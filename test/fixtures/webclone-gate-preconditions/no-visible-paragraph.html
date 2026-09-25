@@ -1,0 +1,33 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<style>
+  body { margin: 0; font-family: serif; }
+  section { min-height: 560px; padding: 20px; }
+  .d { background: #10131a; color: #fff; }
+  .l { background: #fdfdfd; color: #111; }
+  .g { display: grid; grid-template-columns: 2fr 1fr; gap: 16px; }
+  .acc { color: #0071e3; }
+  img { width: 200px; height: 120px; display: block; }
+  /* 문단은 셋인데 보이는 것은 없다. 완료를 선언하지 않는다. */
+  #gone { display: none; }
+  #flat p { height: 0; overflow: hidden; }
+  #faint { opacity: 0; }
+</style>
+</head>
+<body>
+<main>
+  <section class="l g"><h2 style="font-weight:350">제목0</h2><img src="/img1.gif" alt=""></section>
+  <section class="d g"><h2 style="font-weight:450">제목1</h2><img src="/img2.gif" alt=""></section>
+  <section class="l g"><h2 style="font-weight:350">제목2</h2></section>
+  <section class="d g">
+    <h1 style="font-weight:450">제목3</h1>
+    <div id="gone"><p class="acc">감춘 문단</p></div>
+    <div id="flat"><p>높이 없는 문단</p></div>
+    <div id="faint"><p>흐린 문단</p></div>
+  </section>
+</main>
+</body>
+</html>

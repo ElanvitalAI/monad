@@ -1,0 +1,121 @@
+# 표준 «복합» 템플릿 — 구현이 «끝나면 실행이 받아» 도는 한 루프
+#
+# ⛔⭐ 이것은 「impl-standard 를 걷고 이어서 exec-standard 를 걷기」가 «아니다».
+#   exec-standard.yaml 이 그 형태를 «금지»한다:
+#     "한 런이 두 그래프를 걸으면 원장이 한 신원으로 적어 사후 해석이 깨진다"
+#   ⇒ 그 경고는 «여전히 참»이다. 복합은 ***자기 graph_id 를 가진 셋째 그래프***이고,
+#     걸음마다 이 그래프의 신원으로 적힌다. 두 벌을 «잇는» 것이 아니라 «한 벌»이다.
+#
+# 🔑 왜 복합이 필요한가: 「구현이 끝났다」와 「그것이 실제로 도는 것을 봤다」는 다른 값이다.
+#   구현만 재면 ***착지한 파이프라인이 첫 회차에 죽어도 「성공」***으로 남는다.
+#   이 그래프는 그 둘을 «한 종단»으로 묶는다.
+graph_id: composite-standard
+version: 1
+entry_node: plan
+
+# ⛔⭐ 종단이 «넷»이다 — 「구현은 됐는데 못 돌렸다」를 「성공」이나 「실패」로 접지 않는다.
+#   그 칸이 없으면 「파이프라인을 만들었지만 한 번도 안 돌려 봤다」가 보이지 않는다.
+terminal_nodes: [delivered, landed-unrun, blocked, unobserved]
+
+# 🆕⭐ 주기를 «그래프가 선언한다» — 지금 monad 의 스케줄러는 「명령」을 등록하지 걷는 「그래프」를 모른다.
+#   ⛔ 이 필드는 «아직 아무도 안 읽는다»(2026-09-10 실측). 선언을 «먼저» 두고 소비자는 뒤에 온다 —
+#     그 순서가 이 저장소의 규율이고, 그래서 이 줄은 「돈다」가 아니라 「선언됐다」로만 읽어야 한다.
+#   ⇒ 지금은 사람이 이 값을 보고 `monad schedule create --cron <이 값> --command <걷는 명령>` 을 친다.
+schedule:
+  cron: "0 8 * * *"
+  # ⛔ 「등록됐나」와 「발화했나」는 다른 값이다 — 등록은 crontab, 발화는 로그가 답한다.
+  note: "등록은 사람이 한다. 이 값은 «무엇으로 등록할지»의 출처일 뿐이다."
+
+nodes:
+  # ── 구현 절반 ────────────────────────────────────────────────────────────
+  - node_id: plan
+    kind: agent
+    recipe: plan-change
+    max_visits: 2
+    contract: { inputs: [request], tools: read-only, outputs: [plan] }
+  - node_id: build
+    kind: agent
+    recipe: implement-change
+    max_visits: 6
+    contract: { inputs: [plan], tools: workspace-write, outputs: [diff] }
+  - node_id: verify
+    kind: gate
+    recipe: project-gate
+    max_visits: 8
+    contract: { inputs: [diff], tools: read-and-run, outputs: [passed, log] }
+  - node_id: review
+    kind: judge
+    recipe: change-review
+    max_visits: 6
+    contract: { inputs: [diff, plan], tools: read-only, outputs: [verdict, must_fix] }
+  - node_id: rework
+    kind: agent
+    recipe: implement-change
+    max_visits: 6
+    contract: { inputs: [must_fix, diff], tools: workspace-write, outputs: [diff] }
+  - node_id: land
+    kind: git
+    recipe: land-change
+    max_visits: 2
+    contract: { inputs: [diff], tools: git-write, outputs: [ref] }
+
+  # ── ⭐ 이음매 — 이 그래프의 «존재 이유»가 이 노드다 ────────────────────────
+  - node_id: handoff
+    kind: judge
+    recipe: handoff-to-execution
+    max_visits: 2
+    # ⛔ 「착지했으니 돈다」를 «가정하지 않는다» — 실행이 받을 수 있는지 «묻는다».
+    #   못 받으면 landed-unrun 으로 간다. 그것이 「성공」도 「실패」도 아닌 세 번째 값이다.
+    contract: { inputs: [ref], tools: read-only, outputs: [runnable, reason] }
+
+  # ── 실행 절반 ────────────────────────────────────────────────────────────
+  - node_id: run
+    kind: agent
+    recipe: run-pipeline
+    max_visits: 3
+    # ⛔ 이 노드가 «실물 부작용»을 낸다 — 계약이 그것을 말한다(network-write).
+    contract: { inputs: [ref], tools: network-write, outputs: [artifacts, run_log] }
+  - node_id: observe
+    kind: gate
+    recipe: artifact-gate
+    max_visits: 3
+    # ⛔⭐ 「만들었다고 말한 값」이 아니라 «산출의 바이트»를 본다.
+    contract: { inputs: [artifacts], tools: read-only, outputs: [healthy, bytes] }
+
+  # ── 종단 넷 ──────────────────────────────────────────────────────────────
+  - node_id: delivered
+    kind: judge
+    recipe: terminal-delivered
+    max_visits: 1
+    contract: { inputs: [artifacts], tools: read-only, outputs: [summary] }
+  - node_id: landed-unrun
+    kind: judge
+    recipe: terminal-landed-unrun
+    max_visits: 1
+    # ⛔ 이것은 «부분 성공»이 아니다 — 「구현은 main 에 있고 한 번도 안 돌았다」는 «독립한 상태»다.
+    contract: { inputs: [ref, reason], tools: read-only, outputs: [summary] }
+  - node_id: blocked
+    kind: judge
+    recipe: terminal-blocked
+    max_visits: 1
+    contract: { inputs: [reason], tools: read-only, outputs: [summary] }
+  - node_id: unobserved
+    kind: judge
+    recipe: terminal-unobserved
+    max_visits: 1
+    # ⛔ 「못 쟀다」 — 실패가 «아니다». 이 칸을 지우면 가장 못 도는 순간에 가장 관대해진다.
+    contract: { inputs: [], tools: read-only, outputs: [summary] }
+
+edges:
+  - { from: plan, to: build }
+  - { from: build, to: verify }
+  - { from: verify, on: outcome, map: { pass: review, fail: rework } }
+  - { from: review, on: outcome, map: { pass: land, fail: rework } }
+  - { from: rework, to: verify }
+  - { from: land, to: handoff }
+  # ⭐ 이음매의 갈림 — 「실행이 받을 수 있나」. ⛔ 「착지했으니 돈다」를 «가정하지 않는다».
+  - { from: handoff, on: outcome, map: { runnable: run, not-runnable: landed-unrun } }
+  - { from: run, on: outcome, map: { ok: observe, error: blocked } }
+  # ⭐ 폐루프 — 실행이 «나쁜 산출»을 내면 구현으로 되돌아간다.
+  #   ⛔ 되돌림 간선은 «예산이 선 뒤»에만 연다(RFC §5). run:3 · observe:3 · rework:6 이 그 예산이다.
+  - { from: observe, on: outcome, map: { pass: delivered, fail: rework } }

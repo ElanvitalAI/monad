@@ -1,0 +1,72 @@
+[env] 캐시에서 키 갱신: GEMINI_API_KEY, OPENAI_API_KEY, ANTHROPIC_API_KEY, BRAVE_API_KEY, ELEVENLABS_API_KEY, EODHD_API_KEY (낡은 셸 env 를 덮어씀)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+OmniCrawl
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+쿼리:   AI 최신 소식
+모드:   auto
+엔진:   fc-news
+이유:   --engine fc-news
+
+  [firecrawl] 검색: "AI 최신 소식" (limit=5, sources=news)
+  [firecrawl] 5개 결과
+
+총 5건 수집 (1개 엔진)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+---BEGIN_OMNI_CRAWL_JSON---
+{
+  "query": "AI 최신 소식",
+  "mode": "auto",
+  "engines": ["firecrawl"],
+  "totalItems": 5,
+  "costs": [],
+  "savedPath": null,
+  "results": [
+    {
+      "engine": "firecrawl",
+      "totalItems": 5,
+      "summary": null,
+      "items": [
+        {
+          "url": "https://simplywall.st/ko/stocks/us/software/nasdaq-msft/microsoft/news/b74e5390aa93bea6",
+          "title": "클라우드 AI 최신 소식 - AI, 기업 혁신과 성장의 핵심으로 부상",
+          "text": "다양한 산업 분야에서 인공지능은 실험 단계를 넘어 기업 인프라의 핵심 요소로 자리 잡고 있습니다.",
+          "date": "4 days ago",
+          "author": "simplywall.st"
+        },
+        {
+          "url": "https://simplywall.st/ko/stocks/us/semiconductors/nasdaq-nvda/nvidia/news/1a278378b11c9e67",
+          "title": "AI 칩 최신 소식 - AI 데이터 저장 솔루션, 보안 및 접근성 강화",
+          "text": "AI의 급속한 확산은 기업 내 분산된 데이터 저장 환경의 한계를 부각시키고 있습니다.",
+          "date": "5 days ago",
+          "author": "simplywall.st"
+        },
+        {
+          "url": "https://blog.google/intl/ko-kr/company-news/technology/responsible-ai-app-ecosystem-forum-202607/",
+          "title": "구글의 기술 혁신이 열어갈 AI와 앱 생태계의 미래를 논의하는 ‘2026 책임감있는AI X 앱생태계 공동 포럼’ 성료",
+          "text": "구글코리아는 지난 13일 합동 행사를 열었습니다.",
+          "date": "1 month ago",
+          "author": "blog.google"
+        },
+        {
+          "url": "https://www.ibm.com/kr-ko/think/insights/ai-trends-machine-learning-role",
+          "title": "AI 트렌드: 머신 러닝의 역할 자세히 살펴보기",
+          "text": "AI 기술이 주목받고 있는 지금, 조직은 머신 러닝도 기억해야 합니다.",
+          "date": "Dec 27, 2025",
+          "author": "www.ibm.com"
+        },
+        {
+          "url": "https://blog.google/intl/ko-kr/company-news/inside-google/google-for-korea-2026-kr/",
+          "title": "AI 전문가들 ‘구글 포 코리아 2026’ 모여 구글의 AI 성과 및 비전 공유",
+          "text": "구글코리아는 오늘 행사를 개최했습니다.",
+          "date": "Apr 29, 2026",
+          "author": "blog.google"
+        }
+      ]
+    }
+  ]
+}
+---END_OMNI_CRAWL_JSON---
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+사람이 읽는 후속 줄은 JSON 밖에 있다.

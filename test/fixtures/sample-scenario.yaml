@@ -1,0 +1,30 @@
+id: fb4:sample
+title: F-B4 smoke fixture
+description: Used by /playground parse smoke check.
+tags:
+  - smoke
+setup:
+  mount:
+    - id: confirm
+      kind: dialog
+      props:
+        title: Hello?
+        buttons:
+          - value: ok
+            label: OK
+            buttonId: ok
+steps:
+  - action: expect
+    target:
+      kind: modal-mounted
+      id: confirm
+  - action: click
+    target:
+      kind: component
+      componentId: confirm:ok
+  - action: expect
+    target:
+      kind: last-clicked
+      componentId: confirm:ok
+  - action: dismiss
+    modalId: confirm

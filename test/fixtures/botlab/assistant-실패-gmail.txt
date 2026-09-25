@@ -1,0 +1,7 @@
+⛔ Gmail 호출 실패:
+{
+  "error": {
+    "code": 401,
+    "message": "Authentication failed: Failed to get token: Error while setting token in cache: OS keyring failed: Platform secure storage failure: User interaction is not allowed.. Set GOOGLE_WORKSPACE_CLI_KEYRING_BACKEND=file to use file storage.: OS keyring failed: Platform secure storage failure: User interaction is not allowed.. Set GOOGLE_WORKSPACE_CLI_KEYRING_BACKEND=file to use file storage.",
+    "reason": "authError"
+  }

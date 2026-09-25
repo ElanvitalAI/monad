@@ -1,0 +1,24 @@
+id: anthropic
+displayName: Anthropic (Claude)
+aliases: [claude]
+modelPrefixes: [claude-, anthropic/]
+apiKeyEnv: ANTHROPIC_API_KEY
+endpointPattern: https://api.anthropic.com
+defaultStreaming: sse
+toolCallingFormat: native-anthropic
+capabilities:
+  sessionResume: false
+  mcp: false
+  hooks: false
+  skills: true
+  agents: false
+  toolRestrictions: true
+  structuredOutput: true
+  envInjection: false
+  costControl: false
+  effortControl: false
+  thinkingControl: true
+  fallbackModel: false
+  sandbox: false
+  multiHostFanout: false
+builtIn: true

@@ -1,0 +1,24 @@
+name: quick-summary
+description: |
+  Use when: User wants a quick summary of a URL, file path, or YouTube link.
+  Triggers: "summarize", "요약", "tl;dr", "what is this".
+  Does: Hands the URL/file off to the omni-digest skill in essential
+        format and returns the summary text.
+  NOT for: Multi-source comparison, deep research, or rich-format reports
+           (use omni-digest directly with rich-cards / rich format).
+
+# model hint is honored when the user's resolved provider is Anthropic
+# (haiku resolves to claude-haiku-4-5 family); on local / openai / etc.
+# the runtime strips the cross-family hint and falls back to the
+# provider's configured default.
+model: haiku
+
+nodes:
+  - id: route-to-digest
+    skill: omni-digest
+    arguments: $ARGUMENTS
+
+  - id: confirm
+    bash: |
+      echo "summary delivered for: $ARGUMENTS"
+    depends_on: [route-to-digest]

@@ -1,0 +1,44 @@
+{
+  "id": "botlab",
+  "name": "Botlab",
+  "version": "0.1.0",
+  "description": "Read-only manifest boundary for the existing botlab automation surface.",
+  "main": "./plugin.ts",
+  "activationEvents": ["onStartup"],
+  "contributes": {
+    "commands": [
+      {
+        "name": "botlab-schedules",
+        "description": "Read and summarize the local botlab crontab schedules."
+      }
+    ],
+    "prompts": [
+      {
+        "id": "schedule-context",
+        "name": "Botlab schedule context",
+        "content": "When discussing botlab automation, distinguish schedules that were measured from schedules that could not be measured."
+      }
+    ],
+    "tasks": [
+      {
+        "id": "routine-investor",
+        "label": "Run investor routine",
+        "command": "bun",
+        "args": ["scripts/botlab/bot-routine.ts", "investor"]
+      },
+      {
+        "id": "routine-assistant",
+        "label": "Run assistant routine",
+        "command": "bun",
+        "args": ["scripts/botlab/bot-routine.ts", "assistant"]
+      },
+      {
+        "id": "routine-newsbot",
+        "label": "Run newsbot routine",
+        "command": "bun",
+        "args": ["scripts/botlab/bot-routine.ts", "newsbot"]
+      }
+    ]
+  },
+  "capabilities": []
+}

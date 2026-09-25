@@ -1,0 +1,19 @@
+id: gpt-6-luna
+provider: openai
+displayName: GPT-6 Luna
+family: gpt-6
+# ⭐ `familyShortcut` — ***세대(`family`)와 «제품»은 다른 축이다.***
+#   `gpt-6` 세대 안에 astra·sol·luna 가 «같은 날» 나오므로, 세대로만 묶으면
+#   `auditFamilyAliasFreshness` 가 「최신이 누구냐」에 답을 «못 낸다»(unknown-ambiguous-latest).
+#   ⇒ 코드 주석이 이미 처방을 적어 뒀다 — *"familyShortcut distinguishes products
+#     sharing a catalog generation family"*. 그 기전을 쓴다(grok 이 이미 이 방식이다).
+#   ⇒ 이제 `sol` 별칭의 후보는 {gpt-6-sol, gpt-5.6-sol} 이고 최신이 «하나»로 정해진다.
+familyShortcut: luna
+# 출시일 — 「unknown-missing-release-date」를 «승인 목록에 더하지 않고» 없앤다.
+#   출처: developers.openai.com/api/내부 문서 `gpt-6-luna` (2026-09-23 firecrawl 직접)
+releaseDate: 2026-09-22
+discoveryMeta:
+  source: manual
+  lastSeen: 2026-09-23
+  autoFilled: false
+  confidence: high

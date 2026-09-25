@@ -1,0 +1,141 @@
+{
+  "$comment": [
+    "이 파일이 «내용»의 정본이다. DESIGN.md 는 «형식»의 정본이다. 둘을 섞지 마라.",
+    "index.html 은 이 스키마의 한 인스턴스를 인라인으로 담고 있다 — 다른 행사로 재사용할 때는",
+    "이 파일을 채우고 index.html 의 같은 이름 슬롯(data-slot)을 갈아 끼운다.",
+    "⛔ 값이 없으면 «지어내지» 마라 — 그 칸을 통째로 빼는 것이 anti-ai-slop §7(filler copy)이 요구하는 바다."
+  ],
+
+  "meta": {
+    "lang": "ko",
+    "title": "2026 건국대학교 건축대학 총동문 골프대회",
+    "description": "함께한 시간, 더 멀리. 2026년 10월 30일, 춘천 로드힐스 골프앤리조트에서 건국 건축인이 만납니다. 선착순 20팀, 10월 16일 신청 마감.",
+    "siteName": "건국대학교 건축대학 총동문회",
+    "url": "https://example.invalid/",
+    "ogImage": "assets/og.png",
+    "ogImageAlt": "2026 건국대학교 건축대학 총동문 골프대회 · 10월 30일 · 춘천 로드힐스 골프앤리조트",
+    "locale": "ko_KR"
+  },
+
+  "brand": {
+    "logo": { "src": "assets/logo.svg", "alt": "건국대학교" },
+    "org": "건축대학 총동문회",
+    "orgLatin": "ARCHITECTURE ALUMNI"
+  },
+
+  "nav": [
+    { "label": "행사 안내", "href": "#overview" },
+    { "label": "오시는 길", "href": "#venue" },
+    { "label": "후원·찬조", "href": "#sponsor" }
+  ],
+
+  "cta": {
+    "label": "참가 신청 안내",
+    "href": "#apply",
+    "$comment": "온라인 폼이 생기면 href 를 그 URL 로 바꾼다. 지금은 페이지 안 앵커다."
+  },
+
+  "hero": {
+    "image": { "src": "assets/hero.svg", "alt": "호수와 가을 숲이 어우러진 로드힐스 골프 코스" },
+    "eyebrow": "2026 KU ARCHITECTURE GOLF",
+    "invitation": "함께한 시간, 더 멀리",
+    "headline": ["건국대학교", "건축대학 총동문", "골프대회"],
+    "headlineAccentIndex": 2,
+    "description": ["좋은 사람들과, 더 나은 내일을 위해.", "가을의 필드에서 건국 건축인이 다시 만납니다."],
+    "ctaNote": "선착순 20팀 · 10월 16일 마감",
+    "scrollHint": "골프공을 따라, 함께할 하루를 만나보세요.",
+    "date": { "month": "OCTOBER", "day": "30", "weekday": "FRI", "full": "2026. 10. 30. 금요일", "place": "춘천 로드힐스 골프앤리조트" },
+    "venueLatin": "LORDHILLS GOLF & RESORT"
+  },
+
+  "quickFacts": [
+    { "icon": "calendar", "label": "일시", "value": "10월 30일", "valueSmall": "금요일", "note": "오전 10시 접수 시작" },
+    { "icon": "pin",      "label": "장소", "value": "춘천 로드힐스", "note": "골프앤리조트" },
+    { "icon": "users",    "label": "모집", "value": "선착순 20팀", "note": "건축대학 및 대학원 동문" },
+    { "icon": "flag",     "label": "참가비", "value": "1인 30만원", "note": "그린피·카트비·식사비 포함" }
+  ],
+
+  "sections": {
+    "invitation": {
+      "eyebrow": "01 — INVITATION",
+      "heading": ["좋은 동행이", "좋은 추억이 됩니다."],
+      "headingAccentIndex": 1,
+      "body": [
+        "푸르고 청명한 가을 하늘 아래,\n건국 건축인의 정을 나누는 자리를 마련했습니다.",
+        "어려운 시기일수록 동문이 함께 모여 서로를 격려하고 새로운 힘을 나누는 자리가 되었으면 합니다.",
+        "은사님과 선후배 동문 여러분의\n많은 관심과 참여를 부탁드립니다."
+      ],
+      "signature": { "role": "제22대 건국대학교 건축대학 총동문회장", "name": "백만수", "suffix": "배상" }
+    },
+
+    "venue": {
+      "eyebrow": "02 — THE COURSE",
+      "heading": ["가을의 춘천,", "로드힐스에서."],
+      "intro": ["반가운 얼굴, 탁 트인 필드.", "함께할 하루를 기다립니다."],
+      "image": { "src": "assets/venue.svg", "alt": "숲으로 둘러싸인 페어웨이 전경", "caption": "CHUNCHEON, GANGWON" },
+      "name": "로드힐스 골프앤리조트",
+      "address": "강원특별자치도 춘천시 동산면 · 로드힐스 골프앤리조트",
+      "links": [
+        { "label": "네이버 지도에서 보기", "href": "https://map.naver.com/p/search/%EB%A1%9C%EB%93%9C%ED%9E%90%EC%8A%A4%20%EA%B3%A8%ED%94%84%EC%95%A4%EB%A6%AC%EC%A1%B0%ED%8A%B8", "kind": "primary" },
+        { "label": "골프장 공식 홈페이지", "href": "https://lordhills.co.kr/", "kind": "muted" }
+      ]
+    },
+
+    "details": {
+      "eyebrow": "03 — EVENT DETAILS",
+      "heading": "함께하기 위한 안내",
+      "lede": "참가 전, 꼭 확인해 주세요.",
+      "items": [
+        { "term": "행사 일시", "value": "2026년 10월 30일 (금)", "sub": "오전 10시 접수 시작", "note": "티오프 시간은 추후 안내드립니다." },
+        { "term": "참가 대상", "value": "건국대학교 건축대학 및 대학원 동문", "note": "건축전문대학원 및 일반대학원 동문에게도 열려있는 행사입니다." },
+        { "term": "신청 마감", "value": "2026년 10월 16일 (금)", "emphasis": "deadline", "note": "선착순 20팀 모집" },
+        { "term": "참가 문의", "contacts": [
+          { "name": "홍길동", "tel": "010-0000-0001" },
+          { "name": "김담당",  "tel": "010-0000-0003" }
+        ] }
+      ],
+      "fee": {
+        "eyebrow": "PARTICIPATION FEE",
+        "amountPrefix": "1인",
+        "amount": "30",
+        "amountSuffix": "만원",
+        "includes": "그린피 · 카트비 · 식사비 포함",
+        "excludes": "주류 별도",
+        "accountLabel": "참가비 입금 계좌",
+        "bank": "우리은행",
+        "number": "1002940788403",
+        "owner": "백만수",
+        "note": "현장 법인카드 결제 가능"
+      }
+    },
+
+    "sponsor": {
+      "eyebrow": "04 — WITH YOUR SUPPORT",
+      "heading": ["마음을 더하는", "후원과 찬조"],
+      "lede": "즐거운 행사가 될 수 있도록\n동문 여러분의 많은 참여와 후원을 부탁드립니다.",
+      "cards": [
+        { "index": "01", "title": "계좌 이체", "bank": "신한은행", "number": "100-030-004920", "owner": "건국대학교건축총동문회", "copyLabel": "후원 계좌 복사" },
+        { "index": "02", "title": "세금계산서 발행", "body": "사업자등록증 송부 후 ‘홍보비’로\n전자세금계산서 발행 → 계좌 입금", "contact": { "name": "이담당", "tel": "010-0000-0002" } },
+        { "index": "03", "title": "법인카드 결제", "body": "행사 당일 현장 동문회\n카드단말기를 이용하여\n결제 가능합니다." }
+      ]
+    },
+
+    "closing": {
+      "eyebrow": "SEE YOU ON THE GREEN",
+      "heading": ["10월의 멋진 가을날,", "춘천에서 반갑게 뵙겠습니다."],
+      "line": "2026. 10. 30. FRI · 로드힐스 골프앤리조트",
+      "note": "온라인 신청 준비 중 · 문의는 위 연락처로 부탁드립니다."
+    }
+  },
+
+  "footer": { "org": "건국대학교 건축대학 총동문회", "line": "제22대 총동문회 · 2026 총동문 골프대회", "slogan": "함께한 시간, 더 멀리." },
+
+  "mobileBar": { "date": "10. 30. 금요일", "note": "선착순 20팀 · 10. 16. 마감" },
+
+  "ambience": {
+    "$comment": "장식층. DESIGN.md §Motion 의 세 조항을 지키는 조건에서만 켠다. 없으면 통째로 빼도 페이지가 성립한다.",
+    "enabled": true,
+    "audio": { "src": "assets/ambience.mp3", "labelOn": "음악 끄기", "labelOff": "음악 켜기" },
+    "leaves": 6
+  }
+}

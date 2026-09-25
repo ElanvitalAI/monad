@@ -1,0 +1,46 @@
+{
+  "title": "Elanvital — 스스로 관측하고, 스스로 고친다 (종합 시나리오)",
+  "_note": "⛔ 이 파일은 «시연용 장식»이 아니라 ***전 구간을 한 번에 누르는 자***다. 여섯 무료 모델이 한 런에서 전부 불려야 이 장면이 완성된다 — 이미지(Qwen-Image-2.1·MLX) · 목소리(Qwen3-TTS·MLX) · 타이밍(whisper-asr·MLX) · 음악(YuE2-3B·GGUF/Metal) · 합성/렌더(ffmpeg) · 검수(blackdetect+픽셀차). ⛔ 한 칸이라도 «못 물어봤다»면 산출이 그 사실을 이름으로 말해야 한다.",
+  "voiceInstruct": "A calm, warm Korean female narrator, clear diction, unhurried measured pace, low-key confident, premium brand film tone, no theatrical emphasis",
+  "specs": [
+    "1080x1920",
+    "1920x1080"
+  ],
+  "scenes": [
+    {
+      "prompt": "A single small light source in a vast dark navy void, thin volumetric rays barely visible, extreme minimalism, deep shadow, premium cinematic still, no text, no people",
+      "caption": "처음엔 아무것도 보이지 않습니다"
+    },
+    {
+      "prompt": "Faint blue diagnostic grid lines slowly resolving out of darkness onto a matte charcoal surface, precise thin strokes, technical drawing aesthetic, soft rim light, 8k editorial photography",
+      "caption": "그래서 먼저 «봅니다»"
+    },
+    {
+      "prompt": "A dense lattice of teal light filaments on black, one filament clearly broken and glowing amber at the break, everything else calm blue, macro detail, dark premium tech aesthetic, no text",
+      "caption": "어긋난 자리는 스스로 드러납니다"
+    },
+    {
+      "prompt": "The same teal lattice with the amber break now healed into continuous teal light, subtle warm afterglow where the repair happened, macro detail, black background, no text",
+      "caption": "그리고 스스로 고칩니다"
+    },
+    {
+      "prompt": "Wide shot of an organized field of soft blue light nodes on deep navy, gentle depth of field, quiet order, vast negative space, brand atmosphere still, no text",
+      "caption": "사람은 매 단계를 판단하지 않습니다"
+    },
+    {
+      "prompt": "A minimal closing frame, deep navy to black gradient, one clean bright point of light at the golden ratio position, vast calm negative space, premium brand end card, no text",
+      "caption": "Elanvital Research"
+    }
+  ],
+  "music": {
+    "_why": "⛔ 가사를 «비워 두지 않는다» — 비우면 YuE2 가 아니라 기악 엔진이 답해도 «같은 얼굴»이 되어, 「어느 엔진이 만들었나」를 산출에서 못 가른다. ⇒ 가사가 이 축의 반증이다.",
+    "caption": "Slow cinematic indie folk, fingerpicked acoustic guitar, warm analog pad underneath, brushed drums entering late, one gentle female lead vocal, spacious premium brand film underscore",
+    "lyrics": "[Verse]\nQuiet hands are moving in the early light.\nEvery small correction makes the picture right.\n[Chorus]\nWe watch it close, we let it show.\nWhat mends itself is what we let it know.",
+    "duration": 40,
+    "engines": [
+      "yue2-audiocpp",
+      "acestep-cpp",
+      "minimax-mlx"
+    ]
+  }
+}

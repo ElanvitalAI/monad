@@ -1,0 +1,46 @@
+# ── Scenario · iul-timeline-viewer ──
+#
+# Minimal scenario that drives the iul-timeline plugin's viewer widget
+# when available, falling back to a plain log pane otherwise. The
+# `state-timeline-viewer` type isn't in the P3 schema registry yet so
+# it flows through the permissive fallback — decode succeeds without
+# per-field validation.
+
+id: iul-timeline-viewer
+title: IUL Timeline Viewer
+description: |
+  Spawns the widget-recorder viewer modeled on the iul-timeline plugin.
+  Paired with a log so operators always have a live feedback channel
+  next to the scrub controls.
+
+meta:
+  tags: [iul, debugging]
+  requires: widget-recorder
+
+layout:
+  - widget: state-timeline-viewer
+    id: iul-viewer
+    config:
+      autoFollow: true
+    style:
+      decoration:
+        color: surface
+        border:
+          all: { color: border.focused, width: 1, style: double }
+        borderRadius:
+          circular: 1
+        padding: 1
+        boxShadow:
+          - offset: { dx: 1, dy: 1 }
+            color: shadow.soft
+
+  - widget: log
+    id: iul-log
+    config:
+      lines:
+        - "viewer ready"
+    style:
+      decoration:
+        border:
+          all: { color: border, width: 1 }
+        padding: 1

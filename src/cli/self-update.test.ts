@@ -1,0 +1,488 @@
+import { describe, expect, test } from 'bun:test';
+import { resolve, join } from 'node:path';
+import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { childPath, planVersionPrune, relayImportClosure, rollbackTarget, runReleaseUpdate, runSelfUpdate, runUpdateForInstallation, updateRelay, versionCommit, type SelfUpdateDeps, type ReleaseUpdateDeps } from './self-update.js';
+import type { RestartNeededResult } from './nexus-restart-needed.js';
+
+const checkout = resolve(import.meta.dir, '../..');
+const sha = 'abcdef123456abcdef123456abcdef123456abcd';
+function fixture(decision: RestartNeededResult = { exitCode: 11, verdict: 'restart' }) {
+  const calls: string[] = [];
+  const lines: string[] = [];
+  let dirty = false;
+  let installFails = false;
+  const deps: SelfUpdateDeps = {
+    cliRoot: checkout,
+    git: (_cwd, args) => {
+      calls.push(`git ${args.join(' ')}`);
+      if (args.includes('--show-toplevel')) return { status: 0, stdout: `${checkout}\n`, stderr: '' };
+      if (args.includes('--verify')) return { status: 0, stdout: `${sha}\n`, stderr: '' };
+      return { status: dirty ? 1 : 0, stdout: '', stderr: '' };
+    },
+    decide: async (opts) => { calls.push(`decide ${opts.to} ${opts.cwd}`); return decision; },
+    run: (cmd, args) => {
+      calls.push(`${cmd} ${args.join(' ')}`);
+      return { status: cmd === 'bash' && installFails ? 1 : 0, stderr: 'failed' };
+    },
+    installedVersion: () => '1.0.0-abcdef123456',
+    pruneVersions: (plan) => { calls.push(`prune ${plan.current} ${plan.daemonSha} ${plan.keep}`); return { removed: [], kept: [] }; },
+    verifyRestart: async (commit) => { calls.push(`verify ${commit}`); return { ok: true, daemonSha: commit }; },
+    alert: (text) => { calls.push(`alert ${text.slice(0, 20)}`); },
+    os: 'darwin',
+    uid: 501,
+    out: { log: (s) => lines.push(s), error: (s) => lines.push(s) },
+  };
+  return { deps, calls, lines, setDirty: () => { dirty = true; }, failInstall: () => { installFails = true; } };
+}
+
+describe('runReleaseUpdate — release installer', () => {
+  function setup() {
+    const prefix = mkdtempSync(join(tmpdir(), 'monad-release-update-'));
+    const packageRoot = join(prefix, 'versions', 'old', 'node_modules', 'monadagent');
+    mkdirSync(packageRoot, { recursive: true });
+    writeFileSync(join(prefix, 'install.json'), JSON.stringify({ version: '0.1.0' }));
+    const calls: Array<{ command: string; args: string[]; cwd: string; input?: string; env?: NodeJS.ProcessEnv }> = [];
+    const urls: string[] = [];
+    const lines: string[] = [];
+    let installedVersion = '0.2.0';
+    const deps: ReleaseUpdateDeps = {
+      packageRoot,
+      fetchInstaller: async (url) => { urls.push(url); return 'echo verified installer'; },
+      run: (command, args, cwd, input, env) => {
+        calls.push({ command, args, cwd, input, env });
+        if (command === 'bash') writeFileSync(join(prefix, 'install.json'), JSON.stringify({ version: installedVersion }));
+        return { status: 0, stderr: '' };
+      },
+      os: 'darwin', uid: 501,
+      out: { log: (line) => lines.push(line), error: (line) => lines.push(line) },
+    };
+    return { prefix, packageRoot, calls, urls, lines, deps, setInstalledVersion: (value: string) => { installedVersion = value; }, cleanup: () => rmSync(prefix, { recursive: true, force: true }) };
+  }
+
+  test('uses install.json prefix and latest installer, passing script on stdin without changing PATH', async () => {
+    const f = setup();
+    try {
+      const result = await runReleaseUpdate({}, f.deps);
+      expect(f.urls).toEqual(['https://github.com/ElanvitalAI/monad/releases/latest/download/install.sh']);
+      expect(f.calls).toEqual([{ command: 'bash', args: ['-s', '--', '--no-modify-path', '--prefix', f.prefix], cwd: f.prefix, input: 'echo verified installer', env: { MONAD_VERSION: '', MONAD_INSTALL_SOURCE: '' } }]);
+      expect(result).toMatchObject({ exitCode: 0, installedVersion: '0.2.0', restarted: false });
+    } finally { f.cleanup(); }
+  });
+
+  test('version-specific release and explicit restart use selected tag and service', async () => {
+    const f = setup();
+    f.setInstalledVersion('0.2.0-rc.1');
+    try {
+      const result = await runReleaseUpdate({ version: '0.2.0-rc.1', restart: true, json: true }, f.deps);
+      expect(f.urls).toEqual(['https://github.com/ElanvitalAI/monad/releases/download/v0.2.0-rc.1/install.sh']);
+      expect(f.calls[0]?.env).toEqual({ MONAD_VERSION: '0.2.0-rc.1', MONAD_INSTALL_SOURCE: '' });
+      expect(f.calls[1]).toEqual({ command: 'launchctl', args: ['kickstart', '-k', 'gui/501/com.monad.nexus'], cwd: f.prefix, input: undefined, env: undefined });
+      expect(result).toMatchObject({ exitCode: 0, installedVersion: '0.2.0-rc.1', restarted: true });
+      expect(JSON.parse(f.lines[0]!)).toEqual(result);
+    } finally { f.cleanup(); }
+  });
+
+  test('requested prerelease mismatch fails before service restart', async () => {
+    const f = setup();
+    try {
+      const result = await runReleaseUpdate({ version: '0.2.0-rc.1', restart: true }, f.deps);
+      expect(result).toMatchObject({ exitCode: 1, installedVersion: null, restarted: false });
+      expect(result.reason).toContain('요청 0.2.0-rc.1, 설치 0.2.0');
+      expect(f.calls.map((call) => call.command)).toEqual(['bash']);
+    } finally { f.cleanup(); }
+  });
+
+  test('no install marker, unsafe version and fetch failure do not execute installer', async () => {
+    const f = setup();
+    try {
+      expect((await runReleaseUpdate({ version: '../bad' }, f.deps)).exitCode).toBe(2);
+      expect((await runReleaseUpdate({}, { ...f.deps, exists: () => false })).exitCode).toBe(2);
+      const failed = await runReleaseUpdate({}, { ...f.deps, fetchInstaller: async () => { throw new Error('offline'); } });
+      expect(failed).toMatchObject({ exitCode: 1, restarted: false });
+      expect(failed.reason).toContain('offline');
+      expect(f.calls).toHaveLength(0);
+    } finally { f.cleanup(); }
+  });
+
+  test('release pruning preserves current and previous versions and obeys --keep', async () => {
+    const f = setup();
+    const versions = join(f.prefix, 'versions');
+    mkdirSync(join(versions, 'a'));
+    mkdirSync(join(versions, 'b'));
+    mkdirSync(join(versions, 'c'));
+    writeFileSync(join(f.prefix, 'install.json'), JSON.stringify({ version: '0.1.0', versionDir: 'versions/old' }));
+    f.deps.run = (command) => {
+      if (command === 'bash') writeFileSync(join(f.prefix, 'install.json'), JSON.stringify({ version: '0.2.0', versionDir: 'versions/c' }));
+      return { status: 0, stderr: '' };
+    };
+    try {
+      const result = await runReleaseUpdate({ keep: 1 }, f.deps);
+      expect(result.prune).toMatchObject({ kept: expect.arrayContaining(['old', 'c']), removed: expect.arrayContaining(['a', 'b']) });
+      expect(result.prune?.skipped).toBeUndefined();
+    } finally { f.cleanup(); }
+  });
+
+  test('release failure alerts once when requested, including a download failure', async () => {
+    const f = setup();
+    const alerts: string[] = [];
+    try {
+      const failed = await runReleaseUpdate({ alert: true }, { ...f.deps, alert: (text) => alerts.push(text), fetchInstaller: async () => { throw new Error('offline'); } });
+      expect(failed.exitCode).toBe(1);
+      expect(alerts).toHaveLength(1);
+      expect(alerts[0]).toContain('offline');
+      expect(f.calls).toHaveLength(0);
+    } finally { f.cleanup(); }
+  });
+
+  test('installer and restart failure report failure without claiming restart', async () => {
+    const f = setup();
+    try {
+      const failed = await runReleaseUpdate({ restart: true }, { ...f.deps, run: () => ({ status: 7, stderr: 'install failed' }) });
+      expect(failed).toMatchObject({ exitCode: 1, installedVersion: null, restarted: false });
+      expect(failed.reason).toContain('install failed');
+      const restarted = await runReleaseUpdate({ restart: true }, { ...f.deps, run: (command, args, cwd, input, env) => {
+        f.calls.push({ command, args, cwd, input, env });
+        return { status: command === 'bash' ? 0 : 1, stderr: 'service failed' };
+      } });
+      expect(restarted).toMatchObject({ exitCode: 1, installedVersion: '0.1.0', restarted: false });
+      expect(restarted.reason).toContain('service failed');
+    } finally { f.cleanup(); }
+  });
+});
+
+describe('self-update installation routing', () => {
+  test('installed CLI forwards --alert and --keep; explicit checkout keeps its existing options', async () => {
+    const prefix = mkdtempSync(join(tmpdir(), 'monad-update-options-'));
+    const packageRoot = join(prefix, 'versions', 'old', 'node_modules', 'monadagent');
+    mkdirSync(packageRoot, { recursive: true });
+    writeFileSync(join(prefix, 'install.json'), JSON.stringify({ version: '0.1.0', versionDir: 'versions/old', source: 'https://github.com/ElanvitalAI/monad/releases/latest/download/monadagent.tgz' }));
+    const alerts: string[] = [];
+    const plans: Array<{ current: string; previous: string; keep: number; prefix: string }> = [];
+    const f = fixture();
+    try {
+      const releaseDeps: ReleaseUpdateDeps = {
+        out: { log: () => {}, error: () => {} },
+        alert: (text) => alerts.push(text),
+        fetchInstaller: async () => 'echo installer',
+        run: (command) => {
+          if (command === 'bash') writeFileSync(join(prefix, 'install.json'), JSON.stringify({ version: '0.2.0', versionDir: 'versions/new' }));
+          return { status: command === 'bash' ? 0 : 1, stderr: 'restart failed' };
+        },
+        pruneVersions: (plan) => { plans.push(plan); return { removed: [], kept: ['old', 'new'] }; },
+        os: 'darwin', uid: 501,
+      };
+      const release = await runUpdateForInstallation({ restart: true, alert: true, keep: 7 }, { cliRoot: packageRoot, release: releaseDeps });
+      expect(release).toMatchObject({ exitCode: 1, installedVersion: '0.2.0', restarted: false });
+      expect(plans).toEqual([{ current: 'new', previous: 'old', keep: 7, prefix }]);
+      expect(alerts).toHaveLength(1);
+      expect(alerts[0]).toContain('restart failed');
+      const checkoutResult = await runUpdateForInstallation({ from: checkout, keep: 5, alert: true }, { cliRoot: packageRoot, checkout: f.deps });
+      expect(checkoutResult.exitCode).toBe(0);
+      expect(f.calls).toContain('prune 1.0.0-abcdef123456  5');
+      expect(f.calls.some((call) => call.startsWith('alert'))).toBe(false);
+    } finally { rmSync(prefix, { recursive: true, force: true }); }
+  });
+
+  test('installed CLI selects the release installer; an explicit checkout keeps the git path', async () => {
+    const prefix = mkdtempSync(join(tmpdir(), 'monad-update-routing-'));
+    const packageRoot = join(prefix, 'versions', '0.1.0', 'node_modules', 'monadagent');
+    mkdirSync(packageRoot, { recursive: true });
+    writeFileSync(join(prefix, 'install.json'), JSON.stringify({ version: '0.1.0', source: 'https://github.com/ElanvitalAI/monad/releases/latest/download/monadagent.tgz' }));
+    const releaseCalls: string[] = [];
+    const f = fixture();
+    try {
+      const release = await runUpdateForInstallation({ version: '0.2.0', restart: false }, {
+        cliRoot: packageRoot,
+        release: {
+          out: { log: () => {}, error: () => {} },
+          fetchInstaller: async (url) => { releaseCalls.push(url); return 'echo installer'; },
+          run: (command) => { releaseCalls.push(command); writeFileSync(join(prefix, 'install.json'), JSON.stringify({ version: '0.2.0' })); return { status: 0, stderr: '' }; },
+        },
+        checkout: f.deps,
+      });
+      expect(release).toMatchObject({ exitCode: 0, installedVersion: '0.2.0', restarted: false });
+      expect(releaseCalls).toEqual(['https://github.com/ElanvitalAI/monad/releases/download/v0.2.0/install.sh', 'bash']);
+      expect(f.calls).toEqual([]);
+      const checkoutResult = await runUpdateForInstallation({ from: checkout }, { cliRoot: packageRoot, checkout: f.deps });
+      expect(checkoutResult).toMatchObject({ exitCode: 0, installedVersion: '1.0.0-abcdef123456' });
+      expect(f.calls).toContain(`bash ${checkout}/scripts/install.sh --no-modify-path`);
+      expect(releaseCalls).toHaveLength(2);
+    } finally { rmSync(prefix, { recursive: true, force: true }); }
+  });
+});
+
+describe('self-update routing by install source (2026-09-25 🅣)', () => {
+  function installed(source: string | undefined) {
+    const prefix = mkdtempSync(join(tmpdir(), 'monad-update-source-'));
+    const packageRoot = join(prefix, 'versions', '1.0.0-abcdef123456', 'node_modules', 'monadagent');
+    mkdirSync(packageRoot, { recursive: true });
+    writeFileSync(join(prefix, 'install.json'), JSON.stringify({ version: '1.0.0', ...(source === undefined ? {} : { source }) }));
+    return { prefix, packageRoot };
+  }
+
+  test('a checkout-sourced install (this machine: source = pilot checkout) updates from that checkout, never from a release', async () => {
+    const f = fixture();
+    const inst = installed(checkout);
+    const releaseCalls: string[] = [];
+    try {
+      const result = await runUpdateForInstallation({ keep: 3 }, {
+        cliRoot: inst.packageRoot,
+        release: { out: { log: () => {}, error: () => {} }, fetchInstaller: async (url) => { releaseCalls.push(url); return 'x'; } },
+        checkout: f.deps,
+      });
+      expect(releaseCalls).toEqual([]);
+      expect(result.exitCode).toBe(0);
+      expect(f.calls).toContain(`bash ${checkout}/scripts/install.sh --no-modify-path`);
+    } finally { rmSync(inst.prefix, { recursive: true, force: true }); }
+  });
+
+  test('an install with no readable source stops with rc 2 and names --from — it does not guess', async () => {
+    const f = fixture();
+    const inst = installed(undefined);
+    const logs: string[] = [];
+    try {
+      const result = await runUpdateForInstallation({}, { cliRoot: inst.packageRoot, checkout: { ...f.deps, out: { log: (t: string) => logs.push(t), error: () => {} } } });
+      expect(result.exitCode).toBe(2);
+      expect(result.reason).toContain('--from');
+      expect(f.calls).toEqual([]);
+    } finally { rmSync(inst.prefix, { recursive: true, force: true }); }
+  });
+
+  test('the release installer URL follows MONAD_RELEASE_BASE (mirror or file:// fixture)', async () => {
+    const inst = installed('file:///tmp/rel/latest/download/monadagent.tgz');
+    const urls: string[] = [];
+    try {
+      await runReleaseUpdate({}, {
+        packageRoot: inst.packageRoot, releaseBase: 'file:///tmp/rel/', out: { log: () => {}, error: () => {} },
+        fetchInstaller: async (url) => { urls.push(url); throw new Error('stop here'); },
+      });
+      expect(urls).toEqual(['file:///tmp/rel/latest/download/install.sh']);
+    } finally { rmSync(inst.prefix, { recursive: true, force: true }); }
+  });
+});
+
+describe('self-update — injected commands only', () => {
+  test('decides before installation, restarts exactly once after successful install with consent', async () => {
+    const f = fixture();
+    const result = await runSelfUpdate({ restart: true, json: true }, f.deps);
+    expect(result).toMatchObject({ exitCode: 0, installedVersion: '1.0.0-abcdef123456', restarted: true, decision: { verdict: 'restart' } });
+    expect(f.calls).toEqual([
+      'git rev-parse --show-toplevel', 'git rev-parse --verify HEAD', 'git diff --quiet HEAD --',
+      `decide ${sha} ${checkout}`, `bash ${checkout}/scripts/install.sh --no-modify-path`,
+      'prune 1.0.0-abcdef123456  3', 'launchctl kickstart -k gui/501/com.monad.nexus', 'verify abcdef123456',
+    ]);
+    expect(JSON.parse(f.lines[0]!)).toEqual(result);
+  });
+  test('no --restart means no service command and an explicit reason', async () => {
+    const f = fixture();
+    const result = await runSelfUpdate({}, f.deps);
+    expect(result).toMatchObject({ exitCode: 0, restarted: false });
+    expect(result.reason).toContain('--restart 없음');
+    expect(f.calls.filter((s) => s.startsWith('launchctl'))).toHaveLength(0);
+    expect(f.lines).toHaveLength(1);
+  });
+  for (const verdict of ['build', 'none'] as const) {
+    test(`${verdict} does not restart with --restart`, async () => {
+      const f = fixture({ exitCode: verdict === 'build' ? 10 : 0, verdict });
+      const result = await runSelfUpdate({ restart: true }, f.deps);
+      expect(result.restarted).toBe(false);
+      expect(f.calls.some((s) => s.startsWith('launchctl'))).toBe(false);
+    });
+  }
+  test('unknown exit 2 installs but never restarts; preserves reason', async () => {
+    const f = fixture({ exitCode: 2, reason: '데몬 무응답' });
+    const result = await runSelfUpdate({ restart: true }, f.deps);
+    expect(result).toMatchObject({ exitCode: 0, restarted: false });
+    expect(result.reason).toContain('데몬 무응답');
+    expect(f.calls.some((s) => s.startsWith('launchctl'))).toBe(false);
+  });
+  test('failed installation exits 1 without restarting', async () => {
+    const f = fixture(); f.failInstall();
+    const result = await runSelfUpdate({ restart: true }, f.deps);
+    expect(result.exitCode).toBe(1);
+    expect(result.restarted).toBe(false);
+    expect(f.calls.some((s) => s.startsWith('launchctl'))).toBe(false);
+  });
+  test('tracked changes reject before deciding or installing', async () => {
+    const f = fixture(); f.setDirty();
+    const result = await runSelfUpdate({ restart: true }, f.deps);
+    expect(result.exitCode).toBe(2);
+    expect(f.calls.some((s) => s.startsWith('decide') || s.startsWith('bash'))).toBe(false);
+  });
+  test('missing checkout rejects with reason', async () => {
+    const f = fixture();
+    const result = await runSelfUpdate({ from: '/nonexistent-monad-self-update-checkout' }, f.deps);
+    expect(result.exitCode).toBe(2);
+    expect(result.reason).toContain('체크아웃 없음');
+    expect(f.calls).toHaveLength(0);
+  });
+  test('installation thrown error stops restart with exit 1', async () => {
+    const f = fixture();
+    f.deps.run = () => { throw new Error('spawn failed'); };
+    const result = await runSelfUpdate({ restart: true }, f.deps);
+    expect(result).toMatchObject({ exitCode: 1, restarted: false });
+    expect(result.reason).toContain('spawn failed');
+  });
+  test('restart failure exits 1 and reports installed version without claiming restart', async () => {
+    const f = fixture();
+    f.deps.run = (cmd, args) => {
+      f.calls.push(`${cmd} ${args.join(' ')}`);
+      return { status: cmd === 'bash' ? 0 : 1, stderr: 'service failed' };
+    };
+    const result = await runSelfUpdate({ restart: true }, f.deps);
+    expect(result).toMatchObject({ exitCode: 1, installedVersion: '1.0.0-abcdef123456', restarted: false });
+    expect(result.reason).toContain('service failed');
+  });
+  test('linux restarts via systemctl user', async () => {
+    const f = fixture(); f.deps.os = 'linux';
+    await runSelfUpdate({ restart: true }, f.deps);
+    expect(f.calls.at(-2)).toBe('systemctl --user restart monad-nexus');
+    expect(f.calls.at(-1)).toBe('verify abcdef123456');
+  });
+});
+
+// 🆕 2026-09-24 — 크론 PATH(/usr/bin:/bin)에도 설치기가 지금의 bun 을 찾게.
+describe('childPath', () => {
+  test('prepends the running bun directory once and keeps the rest', () => {
+    expect(childPath({ PATH: '/usr/bin:/bin' }, '/Users/me/.bun/bin/bun')).toBe('/Users/me/.bun/bin:/usr/bin:/bin');
+    expect(childPath({ PATH: '/Users/me/.bun/bin:/usr/bin' }, '/Users/me/.bun/bin/bun')).toBe('/Users/me/.bun/bin:/usr/bin');
+    expect(childPath({}, '/opt/bun/bin/bun')).toBe('/opt/bun/bin');
+  });
+});
+
+// 🆕 2026-09-24 — 야간 자동이 하룻밤 한 판(641MB)씩 쌓는다.
+describe('planVersionPrune', () => {
+  const e = (name: string, mtimeMs: number) => ({ name, mtimeMs });
+  const list = [
+    e('1.0.0-111111111111', 1), e('1.0.0-222222222222', 2), e('1.0.0-333333333333-dirty', 3),
+    e('1.0.0-444444444444', 4), e('1.0.0-555555555555', 5), e('1.0.0-666666666666', 6),
+  ];
+  test('keeps current, the daemon version and the newest N; removes the rest', () => {
+    const r = planVersionPrune(list, '1.0.0-666666666666', '111111111', 2);
+    expect(r.kept.sort()).toEqual(['1.0.0-111111111111', '1.0.0-555555555555', '1.0.0-666666666666']);
+    expect(r.removed.sort()).toEqual(['1.0.0-222222222222', '1.0.0-333333333333-dirty', '1.0.0-444444444444']);
+  });
+  test('removes nothing when the daemon version is unknown or absent', () => {
+    expect(planVersionPrune(list, '1.0.0-666666666666', '', 2)).toMatchObject({ removed: [], skipped: expect.stringContaining('데몬 판 모름') });
+    expect(planVersionPrune(list, '1.0.0-666666666666', 'deadbeef', 2)).toMatchObject({ removed: [], skipped: expect.stringContaining('목록에 없음') });
+    expect(planVersionPrune(list, '1.0.0-777777777777', '111111111', 2)).toMatchObject({ removed: [], skipped: expect.stringContaining('current') });
+  });
+  test('a -dirty daemon sha still protects its version', () => {
+    const r = planVersionPrune(list, '1.0.0-666666666666', '333333333-dirty', 1);
+    expect(r.kept).toContain('1.0.0-333333333333-dirty');
+  });
+});
+
+// 🆕 2026-09-24 — 무인 재시작 뒤 건강 확인 · 실패하면 데몬이 돌던 판으로 되돌림.
+describe('self-update — verify after restart and roll back', () => {
+  const decision = { exitCode: 11, verdict: 'restart', from: '111111111' } as RestartNeededResult;
+  const versions = ['1.0.0-111111111111', '1.0.0-abcdef123456', '1.0.0-222222222222'];
+  test('rollbackTarget picks the daemon version, never the installed one', () => {
+    expect(rollbackTarget(versions, '111111111', '1.0.0-abcdef123456')).toBe('1.0.0-111111111111');
+    expect(rollbackTarget(versions, 'abcdef1234', '1.0.0-abcdef123456')).toBeNull();
+    expect(rollbackTarget(versions, '', '1.0.0-abcdef123456')).toBeNull();
+    expect(versionCommit('1.0.0-111111111111-dirty')).toBe('111111111111');
+  });
+  test('unhealthy new version → relink current to daemon version, restart again, alert, exit 1', async () => {
+    const f = fixture(decision);
+    const verifies: boolean[] = [false, true];
+    let relinked = '';
+    const result = await runSelfUpdate({ restart: true }, {
+      ...f.deps,
+      listVersions: () => versions,
+      relinkCurrent: (v) => { relinked = v; },
+      verifyRestart: async () => ({ ok: verifies.shift() ?? false, reason: 'daemonSha 9914 ≠ abcdef' }),
+    });
+    expect(relinked).toBe('1.0.0-111111111111');
+    expect(result).toMatchObject({ exitCode: 1, health: 'rolled-back', rolledBackTo: '1.0.0-111111111111', restarted: true });
+    expect(f.calls.filter((c) => c.startsWith('launchctl')).length).toBe(2);
+    expect(f.calls.some((c) => c.startsWith('alert'))).toBe(true);
+  });
+  test('rollback that also fails is reported as rollback-failed', async () => {
+    const f = fixture(decision);
+    const result = await runSelfUpdate({ restart: true }, { ...f.deps, listVersions: () => versions, relinkCurrent: () => {}, verifyRestart: async () => ({ ok: false, reason: 'x' }) });
+    expect(result).toMatchObject({ exitCode: 1, health: 'rollback-failed' });
+  });
+  test('no rollback target → alert and exit 1 without relinking', async () => {
+    const f = fixture({ ...decision, from: 'deadbeef1' } as RestartNeededResult);
+    let relinked = false;
+    const result = await runSelfUpdate({ restart: true }, { ...f.deps, listVersions: () => versions, relinkCurrent: () => { relinked = true; }, verifyRestart: async () => ({ ok: false }) });
+    expect(relinked).toBe(false);
+    expect(result).toMatchObject({ exitCode: 1, health: 'no-rollback-target' });
+    expect(f.calls.some((c) => c.startsWith('alert'))).toBe(true);
+  });
+});
+
+describe('self-update — unmeasured health never rolls back', () => {
+  test('verify returns unmeasured → no relink, one restart, alert, health=unmeasured', async () => {
+    const f = fixture({ exitCode: 11, verdict: 'restart', from: '111111111' } as RestartNeededResult);
+    let relinked = false;
+    const result = await runSelfUpdate({ restart: true }, { ...f.deps, listVersions: () => ['1.0.0-111111111111'], relinkCurrent: () => { relinked = true; }, verifyRestart: async () => ({ ok: false, unmeasured: true, reason: 'rest url 없음' }) });
+    expect(relinked).toBe(false);
+    expect(result).toMatchObject({ exitCode: 1, health: 'unmeasured' });
+    expect(f.calls.filter((c) => c.startsWith('launchctl')).length).toBe(1);
+    expect(f.calls.some((c) => c.startsWith('alert'))).toBe(true);
+  });
+});
+
+describe('self-update --alert', () => {
+  test('a dirty checkout alerts once with --alert, and stays silent without it', async () => {
+    const f = fixture(); f.setDirty();
+    const r = await runSelfUpdate({ alert: true }, f.deps);
+    expect(r.exitCode).toBe(2);
+    expect(f.calls.filter((c) => c.startsWith('alert')).length).toBe(1);
+    const g = fixture(); g.setDirty();
+    await runSelfUpdate({}, g.deps);
+    expect(g.calls.some((c) => c.startsWith('alert'))).toBe(false);
+  });
+  test('a rollback alerts once even with --alert (no double alert)', async () => {
+    const f = fixture({ exitCode: 11, verdict: 'restart', from: '111111111' } as RestartNeededResult);
+    const verifies = [false, true];
+    await runSelfUpdate({ restart: true, alert: true }, { ...f.deps, listVersions: () => ['1.0.0-111111111111'], relinkCurrent: () => {}, verifyRestart: async () => ({ ok: verifies.shift() ?? false }) });
+    expect(f.calls.filter((c) => c.startsWith('alert')).length).toBe(1);
+  });
+  test('success never alerts', async () => {
+    const f = fixture();
+    await runSelfUpdate({ restart: true, alert: true }, f.deps);
+    expect(f.calls.some((c) => c.startsWith('alert'))).toBe(false);
+  });
+});
+
+describe('self-update — relay (T5 · 2026-09-24)', () => {
+  const decision = { exitCode: 0, verdict: 'none' as const, from: 'aaa', to: 'bbb' };
+  const gitWith = (paths: string[]) => (_cwd: string, args: string[]) => (
+    args[0] === 'diff' ? { status: 0, stdout: paths.map((p) => `${p}\0`).join(''), stderr: '' } : { status: 1, stdout: '', stderr: 'unexpected' }
+  );
+  const relayFiles = () => ['scripts/openai-relay-server.ts', 'src/relay/core.ts'];
+
+  test('restarts only the relay when a relay file changed, even if the nexus verdict is none', () => {
+    const calls: string[] = [];
+    const out = updateRelay(decision, '/co', true, { relayFiles, os: 'darwin', uid: 501 }, gitWith(['src/relay/core.ts', 'docs/x.md']),
+      (command, args) => { calls.push(`${command} ${args.join(' ')}`); return { status: 0, stderr: '' }; });
+    expect(out).toMatchObject({ verdict: 'restarted', paths: ['src/relay/core.ts'] });
+    expect(calls).toEqual(['launchctl kickstart -k gui/501/com.monad.openai-relay']);
+  });
+
+  test('does nothing when no relay file changed, without --restart, or when the daemon commit is unknown', () => {
+    const calls: string[] = [];
+    const run = () => { calls.push('run'); return { status: 0, stderr: '' }; };
+    expect(updateRelay(decision, '/co', true, { relayFiles, os: 'darwin', uid: 501 }, gitWith(['docs/x.md']), run).verdict).toBe('unchanged');
+    expect(updateRelay(decision, '/co', false, { relayFiles, os: 'darwin', uid: 501 }, gitWith(['src/relay/core.ts']), run).verdict).toBe('skipped');
+    expect(updateRelay({ exitCode: 2 }, '/co', true, { relayFiles, os: 'darwin', uid: 501 }, gitWith(['src/relay/core.ts']), run).verdict).toBe('unknown');
+    expect(calls).toEqual([]);
+  });
+
+  test('a failed relay restart is reported as failed, not folded into success', () => {
+    const out = updateRelay(decision, '/co', true, { relayFiles, os: 'darwin', uid: 501 }, gitWith(['scripts/openai-relay-server.ts']),
+      () => ({ status: 1, stderr: 'no such service' }));
+    expect(out).toMatchObject({ verdict: 'failed' });
+    expect(out.reason).toContain('no such service');
+  });
+
+  test('relay import closure follows relative imports from the real entry file', () => {
+    const files = relayImportClosure(checkout);
+    expect(files).toContain('scripts/openai-relay-server.ts');
+    expect(files.length).toBeGreaterThan(1);
+  });
+});

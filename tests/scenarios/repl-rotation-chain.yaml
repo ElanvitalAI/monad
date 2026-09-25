@@ -1,0 +1,69 @@
+description: |
+  4-provider rotation chain — 같은 분석 prompt 를 codex → opus → gemini →
+  grok 순으로 4 turn 실행해 같은 session 안에서 agentic 강도 + reply 길이
+  + tool selection 패턴을 비교한다.
+
+  BACKLOG #4 (2026-05-05) 의 첫 번째 후보. 한 prompt 의 answer surface 를
+  모든 provider 에서 한 번에 보고 싶을 때 — 즉, 새 prompt-bank entry 를
+  추가했을 때 / universal preamble 변경 후 / family-specific addendum 수정
+  후의 cross-provider 회귀 detector.
+
+  Run:
+    monad repl --new --json \
+      --scenario tests/scenarios/repl-rotation-chain.yaml \
+      --exit-after-scenario
+
+  CI-friendly (asserts 자동):
+    monad repl --new --json \
+      --scenario tests/scenarios/repl-rotation-chain.yaml \
+      --exit-after-scenario \
+      | jq -c '{turnId, provider, replyLen: (.reply|length), durationMs}'
+
+  Expected (각 provider, 안정 상태):
+  - turn 1 (codex)   ≥ 800 chars · tool 호출 ≥ 3 (Read/Grep)
+  - turn 2 (opus)    ≥ 1500 chars · structural answer (H2/H3 사용)
+  - turn 3 (gemini)  ≥ 1500 chars · 5+ aspect (gemini-family-addendum 효과)
+  - turn 4 (grok)    ≥ 600 chars · concise (grok 의 default 압축 성향)
+  Pre-fix baseline (회귀 detector — 다음 중 하나라도 보이면 실패):
+  - 어떤 turn 이든 reply == "" → force-synthesis 실패
+  - gemini turn 이 ≤ 500 chars → addendum directive 효과 약화 또는 wire 회귀
+  - 어떤 turn 이든 toolCallCount == 0 → catalog routing 회귀
+
+  같은 session 을 4 turn 가져가는 점이 핵심 — context window 누적이
+  agentic depth 를 끌어올리는지 (turn 4 의 grok 이 turn 1 의 codex 결과
+  보고 다른 방향으로 dive 하는지) 도 같이 관찰.
+
+  References:
+  - docs/manual/MANUAL-llm-pipeline-validation.md §3.5 (LLM self-debug 패턴)
+  - docs/manual/MANUAL-llm-pipeline-validation.md §B.4 (REPL scenario YAML schema)
+
+defaults:
+  asserts:
+    text_min_chars: 600
+
+turns:
+  - id: t1-codex
+    rotate: codex
+    prompt: "이 프로젝트의 LLM tool dispatch 파이프라인을 분석해주세요. src/llm.ts 의 streamLLMWithTools 진입부터 force-synthesis 까지의 흐름을 단계별로."
+    asserts:
+      text_min_chars: 800
+
+  - id: t2-opus
+    rotate: opus
+    prompt: "방금 codex 의 분석을 검증해주세요. 빠진 단계나 부정확한 부분이 있으면 file:line 인용으로 짚어주세요."
+    asserts:
+      text_min_chars: 1500
+      reply_contains: ["src/llm.ts"]
+
+  - id: t3-gemini
+    rotate: gemini
+    prompt: "두 분석을 합쳐서 force-synthesis (W5-E/F/G) 가 codex/gemini family 만 cover 하는 이유와 다른 family 추가 시 검토할 가드 5개를 제안해주세요."
+    asserts:
+      text_min_chars: 1500
+      reply_contains: ["force-synthesis"]
+
+  - id: t4-grok
+    rotate: xai
+    prompt: "위 셋을 한 줄 결론 + 우선순위 next step 3개로 압축해주세요."
+    asserts:
+      text_min_chars: 600

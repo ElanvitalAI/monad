@@ -1,0 +1,128 @@
+node_modules/
+dist/
+data/
+!apps/android/app/src/test/kotlin/com/elanvitalai/monad/android/data/
+!apps/android/app/src/test/kotlin/com/elanvitalai/monad/android/data/RemoteImageLoaderTest.kt
+log/
+# ⛔ `log/` 는 앵커가 없어 «모든» log 폴더를 먹는다 — 소스 폴더 하나를 되살린다(2026-09-25: 공개본을 커밋하면 이 위젯이 조용히 사라졌다).
+!widgets/log/
+*.db
+*.db-shm
+*.db-wal
+bun.lockb
+.DS_Store
+**/.DS_Store
+
+# Runtime workflow artifacts — created per-session by the workflow
+# subsystem, not source.
+.monad/
+# 샘플 설정은 소스다 — 공개본 커밋에서 사라지지 않게(2026-09-25 · export-gitignored 관문).
+!samples/.monad/
+
+# Mission phase outputs (walker 조사 산출물) — 런타임 상태, 소스 아님
+.artifacts/
+
+# Project-local test mode state (monad nexus pwa test)
+/.monad-test/
+
+# loop-runner bootstrap state
+.loop/
+
+# Generated webtoon renders (large PNG panels/refs, ~60MB, regenerable via the
+# webtoon skill). The tracked report.md/index.html do not reference them.
+reports/loop-engineering/*/webtoon/
+
+# Self-Evolution 격리 인스턴스 config(정식 secret 상속·절대 커밋 금지)
+.monad-se/
+
+# DocOps 큐레이션 적용 전 스냅샷(로컬 되돌림용)
+.docops-history/
+node_modules
+
+# 골 접지 측정(2026-08-05 `scripts/measure-goal-grounding-corpus.ts`)이 남기는 bun 번들 산출물.
+# ⛔ 저장소가 이 경로를 만들지도 읽지도 않는다(전수 참조 0건) — 그런데 사흘간 `??` 로 떠 있다가
+#    문서 PR(#7622)의 스테이징에 쓸려 5.9MB 가 히스토리에 «영구»로 들어갔다(2026-08-08 `[T]` 제보).
+.monad-goal-grounding-build/
+
+# Claude Code 런타임 잠금 — 같은 커밋에 같이 딸려 들어갔다.
+.claude/scheduled_tasks.lock
+
+# 🅢 70차 — 일일 스윕 결과는 «운영 상태»다(사람 절대 경로 포함·재현 가능) ⇒ 저장소에 안 넣는다.
+#   ⛔ pr land 가 add --all 이라 gitignore 가 «유일한» 구조적 방어다(GIT-T41 · 하루에 세 번 밟았다).
+reports/ops/
+
+# 자식 실행 하트비트 — 런타임 상태, 소스 아님
+.monad-child-liveness.hb
+
+# ⛔⭐ agent-mission 제어 파일 — 자식의 «입력»이지 산출이 아니다 (2026-08-12 [T] 76차)
+#   driver.ts 가 워크트리 «안»에 쓰고(`join(wt.path,'.mission-prompt.md')`) 자식에게 상대경로로 읽힌다.
+#   그런데 자식이 `git add --all` 을 하면 그것이 «PR 에 실린다» — 실측: main 이력의 커밋 15개가 이 파일을 만졌고
+#   PR #8085 에서는 files 목록 «첫 항목»(+1,414/-63)이었다.
+#   ⛔⭐⭐ 그리고 «진짜» 기전은 「새 파일이 딸려간다」가 아니었다 — ***이 파일이 `#5555` 부터 main 에
+#     «추적»되고 있었다***(main 이 3,009바이트짜리 옛 미션을 들고 있었다). 추적 파일이면
+#     driver 가 덮어쓸 때마다 `M` 으로 뜨고, `add --all` 이 그것을 «항상» 싣는다.
+#     ⇒ 📌 `.gitignore` «만»으로는 영영 못 막는다. 그래서 같은 커밋에서 `git rm --cached` 로 추적을 끊었다.
+#   ⛔ 워크트리 «밖»으로 옮기는 처방(75차 후보 ⑴)은 더 위험하다 — 외부 에이전트(claude·codex)는
+#     cwd 밖 절대경로를 거부할 수 있어 미션 자체가 깨진다. 그리고 이 파일을 git 으로 «가져오는» 자리는 전수 0곳이다.
+/.mission-prompt.md
+
+# codex CLI 로컬 도구 설정 — 기계마다 다르고 localhost 포트를 담는다.
+# ⛔ 2026-08-21: codex 자식이 이 파일을 만들고, `pr land` 가 «전체 스테이징»이라
+#   내 PR(#10783)에 «딸려» 병합됐다. 저장소에 들어갈 것이 아니다.
+.codex/
+
+# 🩸 2026-09-01 (`#14934`) — ***착지에 «쓸려 들어갔다».*** `test/guardian/dispatch-surface-contract.test.ts`
+#   가 저장소 «뿌리»에 mkdtemp 로 만드는 자리인데, 치우는 것이 `afterEach` 라 ***런이 중간에 죽으면 남는다***.
+#   ⛔ 그리고 `pr land` 는 untracked 를 «기본으로 담는다» ⇒ 남은 순간 다음 착지가 그것을 싣는다.
+#   ⛔ 그 안의 `whole-project-sentinel.ts` 는 ***일부러 타입 오류를 내는*** 파일이다(저장소에 있으면 안 된다).
+.dispatch-surface-whole-project-*/
+
+# 🩸 2026-09-01: 운영에 higgsfield MCP 를 물린 뒤(#1428 배선) CCO 봇 «생성 테스트» 산출이
+#    작업 트리 «루트»에 떨어졌다(cco-test-image.png 6.2MB · cco-test-video.mp4 753KB).
+# ⛔ `pr land` 는 untracked 를 «기본으로 담는다» — 안 막으면 다음 착지가 그 6MB 를 함께 올린다.
+# ⚠️ 파일 자체는 «안 지운다»(대표의 산출일 수 있다). 여기서는 «착지에 안 딸려가게»만 한다.
+cco-test-*.png
+cco-test-*.mp4
+
+# 🌳 tree-sync 연속 막힘 카운터 (scripts/tree-sync-apply.sh · #15424)
+#   ⛔ 반드시 무시한다 — 안 그러면 «자기모순 고리»가 된다:
+#      미추적으로 남음 → pr land 가 «기본으로» 담아 커밋됨 → 매 회차가 그것을 «수정» →
+#      수정된 추적 파일 → ***tree-sync 가 막힌다*** (= 이 카운터가 재려던 바로 그 상태)
+.tree-sync-local-changes.streak
+#   🆕 2026-09-07: 짝 카운터가 «하나 늘었다»(`#15949` 계열 · pull 성공/실패 축).
+#   🩸 그런데 그것이 이 목록에 «안 들어왔다» — 위 자기모순 고리를 그대로 밟는다.
+#      📏 반증(그날 실측): `git check-ignore -v .tree-sync-pull.streak` ⇒ rc=1(무시 안 됨)
+#         ↔ 알려진 양성 `.tree-sync-local-changes.streak` ⇒ rc=0. 대조가 깨끗했다.
+#   ⭐ 그러므로 이 자리에 카운터를 «더할» 때는 이 목록도 «같이» 더한다 — 짝이 갈리면 조용히 샌다.
+.tree-sync-pull.streak
+#   🆕 2026-09-24: 셋째 짝 — «판정 불가» 연속(경보 3회째 한 번).
+.tree-sync-unavailable.streak
+
+# 🗒️ 세션 스크래치 (에이전트가 재는 동안 쓰는 일회용 파일)
+#   ⛔ 반드시 무시한다 — `.tree-sync-local-changes.streak` 와 «같은 이유»다:
+#      미추적으로 남음 → pr land 가 «기본으로» 담아 커밋됨 → 탐침 스크립트·인계 초고가 main 에 샌다
+#   📏 2026-09-03 실측: 이 디렉토리에 파일 12개가 있었고 착지 이력은 0건이었다.
+#      즉 «아직» 안 샜을 뿐이고, 막는 것은 «없었다».
+.scratch/
+
+# 파이썬 바이트코드 — scripts/ 의 파이썬 도구를 «돌리면» 생긴다.
+# 🩸 2026-09-07: 그 부산물이 PR 에 딸려 들어갔다(내가 걷었다). main 에 파이썬 도구가 7개인데
+#    무시 규칙이 «0개»였다 — 구멍이 원래 열려 있었다.
+__pycache__/
+*.pyc
+
+# Kotlin/Gradle 빌드 산출 — ⛔ `pr land` 는 untracked 를 «담는다»(기본 동작).
+# 안드로이드 게이트가 매 착지마다 Gradle 을 돌리므로 이 디렉토리가 계속 생긴다.
+apps/android/.kotlin/
+apps/android/**/build/
+
+# 🅕 세션 감시자 앵커 (세션 스코프 상태 — 저장소에 담지 않는다)
+.monad-session/
+
+# remotion 산출·의존
+tools/remotion-shorts/node_modules/
+tools/remotion-shorts/out/
+.vercel
+
+# 문서 사이트 정적 산출 (bun scripts/build-docs-site.ts)
+docs/site/dist/

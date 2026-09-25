@@ -1,0 +1,19 @@
+id: gemini-3.8-flash
+provider: gemini
+displayName: Gemini 3.8 Flash
+family: gemini-3
+# ⭐ 2026-09-25 (대표 「모델별 최신으로」): Gemini `models.list` 실측 ⊕ generateContent 실호출 OK · 단가는 omni-crawl(ai.google.dev 인용 출처 셋).
+#    flash 최신(09-02) · 공식 도입가 $0.75/$3.75(2026-12-31 까지 · 2027-01-01부터 $1.5/$7.5) · 캐시 ~10%.
+contextSize: 1048576
+toolCalling: native-openai
+streamingProtocol: sse
+releaseDate: 2026-09-02
+discoveryMeta:
+  source: manual
+  lastSeen: 2026-09-25
+  autoFilled: false
+  confidence: medium
+pricing:
+  inputPerMTok: 0.75
+  outputPerMTok: 3.75
+  cachedInputPerMTok: 0.075

@@ -1,0 +1,35 @@
+name: chat-driven-research
+description: |
+  Chat-trigger workflow. POST a question to the daemon's chat endpoint
+  and the workflow plans → crawls → summarizes → returns. Streaming
+  response is opt-in (v2 daemon wire).
+
+_meta:
+  template:
+    title: Chat-driven research
+    description: POST /chat → plan → crawl → summarize
+    tags: [chat, research, streaming]
+
+nodes:
+  - id: chat
+    chatTrigger:
+      path: /research/chat
+      sessionMode: stateless
+      streaming: true
+
+  - id: plan
+    prompt: |
+      The user asked: "$ARGUMENTS". Break this into 3 sub-questions
+      we should research, one per line.
+    depends_on: [chat]
+
+  - id: crawl
+    skill: omni-crawl
+    arguments: $plan.output
+    depends_on: [plan]
+
+  - id: summarize
+    prompt: |
+      Synthesize these findings into a concise answer:
+      $crawl.output
+    depends_on: [crawl]

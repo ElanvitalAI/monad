@@ -1,0 +1,21 @@
+name: manual-quickstart
+description: |
+  Two-node smoke for the very first PWA user — click ▶ "Run now" and
+  see the graph light up. Echoes the arguments and exits. Modify to
+  taste once you've confirmed the editor works.
+
+_meta:
+  template:
+    title: Manual quickstart
+    description: Manual ▶ → echo → done (first-touch smoke)
+    tags: [manual, starter]
+
+nodes:
+  - id: start
+    manualTrigger:
+      description: Click ▶ Run now to fire this workflow
+
+  - id: echo
+    bash: |
+      echo "hello from monad-agent: $ARGUMENTS"
+    depends_on: [start]

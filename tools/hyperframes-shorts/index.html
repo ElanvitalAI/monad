@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=720, height=1280" />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <style>
+      * { margin:0; padding:0; box-sizing:border-box; }
+      @font-face { font-family:'Pretendard'; src:url('assets/Pretendard-ExtraBold.woff2') format('woff2');
+                   font-weight:700 800; font-display:block; }
+      html, body { width:720px; height:1280px; overflow:hidden; background:#0B0A14; }
+    </style>
+  </head>
+  <body>
+    <div id="root" data-composition-id="main" data-start="0" data-duration="14.9"
+         data-width="720" data-height="1280">
+      <video id="cut0" class="clip" data-start="0.000" data-duration="4.967"
+             data-track-index="0" src="assets/cut1.mp4" muted
+             style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover"></video>
+      <video id="cut1" class="clip" data-start="4.967" data-duration="4.967"
+             data-track-index="0" src="assets/cut2.mp4" muted
+             style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover"></video>
+      <video id="cut2" class="clip" data-start="9.933" data-duration="4.967"
+             data-track-index="0" src="assets/cut1.mp4" muted
+             style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover"></video>
+      <div id="scrim" class="clip" data-start="0" data-duration="14.9" data-track-index="1"
+           style="position:absolute;inset:0;pointer-events:none;
+                  background:linear-gradient(to top, rgba(20,15,61,.92) 0%, rgba(20,15,61,.62) 20%, rgba(20,15,61,.18) 36%, transparent 52%)"></div>
+      <audio id="a0" class="clip" data-start="0" data-duration="14.9"
+             data-track-index="2" src="assets/vo-el.mp3" data-volume="1.0"></audio>
+      <audio id="a1" class="clip" data-start="0" data-duration="14.9"
+             data-track-index="3" src="assets/bgm.mp3" data-volume="0.22"></audio>
+      <audio id="a2" class="clip" data-start="0.3" data-duration="14.9"
+             data-track-index="4" src="assets/sfx-water.mp3" data-volume="0.35"></audio>
+      <div id="cap0" class="clip" data-start="0.000" data-duration="3.540" data-track-index="6"
+           style="position:absolute;left:0;right:0;bottom:250px;display:flex;flex-wrap:wrap;
+                  justify-content:center;align-items:baseline;gap:4px 12px;padding:0 50px;
+                  font-family:Pretendard,system-ui,sans-serif;color:#FFFFFF;letter-spacing:-.02em;
+                  text-shadow:0 2px 10px rgba(11,10,20,.75),0 0 2px rgba(11,10,20,.9)">
+        <span class="w" data-at="0.000" style="font-size:52px;font-weight:700;position:relative;display:inline-block">샤워하고</span>
+        <span class="w" data-at="0.560" style="font-size:52px;font-weight:700;position:relative;display:inline-block">나왔는데,</span>
+        <span class="w" data-at="1.480" style="font-size:62px;font-weight:800;position:relative;display:inline-block">향이</span>
+        <span class="w" data-at="1.813" style="font-size:52px;font-weight:700;position:relative;display:inline-block">아직</span>
+        <span class="w" data-at="2.000" style="font-size:52px;font-weight:700;position:relative;display:inline-block">남아</span>
+        <span class="w" data-at="2.280" style="font-size:52px;font-weight:700;position:relative;display:inline-block">있어요.</span>
+      </div>
+      <div id="cap1" class="clip" data-start="3.400" data-duration="3.180" data-track-index="6"
+           style="position:absolute;left:0;right:0;bottom:250px;display:flex;flex-wrap:wrap;
+                  justify-content:center;align-items:baseline;gap:4px 12px;padding:0 50px;
+                  font-family:Pretendard,system-ui,sans-serif;color:#FFFFFF;letter-spacing:-.02em;
+                  text-shadow:0 2px 10px rgba(11,10,20,.75),0 0 2px rgba(11,10,20,.9)">
+        <span class="w" data-at="0.000" style="font-size:52px;font-weight:700;position:relative;display:inline-block">바디워시가</span>
+        <span class="w" data-at="0.620" style="font-size:52px;font-weight:700;position:relative;display:inline-block">아니라,</span>
+        <span class="w" data-at="1.160" style="font-size:52px;font-weight:700;position:relative;display:inline-block">바디</span>
+        <span class="w" data-at="1.640" style="font-size:62px;font-weight:800;position:relative;display:inline-block">퍼퓸이에요.</span>
+      </div>
+      <div id="cap2" class="clip" data-start="6.480" data-duration="4.980" data-track-index="6"
+           style="position:absolute;left:0;right:0;bottom:250px;display:flex;flex-wrap:wrap;
+                  justify-content:center;align-items:baseline;gap:4px 12px;padding:0 50px;
+                  font-family:Pretendard,system-ui,sans-serif;color:#FFFFFF;letter-spacing:-.02em;
+                  text-shadow:0 2px 10px rgba(11,10,20,.75),0 0 2px rgba(11,10,20,.9)">
+        <span class="w" data-at="0.000" style="font-size:52px;font-weight:700;position:relative;display:inline-block">냉장고에</span>
+        <span class="w" data-at="0.520" style="font-size:62px;font-weight:800;position:relative;display:inline-block">넣어두면</span>
+        <span class="w" data-at="1.120" style="font-size:52px;font-weight:700;position:relative;display:inline-block">더</span>
+        <span class="w" data-at="1.320" style="font-size:52px;font-weight:700;position:relative;display:inline-block">좋습니다.</span>
+        <span class="w" data-at="2.480" style="font-size:52px;font-weight:700;position:relative;display:inline-block">브랜드가</span>
+        <span class="w" data-at="2.960" style="font-size:52px;font-weight:700;position:relative;display:inline-block">그렇게</span>
+        <span class="w" data-at="3.333" style="font-size:52px;font-weight:700;position:relative;display:inline-block">안내해요.</span>
+      </div>
+      <div id="cap3" class="clip" data-start="11.320" data-duration="2.780" data-track-index="6"
+           style="position:absolute;left:0;right:0;bottom:250px;display:flex;flex-wrap:wrap;
+                  justify-content:center;align-items:baseline;gap:4px 12px;padding:0 50px;
+                  font-family:Pretendard,system-ui,sans-serif;color:#FFFFFF;letter-spacing:-.02em;
+                  text-shadow:0 2px 10px rgba(11,10,20,.75),0 0 2px rgba(11,10,20,.9)">
+        <span class="w" data-at="0.000" style="font-size:52px;font-weight:700;position:relative;display:inline-block">에바스</span>
+        <span class="w" data-at="0.520" style="font-size:52px;font-weight:700;position:relative;display:inline-block">블루</span>
+        <span class="w" data-at="0.960" style="font-size:52px;font-weight:700;position:relative;display:inline-block">로즈마인</span>
+        <span class="w" data-at="1.720" style="font-size:52px;font-weight:700;position:relative;display:inline-block">샤워코롱.</span>
+      </div>
+    </div>
+    <script>
+      window.__timelines = window.__timelines || {};
+      const tl = gsap.timeline({ paused: true });
+  {
+    const ws = document.querySelectorAll('#cap0 .w');
+    ws.forEach((w, i) => {
+      tl.fromTo(w, { y: 34, opacity: 0, filter: 'blur(7px)' },
+                   { y: 0, opacity: 1, filter: 'blur(0px)', duration: .34, ease: 'power3.out' }, 0.000 + i * 0.066);
+      const at = 0.000 + parseFloat(w.dataset.at);
+      tl.to(w, { color: '#140F3D', duration: .001 }, at);
+      tl.to(w, { background: 'linear-gradient(180deg,#D4AF6A,#B8904C)', borderRadius: '12px',
+                 boxShadow: '0 6px 22px rgba(212,175,106,.45)', padding: '2px 8px', duration: .18, ease: 'power2.out' }, at);
+      const nx = ws[i+1];
+      if (nx) {
+        const off = 0.000 + parseFloat(nx.dataset.at);
+        tl.to(w, { color: '#FFFFFF', background: 'transparent', boxShadow: 'none', padding: '0px', duration: .12 }, off);
+      }
+    });
+  }
+  {
+    const ws = document.querySelectorAll('#cap1 .w');
+    ws.forEach((w, i) => {
+      tl.fromTo(w, { y: 34, opacity: 0, filter: 'blur(7px)' },
+                   { y: 0, opacity: 1, filter: 'blur(0px)', duration: .34, ease: 'power3.out' }, 3.400 + i * 0.066);
+      const at = 3.400 + parseFloat(w.dataset.at);
+      tl.to(w, { color: '#140F3D', duration: .001 }, at);
+      tl.to(w, { background: 'linear-gradient(180deg,#D4AF6A,#B8904C)', borderRadius: '12px',
+                 boxShadow: '0 6px 22px rgba(212,175,106,.45)', padding: '2px 8px', duration: .18, ease: 'power2.out' }, at);
+      const nx = ws[i+1];
+      if (nx) {
+        const off = 3.400 + parseFloat(nx.dataset.at);
+        tl.to(w, { color: '#FFFFFF', background: 'transparent', boxShadow: 'none', padding: '0px', duration: .12 }, off);
+      }
+    });
+  }
+  {
+    const ws = document.querySelectorAll('#cap2 .w');
+    ws.forEach((w, i) => {
+      tl.fromTo(w, { y: 34, opacity: 0, filter: 'blur(7px)' },
+                   { y: 0, opacity: 1, filter: 'blur(0px)', duration: .34, ease: 'power3.out' }, 6.480 + i * 0.066);
+      const at = 6.480 + parseFloat(w.dataset.at);
+      tl.to(w, { color: '#140F3D', duration: .001 }, at);
+      tl.to(w, { background: 'linear-gradient(180deg,#D4AF6A,#B8904C)', borderRadius: '12px',
+                 boxShadow: '0 6px 22px rgba(212,175,106,.45)', padding: '2px 8px', duration: .18, ease: 'power2.out' }, at);
+      const nx = ws[i+1];
+      if (nx) {
+        const off = 6.480 + parseFloat(nx.dataset.at);
+        tl.to(w, { color: '#FFFFFF', background: 'transparent', boxShadow: 'none', padding: '0px', duration: .12 }, off);
+      }
+    });
+  }
+  {
+    const ws = document.querySelectorAll('#cap3 .w');
+    ws.forEach((w, i) => {
+      tl.fromTo(w, { y: 34, opacity: 0, filter: 'blur(7px)' },
+                   { y: 0, opacity: 1, filter: 'blur(0px)', duration: .34, ease: 'power3.out' }, 11.320 + i * 0.066);
+      const at = 11.320 + parseFloat(w.dataset.at);
+      tl.to(w, { color: '#140F3D', duration: .001 }, at);
+      tl.to(w, { background: 'linear-gradient(180deg,#D4AF6A,#B8904C)', borderRadius: '12px',
+                 boxShadow: '0 6px 22px rgba(212,175,106,.45)', padding: '2px 8px', duration: .18, ease: 'power2.out' }, at);
+      const nx = ws[i+1];
+      if (nx) {
+        const off = 11.320 + parseFloat(nx.dataset.at);
+        tl.to(w, { color: '#FFFFFF', background: 'transparent', boxShadow: 'none', padding: '0px', duration: .12 }, off);
+      }
+    });
+  }
+      window.__timelines["main"] = tl;
+    </script>
+  </body>
+</html>

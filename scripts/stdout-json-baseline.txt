@@ -1,0 +1,57 @@
+# direct console.log(JSON.stringify(...)) baseline (file-local count).
+# New files and increases fail; replace uses with writeStdoutJson from src/cli/stdout-json.ts.
+# total=59 · files=53
+
+1	docs/live/s44-corpus/probe-free-vs-bound.ts
+1	run.ts
+1	scripts/ad-dry-chain.ts
+1	scripts/backtest-cycle.ts
+1	scripts/botlab/bot-type.ts
+1	scripts/botlab/cdp-console-probe.ts
+3	scripts/botlab/core-role.ts
+1	scripts/botlab/round-parse-coverage.ts
+1	scripts/browser-observe-cycle.ts
+1	scripts/contract-red-freshness.ts
+1	scripts/contract-red-sweep.ts
+1	scripts/hitl-dryrun.ts
+1	scripts/kg-consolidate.ts
+1	scripts/kg-ontology-build.ts
+1	scripts/measure-cut-static.ts
+1	scripts/measure-dev-harness-usage.ts
+1	scripts/mission-retro.ts
+1	scripts/oos-verify.ts
+1	scripts/ops-health-check.ts
+1	scripts/price-guard-cycle.ts
+1	scripts/proof-jdg-s8-counterfactual.ts
+1	scripts/repo-watch-cycle.ts
+1	scripts/retro-cycle.ts
+1	scripts/scqa-fill-audit.ts
+1	scripts/se-decompose-mission.ts
+1	scripts/trade-orchestrator-observe.ts
+1	scripts/tui-sim.ts
+1	scripts/webclone/archive.ts
+1	scripts/webclone/check-affordances.ts
+1	scripts/webclone/check-clone.ts
+1	scripts/webclone/check-concept.ts
+1	scripts/webclone/check-layout.ts
+1	scripts/webclone/check-media-controls.ts
+1	scripts/webclone/check-motion-tokens.ts
+1	scripts/webclone/check-space-ladder.ts
+1	scripts/webclone/check-token-adherence.ts
+1	scripts/webclone/check-token-pairs.ts
+1	scripts/webclone/check-type-ladder.ts
+1	scripts/webclone/check-ua-defaults.ts
+1	scripts/webclone/compare-layout.ts
+1	scripts/webclone/compare-screens.ts
+1	scripts/webclone/compare-style.ts
+1	scripts/webclone/extract-computed.ts
+1	scripts/webclone/lint-design.ts
+1	scripts/webclone/render-mirror.ts
+1	scripts/webclone/seed-cross-compare.ts
+1	scripts/webclone/webclone.ts
+1	src/cli/config-test-sync.ts
+1	src/cli/docs-cli.ts
+4	src/cli/logs-cli.ts
+1	src/cli/logs-unclosed.ts
+1	src/index.test.ts
+2	src/repl/index.ts

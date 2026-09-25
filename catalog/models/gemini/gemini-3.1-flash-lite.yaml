@@ -1,0 +1,23 @@
+id: gemini-3.1-flash-lite
+provider: gemini
+displayName: Gemini 3.1 Flash-Lite
+family: gemini-3
+contextSize: 1000000
+outputMaxTokens: 64000
+vision: images
+audio: { input: true, output: false }
+reasoning: low
+toolCalling: native-gemini
+streamingProtocol: sse
+pricing:
+  inputPerMTok: 0.10
+  outputPerMTok: 0.40
+deprecated: null
+releaseDate: 2026-02-01
+tokenizer: gemini
+kind: chat
+discoveryMeta:
+  source: auto-omni-crawl
+  lastSeen: 2026-05-10
+  autoFilled: true
+  confidence: high

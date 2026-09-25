@@ -1,0 +1,260 @@
+// Unit tests for the Telegram report channel (multi-channel split, 2026-07-05).
+//
+// Covers: config parse/serialize of telegram.reportChannel, target
+// resolution (own bot token vs fallback to the main Q&A token), and the
+// send-only sender's actual API call (via injected fetch — no network).
+
+import { afterEach, beforeEach, describe, expect, test } from 'bun:test';
+import { mkdtempSync, rmSync, writeFileSync, readFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+
+import { buildUserConfig, saveUserConfig, type UserConfig } from '../src/user-config.js';
+import { resolveReportTarget, sendTelegramReport, sendReportPhoto, sendReportPhotoBuffer } from '../src/telegram-report.js';
+import { findSessionByTelegramChat, loadSession } from '../src/session/index.js';
+
+let dir: string;
+beforeEach(() => { dir = mkdtempSync(join(tmpdir(), 'tg-report-')); });
+afterEach(() => { rmSync(dir, { recursive: true, force: true }); });
+
+function writeCfg(telegram: Record<string, unknown>): string {
+  const p = join(dir, 'config.json');
+  writeFileSync(p, JSON.stringify({ telegram }), 'utf-8');
+  return p;
+}
+
+describe('config parse/serialize · telegram.testChannel', () => {
+  test('parses testChannel with botToken + allowedUsers', () => {
+    const cfg = buildUserConfig(writeCfg({
+      enabled: true, botToken: 'MAIN:tok',
+      testChannel: { botToken: '8724930076:TEST', allowedUsers: [1301607555] },
+    }));
+    expect(cfg.telegram.testChannel).toEqual({ botToken: '8724930076:TEST', allowedUsers: [1301607555] });
+  });
+
+  test('parses testChannel with just a botToken (allowlist falls back at runtime)', () => {
+    const cfg = buildUserConfig(writeCfg({
+      enabled: true, botToken: 'MAIN:tok', testChannel: { botToken: '8724930076:TEST' },
+    }));
+    expect(cfg.telegram.testChannel).toEqual({ botToken: '8724930076:TEST' });
+  });
+
+  test('drops a testChannel with no botToken → undefined (feature off)', () => {
+    const cfg = buildUserConfig(writeCfg({
+      enabled: true, botToken: 'MAIN:tok', testChannel: { allowedUsers: [1] },
+    }));
+    expect(cfg.telegram.testChannel).toBeUndefined();
+  });
+
+  test('round-trips through saveUserConfig', () => {
+    const cfg = buildUserConfig(writeCfg({
+      enabled: true, botToken: 'MAIN:tok',
+      testChannel: { botToken: 'T:tok', allowedUsers: [7] },
+    }));
+    const out = join(dir, 'out-test.json');
+    saveUserConfig(cfg, out);
+    const stored = JSON.parse(readFileSync(out, 'utf-8'));
+    expect(stored.telegram.testChannel).toEqual({ botToken: 'T:tok', allowedUsers: [7] });
+  });
+});
+
+describe('config parse/serialize · telegram.poller (T1 split switch)', () => {
+  test('round-trips standalone through saveUserConfig (was dropped by the serializer whitelist)', () => {
+    const cfg = buildUserConfig(writeCfg({ enabled: true, botToken: 'MAIN:tok', poller: 'standalone' }));
+    const out = join(dir, 'out-poller.json');
+    saveUserConfig(cfg, out);
+    expect(JSON.parse(readFileSync(out, 'utf-8')).telegram.poller).toBe('standalone');
+    expect(buildUserConfig(out).telegram.poller).toBe('standalone');
+  });
+  test('an unknown poller value is not invented on save', () => {
+    const cfg = buildUserConfig(writeCfg({ enabled: true, botToken: 'MAIN:tok', poller: 'bogus' }));
+    const out = join(dir, 'out-poller2.json');
+    saveUserConfig(cfg, out);
+    expect(JSON.parse(readFileSync(out, 'utf-8')).telegram.poller).toBeUndefined();
+  });
+});
+
+describe('config parse/serialize · telegram.reportChannel', () => {
+  test('parses reportChannel with its own bot token', () => {
+    const cfg = buildUserConfig(writeCfg({
+      enabled: true, botToken: 'MAIN:tok',
+      reportChannel: { chatId: 1301607555, botToken: 'REPORT:tok' },
+    }));
+    expect(cfg.telegram.reportChannel).toEqual({ chatId: 1301607555, botToken: 'REPORT:tok' });
+  });
+
+  test('parses reportChannel without a bot token (reuses main bot)', () => {
+    const cfg = buildUserConfig(writeCfg({
+      enabled: true, botToken: 'MAIN:tok', reportChannel: { chatId: 42 },
+    }));
+    expect(cfg.telegram.reportChannel).toEqual({ chatId: 42 });
+  });
+
+  test('drops malformed reportChannel (no chatId) → undefined', () => {
+    const cfg = buildUserConfig(writeCfg({
+      enabled: true, botToken: 'MAIN:tok', reportChannel: { botToken: 'X:tok' },
+    }));
+    expect(cfg.telegram.reportChannel).toBeUndefined();
+  });
+
+  test('round-trips through saveUserConfig', () => {
+    const cfg = buildUserConfig(writeCfg({
+      enabled: true, botToken: 'MAIN:tok',
+      reportChannel: { chatId: 99, botToken: 'R:tok' },
+    }));
+    const out = join(dir, 'out.json');
+    saveUserConfig(cfg, out);
+    const stored = JSON.parse(readFileSync(out, 'utf-8'));
+    expect(stored.telegram.reportChannel).toEqual({ chatId: 99, botToken: 'R:tok' });
+  });
+});
+
+function cfgWith(telegram: Partial<UserConfig['telegram']>): UserConfig {
+  return { telegram: { enabled: true, allowedUsers: [], ...telegram } } as unknown as UserConfig;
+}
+
+describe('resolveReportTarget', () => {
+  test('uses the report channel own token when set', () => {
+    const t = resolveReportTarget(cfgWith({ botToken: 'MAIN', reportChannel: { chatId: 5, botToken: 'REPORT' } }));
+    expect(t).toEqual({ botToken: 'REPORT', chatId: 5 });
+  });
+
+  test('falls back to the main bot token when reportChannel has none', () => {
+    const t = resolveReportTarget(cfgWith({ botToken: 'MAIN', reportChannel: { chatId: 7 } }));
+    expect(t).toEqual({ botToken: 'MAIN', chatId: 7 });
+  });
+
+  test('null when no reportChannel configured', () => {
+    expect(resolveReportTarget(cfgWith({ botToken: 'MAIN' }))).toBeNull();
+  });
+
+  test('null when no token available anywhere', () => {
+    expect(resolveReportTarget(cfgWith({ reportChannel: { chatId: 7 } }))).toBeNull();
+  });
+});
+
+describe('sendTelegramReport', () => {
+  test('POSTs to the report bot token + chat, returns true', async () => {
+    const calls: Array<{ url: string; body: any }> = [];
+    const fetchMock = (async (url: string, init: any) => {
+      calls.push({ url: String(url), body: JSON.parse(init.body) });
+      return { json: async () => ({ ok: true, result: { message_id: 1 } }) };
+    }) as unknown as typeof fetch;
+
+    const ok = await sendTelegramReport(
+      cfgWith({ botToken: 'MAIN:tok', reportChannel: { chatId: 1301607555, botToken: 'REPORT:tok' } }),
+      'daily digest',
+      { markdown: false, fetchImpl: fetchMock },
+    );
+    expect(ok).toBe(true);
+    const send = calls.find(c => c.url.includes('/sendMessage'));
+    expect(send).toBeDefined();
+    expect(send!.url).toContain('botREPORT:tok');       // report bot token, not main
+    expect(send!.body.chat_id).toBe(1301607555);
+    expect(send!.body.text).toContain('daily digest');
+  });
+
+  test('no-op (false) when no report channel configured', async () => {
+    const ok = await sendTelegramReport(cfgWith({ botToken: 'MAIN:tok' }), 'x', {});
+    expect(ok).toBe(false);
+  });
+
+  // Fix 2 — cross-surface memory: the alert is mirrored into the REPORT
+  // channel's bot-scoped session so a follow-up in that chat can recall it
+  // (was surface_events-only, session_id NULL → wrong/no answer).
+  test('mirrors the alert into the report channel bot-scoped session', async () => {
+    const prev = process.env.MONAD_SESSION_ROOT;
+    process.env.MONAD_SESSION_ROOT = join(dir, 'sessions');
+    try {
+      const fetchMock = (async () => ({ json: async () => ({ ok: true, result: { message_id: 1 } }) })) as unknown as typeof fetch;
+      const alert = '⚠️ 자율매매 국면 브레이크 — RISK_ON 전환. monad가 이 알림을 기억합니다.';
+      await sendTelegramReport(
+        cfgWith({ botToken: 'MAIN:tok', reportChannel: { chatId: 1301607555, botToken: 'REPORT:tok' } }),
+        alert,
+        { markdown: false, fetchImpl: fetchMock },
+      );
+      // Landed in the REPORT bot's session (botId = token prefix 'REPORT')…
+      const sess = findSessionByTelegramChat(1301607555, undefined, 'REPORT');
+      expect(sess).not.toBeNull();
+      const loaded = loadSession(sess!.id);
+      expect(loaded!.messages.some(m => m.role === 'assistant' && m.content.includes('국면 브레이크'))).toBe(true);
+      // …NOT the default/main bot's session (bot-scoped isolation).
+      expect(findSessionByTelegramChat(1301607555, undefined, 'MAIN')).toBeNull();
+    } finally {
+      if (prev === undefined) delete process.env.MONAD_SESSION_ROOT;
+      else process.env.MONAD_SESSION_ROOT = prev;
+    }
+  });
+});
+
+// Wire guard — the sender is dead unless a surface invokes it. Per
+// feedback_dep_inject_seam_must_be_wired + feedback_source_level_grep_
+// test_value: assert the `/telegram report` slash handler actually calls
+// sendTelegramReport. Behavioral tests above can't catch a dropped wire.
+describe('/telegram report wire', () => {
+  const src = readFileSync(
+    join(import.meta.dir, '..', 'src/dashboard/slash-runtime/dashboard-handlers.ts'),
+    'utf-8',
+  );
+  test('report subcommand imports + calls sendTelegramReport', () => {
+    expect(src).toMatch(/tgSub === 'report'/);
+    expect(src).toMatch(/import\(\s*['"][^'"]*telegram-report(\.js)?['"]\s*\)/);
+    expect(src).toContain('sendTelegramReport(cfg,');
+  });
+  test('report subcommand gates on resolveReportTarget', () => {
+    expect(src).toContain('resolveReportTarget(cfg)');
+  });
+});
+
+describe('sendReportPhoto (URL)', () => {
+  test('POSTs sendPhoto with the URL and caption', async () => {
+    const calls: Array<{ url: string; body: any }> = [];
+    const fetchMock = (async (url: string, init: any) => {
+      calls.push({ url: String(url), body: JSON.parse(init.body) });
+      return { json: async () => ({ ok: true, result: { message_id: 2 } }) };
+    }) as unknown as typeof fetch;
+
+    const ok = await sendReportPhoto(
+      cfgWith({ botToken: 'MAIN:tok', reportChannel: { chatId: 1301607555, botToken: 'REPORT:tok' } }),
+      'https://example.test/heat.png',
+      { caption: 'url photo', fetchImpl: fetchMock },
+    );
+    expect(ok).toBe(true);
+    const send = calls.find(c => c.url.includes('/sendPhoto'));
+    expect(send).toBeDefined();
+    expect(send!.url).toContain('botREPORT:tok');
+    expect(send!.body.chat_id).toBe(1301607555);
+    expect(send!.body.photo).toBe('https://example.test/heat.png');
+    expect(send!.body.caption).toBe('url photo');
+  });
+});
+
+describe('sendReportPhotoBuffer', () => {
+  test('uploads via TelegramBot.sendPhotoBuffer(chatId, png, { caption })', async () => {
+    const calls: Array<{ url: string; body: FormData }> = [];
+    const fetchMock = (async (url: string, init: any) => {
+      calls.push({ url: String(url), body: init.body });
+      return { json: async () => ({ ok: true, result: { message_id: 3 } }) };
+    }) as unknown as typeof fetch;
+    const png = Buffer.from('local-png-bytes');
+
+    const ok = await sendReportPhotoBuffer(
+      cfgWith({ botToken: 'MAIN:tok', reportChannel: { chatId: 42, botToken: 'REPORT:tok' } }),
+      png,
+      { caption: 'digest png', fetchImpl: fetchMock },
+    );
+    expect(ok).toBe(true);
+    const send = calls.find(c => c.url.includes('/sendPhoto'));
+    expect(send).toBeDefined();
+    expect(send!.url).toContain('botREPORT:tok');
+    expect(String(send!.body.get('chat_id'))).toBe('42');
+    expect(String(send!.body.get('caption'))).toBe('digest png');
+    const photo = send!.body.get('photo');
+    expect(photo).toBeInstanceOf(Blob);
+  });
+
+  test('no-op (false) when no report channel configured', async () => {
+    const ok = await sendReportPhotoBuffer(cfgWith({ botToken: 'MAIN:tok' }), Buffer.from('x'));
+    expect(ok).toBe(false);
+  });
+});

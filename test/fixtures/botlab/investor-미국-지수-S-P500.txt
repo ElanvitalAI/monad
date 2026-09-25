@@ -1,0 +1,15 @@
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+OmniMarket — Multi-Provider Financial Data
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+프로바이더: toss:ON  yahoo:ON  eodhd:ON  twelvedata:ON  fds:ON
+명령:  quote
+대상:  GSPC.INDX
+
+## GSPC.INDX Real-Time Quote
+
+- **Close:** 7,666.6  |  **Change:** 35.13 (+0.46%)
+- **Open:** 7,634.58  |  **High:** 7,681.19  |  **Low:** 7,633.62
+- **Volume:** 2,720,039,000  |  **Prev Close:** 7,631.47
+- **Timestamp:** 2026-09-02T20:42:34.000Z [yahoo]
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━

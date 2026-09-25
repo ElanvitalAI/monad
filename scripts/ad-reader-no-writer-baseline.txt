@@ -1,0 +1,34 @@
+# Ad reader/no-writer suspect baseline.
+# New suspect names fail; resolved names are allowed until --update ratchets this snapshot.
+codec_type
+colorDistance
+dialogueLufsTolerance
+docHeight
+expansion
+frameDiffVariance
+h
+imageCount
+imagePixels
+images
+input_i
+input_lra
+input_thresh
+input_tp
+loudness
+maximumSeconds
+minGeneratableSeconds
+nameCandidates
+negativePromptPresent
+outputIdentity
+poll
+priceCandidates
+referenceLimits
+safeAreaViolations
+streams
+target_offset
+text-compile
+text-frame
+text-regions
+toString
+volume
+w

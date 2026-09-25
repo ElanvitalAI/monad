@@ -1,0 +1,30 @@
+name: scheduled-daily-digest
+description: |
+  Daily 9am Seoul-time digest workflow.
+  Triggers: schedule cron 0 9 * * * Asia/Seoul.
+  Does: crawls a fixed search term → omni-digest summary → saves to Obsidian.
+  Edit this template to swap the search term / Obsidian target.
+
+_meta:
+  template:
+    title: Daily digest
+    description: Cron 9am → crawl → summarize → save
+    tags: [schedule, daily, digest]
+
+nodes:
+  - id: tick
+    scheduleTrigger:
+      type: cron
+      cron: 0 9 * * *
+      timezone: Asia/Seoul
+      enabled: true
+
+  - id: crawl
+    skill: omni-crawl
+    arguments: "latest AI agent news"
+    depends_on: [tick]
+
+  - id: save
+    skill: omni-digest
+    arguments: $crawl.output
+    depends_on: [crawl]

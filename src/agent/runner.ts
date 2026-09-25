@@ -1,0 +1,294 @@
+// ── Agent runner ──
+//
+// Phase B3 — turns an AgentTask into a stream of AgentEvent frames.
+//
+// Architecture: streamLLMWithTools is callback-based, but consumers of
+// the agent runtime expect an async iterable (so the log adapter can
+// drive the Phase F thread folding). We bridge the two with a small
+// AsyncEventQueue — callbacks push events, the generator drains them.
+//
+// Task state lives in the AgentTask object supplied by the registry;
+// the runner updates state/result/error fields as the run progresses.
+// Every early exit path (abort, throw, done) closes the queue so the
+// generator terminates instead of hanging.
+
+import {
+  streamLLMWithTools,
+  type LLMMessage,
+  type LLMToolSpec,
+} from '../llm.js';
+import { debug } from '../debug/log.js';
+import { buildUniversalPreamble } from '../prompt-library/universal-preamble.js';
+import { getModelFamily } from '../models/prompts.js';
+import type {
+  AgentDefinition, AgentEvent, AgentSpawnOpts, AgentTask,
+} from './types.js';
+
+// ── AsyncEventQueue: push-to-iterator bridge ──
+
+class AsyncEventQueue<T> {
+  private events: T[] = [];
+  private resolver: (() => void) | null = null;
+  private closed = false;
+
+  push(ev: T): void {
+    if (this.closed) return;
+    this.events.push(ev);
+    this.wake();
+  }
+
+  close(): void {
+    this.closed = true;
+    this.wake();
+  }
+
+  async *drain(): AsyncGenerator<T, void, unknown> {
+    while (true) {
+      while (this.events.length > 0) yield this.events.shift()!;
+      if (this.closed) return;
+      await new Promise<void>(resolve => { this.resolver = resolve; });
+    }
+  }
+
+  private wake() {
+    const r = this.resolver;
+    this.resolver = null;
+    r?.();
+  }
+}
+
+// ── Helpers ──
+
+/** Assemble the initial message history. The parent's rendered system
+ *  text (if any) is prepended with a blank line so adjacent agents
+ *  sharing a parent share the same cache prefix — keeping cache hits
+ *  high when fanning out N personas in parallel.
+ *
+ *  PFC-S1 P5: when `def.omitInheritedContext === true`, replace the parent-
+ *  supplied `systemPromptPrefix` with a compact `<system-reminder>` notice. The
+ *  agent's own `def.systemPrompt` is always preserved — we are only
+ *  stripping inherited context, not the agent's own instructions.
+ *  Pass `ctx.cwd` so the notice can name the sub-agent's working
+ *  directory (set by isolation='worktree' in skill-tool-agent). */
+export function buildAgentMessages(
+  def: AgentDefinition,
+  prompt: string,
+  systemPromptPrefix?: string,
+  ctx: { cwd?: string; enabledTools?: readonly string[] } = {},
+): LLMMessage[] {
+  let effectivePrefix: string | undefined = systemPromptPrefix;
+  if (def.omitInheritedContext) {
+    const noticeLines: string[] = [
+      '<system-reminder>',
+      `You are running as a sub-agent (${def.name}).`,
+    ];
+    if (ctx.cwd) noticeLines.push(`Your working directory is ${ctx.cwd}.`);
+    noticeLines.push(
+      `Parent-provided context and the project preamble are omitted per agent definition; your own instructions remain available.`,
+      '</system-reminder>',
+    );
+    effectivePrefix = noticeLines.join('\n');
+  }
+  const system = effectivePrefix
+    ? `${effectivePrefix}\n\n${def.systemPrompt}`
+    : def.systemPrompt;
+
+  // P3 (2026-05-03) — Universal preamble plumbing for the sub-agent
+  // surface. Without this, codex sub-agents executed with ZERO project
+  // anchor (AGENTS.md/CLAUDE.md) and ZERO codex behavioral discipline
+  // addendum. PR #768 wired the dashboard turn loop only; sub-agent
+  // spawns (general-purpose, persona panels, data-collector, etc.) were
+  // a blind spot — codex sub-agents were arriving with no context and
+  // no anti-reread / parallelize / persist guidance.
+  //
+  // Skip when `def.omitInheritedContext === true` — that flag's whole purpose
+  // is to deliver a SLIM context (sub-agent doesn't need the project
+  // anchor). The codex addendum still matters even in slim mode (it's
+  // about the model's own behavior, not the project), but to keep the
+  // omitInheritedContext contract stable we honor it strictly.
+  let universalPreamble: LLMMessage[] = [];
+  if (!def.omitInheritedContext && ctx.cwd) {
+    const agentModelFamily = def.model ? getModelFamily(def.model) : undefined;
+    universalPreamble = buildUniversalPreamble({
+      cwd: ctx.cwd,
+      ...(agentModelFamily !== undefined ? { modelFamily: agentModelFamily } : {}),
+      ...(ctx.enabledTools !== undefined ? { enabledTools: ctx.enabledTools } : {}),
+    });
+    if (debug.enabled) {
+      debug.log('chat.agent-preamble', 'built', {
+        agent: def.name,
+        model: def.model,
+        modelFamily: agentModelFamily,
+        universalCount: universalPreamble.length,
+        universalChars: universalPreamble.reduce((sum, m) => {
+          const c = m.content;
+          return sum + (typeof c === 'string' ? c.length : JSON.stringify(c).length);
+        }, 0),
+        cwd: ctx.cwd,
+      });
+    }
+  }
+  // ⛔⭐⭐⭐ 「어느 자식이 프로젝트 앵커를 «못 봤나»」는 ***무조건*** 관측한다.
+  //   🚨 종전엔 `built`·`skipped` 가 «둘 다» `if (debug.enabled)` 뒤에 있었다.
+  //      그건 핫패스 게이트라 ***운영에서 꺼진다*** ⇒ 이 축은 조회에 «영영 0건»이다.
+  //      📏 실측 2026-08-26: 등록된 로그 스토어 ***109개 전수*** 에서 chat.agent-preamble 0행이었고,
+  //         직접 태워 보니 `debug.enabled=false` 에서 경로는 «돌았는데» 이벤트가 0개였다.
+  //         ⇒ 「사건이 없다」가 아니라 ***「게이트가 막았다」***다(CLAUDE.md 「0건」 축 ⑪).
+  //   🪞 이것은 `#12766` 이 «바로 옆»(앵커 절단 관측)에서 이미 닫은 결함의 «쌍둥이»다.
+  //      그때 배운 문장 그대로 — 셀프힐 판정의 근거가 되는 관측은 debug 게이트 밖에 둔다.
+  //   ⭐ 비싼 것(메시지 문자 수 합산)은 위 `built` 에 «그대로 남긴다» — 여기선 «싼 필드»만 낸다.
+  //   📌 이 값이 답하는 물음 = 상설 PLAN §6 ② 「omitInheritedContext 자식이 디자인을 못 본다 —
+  //      결손인가 의도인가」. 코드는 «의도»라고 말하지만(위 주석), ***누가 얼마나 그러는지***는
+  //      이 줄이 없으면 못 센다.
+  debug.log('chat.agent-preamble', 'resolved', {
+    agent: def.name,
+    projectAnchorIncluded: universalPreamble.length > 0,
+    reason: universalPreamble.length > 0
+      ? 'included'
+      : def.omitInheritedContext ? 'omit-inherited-context' : 'no-cwd',
+    universalCount: universalPreamble.length,
+    cwd: ctx.cwd,
+  });
+
+  return [
+    ...universalPreamble,
+    { role: 'system', content: system },
+    { role: 'user',   content: prompt },
+  ];
+}
+
+/** Resolve the tools a single agent may invoke this run.
+ *
+ *  Policy (per PLAN §11.2): undefined or empty allowlist = NO tools.
+ *  Only explicit names are exposed. Unknown names in the allowlist
+ *  are dropped silently — the agent simply doesn't see that tool. */
+export function filterAgentTools(
+  hostTools: LLMToolSpec[] | undefined,
+  allowlist: string[] | undefined,
+): LLMToolSpec[] | undefined {
+  if (!allowlist || allowlist.length === 0) return undefined;
+  if (!hostTools || hostTools.length === 0) return undefined;
+  const allow = new Set(allowlist);
+  const filtered = hostTools.filter(t => allow.has(t.name));
+  return filtered.length > 0 ? filtered : undefined;
+}
+
+// ── runAgent ──
+
+/** Stream an agent's execution as a sequence of AgentEvent frames.
+ *
+ *  Exhausting the generator is equivalent to awaiting the run: the
+ *  last event is always `done` | `error` | `status:aborted`, after
+ *  which the generator returns. Consumers can break out early to
+ *  stop listening, but the underlying LLM call keeps running until
+ *  cancelled via `task.controller.abort()` (registry.abort(id)).  */
+export async function* runAgent(
+  task: AgentTask,
+  opts: Omit<AgentSpawnOpts, 'definition' | 'prompt'> & {
+    /** PFC-S1 P2: called once when task state flips to done / error /
+     *  aborted (after finishedAt is stamped). Registry.spawn injects
+     *  `(t) => this.notifyTaskDone(t)` so the task-notification queue
+     *  can observe completion without runner importing registry
+     *  (avoids a circular import). */
+    onTerminal?: (task: AgentTask) => void;
+  },
+): AsyncGenerator<AgentEvent, void, unknown> {
+  const queue = new AsyncEventQueue<AgentEvent>();
+
+  task.state = 'running';
+  task.startedAt = Date.now();
+  queue.push({ type: 'status', stage: 'thinking' });
+
+  // Resolve tools BEFORE buildAgentMessages so the universal preamble
+  // can read the active toolset and emit session-specific guidance
+  // (Wave 4, 2026-05-04 — `buildSessionGuidanceAddendum` reads
+  // `enabledTools` to gate per-tool one-liner directives like
+  // `Agent` → search-vs-spawn split, `TaskCreate` → don't batch).
+  const tools = filterAgentTools(opts.tools, task.definition.tools);
+
+  // Build history on the task so callers can inspect it after the run.
+  // PFC-S1 P5: pass task.cwd so the slim-context notice (when
+  // omitInheritedContext) can name the child's working directory.
+  task.messages = buildAgentMessages(
+    task.definition,
+    task.prompt,
+    opts.systemPromptPrefix,
+    {
+      ...(task.cwd ? { cwd: task.cwd } : {}),
+      ...(tools ? { enabledTools: tools.map(t => t.name) } : {}),
+    },
+  );
+  const dispatchTool = opts.dispatchTool ?? (async (name: string) => {
+    throw new Error(`agent '${task.definition.name}' has no dispatchTool but invoked '${name}'`);
+  });
+
+  // Kick off the LLM call. Callbacks push events to the queue; the
+  // promise's resolution/rejection closes the queue.
+  const runPromise = streamLLMWithTools(
+    task.messages,
+    {
+      // ⛔⭐⭐ 빈 델타는 «에이전트 이벤트»가 아니다 — LLM 층의 «표식»이다.
+      //   📍 llm.ts `clearVisibleAssistantTextForToolRound` 가 툴 라운드마다 `onText('', '')` 를 낸다
+      //      (= "화면에 뿌린 어시스턴트 텍스트를 지워라") ⊕ llm.ts:7535 도 «FINAL emit» 을
+      //      `delta === ''` 로 가른다. ***그 층에서는 의미가 있다.***
+      //   🚨 그런데 ***AgentEvent 의 `text` 에는 «지움» 의미가 없다*** — `{ type:'text', delta:'' }` 는
+      //      소비자에게 «아무것도 말하지 않는다». 실측: agent text 소비자 «셋»이 전부
+      //      무조건 이어붙이기만 한다(skills/tools/agent.ts · subagent-callable.ts · log-adapter.ts).
+      //   ⇒ 그래서 이 자리에서 «떨군다». 안 그러면 툴 라운드마다 ***내용 없는 이벤트가 하나씩*** 흐르고,
+      //     소비자는 그걸 「새 텍스트가 왔다」로 읽는다(UI 플러시·줄 버퍼·로그가 헛돈다).
+      //   ⚠️ ⛔ 이것이 「지움」을 «전달»하지는 않는다 — 그 신호는 ***여기서 사라진다***.
+      //     📌 그래서 라이브 소비자는 여전히 «툴 라운드 «전»» 텍스트를 화면에 들고 있고,
+      //        최종 `done.text` 는 그것을 «뺀» 값이다(실측: 델타 누적 "checking done" ↔ done.text " done").
+      //        ⇒ 그건 «별개 결손»이고 이 줄이 고치지 않는다. AgentEvent 에 지움 의미가 생겨야 닫힌다.
+      onText: (delta) => { if (delta !== '') queue.push({ type: 'text', delta }); },
+      onToolCall: (call) => {
+        queue.push({ type: 'status', stage: 'tool' });
+        queue.push({ type: 'tool_call', id: call.id, name: call.name, args: call.args });
+      },
+      onToolResult: ({ id, name, result }) => {
+        queue.push({ type: 'tool_result', id, name, result });
+        queue.push({ type: 'status', stage: 'thinking' });
+      },
+      dispatchTool,
+    },
+    {
+      model: task.definition.model,
+      tools,
+      signal: task.controller.signal,
+      provider: opts.provider,
+      maxTurns: opts.maxTurns,
+    },
+  );
+
+  runPromise.then(
+    (text) => {
+      task.result = text;
+      task.state = 'done';
+      task.finishedAt = Date.now();
+      queue.push({ type: 'status', stage: 'done' });
+      queue.push({ type: 'done', text });
+      queue.close();
+      // PFC-S1 P2: fire terminal-state callback after the task is
+      // fully settled (state + result + finishedAt). Caught-isolated
+      // by the registry; any throw here is swallowed upstream.
+      try { opts.onTerminal?.(task); } catch { /* registry isolates */ }
+    },
+    (err) => {
+      task.finishedAt = Date.now();
+      if (task.controller.signal.aborted) {
+        task.state = 'aborted';
+        queue.push({ type: 'status', stage: 'aborted' });
+      } else {
+        const msg = err?.message || String(err);
+        task.error = msg;
+        task.state = 'error';
+        queue.push({ type: 'status', stage: 'error' });
+        queue.push({ type: 'error', message: msg });
+      }
+      queue.close();
+      try { opts.onTerminal?.(task); } catch { /* registry isolates */ }
+    },
+  );
+
+  yield* queue.drain();
+}

@@ -1,0 +1,50 @@
+{
+  "sku": "rosemine_blue_shower_cologne_rosebouquet",
+  "format": "youtube_shorts",
+  "aspect": "9:16",
+  "language": "ko",
+  "total_sec": 18,
+  "grounding": {
+    "source": "쿠팡 상품 상세 (제품정보 표 · 브랜드 자기 표기)",
+    "facts_used": [
+      "185ml",
+      "기능성 여부: 해당없음 → 효능 표현 금지",
+      "화려하면서도 매혹적인 자연의 로즈부케향이 샤워 후 오래도록 은은하게 지속",
+      "외출 시 가벼운 향수 대용으로 사용하실 수 있습니다",
+      "※ 냉장보관하신 후 사용하시면 더욱 좋습니다"
+    ],
+    "forbidden": ["미백", "주름", "기능성", "OEM", "공장", "지어낸 숫자"]
+  },
+  "scenes": [
+    { "n": 1, "sec": [0, 4], "role": "hook",
+      "caption": "샤워하고 나왔는데\n향이 아직 남아 있어요",
+      "vo": "샤워하고 나왔는데, 향이 아직 남아 있어요.",
+      "visual": "정지 카메라. 욕실 선반 위 병에 빛이 천천히 흐른다.",
+      "why": "브랜드 표기 「샤워 후 오래도록 은은하게 지속」의 직역 — 과장 아님" },
+    { "n": 2, "sec": [4, 9], "role": "evidence",
+      "caption": "바디워시가 아니라\n바디 퍼퓸입니다",
+      "vo": "바디워시가 아니라, 바디 퍼퓸이에요. 외출할 땐 향수 대신 쓰기도 하고요.",
+      "visual": "정지 카메라. 라벨이 프레임 가운데. 부채꼴 캡에 광택이 지나간다.",
+      "why": "브랜드가 「향수 대용」이라 직접 씀" },
+    { "n": 3, "sec": [9, 14], "role": "differentiator",
+      "caption": "냉장고에 넣어두면\n더 좋아요",
+      "vo": "그리고 냉장고에 넣어두면 더 좋습니다. 브랜드가 그렇게 안내해요.",
+      "visual": "정지 카메라. 병 표면에 서늘한 톤. 보라 장미가 옆에.",
+      "why": "⭐ 남이 안 쓰는 훅 — 판매 페이지 사용법에 그대로 있음" },
+    { "n": 4, "sec": [14, 18], "role": "cta",
+      "caption": "블루 로즈마인 샤워코롱\n185ml",
+      "vo": "에바스 블루 로즈마인 샤워코롱.",
+      "visual": "정지. 병과 기프트 박스가 같이. 라벨 선명.",
+      "why": "용량은 실물값 185ml — 지어내지 않는다" }
+  ],
+  "voice_candidates": [
+    { "id": "dyVV2WrHpfVjbIaIQrq0CnPKWdbD2TeJ", "name": "Seoyeon", "gender": "female", "note": "기본 후보 — 타깃 20~40대 여성" },
+    { "id": "PMPhHkiu6vMXG49XW0MB8uuufifheFCP", "name": "Subin", "gender": "female" },
+    { "id": "kKTntBsdDuheAZ0N6LTEVkDrAlQL7icT", "name": "Eunji", "gender": "female" }
+  ],
+  "timeline_overrides": {
+    "editorVideoAspectRatio": "9:16",
+    "outputVideoAspectRatio": "9:16",
+    "videoLanguage": "ko"
+  }
+}

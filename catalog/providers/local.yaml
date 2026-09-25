@@ -1,0 +1,24 @@
+id: local
+displayName: Local (LM Studio · llama.cpp · ollama · vLLM)
+aliases: [lm-studio, lmstudio, ollama, llama-cpp, vllm]
+modelPrefixes: [local:, gemma-, qwen-, qwen2, qwen3, llama-, llama2, llama3, phi-, kimi-, glm-, mistral-, mixtral-, deepseek-, nemotron-, falcon-]
+apiKeyEnv: LOCAL_LLM_API_KEY
+endpointPattern: http://localhost:1234
+defaultStreaming: sse
+toolCallingFormat: native-openai
+capabilities:
+  sessionResume: false
+  mcp: false
+  hooks: false
+  skills: true
+  agents: false
+  toolRestrictions: true
+  structuredOutput: true
+  envInjection: false
+  costControl: false
+  effortControl: false
+  thinkingControl: false
+  fallbackModel: false
+  sandbox: false
+  multiHostFanout: true
+builtIn: false

@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 220 48" role="img" aria-label="플레이스홀더 로고 — 자기 로고로 교체하십시오">
+  <rect x="0.5" y="0.5" width="219" height="47" rx="6" fill="none" stroke="#dbe4de"/>
+  <rect x="12" y="12" width="24" height="24" rx="4" fill="#07513b"/>
+  <text x="48" y="31" fill="#172d24" font-size="16" letter-spacing="1.5" font-family="Pretendard, system-ui, sans-serif">YOUR LOGO</text>
+</svg>

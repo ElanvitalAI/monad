@@ -1,0 +1,61 @@
+{
+  "personaId": "investor",
+  "steps": 3,
+  "failed": 0,
+  "ok": true,
+  "runId": "botlab-investor-2026-09-02T22-40-01-268Z",
+  "runIdSource": "own",
+  "source": "cron",
+  "stateRoot": "/Users/me/.monad",
+  "saveErrors": 0,
+  "mailbox": {
+    "unread": 1,
+    "messages": [],
+    "error": null,
+    "markedRead": 0,
+    "markError": null
+  },
+  "finishedAtUtc": "2026-09-02T22:40:06.913Z",
+  "tree": {
+    "cwd": "/Users/me/source/leader/monad-agent",
+    "head": "c62527204",
+    "behindMain": 1,
+    "remoteFresh": true
+  },
+  "results": [
+    {
+      "label": "KR 수급 · 삼성전자",
+      "ok": true,
+      "ms": 683,
+      "chars": 679
+    },
+    {
+      "label": "KR 시장 흐름",
+      "ok": true,
+      "ms": 875,
+      "chars": 1068
+    },
+    {
+      "label": "미국 지수 · S&P500",
+      "ok": true,
+      "ms": 313,
+      "chars": 566
+    }
+  ],
+  "delivery": {
+    "mode": "send",
+    "bytes": 3686,
+    "chars": 2674,
+    "bodySteps": 3,
+    "machineTextSteps": 0,
+    "clippedSteps": 0,
+    "textClipped": false,
+    "textHeadroom": 1126,
+    "sent": true,
+    "error": null,
+    "photosPlanned": 0,
+    "photosSent": 0,
+    "photosFailed": 0,
+    "photoMode": false
+  }
+}

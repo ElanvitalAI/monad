@@ -1,0 +1,9 @@
+{
+  "_comment": "조율 채널 트랙 신원의 정본. 트랙을 더하려면 여기 한 줄만 더한다 — scripts/coord-post.sh 와 scripts/build-docs-site.ts 가 이 파일을 읽는다.",
+  "tracks": [
+    { "id": "S", "mark": "🅢" },
+    { "id": "T", "mark": "🅣" },
+    { "id": "F", "mark": "🅕" },
+    { "id": "O", "mark": "🅞" }
+  ]
+}

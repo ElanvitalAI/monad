@@ -1,0 +1,152 @@
+# ⭐ 연구 골 템플릿 — ⛔ 출처는 «오늘 실물로 돈 런»이다(추측 아님).
+#   📏 실측(2026-09-08 · 격리 승격 첫 런 run-16dbf868):
+#      걸음  investigate → judge → investigate → judge → main-sync → regate → open-pr → merge
+#      ⛔ 그중 main-sync·regate 는 이 템플릿이 «선언하지 않은» 노드였다(내 이름 사상이 셋만 덮었다).
+#   🔑 그래서 이 판은 그 둘을 «선언한다» — 착지 경로는 implement-loop 과 «같은 기계»를 쓰기 때문이다.
+#
+# ✅ implement-loop 과의 «진짜» 차이는 하나다: gate 가 «조건부»다(문서만 바뀐 판엔 돌 시험이 없다).
+#   대표 확인: 연구 골의 산출은 «문서»이고 문서는 PR 로 착지해야 «남는다» ⇒ merge 를 뺄 수 없다.
+
+graph_id: research-loop
+version: 5
+entry_node: investigate
+terminal_nodes: [merge]
+runner_inputs: [goal, worktree, branch, review-intent, head-sha, base-branch]
+# ⛔ 키 이름은 파서(`src/self-implement/graph-yaml.ts:201`)가 아는 것뿐이다 — 다른 이름은 «조용히» 무시된다.
+docs_only_gate_skip: true
+
+nodes:
+  - node_id: investigate
+    kind: agent
+    recipe: headless-goal-loop
+    # 📏 실측 2026-09-08 (원장 30일 · 전 우주 · 걸음 191개 소급): 이 노드의 «관측 최대»가 ***7*** 이었다.
+    #   🩸 옛 선언 `4` 는 실물보다 ***3*** 좁았다 — open-pr·merge 와 «같은 계급»의 결함이다.
+    #   🪞 1차 소급에서 이것을 «놓쳤다» — 그 걸음들이 신원 버그로 `self-implement` 로 찍혀 있어
+    #     「선언에 없는 노드」로 걸러졌다. ***낡은 신원의 행에도 «걸음 자료»는 살아 있다.***
+    #   ⛔ 다시 좁히려면 «표본»을 대라.
+    max_visits: 7
+    progress: [implementing, implemented]
+    terminal_stages: [aborted, timed-out]
+    contract:
+      inputs: [goal, worktree]
+      tools: worktree-write
+      outputs: [document, summary, changed-files]
+
+  # ⛔ 조건부다 — 라우터(`routeGate`)가 «코드»로 판정한다. LLM 이 못 고른다(RFC §4.3 ⑵).
+  - node_id: gate
+    kind: gate
+    recipe: gate-baseline
+    # 📏 실측 2026-09-08(걸음 191 소급): 이 노드의 «관측 최대»가 6 였다 — 옛 선언 4 은 좁았다.
+    #   🪞 앞선 판(#16220)이 implement-loop·default-loop «둘만» 고치고 ***이 파일을 빠뜨렸다*** —
+    #     그 전수 실패를 `test/graph-budget-matches-observation.test.ts` 가 잡았다.
+    max_visits: 6
+    progress: [gating, gated]
+    terminal_stages: []
+    contract:
+      inputs: [worktree, changed-files]
+      tools: read-and-run-tests
+      outputs: [passed, log]
+
+  - node_id: judge
+    kind: judge
+    recipe: pr-reviewer
+    max_visits: 4
+    progress: [reviewing, reviewed]
+    terminal_stages: [review-blocked]
+    contract:
+      inputs: [document, review-intent]
+      tools: read-only
+      outputs: [verdict, must-fix, review-summary]
+
+  # 📏 아래 둘은 «실측이 요구했다» — 오늘 첫 런이 실제로 밟았다.
+  - node_id: main-sync
+    kind: git
+    recipe: seams-git-merge-main
+    max_visits: 2
+    progress: [gating, merge-conflict]
+    terminal_stages: [merge-conflict]
+    contract:
+      inputs: [worktree, base-branch]
+      tools: git-write
+      outputs: [synced, conflicts]
+
+  - node_id: regate
+    kind: gate
+    recipe: gate-baseline
+    max_visits: 2
+    progress: [gating]
+    terminal_stages: [gate-failed]
+    contract:
+      inputs: [worktree]
+      tools: read-and-run-tests
+      outputs: [passed, log]
+
+  - node_id: open-pr
+    kind: git
+    recipe: seams-gh-open-pr
+    # 📏 실측 2026-09-08(걸음 191 소급): 이 노드의 «관측 최대»가 2 였다 — 옛 선언 1 은 좁았다.
+    #   🪞 앞선 판(#16220)이 implement-loop·default-loop «둘만» 고치고 ***이 파일을 빠뜨렸다*** —
+    #     그 전수 실패를 `test/graph-budget-matches-observation.test.ts` 가 잡았다.
+    max_visits: 2
+    progress: [pr-opening, pr-opened]
+    terminal_stages: [pr-declined, pr-opened]
+    contract:
+      inputs: [branch, review-summary]
+      tools: gh-pr-create
+      outputs: [pr-number, pr-url]
+
+  - node_id: merge
+    kind: git
+    recipe: seams-gh-merge-squash
+    # 📏 실측 2026-09-08(걸음 191 소급): 이 노드의 «관측 최대»가 2 였다 — 옛 선언 1 은 좁았다.
+    #   🪞 앞선 판(#16220)이 implement-loop·default-loop «둘만» 고치고 ***이 파일을 빠뜨렸다*** —
+    #     그 전수 실패를 `test/graph-budget-matches-observation.test.ts` 가 잡았다.
+    max_visits: 2
+    progress: [merging, merged]
+    terminal_stages: [merged, pr-opened]
+    contract:
+      inputs: [pr-number, head-sha]
+      tools: gh-pr-merge
+      outputs: [merged]
+
+edges:
+  # ⛔⭐ 유일하게 implement-loop 과 «다른» 자리 — gate 를 «건너뛸 수 있다».
+  #   조건은 코드가 낸다: 변경 파일에 «코드»가 있나(routeGate). 못 세면 «돈다»(fail-safe).
+  - from: investigate
+    on: changed-files
+    map:
+      code-changed: gate               # 코드가 섞였다 ⇒ 시험을 돌린다
+      documents-only: judge            # 문서만 ⇒ 돌 시험이 없다
+      unknown: gate                    # ⛔ 「모른다」를 「없다」로 안 읽는다 — fail-safe
+    observed: 3                        # 📏 2026-09-08 첫 런(전부 documents-only)
+
+  - from: gate
+    on: outcome
+    map:
+      pass: judge
+      fail: investigate
+
+  - from: judge
+    on: outcome
+    map:
+      fail: investigate                # 📏 관측 2
+      pass: main-sync                  # 📏 관측 1
+    fallback:
+      - node: open-pr
+        requires: []
+        observed: 0
+
+  - from: main-sync
+    on: outcome
+    map:
+      pass: regate
+    fallback:
+      - node: open-pr
+        requires: []
+        observed: 0
+
+  - from: regate
+    to: open-pr
+
+  - from: open-pr
+    to: merge

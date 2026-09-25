@@ -1,0 +1,62 @@
+/**
+ * --test-state-dir 플래그 — ISO-2 config 완전 분기 계약 (2026-07-13).
+ *
+ * NODE_ENV=test 에서는 sync/불변식 블록이 스킵되므로(실 운영 config 미접촉)
+ * 여기서는 분기 코어(플래그 추출·config-dir 강제·state env)를 고정한다.
+ */
+import { afterEach, describe, expect, it } from 'bun:test';
+import { mkdtempSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+
+import { applyTestStateDirFlagFromArgv, extractTestStateDirFlag } from './test-state-dir-flag.js';
+import { getMonadConfigDirOverride, resetMonadConfigDir, setMonadConfigDir } from '../monad-config-dir.js';
+import { setTestStateRoot } from '../nexus/paths.js';
+
+describe('extractTestStateDirFlag — 순수 추출', () => {
+  it('플래그+값 제거, 마지막 값 승리, = 형식 지원', () => {
+    expect(extractTestStateDirFlag(['a', '--test-state-dir', '/x', 'b'])).toEqual({ dir: '/x', argv: ['a', 'b'] });
+    expect(extractTestStateDirFlag(['--test-state-dir=/y']).dir).toBe('/y');
+    expect(extractTestStateDirFlag(['--test-state-dir', '/x', '--test-state-dir', '/z']).dir).toBe('/z');
+  });
+});
+
+describe('applyTestStateDirFlagFromArgv — ISO-2 완전 분기', () => {
+  const savedArgv = [...process.argv];
+  const savedStateDir = process.env.MONAD_STATE_DIR;
+
+  afterEach(() => {
+    process.argv = [...savedArgv];
+    if (savedStateDir === undefined) delete process.env.MONAD_STATE_DIR;
+    else process.env.MONAD_STATE_DIR = savedStateDir;
+    resetMonadConfigDir();
+    setTestStateRoot(null);
+  });
+
+  it('플래그 하나로 state root + MONAD_STATE_DIR + config dir 전부 test 루트로', () => {
+    const dir = mkdtempSync(join(tmpdir(), 'monad-testflag-'));
+    delete process.env.MONAD_STATE_DIR;
+    process.argv = ['bun', 'index.ts', '--test-state-dir', dir, 'nexus', 'run'];
+    const applied = applyTestStateDirFlagFromArgv();
+    expect(applied).toBe(dir);
+    expect(process.env.MONAD_STATE_DIR ?? '').toBe(dir);
+    expect(getMonadConfigDirOverride()).toBe(dir); // ← config 완전 분기 핵심
+    expect(process.argv).toEqual(['bun', 'index.ts', 'nexus', 'run']);
+    rmSync(dir, { recursive: true, force: true });
+  });
+
+  it('선행 --config-dir(운영 등)이 있어도 test 루트가 이긴다', () => {
+    const dir = mkdtempSync(join(tmpdir(), 'monad-testflag-'));
+    setMonadConfigDir('/somewhere/prod-like');
+    process.argv = ['bun', 'index.ts', '--test-state-dir', dir];
+    applyTestStateDirFlagFromArgv();
+    expect(getMonadConfigDirOverride()).toBe(dir);
+    rmSync(dir, { recursive: true, force: true });
+  });
+
+  it('플래그 없으면 아무것도 안 바꾼다', () => {
+    process.argv = ['bun', 'index.ts', 'nexus', 'run'];
+    expect(applyTestStateDirFlagFromArgv()).toBeUndefined();
+    expect(getMonadConfigDirOverride()).toBeUndefined();
+  });
+});

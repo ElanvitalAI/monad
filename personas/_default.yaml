@@ -1,0 +1,19 @@
+# Default persona — fallback when no specific persona is selected.
+#
+# This is the minimum yaml shape (Sprint 21 M2 will land the full
+# loader + 5-tuple PersonaProfile). For M1.1 (webhook persona
+# adapter) we only need the display-time fields:
+#   personaId · displayName · avatarUrl? · brandColor?
+#
+# Sprint 22 (G2 PersonaProfile catalog) will extend this schema with
+# systemPrompt · models · memoryScope · tools · mentionPatterns
+# while preserving existing fields.
+#
+# PLAN: 내부 문서 `PLAN-discord-rich-light-persona-2026-05-01` §7
+
+personaId: _default
+displayName: Monad
+description: Default monad persona — fallback identity for webhook execute when no specific persona is bound.
+brandColor: "#6d28d9"
+browserPort: 9222
+# avatarUrl: (omitted — webhook will fall back to bot's default avatar)

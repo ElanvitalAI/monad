@@ -1,0 +1,32 @@
+# ⭐ ① «변형» — 최초 결정(launch) 단계에서 기본 템플릿을 바꾸는 «첫 실물 오버레이».
+#
+# 🩸 계기(2026-09-10 실측): `stage: launch` 오버레이가 이 저장소에 «하나도 없었다».
+#   원장 판정 전수: launch  target-mismatch 19 · wrong-stage 13 · ***applies 0***
+#   ⇒ 배선(`decideTemplate(stage:'launch')`)은 도는데 «먹은 표본이 0» 이라
+#     「① 변형이 되는가」가 원리상 답을 못 얻고 있었다.
+#
+# ⛔ 무엇을 바꾸나: research-loop 의 `investigate` 예산을 넓힌다.
+#   근거 — research-loop 은 `implement` 와 `rework` 를 «한 노드»(investigate)로 접는다.
+#   그래서 같은 일에 self-implement 는 12+10=22 를 쓰는데 research 는 7 뿐이다(2026-09-10 실측).
+#   ⚠️ 이 예산은 «아직 강제되지 않는다»(아나토미 §17) — 그래서 이 오버레이의 값은
+#     「런을 살린다」가 «아니라» ***「① 변형이 실제로 먹는지 원장이 말하게 한다」***다.
+#
+# ⛔ 조건이 «값»이다 — 사람이 판단해 얹는 것이 아니다.
+#   `goal_id` 는 최초 결정이 «아는» 유일한 상태다(orchestrator 가 그것만 준다).
+#
+# ⛔⭐ 조건 문법이 «좁다 — 그리고 그것이 의도다»(`graph-overlay-condition.ts`):
+#     "표현식 엔진을 만들지 않는다. 문법이 넓어지면 오버레이가 «작은 프로그램»이 된다"
+#   ⇒ 받는 것은 `<key> <op> <리터럴>` 하나뿐이고 리터럴은 ***수 또는 낱말***이다.
+#     🩸 2026-09-10: 내가 `goal_id != ""` 를 썼다가 `verdict: unparseable` 을 받았다.
+#     ✅ 문자열 «존재»를 물으려면 낱말 리터럴을 쓴다 — 아래처럼.
+overlay_id: research-wide-launch
+target: research-loop
+stage: launch
+applies_when: goal_id != absent
+patch:
+  # ⛔⭐ 패치는 «파싱된 spec» 의 키를 쓴다 — camelCase 다(`maxVisits`), YAML 의 `max_visits` 가 아니다.
+  #   🩸 2026-09-10: 이것을 몰라 세 번 실패했고 오류 문면은 `unreachable-node: "undefined"` 라
+  #     «아무 데도 안 가리켰다». 새 오버레이를 쓸 때 이 줄을 먼저 읽어라.
+  - op: replace
+    path: /nodes/0/maxVisits
+    value: 12

@@ -1,0 +1,29 @@
+id: grok-4.5
+provider: grok
+displayName: Grok 4.5
+family: grok-4
+# ⛔ 2026-08-18 정정: 2000000 은 «낡은 값»이었다 — 4.5 도 4.6 처럼 500k 다
+#    (omni-crawl grok-web 대조 ⊕ docs.x.ai). 4.6 만 줄어든 것이 아니다.
+contextSize: 500000
+outputMaxTokens: 8192
+vision: images
+audio: { input: false, output: false }
+reasoning: high
+toolCalling: native-openai
+streamingProtocol: sse
+pricing:
+  inputPerMTok: 2.00
+  outputPerMTok: 6.00
+  cachedInputPerMTok: 0.50
+rateLimits:
+  rpm: 1800
+  tpm: 10000000
+deprecated: null
+releaseDate: 2026-07-01
+tokenizer: cl100k
+kind: chat
+discoveryMeta:
+  source: auto-omni-crawl
+  lastSeen: 2026-07-15
+  autoFilled: true
+  confidence: high

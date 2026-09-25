@@ -1,0 +1,9 @@
+provider: grok
+prefixes:
+  - prefix: grok-
+    fallback:
+      provider: grok
+      toolCalling: native-openai
+      streamingProtocol: sse
+      tokenizer: cl100k
+      kind: chat

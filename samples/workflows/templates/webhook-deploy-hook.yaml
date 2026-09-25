@@ -1,0 +1,27 @@
+name: webhook-deploy-hook
+description: |
+  Production deploy webhook receiver. CI posts to /hooks/deploy with
+  the build artifact id; the workflow builds, runs tests, and notifies
+  on Slack/Discord depending on result.
+
+_meta:
+  template:
+    title: Webhook deploy hook
+    description: POST /hooks/deploy → build → notify
+    tags: [webhook, deploy, ci]
+
+nodes:
+  - id: receive
+    webhookTrigger:
+      method: POST
+      path: /hooks/deploy
+
+  - id: build
+    bash: |
+      echo "building $ARGUMENTS" && sleep 1 && echo ok
+    depends_on: [receive]
+
+  - id: notify
+    bash: |
+      echo "deploy result: $build.output"
+    depends_on: [build]

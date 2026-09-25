@@ -1,0 +1,28 @@
+# NEXUS · systemd --user unit template (Phase N-5 PR ω)
+#
+# Installed at:    ~/.config/systemd/user/{{UNIT_NAME}}
+# Reload via:      systemctl --user daemon-reload
+# Enable + start:  systemctl --user enable --now {{UNIT_NAME}}
+# Restart policy:  Restart=on-failure restarts on non-zero exit codes.
+#                  Exit 75 (graceful) → restart. Exit 0 (cleanExit) → stay.
+#
+# Reference copy — runtime install reads renderSystemdServiceUnit() in systemd.ts.
+# Edits here are ergonomic only; bump renderSystemdServiceUnit() to change actual
+# generated output.
+
+[Unit]
+Description=monad NEXUS — unified TUI shell + supervisor + meta-api
+After=default.target
+
+[Service]
+Type=simple
+ExecStart={{EXEC_START}}
+WorkingDirectory={{WORKING_DIR}}
+Restart=on-failure
+RestartSec={{RESTART_SEC}}
+StandardOutput=append:{{STDOUT}}
+StandardError=append:{{STDERR}}
+{{ENV_LINES}}
+
+[Install]
+WantedBy=default.target

@@ -1,0 +1,705 @@
+# External resource map — v0
+#
+# ⛔ Every field here was MEASURED on 2026-09-20, not assumed. Fields that
+#    could not be measured are ABSENT rather than guessed: an absent
+#    `free_fallback` means "not measured", never "there is none".
+#
+# Why this file exists: monad reads 33 credentials from FOUR different
+# places, two of them silently. Without a map, a new user cannot tell
+# what is required, what is optional, or what already has a free path.
+#
+# How it was built (re-run these to check it has not gone stale):
+#   env sweep      rg -o "process\.env\.[A-Z_0-9]+" src/ scripts/ --glob '!*.test.ts'
+#                  ⛔ THAT SWEEP ALONE IS NOT ENOUGH — measured 2026-09-21, it misses TWO idioms
+#                  and the misses are silent (a name simply never appears):
+#                    ⓐ injected env — this repo passes `env: NodeJS.ProcessEnv` for testability,
+#                      so credentials are read as `env.NAME`, not `process.env.NAME`.
+#                      Five names were invisible this way, three of them in ONE file
+#                      (src/expression/config/env-bridge.ts — the env→config bridge itself).
+#                    ⓑ string literals — e.g. `envKey: 'GROK_API_KEY'` in a table.
+#                  ⇒ also run:
+#                    rg -o "env\.[A-Z][A-Z0-9_]{2,}" src/ scripts/ --glob '!*.test.ts'
+#                    rg -o "'[A-Z][A-Z0-9_]{2,}(_KEY|_TOKEN|_SECRET)'" src/ scripts/ --glob '!*.test.ts'
+#   resolution     monad doctor            # which of the four sources answers
+#   coverage       every `env:` name below must appear in .env.example
+#
+# Schema (RFC §2ⓒ):
+#   id            what you obtain from a vendor — ONE per account, not per env name
+#   kind          llm | crawl | voice | media | finance | messenger | dev | internal
+#   tier          free | paid | subscription | byo
+#   auth          api-key | oauth-browser | cli-login | none
+#   env           every name the code accepts for this ONE credential
+#   required_for  what stops working without it (measured from read sites)
+#   free_fallback ⭐ the point of this file — a path that needs no key
+#   reads         the source location that proves `required_for`
+
+meta:
+  measured_at: 2026-09-21
+  credential_count: 41          # env names in src/ + scripts/, excluding config/URL/flag names
+  account_count: 30             # after folding alias chains (see `env:` lists below)
+  sources:                      # where a credential can come from, in resolution order
+    - env
+    - "~/.cache/<lowercased-name>"      # src/config.ts:106 — read SILENTLY
+    - "~/.claude/skills/<skill>/.env"   # src/web-search/tavily.ts:30 — outside this repo
+    - "monad user config (~/.monad)"    # src/registry/discovery/config.ts:44
+  note: >-
+    A fresh install has none of the four. `monad doctor` names which one
+    answered for each credential.
+
+resources:
+  # ── LLM ────────────────────────────────────────────────────────────
+  # The primary path is a subscription, not an API key. `monad login
+  # openai-codex` uses the ChatGPT device-code flow. Five providers are
+  # additionally described in catalog/providers/*.yaml (apiKeyEnv).
+  - id: anthropic
+    kind: llm
+    tier: byo
+    auth: api-key
+    env: [ANTHROPIC_API_KEY]
+    required_for: [anthropic-llm]
+    free_fallback: "subscription via `monad login`; llm.fallbackChain"
+    reads: catalog/providers/anthropic.yaml
+    free_fallback_mode: auto
+    free_fallback_note: >-
+      MEASURED 2026-09-23 — losing this key costs only its OWN `<provider>-llm`
+      capability; general LLM work is covered automatically by `llm.fallbackChain`.
+      No human action is needed, so the mode is `auto`, not `manual`.
+
+  - id: openai
+    kind: llm
+    tier: subscription
+    auth: oauth-browser
+    env: [OPENAI_API_KEY]
+    required_for: [openai-llm]
+    free_fallback: "`monad login openai-codex` (device code, no API key)"
+    reads: catalog/providers/openai.yaml
+    free_fallback_mode: none
+    boundary_note: >-
+      ⭐⭐ THIS IS THE FLOOR. The other LLM rows degrade into `llm.fallbackChain`;
+      these two ARE that chain (code default `['codex-rotate']`, this instance `['grok']`
+      as of 2026-09-23). Nothing in-tree sits below them, so monad cannot do LLM work
+      with zero LLM credentials. That is a PROPERTY OF THE PRODUCT, not a gap in the map.
+      ⇒ The open-core question here is not `auto|manual|none` but the owner's: is a BYO
+      subscription part of CORE (like bringing a database) or is it an add-on?
+
+  - id: gemini
+    kind: llm
+    tier: byo
+    auth: api-key
+    env: [GEMINI_API_KEY]
+    required_for: [gemini-llm]
+    free_fallback: "gemini-llm 만 못 쓴다 — 일반 LLM 능력은 llm.fallbackChain 이 덮는다 (📏 2026-09-22 실측 체인 = codex-rotate → grok · 이 프로바이더는 체인에 없다)"
+    reads: catalog/providers/gemini.yaml
+    free_fallback_mode: auto
+    free_fallback_note: >-
+      MEASURED 2026-09-23 — losing this key costs only its OWN `<provider>-llm`
+      capability; general LLM work is covered automatically by `llm.fallbackChain`.
+      No human action is needed, so the mode is `auto`, not `manual`.
+
+  - id: xai
+    kind: llm
+    tier: byo
+    auth: api-key
+    env: [XAI_API_KEY, GROK_API_KEY, GROK_CODE_XAI_API_KEY]   # ONE account, three names
+    required_for: [grok-llm]
+    free_fallback: "llm.fallbackChain ends at grok"
+    reads: src/grok/credential.ts:191          # all three names, one loop
+    # ⛔ GROK_API_KEY is also a string literal in src/intelligence-map/model-catalog.ts:214,
+    #    and scrubEnv/billingEnv name all three (src/agent-mission/driver.ts:161).
+    free_fallback_mode: none
+    boundary_note: >-
+      ⭐⭐ THIS IS THE FLOOR. The other LLM rows degrade into `llm.fallbackChain`;
+      these two ARE that chain (code default `['codex-rotate']`, this instance `['grok']`
+      as of 2026-09-23). Nothing in-tree sits below them, so monad cannot do LLM work
+      with zero LLM credentials. That is a PROPERTY OF THE PRODUCT, not a gap in the map.
+      ⇒ The open-core question here is not `auto|manual|none` but the owner's: is a BYO
+      subscription part of CORE (like bringing a database) or is it an add-on?
+
+  - id: zhipu
+    kind: llm
+    tier: byo
+    auth: api-key
+    env: [ZHIPU_API_KEY, GLM_API_KEY, BIGMODEL_API_KEY]   # ONE account, three names
+    required_for: [zhipu-llm]
+    free_fallback: "zhipu-llm 만 못 쓴다 — 일반 LLM 능력은 llm.fallbackChain 이 덮는다 (📏 2026-09-22: 체인에 없다)"
+    reads: src/config.ts:213
+    free_fallback_mode: auto
+    free_fallback_note: >-
+      MEASURED 2026-09-23 — losing this key costs only its OWN `<provider>-llm`
+      capability; general LLM work is covered automatically by `llm.fallbackChain`.
+      No human action is needed, so the mode is `auto`, not `manual`.
+
+  - id: dashscope
+    kind: llm
+    tier: byo
+    auth: api-key
+    env: [DASHSCOPE_API_KEY, QWEN_API_KEY]                # ONE account, two names
+    required_for: [dashscope-llm]
+    free_fallback: "dashscope-llm 만 못 쓴다 — 일반 LLM 능력은 llm.fallbackChain 이 덮는다 (📏 2026-09-22: 체인에 없다)"
+    reads: src/config.ts:204
+    free_fallback_mode: auto
+    free_fallback_note: >-
+      MEASURED 2026-09-23 — losing this key costs only its OWN `<provider>-llm`
+      capability; general LLM work is covered automatically by `llm.fallbackChain`.
+      No human action is needed, so the mode is `auto`, not `manual`.
+
+  - id: moonshot
+    kind: llm
+    tier: byo
+    auth: api-key
+    env: [MOONSHOT_API_KEY, KIMI_API_KEY]                 # ONE account, two names
+    required_for: [moonshot-llm]
+    free_fallback: "moonshot-llm 만 못 쓴다 — 일반 LLM 능력은 llm.fallbackChain 이 덮는다 (📏 2026-09-22: 체인에 없다)"
+    reads: src/config.ts:194
+    free_fallback_mode: auto
+    free_fallback_note: >-
+      MEASURED 2026-09-23 — losing this key costs only its OWN `<provider>-llm`
+      capability; general LLM work is covered automatically by `llm.fallbackChain`.
+      No human action is needed, so the mode is `auto`, not `manual`.
+
+  - id: openrouter
+    kind: llm
+    tier: byo
+    auth: api-key
+    env: [OPENROUTER_API_KEY]                         # 키 캐시 ~/.cache/openrouter_api_key 가 먼저
+    required_for: [openrouter-llm]
+    free_fallback: "openrouter-llm(kimi·qwen·glm 경로)만 못 쓴다 — 자동 폴백 후보가 «아니라» 명시 선택으로만 온다(2026-09-23)"
+    reads: src/config.ts:172
+    free_fallback_mode: auto
+    free_fallback_note: >-
+      2026-09-23 — OpenRouter is never an automatic fallback (paid · explicit choice only),
+      so losing this key costs only its OWN capability; general LLM work stays on the chain.
+
+  # ── Crawl / search ─────────────────────────────────────────────────
+  - id: tavily
+    kind: crawl
+    tier: paid
+    auth: api-key
+    env: [TAVILY_API_KEY, TAVILY_KEY]                     # ONE account, two names
+    required_for: [web-search]
+    free_fallback: "ddg + jina — skills/omni-crawl/src/free.ts (freeAvailable() is unconditionally true)"
+    reads: src/web-search/tavily.ts:27
+    note: "Additionally gated OFF by config: webSearch.tavily.enabled"
+    free_fallback_mode: auto
+    free_fallback_note: >-
+      MEASURED 2026-09-23 — skills/omni-crawl/src/free.ts:22 `freeAvailable(): boolean { return true; }`
+      ("무료 티어는 항상 사용 가능 · 키 불필요"), and main.ts:196 states the tavily axis empties on
+      "기본 OFF · 키 없음 · 장애" and ddg takes over the angle searches. No human action needed.
+
+  - id: firecrawl
+    kind: crawl
+    tier: paid
+    auth: api-key
+    env: [FIRECRAWL_API_KEY]
+    required_for: [web-search, omni-crawl, community-buzz]
+    free_fallback: "ddg + jina — skills/omni-crawl/src/free.ts"
+    reads: src/registry/discovery/config.ts:44
+    free_fallback_mode: auto
+    free_fallback_note: >-
+      Same free tier as tavily (ddg + jina, skills/omni-crawl/src/free.ts). `applyWebFallback` runs
+      on every search result set (main.ts:100), so an absent key degrades without human action.
+
+  - id: jina
+    kind: crawl
+    tier: free
+    auth: api-key
+    env: [JINA_API_KEY]
+    required_for: [jina-rate-limit]
+    free_fallback: "the free tier calls r.jina.ai WITHOUT a key; this key only raises the rate limit"
+    reads: skills/omni-crawl/src/free.ts:104
+    free_fallback_mode: auto
+    free_fallback_note: >-
+      MEASURED 2026-09-23 at skills/omni-crawl/src/free.ts — the call is
+      `if (jinaKey) headers.Authorization = ...`; the request to r.jina.ai goes out
+      either way. The key raises a RATE LIMIT, it does not gate the capability.
+
+  - id: apify
+    kind: crawl
+    tier: paid
+    auth: api-key
+    env: [APIFY_TOKEN]
+    required_for: [x-scraping]
+    reads: skills/omni-crawl/scripts/main.ts
+    free_fallback_mode: none
+    free_fallback: >-
+      None for its declared purpose. omni-crawl DOES ship a free tier
+      (searchDdg / scrapeFree in skills/omni-crawl/src/free.js) but that covers WEB
+      search and scraping — not X. apify's required_for is `x-scraping` (bulk tweets
+      with fav/date filters); the only other X coverage in-tree is grok, which is paid.
+      Measured: skills/omni-crawl/scripts/main.ts:386 throws 'APIFY_TOKEN 미설정' —
+      it does not route elsewhere.
+
+  - id: reddit
+    kind: crawl
+    tier: byo
+    auth: api-key
+    env: [REDDIT_CLIENT_SECRET]
+    required_for: [community-buzz]
+    free_fallback: RSS 폴백(무자격) — parse-reddit.ts 2경로 중 ② · 볼륨/긍부정/freshness 만(ups 없음) · rate-limit 로 10분 간격 권장 · 로그 = community-buzz-cycle.ts:106
+    reads: src/domains/community-buzz/parse-reddit.ts:27
+    free_fallback_mode: auto
+    free_fallback_note: >-
+      MEASURED 2026-09-23 — src/domains/community-buzz/parse-reddit.ts `fetchRedditHot()` does
+      `const creds = loadRedditCreds(); if (creds) { OAuth listing } else { RSS 폴백 }`.
+      The branch is taken by credential PRESENCE, so it is automatic. ⚠️ the RSS path is NARROWER
+      (volume/sentiment/freshness only — no ups), which is a coverage limit, not a mode change.
+
+  # ── Voice / media ──────────────────────────────────────────────────
+  - id: elevenlabs
+    kind: voice
+    tier: paid
+    auth: api-key
+    env: [ELEVENLABS_API_KEY]
+    required_for: [tts, streaming-stt]
+    reads: src/voice/tts/tts-providers/elevenlabs-tts.ts:46
+    note: "Throws when absent (does not degrade)"
+    free_fallback_mode: auto   # 🔴 2026-09-23 manual → auto (아래 note)
+    free_fallback_mode_note: >-
+      CHANGED 2026-09-23 by #19835. It WAS `manual`: resolveProviderId() defaulted to
+      'openai-tts' (paid) so the free floor needed a human. The daemon resolver now asks
+      isTtsProviderUsableNow() per candidate and walks down on its own.
+      MEASURED in a zero-credential rig (HOME isolated, 45 credential env vars unset):
+        no credential + no explicit choice  →  chosen = ***edge-tts***  (was openai-tts)
+        explicit STT/TTS env or config      →  that id is RESPECTED, even unusable
+        real credentials                    →  chosen = elevenlabs-tts  (no regression)
+      ⇒ the mechanism became automatic, so the boundary verdict moves add-on → CORE.
+    free_fallback: >-
+      Two credential-free TTS providers ship in-tree and both are implemented:
+      `edge-tts` (no API key, multilingual incl. Korean, cross-platform) and
+      `macos-say` (tier: 'free' in the registry, macOS only).
+      MEASURED 2026-09-22: the fallback is NOT automatic — resolveProviderId()
+      in src/voice/voice-tts-singleton.ts:25 defaults to 'openai-tts' (paid);
+      reaching a free provider needs config `voice.tts.provider` or env TTS_PROVIDER.
+      So TTS degrades to free only when the operator says so, never on its own.
+
+  # ⭐ 무자격 TTS — 자원 맵이 «빠뜨리고 있던» 칸이다(실측 2026-09-22).
+  #   오픈코어 경계 규칙상 `auth: none` 은 코어이고, 이 둘이 voice 축의 «무료 바닥»이다.
+  - id: edge-tts
+    kind: voice
+    tier: free
+    auth: none
+    env: []
+    required_for: [tts]
+    reads: src/voice/tts/tts-providers/edge-tts.ts:4
+    note: "No API key. Multilingual incl. Korean, cross-platform. Registry tier: free, implemented: true."
+
+  - id: macos-say
+    kind: voice
+    tier: free
+    auth: none
+    env: []
+    required_for: [tts]
+    reads: src/voice/tts/tts-providers/macos-say.ts:124
+    note: "System `say`; macOS only. Registry calls it the system fallback when no API key or network is available."
+
+  - id: google-speech
+    kind: voice
+    tier: byo
+    auth: api-key
+    env: [GOOGLE_API_KEY]
+    required_for: [gemini-live-stt]
+    reads: src/voice/streaming-stt/streaming-stt-providers/gemini-live-stt.ts:48
+    free_fallback_mode: auto   # 🔴 2026-09-23 manual → auto
+    free_fallback_mode_note: >-
+      CHANGED 2026-09-23 by #19835 (same fix as the TTS axis). MEASURED in a
+      zero-credential rig: no credential + no explicit choice → chosen =
+      ***whisper-cpp-local*** (was openai-realtime-stt). Explicit
+      STREAMING_STT_PROVIDER / voice.stt.provider is still respected.
+    free_fallback: >-
+      MEASURED 2026-09-22. A credential-free STT provider ships in-tree and is
+      implemented: `whisper-cpp-local` (streaming-stt-provider.ts declares
+      tier 'free', implemented true). But the degradation is NOT automatic —
+      resolveProviderId() in src/voice/voice-streaming-stt-singleton.ts:34 defaults to
+      'openai-realtime-stt' (paid); reaching whisper needs config `voice.stt.provider`
+      or env. Same shape as the TTS axis (see elevenlabs) — the free floor exists,
+      the default does not walk to it.
+    note: "Throws when absent (does not degrade)"
+
+  - id: supadata
+    kind: media
+    tier: paid
+    auth: api-key
+    env: [SUPADATA_API_KEY]
+    required_for: [youtube-transcript]
+    reads: src/skills/tools/youtube-transcript.ts
+    free_fallback_mode: manual
+    free_fallback: >-
+      MEASURED 2026-09-22. Without SUPADATA_API_KEY the tool BLOCKS and names the
+      alternative in its own error text (src/skills/tools/youtube-transcript.ts:116):
+      "Export it or use /run-skill youtube-master <url>". That skill path uses yt-dlp
+      + STT (capabilities.ts free line). So a free route exists and is even
+      SIGNPOSTED, but nothing switches to it automatically — hence `manual`, not `auto`.
+
+  - id: upstage
+    kind: media
+    tier: paid
+    auth: api-key
+    env: [UPSTAGE_API_KEY]
+    required_for: [ocr]
+    reads: src/ocr/upstage.ts:145
+
+  # ── Messaging ──────────────────────────────────────────────────────
+    free_fallback_mode: auto
+    free_fallback: >-
+      MEASURED 2026-09-22 — the degradation is AUTOMATIC, not a documented intent.
+      Chain: bootDefaultOcrProviders() (src/ocr/index.ts:86) registers Upstage +
+      LLMVision + Tesseract unconditionally, and production calls it at daemon boot
+      (src/nexus/index.ts:1996). OcrRegistry.pick() skips any provider whose
+      isAvailable() is false, and UpstageProvider.isAvailable() is
+      `resolveApiKey() !== null` (src/ocr/upstage.ts:331) — so with no key Upstage
+      drops out of the ranking and Tesseract (credential-free) wins.
+      Tesseract itself reads no key; it only needs tesseract.js installed.
+
+  - id: telegram-bot
+    kind: messenger
+    tier: free
+    auth: api-key
+    env: [TELEGRAM_BOT_TOKEN, MONAD_TELEGRAM_BOT_TOKEN]   # ONE account, two names
+    required_for: [outbound-alerts]
+    reads: src/domains/outbound-alert.ts:312
+    # MONAD_TELEGRAM_BOT_TOKEN is the env→config bridge spelling
+    # (src/expression/config/env-bridge.ts:44 · src/nexus/config/builtins/tab-channel.ts:28).
+    free_fallback_mode: none
+    free_fallback: >-
+      None — reaching Telegram needs a Telegram credential somewhere; nothing in-tree
+      substitutes for it. Marked `none` deliberately, not left blank.
+    note: >-
+      ⚠️ MEASURED 2026-09-22 — this row's framing was misleading. TELEGRAM_BOT_TOKEN is
+      the FALLBACK path, not the primary. src/domains/outbound-alert.ts:272 `deliver()`
+      tries the monad daemon FIRST (`SEND_VIA_MONAD !== '0'`, i.e. on by default) via
+      POST {NEXUS_URL}/v1/outbound using the ACP token file — no bot token involved —
+      and only falls through to sendTelegramDirect() when that classification is not 'ok'.
+      So an operator without this var still gets alerts IF the daemon is up and itself
+      configured. The credential did not disappear; it moved to the daemon.
+    boundary: core
+    boundary_note: >-
+      Owner DECISION 2026-09-23 — core despite needing a token. The mechanical rule
+      (`auth: none` or `free_fallback_mode: auto`) would file this as an add-on, but
+      the decision is that a FREE account/token is part of the core surface. The rule
+      answers "does it cost money"; this field answers "is it ours to ship".
+
+  - id: telegram-mtproto
+    kind: messenger
+    tier: free
+    auth: api-key
+    env: [TELEGRAM_API_ID, TELEGRAM_API_HASH]   # TWO names, ONE registration
+    required_for: [telegram-inject]
+    reads: scripts/telegram-inject.ts:28
+    free_fallback_mode: none
+    free_fallback: >-
+      None. The MTProto path needs TELEGRAM_API_ID/HASH; scripts/telegram-inject.ts
+      has a config fallback for the `--to` TARGET only, not for the API credential.
+    boundary: core
+    boundary_note: >-
+      Owner DECISION 2026-09-23 — core despite needing a token. The mechanical rule
+      (`auth: none` or `free_fallback_mode: auto`) would file this as an add-on, but
+      the decision is that a FREE account/token is part of the core surface. The rule
+      answers "does it cost money"; this field answers "is it ours to ship".
+
+  # ── Development ────────────────────────────────────────────────────
+  - id: github
+    kind: dev
+    tier: free
+    auth: cli-login
+    env: [GITHUB_TOKEN]
+    required_for: [docs-lint, nightly-docops]
+    free_fallback: "`gh auth login` — the harness uses the gh CLI, not this token, for PRs"
+    reads: scripts/nightly-docops.ts:51
+    boundary: core
+    boundary_note: >-
+      Owner DECISION 2026-09-23 — core despite needing a token. The mechanical rule
+      (`auth: none` or `free_fallback_mode: auto`) would file this as an add-on, but
+      the decision is that a FREE account/token is part of the core surface. The rule
+      answers "does it cost money"; this field answers "is it ours to ship".
+
+  # ── Finance — ⚠️ domain add-on, not part of the general agent ───────
+  - id: eodhd
+    kind: finance
+    tier: paid
+    auth: api-key
+    env: [EODHD_API_KEY]
+    required_for: [eodhd-market-data]
+    reads: skills/omni-market/src/providers/eodhd.ts:22
+    free_fallback_mode: auto
+    free_fallback: >-
+      AUTOMATIC but PARTIAL (measured 2026-09-22). skills/omni-market/src/router.ts
+      filters `ALL_PROVIDERS.filter(p => p.available() && p.supports(cmd, target))`
+      — a provider with no key drops out by itself, and `yahoo` (0 key references)
+      stays in the chain. Coverage limit: yahoo.supports() is
+      `(command === 'eod' || 'quote') && isIndexTarget(symbol)` — INDEX targets only.
+      With zero keys index quotes still work automatically; equities and fundamentals
+      do not, and the router then throws naming each provider's available/supports.
+      The mechanism is auto; the scope is indices.
+
+  - id: financialdatasets
+    kind: finance
+    tier: paid
+    auth: api-key
+    env: [FDS_API_KEY]
+    required_for: [financialdatasets-market-data]
+    reads: skills/omni-market/src/providers/fds.ts:38
+    free_fallback_mode: auto
+    free_fallback: >-
+      Same router as eodhd (skills/omni-market/src/router.ts). `fds` is LAST in
+      ALL_PROVIDERS; without its key `p.available()` filters it out and the chain
+      continues. Free coverage is the same index-only yahoo slice — see the eodhd row
+      for the measured limit and the exact supports() predicate.
+
+  - id: korea-investment
+    kind: finance
+    tier: byo
+    auth: api-key
+    env: [KIS_APP_KEY, KIS_APP_SECRET]          # TWO names, ONE registration
+    required_for: [kr-flow]
+    reads: src/skills/tools/kr-flow.ts:196
+    free_fallback_mode: none
+    free_fallback: >-
+      None. src/skills/tools/kr-flow.ts probes availability
+      (`process.env.KIS_APP_KEY && process.env.KIS_APP_SECRET`) and returns false when
+      absent — the tool is simply not offered. It degrades to ABSENT, not to a free
+      provider. (omni-market's yahoo slice is index-only and does not cover KR flow.)
+
+  - id: tossinvest
+    kind: finance
+    tier: byo
+    auth: api-key
+    env: [TOSSINVEST_CLIENT_SECRET]
+    required_for: [toss-market-data]
+    reads: skills/omni-market/src/providers/toss.ts
+    free_fallback_mode: auto
+    free_fallback: >-
+      Same router. `toss` is FIRST in ALL_PROVIDERS = [toss, yahoo, eodhd, twelvedata, fds]
+      and only claims quote+equity (US/KR suffixes, bare-alnum), so index targets pass
+      through to the keyless `yahoo`. Without a toss credential `p.available()` drops it
+      and the next candidate serves. Free coverage is the index-only yahoo slice — see eodhd.
+
+  # ── 맵이 «모르고 있던» 자격 넷 ────────────────────────────────────────
+  # ⭐ 2026-09-23 — resource-map-check 의 `uncovered` 가 넷을 이름으로 대고 있었고
+  #   그 넷이 곧 게이트의 «유일한» 빨강이었다(빈칸은 이미 0). 읽는 자리를 눌러 등재한다.
+
+  - id: claude-code-oauth
+    kind: llm
+    tier: subscription
+    auth: oauth-browser
+    env: [CLAUDE_CODE_OAUTH_TOKEN]
+    required_for: [claude-budget-usage]
+    reads: src/budget/fetchers/claude.ts:62
+    free_fallback_mode: none
+    free_fallback: >-
+      None. The fetcher exists to read Claude's own usage/budget; there is no
+      credential-free source for another account's usage. Absent = that budget
+      panel has no data, not a degraded reading.
+    note: "Header says the env is for CI + test injection; the normal path is the CLI's own auth."
+
+  - id: discord-hitl-bot
+    kind: messenger
+    tier: free
+    auth: api-key
+    env: [MONAD_DISCORD_HITL_BOT_TOKEN]
+    required_for: [hitl-discord-approval]
+    reads: src/nexus/api/hitl-discord-channel.ts:63
+    free_fallback_mode: none
+    free_fallback: >-
+      None. Reaching Discord needs a Discord credential. ⚠️ This is a SECOND,
+      separate bot from the trigger bot — discord-trigger-bot.ts:20 says
+      "HITL bot = MONAD_DISCORD_HITL_BOT_TOKEN · interaction-only".
+      Do not fold it into the `discord-bot` row.
+    boundary: core
+    boundary_note: >-
+      Owner DECISION 2026-09-23 — core despite needing a token. The mechanical rule
+      (`auth: none` or `free_fallback_mode: auto`) would file this as an add-on, but
+      the decision is that a FREE account/token is part of the core surface. The rule
+      answers "does it cost money"; this field answers "is it ours to ship".
+
+  - id: telegram-hitl-bot
+    kind: messenger
+    tier: free
+    auth: api-key
+    env: [MONAD_TELEGRAM_HITL_BOT_TOKEN]
+    required_for: [hitl-telegram-approval]
+    reads: src/nexus/api/hitl-telegram-channel.ts:65
+    free_fallback_mode: none
+    free_fallback: >-
+      None. Same shape as the Discord HITL bot — a separate token is PREFERRED
+      (hitl-telegram-channel.ts:14) so HITL interactions do not share the alert bot.
+    boundary: core
+    boundary_note: >-
+      Owner DECISION 2026-09-23 — core despite needing a token. The mechanical rule
+      (`auth: none` or `free_fallback_mode: auto`) would file this as an add-on, but
+      the decision is that a FREE account/token is part of the core surface. The rule
+      answers "does it cost money"; this field answers "is it ours to ship".
+
+  - id: telegram-dogfood-script
+    kind: messenger
+    tier: free
+    auth: api-key
+    env: [TG_TOKEN]
+    required_for: [c5-telegram-stream-dogfood]
+    reads: scripts/c5-telegram-stream-dogfood.ts:37
+    free_fallback_mode: manual
+    free_fallback: >-
+      The script itself falls back to `.monad-test/config.json` telegram settings
+      (`process.env.TG_TOKEN ?? fromCfg?.token`), so a developer can run it without
+      exporting anything — but the config must be set up by hand, hence `manual`.
+    note: >-
+      ⚠️ NOT a production credential — this is a manual dogfood script. Listed so the
+      map's `uncovered` axis reaches zero; the boundary rule treats it as tooling.
+
+  # ── MCP 가 자격을 쥐는 유료 서비스 ────────────────────────────────────
+  # ⭐⭐ 이 절은 2026-09-22 에 열었다. 그 전까지 이 셋은 맵에 «없었고», 이유가 오탈자가 아니었다:
+  #   📏 실측 — 저장소 env 변수 420개 중 TOPVIEW*·HIGGSFIELD*·EPIDEMIC* 는 ***0개***다.
+  #     이 맵은 「env 를 읽는 자리」를 색인하므로 ***읽을 env 가 없는 서비스는 원리상 안 보였다.***
+  #   🩸 그래서 epidemic 줄의 옛 주석 "no reader here" 가 «거짓»이 됐다 — 소비자는 MCP 서버였다.
+  #   ⇒ 🅣 가 그 거짓을 찾았고(2026-09-22), 기전은 「정의역 밖을 «없다»로 접은 것」이다.
+  # ⚠️ free_fallback_mode 는 capabilities.ts 의 free 구현으로 판정했다 — 그쪽이 능력 축의 canonical 이다.
+
+  - id: topview
+    kind: media
+    tier: paid
+    auth: mcp
+    mcp_server: topview
+    env: []
+    required_for: [image-gen, video-gen, avatar-rig, canvas, music-gen, export]
+    reads: src/video-pipeline/capabilities.ts:127   # probe: mcp('topview') · quotaProbe: topview_get_credit
+    free_fallback_mode: manual
+    free_fallback: >-
+      capabilities.ts ships free impls for the same capabilities (qwen-image-mlx,
+      ltx2-mlx, acestep-cpp, ffmpeg-encode). They are selected by the capability
+      registry, not automatically substituted for topview — hence `manual`.
+
+  - id: higgsfield
+    kind: media
+    tier: paid
+    auth: cli-login          # ⛔ MCP 가 «아니다» — 실측으로 뒤집은 칸이다(아래 note)
+    env: []
+    required_for: [image-gen, video-gen]
+    reads: src/video-pipeline/capabilities.ts:144   # probe: cmd('higgsfield') · quotaProbe: 'higgsfield account status'
+    free_fallback_mode: manual
+    free_fallback: >-
+      capabilities.ts ships free impls for the same capabilities (qwen-image-mlx,
+      ltx2-mlx). The capability registry picks them; nothing substitutes them for
+      higgsfield automatically — hence `manual`.
+    note: >-
+      🔴 CORRECTED 2026-09-22 before landing. I first filed this row as `auth: mcp`
+      and that was BACKWARDS. Measured from source: the metered cloud service is a
+      CLI — capabilities.ts:144 `probe: cmd('higgsfield')`, quota via
+      `higgsfield account status`. The MCP thing under this name is a DIFFERENT axis:
+      `mcp('higgsfield-bridge')` backs bridge-ae / bridge-premiere / bridge-blender,
+      which are `tier: owned` local app bridges (capabilities.ts:197,201,213).
+      🅣 flagged the conflation; pressing the source is what caught the inversion.
+
+  - id: epidemic-sound
+    kind: media
+    tier: subscription       # capabilities.ts:361 unitCost: '구독'
+
+    auth: mcp
+    mcp_server: epidemic
+    env: []
+    required_for: [licensed-music]
+    reads: src/video-pipeline/capabilities.ts:361   # probe: mcp('epidemic') · '생성이 아니라 «조달»'
+    free_fallback_mode: none
+    free_fallback: >-
+      None. capabilities.ts has free music GENERATION (acestep-cpp, yue2-audiocpp,
+      minimax-music3-mlx) but that is a different product from LICENSED catalogue
+      music — generation does not substitute for a licence. Marked `none` deliberately,
+      not left blank.
+
+  # ── monad's own shared secrets — generate your own ──────────────────
+  - id: monad-control-token
+    kind: internal
+    tier: free
+    auth: none
+    env: [MONAD_TOKEN]
+    required_for: [control-client-authentication]
+    reads: src/control-client/env-resolver.ts:37
+
+  - id: monad-hitl-secret
+    kind: internal
+    tier: free
+    auth: none
+    env: [MONAD_HITL_SECRET]
+    required_for: [hitl-callback-authentication]
+    reads: src/dashboard/runtime/hitl.ts:122
+
+  - id: monad-openai-relay
+    kind: internal
+    tier: free
+    auth: none
+    env: [MONAD_OPENAI_RELAY_SHARED_SECRET]
+    required_for: [openai-relay-authentication]
+    reads: scripts/openai-relay-server.ts:40
+
+  - id: discord-bot
+    kind: messenger
+    tier: free
+    auth: api-key
+    env: [MONAD_DISCORD_BOT_TOKEN]
+    required_for: [discord-bot]
+    reads: src/expression/config/env-bridge.ts:51
+    free_fallback_mode: none
+    free_fallback: >-
+      None. src/expression/config/env-bridge.ts only copies MONAD_DISCORD_BOT_TOKEN
+      into config when present; absent means the discord surface stays off. No
+      credential-free substitute for reaching Discord.
+    boundary: core
+    boundary_note: >-
+      Owner DECISION 2026-09-23 — core despite needing a token. The mechanical rule
+      (`auth: none` or `free_fallback_mode: auto`) would file this as an add-on, but
+      the decision is that a FREE account/token is part of the core surface. The rule
+      answers "does it cost money"; this field answers "is it ours to ship".
+
+  # ── Object storage ─────────────────────────────────────────────────
+  - id: aws-s3
+    kind: media
+    tier: paid
+    auth: api-key
+    env: [AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY]   # TWO names, ONE account
+    required_for: [s3-public-derived-asset-upload]
+    reads: src/webclone/webclone-store.ts:180
+    # Both keys gate only public S3 upload of derived assets; captured assets
+    # are rejected before credentials are checked (uploadAsset()).
+    free_fallback_mode: none
+    free_fallback: >-
+      None. src/webclone/webclone-store.ts IS the S3 public-bucket store
+      (Bun.s3, which per the file header does NOT read ~/.aws/credentials — env or
+      explicit options only). Publishing a public derived asset needs a bucket;
+      nothing in-tree substitutes.
+
+  # ── Judgment ───────────────────────────────────────────────────────
+  - id: typesafe-jev
+    kind: internal
+    tier: byo
+    auth: api-key
+    env: [TYPESAFE_API_KEY]
+    required_for: [typesafe-jev]
+    reads: src/decide/jev.ts:50
+    # Also read from ~/.cache via src/index.ts:1700 — the SILENT source.
+    # `monad` names it when absent (src/index.ts:1695).
+    free_fallback_mode: none
+    free_fallback: >-
+      None. src/decide/jev.ts resolves the key and returns
+      `{ present: false, source: 'none' }` when absent — the capability reports itself
+      off rather than falling back.
+
+  # ── Generic bridge (not a vendor) ──────────────────────────────────
+  - id: monad-llm-bridge
+    kind: llm
+    tier: byo
+    auth: api-key
+    env: [MONAD_LLM_API_KEY]
+    required_for: [configured-llm-api]
+    reads: src/expression/config/env-bridge.ts:30
+    # ⛔ NOT an account. This is the env spelling of `llm.apiKey` for whatever
+    #    provider MONAD_LLM_PROVIDER selects. Listed so a credential sweep
+    #    accounts for it rather than reporting it as an unmapped secret.
+    free_fallback_mode: none
+    free_fallback: >-
+      None. env-bridge.ts copies MONAD_LLM_* into config only when set; absent means
+      the configured-LLM-API surface is not wired. monad's own provider chain is a
+      DIFFERENT axis (llm.provider / fallbackChain) and is itself credentialed.
+
+# ── Deliberately absent ───────────────────────────────────────────────
+# TG_TOKEN            read only by scripts/c5-telegram-stream-dogfood.ts.
+#                     Not a separate account — use telegram-bot.
+# BRAVE_API_KEY       present in the key cache but no reader in this repo.
+# EPIDEMIC_SOUND_API_KEY, YOUTUBE_API_KEY   same — cache-only, no reader here.

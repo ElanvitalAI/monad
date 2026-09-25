@@ -1,0 +1,19 @@
+id: gemini-3.5-flash-lite
+provider: gemini
+displayName: Gemini 3.5 Flash-Lite
+family: gemini-3
+# ⭐ 2026-09-25 (대표 「모델별 최신으로」): Gemini `models.list` 실측 ⊕ generateContent 실호출 OK · 단가는 omni-crawl(ai.google.dev 인용 출처 셋).
+#    flash-lite 최신(07-21) · 공식 $0.30/$2.50 · 캐시 ~10%.
+contextSize: 1048576
+toolCalling: native-openai
+streamingProtocol: sse
+releaseDate: 2026-07-21
+discoveryMeta:
+  source: manual
+  lastSeen: 2026-09-25
+  autoFilled: false
+  confidence: medium
+pricing:
+  inputPerMTok: 0.30
+  outputPerMTok: 2.50
+  cachedInputPerMTok: 0.03

@@ -1,0 +1,4 @@
+# 선택 의존성 — 특정 기능만 (monad python setup --extra --yes)
+pillow                  # import: PIL          · scripts/webclone 픽스처
+matplotlib              # import: matplotlib   · skills/asset-attractiveness/scripts/viz.py
+opencv-python-headless  # import: cv2          · skills/photo-intake-ocr

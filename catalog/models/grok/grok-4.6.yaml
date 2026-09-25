@@ -1,0 +1,34 @@
+id: grok-4.6
+provider: grok
+displayName: Grok 4.6
+family: grok-4
+familyShortcut: grok
+# ⭐ docs.x.ai 1차 대조 (2026-08-13 firecrawl · `Last updated: August 12, 2026`)
+#    Context 500k · Input $2.00/1M · Output $6.00/1M · Reasoning=Configurable
+# ⚠️ 4.5 는 2000000 이었는데 4.6 은 «500000 으로 줄었다» — 오타가 아니다.
+contextSize: 500000
+outputMaxTokens: 8192
+vision: images
+audio: { input: false, output: false }
+# docs 는 `reasoning_effort` 로 «조절 가능»이라고만 말한다. 카탈로그 어휘상
+# 최상위 등급으로 둔다(4.5 와 동일).
+reasoning: high
+toolCalling: native-openai
+streamingProtocol: sse
+pricing:
+  inputPerMTok: 2.00
+  outputPerMTok: 6.00
+  # ⛔ docs 모델 카드에 캐시 단가가 «없다» — 4.5 값(0.50)을 베끼지 않고 비운다.
+  #    2차 출처들이 0.30~0.50 으로 엇갈려서 추측이 된다.
+rateLimits:
+  rpm: 1800
+  tpm: 10000000
+deprecated: null
+releaseDate: 2026-08-12
+tokenizer: cl100k
+kind: chat
+discoveryMeta:
+  source: firecrawl-docs.x.ai
+  lastSeen: 2026-08-13
+  autoFilled: false
+  confidence: high

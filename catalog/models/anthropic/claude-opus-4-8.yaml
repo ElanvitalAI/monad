@@ -1,0 +1,25 @@
+id: claude-opus-4-8
+provider: anthropic
+displayName: Claude Opus 4.8
+family: claude-4
+familyShortcut: opus
+contextSize: 1000000
+outputMaxTokens: 128000
+vision: images
+audio: { input: false, output: false }
+reasoning: high
+toolCalling: native-anthropic
+streamingProtocol: sse
+pricing:
+  inputPerMTok: 15.0
+  outputPerMTok: 75.0
+  cachedInputPerMTok: 1.5
+deprecated: null
+releaseDate: 2026-05-28
+tokenizer: claude
+kind: chat
+discoveryMeta:
+  source: manual
+  lastSeen: 2026-07-19
+  autoFilled: false
+  confidence: high

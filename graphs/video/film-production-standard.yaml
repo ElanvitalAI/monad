@@ -1,0 +1,146 @@
+# 표준 «영상 제작» 템플릿 — DaVinci · After Effects · Blender · HyperFrames · ElevenLabs · Epidemic
+# 📚 절차·함정·실측 = 내부 문서 `MANUAL-script-driven-film-production-2026-09-16`
+#    (함정 번호 ⓟ~㊳ 는 그 문서 §8 을 가리킨다 — 여기 문면을 복제하지 않는다)
+#
+# ⛔⭐ 이 축의 함정은 «거의 전부» 「성공을 반환하고 조용히 빈다」 계열이다(그 매뉴얼 §8 머리말).
+#    그래서 이 그래프의 관문은 전부 ***「돌았나」가 아니라 「값이 들어갔나」***를 잰다.
+#
+# ⛔ 존재 이유는 «갈림 넷»이다:
+#   ⑴ 호스트 갈림 — 사람 앱(DaVinci·AE)이 안 떠서 막힌 것은 «실패»가 아니다. 띄우면 된다(host-blocked)
+#   ⑵ 음악 갈림  — 음악은 조립을 «거치지 않는다». 마감 믹스에서만 들어간다(함정 ㉗ · 20dB)
+#   ⑶ 리프레임   — 최대 안전줌 ≈ 1 이면 잘라선 못 키운다 ⇒ 전용 합성(함정 ㉛·㉜)
+#   ⑷ 이음매    — 「마스터가 났다」 ≠ 「소셜까지 났다」(master-only)
+graph_id: film-production-standard
+version: 1
+entry_node: preflight
+# ⛔⭐ 종단이 «다섯»이다. 특히 host-blocked 를 blocked 로 접지 마라 —
+#   AE 모달창(함정 ⓟ)은 「스크립트 실패」처럼 보이지만 원인도 처방도 다르다.
+terminal_nodes: [delivered, master-only, host-blocked, blocked, unobserved]
+nodes:
+  # ── 관문: 이 트리와 호스트가 «명령을 낼 수 있나» (매뉴얼 §0 ⓐ~ⓔ) ──
+  - node_id: preflight
+    kind: gate
+    recipe: host-and-ruler-preflight
+    max_visits: 3
+    contract: { inputs: [], tools: read-only, outputs: [resolve_attached, ae_can_write, loudness_ruler_ok, asset_plates_baked] }
+  # ── 소재: ⛔ 구워진 판은 렌더러로 «못 고친다» (매뉴얼 §1a · 함정 ㉘㉙㉚) ──
+  - node_id: assets
+    kind: agent
+    recipe: prepare-source-plates
+    max_visits: 2
+    contract: { inputs: [logo_dir], tools: workspace-write, outputs: [plate_kinds, card_paths] }
+  # ── 음악이 «먼저»다: 길이를 알고 검색하고, BPM 으로 마디를 얻는다 (§5a-④ · 함정 ㉔㉕㉖) ──
+  - node_id: music
+    kind: agent
+    recipe: epidemic-mcp-fetch
+    max_visits: 3
+    contract: { inputs: [target_seconds, mood], tools: network-read, outputs: [track_path, bpm, bar_seconds] }
+  - node_id: barsnap
+    kind: gate
+    recipe: bar-grid-gate
+    max_visits: 2
+    contract: { inputs: [bpm, cut_durations], tools: read-only, outputs: [bars_total, off_grid_cuts] }
+  # ── 생성 층 넷 (§2 층별 계약) ──
+  - node_id: generate
+    kind: agent
+    recipe: produce-shots
+    max_visits: 4
+    contract: { inputs: [plan, plates], tools: workspace-write, outputs: [shot_paths, typo_count, cut_count] }
+  # ⛔ 타이포 수 < 컷 수 면 «무자막 구간»이 생긴다. 합본에서만 드러난다 (함정 ⓤ)
+  - node_id: typo-parity
+    kind: gate
+    recipe: typo-cut-parity-gate
+    max_visits: 2
+    contract: { inputs: [typo_count, cut_count], tools: read-only, outputs: [parity, missing_cuts] }
+  - node_id: assemble
+    kind: agent
+    recipe: assemble-master
+    max_visits: 3
+    contract: { inputs: [shot_paths, plan], tools: workspace-write, outputs: [master_path, engine] }
+  # ⛔⭐ 「AppendToTimeline 이 성공을 반환했다」를 통과로 읽지 마라 —
+  #   원점 86400 인데 recordFrame:0 이면 «렌더 범위가 빈다»(함정 ⓢ). 길이를 «재서» 판정한다.
+  - node_id: assemble-gate
+    kind: gate
+    recipe: master-span-gate
+    max_visits: 2
+    contract: { inputs: [master_path, expected_seconds], tools: read-only, outputs: [measured_seconds, span_ok] }
+  # ⛔ 음악은 «여기서만» 들어간다 — 조립(DaVinci A트랙)에 태우면 20dB 가 사라진다(함정 ㉗)
+  - node_id: mix
+    kind: agent
+    recipe: two-pass-normalize-and-duck
+    max_visits: 3
+    contract: { inputs: [master_path, track_path, narration_paths], tools: workspace-write, outputs: [mixed_path] }
+  - node_id: loudness
+    kind: gate
+    recipe: loudness-three-window-gate
+    max_visits: 2
+    contract: { inputs: [mixed_path, narration_window, music_window], tools: read-only, outputs: [lufs_all, lufs_vo, lufs_music] }
+  # ── 비율 다중화: 「잘라 쓸까 다시 그릴까」를 «수»로 가른다 (§4-d · 함정 ㉛㉜) ──
+  - node_id: reframe-decide
+    kind: gate
+    recipe: ink-ruler
+    max_visits: 2
+    contract: { inputs: [mixed_path, plan, targets], tools: read-only, outputs: [max_zoom_per_cut, native_needed] }
+  # ⚠️ 이 축에서는 «다시 그리는 값이 비싸다» — HyperFrames 를 새로 짜거나 AE 레이아웃을 세로로 다시 만든다.
+  #   (영상 생성 축과 다른 점이 여기다 — 거기선 플래그 한 줄이다)
+  #   🆕 2026-09-24: state.hyperframes_projects 가 있는 컷은 이 노드가 캔버스만 바꿔 «지어서» 채운다(#20054 · 라인 --hf-projects #20073).
+  - node_id: native-recut
+    kind: agent
+    recipe: per-ratio-composition
+    max_visits: 3
+    contract: { inputs: [native_needed, targets], tools: workspace-write, outputs: [native_paths] }
+  - node_id: social
+    kind: agent
+    recipe: reframe-social
+    max_visits: 3
+    contract: { inputs: [mixed_path, ink, native_paths, targets], tools: workspace-write, outputs: [social_paths] }
+  # ⛔ 컴프 단위로 보면 «둘 다» 못 잡는다 — 합본으로, 그리고 «비율마다» 본다 (§6)
+  - node_id: review
+    kind: gate
+    recipe: contact-sheet-review
+    max_visits: 3
+    contract: { inputs: [mixed_path, social_paths], tools: read-only, outputs: [sheets, viewed_ratios] }
+  - node_id: delivered
+    kind: judge
+    max_visits: 1
+    recipe: terminal-delivered
+  - node_id: master-only
+    kind: judge
+    max_visits: 1
+    recipe: terminal-master-only
+  - node_id: host-blocked
+    kind: judge
+    max_visits: 1
+    recipe: terminal-host-blocked
+  - node_id: blocked
+    kind: judge
+    max_visits: 1
+    recipe: terminal-blocked
+  - node_id: unobserved
+    kind: judge
+    max_visits: 1
+    recipe: terminal-unobserved
+edges:
+  # ⛔⑴ 호스트 갈림 — 「앱이 안 떠 있다」와 「스크립트가 틀렸다」는 처방이 다르다.
+  - { from: preflight, on: outcome, map: { ready: assets, host-down: host-blocked, unmeasurable: unobserved } }
+  # ⛔ 판이 구워져 있으면 여기서 «다시 그린다». 아래 어느 층에서도 못 고친다(§1a).
+  - { from: assets, on: outcome, map: { ok: music, baked: assets, error: blocked } }
+  - { from: music, on: outcome, map: { ok: barsnap, no-track: blocked, auth-failed: blocked } }
+  # ⛔ 마디에서 어긋난 컷이 하나라도 있으면 그 «뒤 전부»가 음악에서 밀린다 ⇒ 되돌아간다.
+  - { from: barsnap, on: outcome, map: { snapped: generate, off-grid: barsnap, no-bpm: blocked } }
+  # ⛔ AE 모달창은 뒤이은 «모든» DoScript 를 막는다 — 산출이 없으면 먼저 창을 의심한다(함정 ⓟ).
+  - { from: generate, on: outcome, map: { ok: typo-parity, host-modal: host-blocked, error: blocked } }
+  - { from: typo-parity, on: outcome, map: { parity: assemble, gap: generate } }
+  - { from: assemble, to: assemble-gate }
+  # ⛔ 「성공 반환」이 아니라 «잰 길이»로 판정한다(함정 ⓢ).
+  - { from: assemble-gate, on: outcome, map: { spans: mix, empty-range: assemble, unreadable: unobserved } }
+  - { from: mix, to: loudness }
+  # ⛔ 귀로 판정하지 마라 — 세 구간(전체·나레이션·음악만)을 자로 잰다(§0-ⓓ).
+  - { from: loudness, on: outcome, map: { in-range: reframe-decide, off: mix, unmeasured: unobserved } }
+  # ⛔⑶ 최대 안전줌 ≈ 1 이면 잘라선 못 키운다 ⇒ 전용 합성으로 간다.
+  - { from: reframe-decide, on: outcome, map: { croppable: social, needs-native: native-recut, unmeasured: unobserved } }
+  - { from: native-recut, on: outcome, map: { ok: social, error: master-only } }
+  # ⛔⑷ 이음매 — 마스터는 났는데 소셜이 못 나면 «따로» 끝낸다. 실패로 접지 않는다.
+  - { from: social, on: outcome, map: { ok: review, error: master-only } }
+  # ⛔ 「봤다」가 없으면 delivered 가 아니다 — 재작업 3건이 전부 합본 검수에서만 잡혔다(§7).
+  - { from: review, on: outcome, map: { pass: delivered, fail: reframe-decide, unviewed: unobserved } }

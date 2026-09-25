@@ -1,0 +1,29 @@
+# 대표 2026-09-23 — OpenRouter (OpenAI 호환 게이트웨이 · kimi·qwen·glm 의 첫 경로).
+# ⛔ 모델 YAML 은 «손으로 두지 않는다» — `catalogFromDiscovery: true` 라 발견 스냅숏
+#    (`openrouter` 소스 · /api/v1/models)에서 `openrouter/<vendor>/<model>` 로 접힌다.
+#    근거·결정 = 내부 문서 `RESEARCH-kimi-qwen-glm-and-openrouter-provider-implementation-2026-09-23`
+id: openrouter
+displayName: OpenRouter
+aliases: []
+modelPrefixes: [openrouter/]
+apiKeyEnv: OPENROUTER_API_KEY
+endpointPattern: https://openrouter.ai/api/v1
+defaultStreaming: sse
+toolCallingFormat: native-openai
+catalogFromDiscovery: true
+capabilities:
+  sessionResume: false
+  mcp: false
+  hooks: false
+  skills: true
+  agents: false
+  toolRestrictions: true
+  structuredOutput: true
+  envInjection: false
+  costControl: false
+  effortControl: false
+  thinkingControl: true
+  fallbackModel: false
+  sandbox: false
+  multiHostFanout: false
+builtIn: true

@@ -1,0 +1,56 @@
+# Configuration
+
+## Where things live
+
+| What | Where |
+|---|---|
+| The program | `~/.local/share/monad` (see [install](install.md#layout)) |
+| Settings | `monad config path` prints the active file |
+| Sign-ins, logs, sessions, worktree state | `~/.monad` |
+| API keys | the key cache: `~/.cache/<variable name in lower case>`, e.g. `~/.cache/xai_api_key` |
+
+Nothing in `~/.monad` or the key cache is touched by installing or upgrading.
+
+## Changing settings
+
+```bash
+monad config get                         # everything (secrets redacted)
+monad config get llm.provider            # one value, by dotted path
+monad config set llm.provider openai-codex
+monad config unset llm.model
+```
+
+Settings are re-read when the file changes, so most changes apply to a running service without a restart.
+
+## API keys
+
+monad reads a key from the key cache first and from the environment second. The cache is what the background service uses, because a service started at login does not see your shell's environment.
+
+To add a key without it appearing on screen:
+
+```bash
+umask 177 && printf '%s' "$KEY" > ~/.cache/openrouter_api_key    # file mode 600
+```
+
+or, from a checkout, `bash scripts/add-api-key.sh OPENROUTER_API_KEY`. `monad nexus install` (`--launchd` on macOS, `--systemd-user` on Linux) also moves provider keys it finds in your shell into the cache instead of writing them into the service file. To make monad use the environment and ignore the cache for one run, set `MONAD_KEEP_ENV_KEYS=1`.
+
+## Settings you are most likely to change
+
+| Path | Meaning |
+|---|---|
+| `llm.provider` | Default model provider (`openai-codex`, `grok`, `openrouter`, `anthropic`, `gemini`, `local`, …) |
+| `llm.model` | Default model for that provider (leave unset to use the provider's default tier) |
+| `llm.fallbackChain` | Providers to try, in order, when the default cannot answer |
+| `roleLlm` | A different model per role (planning, review, …) |
+
+See [providers](providers.md) for what each provider needs.
+
+## Environment variables
+
+| Variable | Meaning |
+|---|---|
+| `MONAD_INSTALL_PREFIX` | Install location (installer) |
+| `MONAD_PWA_STATIC_DIR` | Folder the service serves the web app from |
+| `MONAD_KEEP_ENV_KEYS=1` | Use environment variables instead of the key cache |
+| `--config-dir <dir>` (flag) | Use another config/state root — e.g. to keep a test setup apart |
+| `--test` (flag) | Run an isolated test instance rooted in the current git tree |

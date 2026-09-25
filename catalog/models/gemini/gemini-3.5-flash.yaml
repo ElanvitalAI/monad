@@ -1,0 +1,23 @@
+id: gemini-3.5-flash
+provider: gemini
+displayName: Gemini 3.5 Flash
+family: gemini-3
+contextSize: 1000000
+outputMaxTokens: 64000
+vision: images
+audio: { input: true, output: false }
+reasoning: medium
+toolCalling: native-gemini
+streamingProtocol: sse
+pricing:
+  inputPerMTok: 0.30
+  outputPerMTok: 2.50
+deprecated: null
+releaseDate: 2026-07-01
+tokenizer: gemini
+kind: chat
+discoveryMeta:
+  source: manual
+  lastSeen: 2026-07-19
+  autoFilled: false
+  confidence: high

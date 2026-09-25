@@ -1,0 +1,9 @@
+id: gemini-3.7-flash
+provider: gemini
+displayName: Gemini 3.7 Flash
+family: gemini-3
+discoveryMeta:
+  source: manual
+  lastSeen: 2026-08-19
+  autoFilled: false
+  confidence: low

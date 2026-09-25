@@ -1,0 +1,69 @@
+name: share-intake
+description: |
+  Use when: User shared a URL/text/file from another app (iOS Share
+            extension, PWA paste, mobile share-sheet) and wants the
+            right processing applied automatically.
+  Triggers: "share-intake", "process this", "intake", "이거 처리해줘",
+            "공유 처리".
+  Does: Classifies the input (url / file / text), routes through the
+        omni-digest skill (essential format) for an immediate summary,
+        then persists the result to Obsidian Inbox with a timestamped
+        filename.
+  NOT for: Multi-source comparison from a list of URLs (use research-deep
+           directly with explicit URL list) or long-form deep research.
+
+# haiku — share-intake is high-frequency by design.
+model: haiku
+
+nodes:
+  - id: classify-input
+    bash: |
+      INPUT="$ARGUMENTS"
+      if [ -z "$INPUT" ]; then
+        echo "type=empty"
+        exit 0
+      fi
+      case "$INPUT" in
+        http://*|https://*)
+          echo "type=url"
+          ;;
+        /*)
+          if [ -e "$INPUT" ]; then
+            echo "type=file"
+          else
+            echo "type=text"
+          fi
+          ;;
+        *)
+          echo "type=text"
+          ;;
+      esac
+
+  - id: digest
+    skill: omni-digest
+    arguments: $ARGUMENTS
+    depends_on: [classify-input]
+
+  - id: save-to-inbox
+    bash: |
+      OBSIDIAN_DIR="${MONAD_OBSIDIAN_DIR:-$HOME/Documents/Obsidian}"
+      DIR="$OBSIDIAN_DIR/Inbox"
+      mkdir -p "$DIR" 2>/dev/null || {
+        echo "ERROR: cannot create $DIR — set MONAD_OBSIDIAN_DIR to a writable path"
+        exit 1
+      }
+      DATE=$(date +%Y-%m-%d)
+      TIME=$(date +%H%M%S)
+      FILE="$DIR/share-$DATE-$TIME.md"
+      cat > "$FILE" <<'SHARE_INTAKE_END_2026_05_08_X9Z2'
+      # Share intake
+
+      Source: $ARGUMENTS
+      Classified: $classify-input.output
+
+      ## Digest
+
+      $digest.output
+      SHARE_INTAKE_END_2026_05_08_X9Z2
+      echo "saved=$FILE source=$ARGUMENTS"
+    depends_on: [digest]

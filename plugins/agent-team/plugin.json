@@ -1,0 +1,60 @@
+{
+  "id": "agent-team",
+  "name": "Agent Team",
+  "version": "0.4.0",
+  "description": "PFC PX-1 — 5 PFC-oriented subagent definitions (Explore / Plan / Research / Critic / Executor) contributed to the agent-definition registry. PFC-S2 adds a team-mailbox status pane to the Agents view as the first contributes.panes[] dogfood. PX-5 adds keyword routes so $explore / $plan / $research / $critic / $executor get suggested as Agent() target candidates.",
+  "main": "./plugin.ts",
+  "activationEvents": ["onStartup"],
+  "contributes": {
+    "agents": [
+      { "bodyPath": "./agents/explore.md" },
+      { "bodyPath": "./agents/plan.md" },
+      { "bodyPath": "./agents/research.md" },
+      { "bodyPath": "./agents/critic.md" },
+      { "bodyPath": "./agents/executor.md" }
+    ],
+    "panes": [
+      {
+        "id": "team-mailbox",
+        "widget": "markdown",
+        "title": "Mailbox",
+        "config": {
+          "text": "# Team Mailbox\n\nInter-agent messages land here when the plugin is active.\n\nLayout: `.monad/team-mailbox/<team>/<recipient>.mbox` (JSONL).\n\n_Dynamic refresh via SendMessage → pane content: PX-8._"
+        }
+      }
+    ],
+    "routes": [
+      {
+        "id": "explore",
+        "aliases": ["search", "find", "scout"],
+        "target": { "kind": "agent", "id": "explore" },
+        "description": "Fast read-only codebase scout — grep/glob/read only."
+      },
+      {
+        "id": "plan",
+        "aliases": ["design", "blueprint"],
+        "target": { "kind": "agent", "id": "plan" },
+        "description": "Architecture planner — writes a phased implementation plan."
+      },
+      {
+        "id": "research",
+        "aliases": ["investigate", "deep-dive"],
+        "target": { "kind": "agent", "id": "research" },
+        "description": "Multi-source research synthesizer."
+      },
+      {
+        "id": "critic",
+        "aliases": ["review", "audit"],
+        "target": { "kind": "agent", "id": "critic" },
+        "description": "Code review / quality audit — finds risks + gaps."
+      },
+      {
+        "id": "executor",
+        "aliases": ["implement", "do"],
+        "target": { "kind": "agent", "id": "executor" },
+        "description": "Executes a pre-approved plan with Edit / Bash / RunShell."
+      }
+    ]
+  },
+  "capabilities": []
+}

@@ -1,0 +1,202 @@
+import { existsSync } from 'node:fs';
+
+import { buildUserConfig, type UserConfig as MainUserConfig } from '../user-config.js';
+import { decideProviderForConfig } from '../llm.js';
+import { resolveGrokCredential } from '../grok/credential.js';
+import { loadTokens } from '../oauth/store.js';
+import {
+  readUserConfig as readNexusUserConfig,
+  readSwitchValue,
+} from './config/user-config.js';
+import type { UserConfig as NexusUserConfig } from './config/types.js';
+import { resolveLaunchdEnvironment } from './install/launchd.js';
+import { resolveSystemdEnvironment } from './install/systemd.js';
+import { resolvePwaStaticDir } from './static-dir-resolve.js';
+
+export type SetupItemId = 'llm' | 'pwa-build' | 'channel-bot' | 'skill-dirs' | 'os-install';
+
+export interface SetupItem {
+  id: SetupItemId;
+  label: string;
+  passed: boolean;
+  hint: string;
+  detail?: string;
+}
+
+export interface SetupCheckResult {
+  required: SetupItem[];
+  recommended: SetupItem[];
+  ok: boolean;
+}
+
+export interface SetupCheckOpts {
+  cfg?: MainUserConfig;
+  nexusCfg?: NexusUserConfig;
+  pwaBuilt?: boolean;
+  argvBin?: string;
+  exists?: (path: string) => boolean;
+  resolveGrokCredential?: typeof resolveGrokCredential;
+  decideProviderForConfig?: typeof decideProviderForConfig;
+}
+
+const UNATTENDED_SETUP_HINT = 'unattended: `monad setup --non-interactive --config <ans.json>`';
+
+function hasText(value: unknown): boolean {
+  return typeof value === 'string' && value.trim().length > 0;
+}
+
+function hasOAuthToken(provider: 'openai-codex' | 'anthropic'): boolean {
+  const state = loadTokens(provider);
+  return Boolean(state?.tokens?.accessToken || state?.tokens?.refreshToken);
+}
+
+function checkLlm(
+  cfg: MainUserConfig,
+  resolveGrokCredentialDependency: typeof resolveGrokCredential,
+  decideProviderForConfigDependency: typeof decideProviderForConfig,
+): SetupItem {
+  const provider = cfg.llm.provider as string | undefined;
+  let passed = false;
+  let credential: string | undefined;
+  let detailProvider = provider;
+  if (provider === 'auto') {
+    const decision = decideProviderForConfigDependency(cfg);
+    passed = decision.auth !== 'none';
+    detailProvider = decision.provider;
+    credential = passed ? decision.auth : undefined;
+  } else if (provider && provider !== 'none') {
+    if (provider === 'local') {
+      passed = hasText(cfg.llm.baseUrl);
+    } else if (provider === 'openai-codex') {
+      passed = hasText(cfg.llm.apiKey) || hasOAuthToken('openai-codex');
+    } else if (provider === 'anthropic') {
+      passed = hasText(cfg.llm.apiKey) || hasOAuthToken('anthropic');
+    } else if (provider === 'grok') {
+      if (hasText(cfg.llm.apiKey)) {
+        passed = true;
+        credential = 'api-key';
+      } else {
+        const resolved = resolveGrokCredentialDependency();
+        passed = resolved?.kind === 'subscription';
+        credential = passed ? 'subscription' : undefined;
+      }
+    } else {
+      passed = hasText(cfg.llm.apiKey);
+    }
+  }
+  return {
+    id: 'llm',
+    label: 'LLM provider',
+    passed,
+    hint: `run \`monad setup llm\` or interactive \`monad nexus\`; ${UNATTENDED_SETUP_HINT}`,
+    ...(detailProvider && detailProvider !== 'none' ? {
+      detail: `provider=${detailProvider}${credential ? ` · credential=${credential}` : ''}`,
+    } : {}),
+  };
+}
+
+function checkPwaBuild(opts: SetupCheckOpts): SetupItem {
+  const built = opts.pwaBuilt ?? Boolean(resolvePwaStaticDir({
+    argvBin: opts.argvBin ?? process.argv[1] ?? '',
+    ...(opts.exists ? { exists: opts.exists } : {}),
+  }));
+  return {
+    id: 'pwa-build',
+    label: 'PWA build',
+    passed: built,
+    hint: 'run `monad nexus build`',
+  };
+}
+
+function checkChannelBot(cfg: NexusUserConfig): SetupItem {
+  const telegram = readSwitchValue(cfg, 'tabs.telegram:1.tokenRef');
+  const discord = readSwitchValue(cfg, 'tabs.discord:1.tokenRef');
+  return {
+    id: 'channel-bot',
+    label: 'Channel bot',
+    passed: hasText(telegram) || hasText(discord),
+    hint: `run \`monad nexus channel-bot setup telegram|discord\`; ${UNATTENDED_SETUP_HINT}`,
+  };
+}
+
+function checkSkillDirs(cfg: MainUserConfig, exists: (path: string) => boolean): SetupItem {
+  const dirs = Array.isArray(cfg.skills.dirs) ? cfg.skills.dirs.filter(hasText) : [];
+  const existingDirs = dirs.filter(exists);
+  const missingDirs = dirs.filter((dir) => !exists(dir));
+  const detail = `${dirs.length} dir${dirs.length === 1 ? '' : 's'} · ${existingDirs.length} exist`;
+  return {
+    id: 'skill-dirs',
+    label: 'Skill dirs',
+    passed: existingDirs.length > 0,
+    hint: missingDirs.length > 0
+      ? `create the missing skill directories or choose an already-existing skill directory; ${UNATTENDED_SETUP_HINT}`
+      : '',
+    ...(dirs.length > 0 ? {
+      detail: missingDirs.length > 0 ? `${detail} · missing: ${missingDirs.join(', ')}` : detail,
+    } : {}),
+  };
+}
+
+function osInstallHint(): string {
+  if (process.platform === 'darwin') return 'run `monad nexus install --launchd`';
+  if (process.platform === 'linux') return 'run `monad nexus install --systemd-user`';
+  return 'run `monad nexus install --launchd|--systemd-user`';
+}
+
+function checkOsInstall(exists: (path: string) => boolean): SetupItem {
+  const launchdInstalled = exists(resolveLaunchdEnvironment().plistPath);
+  const systemdInstalled = exists(resolveSystemdEnvironment().unitPath);
+  return {
+    id: 'os-install',
+    label: 'OS install',
+    passed: launchdInstalled || systemdInstalled,
+    hint: osInstallHint(),
+    ...(launchdInstalled
+      ? { detail: 'launchd installed' }
+      : (systemdInstalled ? { detail: 'systemd-user installed' } : {})),
+  };
+}
+
+export function checkSetupStatus(opts: SetupCheckOpts = {}): SetupCheckResult {
+  const cfg = opts.cfg ?? buildUserConfig();
+  const nexusCfg = opts.nexusCfg ?? readNexusUserConfig();
+  const exists = opts.exists ?? existsSync;
+  const resolveGrokCredentialDependency = opts.resolveGrokCredential ?? resolveGrokCredential;
+  const decideProviderForConfigDependency = opts.decideProviderForConfig ?? decideProviderForConfig;
+  const required = [
+    checkLlm(cfg, resolveGrokCredentialDependency, decideProviderForConfigDependency),
+    checkPwaBuild(opts),
+  ];
+  const recommended = [
+    checkChannelBot(nexusCfg),
+    checkSkillDirs(cfg, exists),
+    checkOsInstall(exists),
+  ];
+  return {
+    required,
+    recommended,
+    ok: required.every((item) => item.passed),
+  };
+}
+
+function formatItem(item: SetupItem, recommended: boolean): string {
+  const glyph = item.passed ? '✓' : (recommended ? '○' : '✗');
+  const detail = item.detail ? ` (${item.detail})` : '';
+  return `    [${glyph}] ${item.label}${detail}  ${item.hint}`;
+}
+
+export function renderSetupStatus(
+  result: SetupCheckResult,
+  sink: { log: (s: string) => void; error: (s: string) => void },
+): void {
+  sink.log('');
+  sink.log('  required:');
+  for (const item of result.required) {
+    sink.log(formatItem(item, false));
+  }
+  sink.log('');
+  sink.log('  recommended (won\'t block boot):');
+  for (const item of result.recommended) {
+    sink.log(formatItem(item, true));
+  }
+}

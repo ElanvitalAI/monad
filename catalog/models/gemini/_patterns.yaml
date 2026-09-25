@@ -1,0 +1,9 @@
+provider: gemini
+prefixes:
+  - prefix: gemini-
+    fallback:
+      provider: gemini
+      toolCalling: native-gemini
+      streamingProtocol: sse
+      tokenizer: gemini
+      kind: chat

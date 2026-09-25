@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+  NEXUS · launchd LaunchAgent template (Phase N-5 PR ψ)
+
+  Installed at:    ~/Library/LaunchAgents/{{LABEL}}.plist
+  Bootstrapped via: launchctl bootstrap gui/<uid> <plist>
+  Restart policy:   KeepAlive {SuccessfulExit=false} = restart unless exit 0.
+                    Exit 75 (graceful) → restart. Exit 0 (cleanExit) → stay.
+  Throttle:         ThrottleInterval prevents fast-crash loops.
+
+  Reference copy — runtime install reads renderLaunchdPlist() in launchd.ts.
+  Edits here are ergonomic only; bump renderLaunchdPlist() to change actual
+  generated output.
+-->
+<plist version="1.0">
+<dict>
+  <key>Label</key>
+  <string>{{LABEL}}</string>
+  <key>ProgramArguments</key>
+  <array>
+{{ARGS}}
+  </array>
+  <key>RunAtLoad</key>
+  <true/>
+  <key>KeepAlive</key>
+  <dict>
+    <key>SuccessfulExit</key>
+    <false/>
+  </dict>
+  <key>ThrottleInterval</key>
+  <integer>{{THROTTLE}}</integer>
+  <key>WorkingDirectory</key>
+  <string>{{WORKING_DIR}}</string>
+  <key>StandardOutPath</key>
+  <string>{{STDOUT}}</string>
+  <key>StandardErrorPath</key>
+  <string>{{STDERR}}</string>
+{{ENV_BLOCK}}</dict>
+</plist>

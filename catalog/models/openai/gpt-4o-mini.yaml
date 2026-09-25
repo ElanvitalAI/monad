@@ -1,0 +1,22 @@
+id: gpt-4o-mini
+provider: openai
+displayName: GPT-4o mini
+family: gpt-4o
+contextSize: 128000
+outputMaxTokens: 16000
+vision: images
+audio: { input: false, output: false }
+reasoning: null
+toolCalling: native-openai
+streamingProtocol: sse
+pricing:
+  inputPerMTok: 0.15
+  outputPerMTok: 0.6
+deprecated: null
+releaseDate: 2024-07-18
+tokenizer: cl100k
+kind: chat
+discoveryMeta:
+  source: manual
+  lastSeen: 2026-05-10
+  autoFilled: false

@@ -1,0 +1,52 @@
+{
+  "corpus": [
+    {
+      "id": "large-typeform-alternative",
+      "feature": "Build a production-ready Typeform alternative with original branding. Research phase: exhaustively study the product, its API, UI, question types, conditional logic, analytics, integrations, pricing and usage limits, then consolidate findings into a single canonical feature matrix, system architecture, and acceptance-test plan. Build phase: implement the form builder, the conditional-logic engine, the response store, the analytics dashboard, and the integration webhooks as real end-to-end functionality with explicit module ownership and shared technical contracts. Verify phase: run the actual application and test every workflow across user roles, devices, permissions, input types, and failure conditions, including adversarial, authorization, data-isolation, and accessibility testing. Continue until all acceptance tests pass, production builds complete, and no known material defects remain."
+    },
+    {
+      "id": "large-ab-measurement-device",
+      "feature": "Build an A/B measurement device for the goal decomposition prompt. Define the measurement record and summary contract so that expected, observed, and unmeasured attempt counts are distinguishable and rate denominators only count observed attempts. Add an executor that runs both arms through the same injected LLM seam and never falls back to the default LLM path, applying the prompt replacement to the treatment arm only and self-verifying that the anchor was present. Wire a CLI entry point that reads the corpus and arm configuration, runs the executor, prints expected, observed, unmeasured, complete-pair and incomplete-pair counts, and persists the structured result as JSON. Include negative controls in the configuration and report per-round variation so that between-round instability is visible in the output."
+    },
+    {
+      "id": "large-run-relationship-supervisor",
+      "feature": "Make split runs relatable to each other. When one request is decomposed into several pieces, each piece must know what it is a piece of, which siblings exist and what they were assigned, and its own position in the whole. That identity must also reach the run ledger as structured values so that the pieces of one request can be read back as a tree from a single command, with the total always recorded and the parent and sibling fields present only for genuinely composite runs. Add a query surface that resolves a piece to its parent and siblings, and cover the ledger entry shape, the chain query, and the CLI that reads those keys."
+    },
+    {
+      "id": "large-decompose-observability",
+      "feature": "Make the terminal decomposition judgment fully observable. Stop discarding the decomposer result when it overruns the wall-clock deadline: keep the decomposer running, let the flow proceed, and record the late answer under its own observation so it can be queried afterwards. Distinguish deadline-exceeded from decomposer-failure from no-fragments-produced as three different recorded reasons rather than one undifferentiated fallback. Preserve the human-facing progress lines exactly as they are today while adding the queryable observations, and add regression coverage for each of the four terminal branches."
+    },
+    {
+      "id": "large-pwa-logs-panel",
+      "feature": "Add a logs panel to the PWA dashboard. It needs a streaming data source that follows the daemon log store without buffering the whole history, a virtualized list that stays responsive at tens of thousands of rows, category and level filters that compose with a free-text search, a detail view that renders the structured payload of a selected entry, and a copy-to-clipboard affordance for a single entry and for the current filtered selection. It must render correctly in both light and dark themes and degrade to a readable empty state when the daemon is unreachable."
+    },
+
+    {
+      "id": "small-raise-timeout-constant",
+      "feature": "Raise the decomposition step wall-clock timeout constant from 30 seconds to 60 seconds.",
+      "negativeControl": true
+    },
+    {
+      "id": "small-fix-progress-wording",
+      "feature": "Fix the wording of the progress line printed when a run falls back to path counting so it reads naturally in Korean.",
+      "negativeControl": true
+    },
+    {
+      "id": "small-optional-parameter",
+      "feature": "Add an optional stateDir parameter to runLedgerPath so callers can resolve a ledger path outside the default state directory.",
+      "negativeControl": true
+    },
+    {
+      "id": "small-add-one-test-case",
+      "feature": "Add one test case to the existing run-ledger test file covering an entry that omits the optional goalId field.",
+      "negativeControl": true
+    },
+    {
+      "id": "small-rename-exported-symbol",
+      "feature": "Rename the exported constant DEFAULT_DECOMPOSE_TIMEOUT_MS to DEFAULT_PRELAUNCH_DECOMPOSE_TIMEOUT_MS and update its importers.",
+      "negativeControl": true
+    }
+  ],
+  "repeats": 3,
+  "maxTasks": 6
+}

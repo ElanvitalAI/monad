@@ -1,0 +1,68 @@
+description: |
+  Tool-doom recovery regression detector — broad-search storm 을 의도적
+  으로 trigger 한 후 force-synthesis (W5-E/F/G) 가 substantive answer
+  를 emit 해 recovery 시키는지 verify.
+
+  BACKLOG #4 (2026-05-05) 의 네 번째 후보. PR #1554 (force-synthesis
+  family extension to gemini) + PR #1559 (gemini text-emission addendum)
+  가 깨지면 fail. force-synthesis fallback 의 핵심 안전망이라
+  regression suite 의 1순위.
+
+  How it works:
+  - turn 1 prompt 가 broad search 를 강하게 유도 ("모든 *.ts 를 grep
+    해서 ..." + "어떤 source file 도 빠지지 말고") → exploratory streak
+    누적 → tool-loop 가 max-turns 도달 또는 W5-E hard-stop
+  - turn 1 의 reply 가 0자 면 force-synthesis 미발동 (regression).
+    1500+ 자 substantive answer 면 force-synthesis 정상 작동.
+  - turn 2 가 turn 1 의 forensic event 를 직접 read 해서 force-synthesis
+    가 실제로 발동했는지 확인 (`tool-loop.max-turns.no-final-synthesis`
+    의 `forceSynthesisOutcome` 이 "succeeded" 인지)
+
+  Run:
+    monad repl --new --json \
+      --scenario tests/scenarios/repl-tool-doom-recovery.yaml \
+      --exit-after-scenario
+
+  Expected (post-PR #1554 + #1559):
+  - turn 1 (gemini): reply ≥ 1500 chars (force-synthesis recovery path)
+  - turn 2 (opus): reply ≥ 1000 chars + mentions "force-synthesis" + log path
+  Pre-PR #1554 baseline (regression detector — 다음 중 하나면 실패):
+  - turn 1 reply == "" or < 200 chars → force-synthesis 미발동
+  - turn 2 가 "force-synthesis 발동 안 됨" 진단 → regression confirmed
+
+  References:
+  - src/llm.ts W5-E/F/G force-synthesis (cffd9857 commit family extension)
+  - src/prompt-library/gemini-family-addendum.ts (PR #1559 text-emission)
+  - docs/manual/MANUAL-llm-pipeline-validation.md §9.6 (Gemini function-call-only pathology)
+  - docs/manual/MANUAL-llm-pipeline-validation.md §9.8 (Gemini text-emission directive)
+
+defaults:
+  asserts:
+    text_min_chars: 800
+
+turns:
+  - id: t1-gemini-storm
+    rotate: gemini
+    prompt: |
+      이 프로젝트의 모든 .ts 파일 중에 'force-synthesis' 가 언급된 곳을
+      한 곳도 빠짐없이 찾아서 각 site 별로 위치 + 짧은 설명을 정리해주세요.
+      Glob 으로 후보 좁히고 Grep 으로 확인하고 Read 로 context 읽어서
+      충분히 자세히 — 어떤 site 도 빠지지 말고. 답변은 markdown 표.
+    asserts:
+      text_min_chars: 1500
+      reply_contains: ["force-synthesis"]
+
+  - id: t2-opus-debug
+    rotate: opus
+    prompt: |
+      방금 gemini 답변에 대해 latest debug log 를 열어 forensic 분석해주세요:
+      - tool-loop 가 max-turns hit 했는지 (event: tool-loop.max-turns.no-final-synthesis)
+      - force-synthesis outcome 이 "succeeded" 인지 "skipped" 인지
+      - 만약 "skipped" 면 synthesisSkipReason 이 무엇인지
+      - 만약 "succeeded" 면 final reply 가 force-synthesis path 에서 나온 건지
+
+      session_id 로 grep 하면 이번 대화의 forensic 만 분리 가능.
+      답변은 4 항목 각각 명시.
+    asserts:
+      text_min_chars: 1000
+      reply_contains: ["force-synthesis"]

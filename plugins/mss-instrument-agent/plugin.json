@@ -1,0 +1,19 @@
+{
+  "id": "mss-instrument-agent",
+  "name": "MSS Instrumentation Assistant",
+  "version": "0.2.0",
+  "description": "Hosts the mss-instrument-reviewer subagent (read-only audit of debug.log coverage) and the /mss-review slash command. M2.2 Phase C2 — the slash captures a branch diff and prints a ready-to-paste reviewer-agent prompt.",
+  "activationEvents": ["onStartup"],
+  "contributes": {
+    "agents": [
+      { "bodyPath": "./agents/mss-instrument-reviewer.md" }
+    ],
+    "commands": [
+      {
+        "name": "mss-review",
+        "description": "Capture the current branch diff and print the mss-instrument-reviewer prompt (M2.2)"
+      }
+    ]
+  },
+  "capabilities": []
+}

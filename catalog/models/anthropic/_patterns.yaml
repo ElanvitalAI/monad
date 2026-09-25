@@ -1,0 +1,16 @@
+provider: anthropic
+prefixes:
+  - prefix: claude-
+    fallback:
+      provider: anthropic
+      toolCalling: native-anthropic
+      streamingProtocol: sse
+      tokenizer: claude
+      kind: chat
+  - prefix: anthropic/
+    fallback:
+      provider: anthropic
+      toolCalling: native-anthropic
+      streamingProtocol: sse
+      tokenizer: claude
+      kind: chat

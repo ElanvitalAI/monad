@@ -1,0 +1,33 @@
+{
+  "name": "harbor",
+  "colors": {
+    "text": "#e6edf3",
+    "muted": "#8b949e",
+    "dim": "#6e7681",
+    "accent": "#2f81f7",
+    "success": "#3fb950",
+    "warning": "#d29922",
+    "error": "#f85149",
+    "info": "#39c5cf",
+    "highlight": "#db61a2"
+  },
+  "pane": {
+    "titleActive": "#2f81f7",
+    "titleInactive": "#8b949e",
+    "dividerActive": "#2f81f7",
+    "dividerInactive": "#30363d"
+  },
+  "modal": {
+    "borderActive": "#39c5cf",
+    "borderInactive": "#30363d",
+    "title": "#e6edf3"
+  },
+  "cursor": {
+    "focused": "#2f81f7",
+    "inactive": "#6e7681"
+  },
+  "widget": {
+    "accent": "#39c5cf",
+    "selected": "#21262d"
+  }
+}

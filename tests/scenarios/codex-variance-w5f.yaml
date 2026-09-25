@@ -1,0 +1,31 @@
+description: |
+  W5-F (force-synthesis on max-turns budget exhaust) 안정성 측정.
+
+  같은 codex analysis prompt 5회 반복 — 각 run 이 독립적으로 W5-F path 를
+  거치며 substantive 답변 (≥ 1500자) 을 안정적으로 emit 하는지 확인.
+  ad-hoc 변동성 진단용 — 일상 회귀 매트릭스 아님.
+
+  background: log/wave7bc/scenario-w5f.txt 에서 analysis-codex 1회 측정
+  3622자 PASS. 4/4 PASS 가 lucky 인지 stable 인지 5-run repeat 으로 검증.
+
+defaults:
+  cwd: ../..
+  asserts:
+    text_min_chars: 1500   # W5-F substantive 기준 (이전 fallback 200-600자 대비)
+
+prompts:
+  - id: variance-codex-1
+    rotate: codex
+    prompt: "이 프로젝트의 디버깅 파이프라인 분석해주세요"
+  - id: variance-codex-2
+    rotate: codex
+    prompt: "이 프로젝트의 디버깅 파이프라인 분석해주세요"
+  - id: variance-codex-3
+    rotate: codex
+    prompt: "이 프로젝트의 디버깅 파이프라인 분석해주세요"
+  - id: variance-codex-4
+    rotate: codex
+    prompt: "이 프로젝트의 디버깅 파이프라인 분석해주세요"
+  - id: variance-codex-5
+    rotate: codex
+    prompt: "이 프로젝트의 디버깅 파이프라인 분석해주세요"

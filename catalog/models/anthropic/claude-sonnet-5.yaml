@@ -1,0 +1,26 @@
+id: claude-sonnet-5
+provider: anthropic
+displayName: Claude Sonnet 5
+family: claude-5
+familyShortcut: sonnet
+contextSize: 200000
+outputMaxTokens: 64000
+vision: images
+audio: { input: false, output: false }
+reasoning: high
+toolCalling: native-anthropic
+streamingProtocol: sse
+pricing:
+  inputPerMTok: 3.0
+  outputPerMTok: 15.0
+  cachedInputPerMTok: 0.3
+deprecated: null
+# ⛔ 2026-08-18 정정: 06-30 → API created_at 1차값은 06-29
+releaseDate: 2026-06-29
+tokenizer: claude
+kind: chat
+discoveryMeta:
+  source: manual
+  lastSeen: 2026-07-19
+  autoFilled: false
+  confidence: high

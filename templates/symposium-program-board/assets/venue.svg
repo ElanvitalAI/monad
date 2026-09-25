@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1400 930" role="img" aria-label="플레이스홀더 — 자기 사진으로 교체하십시오">
+  <rect width="1400" height="930" fill="#eef3ed"/>
+  <path d="M0 596 C 240 540 420 606 640 578 C 880 548 1060 608 1400 566 L1400 930 L0 930 Z" fill="#07513b"/>
+  <path d="M0 716 C 320 672 560 728 860 700 C 1100 678 1240 716 1400 698 L1400 930 L0 930 Z" fill="#103e2e"/>
+  <circle cx="1128" cy="188" r="52" fill="#9d783f" opacity="0.8"/>
+  <text x="70" y="862" fill="#ffffff" opacity="0.45" font-size="28" letter-spacing="4" font-family="Pretendard, system-ui, sans-serif">PLACEHOLDER · 자기 사진으로 교체</text>
+</svg>

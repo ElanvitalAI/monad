@@ -1,0 +1,64 @@
+# 표준 «실행» 템플릿 — 정기 파이프라인(크론) 용
+# ⛔ 구현 템플릿과 «합치지 않는다» — 한 런이 두 그래프를 걸으면 원장이 한 신원으로 적어 사후 해석이 깨진다.
+graph_id: exec-standard
+version: 1
+entry_node: collect
+# ⛔⭐ 종단이 «넷»이다 — 「못 쟀다」를 「실패」로 접으면 가장 못 도는 순간에 가장 관대해진다.
+#   🩸 RFC §6⑷ 에 그렇게 써 놓고 처음엔 셋만 뒀다(2026-09-09 자기점검).
+terminal_nodes: [delivered, skipped, failed, unobserved]
+nodes:
+  - node_id: collect
+    kind: agent
+    recipe: crawl-sources
+    max_visits: 3
+    contract: { inputs: [topics], tools: network-read, outputs: [items, source_count] }
+  - node_id: freshness
+    kind: gate
+    recipe: novelty-gate
+    max_visits: 1
+    contract: { inputs: [items, seen_index], tools: read-only, outputs: [fresh_count] }
+  - node_id: compose
+    kind: agent
+    recipe: compose-cards
+    max_visits: 3
+    contract: { inputs: [items], tools: read-only, outputs: [cards] }
+  - node_id: render
+    kind: agent
+    recipe: higgsfield-cards
+    max_visits: 3
+    contract: { inputs: [cards], tools: network-write, outputs: [assets] }
+  - node_id: qc
+    kind: gate
+    recipe: asset-gate
+    max_visits: 2
+    contract: { inputs: [assets], tools: read-only, outputs: [passed, asset_bytes] }
+  - node_id: publish
+    kind: git
+    recipe: commit-assets
+    max_visits: 2
+    contract: { inputs: [assets, cards], tools: git-write, outputs: [ref] }
+  - node_id: delivered
+    kind: judge
+    max_visits: 1
+    recipe: terminal-delivered
+  - node_id: skipped
+    kind: judge
+    max_visits: 1
+    recipe: terminal-skipped
+  - node_id: failed
+    kind: judge
+    max_visits: 1
+    recipe: terminal-failed
+  - node_id: unobserved
+    kind: judge
+    max_visits: 1
+    recipe: terminal-unobserved
+edges:
+  # ⛔ 「0건」이 «둘»이다 — 도구가 돌고 결과가 없으면 skipped, 도구가 못 돌면 failed.
+  #   🩸 첫 실물 회차에서 이 둘을 한 값으로 접어 「새 뉴스 없음」이 failed 로 갔다(2026-09-09).
+  - { from: collect, on: outcome, map: { ok: freshness, empty: skipped, error: failed } }
+  - { from: freshness, on: outcome, map: { fresh: compose, stale: skipped } }
+  - { from: compose, to: render }
+  - { from: render, to: qc }
+  - { from: qc, on: outcome, map: { pass: publish, fail: render } }
+  - { from: publish, to: delivered }

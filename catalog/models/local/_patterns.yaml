@@ -1,0 +1,113 @@
+provider: local
+prefixes:
+  - prefix: 'local:'
+    fallback:
+      provider: local
+      toolCalling: native-openai
+      streamingProtocol: sse
+      tokenizer: unknown
+      kind: chat
+  - prefix: gemma-
+    fallback:
+      provider: local
+      family: gemma
+      toolCalling: native-openai
+      streamingProtocol: sse
+      tokenizer: unknown
+      kind: chat
+  - prefix: qwen-
+    fallback:
+      provider: local
+      family: qwen
+      toolCalling: native-openai
+      streamingProtocol: sse
+      tokenizer: unknown
+      kind: chat
+  - prefix: qwen2
+    fallback:
+      provider: local
+      family: qwen
+      toolCalling: native-openai
+      streamingProtocol: sse
+      tokenizer: unknown
+      kind: chat
+  - prefix: qwen3
+    fallback:
+      provider: local
+      family: qwen
+      toolCalling: native-openai
+      streamingProtocol: sse
+      tokenizer: unknown
+      kind: chat
+  - prefix: llama-
+    fallback:
+      provider: local
+      family: llama
+      toolCalling: native-openai
+      streamingProtocol: sse
+      tokenizer: llama
+      kind: chat
+  - prefix: llama2
+    fallback:
+      provider: local
+      family: llama
+      toolCalling: native-openai
+      streamingProtocol: sse
+      tokenizer: llama
+      kind: chat
+  - prefix: llama3
+    fallback:
+      provider: local
+      family: llama
+      toolCalling: native-openai
+      streamingProtocol: sse
+      tokenizer: llama
+      kind: chat
+  - prefix: phi-
+    fallback:
+      provider: local
+      family: phi
+      toolCalling: native-openai
+      streamingProtocol: sse
+      tokenizer: unknown
+      kind: chat
+  - prefix: kimi-
+    fallback:
+      provider: local
+      family: kimi
+      toolCalling: native-openai
+      streamingProtocol: sse
+      tokenizer: unknown
+      kind: chat
+  - prefix: glm-
+    fallback:
+      provider: local
+      family: glm
+      toolCalling: native-openai
+      streamingProtocol: sse
+      tokenizer: unknown
+      kind: chat
+  - prefix: deepseek-
+    fallback:
+      provider: local
+      family: deepseek
+      toolCalling: native-openai
+      streamingProtocol: sse
+      tokenizer: unknown
+      kind: chat
+  - prefix: mistral-
+    fallback:
+      provider: local
+      family: mistral
+      toolCalling: native-openai
+      streamingProtocol: sse
+      tokenizer: unknown
+      kind: chat
+  - prefix: mixtral-
+    fallback:
+      provider: local
+      family: mistral
+      toolCalling: native-openai
+      streamingProtocol: sse
+      tokenizer: unknown
+      kind: chat

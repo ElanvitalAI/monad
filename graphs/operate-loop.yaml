@@ -1,0 +1,173 @@
+# ⭐ `operate` 골의 실행 그래프.
+#
+# ⛔⭐ **왜 구현 루프와 «다른 이름»인가** — 이름이 같으면 원장에서 갈 수 없다.
+#   운영 골은 「명세를 등록/배선」하는 골이다. 구현 골과 «다른 것»이 둘 있다:
+#     ⑴ 산출이 «코드»가 아니라 «등록된 명세»다 ⇒ 「그것이 실제로 있나」를 따로 봐야 한다
+#     ⑵ 그래서 gate 를 문서 전용으로 건너뛰지 «않는다» (docs_only_gate_skip: false)
+#
+# ⛔⭐⭐ **지금 «안» 그런 것도 적는다** — 선언이 실행보다 많아지지 않게:
+#   `operate-verify` 는 오늘 «전용 실행기»가 없다. 실행기는 구현 골과 같은 루프를 돌린다.
+#   ⇒ 이 노드는 「그 자리가 있다」는 이름이고, 「거기서 무엇이 돈다」는 아직 아니다.
+#   🔎 반증: monad logs --event graph-visit-budget 에서 node=operate-verify 가 «나오나»
+#      (0건이면 여전히 이름뿐이다 — 그것을 「결함」이 아니라 「아직」으로 읽어라)
+graph_id: operate-loop
+version: 1
+entry_node: operate-plan
+terminal_nodes: [merge, operate-blocked]
+runner_inputs: [goal, worktree, branch, review-intent, head-sha, base-branch]
+docs_only_gate_skip: false
+state: [spec, changed_files, review_summary]
+
+nodes:
+  - node_id: operate-plan
+    kind: agent
+    recipe: headless-goal-loop
+    max_visits: 4
+    progress: [implementing, implemented]
+    terminal_stages: [aborted, timed-out]
+    contract:
+      inputs: [goal, worktree]
+      tools: worktree-write
+      outputs: [spec, changed_files]
+
+  - node_id: operate-verify
+    kind: judge
+    recipe: pr-reviewer
+    max_visits: 2
+    progress: [reviewing]
+    terminal_stages: [review-blocked]
+    contract:
+      inputs: [spec, worktree]
+      tools: read-only
+      outputs: [spec-observed]
+
+  - node_id: gate
+    kind: gate
+    recipe: gate-baseline
+    max_visits: 4
+    progress: [gating, gated]
+    terminal_stages: [gate-failed]
+    contract:
+      inputs: [worktree, changed_files]
+      tools: read-and-run-tests
+      outputs: [passed, log]
+
+  - node_id: operate-review
+    kind: judge
+    recipe: pr-reviewer
+    max_visits: 4
+    progress: [reviewing, reviewed]
+    terminal_stages: [review-blocked]
+    contract:
+      inputs: [spec, review-intent]
+      tools: read-only
+      outputs: [verdict, must-fix, review-summary]
+
+  - node_id: operate-rework
+    kind: agent
+    recipe: headless-goal-loop
+    max_visits: 4
+    progress: [implementing]
+    terminal_stages: [gate-failed, review-blocked]
+    contract:
+      inputs: [must-fix, worktree]
+      tools: worktree-write
+      outputs: [spec, changed_files]
+
+  - node_id: operate-blocked
+    kind: judge
+    recipe: pr-reviewer
+    max_visits: 1
+    progress: [review-blocked]
+    terminal_stages: [review-blocked]
+    contract:
+      inputs: [must-fix, review-summary]
+      tools: read-only
+      outputs: [review-blocked]
+
+  - node_id: main-sync
+    kind: git
+    recipe: seams-git-merge-main
+    max_visits: 2
+    progress: [gating, merge-conflict]
+    terminal_stages: [merge-conflict]
+    contract:
+      inputs: [worktree, base-branch]
+      tools: git-write
+      outputs: [synced, conflicts]
+
+  - node_id: regate
+    kind: gate
+    recipe: gate-baseline
+    max_visits: 2
+    progress: [gating]
+    terminal_stages: [gate-failed]
+    contract:
+      inputs: [worktree]
+      tools: read-and-run-tests
+      outputs: [passed, log]
+
+  - node_id: open-pr
+    kind: git
+    recipe: seams-gh-open-pr
+    max_visits: 2
+    progress: [pr-opening, pr-opened]
+    terminal_stages: [pr-declined, pr-opened]
+    contract:
+      inputs: [branch, review-summary]
+      tools: gh-pr-create
+      outputs: [pr-number, pr-url]
+
+  - node_id: merge
+    kind: git
+    recipe: seams-gh-merge-squash
+    max_visits: 2
+    progress: [merging, merged]
+    terminal_stages: [merged, pr-opened]
+    contract:
+      inputs: [pr-number, head-sha]
+      tools: gh-pr-merge
+      outputs: [merged]
+
+edges:
+  - from: operate-plan
+    to: operate-verify
+
+  - from: operate-verify
+    on: outcome
+    map:
+      pass: gate
+      fail: operate-rework
+
+  - from: gate
+    on: outcome
+    map:
+      pass: operate-review
+      fail: operate-rework
+
+  - from: operate-review
+    on: outcome
+    map:
+      pass: main-sync
+      fail: operate-rework
+
+  - from: operate-rework
+    on: outcome
+    map:
+      retry: operate-plan
+      exhausted: operate-blocked
+
+  - from: main-sync
+    on: outcome
+    map:
+      pass: regate
+      conflict: operate-rework
+
+  - from: regate
+    on: outcome
+    map:
+      pass: open-pr
+      fail: operate-rework
+
+  - from: open-pr
+    to: merge

@@ -1,0 +1,18 @@
+{
+  "slug": "termination-presets",
+  "goalKind": "coding",
+  "intake": "Implement §5-① of docs/RESEARCH-loop-engineering-vs-pfc-dual-loop-2026-07-01.md: goalKind-scoped Termination DSL presets. Create src/conductor/termination-presets.ts exporting `terminationPresetFor(kind: GoalKind): TerminationRule` with sensible defaults per kind — coding = { and: [custom 'bun test', custom 'bun run typecheck', summary_written 'PR.md'] }, research = { and: [min_sources 3, summary_written] }, refactor = { and: [custom 'bun test', custom 'git diff --stat'] }, analysis/monitoring = reasonable stubs. Reuse the TerminationRule type from src/auto-research/termination-dsl.ts. Add test/conductor-termination-presets.test.ts covering every GoalKind returns a well-formed rule and that unknown kinds fall back safely. Keep it additive — do not modify existing termination-dsl.ts behavior.",
+  "workdir": ".",
+  "_termination_note": "Goal-SCOPED gate: file existence + targeted test (which imports+runs the module, so it also proves the new code compiles under bun). Repo-wide typecheck was intentionally dropped — coupling a goal's completion to unrelated pre-existing repo errors is the anti-pattern from CONCEPT §7. Add scoped checks, never whole-repo health.",
+  "termination": {
+    "kind": "and",
+    "rules": [
+      { "kind": "custom", "command": "test -f src/conductor/termination-presets.ts", "timeoutMs": 5000 },
+      { "kind": "custom", "command": "test -f test/conductor-termination-presets.test.ts", "timeoutMs": 5000 },
+      { "kind": "custom", "command": "bun test test/conductor-termination-presets.test.ts", "timeoutMs": 120000 }
+    ]
+  },
+  "maxIterations": 6,
+  "noProgressAndon": 3,
+  "sessionStrategy": "persist"
+}

@@ -1,0 +1,304 @@
+# ═══════════════════════════════════════════════════════════════════════════════
+# ⭐⭐⭐ 기본 템플릿 — «저작부터 무인 머지까지» 지금 가장 많이 도는 흐름 전체.
+#
+# 대표 지시(2026-09-08): 「저작부터 무인 머지까지 기본 템플릿을 만들어 두고,
+#   ⑴ 최초 결정 시 이 템플릿을 «변형»하고  ⑵ 실제 구현 간 «다이나믹»하게 바꾸고
+#   ⑶ 셀프힐링 재-루프와 «저작 시 분해»까지 대응한다」
+#
+# ⛔ 출처는 «실측»이다(추측 없음):
+#   저작 페이즈  ← monad logs --category goal-author --event phase-end   (표본 200 · 7페이즈)
+#   분해·재발사  ← self-dev.supervisor/decision  action ∈ {relaunch, stop}
+#   구현~머지    ← pipeline-traversal-shadow 걸음 182 · 아나토미 §8a-0 엣지 표
+# ═══════════════════════════════════════════════════════════════════════════════
+graph_id: default-loop
+version: 3
+entry_node: author
+terminal_nodes: [merge, stopped]
+runner_inputs: [ask_text, worktree, branch]
+
+# 🔑 상태 — 노드 사이를 흐르는 값. 라우터는 «이 값만» 읽는다(외부 상태·시계 금지 · RFC §4.3 ⑵).
+state:
+  - goal_path          # 저작이 낸 골 문서
+  - rfc_path           # 플랜이 낸 RFC 문서
+  - open_questions     # ⭐ 플랜이 «못 닫은» 물음 — 라우터가 이것으로 사람에게 갈지 정한다
+  - pieces             # 분해가 낸 조각(없으면 단일)
+  - verdict            # 리뷰 판정
+  - attempts           # 라운드 소진
+  - heal_attempts      # ⭐ 셀프힐 소진 — attempts 와 «따로» 센다
+  - changed_files      # 라우터가 gate 를 켤지 정하는 입력
+
+nodes:
+  # ───────── 전반부: 저작 ─────────
+  - node_id: author
+    kind: agent
+    recipe: goal-author
+    max_visits: 2                      # 재저작(supersedes)까지
+    progress: [authoring]
+    phases: [lint, ground, enhance, assemble-inputs, assemble-sections, assemble-document, assemble]
+    terminal_stages: []
+    contract:
+      inputs: [ask_text]
+      tools: read-only                 # ⛔ 저작은 저장소를 «안 쓴다»
+      outputs: [goal_path, goal_id, goal_type, grounding_context]
+
+  # ⭐⭐ 플랜 문서 = «RFC 문서»이고, ***그 RFC 가 이미 「아크/페이즈」로 분해한다***.
+  #   📏 실측(src/autopilot/mission-rfc-author.ts:41-54):
+  #      AuthoredRfc { markdown · title · arcs: RfcArc[] · openQuestions }
+  #      RfcArc { heading · workItems }   ⊕ 주석: "구조화 «작업분해» 블록에서 파싱한 아크/페이즈"
+  #   🩸 그래서 앞 판의 `author → plan → decompose` «순차»는 «틀렸다» — 내가 지어낸 순서였다.
+  - node_id: plan
+    kind: agent
+    recipe: harness-plan-rfc
+    max_visits: 2
+    progress: [planning]
+    terminal_stages: []
+    contract:
+      inputs: [goal_path, ask_text, grounding_context]
+      tools: read-only                 # ⛔ "RFC를 쓰고 실행하지 않는다"
+      outputs: [rfc_path, markdown, arcs, open_questions]
+
+  # ⭐⭐ 분해는 플랜의 «뒤 단계»가 아니라 ***아크마다 «중첩»으로 도는 칸***이다.
+  #   📏 실측(src/self-dev/fabric-decompose-adapter.ts:216-253):
+  #      "Authors RFC arcs …, ***then delegates each arc*** feature to the existing decomposition contract.
+  #       Arc order becomes dependencies on every goal emitted by earlier arcs."
+  #   ⇒ 🔑 아크 순서가 «조각의 의존»이 된다. 그러므로 이 노드는 아크 «수»만큼 방문한다.
+  - node_id: decompose
+    kind: judge
+    recipe: fabric-decompose-adapter
+    max_visits: 12                     # 아크 수만큼(예산은 maxTasks 가 따로 막는다)
+    fan_out: arcs                      # ⭐ 이 노드는 「아크마다 한 번」 돈다 — 순차 노드가 아니다
+    progress: [decomposing]
+    terminal_stages: []
+    contract:
+      inputs: [arcs, grounding_context]
+      tools: read-only
+      outputs: [pieces, ordering, depends_on_edges, hot_path_edges, omitted_goal_count]
+
+  # ───────── 후반부: 구현 ─────────
+  - node_id: implement
+    kind: agent
+    recipe: headless-goal-loop
+    max_visits: 6
+    progress: [implementing, implemented]
+    terminal_stages: [aborted, timed-out]
+    contract:
+      inputs: [goal_path, worktree]
+      tools: worktree-write
+      outputs: [diff, summary, changed_files]
+
+  - node_id: gate
+    kind: gate
+    recipe: gate-baseline
+    max_visits: 8
+    progress: [gating, gated]
+    terminal_stages: []
+    contract:
+      inputs: [worktree, changed_files]
+      tools: read-and-run-tests
+      outputs: [passed, gate_log, reflect_gate_facts]
+
+  - node_id: review
+    kind: judge
+    recipe: pr-reviewer
+    max_visits: 8
+    progress: [reviewing, reviewed]
+    terminal_stages: [review-blocked]
+    contract:
+      inputs: [diff, review_intent]
+      tools: read-only
+      outputs: [verdict, must_fix, should_fix, review_summary]
+
+  - node_id: rework
+    kind: agent
+    recipe: headless-goal-loop
+    max_visits: 6
+    progress: [implementing]
+    terminal_stages: [gate-failed, review-blocked]
+    contract:
+      inputs: [must_fix, gate_log, worktree]
+      tools: worktree-write
+      outputs: [diff, summary]
+
+  # ───────── ⭐ 셀프힐링 ─────────
+  # 🔑 rework 와 «다른 노드»다: rework 는 「자식이 고친다」, heal 은 「하니스가 판단·수복한다」.
+  #   ⛔ 하나로 합치면 「자식이 못 한 것」과 「환경이 막은 것」이 한 값이 된다(제1원칙 ①).
+  - node_id: heal
+    kind: judge
+    recipe: repair-signals
+    max_visits: 3
+    progress: [healing]
+    terminal_stages: [needs-human]
+    contract:
+      inputs: [failure_kind, gate_log, verdict, heal_attempts]
+      tools: read-and-observe          # 원장·로그를 읽는다
+      outputs: [heal_action, reason]   # retry | re-author | re-decompose | escalate
+
+  # ───────── 착지 ─────────
+  - node_id: main-sync
+    kind: git
+    recipe: seams-git-merge-main
+    max_visits: 2
+    progress: [gating, merge-conflict]
+    terminal_stages: [merge-conflict]
+    contract:
+      inputs: [worktree, base_branch]
+      tools: git-write
+      outputs: [synced, conflicts]
+
+  - node_id: regate
+    kind: gate
+    recipe: gate-baseline
+    max_visits: 2
+    progress: [gating]
+    terminal_stages: [gate-failed]
+    contract: { inputs: [worktree], tools: read-and-run-tests, outputs: [passed, gate_log] }
+
+  - node_id: open-pr
+    kind: git
+    recipe: seams-gh-open-pr
+    # 📏 실측 2026-09-08 (원장 30일 · 전 우주 · 걸음 191개 소급 계산):
+    #   이 노드를 «두 번» 밟은 걸음이 3개 있었다(재시도는 «정상»이다).
+    #   🩸 옛 선언 `1` 은 그 3개를 「예산 초과」로 만들었다 — ***선언이 실물보다 좁았다***.
+    #   ⛔ 수를 늘리는 것이 아니라 «관측에 맞추는» 것이다. 다시 좁히려면 «표본»을 대라.
+    max_visits: 2
+    progress: [pr-opening, pr-opened]
+    terminal_stages: [pr-declined, pr-opened]
+    contract: { inputs: [branch, review_summary], tools: gh-pr-create, outputs: [pr_number, pr_url] }
+
+  - node_id: merge
+    kind: git
+    recipe: seams-gh-merge-squash
+    # 📏 실측 2026-09-08 (원장 30일 · 전 우주 · 걸음 191개 소급 계산):
+    #   이 노드를 «두 번» 밟은 걸음이 3개 있었다(재시도는 «정상»이다).
+    #   🩸 옛 선언 `1` 은 그 3개를 「예산 초과」로 만들었다 — ***선언이 실물보다 좁았다***.
+    #   ⛔ 수를 늘리는 것이 아니라 «관측에 맞추는» 것이다. 다시 좁히려면 «표본»을 대라.
+    max_visits: 2
+    progress: [merging, merged]
+    terminal_stages: [merged, pr-opened]
+    contract: { inputs: [pr_number, head_sha], tools: gh-pr-merge, outputs: [merged] }
+
+  - node_id: stopped
+    kind: judge
+    recipe: human-handoff
+    max_visits: 1
+    progress: [stopped]
+    terminal_stages: [abandoned, needs-human]
+    contract:
+      inputs: [reason, artifacts]
+      tools: gh-pr-create               # 중단 산출물을 draft PR 로 «보존»한다
+      outputs: [draft_pr, reason]
+
+edges:
+  - from: author
+    on: outcome
+    map:
+      planned: plan                     # ⭐ 기본 — 저작 뒤 «플랜 문서(RFC)»를 만든다
+      single: implement                 # 작은 골은 플랜을 건너뛴다
+      unauthorable: stopped
+
+  # ⛔ 갈림이 «둘»이다 — 물음이 남았나 ⊕ 아크가 나왔나. 둘을 섞으면 처방이 안 갈린다.
+  #   📏 실측: rfc.arcs.length === 0 ⇒ status 'authored-empty' (어댑터 :241)
+  - from: plan
+    on: outcome
+    map:
+      arcs-with-open-questions: stopped   # ⛔ 못 닫은 설계 결정 ⇒ «사람» — 추측으로 안 간다
+      arcs-ready: decompose               # 아크가 있고 물음이 닫혔다
+      authored-empty: implement           # 아크 0 ⇒ 분해할 것이 없다 ⇒ 단일 구현
+      author-failed: heal                 # ⭐ 저작 «실패»는 사람 이전에 힐이 한 번 본다
+
+  - from: decompose
+    on: pieces
+    map:
+      many: implement                   # 조각을 «순차»로 — 한 relaunch 가 전부를 돈다
+      one: implement
+      none: stopped
+
+  - from: implement
+    to: gate
+
+  - from: gate
+    on: outcome
+    map:
+      pass: review
+      fail: rework
+    fallback:                           # ⛔ 심이 «주입 안 된» 배선의 폴백(관측 0 — 죽은 코드 아님)
+      - { node: main-sync, requires: [mergeMain, commitWork], observed: 0 }
+      - { node: open-pr,   requires: [],                      observed: 0 }
+
+  - from: review
+    on: outcome
+    map:
+      pass: main-sync
+      fail: rework
+    fallback:
+      - { node: open-pr, requires: [], observed: 0 }
+
+  # ⭐ 셀프힐 진입 — 「자식이 또 못 했다」가 아니라 「같은 실패가 반복된다」일 때.
+  - from: rework
+    on: outcome
+    map:
+      retry: implement                  # 📏 관측 194
+      exhausted: heal                   # ⭐ 라운드 예산이 마르면 «사람» 이전에 «힐»을 한 번
+
+  # 🩸⛔ 실측 2026-09-08: `heal_action` 이라는 «값»은 `src/` 전체에 0건이다.
+  #   🪞 그런데 나는 그 0을 「다섯 다 생산자가 없다」로 읽었고 ***그것이 틀렸다***(같은 날 한 시간 뒤 정정) —
+  #     같은 능력이 «다른 이름»을 갖고 있었다: `re-decompose` = TriageAction `decompose-and-retry`.
+  #   ⛔ ⇒ 「그 낱말이 0건」을 「그 능력이 없다」로 읽지 마라. 아래 표시는 «이름이 아니라 신호»를 따른다.
+  #   실제 셀프힐 어휘는 `run-supervisor.ts` 의 `action: relaunch | add-repair-task | stop`
+  #   ⊕ `SupervisorStopReason` 일곱이다. ⇒ 선언과 실행이 «다른 낱말»을 쓰고 있었다.
+  # 🩹 그래서 여기에 ***각 결과의 「생산자 상태」를 적는다***. 시험
+  #   `test/graph-heal-outcome-producers.test.ts` 가 `producible` 아닌 것을 «세고»,
+  #   그 수는 ***줄기만 한다***(늘면 문다).
+  # ⛔ 아직 못 내는 것을 «지우지» 않는다 — 대표 지시(*"셀프힐링으로 재 루프가 돌거나 저작시 분해등까지도"*)가
+  #   요구한 능력이고, 지우면 「무엇이 없는가」를 셀 자리가 사라진다.
+  - from: heal
+    on: heal_action
+    map:
+      retry: implement                  # ✅ producible — supervisor action `relaunch` 가 이것이다
+      escalate: stopped                 # ✅ producible — supervisor action `stop`(사유 일곱) 이 이것이다
+      re-decompose: decompose           # ✅ ⭐ 신호가 «있다» — TriageAction `decompose-and-retry`
+                                        #    (FailureKind `unconverged-decomposable` 에서 결정론적으로 파생)
+                                        #    📏 원장 전 우주 30일: ***47회*** 관측
+                                        #    ⚠️ 「신호가 있다」와 「이 간선을 걷는다」는 다른 값이다 —
+                                        #       결정 층은 아직 stopReason `decomposable-no-progress` 로 «멈춘다».
+      re-plan: plan                     # ⛔ absent — 대응 «개념»이 없다.
+                                        #    ⚠️ 이 다섯 중 ***유일하게 「짓는」 일***이다(나머지는 배선·순서 문제).
+      re-author: author                 # ⚠️⭐ shadowed — «신호는 난다»
+                                        #    체인: AbandonedClassification `goal-unconvergeable-candidate`
+                                        #          → goalCauseObserved → FailureKind `oversized-goal`
+                                        #    📏 원장 30일: abandoned 분류 98건 중 ***22건***(22%)
+                                        #    ⛔ 그런데 ⑴ `decomposable` 분기가 «먼저 이기고»
+                                        #       ⑵ 이겨도 행동은 `add-repair-task` 이지 「저작으로 되돌아감」이 아니다
+                                        #    ⇒ ***「없다」가 아니라 「가려져 있다」***
+                                        #    ✅⭐ 그리고 실측 결과 ***그 가림이 «옳다»*** —
+                                        #       그 15런이 15/15 «전부» decomposable 이었다
+                                        #       (kinds: decompose-and-retry 27 ↔ rework 1)
+                                        #       ⇒ 「골이 크다 ⊕ 쪼갤 수 있다」면 «먼저 쪼개는 것이 맞다»
+                                        #    📌 ⇒ ***`shadowed` 가 곧 「고칠 것」은 아니다***
+                                        #       처방은 「순서를 바꿔라」가 아니라 「가림이 정당한지 재라」다
+                                        #    ⚠️ 뒤집힐 조건 하나: 「골이 큰데 «쪼갤 수 없는»」 표본 (현재 0/15)
+      # ⛔ 반대 방향의 결손도 적는다: supervisor 의 `add-repair-task` 는 ***여기 선언이 없다***
+      #   (기존 조각을 두고 수리 조각을 «붙이는» 처방 — 이 그래프에 그 노드가 없다).
+
+  - from: main-sync
+    on: outcome
+    map:
+      pass: regate
+      conflict: heal                    # 충돌해결 실패도 힐 대상
+    fallback:
+      - { node: open-pr, requires: [], observed: 7 }
+
+  - from: regate
+    to: open-pr
+
+  - from: open-pr
+    on: outcome
+    map:
+      opened: merge
+      declined: stopped
+
+  - from: merge
+    on: outcome
+    map:
+      merged: merge                     # 종료(자기 자신 = 흡수)
+      blocked: stopped

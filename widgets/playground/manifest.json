@@ -1,0 +1,6 @@
+{
+  "name": "playground",
+  "version": "0.1.0",
+  "entry": "widget.ts",
+  "description": "Live scenario YAML editor · P5b · edits re-materialize via scenario pipeline · preview + errors UI"
+}

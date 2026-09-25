@@ -1,0 +1,24 @@
+id: gpt-5-nano
+provider: openai
+displayName: GPT-5 nano
+family: gpt-5
+familyShortcut: nano
+contextSize: 400000
+outputMaxTokens: 128000
+vision: images
+audio: { input: false, output: false }
+reasoning: low
+toolCalling: native-openai
+streamingProtocol: sse
+pricing:
+  inputPerMTok: 0.05
+  outputPerMTok: 0.4
+deprecated: null
+releaseDate: 2025-08-01
+tokenizer: cl100k
+kind: chat
+discoveryMeta:
+  source: auto-omni-crawl
+  lastSeen: 2026-05-10
+  autoFilled: true
+  confidence: high

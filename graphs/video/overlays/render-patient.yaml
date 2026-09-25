@@ -1,0 +1,19 @@
+# ⭐ 조건부 변형 — 「같은 회차에서 렌더가 두 번 이상 되돌아왔다」면 예산을 올린다.
+#
+# ⛔⭐ 관문 둘을 «먼저» 통과시켰다 (monad 에서 오버레이가 0회 얹힌 이유가 정확히 이 둘이었다):
+#   ⑴ target 이 «실제로 도는» 그래프인가  → exec-standard 는 card-news.ts 가 매 회차 싣는다 ✅
+#   ⑵ 조건 키를 실행기가 «주는가»          → cycle_attempts 를 qc 노드가 매 방문마다 올린다 ✅
+#      🔎 반증: rg -n 'cycle_attempts' scripts/card-news.ts   (⇒ 0건이면 이 오버레이는 영영 안 얹힌다)
+#
+# 🩸 계기: 2026-09-09 첫 실물 회차에서 힉스필드가 503 을 냈고 render 가 되돌아갔다.
+#   그날은 예산(3) 안에서 통과했지만, 장애가 길면 예산이 «먼저» 마른다.
+overlay_id: render-patient
+target: exec-standard
+stage: runtime
+applies_when: cycle_attempts >= 2
+patch:
+  - op: replace
+    path: /nodes/3/maxVisits        # render (⚠️ 인덱스는 «노드 순서»에 묶인다 — 이름으로 확인하라)
+    # 📏 근거: 관측 최대 2회차(2026-09-09) · 외부 API 장애는 보통 분 단위로 걷힌다.
+    #    ⛔ 「상한 없음」으로 두지 않는다 — 그러면 예산이라는 개념이 사라지고 크레딧만 탄다.
+    value: 6

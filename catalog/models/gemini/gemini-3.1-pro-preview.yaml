@@ -1,0 +1,25 @@
+id: gemini-3.1-pro-preview
+provider: gemini
+displayName: Gemini 3.1 Pro (preview)
+family: gemini-3
+familyShortcut: pro
+contextSize: 1000000
+outputMaxTokens: 64000
+vision: images
+audio: { input: true, output: false }
+reasoning: high
+toolCalling: native-gemini
+streamingProtocol: sse
+pricing:
+  inputPerMTok: 2.0
+  outputPerMTok: 12.0
+  cachedInputPerMTok: 0.20
+deprecated: null
+releaseDate: 2026-02-19
+tokenizer: gemini
+kind: chat
+discoveryMeta:
+  source: auto-omni-crawl
+  lastSeen: 2026-05-10
+  autoFilled: true
+  confidence: high

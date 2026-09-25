@@ -1,0 +1,23 @@
+id: gpt-5.5-pro
+provider: openai
+displayName: GPT-5.5 Pro
+family: gpt-5.5
+contextSize: 1000000
+outputMaxTokens: 128000
+vision: images
+audio: { input: false, output: false }
+reasoning: high
+toolCalling: native-openai
+streamingProtocol: sse
+pricing:
+  inputPerMTok: 30.0
+  outputPerMTok: 180.0
+deprecated: null
+releaseDate: 2026-04-23
+tokenizer: cl100k
+kind: chat
+discoveryMeta:
+  source: auto-omni-crawl
+  lastSeen: 2026-05-10
+  autoFilled: true
+  confidence: high

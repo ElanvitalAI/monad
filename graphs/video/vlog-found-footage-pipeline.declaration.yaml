@@ -1,0 +1,192 @@
+# 🎥 브이로그형 영상 파이프라인 — 「찍힌 소재」에서 「이야기」까지
+#
+# 대표 2026-09-19: *"그래프 엔지니어링으로 파이프라인도 생성해주세요"*
+#
+# 🚨 이 파일을 `graphs/` 로 «옮기지 마라».
+#    📏 2026-09-10 사고(evas 선언): 파싱 오류가 «하나라도» 나면 로더가 YAML 을 통째로 버리고
+#       하드코딩 상수로 폴백한다 ⇒ 파일 하나가 default-loop·plan-loop 을 «보이지 않게» 만들었다.
+#    ✅ 그래서 스키마는 하니스와 «같게» 맞추되(node_id · kind ∈ {agent,gate,git,judge} · recipe · max_visits),
+#       자리는 여기로 둔다. 런타임은 이 디렉토리를 «안 싣는다».
+#    🔎 반증: rg -n 'graphs/video' src/  ⇒ 0건이면 여전히 안 실린다.
+#
+# 📚 근거·함정 = 내부 문서 `MANUAL-vlog-from-found-footage-2026-09-19`
+#    엄브렐라(셋업·AE·ES·라우드니스) = 내부 문서 `MANUAL-script-driven-film-production-2026-09-16`
+#
+# ⭐⭐ 이 그래프의 «값»은 노드가 아니라 «되돌아가는 간선»에 있다.
+#    같은 증상이라도 원인이 다른 노드에 있다 — 그것을 map 으로 못 박았다.
+#    📏 2026-09-19 실측: 렌더에 검정 깜빡임 22회가 났는데 원인은 «렌더»도 «조립»도 아니라
+#       «컷 추출»의 플래그 하나였다(-avoid_negative_ts). 그래서 qc.blackframe → cut 이다.
+
+graph_id: vlog-found-footage-pipeline
+version: 1
+entry_node: ingest
+
+# ⛔⭐ 종단이 «넷»이다 — 「못 쟀다」를 「실패」로 접지 않는다.
+#   📏 2026-09-19: AE 모달 · 리졸브 스크립팅 정지로 «측정 자체»가 두 번 막혔다.
+#      그때 failed 로 적으면 가장 못 보는 순간에 가장 단정해진다.
+# ⛔⭐ 2026-09-22 — `tools:` 어휘를 ***걷는 자가 아는 이름***으로 맞췄다(통합 선언과 같은 수리).
+#   🩸 `local-compute` · `read-write` · `app-control` 은 워커의 `TOOL_RANK` 에 «없어서»
+#      그 노드들의 계약이 ***전부 undeclared 로 판정***됐다 — 권한 축이 죽어 있었다.
+#   ⚠️ `app-control`(GUI 앱을 «몬다») 은 워커 어휘에 «대응하는 칸이 없다» —
+#      가장 가까운 `workspace-write` 로 뒀다. ⛔ 「없는 축을 있는 칸에 접은 것」이므로
+#      워커 쪽에 app-control 랭크를 더하는 것이 «옳은 처방»이다(별건 · 그 워커는 외부다).
+terminal_nodes: [delivered, needs-human, blocked, unobserved]
+
+nodes:
+  # ── 전반: 소재에서 «구조»를 찾는다 ────────────────────────────────────
+  - node_id: ingest
+    kind: agent
+    recipe: probe-sources
+    max_visits: 2
+    contract: { inputs: [source_dir], tools: read-only, outputs: [clips, specs, has_audio] }
+
+  - node_id: transcribe
+    kind: agent
+    recipe: whisper-korean
+    max_visits: 2
+    contract: { inputs: [clips], tools: workspace-write, outputs: [transcripts, srt] }
+
+  # ⛔ 이 게이트가 이 그래프의 «분기점»이다 — 구조는 소재가 준다. 없으면 사람이 준다.
+  - node_id: structure
+    kind: gate
+    recipe: find-narrative
+    max_visits: 2
+    contract: { inputs: [transcripts], tools: read-only, outputs: [arc, peaks, why_filmed] }
+
+  - node_id: storyboard
+    kind: agent
+    recipe: author-shots-json
+    max_visits: 4
+    contract: { inputs: [arc, clips], tools: workspace-write, outputs: [shots_json, target_dur] }
+
+  # ⛔ 노트를 믿지 않는다 — 📏 실측: 제안 인점 33 중 «5»가 그 시각에 없었다.
+  - node_id: inpoints
+    kind: gate
+    recipe: verify-frames
+    max_visits: 3
+    contract: { inputs: [shots_json], tools: read-only, outputs: [drift_count, contact_sheet] }
+
+  # ── 중반: 층을 만든다 ────────────────────────────────────────────────
+  - node_id: layers
+    kind: agent
+    recipe: build-layers
+    max_visits: 4
+    contract: { inputs: [shots_json], tools: workspace-write, outputs: [map, text, leaks, scrim, grain, cards] }
+
+  - node_id: cut
+    kind: agent
+    recipe: extract-cuts-with-handles
+    max_visits: 4
+    contract: { inputs: [shots_json, clips], tools: workspace-write, outputs: [cuts, handles_json] }
+
+  # ⛔ 「초」가 아니라 «프레임»으로 센다 ⊕ start_time ⊕ 핸들 ⊕ 합
+  - node_id: cutgate
+    kind: gate
+    recipe: frame-exact-gate
+    max_visits: 3
+    contract: { inputs: [cuts, handles_json], tools: read-only, outputs: [frames_ok, editlist_ok, handles_ok] }
+
+  - node_id: audio
+    kind: agent
+    recipe: body-then-duck
+    max_visits: 3
+    contract: { inputs: [cuts, music], tools: workspace-write, outputs: [body_wav, ducked_wav] }
+
+  # ⛔ 기대를 «라벨»이 아니라 «그 자리의 실측 레벨»에서 뽑는다
+  - node_id: duckgate
+    kind: gate
+    recipe: level-based-duck-gate
+    max_visits: 3
+    contract: { inputs: [body_wav, ducked_wav], tools: read-only, outputs: [duck_db, silent_db] }
+
+  # ── 후반: 조립하고 «되읽는다» ────────────────────────────────────────
+  - node_id: assemble
+    kind: agent
+    recipe: resolve-timeline
+    max_visits: 4
+    contract: { inputs: [cuts, layers, ducked_wav], tools: workspace-write, outputs: [project, timeline] }
+
+  # ⛔ 「얹었다」를 「맞다」로 읽지 않는다 — 틈·전환길이·총프레임
+  - node_id: readback
+    kind: gate
+    recipe: timeline-readback
+    max_visits: 3
+    contract: { inputs: [timeline], tools: workspace-write, outputs: [gaps, transition_lens, end_frame] }
+
+  - node_id: render
+    kind: agent
+    recipe: export-master
+    max_visits: 3
+    contract: { inputs: [timeline], tools: workspace-write, outputs: [master] }
+
+  # ⛔ 증상마다 «되돌아갈 자리»가 다르다 — 아래 edges 가 그 지식이다
+  - node_id: qc
+    kind: gate
+    recipe: render-qc
+    max_visits: 3
+    contract: { inputs: [master, shots_json], tools: read-only, outputs: [black_frames, layer_hits, sheet_match] }
+
+  - node_id: deliver
+    kind: agent
+    recipe: encode-and-sheet
+    max_visits: 2
+    contract: { inputs: [master, shots_json], tools: workspace-write, outputs: [deliverables, review_sheet] }
+
+  # ── 종단 ────────────────────────────────────────────────────────────
+  - node_id: delivered
+    kind: judge
+    max_visits: 1
+    recipe: terminal-delivered
+  - node_id: needs-human
+    kind: judge
+    max_visits: 1
+    recipe: terminal-needs-human
+  - node_id: blocked
+    kind: judge
+    max_visits: 1
+    recipe: terminal-blocked
+  - node_id: unobserved
+    kind: judge
+    max_visits: 1
+    recipe: terminal-unobserved
+
+edges:
+  # ⛔ YAML 모양 — 워커가 «인라인 한 줄»만 읽는다. 블록 모양은 edges 가 []로 조용히 파싱된다.
+  - { from: ingest, on: outcome, map: { ok: transcribe, no-audio: storyboard, error: blocked } }
+
+  # ⛔ 소리가 없으면 전사를 건너뛴다 — 그때 구조는 «사람»이 준다(소재가 말을 안 한다).
+  - { from: transcribe, on: outcome, map: { ok: structure, empty: needs-human, error: unobserved } }
+
+  # ⭐ 이 그래프의 분기점. 「하이라이트 모음」으로 흘러가지 않게 막는 자리다.
+  - { from: structure, on: outcome, map: { found: storyboard, thin: needs-human } }
+
+  - { from: storyboard, to: inpoints }
+
+  # ⛔ 인점이 빗나가면 «스토리보드»로 되돌아간다 — 컷 추출 뒤가 아니라 «전»에 잡는다.
+  - { from: inpoints, on: outcome, map: { clean: layers, drift: storyboard, unreadable: unobserved } }
+
+  - { from: layers, on: outcome, map: { ok: cut, app-silent: unobserved, error: blocked } }
+  - { from: cut, to: cutgate }
+
+  # ⛔ 증상 셋이 «전부» cut 으로 되돌아간다 — 원인이 거기 있기 때문이다.
+  #   short=프레임 모자람(-t 초) · editlist=start_time≠0(B프레임·avoid_negative_ts) · nohandle=핸들 부재
+  - { from: cutgate, on: outcome, map: { pass: audio, short: cut, editlist: cut, nohandle: cut, unmeasurable: unobserved } }
+
+  - { from: audio, to: duckgate }
+  # ⛔ weak = 제일 중요한 대사가 안 눌린 것. 키 조정(dynaudnorm)은 «audio» 의 일이다.
+  - { from: duckgate, on: outcome, map: { pass: assemble, weak: audio, unmeasurable: unobserved } }
+
+  - { from: assemble, on: outcome, map: { ok: readback, app-silent: unobserved, error: blocked } }
+
+  # ⛔ gap 과 short-transition 은 «같은 원인»(endFrame 배타)에서 온다 — 둘 다 assemble 로.
+  - { from: readback, on: outcome, map: { pass: render, gap: assemble, short-transition: assemble, wrong-length: storyboard } }
+
+  - { from: render, on: outcome, map: { ok: qc, app-silent: unobserved, error: blocked } }
+
+  # ⭐⭐ 여기가 이 그래프의 심장 — 같은 «검정 프레임»이라도 원인 노드가 다르다.
+  #   blackframe    → cut        (📏 실측: -avoid_negative_ts 가 범인이었다. 렌더도 조립도 아니다)
+  #   layer-missing → layers     (한 층이 타임라인을 못 덮음)
+  #   sheet-mismatch→ storyboard (원장이 실물과 갈렸다 — 검수표가 «없는 자막»을 찾게 한다)
+  - { from: qc, on: outcome, map: { pass: deliver, blackframe: cut, layer-missing: layers, sheet-mismatch: storyboard, unmeasurable: unobserved } }
+
+  - { from: deliver, to: delivered }

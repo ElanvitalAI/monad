@@ -1,0 +1,35 @@
+# 🎥 vlog — 소재를 «만들지 않는다». 남이 찍어 보낸 것에서 이야기를 뽑는다.
+#
+# ⛔ 관문 둘(render-patient 가 세운 것과 같은 둘)을 여기서도 먼저 물어라:
+#   ⑴ target 이 «실제로 도는» 그래프인가 — 🔴 video-production 은 아직 «선언»이다(워커 없음)
+#   ⑵ 조건 «술어»를 실행기가 «주는가» — selected(cap) · any_selected_tier(t)
+#      🔎 반증: 워커가 그 술어를 구현하지 않으면 이 오버레이는 영영 안 얹힌다.
+#      ⛔ 종전엔 `profile == 'vlog'` 였는데, 그 키는 ***state 에 없었다***(리뷰 지적).
+#
+# 📏 근거(2026-09-19 vlog 실물): 되돌아온 간선이 cut(=compose) 쪽에 몰렸다.
+#    소재는 고정인데 «어디를 자르나»가 계속 틀렸기 때문이다.
+overlay_id: profile-found-footage
+target: video-production
+stage: runtime
+# ⛔⭐ 조건을 «갈래 이름»으로 걸지 않는다 — 갈래는 동시에 참일 수 있다(브이로그 소재로 쇼츠).
+#   ⇒ ***사실***로 건다: 「소재를 생성하지 않는다」 = 생성 능력이 스택에 없다.
+# ⛔⭐⭐ 6차 리뷰 ① — 종전 조건은 ***부재만*** 봤다(생성 능력이 «선택되지 않았다»).
+#   그런데 같은 부재가 «세 가지»를 뜻한다:
+#     ⑴ 소재가 주어졌다(의도한 사실)  ⑵ 이 기계에 생성 능력이 «없다»(결손)  ⑶ 구간을 잘라 계획했다
+#   ⇒ ⑵ 일 때 assets 예산을 6→1 로 «조이면» 가장 필요한 순간에 예산이 마른다.
+#   🔑 ***부재는 사실이 아니다.*** 그래서 «양의 사실»을 앞에 세운다 — 소재 디렉터리가 주어졌나.
+#      (`source_dir` 는 이 그래프의 state 목록에 «이미» 있다 — 새 키를 지어내지 않았다)
+# ⛔⭐ 조건은 «비교 하나»다 — DSL 에 `and`·`not` 이 «없다».
+#   ⇒ 「소재가 있고 생성을 안 쓴다」라는 ***합성 사실을 도구가 하나의 값으로*** 낸다.
+#     found_footage = (source_dir 있음) ∧ ¬selected(image-gen) ∧ ¬selected(video-gen)
+applies_when: found_footage >= 1
+patch:
+  - op: replace
+    path: /nodes/3/maxVisits          # assets — 소재를 «생성»하지 않는다(수집만)
+    value: 1
+  - op: replace
+    path: /nodes/5/maxVisits          # audio — 원본 소리를 쓴다. 생성은 음악 한 번뿐
+    value: 2
+  - op: replace
+    path: /nodes/7/maxVisits          # compose — ⭐ 여기가 이 갈래의 병목이다
+    value: 8

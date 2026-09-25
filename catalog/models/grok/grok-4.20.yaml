@@ -1,0 +1,27 @@
+id: grok-4.20
+provider: grok
+displayName: Grok 4.20 (reasoning)
+family: grok-4
+contextSize: 2000000
+outputMaxTokens: 8192
+vision: images
+audio: { input: false, output: false }
+reasoning: high
+toolCalling: native-openai
+streamingProtocol: sse
+pricing:
+  inputPerMTok: 1.25
+  outputPerMTok: 2.50
+  cachedInputPerMTok: 0.31
+rateLimits:
+  rpm: 600
+  tpm: 4000000
+deprecated: null
+releaseDate: 2026-03-09
+tokenizer: cl100k
+kind: chat
+discoveryMeta:
+  source: manual
+  lastSeen: 2026-07-19
+  autoFilled: false
+  confidence: high

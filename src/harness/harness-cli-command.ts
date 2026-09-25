@@ -1,0 +1,1288 @@
+import { execFileSync } from 'node:child_process';
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
+import { Command, Option } from 'commander';
+import { runGitCommand } from '../git-fs/runner.js';
+import { GOAL_TYPES, parseGoalType, type GoalType } from '../self-implement/goal-author.js';
+import { parseRunControlValue } from '../self-implement/run-controls.js';
+import { templateForGoalType } from '../self-implement/graph-templates.js';
+import { loadFederatedRunLedger, loadRunLedger, runLedgerDir } from '../self-implement/run-ledger.js';
+import { resolveChildLlmEffort, resolveImplementationChildModel } from '../self-dev/dev-cli.js';
+import { resolveHarnessTarget } from '../self-implement/harness-target-options.js';
+import { DevPipelineError } from '../self-dev/dev-pipeline.js';
+import { installDeliverableVerifyCliCommand, type InstallDeliverableVerifyCliDeps } from './deliverable-verify-cli.js';
+import { installHarnessCliSinkHook } from './harness-cli-sink.js';
+import { runHarnessPlanRfc } from './harness-plan-rfc.js';
+import type { MissionSolveOutcome } from './mission-solve-loop.js';
+import { formatAxis, formatAxisObservations, inspectAskMarkers, inspectUnpressedDecisionSignals } from '../../scripts/ask-marker-check.js';
+
+let harnessPlanRfcForTesting: typeof runHarnessPlanRfc | undefined;
+let harnessAskMarkerInspectorForTesting: ((ask: string) => readonly string[]) | undefined;
+let harnessUnpressedDecisionSignalInspectorForTesting:
+  | ((ask: string) => ReturnType<typeof inspectUnpressedDecisionSignals>)
+  | undefined;
+
+function warningDetailsFromAxis(axis: Parameters<typeof formatAxis>[0]): readonly string[] {
+  return [formatAxis(axis), ...formatAxisObservations(axis)]
+    .filter((detail) => detail.startsWith('⚠️') || detail.startsWith('❌'));
+}
+
+function inspectHarnessAskMarkerWarnings(ask: string): readonly string[] {
+  const inspector = harnessAskMarkerInspectorForTesting;
+  if (inspector) return inspector(ask);
+  const markerWarnings = inspectAskMarkers(ask).flatMap(warningDetailsFromAxis);
+  let unpressedWarnings: readonly string[];
+  try {
+    const inspectUnpressed = harnessUnpressedDecisionSignalInspectorForTesting ?? inspectUnpressedDecisionSignals;
+    unpressedWarnings = warningDetailsFromAxis(inspectUnpressed(ask));
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    const firstLine = message.split(/\r\n|\n|\r/, 1)[0] ?? '';
+    unpressedWarnings = [`⚠️ ask 마커 — 안 눌릴 신호 검사 실패: ${firstLine}`];
+  }
+  return [...markerWarnings, ...unpressedWarnings];
+}
+
+/** Test-only override for dry-run ask-marker inspection. */
+export function setHarnessAskMarkerInspectorForTesting(inspector: ((ask: string) => readonly string[]) | undefined): void {
+  harnessAskMarkerInspectorForTesting = inspector;
+}
+
+/** Test-only override for dry-run unpressed-decision-signal inspection. */
+export function setHarnessUnpressedDecisionSignalInspectorForTesting(
+  inspector: ((ask: string) => ReturnType<typeof inspectUnpressedDecisionSignals>) | undefined,
+): void {
+  harnessUnpressedDecisionSignalInspectorForTesting = inspector;
+}
+
+/** Test-only override for the RFC plan handler installed by the singleton CLI. */
+export function setHarnessPlanRfcForTesting(fn: typeof runHarnessPlanRfc | undefined): void {
+  harnessPlanRfcForTesting = fn;
+}
+
+export type HarnessSupervisorSource = 'flag' | 'default';
+
+/** A command-line value was rejected before any harness work began. */
+export class HarnessCliInputError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'HarnessCliInputError';
+  }
+}
+
+export interface HarnessAskSayOptions {
+  json?: boolean;
+  base?: string;
+  target?: string;
+  forcePreflight?: boolean;
+  autoMerge?: boolean;
+  observeOnly?: boolean;
+  supervise?: boolean;
+  supervisorSource?: HarnessSupervisorSource;
+  graph?: boolean;
+  goalType?: GoalType;
+  correlation?: string;
+}
+
+export interface ResolvedHarnessSupervisor {
+  readonly supervise: boolean;
+  readonly supervisorSource: HarnessSupervisorSource;
+}
+
+export function resolveHarnessSupervisor(opts: Pick<HarnessAskSayOptions, 'supervise'>): ResolvedHarnessSupervisor {
+  return opts.supervise === false
+    ? { supervise: false, supervisorSource: 'flag' }
+    : { supervise: true, supervisorSource: 'default' };
+}
+
+export interface HarnessAskSayChildLlmOptions extends HarnessAskSayOptions {
+  childLlmProvider?: string;
+  childLlmModel?: string;
+  childLlmEffort?: string;
+}
+
+export interface HarnessPlanOptions extends HarnessAskSayOptions {
+  roleLlm?: string[];
+  /** ⭐ `plan` 문만 이 값을 넘긴다 — 주입된 핸들러가 「쓸까 말까」를 알아야 한다(ask·say 엔 없다). */
+  dryRun?: boolean;
+}
+
+export type HarnessAskHandler = (goalPath: string, opts: HarnessAskSayChildLlmOptions) => Promise<void>;
+export type HarnessSayHandler = (words: string[], opts: HarnessAskSayChildLlmOptions) => Promise<void>;
+export type HarnessPlanHandler = (words: string[], opts: HarnessPlanOptions) => Promise<void>;
+export type HarnessMissionHandler = (missionId: string, opts: { executor?: 'self-implement' }) => Promise<void>;
+export type HarnessMissionLoopHandler = (missionIds: readonly string[], opts: { executor?: 'self-implement' }) => Promise<readonly MissionSolveOutcome[]>;
+
+function renderHarnessMissionOutcomes(outcomes: readonly MissionSolveOutcome[]): void {
+  for (const outcome of outcomes) {
+    const detail = outcome.detail ?? outcome.terminal;
+    console.log(`🧩 미션 '${outcome.missionId}' — ${outcome.status}${detail ? `: ${detail}` : ''}`);
+  }
+}
+
+function humanErrorLine(error: unknown): string {
+  const message = error instanceof Error ? error.message : String(error);
+  const humanMessage = message
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .find((line) => line && !/^at\s/.test(line) && !/^\s*at\s/.test(line));
+  return `❌ ${humanMessage || 'harness command failed'}`;
+}
+
+async function runInjectedHarnessHandler(run: () => Promise<void>): Promise<void> {
+  try {
+    await run();
+  } catch (error) {
+    console.error(humanErrorLine(error));
+    process.exitCode = 1;
+  }
+}
+
+function registerHarnessCommonOptions(command: Command): Command {
+  return command
+    .option('--json', '구조화 출력')
+    .option('--base <branch>', '분기 base')
+    .addOption(new Option('--no-auto-merge', 'self: PR 생성 후 자동 병합을 끔'))
+    .option('--observe-only', 'monad: child boot부터 SelfImplement 호출을 기록만 한다')
+    .addOption(new Option('--no-supervise', 'self: supervisor 재개를 끔').hideHelp())
+    .option('--graph <on|off>', 'self: graph authority를 이번 런에만 설정', (value: string) => {
+      const parsed = parseRunControlValue('graph', value);
+      if (parsed === undefined) throw new HarnessCliInputError(`--graph 값은 on 또는 off여야 함: ${value}`);
+      return parsed as boolean;
+    })
+    .option('--dry-run', '변경 없이 발사 계획만 출력');
+}
+
+type HarnessDryRunOpts = { dryRun?: boolean };
+
+function isHarnessDryRun(opts: HarnessDryRunOpts): boolean {
+  return opts.dryRun === true;
+}
+
+function renderGoalTemplateDryRun(goalPath: string, goalTypeOverride?: GoalType): string {
+  // ⛔ 「골 문서를 못 읽었다」와 「읽었는데 종류가 잘못됐다」는 «다른 값」이다 —
+  //   같은 문면으로 접으면 사람이 오타를 찾는 대신 경로를 의심한다(그 반대도 같다).
+  if (goalTypeOverride !== undefined) {
+    const template = templateForGoalType(goalTypeOverride);
+    return `[dry-run] 골 종류·템플릿: ${goalTypeOverride} · ${template?.graphId ?? '템플릿 없음'}`;
+  }
+  let document: string;
+  try {
+    document = readFileSync(goalPath, 'utf8');
+  } catch {
+    return '[dry-run] 골 종류·템플릿: 읽지 못함 · 미상';
+  }
+  const goalType = parseGoalType(document);
+  if (!goalType) return '[dry-run] 골 종류·템플릿: 미상 · 미상';
+  const template = templateForGoalType(goalType);
+  return `[dry-run] 골 종류·템플릿: ${goalType} · ${template?.graphId ?? '템플릿 없음'}`;
+}
+
+function printHarnessAskMarkerDryRun(goalPath?: string): void {
+  if (!goalPath) {
+    console.log('[dry-run] ask 마커 — 골 문서가 아직 없다 (⛔ 「경고 없음」이 아니다)');
+    return;
+  }
+  let ask: string;
+  try {
+    ask = readFileSync(goalPath, 'utf8');
+  } catch (error) {
+    const message = error instanceof Error ? error.message.split('\n')[0] : String(error);
+    console.log(`[dry-run] ⚠️ ask 마커 — 골 문서 판독 실패: ${message}`);
+    return;
+  }
+  try {
+    const warnings = inspectHarnessAskMarkerWarnings(ask);
+    if (warnings.length === 0) {
+      console.log('[dry-run] ✅ ask 마커 — 경고 없음');
+      return;
+    }
+    for (const warning of warnings) console.log(`[dry-run] ⚠️ ask 마커 — ${warning}`);
+  } catch (error) {
+    const message = error instanceof Error ? error.message.split('\n')[0] : String(error);
+    console.log(`[dry-run] ⚠️ ask 마커 — 검사 실패: ${message}`);
+  }
+}
+
+function printHarnessLaunchDryRun(preview: {
+  readonly input: string;
+  readonly entrance: string;
+  readonly wouldStart: string;
+  readonly goalPath?: string;
+  readonly goalType?: GoalType;
+  readonly graph?: boolean;
+  readonly target?: string;
+}): void {
+  console.log(`[dry-run] 입력: ${preview.input}`);
+  console.log(`[dry-run] 입구: ${preview.entrance}`);
+  console.log(`[dry-run] 시작 예정: ${preview.wouldStart}`);
+  console.log('[dry-run] 전제 검사: ask 마커만 돌렸다 · 원격 조회(열린 PR·런 원장)는 돌리지 않음');
+  printHarnessAskMarkerDryRun(preview.goalPath);
+  if (preview.graph !== undefined) console.log(`[dry-run] graph authority: ${preview.graph ? 'on' : 'off'}`);
+  if (preview.goalPath) console.log(renderGoalTemplateDryRun(preview.goalPath, preview.goalType));
+  if (preview.target !== undefined) {
+    const target = resolveHarnessTarget(preview.target);
+    console.log(`[dry-run] target: ${target.canonicalTarget ?? resolve(preview.target)} · ${target.status}`);
+  }
+}
+
+function registerHarnessAskSayOptions(command: Command): Command {
+  return registerHarnessCommonOptions(command)
+    .option('--target <path>', 'self: harness가 작업할 레포 또는 디렉터리(self-mission 전용)')
+    .option('--correlation <id>', '요청과 런을 잇는 불투명 correlation 값')
+    .addOption(new Option('--goal-type <type>', `골 종류 (${GOAL_TYPES.join('|')})`).choices([...GOAL_TYPES]))
+    .option('--force-preflight', '전제 검사 막힘을 명시 요청으로 우회(관측에 남음)')
+    .option('--child-llm-provider <id>', 'self: 구현 자식 LLM provider(--child-llm-model과 함께)')
+    .option('--child-llm-model <id>', 'self: 구현 자식 LLM model(--child-llm-provider와 함께)')
+    .option('--child-llm-effort <level>', 'self: 구현 자식 추론 노력 minimal|low|medium|high|xhigh|max — 모델 상한을 넘으면 «거부»한다(--child-llm-provider와 함께)');
+}
+
+function registerHarnessPlanOptions(command: Command): Command {
+  return registerHarnessCommonOptions(command)
+    .option(
+      '--role-llm <role=provider[/tier]>',
+      '⭐ 역할별 LLM (반복 가능 · implement|review|research|planning|audit|classify) 예: implement=grok/best · review=anthropic · planning=/best',
+      (value: string, previous: string[] = []) => [...previous, value],
+    );
+}
+
+function registerHarnessMissionOptions(command: Command): Command {
+  return command
+    .addOption(new Option('--executor <executor>', '실행기 (self-implement; 생략 시 self-implement)').choices(['self-implement']))
+    .option('--dry-run', '변경 없이 발사 계획만 출력');
+}
+
+function normalizeHarnessCommonOptions(opts: HarnessAskSayOptions): HarnessAskSayOptions {
+  return {
+    ...(opts.json ? { json: true } : {}),
+    ...(opts.base !== undefined ? { base: opts.base } : {}),
+    ...(opts.target !== undefined ? { target: opts.target } : {}),
+    ...(opts.autoMerge === false ? { autoMerge: false } : {}),
+    ...(opts.observeOnly ? { observeOnly: true } : {}),
+    ...(opts.graph !== undefined ? { graph: opts.graph } : {}),
+    ...(opts.goalType !== undefined ? { goalType: opts.goalType } : {}),
+    ...resolveHarnessSupervisor(opts),
+  };
+}
+
+function normalizeHarnessAskSayOptions(opts: HarnessAskSayChildLlmOptions): HarnessAskSayChildLlmOptions {
+  return {
+    ...normalizeHarnessCommonOptions(opts),
+    ...(opts.target !== undefined ? { target: opts.target } : {}),
+    ...(opts.correlation !== undefined ? { correlation: opts.correlation } : {}),
+    ...(opts.forcePreflight === true ? { forcePreflight: true } : {}),
+    ...(opts.childLlmProvider !== undefined ? { childLlmProvider: opts.childLlmProvider } : {}),
+    ...(opts.childLlmModel !== undefined ? { childLlmModel: opts.childLlmModel } : {}),
+    // ⛔⭐⭐ 🩸 2026-09-12 — ***이 줄이 «없어서» `--child-llm-effort` 가 조용히 삼켜졌다.***
+    //    옵션은 등록됐고 판정 함수도 맞았는데 ***통로가 «안 날랐다»***.
+    //    🔑 해석 줄에 `effort=` 가 «안 찍히는» 것으로 잡았다 — 그 줄을 둔 이유가 이것이다.
+    ...(opts.childLlmEffort !== undefined ? { childLlmEffort: opts.childLlmEffort } : {}),
+  };
+}
+
+/** Reject a supplied `--child-llm-model` at argv time — before ask/say authoring or dry-run. */
+function assertHarnessChildLlmModel(opts: HarnessAskSayChildLlmOptions): void {
+  // ⛔ 노력만 오고 모델·provider 가 없으면 «조용히 무시하지 않는다».
+  if (opts.childLlmEffort !== undefined && !opts.childLlmProvider?.trim()) {
+    throw new DevPipelineError('--child-llm-provider 필요(--child-llm-effort와 함께)');
+  }
+  if (opts.childLlmModel === undefined) return;
+  const provider = opts.childLlmProvider;
+  if (!provider?.trim()) {
+    throw new DevPipelineError('--child-llm-provider 필요(--child-llm-model과 함께)');
+  }
+  resolveImplementationChildModel(provider, opts.childLlmModel);
+  if (opts.childLlmEffort !== undefined) {
+    resolveChildLlmEffort(provider, opts.childLlmModel, opts.childLlmEffort);
+  }
+}
+
+/** Shared post-parse gate: validate child model before any ask/say early return (including `--dry-run`). */
+async function dispatchHarnessAskSay(
+  opts: HarnessAskSayChildLlmOptions & HarnessDryRunOpts,
+  dryRunPreview: {
+    readonly input: string;
+    readonly entrance: string;
+    readonly wouldStart: string;
+    readonly goalPath?: string;
+  },
+  dispatch: () => Promise<void>,
+): Promise<void> {
+  await runInjectedHarnessHandler(async () => {
+    assertHarnessChildLlmModel(opts);
+    if (isHarnessDryRun(opts)) {
+      printHarnessLaunchDryRun(dryRunPreview);
+      return;
+    }
+    await dispatch();
+  });
+}
+
+function normalizeHarnessPlanOptions(opts: HarnessPlanOptions): HarnessPlanOptions {
+  return {
+    ...normalizeHarnessCommonOptions(opts),
+    ...(Array.isArray(opts.roleLlm) && opts.roleLlm.length > 0 ? { roleLlm: opts.roleLlm } : {}),
+  };
+}
+
+export type HarnessProcessParentStatus = 'absent' | 'present' | 'unknown';
+export type HarnessProcessPidUniverse = 'complete' | 'subset';
+export type HarnessProcessLaunchdEvidence = 'managed' | 'no-evidence' | 'unqueried';
+
+export type HarnessLaunchdPidObservation =
+  | { readonly status: 'ok'; readonly pids: readonly number[] }
+  | { readonly status: 'failed'; readonly reason: string };
+
+export interface ObserveHarnessLaunchdPidsDeps {
+  readonly platform?: NodeJS.Platform | string;
+  readonly execLaunchctlList?: () => string;
+}
+
+export interface HarnessProcessRecord {
+  readonly pid: number;
+  readonly ppid: number;
+  readonly cpuPercent: number;
+  readonly elapsedSeconds: number;
+  readonly command: string;
+  readonly cwd?: string;
+  readonly cwdStatus?: 'observed' | 'unknown';
+  readonly cwdFailureReason?: string;
+  readonly ownership?: HarnessProcessOwnershipObservation;
+  readonly parentStatus?: HarnessProcessParentStatus;
+}
+
+export const HARNESS_PROCESS_OWNERSHIP_ENV = {
+  runId: 'MONAD_RUN_ID',
+  originSession: 'MONAD_ORIGIN_SESSION',
+  stateDir: 'MONAD_STATE_DIR',
+} as const;
+
+export type HarnessProcessOwnershipObservation =
+  | {
+      readonly status: 'observed';
+      readonly runId?: string;
+      readonly originSession?: string;
+      readonly stateDir?: string;
+    }
+  | {
+      readonly status: 'unknown';
+      readonly reason: string;
+    };
+
+export interface ReadProcessOwnershipDeps {
+  readonly execProcessEnv?: (pid: number) => string;
+  readonly execPsEww?: (pid: number) => string;
+  readonly execPsArgv?: (pid: number) => string;
+  readonly argvCommand?: string;
+  readonly readLinuxEnviron?: (pid: number) => string;
+}
+
+export interface HarnessProcessClassificationThresholds {
+  readonly resourceCpuPercent: number;
+  readonly longRunningElapsedSeconds: number;
+}
+
+export const HARNESS_PROCESS_RESOURCE_CPU_PERCENT = 50;
+export const HARNESS_PROCESS_LONG_RUNNING_ELAPSED_SECONDS = 60 * 60;
+
+export const DEFAULT_HARNESS_PROCESS_THRESHOLDS: HarnessProcessClassificationThresholds = {
+  resourceCpuPercent: HARNESS_PROCESS_RESOURCE_CPU_PERCENT,
+  longRunningElapsedSeconds: HARNESS_PROCESS_LONG_RUNNING_ELAPSED_SECONDS,
+};
+
+export type HarnessProcessClass = 'resource-consuming' | 'long-running-only';
+export type HarnessProcessListStage = 'ps-exec' | 'ps-parse';
+export type HarnessProcessWorktreeStage = 'lsof' | 'git-worktree-list';
+
+export interface HarnessProcessListOk {
+  readonly status: 'ok';
+  readonly records: readonly HarnessProcessRecord[];
+  readonly excludedCount: number;
+  readonly livePids?: readonly number[];
+  readonly pidUniverse?: HarnessProcessPidUniverse;
+}
+
+export interface HarnessProcessListIncomplete {
+  readonly status: 'incomplete';
+  readonly records: readonly HarnessProcessRecord[];
+  readonly stage: 'ps-parse';
+  readonly reason: string;
+  readonly malformedCount: number;
+  readonly excludedCount: number;
+  readonly livePids?: readonly number[];
+  readonly pidUniverse?: HarnessProcessPidUniverse;
+}
+
+export type HarnessProcessListObservation =
+  | HarnessProcessListOk
+  | HarnessProcessListIncomplete
+  | { readonly status: 'failed'; readonly stage: HarnessProcessListStage; readonly reason: string };
+
+export type HarnessWorktreeListObservation =
+  | { readonly status: 'ok'; readonly paths: readonly string[] }
+  | { readonly status: 'failed'; readonly stage: 'git-worktree-list'; readonly reason: string };
+
+export type HarnessProcessWorktreeAssociation =
+  | { readonly status: 'associated'; readonly path: string }
+  | { readonly status: 'unassociated' }
+  | { readonly status: 'unknown'; readonly stage: HarnessProcessWorktreeStage; readonly reason: string };
+
+export interface HarnessProcessObservationFailure {
+  readonly stage: HarnessProcessListStage;
+  readonly reason: string;
+  readonly malformedCount?: number;
+}
+
+export type HarnessProcessLastActivity =
+  | { readonly status: 'observed'; readonly timestamp: string; readonly ageSeconds: number }
+  | { readonly status: 'unknown' }
+  | { readonly status: 'absent' }
+  | { readonly status: 'lookup-failed' }
+  | { readonly status: 'unreadable' };
+
+/** lastActivity 는 런 원장 전이만 본다 — 로그 스토어는 안 본다. */
+export const HARNESS_PROCESS_LAST_ACTIVITY_SCOPE = '원장만';
+export const HARNESS_PROCESS_LAST_ACTIVITY_SCOPE_LINE =
+  'lastActivity 자: 런 원장 전이만 (로그 스토어는 안 본다)';
+
+export interface HarnessProcessLedgerEntry {
+  readonly timestamp?: string;
+}
+
+export type HarnessProcessLedgerLookup = (
+  runId: string,
+  stateDir?: string,
+) => readonly HarnessProcessLedgerEntry[] | null;
+
+export interface HarnessProcessObservationRow extends HarnessProcessRecord {
+  readonly parentStatus: HarnessProcessParentStatus;
+  readonly classification: HarnessProcessClass;
+  readonly worktree: HarnessProcessWorktreeAssociation;
+  readonly launchd?: HarnessProcessLaunchdEvidence;
+  readonly ownership: HarnessProcessOwnershipObservation;
+  readonly lastActivity: HarnessProcessLastActivity;
+}
+
+export interface HarnessProcessReport {
+  readonly thresholds: HarnessProcessClassificationThresholds;
+  readonly observationStatus: 'ok' | 'failed' | 'incomplete';
+  readonly observationFailure?: HarnessProcessObservationFailure;
+  readonly excludedCount: number;
+  readonly unclassifiedCount: number;
+  readonly parentPresentCount: number;
+  readonly resourceConsuming: readonly HarnessProcessObservationRow[];
+  readonly longRunningOnly: readonly HarnessProcessObservationRow[];
+  readonly parentUnknown: readonly HarnessProcessObservationRow[];
+}
+
+export interface HarnessProcessObservationDeps {
+  listProcesses?: () => HarnessProcessListObservation | readonly HarnessProcessRecord[];
+  listWorktrees?: () => HarnessWorktreeListObservation | readonly string[];
+  observeLaunchdPids?: () => HarnessLaunchdPidObservation;
+  lookupLedger?: HarnessProcessLedgerLookup;
+  nowMs?: number;
+  thresholds?: HarnessProcessClassificationThresholds;
+  write?: (text: string) => void;
+}
+
+export function formatHarnessProcessElapsed(seconds: number): string {
+  const safe = Number.isFinite(seconds) && seconds > 0 ? Math.floor(seconds) : 0;
+  const hours = Math.floor(safe / 3600);
+  const minutes = Math.floor((safe % 3600) / 60);
+  const rest = safe % 60;
+  if (hours > 0) return `${hours}h ${String(minutes).padStart(2, '0')}m`;
+  if (minutes > 0) return `${minutes}m ${String(rest).padStart(2, '0')}s`;
+  return `${rest}s`;
+}
+
+function observationFailureReason(error: unknown): string {
+  if (error instanceof Error && error.message.trim()) return error.message.trim();
+  const text = String(error).trim();
+  return text || 'unknown observation failure';
+}
+
+function normalizeProcessListObservation(
+  listed: HarnessProcessListObservation | readonly HarnessProcessRecord[],
+): HarnessProcessListObservation {
+  if (Array.isArray(listed)) return { status: 'ok', records: listed, excludedCount: 0 };
+  return listed as HarnessProcessListObservation;
+}
+
+function normalizeWorktreeListObservation(
+  listed: HarnessWorktreeListObservation | readonly string[],
+): HarnessWorktreeListObservation {
+  if (Array.isArray(listed)) return { status: 'ok', paths: listed };
+  return listed as HarnessWorktreeListObservation;
+}
+
+export function associateHarnessProcessWorktree(
+  record: Pick<HarnessProcessRecord, 'cwd' | 'cwdStatus' | 'cwdFailureReason'>,
+  worktrees: HarnessWorktreeListObservation | readonly string[],
+): HarnessProcessWorktreeAssociation {
+  const listed = normalizeWorktreeListObservation(worktrees);
+  if (listed.status === 'failed') return { status: 'unknown', stage: listed.stage, reason: listed.reason };
+  if (record.cwdStatus === 'unknown') {
+    return { status: 'unknown', stage: 'lsof', reason: record.cwdFailureReason ?? 'lsof cwd unconfirmed' };
+  }
+  if (record.cwdStatus !== 'observed' && !record.cwd) {
+    return { status: 'unknown', stage: 'lsof', reason: 'cwd unconfirmed' };
+  }
+  if (!record.cwd) return { status: 'unassociated' };
+  const normalized = resolve(record.cwd);
+  let best: string | undefined;
+  for (const worktree of listed.paths) {
+    const root = resolve(worktree);
+    const prefix = root.endsWith('/') ? root : `${root}/`;
+    if (normalized === root || normalized.startsWith(prefix)) {
+      if (best === undefined || root.length > best.length) best = root;
+    }
+  }
+  return best ? { status: 'associated', path: best } : { status: 'unassociated' };
+}
+
+const KERNEL_PARENT_PIDS = new Set([0, 1]);
+
+export function resolveHarnessProcessParentStatus(
+  record: Pick<HarnessProcessRecord, 'pid' | 'ppid' | 'parentStatus'>,
+  livePids: ReadonlySet<number>,
+  pidUniverse: HarnessProcessPidUniverse = 'complete',
+): HarnessProcessParentStatus {
+  if (record.parentStatus) return record.parentStatus;
+  if (KERNEL_PARENT_PIDS.has(record.ppid)) return 'absent';
+  if (livePids.has(record.ppid)) return 'present';
+  if (pidUniverse === 'subset') return 'unknown';
+  return 'absent';
+}
+
+export function classifyHarnessProcess(
+  record: HarnessProcessRecord,
+  thresholds: HarnessProcessClassificationThresholds = DEFAULT_HARNESS_PROCESS_THRESHOLDS,
+): HarnessProcessClass | undefined {
+  if (record.cpuPercent >= thresholds.resourceCpuPercent) return 'resource-consuming';
+  if (record.elapsedSeconds >= thresholds.longRunningElapsedSeconds) return 'long-running-only';
+  return undefined;
+}
+
+export function defaultLookupHarnessProcessLedger(
+  runId: string,
+  stateDir?: string,
+): readonly HarnessProcessLedgerEntry[] | null {
+  if (stateDir) {
+    const ledger = loadRunLedger(runId, runLedgerDir(stateDir));
+    if (ledger !== null) return ledger;
+  }
+  return loadFederatedRunLedger(runId, { includeTest: true });
+}
+
+export function resolveHarnessProcessLastActivity(
+  ownership: HarnessProcessOwnershipObservation,
+  lookupLedger: HarnessProcessLedgerLookup = defaultLookupHarnessProcessLedger,
+  nowMs: number = Date.now(),
+): HarnessProcessLastActivity {
+  const runId = ownership.status === 'observed' ? ownership.runId : undefined;
+  if (!runId) return { status: 'unknown' };
+  let ledger: readonly HarnessProcessLedgerEntry[] | null;
+  try {
+    ledger = lookupLedger(runId, ownership.status === 'observed' ? ownership.stateDir : undefined);
+  } catch {
+    return { status: 'lookup-failed' };
+  }
+  if (ledger === null) return { status: 'absent' };
+  const timestamp = ledger.at(-1)?.timestamp;
+  if (typeof timestamp !== 'string' || timestamp.length === 0) return { status: 'unreadable' };
+  const time = Date.parse(timestamp);
+  if (!Number.isFinite(time)) return { status: 'unreadable' };
+  const ageSeconds = Math.max(0, Math.floor((nowMs - time) / 1000));
+  return { status: 'observed', timestamp, ageSeconds };
+}
+
+export function renderHarnessProcessLastActivity(activity: HarnessProcessLastActivity): string {
+  if (activity.status === 'unknown') return '미상';
+  if (activity.status === 'absent') return '없음';
+  if (activity.status === 'lookup-failed') return '조회 실패';
+  if (activity.status === 'unreadable') return '시각 못 읽음';
+  return `${activity.timestamp} (${formatHarnessProcessElapsed(activity.ageSeconds)})`;
+}
+
+function renderHarnessProcessLastActivityCell(activity: HarnessProcessLastActivity): string {
+  const value = renderHarnessProcessLastActivity(activity);
+  if (activity.status === 'unknown') return value;
+  return `${value} · ${HARNESS_PROCESS_LAST_ACTIVITY_SCOPE}`;
+}
+
+export function parseLaunchctlListOutput(out: string): readonly number[] {
+  const pids: number[] = [];
+  const seen = new Set<number>();
+  for (const line of out.split('\n')) {
+    const match = /^\s*(\d+)\s/.exec(line);
+    if (!match) continue;
+    const pid = Number(match[1]);
+    if (!Number.isFinite(pid) || seen.has(pid)) continue;
+    seen.add(pid);
+    pids.push(pid);
+  }
+  return pids;
+}
+
+export function resolveHarnessProcessLaunchdEvidence(
+  pid: number,
+  observation: HarnessLaunchdPidObservation,
+): HarnessProcessLaunchdEvidence {
+  if (observation.status === 'failed') return 'unqueried';
+  return observation.pids.includes(pid) ? 'managed' : 'no-evidence';
+}
+
+export function observeHarnessLaunchdPids(deps: ObserveHarnessLaunchdPidsDeps = {}): HarnessLaunchdPidObservation {
+  const platform = deps.platform ?? process.platform;
+  if (platform !== 'darwin') return { status: 'failed', reason: `launchctl unavailable on ${platform}` };
+  try {
+    const out = deps.execLaunchctlList
+      ? deps.execLaunchctlList()
+      : execFileSync('launchctl', ['list'], {
+        encoding: 'utf8',
+        timeout: 5_000,
+        stdio: ['ignore', 'pipe', 'ignore'],
+      });
+    return { status: 'ok', pids: parseLaunchctlListOutput(out) };
+  } catch (error) {
+    return { status: 'failed', reason: observationFailureReason(error) };
+  }
+}
+
+export function buildHarnessProcessReport(
+  records: HarnessProcessListObservation | readonly HarnessProcessRecord[],
+  worktrees: HarnessWorktreeListObservation | readonly string[] = [],
+  thresholds: HarnessProcessClassificationThresholds = DEFAULT_HARNESS_PROCESS_THRESHOLDS,
+  pidUniverse: HarnessProcessPidUniverse = 'subset',
+  launchd: HarnessLaunchdPidObservation = { status: 'failed', reason: 'launchd observation not supplied' },
+  lookupLedger: HarnessProcessLedgerLookup = defaultLookupHarnessProcessLedger,
+  nowMs: number = Date.now(),
+): HarnessProcessReport {
+  const listed = normalizeProcessListObservation(records);
+  if (listed.status === 'failed') {
+    return {
+      thresholds,
+      observationStatus: 'failed',
+      observationFailure: { stage: listed.stage, reason: listed.reason },
+      excludedCount: 0,
+      unclassifiedCount: 0,
+      parentPresentCount: 0,
+      resourceConsuming: [],
+      longRunningOnly: [],
+      parentUnknown: [],
+    };
+  }
+  const livePids = new Set(listed.livePids ?? listed.records.map((record) => record.pid));
+  const universe = listed.pidUniverse ?? pidUniverse;
+  const resourceConsuming: HarnessProcessObservationRow[] = [];
+  const longRunningOnly: HarnessProcessObservationRow[] = [];
+  const parentUnknown: HarnessProcessObservationRow[] = [];
+  let unclassifiedCount = 0;
+  let parentPresentCount = 0;
+  for (const record of listed.records) {
+    const classification = classifyHarnessProcess(record, thresholds);
+    if (classification === undefined) {
+      unclassifiedCount += 1;
+      continue;
+    }
+    const parentStatus = resolveHarnessProcessParentStatus(record, livePids, universe);
+    if (parentStatus === 'present') {
+      parentPresentCount += 1;
+      continue;
+    }
+    const ownership = resolveHarnessProcessOwnership(record);
+    const row: HarnessProcessObservationRow = {
+      ...record,
+      parentStatus,
+      classification,
+      worktree: associateHarnessProcessWorktree(record, worktrees),
+      launchd: resolveHarnessProcessLaunchdEvidence(record.pid, launchd),
+      ownership,
+      lastActivity: resolveHarnessProcessLastActivity(ownership, lookupLedger, nowMs),
+    };
+    if (parentStatus === 'unknown') parentUnknown.push(row);
+    else if (classification === 'resource-consuming') resourceConsuming.push(row);
+    else longRunningOnly.push(row);
+  }
+  if (listed.status === 'incomplete') {
+    return {
+      thresholds,
+      observationStatus: 'incomplete',
+      observationFailure: {
+        stage: listed.stage,
+        reason: listed.reason,
+        malformedCount: listed.malformedCount,
+      },
+      excludedCount: listed.excludedCount,
+      unclassifiedCount,
+      parentPresentCount,
+      resourceConsuming,
+      longRunningOnly,
+      parentUnknown,
+    };
+  }
+  return {
+    thresholds,
+    observationStatus: 'ok',
+    excludedCount: listed.excludedCount,
+    unclassifiedCount,
+    parentPresentCount,
+    resourceConsuming,
+    longRunningOnly,
+    parentUnknown,
+  };
+}
+
+function renderWorktreeAssociation(worktree: HarnessProcessWorktreeAssociation): string {
+  if (worktree.status === 'associated') return worktree.path;
+  if (worktree.status === 'unassociated') return 'unassociated';
+  return `확인 불가(${worktree.stage}: ${worktree.reason})`;
+}
+
+function renderLaunchdEvidence(evidence: HarnessProcessLaunchdEvidence): string {
+  if (evidence === 'managed') return 'launchd 가 관리한다';
+  if (evidence === 'no-evidence') return '근거 없음';
+  return '못 물어봤다';
+}
+
+function renderOwnershipObservation(ownership: HarnessProcessOwnershipObservation): string {
+  if (ownership.status === 'unknown') return `확인 불가(${ownership.reason})`;
+  const parts: string[] = [];
+  if (ownership.runId) parts.push(`run=${ownership.runId}`);
+  if (ownership.originSession) parts.push(`session=${ownership.originSession}`);
+  if (ownership.stateDir) parts.push(`state=${ownership.stateDir}`);
+  return parts.length > 0 ? parts.join(' ') : '없음';
+}
+
+function renderHarnessProcessRow(row: HarnessProcessObservationRow): string[] {
+  return [
+    `- pid=${row.pid} ppid=${row.ppid} elapsed=${formatHarnessProcessElapsed(row.elapsedSeconds)} cpu=${row.cpuPercent.toFixed(1)}% worktree=${renderWorktreeAssociation(row.worktree)} lastActivity=${renderHarnessProcessLastActivityCell(row.lastActivity)}`,
+    `  command=${row.command}`,
+    `  launchd=${renderLaunchdEvidence(row.launchd ?? 'unqueried')}`,
+    `  ownership=${renderOwnershipObservation(row.ownership)}`,
+  ];
+}
+
+export function renderHarnessProcessReport(report: HarnessProcessReport): string[] {
+  const { resourceCpuPercent, longRunningElapsedSeconds } = report.thresholds;
+  const lines = [
+    '━━ harness processes (READ-ONLY) ━━',
+    '프로세스를 죽이지 않는다 — 종료는 사람 판단이다',
+    `분류 기준: 자원소비 CPU >= ${resourceCpuPercent}% · 장기실행만 경과 >= ${formatHarnessProcessElapsed(longRunningElapsedSeconds)} 그리고 CPU < ${resourceCpuPercent}%`,
+    '대상: 부모 부재가 확인된 프로세스만 자원소비/장기실행만에 넣는다',
+    HARNESS_PROCESS_LAST_ACTIVITY_SCOPE_LINE,
+  ];
+  if (report.observationStatus === 'failed') {
+    const failure = report.observationFailure;
+    lines.push(`관찰 실패/확인 불가 (${failure?.stage ?? 'ps-exec'}: ${failure?.reason ?? 'unknown observation failure'})`);
+    lines.push('자원소비와 장기실행만은 확인하지 않았다 — 빈 관찰이 아니다');
+    return lines;
+  }
+  if (report.observationStatus === 'incomplete') {
+    const failure = report.observationFailure;
+    lines.push(`불완전 관측 (ps-parse: ${failure?.reason ?? 'unparseable ps rows'}) · 해석 실패 ${failure?.malformedCount ?? 0}행`);
+    lines.push('일부 행만 해석됐다 — 아래 수는 확정이 아니다');
+  }
+  if (report.excludedCount > 0) {
+    lines.push(`모집단 제외 ${report.excludedCount}행`);
+    lines.push('제외 기준: command에 monad.mjs를 포함하지 않은 행');
+  }
+  lines.push(`분류 제외 ${report.unclassifiedCount}행`);
+  lines.push(`부모 생존 제외 ${report.parentPresentCount}행`);
+  lines.push(`자원소비 ${report.resourceConsuming.length} · 장기실행만 ${report.longRunningOnly.length}`);
+  if (report.parentUnknown.length > 0) lines.push(`부모 확인 불가 ${report.parentUnknown.length} — 자원소비/장기실행만에 넣지 않았다`);
+  const empty = report.resourceConsuming.length === 0 && report.longRunningOnly.length === 0 && report.parentUnknown.length === 0;
+  if (empty && report.observationStatus === 'ok') {
+    lines.push('관찰 대상 없음');
+    return lines;
+  }
+  if (empty && report.observationStatus === 'incomplete') {
+    lines.push('해석된 행 중 분류 대상이 없다 — 빈 관찰이 아니다');
+    return lines;
+  }
+  if (report.resourceConsuming.length > 0) {
+    lines.push('자원소비:');
+    for (const row of report.resourceConsuming) lines.push(...renderHarnessProcessRow(row));
+  }
+  if (report.longRunningOnly.length > 0) {
+    lines.push('장기실행만:');
+    for (const row of report.longRunningOnly) lines.push(...renderHarnessProcessRow(row));
+  }
+  if (report.parentUnknown.length > 0) {
+    lines.push('부모 확인 불가:');
+    for (const row of report.parentUnknown) lines.push(...renderHarnessProcessRow(row));
+  }
+  return lines;
+}
+
+function parsePsEtime(raw: string): number | undefined {
+  const daysSplit = raw.split('-');
+  let days = 0;
+  let clock = raw;
+  if (daysSplit.length === 2) {
+    days = Number(daysSplit[0]);
+    clock = daysSplit[1] ?? '';
+  }
+  if (!Number.isFinite(days)) return undefined;
+  const parts = clock.split(':').map((part) => Number(part));
+  if (parts.length === 0 || parts.some((part) => !Number.isFinite(part))) return undefined;
+  if (parts.length === 3) return days * 86400 + parts[0]! * 3600 + parts[1]! * 60 + parts[2]!;
+  if (parts.length === 2) return days * 86400 + parts[0]! * 60 + parts[1]!;
+  if (parts.length === 1) return days * 86400 + parts[0]!;
+  return undefined;
+}
+
+type ParsedHarnessProcessPsLine =
+  | { readonly kind: 'record'; readonly record: HarnessProcessRecord }
+  | { readonly kind: 'blank' }
+  | { readonly kind: 'excluded'; readonly pid: number }
+  | { readonly kind: 'malformed'; readonly line: string; readonly pid?: number };
+
+function parseHarnessProcessPsPid(line: string): number | undefined {
+  const match = /^\s*(\d+)\s+(\d+)\b/.exec(line);
+  if (!match) return undefined;
+  const pid = Number(match[1]);
+  return Number.isFinite(pid) ? pid : undefined;
+}
+
+function parseHarnessProcessPsLine(line: string): ParsedHarnessProcessPsLine {
+  const trimmed = line.trim();
+  if (!trimmed) return { kind: 'blank' };
+  const match = /^\s*(\d+)\s+(\d+)\s+(\d+(?:[.,]\d+)?)\s+(\S+)\s+(.*)$/.exec(line);
+  if (!match) return { kind: 'malformed', line: trimmed, pid: parseHarnessProcessPsPid(line) };
+  const command = match[5]!.trim();
+  const pid = Number(match[1]);
+  if (!command.includes('monad.mjs')) return { kind: 'excluded', pid };
+  const elapsedSeconds = parsePsEtime(match[4]!);
+  if (elapsedSeconds === undefined) return { kind: 'malformed', line: trimmed, pid };
+  return {
+    kind: 'record',
+    record: {
+      pid,
+      ppid: Number(match[2]),
+      cpuPercent: Number(match[3]!.replace(',', '.')),
+      elapsedSeconds,
+      command,
+    },
+  };
+}
+
+export function parseHarnessProcessPsOutput(out: string): HarnessProcessListObservation {
+  const records: HarnessProcessRecord[] = [];
+  const malformed: string[] = [];
+  const livePids: number[] = [];
+  const seenPids = new Set<number>();
+  let excludedCount = 0;
+  let sawContent = false;
+  let pidUniverse: HarnessProcessPidUniverse = 'complete';
+  const rememberPid = (pid: number | undefined): void => {
+    if (pid === undefined) {
+      pidUniverse = 'subset';
+      return;
+    }
+    if (seenPids.has(pid)) return;
+    seenPids.add(pid);
+    livePids.push(pid);
+  };
+  for (const line of out.split('\n')) {
+    const parsed = parseHarnessProcessPsLine(line);
+    if (parsed.kind === 'blank') continue;
+    if (parsed.kind === 'excluded') {
+      excludedCount++;
+      rememberPid(parsed.pid);
+      continue;
+    }
+    sawContent = true;
+    rememberPid(parsed.kind === 'record' ? parsed.record.pid : parsed.pid);
+    if (parsed.kind === 'malformed') {
+      malformed.push(parsed.line);
+      continue;
+    }
+    records.push(parsed.record);
+  }
+  if (malformed.length > 0) {
+    const reason = `unparseable ps rows: ${malformed.slice(0, 3).join(' | ')}`;
+    if (records.length === 0 && sawContent) return { status: 'failed', stage: 'ps-parse', reason };
+    return {
+      status: 'incomplete',
+      records,
+      stage: 'ps-parse',
+      reason,
+      malformedCount: malformed.length,
+      excludedCount,
+      livePids,
+      pidUniverse,
+    };
+  }
+  return { status: 'ok', records, excludedCount, livePids, pidUniverse };
+}
+
+function readProcessCwd(pid: number): Pick<HarnessProcessRecord, 'cwd' | 'cwdStatus' | 'cwdFailureReason'> {
+  try {
+    const out = execFileSync('lsof', ['-a', '-p', String(pid), '-d', 'cwd', '-Fn'], {
+      encoding: 'utf8',
+      timeout: 2_000,
+      stdio: ['ignore', 'pipe', 'ignore'],
+    });
+    const line = out.split('\n').find((entry) => entry.startsWith('n'));
+    const cwd = line?.slice(1).trim();
+    if (!cwd) return { cwdStatus: 'unknown', cwdFailureReason: 'lsof cwd missing' };
+    return { cwd, cwdStatus: 'observed' };
+  } catch (error) {
+    return { cwdStatus: 'unknown', cwdFailureReason: observationFailureReason(error) };
+  }
+}
+
+const OWNERSHIP_ENV_KEYS = new Set<string>(Object.values(HARNESS_PROCESS_OWNERSHIP_ENV));
+
+function ownershipValueFromEntry(entry: string, key: string): string | undefined {
+  const prefix = `${key}=`;
+  if (!entry.startsWith(prefix)) return undefined;
+  const value = entry.slice(prefix.length);
+  return value.length > 0 ? value : undefined;
+}
+
+function parseOwnershipEnvEntries(entries: readonly string[]): HarnessProcessOwnershipObservation {
+  let runId: string | undefined;
+  let originSession: string | undefined;
+  let stateDir: string | undefined;
+  for (const entry of entries) {
+    if (!entry.includes('=')) continue;
+    const key = entry.slice(0, entry.indexOf('='));
+    if (!OWNERSHIP_ENV_KEYS.has(key)) continue;
+    const value = ownershipValueFromEntry(entry, key);
+    if (key === HARNESS_PROCESS_OWNERSHIP_ENV.runId) runId = value;
+    else if (key === HARNESS_PROCESS_OWNERSHIP_ENV.originSession) originSession = value;
+    else if (key === HARNESS_PROCESS_OWNERSHIP_ENV.stateDir) stateDir = value;
+  }
+  return {
+    status: 'observed',
+    ...(runId ? { runId } : {}),
+    ...(originSession ? { originSession } : {}),
+    ...(stateDir ? { stateDir } : {}),
+  };
+}
+
+export function parseProcessOwnershipEnv(out: string): HarnessProcessOwnershipObservation {
+  return parseOwnershipEnvEntries(out.split('\0'));
+}
+
+function extractPsEwwCommandColumn(out: string): string | undefined {
+  for (const line of out.split(/\r?\n/)) {
+    if (!line.trim()) continue;
+    if (/^\s*PID\b/.test(line) && /\bCOMMAND\b/.test(line)) continue;
+    const match = /^\s*\d+\s+\S+\s+\S+\s+\S+\s+(.*)$/.exec(line);
+    if (!match) return undefined;
+    const command = match[1]!.trim();
+    return command.length > 0 ? command : undefined;
+  }
+  return undefined;
+}
+
+function envRegionAfterConfirmedArgvPrefix(commandColumn: string, argvCommand: string): string | undefined {
+  const argv = argvCommand.trim();
+  const column = commandColumn.trim();
+  if (argv.length === 0) return undefined;
+  const matches: number[] = [];
+  for (let index = 0; index <= column.length - argv.length; index++) {
+    if (column.slice(index, index + argv.length) !== argv) continue;
+    const end = index + argv.length;
+    const beforeOk = index === 0 || /\s/.test(column[index - 1]!);
+    const afterOk = end === column.length || /\s/.test(column[end]!);
+    if (beforeOk && afterOk) matches.push(index);
+  }
+  if (matches.length !== 1 || matches[0] !== 0) return undefined;
+  return column.slice(argv.length).trimStart();
+}
+
+function parsePsEwwEnvRegion(envRegion: string): HarnessProcessOwnershipObservation {
+  const assignmentRe = /(^|\s)([A-Za-z_][A-Za-z0-9_]*)=/g;
+  const assignments: Array<{ key: string; keyStart: number; valueStart: number }> = [];
+  for (const match of envRegion.matchAll(assignmentRe)) {
+    const lead = match[1] ?? '';
+    assignments.push({
+      key: match[2]!,
+      keyStart: (match.index ?? 0) + lead.length,
+      valueStart: (match.index ?? 0) + match[0].length,
+    });
+  }
+  const entries: string[] = [];
+  for (let i = 0; i < assignments.length; i++) {
+    const current = assignments[i]!;
+    if (!OWNERSHIP_ENV_KEYS.has(current.key)) continue;
+    const valueEnd = i + 1 < assignments.length ? assignments[i + 1]!.keyStart : envRegion.length;
+    entries.push(`${current.key}=${envRegion.slice(current.valueStart, valueEnd).trimEnd()}`);
+  }
+  return parseOwnershipEnvEntries(entries);
+}
+
+export function parsePsEwwOwnershipEnv(out: string, argvCommand: string): HarnessProcessOwnershipObservation {
+  const commandColumn = extractPsEwwCommandColumn(out);
+  if (commandColumn === undefined) return { status: 'unknown', reason: 'ps eww: command column unreadable' };
+  const envRegion = envRegionAfterConfirmedArgvPrefix(commandColumn, argvCommand);
+  if (envRegion === undefined) return { status: 'unknown', reason: 'ps eww: argv prefix unconfirmed' };
+  return parsePsEwwEnvRegion(envRegion);
+}
+
+export function resolveHarnessProcessOwnership(
+  record: Pick<HarnessProcessRecord, 'ownership'>,
+): HarnessProcessOwnershipObservation {
+  return record.ownership ?? { status: 'unknown', reason: 'ownership unconfirmed' };
+}
+
+function readLinuxEnvironFile(pid: number): string {
+  return readFileSync(`/proc/${pid}/environ`, { encoding: 'utf8' });
+}
+
+function readPsEwwOutput(pid: number): string {
+  const out = execFileSync('ps', ['eww', '-p', String(pid)], {
+    encoding: 'utf8',
+    timeout: 2_000,
+    stdio: ['ignore', 'pipe', 'ignore'],
+  });
+  if (typeof out !== 'string' || !out.trim()) throw new Error('ps eww: empty output');
+  return out;
+}
+
+function readPsArgv(pid: number): string {
+  const out = execFileSync('ps', ['-www', '-p', String(pid), '-o', 'command='], {
+    encoding: 'utf8',
+    timeout: 2_000,
+    stdio: ['ignore', 'pipe', 'ignore'],
+  });
+  const argv = typeof out === 'string' ? out.trim() : '';
+  if (!argv) throw new Error('ps argv: empty output');
+  return argv;
+}
+
+function readPsEwwOwnership(pid: number, deps: ReadProcessOwnershipDeps): HarnessProcessOwnershipObservation {
+  const out = (deps.execPsEww ?? readPsEwwOutput)(pid);
+  if (typeof out !== 'string' || !out.trim()) throw new Error('ps eww: empty output');
+  const argv = deps.argvCommand ?? (deps.execPsArgv ?? readPsArgv)(pid);
+  return parsePsEwwOwnershipEnv(out, argv);
+}
+
+export function readProcessOwnership(
+  pid: number,
+  deps: ReadProcessOwnershipDeps = {},
+): HarnessProcessOwnershipObservation {
+  try {
+    if (deps.execProcessEnv) {
+      try {
+        return parseProcessOwnershipEnv(deps.execProcessEnv(pid));
+      } catch {
+        return readPsEwwOwnership(pid, deps);
+      }
+    }
+    const tryLinuxFirst = deps.readLinuxEnviron !== undefined || deps.execPsEww === undefined;
+    if (tryLinuxFirst) {
+      try {
+        return parseProcessOwnershipEnv((deps.readLinuxEnviron ?? readLinuxEnvironFile)(pid));
+      } catch {
+        return readPsEwwOwnership(pid, deps);
+      }
+    }
+    return readPsEwwOwnership(pid, deps);
+  } catch (error) {
+    return { status: 'unknown', reason: observationFailureReason(error) };
+  }
+}
+
+function defaultListHarnessProcesses(): HarnessProcessListObservation {
+  let out: string;
+  try {
+    out = execFileSync('ps', ['-axo', 'pid=,ppid=,pcpu=,etime=,command='], {
+      encoding: 'utf8',
+      timeout: 5_000,
+      stdio: ['ignore', 'pipe', 'ignore'],
+    });
+  } catch (error) {
+    return { status: 'failed', stage: 'ps-exec', reason: observationFailureReason(error) };
+  }
+  const parsed = parseHarnessProcessPsOutput(out);
+  if (parsed.status === 'failed') return parsed;
+  const records = parsed.records.map((record) => ({
+    ...record,
+    ...readProcessCwd(record.pid),
+    ownership: readProcessOwnership(record.pid),
+  }));
+  if (parsed.status === 'incomplete') {
+    return {
+      status: 'incomplete',
+      records,
+      stage: parsed.stage,
+      reason: parsed.reason,
+      malformedCount: parsed.malformedCount,
+      excludedCount: parsed.excludedCount,
+      livePids: parsed.livePids,
+      pidUniverse: parsed.pidUniverse,
+    };
+  }
+  return {
+    status: 'ok',
+    records,
+    excludedCount: parsed.excludedCount,
+    livePids: parsed.livePids,
+    pidUniverse: parsed.pidUniverse,
+  };
+}
+
+function defaultListHarnessWorktreePaths(): HarnessWorktreeListObservation {
+  try {
+    const result = runGitCommand(process.cwd(), ['worktree', 'list', '--porcelain'], {
+      encoding: 'utf8',
+      timeout: 5_000,
+      stdio: ['ignore', 'pipe', 'ignore'],
+    });
+    if (result.status !== 0) {
+      return {
+        status: 'failed',
+        stage: 'git-worktree-list',
+        reason: result.stderr.trim() || `git worktree list failed (status=${result.status})`,
+      };
+    }
+    const paths: string[] = [];
+    for (const line of result.stdout.split('\n')) {
+      if (line.startsWith('worktree ')) paths.push(line.slice('worktree '.length).trim());
+    }
+    return { status: 'ok', paths };
+  } catch (error) {
+    return { status: 'failed', stage: 'git-worktree-list', reason: observationFailureReason(error) };
+  }
+}
+
+function installHarnessProcessObservationCommand(
+  harnessCmd: Command,
+  deps: HarnessProcessObservationDeps = {},
+): Command {
+  const write = deps.write ?? ((text: string) => { console.log(text); });
+  return harnessCmd
+    .command('processes')
+    .description('이 저장소가 띄운 OS 프로세스를 읽기 전용으로 분류한다. 자원을 먹는 무리와 오래 떠 있는 무리를 가른다. 죽이지 않는다.')
+    .action(() => {
+      const records = deps.listProcesses?.() ?? defaultListHarnessProcesses();
+      const worktrees = deps.listWorktrees?.() ?? defaultListHarnessWorktreePaths();
+      const launchd = deps.observeLaunchdPids?.() ?? observeHarnessLaunchdPids();
+      const report = buildHarnessProcessReport(
+        records,
+        worktrees,
+        deps.thresholds ?? DEFAULT_HARNESS_PROCESS_THRESHOLDS,
+        'subset',
+        launchd,
+        deps.lookupLedger ?? defaultLookupHarnessProcessLedger,
+        deps.nowMs ?? Date.now(),
+      );
+      for (const line of renderHarnessProcessReport(report)) write(line);
+    });
+}
+
+export interface HarnessCliCommandDeps {
+  registerSink: (surface: string) => Promise<void>;
+  resolveSurface: () => Promise<string>;
+  deliverableVerify?: InstallDeliverableVerifyCliDeps;
+  processObservation?: HarnessProcessObservationDeps;
+  ask?: HarnessAskHandler;
+  say?: HarnessSayHandler;
+  plan?: HarnessPlanHandler;
+  /** ⭐ `plan` 주입이 «없을 때» 가는 기본 분기. 시험이 이 자리로 «CLI 의 기본 배선»을 문다
+   *  (⛔ 주입된 `plan` 이 파일을 스스로 만들면 그 시험은 배선을 «못 답한다» — 무인 리뷰 GOODHART 지적). */
+  planRfc?: typeof runHarnessPlanRfc;
+  mission?: HarnessMissionHandler;
+  missionLoop?: HarnessMissionLoopHandler;
+}
+
+export function installHarnessCliCommand(program: Command, deps: HarnessCliCommandDeps): Command {
+  const harnessCmd = program
+    .command('harness')
+    .description('dev-harness worktree 수명 — 워크트리 생성(worktree add)·조회(worktrees)·정리(clean)·프로세스 관찰(processes)');
+  installHarnessCliSinkHook(harnessCmd, deps.registerSink, deps.resolveSurface);
+  installDeliverableVerifyCliCommand(harnessCmd, deps.deliverableVerify);
+  installHarnessProcessObservationCommand(harnessCmd, deps.processObservation);
+
+  const ask = deps.ask;
+  if (ask) {
+    registerHarnessAskSayOptions(harnessCmd.command('ask <goal-path>').description('골 문서 경로를 받아 구동한다'))
+      .action(async (goalPath: string, opts: HarnessAskSayChildLlmOptions & HarnessDryRunOpts) => {
+        await dispatchHarnessAskSay(
+          opts,
+          {
+            input: goalPath,
+            entrance: 'cli-harness-ask',
+            wouldStart: '워크트리 · 브랜치 · 자식 · 파이프라인',
+            goalPath,
+            ...(opts.goalType !== undefined ? { goalType: opts.goalType } : {}),
+            ...(opts.graph !== undefined ? { graph: opts.graph } : {}),
+            ...(opts.target !== undefined ? { target: opts.target } : {}),
+          },
+          () => ask(goalPath, normalizeHarnessAskSayOptions(opts)),
+        );
+      });
+  }
+
+  const say = deps.say;
+  if (say) {
+    registerHarnessAskSayOptions(harnessCmd.command('say <sentence...>').description('문장을 받아 구동한다'))
+      .action(async (sentence: string[], opts: HarnessAskSayChildLlmOptions & HarnessDryRunOpts) => {
+        await dispatchHarnessAskSay(
+          opts,
+          {
+            input: sentence.join(' '),
+            entrance: 'cli-harness-say',
+            wouldStart: '골 문서 · 워크트리 · 브랜치 · 자식 · 파이프라인',
+            ...(opts.graph !== undefined ? { graph: opts.graph } : {}),
+            ...(opts.target !== undefined ? { target: opts.target } : {}),
+          },
+          () => say(sentence, normalizeHarnessAskSayOptions(opts)),
+        );
+      });
+  }
+
+  const plan = deps.plan;
+  registerHarnessPlanOptions(harnessCmd.command('plan <sentence...>').description('RFC를 쓰고 실행하지 않는다'))
+    .action(async (sentence: string[], opts: HarnessPlanOptions & HarnessDryRunOpts) => {
+      const input = sentence.join(' ');
+      const dryRun = isHarnessDryRun(opts);
+      await runInjectedHarnessHandler(async () => {
+        // ⛔⭐ `deps.plan` 은 «시험 주입»용이다. 운영은 주입이 «없어» RFC 문으로 간다
+        //   (src/index.ts 가 이 자리에 아무것도 안 준다 — 그 이유가 거기 주석에 있다).
+        if (plan) { await plan(sentence, { ...normalizeHarnessPlanOptions(opts), dryRun }); return; }
+        // ⛔ `rootDir`를 넘기지 않는다. 기본 handler는 harnessPlanRfcRoot()로 cwd에서 저장소 루트를 찾는다.
+        await (harnessPlanRfcForTesting ?? deps.planRfc ?? runHarnessPlanRfc)(input, { dryRun });
+      });
+    });
+
+  const mission = deps.mission;
+  const missionLoop = deps.missionLoop;
+  if (mission) {
+    registerHarnessMissionOptions(harnessCmd.command('mission <mission-ids...>').description('기존 미션 하나 또는 여러 개를 읽어 하니스로 해결한다'))
+      .action(async (missionIds: string[], opts: { executor?: 'self-implement' } & HarnessDryRunOpts) => {
+        if (isHarnessDryRun(opts)) {
+          printHarnessLaunchDryRun({
+            input: missionIds.join(' '),
+            entrance: 'cli-harness-mission',
+            wouldStart: missionIds.length === 1
+              ? '기존 미션 read · 워크트리 · 하니스 실행기'
+              : `기존 미션 ${missionIds.join(', ')} read · 순차 하니스 실행기`,
+          });
+          return;
+        }
+        const missionOpts = { ...(opts.executor !== undefined ? { executor: opts.executor } : {}) };
+        if (missionIds.length === 1) {
+          await runInjectedHarnessHandler(() => mission(missionIds[0]!, missionOpts));
+          return;
+        }
+        if (!missionLoop) {
+          console.error('❌ harness mission 다건 실행기를 사용할 수 없음');
+          process.exitCode = 1;
+          return;
+        }
+        try {
+          renderHarnessMissionOutcomes(await missionLoop(missionIds, missionOpts));
+        } catch (error) {
+          console.error(humanErrorLine(error));
+          process.exitCode = 1;
+        }
+      });
+  }
+  return harnessCmd;
+}

@@ -1,0 +1,24 @@
+id: openai
+displayName: OpenAI / Codex
+aliases: [openai-codex, codex]
+modelPrefixes: [gpt-, o1-, o3-, o4-, codex-]
+apiKeyEnv: OPENAI_API_KEY
+endpointPattern: https://api.openai.com
+defaultStreaming: sse
+toolCallingFormat: native-openai
+capabilities:
+  sessionResume: false
+  mcp: false
+  hooks: false
+  skills: true
+  agents: false
+  toolRestrictions: true
+  structuredOutput: true
+  envInjection: false
+  costControl: false
+  effortControl: true
+  thinkingControl: false
+  fallbackModel: false
+  sandbox: false
+  multiHostFanout: false
+builtIn: true

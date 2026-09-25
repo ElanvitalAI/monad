@@ -1,0 +1,83 @@
+description: |
+  4-provider feature implementation comparison — opus / xai / codex / gemini
+  로 같은 작은 feature 구현 prompt 를 실행하여 코드 품질 / 정확도 / 속도
+  비교. 분석 발화 sweep (codex-baseline.yaml) 의 자매 scenario.
+
+  주의: 모델은 실제 Edit 을 시도할 수 있으나 sandbox 가 아닌 실제 cwd 에
+  쓰므로 결과 검증 후 git restore. 또는 silent 모드에서 모델이 답변으로
+  patch 만 출력하도록 prompt 설계 — 본 scenario 는 후자.
+
+defaults:
+  cwd: ../..  # this scenario lives in monad-agent/tests/scenarios/
+  asserts:
+    text_min_chars: 200    # 패치 + 설명이 들어가려면 최소 길이
+
+prompts:
+  # 같은 prompt 를 4 provider 로 (analysis + 구현 patch only, 실제 edit 금지)
+  - id: feature-opus
+    rotate: opus
+    prompt: |
+      `src/index.ts` 의 `repro` 명령에 `--temperature <n>` 옵션을 추가하는
+      patch 를 작성해 주세요. 요구사항:
+
+      1. commander option: `--temperature <n>` (number)
+      2. action handler 에서 `askOpts.temperature = parsed_n` 으로 전달
+         (parseFloat + isFinite 검증)
+      3. EvalPromptOpts (src/eval-prompt-cli.ts) 에 `temperature?: number`
+         필드 추가 + runEvalPrompt 에서 streamLLMWithTools 의 opts 에
+         그대로 패스
+      4. 기존 default (없을 때 provider 기본값 0.3) 는 유지
+
+      **출력**: 실제로 Edit 도구를 사용하지 말고, **답변 텍스트로 unified
+      diff 형식의 patch + 한 단락 설명** 만 작성하세요.
+
+  - id: feature-xai
+    rotate: xai
+    prompt: |
+      `src/index.ts` 의 `repro` 명령에 `--temperature <n>` 옵션을 추가하는
+      patch 를 작성해 주세요. 요구사항:
+
+      1. commander option: `--temperature <n>` (number)
+      2. action handler 에서 `askOpts.temperature = parsed_n` 으로 전달
+         (parseFloat + isFinite 검증)
+      3. EvalPromptOpts (src/eval-prompt-cli.ts) 에 `temperature?: number`
+         필드 추가 + runEvalPrompt 에서 streamLLMWithTools 의 opts 에
+         그대로 패스
+      4. 기존 default (없을 때 provider 기본값 0.3) 는 유지
+
+      **출력**: 실제로 Edit 도구를 사용하지 말고, **답변 텍스트로 unified
+      diff 형식의 patch + 한 단락 설명** 만 작성하세요.
+
+  - id: feature-codex
+    rotate: codex
+    prompt: |
+      `src/index.ts` 의 `repro` 명령에 `--temperature <n>` 옵션을 추가하는
+      patch 를 작성해 주세요. 요구사항:
+
+      1. commander option: `--temperature <n>` (number)
+      2. action handler 에서 `askOpts.temperature = parsed_n` 으로 전달
+         (parseFloat + isFinite 검증)
+      3. EvalPromptOpts (src/eval-prompt-cli.ts) 에 `temperature?: number`
+         필드 추가 + runEvalPrompt 에서 streamLLMWithTools 의 opts 에
+         그대로 패스
+      4. 기존 default (없을 때 provider 기본값 0.3) 는 유지
+
+      **출력**: 실제로 Edit 도구를 사용하지 말고, **답변 텍스트로 unified
+      diff 형식의 patch + 한 단락 설명** 만 작성하세요.
+
+  - id: feature-gemini
+    rotate: gemini
+    prompt: |
+      `src/index.ts` 의 `repro` 명령에 `--temperature <n>` 옵션을 추가하는
+      patch 를 작성해 주세요. 요구사항:
+
+      1. commander option: `--temperature <n>` (number)
+      2. action handler 에서 `askOpts.temperature = parsed_n` 으로 전달
+         (parseFloat + isFinite 검증)
+      3. EvalPromptOpts (src/eval-prompt-cli.ts) 에 `temperature?: number`
+         필드 추가 + runEvalPrompt 에서 streamLLMWithTools 의 opts 에
+         그대로 패스
+      4. 기존 default (없을 때 provider 기본값 0.3) 는 유지
+
+      **출력**: 실제로 Edit 도구를 사용하지 말고, **답변 텍스트로 unified
+      diff 형식의 patch + 한 단락 설명** 만 작성하세요.

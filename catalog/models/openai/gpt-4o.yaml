@@ -1,0 +1,22 @@
+id: gpt-4o
+provider: openai
+displayName: GPT-4o
+family: gpt-4o
+contextSize: 128000
+outputMaxTokens: 8000
+vision: images
+audio: { input: true, output: false }
+reasoning: null
+toolCalling: native-openai
+streamingProtocol: sse
+pricing:
+  inputPerMTok: 2.5
+  outputPerMTok: 10.0
+deprecated: null
+releaseDate: 2024-05-13
+tokenizer: cl100k
+kind: chat
+discoveryMeta:
+  source: manual
+  lastSeen: 2026-05-10
+  autoFilled: false

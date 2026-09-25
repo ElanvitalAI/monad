@@ -1,0 +1,17 @@
+{
+  "id": "example-theme",
+  "name": "Example Theme",
+  "version": "0.1.0",
+  "main": "./plugin.ts",
+  "activationEvents": ["onCommand"],
+  "contributes": {
+    "themes": [
+      {
+        "id": "harbor",
+        "label": "Harbor",
+        "path": "./themes/harbor.json"
+      }
+    ]
+  },
+  "capabilities": []
+}

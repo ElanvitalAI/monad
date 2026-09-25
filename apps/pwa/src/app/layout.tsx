@@ -1,0 +1,64 @@
+import type { Metadata, Viewport } from 'next';
+import './globals.css';
+import { Geist } from 'next/font/google';
+import { cn } from '@/lib/utils';
+import { DaemonProvider } from '@/components/providers/DaemonProvider';
+import { NexusClientProvider } from '@/components/providers/NexusClientProvider';
+import { ThemeProvider } from '@/components/providers/ThemeProvider';
+import { ToastProvider } from '@/components/providers/ToastProvider';
+import { TooltipProvider } from '@/components/ui/tooltip';
+import { AppShell } from '@/components/shell/AppShell';
+import { ServiceWorkerRegister } from '@/components/providers/ServiceWorkerRegister';
+
+const geist = Geist({ subsets: ['latin'], variable: '--font-sans' });
+
+export const metadata: Metadata = {
+  title: 'monad',
+  description: 'monad-agent unified PWA — voice · chat · intake · control · terminal.',
+  manifest: '/app/manifest.webmanifest',
+  applicationName: 'monad',
+};
+
+export const viewport: Viewport = {
+  themeColor: '#1e1e2e',
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+};
+
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return (
+    <html lang="ko" className={cn('font-sans', geist.variable)}>
+      <head>
+        {/* Preload the Regular weight so xterm.js measures glyphs with
+            the bundled Nerd Font on first paint instead of falling back
+            to monospace and reflowing once the @font-face fetch lands. */}
+        <link
+          rel="preload"
+          as="font"
+          type="font/ttf"
+          href="/app/fonts/JetBrainsMonoNerdFontMono-Regular.ttf"
+          crossOrigin="anonymous"
+        />
+      </head>
+      <body className="min-h-screen bg-background text-foreground antialiased">
+        <ServiceWorkerRegister />
+        <DaemonProvider>
+          <NexusClientProvider>
+            <ThemeProvider>
+              <TooltipProvider>
+                <ToastProvider>
+                  <AppShell>{children}</AppShell>
+                </ToastProvider>
+              </TooltipProvider>
+            </ThemeProvider>
+          </NexusClientProvider>
+        </DaemonProvider>
+      </body>
+    </html>
+  );
+}

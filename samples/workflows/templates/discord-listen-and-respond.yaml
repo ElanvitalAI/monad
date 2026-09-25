@@ -1,0 +1,29 @@
+name: discord-listen-and-respond
+description: |
+  Listens for messages on a specific Discord channel matching a regex
+  pattern, runs a small script, and posts a reply. Daemon-side AXON
+  bridge tap (BACKLOG FU-1) is required for production fire — until
+  then this works in dry-run via PWA "Run now".
+
+_meta:
+  template:
+    title: Discord listen & respond
+    description: Discord #ops message → script → reply
+    tags: [discord, listen, respond]
+
+nodes:
+  - id: listen
+    discordTrigger:
+      kind: message
+      channel: ops
+      pattern: "^deploy"
+
+  - id: handle
+    bash: |
+      echo "received: $listen.output"
+    depends_on: [listen]
+
+  - id: reply
+    bash: |
+      echo "replying with: $handle.output"
+    depends_on: [handle]

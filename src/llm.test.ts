@@ -1,0 +1,188 @@
+import { expect, spyOn, test } from 'bun:test';
+import { debug } from './debug/log.js';
+import { PROVIDERS, streamLLM, streamLLMWithTools, type LLMProvider } from './llm.js';
+
+async function observeDone(run: () => Promise<unknown>) {
+  const done: Record<string, unknown>[] = [];
+  const log = spyOn(debug, 'log').mockImplementation((category, event, data) => {
+    if (category === 'llm.router.done' && event === 'streamLLM') done.push((data ?? {}) as Record<string, unknown>);
+  });
+  try {
+    await run();
+    return done;
+  } finally {
+    log.mockRestore();
+  }
+}
+
+test('streamLLM always consumes streamChat usage, aggregates raw fields, and preserves callback fail-softness', async () => {
+  let chatCalls = 0;
+  let streamCalls = 0;
+  const provider: LLMProvider = {
+    name: 'grok',
+    defaultModel: 'grok-4.6',
+    available: () => true,
+    async *chat() { chatCalls++; yield 'fallback'; },
+    async *streamChat() {
+      streamCalls++;
+      yield { type: 'usage', usage: { inputTokens: 12, outputTokens: 3, cacheReadInputTokens: 2 } };
+      yield { type: 'usage', usage: { inputTokens: 8, outputTokens: 4, cacheCreationInputTokens: 1 } };
+      yield { type: 'text', delta: 'answer' };
+    },
+  };
+  const usages: number[] = [];
+  const chunks: string[] = [];
+  let withCallback = '';
+  let withoutCallback = '';
+  const done = await observeDone(async () => {
+    withCallback = await streamLLM([{ role: 'user', content: 'question' }], (delta) => chunks.push(delta), {
+      provider,
+      onUsage: ({ inputTokens }) => {
+        usages.push(inputTokens ?? 0);
+        throw new Error('telemetry unavailable');
+      },
+    });
+    withoutCallback = await streamLLM([{ role: 'user', content: 'question' }], () => {}, { provider });
+  });
+
+  expect(withCallback).toBe('answer');
+  expect(withoutCallback).toBe('answer');
+  expect(usages).toEqual([12, 8]);
+  expect(chunks).toEqual(['answer']);
+  expect(chatCalls).toBe(0);
+  expect(streamCalls).toBe(2);
+  expect(done).toHaveLength(2);
+  expect(done.map((entry) => entry.usage)).toEqual([
+    { inputTokens: 20, outputTokens: 7, cacheReadInputTokens: 2, cacheCreationInputTokens: 1 },
+    { inputTokens: 20, outputTokens: 7, cacheReadInputTokens: 2, cacheCreationInputTokens: 1 },
+  ]);
+});
+
+test('streamLLM retains chat fallback and observes usage as unmeasured without streamChat', async () => {
+  let chatCalls = 0;
+  const provider: LLMProvider = {
+    name: 'grok',
+    defaultModel: 'grok-4.6',
+    available: () => true,
+    async *chat() { chatCalls++; yield 'fallback'; },
+  };
+  let text = '';
+  const done = await observeDone(async () => {
+    text = await streamLLM([{ role: 'user', content: 'question' }], () => {}, { provider });
+  });
+
+  expect(text).toBe('fallback');
+  expect(chatCalls).toBe(1);
+  expect(done).toHaveLength(1);
+  expect(done[0]?.usage).toBe('unmeasured');
+});
+
+test('streamLLM preserves an injected unregistered provider at the streaming boundary', async () => {
+  const provider: LLMProvider = {
+    name: 'injected-test-provider',
+    defaultModel: 'injected-model',
+    available: () => true,
+    async *chat() { yield 'injected'; },
+  };
+
+  await expect(streamLLM([{ role: 'user', content: 'question' }], () => {}, { provider }))
+    .resolves.toBe('injected');
+});
+
+test('streamLLM reroutes an incompatible Codex provider and Grok model before streaming', async () => {
+  const codex = PROVIDERS['openai-codex']!;
+  const grok = PROVIDERS.grok!;
+  const originalCodexStream = codex.streamChat;
+  const originalGrokStream = grok.streamChat;
+  let codexCalls = 0;
+  let receivedModel = '';
+  codex.streamChat = async function* () { codexCalls++; yield { type: 'text', delta: 'wrong-provider' }; };
+  grok.streamChat = async function* (_messages, opts) {
+    receivedModel = opts?.model ?? '';
+    yield { type: 'text', delta: 'rerouted' };
+  };
+  try {
+    const text = await streamLLM([{ role: 'user', content: 'question' }], () => {}, {
+      provider: codex,
+      model: 'grok-4.6',
+    });
+    expect(text).toBe('rerouted');
+    expect(codexCalls).toBe(0);
+    expect(receivedModel).toBe('grok-4.6');
+  } finally {
+    codex.streamChat = originalCodexStream;
+    grok.streamChat = originalGrokStream;
+  }
+});
+
+test('streamLLMWithTools reroutes an incompatible Codex provider and Grok model before streaming', async () => {
+  const codex = PROVIDERS['openai-codex']!;
+  const grok = PROVIDERS.grok!;
+  const originalCodexStream = codex.streamChat;
+  const originalGrokStream = grok.streamChat;
+  let codexCalls = 0;
+  let receivedModel = '';
+  codex.streamChat = async function* () { codexCalls++; yield { type: 'text', delta: 'wrong-provider' }; };
+  grok.streamChat = async function* (_messages, opts) {
+    receivedModel = opts?.model ?? '';
+    yield { type: 'text', delta: 'rerouted-tools' };
+  };
+  try {
+    const text = await streamLLMWithTools(
+      [{ role: 'user', content: 'question' }],
+      { onText() {}, dispatchTool: async () => 'unused' },
+      { provider: codex, model: 'grok-4.6', tools: [{ name: 'unused', description: 'unused', parameters: { type: 'object', properties: {} } }] },
+    );
+    expect(text).toBe('rerouted-tools');
+    expect(codexCalls).toBe(0);
+    expect(receivedModel).toBe('grok-4.6');
+  } finally {
+    codex.streamChat = originalCodexStream;
+    grok.streamChat = originalGrokStream;
+  }
+});
+
+test('streamLLMWithTools preserves compatible provider/model pairs before streaming', async () => {
+  const grok = PROVIDERS.grok!;
+  const originalGrokStream = grok.streamChat;
+  let receivedModel = '';
+  grok.streamChat = async function* (_messages, opts) {
+    receivedModel = opts?.model ?? '';
+    yield { type: 'text', delta: 'compatible' };
+  };
+  try {
+    const text = await streamLLMWithTools(
+      [{ role: 'user', content: 'question' }],
+      { onText() {}, dispatchTool: async () => 'unused' },
+      { provider: grok, model: 'grok-4.6', tools: [{ name: 'unused', description: 'unused', parameters: { type: 'object', properties: {} } }] },
+    );
+    expect(text).toBe('compatible');
+    expect(receivedModel).toBe('grok-4.6');
+  } finally {
+    grok.streamChat = originalGrokStream;
+  }
+});
+
+// 🩸 2026-09-25 — 도구 루프 조립부가 reasoning 꺼진 adaptive 모델(claude-sonnet-5)에 temperature 를 보내 400.
+import { anthropicTemperatureField } from './llm.js';
+test('anthropic temperature field: adaptive models never get temperature, even with thinking off', () => {
+  expect(anthropicTemperatureField('claude-sonnet-5', false, undefined)).toEqual({});
+  expect(anthropicTemperatureField('claude-opus-5', false, 0.7)).toEqual({});
+  expect(anthropicTemperatureField('claude-sonnet-4-7', false, undefined)).toEqual({});
+  expect(anthropicTemperatureField('claude-haiku-4-5-20251001', false, undefined)).toEqual({ temperature: 0.3 });
+  expect(anthropicTemperatureField('claude-haiku-4-5-20251001', true, undefined)).toEqual({});
+  expect(anthropicTemperatureField('claude-haiku-4-5-20251001', false, 0.9)).toEqual({ temperature: 0.9 });
+});
+
+// BACKLOG B7 — anthropic 기본 모델은 사다리 best(최신 Opus)에서 파생 · 옛 haiku 상수가 아니다(대표 09-25).
+test('ANTHROPIC_MODEL defaults to the anthropic ladder best model (latest Opus), not the legacy haiku constant', () => {
+  const env = { ...process.env };
+  delete env.ANTHROPIC_MODEL;
+  const r = Bun.spawnSync({
+    cmd: [process.execPath, '-e', `import { ANTHROPIC_MODEL } from ${JSON.stringify(new URL('./config.ts', import.meta.url).href)}; import { lookupLlmTierSpec } from ${JSON.stringify(new URL('./model-tier/llm-tier-map.ts', import.meta.url).href)}; console.log(JSON.stringify({ got: ANTHROPIC_MODEL, want: lookupLlmTierSpec('anthropic', 'best').model }))`],
+    env, stdout: 'pipe', stderr: 'pipe',
+  });
+  const { got, want } = JSON.parse(new TextDecoder().decode(r.stdout).trim());
+  expect(got).toBe(want);
+  expect(got).not.toContain('haiku');
+});

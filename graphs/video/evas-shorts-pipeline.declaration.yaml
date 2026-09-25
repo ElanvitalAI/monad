@@ -1,0 +1,157 @@
+# 🚨🚨 이 파일은 «하니스가 실행하는 그래프»가 «아니다» — 마케팅 파이프라인의 «선언 문서»다.
+#
+# ⛔⛔ 2026-09-10 사고: 나는 이것을 `graphs/` 에 뒀고, 그것이 «하니스 전체»를 망가뜨렸다.
+#
+#   ① `graphs/` 는 하니스 루프 템플릿 자리다. 파서(`src/self-implement/graph-yaml.ts`)의 스키마는:
+#        node_id (⛔ `id` 아님) · kind ∈ {agent, gate, git, judge} (⛔ observe/act/author/terminal 아님)
+#        recipe (필수) · max_visits (⛔ camelCase `maxVisits` 아님)
+#      ⇒ 이 파일은 그 스키마와 «전혀» 달라 파싱 오류 **32건**을 냈다.
+#
+#   ② 그리고 로더는 ***오류가 «하나라도» 있으면 YAML 을 전부 버리고 하드코딩 상수로 폴백***한다:
+#        if (loaded.errors.length > 0 || …) return { templates: BUILTIN_TEMPLATES, source: 'builtin-fallback' }
+#      📏 실측: `source = builtin-fallback` · 템플릿 4개 → **2개**.
+#      ⇒ ***내 파일 하나가 default-loop·plan-loop 을 «보이지 않게» 만들었다.***
+#         다른 트랙이 튜닝해 온 예산·방문수 선언이 전부 안 읽히고 있었다.
+#
+#   ③ 변경파일 스코프 게이트는 이것을 «원리상 못 잡는다» — 나는 test 파일을 하나도 안 바꿨다.
+#      🔑 잡은 것은 「main 에서 판정자에게 직접 물어본 것」뿐이다.
+#
+# 📌 그래서 남는 규율: ***`graphs/` 에 파일을 놓기 전에 로더에게 «물어라».***
+#      bun -e "import {loadGraphTemplatesFrom} from './src/self-implement/graph-templates.js';
+#               console.log(loadGraphTemplatesFrom('graphs').source)"     # ⇒ 'yaml' 이어야 한다
+#
+# ⇒ 이 선언은 「무엇을 어떤 순서로 하나」를 사람이 읽는 문서로 «여기» 산다.
+#   실행은 `tools/remotion-shorts/` ⊕ Higgsfield/ElevenLabs CLI 가 한다.
+
+# 🎬 유튜브 쇼츠 파이프라인 — 「비주얼만」에서 「자막·보이스·음악까지」로
+#
+# 대표 2026-09-10: *"텍스트 애니메이션과 voice 를 추가한 마케팅 버전도 가능할까요? 유튜브 short용으로요"*
+#              ⊕ *"그래프 엔지니어링으로 추가 노드도 만들어주세요"*
+#
+# 🆕 2026-09-10 오후: 후반이 «넷»에서 «여섯»이 됐다 — align · caption 이 붙었다.
+#    ⛔ 계기는 결손이 아니라 «이름의 뭉갬»이었다: 「assemble」 한 칸이 «배치»와 «그리기»를 덮고 있었다.
+#       배치(어느 클립이 몇 초에) 와 그리기(그 위 텍스트) 는 도구도 실패 양상도 다르다.
+#    ⛔ 자막 «타이밍»은 그전까지 «손으로 추정»했다 — 균등분할이었고 실측 대비
+#       평균 174ms · 최대 489ms 어긋나 있었다(30fps 로 5.2~14.7 프레임).
+#    ⭐ 대표 지적으로 «축이 바뀌었다»: whisper 로 「되받아 듣는」 대신 ElevenLabs `/with-timestamps` 로
+#       «만들 때 같이 받는다». 텍스트가 우리가 넣은 대본 그대로라 받아쓰기 오차가 «원리상 없다».
+#
+# ⛔ 이 그래프가 «기존 것과 다른 점»은 후반이다 — script · voice · music · align · caption.
+#    앞의 정적·영상 칸은 evas-meta-pipeline 과 같은 계약을 쓴다.
+#
+# 📚 근거·함정 = 내부 문서 `MANUAL-marketing-ad-pipeline-automation-2026-09-10`
+#    ⭐ 특히 §2ⓝ 세 원리: ①비율은 «확장»(outpaint) ②start_image 비율이 이긴다 ③카메라를 세우면 텍스트가 산다
+
+graph_id: evas-shorts-pipeline
+version: 1
+entry_node: survey
+terminal_nodes: [published, awaiting-human, blocked, nothing-to-do]
+
+schedule:
+  cron: "0 9 * * 1"          # 매주 월 09:00 — 한 스프린트
+
+nodes:
+  # ── 전반: 산출물 트리를 읽어 「어느 칸인가」 ──
+  - { id: survey,   kind: observe, maxVisits: 1 }
+
+  # ── 접지: 실물에서만 사실을 가져온다 (⛔ 지어내지 않는다) ──
+  #
+  # 🔬 2026-09-10 다른 SKU(OBgE 쿠션 SPF50+)로 «전이 검증»했다 — 매뉴얼 §2ⓤ. 결과 셋:
+  #   ✅ 제품명·용량·제조사·상세페이지(3장 33,178px)까지 «전부» 온다
+  #   ⛔ 접지는 «aside»(사람의 실제 브라우저)를 요구한다 — firecrawl 은 헤더만 받는다(쿠팡이 봇 차단)
+  #      ⇒ 이 노드는 «지금 구조로는 크론이 혼자 못 돈다». 그것이 이 파이프라인의 진짜 병목이다.
+  #   ⛔⛔ 「기능성 여부」 같은 «법적» 칸은 SKU 마다 «있기도 없기도» 하다.
+  #      에바스엔 표에 `해당없음` 이 있었고 OBgE 엔 그 필드가 «아예 없다»(그리고 SPF50+ 제품이다).
+  #      ⇒ ***앞 SKU 의 불변식을 복사하면 「틀린 쪽으로」 틀린다.***
+  #      ⛔ 본문 grep 금지 — `기능성` 9건 중 대부분이 «광고로 붙은 다른 상품»의 문구다
+  #        (DOM 경로 `ui-recommendation-list`·`promotion-carousel`). ✅ «구조화된 표»에서만 읽는다.
+  #
+  # ✅ 2026-09-10 오후 배선: 이 노드가 «무엇을 얻어야 하는지»가 이제 «코드»로 있다 —
+  #    `src/product-grounding/` (수집기 ⊕ 체크리스트 ⊕ 실측 표본 3사이트).
+  #    ⛔ 사이트별 분기가 «아니다» — 어느 사이트든 같은 체크리스트를 통과해야 한다.
+  #    📏 쿠팡·네이버·무신사를 «같은 수집기»로 훑어 통과/미통과가 갈렸다(§README 표).
+  #    ⇒ 새 사이트 = 「체크리스트가 이름을 댄 빈 칸을 메우는 일」이지 코드를 짓는 일이 아니다.
+  - { id: ground,   kind: act,    maxVisits: 1 }   # 판매 페이지 → 00_brief.json ⊕ visual_lock
+  - { id: refs,     kind: act,    maxVisits: 1 }   # 사람이 고른 실사만 업로드
+
+  # 🧭 사람 칸이 «셋»이고 성질이 다르다 — ⛔ 「미완」으로 적지 마라(다음 창이 영영 크롤러를 고친다):
+  #   ① 접지 실행 주체(aside)      = 배선하면 «열린다»
+  #   ② 법적 불변식(기능성 등)      = 「아직 안 쟀다」가 «아니라» ***「이 사다리로는 못 잰다」***
+  #                                  (판매 페이지를 더 밟아도 «없는 필드»는 안 생긴다 · 🅕 근거 계급 5칸째)
+  #   ③ 실사 선택 ⊕ 승인 게이트 넷  = 대표 이 «정한» 불변식 — 열지 않는다
+
+  # ── 정적: 비율은 «생성»이 아니라 «확장» (§2ⓝ) ──
+  # ⚠️ 「0 CU」는 «거짓»이었다 — 2026-09-10 재측정 3.08 CU (2611.63 → 2608.55). 매뉴얼 §2ⓝ 참조.
+  #    ⛔ 그리고 «확장 후» 캔버스가 «2560px» 를 넘으면 거부된다 ⇒ 9:16 이면 폭 상한이 1440.
+  - { id: reframe,  kind: act,    maxVisits: 3 }   # flux_2_pro_outpaint · ~3 CU · 원본 픽셀 무손상
+
+  # ── 영상: 카메라를 «세운다» (§2ⓝ) ──
+  - { id: cuts,     kind: act,    maxVisits: 4 }   # kling3_0_turbo --start-image · static camera
+
+  # ── 🆕 후반 넷 — 여기부터가 「쇼츠」다 ──
+  - { id: script,   kind: author, maxVisits: 2 }   # 05_script.json · 씬마다 caption/vo/why
+  # ⭐ voice 의 «제공자 선택»이 align 이 필요한지를 «결정한다» — 그래서 둘은 한 축이다.
+  #    ✅ ElevenLabs /with-timestamps  → 오디오 ⊕ 낱말별 시각을 «한 응답»에 (기본)
+  #    ⚠️ Topview generate_voice (0.1 CU) → 타이밍 없음 ⇒ align 이 «실제로» 돌아야 한다
+  #    ⛔ ElevenLabs 는 «비결정적»이다 — 같은 대본·같은 설정이 13.42s / 11.89s 로 갈렸다(실측).
+  #       ⇒ 오디오와 타이밍을 «따로» 만들지 마라. 한 호출이 둘 다 내야 한다.
+  - { id: voice,    kind: act,    maxVisits: 2 }   # ElevenLabs with-timestamps (기본) | topview (대체)
+  - { id: music,    kind: act,    maxVisits: 1 }   # topview_generate_music
+
+  # ── 🆕 자막 «정렬» — ⛔ 이 칸은 «조건부»다 ──
+  #    voice 가 ElevenLabs 면 정렬이 «그 응답 안에» 있다 ⇒ 즉시 ok 를 내고 지나간다.
+  #    타이밍을 «안 내는» 제공자를 쓸 때만 whisper 로 되받아 정렬한다.
+  #    📌 그래서 이것은 「빠진 단계」가 아니라 «제공자 선택의 결과»다.
+  - { id: align,    kind: act,    maxVisits: 2 }   # (폴백) whisper → 낱말별 atMs
+
+  # ── 🆕 렌더 — ⛔ 「조립」이 «둘»이었다: 배치(타임라인) ≠ 그리기(텍스트) ──
+  - { id: caption,  kind: act,    maxVisits: 3 }   # Remotion: 낱말별 자막 ⊕ 3트랙 믹스 → MP4
+  - { id: assemble, kind: act,    maxVisits: 2 }   # (대체 경로) 캔버스 → 타임라인 → MP4 export
+
+  - { id: published,      kind: terminal }
+  - { id: awaiting-human, kind: terminal }
+  - { id: blocked,        kind: terminal }
+  - { id: nothing-to-do,  kind: terminal }
+
+edges:
+  - from: survey
+    on: outcome
+    map:
+      brief-missing:   ground
+      refs-missing:    awaiting-human      # ⛔ 실사 «선택»은 사람이 한다 → 여기서 멈춘다
+      refs-picked:     refs                # ✅ 사람이 골라 넣으면 그때 업로드 노드가 돈다
+      refs-ready:      reframe
+      frames-ready:    cuts
+      cuts-ready:      script
+      script-ready:    voice
+      voice-ready:     music
+      music-ready:     align
+      align-ready:     caption
+      waiting:         awaiting-human
+      none:            nothing-to-do
+  - { from: ground,   to: awaiting-human }                                  # BRIEF_OK
+  - { from: refs,     on: outcome, map: { ok: reframe,  error: blocked } }
+  - { from: reframe,  on: outcome, map: { ok: cuts,     error: blocked } }
+  - { from: cuts,     to: awaiting-human }                                  # MASTER_PICK
+  - { from: script,   to: awaiting-human }                                  # ⭐ 대본은 «승인»을 받는다
+  - { from: voice,    on: outcome, map: { ok: music,    error: blocked } }
+  - { from: music,    on: outcome, map: { ok: align,    error: blocked } }
+  # ⛔ align 이 «실패해도» 진행한다 — 손추정 타이밍이 「자막 없음」보다 낫다.
+  #    그래서 error 가 blocked 가 «아니라» caption 으로 간다. 이 갈림은 의도다.
+  # 📏 다만 손추정이 «얼마나» 나쁜지는 쟀다: 균등분할 대비 평균 174ms(5.2 프레임) · 최대 489ms(14.7 프레임).
+  #    한국어 어절 편차가 3.5배다(샤워하고 615ms 對 아직 174ms). ⇒ 폴백은 «되지만» 기본이 아니다.
+  - { from: align,    on: outcome, map: { ok: caption,  error: caption } }
+  - from: caption
+    on: outcome
+    map:
+      ok:       awaiting-human   # VIDEO_OK — 사람이 보고 올린다
+      uploaded: published
+      error:    assemble         # ⭐ Remotion 이 죽으면 «캔버스 경로»로 되접는다
+  - from: assemble
+    on: outcome
+    map:
+      ok:      awaiting-human    # PACK_OK — 사람이 보고 올린다
+      uploaded: published        # 사람이 올렸다고 표시하면 종단
+      error:   blocked
+  # ⛔ published 는 「기계가 올렸다」가 아니라 「사람이 올렸다고 «표시»했다」이다.
+  #    유튜브 업로드는 이 파이프라인 밖이다 — 그것을 숨기지 않는다.

@@ -1,0 +1,44 @@
+description: |
+  Self-debug arc — gemini analysis → opus diagnosis on the same session.
+
+  Mirrors the live 2026-05-04 reproduction (PR #1554) as a YAML
+  scenario so the multi-provider self-debug pattern can be replayed
+  for regression. Two turns share one session id; turn 2 reads
+  log/latest to diagnose turn 1's tool-loop behavior.
+
+  Run:
+    monad repl --new --json --scenario tests/scenarios/repl-self-debug-arc.yaml
+  CI-style:
+    monad repl --new --json \
+      --scenario tests/scenarios/repl-self-debug-arc.yaml \
+      --exit-after-scenario
+
+  Expected (post-PR #1554 fixes):
+  - turn 1 (gemini)  ≥ 500 chars (force-synthesis ext + universal
+                                  preamble + maxTurns=16 in effect)
+  - turn 2 (opus)    ≥ 1500 chars + mentions "session_id" or
+                                    "force-synthesis" or "maxTurns"
+  - turn 2 should also reference at least one log/debug-*.log path
+  Pre-PR #1554 baseline (regression detector):
+  - turn 1 ≈ 0 chars (function-call-only pathology)
+  - turn 2 ≈ "파일 시스템 접근 불가" boilerplate (~500 chars, no log paths)
+
+defaults:
+  asserts:
+    text_min_chars: 200
+
+turns:
+  - id: t1-gemini-analysis
+    rotate: gemini
+    prompt: "llm pipeline 툴 노출에 대한 흐름을 분석해주세요"
+    asserts:
+      text_min_chars: 500
+
+  - id: t2-opus-debug
+    rotate: opus
+    prompt: |
+      방금 답변에 대해 최신 debug 파일을 열어 내용 확인하고 디버깅 해주세요.
+      session_id 로 이번 대화의 forensic 이벤트를 grep 해서 분석에 포함해주세요.
+    asserts:
+      text_min_chars: 1500
+      reply_contains: ["session_id"]

@@ -1,0 +1,138 @@
+# 광고 제작 그래프는 «실행으로 이관됐다» — 아래 observed 는 실물 원장에서 «잰» 수다.
+# 📏 2026-09-14 01:5x KST 실측: ad-pipeline.graph/pipeline-node-entry ***35행 · declared 35/35***
+#    = 간선 일곱 × 다섯 판. fail·empty·unknown 갈래는 «한 번도» 안 밟혔다(=0) — 그것도 실측이다.
+# ⛔ 이 수를 손으로 고치지 말고 «다시 재라»:
+#    bun bin/monad.mjs logs --category ad-pipeline.graph --event pipeline-node-entry --limit 400 --json --json-data
+#    (data.gate|data.from · data.outcome · data.node 셋으로 묶어 센다)
+graph_id: ad-loop
+version: 1
+entry_node: survey
+terminal_nodes: [deliver]
+runner_inputs: []
+
+nodes:
+  - node_id: survey
+    kind: agent
+    recipe: survey-market
+    # 다중 컨텍스트를 다시 짓기 위한 방문 예산이다.
+    max_visits: 3
+    contract:
+      inputs: [campaign]
+      tools: web-crawl
+      outputs: [survey-candidates]
+
+  - node_id: select
+    kind: gate
+    recipe: select-survey-candidate
+    max_visits: 3
+    contract:
+      inputs: [survey-candidates]
+      tools: human-selection
+      outputs: [selected-survey]
+
+  - node_id: concept
+    kind: agent
+    recipe: generate-concept
+    max_visits: 3
+    contract:
+      inputs: [selected-survey]
+      tools: concept-generation
+      outputs: [concept]
+
+  - node_id: brief
+    kind: gate
+    recipe: brief-ok
+    max_visits: 3
+    contract:
+      inputs: [concept]
+      tools: gate-evaluation
+      outputs: [brief]
+
+  - node_id: shoot
+    kind: agent
+    recipe: shoot-master-pick
+    max_visits: 3
+    contract:
+      inputs: [brief]
+      tools: video-generation
+      outputs: [master]
+
+  - node_id: assemble
+    kind: agent
+    recipe: assemble-pack
+    max_visits: 3
+    contract:
+      inputs: [master]
+      tools: video-assembly
+      outputs: [pack]
+
+  - node_id: qc
+    kind: gate
+    recipe: video-qc
+    max_visits: 3
+    contract:
+      inputs: [pack]
+      tools: quality-measurement
+      outputs: [approved-video]
+
+  - node_id: deliver
+    kind: agent
+    recipe: retain-output
+    max_visits: 1
+    contract:
+      inputs: [approved-video]
+      tools: output-retention
+      outputs: [delivery]
+
+edges:
+  - from: survey
+    on: candidates
+    map:
+      candidate: select
+      empty: survey
+      unknown: survey
+    observed: 5                  # 📏 전부 candidate→select · empty·unknown 0
+
+  - from: select
+    to: concept
+    observed: 5
+
+  - from: concept
+    on: CONCEPT_OK
+    map:
+      pass: brief
+      fail: survey
+      unknown: survey
+    observed: 5                  # 📏 전부 pass · fail·unknown 0
+
+  - from: brief
+    on: BRIEF_OK
+    map:
+      pass: shoot
+      fail: concept
+      unknown: concept
+    observed: 5                  # 📏 전부 pass · fail·unknown 0
+
+  - from: shoot
+    on: MASTER_PICK
+    map:
+      pass: assemble
+      fail: shoot
+      unknown: shoot
+    observed: 5                  # 📏 전부 pass · fail·unknown 0
+
+  - from: assemble
+    on: PACK_OK
+    map:
+      pass: qc
+      fail: assemble
+      unknown: assemble
+    observed: 5                  # 📏 전부 pass · fail·unknown 0
+
+  - from: qc
+    on: VIDEO_OK
+    map:
+      pass: deliver
+      fail: assemble
+      unknown: assemble
+    observed: 5                  # 📏 전부 pass · fail·unknown 0

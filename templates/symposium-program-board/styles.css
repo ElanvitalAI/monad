@@ -1,0 +1,124 @@
+/* ── 심포지엄 프로그램 보드 ────────────────────────────────────────────────
+ * ⛔ 색·서체를 «지어내지 않았다» — 전부 `../event-landing-editorial/DESIGN.md` 의
+ *    씨앗 토큰이다(추출 파이프라인 산출물). 그것이 이 템플릿의 «시험»이다:
+ *    같은 시스템으로 «구조가 다른» 화면이 서는가.
+ * 🆕 이 컨셉이 «요구해서» 더한 토큰만 아래 §추가 에 이름을 대고 적는다. */
+:root {
+  --ground: #ffffff;
+  --ink: #172d24;
+  --ink-muted: #606f66;
+  --brand: #07513b;
+  --brand-deep: #103e2e;
+  --brand-panel: #0d4c39;
+  --surface: #f4f6f2;
+  --surface-cool: #eef3ed;
+  --line: #dbe4de;
+  --line-soft: #edf0ec;
+  --accent: #9d783f;
+  --danger: #a63823;
+  --on-brand: #ffffff;
+
+  /* ── 추가 — ⛔ 원본 랜딩엔 «없던» 상태다. 운영 화면은 「지금 무엇이 도는가」를 말해야 한다.
+   *    둘 다 씨앗 색에서 «파생»했다(새 색상을 들이지 않았다). */
+  --live: var(--brand);          /* 진행 중 — 브랜드 그린 그대로 */
+  --done: var(--ink-muted);      /* 종료 — 보조 글자색 그대로 */
+
+  --font-display: Pretendard, "Noto Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+  --font-body: Pretendard, "Noto Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+  --font-eyebrow: Arial, "Helvetica Neue", sans-serif;
+}
+
+* { box-sizing: border-box; }
+body {
+  margin: 0; background: var(--ground); color: var(--ink);
+  font-family: var(--font-body); font-size: 15px; line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+}
+.wrap { max-width: 1180px; margin: 0 auto; padding: 0 28px; }
+
+/* ── 머리 — ⛔ 히어로가 «없다». 운영 화면은 첫 화면에 「지금」이 와야 한다 ── */
+.topbar {
+  border-bottom: 1px solid var(--line-soft);
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 0; gap: 20px;
+}
+.topbar img { height: 34px; display: block; }
+.clock {
+  font-family: var(--font-eyebrow); font-size: 12px; letter-spacing: 1.4px;
+  color: var(--ink-muted); text-transform: uppercase;
+  font-variant-numeric: tabular-nums;
+}
+
+.masthead { padding: 34px 0 26px; border-bottom: 2px solid var(--ink); }
+.eyebrow {
+  font-family: var(--font-eyebrow); font-size: 11px; letter-spacing: 2.4px;
+  text-transform: uppercase; color: var(--ink-muted); margin: 0 0 12px;
+}
+h1 { font-family: var(--font-display); font-size: 34px; line-height: 1.2; margin: 0 0 8px; font-weight: 700; text-wrap: balance; }
+.sub { margin: 0; color: var(--ink-muted); font-size: 14px; }
+
+/* ── 상태 띠 — 고밀도. 랜딩엔 없던 축이다 ── */
+.rail { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; background: var(--line); border: 1px solid var(--line); margin: 22px 0 0; }
+.rail div { background: var(--surface); padding: 13px 15px; }
+.rail dt { font-family: var(--font-eyebrow); font-size: 10px; letter-spacing: 1.6px; text-transform: uppercase; color: var(--ink-muted); margin: 0 0 5px; }
+.rail dd { margin: 0; font-size: 17px; font-weight: 700; font-variant-numeric: tabular-nums; }
+
+/* ── 프로그램 표 — 이 컨셉의 «본체» ── */
+.board { margin: 30px 0 0; }
+.tracklabel {
+  display: flex; align-items: baseline; gap: 12px;
+  border-bottom: 1px solid var(--line); padding-bottom: 8px; margin: 26px 0 0;
+}
+.tracklabel h2 { font-family: var(--font-display); font-size: 17px; margin: 0; font-weight: 700; }
+.tracklabel span { font-family: var(--font-eyebrow); font-size: 11px; letter-spacing: 1.6px; text-transform: uppercase; color: var(--ink-muted); }
+
+table { width: 100%; border-collapse: collapse; }
+caption { text-align: left; font-size: 12px; color: var(--ink-muted); padding: 9px 0; }
+th {
+  text-align: left; font-family: var(--font-eyebrow); font-size: 10px; letter-spacing: 1.5px;
+  text-transform: uppercase; color: var(--ink-muted); font-weight: 400;
+  padding: 9px 12px 9px 0; border-bottom: 1px solid var(--line);
+}
+td { padding: 13px 12px 13px 0; border-bottom: 1px solid var(--line-soft); vertical-align: top; }
+tr:hover td { background: var(--surface-cool); }
+.time { font-variant-numeric: tabular-nums; white-space: nowrap; color: var(--ink-muted); font-size: 13px; width: 118px; }
+.title { font-weight: 600; }
+.who { color: var(--ink-muted); font-size: 13px; margin-top: 2px; }
+.room { font-family: var(--font-eyebrow); font-size: 11px; letter-spacing: 1.2px; color: var(--ink-muted); white-space: nowrap; }
+
+/* ── 상태 칩 — «지금 무엇이 도는가». 랜딩엔 없던 것 ── */
+.chip {
+  display: inline-block; font-family: var(--font-eyebrow); font-size: 10px;
+  letter-spacing: 1.3px; text-transform: uppercase; padding: 3px 8px;
+  border: 1px solid currentColor; white-space: nowrap;
+}
+.chip.live { color: var(--on-brand); background: var(--live); border-color: var(--live); }
+.chip.next { color: var(--accent); }
+.chip.done { color: var(--done); border-color: var(--line); }
+.chip.full { color: var(--danger); }
+
+tr.is-live td { background: var(--surface); }
+tr.is-live .title { color: var(--brand); }
+tr.is-done .title, tr.is-done .who { color: var(--ink-muted); }
+
+/* ── 공지 판 — 어두운 면 하나. 랜딩의 요금표와 «같은 역할의 색»을 다른 구조로 ── */
+.notice {
+  margin: 34px 0 0; background: var(--brand-deep); color: var(--on-brand);
+  padding: 24px 26px; display: grid; grid-template-columns: 1.4fr 1fr; gap: 26px;
+}
+.notice h3 { font-family: var(--font-display); font-size: 15px; margin: 0 0 10px; }
+.notice p { margin: 0 0 8px; font-size: 13px; opacity: .88; }
+.notice .k { font-family: var(--font-eyebrow); font-size: 10px; letter-spacing: 1.6px; text-transform: uppercase; opacity: .7; }
+.notice .v { font-size: 14px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.notice hr { border: 0; border-top: 1px solid rgba(255,255,255,.22); margin: 12px 0; }
+
+footer { margin: 40px 0 0; border-top: 1px solid var(--line); padding: 20px 0 46px; color: var(--ink-muted); font-size: 12px; }
+a { color: var(--brand); }
+a:focus-visible, tr:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+@media (width <= 860px) {
+  .rail { grid-template-columns: repeat(2, 1fr); }
+  .notice { grid-template-columns: 1fr; }
+  .room { display: none; }
+}

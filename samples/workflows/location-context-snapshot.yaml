@@ -1,0 +1,90 @@
+name: location-context-snapshot
+description: |
+  Use when: User arrived at a meaningful place (iBeacon trigger / GPS
+            geofence / NFC tap) and wants a quick context snapshot —
+            "where am I, what was I doing here last time, what's next".
+  Triggers: "location snapshot", "where am I", "context here",
+            "여기서 정리", "장소 컨텍스트".
+  Does: Pulls the place name (env override or argument) → reads
+        Obsidian for prior notes tagged with the place → LLM extracts
+        a 1-line glance for Live Activity + a short body for the
+        archive note.
+  NOT for: Full daily journal (use a separate journal workflow) or
+           directions / nav (those belong in the OS map app).
+
+# haiku — glance card needs to surface in <1s.
+model: haiku
+
+nodes:
+  - id: resolve-place
+    bash: |
+      PLACE="${MONAD_LOCATION_PLACE:-}"
+      if [ -z "$PLACE" ] && [ -n "$ARGUMENTS" ]; then
+        PLACE="$ARGUMENTS"
+      fi
+      if [ -z "$PLACE" ]; then
+        echo 'place=unknown'
+        exit 0
+      fi
+      echo "place=$PLACE"
+
+  - id: gather-priors
+    bash: |
+      OBSIDIAN_DIR="${MONAD_OBSIDIAN_DIR:-$HOME/Documents/Obsidian}"
+      RAW='$resolve-place.output'
+      PLACE="${RAW#place=}"
+      if [ "$PLACE" = "unknown" ] || [ -z "$PLACE" ]; then
+        echo "(no place context — set MONAD_LOCATION_PLACE or pass as argument)"
+        exit 0
+      fi
+      if [ ! -d "$OBSIDIAN_DIR" ]; then
+        echo "(Obsidian dir missing — set MONAD_OBSIDIAN_DIR)"
+        exit 0
+      fi
+      echo "## Prior notes for: $PLACE"
+      grep -rl "$PLACE" "$OBSIDIAN_DIR" 2>/dev/null | head -10 \
+        | while read -r f; do
+          echo "- $(basename "$f")"
+        done
+      [ -z "$(grep -rl "$PLACE" "$OBSIDIAN_DIR" 2>/dev/null | head -1)" ] && echo '(no prior notes — first time at this place)'
+
+  - id: glance
+    prompt: |
+      Produce a 1-line glance for an iOS Live Activity card.
+
+      Place line: $resolve-place.output
+      Priors:
+      $gather-priors.output
+
+      Output exactly one line, ≤80 chars, no markdown — pure text.
+    allowed_tools: []
+    depends_on: [resolve-place, gather-priors]
+    trigger_rule: all_done
+
+  - id: save-snapshot
+    bash: |
+      OBSIDIAN_DIR="${MONAD_OBSIDIAN_DIR:-$HOME/Documents/Obsidian}"
+      DIR="$OBSIDIAN_DIR/Locations"
+      mkdir -p "$DIR" 2>/dev/null || {
+        echo "ERROR: cannot create $DIR — set MONAD_OBSIDIAN_DIR"
+        exit 1
+      }
+      DATE=$(date +%Y-%m-%d)
+      TIME=$(date +%H%M%S)
+      FILE="$DIR/$DATE-$TIME.md"
+      cat > "$FILE" <<'LOCATION_END_2026_05_08_X9Z2'
+      # Location snapshot
+
+      $resolve-place.output
+
+      ## Glance
+
+      $glance.output
+
+      ## Priors
+
+      $gather-priors.output
+      LOCATION_END_2026_05_08_X9Z2
+      echo "saved=$FILE"
+    depends_on: [glance]
+    trigger_rule: all_done

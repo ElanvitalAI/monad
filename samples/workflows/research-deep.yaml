@@ -1,0 +1,76 @@
+name: research-deep
+description: |
+  Use when: User wants a deep research package on a keyword or URL —
+            multi-source crawl + rich digest + a diagram to visualize
+            the result.
+  Triggers: "research deep", "deep dive", "deep research", "리서치 딥",
+            "백그라운드 조사".
+  Does: omni-crawl in parallel (X + Grok + Firecrawl) → omni-digest in
+        rich format → diagram-master picks the best engine for the
+        topic → saves the bundle under Obsidian Research/.
+  NOT for: One-shot quick summary (use quick-summary or share-intake)
+           or list-of-URLs comparison (use a separate compare workflow).
+
+# sonnet — long-running and quality-sensitive (Live Activity 1-2 min
+# consumer in Phase 2). Anthropic-family hint; non-Anthropic providers
+# strip and fall back to provider default.
+model: sonnet
+
+nodes:
+  - id: crawl
+    skill: omni-crawl
+    arguments: $ARGUMENTS
+
+  - id: digest
+    skill: omni-digest
+    arguments: |
+      Mode: rich
+      Topic: $ARGUMENTS
+
+      Crawl context:
+      $crawl.output
+    depends_on: [crawl]
+
+  - id: diagram
+    skill: diagram-master
+    arguments: |
+      Topic: $ARGUMENTS
+
+      Content to visualize:
+      $digest.output
+    depends_on: [digest]
+    # 'all_done' so a missing or failing diagram-master does not kill
+    # the research package — the digest still saves.
+    trigger_rule: all_done
+
+  - id: save
+    bash: |
+      OBSIDIAN_DIR="${MONAD_OBSIDIAN_DIR:-$HOME/Documents/Obsidian}"
+      DIR="$OBSIDIAN_DIR/Research"
+      mkdir -p "$DIR" 2>/dev/null || {
+        echo "ERROR: cannot create $DIR — set MONAD_OBSIDIAN_DIR to a writable path"
+        exit 1
+      }
+      DATE=$(date +%Y-%m-%d)
+      TIME=$(date +%H%M%S)
+      FILE="$DIR/$DATE-$TIME.md"
+      cat > "$FILE" <<'RESEARCH_DEEP_END_2026_05_08_X9Z2'
+      # Research — $ARGUMENTS
+
+      _Generated $DATE $TIME_
+
+      ## Crawl summary
+
+      $crawl.output
+
+      ## Digest
+
+      $digest.output
+
+      ## Diagram
+
+      $diagram.output
+      RESEARCH_DEEP_END_2026_05_08_X9Z2
+      echo "saved=$FILE topic=$ARGUMENTS"
+    depends_on: [digest, diagram]
+    trigger_rule: all_done

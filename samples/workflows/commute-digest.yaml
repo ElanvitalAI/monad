@@ -1,0 +1,79 @@
+name: commute-digest
+description: |
+  Use when: User is leaving home / about to drive / on transit and
+            wants a hands-off commute briefing — top PR + headlines +
+            today's calendar — surfaced in CarPlay Live Activity.
+  Triggers: "commute digest", "leaving home", "출퇴근 정리",
+            "운전 준비", "transit brief".
+  Does: Reads latest open PRs + (optional) today's calendar + a short
+        news headline pull, then renders a 60s readout-friendly
+        markdown bundle saved to Obsidian Commute/<DATE>.md.
+  NOT for: Long-form research (use research-deep) or daily standup
+           (use daily-standup).
+
+# haiku — readout-style, latency-sensitive, high-frequency.
+model: haiku
+
+nodes:
+  - id: gather-prs
+    bash: |
+      if ! command -v gh >/dev/null 2>&1; then
+        echo '(gh CLI not installed — skipping PR section)'
+        echo 'Install hint: brew install gh && gh auth login'
+        exit 0
+      fi
+      echo "## Open PRs (mine)"
+      gh pr list --author '@me' --state open \
+        --json number,title \
+        --jq '.[] | "- #\(.number) \(.title)"' 2>/dev/null \
+        || echo '(none)'
+
+  - id: gather-calendar
+    bash: |
+      # Calendar adapter is environment-dependent. Honor user-provided
+      # MONAD_CALENDAR_CMD (returns markdown bullet list) when set;
+      # otherwise emit a placeholder so the workflow stays usable.
+      if [ -n "${MONAD_CALENDAR_CMD:-}" ]; then
+        eval "$MONAD_CALENDAR_CMD" 2>/dev/null \
+          || echo '(calendar adapter failed — check MONAD_CALENDAR_CMD)'
+      else
+        echo '(no calendar adapter — set MONAD_CALENDAR_CMD to a script that prints today as markdown bullets)'
+      fi
+
+  - id: synthesize
+    prompt: |
+      Generate a 60-second readout-friendly commute brief. Plain
+      sentences only — no headers, no bullets in the spoken portion.
+      The user is driving; brevity wins.
+
+      ## Open PRs
+      $gather-prs.output
+
+      ## Today's calendar
+      $gather-calendar.output
+
+      Output format:
+      <2-3 short paragraphs, each ≤140 chars, plain prose>
+    allowed_tools: []
+    depends_on: [gather-prs, gather-calendar]
+    trigger_rule: all_done
+
+  - id: save-commute
+    bash: |
+      OBSIDIAN_DIR="${MONAD_OBSIDIAN_DIR:-$HOME/Documents/Obsidian}"
+      DIR="$OBSIDIAN_DIR/Commute"
+      mkdir -p "$DIR" 2>/dev/null || {
+        echo "ERROR: cannot create $DIR — set MONAD_OBSIDIAN_DIR"
+        exit 1
+      }
+      DATE=$(date +%Y-%m-%d)
+      TIME=$(date +%H%M)
+      FILE="$DIR/$DATE-$TIME.md"
+      cat > "$FILE" <<'COMMUTE_END_2026_05_08_X9Z2'
+      # Commute digest
+
+      $synthesize.output
+      COMMUTE_END_2026_05_08_X9Z2
+      echo "saved=$FILE date=$DATE time=$TIME"
+    depends_on: [synthesize]
+    trigger_rule: all_done

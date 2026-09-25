@@ -1,0 +1,46 @@
+# ── Scenario · heap-graph ──
+#
+# Telemetry-style dashboard that pairs a hello-text pane with a log.
+# Exercises the symmetric border + padding shorthand + the `padding: 2`
+# scalar form (== EdgeInsets.all(2) after expansion).
+
+id: heap-graph
+title: Heap Graph
+description: |
+  Compact scenario intended for the V8 heap telemetry visualisation
+  (paired with a log summary). Keeps the widget set to primitives
+  already covered by the P3 schema registry so decode stays strict.
+
+meta:
+  tags: [telemetry]
+
+layout:
+  - widget: hello-text
+    id: heap-summary
+    config:
+      message: "Heap trend (last 60s)"
+    style:
+      decoration:
+        border:
+          symmetric:
+            horizontal: { color: border.accent, width: 1 }
+            vertical: { color: border, width: 1 }
+        padding: 2
+
+  - widget: log
+    id: heap-log
+    config:
+      lines:
+        - "heap: 42 MB"
+        - "gc: 0 recent"
+    style:
+      decoration:
+        color: surface.sunken
+        border:
+          only:
+            top: { color: border.focused, width: 1 }
+            bottom: { color: border, width: 1 }
+        padding:
+          only:
+            top: 1
+            bottom: 1

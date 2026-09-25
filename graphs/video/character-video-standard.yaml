@@ -1,0 +1,99 @@
+# 표준 «캐릭터→영상» 템플릿 — 레퍼런스 수집부터 소셜 리프레임까지 한 파이프라인
+# 📚 절차·함정·실측 = 내부 문서 `MANUAL-character-to-video-pipeline-2026-09-17`
+#
+# ⛔ 이 그래프의 존재 이유는 «갈림 셋»이다. 그 셋이 없으면 파이프라인이 조용히 거짓말을 한다:
+#   ⑴ 등록 갈림   — 얼굴이 없으면 Soul 은 «원리상» 못 배운다 ⇒ Element 로 간다
+#   ⑵ 리프레임 갈림 — 잉크 폭이 1.00 이면 «잘라선 못 키운다» ⇒ 그 비율로 다시 렌더한다
+#   ⑶ 이음매      — 「컷이 났다」와 「그것이 편집까지 갔다」는 다른 값이다(rendered-unedited)
+graph_id: character-video-standard
+version: 1
+entry_node: reference
+# ⛔⭐ 종단이 «넷»이다 — 「편집이 못 돌았다」를 「실패」로 접으면 컷만 쌓이고 끝난 판을
+#   「성공」으로 읽는다. exec-standard 의 landed-unrun 과 같은 자리다.
+terminal_nodes: [delivered, rendered-unedited, blocked, unobserved]
+nodes:
+  - node_id: reference
+    kind: agent
+    recipe: pin-collect
+    max_visits: 3
+    contract: { inputs: [queries], tools: network-read, outputs: [pins, query_count] }
+  - node_id: sheet
+    kind: agent
+    recipe: model-sheet
+    max_visits: 4
+    contract: { inputs: [pins, character_brief], tools: network-write, outputs: [sheet_job, sheet_path] }
+  - node_id: sheet-gate
+    kind: gate
+    recipe: sheet-panels-gate
+    max_visits: 2
+    contract: { inputs: [sheet_path], tools: read-only, outputs: [turnaround_views, expression_count, palette_found] }
+  - node_id: views
+    kind: agent
+    recipe: single-character-views
+    max_visits: 3
+    contract: { inputs: [sheet_job], tools: network-write, outputs: [view_jobs, view_count] }
+  - node_id: register
+    kind: agent
+    recipe: identity-register
+    max_visits: 2
+    contract: { inputs: [view_jobs], tools: network-write, outputs: [element_id, soul_id, soul_fail_reason] }
+  - node_id: register-gate
+    kind: gate
+    recipe: identity-holds-gate
+    max_visits: 2
+    contract: { inputs: [element_id], tools: network-write, outputs: [identity_holds, probe_job] }
+  - node_id: shots
+    kind: agent
+    recipe: directed-shots
+    max_visits: 5
+    contract: { inputs: [element_id, direction_block, shot_prompts, aspect], tools: network-write, outputs: [shot_paths, shot_count] }
+  - node_id: shot-gate
+    kind: gate
+    recipe: animation-principles-gate
+    max_visits: 3
+    contract: { inputs: [shot_paths], tools: read-only, outputs: [anticipation_seen, squash_seen, character_held] }
+  - node_id: reframe-decide
+    kind: gate
+    recipe: ink-ruler
+    max_visits: 2
+    contract: { inputs: [shot_paths, targets], tools: read-only, outputs: [max_zoom, fullbleed_cuts] }
+  - node_id: edit
+    kind: agent
+    recipe: bar-snapped-assemble
+    max_visits: 3
+    contract: { inputs: [shot_paths, plan, audio, targets], tools: workspace-write, outputs: [master, social_paths, duration] }
+  - node_id: delivered
+    kind: judge
+    max_visits: 1
+    recipe: terminal-delivered
+  - node_id: rendered-unedited
+    kind: judge
+    max_visits: 1
+    recipe: terminal-rendered-unedited
+  - node_id: blocked
+    kind: judge
+    max_visits: 1
+    recipe: terminal-blocked
+  - node_id: unobserved
+    kind: judge
+    max_visits: 1
+    recipe: terminal-unobserved
+edges:
+  # ⛔ 「핀 0건」과 「브라우저가 못 떴다」는 다른 값이다 — 앞은 쿼리를 늘리면 되고 뒤는 막힌 것이다.
+  - { from: reference, on: outcome, map: { ok: sheet, empty: reference, error: blocked } }
+  - { from: sheet, to: sheet-gate }
+  # ⛔ 판형은 «세어» 판정한다 — 턴어라운드가 다섯이 아니면 다시 그린다(1차 판이 3/4 Back 을 잘랐다).
+  - { from: sheet-gate, on: outcome, map: { pass: views, thin: sheet, unreadable: blocked } }
+  - { from: views, on: outcome, map: { ok: register, partial: views, error: blocked } }
+  # ⭐⑴ 등록 갈림 — face_not_found 는 «실패»가 아니라 «갈림»이다. Element 로 계속 간다.
+  - { from: register, on: outcome, map: { both: register-gate, element-only: register-gate, none: blocked } }
+  # ⛔ 「등록됐다」와 「그 정체성이 새 장면에서 유지된다」는 다른 값이다 ⇒ 반드시 한 컷 눌러 본다.
+  - { from: register-gate, on: outcome, map: { holds: shots, drifts: views, unprobed: unobserved } }
+  - { from: shots, on: outcome, map: { ok: shot-gate, error: rendered-unedited } }
+  # ⛔ 연출 블록이 «들어갔나»를 산출에서 확인한다 — 프롬프트에 썼다는 것은 증거가 아니다.
+  - { from: shot-gate, on: outcome, map: { principled: reframe-decide, flat: shots, unviewed: unobserved } }
+  # ⭐⑵ 리프레임 갈림 — 최대 안전줌이 1 근처면 «잘라선 못 키운다» ⇒ 그 비율로 다시 렌더한다.
+  #   영상은 다시 그리는 값이 싸다(플래그 한 줄). 정지 이미지 축과 다른 점이 여기다.
+  - { from: reframe-decide, on: outcome, map: { croppable: edit, fullbleed: shots, unmeasured: unobserved } }
+  # ⭐⑶ 이음매 — 편집이 못 돌면 「컷은 났다」로 «따로» 끝낸다. 실패로 접지 않는다.
+  - { from: edit, on: outcome, map: { ok: delivered, no-plan: rendered-unedited, error: rendered-unedited } }

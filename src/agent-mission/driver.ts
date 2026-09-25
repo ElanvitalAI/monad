@@ -1,0 +1,1154 @@
+// ── monad → codex PTY RFC mission driver ──
+//
+// ROADMAP-monad-is-all-pty-unified-autonomy §1 3차(역전): 모나드가 codex 를 PTY 로 인보크해
+// 미션을 RFC(입력→결과확인→재입력)로 완주시킨다.
+//   - codex --yolo (무프롬프트) · 구독 모드(OPENAI_API_KEY 스크럽·API 과금 0)
+//   - CWD→git worktree 분기(격리) · 브레인=monad streamLLM(codex 화면 읽고 다음 행동 결정)
+//   - 막히면 omni-crawl 자율 검색 → worktree 파일로 떨궈 codex 에 read 지시(TUI 멀티라인 회피)
+//   - 증거 게이트(doc 존재 / tsc 0 / test pass)로 완료 판정 후 commit
+// 재사용: startPty(Bun 네이티브 PTY)·createWorktree·streamLLM·worktreeHasChanges·commitWorktree.
+import { execFileSync, spawnSync } from 'node:child_process';
+import { existsSync, writeFileSync, mkdirSync, readdirSync, readFileSync, statSync } from 'node:fs';
+import { join } from 'node:path';
+import { startPty, mintPtyId, onPtyEvent, type PtyHandle, type StartOpts } from '../pty-shell/registry.js';
+import { withChildPtyIdentity } from '../agent/pty-identity.js';
+import { NESTED_AGENT_ENV_BLOCKLIST } from '../agent/nested-agent-env.js';
+import { createWorktree, resolveMainRepoRoot, type CreateWorktreeOpts } from '../git-fs/worktree.js';
+import { configuredWorktreeRoot } from '../user-config.js';
+import { worktreeHasChanges, commitWorktree, changedFiles } from '../self-implement/seams.js';
+import { streamLLM, type LLMMessage } from '../llm.js';
+import { debug } from '../debug/log.js';
+import { classifyAuthError } from '../oauth/codex.js';
+import type { FallbackStep } from '../oauth/fallback-chain.js';
+import { runPtyControlLoop, controlDepsForHandle, type ControlDecision, type ControlObservation, type RunSupervisor } from '../autopilot/pty-control-loop.js';
+import { probeControlStance, stanceBlocksWrite } from '../pty-shell/pty-control-stance.js';
+import { mapControlStance, supervisionObservationFields } from '../self-implement/supervision-vocabulary.js';
+import { createLlmControlBrain, type StreamLLMFn } from '../autopilot/llm-control-brain.js';
+import { buildExecutorPtyRef, execSurfaceId } from '../self-implement/executor-contract.js';
+import { runWithControlObserve } from '../capture/control-observe-adapter.js';
+import { buildMissionProvision, sanitizeForPtyInput, type ProvisionRequest, type ProvisionResult } from './provision.js';
+import { ensureRunId } from '../harness/harness-space.js';
+import { recordHarnessWorktreeProvenance } from '../harness/harness-worktree-add.js';
+import { resolveInstanceName } from '../instance-identity.js';
+import { getChannelBus } from '../terminal-matrix/index.js';
+import { publishSelfReportFrame } from '../capture/self-report-frame.js';
+import { buildExecutorSelfReportFrame } from '../self-implement/executor-frame.js';
+import { classifierFrameLines, classifyFrameState, type FrameState } from '../capture/frame-state-detect.js';
+import { isKeyframeMoment, keyframePath, writeKeyframePng } from '../capture/keyframe-capture.js';
+import type { ChannelBus } from '../terminal-matrix/channel-bus.js';
+import {
+  parseTestOutput, parseBrainDecision, screenNeedsTrust,
+} from './parse.js';
+import { assessTypecheckExecution, tscEnv, type TypecheckError } from '../typecheck-ratchet.js';
+import { classifyAgainstBaseline } from '../self-implement/gate-baseline.js';
+import type { IngestionEntry } from '../agent-substrate/execution/ingestion-policy.js';
+
+const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
+/** Bounded classifier-compatible screen tail retained with each screen observation. */
+export const SCREEN_LOG_TAIL_MAX_LINES = 10;
+/** Maximum code points retained for each logged screen-tail line. */
+export const SCREEN_LOG_TAIL_MAX_LINE_LENGTH = 160;
+
+/** Builds the bounded screen payload without changing the screen used for control or classification. */
+export function buildScreenLogPayload(label: string, screen: string): {
+  label: string;
+  chars: number;
+  tail: string[];
+  tailTruncated: boolean;
+} {
+  let tailTruncated = false;
+  const tail = classifierFrameLines(screen).slice(-SCREEN_LOG_TAIL_MAX_LINES).map((line) => {
+    const chars = [...line];
+    if (chars.length <= SCREEN_LOG_TAIL_MAX_LINE_LENGTH) return line;
+    tailTruncated = true;
+    return chars.slice(0, SCREEN_LOG_TAIL_MAX_LINE_LENGTH).join('');
+  });
+  return { label, chars: screen.length, tail, tailTruncated };
+}
+
+export type EvidenceMode =
+  | { kind: 'doc'; glob: RegExp; dirRel: string }          // 문서 산출(플랜 등)
+  | { kind: 'tsc' }                                         // 변경 + tsc 0
+  | { kind: 'test'; testPath: string; fileRel?: string };   // 변경 + tsc 0 + 특정 test pass
+
+// ── Agent backend (agent-agnostic PTY RFC) ──
+//   monad 이 PTY 로 모는 코딩 에이전트를 교체 가능하게 추상화. 지금은 codex, 이후 claude/gemini/grok 확장.
+//   (폴더/개념이 codex-mission 이던 것을 agent-mission 으로 일반화 — driver 는 backend 만 바꾸면 된다.)
+export interface AgentBackend {
+  name: 'codex' | 'claude' | 'gemini' | 'grok' | 'aside';
+  /** PTY 실행 커맨드/인자. */
+  cmd: string;
+  args: string[];
+  /** 구독 모드 위해 스크럽할 env 키(API 과금 회피). */
+  scrubEnv?: string[];
+  /** 초기 신뢰/권한 프롬프트 처리 — 스크린 보고 필요 시 키 입력. 처리했으면 true. */
+  handleTrust?(screen: string, write: (s: string) => void): boolean;
+}
+
+/** codex --yolo 백엔드(구독 모드·trust=1). 첫 backend. */
+export const codexBackend: AgentBackend = {
+  name: 'codex',
+  cmd: 'codex',
+  args: ['--yolo'],
+  scrubEnv: ['OPENAI_API_KEY'],
+  handleTrust: (screen, write) => {
+    if (screenNeedsTrust(screen)) { write('1\r'); return true; }
+    return false;
+  },
+};
+
+// ── U3: claude/gemini/grok PTY backend 실구현 ──
+//   각 CLI 의 인터랙티브 PTY 모드를 auto-approve 플래그로 열어(codex --yolo 와 동형) 컨트롤 브레인이
+//   화면을 보며 몰 수 있게 한다. API 키는 scrubEnv 로 제거해 구독(oauth) 모드 강제(과금 회피·codex 패턴).
+//   플래그 출처(각 CLI --help): claude=--dangerously-skip-permissions · gemini=--yolo(전툴 자동승인) ·
+//   grok=--always-approve(전툴 자동승인).
+//   ⚠️ handleTrust 는 codex 전용(응답키 '1\r' 은 codex 메뉴 고유) — 다른 CLI 의 첫 trust/확인 화면
+//   응답키는 미검증이라 fabricate 하지 않는다(잘못된 키 주입이 무처리보다 나쁨). auto-approve 플래그가
+//   툴 권한 스트림을 우회하고, 첫 확인 화면은 LLM 컨트롤 브레인이 관측·응답한다. 결정론 fast-path 는
+//   백엔드별 도그푸드 후 추가(선택 실증 스코프 = 선택·spawn 정합).
+
+// scrubEnv 는 구독(oauth) 모드를 우선시키기 위해 각 CLI 의 알려진 과금 경로 env 를 스크럽한다(대표: 과금
+//   회피). 단일 API 키만 지우면 대체 인증(Anthropic AUTH_TOKEN·Bedrock/Vertex 스위치·Gemini Vertex/ADC)
+//   이 새어 과금될 수 있으므로 프로바이더 스위치·대체 토큰까지 지워 남는 경로를 oauth 로그인으로 좁힌다.
+//   ⚠️ "알려진 경로"까지의 보장 — CLI 가 새 과금 env 를 추가하면 추적 필요(flag/scrub drift 는 테스트로 감시).
+
+/** claude Code 백엔드 — --dangerously-skip-permissions(권한 자동)·구독(oauth) 모드.
+ *  scrub: API 키 + 대체 인증 토큰(ANTHROPIC_AUTH_TOKEN) + 프로바이더 스위치(Bedrock/Vertex) → oauth 로 좁힘.
+ *  CLAUDE_CODE_USE_BEDROCK/VERTEX 가 unset 이면 AWS/GCP creds 가 있어도 그 경로로 라우팅되지 않는다. */
+export const claudeBackend: AgentBackend = {
+  name: 'claude',
+  cmd: 'claude',
+  args: ['--dangerously-skip-permissions'],
+  scrubEnv: ['ANTHROPIC_API_KEY', 'ANTHROPIC_AUTH_TOKEN', 'CLAUDE_CODE_USE_BEDROCK', 'CLAUDE_CODE_USE_VERTEX'],
+};
+
+/** gemini 백엔드 — ⭐ 실행체는 **Antigravity CLI(`agy`)** 다(대표 2026-08-18 결정).
+ *
+ *  ⛔⭐⭐⭐ 왜 `gemini` 가 아닌가 — ***그 CLI 는 «죽었다»***(2026-08-19 라이브 실측):
+ *    `gemini -p "…"` ⇒ IneligibleTierError · ineligibleTiers=[{ reasonCode:'UNSUPPORTED_CLIENT',
+ *      tierId:'free-tier', tierName:'Gemini Code Assist for individuals' }]
+ *      "This client is no longer supported … migrate to the Antigravity suite of products"
+ *    ⚠️ 그런데 «인증만» 보면 산다 — cloudcode-pa.googleapis.com:loadCodeAssist 는 HTTP 200 을 낸다.
+ *      ⇒ 📌 ***「인증이 산다」와 「쓸 수 있다」는 다른 값이다.*** 200 을 보고 「된다」고 읽지 마라.
+ *    📄 배경·측정 = 내부 문서 `RFC-gemini-to-antigravity-cli-migration-2026-08-18` §4e-0
+ *
+ *  ⭐ 이름(`gemini`)은 «그대로 둔다»(대표 지시) — provider id·brand·budget·router 20+ 자리가 그 낱말을
+ *    쓰고, 그것들은 이 backend 와 «다른 축»이다. 바뀌는 것은 «실행체»뿐이다.
+ *
+ *  🙋 ⛔ **사람 칸이 하나 있다** — `agy` 는 자기 OAuth 를 요구한다(client_id·redirect_uri 가 gemini-cli 와
+ *    «다르다» · scope 에 aicode 포함). `~/.gemini/oauth_creds.json` 을 «안 쓴다».
+ *    ⇒ 사람이 `agy` 를 한 번 띄워 로그인해야 자식이 무인으로 돈다. 그 전에는 자식이
+ *      "Authentication required. Please visit the URL to log in:" 으로 «이름을 대고» 멎는다.
+ *
+ *  scrub: API 키(GEMINI/GOOGLE) + Vertex/ADC 트리거 → 과금 경로 차단, 남는 건 구독 로그인.
+ *    ⚠️ agy 도 `GEMINI_API_KEY` 를 «본다»(CHANGELOG 1.1.13) — 그래서 이 목록이 여전히 필요하다. */
+export const geminiBackend: AgentBackend = {
+  name: 'gemini',
+  cmd: 'agy',
+  args: ['--dangerously-skip-permissions'],
+  scrubEnv: ['GEMINI_API_KEY', 'GOOGLE_API_KEY', 'GOOGLE_GENAI_USE_VERTEXAI', 'GOOGLE_APPLICATION_CREDENTIALS'],
+};
+
+/** xAI grok Build CLI 백엔드 — --always-approve(전툴 자동승인)·구독(grok login) 모드.
+ *  scrub: XAI/GROK API 키 전부 → 남는 인증 = ~/.grok/auth.json(grok login oauth).
+ *  ⚠️ 바이너리는 xAI install.sh 가 ~/.grok/bin/grok 에 둔다 — cron/launchd 최소 PATH 에선 ensure-bin-path
+ *  보강 필요할 수 있음(codex 와 동일하게 cmd 는 PATH 해석). */
+export const grokBackend: AgentBackend = {
+  name: 'grok',
+  cmd: 'grok',
+  args: ['--always-approve'],
+  scrubEnv: ['XAI_API_KEY', 'GROK_API_KEY', 'GROK_CODE_XAI_API_KEY'],
+};
+
+/** Aside Browser agent backend — `aside exec --help` confirms `--effort low`; `ultrabrowse` enables the highest thinking level and proactive mode. */
+export const asideBackend: AgentBackend = {
+  name: 'aside',
+  cmd: 'aside',
+  args: ['exec', '--effort', 'low'],
+  // Aside uses its selected account; cost control is the explicit CLI effort flag, not environment-variable scrubbing.
+  scrubEnv: [],
+};
+
+const AGENT_BACKENDS: Record<string, AgentBackend> = {
+  codex: codexBackend,
+  claude: claudeBackend,
+  gemini: geminiBackend,
+  grok: grokBackend,
+  aside: asideBackend,
+};
+
+const FORCED_ENV_BY_BACKEND: Readonly<Record<string, Readonly<Record<string, string>>>> = {
+  grok: { GROK_DISABLE_API_KEY_AUTH: '1' },
+};
+
+/**
+ * 선택된 backend 로 PTY spawn 에 넘길 파라미터(cmd·args·env)를 구성한다(순수·테스트 seam).
+ * env 는 baseEnv 복사 후 backend.scrubEnv 키와 공용 중첩-실행 표지를 각각 제거한다. 전자는 지정 backend 의 알려진
+ * 과금 경로(API 키·대체 인증·프로바이더 스위치)를 좁혀 구독(oauth) 모드를 우선하고, 후자는 부모 중첩 상태가 PTY 자식에
+ * 전파되지 않게 한다. backend 강제 env 는 스크럽 뒤에 적용하되 바깥에서 설정한 값은 보존한다. driver 의 실 spawn 은 이
+ * 결과에 TERM·MONAD_RUN_ID 만 덧댄다.
+ * 이 함수로 "선택 → spawn 파라미터" 실행경로가 백엔드별로 단위 검증된다(U3 선택 실증).
+ */
+export function resolveBackendSpawn(
+  backend: AgentBackend,
+  baseEnv: Record<string, string | undefined>,
+): { cmd: string; args: string[]; env: Record<string, string>; nestedEnvRemovedCount: number; forcedEnv: string[] } {
+  const env: Record<string, string> = {};
+  for (const [k, v] of Object.entries(baseEnv)) if (v != null) env[k] = v;
+  for (const k of backend.scrubEnv ?? []) delete env[k];
+  const forcedEnv: string[] = [];
+  for (const [key, value] of Object.entries(FORCED_ENV_BY_BACKEND[backend.name] ?? {})) {
+    if (!(key in env)) {
+      env[key] = value;
+      forcedEnv.push(key);
+    }
+  }
+  let nestedEnvRemovedCount = 0;
+  for (const key of NESTED_AGENT_ENV_BLOCKLIST) {
+    if (key in env) {
+      delete env[key];
+      nestedEnvRemovedCount += 1;
+    }
+  }
+  return { cmd: backend.cmd, args: [...backend.args], env, nestedEnvRemovedCount, forcedEnv };
+}
+
+/** Build the mission PTY options after identity is preallocated for child env propagation. */
+export function buildAgentMissionPtySpawnOptions(opts: {
+  readonly backend: AgentBackend;
+  readonly spawn: { cmd: string; args: string[]; env: Record<string, string> };
+  readonly workdir: string;
+  readonly nickname: string;
+}): StartOpts {
+  const id = mintPtyId(opts.backend.name);
+  return {
+    id,
+    cmd: opts.spawn.cmd,
+    args: opts.spawn.args,
+    workdir: opts.workdir,
+    env: withChildPtyIdentity(opts.spawn.env, id),
+    cols: 110,
+    rows: 40,
+    kind: opts.backend.name,
+    nickname: opts.nickname,
+    accessMode: 'auto',
+  };
+}
+
+/** 등록된 agent backend 이름들(CLI 안내·에러 메시지·확장 검증용). */
+export function agentBackendNames(): string[] {
+  return Object.keys(AGENT_BACKENDS);
+}
+
+/**
+ * ⛔⭐⭐ **백엔드를 «미지정»으로 뒀을 때 — codex 가 소진됐으면 체인의 다음 칸으로.**
+ *
+ * 왜 여기인가: `resolveBackend()` 의 「미지정 → codex」가 이 저장소에서 codex 축이 끝나는
+ * 유일한 «선택» 지점이다. 판정기(`fallback-chain.ts`)를 만들어 놓고 안 꽂으면 그것이
+ * 이 저장소가 이름 붙인 **F38(심은 뚫려 있고 꽂는 사람이 없다)** 이다.
+ *
+ * ⛔ 불변식 셋(윗 모듈에서 그대로 이어받는다):
+ *   ① **사람이 이름을 «명시»했으면 이 함수는 «안» 불린다** — 의도가 이긴다(호출자가 위에서 갈린다).
+ *   ② **기본 체인은 `['codex-rotate']`** 이라 옵션을 안 켠 사용자는 «항상 codex» — 무변경.
+ *   ③ **조용히 바꾸지 않는다** — 바꿨으면 관측에 남긴다. 조용한 폴백은 이 파일이 이미
+ *      거부한 형태다(위 `resolveBackend` 주석: *"조용한 codex 폴백은 애그노스틱 위반"*).
+ *
+ * ⛔ 판정 실패는 삼킨다 — 체인 때문에 백엔드가 «안 뜨는» 일은 없어야 한다. 그때는 codex.
+ */
+export function resolveDefaultBackend(
+  /** ⛔ 테스트 심 — 실 스토어·실 자격 없이 판정을 주입한다. */
+  deps: { readonly decide?: () => { action: string; backend?: string } } = {},
+): AgentBackend {
+  try {
+    const decide = deps.decide
+      ?? (() => {
+        // ⛔ 지연 로드 — 이 모듈은 부팅 초기에 읽히는데 oauth 축은 스토어·config 를 건드린다.
+        //   정적 import 로 끌어오면 「백엔드 이름 하나 물어보려다」 디스크를 깨우게 된다.
+        const { resolveRunFallback } = require('../oauth/codex-account-store.js') as typeof import('../oauth/codex-account-store.js');
+        return resolveRunFallback();
+      });
+    const decision = decide();
+    if (decision.action === 'switch-backend' && decision.backend === 'grok') {
+      debug.log('agent-mission.backend', 'fallback-switch', { from: 'codex', to: 'grok', reason: 'codex-exhausted' });
+      return grokBackend;
+    }
+  } catch (err) {
+    debug.log('agent-mission.backend', 'fallback-failed', { message: (err as Error)?.message }, { level: 'warn' });
+  }
+  return codexBackend;
+}
+
+/**
+ * 이름으로 backend 해석. **미지정 → 디폴트 codex**(외부 에이전트 파이프라인 기본값·대표 허용).
+ * ⚠️ U1(솔루션 애그노스틱) — **명시 지정한 미등록 backend 는 조용히 codex 로 폴백하지 않고 명시 에러**.
+ *   조용한 폴백은 "선택 계약이 애그노스틱한 척하고 실배선은 codex 하나"인 것을 은폐한다(대표 지적:
+ *   "지정해도 못 쓰는 게 결함"). U3 에서 claude/gemini/grok 실등록 완료(codex/claude/gemini/grok).
+ *   설계 = [[PLAN-unified-selfdev-cli-runDevPipeline-2026-07-25]] §3/§7 U1/U3.
+ */
+export function resolveBackend(name?: string): AgentBackend {
+  const key = name?.trim();
+  if (!key) return resolveDefaultBackend(); // 미지정/빈값/공백 = 디폴트 codex (⊕ 소진 시 체인)
+  const b = AGENT_BACKENDS[key];
+  if (!b) {
+    throw new Error(
+      `알 수 없는 agent backend '${key}'. 등록된 backend: ${agentBackendNames().join(', ')}. ` +
+      `조용한 codex 폴백은 애그노스틱 위반이라 차단.`,
+    );
+  }
+  return b;
+}
+
+/** ⛔ export 하지 않는다 — 소비자가 «이 파일 안»뿐이다(무인 리뷰 must-fix).
+ *  ⭐ 이 저장소가 오늘 여러 번 본 형태다: 「만들었는데 아무도 안 부르는 공개 표면」.
+ *  외부 계약이 «실제로» 필요해지면 그때 export 한다. */
+interface RuntimeFallbackState {
+  readonly attemptedSteps: ReadonlySet<FallbackStep>;
+  readonly descents: number;
+  readonly maxDescents: number;
+}
+
+interface RuntimeFallbackContext extends RuntimeFallbackState {
+  readonly fallbackEligible: boolean;
+}
+
+/** 한도 실패에만 재판정한다. 새·미시도 체인 칸과 최초 남은 칸 상한을 모두 만족해야 이동한다. */
+export function decideRuntimeFallback(
+  failure: unknown,
+  currentStep: FallbackStep,
+  state: RuntimeFallbackState,
+  decide: (input: { currentStep: FallbackStep; currentCredentialRateLimited: true }) => { action: string; backend?: string },
+): AgentBackend | null {
+  if (classifyAuthError(failure).errorKind !== 'rate-limited' || state.descents >= state.maxDescents) return null;
+  const decision = decide({ currentStep, currentCredentialRateLimited: true });
+  if (decision.action !== 'switch-backend' || decision.backend !== 'grok' || state.attemptedSteps.has('grok')) return null;
+  return grokBackend;
+}
+
+export interface AgentMissionSpec {
+  /** 에이전트에 보낼 미션 프롬프트(마지막 줄에 MISSION-COMPLETE 지시 포함 권장). */
+  mission: string;
+  /** repo 루트(기본: CWD 에서 resolveMainRepoRoot). */
+  repo?: string;
+  /** 새 worktree 브랜치명. */
+  branch: string;
+  /** 분기 base(기본 HEAD). 이전 미션 산출 위에 쌓으려면 그 브랜치명. */
+  base?: string;
+  /** 완료 증거 판정. */
+  evidence: EvidenceMode;
+  /** RFC 최대 라운드(기본 16). */
+  maxRounds?: number;
+  /** 완료 시 자동 commit(기본 true). */
+  commit?: boolean;
+  /** 스크린 캡처 저장 디렉토리. */
+  screensDir?: string;
+  /** omni-crawl main.ts 경로. */
+  omniCrawlPath?: string;
+  /** 구동할 에이전트 backend(기본 codexBackend). claude/gemini/grok 확장점. */
+  agent?: AgentBackend;
+  /**
+   * ★ monad 내부 프롬프트 인핸싱(가산·anti-drift) — 원문 verbatim 보존 + 커버리지 체크리스트 부착.
+   * 명시 override(undefined 면 entry 정책이 결정: monad-apparatus→ON·external-verbatim→OFF·§6e capability 구동).
+   * 켜면 mission 을 파일(.mission-prompt.md)로 떨궈 에이전트에 read 지시(TUI 멀티라인 페이스트 위험 회피).
+   */
+  enhance?: boolean;
+  /** ★ 진입 클래스(§6e·capability 구동) — enhance mode-gating. 기본 monad-apparatus(monad 가 원문 prep→ON).
+   *  외부 에이전트가 프롬프트를 직접 크래프트했거나 상위 monad 중첩이면 external-verbatim(→OFF). */
+  entry?: IngestionEntry;
+  /** 인핸싱 산출물 유형 힌트(예: 'PPT 발표덱', 'PLAN 문서'). */
+  deliverableHint?: string;
+  /**
+   * ★ entry-independent 기억 주입(PLAN §6e FIX) — monad 기억을 가산 grounding 컨텍스트로(프롬프트 무접촉·
+   * 인핸싱과 독립). 어떤 진입이든 기본 ON(false 로만 끔). external-verbatim(인핸싱 OFF)에서도 원문 안 건드림.
+   */
+  memory?: boolean;
+  /** PTY 닉네임(휴먼 리더블·goto 로 나중 접근). 기본 branch. */
+  nickname?: string;
+  /** ⭐⭐ 그 브랜치를 이미 쥔 «소유» 워크트리가 있으면 지우지 말고 그대로 재사용하라고 요청한다
+   *  (`createWorktree` 의 같은 이름 인자로 그대로 내려간다 · 판정은 거기 `gateWorktreeReuse` 가 한다).
+   *
+   *  왜: 외부 에이전트 백엔드로 PR 을 낸 뒤 그 PR 의 리뷰 수리 라운드를 «같은 브랜치»에 이어 붙이려 하면
+   *  종전엔 워크트리 생성에서 막혀 사람이 손으로 지우고 다시 쏴야 했다(실측 2026-08-11).
+   *
+   *  ⛔ 기본은 미지정 = **종전 그대로**(재사용 요청 없음 → 이미 쥔 워크트리가 있으면 거부/리셋).
+   *     안전장치를 «푸는» 스위치이므로 호출자가 명시할 때만 실린다 — 여기서 조건을 완화하지 않는다. */
+  reuseOwnedWorktree?: boolean;
+}
+/** @deprecated codex 특정 이름 — agent-agnostic 리네임. AgentMissionSpec 을 쓰라. */
+export type CodexMissionSpec = AgentMissionSpec;
+
+export interface AgentMissionResult {
+  ok: boolean;
+  worktree: string;
+  branch: string;
+  rounds: number;
+  evidencePath: string | null;
+  committed: boolean;
+  usedOmniCrawl: boolean;
+  detail: string;
+}
+/** @deprecated codex 특정 이름 — AgentMissionResult 을 쓰라. */
+export type CodexMissionResult = AgentMissionResult;
+
+/** Test seams for the mission boundary; production defaults remain the registry and worktree implementations. */
+export interface AgentMissionDeps {
+  startPty?: (opts: StartOpts) => PtyHandle;
+  createWorktree?: typeof createWorktree;
+  recordWorktreeProvenance?: typeof recordHarnessWorktreeProvenance;
+  runControlLoop?: typeof runPtyControlLoop;
+  resolveRunFallback?: (input: { currentStep: FallbackStep; currentCredentialRateLimited: true }) => { action: string; backend?: string };
+  /** 재귀 재시도 사이에만 전달되는 런 로컬 폴백 진행 상태. */
+  runtimeFallback?: RuntimeFallbackContext;
+}
+
+const DEFAULT_OMNI = `${process.env.HOME}/.claude/skills/omni-crawl/scripts/main.ts`;
+
+// ── PTY idle 감지 ──
+async function waitForQuiet(h: PtyHandle, quietMs: number, maxWaitMs: number): Promise<'quiet' | 'timeout' | 'exited'> {
+  const start = Date.now(); h.drainDelta(); let last = Date.now();
+  while (Date.now() - start < maxWaitMs) {
+    if (!h.isAlive()) return 'exited';
+    const d = h.drainDelta();
+    if (d.length > 0) last = Date.now();
+    else if (Date.now() - last >= quietMs) return 'quiet';
+    await sleep(300);
+  }
+  return 'timeout';
+}
+
+// ── omni-crawl (자율 폴백) ──
+// ⚠️ graceful — omni-crawl 은 `npx tsx` 외부 프로세스+네트워크라 실패가 흔하다(타임아웃·네트워크·JSON
+//   파싱). 실패를 throw 하면 control loop 이 error termination 으로 미션 전체를 죽인다(회귀). 원본처럼
+//   실패 메시지를 문자열로 반환해 context 로 기록하고 계속한다 — search 는 보조 폴백이지 미션 킬러가 아니다.
+function omniCrawl(query: string, omniPath: string): string {
+  try {
+    // ⭐npx/tsx PATH 의존 제거(근본 동작 수리) — `npx tsx` 는 PATH 의 nvm bin + 전역 tsx 에 의존해,
+    //   제한된 PATH(데몬/미션/self-implement child)서 ENOENT 로 죽던 근본(cron PATH 무음실패 계열).
+    //   monad 는 bun 런타임이고 bun 은 TS 를 네이티브 실행하므로(tsx 불필요), 현재 실행 파일 절대경로
+    //   (process.execPath=bun)로 직접 돌린다 → PATH 무관·tsx 불필요·더 빠름. omni-crawl 은 자체 initEnv 로
+    //   .env(절대경로)를 로드하니 API 키도 cwd/셸 env 와 무관하게 채워진다.
+    const out = execFileSync(process.execPath, [omniPath, query, '--json', '--mode', 'deep'], {
+      encoding: 'utf8', timeout: 180000, maxBuffer: 20 * 1024 * 1024,
+    });
+    const m = out.match(/---BEGIN_OMNI_CRAWL_JSON---([\s\S]*?)---END_OMNI_CRAWL_JSON---/);
+    if (!m) return out.slice(-4000);
+    const j = JSON.parse(m[1]!) as { results?: Array<{ engine: string; summary?: string; items?: Array<{ title: string; url: string; text?: string }> }> };
+    const parts: string[] = [];
+    for (const r of j.results ?? []) {
+      if (r.summary) parts.push(`## ${r.engine}\n${r.summary}`);
+      for (const it of (r.items ?? []).slice(0, 5)) parts.push(`- ${it.title} ${it.url}\n  ${(it.text || '').slice(0, 700)}`);
+    }
+    return parts.join('\n\n').slice(0, 8000);
+  } catch (e) { return `omni-crawl 실패: ${(e as Error).message}`; }
+}
+
+export interface MissionSearchOpts {
+  readonly worktree: string;
+  readonly omniPath: string;
+  readonly crawl?: (query: string, omniPath: string) => string;
+}
+
+/** omni-crawl 결과를 mission-local context로 영속한다. ⚠️search 는 미션 킬러가 아니다 — crawl(주입 포함)
+ *  또는 파일쓰기가 실패해도 실패 메시지를 context 로 기록하고 계속한다(원본 graceful 시맨틱·미션 무중단). */
+export function createMissionSearch(opts: MissionSearchOpts): (query: string, step?: number) => Promise<void> {
+  const crawl = opts.crawl ?? omniCrawl;
+  return async (query, step) => {
+    debug.log('agent-mission', 'omni-crawl', { step, query: query.slice(0, 120) });
+    let info: string;
+    try { info = crawl(query, opts.omniPath); }
+    catch (e) { info = `omni-crawl 실패: ${(e as Error).message}`; } // 주입 crawl 이 throw 해도 미션 무중단
+    try { writeFileSync(join(opts.worktree, '.mission-context.md'), `# monad 가 omni-crawl 로 수집한 정보\n\n${info}\n`); }
+    catch (e) { debug.log('agent-mission', 'search-context-write-failed', { step, error: (e as Error).message }); } // 기록 실패를 관측 가능하게(계약 정합·review)
+  };
+}
+
+// ── 증거 게이트 ──
+type TscExecutor = (wt: string) => { ran: boolean; diagnostics: TypecheckError[]; failure?: string; output?: string };
+
+type TypecheckBaselineResult = {
+  readonly ok: boolean;
+  readonly baselineErrors: number;
+  readonly newErrors: string[];
+  readonly failure?: string;
+};
+
+type EvidenceCheckDeps = {
+  readonly baseline?: readonly TypecheckError[];
+  readonly executeTsc?: TscExecutor;
+  readonly runTest?: (wt: string, testPath: string) => { ok: boolean; out: string };
+  readonly hasChanges?: (wt: string) => boolean;
+};
+
+export function checkEvidence(
+  wt: string,
+  ev: EvidenceMode,
+  deps: EvidenceCheckDeps = {},
+): { ok: boolean; path: string | null; retry?: string } {
+  const baseline = deps.baseline ?? [];
+  const executeTsc = deps.executeTsc ?? collectTscDiagnostics;
+  const testRunner = deps.runTest ?? runTest;
+  const hasChanges = deps.hasChanges ?? worktreeHasChanges;
+  if (ev.kind === 'doc') {
+    const dir = join(wt, ev.dirRel);
+    if (!existsSync(dir)) return { ok: false, path: null, retry: `${ev.dirRel} 아래 문서가 아직 없다.` };
+    const hit = readdirSync(dir).find((f) => ev.glob.test(f));
+    return hit ? { ok: true, path: join(dir, hit) } : { ok: false, path: null, retry: `${ev.dirRel} 아래 대상 문서가 아직 없다.` };
+  }
+  if (!hasChanges(wt)) return { ok: false, path: null, retry: '아직 변경사항이 없다. 실제 파일을 작성하라.' };
+  if (ev.kind === 'tsc') {
+    const tsc = runTsc(wt, baseline, executeTsc);
+    debug.log('agent-mission', 'verify', { evidence: ev.kind, baselineErrors: tsc.baselineErrors, newErrors: tsc.newErrors.length, ok: tsc.ok });
+    if (!tsc.ok) return { ok: false, path: null, retry: `tsc 실패. 다음 에러를 고쳐라:\n${(tsc.failure ?? tsc.newErrors.join('\n')).slice(0, 1500)}` };
+    return { ok: true, path: wt };
+  }
+  // test — 기준선 판정은 tsc evidence 전용이다. 기존 전체 tsc → runTest 순서와 문구를 보존한다.
+  //   종전 포맷 계약(무회귀): 파싱된 진단은 앞 25개만 싣고(parseTscErrors(out).slice(0,25)), 파싱 결과가
+  //   없으면 비파싱 원시 출력의 **끝** 1500자(out.slice(-1500))를 쓴다. output.slice(0,1500)(앞부분)로
+  //   바꾸면 종전 문구와 어긋나 수용기준을 위반한다.
+  if (ev.fileRel && !existsSync(join(wt, ev.fileRel))) return { ok: false, path: null, retry: `${ev.fileRel} 가 아직 없다.` };
+  const tsc = executeTsc(wt);
+  if (!tsc.ran || tsc.diagnostics.length > 0) {
+    const parsed = tsc.diagnostics.map((diagnostic) => diagnostic.line);
+    const errors = parsed.slice(0, 25).join('\n') || (tsc.output ?? tsc.failure ?? '').slice(-1500);
+    return { ok: false, path: null, retry: `tsc 실패. 다음 에러를 고쳐라:\n${errors.slice(0, 1500)}` };
+  }
+  const t = testRunner(wt, ev.testPath);
+  if (!t.ok) return { ok: false, path: null, retry: `테스트 실패/부재:\n${t.out.slice(0, 1200)}` };
+  return { ok: true, path: ev.fileRel ? join(wt, ev.fileRel) : wt };
+}
+
+type TscExecFile = typeof execFileSync;
+
+export function collectTscDiagnostics(wt: string, execute: TscExecFile = execFileSync): { ran: boolean; diagnostics: TypecheckError[]; failure?: string; output?: string } {
+  const startedAt = Date.now();
+  try {
+    const out = String(execute('bunx', ['tsc', '--noEmit'], { cwd: wt, encoding: 'utf8', timeout: 240000, maxBuffer: 20 * 1024 * 1024, env: tscEnv() }) ?? '');
+    const assessed = assessTypecheckExecution({ out, status: 0, signal: null, durationMs: Date.now() - startedAt });
+    return { ran: assessed.executed, diagnostics: assessed.diagnostics, ...(assessed.executed ? {} : { failure: assessed.failureLog, output: out }) };
+  } catch (error: unknown) {
+    const x = error as { status?: number | null; signal?: NodeJS.Signals | null; stdout?: string; stderr?: string };
+    const out = `${x.stdout ?? ''}${x.stderr ?? ''}`;
+    const normalDiagnosticExit = x.status === 1 || x.status === 2;
+    const assessed = assessTypecheckExecution({ out, status: x.status ?? null, signal: x.signal ?? null, ...(normalDiagnosticExit ? {} : { error }), durationMs: Date.now() - startedAt });
+    return { ran: assessed.executed, diagnostics: assessed.diagnostics, ...(assessed.executed ? {} : { failure: `${assessed.failureLog}\n${out.slice(-1500)}`, output: out }) };
+  }
+}
+
+export function runTsc(
+  wt: string,
+  baseline: readonly TypecheckError[] = [],
+  execute: TscExecutor = collectTscDiagnostics,
+): TypecheckBaselineResult {
+  const current = execute(wt);
+  if (!current.ran) return { ok: false, baselineErrors: baseline.length, newErrors: [], failure: current.failure ?? 'tsc 실행 실패' };
+  const comparison = classifyAgainstBaseline(baseline, current.diagnostics, (diagnostic) => diagnostic.line);
+  const newErrors = comparison.introduced.map((diagnostic) => diagnostic.line);
+  return { ok: newErrors.length === 0, baselineErrors: baseline.length, newErrors, ...(newErrors.length ? { failure: newErrors.slice(0, 25).join('\n') } : {}) };
+}
+function runTest(wt: string, testPath: string): { ok: boolean; out: string } {
+  // ⚠️ bun test 의 pass/fail 요약은 STDERR 로 나간다. execFileSync 는 stdout 만 반환하므로
+  // "N pass" 를 놓쳐 거짓실패했다(2026-07-23 미션4 에서 규명). spawnSync 로 stdout+stderr 를
+  // 모두 캡처한다. spawnSync 는 비-0 종료에도 throw 하지 않아 실패 케이스도 동일 경로로 처리.
+  const r = spawnSync('bun', ['test', testPath], { cwd: wt, encoding: 'utf8', timeout: 120000, maxBuffer: 20 * 1024 * 1024 });
+  const out = `${r.stdout || ''}${r.stderr || ''}`;
+  const parsed = parseTestOutput(out);
+  // ⭐OH8 증거 — 지정 파일이 0개 매칭이면(경로 오타·no-match) bun 은 exit 0·pass 흡수로
+  // 거짓 통과하던 근본. 재작업 메시지가 "왜"를 알도록 증거 라인을 앞에 붙인다.
+  const evidence = parsed.hasRunSummary
+    ? (parsed.ranFiles === 0
+        ? `⚠ 증거: "${testPath}" 가 0개 파일 매칭 — 아무 테스트도 실행되지 않았다(경로 오타?). exit0/pass 흡수 거짓통과 차단.\n`
+        : `증거: ${parsed.ranFiles}파일 · ${parsed.pass} pass / ${parsed.fail} fail.\n`)
+    : '';
+  return { ok: parsed.ok, out: evidence + out.slice(-700) };
+}
+
+// ── 커버리지 게이트용 산출물 텍스트 수집 ──
+//   evidence 가 파일(doc 모드)이면 그 파일, 아니면 워크트리 변경 텍스트류(.md/.txt/.html/코드) concat(캡).
+function gatherArtifactText(wt: string, evPath: string | null): string {
+  try {
+    if (evPath && evPath !== wt && existsSync(evPath) && statSync(evPath).isFile()) {
+      return readFileSync(evPath, 'utf8');
+    }
+  } catch { /* noop */ }
+  try {
+    const files = changedFiles(wt).filter((f) => /\.(md|txt|html?|tsx?|jsx?|json|py)$/i.test(f) && !f.startsWith('.mission-'));
+    const parts: string[] = [];
+    let total = 0;
+    for (const f of files) {
+      try {
+        const t = readFileSync(join(wt, f), 'utf8');
+        parts.push(`# ${f}\n${t}`);
+        total += t.length;
+        if (total > 40000) break;
+      } catch { /* noop */ }
+    }
+    return parts.join('\n\n');
+  } catch { return ''; }
+}
+
+// ── mission RFC brain → canonical 3-action control brain adapter ──
+export interface MissionVerifyDoneOpts {
+  readonly worktree: string;
+  readonly evidence: EvidenceMode;
+  readonly checklist: readonly string[];
+  readonly coverageRetries: number;
+  readonly checkEvidence?: typeof checkEvidence;
+  readonly gatherArtifactText?: typeof gatherArtifactText;
+  readonly verifyCoverage?: (text: string, checklist: string[]) => Promise<{ covered: string[]; missing: string[]; ratio: number; method: string }>;
+}
+
+/** Evidence는 파일/컴파일/테스트 gate(hard·최종 ok 결정), coverage는 enhanced checklist의 best-effort
+ * anti-drift gate다. ⭐coverage 는 retry budget 동안만 되먹이고, 소진되면 미달을 로그로 가시화하고
+ * 수락한다(visible omission·원본 시맨틱). coverage 를 hard-fail 로 만들면 최종 ok 는 어차피 evidence
+ * gate(finalEv)가 결정하는데 control loop 만 budget 까지 헛돌며 자식을 불필요하게 계속 찌른다(무한 되먹임). */
+export function createMissionVerifyDone(opts: MissionVerifyDoneOpts): (obs?: ControlObservation) => Promise<{ ok: true } | { ok: false; retry: string }> {
+  const evidenceCheck = opts.checkEvidence ?? checkEvidence;
+  const artifactText = opts.gatherArtifactText ?? gatherArtifactText;
+  let coverageRetries = opts.coverageRetries;
+  return async (obs) => {
+    const ev = evidenceCheck(opts.worktree, opts.evidence);
+    debug.log('agent-mission', 'verify', { step: obs?.step, ok: ev.ok, path: ev.path, retry: ev.retry?.slice(0, 100) });
+    if (!ev.ok) return { ok: false as const, retry: `${ev.retry ?? '증거가 아직 부족하다.'}\n고친 뒤 MISSION-COMPLETE 라고 답하라.\r` };
+    if (!opts.checklist.length) return { ok: true as const };
+    const verifyCoverage = opts.verifyCoverage ?? (async (text, checklist) => (await import('../prompt-enhance/coverage.js')).verifyCoverage(text, checklist, {}));
+    const cov = await verifyCoverage(artifactText(opts.worktree, ev.path), [...opts.checklist]);
+    debug.log('agent-mission', 'coverage', {
+      step: obs?.step, covered: cov.covered.length, missing: cov.missing.length,
+      ratio: Number(cov.ratio.toFixed(2)), method: cov.method, coverageRetries,
+    });
+    if (!cov.missing.length) return { ok: true as const };
+    // ★ 예산 소진 — 미달을 가시화하고 수락한다(visible omission). evidence 는 이미 충족했고 최종 ok 는
+    //   evidence gate 가 결정하므로, 여기서 계속 hard-fail 하면 budget 낭비만 늘 뿐 결과는 안 바뀐다.
+    if (coverageRetries <= 0) {
+      debug.log('agent-mission', 'coverage-exhausted', { step: obs?.step, missing: cov.missing.length });
+      return { ok: true as const };
+    }
+    coverageRetries -= 1;
+    const list = cov.missing.slice(0, 20).map((m) => `- ${m}`).join('\n');
+    return {
+      ok: false as const,
+      retry: `증거는 충족했으나 원문 커버리지 미달 — 다음 항목이 산출물에 빠졌거나 일반화됐다:\n${list}\n이 항목들을 원문 그대로 반영한 뒤(요약·생략 금지) MISSION-COMPLETE 라고 답하라. 남은 커버리지 재시도: ${coverageRetries}.\r`,
+    };
+  };
+}
+
+export interface MissionControlBrainOpts {
+  readonly mission: string;
+  readonly evidenceReady: () => boolean;
+  readonly search: (query: string, step?: number) => Promise<void> | void;
+  /** PTY에서 실행 중인 에이전트. 미지정 시 기존 codex 기본값을 유지한다. */
+  readonly backend?: AgentBackend;
+  /** ★ P4 — 역량 프로비저닝(감독이 자식의 없는 패키지/도구를 격리 worktree 에 자율 설치). 미주입 시 provision
+   *  행동은 no-op(wait)로 폴백 = 무회귀. 반환 detail 을 자식에 input 으로 전달(설치됨/거부 안내). */
+  readonly provision?: (req: ProvisionRequest) => Promise<ProvisionResult>;
+  readonly stream?: StreamLLMFn;
+}
+
+/** 기존 5-action mission 판단을 canonical PTY control-loop 결정으로 축소한다. search는 이 경계에서만
+ * 부작용(context 기록)을 끝내고, child에는 context를 읽고 계속하라는 단일 input만 전달한다. */
+export function createMissionControlBrain(opts: MissionControlBrainOpts): RunSupervisor {
+  const history: string[] = [];
+  const backendName = (opts.backend ?? codexBackend).name;
+  // ★ P4 dedup(제한적 재시도·리뷰) — (layer:spec)별 시도횟수. 성공 시 영구 차단, 실패는 최대 2회까지
+  //   허용(일시 네트워크/프로세스 오류는 재시도, 지속 실패는 루프 차단).
+  const provisionAttempts = new Map<string, number>();
+  const PROVISION_MAX_ATTEMPTS = 2;
+  return createLlmControlBrain({
+    goal: opts.mission,
+    stream: opts.stream,
+    maxTokens: 500,
+    temperature: 0.2,
+    messageBuilder: (obs, controlHistory): LLMMessage[] => {
+      const sys = `너는 monad 다. ${backendName}(외부 코딩 에이전트)를 PTY 로 열어 미션을 완주시키는 컨트롤러다.
+ ${backendName} 의 현재 화면을 보고 **다음 행동 하나**를 JSON 으로만 결정하라.
+
+ 미션 요지: ${opts.mission.slice(0, 400)}
+
+ 행동(action):
+ - "wait": ${backendName} 가 아직 작업 중(도구 실행/생성)이면 대기.
+ - "verify": ${backendName} 가 MISSION-COMPLETE/완료를 주장하면 증거 게이트(내가 실행)로 검증. 완료주장 시 이걸 우선.
+ - "send": ${backendName} 가 멈추거나 계속 진행이 필요하면 짧고 명확한 지시(text).
+ - "search": ${backendName} 가 정보/라이브러리/문법/외부자원에 막혔으면 omni-crawl 로 조사(query). ⭐외부 힌트 없이 스스로 판단.${opts.provision ? `
+ - "provision": ${backendName} 가 **없는 Node 패키지**에 막혔으면(예: "Cannot find module 'X'"·"Module not found: X") 격리 worktree 에 자율 설치(spec=**npm 패키지명**, layer="pkg"). ⚠️Node 패키지만 — 파이썬/시스템 도구(pip·apt·brew)는 아직 미지원이니 provision 하지 말고 다른 방법(search·send)으로. 내가 설치 후 재시도를 지시한다.` : ''}
+ 증거상태: ${opts.evidenceReady() ? '충족(완료 가능)' : '아직'}.
+ JSON 만: {"action":"...","text":"...","query":"...","spec":"...","layer":"pkg","reason":"..."}`;
+      const recent = history.slice(-4).join(' | ') || controlHistory.slice(-4).join(' | ') || '없음';
+      return [
+        { role: 'system', content: sys },
+        { role: 'user', content: `스텝 ${obs.step}. 최근행동: ${recent}\n\n=== ${backendName} 화면 ===\n${obs.screen.slice(-3500)}` },
+      ];
+    },
+    decisionFromRaw: async (raw, obs): Promise<ControlDecision> => {
+      const decision = parseBrainDecision(raw);
+      history.push(`s${obs.step}:${decision.action}`);
+      debug.log('agent-mission', 'brain', { step: obs.step, action: decision.action, reason: decision.reason.slice(0, 120) });
+      if (decision.action === 'send') return { action: 'input', text: `${decision.text || 'continue'}\r` };
+      if (decision.action === 'verify' || decision.action === 'done') return { action: 'done', reason: decision.reason || 'agent completed' };
+      if (decision.action === 'search') {
+        await opts.search(decision.query || opts.mission.slice(0, 120), obs.step);
+        // ★ child 에게 저장 경로를 명시해야 조사 결과를 찾는다 — 경로 안내 제거는 회귀(review·원본 시맨틱).
+        return { action: 'input', text: '조사 결과를 .mission-context.md 에 저장했다. 읽고 계속 진행하라.\r' };
+      }
+      // ★ P4 provision(search 와 동형 부작용 동사) — 감독이 자식 역량을 격리 worktree 에 자율 설치 후 재시도 지시.
+      //   미배선(opts.provision 없음)이면 wait 폴백(무회귀). spec 없으면 무의미 → wait.
+      if (decision.action === 'provision') {
+        if (!opts.provision || !decision.spec) return { action: 'wait' };
+        // ★ dedup(제한적 재시도·review) — (layer:spec)별 시도 상한(성공=영구차단·99, 실패=최대 2회). 일시
+        //   오류는 재시도하되 지속 실패/성공 후 반복은 차단(설치루프·네트워크 낭비 방지). spec sanitize.
+        const key = `${decision.layer ?? 'pkg'}:${decision.spec}`;
+        const attempts = provisionAttempts.get(key) ?? 0;
+        if (attempts >= PROVISION_MAX_ATTEMPTS) {
+          return { action: 'input', text: `'${sanitizeForPtyInput(decision.spec, 80)}' 는 이번 미션에서 이미 provision 을 시도했다. 재설치 말고 다른 방법(search·직접 구현)으로 진행하라.\r` };
+        }
+        provisionAttempts.set(key, attempts + 1);
+        // ★ graceful(search 동형·review) — provisioner 예외가 decide 밖으로 전파되면 제어루프가 error 종료로
+        //   미션을 죽인다. 실패도 자식에 "설치 없이 계속" input 으로 내부화(미션 무중단).
+        try {
+          const res = await opts.provision({ layer: decision.layer ?? 'pkg', spec: decision.spec, ...(decision.reason ? { reason: decision.reason } : {}) });
+          if (res.ok) provisionAttempts.set(key, 99); // 성공 = 영구 차단(재설치 불요)
+          // ★ PTY 주입 직전 경계에서도 sanitize(심층방어) — 주입 가능한 provision 구현이 제어문자/개행을 detail 에
+          //   담아도 PTY 로 추가 라인·시퀀스가 안 새게. 기본 구현은 이미 안전하나 경계에서 재보장.
+          return { action: 'input', text: `${sanitizeForPtyInput(res.detail, 400)}\r` };
+        } catch (e) {
+          debug.log('agent-mission', 'provision-error', { spec: decision.spec, error: e instanceof Error ? e.message : String(e) }, { level: 'warn' });
+          return { action: 'input', text: '설치 시도 중 오류가 발생했다. 설치 없이 다른 방법으로 진행하라.\r' };
+        }
+      }
+      return { action: 'wait' };
+    },
+  });
+}
+
+/**
+ * ★ U5(감독 통일 seam) — ReAct 제어루프 관측(화면)을 executor SelfReportFrame 으로 통일 프레임 버스에 발행.
+ *
+ * 감독 통일 §4 obstacle-1(observe→SelfReportFrame): #5379(P3b)가 headless goal-loop·TUI 는 프레임 버스로
+ * 발행했으나 **ReAct 제어루프(runPtyControlLoop·agent-mission 이 구동)는 아무것도 발행 안 함** → 프레임 버스가
+ * PTY 감독 계열을 못 봄. 이 seam 이 그 갭을 닫는다 — headless 와 **동일 빌더**(buildExecutorSelfReportFrame·
+ * surfaceId=exec:<ptyId>·K4 runId join) 재사용(재발명 0)해 fleet/observatory/G5 구독자가 agent-mission 화면도
+ * 관측·검증 접합. 순수하게 bus 를 받아 테스트 가능. publishSelfReportFrame 은 내부 fail-soft(관측이 관측대상을
+ * 안 깸)이나, ★제1원칙: build 단계의 지속적 실패도 은폐 안 되게 호출부에서 관측을 남긴다.
+ */
+export function publishControlObservationFrame(
+  bus: ChannelBus,
+  obs: { screen: string },
+  ident: { ptyId: string; instance: string; at: number; runId?: string; pngRef?: string },
+): void {
+  publishSelfReportFrame(bus, buildExecutorSelfReportFrame({
+    ptyId: ident.ptyId,
+    rendered: obs.screen,
+    at: ident.at,
+    instance: ident.instance,
+    ...(ident.runId ? { runId: ident.runId } : {}),
+    // ★ keyframe pngRef 포워딩(agent-cli backend·#5386 확장) — 전이 순간에만 실림(never inline·on-demand).
+    ...(ident.pngRef ? { pngRef: ident.pngRef } : {}),
+  }));
+}
+
+/** ★ keyframe 렌더 timeout(ms·리뷰) — renderPng(sharp 래스터화)이 느리거나 행에 걸려도 프레임 발행을
+ *  무기한 지연하지 않게 바운드. 초과 시 null(=pngRef 생략·발행 진행). */
+const KEYFRAME_RENDER_TIMEOUT_MS = 2000;
+
+/** renderPng 를 timeout 으로 감싼다 — 초과=null(fail-soft). 타이머는 항상 정리(누수 방지). */
+async function raceKeyframeRender(render: () => Promise<Buffer | null> | Buffer | null): Promise<Buffer | null> {
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  const timeout = new Promise<null>((resolve) => { timer = setTimeout(() => resolve(null), KEYFRAME_RENDER_TIMEOUT_MS); });
+  try {
+    return await Promise.race([Promise.resolve(render()), timeout]);
+  } finally {
+    if (timer) clearTimeout(timer);
+  }
+}
+
+/**
+ * runPtyControlLoop 의 onStep 훅 factory — 매 제어스텝에 프레임 버스 발행(신규) + 화면 전사(기존)를 수행.
+ * runAgentMission 이 실제로 이 factory 를 배선하므로, 반환 함수 + 배선 가드(source)를 함께 테스트하면
+ * "제어루프 경유 프레임 발행"을 회귀 검증한다.
+ *
+ * ⚠️ **범위**: agent-mission 의 onStep 배선에만 적용 — 범용 runPtyControlLoop·타 ReAct 호출자(monad drive
+ *    등)는 자동 합류 안 함(각자 배선 필요).
+ * ⚠️ **실패 계약(정직)**: 두 관측은 대칭이 아니다 —
+ *    · 발행은 **fail-soft**: publishSelfReportFrame 이 bus.publish 실패를 설계상 내부에서 삼킨다(#5379 계약·
+ *      관측이 관측대상을 안 깸). 별도 바깥 try/catch 없음 — buildExecutorSelfReportFrame 은 typed string
+ *      화면에서 throw 하지 않는 정상 불변이라, 억지 catch 로 빌더 결함을 은폐하지 않는다(불변 깨지면 표면화).
+ *    · capture 는 **예외 전파**: 기존 semantics 그대로(전사/증거 계약 불변·EMIT seam 범위 밖 변경 금지).
+ *    발행을 **먼저** 수행 → capture 가 실패로 전파되더라도 프레임은 이미 발행돼 유실되지 않는다.
+ */
+export function makeMissionObserveStep(deps: {
+  capture: (label: string) => Promise<unknown> | unknown;
+  renderPng?: () => Promise<Buffer | null> | Buffer | null;
+  bus: ChannelBus;
+  ident: { ptyId: string; instance: string; runId?: string };
+  now?: () => number;
+}): (obs: ControlObservation, decision: ControlDecision) => Promise<void> {
+  const now = deps.now ?? ((): number => Date.now());
+  let lastFrameState: FrameState | null = null;
+  let keyframeSeq = 0;
+  return async (obs, decision) => {
+    let pngRef: string | undefined;
+    try {
+      const state = classifyFrameState(obs.screen).state;
+      const moment = isKeyframeMoment(lastFrameState, state);
+      // ★ best-effort·무재시도(리뷰): 상태는 캡처 성공과 무관하게 갱신 → 전이당 최대 1회 시도. 일시 렌더 실패 시
+      //   그 전이의 keyframe 은 놓치되(재시도 없음·반복 캡처 비용 회피), 다음 전이는 정상 캡처. 관측이 미션을 안 막음.
+      lastFrameState = state;
+      if (moment && deps.renderPng) {
+        // ★ 발행 우선 보장(리뷰): renderPng 를 timeout 으로 바운드 → 느린/행 렌더가 프레임 발행을 지연 안 시킴
+        //   (초과=null=pngRef 생략·발행 진행). fail-soft 계약 복원.
+        const png = await raceKeyframeRender(deps.renderPng);
+        if (png) {
+          const path = keyframePath(deps.ident.runId ?? 'unknown', deps.ident.ptyId, keyframeSeq, state);
+          if (writeKeyframePng(path, png)) {
+            pngRef = path;
+            debug.log('agent-mission', 'keyframe-capture', { ptyId: deps.ident.ptyId, runId: deps.ident.runId, seq: keyframeSeq, state });
+            keyframeSeq += 1;
+          }
+        }
+      }
+    } catch (e) {
+      debug.log('agent-mission', 'keyframe-fail', { ptyId: deps.ident.ptyId, error: String(e instanceof Error ? e.message : e).slice(0, 120) });
+    }
+    // 발행 먼저(publishSelfReportFrame 내부 fail-soft·capture 종속 제거). 억지 catch 없음(빌더 정상 불변).
+    publishControlObservationFrame(deps.bus, obs, {
+      ptyId: deps.ident.ptyId, instance: deps.ident.instance, at: now(),
+      ...(deps.ident.runId ? { runId: deps.ident.runId } : {}),
+      ...(pngRef ? { pngRef } : {}),
+    });
+    // capture 는 원 semantics 유지 — 예외 전파(증거/전사 계약 불변).
+    await deps.capture(`s${obs.step}-${decision.action}`);
+  };
+}
+
+/** 미션 spec → `createWorktree` 인자. ⭐ 이 마디를 «함수»로 꺼낸 이유는 사슬을 물 수 있게 하려는 것이다 —
+ *  `runAgentMission` 본체는 PTY 를 띄우므로 테스트가 못 부르고, 그러면 「호출자가 준 값이 워크트리 생성까지
+ *  갔나」를 구조적으로 확인할 방법이 없다(인라인 객체 리터럴은 그 자리에서만 산다).
+ *  ⛔ 문면은 종전 그대로다 — `reuseOwnedWorktree` 는 spec 이 «명시»했을 때만 실린다(미지정=키 자체가 없다). */
+export function buildMissionWorktreeRequest(
+  spec: Pick<AgentMissionSpec, 'branch' | 'base' | 'reuseOwnedWorktree'>,
+  ctx: { repoRoot: string; worktreeRoot: string },
+): CreateWorktreeOpts {
+  return {
+    repoRoot: ctx.repoRoot, branch: spec.branch, worktreeRoot: ctx.worktreeRoot, resetExisting: true,
+    ...(spec.base ? { base: spec.base } : {}),
+    ...(spec.reuseOwnedWorktree === true ? { reuseOwnedWorktree: true } : {}),
+  };
+}
+
+export function buildMissionWorktreeProvenance(branch: string, createdAt = new Date().toISOString()): {
+  owner: string;
+  command: 'monad agent-mission';
+  createdAt: string;
+} {
+  return { owner: `agent:${branch}`, command: 'monad agent-mission', createdAt };
+}
+
+export function recordMissionWorktreeProvenance(
+  worktreePath: string,
+  provenance: ReturnType<typeof buildMissionWorktreeProvenance>,
+  record: typeof recordHarnessWorktreeProvenance = recordHarnessWorktreeProvenance,
+): void {
+  try {
+    record(worktreePath, provenance);
+    debug.log('agent-mission', 'provenance-recorded', { path: worktreePath, ...provenance });
+  } catch (error) {
+    const reason = error instanceof Error ? error.message : String(error);
+    debug.log('agent-mission', 'provenance-failed', { path: worktreePath, ...provenance, reason }, { level: 'warn' });
+    throw new Error(`agent-mission worktree provenance failed — ${reason}`);
+  }
+}
+
+// ══════════════════ 메인 ══════════════════
+export async function runAgentMission(spec: AgentMissionSpec, deps: AgentMissionDeps = {}): Promise<AgentMissionResult> {
+  const backend = spec.agent ?? resolveDefaultBackend();
+  const runtimeFallback = deps.runtimeFallback ?? {
+    fallbackEligible: spec.agent === undefined,
+    attemptedSteps: new Set<FallbackStep>([backend.name === 'grok' ? 'grok' : 'codex-rotate']),
+    descents: 0,
+    maxDescents: backend.name === 'codex' ? 1 : 0,
+  };
+  const spawnPty = deps.startPty ?? startPty;
+  const createMissionWorktree = deps.createWorktree ?? createWorktree;
+  const recordWorktreeProvenance = deps.recordWorktreeProvenance ?? recordHarnessWorktreeProvenance;
+  const repoRoot = spec.repo ?? resolveMainRepoRoot(process.cwd()) ?? process.cwd();
+  const maxRounds = spec.maxRounds ?? 16;
+  const omniPath = spec.omniCrawlPath ?? DEFAULT_OMNI;
+  const screensDir = spec.screensDir ?? join(process.env.TMPDIR || '/tmp', `agent-mission-${backend.name}-${spec.branch}`);
+  mkdirSync(screensDir, { recursive: true });
+
+  debug.log('agent-mission', 'start', { agent: backend.name, branch: spec.branch, base: spec.base ?? 'HEAD', evidence: spec.evidence.kind, repoRoot });
+  // ★ capability 구동(2026-07-23) — 롤·capability 를 선언·관측하고, **활성 집합이 enhance behavior 를 구동**한다
+  //   (선언 ∩ §6e 진입정책). agent-mission = controller 가 executor:agent 를 몰다. 진입 기본 monad-apparatus
+  //   (monad 가 원문 prep → enhance ON) · 명시 spec.enhance override 우선 · 외부/중첩은 external-verbatim 전달.
+  const { describeRole } = await import('../agent-substrate/execution/roles.js');
+  const { resolveActiveCapabilities } = await import('../agent-substrate/execution/capabilities.js');
+  // 기본 external-verbatim(보수·무회귀) — 프롬프트를 함부로 인핸싱하지 않음. monad-apparatus 는 도어가 명시 선언
+  //   (agent-mission CLI = monad-apparatus → ON). 명시 spec.enhance override 는 여전히 최우선.
+  const missionEntry = spec.entry ?? 'external-verbatim';
+  const caps = resolveActiveCapabilities('agent-mission', {
+    entry: missionEntry,
+    ...(spec.enhance !== undefined ? { explicitEnhance: spec.enhance } : {}),
+  });
+  const enhanceActive = caps.has('enhance');
+  debug.log('agent-mission', 'role', {
+    role: 'controller', executor: describeRole({ role: 'executor', executorKind: 'agent', agentBackend: backend.name }),
+    entry: missionEntry, capabilities: [...caps.active], enhanceActive,
+  });
+  // ⭐ 이 자리는 «별칭»(createMissionWorktree)이라 소스 스캔이 못 찾았고 타입 검사가 찾았다
+  //    — 리뷰 3R must-fix ② 가 경고한 그 형태다(별칭·래퍼는 정규식으로 못 센다).
+  const wt = createMissionWorktree(buildMissionWorktreeRequest(spec, { repoRoot, worktreeRoot: configuredWorktreeRoot() }));
+  recordMissionWorktreeProvenance(wt.path, buildMissionWorktreeProvenance(spec.branch), recordWorktreeProvenance);
+  debug.log('agent-mission', 'worktree', { path: wt.path, branch: wt.branch, base: wt.base });
+  const baselineTsc = spec.evidence.kind === 'tsc' ? collectTscDiagnostics(wt.path) : null;
+  const evidenceCheck: typeof checkEvidence = (worktree, evidence) => evidence.kind === 'tsc' && baselineTsc
+    ? checkEvidence(worktree, evidence, { baseline: baselineTsc.diagnostics, executeTsc: baselineTsc.ran ? collectTscDiagnostics : () => baselineTsc })
+    : checkEvidence(worktree, evidence);
+
+  // 구독 모드 — backend 지정 env 키 스크럽 후 강제 env까지 적용해 cmd·args·env를 순수 seam으로 구성한다.
+  // forcedEnv 이름의 후속 로깅은 이 착지의 의도적 경계이며, spawn에는 같은 seam의 env가 그대로 흐른다.
+  const spawnParams = resolveBackendSpawn(backend, process.env);
+  const env = spawnParams.env;
+  env.TERM = 'xterm-256color';
+  // ⭐run-identity — runId 를 spawn 前 확정해 child env(MONAD_RUN_ID 상속)와 executorRef 에 동일 배선한다.
+  //   spawn 後 mint 하면 child 는 자기 runId 를 모르고 ref 와도 상관이 끊긴다(K join 정합·review).
+  const runId = ensureRunId();
+  env.MONAD_RUN_ID = runId;
+  debug.log('agent-mission', 'spawn', { agent: backend.name, cmd: `${spawnParams.cmd} ${spawnParams.args.join(' ')}`, scrubbed: backend.scrubEnv ?? [], nestedEnvRemovedCount: spawnParams.nestedEnvRemovedCount, runId });
+  // PTY 정체성 — kind(=backend)·nickname(goto 로 나중 접근)·accessMode='auto'(헤드리스 자율·brain 이 write 소유).
+  const h = spawnPty(buildAgentMissionPtySpawnOptions({
+    backend,
+    spawn: { cmd: spawnParams.cmd, args: spawnParams.args, env },
+    workdir: wt.path,
+    nickname: spec.nickname ?? spec.branch,
+  }));
+  const executorRef = buildExecutorPtyRef({
+    ptyId: h.id,
+    backend: backend.name,
+    runId, // child env(MONAD_RUN_ID)와 동일 — spawn 前 확정
+    spaceId: env.MONAD_HARNESS_SPACE_ID,
+    instance: resolveInstanceName(),
+  });
+  debug.log('agent-mission', 'pty', { id: h.id, kind: h.kind, nickname: h.nickname, accessMode: h.accessMode, executorRef });
+
+  // ⭐P2 arbiter: the child is accessMode='auto' (brain-owned), so the driver —
+  // the autonomous brain — must write as 'agent' or the arbiter denies it. This
+  // makes "protected autonomy" real: a human attaching mid-mission (read) can't
+  // inject unless they takeover (auto→write, needs 'open' policy). `h['write']`
+  // form so the drive helper isn't caught by the h.write→drive rewrite.
+  //
+  // ⭐takeover 조율/셀프힐(review): 사람이 takeover 하면(auto→write) agent write 가 arbiter 에
+  // 거부된다. 조용히 유실돼 미션이 헛도는 대신, drive 前 canWrite 로 감지해 미션을 깔끔히 중단
+  // (사람이 제어를 가져갔으니 자율 구동 멈춤 = HITL 로 넘어감). 관측 남김.
+  const drive = (s: string): void => {
+    // ⭐공용 seam(P2b P-a′) — 판정은 `pty-control-stance` 한 곳. 집행(throw)은 종전 그대로다(무회귀).
+    const stance = probeControlStance(h, 'agent', (e) =>
+      debug.log('agent-mission', 'hascontrol-error', { id: h.id, error: (e as Error)?.message ?? String(e) }));
+    if (stanceBlocksWrite(stance)) {
+      debug.log('agent-mission', 'yield-to-human', { id: h.id, mode: h.accessMode, stance,
+        reason: stance === 'unknown'
+          ? 'control ownership unverifiable — 조회 실패라 takeover 여부를 단정할 수 없다'
+          : 'arbiter denied agent write — 사람 takeover',
+        ...supervisionObservationFields(mapControlStance(stance, 'halt')) });
+      // ⚠️ `unknown`(조회 실패)을 *사람 takeover* 로 단정하지 않는다 — 구조화 로그와 문구가 어긋나면
+      //   진단이 엉뚱한 곳을 판다. 집행(중단)은 종전과 같다.
+      throw new Error(stance === 'unknown'
+        ? 'AGENT_YIELDED: PTY 소유권 조회 실패(unverifiable) — 자율 미션 중단'
+        : 'AGENT_YIELDED: PTY 제어가 사람에게 이양됨(takeover) — 자율 미션 중단');
+    }
+    h['write'](s, 'agent');
+  };
+
+  let seq = 0;
+  const capture = async (label: string): Promise<string> => {
+    const s = await h.renderScreen();
+    try { writeFileSync(join(screensDir, `${String(++seq).padStart(2, '0')}-${label}.txt`), s); } catch { /* noop */ }
+    debug.log('agent-mission', 'screen', buildScreenLogPayload(label, s));
+    return s;
+  };
+
+  // ── 라이브 포워딩 (P0a·B2 근본수리) — registry push 버스(onPtyEvent) 구독 → 연속 화면 스트림.
+  //   종전엔 라운드 경계 renderScreen 1회만(waitForQuiet 가 라운드 내 출력 삼킴) = 스냅샷만. 이제 출력 chunk
+  //   마다 dirty 표시 → 디바운스 타이머가 live.txt 갱신(cat 으로 실시간 관측)+하트비트. controller/PWA 도 같은
+  //   버스 구독 가능(중첩 포워딩 씨앗). 능력 신설 아님 — 이미 있는 버스를 미션 드라이버에 배선.
+  const liveFile = join(screensDir, 'live.txt');
+  let liveDirty = false, liveChunks = 0;
+  const offLive = onPtyEvent((ev) => { if (ev.id === h.id && ev.type === 'output') { liveDirty = true; liveChunks += 1; } });
+  const liveTimer = setInterval(() => {
+    if (!liveDirty) return;
+    liveDirty = false;
+    void h.renderScreen().then((s) => {
+      try { writeFileSync(liveFile, s); } catch { /* noop */ }
+      if (liveChunks % 20 === 0) debug.log('agent-mission', 'live', { chunks: liveChunks, tail: s.slice(-80).replace(/\s+/g, ' ') });
+    }).catch(() => { /* noop */ });
+  }, 800);
+  const stopLive = (): void => { try { clearInterval(liveTimer); } catch { /* noop */ } try { offLive(); } catch { /* noop */ } };
+
+  // ready + trust — backend 별 신뢰/권한 프롬프트 처리(codex=1, 이후 백엔드는 자체 handler).
+  await waitForQuiet(h, 1500, 20000);
+  let screen = await capture('ready');
+  if (backend.handleTrust?.(screen, (s) => drive(s))) {
+    debug.log('agent-mission', 'trust', { agent: backend.name, action: 'handled' });
+    await waitForQuiet(h, 1500, 15000); screen = await capture('trusted');
+  }
+
+  // ★ monad 내부 인핸싱(opt-in) — 원문 verbatim 보존 + 커버리지 체크리스트 부착(anti-drift).
+  //   외부(1차)는 원문을 재해석 없이 넘기고, 인핸싱은 monad(2차) 안에서만 가산적으로 일어난다.
+  let missionText = spec.mission;
+  let checklist: string[] = [];
+  if (enhanceActive) {
+    const { enhancePrompt } = await import('../prompt-enhance/enhance.js');
+    const enh = await enhancePrompt(spec.mission, {
+      ...(spec.deliverableHint ? { deliverableHint: spec.deliverableHint } : {}),
+    });
+    missionText = enh.enhanced;
+    checklist = enh.checklist;
+    debug.log('agent-mission', 'enhance', {
+      checklist: enh.checklist.length, enhancedBy: enh.enhancedBy,
+      origChars: enh.original.length, enhancedChars: enh.enhanced.length, verbatimPreserved: enh.verbatimPreserved,
+    });
+  }
+
+  // ★ entry-independent 기억 (PLAN §6e FIX) — 어떤 진입이든 monad 기억을 가산 컨텍스트로(프롬프트 무접촉·
+  //   인핸싱과 독립·mirage 가드). 인핸싱 OFF(external-verbatim)에서도 원문 안 건드리고 기억만 얹음.
+  if (spec.memory !== false) {
+    const { recallMemoryContext } = await import('../agent-substrate/execution/memory-context.js');
+    const mem = await recallMemoryContext(spec.mission.slice(0, 300), { limit: 5 });
+    if (mem) { missionText = `${missionText}\n\n${mem}`; debug.log('agent-mission', 'memory', { injected: true, chars: mem.length }); }
+    else debug.log('agent-mission', 'memory', { injected: false });
+  }
+
+  // 미션 전송 — 인핸싱/기억으로 가공됐으면(멀티라인) 파일로 떨궈 read 지시(TUI 멀티라인 위험·verbatim 보존).
+  //   원문 그대로면(단문) 타이핑.
+  if (missionText !== spec.mission) {
+    const pf = join(wt.path, '.mission-prompt.md');
+    try { writeFileSync(pf, missionText); } catch { /* noop */ }
+    const note = enhanceActive
+      ? '.mission-prompt.md 파일을 읽고 그 안의 미션을 완수하라. [monad 인핸싱]의 커버리지 체크리스트 모든 항목을 산출물에 빠짐없이 반영하고(요약·일반화 금지), 완료하면 MISSION-COMPLETE 라고 답하라.'
+      : '.mission-prompt.md 파일을 읽고 그 안의 미션을 완수하라(원문 그대로·[monad 기억]은 참조 컨텍스트). 완료하면 MISSION-COMPLETE 라고 답하라.';
+    debug.log('agent-mission', 'mission-send', { via: 'file', file: '.mission-prompt.md', chars: missionText.length, enhanced: enhanceActive });
+    drive(note); await sleep(800); drive('\r');
+  } else {
+    debug.log('agent-mission', 'mission-send', { via: 'type', chars: spec.mission.length });
+    drive(spec.mission); await sleep(800); drive('\r');
+  }
+
+  let usedOmni = false;
+  let coverageRetries = enhanceActive && checklist.length ? 2 : 0;
+  const search = createMissionSearch({ worktree: wt.path, omniPath });
+  const brain = createMissionControlBrain({
+    mission: spec.mission,
+    backend,
+    evidenceReady: () => evidenceCheck(wt.path, spec.evidence).ok,
+    search: async (query, step) => {
+      usedOmni = true;
+      await search(query, step);
+    },
+    // ★ P4 역량 프로비저닝(2026-07-25) — 감독이 자식의 없는 Node 패키지를 **worktree(wt.path)** 에 자율 설치.
+    //   정책 게이트(pkg 만·안전 spec·매니저 allowlist·--ignore-scripts) + worktree-local node_modules. ⚠️ 완전
+    //   sandbox 는 아님(설치 코드는 import 시 실행·서브프로세스 write 는 #4 경계 밖) — 자세한 격리 한계는 provision.ts 헤더. 관측=autopilot.provision.
+    //   buildMissionProvision 팩토리로 배선(wt.path→cwd 를 DI 로 행동검증 가능·소스 tripwire 불요).
+    provision: buildMissionProvision(wt.path),
+  });
+  const verifyDone = createMissionVerifyDone({
+    worktree: wt.path,
+    evidence: spec.evidence,
+    checklist,
+    coverageRetries,
+    checkEvidence: evidenceCheck,
+  });
+  // ★ P3b-2 observe 어댑터(2026-07-25) — EMIT-side(makeMissionObserveStep)가 프레임 버스에 흘리는 executor
+  //   화면을 **구조화 진행 다이제스트**(state+요약·throttle)로 압축해 observe 서피스(로그 패브릭)에 노출한다.
+  //   raw 화면(self screen/manifest)이 아닌 "지금 뭐 하나" 서사. brain 무접촉·순수 관측·재발명 0(버스 구독 +
+  //   classifyFrameState). 조회=`monad logs --category agent-mission.observe`. runWithControlObserve seam 이
+  //   attach→run→cleanup(성공·예외·fail-soft attach) 전 경로를 소유(누수·관측예외로부터 미션 보호). runId
+  //   필터로 이 run 의 프레임만 관측(PTY 재사용 시 타 run 혼입 방지). 텔레그램/TUI sink 는 얇은 후속 부착.
+  // ★ 동일 버스 인스턴스 보장(리뷰 should-fix) — observe 구독과 EMIT(makeMissionObserveStep)이 **같은** 버스를
+  //   봐야 프레임이 흐른다. getChannelBus() 를 두 번 부르지 말고 지역 캐시로 구조적 보장.
+  const bus = getChannelBus();
+  const control = await runWithControlObserve(
+    bus, execSurfaceId(h.id),
+    (d) => debug.log('agent-mission.observe', 'progress', { surfaceId: d.surfaceId, state: d.state, summary: d.summary, unknownInput: d.unknownInput, frame: d.frameCount, runId: d.runId }),
+    () => (deps.runControlLoop ?? runPtyControlLoop)(brain, {
+      ...controlDepsForHandle(h),
+      settle: async () => { await waitForQuiet(h, 6000, 360000); },
+      // ★ U5 — 제어스텝 관측: 프레임 버스 발행(PTY 감독 계열 통일 합류·headless #5379 와 동일 seam) + 화면 전사.
+      //   발행 먼저·내부 fail-soft(관측이 미션 안 깸)·capture 는 예외 전파(원 semantics). 배선=makeMissionObserveStep.
+      onStep: makeMissionObserveStep({
+        capture,
+        renderPng: () => h.renderScreenPng(),
+        bus,
+        ident: { ptyId: h.id, instance: resolveInstanceName(), runId },
+      }),
+      verifyDone,
+    }, { maxSteps: maxRounds }),
+    { onSettled: (digestCount) => debug.log('agent-mission.observe', 'summary', { digestCount }), observeOpts: { expectRunId: runId } },
+  );
+  const done = control.termination.kind === 'success';
+  const round = control.steps;
+  if (control.termination.kind === 'error') {
+    const failure = new Error(control.termination.message);
+    const resolveRunFallback = deps.resolveRunFallback
+      ?? ((input: { currentStep: FallbackStep; currentCredentialRateLimited: true }) => {
+        const { resolveRunFallback: resolve } = require('../oauth/codex-account-store.js') as typeof import('../oauth/codex-account-store.js');
+        return resolve(process.env, input);
+      });
+    const currentStep: FallbackStep = backend.name === 'grok' ? 'grok' : 'codex-rotate';
+    const nextBackend = runtimeFallback.fallbackEligible ? decideRuntimeFallback(
+      failure,
+      currentStep,
+      runtimeFallback,
+      resolveRunFallback,
+    ) : null;
+    debug.log('agent-mission.backend', 'runtime-fallback', {
+      errorKind: classifyAuthError(failure).errorKind,
+      credentialRateLimited: classifyAuthError(failure).errorKind === 'rate-limited',
+      selectedChainStep: nextBackend?.name ?? null,
+      attemptedChainSteps: [...runtimeFallback.attemptedSteps],
+      descents: runtimeFallback.descents,
+      maxFallbackDescents: runtimeFallback.maxDescents,
+    });
+    if (nextBackend) {
+      const nextStep: FallbackStep = nextBackend.name === 'grok' ? 'grok' : 'codex-rotate';
+      stopLive();
+      try { h.kill(); } catch { /* noop */ }
+      return runAgentMission(
+        { ...spec, agent: nextBackend, reuseOwnedWorktree: true },
+        {
+          ...deps,
+          runtimeFallback: {
+            ...runtimeFallback,
+            attemptedSteps: new Set([...runtimeFallback.attemptedSteps, nextStep]),
+            descents: runtimeFallback.descents + 1,
+          },
+        },
+      );
+    }
+  }
+  debug.log('agent-mission', 'control-result', { termination: control.termination.kind, steps: control.steps });
+  if (control.termination.kind === 'cancelled') {
+    stopLive();
+    try { h.kill(); } catch { /* noop */ }
+    throw new Error('AGENT_YIELDED: PTY 제어가 사람에게 이양됨(takeover) — 자율 미션 중단');
+  }
+
+  const finalEv = evidenceCheck(wt.path, spec.evidence);
+  const evidencePath = finalEv.ok ? finalEv.path : null;
+  let committed = false;
+  if (finalEv.ok && (spec.commit ?? true)) {
+    const c = commitWorktree(wt.path, `chore(agent-mission): ${spec.branch} — ${backend.name}-in-monad PTY RFC 산출`);
+    committed = c.ok;
+    debug.log('agent-mission', 'commit', { ok: c.ok, out: c.out.slice(0, 120) });
+  }
+  debug.log('agent-mission', 'result', { ok: finalEv.ok, rounds: round, evidencePath, committed, usedOmni });
+  stopLive();
+  try { h.kill(); } catch { /* noop */ }
+  await sleep(400);
+
+  return {
+    ok: finalEv.ok, worktree: wt.path, branch: wt.branch, rounds: round,
+    evidencePath, committed, usedOmniCrawl: usedOmni,
+    detail: done ? '완료(증거 충족)' : (finalEv.ok ? '증거 충족(루프 종료)' : '미완(증거 부족)'),
+  };
+}
+
+/** @deprecated codex 특정 이름 — runAgentMission 을 쓰라(codex 는 기본 backend). */
+export const runCodexMission = runAgentMission;

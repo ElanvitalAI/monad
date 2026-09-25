@@ -1,0 +1,20 @@
+{
+  "title": "Elanvital — 에이전트가 스스로 만든다 (세로 광고)",
+  "voiceInstruct": "A calm, warm Korean female narrator voice, clear diction, measured pace, premium brand advertising tone",
+  "specs": ["1080x1920"],
+  "scenes": [
+    { "prompt": "A single glass prism floating on a deep navy void, one thin white beam entering and a clean rainbow spectrum leaving, studio product photography, ultra minimal, soft rim light, 8k advertising still",
+      "caption": "빛이 들어가면 색이 나옵니다" },
+    { "prompt": "An elegant dark navy desk surface with a thin sheet of paper showing faint blueprint grid lines, a single soft spotlight, extreme minimalism, premium editorial photography, shallow depth of field",
+      "caption": "에이전트가 설계를 읽고" },
+    { "prompt": "Abstract flowing ribbons of teal and blue light forming an organized lattice on black, precise geometric order emerging from motion, dark premium tech aesthetic, no text",
+      "caption": "스스로 만들고, 스스로 고칩니다" },
+    { "prompt": "A minimal dark composition with a small bright point of light at golden ratio position, vast negative space, deep navy to black gradient, quiet and confident, brand closing frame",
+      "caption": "Elanvital Research" }
+  ],
+  "music": {
+    "caption": "Calm minimal cinematic ambient, soft analog synth pad, gentle pulse, no drums, premium brand film underscore, warm and spacious",
+    "lyrics": "[inst]\n[verse]\n[inst]\n[outro]",
+    "duration": 20
+  }
+}

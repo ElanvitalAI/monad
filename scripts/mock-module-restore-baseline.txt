@@ -1,0 +1,29 @@
+# R-TST23 mock.module 복구 baseline (파일별 미복구 모듈 수).
+# 신규/증가만 CI 실패; 수복 뒤 --update로 baseline을 낮춘다.
+# total=82 · files=25
+
+2	apps/pwa/src/components/providers/ThemeProvider.test.tsx
+1	apps/pwa/src/components/settings/EmbeddingVisionTierCard.test.tsx
+2	apps/pwa/src/components/shell/activity-snapshot.test.tsx
+3	apps/pwa/src/components/terminal/TerminalChatDock.test.tsx
+6	apps/pwa/src/components/terminal/TerminalPanel.interaction.test.tsx
+15	apps/pwa/src/components/terminal/TerminalPanel.test.tsx
+2	apps/pwa/src/components/terminal/TerminalTabs.interaction.test.tsx
+1	apps/pwa/src/components/terminal/TuiMirrorView.test.tsx
+14	apps/pwa/src/components/terminal/XtermView.test.tsx
+2	apps/pwa/src/components/worktrees/WorktreesPanel.test.tsx
+1	src/autopilot/monad-builtin-runner-integration.test.ts
+1	src/dashboard/rich-scratch-viewers.test.ts
+9	src/dashboard/slash-runtime/dashboard-handlers.test.ts
+2	src/harness/harness-index-acp-cli-sink.test.ts
+4	src/harness/harness-index-cli-sink.test.ts
+1	src/harness/harness-index-local-cli-sink.test.ts
+2	src/harness/harness-index-registry-cli-sink.test.ts
+2	src/harness/harness-index-session-cli-sink.test.ts
+1	src/self-implement/decision-signal-press.test.ts
+2	src/self-implement/goal-author-decompose.test.ts
+4	src/session/chat.test.ts
+1	src/skills/runner.test.ts
+1	test/daemon-tools-boundary-failsoft.test.ts
+1	test/oauth/codex-account-rotation.test.ts
+2	test/skill-tool-market-quote.test.ts

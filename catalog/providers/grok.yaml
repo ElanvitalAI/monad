@@ -1,0 +1,24 @@
+id: grok
+displayName: xAI Grok
+aliases: [xai]
+modelPrefixes: [grok-]
+apiKeyEnv: XAI_API_KEY
+endpointPattern: https://api.x.ai
+defaultStreaming: sse
+toolCallingFormat: native-openai
+capabilities:
+  sessionResume: false
+  mcp: false
+  hooks: false
+  skills: true
+  agents: false
+  toolRestrictions: true
+  structuredOutput: true
+  envInjection: false
+  costControl: false
+  effortControl: false
+  thinkingControl: false
+  fallbackModel: false
+  sandbox: false
+  multiHostFanout: false
+builtIn: true

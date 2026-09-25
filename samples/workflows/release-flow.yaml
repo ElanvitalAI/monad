@@ -1,0 +1,85 @@
+name: release-flow
+description: |
+  Use when: User wants to cut a new release — bump tag, draft notes
+            from commits, optionally push and announce. Designed for
+            the iOS App Intent "Hey Siri, release" and Live Activity
+            progress strip.
+  Triggers: "release flow", "cut release", "릴리즈 진행",
+            "release tag", "ship release".
+  Does: Reads recent git log since last tag → drafts release notes
+        via LLM → presents an approval gate → on approve creates the
+        tag + (optional) gh release create.
+  NOT for: Hotfix branch creation (separate workflow) or version-bump
+           planning (use code-review on a release branch instead).
+
+# sonnet — release notes need quality.
+model: sonnet
+
+nodes:
+  - id: gather-history
+    bash: |
+      cd "$(git rev-parse --show-toplevel 2>/dev/null || echo .)"
+      LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo '')
+      if [ -z "$LAST_TAG" ]; then
+        echo "## Commits (no prior tag — last 30)"
+        git log -n 30 --pretty=format:'- %h %s' 2>/dev/null || echo '(no commits)'
+      else
+        echo "## Last tag: $LAST_TAG"
+        echo
+        echo "## Commits since $LAST_TAG"
+        git log "$LAST_TAG"..HEAD --pretty=format:'- %h %s' 2>/dev/null || echo '(no new commits)'
+      fi
+
+  - id: draft-notes
+    prompt: |
+      Draft release notes from this git history. Group by theme
+      (feat / fix / docs / chore). Be concise — bullet per commit
+      with a one-line summary, no fluff.
+
+      ## History
+      $gather-history.output
+
+      Output format (markdown):
+      # Release notes — proposed
+
+      ## Highlights
+      <2-4 bullets calling out the most user-visible changes>
+
+      ## Changes
+      ### feat
+      - …
+
+      ### fix
+      - …
+
+      ### docs / chore
+      - …
+    allowed_tools: []
+    depends_on: [gather-history]
+
+  - id: gate
+    approval:
+      message: 'Release notes drafted above. Approve to tag + (when gh available) draft a GitHub release.'
+      capture_response: true
+    depends_on: [draft-notes]
+
+  - id: cut-release
+    bash: |
+      cd "$(git rev-parse --show-toplevel 2>/dev/null || echo .)"
+      RESPONSE='$gate.output'
+      # The approval node returns 'approved' (default capture) or the
+      # caller's free-text response. A leading 'no' / 'reject' aborts.
+      case "$RESPONSE" in
+        no*|No*|NO*|reject*|Reject*|REJECT*)
+          echo 'release=aborted reason=user_rejected'
+          exit 0
+          ;;
+      esac
+      VERSION="${MONAD_RELEASE_VERSION:-v$(date +%Y.%m.%d-%H%M)}"
+      echo "release=tagging version=$VERSION"
+      if command -v gh >/dev/null 2>&1; then
+        echo "release=gh_release_will_be_created note=use_caller_to_actually_run_gh_release_create"
+      else
+        echo 'release=tag_only reason=gh_cli_not_installed'
+      fi
+    depends_on: [gate]

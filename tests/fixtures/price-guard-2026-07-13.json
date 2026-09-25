@@ -1,0 +1,142 @@
+{
+  "metadata": {
+    "fixture": "price-guard-2026-07-13",
+    "timezone": "Asia/Seoul",
+    "description": "2026-07-13 오전 급락 미탐의 최소 결정론 리플레이 입력. 기존 QuoteResult, HoldingMeta, RegimeVector 필드만 사용한다.",
+    "sources": [
+      {
+        "id": "apm_conatus-price-guard-cycle-recovery-integration_4ca472/run.log",
+        "path": "~/.monad/conatus/missions/apm_conatus-price-guard-cycle-recovery-integration_4ca472/run.log",
+        "extract": "배경 — 2026-07-13 급락 미탐 사후분석: 122630 -6%, KORU -9%, SK하이닉스 -7.9%, composite 0.459→0.343"
+      },
+      {
+        "id": "regime.db/regime_vector",
+        "path": "~/.monad/conatus/regime.db",
+        "extract": "2026-07-12T23:00:00.191Z composite=0.459 RISK_ON; 2026-07-13T00:30:00.127Z composite=0.343 RISK_ON transition=true transition_axes=[community_buzz,dislocation]"
+      },
+      {
+        "id": "free_swing_cycle.log:137-139",
+        "path": "~/.monad/conatus/free_swing_cycle.log",
+        "extract": "2026-07-13T01:03:51.031Z 당시 한국 반도체와 SK하이닉스 -7.95% 하락 관측"
+      }
+    ],
+    "extractionRange": {
+      "start": "2026-07-13T08:00:00+09:00",
+      "end": "2026-07-13T10:30:00+09:00",
+      "regimePrevious": "2026-07-12T23:00:00.191Z",
+      "regimeCurrent": "2026-07-13T00:30:00.127Z"
+    },
+    "holdingNote": "보유 레코드는 당시 영향 자산을 held 경로로 재현하기 위한 기존 HoldingMeta 모양이며, 수량은 판단에 영향을 주지 않는 최소 양수값이다. KORU 550주는 기존 스윙 운영 상태를 보존한다."
+  },
+  "records": [
+    {
+      "id": "control-below-threshold",
+      "timestamp": "2026-07-13T08:55:00+09:00",
+      "holdings": [
+        {
+          "symbol": "005930",
+          "shares": 1,
+          "entryPrice": 285000,
+          "highwater": 305000,
+          "firedLadder": []
+        }
+      ],
+      "quotes": {
+        "005930": {
+          "close": 297600,
+          "changePct": -0.8,
+          "high": 300000,
+          "previousClose": 300000
+        }
+      },
+      "previousRegime": {
+        "axes": [],
+        "composite": 0.459,
+        "regimeLabel": "RISK_ON",
+        "transition": false,
+        "transitionAxes": [
+          "dislocation"
+        ],
+        "asOf": "2026-07-12T23:00:00.191Z"
+      },
+      "regime": {
+        "axes": [],
+        "composite": 0.443,
+        "regimeLabel": "RISK_ON",
+        "transition": false,
+        "transitionAxes": [
+          "dislocation"
+        ],
+        "asOf": "2026-07-13T00:00:00.900Z"
+      }
+    },
+    {
+      "id": "morning-drawdown-and-regime-transition",
+      "timestamp": "2026-07-13T09:30:00+09:00",
+      "holdings": [
+        {
+          "symbol": "122630",
+          "shares": 1,
+          "entryPrice": 141000,
+          "highwater": 150000,
+          "firedLadder": []
+        },
+        {
+          "symbol": "KORU",
+          "shares": 550,
+          "entryPrice": 539.5,
+          "highwater": 560,
+          "firedLadder": []
+        },
+        {
+          "symbol": "000660",
+          "shares": 1,
+          "entryPrice": 2000000,
+          "highwater": 2100000,
+          "firedLadder": []
+        }
+      ],
+      "quotes": {
+        "122630": {
+          "close": 132540,
+          "changePct": -6,
+          "high": 141000,
+          "previousClose": 141000
+        },
+        "KORU": {
+          "close": 509.6,
+          "changePct": -9,
+          "high": 560,
+          "previousClose": 560
+        },
+        "000660": {
+          "close": 1842000,
+          "changePct": -7.9,
+          "high": 2000000,
+          "previousClose": 2000000
+        }
+      },
+      "previousRegime": {
+        "axes": [],
+        "composite": 0.459,
+        "regimeLabel": "RISK_ON",
+        "transition": false,
+        "transitionAxes": [
+          "dislocation"
+        ],
+        "asOf": "2026-07-12T23:00:00.191Z"
+      },
+      "regime": {
+        "axes": [],
+        "composite": 0.343,
+        "regimeLabel": "RISK_ON",
+        "transition": true,
+        "transitionAxes": [
+          "community_buzz",
+          "dislocation"
+        ],
+        "asOf": "2026-07-13T00:30:00.127Z"
+      }
+    }
+  ]
+}

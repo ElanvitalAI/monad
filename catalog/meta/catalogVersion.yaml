@@ -1,0 +1,8 @@
+catalogVersion: 1
+description: |
+  RFC #2161 Phase 1 — Layer A static catalog (2-tier · builtin only at this
+  Phase · global tier '~/.monad/catalog/' overlay added by Phase 6 discovery).
+  Schema in src/registry/types.ts. Loader in src/registry/loader.ts.
+schemaCompat:
+  minLoaderVersion: 1
+  maxLoaderVersion: 1

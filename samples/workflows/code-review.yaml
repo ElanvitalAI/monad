@@ -1,0 +1,50 @@
+name: code-review
+description: |
+  Use when: User wants a self-contained code review of the current
+            branch's diff against main, with an explicit human gate
+            before posting comments.
+  Triggers: "review my branch", "code review", "check diff".
+  Does: gathers diff -> AI review -> user approval -> (optional) post.
+  NOT for: PR-on-GitHub flows (use the GitHub PR review skill) or
+           multi-file refactor planning.
+
+# model hint (sonnet) is Anthropic-family — honored on Anthropic,
+# stripped on other providers (runtime falls back to provider default).
+model: sonnet
+
+nodes:
+  - id: gather-diff
+    bash: |
+      echo "=== Branch ==="
+      git rev-parse --abbrev-ref HEAD
+      echo ""
+      echo "=== Diff vs main ==="
+      git diff main...HEAD | head -500
+      echo ""
+      echo "=== Recent commits ==="
+      git log main..HEAD --oneline | head -20
+
+  - id: review
+    prompt: |
+      Review this branch diff. Focus on:
+      - correctness (logic errors, off-by-one, null handling)
+      - tests (missing or weak coverage)
+      - safety (input validation, error swallowing, race conditions)
+
+      Be terse. Bullet points only. Cite file:line for each finding.
+
+      ## Diff context
+      $gather-diff.output
+    denied_tools: [Edit, Bash]
+    depends_on: [gather-diff]
+
+  - id: gate
+    approval:
+      message: "Review above. Approve to continue, deny to abort."
+      capture_response: true
+    depends_on: [review]
+
+  - id: confirm
+    bash: |
+      echo "Review approved with note: $gate.output"
+    depends_on: [gate]

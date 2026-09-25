@@ -1,0 +1,82 @@
+// 상호작용 시뮬레이터 계약 — ⛔ 라이브로 «판당 3~5분» 걸리던 시나리오를 즉시 재현한다.
+import { describe, test, expect } from 'bun:test';
+import { simEscGate, simAgentRegistry } from './interaction.js';
+import { TURN_ABORT_TURN_ONLY } from '../turn-abort-scope.js';
+
+describe('simEscGate — ESC 게이트를 «자식 N개» 상태로 즉시 세운다', () => {
+  test('자식 0 → ESC 가 즉시 중단한다(모달 없음)', () => {
+    const s = simEscGate({ runningChildren: 0 });
+    s.esc();
+    expect(s.abortCtrl.signal.aborted).toBe(true);
+    expect(s.isOpen()).toBe(false);
+    expect(s.mounted).toHaveLength(0);
+  });
+
+  test('⭐ 자식 ≥1 → 모달이 «뜬다» (라이브에선 이 상태를 잡느라 두 번 놓쳤다)', () => {
+    const s = simEscGate({ runningChildren: 3 });
+    s.esc();
+    expect(s.isOpen()).toBe(true);
+    expect(s.mounted).toHaveLength(1);
+    expect(s.abortCtrl.signal.aborted).toBe(false);
+  });
+
+  test('⭐⭐ `A2` — 두 번째 ESC 가 «중단»한다 (철회가 아니다)', async () => {
+    const s = simEscGate({ runningChildren: 2 });
+    s.esc();
+    s.esc();
+    await s.settle();
+    expect(s.abortCtrl.signal.aborted).toBe(true);
+  });
+
+  test('⭐⭐ `A2` — 모달 위 ESC 키(handleKey 경로)도 중단한다', async () => {
+    const s = simEscGate({ runningChildren: 2 });
+    s.esc();
+    expect(s.key('escape')).toBe(true);
+    await s.settle();
+    expect(s.abortCtrl.signal.aborted).toBe(true);
+  });
+
+  test('`n` 은 철회 — 중단하지 않는다', async () => {
+    const s = simEscGate({ runningChildren: 2 });
+    s.esc();
+    s.key('n');
+    await s.settle();
+    expect(s.abortCtrl.signal.aborted).toBe(false);
+  });
+
+  test('⭐⭐ `R1` — 취소의 «뜻»이 turn-only 다 (자식이 안 죽는 근거)', () => {
+    const s = simEscGate({ runningChildren: 0 });
+    s.esc();
+    expect(s.abortReason()).toBe(TURN_ABORT_TURN_ONLY);
+  });
+
+  test('⭐⭐ `R4a` — 중단 «전»에 자식 핸드오프가 불린다 (고아 방지)', () => {
+    const s = simEscGate({ runningChildren: 0 });
+    s.esc();
+    expect(s.handoffCalls).toBe(1);
+  });
+
+  test('모달 경로에서도 핸드오프가 «중단할 때만» 불린다', async () => {
+    const keep = simEscGate({ runningChildren: 2 });
+    keep.esc();
+    keep.key('n');
+    await keep.settle();
+    expect(keep.handoffCalls).toBe(0);      // 철회했으면 넘기지 않는다
+
+    const stop = simEscGate({ runningChildren: 2 });
+    stop.esc();
+    stop.key('y');
+    await stop.settle();
+    expect(stop.handoffCalls).toBe(1);      // 중단하면 넘긴다
+    expect(stop.abortCtrl.signal.aborted).toBe(true);
+  });
+});
+
+describe('simAgentRegistry — 자식 상태를 숫자로 세운다', () => {
+  test('전경/배경/종료를 섞어 세우고 실제 규칙이 그대로 적용된다', () => {
+    const reg = simAgentRegistry({ foreground: 2, background: 1, done: 1 });
+    const moved = reg.markBackgroundAllRunning();
+    expect(moved).toHaveLength(2);            // 전경 둘만 넘어간다
+    expect(reg.markBackgroundAllRunning()).toEqual([]);  // 멱등
+  });
+});

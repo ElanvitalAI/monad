@@ -1,0 +1,24 @@
+id: claude-sonnet-4-6
+provider: anthropic
+displayName: Claude Sonnet 4.6
+family: claude-4
+familyShortcut: sonnet
+contextSize: 1000000
+outputMaxTokens: 64000
+vision: images
+audio: { input: false, output: false }
+reasoning: medium
+toolCalling: native-anthropic
+streamingProtocol: sse
+pricing:
+  inputPerMTok: 3.0
+  outputPerMTok: 15.0
+deprecated: null
+releaseDate: 2026-02-01
+tokenizer: claude
+kind: chat
+discoveryMeta:
+  source: auto-omni-crawl
+  lastSeen: 2026-05-10
+  autoFilled: true
+  confidence: high

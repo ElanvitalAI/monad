@@ -1,0 +1,151 @@
+# Local LLM parameter presets · monad-agent built-in registry.
+#
+# Loaded by `src/llm/local-manager/preset-registry.ts`. Each preset
+# binds a model-id pattern to vendor-recommended sampling +
+# output budget + behavioural defaults. Applied automatically by
+# LocalProvider when `user-config.llm.localPresetMode === 'predefined'`
+# (default) and the model id matches a preset's `matches` entry.
+#
+# User override: drop a sibling YAML at `~/.monad/local-llm-presets.yaml`
+# with the same shape — entries with the same `id` win over built-in.
+#
+# Match precedence: registry order. Put more-specific patterns above
+# more-general ones (e.g. qwen-instruct above qwen-default). The
+# `openai-default` entry is the catch-all fallback — keep it last.
+#
+# Adding a new preset: append a block, set `matches[].pattern` to a
+# regex that uniquely identifies the model family, and source the
+# sampling values from the model card / vendor blog. Cite the source
+# in the `source` field so the next reviewer can re-verify after
+# vendor docs change.
+#
+# Reviewed: 2026-05-05 (qwen3 dogfood + omni-crawl official-recipe pull)
+
+version: 1
+presets:
+  # ── Qwen3 Instruct (non-thinking variants — fixed off) ──
+  # Keep before the broad qwen thinking substring: registry order decides matches.
+  - id: qwen3-instruct
+    name: "Qwen3 Instruct (non-thinking variants)"
+    matches:
+      # Covers both generic and dated (for example, `*-instruct-2507`) instruct IDs.
+      - pattern: "qwen3?.*instruct"
+        regex: true
+    source: "https://qwenlm.github.io/blog/qwen3 — non-thinking-mode recipe"
+    sampling:
+      temperature: 0.7
+      top_p: 0.8
+      top_k: 20
+      min_p: 0
+      presence_penalty: 1.5
+    output:
+      max_tokens: 4096
+    behaviors:
+      auto_prepend_no_think: false   # already non-thinking by template
+
+  # ── Qwen3 thinking variants (Qwen 3.6 / 3.5 / Qwen3-Thinking-* / *-MoE) ──
+  - id: qwen3-thinking
+    name: "Qwen3 thinking (Qwen 3.6 / 3.5 / *-Thinking-*)"
+    matches:
+      # Match qwen3.x and qwen3-thinking; case-insensitive substring.
+      # The more-specific qwen3-instruct preset above gets first crack.
+      # Registry order determines precedence.
+      - pattern: "qwen"
+        regex: false
+    source: "https://qwenlm.github.io/blog/qwen3 — official thinking-mode recipe"
+    sampling:
+      temperature: 0.6
+      top_p: 0.95
+      top_k: 20
+      min_p: 0
+    output:
+      max_tokens: 8192   # 4096 floor (empirical) ↔ 32768 ceiling (official)
+    behaviors:
+      # Auto-prepend `/no_think` to first user message when user hasn't
+      # already typed `/think` or `/no_think`. 5-model bench 2026-05-05
+      # measured: −36% wall (44.3s → 28.5s), visible chars +1.7% (no
+      # quality loss), reasoning −44%. User opts INTO deep reasoning by
+      # prefixing `/think` themselves — qwen's "last tag wins" rule
+      # supersedes our auto-prefix cleanly.
+      auto_prepend_no_think: true
+    notes: |
+      Defaults sourced from qwenlm.github.io/blog/qwen3 best-practices.
+      max_tokens 8192 is intentionally below the official 32,768 ceiling
+      to keep per-request memory bounded; bump explicitly via opts.maxTokens
+      for genuinely long reasoning prompts.
+
+      ── thinking off-switch: 2026-08-18 재측정 (qwen3.8-27b-mlx · LM Studio) ──
+      1) chat_template_kwargs.enable_thinking  → ❌ 여전히 안 먹는다. LM Studio 가 그 kwargs 를
+         템플릿에 «넘기지 않는다». 반증: 잘못된 값을 줘도 템플릿의 raise_exception 이 «안 난다».
+      2) reasoning_effort (none|minimal|low)   → ❌ LM Studio 가 «검증»은 하지만(잘못된 값이면 400)
+         MLX 경로에서 thinking 을 끄지 못한다. 3회 반복 실측에서 reasoning_tokens 가 0 이 «된 적 없다».
+      3) `/no_think` 소프트 태그               → 🟡 줄이긴 한다(3회 평균 150→85 · −43%). 하지만 0 은 아니다.
+      4) ⭐ 모델의 chat_template.jinja 첫 줄에 `{%- set enable_thinking = false %}`
+         → ✅ ***reasoning_tokens = 0*** (3/3) ⊕ 응답이 «결정적»이 된다(세 번 다 동일 산출).
+         템플릿이 그 분기를 이미 갖고 있다 — false 면 빈 `<think></think>` 를 미리 닫는다.
+         ⛔ 모델 파일이라 재다운로드 시 날아간다. 백업(.bak-<stamp>)을 남기고 적용한다.
+      ⇒ 📌 그래서 monad 쪽 off-switch 는 여전히 `/no_think` 가 «유일한 수단»이고, 완전한 차단은
+         모델 템플릿 축이다. 이 둘은 «다른 층»이므로 하나로 대체되지 않는다.
+
+  # ── DeepSeek-R1 thinking ──
+  - id: deepseek-r1
+    name: "DeepSeek-R1 (thinking)"
+    matches:
+      - pattern: "deepseek.*r1"
+        regex: true
+    source: "https://github.com/deepseek-ai/DeepSeek-R1 — recommended sampling"
+    sampling:
+      temperature: 0.6
+      top_p: 0.95
+    output:
+      max_tokens: 16384   # R1 routinely emits long traces
+    behaviors:
+      auto_prepend_no_think: false   # no soft-switch documented
+
+  # ── Google Gemma 3 ──
+  - id: gemma3
+    name: "Google Gemma 3"
+    matches:
+      - pattern: "gemma-?3"
+        regex: true
+      - pattern: "gemma3"
+        regex: false
+    source: "https://ai.google.dev/gemma/docs — generation guide"
+    sampling:
+      temperature: 1.0
+      top_p: 0.95
+      top_k: 64
+    output:
+      max_tokens: 4096
+    behaviors: {}
+
+  # ── gpt-oss (OpenAI open-weight) ──
+  - id: gpt-oss
+    name: "gpt-oss (OpenAI open weights)"
+    matches:
+      - pattern: "gpt-oss"
+        regex: false
+    source: "https://huggingface.co/openai/gpt-oss-20b — model card"
+    sampling:
+      temperature: 0.7
+      top_p: 0.95
+    output:
+      max_tokens: 8192
+    behaviors: {}
+
+  # ── Catch-all for any other OpenAI-compat local model ──
+  # Keep LAST. Pattern matches anything; conservative defaults that
+  # mirror the legacy LocalProvider behaviour (temp 0.3, max 4096) so
+  # existing integrations don't see surprises when a new unknown model
+  # comes online and registry doesn't recognise it.
+  - id: openai-default
+    name: "OpenAI-compat fallback (no preset matched)"
+    matches:
+      - pattern: ".*"
+        regex: true
+    source: "monad legacy LocalProvider defaults"
+    sampling:
+      temperature: 0.3
+    output:
+      max_tokens: 4096
+    behaviors: {}

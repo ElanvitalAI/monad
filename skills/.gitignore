@@ -1,0 +1,17 @@
+# ⛔ 배포 사본의 «자격·비밀» 방어선 (2026-09-17)
+#   각 스킬의 .gitignore 를 «고치지 않고» 여기서 한 번에 막는다 —
+#   사본을 건드리면 원본과 갈라지고, 갈라짐을 막는 장치가 아직 없다(README 참조).
+.env
+.env.*
+*.key
+*.pem
+*.p12
+*.pfx
+*.db
+*.sqlite
+*.sqlite3
+*.lock
+data/
+__pycache__/
+*.pyc
+.DS_Store

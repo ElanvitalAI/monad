@@ -1,0 +1,83 @@
+name: incident-postmortem
+description: |
+  Use when: User wants to capture an incident postmortem fast — voice
+            note in, structured 5-section markdown out (timeline /
+            impact / root cause / mitigation / followups).
+  Triggers: "incident postmortem", "postmortem", "사후 분석",
+            "장애 정리", "rca writeup".
+  Does: Accepts a voice memo or freeform text → STT (when audio) →
+        LLM structures it into the standard 5-section template →
+        saves under Obsidian Postmortems/<DATE>-<slug>.md.
+  NOT for: Live incident response (use a paging workflow) or root
+           cause analysis-by-method (use the rca-5why CFT directly).
+
+# sonnet — postmortem quality matters.
+model: sonnet
+
+nodes:
+  - id: detect-input
+    bash: |
+      INPUT="$ARGUMENTS"
+      if [ -z "$INPUT" ]; then
+        echo "type=empty"
+        exit 0
+      fi
+      case "$INPUT" in
+        *.wav|*.m4a|*.mp3|*.flac|*.ogg|*.opus)
+          if [ -f "$INPUT" ]; then echo "type=audio"; else echo "type=text"; fi
+          ;;
+        *) echo "type=text" ;;
+      esac
+
+  - id: transcribe
+    skill: voice-stt
+    arguments: $ARGUMENTS
+    when: "$detect-input.output == 'type=audio'"
+    depends_on: [detect-input]
+
+  - id: structure
+    prompt: |
+      Structure the user's incident note into a postmortem. Be terse;
+      bullet points only. Surface unknowns explicitly.
+
+      ## Source
+      raw_input:  $ARGUMENTS
+      transcript: $transcribe.output
+
+      Output format (markdown):
+      # Incident postmortem — <1-line title>
+
+      ## Timeline
+      <chronological bullets · UTC timestamps when known>
+
+      ## Impact
+      <who / what / how long>
+
+      ## Root cause
+      <bullet · cite evidence>
+
+      ## Mitigation
+      <bullet · what stopped the bleeding>
+
+      ## Followups
+      <bullet · with owner if known · "(unknown owner)" otherwise>
+    allowed_tools: []
+    depends_on: [detect-input, transcribe]
+    trigger_rule: one_success
+
+  - id: save-pm
+    bash: |
+      OBSIDIAN_DIR="${MONAD_OBSIDIAN_DIR:-$HOME/Documents/Obsidian}"
+      DIR="$OBSIDIAN_DIR/Postmortems"
+      mkdir -p "$DIR" 2>/dev/null || {
+        echo "ERROR: cannot create $DIR — set MONAD_OBSIDIAN_DIR"
+        exit 1
+      }
+      DATE=$(date +%Y-%m-%d)
+      TIME=$(date +%H%M)
+      FILE="$DIR/$DATE-$TIME.md"
+      cat > "$FILE" <<'POSTMORTEM_END_2026_05_08_X9Z2'
+      $structure.output
+      POSTMORTEM_END_2026_05_08_X9Z2
+      echo "saved=$FILE date=$DATE time=$TIME"
+    depends_on: [structure]

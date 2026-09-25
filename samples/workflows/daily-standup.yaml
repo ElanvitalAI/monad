@@ -1,0 +1,97 @@
+name: daily-standup
+description: |
+  Use when: User wants an end-of-day standup recap — today's git/PR
+            activity synthesized into the standard "Yesterday / Today /
+            Blockers / Tomorrow first action" template, with optional
+            broadcast to Discord/Telegram.
+  Triggers: "daily standup", "standup recap", "EoD recap", "오늘 마감",
+            "야근전 정리".
+  Does: Today's commits + open PR queue → LLM-synthesized standup
+        template. Saves under Obsidian Standup/<DATE>.md and (when env
+        MONAD_STANDUP_CHANNEL is set) emits a broadcast intent line
+        for the cv-3 β-1 channel infra to consume.
+  NOT for: Weekly retro (use a separate weekly-retro workflow) or
+           sprint-end review.
+
+# haiku — daily run, cost-conscious.
+model: haiku
+
+nodes:
+  - id: gather-today
+    bash: |
+      cd "$(git rev-parse --show-toplevel 2>/dev/null || echo .)"
+      echo "## Today's commits"
+      git log --since='today.midnight' --pretty=format:'- %h %s' 2>/dev/null \
+        || echo '(no commits today)'
+      echo
+      echo
+      if command -v gh >/dev/null 2>&1; then
+        echo "## Open PRs (mine)"
+        gh pr list --author '@me' --json number,title,state \
+          --jq '.[] | "- #\(.number) \(.title) (\(.state))"' 2>/dev/null \
+          || echo '(none)'
+      else
+        echo "## Open PRs (mine)"
+        echo '(gh CLI not installed — skipping PR section)'
+        echo 'Install hint: brew install gh && gh auth login'
+      fi
+
+  - id: synthesize
+    prompt: |
+      Build a concise standup recap. The user is closing the day.
+
+      ## Today's git + GitHub
+      $gather-today.output
+
+      Output as markdown, using EXACTLY these section headers:
+
+      ## Yesterday
+      <1-2 bullets · what closed / shipped>
+
+      ## Today
+      <1-3 bullets · what got done — cite commits / PRs>
+
+      ## Blockers
+      <1-2 bullets · what is stuck or risky>
+
+      ## Tomorrow first action
+      <1 sentence · the very first concrete step tomorrow>
+    allowed_tools: []
+    depends_on: [gather-today]
+
+  - id: save-standup
+    bash: |
+      OBSIDIAN_DIR="${MONAD_OBSIDIAN_DIR:-$HOME/Documents/Obsidian}"
+      DIR="$OBSIDIAN_DIR/Standup"
+      mkdir -p "$DIR" 2>/dev/null || {
+        echo "ERROR: cannot create $DIR — set MONAD_OBSIDIAN_DIR to a writable path"
+        exit 1
+      }
+      DATE=$(date +%Y-%m-%d)
+      TIME=$(date +%H:%M)
+      FILE="$DIR/$DATE.md"
+      cat > "$FILE" <<'STANDUP_END_2026_05_08_X9Z2'
+      # Daily standup — $DATE $TIME
+
+      $synthesize.output
+      STANDUP_END_2026_05_08_X9Z2
+      echo "saved=$FILE date=$DATE time=$TIME"
+    depends_on: [synthesize]
+
+  - id: broadcast
+    bash: |
+      CHANNEL="${MONAD_STANDUP_CHANNEL:-}"
+      if [ -z "$CHANNEL" ]; then
+        echo 'broadcast=skipped reason=MONAD_STANDUP_CHANNEL_not_set'
+        exit 0
+      fi
+      case "$CHANNEL" in
+        discord|telegram|both)
+          echo "broadcast=intent channel=$CHANNEL note=actual_send_uses_cv-3_beta-1_infra"
+          ;;
+        *)
+          echo "broadcast=skipped reason=unknown_channel(${CHANNEL})_expected_discord|telegram|both"
+          ;;
+      esac
+    depends_on: [save-standup]
+    trigger_rule: all_done

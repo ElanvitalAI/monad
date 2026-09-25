@@ -1,0 +1,24 @@
+id: gpt-5-mini
+provider: openai
+displayName: GPT-5 mini
+family: gpt-5
+familyShortcut: mini
+contextSize: 400000
+outputMaxTokens: 128000
+vision: images
+audio: { input: false, output: false }
+reasoning: medium
+toolCalling: native-openai
+streamingProtocol: sse
+pricing:
+  inputPerMTok: 0.25
+  outputPerMTok: 2.0
+deprecated: null
+releaseDate: 2025-08-01
+tokenizer: cl100k
+kind: chat
+discoveryMeta:
+  source: auto-omni-crawl
+  lastSeen: 2026-05-10
+  autoFilled: true
+  confidence: high

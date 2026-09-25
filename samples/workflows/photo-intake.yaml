@@ -1,0 +1,72 @@
+name: photo-intake
+description: |
+  Use when: User shared a photo / receipt / whiteboard scan and wants
+            it auto-processed — OCR via omni-digest image mode, then
+            archived under Obsidian Photos/.
+  Triggers: "photo intake", "scan receipt", "process this photo",
+            "사진 처리", "영수증 스캔".
+  Does: Detects an image path → routes through omni-digest (OCR /
+        VLM) → archives result + the file path under Obsidian
+        Photos/<DATE>/.
+  NOT for: Live camera capture (use the iOS native camera flow) or
+           bulk photo album processing.
+
+# haiku — image router is high-frequency.
+model: haiku
+
+nodes:
+  - id: detect-image
+    bash: |
+      INPUT="$ARGUMENTS"
+      if [ -z "$INPUT" ]; then
+        echo "type=empty"
+        exit 0
+      fi
+      case "$INPUT" in
+        *.jpg|*.jpeg|*.png|*.heic|*.heif|*.webp|*.gif)
+          if [ -f "$INPUT" ]; then
+            echo "type=image"
+          else
+            echo "type=missing-file"
+          fi
+          ;;
+        *)
+          echo "type=not-image"
+          ;;
+      esac
+
+  - id: digest
+    skill: omni-digest
+    arguments: |
+      Mode: image
+      Path: $ARGUMENTS
+    when: "$detect-image.output == 'type=image'"
+    depends_on: [detect-image]
+
+  - id: archive
+    bash: |
+      if [ "$detect-image.output" != "type=image" ]; then
+        echo "archive=skipped reason=$detect-image.output"
+        exit 0
+      fi
+      OBSIDIAN_DIR="${MONAD_OBSIDIAN_DIR:-$HOME/Documents/Obsidian}"
+      DATE=$(date +%Y-%m-%d)
+      DIR="$OBSIDIAN_DIR/Photos/$DATE"
+      mkdir -p "$DIR" 2>/dev/null || {
+        echo "ERROR: cannot create $DIR — set MONAD_OBSIDIAN_DIR"
+        exit 1
+      }
+      TIME=$(date +%H%M%S)
+      FILE="$DIR/$TIME.md"
+      cat > "$FILE" <<'PHOTO_INTAKE_END_2026_05_08_X9Z2'
+      # Photo intake $TIME
+
+      Source: $ARGUMENTS
+
+      ## OCR / Digest
+
+      $digest.output
+      PHOTO_INTAKE_END_2026_05_08_X9Z2
+      echo "saved=$FILE source=$ARGUMENTS"
+    depends_on: [detect-image, digest]
+    trigger_rule: one_success

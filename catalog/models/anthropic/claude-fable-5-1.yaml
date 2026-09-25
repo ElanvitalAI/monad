@@ -1,0 +1,16 @@
+id: claude-fable-5-1
+provider: anthropic
+displayName: Claude Fable 5.1
+family: claude
+# ⭐ 2026-09-24 1차 대조: `monad model-watch` 가 Anthropic 모델 문서(anthropic-models) ⊕ 가격표(anthropic-pricing)
+#    두 출처에서 모두 이 id 를 냈다. /v1/models 실호출은 안 했다(셸에 API 키 없음).
+contextSize: 1000000
+vision: images
+audio: { input: false, output: false }
+reasoning: adaptive
+toolCalling: native-anthropic
+streamingProtocol: sse
+releaseDate: 2026-09-01
+pricing:
+  inputPerMTok: 10.00
+  outputPerMTok: 50.00

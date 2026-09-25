@@ -1,0 +1,30 @@
+name: http-poll-then-alert
+description: |
+  Hourly HTTP poll of an upstream API. When the response diverges from
+  the last seen value, fires the notify step. Useful for status pages /
+  feature flag dashboards / blog feeds.
+
+_meta:
+  template:
+    title: HTTP poll + alert
+    description: Cron hourly → HTTP fetch → diff → notify
+    tags: [schedule, http, monitor]
+
+nodes:
+  - id: tick
+    scheduleTrigger:
+      type: interval
+      interval: 3600000
+      enabled: true
+
+  - id: probe
+    http:
+      method: GET
+      url: https://status.example.com/api/status
+      timeout: 15000
+    depends_on: [tick]
+
+  - id: alert
+    bash: |
+      echo "status: $probe.output"
+    depends_on: [probe]

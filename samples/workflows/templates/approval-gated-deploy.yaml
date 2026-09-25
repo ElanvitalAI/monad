@@ -1,0 +1,30 @@
+name: approval-gated-deploy
+description: |
+  Build the artifact, ask the operator to approve, then deploy. The
+  approval step parks the executor on a deferred Promise — PWA pops
+  the approval modal · CLI prints the message.
+
+_meta:
+  template:
+    title: Approval-gated deploy
+    description: Manual start → build → approval → deploy
+    tags: [manual, approval, deploy]
+
+nodes:
+  - id: start
+    manualTrigger:
+      description: Build then deploy after operator approval
+
+  - id: build
+    bash: echo "building artifact"
+    depends_on: [start]
+
+  - id: confirm
+    approval:
+      message: "Build complete. Deploy to production?"
+      delivery: modal
+    depends_on: [build]
+
+  - id: deploy
+    bash: echo "deploying"
+    depends_on: [confirm]

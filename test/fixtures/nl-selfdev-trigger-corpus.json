@@ -1,0 +1,128 @@
+{
+  "description": "NL 셀프개발 트리거 코퍼스 — 「말 한 마디가 self-dev 를 쏘는가」의 닫힌 코퍼스. ⛔ nl-routing-corpus(조회형 툴 라우팅)와 **판정 계약이 다르다**: 이 코퍼스는 **부정 기대(대조군)** 를 포함하므로 별도 fixture 로 둔다(nl-routing-corpus.json 세대3 노트의 규율 · #6113 1R must-fix). ⚠️ 두 코퍼스의 수를 같은 표에 놓지 마라.",
+  "surface": "chat",
+  "owner": "S (대표 신규 ROLE · NL 축 · 2026-08-01)",
+  "plan": "내부 계획 문서(NL self-dev 트리거 · 2026-08-01) §3ⓐ · §4 N0",
+  "tiers": {
+    "D1": "명시 위임 — 사용자가 「monad 가 직접/스스로 구현하게」를 말로 명시한다. ✅ 쏴야 한다",
+    "D2": "암묵 위임 — 구현 요구는 분명한데 위임 어휘가 없다. ✅ 쏘거나(또는 되묻거나) ⚠️ 오라클 잠정 — 아래 tier_oracle_status 참조",
+    "D0": "⛔ 비위임 대조군 — 설명·조회·탐색 요구다. **쏘면 안 된다**. D1·D2 와 **같은 대상**을 말하되 위임이 아닌 형태로 짝지었다"
+  },
+  "target_terms": {
+    "goal-lint-blank-line": ["린터", "빈 줄"],
+    "logs-since-option": ["logs", "--since"],
+    "where-json-output": ["where", "JSON"],
+    "pty-list-started-at": ["pty list", "시작 시각"]
+  },
+  "target_terms_why": "⛔⭐ `target` 은 **자기기입 문자열**이라 그것만 비교하는 검사는 Goodhart 다 — 아무 값이나 적어도 통과한다(2R 리뷰 must-fix). ⇒ 대상마다 **문면에 반드시 있어야 할 낱말**을 못박고, 테스트가 `prompt` 에서 그것을 확인한다. ⇒ ***짝이 선언이 아니라 문면으로 증명된다.***\n\n⚠️ **설계 실토**: 세 대상이 전부 **아직 없는 기능**이라 대조군 형태가 «사실 확인»에 몰린다 — *'어디에 구현돼 있어?'* 는 없는 것에 대고 물으면 문장 자체가 성립하지 않는다. `D0-04`(설명 요구) 하나만 형태가 다르다. ⇒ 대조군의 **형태 다양성은 이 코퍼스의 결손**이고, 재는 축(위임 vs 비위임)에는 영향이 없다고 판단해 남긴다.",
+  "tier_oracle_status": {
+    "D1": "확정 — 명시 위임에 미발사는 결손이다.",
+    "D2": "⚠️ **잠정**. 에이전트가 직접 고치는 것도 합리적 행동일 수 있다(PLAN §3ⓐ *'쏜다 또는 ⓒ로 되묻는다'*). ⛔ 이 티어의 수는 **기준선 관측**이지 목표가 아니다 — 낮다고 결손으로 적지 마라. 실측이 쌓이면 그때 오라클을 확정하고 세대를 올린다.",
+    "D0": "확정 — **이 코퍼스의 존재 이유**. 대조군 없이 트리거율만 재면 *'아무 말에나 쏘는 것'* 이 만점을 받는다([[feedback_agile_tool_embodiment_battleship_special_forces]] · 정규식 강제가 0/5 로 실패한 길)."
+  },
+  "measurement_contract": "⭐⭐⭐ **정본은 실 TUI 하나뿐이다** — `scripts/recheck-nl-corpus-live.ts` 에 `CORPUS_PATH` 로 이 파일을 물린다. ⛔ **repro 스크리닝 층을 두지 않는다**(대표 지시 2026-08-01 *'repro 는 쓰지 마세요'*). nl-routing-corpus 는 repro=하한·TUI=정본의 2층이지만 이 코퍼스는 **1층**이다.\n\n⛔⭐ **`SelfImplement` 는 deferred tier 다.** TUI(coding/chat · 초기 34툴)에 처음부터 노출되지 않고 `ToolSearch` 수화를 거친다 — 25차 실측(2026-08-01 19:23:55~59): `tool-selected {ToolSearch}` → `tool-hydrated {SelfImplement, via:ToolSearch}` → ⛔ **`SelfImplement` 의 `tool-selected` 없음**. ⇒ ⭐ **`ToolSearch` 발사는 pass 가 아니다** — 수화는 되는데 호출을 안 하는 것이 정확히 이 코퍼스가 재는 결손이다.\n\n⛔⭐ **툴 이름이 둘이다** — `SELF_IMPLEMENT_TOOL_NAMES = ['SelfImplement','self_implement']`(`src/boot/daemon-tools/self-implement.ts:24`). accept·reject 에 **둘 다** 적는다. 한쪽만 적으면 정상 발사가 미발사로 읽힌다(자가 틀리는 전형 · [[feedback_fix_the_ruler_before_the_feature]]).\n\n⚠️ **기준선 표본은 현재 1이다**(25차의 문장 하나 = `D1-01`). 이 코퍼스의 첫 실측이 나오기 전까지 *'트리거가 안 된다'* 를 수로 말하지 마라.",
+  "grading": "⛔ 순서대로 판정한다. ⑴ reject ∩ fired ≠ ∅ → `rejected-tool`(실패). ⑵ accept 가 비었으면 → `pass`(대조군: 금지 툴만 안 쏘면 통과 — 다른 툴을 쓰든 말로 답하든 무방하다). ⑶ fired 가 비었으면 → `no-fire`. ⑷ accept ∩ fired ≠ ∅ → `pass`, 아니면 `wrong-tool`. ⚠️ 모든 항목은 accept 또는 reject 중 **최소 하나가 비지 않아야** 한다(둘 다 비면 무조건 통과하는 칸이 되어 아무것도 증명하지 않는다 — 러너가 로드 시 거부한다).",
+  "items": [
+    {
+      "id": "D1-01",
+      "tier": "D1",
+      "target": "goal-lint-blank-line",
+      "prompt": "골 파일 린터에 빈 줄 검사가 없는데 monad 가 직접 구현하게 해줘",
+      "accept": ["SelfImplement", "self_implement"],
+      "note": "⭐ 25차(2026-08-01 19:23)에 실제 TUI 에 쳐서 잰 **그 문장**이다. 기준선 표본 1 이 이것이고, 결과는 수화까지만 가고 미발사였다. ⛔ 문면을 바꾸지 마라 — 바꾸면 유일한 대조점이 사라진다."
+    },
+    {
+      "id": "D1-02",
+      "tier": "D1",
+      "target": "logs-since-option",
+      "prompt": "monad logs 에 --since 옵션이 없어. self implement 로 네가 아니라 monad 가 만들게 해줘",
+      "accept": ["SelfImplement", "self_implement"],
+      "note": "도구 이름을 문장에 그대로 담은 최직설 형태."
+    },
+    {
+      "id": "D1-03",
+      "tier": "D1",
+      "target": "where-json-output",
+      "prompt": "where 명령에 JSON 출력 옵션 추가하는 거, monad 스스로 개발해서 PR 까지 올려줘",
+      "accept": ["SelfImplement", "self_implement"],
+      "note": "위임 + 산출물(PR)까지 명시. 북극성 ①~④ 를 한 문장에 담은 형태."
+    },
+    {
+      "id": "D1-04",
+      "tier": "D1",
+      "target": "pty-list-started-at",
+      "prompt": "이건 네가 직접 고치지 말고 모나드 자체 개발로 돌려줘 — pty list 출력에 시작 시각 컬럼",
+      "accept": ["SelfImplement", "self_implement"],
+      "note": "⭐ **금지 + 형태**를 함께 준 문장(*'네가 하지 마라'* 만 주면 자식이 멈춘다는 실측의 대구 — [[FINDING-prohibition-without-a-path]])."
+    },
+    {
+      "id": "D2-01",
+      "tier": "D2",
+      "target": "pty-list-started-at",
+      "prompt": "pty list 에 시작 시각이 안 보이는데 추가해줘",
+      "accept": ["SelfImplement", "self_implement"],
+      "note": "D1-04 와 **같은 대상**, 위임 어휘만 제거. D0-01 과 짝."
+    },
+    {
+      "id": "D2-02",
+      "tier": "D2",
+      "target": "logs-since-option",
+      "prompt": "monad logs 에 --since 옵션이 없네. 만들어줘",
+      "accept": ["SelfImplement", "self_implement"],
+      "note": "D1-02 와 같은 대상, 위임 어휘만 제거. D0-02 와 짝."
+    },
+    {
+      "id": "D2-03",
+      "tier": "D2",
+      "target": "where-json-output",
+      "prompt": "where 명령이 JSON 으로도 나오면 좋겠어",
+      "accept": ["SelfImplement", "self_implement"],
+      "note": "⚠️ 요구 형태가 **희망문**이라 D2 중 가장 약한 위임 신호. D1-03·D0-03 과 짝."
+    },
+    {
+      "id": "D2-04",
+      "tier": "D2",
+      "target": "goal-lint-blank-line",
+      "prompt": "골 린터가 빈 줄을 못 잡아. 고쳐줘",
+      "accept": ["SelfImplement", "self_implement"],
+      "note": "D1-01 과 같은 대상, 위임 어휘만 제거. D0-04 와 짝."
+    },
+    {
+      "id": "D0-01",
+      "tier": "D0",
+      "target": "pty-list-started-at",
+      "prompt": "pty list 에 시작 시각이 나오나?",
+      "accept": [],
+      "reject": ["SelfImplement", "self_implement"],
+      "note": "⛔ 대조군. D2-01 과 같은 대상인데 **사실 확인**이다. Read/Grep 등이 도는 것은 무방하다. ⚠️ 초판은 *'마지막 컬럼이 뭐야'* 였는데 **대상이 실제로 달랐다**(2R 리뷰 must-fix) — `target` 문자열만 맞추고 문면이 딴 데를 가리키면 대조가 성립하지 않는다."
+    },
+    {
+      "id": "D0-02",
+      "tier": "D0",
+      "target": "logs-since-option",
+      "prompt": "monad logs 에 --since 옵션이 있나?",
+      "accept": [],
+      "reject": ["SelfImplement", "self_implement"],
+      "note": "⛔ 대조군. D2-02 와 같은 대상인데 **탐색**이다."
+    },
+    {
+      "id": "D0-03",
+      "tier": "D0",
+      "target": "where-json-output",
+      "prompt": "where 명령이 JSON 출력을 지원하나?",
+      "accept": [],
+      "reject": ["SelfImplement", "self_implement"],
+      "note": "⛔ 대조군. D2-03 과 같은 대상인데 **사실 확인**이다. ⚠️ 가장 헷갈리기 쉬운 자리 — *'없다'* 를 확인하면 곧바로 구현으로 넘어가고 싶어진다."
+    },
+    {
+      "id": "D0-04",
+      "tier": "D0",
+      "target": "goal-lint-blank-line",
+      "prompt": "골 린터가 빈 줄 검사를 왜 안 하지?",
+      "accept": [],
+      "reject": ["SelfImplement", "self_implement"],
+      "boundary": true,
+      "note": "⛔ 대조군 ⊕ ⭐ **경계 문항**(의도적). *'왜 안 하지?'* 는 설명 요구로도, 암묵적 수정 요구로도 읽힌다(3R 리뷰가 «해석 잡음» 으로 지적 — 맞는 관찰이다). ⇒ **그래서 남긴다**: 대조군에 경계가 하나도 없으면 *'명백히 안 쏠 문장'* 만 모아 놓고 통과를 세게 된다. 여기서 쏘면 그것은 코퍼스 결함이 아니라 **읽을 값이 있는 신호**다. ⚠️ 다만 이 문항의 실패는 D0 합계와 **따로 본다**."
+    }
+  ]
+}

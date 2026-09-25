@@ -1,0 +1,918 @@
+import { afterEach, describe, expect, test } from 'bun:test';
+import { spawn, type ChildProcess } from 'node:child_process';
+import { once } from 'node:events';
+import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import {
+  cleanupTemporaryRoot,
+  getProcessGroupId,
+  installShutdownSignalGate,
+  isLivePid,
+  isLiveProcessGroup,
+  killProcessGroup,
+  prepareIsolatedTestEnv,
+  runDeterministicTests,
+  TEMP_ROOT_PREFIX,
+  terminateDirectChild,
+  type DirectChild,
+  type ShutdownSignal,
+  type SignalTarget,
+} from './test-deterministic.js';
+
+const source = readFileSync('scripts/test-deterministic.ts', 'utf8');
+const script = join(import.meta.dir, 'test-deterministic.ts');
+const cleanups: Array<() => void> = [];
+
+afterEach(() => {
+  for (const cleanup of cleanups.splice(0)) cleanup();
+});
+
+function trackRoot(root: string): string {
+  cleanups.push(() => { if (existsSync(root)) rmSync(root, { recursive: true, force: true }); });
+  return root;
+}
+
+function makeRoot(prefix = 'monad-deterministic-unit-'): string {
+  return trackRoot(mkdtempSync(join(tmpdir(), prefix)));
+}
+
+function isLive(pid: number): boolean {
+  try { process.kill(pid, 0); return true; } catch { return false; }
+}
+
+async function expectDead(pid: number, timeoutMs = 5_000): Promise<void> {
+  const deadline = Date.now() + timeoutMs;
+  while (Date.now() < deadline) {
+    if (!isLive(pid)) return;
+    await Bun.sleep(25);
+  }
+  throw new Error(`process survived cleanup: ${pid}`);
+}
+
+function spawnHang(ignoreTerm = false): DirectChild {
+  const body = ignoreTerm
+    ? 'process.on("SIGTERM", () => {}); await Bun.sleep(60_000);'
+    : 'await Bun.sleep(60_000);';
+  const child = Bun.spawn({
+    cmd: [process.execPath, '-e', body],
+    stdin: 'ignore',
+    stdout: 'ignore',
+    stderr: 'ignore',
+    detached: true,
+  });
+  const wrapped: DirectChild = {
+    pid: child.pid,
+    exited: child.exited,
+    kill(signal) { return child.kill(signal); },
+  };
+  cleanups.push(() => {
+    if (child.pid !== undefined) {
+      try { process.kill(-child.pid, 'SIGKILL'); } catch { /* already gone */ }
+    }
+    try { child.kill('SIGKILL'); } catch { /* already gone */ }
+  });
+  return wrapped;
+}
+
+async function waitForPidFile(path: string): Promise<number> {
+  const deadline = Date.now() + 8_000;
+  while (Date.now() < deadline) {
+    if (existsSync(path)) {
+      const pid = Number(readFileSync(path, 'utf8'));
+      if (Number.isInteger(pid) && pid > 1) return pid;
+    }
+    await Bun.sleep(25);
+  }
+  throw new Error(`pid file did not appear: ${path}`);
+}
+
+async function spawnHangWithGrandchild(pidPath: string): Promise<{ child: DirectChild; grandchildPid: number }> {
+  const child = Bun.spawn({
+    cmd: [process.execPath, '-e', `
+      import { writeFileSync } from 'node:fs';
+      const g = Bun.spawn({ cmd: ['sleep', '60'], stdin: 'ignore', stdout: 'ignore', stderr: 'ignore' });
+      writeFileSync(${JSON.stringify(pidPath)}, String(g.pid));
+      await Bun.sleep(60_000);
+    `],
+    stdin: 'ignore',
+    stdout: 'ignore',
+    stderr: 'ignore',
+    detached: true,
+  });
+  const wrapped: DirectChild = {
+    pid: child.pid,
+    exited: child.exited,
+    kill(signal) { return child.kill(signal); },
+  };
+  cleanups.push(() => {
+    if (child.pid !== undefined) {
+      try { process.kill(-child.pid, 'SIGKILL'); } catch { /* already gone */ }
+    }
+    try { child.kill('SIGKILL'); } catch { /* already gone */ }
+  });
+  const grandchildPid = await waitForPidFile(pidPath);
+  cleanups.push(() => {
+    try { process.kill(grandchildPid, 'SIGKILL'); } catch { /* already gone */ }
+  });
+  return { child: wrapped, grandchildPid };
+}
+
+async function spawnExitedLeaderWithTermIgnoringGrandchild(pidPath: string): Promise<{ child: DirectChild; grandchildPid: number }> {
+  const grandchildBody = 'process.on("SIGTERM", () => {}); process.on("SIGHUP", () => {}); process.on("SIGINT", () => {}); await Bun.sleep(60_000);';
+  const child = Bun.spawn({
+    cmd: [process.execPath, '-e', `
+      import { writeFileSync } from 'node:fs';
+      const g = Bun.spawn({
+        cmd: ${JSON.stringify([process.execPath, '-e', grandchildBody])},
+        stdin: 'ignore',
+        stdout: 'ignore',
+        stderr: 'ignore',
+      });
+      g.unref();
+      writeFileSync(${JSON.stringify(pidPath)}, String(g.pid));
+    `],
+    stdin: 'ignore',
+    stdout: 'ignore',
+    stderr: 'ignore',
+    detached: true,
+  });
+  const wrapped: DirectChild = {
+    pid: child.pid,
+    exited: child.exited,
+    kill(signal) { return child.kill(signal); },
+  };
+  cleanups.push(() => {
+    if (child.pid !== undefined) {
+      try { process.kill(-child.pid, 'SIGKILL'); } catch { /* already gone */ }
+    }
+    try { child.kill('SIGKILL'); } catch { /* already gone */ }
+  });
+  const grandchildPid = await waitForPidFile(pidPath);
+  cleanups.push(() => {
+    try { process.kill(grandchildPid, 'SIGKILL'); } catch { /* already gone */ }
+  });
+  await child.exited;
+  const deadline = Date.now() + 2_000;
+  while (Date.now() < deadline) {
+    if (isLive(grandchildPid) && isLiveProcessGroup(wrapped.pid!)) return { child: wrapped, grandchildPid };
+    await Bun.sleep(25);
+  }
+  throw new Error(`term-ignoring grandchild did not remain in the dead leader group: pid=${grandchildPid}`);
+}
+
+class FakeSignalTarget implements SignalTarget {
+  private readonly listeners = new Map<string, Array<(...args: unknown[]) => void>>();
+
+  on(event: string, listener: (...args: unknown[]) => void): this {
+    const list = this.listeners.get(event) ?? [];
+    list.push(listener);
+    this.listeners.set(event, list);
+    return this;
+  }
+
+  removeListener(event: string, listener: (...args: unknown[]) => void): this {
+    const list = this.listeners.get(event) ?? [];
+    this.listeners.set(event, list.filter((candidate) => candidate !== listener));
+    return this;
+  }
+
+  emit(event: string): void {
+    for (const listener of [...(this.listeners.get(event) ?? [])]) listener();
+  }
+
+  listenerCount(event: string): number {
+    return this.listeners.get(event)?.length ?? 0;
+  }
+}
+
+function writeProbeTest(directory: string): string {
+  const file = join(directory, 'probe.test.ts');
+  writeFileSync(file, `
+import { test } from 'bun:test';
+import { writeFileSync } from 'node:fs';
+
+test('deterministic runner probe', async () => {
+  const path = process.env.DETERMINISTIC_RUNNER_PROBE_PATH;
+  if (path) {
+    writeFileSync(path, JSON.stringify({
+      pid: process.pid,
+      ppid: process.ppid,
+      HOME: process.env.HOME,
+      XDG_CONFIG_HOME: process.env.XDG_CONFIG_HOME,
+      MONAD_STATE_DIR: process.env.MONAD_STATE_DIR,
+      MONAD_CONFIG_DIR: process.env.MONAD_CONFIG_DIR,
+      ANTHROPIC_API_KEY: process.env.ANTHROPIC_API_KEY ?? null,
+      APIFY_TOKEN: process.env.APIFY_TOKEN ?? null,
+    }));
+  }
+  const mode = process.env.DETERMINISTIC_RUNNER_PROBE_MODE ?? 'exit-0';
+  if (mode === 'hang-grandchild') {
+    const g = Bun.spawn({ cmd: ['sleep', '60'], stdin: 'ignore', stdout: 'ignore', stderr: 'ignore' });
+    if (path) {
+      writeFileSync(path, JSON.stringify({
+        pid: process.pid,
+        ppid: process.ppid,
+        HOME: process.env.HOME,
+        grandchildPid: g.pid,
+      }));
+    }
+    await Bun.sleep(60_000);
+  }
+  if (mode === 'hang') await Bun.sleep(60_000);
+  if (mode === 'stdout-marker') console.log('DETERMINISTIC_STDOUT_VISIBLE');
+  if (mode === 'exit-1') throw new Error('forced child failure');
+}, 70_000);
+`);
+  return file;
+}
+
+async function waitForProbe(path: string): Promise<{
+  pid: number;
+  ppid: number;
+  HOME: string;
+  XDG_CONFIG_HOME?: string;
+  MONAD_STATE_DIR?: string;
+  MONAD_CONFIG_DIR?: string;
+  ANTHROPIC_API_KEY?: string | null;
+  APIFY_TOKEN?: string | null;
+  grandchildPid?: number;
+}> {
+  const deadline = Date.now() + 8_000;
+  while (Date.now() < deadline) {
+    if (existsSync(path)) return JSON.parse(readFileSync(path, 'utf8'));
+    await Bun.sleep(25);
+  }
+  throw new Error(`probe did not write: ${path}`);
+}
+
+function startRunner(
+  env: Record<string, string>,
+  probeFile: string,
+  stdio: ['ignore', 'ignore' | 'pipe', 'pipe'] = ['ignore', 'ignore', 'pipe'],
+): ChildProcess {
+  return spawn(process.execPath, [script, probeFile], {
+    env: { ...process.env, ...env },
+    stdio,
+  });
+}
+
+async function collect(child: ChildProcess): Promise<{ code: number | null; signal: NodeJS.Signals | null; stdout: string; stderr: string }> {
+  let stdout = '';
+  let stderr = '';
+  child.stdout?.on('data', (chunk: Buffer) => { stdout += chunk; });
+  child.stderr?.on('data', (chunk: Buffer) => { stderr += chunk; });
+  if (child.exitCode !== null || child.signalCode !== null) {
+    return { code: child.exitCode, signal: child.signalCode, stdout, stderr };
+  }
+  const [code, signal] = await once(child, 'close') as [number | null, NodeJS.Signals | null];
+  return { code, signal, stdout, stderr };
+}
+
+describe('scripts/test-deterministic.ts preservation', () => {
+  test('keeps the human deterministic entrypoint wired to the credential filter and redirected roots', () => {
+    expect(source).toContain("import { isCredentialKey } from './lib/deterministic-env.js';");
+    expect(source).toContain("'MONAD_HARNESS_SPACE'");
+    expect(source).toContain('!isCredentialKey(key) && !HARNESS_TEST_ENV_KEYS.includes');
+    expect(source).toContain('env.HOME = testRoot;');
+    expect(source).toContain("env.XDG_CONFIG_HOME = join(testRoot, '.config');");
+    expect(source).toContain("env.MONAD_STATE_DIR = join(testRoot, 'state');");
+    expect(source).toContain("env.MONAD_CONFIG_DIR = join(testRoot, 'config');");
+    expect(source).toContain('env,');
+    expect(source).toContain("stdin: 'inherit'");
+    expect(source).toContain("stdout: 'inherit'");
+    expect(source).toContain("stderr: 'inherit'");
+    expect(source).toContain('detached: true');
+    // ⛔ 이 칸이 지키는 «뜻»은 「사람이 준 argv 가 bun test 까지 그대로 간다」다.
+    //   2026-09-24: CDP 레인 분리로 그 앞에 ...ignoreArgs 가 붙었다 — argv 통과는 그대로다.
+    expect(source).toContain("cmd: ['bun', 'test', ...ignoreArgs, ...argv]");
+    expect(source).toContain("join(tempBase(), TEMP_ROOT_PREFIX)");
+    expect(source).toContain("export const TEMP_ROOT_PREFIX = 'monad-deterministic-test-';");
+    expect(source).toContain('if (import.meta.main)');
+    expect(source).toContain('await runDeterministicTests()');
+    expect(source).toContain('const defaultSpawn: SpawnDirectChild = (opts) => Bun.spawn({');
+    expect(source).not.toContain("Bun.spawnSync({\n  cmd: ['bun', 'test'");
+  });
+
+  test('signal path terminates the process group before cleanup and retries once with SIGKILL', () => {
+    const signalBlock = source.slice(source.indexOf("if (outcome.kind === 'signal')"));
+    expect(signalBlock).toContain('await terminateDirectChild(child, outcome.signal');
+    expect(signalBlock).toContain('cleanupTemporaryRoot(testRoot');
+    expect(signalBlock.indexOf('await terminateDirectChild')).toBeLessThan(signalBlock.indexOf('cleanupTemporaryRoot'));
+    expect(source).toContain("tryKill('SIGKILL')");
+    expect(source).toContain('process.kill(-pid, signal)');
+    expect(source).toContain('killGroup(pid, sig)');
+    expect(source).toContain('signalDirectChild(child, pid, sig, report)');
+    expect(source).toContain('failed to signal process group pgid=');
+    expect(source).toContain("refusing to signal this process's own group");
+    expect(source).toContain('reportVisible(`failed to signal process group pgid=${pid} with ${sig}: ${formatError(error)}`, report)');
+    expect(source).toContain('waitUntilPidAndGroupDead');
+    expect(source).toContain('isLiveProcessGroup');
+    expect(source).toContain('getProcessGroupId');
+    expect(source).toContain('process.kill(-pgid, 0)');
+    expect(source).not.toMatch(/if \(pid === process\.pid\)/);
+    expect(source.indexOf('if (await waitUntilPidAndGroupDead')).toBeGreaterThan(source.indexOf('tryKill(signal)'));
+    expect(source.indexOf("tryKill('SIGKILL')")).toBeGreaterThan(source.indexOf('if (await waitUntilPidAndGroupDead'));
+    expect(source).not.toContain('pgrep');
+    expect(source).not.toContain('pkill');
+    expect(source).not.toContain('killall');
+    expect(signalBlock).toContain('resignalSelf(outcome.signal');
+    expect(source).toContain('} finally {');
+    expect(source).not.toContain('process.once');
+    expect(source).not.toContain('process.exit(130');
+    expect(source).not.toContain('process.exit(143');
+  });
+});
+
+describe('prepareIsolatedTestEnv', () => {
+  test('strips credential-shaped keys while pinning HOME, XDG, and monad roots', () => {
+    const testRoot = '/isolated/monad-deterministic-test-root';
+    const env = prepareIsolatedTestEnv({
+      ANTHROPIC_API_KEY: 'live-secret',
+      APIFY_TOKEN: 'live-token',
+      OPENAI_BASE_URL: 'https://example.invalid',
+      HOME: '/real/home',
+      MONAD_STATE_DIR: '/real/state',
+      MONAD_CONFIG_DIR: '/real/config',
+      MONAD_HARNESS_SPACE: 'self-implement',
+      MONAD_HARNESS_SPACE_ID: 'test-space',
+      MONAD_HARNESS_BOUNDARY: '/real/boundary',
+      MONAD_HARNESS_ROLE: 'executor',
+      MONAD_HARNESS_DETACHED: '1',
+      MONAD_RUN_ID: 'run-parent',
+      PATH: '/usr/bin',
+    }, testRoot);
+    expect(env.ANTHROPIC_API_KEY).toBeUndefined();
+    expect(env.APIFY_TOKEN).toBeUndefined();
+    expect(env.OPENAI_BASE_URL).toBe('https://example.invalid');
+    expect(env.HOME).toBe(testRoot);
+    expect(env.XDG_CONFIG_HOME).toBe(`${testRoot}/.config`);
+    expect(env.MONAD_STATE_DIR).toBe(`${testRoot}/state`);
+    expect(env.MONAD_CONFIG_DIR).toBe(`${testRoot}/config`);
+    expect(env.MONAD_HARNESS_SPACE).toBeUndefined();
+    expect(env.MONAD_HARNESS_SPACE_ID).toBeUndefined();
+    expect(env.MONAD_HARNESS_BOUNDARY).toBeUndefined();
+    expect(env.MONAD_HARNESS_ROLE).toBeUndefined();
+    expect(env.MONAD_HARNESS_DETACHED).toBeUndefined();
+    expect(env.MONAD_RUN_ID).toBeUndefined();
+    expect(env.PATH).toBe('/usr/bin');
+  });
+});
+
+describe('cleanupTemporaryRoot', () => {
+  test('reports a forced removal failure with the affected path', () => {
+    const testRoot = '/tmp/monad-deterministic-test-forced-fail';
+    const messages: string[] = [];
+    cleanupTemporaryRoot(testRoot, {
+      rmSync: () => { throw new Error('EACCES: permission denied'); },
+      report: (message) => messages.push(message),
+    });
+    expect(messages).toHaveLength(1);
+    expect(messages[0]).toContain(testRoot);
+    expect(messages[0]).toContain('failed to remove temporary root');
+    expect(messages[0]).toContain('EACCES: permission denied');
+  });
+});
+
+describe('installShutdownSignalGate', () => {
+  test('keeps listeners until dispose and absorbs later SIGINT/SIGTERM', async () => {
+    const target = new FakeSignalTarget();
+    const absorbed: ShutdownSignal[] = [];
+    const gate = installShutdownSignalGate(target, (signal) => absorbed.push(signal));
+    target.emit('SIGTERM');
+    target.emit('SIGTERM');
+    target.emit('SIGINT');
+    expect(await gate.received).toBe('SIGTERM');
+    expect(absorbed).toEqual(['SIGTERM', 'SIGINT']);
+    expect(target.listenerCount('SIGTERM')).toBe(1);
+    expect(target.listenerCount('SIGINT')).toBe(1);
+    gate.dispose();
+    expect(target.listenerCount('SIGTERM')).toBe(0);
+    expect(target.listenerCount('SIGINT')).toBe(0);
+  });
+});
+
+describe('killProcessGroup', () => {
+  test('refuses to signal this process own group', () => {
+    expect(() => killProcessGroup(process.pid, 'SIGTERM')).toThrow(/own group/);
+  });
+
+  test('refuses when the target pid equals this process actual pgid, not process.pid', () => {
+    const ownPgid = process.pid === 1 ? 2 : 1;
+    expect(ownPgid).not.toBe(process.pid);
+    expect(() => killProcessGroup(ownPgid, 'SIGTERM', {
+      getProcessGroupId: (pid) => pid === 0 ? ownPgid : 99_001,
+    })).toThrow(/own group/);
+  });
+
+  test('refuses when a different pid shares this process pgid', () => {
+    const ownPgid = 4242;
+    const otherPid = 7777;
+    expect(() => killProcessGroup(otherPid, 'SIGTERM', {
+      getProcessGroupId: (pid) => pid === 0 || pid === otherPid ? ownPgid : 99_001,
+    })).toThrow(/own group/);
+  });
+
+  test('reads the live process group id instead of treating process.pid as pgid', () => {
+    const ownPgid = getProcessGroupId(0);
+    expect(ownPgid).toBe(getProcessGroupId(process.pid));
+    expect(Number.isInteger(ownPgid) && ownPgid > 0).toBe(true);
+    const child = spawnHang();
+    if (child.pid === undefined) throw new Error('spawned child has no pid');
+    const childPid: number = child.pid;
+    expect(getProcessGroupId(childPid)).toBe(childPid);
+    expect(getProcessGroupId(childPid)).not.toBe(ownPgid);
+  });
+});
+
+describe('terminateDirectChild', () => {
+  test('sends the received signal and waits until the direct child is dead', async () => {
+    const child = spawnHang();
+    expect(child.pid).toBeTypeOf('number');
+    await terminateDirectChild(child, 'SIGTERM', { graceMs: 1_000 });
+    await expectDead(child.pid!, 1_000);
+  });
+
+  test('retries exactly once with SIGKILL when the child ignores the first signal', async () => {
+    const child = spawnHang(true);
+    await terminateDirectChild(child, 'SIGTERM', { graceMs: 200 });
+    await expectDead(child.pid!, 1_000);
+  });
+
+  test('ends a grandchild that lives in the child process group', async () => {
+    const pidPath = join(makeRoot(), 'grandchild.pid');
+    const { child, grandchildPid } = await spawnHangWithGrandchild(pidPath);
+    expect(isLive(child.pid!)).toBe(true);
+    expect(isLive(grandchildPid)).toBe(true);
+    await terminateDirectChild(child, 'SIGTERM', { graceMs: 1_000 });
+    await expectDead(child.pid!, 1_000);
+    await expectDead(grandchildPid, 1_000);
+  });
+
+  test('SIGINT also ends the child and its grandchild', async () => {
+    const pidPath = join(makeRoot(), 'grandchild.pid');
+    const { child, grandchildPid } = await spawnHangWithGrandchild(pidPath);
+    await terminateDirectChild(child, 'SIGINT', { graceMs: 1_000 });
+    await expectDead(child.pid!, 1_000);
+    await expectDead(grandchildPid, 1_000);
+  });
+
+  test('SIGKILLs the group when the direct child is already dead and a grandchild ignores SIGTERM', async () => {
+    const pidPath = join(makeRoot(), 'grandchild.pid');
+    const { child, grandchildPid } = await spawnExitedLeaderWithTermIgnoringGrandchild(pidPath);
+    expect(isLive(child.pid!)).toBe(false);
+    expect(isLive(grandchildPid)).toBe(true);
+    expect(isLiveProcessGroup(child.pid!)).toBe(true);
+    const groupSignals: NodeJS.Signals[] = [];
+    await terminateDirectChild(child, 'SIGTERM', {
+      graceMs: 200,
+      killProcessGroup: (pid, signal) => {
+        groupSignals.push(signal);
+        killProcessGroup(pid, signal);
+      },
+    });
+    expect(groupSignals).toContain('SIGTERM');
+    expect(groupSignals).toContain('SIGKILL');
+    await expectDead(grandchildPid, 1_000);
+    expect(isLiveProcessGroup(child.pid!)).toBe(false);
+  }, 15_000);
+
+  test('reports the child pid when termination fails', async () => {
+    const child = spawnHang();
+    const messages: string[] = [];
+    await terminateDirectChild({
+      pid: child.pid,
+      exited: child.exited,
+      kill: () => true,
+    }, 'SIGTERM', {
+      graceMs: 80,
+      report: (message) => messages.push(message),
+      killProcessGroup: () => {},
+    });
+    expect(messages.some((message) => message.includes(`failed to terminate child pid=${child.pid}`))).toBe(true);
+    expect(isLive(child.pid!)).toBe(true);
+  });
+
+  test('group termination failure is visible and still ends the direct child', async () => {
+    const child = spawnHang();
+    const messages: string[] = [];
+    await terminateDirectChild(child, 'SIGTERM', {
+      graceMs: 1_000,
+      report: (message) => messages.push(message),
+      killProcessGroup: () => { throw new Error('killpg failed: ESRCH'); },
+    });
+    expect(messages.join('\n')).toContain(`failed to signal process group pgid=${child.pid}`);
+    expect(messages.join('\n')).toContain('killpg failed: ESRCH');
+    await expectDead(child.pid!, 1_000);
+  });
+});
+
+describe('runDeterministicTests lifecycle', () => {
+  test('propagates a normal child exit code and removes the temporary root', async () => {
+    const testRoot = makeRoot();
+    writeFileSync(join(testRoot, 'keep-me'), 'x');
+    const leftover = makeRoot(TEMP_ROOT_PREFIX);
+    writeFileSync(join(leftover, 'prior'), 'stale');
+    let spawned: { cmd: string[]; stdin: string; stdout: string; stderr: string; detached: true; env: NodeJS.ProcessEnv } | undefined;
+    const code = await runDeterministicTests({
+      env: { ANTHROPIC_API_KEY: 'secret', PATH: '/bin' },
+      argv: ['--dots', 'focused.test.ts'],
+      mkdtempSync: () => testRoot,
+      tmpdir: () => tmpdir(),
+      spawn: (opts) => {
+        spawned = opts;
+        return { pid: process.pid, exited: Promise.resolve(7), kill: () => true };
+      },
+      waitForSignal: () => new Promise<ShutdownSignal>(() => {}),
+      killSelf: () => { throw new Error('normal exit must not re-signal self'); },
+    });
+    expect(code).toBe(7);
+    expect(existsSync(testRoot)).toBe(false);
+    expect(existsSync(leftover)).toBe(true);
+    expect(spawned?.cmd).toEqual(['bun', 'test', '--dots', 'focused.test.ts']);
+    expect(spawned?.stdin).toBe('inherit');
+    expect(spawned?.stdout).toBe('inherit');
+    expect(spawned?.stderr).toBe('inherit');
+    expect(spawned?.detached).toBe(true);
+    expect(spawned?.env.ANTHROPIC_API_KEY).toBeUndefined();
+    expect(spawned?.env.HOME).toBe(testRoot);
+    expect(spawned?.env.MONAD_STATE_DIR).toBe(join(testRoot, 'state'));
+  });
+
+  test('SIGTERM kills the process group, removes the root, and re-signals SIGTERM', async () => {
+    const testRoot = makeRoot();
+    const hang = spawnHang();
+    const groupSignals: NodeJS.Signals[] = [];
+    let killedSelf: ShutdownSignal | undefined;
+    await runDeterministicTests({
+      mkdtempSync: () => testRoot,
+      tmpdir: () => tmpdir(),
+      spawn: () => ({
+        pid: hang.pid,
+        exited: hang.exited,
+        kill(signal) { return hang.kill(signal); },
+      }),
+      waitForSignal: async () => 'SIGTERM',
+      killSelf: (signal) => { killedSelf = signal; },
+      childGraceMs: 1_000,
+      killProcessGroup: (pid, signal) => {
+        groupSignals.push(signal);
+        killProcessGroup(pid, signal);
+      },
+    });
+    expect(groupSignals[0]).toBe('SIGTERM');
+    expect(killedSelf).toBe('SIGTERM');
+    expect(existsSync(testRoot)).toBe(false);
+    await expectDead(hang.pid!, 1_000);
+  });
+
+  test('SIGINT kills the process group, removes the root, and re-signals SIGINT', async () => {
+    const testRoot = makeRoot();
+    const hang = spawnHang();
+    const groupSignals: NodeJS.Signals[] = [];
+    let killedSelf: ShutdownSignal | undefined;
+    await runDeterministicTests({
+      mkdtempSync: () => testRoot,
+      tmpdir: () => tmpdir(),
+      spawn: () => ({
+        pid: hang.pid,
+        exited: hang.exited,
+        kill(signal) { return hang.kill(signal); },
+      }),
+      waitForSignal: async () => 'SIGINT',
+      killSelf: (signal) => { killedSelf = signal; },
+      childGraceMs: 1_000,
+      killProcessGroup: (pid, signal) => {
+        groupSignals.push(signal);
+        killProcessGroup(pid, signal);
+      },
+    });
+    expect(groupSignals[0]).toBe('SIGINT');
+    expect(killedSelf).toBe('SIGINT');
+    expect(existsSync(testRoot)).toBe(false);
+    await expectDead(hang.pid!, 1_000);
+  });
+
+  test('SIGTERM through the runner ends a grandchild in the child group', async () => {
+    const testRoot = makeRoot();
+    const pidPath = join(makeRoot(), 'grandchild.pid');
+    const { child, grandchildPid } = await spawnHangWithGrandchild(pidPath);
+    let killedSelf: ShutdownSignal | undefined;
+    await runDeterministicTests({
+      mkdtempSync: () => testRoot,
+      tmpdir: () => tmpdir(),
+      spawn: () => child,
+      waitForSignal: async () => 'SIGTERM',
+      killSelf: (signal) => { killedSelf = signal; },
+      childGraceMs: 1_000,
+    });
+    expect(killedSelf).toBe('SIGTERM');
+    await expectDead(child.pid!, 1_000);
+    await expectDead(grandchildPid, 1_000);
+    expect(existsSync(testRoot)).toBe(false);
+  });
+
+  test('SIGTERM through the runner SIGKILLs a grandchild that ignores SIGTERM after the child exits', async () => {
+    const testRoot = makeRoot();
+    const pidPath = join(makeRoot(), 'grandchild.pid');
+    const { child, grandchildPid } = await spawnExitedLeaderWithTermIgnoringGrandchild(pidPath);
+    expect(isLive(child.pid!)).toBe(false);
+    expect(isLive(grandchildPid)).toBe(true);
+    const groupSignals: NodeJS.Signals[] = [];
+    let killedSelf: ShutdownSignal | undefined;
+    await runDeterministicTests({
+      mkdtempSync: () => testRoot,
+      tmpdir: () => tmpdir(),
+      spawn: () => ({
+        pid: child.pid,
+        // Leader already exited; keep this pending so the signal path, not the
+        // normal-exit path, is the one that must reap the remaining group.
+        exited: new Promise<number>(() => {}),
+        kill(signal) { return child.kill(signal); },
+      }),
+      waitForSignal: async () => 'SIGTERM',
+      killSelf: (signal) => { killedSelf = signal; },
+      childGraceMs: 200,
+      killProcessGroup: (pid, signal) => {
+        groupSignals.push(signal);
+        killProcessGroup(pid, signal);
+      },
+    });
+    expect(killedSelf).toBe('SIGTERM');
+    expect(groupSignals).toContain('SIGTERM');
+    expect(groupSignals).toContain('SIGKILL');
+    await expectDead(grandchildPid, 1_000);
+    expect(existsSync(testRoot)).toBe(false);
+  }, 15_000);
+
+  test('SIGINT through the runner ends a grandchild in the child group', async () => {
+    const testRoot = makeRoot();
+    const pidPath = join(makeRoot(), 'grandchild.pid');
+    const { child, grandchildPid } = await spawnHangWithGrandchild(pidPath);
+    let killedSelf: ShutdownSignal | undefined;
+    await runDeterministicTests({
+      mkdtempSync: () => testRoot,
+      tmpdir: () => tmpdir(),
+      spawn: () => child,
+      waitForSignal: async () => 'SIGINT',
+      killSelf: (signal) => { killedSelf = signal; },
+      childGraceMs: 1_000,
+    });
+    expect(killedSelf).toBe('SIGINT');
+    await expectDead(child.pid!, 1_000);
+    await expectDead(grandchildPid, 1_000);
+    expect(existsSync(testRoot)).toBe(false);
+  });
+
+  test('group-kill failure through the runner is visible and still ends the direct child', async () => {
+    const testRoot = makeRoot();
+    const hang = spawnHang();
+    const messages: string[] = [];
+    let killedSelf: ShutdownSignal | undefined;
+    await runDeterministicTests({
+      mkdtempSync: () => testRoot,
+      tmpdir: () => tmpdir(),
+      spawn: () => hang,
+      waitForSignal: async () => 'SIGTERM',
+      killSelf: (signal) => { killedSelf = signal; },
+      childGraceMs: 1_000,
+      report: (message) => messages.push(message),
+      killProcessGroup: () => { throw new Error('killpg failed: ESRCH'); },
+    });
+    expect(killedSelf).toBe('SIGTERM');
+    expect(messages.join('\n')).toContain(`failed to signal process group pgid=${hang.pid}`);
+    expect(messages.join('\n')).toContain('killpg failed: ESRCH');
+    await expectDead(hang.pid!, 1_000);
+    expect(existsSync(testRoot)).toBe(false);
+  });
+
+  test('fails if the signal path no longer terminates the direct child', async () => {
+    const testRoot = makeRoot();
+    const hang = spawnHang();
+    let groupKilled = false;
+    await runDeterministicTests({
+      mkdtempSync: () => testRoot,
+      tmpdir: () => tmpdir(),
+      spawn: () => hang,
+      waitForSignal: async () => 'SIGTERM',
+      killSelf: () => {},
+      childGraceMs: 1_000,
+      killProcessGroup: (pid, signal) => {
+        groupKilled = true;
+        killProcessGroup(pid, signal);
+      },
+    });
+    expect(groupKilled).toBe(true);
+    expect(isLivePid(hang.pid!)).toBe(false);
+  });
+
+  test('a second SIGTERM during shutdown is absorbed before the child and root are cleaned', async () => {
+    const testRoot = makeRoot();
+    const hang = spawnHang();
+    const target = new FakeSignalTarget();
+    const absorbed: ShutdownSignal[] = [];
+    let killedSelf: ShutdownSignal | undefined;
+    const running = runDeterministicTests({
+      mkdtempSync: () => testRoot,
+      tmpdir: () => tmpdir(),
+      signalTarget: target,
+      onAbsorbSignal: (signal) => absorbed.push(signal),
+      spawn: () => {
+        queueMicrotask(() => {
+          target.emit('SIGTERM');
+          target.emit('SIGTERM');
+          target.emit('SIGINT');
+        });
+        return {
+          pid: hang.pid,
+          exited: hang.exited,
+          kill(signal) { return hang.kill(signal); },
+        };
+      },
+      killSelf: (signal) => { killedSelf = signal; },
+      childGraceMs: 1_000,
+    });
+    await running;
+    expect(killedSelf).toBe('SIGTERM');
+    expect(absorbed).toEqual(['SIGTERM', 'SIGINT']);
+    expect(existsSync(testRoot)).toBe(false);
+    expect(target.listenerCount('SIGTERM')).toBe(0);
+    expect(target.listenerCount('SIGINT')).toBe(0);
+    await expectDead(hang.pid!, 1_000);
+  });
+
+  test('cleans the temporary root and signal listeners when spawn throws', async () => {
+    const testRoot = makeRoot();
+    const target = new FakeSignalTarget();
+    const messages: string[] = [];
+    await expect(runDeterministicTests({
+      mkdtempSync: () => testRoot,
+      tmpdir: () => tmpdir(),
+      signalTarget: target,
+      spawn: () => { throw new Error('spawn failed'); },
+      report: (message) => messages.push(message),
+    })).rejects.toThrow('spawn failed');
+    expect(existsSync(testRoot)).toBe(false);
+    expect(target.listenerCount('SIGINT')).toBe(0);
+    expect(target.listenerCount('SIGTERM')).toBe(0);
+    expect(messages.some((message) => message.includes('spawn failed'))).toBe(true);
+  });
+
+  test('cleans the temporary root when child.exited rejects', async () => {
+    const testRoot = makeRoot();
+    const hang = spawnHang();
+    const messages: string[] = [];
+    await expect(runDeterministicTests({
+      mkdtempSync: () => testRoot,
+      tmpdir: () => tmpdir(),
+      spawn: () => ({
+        pid: hang.pid,
+        exited: Promise.reject(new Error('exited rejected')),
+        kill(signal) { return hang.kill(signal); },
+      }),
+      waitForSignal: () => new Promise<ShutdownSignal>(() => {}),
+      report: (message) => messages.push(message),
+      childGraceMs: 1_000,
+    })).rejects.toThrow('exited rejected');
+    expect(existsSync(testRoot)).toBe(false);
+    expect(messages.some((message) => message.includes('exited rejected'))).toBe(true);
+    await expectDead(hang.pid!, 1_000);
+  });
+});
+
+describe('runtime entrypoint', () => {
+  test('SIGTERM from the live entrypoint ends the direct child and removes the temporary root', async () => {
+    const directory = makeRoot('monad-deterministic-live-');
+    const probePath = join(directory, 'probe.json');
+    const probeFile = writeProbeTest(directory);
+    const leftover = makeRoot(TEMP_ROOT_PREFIX);
+    writeFileSync(join(leftover, 'prior'), 'stale');
+    const child = startRunner({
+      DETERMINISTIC_RUNNER_PROBE_PATH: probePath,
+      DETERMINISTIC_RUNNER_PROBE_MODE: 'hang',
+      ANTHROPIC_API_KEY: 'live-secret',
+      APIFY_TOKEN: 'live-token',
+    }, probeFile);
+    try {
+      const probe = await waitForProbe(probePath);
+      expect(probe.HOME.includes(TEMP_ROOT_PREFIX)).toBe(true);
+      expect(probe.XDG_CONFIG_HOME).toBe(`${probe.HOME}/.config`);
+      expect(probe.MONAD_STATE_DIR).toBe(`${probe.HOME}/state`);
+      expect(probe.MONAD_CONFIG_DIR).toBe(`${probe.HOME}/config`);
+      expect(probe.ANTHROPIC_API_KEY).toBeNull();
+      expect(probe.APIFY_TOKEN).toBeNull();
+      expect(existsSync(probe.HOME)).toBe(true);
+      const directChildPid = probe.ppid === child.pid ? probe.pid : probe.ppid;
+      child.kill('SIGTERM');
+      const result = await collect(child);
+      expect(result.signal).toBe('SIGTERM');
+      expect(result.code).toBeNull();
+      await expectDead(directChildPid, 2_000);
+      expect(existsSync(probe.HOME)).toBe(false);
+      expect(existsSync(leftover)).toBe(true);
+    } finally {
+      if (child.exitCode === null && child.signalCode === null) {
+        try { child.kill('SIGKILL'); } catch { /* already gone */ }
+        await once(child, 'close').catch(() => undefined);
+      }
+    }
+  }, 15_000);
+
+  test('SIGINT from the live entrypoint ends the direct child and removes the temporary root', async () => {
+    const directory = makeRoot('monad-deterministic-live-');
+    const probePath = join(directory, 'probe.json');
+    const probeFile = writeProbeTest(directory);
+    const child = startRunner({
+      DETERMINISTIC_RUNNER_PROBE_PATH: probePath,
+      DETERMINISTIC_RUNNER_PROBE_MODE: 'hang',
+    }, probeFile);
+    try {
+      const probe = await waitForProbe(probePath);
+      const directChildPid = probe.ppid === child.pid ? probe.pid : probe.ppid;
+      child.kill('SIGINT');
+      const result = await collect(child);
+      expect(result.signal).toBe('SIGINT');
+      expect(result.code).toBeNull();
+      await expectDead(directChildPid, 2_000);
+      expect(existsSync(probe.HOME)).toBe(false);
+    } finally {
+      if (child.exitCode === null && child.signalCode === null) {
+        try { child.kill('SIGKILL'); } catch { /* already gone */ }
+        await once(child, 'close').catch(() => undefined);
+      }
+    }
+  }, 15_000);
+
+  test('normal child completion propagates the exit code and removes the temporary root', async () => {
+    const directory = makeRoot('monad-deterministic-live-');
+    const probePath = join(directory, 'probe.json');
+    const probeFile = writeProbeTest(directory);
+    const child = startRunner({
+      DETERMINISTIC_RUNNER_PROBE_PATH: probePath,
+      DETERMINISTIC_RUNNER_PROBE_MODE: 'exit-1',
+      ANTHROPIC_API_KEY: 'live-secret',
+    }, probeFile);
+    const probe = await waitForProbe(probePath);
+    const result = await collect(child);
+    expect(result.code).toBe(1);
+    expect(existsSync(probe.HOME)).toBe(false);
+    expect(probe.ANTHROPIC_API_KEY).toBeNull();
+    expect(probe.HOME.includes(TEMP_ROOT_PREFIX)).toBe(true);
+  }, 15_000);
+
+  test('SIGTERM from the live entrypoint ends a grandchild spawned by the child', async () => {
+    const directory = makeRoot('monad-deterministic-live-');
+    const probePath = join(directory, 'probe.json');
+    const probeFile = writeProbeTest(directory);
+    const child = startRunner({
+      DETERMINISTIC_RUNNER_PROBE_PATH: probePath,
+      DETERMINISTIC_RUNNER_PROBE_MODE: 'hang-grandchild',
+    }, probeFile);
+    try {
+      const probe = await waitForProbe(probePath);
+      expect(probe.grandchildPid).toBeTypeOf('number');
+      const directChildPid = probe.ppid === child.pid ? probe.pid : probe.ppid;
+      child.kill('SIGTERM');
+      const result = await collect(child);
+      expect(result.signal).toBe('SIGTERM');
+      await expectDead(directChildPid, 2_000);
+      await expectDead(probe.grandchildPid!, 2_000);
+      expect(existsSync(probe.HOME)).toBe(false);
+    } finally {
+      if (child.exitCode === null && child.signalCode === null) {
+        try { child.kill('SIGKILL'); } catch { /* already gone */ }
+        await once(child, 'close').catch(() => undefined);
+      }
+    }
+  }, 15_000);
+
+  test('inherited stdout from a detached child still reaches this process', async () => {
+    const directory = makeRoot('monad-deterministic-live-');
+    const probePath = join(directory, 'probe.json');
+    const probeFile = writeProbeTest(directory);
+    const child = startRunner({
+      DETERMINISTIC_RUNNER_PROBE_PATH: probePath,
+      DETERMINISTIC_RUNNER_PROBE_MODE: 'stdout-marker',
+    }, probeFile, ['ignore', 'pipe', 'pipe']);
+    const result = await collect(child);
+    expect(result.code).toBe(0);
+    expect(result.stdout).toContain('DETERMINISTIC_STDOUT_VISIBLE');
+  }, 15_000);
+
+  test('forced temporary-directory cleanup failure is visible with the path', async () => {
+    const testRoot = makeRoot();
+    const messages: string[] = [];
+    await runDeterministicTests({
+      mkdtempSync: () => testRoot,
+      tmpdir: () => tmpdir(),
+      rmSync: () => { throw new Error('EBUSY: resource busy'); },
+      spawn: () => ({ pid: process.pid, exited: Promise.resolve(0), kill: () => true }),
+      waitForSignal: () => new Promise<ShutdownSignal>(() => {}),
+      report: (message) => messages.push(message),
+    });
+    expect(messages.join('\n')).toContain(testRoot);
+    expect(messages.join('\n')).toContain('failed to remove temporary root');
+    expect(messages.join('\n')).toContain('EBUSY: resource busy');
+    expect(existsSync(testRoot)).toBe(true);
+  });
+});

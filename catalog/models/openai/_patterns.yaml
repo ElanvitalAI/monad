@@ -1,0 +1,40 @@
+provider: openai
+prefixes:
+  - prefix: gpt-
+    fallback:
+      provider: openai
+      toolCalling: native-openai
+      streamingProtocol: sse
+      tokenizer: cl100k
+      kind: chat
+  - prefix: o1-
+    fallback:
+      provider: openai
+      toolCalling: native-openai
+      streamingProtocol: sse
+      tokenizer: cl100k
+      kind: chat
+      reasoning: high
+  - prefix: o3-
+    fallback:
+      provider: openai
+      toolCalling: native-openai
+      streamingProtocol: sse
+      tokenizer: cl100k
+      kind: chat
+      reasoning: high
+  - prefix: o4-
+    fallback:
+      provider: openai
+      toolCalling: native-openai
+      streamingProtocol: sse
+      tokenizer: cl100k
+      kind: chat
+      reasoning: high
+  - prefix: codex-
+    fallback:
+      provider: openai
+      toolCalling: native-openai
+      streamingProtocol: sse
+      tokenizer: cl100k
+      kind: chat

@@ -1,0 +1,40 @@
+id: grok-4.7
+provider: grok
+displayName: Grok 4.7
+family: grok-4
+# ⭐ `familyShortcut: grok` — ***`grok` 별칭은 «플래그십 라인»을 뜻한다.***
+#   ⛔ 이것을 안 붙이면 후보가 `family: grok-4` 전체로 넓어지고, 거기엔 «다른 제품»인
+#     `grok-build-0.1`(agentic coding · `grok-code-fast-1` 별칭)이 들어 있는데 «출시일이 없다».
+#     ⇒ `auditFamilyAliasFreshness` 가 「최신을 모른다」(unknown-missing-release-date)를 낸다.
+#   ⇒ 코드 주석의 처방 그대로 «제품»으로 좁힌다 — 4.6 도 이 단축을 갖고 있고, 둘 다 날짜가 있어
+#     최신이 «하나»(4.7)로 정해진다.
+#   🔲 `grok-build-0.1` 의 출시일은 «안 쟀다» — 그 제품에 자기 단축을 줄지는 별개 판이다.
+familyShortcut: grok
+# ⛔ `familyShortcut: grok` 을 «일부러» 안 붙였다 — 그 단축은 `grok-4.5` 가 쥐고 있고
+#    (drift 시험이 `ids.has('grok')` ⊕ 「familyShortcut → grok-4.5」를 함께 판정한다),
+#    옮기는 것은 «별개 결정»이다. 이 파일은 「사다리가 가리키는데 카탈로그에 없다」만 닫는다.
+#
+# 🩸 왜 이제야 생겼나 — `llm-tier-map` 의 grok 사다리가 2026-09-22 에 `grok-4.7` 로 올라갔는데
+#    YAML 레코드가 «안 따라왔다». 그래서 `catalog drift` 가 3칸(better·best·loaded)을
+#    ***missing*** 으로 내고 있었다(내 변경 전부터 빨강).
+#
+# 📏 수치 출처 — `src/intelligence-map/model-catalog.ts` 의 grok-4.7 엔트리(2026-09-22 등재).
+#    ⚠️ ***docs.x.ai 1차 대조는 «안 했다»*** — 그래서 confidence 를 `low` 로 둔다.
+#    ⛔ 4.6 파일처럼 `pricing`·`rateLimits` 를 «채우지 않는다» — 1차 출처를 안 본 값을 적으면
+#       다음 사람이 그것을 「잰 값」으로 읽는다. sparse 레코드가 «정직한» 모양이다.
+contextSize: 500000
+outputMaxTokens: 8192
+reasoning: high
+toolCalling: native-openai
+streamingProtocol: sse
+deprecated: null
+tokenizer: cl100k
+kind: chat
+# 출시일 — 「unknown-missing-release-date」를 «승인 목록에 더하지 않고» 없앤다.
+#   출처: model-catalog.ts — 「2026-09-22 에 4.7 이 나와 4.6 을 강등」
+releaseDate: 2026-09-22
+discoveryMeta:
+  source: manual
+  lastSeen: 2026-09-23
+  autoFilled: false
+  confidence: low

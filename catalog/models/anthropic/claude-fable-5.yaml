@@ -1,0 +1,18 @@
+id: claude-fable-5
+provider: anthropic
+displayName: Claude Fable 5
+family: claude
+# ⭐ 2026-08-18 1차 대조: Anthropic `/v1/models` 실호출 ⊕ claude-api 레퍼런스 표.
+#    최상위 — 가장 어려운 추론·장기 에이전틱 (⚠️ 30일 데이터 보존 필요)
+contextSize: 1000000
+outputMaxTokens: 128000
+vision: images
+audio: { input: false, output: false }
+reasoning: adaptive
+toolCalling: native-anthropic
+streamingProtocol: sse
+# ⭐ Anthropic `/v1/models` 의 created_at 1차 (2026-08-18 조회)
+releaseDate: 2026-06-07
+pricing:
+  inputPerMTok: 10.00
+  outputPerMTok: 50.00

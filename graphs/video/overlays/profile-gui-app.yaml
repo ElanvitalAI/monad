@@ -1,0 +1,27 @@
+# 🖥️ script-film — After Effects · DaVinci Resolve 를 «앱으로» 몬다.
+#
+# ⛔⭐ 이 갈래의 고유 실패는 「틀린 결과」가 아니라 ***「조용히 멈춤」***이다.
+#   📏 실측 2026-09-19: AE 모달 · 리졸브 스크립팅 정지로 «측정 자체»가 두 번 막혔다.
+#   ⇒ 그래서 이 갈래에서는 app-silent → unobserved 간선이 «자주» 불린다.
+#      예산을 올려 두지 않으면 그 정지가 blocked 로 오분류된다.
+#
+# ⭐ aerender 는 자기 인스턴스를 띄워 «열려 있는 AE 세션을 안 건드린다»(2026-09-17 실측).
+#   ⇒ 무인 배치는 aerender 로, Bridge MCP 는 «사람이 열어 둔 장면» 축으로 갈라 쓴다.
+overlay_id: profile-gui-app
+target: video-production
+stage: runtime
+# ⛔ 이름이 아니라 «사실»로: 앱을 «도구 호출로» 몬다 = app-control 이 스택에 있다.
+#   그 갈래의 고유 실패는 「틀린 결과」가 아니라 ***「조용히 멈춤」***이다.
+# ⛔⭐ 조건은 «비교 하나»다 — 엔진의 DSL(`graph-overlay-condition.ts`)이 비교 연산자만 안다.
+#   🩸 실측 2026-09-23: 종전 문면 `selected('app-control')` 은 ***unparseable*** 이었고
+#      얹힌 오버레이가 «0개»였다. 함수 꼴을 지어 쓰면 조용히 아무것도 안 얹힌다.
+#   🔑 ⇒ ***사실은 도구가 계산하고 오버레이는 「그 값과 견준다」***(엔진 자신의 규율: 판정을 «값»으로).
+#      이 키는 `video-pipeline.ts plan --overlay` 가 고른 스택에서 «세어» 넣는다.
+applies_when: selected_app_control >= 1
+patch:
+  - op: replace
+    path: /nodes/7/maxVisits          # compose — 앱이 멈추면 되돌아온다
+    value: 7
+  - op: replace
+    path: /nodes/9/maxVisits          # render — aerender 재시도 여유
+    value: 7

@@ -1,0 +1,28 @@
+{
+  "name": "monad",
+  "short_name": "monad",
+  "description": "monad-agent unified PWA — voice · chat · intake · control · terminal.",
+  "start_url": "/app/chat",
+  "scope": "/app/",
+  "display": "standalone",
+  "background_color": "#0b0f1a",
+  "theme_color": "#0b0f1a",
+  "permissions": ["microphone"],
+  "icons": [],
+  "share_target": {
+    "action": "/app/share/",
+    "method": "POST",
+    "enctype": "multipart/form-data",
+    "params": {
+      "title": "title",
+      "text": "text",
+      "url": "url",
+      "files": [
+        {
+          "name": "files",
+          "accept": ["image/*", "video/*", "application/pdf", "text/plain", ".txt", ".md"]
+        }
+      ]
+    }
+  }
+}

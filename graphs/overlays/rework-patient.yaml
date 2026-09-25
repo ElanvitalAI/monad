@@ -1,0 +1,31 @@
+# ⭐ 이 저장소에서 ***실제로 얹히는 것이 확인된 첫 오버레이***다 (2026-09-09 · 🅢 152차 · `#16559`).
+#   📏 눌러서 확인한 값: attempts=3 → applied=["rework-patient"] · rework 예산이 바뀐다 · rejections 없음
+#                        attempts=2 → applied=[] · 기준 선언 그대로
+#   🔑 앞선 오버레이(`heal-patient`)가 0번 얹힌 이유는 «기계가 없어서»가 아니라
+#      ⑴ target 이 활성이 될 수 없는 `default-loop` 이고 ⑵ 조건 키 `heal_attempts` 를 실행기가 «안 주기» 때문이다.
+#      ⇒ 이 파일은 그 둘을 피한다: target 이 «활성» 템플릿이고, 조건이 실행기가 «실제로 주는» `attempts` 다.
+#
+# ⛔⭐ 승격(`graphAuthority`)이 꺼져 있으면 «아무 일도 안 일어난다» — `applyRuntimeOverlays` 가 먼저 되돌아간다.
+#   🔎 반증: rg -n 'if \(!graphAuthority.enabled\) return' src/self-implement/orchestrator.ts
+#
+# 🚨⛔ **경로 인덱스는 «노드 순서»에 묶인다** — `implement-loop.yaml` 의 순서가 바뀌면 이 파일도 바뀌어야 한다.
+#   ⇒ 고치기 «전»에 이름으로 확인하라:
+#      bun -e "const m=await import('./src/self-implement/graph-templates.ts');const y=await import('./src/self-implement/graph-yaml.ts');\
+#              const b=y.loadGraphTemplates(m.defaultGraphsDir());console.log((b.templates||b.specs)['self-implement'].nodes.map((n,i)=>i+':'+n.nodeId).join(' '))"
+#   (author·plan·decompose 가 앞에 붙은 뒤 인덱스 6 = rework)
+overlay_id: rework-patient
+target: self-implement
+stage: runtime
+
+# ⭐ 「같은 실패를 3라운드째 반복 중」일 때만 얹는다 — ⛔ 「상한을 올려라」가 기본 처방이 아니다.
+#   `attempts` 는 오케스트레이터가 라운드 번호로 준다(`state: { attempts: round }`).
+applies_when: attempts >= 3
+
+patch:
+  - op: replace
+    path: /nodes/6/maxVisits        # rework (⚠️ 위 명령으로 이름 확인)
+    # 📏 근거: 2026-09-09 실측 rework 는 런 52 중 관측 최대 ***8***, 중앙값 2, 선언 10.
+    #    ⇒ 「참을성 있게」는 «두 배»면 충분하다. ⛔ 앞 판의 99 는 사실상 「상한 없음」이라
+    #       예산이라는 개념 자체를 지우므로 쓰지 않는다.
+    #    ⛔ 이 수를 인용하지 말고 `bun scripts/measure-graph-visit-budget-drift.ts` 로 그때 다시 재라.
+    value: 20

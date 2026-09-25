@@ -1,0 +1,26 @@
+# 모델 이름 하드코딩 baseline — 신규/증가만 CI 실패.
+# 옮긴 뒤 `--update` 로 ratchet down 한다. 정본 레지스트리는 스캔에서 제외된다.
+scripts/backend-explore-bench.ts 4
+scripts/bench-report.test.ts 6
+scripts/llm-cost-ledger.test.ts 12
+scripts/measure-decomposer-promotion-ab.ts 1
+scripts/measure-fabric-arc-ab.ts 1
+scripts/qwen-pipeline-bench.ts 3
+scripts/run-mission.ts 6
+scripts/se-backend-bench.ts 1
+scripts/se-mission-expand.ts 1
+scripts/se-monad-self-tune.ts 7
+scripts/webclone/loop/fire-fc1.sh 1
+scripts/webclone/loop/fire-real14-ab.sh 2
+scripts/webclone/loop/fire-real17-ab.sh 2
+scripts/webclone/loop/fire-real18-ab.sh 2
+scripts/webclone/loop/fire-real19-ab.sh 2
+scripts/webclone/loop/fire-real20-ab.sh 2
+scripts/webclone/loop/fire-real21-ab.sh 2
+scripts/webclone/loop/fire-real22-ab.sh 2
+scripts/webclone/loop/fire-real23-ab.sh 2
+scripts/webclone/loop/fire-real24-ab.sh 1
+scripts/webclone/loop/fire-real25-ab.sh 1
+scripts/webclone/loop/fire-st1-ab.sh 2
+scripts/webclone/loop/fire-synth1-ab.sh 2
+scripts/webclone/loop/fire-synth2-ab.sh 2

@@ -1,0 +1,1480 @@
+import { spawn } from 'node:child_process';
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, realpathSync, rmSync, writeFileSync } from 'node:fs';
+import { homedir, tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { describe, expect, test } from 'bun:test';
+import { Command } from 'commander';
+import {
+  DEFAULT_HARNESS_PROCESS_THRESHOLDS,
+  HARNESS_PROCESS_LONG_RUNNING_ELAPSED_SECONDS,
+  HARNESS_PROCESS_RESOURCE_CPU_PERCENT,
+  associateHarnessProcessWorktree,
+  buildHarnessProcessReport,
+  classifyHarnessProcess,
+  defaultLookupHarnessProcessLedger,
+  formatHarnessProcessElapsed,
+  installHarnessCliCommand,
+  observeHarnessLaunchdPids,
+  parseHarnessProcessPsOutput,
+  parseLaunchctlListOutput,
+  parseProcessOwnershipEnv,
+  parsePsEwwOwnershipEnv,
+  readProcessOwnership,
+  renderHarnessProcessLastActivity,
+  renderHarnessProcessReport,
+  resolveHarnessProcessLastActivity,
+  resolveHarnessProcessLaunchdEvidence,
+  resolveHarnessProcessOwnership,
+  resolveHarnessProcessParentStatus,
+  setHarnessAskMarkerInspectorForTesting,
+  setHarnessUnpressedDecisionSignalInspectorForTesting,
+  type HarnessLaunchdPidObservation,
+  type HarnessProcessLedgerLookup,
+  type HarnessProcessListObservation,
+  type HarnessProcessRecord,
+  type HarnessWorktreeListObservation,
+} from './harness-cli-command.js';
+
+const MEASURED_LAUNCHCTL_LIST = [
+  '46480   0     com.monad.nexus',
+  '4421    -15   com.monad.openai-relay',
+  '-       127   com.monad.control',
+].join('\n');
+
+const MEASURED_OWNERSHIP_ENV = [
+  'MONAD_RUN_ID=run-5da31123-1fe3-49b7-a5d0-998740374d3c',
+  'MONAD_ORIGIN_SESSION=7507f456-2b74-4a6a-ad2c-1a09c8851577',
+  'MONAD_STATE_DIR=/Users/example/source/axon/monad-agent/.monad-test',
+].join('\0');
+
+const MEASURED_PS_EWW_ARGV = 'bun bin/monad.mjs --test self implement';
+const MEASURED_PS_EWW = [
+  '  PID   TT  STAT      TIME COMMAND',
+  [
+    '45806   ??  S      0:00.01 bun bin/monad.mjs --test self implement',
+    'PATH=/usr/bin',
+    'MONAD_RUN_ID=run-6ecb1a67-f650-48d9-86f5-88715e91746c',
+    'MONAD_ORIGIN_SESSION=7507f456-2b74-4a6a-ad2c-1a09c8851577',
+    'MONAD_STATE_DIR=/Users/example/source/axon/monad-agent/.monad-test',
+    'HOME=/tmp',
+  ].join(' '),
+].join('\n');
+
+const MEASURED_PS_EWW_OWNERSHIP = {
+  status: 'observed' as const,
+  runId: 'run-6ecb1a67-f650-48d9-86f5-88715e91746c',
+  originSession: '7507f456-2b74-4a6a-ad2c-1a09c8851577',
+  stateDir: '/Users/example/source/axon/monad-agent/.monad-test',
+};
+
+describe('harness CLI command', () => {
+  function install(
+    ask?: Parameters<typeof installHarnessCliCommand>[1]['ask'],
+    say?: Parameters<typeof installHarnessCliCommand>[1]['say'],
+    plan?: Parameters<typeof installHarnessCliCommand>[1]['plan'],
+    processObservation?: Parameters<typeof installHarnessCliCommand>[1]['processObservation'],
+    mission?: Parameters<typeof installHarnessCliCommand>[1]['mission'],
+    missionLoop?: Parameters<typeof installHarnessCliCommand>[1]['missionLoop'],
+  ) {
+    const program = new Command().exitOverride();
+    const harness = installHarnessCliCommand(program, {
+      registerSink: async () => {},
+      resolveSurface: async () => 'harness',
+      ask,
+      say,
+      plan,
+      processObservation,
+      mission,
+      missionLoop,
+    });
+    return { program, harness };
+  }
+
+  async function captureLog(run: () => Promise<unknown>): Promise<string[]> {
+    const lines: string[] = [];
+    const original = console.log;
+    console.log = (...args: unknown[]) => { lines.push(args.map(String).join(' ')); };
+    try {
+      await run();
+    } finally {
+      console.log = original;
+    }
+    return lines;
+  }
+
+  async function captureError(run: () => Promise<unknown>): Promise<string[]> {
+    const lines: string[] = [];
+    const original = console.error;
+    console.error = (...args: unknown[]) => { lines.push(args.map(String).join(' ')); };
+    try {
+      await run();
+    } finally {
+      console.error = original;
+    }
+    return lines;
+  }
+
+  function processFixture(
+    overrides: Partial<HarnessProcessRecord> & Pick<HarnessProcessRecord, 'pid'>,
+  ): HarnessProcessRecord {
+    return {
+      ppid: 1,
+      cpuPercent: 0.1,
+      elapsedSeconds: 12,
+      command: 'bun bin/monad.mjs --test harness processes',
+      ownership: { status: 'observed' },
+      ...overrides,
+    };
+  }
+
+  async function runProcesses(
+    records: HarnessProcessListObservation | readonly HarnessProcessRecord[],
+    worktrees: HarnessWorktreeListObservation | readonly string[] = [],
+    launchd: HarnessLaunchdPidObservation = {
+      status: 'failed',
+      reason: 'launchctl not invoked in test',
+    },
+    lookupLedger: HarnessProcessLedgerLookup = () => null,
+    nowMs?: number,
+  ): Promise<string[]> {
+    const { program } = install(undefined, undefined, undefined, {
+      listProcesses: () => records,
+      listWorktrees: () => worktrees,
+      observeLaunchdPids: () => launchd,
+      lookupLedger,
+      ...(nowMs === undefined ? {} : { nowMs }),
+    });
+    return captureLog(() => program.parseAsync(['node', 'monad', 'harness', 'processes']));
+  }
+
+  test('parses --graph through the shared registry and passes it to ask', async () => {
+    const received: unknown[] = [];
+    const { program } = install(async (_goalPath, options) => { received.push(options); });
+    await program.parseAsync(['node', 'monad', 'harness', 'ask', '/tmp/goal.md', '--graph', 'on']);
+    await program.parseAsync(['node', 'monad', 'harness', 'ask', '/tmp/goal.md', '--graph', 'off']);
+    expect(received).toEqual([
+      { graph: true, supervise: true, supervisorSource: 'default' },
+      { graph: false, supervise: true, supervisorSource: 'default' },
+    ]);
+    await expect(program.parseAsync(['node', 'monad', 'harness', 'ask', '/tmp/goal.md', '--graph', 'invalid']))
+      .rejects.toThrow('--graph 값은 on 또는 off여야 함: invalid');
+  });
+
+  test('exposes and forwards force-preflight only when ask or say explicitly requests it', async () => {
+    const received: unknown[] = [];
+    const { program, harness } = install(
+      async (goalPath, options) => { received.push(['ask', goalPath, options]); },
+      async (words, options) => { received.push(['say', words, options]); },
+    );
+    for (const name of ['ask', 'say'] as const) {
+      const options = harness.commands.find((command) => command.name() === name)!.options;
+      const longs = options.map((option) => option.long);
+      expect(longs).toContain('--force-preflight');
+      expect(options.find((option) => option.long === '--force-preflight')?.description)
+        .toBe('전제 검사 막힘을 명시 요청으로 우회(관측에 남음)');
+      expect(longs).not.toContain('--no-launch-decomposition');
+    }
+
+    await program.parseAsync(['node', 'monad', 'harness', 'ask', '/tmp/goal.md']);
+    await program.parseAsync(['node', 'monad', 'harness', 'say', 'write', 'goal']);
+    await program.parseAsync(['node', 'monad', 'harness', 'ask', '/tmp/goal.md', '--force-preflight']);
+    await program.parseAsync(['node', 'monad', 'harness', 'say', 'write', 'goal', '--force-preflight']);
+
+    expect(received).toEqual([
+      ['ask', '/tmp/goal.md', { supervise: true, supervisorSource: 'default' }],
+      ['say', ['write', 'goal'], { supervise: true, supervisorSource: 'default' }],
+      ['ask', '/tmp/goal.md', { forcePreflight: true, supervise: true, supervisorSource: 'default' }],
+      ['say', ['write', 'goal'], { forcePreflight: true, supervise: true, supervisorSource: 'default' }],
+    ]);
+  });
+
+  test('ask and say expose and forward --target without exposing it to plan', async () => {
+    const received: unknown[] = [];
+    const { program, harness } = install(
+      async (goalPath, options) => { received.push(['ask', goalPath, options]); },
+      async (words, options) => { received.push(['say', words, options]); },
+    );
+    for (const name of ['ask', 'say'] as const) {
+      expect(harness.commands.find((command) => command.name() === name)!.options.map((option) => option.long)).toContain('--target');
+    }
+    expect(harness.commands.find((command) => command.name() === 'plan')!.options.map((option) => option.long)).not.toContain('--target');
+
+    await program.parseAsync(['node', 'monad', 'harness', 'ask', '/tmp/goal.md', '--target', '/tmp/repo']);
+    await program.parseAsync(['node', 'monad', 'harness', 'say', 'write', 'goal', '--target', '/tmp/dir']);
+    await program.parseAsync(['node', 'monad', 'harness', 'ask', '/tmp/no-target.md']);
+
+    expect(received).toEqual([
+      ['ask', '/tmp/goal.md', { target: '/tmp/repo', supervise: true, supervisorSource: 'default' }],
+      ['say', ['write', 'goal'], { target: '/tmp/dir', supervise: true, supervisorSource: 'default' }],
+      ['ask', '/tmp/no-target.md', { supervise: true, supervisorSource: 'default' }],
+    ]);
+  });
+
+  test('ask and say expose and forward opaque --correlation without exposing it to plan or mission', async () => {
+    const received: unknown[] = [];
+    const { program, harness } = install(
+      async (goalPath, options) => { received.push(['ask', goalPath, options]); },
+      async (words, options) => { received.push(['say', words, options]); },
+      undefined,
+      undefined,
+      async () => {},
+    );
+    for (const name of ['ask', 'say'] as const) {
+      const command = harness.commands.find((candidate) => candidate.name() === name)!;
+      expect(command.options.map((option) => option.long)).toContain('--correlation');
+      expect(command.helpInformation()).toContain('--correlation <id>');
+    }
+    expect(harness.commands.find((command) => command.name() === 'plan')!.options.map((option) => option.long)).not.toContain('--correlation');
+    expect(harness.commands.find((command) => command.name() === 'mission')!.options.map((option) => option.long)).not.toContain('--correlation');
+
+    await program.parseAsync(['node', 'monad', 'harness', 'ask', '/tmp/goal.md', '--correlation', 'request/run:opaque']);
+    await program.parseAsync(['node', 'monad', 'harness', 'say', 'write', 'goal', '--correlation', 'say-correlation']);
+    await program.parseAsync(['node', 'monad', 'harness', 'ask', '/tmp/no-correlation.md']);
+
+    expect(received).toEqual([
+      ['ask', '/tmp/goal.md', { correlation: 'request/run:opaque', supervise: true, supervisorSource: 'default' }],
+      ['say', ['write', 'goal'], { correlation: 'say-correlation', supervise: true, supervisorSource: 'default' }],
+      ['ask', '/tmp/no-correlation.md', { supervise: true, supervisorSource: 'default' }],
+    ]);
+  });
+
+  test('ask and say expose and forward canonical --goal-type while invalid values fail before dry-run', async () => {
+    const received: unknown[] = [];
+    const { program, harness } = install(
+      async (goalPath, options) => { received.push(['ask', goalPath, options]); },
+      async (words, options) => { received.push(['say', words, options]); },
+    );
+    for (const name of ['ask', 'say'] as const) {
+      expect(harness.commands.find((command) => command.name() === name)!.options.map((option) => option.long)).toContain('--goal-type');
+    }
+    await program.parseAsync(['node', 'monad', 'harness', 'ask', '/tmp/goal.md', '--goal-type', 'research']);
+    await program.parseAsync(['node', 'monad', 'harness', 'say', 'write', 'goal', '--goal-type', 'document']);
+    expect(received).toEqual([
+      ['ask', '/tmp/goal.md', { goalType: 'research', supervise: true, supervisorSource: 'default' }],
+      ['say', ['write', 'goal'], { goalType: 'document', supervise: true, supervisorSource: 'default' }],
+    ]);
+    await expect(program.parseAsync(['node', 'monad', 'harness', 'ask', '/tmp/goal.md', '--goal-type', 'nonsense', '--dry-run']))
+      .rejects.toThrow(/implement.*research.*document.*operate/);
+  });
+
+  test('ask dry-run displays the requested graph authority without dispatching', async () => {
+    const received: unknown[] = [];
+    const { program } = install(async (_goalPath, options) => { received.push(options); });
+    const lines = await captureLog(() => program.parseAsync([
+      'node', 'monad', 'harness', 'ask', '/tmp/goal.md', '--graph', 'on', '--dry-run',
+    ]));
+    expect(received).toEqual([]);
+    expect(lines).toContain('[dry-run] graph authority: on');
+  });
+
+  test('registers the RFC-only plan entrance while retaining ask/say handlers', async () => {
+    const received: unknown[] = [];
+    const { program, harness } = install(
+      async (goalPath, options) => { received.push(['ask', goalPath, options]); },
+      async (words, options) => { received.push(['say', words, options]); },
+    );
+    const plan = harness.commands.find((command) => command.name() === 'plan')!;
+    expect(harness.commands.map((command) => command.name())).toEqual(
+      expect.arrayContaining(['ask', 'say', 'plan', 'processes']),
+    );
+    expect(plan.helpInformation()).toContain('harness plan [options] <sentence...>');
+    expect(plan.helpInformation()).toContain('RFC를 쓰고 실행하지 않는다');
+
+    await program.parseAsync(['node', 'monad', 'harness', 'ask', '/tmp/goal.md']);
+    await program.parseAsync(['node', 'monad', 'harness', 'say', 'write', 'goal']);
+    expect(received).toEqual([
+      ['ask', '/tmp/goal.md', { supervise: true, supervisorSource: 'default' }],
+      ['say', ['write', 'goal'], { supervise: true, supervisorSource: 'default' }],
+    ]);
+
+    // ⓐ 주입 경로 — «옵션이 어떤 모양으로 넘어가나»만 잰다.
+    //   ⛔⭐ 이 시험은 「RFC 가 실제로 쓰이나」를 «못 답한다» — 주입된 콜백이 스스로 파일을 만들기 때문이다
+    //     (무인 리뷰가 이것을 GOODHART 로 잡았다). 그 질문은 아래 ⓑ 가 «주입 없이» 답한다.
+    const planCalls: unknown[] = [];
+    const { program: planProgram } = install(undefined, undefined, async (sentence, options) => {
+      planCalls.push([sentence, options]);
+    });
+    await planProgram.parseAsync(['node', 'monad', 'harness', 'plan', 'write', 'RFC', 'only']);
+    // ⭐ 형제 문(ask·say)과 «같은» 정규화 모양이어야 한다(위 기대를 보라) ⊕ plan 만 dryRun 을 더 싣는다.
+    expect(planCalls).toEqual([[['write', 'RFC', 'only'], {
+      dryRun: false,
+      supervise: true,
+      supervisorSource: 'default',
+    }]]);
+  });
+
+  test('CLI 기본 분기 — plan 주입이 «없으면» runHarnessPlanRfc 로 «간다» (배선)', async () => {
+    // ⛔⭐ 이것이 GOODHART 를 막는 시험이다 — 주입된 `plan` 콜백이 스스로 파일을 만들면
+    //   그 시험은 「배선」을 못 답한다(무인 리뷰 1차 지적). 여기서는 `plan` 을 «안 주고»
+    //   기본 분기가 가는 자리(`planRfc`)를 잡아 «무엇이 어떤 인자로 불렸나»를 잰다.
+    const rfcCalls: unknown[] = [];
+    const program = new Command();
+    installHarnessCliCommand(program, {
+      registerSink: async () => {},
+      resolveSurface: async () => 'harness',
+      ask: async () => {},
+      say: async () => {},
+      // ⛔ plan 은 «주지 않는다» — 그것이 이 시험의 요지다
+      planRfc: (async (goal: string, options?: { dryRun?: boolean }) => {
+        rfcCalls.push([goal, options]);
+        return { path: 'docs/RFC-x-2026-09-04.md', markdown: '', openQuestions: [], dryRun: options?.dryRun === true };
+      }) as never,
+    });
+    await program.parseAsync(['node', 'monad', 'harness', 'plan', 'write', 'RFC', 'only', '--dry-run']);
+    expect(rfcCalls).toEqual([['write RFC only', { dryRun: true }]]);
+  });
+
+  test('주입이 «없으면» plan 문이 실제 RFC 저작 경로로 간다 (배선)', async () => {
+    // ⛔⭐ 위 ⓐ 가 못 답하는 것을 여기서 답한다 — ***주입 없이*** 실제 배선을 탄다.
+    //   저작기(LLM)는 심으로 갈아 끼우되, 「어느 함수가 불렸나 · 어디에 쓰이나」는 «진짜»를 잰다.
+    const repo = mkdtempSync(join(tmpdir(), 'harness-plan-wiring-'));
+    mkdirSync(join(repo, 'docs'));
+    const previousCwd = process.cwd();
+    process.chdir(repo);
+    try {
+      const { runHarnessPlanRfc } = await import('./harness-plan-rfc.js');
+      const authored = {
+        markdown: '# Authored RFC\n',
+        title: 'x',
+        arcs: [] as never[],
+        openQuestions: [] as string[],
+      };
+      // 쓰는 판 — 실제로 파일이 생겨야 한다
+      const wrote = await runHarnessPlanRfc('write RFC only', {}, {
+        author: async () => authored,
+        resolve: async () => '',
+        now: () => new Date('2026-09-04T00:00:00Z'),
+        rootDir: repo,
+        print: () => {},
+        env: { MONAD_HARNESS_SPACE_ID: '' },
+      });
+      expect(wrote.dryRun).toBe(false);
+      expect(wrote.path.startsWith('docs/RFC-')).toBe(true);
+      expect(existsSync(join(repo, wrote.path))).toBe(true);
+      expect(readFileSync(join(repo, wrote.path), 'utf8')).toBe('# Authored RFC\n');
+
+      // ⭐ dry-run 판 — «이미 있는데도» 죽지 않고, 아무것도 «안 쓴다»
+      const before = readFileSync(join(repo, wrote.path), 'utf8');
+      const preview = await runHarnessPlanRfc('write RFC only', { dryRun: true }, {
+        author: async () => ({ ...authored, markdown: '# CHANGED\n' }),
+        resolve: async () => '',
+        now: () => new Date('2026-09-04T00:00:00Z'),
+        rootDir: repo,
+        print: () => {},
+        env: { MONAD_HARNESS_SPACE_ID: '' },
+      });
+      expect(preview.dryRun).toBe(true);
+      expect(preview.path).toBe(wrote.path);
+      expect(readFileSync(join(repo, wrote.path), 'utf8')).toBe(before);
+    } finally {
+      process.chdir(previousCwd);
+      rmSync(repo, { recursive: true, force: true });
+    }
+  });
+
+  test('registers mission only when injected and forwards its id with an explicit executor', async () => {
+    expect(install().harness.commands.map((command) => command.name())).not.toContain('mission');
+
+    const received: unknown[] = [];
+    const { program, harness } = install(undefined, undefined, undefined, undefined, async (missionId, opts) => {
+      received.push([missionId, opts]);
+    });
+
+    expect(harness.commands.map((command) => command.name())).toContain('mission');
+    await program.parseAsync(['node', 'monad', 'harness', 'mission', 'apm-default']);
+    await program.parseAsync(['node', 'monad', 'harness', 'mission', 'apm-self', '--executor', 'self-implement']);
+
+    expect(received).toEqual([
+      ['apm-default', {}],
+      ['apm-self', { executor: 'self-implement' }],
+    ]);
+  });
+
+  test('rejects retired staged executor while retaining the self-implement choice', async () => {
+    const { program, harness } = install(undefined, undefined, undefined, undefined, async () => {});
+    const mission = harness.commands.find((command) => command.name() === 'mission')!;
+    expect(mission.helpInformation()).toContain('self-implement');
+    expect(mission.helpInformation()).not.toContain('staged');
+    await expect(program.parseAsync(['node', 'monad', 'harness', 'mission', 'apm-staged', '--executor', 'staged'])).rejects.toThrow(/staged/);
+  });
+
+  test('multiple mission IDs use the loop, render every outcome, and preserve the single-ID handler', async () => {
+    const single: unknown[] = [];
+    const loops: unknown[] = [];
+    const { program } = install(
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      async (...args) => { single.push(args); },
+      async (missionIds, opts) => {
+        loops.push([missionIds, opts]);
+        return [
+          { missionId: 'apm-solved', status: 'solved', terminal: 'deployed' },
+          { missionId: 'apm-gone', status: 'not-found', detail: '미션 미존재' },
+          { missionId: 'apm-refused', status: 'refused', detail: 'not coding' },
+          { missionId: 'apm-error', status: 'error', detail: 'boom' },
+        ];
+      },
+    );
+
+    await program.parseAsync(['node', 'monad', 'harness', 'mission', 'apm-single']);
+    const lines = await captureLog(() => program.parseAsync([
+      'node', 'monad', 'harness', 'mission', 'apm-solved', 'apm-gone', 'apm-refused', 'apm-error', '--executor', 'self-implement',
+    ]));
+
+    expect(single).toEqual([['apm-single', {}]]);
+    expect(loops).toEqual([[[
+      'apm-solved', 'apm-gone', 'apm-refused', 'apm-error',
+    ], { executor: 'self-implement' }]]);
+    expect(lines).toEqual([
+      "🧩 미션 'apm-solved' — solved: deployed",
+      "🧩 미션 'apm-gone' — not-found: 미션 미존재",
+      "🧩 미션 'apm-refused' — refused: not coding",
+      "🧩 미션 'apm-error' — error: boom",
+    ]);
+  });
+
+  test('multi-mission dry-run lists every planned launch without calling the loop', async () => {
+    const loops: unknown[] = [];
+    const { program } = install(
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      async () => {},
+      async (...args) => { loops.push(args); return []; },
+    );
+
+    const lines = await captureLog(() => program.parseAsync([
+      'node', 'monad', 'harness', 'mission', 'apm-one', 'apm-two', '--dry-run',
+    ]));
+
+    expect(loops).toEqual([]);
+    expect(lines).toEqual([
+      '[dry-run] 입력: apm-one apm-two',
+      '[dry-run] 입구: cli-harness-mission',
+      '[dry-run] 시작 예정: 기존 미션 apm-one, apm-two read · 순차 하니스 실행기',
+      '[dry-run] 전제 검사: ask 마커만 돌렸다 · 원격 조회(열린 PR·런 원장)는 돌리지 않음',
+      '[dry-run] ask 마커 — 골 문서가 아직 없다 (⛔ 「경고 없음」이 아니다)',
+    ]);
+  });
+
+  test('ask dry-run renders marker warnings without dispatching', async () => {
+    const goalPath = join(tmpdir(), `harness-dry-run-warning-${crypto.randomUUID()}.md`);
+    writeFileSync(goalPath, '# Goal\n');
+    try {
+      const calls: unknown[] = [];
+      const { program } = install(async (...args) => { calls.push(args); });
+      const lines = await captureLog(() => program.parseAsync(['node', 'monad', 'harness', 'ask', goalPath, '--dry-run']));
+      expect(calls).toEqual([]);
+      expect(lines).toContain('[dry-run] 전제 검사: ask 마커만 돌렸다 · 원격 조회(열린 PR·런 원장)는 돌리지 않음');
+      expect(lines).toContain('[dry-run] ⚠️ ask 마커 — ❌ 불변식 — 마커가 «없다» (제목형 "## 불변식" 은 마커가 아니다 ⇒ "불변식: <문장>" 줄로 쓴다)');
+    } finally {
+      rmSync(goalPath, { force: true });
+    }
+  });
+
+  test('ask dry-run reports an unreadable goal document distinctly without dispatching', async () => {
+    const goalPath = join(tmpdir(), `harness-dry-run-missing-${crypto.randomUUID()}.md`);
+    const calls: unknown[] = [];
+    const { program } = install(async (...args) => { calls.push(args); });
+
+    const lines = await captureLog(() => program.parseAsync(['node', 'monad', 'harness', 'ask', goalPath, '--dry-run']));
+
+    expect(calls).toEqual([]);
+    expect(lines.some((line) => line.startsWith('[dry-run] ⚠️ ask 마커 — 골 문서 판독 실패: ENOENT: no such file or directory, open '))).toBe(true);
+    expect(lines).toContain('[dry-run] 골 종류·템플릿: 읽지 못함 · 미상');
+  });
+
+  test('ask dry-run reports clean markers from a real inspectable goal and inspection failures distinctly', async () => {
+    const goalPath = join(tmpdir(), `harness-dry-run-inspection-${crypto.randomUUID()}.md`);
+    writeFileSync(goalPath, `대상 경로: scripts/ask-marker-check.ts
+
+불변식: scripts/ask-marker-check.ts 를 계속 쓴다.
+경계: 다른 스크립트는 대상이 아니다.
+판정 신호: 조건 = 검사기가 export를 센다; 관측 = rg -c 'export function inspectAskMarkers' scripts/ask-marker-check.ts; 기대 = 1 이상.
+`);
+    try {
+      const clean = await captureLog(() => install(async () => {}).program.parseAsync(['node', 'monad', 'harness', 'ask', goalPath, '--dry-run']));
+      expect(clean).toContain('[dry-run] ✅ ask 마커 — 경고 없음');
+      expect(clean.filter((line) => line.includes('⚠️ ask 마커') || line.includes('❌ ask 마커'))).toEqual([]);
+
+      setHarnessAskMarkerInspectorForTesting(() => { throw new Error('inspection broke'); });
+      const failed = await captureLog(() => install(async () => {}).program.parseAsync(['node', 'monad', 'harness', 'ask', goalPath, '--dry-run']));
+      expect(failed).toContain('[dry-run] ⚠️ ask 마커 — 검사 실패: inspection broke');
+    } finally {
+      setHarnessAskMarkerInspectorForTesting(undefined);
+      rmSync(goalPath, { force: true });
+    }
+  });
+
+  test('ask dry-run renders real unpressed-decision-signal warnings without dispatching', async () => {
+    const goalPath = join(tmpdir(), `harness-dry-run-unpressed-${crypto.randomUUID()}.md`);
+    writeFileSync(goalPath, `대상 경로: src/harness/harness-cli-command.ts
+
+불변식: src/harness/harness-cli-command.ts 를 계속 쓴다.
+경계: src/self-dev/launch-preflight.ts 는 이 골에서 바꾸지 않는다.
+판정 신호: 조건 = 경로; 관측 = bun test src/harness/harness-cli-command.test.ts; 기대 = 경고
+판정 신호: 조건 = 기판; 관측 = 그 기판으로 자식을 하나 돌려 main-tree-reject 0 을 보여라; 기대 = 0
+`);
+    try {
+      const calls: unknown[] = [];
+      const { program } = install(async (...args) => { calls.push(args); });
+      const lines = await captureLog(() => program.parseAsync(['node', 'monad', 'harness', 'ask', goalPath, '--dry-run']));
+      expect(calls).toEqual([]);
+      expect(lines).toContain('[dry-run] 전제 검사: ask 마커만 돌렸다 · 원격 조회(열린 PR·런 원장)는 돌리지 않음');
+      expect(lines.some((line) => line.includes('안 눌릴 신호'))).toBe(true);
+      expect(lines.some((line) => line.startsWith('[dry-run] ⚠️ ask 마커 — ') && line.includes('안 눌릴 신호'))).toBe(true);
+    } finally {
+      rmSync(goalPath, { force: true });
+    }
+  });
+
+  test('ask dry-run reports unpressed-signal inspection failure without swallowing remaining dry-run output', async () => {
+    const goalPath = join(tmpdir(), `harness-dry-run-unpressed-fail-${crypto.randomUUID()}.md`);
+    writeFileSync(goalPath, `대상 경로: src/harness/harness-cli-command.ts
+
+불변식: src/harness/harness-cli-command.ts 를 계속 쓴다.
+경계: src/self-dev/launch-preflight.ts 는 이 골에서 바꾸지 않는다.
+판정 신호: 조건 = 산문; 관측 = 산문으로만 적었다; 기대 = 문면을 유지한다
+`);
+    try {
+      setHarnessUnpressedDecisionSignalInspectorForTesting(() => {
+        throw new Error('first line\nsecond line');
+      });
+      const calls: unknown[] = [];
+      const { program } = install(async (...args) => { calls.push(args); });
+      const lines = await captureLog(() => program.parseAsync(['node', 'monad', 'harness', 'ask', goalPath, '--dry-run']));
+      expect(calls).toEqual([]);
+      expect(lines).toContain('[dry-run] 입력: ' + goalPath);
+      expect(lines).toContain('[dry-run] 입구: cli-harness-ask');
+      expect(lines).toContain('[dry-run] 시작 예정: 워크트리 · 브랜치 · 자식 · 파이프라인');
+      expect(lines).toContain('[dry-run] 전제 검사: ask 마커만 돌렸다 · 원격 조회(열린 PR·런 원장)는 돌리지 않음');
+      expect(lines).toContain('[dry-run] ⚠️ ask 마커 — ⚠️ ask 마커 — 안 눌릴 신호 검사 실패: first line');
+      expect(lines.some((line) => line.includes('second line'))).toBe(false);
+      expect(lines.some((line) => line.includes('✅ ask 마커 — 경고 없음'))).toBe(false);
+      expect(lines.some((line) => line.startsWith('[dry-run] 골 종류·템플릿:'))).toBe(true);
+    } finally {
+      setHarnessUnpressedDecisionSignalInspectorForTesting(undefined);
+      rmSync(goalPath, { force: true });
+    }
+  });
+
+  test('ask dry-run injected inspector remains exclusive of unpressed-signal inspection', async () => {
+    const goalPath = join(tmpdir(), `harness-dry-run-injected-exclusive-${crypto.randomUUID()}.md`);
+    writeFileSync(goalPath, `대상 경로: src/harness/harness-cli-command.ts
+
+불변식: src/harness/harness-cli-command.ts 를 계속 쓴다.
+경계: src/self-dev/launch-preflight.ts 는 이 골에서 바꾸지 않는다.
+판정 신호: 조건 = 기판; 관측 = 그 기판으로 자식을 하나 돌려 main-tree-reject 0 을 보여라; 기대 = 0
+`);
+    try {
+      setHarnessAskMarkerInspectorForTesting(() => ['⚠️ injected-only']);
+      setHarnessUnpressedDecisionSignalInspectorForTesting(() => {
+        throw new Error('must not run');
+      });
+      const calls: unknown[] = [];
+      const { program } = install(async (...args) => { calls.push(args); });
+      const lines = await captureLog(() => program.parseAsync(['node', 'monad', 'harness', 'ask', goalPath, '--dry-run']));
+      expect(calls).toEqual([]);
+      expect(lines).toContain('[dry-run] ⚠️ ask 마커 — ⚠️ injected-only');
+      expect(lines.filter((line) => line.includes('⚠️ ask 마커'))).toEqual([
+        '[dry-run] ⚠️ ask 마커 — ⚠️ injected-only',
+      ]);
+      expect(lines.some((line) => line.includes('안 눌릴 신호'))).toBe(false);
+      expect(lines.some((line) => line.includes('검사 실패'))).toBe(false);
+      expect(lines.some((line) => line.includes('must not run'))).toBe(false);
+    } finally {
+      setHarnessAskMarkerInspectorForTesting(undefined);
+      setHarnessUnpressedDecisionSignalInspectorForTesting(undefined);
+      rmSync(goalPath, { force: true });
+    }
+  });
+
+  test('mission dry-run prints the launch plan and does not call its injected handler', async () => {
+    const calls: unknown[] = [];
+    const { program } = install(undefined, undefined, undefined, undefined, async (...args) => { calls.push(args); });
+
+    const lines = await captureLog(() => program.parseAsync([
+      'node', 'monad', 'harness', 'mission', 'apm-dry-run', '--dry-run',
+    ]));
+
+    expect(calls).toEqual([]);
+    expect(lines).toEqual([
+      '[dry-run] 입력: apm-dry-run',
+      '[dry-run] 입구: cli-harness-mission',
+      '[dry-run] 시작 예정: 기존 미션 read · 워크트리 · 하니스 실행기',
+      '[dry-run] 전제 검사: ask 마커만 돌렸다 · 원격 조회(열린 PR·런 원장)는 돌리지 않음',
+      '[dry-run] ask 마커 — 골 문서가 아직 없다 (⛔ 「경고 없음」이 아니다)',
+    ]);
+  });
+
+
+  // ⛔⭐⭐ 🩸 2026-09-12 — ***등록은 됐는데 «전달»이 «안» 됐다.***
+  //    `--child-llm-effort` 를 옵션으로 «달았고» 판정 함수도 맞았는데,
+  //    `normalizeHarnessAskSayOptions` 가 그 칸을 «안 실어서» 조용히 사라졌다.
+  //    🔑 실물에서 잡은 방법 = ***해석 줄에 `effort=` 가 «안 찍혔다»***.
+  //    ⛔ 그래서 이 시험은 「옵션이 있나」가 «아니라» ***「그 값이 «건너편»에 닿나」***를 문다.
+  test('🩸 say 가 --child-llm-effort 를 «실어 보낸다» (등록 ≠ 전달)', async () => {
+    // ⛔ `let … | null` 로 두면 TS 가 «null 로 좁혀» 캐스트를 막는다 — 배열로 담는다(기존 시험 방식).
+    const seen: Record<string, unknown>[] = [];
+    const { program } = install(undefined, async (_text: unknown, opts: unknown) => {
+      seen.push(opts as Record<string, unknown>);
+    });
+    await program.parseAsync([
+      'node', 'x', 'harness', 'say', '문장',
+      '--child-llm-provider', 'openai-codex',
+      '--child-llm-model', 'gpt-6-astra',
+      '--child-llm-effort', 'xhigh',
+      // ⛔ `--dry-run` 을 «주지 않는다» — 그 플래그는 콜백 «전»에 조기 반환한다(그래서 못 잡는다).
+    ]);
+    expect(seen).toHaveLength(1);
+    expect(seen[0]!.childLlmEffort).toBe('xhigh');   // ⛔ 이 단언이 그 결함의 «전부»다
+    expect(seen[0]!.childLlmModel).toBe('gpt-6-astra');
+  });
+
+  // ⛔ 이 자는 던지지 «않는다» — `runInjectedHarnessHandler` 가 잡아 stderr ⊕ exitCode=1 로 낸다.
+  //    그래서 기존 `--child-llm-model` 시험과 «같은 방식»으로 단언한다.
+  test('⛔ 상한을 넘는 effort 는 «발사 전에» 거부되고 «두 값을 다» 말한다', async () => {
+    const called: unknown[] = [];
+    const { program } = install(undefined, async (...a: unknown[]) => { called.push(a); });
+    const previousExit = process.exitCode;
+    try {
+      const err = await captureError(() => program.parseAsync([
+        'node', 'monad', 'harness', 'say', '문장',
+        // 🩸 2026-09-23 실측으로 codex 모델 상한이 전부 `max` 가 됐다(`model-catalog.ts`) — 초과 예는 상한이 낮은 모델로 잰다.
+        '--child-llm-provider', 'anthropic',
+        '--child-llm-model', 'claude-haiku-4-5',
+        '--child-llm-effort', 'high',
+      ]));
+      expect(called).toEqual([]);                       // ⛔ 자식이 «안» 떴다
+      expect(err.join('\n')).toContain('high');
+      expect(err.join('\n')).toContain('claude-haiku-4-5');
+      expect(err.join('\n')).toContain('low');          // 상한
+      expect(process.exitCode).toBe(1);
+    } finally {
+      process.exitCode = previousExit ?? 0;
+    }
+  });
+
+  test('⛔ provider 없이 effort 만 오면 «조용히 무시하지 않는다»', async () => {
+    const called: unknown[] = [];
+    const { program } = install(undefined, async (...a: unknown[]) => { called.push(a); });
+    const previousExit = process.exitCode;
+    try {
+      const err = await captureError(() => program.parseAsync([
+        'node', 'monad', 'harness', 'say', '문장', '--child-llm-effort', 'high',
+      ]));
+      expect(called).toEqual([]);
+      expect(err.join('\n')).toContain('--child-llm-provider 필요');
+      expect(process.exitCode).toBe(1);
+    } finally {
+      process.exitCode = previousExit ?? 0;
+    }
+  });
+
+  test('ask and say expose child LLM flags while plan exposes repeatable role LLM flags', async () => {
+    const { harness, program } = install(async () => {}, async () => {}, async () => {});
+    for (const name of ['ask', 'say'] as const) {
+      const longs = harness.commands.find((command) => command.name() === name)!.options.map((option) => option.long);
+      expect(longs).toEqual(expect.arrayContaining([
+        '--json',
+        '--base',
+        '--no-auto-merge',
+        '--observe-only',
+        '--no-supervise',
+        '--dry-run',
+        '--child-llm-provider',
+        '--child-llm-model',
+      ]));
+      expect(longs).not.toContain('--role-llm');
+    }
+
+    const planLongs = harness.commands.find((command) => command.name() === 'plan')!.options.map((option) => option.long);
+    expect(planLongs).toEqual(expect.arrayContaining([
+      '--json',
+      '--base',
+      '--no-auto-merge',
+      '--observe-only',
+      '--no-supervise',
+      '--dry-run',
+      '--role-llm',
+    ]));
+    expect(planLongs).not.toContain('--child-llm-provider');
+    expect(planLongs).not.toContain('--child-llm-model');
+
+    try {
+      await expect(program.parseAsync([
+        'node', 'monad', 'harness', 'ask', '--role-llm', 'implement=grok', '/tmp/goal.md',
+      ])).rejects.toThrow(/unknown option '--role-llm'/);
+      await expect(program.parseAsync([
+        'node', 'monad', 'harness', 'plan', '--child-llm-provider', 'grok', 'write', 'plan',
+      ])).rejects.toThrow(/unknown option '--child-llm-provider'/);
+    } finally {
+      process.exitCode = 0;
+    }
+  });
+
+  test('unknown --child-llm-model dies before ask/say handlers and names the value plus candidates', async () => {
+    const received: unknown[] = [];
+    const { program } = install(
+      async (...args) => { received.push(['ask', ...args]); },
+      async (...args) => { received.push(['say', ...args]); },
+    );
+    const previousExit = process.exitCode;
+    try {
+      const askErr = await captureError(() => program.parseAsync([
+        'node', 'monad', 'harness', 'ask',
+        '--child-llm-provider', 'grok', '--child-llm-model', 'not-a-real-model',
+        '/tmp/goal.md',
+      ]));
+      expect(received).toEqual([]);
+      expect(askErr.join('\n')).toMatch(/--child-llm-model 알 수 없음: not-a-real-model/);
+      expect(askErr.join('\n')).toContain('grok-4.6');
+      expect(process.exitCode).toBe(1);
+
+      process.exitCode = 0;
+      const sayErr = await captureError(() => program.parseAsync([
+        'node', 'monad', 'harness', 'say',
+        '--child-llm-provider', 'grok', '--child-llm-model', 'not-a-real-model',
+        'write', 'goal',
+      ]));
+      expect(received).toEqual([]);
+      expect(sayErr.join('\n')).toMatch(/--child-llm-model 알 수 없음: not-a-real-model/);
+      expect(sayErr.join('\n')).toContain('grok-4.6');
+      expect(process.exitCode).toBe(1);
+    } finally {
+      process.exitCode = previousExit ?? 0;
+    }
+  });
+
+  test('unknown --child-llm-model dies before ask/say --dry-run and names the value plus candidates', async () => {
+    const received: unknown[] = [];
+    const { program } = install(
+      async (...args) => { received.push(['ask', ...args]); },
+      async (...args) => { received.push(['say', ...args]); },
+    );
+    const previousExit = process.exitCode;
+    try {
+      let askLog: string[] = [];
+      const askErr = await captureError(async () => {
+        askLog = await captureLog(() => program.parseAsync([
+          'node', 'monad', 'harness', 'ask', '--dry-run',
+          '--child-llm-provider', 'grok', '--child-llm-model', 'not-a-real-model',
+          '/tmp/goal.md',
+        ]));
+      });
+      expect(received).toEqual([]);
+      expect(askLog.join('\n')).not.toMatch(/\[dry-run\]/);
+      expect(askErr.join('\n')).toMatch(/--child-llm-model 알 수 없음: not-a-real-model/);
+      expect(askErr.join('\n')).toContain('grok-4.6');
+      expect(process.exitCode).toBe(1);
+
+      process.exitCode = 0;
+      let sayLog: string[] = [];
+      const sayErr = await captureError(async () => {
+        sayLog = await captureLog(() => program.parseAsync([
+          'node', 'monad', 'harness', 'say', '--dry-run',
+          '--child-llm-provider', 'grok', '--child-llm-model', 'not-a-real-model',
+          'write', 'goal',
+        ]));
+      });
+      expect(received).toEqual([]);
+      expect(sayLog.join('\n')).not.toMatch(/\[dry-run\]/);
+      expect(sayErr.join('\n')).toMatch(/--child-llm-model 알 수 없음: not-a-real-model/);
+      expect(sayErr.join('\n')).toContain('grok-4.6');
+      expect(process.exitCode).toBe(1);
+    } finally {
+      process.exitCode = previousExit ?? 0;
+    }
+  });
+
+  test('supplied --child-llm-model with omitted/blank provider or blank model dies before ask/say handlers', async () => {
+    const received: unknown[] = [];
+    const { program } = install(
+      async (...args) => { received.push(['ask', ...args]); },
+      async (...args) => { received.push(['say', ...args]); },
+    );
+    const previousExit = process.exitCode;
+    const cases: Array<{ argv: string[]; error: RegExp; candidate?: string }> = [
+      {
+        argv: ['ask', '--child-llm-model', 'not-a-real-model', '/tmp/goal.md'],
+        error: /--child-llm-provider 필요\(--child-llm-model과 함께\)/,
+      },
+      {
+        argv: ['ask', '--child-llm-provider', '  ', '--child-llm-model', 'not-a-real-model', '/tmp/goal.md'],
+        error: /--child-llm-provider 필요\(--child-llm-model과 함께\)/,
+      },
+      {
+        argv: ['ask', '--child-llm-provider', 'grok', '--child-llm-model', '  ', '/tmp/goal.md'],
+        error: /--child-llm-model 알 수 없음:/,
+        candidate: 'grok-4.6',
+      },
+      {
+        argv: ['say', '--child-llm-model', 'not-a-real-model', 'write', 'goal'],
+        error: /--child-llm-provider 필요\(--child-llm-model과 함께\)/,
+      },
+      {
+        argv: ['say', '--child-llm-provider', '  ', '--child-llm-model', 'not-a-real-model', 'write', 'goal'],
+        error: /--child-llm-provider 필요\(--child-llm-model과 함께\)/,
+      },
+      {
+        argv: ['say', '--child-llm-provider', 'grok', '--child-llm-model', '  ', 'write', 'goal'],
+        error: /--child-llm-model 알 수 없음:/,
+        candidate: 'grok-4.6',
+      },
+    ];
+    try {
+      for (const testCase of cases) {
+        process.exitCode = 0;
+        const err = await captureError(() => program.parseAsync(['node', 'monad', 'harness', ...testCase.argv]));
+        expect(received).toEqual([]);
+        expect(err.join('\n')).toMatch(testCase.error);
+        if (testCase.candidate) expect(err.join('\n')).toContain(testCase.candidate);
+        expect(process.exitCode).toBe(1);
+      }
+    } finally {
+      process.exitCode = previousExit ?? 0;
+    }
+  });
+
+  test('valid or omitted --child-llm-model still dispatches ask/say handlers unchanged', async () => {
+    const received: unknown[] = [];
+    const { program } = install(
+      async (goalPath, options) => { received.push(['ask', goalPath, options]); },
+      async (words, options) => { received.push(['say', words, options]); },
+    );
+    await program.parseAsync(['node', 'monad', 'harness', 'ask', '/tmp/goal.md']);
+    await program.parseAsync([
+      'node', 'monad', 'harness', 'ask',
+      '--child-llm-provider', 'grok', '--child-llm-model', 'grok-4.6',
+      '/tmp/goal.md',
+    ]);
+    await program.parseAsync(['node', 'monad', 'harness', 'say', 'write', 'goal']);
+    expect(received).toEqual([
+      ['ask', '/tmp/goal.md', { supervise: true, supervisorSource: 'default' }],
+      ['ask', '/tmp/goal.md', {
+        supervise: true,
+        supervisorSource: 'default',
+        childLlmProvider: 'grok',
+        childLlmModel: 'grok-4.6',
+      }],
+      ['say', ['write', 'goal'], { supervise: true, supervisorSource: 'default' }],
+    ]);
+  });
+
+  test('ask dry-run reports a present template and clean marker inspection without dispatching', async () => {
+    const goalPath = join(mkdtempSync(join(tmpdir(), 'harness-dry-run-')), 'implement.md');
+    writeFileSync(goalPath, 'Implement goal\n- GoalType: implement\n');
+    const calls: unknown[] = [];
+    const { program } = install(async (...args) => { calls.push(args); });
+
+    try {
+      setHarnessAskMarkerInspectorForTesting(() => []);
+      const lines = await captureLog(() => program.parseAsync([
+        'node', 'monad', 'harness', 'ask', '--dry-run', goalPath,
+      ]));
+
+      expect(calls).toEqual([]);
+      expect(lines).toEqual([
+        `[dry-run] 입력: ${goalPath}`,
+        '[dry-run] 입구: cli-harness-ask',
+        '[dry-run] 시작 예정: 워크트리 · 브랜치 · 자식 · 파이프라인',
+        '[dry-run] 전제 검사: ask 마커만 돌렸다 · 원격 조회(열린 PR·런 원장)는 돌리지 않음',
+        '[dry-run] ✅ ask 마커 — 경고 없음',
+        '[dry-run] 골 종류·템플릿: implement · self-implement',
+      ]);
+    } finally {
+      setHarnessAskMarkerInspectorForTesting(undefined);
+      rmSync(goalPath, { force: true });
+    }
+  });
+
+  test('ask and say dry-run preview distinct resolved target statuses without dispatching', async () => {
+    const inHome = mkdtempSync(join(homedir(), 'harness-target-dry-run-'));
+    const received: unknown[] = [];
+    const { program } = install(
+      async (...args) => { received.push(['ask', args]); },
+      async (...args) => { received.push(['say', args]); },
+    );
+
+    try {
+      const askLines = await captureLog(() => program.parseAsync([
+        'node', 'monad', 'harness', 'ask', '--dry-run', '--target', inHome, '/tmp/goal.md',
+      ]));
+      const previousExit = process.exitCode;
+      process.exitCode = 0;
+      try {
+        const sayLines = await captureLog(() => program.parseAsync([
+          'node', 'monad', 'harness', 'say', '--dry-run', '--target', '/tmp', 'write', 'goal',
+        ]));
+        expect(sayLines).toContain(`[dry-run] target: ${realpathSync('/tmp')} · outside-home`);
+        expect(process.exitCode).toBe(0);
+      } finally {
+        process.exitCode = previousExit;
+      }
+
+      expect(received).toEqual([]);
+      expect(askLines).toContain(`[dry-run] target: ${inHome} · non-git-dir`);
+    } finally {
+      rmSync(inHome, { force: true, recursive: true });
+    }
+  });
+
+  test('ask dry-run gives --goal-type precedence over declared and default goal types', async () => {
+    const root = mkdtempSync(join(tmpdir(), 'harness-dry-run-'));
+    const declaredGoalPath = join(root, 'declared-research.md');
+    const undeclaredGoalPath = join(root, 'undeclared.md');
+    writeFileSync(declaredGoalPath, 'Research goal\n- GoalType: research\n');
+    writeFileSync(undeclaredGoalPath, 'Undeclared goal\n');
+    const { program } = install(async () => {});
+
+    try {
+      const declaredLines = await captureLog(() => program.parseAsync([
+        'node', 'monad', 'harness', 'ask', '--dry-run', '--goal-type', 'document', declaredGoalPath,
+      ]));
+      const undeclaredLines = await captureLog(() => program.parseAsync([
+        'node', 'monad', 'harness', 'ask', '--dry-run', '--goal-type', 'research', undeclaredGoalPath,
+      ]));
+
+      expect(declaredLines.at(-1)).toBe('[dry-run] 골 종류·템플릿: document · document-loop');
+      expect(undeclaredLines.at(-1)).toBe('[dry-run] 골 종류·템플릿: research · research-loop');
+    } finally {
+      rmSync(root, { force: true, recursive: true });
+    }
+  });
+
+  test('ask dry-run reports template absence for a readable goal type', async () => {
+    const goalPath = join(mkdtempSync(join(tmpdir(), 'harness-dry-run-')), 'document.md');
+    writeFileSync(goalPath, 'Document goal\n- GoalType: document\n');
+    const { program } = install(async () => {});
+
+    try {
+      const lines = await captureLog(() => program.parseAsync([
+        'node', 'monad', 'harness', 'ask', '--dry-run', goalPath,
+      ]));
+
+      expect(lines.at(-1)).toBe('[dry-run] 골 종류·템플릿: document · document-loop');
+    } finally {
+      rmSync(goalPath, { force: true });
+    }
+  });
+
+  test('ask dry-run distinguishes an unreadable goal type from template absence', async () => {
+    const goalPath = join(mkdtempSync(join(tmpdir(), 'harness-dry-run-')), 'unknown.md');
+    writeFileSync(goalPath, 'Unknown goal\n- GoalType: unsupported\n');
+    const { program } = install(async () => {});
+
+    try {
+      const lines = await captureLog(() => program.parseAsync([
+        'node', 'monad', 'harness', 'ask', '--dry-run', goalPath,
+      ]));
+
+      expect(lines.at(-1)).toBe('[dry-run] 골 종류·템플릿: 미상 · 미상');
+      expect(lines.at(-1)).not.toContain('템플릿 없음');
+    } finally {
+      rmSync(goalPath, { force: true });
+    }
+  });
+
+  test('ask dry-run separates «could not read the file» from «type is malformed»', async () => {
+    // ⛔ 둘이 같은 문면이면 사람이 오타를 찾는 대신 경로를 의심한다(그 반대도 같다).
+    const missing = join(mkdtempSync(join(tmpdir(), 'harness-dry-run-')), 'absent.md');
+    const { program } = install(async () => {});
+
+    const lines = await captureLog(() => program.parseAsync([
+      'node', 'monad', 'harness', 'ask', '--dry-run', missing,
+    ]));
+
+    expect(lines.at(-1)).toBe('[dry-run] 골 종류·템플릿: 읽지 못함 · 미상');
+    expect(lines.at(-1)).not.toBe('[dry-run] 골 종류·템플릿: 미상 · 미상');
+  });
+
+  test('processes is read-only and distinguishes empty, failed, and incomplete observations', async () => {
+    const { harness } = install();
+    const processes = harness.commands.find((command) => command.name() === 'processes');
+    expect(processes?.description()).toMatch(/읽기 전용/);
+    expect(processes?.options.map((option) => option.long)).not.toEqual(
+      expect.arrayContaining(['--kill', '--signal', '--reap']),
+    );
+
+    const empty = await runProcesses([]);
+    expect(empty.join('\n')).toContain('관찰 대상 없음');
+    expect(empty.join('\n')).toContain('프로세스를 죽이지 않는다');
+
+    const failed = await runProcesses({
+      status: 'failed',
+      stage: 'ps-exec',
+      reason: 'ps: command not found',
+    });
+    expect(failed.join('\n')).toContain('관찰 실패/확인 불가 (ps-exec: ps: command not found)');
+    expect(failed.join('\n')).not.toContain('관찰 대상 없음');
+
+    const incomplete = parseHarnessProcessPsOutput([
+      '    12861     1  98.9 12-08:00:00 bun bin/monad.mjs --test pr land --dry-run',
+      'not-a-process-table',
+    ].join('\n'));
+    expect(incomplete.status).toBe('incomplete');
+    const incompleteLines = await runProcesses(incomplete);
+    expect(incompleteLines.join('\n')).toContain('불완전 관측');
+    expect(incompleteLines.join('\n')).not.toContain('관찰 대상 없음');
+  });
+
+  test('process reports separately disclose excluded ps rows without classifying them', async () => {
+    const excludedOnly = parseHarnessProcessPsOutput([
+      '12862 1 99.0 12-08:00:00 codex app-server',
+      '12863 1 0.1 02:00:00 node worker.js',
+    ].join('\n'));
+    expect(excludedOnly).toMatchObject({ status: 'ok', excludedCount: 2, records: [] });
+    const excludedLines = await runProcesses(excludedOnly);
+    const excludedText = excludedLines.join('\n');
+    expect(excludedText).toContain('모집단 제외 2행');
+    expect(excludedText).toContain('제외 기준: command에 monad.mjs를 포함하지 않은 행');
+    expect(excludedText).toContain('분류 제외 0행');
+    expect(excludedText).toContain('부모 생존 제외 0행');
+    expect(excludedText).toContain('자원소비 0 · 장기실행만 0');
+    expect(excludedText).not.toContain('pid=12862');
+    expect(excludedText).not.toContain('pid=12863');
+
+    const includedOnly = parseHarnessProcessPsOutput(
+      '12861 1 98.9 12-08:00:00 bun bin/monad.mjs --test harness processes',
+    );
+    expect(includedOnly).toMatchObject({ status: 'ok', excludedCount: 0 });
+    const includedText = (await runProcesses(includedOnly)).join('\n');
+    expect(includedText).not.toContain('모집단 제외');
+    expect(includedText).not.toContain('제외 기준:');
+
+    const mixed = parseHarnessProcessPsOutput([
+      '12861 1 98.9 12-08:00:00 bun bin/monad.mjs --test harness processes',
+      '12862 1 99.0 12-08:00:00 codex app-server',
+      'not-a-process-table',
+    ].join('\n'));
+    expect(mixed).toMatchObject({ status: 'incomplete', malformedCount: 1, excludedCount: 1 });
+    const mixedText = (await runProcesses(mixed)).join('\n');
+    expect(mixedText).toContain('해석 실패 1행');
+    expect(mixedText).toContain('모집단 제외 1행');
+    expect(mixedText).toContain('자원소비 1 · 장기실행만 0');
+    expect(mixedText).not.toContain('pid=12862');
+  });
+
+  test('process reports classify only parent-absent processes and retain worktree, launchd, and ownership distinctions', async () => {
+    const managed = processFixture({
+      pid: 46480,
+      ppid: 1,
+      cpuPercent: 0.4,
+      elapsedSeconds: 8 * 3600,
+      cwd: '/tmp/self-impl-nexus',
+      cwdStatus: 'observed',
+    });
+    const burning = processFixture({
+      pid: 12861,
+      ppid: 1,
+      cpuPercent: 98.9,
+      elapsedSeconds: 90,
+      cwd: '/tmp/self-impl-orphan',
+      cwdStatus: 'observed',
+      ownership: MEASURED_PS_EWW_OWNERSHIP,
+    });
+    const livingParent = processFixture({ pid: 76, ppid: 1, cwdStatus: 'observed' });
+    const child = processFixture({
+      pid: 77,
+      ppid: 76,
+      cpuPercent: 98.9,
+      elapsedSeconds: 8 * 3600,
+      cwdStatus: 'observed',
+    });
+
+    const lines = await runProcesses(
+      [managed, burning, livingParent, child],
+      ['/tmp/self-impl-nexus', '/tmp/self-impl-orphan'],
+      { status: 'ok', pids: [46480] },
+    );
+    const text = lines.join('\n');
+
+    expect(text).toContain('분류 제외 1행');
+    expect(text).toContain('부모 생존 제외 1행');
+    expect(text).toContain('자원소비 1 · 장기실행만 1');
+    expect(text).toContain('lastActivity 자: 런 원장 전이만 (로그 스토어는 안 본다)');
+    expect(text).toContain('pid=12861 ppid=1 elapsed=1m 30s cpu=98.9% worktree=/tmp/self-impl-orphan lastActivity=없음 · 원장만');
+    expect(text).toContain('pid=46480 ppid=1 elapsed=8h 00m cpu=0.4% worktree=/tmp/self-impl-nexus lastActivity=미상');
+    expect(text).toContain('  launchd=launchd 가 관리한다');
+    expect(text).toContain('  launchd=근거 없음');
+    expect(text).toContain('ownership=run=run-6ecb1a67-f650-48d9-86f5-88715e91746c');
+    expect(text).not.toContain('pid=77');
+    expect(text).not.toContain('pid=76');
+  });
+
+  test('process rows attach last ledger activity without changing classification counts', async () => {
+    const nowMs = Date.parse('2026-08-29T16:00:00.000Z');
+    const lastEvent = '2026-08-29T15:59:55.000Z';
+    const hold = processFixture({
+      pid: 23117,
+      ppid: 1,
+      cpuPercent: 0.1,
+      elapsedSeconds: 32 * 3600 + 54 * 60,
+      cwd: '/tmp/self-impl-hold',
+      cwdStatus: 'observed',
+      ownership: {
+        status: 'observed',
+        runId: 'run-5da31123-1fe3-49b7-a5d0-998740374d3c',
+        originSession: '7507f456-2b74-4a6a-ad2c-1a09c8851577',
+      },
+    });
+    const missingRunId = processFixture({
+      pid: 4242,
+      ppid: 1,
+      cpuPercent: 0.2,
+      elapsedSeconds: 8 * 3600,
+      cwdStatus: 'observed',
+      ownership: { status: 'observed' },
+    });
+    const unreadLedger = processFixture({
+      pid: 9001,
+      ppid: 1,
+      cpuPercent: 0.3,
+      elapsedSeconds: 9 * 3600,
+      cwdStatus: 'observed',
+      ownership: { status: 'observed', runId: 'run-6ecb1a67-f650-48d9-86f5-88715e91746c' },
+    });
+    const burning = processFixture({
+      pid: 12861,
+      ppid: 1,
+      cpuPercent: 98.9,
+      elapsedSeconds: 90,
+      cwdStatus: 'observed',
+      ownership: { status: 'observed', runId: 'run-5da31123-1fe3-49b7-a5d0-998740374d3c' },
+    });
+
+    const lookupLedger: HarnessProcessLedgerLookup = (runId) => {
+      if (runId === 'run-5da31123-1fe3-49b7-a5d0-998740374d3c') {
+        return [{ timestamp: lastEvent }];
+      }
+      throw new Error('ledger unreadable');
+    };
+
+    const lines = await runProcesses(
+      [hold, missingRunId, unreadLedger, burning],
+      [],
+      { status: 'failed', reason: 'launchctl not invoked in test' },
+      lookupLedger,
+      nowMs,
+    );
+    const text = lines.join('\n');
+
+    expect(text).toContain('자원소비 1 · 장기실행만 3');
+    expect(text).toContain('lastActivity 자: 런 원장 전이만 (로그 스토어는 안 본다)');
+    expect(text).toContain(`pid=23117 ppid=1 elapsed=32h 54m cpu=0.1% worktree=unassociated lastActivity=${lastEvent} (5s) · 원장만`);
+    expect(text).toContain('pid=4242 ppid=1 elapsed=8h 00m cpu=0.2% worktree=unassociated lastActivity=미상');
+    expect(text).toContain('pid=9001 ppid=1 elapsed=9h 00m cpu=0.3% worktree=unassociated lastActivity=조회 실패 · 원장만');
+    expect(text).toContain(`pid=12861 ppid=1 elapsed=1m 30s cpu=98.9% worktree=unassociated lastActivity=${lastEvent} (5s) · 원장만`);
+    expect(HARNESS_PROCESS_RESOURCE_CPU_PERCENT).toBe(50);
+    expect(HARNESS_PROCESS_LONG_RUNNING_ELAPSED_SECONDS).toBe(60 * 60);
+  });
+
+  test('launchctl parsing and evidence retain managed, no-evidence, and unqueried states', () => {
+    expect(parseLaunchctlListOutput(MEASURED_LAUNCHCTL_LIST)).toEqual([46480, 4421]);
+    expect(parseLaunchctlListOutput('-       0     com.monad.control\n')).toEqual([]);
+
+    const observed = observeHarnessLaunchdPids({
+      platform: 'darwin',
+      execLaunchctlList: () => MEASURED_LAUNCHCTL_LIST,
+    });
+    expect(observed).toEqual({ status: 'ok', pids: [46480, 4421] });
+
+    const unavailable = observeHarnessLaunchdPids({
+      platform: 'linux',
+      execLaunchctlList: () => MEASURED_LAUNCHCTL_LIST,
+    });
+    expect(unavailable.status).toBe('failed');
+
+    expect(resolveHarnessProcessLaunchdEvidence(46480, observed)).toBe('managed');
+    expect(resolveHarnessProcessLaunchdEvidence(9001, observed)).toBe('no-evidence');
+    expect(resolveHarnessProcessLaunchdEvidence(46480, unavailable)).toBe('unqueried');
+  });
+
+  test('NUL-delimited ownership parsing preserves values and does not trust flattened argv tokens', () => {
+    expect(parseProcessOwnershipEnv(MEASURED_OWNERSHIP_ENV)).toEqual({
+      status: 'observed',
+      runId: 'run-5da31123-1fe3-49b7-a5d0-998740374d3c',
+      originSession: '7507f456-2b74-4a6a-ad2c-1a09c8851577',
+      stateDir: '/Users/example/source/axon/monad-agent/.monad-test',
+    });
+
+    expect(parseProcessOwnershipEnv([
+      'bun bin/monad.mjs',
+      'MONAD_RUN_ID=forged',
+      'MONAD_ORIGIN_SESSION=forged',
+      'MONAD_STATE_DIR=/tmp/forged',
+    ].join(' '))).toEqual({ status: 'observed' });
+
+    expect(parseProcessOwnershipEnv([
+      'MONAD_RUN_ID=run-5da31123-1fe3-49b7-a5d0-998740374d3c',
+      'MONAD_ORIGIN_SESSION=7507f456-2b74-4a6a-ad2c-1a09c8851577',
+      'MONAD_STATE_DIR=/tmp/monad state dir/.monad-test',
+    ].join('\0'))).toEqual({
+      status: 'observed',
+      runId: 'run-5da31123-1fe3-49b7-a5d0-998740374d3c',
+      originSession: '7507f456-2b74-4a6a-ad2c-1a09c8851577',
+      stateDir: '/tmp/monad state dir/.monad-test',
+    });
+  });
+
+  test('ps eww ownership parsing requires a confirmed argv prefix and preserves state paths with spaces', () => {
+    expect(parsePsEwwOwnershipEnv(MEASURED_PS_EWW, MEASURED_PS_EWW_ARGV))
+      .toEqual(MEASURED_PS_EWW_OWNERSHIP);
+
+    const forgedArgv = [
+      MEASURED_PS_EWW_ARGV,
+      'MONAD_RUN_ID=run-forged-from-argv',
+      'MONAD_ORIGIN_SESSION=session-forged',
+      'MONAD_STATE_DIR=/tmp/forged',
+    ].join(' ');
+    const forgedOutput = [
+      '  PID   TT  STAT      TIME COMMAND',
+      `45806   ??  S      0:00.01 ${forgedArgv} PATH=/usr/bin HOME=/tmp`,
+    ].join('\n');
+    expect(parsePsEwwOwnershipEnv(forgedOutput, forgedArgv)).toEqual({ status: 'observed' });
+
+    const embeddedArgv = [
+      '  PID   TT  STAT      TIME COMMAND',
+      `45806   ??  S      0:00.01 /usr/bin/env ${MEASURED_PS_EWW_ARGV} MONAD_RUN_ID=forged`,
+    ].join('\n');
+    expect(parsePsEwwOwnershipEnv(embeddedArgv, MEASURED_PS_EWW_ARGV)).toEqual({
+      status: 'unknown',
+      reason: 'ps eww: argv prefix unconfirmed',
+    });
+
+    const spacedStateDir = '/tmp/monad state dir/.monad-test';
+    const spacedOutput = [
+      '  PID   TT  STAT      TIME COMMAND',
+      [
+        '45806   ??  S      0:00.01',
+        MEASURED_PS_EWW_ARGV,
+        'PATH=/usr/bin',
+        'MONAD_RUN_ID=run-6ecb1a67-f650-48d9-86f5-88715e91746c',
+        'MONAD_ORIGIN_SESSION=7507f456-2b74-4a6a-ad2c-1a09c8851577',
+        `MONAD_STATE_DIR=${spacedStateDir}`,
+        'HOME=/tmp',
+      ].join(' '),
+    ].join('\n');
+    expect(parsePsEwwOwnershipEnv(spacedOutput, MEASURED_PS_EWW_ARGV)).toEqual({
+      ...MEASURED_PS_EWW_OWNERSHIP,
+      stateDir: spacedStateDir,
+    });
+  });
+
+  test('ownership reading falls through from Linux environ to ps eww and distinguishes absent from unknown', () => {
+    const fromProc = readProcessOwnership(12861, {
+      execProcessEnv: () => MEASURED_OWNERSHIP_ENV,
+    });
+    expect(fromProc.status).toBe('observed');
+
+    const fromPs = readProcessOwnership(45806, {
+      readLinuxEnviron: () => {
+        throw new Error("ENOENT: no such file or directory, open '/proc/45806/environ'");
+      },
+      execPsEww: () => MEASURED_PS_EWW,
+      execPsArgv: () => MEASURED_PS_EWW_ARGV,
+    });
+    expect(fromPs).toEqual(MEASURED_PS_EWW_OWNERSHIP);
+
+    const absent = readProcessOwnership(12345, {
+      execPsEww: () => '  PID   TT  STAT      TIME COMMAND\n12345 ?? S 0:00.01 /usr/bin/ssh PATH=/usr/bin HOME=/tmp',
+      execPsArgv: () => '/usr/bin/ssh',
+    });
+    const unread = readProcessOwnership(12345, {
+      execPsEww: () => {
+        throw new Error('ps eww: no such process');
+      },
+    });
+    expect(absent).toEqual({ status: 'observed' });
+    expect(unread).toEqual({ status: 'unknown', reason: 'ps eww: no such process' });
+    expect(resolveHarnessProcessOwnership({ ownership: absent })).toEqual(absent);
+    expect(resolveHarnessProcessOwnership({ ownership: unread })).toEqual(unread);
+    expect(resolveHarnessProcessOwnership({})).toEqual({
+      status: 'unknown',
+      reason: 'ownership unconfirmed',
+    });
+  });
+
+  test('live child ownership carries MONAD identifiers', async () => {
+    const runId = 'run-live-ps-eww-ownership';
+    const originSession = '7507f456-2b74-4a6a-ad2c-1a09c8851577';
+    const stateDir = '/Users/example/source/axon/monad-agent/.monad-test';
+    const child = spawn(process.execPath, ['-e', 'setTimeout(() => {}, 30000)'], {
+      env: {
+        ...process.env,
+        MONAD_RUN_ID: runId,
+        MONAD_ORIGIN_SESSION: originSession,
+        MONAD_STATE_DIR: stateDir,
+      },
+      stdio: 'ignore',
+    });
+
+    try {
+      expect(child.pid).toBeDefined();
+      await Bun.sleep(150);
+      expect(readProcessOwnership(child.pid!)).toEqual({
+        status: 'observed',
+        runId,
+        originSession,
+        stateDir,
+      });
+    } finally {
+      child.kill();
+    }
+  });
+});
+
+describe('harness process classification/report helpers', () => {
+  function syntheticProcess(
+    overrides: Partial<HarnessProcessRecord> & Pick<HarnessProcessRecord, 'pid'>,
+  ): HarnessProcessRecord {
+    return {
+      ppid: 1,
+      cpuPercent: 0.1,
+      elapsedSeconds: 12,
+      command: 'bun bin/monad.mjs --test harness processes',
+      cwdStatus: 'observed',
+      ownership: { status: 'observed' },
+      ...overrides,
+    };
+  }
+
+  test('classifies resource-consuming and long-running-only parent-absent processes', () => {
+    const burning = syntheticProcess({
+      pid: 12861,
+      cpuPercent: 98.9,
+      elapsedSeconds: 12 * 3600 + 8 * 60,
+      cwd: '/tmp/self-impl-orphan',
+    });
+    const idle = syntheticProcess({
+      pid: 4242,
+      cpuPercent: 0.4,
+      elapsedSeconds: 8 * 3600,
+      cwd: '/tmp/self-impl-idle',
+    });
+    const quiet = syntheticProcess({
+      pid: 77,
+      ppid: 76,
+      cpuPercent: 1.2,
+      elapsedSeconds: 30,
+    });
+    const records = [burning, idle, quiet];
+    const worktrees = ['/tmp/self-impl-orphan', '/tmp/self-impl-idle'];
+    const livePids = new Set(records.map((record) => record.pid));
+
+    expect(DEFAULT_HARNESS_PROCESS_THRESHOLDS).toEqual({
+      resourceCpuPercent: HARNESS_PROCESS_RESOURCE_CPU_PERCENT,
+      longRunningElapsedSeconds: HARNESS_PROCESS_LONG_RUNNING_ELAPSED_SECONDS,
+    });
+    expect(classifyHarnessProcess(burning)).toBe('resource-consuming');
+    expect(classifyHarnessProcess(idle)).toBe('long-running-only');
+    expect(classifyHarnessProcess(quiet)).toBeUndefined();
+    expect(resolveHarnessProcessParentStatus(burning, livePids, 'complete')).toBe('absent');
+    expect(associateHarnessProcessWorktree(burning, worktrees)).toEqual({
+      status: 'associated',
+      path: '/tmp/self-impl-orphan',
+    });
+    expect(formatHarnessProcessElapsed(burning.elapsedSeconds)).toBe('12h 08m');
+
+    const report = buildHarnessProcessReport(records, worktrees);
+    expect(report.resourceConsuming.map((row) => row.pid)).toEqual([12861]);
+    expect(report.longRunningOnly.map((row) => row.pid)).toEqual([4242]);
+
+    const rendered = renderHarnessProcessReport(report).join('\n');
+    expect(rendered).toContain('자원소비:');
+    expect(rendered).toContain('장기실행만:');
+    expect(rendered).toContain('worktree=/tmp/self-impl-orphan');
+    expect(rendered).toContain('lastActivity=미상');
+    expect(report.longRunningOnly[0]?.lastActivity).toEqual({ status: 'unknown' });
+  });
+
+  test('lastActivity is observed from the last ledger event and never estimated', () => {
+    const nowMs = Date.parse('2026-08-29T16:00:00.000Z');
+    const timestamp = '2026-08-29T15:59:55.000Z';
+    const observed = resolveHarnessProcessLastActivity(
+      { status: 'observed', runId: 'run-5da31123-1fe3-49b7-a5d0-998740374d3c' },
+      () => [{ timestamp }],
+      nowMs,
+    );
+    expect(observed).toEqual({ status: 'observed', timestamp, ageSeconds: 5 });
+    expect(renderHarnessProcessLastActivity(observed)).toBe(`${timestamp} (5s)`);
+
+    expect(resolveHarnessProcessLastActivity({ status: 'observed' })).toEqual({ status: 'unknown' });
+    expect(resolveHarnessProcessLastActivity({ status: 'unknown', reason: 'ownership unconfirmed' }))
+      .toEqual({ status: 'unknown' });
+    expect(renderHarnessProcessLastActivity({ status: 'unknown' })).toBe('미상');
+
+    const owned = { status: 'observed' as const, runId: 'run-6ecb1a67-f650-48d9-86f5-88715e91746c' };
+    expect(resolveHarnessProcessLastActivity(owned, () => null)).toEqual({ status: 'absent' });
+    expect(resolveHarnessProcessLastActivity(owned, () => [])).toEqual({ status: 'unreadable' });
+    expect(resolveHarnessProcessLastActivity(owned, () => [{ timestamp: '' }])).toEqual({ status: 'unreadable' });
+    expect(resolveHarnessProcessLastActivity(owned, () => [{ timestamp: 'not-a-date' }])).toEqual({ status: 'unreadable' });
+    expect(resolveHarnessProcessLastActivity(owned, () => {
+      throw new Error('ledger unreadable');
+    })).toEqual({ status: 'lookup-failed' });
+
+    const absentText = renderHarnessProcessLastActivity({ status: 'absent' });
+    const failedText = renderHarnessProcessLastActivity({ status: 'lookup-failed' });
+    const unreadableText = renderHarnessProcessLastActivity({ status: 'unreadable' });
+    expect(absentText).toBe('없음');
+    expect(failedText).toBe('조회 실패');
+    expect(unreadableText).toBe('시각 못 읽음');
+    expect(failedText).not.toBe(absentText);
+    expect(unreadableText).not.toBe(absentText);
+    expect(unreadableText).not.toBe(failedText);
+  });
+
+  test('lookup failure and confirmed ledger absence render as different lastActivity strings', () => {
+    const failed = syntheticProcess({
+      pid: 9001,
+      cpuPercent: 0.3,
+      elapsedSeconds: 9 * 3600,
+      ownership: { status: 'observed', runId: 'run-aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa' },
+    });
+    const missing = syntheticProcess({
+      pid: 9002,
+      cpuPercent: 0.3,
+      elapsedSeconds: 9 * 3600,
+      ownership: { status: 'observed', runId: 'run-bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb' },
+    });
+    const lookupLedger: HarnessProcessLedgerLookup = (runId) => {
+      if (runId === 'run-aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa') {
+        throw new Error('ledger unreadable');
+      }
+      return null;
+    };
+    const report = buildHarnessProcessReport(
+      [failed, missing],
+      [],
+      DEFAULT_HARNESS_PROCESS_THRESHOLDS,
+      'subset',
+      { status: 'failed', reason: 'launchctl not invoked in test' },
+      lookupLedger,
+    );
+    const text = renderHarnessProcessReport(report).join('\n');
+    const failedLine = 'pid=9001 ppid=1 elapsed=9h 00m cpu=0.3% worktree=unassociated lastActivity=조회 실패 · 원장만';
+    const absentLine = 'pid=9002 ppid=1 elapsed=9h 00m cpu=0.3% worktree=unassociated lastActivity=없음 · 원장만';
+    expect(text).toContain('lastActivity 자: 런 원장 전이만 (로그 스토어는 안 본다)');
+    expect(text).toContain(failedLine);
+    expect(text).toContain(absentLine);
+    expect(failedLine).not.toBe(absentLine);
+    expect(report.longRunningOnly.map((row) => row.lastActivity.status)).toEqual(['lookup-failed', 'absent']);
+  });
+
+  test('defaultLookupHarnessProcessLedger does not collapse lookup failure into absence', () => {
+    expect(defaultLookupHarnessProcessLedger('run-ffffffff-ffff-ffff-ffff-ffffffffffff')).toBeNull();
+    expect(() => defaultLookupHarnessProcessLedger('../escape')).toThrow(/invalid runId/);
+  });
+
+  test('an empty report explicitly states that no processes were observed', () => {
+    const report = buildHarnessProcessReport([]);
+    expect(report.observationStatus).toBe('ok');
+    expect(report.resourceConsuming).toEqual([]);
+    expect(report.longRunningOnly).toEqual([]);
+    expect(report.parentUnknown).toEqual([]);
+    expect(renderHarnessProcessReport(report)).toContain('관찰 대상 없음');
+  });
+});

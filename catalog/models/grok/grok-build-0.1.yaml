@@ -1,0 +1,17 @@
+id: grok-build-0.1
+provider: grok
+displayName: Grok Build 0.1 (agentic coding)
+family: grok-4
+# ⭐ 2026-08-18 xAI 1차: `/v1/language-models` 가격 ⊕ 실호출로 응답 모델 확인.
+#    별칭 `grok-code-fast-1` · `grok-code-fast` 가 이 모델로 온다.
+contextSize: 256000
+outputMaxTokens: 8192
+vision: images
+audio: { input: false, output: false }
+reasoning: null
+toolCalling: native-openai
+streamingProtocol: sse
+pricing:
+  inputPerMTok: 1.00
+  outputPerMTok: 2.00
+  cachedInputPerMTok: 0.20

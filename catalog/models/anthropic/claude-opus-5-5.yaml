@@ -1,0 +1,20 @@
+id: claude-opus-5-5
+provider: anthropic
+displayName: Claude Opus 5.5
+family: claude
+familyShortcut: opus
+# ⭐ 2026-09-24 1차 대조: `monad model-watch` 가 Anthropic 모델 문서(anthropic-models) ⊕ 가격표(anthropic-pricing)
+#    두 출처에서 모두 이 id 를 냈다. /v1/models 실호출은 안 했다(셸에 API 키 없음).
+#    ✅ 2026-09-25 (대표 「모델별 최신으로」): `/v1/models` 실호출 ⊕ 메시지 실호출 OK · 「opus」 별칭을 여기로 옮겼다.
+#    📏 공식(platform.claude.com opus-5-5) 캐시 읽기 $0.20 = 입력의 5%.
+contextSize: 1000000
+vision: images
+audio: { input: false, output: false }
+reasoning: adaptive
+toolCalling: native-anthropic
+streamingProtocol: sse
+releaseDate: 2026-09-22
+pricing:
+  inputPerMTok: 4.00
+  outputPerMTok: 20.00
+  cachedInputPerMTok: 0.20

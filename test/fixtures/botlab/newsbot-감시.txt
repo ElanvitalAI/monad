@@ -1,0 +1,18 @@
+🔌 포트 9403 — 명시(--port)
+👁️ newsbot — 상황 2건 · ⚡ 변함 2(그중 ***분량만*** 1) · ⚪ 못 쟀다 0
+
+━━ ⚡ 변한 것 ━━
+  HN 프론트가 바뀌었나(제목+본문 분량)
+    ⚡ 변했다 — ***분량만*** 3899 → 4090 (제목은 그대로: Hacker News)
+    https://news.ycombinator.com
+  HN 첫 글이 바뀌었나
+    ⚡ 변했다 — 전: “I just chose words carefully” (aresluna.org) → 지금: Google Has Removed MV2 Extensions from the Chrome 
+    https://news.ycombinator.com
+
+━━ 👁️ 감시 중인 전체 목록 ━━
+  ⚡ [hn] HN 프론트가 바뀌었나(제목+본문 분량)
+      ⚡ 변했다 — ***분량만*** 3899 → 4090 (제목은 그대로: Hacker News)
+      📊 최근 10회 중 «변함» 9회 — ⛔ 판정이 아니라 «관측»이다(임계를 안 둔다)
+  ⚡ [hn-top] HN 첫 글이 바뀌었나  «.titleline»
+      ⚡ 변했다 — 전: “I just chose words carefully” (aresluna.org) → 지금: Google Has Removed MV2 Extensions from the Chrome 
+      📊 최근 9회 중 «변함» 6회 — ⛔ 판정이 아니라 «관측»이다(임계를 안 둔다)

@@ -1,0 +1,53 @@
+# ── Scenario · dashboard-default ──
+#
+# Minimal 2-pane reference layout that exercises the P2 + P3 + P4 chain
+# end-to-end: a chat-style log next to a focused list. Every rendered
+# attribute (border, borderRadius, padding, color) runs through the
+# same decoder path a Playground-authored scenario would.
+
+id: dashboard-default
+title: Dashboard Default
+description: |
+  Reference layout with a log pane and a focused list pane. Serves as
+  the visual regression baseline for the P5a materialization pipeline.
+
+meta:
+  tags: [reference, smoke-test]
+  author: widget-team
+
+layout:
+  - widget: log
+    id: dashboard-log
+    config:
+      lines:
+        - "> ready"
+    style:
+      decoration:
+        color: surface
+        border:
+          all: { color: border, width: 1 }
+        borderRadius:
+          circular: 1
+        padding: 1
+
+  - widget: list
+    id: dashboard-list
+    config:
+      items:
+        - Overview
+        - Tasks
+        - Logs
+      character: Focus
+    style:
+      decoration:
+        color: surface.raised
+        border:
+          all: { color: border.focused, width: 1 }
+        borderRadius:
+          circular: 1
+        padding:
+          symmetric: { horizontal: 2, vertical: 1 }
+        boxShadow:
+          - offset: { dx: 1, dy: 1 }
+            color: border
+            opacity: 0.4

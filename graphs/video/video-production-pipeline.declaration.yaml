@@ -1,0 +1,246 @@
+# 🎬🎬 통합 영상 생산 파이프라인 — 흩어진 갈래를 «한 뼈대»로
+#
+# 대표 2026-09-22: *"ad 파이프라인부터 다빈치 리졸브까지 3~4가지가 있는데 하나로 통합"*
+#
+# 📚 매뉴얼 = 내부 문서 `MANUAL-unified-video-production-2026-09-22`
+#
+# ⛔⭐ 이 파일은 «선언»이다 — 런타임이 안 싣는다(graphs/video/README.md).
+#   🔎 반증: 그 디렉터리 README 의 «관문 블록»을 친다(찾으면 exit 1 · 없으면 0)
+#      ⛔ 2026-09-22 정정 — 옛 문면은 주석 줄을 안 빼서 spine.ts 의 «주석» 때문에 항상 걸렸다
+#   ⛔ `graphs/` 로 옮기지 마라. 2026-09-10 에 그렇게 해서 하니스 전체가 builtin-fallback 으로 떨어졌다.
+#
+# ✅ 이 선언은 «진짜 하니스 스키마»다 — 실측 2026-09-22:
+#      bun scripts/check-graph-declaration.ts graphs/video/video-production-pipeline.declaration.yaml
+#      ⇒ 관문은 매뉴얼 §0 ⑴ 이 canonical — ⛔ 결과 수를 여기 적지 않는다(3차 리뷰: 그 수가 거짓이었다)
+#   ⚠️ 대조: evas-shorts-pipeline.declaration.yaml 은 «아직도» 파싱되지 않는다(--expect-fail 로 이름을 댄다).
+#      그것은 그래프가 아니라 문서다. 이 파일이 그 자리를 대신한다.
+
+graph_id: video-production
+version: 1
+entry_node: ground
+
+# ⛔⭐ 종단이 «넷»이다 — 「못 쟀다」를 「실패」로 접지 않는다.
+#   📏 근거(vlog 실측 2026-09-19): AE 모달 · 리졸브 스크립팅 정지로 «측정 자체»가 두 번 막혔다.
+#      그때 blocked 로 적으면 가장 못 보는 순간에 가장 단정해진다.
+# ⛔⭐⭐ 2026-09-22 — `tools:` 어휘를 ***걷는 자가 아는 이름***으로 맞췄다.
+#   🩸 종전엔 `local-compute` · `generate` · `none` · `read-write` 를 «지어 썼다».
+#      그 이름들은 `TOOL_RANK` 에 없어서 ***전 노드의 계약이 `undeclared` 로 판정***됐다 —
+#      즉 ***이 그래프의 «권한 축»이 통째로 죽어 있었다***(아무것도 허용 안 하고 아무것도 검사 안 한다).
+#   ⛔ 스키마 파서도 drift 관문도 이것을 «원리상» 못 본다 — 둘 다 「문자열인가」만 묻는다.
+#   ✅ 허용 어휘: read-only · read-and-run · network-read · workspace-write · network-write · git-write
+#      매핑: none→read-only · local-compute/read-write→workspace-write · generate→network-write
+#   📏 반증 = `bun graphs/video/walk-video-production.mjs` 의 「계약 undeclared」 줄
+terminal_nodes: [delivered, needs-human, blocked, unobserved]
+
+# ⛔⭐ 2026-09-22 정정 — 종전엔 `profile: ad|shorts|…` 열거였다. ***틀렸다.***
+#   ⑴ 갈래는 «동시에 참일 수 있다» — 브이로그 소재로 쇼츠를 만들면 둘 다다
+#   ⑵ 도구 계층이 축으로 없어서 유료 앱이 없는 고객 기계에서 통째로 죽었다
+#   ⇒ 축을 셋으로 갈랐다. 📄 근거 = 내부 문서 `RFC-composable-video-pipeline-2026-09-22`
+#
+#   ① capabilities  이 기계에서 «쓸 수 있는» 구현 (probe 가 잰다)
+#   ② toolchain     능력 → 구현 확정 결과 (plan 이 낸다)
+#   ③ 구간          ⭐ 레고 돌기는 각 노드의 contract.inputs 다 —
+#                   «그 inputs 를 채울 수 있으면» 그 노드에서 시작할 수 있다
+#   ⇒ 갈래 이름은 «필요 없다». 조합은 「입력을 어디서 얻나」로 정해진다.
+state: [capabilities, toolchain, brief, source_dir, target_specs, budget_credits, palette]
+
+# ⛔⭐ 이 선언의 contract.inputs 는 ***src/video-pipeline/spine.ts 와 «같아야» 한다***.
+#   두 벌이 갈리면 도구(plan/spine)가 «선언과 다른 계약»을 보고한다.
+#   📏 실측 2026-09-22(리뷰 지적): plan 이 specs 를, compose 가 vo·music 을 «더» 요구하고 있었다.
+#   🔎 반증: bun scripts/video-pipeline.ts spine 의 inputs 와 이 파일의 contract.inputs 를 대조
+nodes:
+  # ══ ① 접지 — 사실을 «실물»에서 가져온다. ⛔ 지어내지 않는다 ═══════════════
+  # 수집기는 «입력의 종류»가 고른다 (⛔ 갈래 «이름»이 고르지 않는다):
+  #   ad|shorts   판매 링크 → 제품 접지(src/product-grounding/)  ⚠️ aside(사람 브라우저) 필요 · firecrawl 은 헤더만 받는다
+  #   vlog        소재 폴더 probe (clips·specs·has_audio)
+  #   floorplan   평면도 이미지 ⊕ 창밖 실측 — «둘 다» 자료다
+  #   script-film 대본 원문
+  #   kinetic     plan.json(BPM·마디) — ⛔ 이것이 컷 목록의 SSOT 다
+  - node_id: ground
+    kind: agent
+    recipe: collect-ground-truth
+    max_visits: 2
+    contract: { inputs: [brief], tools: read-only, outputs: [facts, clips, specs] }
+
+  # ══ ② 구조 — 이 그래프의 «첫 분기점» ═══════════════════════════════════
+  # ⛔ 「하이라이트 모음」으로 흘러가지 않게 막는 자리다. 구조는 소재가 준다. 없으면 «사람»이 준다.
+  - node_id: structure
+    kind: gate
+    recipe: find-narrative
+    max_visits: 2
+    contract: { inputs: [facts|clips], tools: read-only, outputs: [arc, peaks, why] }
+
+  # ══ ③ 계획 — 컷 목록의 SSOT. 이 문서가 «시간»을 소유한다 ═══════════════
+  # ⛔ kinetic 에서 컷 길이를 바꾸면 그 뒤 전 컷이 음악에서 밀린다.
+  - node_id: plan
+    kind: agent
+    recipe: author-shot-plan
+    max_visits: 4
+    contract: { inputs: [arc, target_specs], tools: workspace-write, outputs: [shot_plan, target_dur] }
+
+  # ══ ④ 소재 — 만들거나 모은다 ══════════════════════════════════════════
+  # ⭐⭐ 파이프라인 규칙(태운 크레딧의 값어치): 3D 렌더 → **실사 변환** → 영상.
+  #    중간 단계를 빼면 «배경만 3D» 인 결과가 양산된다.
+  # ⚠️ 컷마다 팔레트를 «반복해» 못 박는다 — 안 적은 컷에서 소파 색이 드리프트했다(2026-09-16 실측).
+  - node_id: assets
+    kind: agent
+    recipe: produce-or-gather-assets
+    max_visits: 6
+    contract: { inputs: [shot_plan, palette, budget_credits], tools: network-write, outputs: [asset_files, spent_credits] }
+
+  # ══ ⑤ 소재 관문 — «쓸 수 있나» ════════════════════════════════════════
+  # ⛔ 비율은 «자르기»가 아니라 «확장»(outpaint) 이다 · start_image 비율이 이긴다.
+  - node_id: assetgate
+    kind: gate
+    recipe: verify-assets
+    max_visits: 3
+    contract: { inputs: [asset_files, target_specs, palette], tools: workspace-write, outputs: [verdict, reasons] }
+
+  # ══ ⑥ 오디오 — 목소리·음악 ════════════════════════════════════════════
+  # ⭐ 자막 타이밍을 «되받아 듣지» 않는다 — ElevenLabs /with-timestamps 로 «만들 때 같이 받는다».
+  #    텍스트가 우리가 넣은 대본 그대로라 받아쓰기 오차가 «원리상 없다».
+  - node_id: audio
+    kind: agent
+    recipe: voice-and-music
+    max_visits: 4
+    contract: { inputs: [shot_plan], tools: network-write, outputs: [vo, music, word_timestamps] }
+
+  # ══ ⑦ 정렬 — 시간을 맞춘다 ════════════════════════════════════════════
+  # 📏 실측: 균등분할 자막은 평균 174ms · 최대 489ms 어긋났다(30fps 로 5.2~14.7 프레임).
+  - node_id: align
+    kind: gate
+    recipe: align-time
+    max_visits: 3
+    contract: { inputs: [word_timestamps, shot_plan, music], tools: workspace-write, outputs: [timeline, drift_ms] }
+
+  # ══ ⑧ 배치 — 어느 클립이 몇 초에 ══════════════════════════════════════
+  # ⛔⭐ 배치와 그리기를 «한 칸»으로 두지 않는다 — 도구도 실패 양상도 다르다(2026-09-10 이름 뭉갬 사고).
+  - node_id: compose
+    kind: agent
+    recipe: place-clips
+    max_visits: 5
+    contract: { inputs: [timeline, asset_files], tools: workspace-write, outputs: [edl, comp_project] }
+
+  # ══ ⑨ 그리기 — 그 «위» 텍스트·자막·층 ═══════════════════════════════
+  - node_id: overlay
+    kind: agent
+    recipe: draw-captions
+    max_visits: 4
+    contract: { inputs: [edl, word_timestamps], tools: workspace-write, outputs: [overlay_layers] }
+
+  # ══ ⑩ 렌더 — 픽셀을 굽는다 ════════════════════════════════════════════
+  # 엔진은 «능력 encode 의 구현»이 고른다: ffmpeg · aerender · Resolve · HyperFrames
+  # ⛔ GUI 앱을 모는 갈래는 «조용히» 멈춘다 ⇒ app-silent 를 failed 가 아니라 unobserved 로.
+  - node_id: render
+    kind: agent
+    recipe: render-master
+    max_visits: 5
+  # ⛔⭐ 6차 리뷰 ④ — comp_project 를 «필수»로 두면 자유 갈래(ffmpeg)가 계약상 닫히지 않는다.
+  #   compose 는 app-control 이 없으면 edl 만 낸다 ⇒ 필수는 edl ⊕ overlay_layers 뿐이다.
+  #   comp_project 는 «있으면 편집 가능한 프로젝트가 남는» 선택 입력이고, 그 자리는 이 스키마에 없다.
+    contract: { inputs: [edl, overlay_layers], tools: workspace-write, outputs: [master, render_log] }
+
+  # ══ ⑪ 되읽기 — 만든 것을 «다시 잰다» ══════════════════════════════════
+  # ⛔ 렌더가 exit 0 이라고 길이가 맞는 게 아니다.
+  - node_id: readback
+    kind: gate
+    recipe: probe-master
+    max_visits: 3
+    contract: { inputs: [master, target_dur], tools: workspace-write, outputs: [dur, gaps, transitions] }
+
+  # ══ ⑫ 검수 — ⭐⭐ 이 그래프의 심장 ════════════════════════════════════
+  # 같은 «검정 프레임»이라도 원인 노드가 다르다. 그 갈림이 아래 edges 에 있다.
+  - node_id: qc
+    kind: judge
+    recipe: inspect-master
+    max_visits: 3
+    contract: { inputs: [master, shot_plan], tools: workspace-write, outputs: [findings] }
+
+  # ══ ⑬ 납품 — 비율 변형 · 업로드 ═══════════════════════════════════════
+  # ⛔ 마스터를 «잘라» 소셜을 만들지 않는다 — 소재에서 다시 짓는다(DaVinciStack 실측: 마스터만 고치면 소셜이 안 따라온다).
+  - node_id: deliver
+    kind: agent
+    recipe: derive-and-ship
+    max_visits: 3
+    contract: { inputs: [master|comp_project, target_specs], tools: workspace-write, outputs: [deliverables] }
+
+  # ══ ⑭ 납품 «검수» — ⛔ 2026-09-22 신설 ════════════════════════════════
+  # 🩸 계기: 1080×1920 마스터에서 뽑은 1920×1080 납품물에 ***자막이 통째로 없었다.***
+  #   그런데 종단은 delivered 였고 qc 도 pass 였다 — ***qc 는 master 만 본다.***
+  #   📏 그날 선언 전수: `inputs: [deliverables]` 를 갖는 노드가 ***종단뿐***이었다.
+  #   ⇒ ***납품물을 보는 눈이 「없었다」.*** 사람이 파일을 열어야만 보이는 결함이었다.
+  # 🔑 ⛔ `deliver` 가 «자기 산출»을 재는 것으로는 이 자리를 못 메운다 —
+  #   ***판정 결과가 흐르는 채널은 그 판정의 «대상»이 쓸 수 없어야 한다***(상시 규율).
+  #   ⇒ 만드는 노드와 «보는 노드»를 «가른다».
+  - node_id: shipcheck
+    kind: judge
+    recipe: inspect-deliverables
+    max_visits: 2
+    contract: { inputs: [deliverables, master], tools: workspace-write, outputs: [findings] }
+
+  # ══ 종단 넷 — ⛔ terminal_nodes 도 «노드로» 선언돼 있어야 파싱된다 ════
+  # ⛔⭐⭐ 2026-09-22 — 이 넷을 «flow 스타일»(`- { node_id: …, … }`)로 적었더니
+  #   `check-graph-declaration.ts`(스키마 파서)는 통과하는데 ***실제로 «걷는» 자가 못 봤다***.
+  #   ⇒ `deliver → delivered` 가 `no-edge` 로 죽고 ***종단에 0/4 로 못 닿았다***.
+  #   🔑 ***두 독자가 다르면 «더 엄한» 쪽이 진실을 말한다*** — 그리고 그 쪽을 아무도 안 돌리고 있었다.
+  #   ⇒ 그래서 block 스타일로 되돌린다. 📏 반증 = `bun graphs/video/walk-video-production.mjs`
+  - node_id: delivered
+    kind: gate
+    recipe: terminal-delivered
+    max_visits: 1
+    contract: { inputs: [deliverables], tools: read-only, outputs: [] }
+  - node_id: needs-human
+    kind: gate
+    recipe: terminal-needs-human
+    max_visits: 1
+    contract: { inputs: [reasons],      tools: read-only, outputs: [] }
+  - node_id: blocked
+    kind: gate
+    recipe: terminal-blocked
+    max_visits: 1
+    contract: { inputs: [reasons],      tools: read-only, outputs: [] }
+  - node_id: unobserved
+    kind: gate
+    recipe: terminal-unobserved
+    max_visits: 1
+    contract: { inputs: [reasons],      tools: read-only, outputs: [] }
+
+edges:
+  # ── 접지: 소재가 아무 말도 안 하면 사람이 준다 ──
+  - { from: ground, on: outcome, map: { ok: structure, empty: needs-human, error: unobserved } }
+
+  # ⭐ 첫 분기점 — 구조가 «얇으면» 사람에게 간다. 여기서 밀면 하이라이트 모음이 나온다.
+  - { from: structure, on: outcome, map: { found: plan, thin: needs-human, unmeasurable: unobserved } }
+
+  - { from: plan, to: assets }
+
+  - { from: assets, on: outcome, map: { ok: assetgate, budget-exhausted: needs-human, error: blocked } }
+
+  # ⛔ 비율·팔레트는 «소재»의 병이다 — 조립에서 고치지 않는다.
+  - { from: assetgate, on: outcome, map: { pass: audio, ratio: assets, palette-drift: assets, missing: assets, unmeasurable: unobserved } }
+
+  - { from: audio, on: outcome, map: { ok: align, error: blocked, app-silent: unobserved } }
+
+  # ⛔ 어긋난 시간은 «계획»으로 되돌아간다 — 자막을 늘려 때우지 않는다.
+  - { from: align, on: outcome, map: { pass: compose, drift: plan, no-timestamps: audio, unmeasurable: unobserved } }
+
+  - { from: compose, on: outcome, map: { ok: overlay, app-silent: unobserved, error: blocked } }
+  - { from: overlay, on: outcome, map: { ok: render, app-silent: unobserved, error: blocked } }
+  - { from: render,  on: outcome, map: { ok: readback, app-silent: unobserved, error: blocked } }
+
+  # ⛔ gap 과 short-transition 은 «같은 원인»(endFrame 배타)에서 온다 — 둘 다 compose 로.
+  #    wrong-length 는 계획이 틀린 것이다 — plan 으로.
+  - { from: readback, on: outcome, map: { pass: qc, gap: compose, short-transition: compose, wrong-length: plan, unmeasurable: unobserved } }
+
+  # ⭐⭐ 심장 — 같은 증상이라도 «원인 노드»가 다르다.
+  #   blackframe     → compose   📏 vlog 실측: -avoid_negative_ts 가 범인이었다. 렌더도 조립도 아니다
+  #   layer-missing  → overlay   한 층이 타임라인을 못 덮음
+  #   sheet-mismatch → plan      원장이 실물과 갈렸다 — 검수표가 «없는 자막»을 찾게 한다
+  #   stale-cache    → compose   📏 DaVinciStack 실측: 옛 ink.json 으로 새 컷을 자르면 0.98x 로 주저앉는다
+  #   palette-drift  → assets    그림이 틀린 것이지 조립이 틀린 게 아니다
+  - { from: qc, on: outcome, map: { pass: deliver, blackframe: compose, layer-missing: overlay, sheet-mismatch: plan, stale-cache: compose, palette-drift: assets, unmeasurable: unobserved } }
+
+  # ⛔ 종전엔 `deliver → delivered` 로 «바로» 갔다. 그 사이에 «보는 자»가 없었다.
+  - { from: deliver, on: outcome, map: { ok: shipcheck, error: blocked, unmeasurable: unobserved } }
+  # ⛔ 「틀렸다」는 deliver 로 «되돌린다» — 게이트는 찾기만 하고 고치는 것은 만드는 노드의 일이다.
+  - { from: shipcheck, on: outcome, map: { pass: delivered, ship-broken: deliver, unmeasurable: unobserved } }

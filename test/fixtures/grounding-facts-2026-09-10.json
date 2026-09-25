@@ -1,0 +1,94 @@
+{
+  "coupang": {
+    "url": "https://www.coupang.com/vp/products/6387145947",
+    "title": "OBge 퍼펙트 옴므 쿠션 SPF50+ PA+++ 15g, 2호 베이지, 2개 - 베이스메이크업 | 쿠팡",
+    "nameCandidates": ["OBge 퍼펙트 옴므 쿠션 SPF50+ PA+++ 15g, 2호 베이지, 2개", "다른 고객이 함께 본 상품"],
+    "priceCandidates": ["25,400원", "8,300원"],
+    "specRows": {
+      "용량(중량)": "15g 제품 주요 사양 모든 피부용",
+      "사용기한 또는 개봉 후 사용기간": "본 상품은 해당 물류센터 직발송 상품인 관계로 제조연월일 및 사용기한 정보가 매번 변경되므로 상단 사용기한 정보를 참고해 주세요.",
+      "화장품제조업자, 화장품책임판매업자 및 맞춤형화장품판매업자": "한국콜마(주) / 주식회사 어댑트 제조국 대한민국",
+      "화장품법에 따라 기재, 표시하여야 하는 모든 성분": "컨텐츠 참조 화장품법에 따른 기능성 화장품 심사(또는 보고)를 필함 해당 유무 유/자외선차단,미백,주름개선",
+      "배송방법": "순차배송"
+    },
+    "images": [
+      { "src": "detail1", "w": 1000, "h": 27806 },
+      { "src": "detail2", "w": 1000, "h": 2373 },
+      { "src": "detail3", "w": 1000, "h": 2999 },
+      { "src": "main", "w": 492, "h": 492 },
+      { "src": "icon", "w": 300, "h": 300 }
+    ],
+    "expansion": {
+      "clicked": ["상품정보 더보기", "더보기", "전체보기"],
+      "skipped": [],
+      "before": { "docHeight": 18981, "imageCount": 627, "imagePixels": 131124 },
+      "after": { "docHeight": 19101, "imageCount": 627, "imagePixels": 131124 }
+    }
+  },
+  "naver": {
+    "url": "https://brand.naver.com/yslbeauty/products/9920712311",
+    "title": "[입생로랑] [리필] 메쉬 핑크 쿠션 : 입생로랑 뷰티",
+    "nameCandidates": ["하위영역", "[입생로랑] [리필] 메쉬 핑크 쿠션"],
+    "priceCandidates": [],
+    "specRows": {
+      "내용물의 용량 및 중량": "12g(리필)",
+      "사용기한 또는 개봉 후 사용기간": "사용기한이 12개월 이상 남아있는 제품부터 순차적으로 배송됩니다.",
+      "화장품제조업자": "로레알",
+      "제조국": "한국",
+      "화장품책임판매업자": "엘오케이(유)",
+      "｢화장품법｣에 따라 기재 표시하여야 하는 모든성분": "상세페이지 확인"
+    },
+    "images": [
+      { "src": "detail-long", "w": 730, "h": 8656 },
+      { "src": "detail2", "w": 730, "h": 2044 },
+      { "src": "main", "w": 1000, "h": 1000 },
+      { "src": "thumb", "w": 500, "h": 500 }
+    ],
+    "expansion": {
+      "clicked": ["상세정보 펼쳐보기", "상품정보제공고시 보기", "더보기"],
+      "skipped": ["전체보기 (링크라 안 누름)"],
+      "before": { "docHeight": 10231, "imageCount": 160, "imagePixels": 79173 },
+      "after": { "docHeight": 20323, "imageCount": 186, "imagePixels": 92173 }
+    }
+  },
+  "musinsa": {
+    "url": "https://www.musinsa.com/products/6796665",
+    "title": "무신사 스탠다드 우먼 [시티 레저] 우먼즈 시어 후디드 라이트 다운 재킷 [옐로우 그린]",
+    "nameCandidates": ["배송/교환/반품 안내", "무신사 스탠다드 우먼 [시티 레저] 우먼즈 시어 후디드 라이트 다운 재킷 [옐로우 그린]"],
+    "priceCandidates": ["79,900원", "39,900원"],
+    "specRows": {
+      "1 총장": "2 어깨너비 3 가슴단면 4 소매길이 5 밑단단면 6 소매부리단면 7 암홀",
+      "품번": "MWFDJ9A02-YG",
+      "성별": "여",
+      "시즌": "2026 FW",
+      "시험성적서": "소재 관련 시험성적서 제출 완료"
+    },
+    "images": [
+      { "src": "detail-a", "w": 960, "h": 5475 },
+      { "src": "detail-b", "w": 960, "h": 4155 },
+      { "src": "main", "w": 1200, "h": 1440 },
+      { "src": "thumb", "w": 500, "h": 600 }
+    ],
+    "expansion": {
+      "clicked": ["상품 정보 더보기"],
+      "skipped": ["더보기 (링크라 안 누름)", "전체보기 (링크라 안 누름)"],
+      "before": { "docHeight": 14846, "imageCount": 236, "imagePixels": 104549 },
+      "after": { "docHeight": 40545, "imageCount": 236, "imagePixels": 104549 }
+    }
+  },
+  "musinsa-navigated-away": {
+    "url": "https://www.musinsa.com/cs/notice",
+    "title": "공지사항",
+    "nameCandidates": [],
+    "priceCandidates": [],
+    "specRows": {},
+    "images": [],
+    "navigatedAway": { "from": "https://www.musinsa.com/products/6796665", "to": "https://www.musinsa.com/cs/notice", "by": "더보기" },
+    "expansion": {
+      "clicked": [],
+      "skipped": ["더보기 (누르니 페이지를 떠났다)"],
+      "before": { "docHeight": 14846, "imageCount": 236, "imagePixels": 104549 },
+      "after": { "docHeight": 14846, "imageCount": 236, "imagePixels": 104549 }
+    }
+  }
+}

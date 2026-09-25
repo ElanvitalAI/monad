@@ -1,0 +1,118 @@
+name: voice-quick-task
+description: |
+  Use when: User speaks a short intent (Siri / Watch / mobile mic) and
+            wants automatic routing — no need to think which skill to
+            invoke.
+  Triggers: "voice quick task", "voice memo", "monad capture",
+            "음성 받아 적어", "remember this voice".
+  Does: Detects audio file vs pre-transcribed text, runs voice-stt
+        when needed (cv-3 phase 1 reuse), then asks an LLM picker to
+        choose ONE action (digest / capture / task-create / llm-respond)
+        and dispatches it.
+  NOT for: Long-form dictation (use a separate dictation workflow) or
+           streaming realtime voice.
+
+# haiku — voice flow is high-frequency, latency-sensitive.
+model: haiku
+
+nodes:
+  - id: detect-input
+    bash: |
+      INPUT="$ARGUMENTS"
+      if [ -z "$INPUT" ]; then
+        echo "type=empty"
+        exit 0
+      fi
+      case "$INPUT" in
+        *.wav|*.m4a|*.mp3|*.flac|*.ogg|*.opus)
+          if [ -f "$INPUT" ]; then
+            echo "type=audio"
+          else
+            echo "type=text"
+          fi
+          ;;
+        *)
+          echo "type=text"
+          ;;
+      esac
+
+  - id: transcribe
+    skill: voice-stt
+    arguments: $ARGUMENTS
+    when: "$detect-input.output == 'type=audio'"
+    depends_on: [detect-input]
+
+  - id: pick-action
+    prompt: |
+      The user spoke (audio transcribed via voice-stt) or typed:
+
+      ---
+      audio_text: $transcribe.output
+      raw_input:  $ARGUMENTS
+      ---
+
+      Pick exactly ONE action and emit JSON. Available actions:
+
+      - "digest"      — input contains a URL or document path; route to
+                        omni-digest (essential format).
+      - "capture"     — input is a fleeting thought / note to remember;
+                        append to Obsidian Capture.md.
+      - "task-create" — input is an actionable to-do; append to
+                        Obsidian Tasks.md as a checklist item.
+      - "llm-respond" — input is a question; reply with a one-line
+                        answer.
+
+      Output format (JSON only — no fences, no prose):
+      {"action": "<digest|capture|task-create|llm-respond>", "args": "<text>"}
+    output_format:
+      type: object
+      required: [action, args]
+    allowed_tools: []
+    depends_on: [detect-input, transcribe]
+    # 'one_success' so the picker fires even when transcribe was
+    # skipped (text-input branch). transcribe.output remains empty
+    # in that case and the picker decides from raw_input alone.
+    trigger_rule: one_success
+
+  - id: dispatch
+    bash: |
+      OBSIDIAN_DIR="${MONAD_OBSIDIAN_DIR:-$HOME/Documents/Obsidian}"
+      mkdir -p "$OBSIDIAN_DIR" 2>/dev/null || {
+        echo "ERROR: cannot create $OBSIDIAN_DIR — set MONAD_OBSIDIAN_DIR to a writable path"
+        exit 1
+      }
+      DATE=$(date '+%Y-%m-%d %H:%M')
+
+      ACTION_FILE="$OBSIDIAN_DIR/.voice-action-$$.json"
+      cat > "$ACTION_FILE" <<'VOICE_ACTION_END_2026_05_08_X9Z2'
+      $pick-action.output
+      VOICE_ACTION_END_2026_05_08_X9Z2
+
+      ACTION=$(grep -o '"action"[[:space:]]*:[[:space:]]*"[^"]*"' "$ACTION_FILE" \
+                 | head -1 | sed 's/.*"\([^"]*\)"$/\1/')
+      ARGS=$(grep -o '"args"[[:space:]]*:[[:space:]]*"[^"]*"' "$ACTION_FILE" \
+               | head -1 | sed 's/.*"\([^"]*\)"$/\1/')
+      rm -f "$ACTION_FILE"
+
+      case "$ACTION" in
+        capture)
+          echo "[$DATE] $ARGS" >> "$OBSIDIAN_DIR/Capture.md"
+          echo "dispatch=capture file=$OBSIDIAN_DIR/Capture.md"
+          ;;
+        task-create)
+          echo "- [ ] $ARGS  ⏱ $DATE" >> "$OBSIDIAN_DIR/Tasks.md"
+          echo "dispatch=task-create file=$OBSIDIAN_DIR/Tasks.md"
+          ;;
+        digest)
+          echo "$ARGS" >> "$OBSIDIAN_DIR/voice-digest-queue.txt"
+          echo "dispatch=digest queue=$OBSIDIAN_DIR/voice-digest-queue.txt"
+          ;;
+        llm-respond)
+          echo "dispatch=llm-respond args=$ARGS"
+          ;;
+        *)
+          echo "ERROR: unknown action '$ACTION' — pick-action emitted invalid JSON"
+          exit 1
+          ;;
+      esac
+    depends_on: [pick-action]

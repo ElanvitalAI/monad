@@ -1,0 +1,52 @@
+name: pdca-cycle
+description: |
+  Use when: User wants to run a Plan-Do-Check-Act improvement cycle on
+            a small refactor or process change.
+  Triggers: "pdca", "improvement cycle", "iterate on", "improve".
+  Does: 4-step PDCA via the CFT pdca method, with intent extraction
+        first to seed the Plan stage with a structured input.
+  NOT for: Open-ended exploration (use auto-research) or one-shot
+           debugging (use omni-llm with grok or gpt).
+
+# model hints (sonnet / haiku) are Anthropic-family aliases — honored
+# on Anthropic, stripped on other providers (runtime falls back to
+# provider default).
+model: sonnet
+
+nodes:
+  - id: extract-goal
+    prompt: |
+      User request: $ARGUMENTS
+
+      Extract the improvement goal as JSON:
+      - goal: one-sentence description of the desired outcome
+      - constraints: list of constraints / non-goals
+      - success_criteria: 2-3 measurable signals that "improved" is true
+    model: haiku
+    allowed_tools: []
+    output_format:
+      type: object
+      properties:
+        goal: { type: string }
+        constraints: { type: array }
+        success_criteria: { type: array }
+      required: [goal, success_criteria]
+
+  - id: pdca
+    cft: pdca
+    config:
+      goal: $extract-goal.output.goal
+      constraints: $extract-goal.output.constraints
+      success_criteria: $extract-goal.output.success_criteria
+    depends_on: [extract-goal]
+
+  - id: report
+    prompt: |
+      Goal: $extract-goal.output.goal
+      PDCA result: $pdca.output
+
+      Produce a 1-paragraph closure note for the user covering:
+      - what was tried
+      - what worked
+      - what to monitor next
+    depends_on: [pdca]

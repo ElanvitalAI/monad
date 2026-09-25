@@ -1,0 +1,37 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<style>
+  body { margin: 0; font-family: serif; }
+  section { min-height: 560px; padding: 20px; }
+  .d { background: #10131a; color: #fff; }
+  .l { background: #fdfdfd; color: #111; }
+  .g { display: grid; grid-template-columns: 2fr 1fr; gap: 16px; }
+  .acc { color: #0071e3; }
+  img { width: 200px; height: 120px; display: block; }
+  /* 로드 직후엔 문단이 없다. 완료를 선언하지 않고, 시간이 지난 뒤에만 보인다. */
+  #late-copy { display: none; }
+  #late-copy.sat { display: block; }
+</style>
+</head>
+<body>
+<main>
+  <section class="l g"><h2 style="font-weight:350">제목0</h2><img src="/img1.gif" alt=""></section>
+  <section class="d g"><h2 style="font-weight:450">제목1</h2><img src="/img2.gif" alt=""></section>
+  <section class="l g"><h2 style="font-weight:350">제목2</h2></section>
+  <section id="late" class="d g">
+    <h1 style="font-weight:450">제목3</h1>
+    <div id="late-copy">
+      <p class="acc">늦게 보이는 문단</p>
+      <p>두 번째 문단</p>
+    </div>
+  </section>
+</main>
+<script>
+  const copy = document.getElementById('late-copy');
+  setTimeout(() => copy.classList.add('sat'), 450);
+</script>
+</body>
+</html>

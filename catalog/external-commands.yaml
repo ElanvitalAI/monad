@@ -1,0 +1,218 @@
+# External command map — v0
+#
+# ⛔ Every count here was MEASURED on 2026-09-20 by running the command in
+#    `meta.measured_by`, not assumed. A command whose consequence could not
+#    be measured carries `breaks: unmeasured` rather than a guess —
+#    `unmeasured` means "nobody has checked", never "nothing breaks".
+#
+# Why this file exists: on a fresh WSL2 Ubuntu, NINE of these were absent
+# (rg, gh, ffmpeg, zsh, java, jq, codex, node, npm) and monad reported the
+# absence in four unrelated disguises — an installer crash, 31 test errors,
+# "No LLM provider available", and a postmortem classified `quota-exhausted`
+# on an account with 75% quota left. None of those name the missing command.
+#
+# ⛔ This file is a MAP, not a gate. It does not decide what is required;
+#    it records what was measured so `monad doctor` can name the gap.
+#
+# ⛔ `probe` — HOW a command is detected. Absent means `path` (is the name on
+#    PATH). One entry is NOT a PATH command and says so: monad finds Chrome by
+#    scanning known install locations (`discoverChromeBinary`), so a PATH check
+#    reports `missing` on a macOS that HAS Chrome — measured 2026-09-20, and
+#    that false negative is exactly why this field exists.
+#    `native-module` is the other non-PATH probe: `require(name)` must succeed.
+#    `node-pty` can sit in optionalDependencies and still be absent or unusable
+#    — a PATH check would never name it. Measured 2026-09-22: on Linux the
+#    blocker is the build toolchain (make, g++), NOT node-gyp (bunx fetches it);
+#    on macOS the module loads but spawn-helper ships non-executable.
+#
+meta:
+  version: 0
+  measured_at: "2026-09-20"
+  measured_on: "WSL2 Ubuntu 26.04.1 (fresh) ⊕ macOS Darwin 27.0.0"
+  measured_by: >-
+    RG_REPLACE=1 rg --no-filename --only-matching --no-ignore
+    "spawnSync\('([a-z][a-z0-9_.-]{1,18})'" --replace '$1'
+    src/ scripts/ --glob '!*.test.ts' | sort | uniq -c | sort -rn
+  # ⛔ 이 저장소의 `rg` 는 셸 함수 래퍼라 RG_REPLACE=1 없이는 --replace 를 막고
+  #    그 거부가 「0건」으로 «보인다». 재현할 때 그 접두를 빼지 마라.
+  command_count: 22
+  tier_counts: { required: 2, harness: 3, capability: 14, platform: 3 }
+  unmeasured_breaks: 9   # ⛔ 「없다」가 아니라 「아무도 안 재 봤다」
+
+commands:
+  - name: git
+    tier: required
+    spawn_sites: 36
+    used_for: worktrees, commits, diffs, every harness phase
+    breaks: monad does not boot
+
+  - name: bun
+    tier: required
+    spawn_sites: 28
+    used_for: the runtime itself, child agents, gates
+    breaks: monad does not boot
+    note: "engines.bun >= 1.3.5 — below that Bun-native PTY silently delivers zero bytes"
+
+  - name: gh
+    tier: harness
+    spawn_sites: 13
+    used_for: pull requests, harness base-branch selection, coordination channel
+    breaks: >-
+      degrades, does not crash — base selection falls back to the default
+      branch and says so (`base-selection=pr-lookup-failed`)
+    also_needs: "authentication — an installed but unauthenticated gh exits 7"
+
+  - name: rg
+    tier: harness
+    spawn_sites: 8
+    used_for: code search (first-class capability) and the test suite itself
+    breaks: "31 test errors on a fresh Linux machine: Executable not found in $PATH"
+
+  - name: codex
+    tier: harness
+    spawn_sites: 0
+    resolved_via: ACP delegate spawns the Codex CLI app-server
+    used_for: harness implement on the codex backend
+    breaks: >-
+      `codex app-server stdin drain timeout after 5000ms`, and the postmortem
+      then classifies the run `quota-exhausted` because the Codex rotation
+      snapshot is empty — measured with 75% quota actually remaining
+    also_needs: "node — the bun-global codex binary has a `node` shebang"
+
+  - name: curl
+    tier: capability
+    spawn_sites: 10
+    used_for: fetching, installers
+    breaks: unmeasured
+
+  - name: ssh
+    tier: capability
+    spawn_sites: 8
+    used_for: remote nodes
+    breaks: unmeasured
+
+  - name: crontab
+    tier: capability
+    spawn_sites: 6
+    used_for: scheduled missions
+    breaks: unmeasured
+
+  - name: magick
+    tier: capability
+    spawn_sites: 4
+    used_for: image pipeline
+    breaks: unmeasured
+
+  - name: ffmpeg
+    tier: capability
+    spawn_sites: 4
+    used_for: video/audio assembly, ad pipeline
+    breaks: "4 test errors on a fresh Linux machine"
+
+  - name: unzip
+    tier: capability
+    spawn_sites: 2
+    used_for: archive extraction
+    breaks: >-
+      bun's own official install script fails on a fresh Ubuntu without it —
+      measured 2026-09-20, this is the FIRST wall a new Linux user hits
+
+  - name: rsync
+    tier: capability
+    spawn_sites: 2
+    used_for: sync
+    breaks: unmeasured
+
+  - name: tesseract
+    tier: capability
+    spawn_sites: 2
+    used_for: OCR skills
+    breaks: unmeasured
+
+  - name: sox
+    tier: capability
+    spawn_sites: 2
+    used_for: audio
+    breaks: unmeasured
+
+  - name: zsh
+    tier: capability
+    spawn_sites: 0
+    resolved_via: shell-shape tests and some skill scripts
+    used_for: shell compatibility checks
+    breaks: "3 test errors on a fresh Linux machine"
+
+  - name: python3
+    tier: capability
+    spawn_sites: 1
+    used_for: a few skills
+    breaks: unmeasured
+
+  - name: chafa
+    tier: capability
+    spawn_sites: 1
+    used_for: terminal image rendering
+    breaks: unmeasured
+
+  - name: chrome
+    tier: capability
+    probe: chrome-discovery   # ⛔ NOT on PATH — see discoverChromeBinary()
+    spawn_sites: 0
+    resolved_via: headless browser lookup (PWA mirror diagnostics, screenshots)
+    used_for: PWA mirror self-diagnosis, page capture
+    breaks: "19 test failures on a fresh Linux machine: `Chrome 을 못 찾았다`"
+    # ⛔ A Chromium-based browser is NOT automatically a substitute. Measured
+    #    2026-09-20 on two Macs: Arc, Dia and Aside are Chromium (Aside's CDP
+    #    reports `Chrome/152.0.7977.83` / `HeadlessChrome/152.0.0.0`) but the
+    #    ONE-SHOT flags hang instead of failing:
+    #      --dump-dom / --screenshot  → rc=124 after 25s, stdout 0B
+    #      --remote-debugging-port    → ✅ full CDP, works
+    #    So they satisfy the CDP axis and NOT the one-shot axis. Adding them to
+    #    a one-shot candidate list would turn "no browser" into "hangs", which
+    #    is worse. Windows Edge via WSL interop DOES satisfy both (measured).
+    satisfies_one_shot: [google-chrome, chromium, msedge]
+    satisfies_cdp_only: [arc, dia, aside, comet]
+
+  - name: node-pty
+    tier: capability
+    probe: native-module   # ⛔ NOT on PATH — native addon; require() must succeed
+    spawn_sites: 0
+    resolved_via: require('node-pty') from src/pty-shell/registry.ts
+    used_for: Node-runtime PTY spawn (Bun uses Bun.spawn terminal instead)
+    breaks: >-
+      `monad pty list` answers "no PTYs found" (rc=0) without naming the
+      missing module — measured 2026-09-22 on host-e-wsl (WSL2 6.18), where
+      node-pty was absent because there is no linux prebuild and the build
+      toolchain (make, g++) was missing
+    breaks_broken: >-
+      the module loads but `pty.spawn` dies with `posix_spawnp failed` — measured
+      2026-09-22 on a fresh macOS install where prebuilds/darwin-*/spawn-helper
+      shipped as -rw-rw-rw-; the A/B was exact, chmod +x removed the error
+    fix: >-
+      On Linux: sudo apt-get install -y build-essential, then re-run the monad
+      installer (node-pty builds once make and g++ are present — measured
+      2026-09-24 on a fresh Ubuntu 24.04 VM: missing → found)
+    fix_broken: chmod +x grants execute permission on spawn-helper
+
+  - name: open
+    tier: platform
+    spawn_sites: 3
+    platform: darwin
+    used_for: revealing files and URLs
+    breaks: "nothing — guarded by process.platform"
+
+  - name: say
+    tier: platform
+    spawn_sites: 1
+    platform: darwin
+    used_for: macOS TTS provider
+    breaks: >-
+      nothing — `src/voice/tts/tts-providers/macos-say.ts:47` refuses on
+      non-darwin and names the alternatives (openai-tts / edge-tts / elevenlabs-tts)
+
+  - name: osascript
+    tier: platform
+    spawn_sites: 1
+    platform: darwin
+    used_for: clipboard image grab
+    breaks: "nothing — grabClipboardImage is darwin-only by declaration"

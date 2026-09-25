@@ -1,0 +1,83 @@
+name: morning-briefing
+description: |
+  Use when: User starts the day and wants a synthesized briefing — open
+            PRs, recent commits, and top priorities pulled into one
+            Obsidian Daily Note.
+  Triggers: "morning briefing", "what's today", "오늘 뭐 해야 해",
+            "daily kickoff", "today's plan".
+  Does: Aggregates git log (yesterday + today) + gh pr list (mine +
+        reviewing) and synthesizes a 3-priority kickoff via LLM. Writes
+        an Obsidian Daily Note under $MONAD_OBSIDIAN_DIR/Daily Notes/.
+  NOT for: Weekly review (use a separate weekly-review workflow) or
+           multi-day retrospective.
+
+# haiku is cost-conscious — daily use. Anthropic-family hint; non-Anthropic
+# providers strip it and fall back to the provider default.
+model: haiku
+
+nodes:
+  - id: gather-git
+    bash: |
+      cd "$(git rev-parse --show-toplevel 2>/dev/null || echo .)"
+      echo "## Yesterday's commits"
+      git log --since='yesterday.midnight' --until='today.midnight' \
+        --pretty=format:'- %h %s' 2>/dev/null || echo '(no commits)'
+      echo
+      echo
+      echo "## Today's commits so far"
+      git log --since='today.midnight' --pretty=format:'- %h %s' 2>/dev/null \
+        || echo '(no commits)'
+
+  - id: gather-prs
+    bash: |
+      if ! command -v gh >/dev/null 2>&1; then
+        echo '(gh CLI not installed — skipping PR section)'
+        echo 'Install hint: brew install gh && gh auth login'
+        exit 0
+      fi
+      echo "## Open PRs (mine)"
+      gh pr list --author '@me' --json number,title,state \
+        --jq '.[] | "- #\(.number) \(.title) (\(.state))"' 2>/dev/null \
+        || echo '(none or gh auth missing)'
+      echo
+      echo "## PRs assigned for review"
+      gh search prs --review-requested @me --state open \
+        --json number,title,repository \
+        --jq '.[] | "- \(.repository.nameWithOwner) #\(.number) \(.title)"' \
+        2>/dev/null || echo '(none)'
+
+  - id: synthesize
+    prompt: |
+      You are the user's morning kickoff synthesizer. Given the git
+      activity and GitHub PR queue below, produce a focused brief.
+
+      ## Git activity
+      $gather-git.output
+
+      ## GitHub PRs
+      $gather-prs.output
+
+      Output (markdown):
+      - 1-paragraph context summary
+      - "## Top 3 today" with 3 actionable priorities (cite PR# / commit
+        / file when concrete)
+      - "## Watch / Blocked" with risks or stalled items
+    allowed_tools: []
+    depends_on: [gather-git, gather-prs]
+
+  - id: save-daily-note
+    bash: |
+      OBSIDIAN_DIR="${MONAD_OBSIDIAN_DIR:-$HOME/Documents/Obsidian}"
+      DATE=$(date +%Y-%m-%d)
+      TIME=$(date +%H:%M)
+      DIR="$OBSIDIAN_DIR/Daily Notes"
+      FILE="$DIR/$DATE.md"
+      mkdir -p "$DIR" 2>/dev/null || {
+        echo "ERROR: cannot create $DIR — set MONAD_OBSIDIAN_DIR to a writable path"
+        exit 1
+      }
+      cat > "$FILE" <<'MORNING_NOTE_END_2026_05_08_X9Z2'
+      $synthesize.output
+      MORNING_NOTE_END_2026_05_08_X9Z2
+      echo "saved=$FILE date=$DATE time=$TIME"
+    depends_on: [synthesize]

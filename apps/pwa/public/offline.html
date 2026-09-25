@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1" />
+    <title>monad — 오프라인</title>
+    <style>
+      :root {
+        color-scheme: light dark;
+      }
+      html, body {
+        margin: 0;
+        padding: 0;
+        background: #0b0f1a;
+        color: #e9e3d4;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+        min-height: 100vh;
+      }
+      main {
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 24px;
+        text-align: center;
+        gap: 12px;
+      }
+      h1 {
+        margin: 0;
+        font-size: 20px;
+        font-weight: 600;
+      }
+      p {
+        margin: 0;
+        font-size: 13px;
+        line-height: 1.5;
+        max-width: 480px;
+        opacity: 0.85;
+      }
+      code {
+        display: inline-block;
+        background: rgba(255, 255, 255, 0.08);
+        padding: 1px 6px;
+        border-radius: 4px;
+        font-family: ui-monospace, "JetBrains Mono", Consolas, monospace;
+        font-size: 12px;
+      }
+      button {
+        margin-top: 8px;
+        background: #89b4fa;
+        color: #0b0f1a;
+        border: 0;
+        padding: 8px 16px;
+        border-radius: 6px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+      }
+      button:hover {
+        background: #94c0fb;
+      }
+      .hint {
+        font-size: 11px;
+        opacity: 0.65;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <div style="font-size:48px;line-height:1">📡</div>
+      <h1>오프라인</h1>
+      <p>
+        monad daemon 에 연결할 수 없습니다.
+        Wi-Fi · Tailscale 또는 daemon (<code>monad serve</code>) 상태를 확인하세요.
+      </p>
+      <button type="button" onclick="window.location.reload()">다시 시도</button>
+      <p class="hint">
+        Service Worker 가 마지막 응답을 캐시했다면 PWA 의 다른 페이지는 계속 동작합니다 — 다른 탭에서
+        <code>/term</code> 또는 <code>/chat</code> 로 이동해 보세요.
+      </p>
+    </main>
+  </body>
+</html>

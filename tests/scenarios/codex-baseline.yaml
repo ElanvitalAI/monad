@@ -1,0 +1,34 @@
+description: |
+  Codex baseline regression — 분석/구현/디버깅 3 파이프라인을 한 번에 회귀.
+  Wave 5 W5-A/W3-A-glob/W5-D/W5-E + anchor header 적용 후 baseline.
+  Glob storm/anchor read 차단 + force-synthesis 가 모두 동작해야 함.
+
+defaults:
+  model: gpt-5.4
+  cwd: ../..  # this scenario lives in monad-agent/tests/scenarios/
+
+prompts:
+  - id: analysis-debug-pipeline
+    prompt: "이 프로젝트의 디버깅 파이프라인 분석해주세요"
+    asserts:
+      # Anchor header should keep model from re-Reading anchor files
+      no_event:
+        - tool-loop.anchor-read-blocked  # zero blocks — header pre-empts the call
+      # Glob storm crushed by W5-A + W3-A-glob
+      tool_max:
+        Glob: 8
+      # Final answer must be substantive (not just [SYNTHESIS IGNORED])
+      text_min_chars: 200
+
+  - id: impl-dispatch-one
+    prompt: "src/llm.ts 의 dispatchOne 함수 핵심 로직 설명해주세요"
+    asserts:
+      # W5-E should kick in if [ACTION IGNORED] would have fired,
+      # producing real text instead of the template
+      text_min_chars: 100
+
+  - id: debug-bug-question
+    prompt: "src/llm.ts:4467 dispatchOne 함수에 버그가 있나요?"
+    asserts:
+      # Even on hard-stop, W5-E gives us a model-written answer
+      text_min_chars: 100

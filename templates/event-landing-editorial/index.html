@@ -1,0 +1,341 @@
+<!doctype html>
+<!--
+  Editorial Event Landing — 재현 템플릿
+  ⛔ 빌드 없음. 이 파일을 브라우저로 바로 열면 그대로 돈다.
+  ⭐ 모든 내용 칸에 `data-slot="…"` 이 붙어 있고, 그 이름이 `content.json` 의 경로다.
+     다른 행사로 재사용 = content.json 을 채우고 같은 이름 슬롯을 갈아 끼운다.
+  ⛔ 아이콘은 전부 monoline SVG(stroke: currentColor)다 — 이모지를 쓰지 않는다(anti-ai-slop §3).
+-->
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title data-slot="meta.title">2026 건국대학교 건축대학 총동문 골프대회</title>
+<meta name="description" data-slot="meta.description" content="함께한 시간, 더 멀리. 2026년 10월 30일, 춘천 로드힐스 골프앤리조트에서 건국 건축인이 만납니다. 선착순 20팀, 10월 16일 신청 마감.">
+<meta property="og:type" content="website">
+<meta property="og:locale" content="ko_KR">
+<meta property="og:title" content="2026 건국대학교 건축대학 총동문 골프대회">
+<meta property="og:description" content="함께한 시간, 더 멀리. 2026년 10월 30일, 춘천 로드힐스 골프앤리조트에서 건국 건축인이 만납니다.">
+<meta property="og:image" content="assets/og.png">
+<meta property="og:image:alt" content="2026 건국대학교 건축대학 총동문 골프대회 · 10월 30일 · 춘천 로드힐스 골프앤리조트">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="stylesheet" href="styles.css">
+</head>
+
+<body data-motion-paused="false">
+<a class="skip-link" href="#main">본문 바로가기</a>
+
+<!-- ══ header ══════════════════════════════════════════════════════════ -->
+<header class="site-header">
+  <a class="brand" href="#top" aria-label="홈으로">
+    <span class="brand-logo"><img data-slot="brand.logo" src="assets/logo.svg" alt="건국대학교"></span>
+    <span class="brand-divider" aria-hidden="true"></span>
+    <span class="brand-name">
+      <strong data-slot="brand.org">건축대학 총동문회</strong>
+      <span data-slot="brand.orgLatin">ARCHITECTURE ALUMNI</span>
+    </span>
+  </a>
+  <nav class="site-nav" aria-label="주요 메뉴" data-slot="nav">
+    <a href="#overview">행사 안내</a>
+    <a href="#venue">오시는 길</a>
+    <a href="#sponsor">후원·찬조</a>
+  </nav>
+  <a class="btn btn--primary" href="#apply" data-slot="cta">
+    참가 신청 안내
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 7h10v10"/><path d="M7 17 17 7"/></svg>
+  </a>
+</header>
+
+<main id="main">
+
+  <!-- ══ hero ══════════════════════════════════════════════════════════ -->
+  <section id="top" class="hero">
+    <img class="hero-image" data-slot="hero.image" src="assets/hero.svg"
+         alt="호수와 가을 숲이 어우러진 로드힐스 골프 코스" fetchpriority="high">
+    <div class="hero-shade" aria-hidden="true"></div>
+
+    <!-- 장식층 — aria-hidden ⊕ pointer-events:none ⊕ reduced-motion 에서 사라진다 -->
+    <div class="leaves" aria-hidden="true" data-slot="ambience.leaves">
+      <span class="leaf" style="left:8%;  --leaf-color:#c2592f; --leaf-dur:15s; --leaf-delay:0s;  --leaf-drift:60px"></span>
+      <span class="leaf" style="left:23%; --leaf-color:#d0973a; --leaf-dur:18s; --leaf-delay:3s;  --leaf-drift:-40px"></span>
+      <span class="leaf" style="left:47%; --leaf-color:#c2592f; --leaf-dur:16s; --leaf-delay:6s;  --leaf-drift:80px"></span>
+      <span class="leaf" style="left:62%; --leaf-color:#d0973a; --leaf-dur:20s; --leaf-delay:1.5s;--leaf-drift:-70px"></span>
+      <span class="leaf" style="left:78%; --leaf-color:#c2592f; --leaf-dur:17s; --leaf-delay:8s;  --leaf-drift:30px"></span>
+      <span class="leaf" style="left:91%; --leaf-color:#d0973a; --leaf-dur:19s; --leaf-delay:4.5s;--leaf-drift:-55px"></span>
+    </div>
+
+    <div class="hero-content">
+      <p class="eyebrow eyebrow--on-dark" data-slot="hero.eyebrow">2026 KU ARCHITECTURE GOLF</p>
+      <p class="hero-invitation" data-slot="hero.invitation">함께한 시간, 더 멀리</p>
+      <h1 data-slot="hero.headline">건국대학교<br>건축대학 총동문<br><em>골프대회</em></h1>
+      <p class="hero-description" data-slot="hero.description">좋은 사람들과, 더 나은 내일을 위해.<br>가을의 필드에서 건국 건축인이 다시 만납니다.</p>
+      <div class="hero-actions">
+        <a class="btn btn--ghost-light" href="#apply">
+          참가 신청 안내
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 7h10v10"/><path d="M7 17 17 7"/></svg>
+        </a>
+        <span data-slot="hero.ctaNote">선착순 20팀 · 10월 16일 마감</span>
+      </div>
+      <a class="hero-scroll-hint" href="#overview">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14"/><path d="m19 12-7 7-7-7"/></svg>
+        <span data-slot="hero.scrollHint">골프공을 따라, 함께할 하루를 만나보세요.</span>
+      </a>
+    </div>
+
+    <div class="hero-date" data-slot="hero.date" aria-label="2026년 10월 30일 금요일">
+      <span>OCTOBER</span>
+      <strong>30<span>FRI</span></strong>
+      <p>2026. 10. 30. 금요일<br>춘천 로드힐스 골프앤리조트</p>
+    </div>
+
+    <div class="hero-bottom">
+      <a href="#overview">행사 알아보기
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14"/><path d="m19 12-7 7-7-7"/></svg>
+      </a>
+      <span data-slot="hero.venueLatin">LORDHILLS GOLF &amp; RESORT</span>
+    </div>
+  </section>
+
+  <!-- ══ quick facts ═══════════════════════════════════════════════════ -->
+  <section class="quick-facts" aria-label="행사 핵심 정보" data-slot="quickFacts">
+    <div>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 2v3"/><path d="M16 2v3"/><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/></svg>
+      <p><span>일시</span><strong>10월 30일 <small>금요일</small></strong><small>오전 10시 접수 시작</small></p>
+    </div>
+    <div>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0"/><circle cx="12" cy="10" r="3"/></svg>
+      <p><span>장소</span><strong>춘천 로드힐스</strong><small>골프앤리조트</small></p>
+    </div>
+    <div>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/></svg>
+      <p><span>모집</span><strong>선착순 20팀</strong><small>건축대학 및 대학원 동문</small></p>
+    </div>
+    <div>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 22V4a1 1 0 0 1 .4-.8A6 6 0 0 1 8 2c3 0 5 2 7.333 2q2 0 3.067-.8A1 1 0 0 1 20 4v10a1 1 0 0 1-.4.8A6 6 0 0 1 16 16c-3 0-5-2-8-2a6 6 0 0 0-4 1.528"/></svg>
+      <p><span>참가비</span><strong>1인 30만원</strong><small>그린피·카트비·식사비 포함</small></p>
+    </div>
+  </section>
+
+  <!-- ══ 01 invitation ═════════════════════════════════════════════════ -->
+  <section id="overview" class="section invitation reveal">
+    <div>
+      <p class="eyebrow">01 — INVITATION</p>
+      <h2>좋은 동행이<br><em>좋은 추억이 됩니다.</em></h2>
+    </div>
+    <div class="invitation-copy" data-slot="sections.invitation.body">
+      <p>푸르고 청명한 가을 하늘 아래,<br>건국 건축인의 정을 나누는 자리를 마련했습니다.</p>
+      <p>어려운 시기일수록 동문이 함께 모여 서로를 격려하고 새로운 힘을 나누는 자리가 되었으면 합니다.</p>
+      <p>은사님과 선후배 동문 여러분의<br>많은 관심과 참여를 부탁드립니다.</p>
+      <div class="signature" data-slot="sections.invitation.signature">
+        <span>제22대 건국대학교 건축대학 총동문회장</span>
+        <strong>백만수 <small>배상</small></strong>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══ 02 venue ══════════════════════════════════════════════════════ -->
+  <section id="venue" class="venue-section reveal">
+    <div class="venue-image">
+      <img data-slot="sections.venue.image" src="assets/venue.svg" alt="숲으로 둘러싸인 페어웨이 전경" loading="lazy" width="1400" height="930">
+      <span>CHUNCHEON, GANGWON</span>
+    </div>
+    <div class="venue-copy">
+      <p class="eyebrow">02 — THE COURSE</p>
+      <h2>가을의 춘천,<br>로드힐스에서.</h2>
+      <p class="venue-intro">반가운 얼굴, 탁 트인 필드.<br>함께할 하루를 기다립니다.</p>
+      <div class="venue-address">
+        <strong>로드힐스 골프앤리조트</strong>
+        <p>강원특별자치도 춘천시 동산면 · 로드힐스 골프앤리조트</p>
+      </div>
+      <a class="text-link" href="https://map.naver.com/p/search/%EB%A1%9C%EB%93%9C%ED%9E%90%EC%8A%A4%20%EA%B3%A8%ED%94%84%EC%95%A4%EB%A6%AC%EC%A1%B0%ED%8A%B8" target="_blank" rel="noopener noreferrer">
+        네이버 지도에서 보기
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 7h10v10"/><path d="M7 17 17 7"/></svg>
+      </a>
+      <a class="muted-link" href="https://lordhills.co.kr/" target="_blank" rel="noopener noreferrer">골프장 공식 홈페이지 ↗</a>
+    </div>
+  </section>
+
+  <!-- ══ 03 details ════════════════════════════════════════════════════ -->
+  <section id="details" class="section reveal">
+    <div class="section-heading">
+      <div>
+        <p class="eyebrow">03 — EVENT DETAILS</p>
+        <h2>함께하기 위한 안내</h2>
+      </div>
+      <p>참가 전, 꼭 확인해 주세요.</p>
+    </div>
+
+    <div class="details-grid">
+      <div class="detail-list" data-slot="sections.details.items">
+        <div><span>행사 일시</span><p><strong>2026년 10월 30일 (금)</strong><small>오전 10시 접수 시작 · 티오프 시간은 추후 안내드립니다.</small></p></div>
+        <div><span>참가 대상</span><p><strong>건국대학교 건축대학 및 대학원 동문</strong><small>건축전문대학원 및 일반대학원 동문에게도 열려있는 행사입니다.</small></p></div>
+        <div><span>신청 마감</span><p><strong class="is-deadline">2026년 10월 16일 (금) 마감</strong><small>선착순 20팀 모집</small></p></div>
+        <div><span>참가 문의</span>
+          <p class="contact-links">
+            <a href="tel:010-0000-0001">홍길동 <span>010-0000-0001</span>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13.832 16.568a1 1 0 0 0 1.213-.303l.355-.465A2 2 0 0 1 17 15h3a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2A18 18 0 0 1 2 4a2 2 0 0 1 2-2h3a2 2 0 0 1 2 2v3a2 2 0 0 1-.8 1.6l-.468.351a1 1 0 0 0-.292 1.233 14 14 0 0 0 6.392 6.384"/></svg>
+            </a>
+            <a href="tel:010-0000-0003">김담당 <span>010-0000-0003</span>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13.832 16.568a1 1 0 0 0 1.213-.303l.355-.465A2 2 0 0 1 17 15h3a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2A18 18 0 0 1 2 4a2 2 0 0 1 2-2h3a2 2 0 0 1 2 2v3a2 2 0 0 1-.8 1.6l-.468.351a1 1 0 0 0-.292 1.233 14 14 0 0 0 6.392 6.384"/></svg>
+            </a>
+          </p>
+        </div>
+      </div>
+
+      <aside class="fee-panel" data-slot="sections.details.fee">
+        <p class="eyebrow">PARTICIPATION FEE</p>
+        <h3>1인 <strong>30</strong>만원</h3>
+        <p>그린피 · 카트비 · 식사비 포함<br><span>주류 별도</span></p>
+        <div class="fee-line" aria-hidden="true"></div>
+        <span class="account-label">참가비 입금 계좌</span>
+        <strong class="bank-name">우리은행</strong>
+        <span class="account-number" data-copy-value="1002940788403">1002940788403</span>
+        <p class="account-owner">예금주 : 백만수</p>
+        <button type="button" class="btn btn--outline" data-copy="1002940788403">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="14" height="14" x="8" y="8" rx="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
+          계좌번호 복사
+        </button>
+        <small>현장 법인카드 결제 가능</small>
+      </aside>
+    </div>
+    <p class="copy-status" role="status" aria-live="polite"></p>
+  </section>
+
+  <!-- ══ 04 sponsor ════════════════════════════════════════════════════ -->
+  <section id="sponsor" class="sponsor-section reveal">
+    <div class="section">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">04 — WITH YOUR SUPPORT</p>
+          <h2>마음을 더하는<br>후원과 찬조</h2>
+        </div>
+        <p>즐거운 행사가 될 수 있도록
+동문 여러분의 많은 참여와 후원을 부탁드립니다.</p>
+      </div>
+      <div class="sponsor-grid" data-slot="sections.sponsor.cards">
+        <article>
+          <span class="sponsor-index">01</span>
+          <h3>계좌 이체</h3>
+          <p>신한은행</p>
+          <strong class="sponsor-account">100-030-004920</strong>
+          <p>예금주 : 건국대학교건축총동문회</p>
+          <button type="button" class="btn btn--outline" data-copy="100-030-004920">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="14" height="14" x="8" y="8" rx="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
+            후원 계좌 복사
+          </button>
+        </article>
+        <article>
+          <span class="sponsor-index">02</span>
+          <h3>세금계산서 발행</h3>
+          <p>사업자등록증 송부 후 ‘홍보비’로
+전자세금계산서 발행 → 계좌 입금</p>
+          <a class="sponsor-contact" href="tel:010-0000-0002">문의 이담당 <strong>010-0000-0002</strong>
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 7h10v10"/><path d="M7 17 17 7"/></svg>
+          </a>
+        </article>
+        <article>
+          <span class="sponsor-index">03</span>
+          <h3>법인카드 결제</h3>
+          <p>행사 당일 현장 동문회
+카드단말기를 이용하여
+결제 가능합니다.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══ closing ═══════════════════════════════════════════════════════ -->
+  <section id="apply" class="closing reveal">
+    <p class="eyebrow eyebrow--on-dark">SEE YOU ON THE GREEN</p>
+    <h2>10월의 멋진 가을날,<br>춘천에서 반갑게 뵙겠습니다.</h2>
+    <p>2026. 10. 30. FRI · 로드힐스 골프앤리조트</p>
+    <a class="btn btn--ghost-light" href="#details">
+      참가 안내 다시 보기
+      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 7h10v10"/><path d="M7 17 17 7"/></svg>
+    </a>
+    <span class="closing-note">온라인 신청 준비 중 · 문의는 위 연락처로 부탁드립니다.</span>
+  </section>
+</main>
+
+<footer class="site-footer" data-slot="footer">
+  <strong>건국대학교 건축대학 총동문회</strong>
+  <p>제22대 총동문회 · 2026 총동문 골프대회</p>
+  <span>함께한 시간, 더 멀리.</span>
+</footer>
+
+<!-- ══ 장식 토글 ═══════════════════════════════════════════════════════ -->
+<aside class="ambience-dock" aria-label="화면 움직임">
+  <button type="button" class="btn btn--primary" id="motion-toggle" aria-pressed="false">
+    <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 4.702a.705.705 0 0 0-1.203-.498L6.413 7.587A1.4 1.4 0 0 1 5.416 8H3a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h2.416a1.4 1.4 0 0 1 .997.413l3.383 3.384A.705.705 0 0 0 11 19.298z"/><path d="M16 9a5 5 0 0 1 0 6"/></svg>
+    <span><strong>움직임 끄기</strong><small>낙엽과 전환을 멈춥니다</small></span>
+  </button>
+  <p class="ambience-status" role="status" aria-live="polite"></p>
+</aside>
+
+<!-- ══ mobile bar ══════════════════════════════════════════════════════ -->
+<div class="mobile-apply" data-slot="mobileBar">
+  <div><strong>10. 30. 금요일</strong><span>선착순 20팀 · 10. 16. 마감</span></div>
+  <a class="btn btn--primary" href="#apply">참가 신청 안내</a>
+</div>
+
+<script>
+/* ⛔ 이 스크립트가 «없어도» 페이지는 읽힌다 — 전부 점진적 향상이다.
+   DESIGN.md §Motion 세 조항과 §Accessibility floor 를 그대로 구현한다. */
+(function () {
+  'use strict';
+  var reduced = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+  /* ── ① 섹션 진입 — 스크롤은 「공간 이동」이라 허용되는 축 ────────────── */
+  var revealables = document.querySelectorAll('.reveal');
+  if (reduced.matches || !('IntersectionObserver' in window)) {
+    revealables.forEach(function (el) { el.classList.add('is-visible'); });
+  } else {
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (e) {
+        if (!e.isIntersecting) return;
+        e.target.classList.add('is-visible');
+        io.unobserve(e.target);          /* 한 번만 — 반복 애니메이션은 장식이다 */
+      });
+    }, { rootMargin: '0px 0px -12% 0px', threshold: 0.05 });
+    revealables.forEach(function (el) { io.observe(el); });
+  }
+
+  /* ── ② 사람이 끌 수 있다 (조항 ③) ─────────────────────────────────── */
+  var toggle = document.getElementById('motion-toggle');
+  var status = document.querySelector('.ambience-status');
+  if (toggle) {
+    toggle.addEventListener('click', function () {
+      var paused = document.body.getAttribute('data-motion-paused') === 'true';
+      var next = !paused;
+      document.body.setAttribute('data-motion-paused', String(next));
+      toggle.setAttribute('aria-pressed', String(next));
+      toggle.querySelector('strong').textContent = next ? '움직임 켜기' : '움직임 끄기';
+      toggle.querySelector('small').textContent = next ? '낙엽과 전환을 다시 켭니다' : '낙엽과 전환을 멈춥니다';
+      if (status) status.textContent = next ? '움직임을 껐습니다.' : '';
+      if (next) revealables.forEach(function (el) { el.classList.add('is-visible'); });
+    });
+  }
+
+  /* ── ③ 계좌 복사 — 상태 확정 피드백. ⛔ 실패도 «말한다»(state-coverage) ── */
+  var copyStatus = document.querySelector('.copy-status');
+  function announce(el, msg) { if (el) { el.textContent = msg; window.setTimeout(function () { el.textContent = ''; }, 4000); } }
+
+  document.querySelectorAll('[data-copy]').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var value = btn.getAttribute('data-copy') || '';
+      var target = btn.closest('.fee-panel') ? copyStatus : (btn.closest('article') ? copyStatus : copyStatus);
+      var done = function () { announce(target, '계좌번호를 복사했습니다 — ' + value); };
+      /* ⛔ clipboard API 는 https/localhost 에서만 있다. 없을 때 «조용히» 실패하지 않는다. */
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(value).then(done).catch(function () {
+          announce(target, '복사하지 못했습니다. 계좌번호를 길게 눌러 직접 복사해 주세요 — ' + value);
+        });
+      } else {
+        announce(target, '이 브라우저에서는 자동 복사를 지원하지 않습니다 — ' + value);
+      }
+    });
+  });
+})();
+</script>
+</body>
+</html>

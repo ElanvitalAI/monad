@@ -1,0 +1,52 @@
+# 표준 «구현» 템플릿 — 외부 프로젝트용 (monad RFC-graph-engineering-for-external-projects-2026-09-09 §4)
+# ⛔ 이 파일은 «선언»이다. 걷는 것은 scripts/graph-walk.ts 다.
+graph_id: impl-standard
+version: 1
+entry_node: plan
+terminal_nodes: [landed, blocked]
+nodes:
+  - node_id: plan
+    kind: agent
+    recipe: plan-change
+    max_visits: 2
+    contract: { inputs: [request], tools: read-only, outputs: [plan] }
+  - node_id: build
+    kind: agent
+    recipe: implement-change
+    max_visits: 6
+    contract: { inputs: [plan], tools: workspace-write, outputs: [diff] }
+  - node_id: verify
+    kind: gate
+    recipe: project-gate
+    max_visits: 8
+    contract: { inputs: [diff], tools: read-and-run, outputs: [passed, log] }
+  - node_id: review
+    kind: judge
+    recipe: change-review
+    max_visits: 6
+    contract: { inputs: [diff, plan], tools: read-only, outputs: [verdict, must_fix] }
+  - node_id: rework
+    kind: agent
+    recipe: implement-change
+    max_visits: 6
+    contract: { inputs: [must_fix, log], tools: workspace-write, outputs: [diff] }
+  - node_id: land
+    kind: git
+    recipe: commit-and-push
+    max_visits: 2
+    contract: { inputs: [diff], tools: git-write, outputs: [ref] }
+  - node_id: landed
+    kind: judge
+    max_visits: 1
+    recipe: terminal-ok
+  - node_id: blocked
+    kind: judge
+    max_visits: 1
+    recipe: terminal-blocked
+edges:
+  - { from: plan, to: build }
+  - { from: build, to: verify }
+  - { from: verify, on: outcome, map: { pass: review, fail: rework } }
+  - { from: review, on: outcome, map: { pass: land, fail: rework } }
+  - { from: rework, to: verify }
+  - { from: land, to: landed }

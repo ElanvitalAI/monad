@@ -1,0 +1,25 @@
+id: gpt-5.5
+provider: openai
+displayName: GPT-5.5
+family: gpt-5.5
+familyShortcut: codex
+contextSize: 1050000
+outputMaxTokens: 128000
+vision: images
+audio: { input: false, output: false }
+reasoning: medium
+toolCalling: native-openai
+streamingProtocol: sse
+pricing:
+  inputPerMTok: 5.0
+  outputPerMTok: 30.0
+  cachedInputPerMTok: 0.5
+deprecated: null
+releaseDate: 2026-04-23
+tokenizer: cl100k
+kind: chat
+discoveryMeta:
+  source: auto-omni-crawl
+  lastSeen: 2026-05-10
+  autoFilled: true
+  confidence: high

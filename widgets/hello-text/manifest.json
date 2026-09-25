@@ -1,0 +1,6 @@
+{
+  "name": "hello-text",
+  "version": "0.1.0",
+  "entry": "widget.ts",
+  "description": "Static text block — scaffold widget demonstrating the minimum shape."
+}

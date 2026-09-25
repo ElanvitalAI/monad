@@ -1,0 +1,27 @@
+id: grok-4.3
+provider: grok
+displayName: Grok 4.3
+family: grok-4
+contextSize: 1000000
+outputMaxTokens: 8192
+vision: images
+audio: { input: false, output: false }
+reasoning: medium
+toolCalling: native-openai
+streamingProtocol: sse
+pricing:
+  inputPerMTok: 1.25
+  outputPerMTok: 2.50
+  cachedInputPerMTok: 0.20
+rateLimits:
+  rpm: 1800
+  tpm: 10000000
+deprecated: null
+releaseDate: 2026-03-01
+tokenizer: cl100k
+kind: chat
+discoveryMeta:
+  source: auto-omni-crawl
+  lastSeen: 2026-05-10
+  autoFilled: true
+  confidence: high

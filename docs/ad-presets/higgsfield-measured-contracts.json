@@ -1,0 +1,20 @@
+{
+  "_source": "docs/RFC-higgsfield-marketing-pipeline-upgrade-three-modes-2026-09-10.md §모델 계약 · Movies/monad-ad/2026-09-11-umbrella/v3-outcomes.json",
+  "_rule": "⛔ 이 파일의 값은 «실측»이다. 새 모델을 더할 때 추정으로 채우지 말고, 거부 문면이나 과금 관측으로 확인한 뒤 적어라.",
+  "durationRules": {
+    "seedance_2_0":   { "minimumSeconds": 4, "_evidence": "2·3초 거부: 'greater than or equal to 4'" },
+    "kling3_0_turbo": { "minimumSeconds": 3, "_evidence": "2초 거부: 'greater than or equal to 3'" }
+  },
+  "creditsPerSecond": {
+    "seedance_2_0":   4.5,
+    "kling3_0_turbo": 1.5,
+    "_evidence": "v3-outcomes 역산이 문서 값과 일치 (22.5/5 · 31.5/7 · 4.5/3)"
+  },
+  "referenceDelivery": {
+    "seedance_2_0": { "kind": "repeated", "flag": "--image-references", "_evidence": "v3 다섯 컷 전부 이 플래그로 통과" }
+  },
+  "_unknown": {
+    "kling3_0_turbo.referenceDelivery": "⛔ 아직 «안 쟀다» — v3 에서 그 모델에 참조를 안 줬다. 추정하지 말 것.",
+    "_note": "여기 없는 모델은 계획기가 needs-input 으로 «이름을 대고» 멈춘다. 그것이 옳은 동작이다."
+  }
+}

@@ -1,0 +1,22 @@
+# 💸 ad · floorplan — 크레딧을 «태우는» 갈래. 소재 생성이 비용의 전부다.
+#
+# ⛔⭐ 이 오버레이는 예산을 «올리는» 것이 아니라 «조이는» 것이다.
+#   📏 근거: `generate cost` 견적 ≠ 실제 청구(2026-09-16 실측 델타 62cr).
+#      assets 를 넉넉히 두면 견적 오차가 곱해져서 조용히 샌다.
+#   ⛔ 「상한 없음」으로 두지 않는다 — 그러면 예산이라는 개념이 사라지고 크레딧만 탄다.
+#
+# ⭐ floorplan 은 «3D 렌더 → 실사 변환 → 영상» 이라 한 컷에 생성이 두 번 이상 돈다.
+#   그래서 assets 를 1로 조이면 안 된다. 6 은 그 두 단계를 «한 방문»으로 보는 값이다.
+overlay_id: profile-credit-heavy
+target: video-production
+stage: runtime
+# ⛔ 이름이 아니라 «사실»로: 과금 구현이 스택에 «있다».
+# ⛔⭐ 조건은 «비교 하나»다 (profile-gui-app 의 같은 주석 참고 — 종전 함수 꼴은 unparseable 이었다).
+applies_when: selected_metered_count >= 1
+patch:
+  - op: replace
+    path: /nodes/4/maxVisits          # assetgate — 비율·팔레트를 «생성 전»에 잡는 쪽이 싸다
+    value: 5
+  - op: replace
+    path: /nodes/11/maxVisits         # qc — 크레딧을 태운 판은 검수를 더 돈다
+    value: 4

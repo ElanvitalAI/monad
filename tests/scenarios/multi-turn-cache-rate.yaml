@@ -1,0 +1,49 @@
+description: |
+  Wave A1 verify (B2 흡수) — multi-turn baseline + cache hit rate
+  측정 인프라 검증. 같은 분석 prompt 를 4-provider 동시 실행해
+  multi-turn pathology + cacheReadInputTokens 추적 가능 여부 확인.
+
+  Success criterion (per-provider):
+  - text ≥ 1500 chars
+  - turnCount ≥ 1 (multi-turn 강제는 prompt 자체로 — 작은 모델이
+    single-turn 으로 끝나도 PASS, agent 능력 비교 측정만)
+  - debug.log 에 chat.cache.turn 카테고리 가시 (Wave A1 forensic)
+  - 회귀 0
+
+  비교 metric:
+  - turnCount / toolCallCount: 모델별 agentic 강도
+  - cacheReadInputTokens (turn 별 + 누적): cache 활용도
+  - hitRatePct (chat.cache.turn forensic): 측정 인프라 작동 확인
+
+  4-provider 분석 prompt — 각 provider 의 native path 동시 측정:
+  - codex (gpt-5.5): Codex Responses API, reasoning high
+  - opus (claude-opus-4-7): Anthropic, prompt cache 4-slot
+  - gemini (gemini-3.1-pro-preview): @google/genai SDK,
+    systemInstruction + thinkingConfig
+  - xai (grok-4.3): OpenAI-compat, reasoning always-on
+
+defaults:
+  cwd: ../..
+  asserts:
+    text_min_chars: 1500
+
+prompts:
+  # ── codex (Codex Responses API) ──────────────────────────────────
+  - id: cache-rate-codex
+    rotate: codex
+    prompt: "이 프로젝트의 디버깅 파이프라인을 한국어로 자세히 분석해주세요"
+
+  # ── claude (Anthropic prompt-cache 4-slot) ───────────────────────
+  - id: cache-rate-opus
+    rotate: opus
+    prompt: "이 프로젝트의 디버깅 파이프라인을 한국어로 자세히 분석해주세요"
+
+  # ── gemini (native @google/genai SDK + thinkingConfig) ───────────
+  - id: cache-rate-gemini
+    rotate: gemini
+    prompt: "이 프로젝트의 디버깅 파이프라인을 한국어로 자세히 분석해주세요"
+
+  # ── grok 4.3 (reasoning always-on) ───────────────────────────────
+  - id: cache-rate-xai
+    rotate: xai
+    prompt: "이 프로젝트의 디버깅 파이프라인을 한국어로 자세히 분석해주세요"

@@ -1,0 +1,148 @@
+graph_id: document-loop
+version: 1
+entry_node: document-draft
+terminal_nodes: [merge, document-blocked]
+runner_inputs: [goal, worktree, branch, review-intent, head-sha, base-branch]
+docs_only_gate_skip: true
+state: [document, changed_files, review_summary]
+
+nodes:
+  - node_id: document-draft
+    kind: agent
+    recipe: headless-goal-loop
+    max_visits: 4
+    progress: [implementing, implemented]
+    terminal_stages: [aborted, timed-out]
+    contract:
+      inputs: [goal, worktree]
+      tools: worktree-write
+      outputs: [document, changed_files]
+
+  - node_id: gate
+    kind: gate
+    recipe: gate-baseline
+    max_visits: 4
+    progress: [gating, gated]
+    terminal_stages: [gate-failed]
+    contract:
+      inputs: [worktree, changed_files]
+      tools: read-and-run-tests
+      outputs: [passed, log]
+
+  - node_id: document-review
+    kind: judge
+    recipe: pr-reviewer
+    max_visits: 4
+    progress: [reviewing, reviewed]
+    terminal_stages: [review-blocked]
+    contract:
+      inputs: [document, review-intent]
+      tools: read-only
+      outputs: [verdict, must-fix, review-summary]
+
+  - node_id: document-rework
+    kind: agent
+    recipe: headless-goal-loop
+    max_visits: 4
+    progress: [implementing]
+    terminal_stages: [gate-failed, review-blocked]
+    contract:
+      inputs: [must-fix, worktree]
+      tools: worktree-write
+      outputs: [document, changed_files]
+
+  - node_id: document-blocked
+    kind: judge
+    recipe: pr-reviewer
+    max_visits: 1
+    progress: [review-blocked]
+    terminal_stages: [review-blocked]
+    contract:
+      inputs: [must-fix, review-summary]
+      tools: read-only
+      outputs: [review-blocked]
+
+  - node_id: main-sync
+    kind: git
+    recipe: seams-git-merge-main
+    max_visits: 2
+    progress: [gating, merge-conflict]
+    terminal_stages: [merge-conflict]
+    contract:
+      inputs: [worktree, base-branch]
+      tools: git-write
+      outputs: [synced, conflicts]
+
+  - node_id: regate
+    kind: gate
+    recipe: gate-baseline
+    max_visits: 2
+    progress: [gating]
+    terminal_stages: [gate-failed]
+    contract:
+      inputs: [worktree]
+      tools: read-and-run-tests
+      outputs: [passed, log]
+
+  - node_id: open-pr
+    kind: git
+    recipe: seams-gh-open-pr
+    max_visits: 2
+    progress: [pr-opening, pr-opened]
+    terminal_stages: [pr-declined, pr-opened]
+    contract:
+      inputs: [branch, review-summary]
+      tools: gh-pr-create
+      outputs: [pr-number, pr-url]
+
+  - node_id: merge
+    kind: git
+    recipe: seams-gh-merge-squash
+    max_visits: 2
+    progress: [merging, merged]
+    terminal_stages: [merged, pr-opened]
+    contract:
+      inputs: [pr-number, head-sha]
+      tools: gh-pr-merge
+      outputs: [merged]
+
+edges:
+  - from: document-draft
+    on: changed-files
+    map:
+      code-changed: gate
+      documents-only: document-review
+      unknown: gate
+
+  - from: gate
+    on: outcome
+    map:
+      pass: document-review
+      fail: document-rework
+
+  - from: document-review
+    on: outcome
+    map:
+      pass: main-sync
+      fail: document-rework
+
+  - from: document-rework
+    on: outcome
+    map:
+      retry: document-draft
+      exhausted: document-blocked
+
+  - from: main-sync
+    on: outcome
+    map:
+      pass: regate
+      conflict: document-rework
+
+  - from: regate
+    on: outcome
+    map:
+      pass: open-pr
+      fail: document-rework
+
+  - from: open-pr
+    to: merge

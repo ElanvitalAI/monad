@@ -1,0 +1,136 @@
+/* Ergonomic-port Tier E2 (2026-05-11) — node card status visuals.
+ *
+ * The base `renderNodeCard` paints a status dot (Tier 2 W4); this
+ * layer wraps the whole card with a status-tinted halo + animation
+ * so the user can spot a running / failed / completed card at a
+ * glance instead of scanning each dot.
+ *
+ * `prefers-reduced-motion` users see a static colored ring instead
+ * of the pulse / flash so the surface stays readable for vestibular-
+ * sensitive viewers.
+ *
+ * E2.1 — drag-to-connect line uses `.workflow-edge-pending` to fade
+ * in over 300ms so a stray click doesn't paint a connection wire
+ * for a single frame.
+ */
+
+.workflow-node-status-running {
+  animation: workflow-node-pulse 1.4s ease-in-out infinite;
+  box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.45);
+}
+
+.workflow-node-status-done {
+  animation: workflow-node-flash 1.2s ease-out 1;
+}
+
+.workflow-node-status-failed {
+  box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.55);
+}
+
+.workflow-node-status-skipped {
+  box-shadow: 0 0 0 2px rgba(107, 114, 128, 0.45);
+}
+
+/* Surface-unification §D1 (2026-05-11) — amber pulse for nodes waiting
+ * on approval. Slower cadence than running (2.0s vs 1.4s) so users can
+ * distinguish "running computation" from "halted, needs you". */
+.workflow-node-status-awaiting_approval {
+  animation: workflow-node-pulse-amber 2.0s ease-in-out infinite;
+  box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.55);
+}
+
+@keyframes workflow-node-pulse-amber {
+  0% {
+    box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.75);
+  }
+  70% {
+    box-shadow: 0 0 0 14px rgba(245, 158, 11, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(245, 158, 11, 0);
+  }
+}
+
+@keyframes workflow-node-pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.55);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(245, 158, 11, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(245, 158, 11, 0);
+  }
+}
+
+@keyframes workflow-node-flash {
+  0% {
+    box-shadow: 0 0 0 0 rgba(34, 197, 94, 0);
+  }
+  35% {
+    box-shadow: 0 0 0 6px rgba(34, 197, 94, 0.45);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(34, 197, 94, 0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .workflow-node-status-running {
+    animation: none;
+    box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.55);
+  }
+  .workflow-node-status-done {
+    animation: none;
+    box-shadow: 0 0 0 2px rgba(34, 197, 94, 0.55);
+  }
+  .workflow-node-status-awaiting_approval {
+    animation: none;
+    box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.7);
+  }
+}
+
+/* Tier E3.1 (2026-05-11) — Handle visual: bigger hit-target than the
+ * ReactFlow default (6×6) so iPad touch + zoomed-out canvas stay
+ * usable. The variant border on each node provides the "this is a
+ * handle" hint at rest; hover bumps the size for keyboard / mouse
+ * feedback. Zoom compensation is deliberately deferred — modern iPads
+ * + ReactFlow's default minZoom (0.5) keep the absolute size legible
+ * down to ~6 px, which the 12 px baseline already exceeds. */
+.workflow-node-status .react-flow__handle,
+.workflow-node-status-running .react-flow__handle,
+.workflow-node-status-done .react-flow__handle,
+.workflow-node-status-failed .react-flow__handle,
+.workflow-node-status-skipped .react-flow__handle,
+.workflow-node-status-awaiting_approval .react-flow__handle {
+  width: 12px;
+  height: 12px;
+  border-width: 2px;
+  background: var(--surface, #0f1117);
+  border-color: var(--accent, #8b5cf6);
+}
+.workflow-node-status .react-flow__handle:hover,
+.workflow-node-status-running .react-flow__handle:hover,
+.workflow-node-status-done .react-flow__handle:hover,
+.workflow-node-status-failed .react-flow__handle:hover,
+.workflow-node-status-skipped .react-flow__handle:hover,
+.workflow-node-status-awaiting_approval .react-flow__handle:hover {
+  width: 16px;
+  height: 16px;
+  background: var(--accent, #8b5cf6);
+}
+
+/* E2.1 — pending connection line. ReactFlow inlines stroke colors
+ * via inline style on <path>; we layer a 300ms fade-in via the
+ * wrapping <g> so the wire only becomes visible after the user
+ * commits to the drag. */
+.workflow-edge-pending {
+  opacity: 0;
+  animation: workflow-edge-fade-in 220ms ease-in 80ms forwards;
+}
+
+@keyframes workflow-edge-fade-in {
+  to {
+    opacity: 1;
+  }
+}

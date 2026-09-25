@@ -1,0 +1,30 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>cdp-moving-layout</title>
+<style>
+  html, body { margin: 0; }
+  #mover { width: 40px; height: 40px; background: #246; }
+</style>
+<div id="mover"></div>
+<script>
+  // Motion starts only after the test arms it. Each step is 400ms, so the last change lands at 1600ms.
+  // data-cdp-layout-final is the settled height. A constant sleep(100) reads 120, not 640.
+  const mover = document.getElementById('mover');
+  const steps = [120, 240, 360, 480, 640];
+  window.addEventListener('load', () => {
+    let index = 0;
+    const tick = () => {
+      if (index >= steps.length) return;
+      mover.style.height = steps[index] + 'px';
+      index += 1;
+      if (index >= steps.length) document.documentElement.dataset.cdpLayoutFinal = '640';
+      setTimeout(tick, 400);
+    };
+    const arm = () => {
+      if (document.documentElement.dataset.cdpLayoutEpoch !== 'go') return;
+      tick();
+    };
+    new MutationObserver(arm).observe(document.documentElement, { attributes: true, attributeFilter: ['data-cdp-layout-epoch'] });
+    arm();
+  });
+</script>

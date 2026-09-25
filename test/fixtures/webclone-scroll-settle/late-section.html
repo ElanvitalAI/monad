@@ -1,0 +1,40 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<style>
+  body { margin: 0; }
+  section { min-height: 560px; padding: 20px; }
+  .d { background: #10131a; color: #fff; }
+  .l { background: #fdfdfd; color: #111; }
+  .g { display: grid; grid-template-columns: 2fr 1fr; gap: 16px; }
+  .acc { color: #0071e3; }
+  img { width: 200px; height: 120px; display: block; }
+  /* 스크롤로 들어오기 전에는 한 줄이다. 너무 일찍 재면 이 절이 문서 높이에 거의 안 들어간다. */
+  #late { min-height: 0; height: 1px; overflow: hidden; padding: 0; }
+  #late.sat { height: auto; min-height: 720px; overflow: visible; padding: 20px; }
+</style>
+</head>
+<body>
+<main>
+  <section class="l g"><h2 style="font-weight:350">제목0</h2><p class="acc">강조</p><p class="acc">강조</p><img src="/img1.gif" alt=""></section>
+  <section class="d g"><h2 style="font-weight:450">제목1</h2><p class="acc">강조</p><p class="acc">강조</p><img src="/img2.gif" alt=""></section>
+  <section class="l g"><h2 style="font-weight:350">제목2</h2><p class="acc">강조</p><p>본문</p></section>
+  <section id="late" class="d g"><h2 style="font-weight:450">제목3</h2><p class="acc">강조</p><p>늦게 앉는 절</p></section>
+</main>
+<script>
+  // 완료를 선언하지 않는다. 스크롤로 들어온 뒤에만 높이가 자라고, 그 뒤엔 더 안 변한다.
+  const late = document.getElementById('late');
+  const observer = new IntersectionObserver((entries) => {
+    for (const entry of entries) {
+      if (!entry.isIntersecting) continue;
+      // 들어온 뒤에도 바로 안 앉는다. 정착 창(150ms×20)보다 늦게 자라므로, 안 기다리고 재면 높이가 빠진다.
+      setTimeout(() => late.classList.add('sat'), 4000);
+      observer.disconnect();
+    }
+  });
+  observer.observe(late);
+</script>
+</body>
+</html>

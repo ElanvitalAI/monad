@@ -1,0 +1,19 @@
+id: claude-opus-5
+provider: anthropic
+displayName: Claude Opus 5
+family: claude
+# ⭐ 2026-09-25: `opus` 별칭은 claude-opus-5-5 로 옮겼다(대표 「모델별 최신으로」).
+# ⭐ 2026-08-18 1차 대조: Anthropic `/v1/models` 실호출 ⊕ claude-api 레퍼런스 표.
+#    현 flagship — 복잡 에이전틱 코딩·장기 추론
+contextSize: 1000000
+outputMaxTokens: 128000
+vision: images
+audio: { input: false, output: false }
+reasoning: adaptive
+toolCalling: native-anthropic
+streamingProtocol: sse
+# ⭐ Anthropic `/v1/models` 의 created_at 1차 (2026-08-18 조회)
+releaseDate: 2026-07-24
+pricing:
+  inputPerMTok: 5.00
+  outputPerMTok: 25.00
