@@ -144,6 +144,8 @@ export interface DoctorOptions {
    * Throw when the lookup itself fails — that is not a checkout.
    */
   readInstallPrefix?: () => string | null | undefined;
+  /** 저장소가 시험한 bun 판(시험 seam) — 기본은 패키지 뿌리의 `.bun-version`. */
+  bunPin?: () => string | null;
   /** 리눅스 TMPDIR/bun 캐시 파일시스템 비교(시험 seam). */
   tmpdirSameFsAsBunCache?: () => boolean | null;
   /** Read-only `gh auth status` exit code. `null` means it could not be run. */
@@ -271,6 +273,9 @@ interface ReadinessLookup {
   ghAuthStatus: () => number | null;
   ghVersion?: () => string | null;
   tmpdirSameFsAsBunCache: () => boolean | null;
+  /** 저장소가 시험한 bun 판(`.bun-version`) · 지금 도는 bun 판(시험 seam). */
+  bunPin?: () => string | null;
+  bunVersion?: () => string | null;
   /** LLM 키가 하나라도 풀렸나(자격 보고서에서 · 없으면 못 쟀다). */
   llmKeyResolved?: boolean;
   /** `/etc/os-release` 본문(시험 seam) — 못 읽으면 null. */
@@ -287,6 +292,20 @@ interface ReadinessLookup {
   readServiceFile?: () => { path: string; text: string } | null;
   /** 첫 PATH 의 `monad` 실경로(시험 seam). */
   monadOnPath?: (pathEntries: readonly string[]) => string | null;
+}
+
+function safe(read: () => string | null): string | null {
+  try { return read(); } catch { return null; }
+}
+
+/** 저장소가 시험한 bun 판 — 패키지 뿌리의 `.bun-version`(설치기·Pod 이미지와 같은 한 칸). 못 읽으면 null. */
+export function readBunPin(root: string, read: (path: string) => string = (path) => readFileSync(path, 'utf8')): string | null {
+  try {
+    const value = read(join(root, '.bun-version')).trim();
+    return /^\d+\.\d+\.\d+$/.test(value) ? value : null;
+  } catch {
+    return null;
+  }
 }
 
 /** PATH 를 앞에서부터 보고 처음 만나는 `monad` 의 실경로(링크를 끝까지 푼 것). 없으면 null. */
@@ -414,6 +433,8 @@ function resolveReadinessDeps(lookup: ReadinessLookup): ReadinessDeps {
     codeRevision: revision,
     platform: lookup.platform,
     tmpdirSameFsAsBunCache,
+    bunVersion: safe(lookup.bunVersion ?? (() => (typeof Bun !== 'undefined' ? Bun.version : null))),
+    bunPin: safe(lookup.bunPin ?? (() => null)),
     serviceFile,
     buildToolchain: (() => { try { return (lookup.probeBuildToolchain ?? (() => defaultProbeBuildToolchain(lookup.commandExists, pathEntries)))(); } catch { return null; } })(),
     pythonEnv: (() => { try { return (lookup.checkPythonEnv ?? defaultCheckPythonEnv)(); } catch { return null; } })(),
@@ -951,6 +972,7 @@ export function runDoctor(options: DoctorOptions = {}): DoctorReport {
         codeRevision: options.codeRevision ?? defaultCodeRevision,
         fetchHealth: options.fetchHealth ?? defaultFetchHealth,
         readInstallPrefix: options.readInstallPrefix ?? (() => defaultReadInstallPrefix(root, exists)),
+        bunPin: options.bunPin ?? (() => readBunPin(root)),
         ghAuthStatus: options.ghAuthStatus ?? (() => defaultGhAuthStatus(commandExists)),
         ghVersion: options.ghVersion ?? (() => defaultGhVersion(commandExists)),
         tmpdirSameFsAsBunCache: options.tmpdirSameFsAsBunCache ?? (() => defaultTmpdirSameFsAsBunCache(env)),
@@ -980,12 +1002,17 @@ export function runDoctor(options: DoctorOptions = {}): DoctorReport {
 
 function formatReadiness(readiness: ReadinessReport | undefined): string[] {
   if (readiness === undefined) return [];
+  const todo = readiness.items.filter((entry) => entry.status === 'manual' || entry.status === 'fixable');
   return [
     '준비 상태:',
     ...readiness.items.map((entry) => {
       const remedy = entry.remedy === undefined ? '' : ` — ${entry.remedy}`;
       return `  ${entry.id}: ${entry.status} — ${entry.evidence}${remedy}`;
     }),
+    todo.length === 0
+      ? '할 일 없음.'
+      // 처방은 줄마다 이미 있다 — 「fixable」이 곧 `doctor --fix` 는 아니다(install-path 의 처방은 export 한 줄).
+      : `할 일 ${todo.length}개: ${todo.map((entry) => entry.id).join(', ')} — 처방은 위 각 줄 끝`,
   ];
 }
 
@@ -1026,8 +1053,10 @@ export function formatDoctorReport(report: DoctorReport): string {
       ].join('\n');
     }),
     ...(report.externalCommandsCatalogUnavailable ? [`External commands catalog unavailable: ${report.externalCommandsCatalogReason ?? 'catalog/external-commands.yaml is unavailable.'}`] : []),
-    ...formatReadiness(report.readiness),
     ...formatCapabilitySummary(capabilitySummary),
+    // 준비 상태는 «맨 끝» — 터미널에서 보이는 것은 끝이다. 09-25 베어 ubuntu:24.04: 224줄 중 준비 상태가
+    // 「못 하는 일」 40여 줄 위에 묻혀 스크롤 밖이었다.
+    ...formatReadiness(report.readiness),
   ].join('\n');
 }
 

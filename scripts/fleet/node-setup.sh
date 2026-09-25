@@ -23,6 +23,19 @@ R true >/dev/null 2>&1 && ok "ssh" || { bad "ssh 불통 — 이 맥에서 ssh �
 # 2. brew · docker(OrbStack)
 R 'command -v brew' >/dev/null && ok "brew" || bad "brew 없음 — https://brew.sh 로 먼저 설치(사람이)"
 if R 'docker info --format "{{.ServerVersion}}"' >/dev/null 2>&1; then ok "docker $(R 'docker info --format "{{.ServerVersion}} cpu={{.NCPU}} mem={{.MemTotal}}"')"; else bad "docker 없음·꺼짐 — OrbStack 을 설치·실행(사람이 · ⛔ OrbStack 내장 k8s 는 NetworkPolicy 를 집행 안 한다 · k3d 를 쓴다)"; fi
+# 2b. ssh 비로그인 PATH — zsh 는 비대화형 ssh 명령에서도 ~/.zshenv 를 읽는다. 여기에 brew·docker·OrbStack 경로를 둔다.
+#     그래야 `DOCKER_HOST=ssh://<호스트>` 와 원격 명령이 PATH 우회 없이 docker·k3d 를 찾는다(09-25: 기본 PATH 는 /usr/bin:/bin:/usr/sbin:/sbin 뿐이었다).
+if ssh -o BatchMode=yes -o ConnectTimeout=10 "$HOST" 'command -v docker >/dev/null && command -v brew >/dev/null'; then ok "ssh 비로그인 PATH(docker·brew)"
+elif [ $CHECK = 1 ]; then todo "~/.zshenv 에 PATH 블록(비로그인 ssh 가 docker·brew 를 찾게)"
+elif [ "$(R 'basename "$SHELL"')" != "zsh" ]; then bad "기본 셸이 zsh 가 아니다 — 비로그인 PATH 를 손으로(사람이)"
+else R 'grep -q ">>> monad fleet >>>" ~/.zshenv 2>/dev/null || printf "%s\n" "# >>> monad fleet >>> (scripts/fleet/node-setup.sh · 비로그인 ssh 가 docker·brew·k3d 를 찾게)" "export PATH=\"/opt/homebrew/bin:/usr/local/bin:\$HOME/.orbstack/bin:\$PATH\"" "# <<< monad fleet <<<" >> ~/.zshenv'
+  ssh -o BatchMode=yes -o ConnectTimeout=10 "$HOST" 'command -v docker >/dev/null' && ok "ssh 비로그인 PATH (~/.zshenv 블록 추가)" || bad "~/.zshenv 를 넣었는데도 docker 를 못 찾는다"; fi
+# 2c. 플릿 전용 docker 설정 — 기본 설정이 자격을 macOS 키체인(credsStore)에서 꺼내면 비대화형 ssh 에선 키체인이 잠겨 공개 이미지 받기도 막힌다(09-25 node-c).
+#     ~/.docker-fleet = 자격 저장소 없이 «현재 컨텍스트»만 그대로 ⊕ cli-plugins(buildx) 링크 — 빠지면 옛 빌더로 떨어져 TARGETARCH 가 비고 아키텍처별 단계가 깨진다(09-25 node-c). 원격 빌드(build.sh MONAD_BUILD_REMOTE)가 이것을 쓴다.
+if R 'test -f ~/.docker-fleet/config.json && DOCKER_CONFIG=~/.docker-fleet docker info >/dev/null 2>&1 && DOCKER_CONFIG=~/.docker-fleet docker buildx version >/dev/null 2>&1'; then ok "플릿 docker 설정(~/.docker-fleet · buildx)"
+elif [ $CHECK = 1 ]; then todo "~/.docker-fleet(키체인 없는 docker 설정)"
+else R 'mkdir -p ~/.docker-fleet && ctx=$(python3 -c "import json,os;print(json.load(open(os.path.expanduser(\"~/.docker/config.json\"))).get(\"currentContext\",\"\"))" 2>/dev/null); printf "{\"currentContext\": \"%s\"}\n" "$ctx" > ~/.docker-fleet/config.json; [ -e ~/.docker-fleet/contexts ] || ln -s ~/.docker/contexts ~/.docker-fleet/contexts; [ -e ~/.docker-fleet/cli-plugins ] || [ ! -d ~/.docker/cli-plugins ] || ln -s ~/.docker/cli-plugins ~/.docker-fleet/cli-plugins'
+  R 'DOCKER_CONFIG=~/.docker-fleet docker info >/dev/null 2>&1 && DOCKER_CONFIG=~/.docker-fleet docker buildx version >/dev/null 2>&1' && ok "플릿 docker 설정 (~/.docker-fleet 생성 · buildx)" || bad "플릿 docker 설정으로 docker 에 못 붙는다"; fi
 # 3. bun — 이 맥과 «같은 판»(시험 샤딩은 판이 같아야 비교된다).
 #    ⛔ 원격에 «다른 판» bun 이 이미 있으면 덮어쓰지 않는다(그 기계의 다른 일이 쓴다) — ~/.bun-<판> 에 나란히 둔다.
 #    ⛔ 나란히 설치할 땐 설치기가 셸 설정에 PATH 를 덧붙여 기본 bun 을 가로채지 않게, 셸 설정 파일을 전후로 되돌린다.

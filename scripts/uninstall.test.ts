@@ -48,6 +48,19 @@ describe('scripts/uninstall.sh', () => {
     expect(r.stdout).toContain('kept state:');
   });
 
+  // 🩸 09-25 — 기억 저장소 기본 위치가 설치 폴더 안(~/.local/share/monad/memory)이라 통째로 지우면 기억이 사라졌다.
+  test('keeps what is not part of the installation (memory/) and says so; removes only the four install items', () => {
+    const f = fixture();
+    mkdirSync(join(f.prefix, 'memory'), { recursive: true });
+    writeFileSync(join(f.prefix, 'memory', 'MEMORY.md'), '- [probe](x.md)\n');
+    const r = run(f);
+    expect(r.status, r.stderr).toBe(0);
+    expect(readFileSync(join(f.prefix, 'memory', 'MEMORY.md'), 'utf8')).toContain('probe');
+    for (const item of ['versions', 'current', 'bin', 'install.json']) expect(existsSync(join(f.prefix, item))).toBe(false);
+    expect(r.stdout).toContain('kept in');
+    expect(r.stdout).toContain('memory');
+  });
+
   test('--dry-run and --keep-path change nothing they should not', () => {
     const f = fixture();
     const dry = run(f, ['--dry-run']);

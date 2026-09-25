@@ -55,32 +55,15 @@ done
 # ⛔ 끄면(--no-bootstrap-bun) 공식 설치 명령을 안내하고 rc 127 로 멈춘다.
 # 🩸 2026-09-24 빈 VM 실측: 비대화 셸(ssh 명령·크론)은 ~/.bun/bin 이 PATH 에 없어 «이미 깐» bun 을 못 보고 또 설치했다.
 #    ⇒ 표준 위치에 있으면 그것을 쓴다.
+# 전에 둔 $PREFIX/bin/bun 이 «끊어진» 링크(고리 포함)면 먼저 걷는다 — 0.1.0 설치기가 재설치 때 자기 자신을 가리키는
+# 고리를 만들었다(09-25 GCP debian-12). 걷으면 아래 표준 위치(~/.bun/bin/bun) 탐색이 이어받는다.
+if [ -L "$PREFIX/bin/bun" ] && [ ! -e "$PREFIX/bin/bun" ]; then
+  echo "removing a broken bun link at $PREFIX/bin/bun (left by an earlier install)" >&2
+  rm -f "$PREFIX/bin/bun"
+fi
 if ! command -v bun >/dev/null 2>&1 && [ -x "${BUN_INSTALL:-$HOME/.bun}/bin/bun" ]; then
   export PATH="${BUN_INSTALL:-$HOME/.bun}/bin:$PATH"
 fi
-if ! command -v bun >/dev/null 2>&1 && [ "$BOOTSTRAP_BUN" -eq 1 ]; then
-  # 🩸 2026-09-24 빈 GCP Ubuntu 24.04 실측: unzip 이 없어 bun 공식 설치기가 곧바로 죽고, 이 스크립트는 「bun 이 없다」만
-  #    말했다. ⇒ 미리 보고 «칠 한 줄»을 댄다(패키지 매니저 권한은 사람 몫이라 대신 깔지 않는다).
-  if ! command -v unzip >/dev/null 2>&1; then
-    echo "⛔ bun's installer needs unzip, which is missing. Install it, then rerun this script:" >&2
-    if command -v apt-get >/dev/null 2>&1; then echo "   sudo apt-get install -y unzip" >&2
-    elif command -v dnf >/dev/null 2>&1; then echo "   sudo dnf install -y unzip" >&2
-    elif command -v brew >/dev/null 2>&1; then echo "   brew install unzip" >&2
-    else echo "   (install the 'unzip' package with your package manager)" >&2; fi
-    exit 127
-  fi
-  if command -v curl >/dev/null 2>&1; then
-    echo "bun not found — installing bun with its official installer (https://bun.sh/install)" >&2
-    if curl -fsSL https://bun.sh/install | bash >&2; then
-      export PATH="${BUN_INSTALL:-$HOME/.bun}/bin:$PATH"
-    else
-      echo "⚠️ bun bootstrap failed" >&2
-    fi
-  else
-    echo "⚠️ bun bootstrap needs curl" >&2
-  fi
-fi
-
 # Match doctor-distro.ts families when a required command is absent; do not source os-release as shell code.
 required_command_hint() {
   local package="$1" id='' id_like='' version='' key value family='unknown' like
@@ -117,13 +100,45 @@ required_command_hint() {
     return
   fi
   case "$family" in
-    debian) echo "   sudo apt-get install -y $package" >&2 ;;
-    fedora) echo "   sudo dnf install -y $package" >&2 ;;
-    amzn2) echo "   sudo yum install -y $package" >&2 ;;
+    debian) echo "   ${SUDO}apt-get install -y $package" >&2 ;;
+    fedora) echo "   ${SUDO}dnf install -y $package" >&2 ;;
+    amzn2) echo "   ${SUDO}yum install -y $package" >&2 ;;
     darwin) echo "   brew install $package" >&2 ;;
     *) echo "   (install the '$package' package with your package manager)" >&2 ;;
   esac
 }
+
+# root(컨테이너·클라우드 이미지)엔 sudo 가 없는 일이 흔하다 — 안내 줄에 sudo 를 붙이면 그대로 쳐도 실패한다(09-25 베어 ubuntu:24.04 실측).
+SUDO='sudo '
+[ "$(id -u 2>/dev/null)" = 0 ] && SUDO=''
+
+# 빠진 선행 명령을 «한 번에» 모아 한 줄로 댄다.
+# 🩸 09-25 베어 ubuntu:24.04 실측: unzip 으로 멈추고, 깔고 다시 돌리면 git 으로 또 멈췄다(세 판).
+# 패키지 매니저 권한은 사람 몫이라 대신 깔지 않는다. bun 은 여기서 세지 않는다(없으면 아래에서 공식 설치기로 깐다).
+MISSING=()
+if ! command -v bun >/dev/null 2>&1 && [ "$BOOTSTRAP_BUN" -eq 1 ]; then
+  command -v curl >/dev/null 2>&1 || MISSING+=(curl)
+  command -v unzip >/dev/null 2>&1 || MISSING+=(unzip)   # bun 공식 설치기가 쓴다
+fi
+command -v git >/dev/null 2>&1 || MISSING+=(git)
+if [ "${#MISSING[@]}" -gt 0 ]; then
+  echo "⛔ required command missing: ${MISSING[*]}. Install it, then rerun this script:" >&2
+  required_command_hint "${MISSING[*]}"
+  exit 127
+fi
+
+# bun 판은 고정한다 — 기계마다 «그날의 최신»이 깔리면 같은 판을 설치해도 다르게 돈다.
+# Pod 이미지(docker/harness/Dockerfile `ARG BUN_VERSION`)와 같은 판. MONAD_BUN_VERSION=latest 면 고정하지 않는다.
+BUN_PIN="${MONAD_BUN_VERSION:-1.4.2}"
+if ! command -v bun >/dev/null 2>&1 && [ "$BOOTSTRAP_BUN" -eq 1 ]; then
+  echo "bun not found — installing bun ${BUN_PIN} with its official installer (https://bun.sh/install)" >&2
+  if [ "$BUN_PIN" = latest ]; then BUN_ARGS=(); else BUN_ARGS=("bun-v${BUN_PIN}"); fi
+  if curl -fsSL https://bun.sh/install | bash -s ${BUN_ARGS[@]+"${BUN_ARGS[@]}"} >&2; then
+    export PATH="${BUN_INSTALL:-$HOME/.bun}/bin:$PATH"
+  else
+    echo "⚠️ bun bootstrap failed" >&2
+  fi
+fi
 
 # Keep this explicit set aligned with catalog/external-commands.yaml required entries.
 REQUIRED_COMMANDS=(git bun)
@@ -138,6 +153,14 @@ done
 for command in "${HARNESS_COMMANDS[@]}"; do
   command -v "$command" >/dev/null 2>&1 || echo "⚠️ harness command missing: $command" >&2
 done
+
+# bun 의 «실제 실행 파일» — PATH 의 이름이 아니라 bun 이 스스로 말하는 경로(링크를 끝까지 푼 것).
+# 🩸 09-25 GCP debian-12 재설치: 로그인 셸은 $PREFIX/bin 이 PATH 맨 앞이라 `command -v bun` 이 우리가 전에 둔
+#    $PREFIX/bin/bun 링크 «자신»을 가리켰고, `ln -sfn` 이 그것을 자기 자신으로 덮어 고리를 만들었다
+#    (`bun: Too many levels of symbolic links` · 설치 rc 127 · 이후 `monad` 가 전부 죽음). 업데이트·재설치 경로 전부가 여기를 지난다.
+BUN_EXEC="$(bun -e 'process.stdout.write(process.execPath)' 2>/dev/null || true)"
+# bun 이 경로를 못 대면(비정상 bun) 예전처럼 PATH 의 이름으로 물러선다 — 그 이름이 우리 링크 자신이면 아래에서 다시 잇지 않는다.
+{ [ -n "$BUN_EXEC" ] && [ -x "$BUN_EXEC" ]; } || BUN_EXEC="$(command -v bun)"
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]:-$0}")" && pwd -P)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd -P)"
@@ -272,8 +295,8 @@ fi
 #    bun 이 불러오는 순간 panic(uv_version_string)으로 죽었다. ⇒ 빌드 동안만 node=bun · node-gyp=최신 심을 PATH 앞에
 #    (src/native/native-build-env.ts 와 같은 심).
 NATIVE_SHIM="$(mktemp -d "${TMPDIR:-/tmp}/monad-native-build.XXXXXX")"
-ln -s "$(command -v bun)" "$NATIVE_SHIM/node"
-printf '#!/bin/sh\nexec "%s" x node-gyp@latest "$@"\n' "$(command -v bun)" > "$NATIVE_SHIM/node-gyp"
+ln -s "$BUN_EXEC" "$NATIVE_SHIM/node"
+printf '#!/bin/sh\nexec "%s" x node-gyp@latest "$@"\n' "$BUN_EXEC" > "$NATIVE_SHIM/node-gyp"
 chmod +x "$NATIVE_SHIM/node-gyp"
 if ! (cd "$VERSION_DIR" && PATH="$NATIVE_SHIM:$PATH" bun add --no-save --offline "$INSTALL_TARBALL" >/dev/null 2>&1); then
   echo "dependencies not in the local bun cache — fetching them from the npm registry" >&2
@@ -287,7 +310,10 @@ chmod +x "$PREFIX/bin/monad"
 # monad 엔트리는 `#!/usr/bin/env bun` 이다 — bun 도 같은 bin 에 둬서 PATH 한 줄로 둘 다 잡히게 한다.
 # 🩸 2026-09-25 빈 debian:12 컨테이너: bun 설치기는 ~/.bun/bin 을 ~/.bashrc 에만 써서(비대화형이면 안 읽힌다)
 #    로그인 셸에서 monad 는 찾았는데 `/usr/bin/env: 'bun': No such file or directory` 로 죽었다.
-ln -sfn "$(command -v bun)" "$PREFIX/bin/bun"
+case "$BUN_EXEC" in
+  "$PREFIX/bin/bun"|"$PREFIX/bin/bun/") ;;   # 자기 자신에게 잇지 않는다(고리)
+  *) ln -sfn "$BUN_EXEC" "$PREFIX/bin/bun" ;;
+esac
 
 INSTALLED_PACKAGE="$PREFIX/current/node_modules/monadagent/package.json"
 VERSION="$(bun -e 'const p=JSON.parse(await Bun.file(process.argv.at(-1)).text()); process.stdout.write(p.version)' "$INSTALLED_PACKAGE")"

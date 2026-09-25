@@ -44,6 +44,7 @@ import { registerWhereCommand } from './cli/where-cli.js';
 import { registerBrowserAnnotateCommand } from './cli/browser-annotate-cli.js';
 import { registerPendingQuestionsCommand } from './cli/pending-questions-cli.js';
 import { registerUsageCommand } from './cli/usage-cli.js';
+import { registerReleaseCommands } from './cli/release-cli.js';
 import { registerModelWatchCommand } from './cli/model-watch-cli.js';
 import { registerDoctorCommand } from './cli/doctor-cli.js';
 import { registerSetupCommand } from './cli/setup-cli.js';
@@ -914,6 +915,7 @@ registerWhereCommand(program);
 registerBrowserAnnotateCommand(program);
 registerPendingQuestionsCommand(program);
 registerUsageCommand(program);
+registerReleaseCommands(program);
 registerModelWatchCommand(program);
 registerDoctorCommand(program);
 registerSetupCommand(program);
@@ -4082,6 +4084,8 @@ const selfOrchestrateCmd = selfCmd
   .option('--open-pr', 'S3 — 각 잡: gate/리뷰 통과 시 draft PR 개설(각 self-implement 에 --open-pr·승격이 리뷰노드 경유→disposition 내부 각인)')
   .option('--base <branch>', '각 잡 PR base 브랜치')
   .option('--decompose', 'S2 — goal 1개를 LLM 으로 의존성 서브-DAG(위상 병렬 + hot-file 직렬)로 분해 후 실행')
+  .option('--pod-skill-env', 'pod: 필수 스킬(설정 pod-skills.txt)의 키(.env)를 이 런의 Secret 으로 넘긴다 — 명시 opt-in(유료 크레딧) · 이미지엔 안 들어간다')
+  .option('--pod-pool <spec>', 'pod 풀 — 컨텍스트[@ssh호스트][:상한] 을 쉼표로, 앞이 우선(예 pool-node-b@node-b:12,pool-node-c@node-c:3) · 없으면 MONAD_POD_POOL · 그것도 없으면 현재 컨텍스트 하나')
   .option('--substrate <kind>', '실행 칸: local(기본 · 격리 워크트리) | pod(k8s Job · docker/harness 이미지 · MANUAL-pods-for-monad-ops-and-dev)')
   .option('--pod-account <name>', 'pod: codex 계정(~/.monad/auth.json openai-codex:<name> · refresh 제외 사본) · 기본 team')
   .option('--no-pod-rebuild', 'pod: 이미지 판(monad.commit)이 HEAD 와 달라도 다시 굽지 않는다 — 측정은 «이미지 판»을 잰다')
@@ -4221,8 +4225,25 @@ const selfOrchestrateCmd = selfCmd
       const substrate = (opts as { substrate?: string }).substrate ?? 'local';
       let podSpawn: import('./task-orchestrator/surfaces/self-implement.js').SelfImplementJobSpawn | undefined;
       if (substrate === 'pod') {
-        const { podSelfImplementSpawn, podSubstrateReady } = await import('./task-orchestrator/surfaces/self-implement-pod.js');
-        const ready = podSubstrateReady();
+        const { podSelfImplementSpawn, podSubstrateReady, defaultKubectl } = await import('./task-orchestrator/surfaces/self-implement-pod.js');
+        const poolMod = await import('./task-orchestrator/surfaces/pod-pool.js');
+        const poolSpec = poolMod.resolvePodPoolSpec((opts as { podPool?: string }).podPool);
+        let pool: import('./task-orchestrator/surfaces/pod-pool.js').PodPoolScheduler | undefined;
+        let poolMembers: import('./task-orchestrator/surfaces/pod-pool.js').PodPoolMember[] = [];
+        let ready: { ok: boolean; reason: string };
+        if (poolSpec) {
+          let members: import('./task-orchestrator/surfaces/pod-pool.js').PodPoolMember[];
+          try { members = poolMod.parsePodPool(poolSpec); } catch (e) { ui.error(String((e as Error).message)); process.exit(2); }
+          const checked = poolMod.checkPodPool(members!, (args) => defaultKubectl(args));
+          for (const d of checked.dropped) ui.warn(`[pod-pool] ${d.context} 뺌 — ${d.reason}`);
+          debug.log('self-implement.pod', 'pool-check', { spec: poolSpec, ready: checked.ready.map((m) => m.context), dropped: checked.dropped });
+          if (!checked.ok) { ui.error('--substrate pod: 풀의 노드가 하나도 준비되지 않았다'); process.exit(2); }
+          poolMembers = checked.ready;
+          pool = new poolMod.PodPoolScheduler(poolMembers);
+          ready = { ok: true, reason: `pool ${poolMembers.map((m) => `${m.context}:${m.capacity}`).join(',')}` };
+        } else {
+          ready = podSubstrateReady();
+        }
         if (!ready.ok) { ui.error(`--substrate pod: ${ready.reason}`); process.exit(2); }
         // ⛔ Pod 의 monad 는 이미지 판이다 — HEAD 와 다르면 다시 굽는다(BACKLOG E6 · 09-25 세 판이 옛 판을 쟀다).
         const { podImageFreshness } = await import('./task-orchestrator/surfaces/self-implement-pod.js');
@@ -4240,8 +4261,23 @@ const selfOrchestrateCmd = selfCmd
           }
         }
         debug.log('self-implement.pod', 'image-freshness', { ...image });
+        // ☸️ 원격 노드도 «같은 판»이어야 한다 — 다르면 보내서 넣는다. 못 맞춘 노드는 풀에서 뺀다.
+        if (pool) {
+          const synced: typeof poolMembers = [];
+          // ⭐ 노드들을 «동시에» — 노드 쪽 빌드(바뀐 층만) 1순위 · 실패하면 통째 전송.
+          const syncs = await poolMod.syncPoolImages(poolMembers, 'monad-harness:local', image.imageCommit);
+          for (const m of poolMembers) {
+            const r = syncs.get(m.context)!;
+            debug.log('self-implement.pod', 'pool-image-sync', { context: m.context, ...r });
+            if (r.ok) synced.push(m); else ui.warn(`[pod-pool] ${m.context} 뺌 — 이미지 판을 못 맞췄다: ${r.detail}`);
+            if (!opts.json && (r.action === 'shipped' || r.action === 'built')) ui.info(`[pod-pool] ${m.context} 이미지 ${r.action === 'built' ? '노드 쪽 빌드' : '보냄'} ${r.detail} · ${Math.round(r.ms / 1000)}초`);
+          }
+          if (synced.length === 0) { ui.error('--substrate pod: 이미지를 맞춘 풀 노드가 없다'); process.exit(2); }
+          pool = new poolMod.PodPoolScheduler(synced);
+          poolMembers = synced;
+        }
         const passEnv = String((opts as { podPassEnv?: string }).podPassEnv ?? '').split(',').map((k) => k.trim()).filter(Boolean);
-        const podBase = { account: (opts as { podAccount?: string }).podAccount ?? 'team', passEnv };
+        const podBase = { account: (opts as { podAccount?: string }).podAccount ?? 'team', passEnv, ...(pool ? { pool } : {}), ...((opts as { podSkillEnv?: boolean }).podSkillEnv ? { skillEnv: true } : {}) };
         if (benchArms) {
           const { benchPodSpawn } = await import('./task-orchestrator/surfaces/self-implement-pod.js');
           podSpawn = benchPodSpawn(benchArms, podBase);

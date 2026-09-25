@@ -243,4 +243,10 @@ describe('pod run-origin env (RFC run-origin §A3)', () => {
     reemitPodUsage(line, 'si-x', (_c, _e, d) => out.push(d));
     expect(out[0]).toMatchObject({ podName: 'si-x-abc', nodeName: 'k3d-node-0', podHostId: 'host-abc' });
   });
+
+  test('memory limit defaults to 12Gi (6Gi OOMKilled a real child) and follows MONAD_POD_MEMORY', () => {
+    const base = { name: 'j', namespace: 'n', image: 'i', repoUrl: 'r', args: [], passEnv: [], deadlineSeconds: 60 };
+    expect(JSON.stringify(podJobManifest(base))).toContain('"memory":"12Gi"');
+    expect(JSON.stringify(podJobManifest({ ...base, memoryLimit: '24Gi' }))).toContain('"memory":"24Gi"');
+  });
 });

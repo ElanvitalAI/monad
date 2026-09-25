@@ -189,9 +189,10 @@ commands:
       2026-09-22 on a fresh macOS install where prebuilds/darwin-*/spawn-helper
       shipped as -rw-rw-rw-; the A/B was exact, chmod +x removed the error
     fix: >-
-      On Linux: sudo apt-get install -y build-essential, then re-run the monad
-      installer (node-pty builds once make and g++ are present — measured
-      2026-09-24 on a fresh Ubuntu 24.04 VM: missing → found)
+      On Linux: sudo apt-get install -y build-essential (make, g++), then run
+      `monad doctor --fix --yes` (rebuilds node-pty in the installed version —
+      measured 2026-09-25 on a bare ubuntu:24.04 container: missing → loads;
+      re-running the installer on the same version does not rebuild it)
     fix_broken: chmod +x grants execute permission on spawn-helper
 
   - name: open

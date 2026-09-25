@@ -1,0 +1,318 @@
+// `monad release` — 공개 배포 한 판을 «명령»으로 (버전 매뉴얼 내부 문서 `MANUAL-versioning-and-release-2026-09-25` §A).
+//
+//   monad release prepare --version <x.y.z[-rc.N]> [--source <ref>] [--out <dir>] [--notes-from <ref>] [--skip-e2e]
+//   monad release publish --dir <prepare 산출> --notes-file <본문> [--yes]
+//   monad release verify  [--version <x.y.z>]
+//   monad release notes   --from <ref> [--to <ref>]
+//
+// 🩸 계기(2026-09-25 v0.1.0 첫 공개): 손으로 밟은 절차에서 둘을 빠뜨릴 뻔했다 — 공개본 git 커밋(판 커밋이 공개본 커밋이 된다) ·
+//    PWA 빌드(빌드 산출은 공개본에 안 실린다 → 빠뜨리면 «웹 화면 없는 판»). 절차를 명령으로 굳힌다.
+// ⛔ prepare 는 «네트워크에 아무것도 쓰지 않는다»(공개 저장소를 «읽기»로 clone 만 한다) — 쓰는 것은 publish 뿐이고 `--yes` 가 있어야 한다.
+//    공개는 되돌릴 수 없다(그 판은 영구히 공개 라이선스).
+// ⛔ 공개본은 «원본 매니페스트»(`release/public-export.yaml`)대로만 만든다 — 매매 실행 코드는 그 매니페스트가 이미 뺀다(🅢 #20529).
+import { spawnSync } from 'node:child_process';
+import { createHash } from 'node:crypto';
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, realpathSync, renameSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { dirname, join, resolve } from 'node:path';
+import type { Command } from 'commander';
+
+export const DEFAULT_PUBLIC_REPO = 'ElanvitalAI/monad';
+const SEMVER = /^\d+\.\d+\.\d+(?:-(?:rc|alpha|beta)\.\d+)?$/;
+
+export interface RunResult { status: number | null; stdout: string; stderr: string }
+export type Runner = (command: string, args: readonly string[], cwd: string, opts?: { env?: NodeJS.ProcessEnv; input?: string }) => RunResult;
+
+export const defaultRunner: Runner = (command, args, cwd, opts = {}) => {
+  const r = spawnSync(command, [...args], { cwd, encoding: 'utf8', env: opts.env ?? process.env, input: opts.input, maxBuffer: 256 * 1024 * 1024 });
+  return { status: r.status, stdout: r.stdout ?? '', stderr: r.error ? String(r.error) : (r.stderr ?? '') };
+};
+
+export function isReleaseVersion(version: string): boolean { return SEMVER.test(version); }
+export function isPrerelease(version: string): boolean { return version.includes('-'); }
+
+export interface ReleaseManifest {
+  version: string;
+  tag: string;
+  prerelease: boolean;
+  publicRepo: string;
+  sourceRef: string;
+  sourceCommit: string;
+  publicCommit: string;
+  publicDir: string;
+  distDir: string;
+  files: Array<{ name: string; sha256: string; bytes: number }>;
+  webUi: boolean;
+  e2e: { ran: boolean; ok?: boolean; versionLine?: string };
+  notesDraft?: string;
+  preparedAt: string;
+}
+
+function must(r: RunResult, what: string): string {
+  if (r.status !== 0) throw new Error(`${what} 실패 rc=${r.status}: ${(r.stderr || r.stdout).trim().slice(0, 400)}`);
+  return r.stdout.trim();
+}
+
+function sha256(path: string): string {
+  return createHash('sha256').update(readFileSync(path)).digest('hex');
+}
+
+/** SHA256SUMS 의 모든 줄을 파일과 다시 대조한다 — 하나라도 다르면 이름을 댄다. */
+export function verifyChecksums(dist: string): string[] {
+  const bad: string[] = [];
+  for (const line of readFileSync(join(dist, 'SHA256SUMS'), 'utf8').split('\n')) {
+    const m = /^([0-9a-f]{64})\s+(\S+)$/.exec(line.trim());
+    if (!m) continue;
+    if (!existsSync(join(dist, m[2]!)) || sha256(join(dist, m[2]!)) !== m[1]) bad.push(m[2]!);
+  }
+  return bad;
+}
+
+export interface PrepareOptions {
+  version: string;
+  source?: string;
+  out?: string;
+  notesFrom?: string;
+  skipE2e?: boolean;
+  publicRepo?: string;
+  repoRoot?: string;
+  log?: (line: string) => void;
+}
+
+/** 공개 한 판을 «로컬에서만» 만든다 — 산출 폴더에 `public/`(공개 저장소 작업 트리 · 새 커밋 1) · `dist/`(자산 넷) · `release.json`. */
+export async function prepareRelease(opts: PrepareOptions, run: Runner = defaultRunner): Promise<ReleaseManifest> {
+  const log = opts.log ?? ((l: string) => console.error(l));
+  if (!isReleaseVersion(opts.version)) throw new Error(`버전 모양이 아니다: ${opts.version} (예: 0.1.1 · 0.2.0-rc.1)`);
+  const repoRoot = resolve(opts.repoRoot ?? join(import.meta.dir, '..', '..'));
+  const publicRepo = opts.publicRepo ?? DEFAULT_PUBLIC_REPO;
+  const sourceRef = opts.source ?? 'origin/main';
+  const out = resolve(opts.out ?? mkdtempSync(join(tmpdir(), `monad-release-${opts.version}-`)));
+  if (existsSync(out) && readdirSync(out).length > 0) throw new Error(`산출 폴더가 비어 있지 않다: ${out}`);
+  mkdirSync(out, { recursive: true });
+  const tag = `v${opts.version}`;
+  // 의존성은 «node_modules 의 실제 자리»에서 — 워크트리의 node_modules 는 대개 본 트리로의 링크라 `apps/pwa/node_modules` 가 거기만 있다.
+  const modulesRoot = dirname(realpathSync(join(repoRoot, 'node_modules')));
+  const sourceDir = join(out, 'source');
+  const publicDir = join(out, 'public');
+  const distDir = join(out, 'dist');
+
+  // ① 원본을 «깨끗한» 분리 체크아웃으로 — 작업 트리의 커밋 안 된 변경이 공개본에 새지 않게.
+  if (sourceRef.startsWith('origin/')) must(run('git', ['fetch', '-q', 'origin', sourceRef.slice('origin/'.length)], repoRoot), 'git fetch');
+  must(run('git', ['worktree', 'add', '-q', '--detach', sourceDir, sourceRef], repoRoot), 'git worktree add');
+  try {
+    const sourceCommit = must(run('git', ['rev-parse', 'HEAD'], sourceDir), 'git rev-parse');
+    const pkgVersion = (JSON.parse(readFileSync(join(sourceDir, 'package.json'), 'utf8')) as { version?: string }).version;
+    if (pkgVersion !== opts.version) throw new Error(`package.json 버전 ${pkgVersion} ≠ ${opts.version} — 먼저 버전을 올리는 PR 을 착지하라(원천 = package.json 한 칸)`);
+    symlinkSync(join(modulesRoot, 'node_modules'), join(sourceDir, 'node_modules'), 'dir');
+    log(`① 원본 ${sourceRef} = ${sourceCommit.slice(0, 12)} · package.json ${pkgVersion}`);
+
+    // ② 공개본 내보내기(유출 검사 포함 · 유출이 있으면 rc 1 → 멈춘다).
+    must(run('bun', ['scripts/public-export.ts', '--out', join(out, 'export')], sourceDir), '공개본 내보내기(유출 검사)');
+    log('② 공개본 내보내기 · 유출 0');
+
+    // ③ 공개 저장소 «이력 위에» 새 커밋 — 첫 판이면 새 저장소.
+    const clone = run('git', ['clone', '-q', '--depth', '1', `https://github.com/${publicRepo}.git`, join(out, 'public-git')], out);
+    renameSync(join(out, 'export'), publicDir);
+    if (clone.status === 0 && existsSync(join(out, 'public-git', '.git'))) {
+      renameSync(join(out, 'public-git', '.git'), join(publicDir, '.git'));
+      rmSync(join(out, 'public-git'), { recursive: true, force: true });
+    } else {
+      must(run('git', ['init', '-q', '-b', 'main'], publicDir), 'git init');
+      must(run('git', ['remote', 'add', 'origin', `https://github.com/${publicRepo}.git`], publicDir), 'git remote add');
+      log(`   (공개 저장소를 못 읽었다 — 새 이력으로 시작: ${(clone.stderr || '').trim().slice(0, 120)})`);
+    }
+    const name = must(run('git', ['config', 'user.name'], repoRoot), 'git config user.name');
+    const email = must(run('git', ['config', 'user.email'], repoRoot), 'git config user.email');
+    must(run('git', ['add', '-A'], publicDir), 'git add');
+    must(run('git', ['-c', `user.name=${name}`, '-c', `user.email=${email}`, 'commit', '-q', '--allow-empty', '-m', `monad ${tag}`], publicDir), 'git commit');
+    const publicCommit = must(run('git', ['rev-parse', 'HEAD'], publicDir), 'git rev-parse');
+    log(`③ 공개 커밋 ${publicCommit.slice(0, 12)} (${publicRepo} main 위)`);
+
+    // ④ PWA 빌드 — ⛔ 빠뜨리면 «웹 화면 없는 판»(빌드 산출은 공개본에 안 실린다).
+    symlinkSync(join(modulesRoot, 'node_modules'), join(publicDir, 'node_modules'), 'dir');
+    const pwaModules = join(modulesRoot, 'apps', 'pwa', 'node_modules');
+    if (existsSync(pwaModules) && existsSync(join(publicDir, 'apps', 'pwa'))) symlinkSync(pwaModules, join(publicDir, 'apps', 'pwa', 'node_modules'), 'dir');
+    const pwa = run('bun', ['bin/monad.mjs', 'nexus', 'build'], publicDir);
+    const webUi = pwa.status === 0 && existsSync(join(publicDir, 'apps', 'pwa', 'out', 'index.html'));
+    if (!webUi) throw new Error(`PWA 빌드 실패 — 웹 화면 없는 판은 내지 않는다: ${(pwa.stderr || pwa.stdout).trim().slice(-300)}`);
+    log('④ PWA 빌드');
+
+    // ⑤ 묶음 ⊕ 태그 대조 ⊕ 체크섬 재대조.
+    const built = run('bun', [join(sourceDir, 'scripts', 'release-build.ts'), '--root', publicDir, '--out', distDir, '--tag', tag], out);
+    const buildJson = JSON.parse(must(built, 'release-build')) as { files: ReleaseManifest['files'] };
+    const bad = verifyChecksums(distDir);
+    if (bad.length) throw new Error(`체크섬 불일치: ${bad.join(', ')}`);
+    log(`⑤ 묶음 ${buildJson.files.map((f) => `${f.name} ${f.bytes}`).join(' · ')} · 체크섬 OK`);
+
+    // ⑥ 로컬 끝까지 한 번 — 파이프 설치(file:// 릴리스) → --version → 제거.
+    let e2e: ReleaseManifest['e2e'] = { ran: false };
+    if (!opts.skipE2e) {
+      const rel = join(out, 'e2e-release', 'latest');
+      mkdirSync(rel, { recursive: true });
+      const download = join(rel, 'download');
+      mkdirSync(download);
+      for (const f of readdirSync(distDir)) writeFileSync(join(download, f), readFileSync(join(distDir, f)));
+      const home = join(out, 'e2e-home');
+      const prefix = join(out, 'e2e-prefix');
+      mkdirSync(home);
+      const env = { ...process.env, HOME: home, MONAD_INSTALL_PREFIX: prefix, MONAD_RELEASE_BASE: `file://${join(out, 'e2e-release')}`, MONAD_INSTALL_SOURCE: '', MONAD_VERSION: '', SHELL: '/bin/zsh' };
+      const install = run('bash', ['-s', '--', '--no-modify-path'], home, { env, input: readFileSync(join(distDir, 'install.sh'), 'utf8') });
+      const version = run(join(prefix, 'bin', 'monad'), ['--version'], home, { env });
+      const versionLine = version.stdout.trim();
+      const ok = install.status === 0 && versionLine.startsWith(`${opts.version} ${publicCommit}`);
+      run('bash', [join(publicDir, 'scripts', 'uninstall.sh')], home, { env });
+      e2e = { ran: true, ok, versionLine };
+      if (!ok) throw new Error(`로컬 끝까지 실패 — 설치 rc=${install.status} · --version «${versionLine}» (기대 ${opts.version} ${publicCommit.slice(0, 12)}…)`);
+      log(`⑥ 로컬 끝까지: ${versionLine}`);
+    }
+
+    let notesDraft: string | undefined;
+    if (opts.notesFrom) {
+      const notes = run('bun', ['scripts/release-notes.ts', '--from', opts.notesFrom, '--to', sourceCommit], sourceDir);
+      if (notes.status === 0) { notesDraft = join(out, 'notes-draft.md'); writeFileSync(notesDraft, notes.stdout); }
+    }
+    const manifest: ReleaseManifest = {
+      version: opts.version, tag, prerelease: isPrerelease(opts.version), publicRepo, sourceRef, sourceCommit, publicCommit,
+      publicDir, distDir, files: buildJson.files, webUi, e2e, ...(notesDraft ? { notesDraft } : {}), preparedAt: new Date().toISOString(),
+    };
+    writeFileSync(join(out, 'release.json'), `${JSON.stringify(manifest, null, 2)}\n`);
+    log(`✅ 준비 끝 — ${out}/release.json · 공개는 \`monad release publish --dir ${out} --notes-file <본문> --yes\``);
+    return manifest;
+  } finally {
+    run('git', ['worktree', 'remove', '--force', sourceDir], repoRoot);
+  }
+}
+
+export interface PublishStep { what: string; command: string; args: string[]; cwd: string }
+
+/** publish 가 «할 일»을 명령 목록으로 — `--yes` 없으면 이것만 보여 준다. */
+export function planPublish(m: ReleaseManifest, notesFile: string): PublishStep[] {
+  // ⛔ 설치기는 `SHA256SUMS` 로 받은 묶음을 확인한다 — 빠지면 그 판의 설치가 «전부» 실패한다.
+  //    🩸 2026-09-25 v0.1.1 드라이런: release-build 의 `files` 에는 SHA256SUMS 가 없어(체크섬 대상 목록이라) «자산 4» 로 올릴 뻔했다.
+  const assets = [...new Set([...m.files.map((f) => f.name), 'SHA256SUMS'])];
+  return [
+    { what: `공개 저장소 ${m.publicRepo} main 푸시(${m.publicCommit.slice(0, 12)})`, command: 'git', args: ['push', 'origin', 'HEAD:main'], cwd: m.publicDir },
+    {
+      what: `릴리스 ${m.tag}${m.prerelease ? ' (prerelease)' : ''} 생성 ⊕ 자산 ${assets.length}(${assets.join(' · ')})`,
+      command: 'gh',
+      args: ['release', 'create', m.tag, ...assets.map((name) => join(m.distDir, name)), '--repo', m.publicRepo, '--target', m.publicCommit,
+        '--title', `monad ${m.tag}`, '--notes-file', notesFile, ...(m.prerelease ? ['--prerelease'] : [])],
+      cwd: m.publicDir,
+    },
+  ];
+}
+
+export function readManifest(dir: string): ReleaseManifest {
+  return JSON.parse(readFileSync(join(resolve(dir), 'release.json'), 'utf8')) as ReleaseManifest;
+}
+
+export async function publishRelease(opts: { dir: string; notesFile: string; yes?: boolean; log?: (l: string) => void }, run: Runner = defaultRunner): Promise<{ published: boolean; steps: PublishStep[] }> {
+  const log = opts.log ?? ((l: string) => console.log(l));
+  const m = readManifest(opts.dir);
+  if (!existsSync(opts.notesFile)) throw new Error(`릴리스 본문 파일이 없다: ${opts.notesFile} (초안: ${m.notesDraft ?? 'release notes --from <ref>'})`);
+  if (m.e2e.ran && !m.e2e.ok) throw new Error('prepare 의 로컬 끝까지가 실패한 판이다 — 공개하지 않는다');
+  const bad = verifyChecksums(m.distDir);
+  if (bad.length) throw new Error(`준비 뒤 자산이 바뀌었다: ${bad.join(', ')}`);
+  const existing = run('gh', ['release', 'view', m.tag, '--repo', m.publicRepo], m.publicDir);
+  if (existing.status === 0) throw new Error(`이미 있는 릴리스다: ${m.tag} — 버전을 올려 다시 prepare 하라(같은 태그를 덮지 않는다)`);
+  const steps = planPublish(m, resolve(opts.notesFile));
+  for (const s of steps) log(`${opts.yes ? '▶' : '·'} ${s.what}\n    ${s.command} ${s.args.join(' ')}`);
+  if (!opts.yes) { log('⛔ 보기만 했다 — 공개는 되돌릴 수 없다. 실행하려면 --yes'); return { published: false, steps }; }
+  for (const s of steps) must(run(s.command, s.args, s.cwd), s.what);
+  log(`✅ 공개: https://github.com/${m.publicRepo}/releases/tag/${m.tag} — 이어서 \`monad release verify --version ${m.version}\``);
+  return { published: true, steps };
+}
+
+/** 공개 주소로 끝까지 — 깨끗한 임시 홈에서 설치 → --version → self-update → 제거. */
+/** 상태 왕복 — 설치본이 «쓰고 다른 프로세스에서 다시 읽나»(자격 불요). `--version` 은 일을 하는 증거가 아니다.
+ *  ① 기억: `memory add`(stdin 본문에 nonce) → 새 프로세스 `memory search <nonce>` 가 찾는가.
+ *  ② 로그(sqlite): `setup --non-interactive` 가 남기는 행 — 검증 시작 «뒤»의 행이 `logs --json` 으로 읽히는가(카테고리에 기대지 않는다).
+ *  📏 09-25: 기억은 베어 ubuntu:24.04 ⊕ 이 맥 빈 HOME 둘 다 ok. 로그는 «데몬이 한 번 떠야» 스토어가 생긴다 — 빈 HOME 에선
+ *  스토어가 없어(`registeredStores:0`) 원리상 못 잰다 ⇒ `no-store`(실패도 통과도 아님 · 판정에서 뺀다). 데몬은 LLM 자격이
+ *  없으면 기동을 거부하므로, 로그·세션·미션 스토어 왕복은 자격을 넣는 베어 컨테이너 검증의 몫(버전 매뉴얼).
+ *  미션 스토어·세션 기록은 LLM 이 있어야 생겨 여기서 «안 잰다». */
+export type LogRoundTrip = 'ok' | 'fail' | 'no-store';
+
+export function stateRoundTrip(monad: string, home: string, env: NodeJS.ProcessEnv, run: Runner, startedAtMs: number, nonce = `verify${startedAtMs}`): { memory: boolean; logs: LogRoundTrip } {
+  const add = run(monad, ['memory', 'add', 'reference', `release-verify-${nonce}`, 'release verify probe'], home, { env, input: `release verify nonce ${nonce}\n` });
+  const search = run(monad, ['memory', 'search', nonce], home, { env });
+  const memory = add.status === 0 && search.status === 0 && search.stdout.includes(nonce);
+  run(monad, ['setup', '--non-interactive'], home, { env });
+  const read = run(monad, ['logs', '--limit', '20', '--json'], home, { env });
+  const rows = read.stdout.split('\n').flatMap((line) => {
+    try { const row = JSON.parse(line) as { ts_ms?: unknown }; return typeof row.ts_ms === 'number' ? [row.ts_ms] : []; } catch { return []; }
+  });
+  if (rows.some((ts) => ts >= startedAtMs)) return { memory, logs: 'ok' };
+  return { memory, logs: /"registeredStores":0\b/.test(`${read.stdout}${read.stderr}`) ? 'no-store' : 'fail' };
+}
+
+export async function verifyRelease(opts: { version?: string; publicRepo?: string; log?: (l: string) => void }, run: Runner = defaultRunner): Promise<{ ok: boolean; versionLine: string; installerUrl: string }> {
+  const log = opts.log ?? ((l: string) => console.log(l));
+  if (opts.version !== undefined && !isReleaseVersion(opts.version)) throw new Error(`버전 모양이 아니다: ${opts.version}`);
+  const repo = opts.publicRepo ?? DEFAULT_PUBLIC_REPO;
+  const installerUrl = `https://github.com/${repo}/releases/${opts.version ? `download/v${opts.version}` : 'latest/download'}/install.sh`;
+  const root = mkdtempSync(join(tmpdir(), 'monad-release-verify-'));
+  const startedAtMs = Date.now();
+  try {
+    const home = join(root, 'home');
+    const prefix = join(root, 'prefix');
+    mkdirSync(home);
+    // 검증은 «빈 HOME» 에서만 쓴다 — 물려받은 MONAD_*(STATE_DIR 등)·XDG_* 가 있으면 상태 왕복이 운영 저장소에 쓴다.
+    const inherited = Object.fromEntries(Object.entries(process.env).filter(([key]) => !key.startsWith('MONAD_') && !key.startsWith('XDG_')));
+    const env: NodeJS.ProcessEnv = { ...inherited, HOME: home, MONAD_INSTALL_PREFIX: prefix, MONAD_INSTALL_SOURCE: '', MONAD_VERSION: opts.version ?? '', SHELL: '/bin/zsh' };
+    const script = must(run('curl', ['-fsSL', installerUrl], home), `설치기 받기 ${installerUrl}`);
+    const install = run('bash', ['-s', '--', '--no-modify-path'], home, { env, input: script });
+    const versionLine = run(join(prefix, 'bin', 'monad'), ['--version'], home, { env }).stdout.trim();
+    const state = stateRoundTrip(join(prefix, 'bin', 'monad'), home, env, run, startedAtMs);
+    const update = run(join(prefix, 'bin', 'monad'), ['self-update', '--json'], home, { env });
+    const uninstall = existsSync(join(prefix, 'current', 'node_modules', 'monadagent', 'scripts', 'uninstall.sh'))
+      ? run('bash', [join(prefix, 'current', 'node_modules', 'monadagent', 'scripts', 'uninstall.sh')], home, { env })
+      : { status: null, stdout: '', stderr: 'uninstall.sh 없음' };
+    const ok = install.status === 0 && (opts.version ? versionLine.startsWith(`${opts.version} `) : versionLine.length > 0) && update.status === 0 && state.memory && state.logs !== 'fail';
+    log(`${ok ? '✅' : '⛔'} ${installerUrl}\n  설치 rc=${install.status} · --version «${versionLine}» · 기억 왕복 ${state.memory ? 'ok' : 'FAIL'} · 로그 왕복 ${state.logs === 'ok' ? 'ok' : state.logs === 'fail' ? 'FAIL' : '안 잼(스토어 없음 — 데몬이 한 번 떠야 생긴다)'} · self-update rc=${update.status} · 제거 rc=${uninstall.status}`);
+    return { ok, versionLine, installerUrl };
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+}
+
+export function registerReleaseCommands(program: Command): void {
+  const release = program.command('release').description('공개 배포 한 판 — prepare(로컬) → publish(--yes) → verify (docs/manual/MANUAL-versioning-and-release-2026-09-25.md)');
+  release.command('prepare')
+    .description('깨끗한 원본 → 공개본 → 공개 저장소 이력 위 커밋 → PWA → 묶음·체크섬 → 로컬 끝까지 (네트워크 쓰기 없음)')
+    .requiredOption('--version <x.y.z>', 'package.json 과 같은 버전(먼저 버전 PR 을 착지)')
+    .option('--source <ref>', '원본 ref', 'origin/main')
+    .option('--out <dir>', '산출 폴더(비어 있어야 한다 · 기본 임시 폴더)')
+    .option('--notes-from <ref>', '변경 기록 초안의 시작 ref(직전 릴리스의 원본 커밋)')
+    .option('--skip-e2e', '로컬 끝까지를 건너뛴다(권하지 않음)')
+    .option('--public-repo <owner/name>', '공개 저장소', DEFAULT_PUBLIC_REPO)
+    .action(async (o: { version: string; source: string; out?: string; notesFrom?: string; skipE2e?: boolean; publicRepo: string }) => {
+      try { await prepareRelease({ version: o.version, source: o.source, out: o.out, notesFrom: o.notesFrom, skipE2e: o.skipE2e, publicRepo: o.publicRepo }); }
+      catch (e) { console.error(`⛔ ${(e as Error).message}`); process.exitCode = 1; }
+    });
+  release.command('publish')
+    .description('⛔ 되돌릴 수 없다 — 공개 저장소 푸시 ⊕ GitHub 릴리스. --yes 없으면 보기만')
+    .requiredOption('--dir <dir>', 'prepare 산출 폴더')
+    .requiredOption('--notes-file <file>', '공개용 릴리스 본문(내부 PR 번호·트랙 표식 없이)')
+    .option('--yes', '실제로 공개한다')
+    .action(async (o: { dir: string; notesFile: string; yes?: boolean }) => {
+      try { await publishRelease({ dir: o.dir, notesFile: o.notesFile, yes: o.yes }); }
+      catch (e) { console.error(`⛔ ${(e as Error).message}`); process.exitCode = 1; }
+    });
+  release.command('verify')
+    .description('공개 주소로 끝까지 — 깨끗한 임시 홈에서 설치 → --version → self-update → 제거')
+    .option('--version <x.y.z>', '고정 버전(없으면 latest)')
+    .option('--public-repo <owner/name>', '공개 저장소', DEFAULT_PUBLIC_REPO)
+    .action(async (o: { version?: string; publicRepo: string }) => {
+      try { const r = await verifyRelease({ version: o.version, publicRepo: o.publicRepo }); if (!r.ok) process.exitCode = 1; }
+      catch (e) { console.error(`⛔ ${(e as Error).message}`); process.exitCode = 1; }
+    });
+  release.command('notes')
+    .description('두 ref 사이 착지로 변경 기록 초안(공개 전에 다듬는다)')
+    .requiredOption('--from <ref>', '시작 ref')
+    .option('--to <ref>', '끝 ref', 'HEAD')
+    .action(async (o: { from: string; to: string }) => {
+      const { draftReleaseNotes, readLandedCommits, renderReleaseNotes } = await import('../../scripts/release-notes.js');
+      console.log(renderReleaseNotes(draftReleaseNotes(readLandedCommits(o.from, o.to), o.from, o.to)));
+    });
+}

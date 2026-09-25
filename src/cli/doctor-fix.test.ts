@@ -1,4 +1,5 @@
 import { describe, expect, test } from 'bun:test';
+import { spawnSync } from 'node:child_process';
 import { lstatSync, mkdtempSync, readFileSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -690,15 +691,32 @@ describe('doctor --fix --yes --sudo (RFC #20265 P5)', () => {
     const lines = [...manual, { id: 'gh-auth', status: 'manual' as const, evidence: 'x', remedy: 'sudo apt-get install -y gh' }];
     const result = applySudoFixes(lines, { run: (command, args) => {
       calls.push([command, ...args].join(' '));
-      if (args.join(' ').includes('gh')) return { status: 100, stderr: 'E: Unable to locate package gh' };
+      if (command === 'sh' && args[0] === '-c' && args.join(' ').includes('gh')) return { status: 100, stderr: 'E: Unable to locate package gh' };
       return { status: 0, stderr: '' };
     } });
-    expect(calls).toEqual(['sudo -n true', 'sh -c sudo dnf install -y gcc-c++ make', 'sh -c sudo apt-get install -y gh']);
+    expect(calls).toEqual(['sudo -n true', 'sh -n -c sudo dnf install -y gcc-c++ make', 'sh -c sudo dnf install -y gcc-c++ make', 'sh -n -c sudo apt-get install -y gh', 'sh -c sudo apt-get install -y gh']);
     expect(result.runs).toEqual([
       { command: 'sudo dnf install -y gcc-c++ make', result: 'ran' },
       { command: 'sudo apt-get install -y gh', result: 'failed', detail: 'E: Unable to locate package gh' },
     ]);
     expect(result.exitCode).toBe(1);
+  });
+});
+
+// 🩸 09-25 GCP debian-12 — 설명문이 붙은 처방이 문자열 가드를 빠져나가 `sh` 에서 문법 오류로 죽고 rc 1 을 냈다.
+describe('applySudoFixes — 셸이 «명령이 아니다»라고 하면 치지 않는다', () => {
+  test('a remedy with prose is skipped by the sh -n check, never executed, and does not fail the run', () => {
+    const prose = 'sudo apt-get install -y build-essential libssl-dev && reinstall monad (the package must ship requirements-python.txt)';
+    const calls: string[] = [];
+    const result = applySudoFixes([{ id: 'python-env', status: 'manual', evidence: 'x', remedy: prose }], { run: (command, args) => {
+      calls.push([command, ...args].join(' '));
+      // 실물 sh 로 문법만 잰다 — 가짜가 아니라 진짜 판정.
+      if (command === 'sh' && args[0] === '-n') { const r = spawnSync('sh', [...args], { encoding: 'utf8' }); return { status: r.status, stderr: r.stderr ?? '' }; }
+      return { status: 0, stderr: '' };
+    } });
+    expect(calls).not.toContain(`sh -c ${prose}`);
+    expect(result.runs).toEqual([{ command: prose, result: 'skipped', detail: 'not a shell command — read it and run the parts by hand' }]);
+    expect(result.exitCode).toBe(0);
   });
 });
 

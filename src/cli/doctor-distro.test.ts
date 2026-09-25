@@ -71,6 +71,8 @@ describe('doctor-distro', () => {
     expect(gh({ ghOnPath: false, platform: 'linux', distro: 'amzn2' }).remedy).toContain('yum');
     expect(gh({ ghOnPath: false, platform: 'darwin', distro: 'darwin' }).remedy).toBe('brew install gh');
     expect(gh({ ghOnPath: false, platform: 'linux', distro: 'unknown' }).remedy).toBeUndefined();
-    expect(gh({ ghOnPath: false, platform: 'linux' }).remedy).toBe('sudo apt-get install -y gh');
+    // Debian 계열·못 잰 리눅스는 apt gh 가 최소 판 미만이라 고정 판 정적 gh(09-25 GCP debian-12 실측).
+    expect(gh({ ghOnPath: false, platform: 'linux' }).remedy).toBe('monad doctor --fix --yes');
+    expect(gh({ ghOnPath: false, platform: 'linux', distro: 'debian' }).remedy).toBe('monad doctor --fix --yes');
   });
 });

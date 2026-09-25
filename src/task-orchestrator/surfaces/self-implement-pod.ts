@@ -11,6 +11,8 @@
 // ⛔ worktreePath 는 Pod 안 경로라 호스트에서 쓸 수 없다 → disposition 에서 지운다.
 // 부작용(kubectl·파일)은 주입받는다 — 시험은 가짜 kubectl 로 누른다.
 
+import { podSkillsDigest, readSkillEnvFiles, resolvePodSkills } from './pod-skills.js';
+import type { PodPoolMember, PodPoolScheduler } from './pod-pool.js';
 import { spawnSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
@@ -43,6 +45,12 @@ export interface PodSpawnOptions {
   deadlineSeconds?: number;
   pollMs?: number;
   kubectl?: Kubectl;
+  /** 🔑 Pod 필수 스킬의 키(.env)를 이 런의 Secret 으로 넘긴다 — 명시 opt-in(유료 크레딧을 쓴다). */
+  skillEnv?: boolean;
+  /** 스킬 키 읽기(시험 주입) — `{ <스킬>: <.env 내용> }`. */
+  readSkillEnv?: () => Record<string, string>;
+  /** ☸️ 여러 클러스터 풀(pod-pool.ts) — Job 마다 우선순위 순 첫 빈 자리로. 없으면 현재 컨텍스트 하나. */
+  pool?: PodPoolScheduler;
   sleep?: (ms: number) => Promise<void>;
   credentials?: () => { monadAuth: string; codexAuth: string; ghToken: string };
   /** 호스트 키 캐시(`~/.cache/<소문자 이름>`)에서 키를 읽는다(시험 주입) — env 에 없을 때. */
@@ -103,12 +111,14 @@ done
 echo "[gate] ISOLATION NOT ENFORCED within 30s"; exit 1`;
 
 /** Job 매니페스트(JSON) — docker/harness/job.yaml 과 같은 격리(관문 ⊕ 읽기 전용 Secret ⊕ 한도). */
-export function podJobManifest(o: { name: string; namespace: string; image: string; repoUrl: string; args: readonly string[]; passEnv: readonly string[]; deadlineSeconds: number; runId?: string; armEnv?: Readonly<Record<string, string>>; hostId?: string; imageCommit?: string | null }): Record<string, unknown> {
+export function podJobManifest(o: { name: string; namespace: string; image: string; repoUrl: string; args: readonly string[]; passEnv: readonly string[]; deadlineSeconds: number; runId?: string; armEnv?: Readonly<Record<string, string>>; hostId?: string; imageCommit?: string | null; skillEnvs?: readonly string[]; memoryLimit?: string }): Record<string, unknown> {
   const quoted = o.args.map((a) => `'${a.replace(/'/g, `'\\''`)}'`).join(' ');
   const script = [
     'set -u',
     'mkdir -p ~/.monad ~/.codex && cp /creds/monad-auth.json ~/.monad/auth.json && cp /creds/codex-auth.json ~/.codex/auth.json && chmod 600 ~/.monad/auth.json ~/.codex/auth.json',
     'export GH_TOKEN="$(cat /creds/gh-token)"',
+    // 🔑 스킬 키(.env) — 이미지엔 없다. 이 런의 Secret 에서 각 스킬 폴더로 0600 복사(값은 로그에 안 나온다).
+    ...(o.skillEnvs?.length ? [`for n in ${o.skillEnvs.join(' ')}; do [ -d ~/.claude/skills/$n ] && install -m 600 /creds/skillenv-$n ~/.claude/skills/$n/.env; done; echo "[pod] skill env: ${o.skillEnvs.join(',')}"`] : []),
     'git config --global user.name "monad pod child" && git config --global user.email "noreply@anthropic.com" && gh auth setup-git',
     'curl -s -m 3 -o /dev/null http://host.orb.internal:31415/health && { echo "[pod] ISOLATION FAIL"; exit 3; }',
     `git clone -q --depth 50 '${o.repoUrl}' repo && cd repo || exit 5`,
@@ -136,7 +146,8 @@ export function podJobManifest(o: { name: string; namespace: string; image: stri
           initContainers: [{ name: 'isolation-gate', image: o.image, imagePullPolicy: 'Never', command: ['bash', '-c'], args: [GATE] }],
           containers: [{
             name: 'child', image: o.image, imagePullPolicy: 'Never',
-            resources: { limits: { memory: '6Gi', cpu: '4' } },
+            // 📏 09-25: 6Gi 는 빠듯했다 — 자식이 6,127Mi 에 붙어 OOMKilled(137). 기본 12Gi · MONAD_POD_MEMORY 로 조정.
+            resources: { limits: { memory: o.memoryLimit ?? '12Gi', cpu: '4' } },
             command: ['bash', '-c'], args: [script],
             env: [
               // 토큰 관측(`llm.usage`)이 부모 런에 묶이게 — debug.log 는 MONAD_RUN_ID 를 data.runId 로 붙인다.
@@ -161,7 +172,7 @@ export function podJobManifest(o: { name: string; namespace: string; image: stri
 }
 
 export function podSelfImplementSpawn(options: PodSpawnOptions = {}): SelfImplementJobSpawn {
-  const kubectl = options.kubectl ?? defaultKubectl;
+  const baseKubectl = options.kubectl ?? defaultKubectl;
   const sleep = options.sleep ?? ((ms: number) => new Promise<void>((r) => setTimeout(r, ms)));
   const namespace = options.namespace ?? 'monad-test';
   const image = options.image ?? 'monad-harness:local';
@@ -179,14 +190,32 @@ export function podSelfImplementSpawn(options: PodSpawnOptions = {}): SelfImplem
       ...(options.extraArgs ?? []),
     ];
     const done = (async (): Promise<SelfImplementJobDone> => {
+      // ☸️ 풀이면 자리를 잡는다(우선순위 순 · 다 차면 기다린다) — 그 노드의 컨텍스트로 모든 호출을 묶는다.
+      let member: PodPoolMember | null = null;
+      if (options.pool) {
+        for (;;) {
+          if (input.signal?.aborted) return { exitCode: null, output: '', error: { code: 'aborted', message: 'aborted before a pool slot opened' } };
+          member = options.pool.tryAcquire();
+          if (member) break;
+          await sleep(options.pollMs ?? 15_000);
+        }
+        debug.log('self-implement.pod', 'pool-slot', { spaceId: input.spaceId, context: member.context, inflight: options.pool.snapshot() });
+      }
+      const kubectl: Kubectl = member ? (args, stdin) => baseKubectl(['--context', member!.context, ...args], stdin) : baseKubectl;
+      try {
       const cleanupSecret = () => { kubectl(['-n', namespace, 'delete', 'secret', `${name}-creds`, '--ignore-not-found']); };
       try {
         const creds = (options.credentials ?? (() => hostCredentials(options.account ?? 'team')))();
+        const skillEnvs: Record<string, string> = options.skillEnv
+          ? (options.readSkillEnv ?? (() => readSkillEnvFiles(resolvePodSkills(env).skills)))()
+          : {};
+        if (options.skillEnv) debug.log('self-implement.pod', 'skill-env', { job: name, skills: Object.keys(skillEnvs) });   // ⛔ 이름만 — 값은 안 싣는다
         const secret = {
           apiVersion: 'v1', kind: 'Secret', type: 'Opaque',
           metadata: { name: `${name}-creds`, namespace, labels: { 'monad.job': name } },
           stringData: {
             'monad-auth.json': creds.monadAuth, 'codex-auth.json': creds.codexAuth, 'gh-token': creds.ghToken, feature: input.feature,
+            ...Object.fromEntries(Object.entries(skillEnvs).map(([n, text]) => [`skillenv-${n}`, text])),
             ...Object.fromEntries((options.passEnv ?? []).map((k) => [k, env[k] ?? (options.readKeyCache ?? defaultReadKeyCache)(k)] as const).filter(([, v]) => v).map(([k, v]) => [`env-${k}`, v!])),
           },
         };
@@ -197,10 +226,10 @@ export function podSelfImplementSpawn(options: PodSpawnOptions = {}): SelfImplem
         const s = kubectl(['apply', '-f', '-'], JSON.stringify(secret));
         if (s.status !== 0) return { exitCode: 1, output: s.stderr, error: { code: 'pod-secret', message: s.stderr.trim() } };
         kubectl(['-n', namespace, 'delete', 'job', name, '--ignore-not-found']);
-        const job = podJobManifest({ name, namespace, image, repoUrl, args, passEnv, deadlineSeconds: options.deadlineSeconds ?? 5400, ...(env.MONAD_RUN_ID ? { runId: env.MONAD_RUN_ID } : {}), ...(options.armEnv ? { armEnv: options.armEnv } : {}), hostId: resolveHostId(env), imageCommit: options.imageCommit !== undefined ? options.imageCommit : options.kubectl ? null : podImageFreshness({ image }).imageCommit });   // kubectl 주입(=시험)이면 docker 를 부르지 않는다
+        const job = podJobManifest({ name, namespace, image, repoUrl, args, passEnv, deadlineSeconds: options.deadlineSeconds ?? 5400, ...(env.MONAD_RUN_ID ? { runId: env.MONAD_RUN_ID } : {}), ...(options.armEnv ? { armEnv: options.armEnv } : {}), hostId: resolveHostId(env), skillEnvs: Object.keys(skillEnvs), ...(env.MONAD_POD_MEMORY?.trim() ? { memoryLimit: env.MONAD_POD_MEMORY.trim() } : {}), imageCommit: options.imageCommit !== undefined ? options.imageCommit : options.kubectl ? null : podImageFreshness({ image }).imageCommit });   // kubectl 주입(=시험)이면 docker 를 부르지 않는다
         const a = kubectl(['apply', '-f', '-'], JSON.stringify(job));
         if (a.status !== 0) { cleanupSecret(); return { exitCode: 1, output: a.stderr, error: { code: 'pod-apply', message: a.stderr.trim() } }; }
-        debug.log('self-implement.pod', 'job-applied', { job: name, namespace, image, spaceId: input.spaceId, passEnv, extraArgs: options.extraArgs ?? [], ...(options.armEnv?.MONAD_ARM_ID ? { armId: options.armEnv.MONAD_ARM_ID } : {}) });
+        debug.log('self-implement.pod', 'job-applied', { job: name, namespace, ...(member ? { context: member.context } : {}), image, spaceId: input.spaceId, passEnv, extraArgs: options.extraArgs ?? [], ...(options.armEnv?.MONAD_ARM_ID ? { armId: options.armEnv.MONAD_ARM_ID } : {}) });
         let state: 'complete' | 'failed' | 'aborted' = 'failed';
         for (;;) {
           if (input.signal?.aborted) {
@@ -222,7 +251,7 @@ export function podSelfImplementSpawn(options: PodSpawnOptions = {}): SelfImplem
         const parsed = parseSelfImplementJson(logs);
         // Pod 안 경로는 호스트에서 쓸 수 없다.
         const disposition = parsed ? { ...parsed, worktreePath: undefined } : undefined;
-        debug.log('self-implement.pod', 'job-finished', { job: name, state, stage: disposition?.stage ?? null, prUrl: disposition?.prUrl ?? null });
+        debug.log('self-implement.pod', 'job-finished', { job: name, ...(member ? { context: member.context } : {}), state, stage: disposition?.stage ?? null, prUrl: disposition?.prUrl ?? null });
         const tail = logs.slice(-4000);
         if (state === 'aborted') return { exitCode: null, output: tail, error: { code: 'aborted', message: 'aborted — Job deleted' }, ...(disposition ? { disposition } : {}) };
         return {
@@ -236,6 +265,9 @@ export function podSelfImplementSpawn(options: PodSpawnOptions = {}): SelfImplem
         const message = err instanceof Error ? err.message : String(err);
         debug.log('self-implement.pod', 'job-error', { job: name, message }, { level: 'error' });
         return { exitCode: 1, output: message, error: { code: 'pod-error', message } };
+      }
+      } finally {
+        if (member) options.pool!.release(member);
       }
     })();
     return { address, done };
@@ -376,6 +408,8 @@ export function podImageFreshness(deps: {
   run?: (cmd: string, args: readonly string[]) => { status: number | null; stdout: string };
   image?: string;
   cwd?: string;
+  /** 지금 설정의 Pod 스킬 세트 해시(pod-skills.ts). 생략 시 — run 을 주입한 시험이면 대조하지 않고, 아니면 실제로 잰다. */
+  skillsDigest?: () => string;
 } = {}): PodImageFreshness {
   const run = deps.run ?? ((cmd, args) => { const r = spawnSync(cmd, [...args], { encoding: 'utf8', timeout: 20_000, ...(deps.cwd ? { cwd: deps.cwd } : {}) }); return { status: r.status, stdout: r.stdout ?? '' }; });
   const image = deps.image ?? 'monad-harness:local';
@@ -387,6 +421,14 @@ export function podImageFreshness(deps: {
   if (!headCommit) return { imageCommit, headCommit, fresh: false, reason: 'HEAD 를 못 읽었다 — 판정 불가(낡음으로 본다)' };
   if (img.status !== 0) return { imageCommit, headCommit, fresh: false, reason: `이미지 ${image} 없음` };
   if (!imageCommit) return { imageCommit, headCommit, fresh: false, reason: '이미지에 monad.commit 라벨이 없다(build.sh 전 판)' };
+  // ☸️ 스킬 세트가 바뀌었으면(설정 목록·스킬 내용) 코드가 같아도 낡았다.
+  const digestOf = deps.skillsDigest ?? (deps.run ? undefined : () => podSkillsDigest(resolvePodSkills().skills).digest);
+  if (digestOf && imageCommit === headCommit) {
+    const want = digestOf();
+    const lab = run('docker', ['image', 'inspect', image, '--format', '{{index .Config.Labels "monad.pod-skills"}}']);
+    const have = lab.status === 0 ? lab.stdout.trim() : '';
+    if (have !== want) return { imageCommit, headCommit, fresh: false, reason: `Pod 스킬 세트가 바뀌었다(이미지 ${have && have !== '<no value>' ? have : '없음'} ≠ 지금 ${want})` };
+  }
   return imageCommit === headCommit
     ? { imageCommit, headCommit, fresh: true, reason: 'HEAD 와 같다' }
     : { imageCommit, headCommit, fresh: false, reason: `이미지 ${imageCommit.slice(0, 12)} ≠ HEAD ${headCommit.slice(0, 12)}` };

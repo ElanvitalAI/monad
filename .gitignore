@@ -126,3 +126,10 @@ tools/remotion-shorts/out/
 
 # 문서 사이트 정적 산출 (bun scripts/build-docs-site.ts)
 docs/site/dist/
+
+# 공개 매뉴얼 사이트(Docusaurus) — 생성물·의존성은 커밋하지 않는다(원본 = release/public/docs ⊕ website/pages.json)
+website/node_modules/
+website/build/
+website/.docusaurus/
+website/docs/
+website/i18n/

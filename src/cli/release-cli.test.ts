@@ -1,0 +1,145 @@
+import { describe, expect, test } from 'bun:test';
+import { createHash } from 'node:crypto';
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { isPrerelease, isReleaseVersion, planPublish, publishRelease, verifyChecksums, verifyRelease, type ReleaseManifest, type Runner } from './release-cli.js';
+
+function fixture() {
+  const out = mkdtempSync(join(tmpdir(), 'release-cli-'));
+  const dist = join(out, 'dist');
+  mkdirSync(dist);
+  const files = ['monadagent.tgz', 'install.sh', 'install.ps1'].map((name) => {
+    const body = `content of ${name}`;
+    writeFileSync(join(dist, name), body);
+    return { name, sha256: createHash('sha256').update(body).digest('hex'), bytes: body.length };
+  });
+  writeFileSync(join(dist, 'SHA256SUMS'), files.map((f) => `${f.sha256}  ${f.name}`).join('\n') + '\n');
+  const manifest: ReleaseManifest = {
+    version: '0.1.1', tag: 'v0.1.1', prerelease: false, publicRepo: 'ElanvitalAI/monad', sourceRef: 'origin/main',
+    sourceCommit: 'a'.repeat(40), publicCommit: 'b'.repeat(40), publicDir: join(out, 'public'), distDir: dist,
+    // files = release-build 가 내는 그대로 — SHA256SUMS 는 «목록에 없다»
+    files, webUi: true, e2e: { ran: true, ok: true, versionLine: `0.1.1 ${'b'.repeat(40)}` },
+    preparedAt: '2026-09-25T00:00:00Z',
+  };
+  writeFileSync(join(out, 'release.json'), JSON.stringify(manifest));
+  const notes = join(out, 'notes.md');
+  writeFileSync(notes, 'notes');
+  return { out, dist, manifest, notes };
+}
+
+describe('release — 버전·자산', () => {
+  test('버전 모양: x.y.z 와 -rc/-alpha/-beta.N 만 · 접두 v 는 아니다', () => {
+    expect(['0.1.0', '0.2.0-rc.1', '1.0.0-beta.2'].every(isReleaseVersion)).toBe(true);
+    expect(['v0.1.0', '0.1', '0.1.0-dev', ''].some(isReleaseVersion)).toBe(false);
+    expect(isPrerelease('0.2.0-rc.1')).toBe(true);
+    expect(isPrerelease('0.2.0')).toBe(false);
+  });
+
+  test('체크섬 재대조가 바뀐 파일의 «이름»을 댄다', () => {
+    const f = fixture();
+    try {
+      expect(verifyChecksums(f.dist)).toEqual([]);
+      writeFileSync(join(f.dist, 'install.sh'), 'tampered');
+      expect(verifyChecksums(f.dist)).toEqual(['install.sh']);
+    } finally { rmSync(f.out, { recursive: true, force: true }); }
+  });
+});
+
+describe('release publish — 되돌릴 수 없으니 기본은 «보기만»', () => {
+  test('계획: 공개 커밋 푸시 → 태그 릴리스(자산 전부 · 공개 커밋을 target · prerelease 면 표시)', () => {
+    const f = fixture();
+    try {
+      const steps = planPublish(f.manifest, f.notes);
+      expect(steps.map((s) => s.command)).toEqual(['git', 'gh']);
+      expect(steps[0]!.args).toEqual(['push', 'origin', 'HEAD:main']);
+      expect(steps[1]!.args).toContain('--target');
+      expect(steps[1]!.args[steps[1]!.args.indexOf('--target') + 1]).toBe('b'.repeat(40));
+      expect(steps[1]!.args).not.toContain('--prerelease');
+      expect(planPublish({ ...f.manifest, prerelease: true }, f.notes)[1]!.args).toContain('--prerelease');
+      // ⛔ 설치기가 읽는 SHA256SUMS 를 반드시 올린다(release-build 의 files 에는 없다)
+      expect(steps[1]!.args).toContain(join(f.dist, 'SHA256SUMS'));
+      expect(steps[1]!.args.filter((a) => a.startsWith(f.dist))).toHaveLength(4);
+    } finally { rmSync(f.out, { recursive: true, force: true }); }
+  });
+
+  test('--yes 없으면 아무것도 실행하지 않는다 · 이미 있는 태그는 거부 · 자산이 바뀌었으면 거부', async () => {
+    const f = fixture();
+    const calls: string[] = [];
+    const noRelease: Runner = (c, a) => { calls.push(`${c} ${a[0]} ${a[1]}`); return { status: c === 'gh' && a[1] === 'view' ? 1 : 0, stdout: '', stderr: '' }; };
+    try {
+      const dry = await publishRelease({ dir: f.out, notesFile: f.notes, log: () => {} }, noRelease);
+      expect(dry.published).toBe(false);
+      expect(calls).toEqual(['gh release view']);
+      const exists: Runner = () => ({ status: 0, stdout: '', stderr: '' });
+      await expect(publishRelease({ dir: f.out, notesFile: f.notes, yes: true, log: () => {} }, exists)).rejects.toThrow('이미 있는 릴리스');
+      writeFileSync(join(f.dist, 'monadagent.tgz'), 'changed');
+      await expect(publishRelease({ dir: f.out, notesFile: f.notes, yes: true, log: () => {} }, noRelease)).rejects.toThrow('monadagent.tgz');
+    } finally { rmSync(f.out, { recursive: true, force: true }); }
+  });
+
+  test('--yes 면 푸시 → 릴리스 순서로 실행한다', async () => {
+    const f = fixture();
+    const calls: string[] = [];
+    const run: Runner = (c, a) => { calls.push(`${c} ${a[0]} ${a[1]}`); return { status: c === 'gh' && a[1] === 'view' ? 1 : 0, stdout: '', stderr: '' }; };
+    try {
+      const r = await publishRelease({ dir: f.out, notesFile: f.notes, yes: true, log: () => {} }, run);
+      expect(r.published).toBe(true);
+      expect(calls).toEqual(['gh release view', 'git push origin', 'gh release create']);
+    } finally { rmSync(f.out, { recursive: true, force: true }); }
+  });
+});
+
+// 상태 왕복 가짜 — memory add 로 받은 nonce 를 search 가 돌려주고, logs 는 «지금» 쓰인 행을 낸다.
+let lastNonce = '';
+function stateOk(a: readonly string[]): { status: number; stdout: string; stderr: string } {
+  if (a[0] === 'memory' && a[1] === 'add') { lastNonce = String(a[3]).replace('release-verify-', ''); return { status: 0, stdout: 'saved', stderr: '' }; }
+  if (a[0] === 'memory' && a[1] === 'search') return { status: 0, stdout: `match release-verify-${lastNonce}`, stderr: '' };
+  if (a[0] === 'logs') return { status: 0, stdout: `{"_meta":{}}\n{"id":2,"ts_ms":${Date.now()}}\n`, stderr: '' };
+  return { status: 0, stdout: '', stderr: '' };
+}
+
+describe('release verify — 공개 주소로 끝까지', () => {
+  test('고정 버전이면 download/v<버전> 설치기를 받고, --version 이 그 버전으로 시작해야 ok', async () => {
+    const urls: string[] = [];
+    const run: Runner = (c, a) => {
+      if (c === 'curl') { urls.push(String(a[1])); return { status: 0, stdout: 'echo installer', stderr: '' }; }
+      if (a[0] === '--version') return { status: 0, stdout: '0.1.1 cafe\n', stderr: '' };
+      return stateOk(a);
+    };
+    const r = await verifyRelease({ version: '0.1.1', log: () => {} }, run);
+    expect(urls).toEqual(['https://github.com/ElanvitalAI/monad/releases/download/v0.1.1/install.sh']);
+    expect(r.ok).toBe(true);
+    const wrong: Runner = (c, a) => (a[0] === '--version' ? { status: 0, stdout: '0.1.0 cafe', stderr: '' } : stateOk(a));
+    expect((await verifyRelease({ version: '0.1.1', log: () => {} }, wrong)).ok).toBe(false);
+  });
+
+  test('검증 환경은 물려받은 MONAD_*·XDG_* 를 걷는다 — 상태 왕복이 운영 저장소에 쓰지 않게', async () => {
+    const seen: NodeJS.ProcessEnv[] = [];
+    const saved = { s: process.env.MONAD_STATE_DIR, x: process.env.XDG_DATA_HOME };
+    process.env.MONAD_STATE_DIR = '/real/state'; process.env.XDG_DATA_HOME = '/real/xdg';
+    try {
+      const run: Runner = (c, a, cwd, o) => { if (o?.env) seen.push(o.env); return c === 'curl' ? { status: 0, stdout: 'x', stderr: '' } : a[0] === '--version' ? { status: 0, stdout: '0.1.1 c', stderr: '' } : stateOk(a); };
+      await verifyRelease({ version: '0.1.1', log: () => {} }, run);
+    } finally {
+      if (saved.s === undefined) delete process.env.MONAD_STATE_DIR; else process.env.MONAD_STATE_DIR = saved.s;
+      if (saved.x === undefined) delete process.env.XDG_DATA_HOME; else process.env.XDG_DATA_HOME = saved.x;
+    }
+    expect(seen.length).toBeGreaterThan(3);
+    for (const env of seen) { expect(env.MONAD_STATE_DIR).toBeUndefined(); expect(env.XDG_DATA_HOME).toBeUndefined(); expect(env.HOME).toContain('monad-release-verify-'); }
+  });
+
+  test('--version 이 맞아도 상태 왕복(기억 · 로그)이 안 되면 ok 가 아니다', async () => {
+    const base: Runner = (c, a) => (c === 'curl' ? { status: 0, stdout: 'echo installer', stderr: '' } : a[0] === '--version' ? { status: 0, stdout: '0.1.1 cafe\n', stderr: '' } : stateOk(a));
+    const noMemory: Runner = (c, a, cwd, o) => (a[0] === 'memory' && a[1] === 'search' ? { status: 0, stdout: 'no matches', stderr: '' } : base(c, a, cwd, o));
+    const oldLogs: Runner = (c, a, cwd, o) => (a[0] === 'logs' ? { status: 0, stdout: '{"id":1,"ts_ms":1}\n', stderr: '' } : base(c, a, cwd, o));
+    expect((await verifyRelease({ version: '0.1.1', log: () => {} }, base)).ok).toBe(true);
+    expect((await verifyRelease({ version: '0.1.1', log: () => {} }, noMemory)).ok).toBe(false);
+    expect((await verifyRelease({ version: '0.1.1', log: () => {} }, oldLogs)).ok).toBe(false);
+    // 빈 HOME — 데몬이 한 번도 안 떠 로그 스토어가 없다(📏 09-25 이 맥 실측). 실패도 통과도 아니고 «안 쟀다»고 말한다.
+    const lines: string[] = [];
+    const noStore: Runner = (c, a, cwd, o) => (a[0] === 'logs' ? { status: 1, stdout: '', stderr: 'monad logs: 열 수 있는 로그 스토어 없음 — scope={"registeredStores":0,"unopenedStores":0}' } : base(c, a, cwd, o));
+    expect((await verifyRelease({ version: '0.1.1', log: (l) => lines.push(l) }, noStore)).ok).toBe(true);
+    expect(lines.join('\n')).toContain('로그 왕복 안 잼');
+  });
+});

@@ -184,7 +184,7 @@ export function evaluatePythonEnv(input: {
   platform?: NodeJS.Platform;
 }): PythonEnvCheck {
   const { resolution, declared, probe, venvExists } = input;
-  if (input.declarationsFound === false) return { status: 'manual', evidence: 'requirements-python.txt was not found next to this monad — the install is missing its python declarations', remedy: 'reinstall monad (the package must ship requirements-python.txt)', resolution };
+  if (input.declarationsFound === false) return { status: 'manual', evidence: 'requirements-python.txt was not found next to this monad — the install is missing its python declarations', remedy: 'monad self-update (this release shipped without requirements-python.txt — 0.1.0 did)', resolution };
   if (input.baseHasEnsurepip === false && (!venvExists || probe?.hasPip === false)) {
     return { status: 'manual', evidence: 'the base python cannot create a venv with pip (ensurepip missing)', ...(input.venvRemedy ? { remedy: `${input.venvRemedy} && monad python setup --yes` } : { remedy: 'install the venv/ensurepip package for your python, then: monad python setup --yes' }), resolution };
   }

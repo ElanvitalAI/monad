@@ -86,7 +86,7 @@ describe('checkReadiness', () => {
   test('gh missing is manual and names the install command for the measured platform', () => {
     const linux = byId({ ...healthy, ghOnPath: false, ghAuthStatus: 1, platform: 'linux' }, 'gh-auth');
     expect(linux.status).toBe('manual');
-    expect(linux.remedy).toBe('sudo apt-get install -y gh');
+    expect(linux.remedy).toBe('monad doctor --fix --yes');   // apt gh 는 2.80 미만(Debian 12 2.23 · Ubuntu 24.04 2.45)
     const darwin = byId({ ...healthy, ghOnPath: false, ghAuthStatus: 1, platform: 'darwin' }, 'gh-auth');
     expect(darwin.status).toBe('manual');
     expect(darwin.remedy).toBe('brew install gh');
@@ -355,6 +355,7 @@ describe('checkReadiness', () => {
       'harness-tools',
       'install-path',
       'service-version',
+      'bun-version',
       'bun-tmpdir',
       'service-file',
       'service-secrets',
@@ -433,6 +434,20 @@ describe('checkReadiness', () => {
 });
 
 // 🆕 2026-09-24 — 전역 monad 링크가 설치본으로 풀리면 PATH 블록이 필요 없다.
+describe('bun-version — one pin (.bun-version) for installer, pod image and doctor', () => {
+  const by = (d: Parameters<typeof checkReadiness>[0]) => checkReadiness(d).items.find((entry) => entry.id === 'bun-version')!;
+  test('equal is ok, different is manual with the pinned install line, unreadable is unknown', () => {
+    expect(by({ bunVersion: '1.4.2', bunPin: '1.4.2' }).status).toBe('ok');
+    const differs = by({ bunVersion: '1.3.12', bunPin: '1.4.2', platform: 'linux' });
+    expect(differs.status).toBe('manual');
+    expect(differs.evidence).toContain('1.3.12');
+    expect(differs.remedy).toBe('curl -fsSL https://bun.sh/install | bash -s bun-v1.4.2');
+    expect(by({ bunVersion: '1.3.12', bunPin: '1.4.2', platform: 'win32' }).remedy).toBeUndefined();
+    expect(by({ bunVersion: '1.4.2', bunPin: null }).status).toBe('unknown');
+    expect(by({}).status).toBe('unknown');
+  });
+});
+
 describe('install-path — monad on PATH resolving into the install', () => {
   const base = { installPrefix: '/home/u/.local/share/monad', pathEntries: ['/home/u/.bun/bin', '/usr/bin'] };
   test('ok when the first monad on PATH resolves inside the install prefix', () => {

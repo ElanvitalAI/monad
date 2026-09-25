@@ -598,7 +598,7 @@ export function applyDoctorFixes(deps: DoctorFixDeps = {}, yes = false): DoctorF
  */
 export interface SudoFixResult {
   readonly sudoAvailable: boolean;
-  readonly runs: Array<{ command: string; result: 'ran' | 'failed'; detail?: string }>;
+  readonly runs: Array<{ command: string; result: 'ran' | 'failed' | 'skipped'; detail?: string }>;
   readonly exitCode: number;
 }
 
@@ -619,6 +619,10 @@ export function applySudoFixes(
   const probe = run('sudo', ['-n', 'true']);
   if (probe.status !== 0) return { sudoAvailable: false, runs: [], exitCode: 1 };
   const runs = sudoFixCommands(manual).map((command) => {
+    // 치기 «전»에 셸에게 «명령인가»를 묻는다 — 문자열 모양으로 거르는 위 가드는 설명문 하나를 놓쳤다
+    // (🩸 09-25 GCP debian-12: `… && reinstall monad (the package must ship …)` → `Syntax error: "(" unexpected` · rc 1).
+    const syntax = run('sh', ['-n', '-c', command]);
+    if (syntax.status !== 0) return { command, result: 'skipped' as const, detail: 'not a shell command — read it and run the parts by hand' };
     const r = run('sh', ['-c', command]);
     return r.status === 0
       ? { command, result: 'ran' as const }

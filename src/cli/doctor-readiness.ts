@@ -99,6 +99,9 @@ export interface ReadinessDeps {
    * 🩸 다르면 bun 이 optional 의존성(node-pty 등)을 «조용히» 빠뜨린다(EXDEV · oven-sh/bun#38079 · 2026-09-22 실측 4/4).
    */
   tmpdirSameFsAsBunCache?: boolean | null;
+  /** 지금 도는 bun 판 · 저장소가 시험한 판(`.bun-version`) — 못 읽으면 null. */
+  bunVersion?: string | null;
+  bunPin?: string | null;
   /** 배포판 계열(`doctor-distro.ts`). 주입 안 하면 종전 동작(linux=apt). */
   /** 빌드 도구 탐침 — `make` 가 PATH 에 있나 · C++ 컴파일러가 `-std=gnu++20` 을 받나(한 줄 컴파일). null = 못 잼. */
   buildToolchain?: { make: boolean | null; cxx20: boolean | null } | null;
@@ -224,7 +227,12 @@ function providerDecision(deps: ReadinessDeps): ReadinessItem {
   return item('provider-decision', 'ok', 'llm.provider=auto and no codex login');
 }
 
+/** Debian 계열 apt 의 gh 는 GH_MIN_VERSION 미만이다(📏 09-25: Debian 12 = 2.23 · Ubuntu 24.04 = 2.45) — apt 로 깔면 곧바로
+ *  「낡았다」로 다시 걸린다(GCP debian-12 에서 `--sudo` 가 실제로 2.23 을 깔았다). `--fix` 는 고정 판 정적 gh 를 받는다. */
+const GH_INSTALL_PINNED = 'monad doctor --fix --yes';
+
 function ghInstallRemedy(platform: NodeJS.Platform | undefined, distro?: DistroFamily): string | undefined {
+  if (platform === 'linux' && (distro === undefined || distro === 'debian')) return GH_INSTALL_PINNED;
   // 계열을 알면 표에서(모르는 계열 = 추측하지 않고 없음) · 계열을 안 쟀으면 종전 동작.
   if (distro !== undefined) return remediesFor(distro)?.gh;
   if (platform === 'linux') return GH_INSTALL_LINUX;
@@ -414,7 +422,7 @@ function nodePty(deps: ReadinessDeps): ReadinessItem {
   if (deps.nodePty === 'found') return item('node-pty', 'ok', 'node-pty loads');
   const toolchain = buildToolchain(deps);
   if (toolchain.status === 'ok') return item('node-pty', 'fixable', `node-pty is ${deps.nodePty} and the build toolchain is present — rebuild it`, 'monad doctor --fix --yes');
-  return item('node-pty', 'manual', `node-pty is ${deps.nodePty} — install the build toolchain first (see build-toolchain), then re-run the installer`, remediesFor(deps.distro ?? 'unknown')?.buildToolchain);
+  return item('node-pty', 'manual', `node-pty is ${deps.nodePty} — install the build toolchain first (see build-toolchain), then run monad doctor --fix --yes (re-running the installer on the same version does not rebuild it)`, remediesFor(deps.distro ?? 'unknown')?.buildToolchain);
 }
 
 /** 파이썬 환경 — RFC #20265 A3 · 대표 결정: 표준 = monad 소유 venv. 판정 자체는 `src/python/resolve-python.ts` `evaluatePythonEnv`. */
@@ -429,7 +437,8 @@ function pythonEnv(deps: ReadinessDeps): ReadinessItem {
     // 파이썬이 아예 없고 배포판 파이썬이 선언을 넘는 계열이면 — 빌드가 아니라 배포판 패키지 한 줄(2026-09-25 컨테이너 실측).
     const base = /^no python3 found/.test(evidence) ? remediesFor(deps.distro ?? 'unknown')?.pythonBase : undefined;
     if (base) return item('python-env', 'manual', evidence, `${base} && monad python setup --yes`);
-    const deps2 = /ensurepip/.test(evidence) ? undefined : remediesFor(deps.distro ?? 'unknown')?.pythonBuildDeps;
+    // 선언 파일이 설치본에 없는 경우도 빌드 의존성과 무관하다 — 처방은 판 올림 하나(09-25 베어 ubuntu:24.04 · v0.1.0 이 선언 파일 없이 나갔다).
+    const deps2 = /ensurepip|was not found next to this monad/.test(evidence) ? undefined : remediesFor(deps.distro ?? 'unknown')?.pythonBuildDeps;
     return item('python-env', 'manual', evidence, [deps2, remedy].filter(Boolean).join(' && ') || undefined);
   }
   return item('python-env', 'ok', evidence);
@@ -492,6 +501,14 @@ function serviceFile(deps: ReadinessDeps): ReadinessItem {
 
 /** Read-only readiness. Callers inject every lookup; this function performs none. */
 const BUN_TMPDIR_REMEDY = 'mkdir -p ~/tmp-bun && export TMPDIR=~/tmp-bun  # then re-run the install';
+
+/** bun 판 — 설치기·Pod 이미지·doctor 가 `.bun-version` 한 칸을 따른다(09-25 결정 · 판이 갈리면 같은 코드가 기계마다 다르게 돈다). */
+function bunVersionItem(deps: ReadinessDeps): ReadinessItem {
+  if (!deps.bunVersion || !deps.bunPin) return item('bun-version', 'unknown', `bun ${deps.bunVersion ?? '?'} · tested ${deps.bunPin ?? '?'} (.bun-version) — one side could not be read`);
+  if (deps.bunVersion === deps.bunPin) return item('bun-version', 'ok', `bun ${deps.bunVersion} = the tested version (.bun-version)`);
+  const remedy = deps.platform === 'win32' ? undefined : `curl -fsSL https://bun.sh/install | bash -s bun-v${deps.bunPin}`;
+  return item('bun-version', 'manual', `bun ${deps.bunVersion} differs from the tested ${deps.bunPin} (.bun-version) — monad is verified on that one`, remedy);
+}
 
 function bunTmpdir(deps: ReadinessDeps): ReadinessItem {
   if (deps.platform !== 'linux') return item('bun-tmpdir', 'ok', 'not Linux — the TMPDIR/bun-cache filesystem split only bites on Linux');
@@ -657,6 +674,7 @@ export function checkReadiness(deps: ReadinessDeps = {}): ReadinessReport {
       harnessTools(deps),
       installPath(deps),
       serviceVersion(deps),
+      bunVersionItem(deps),
       bunTmpdir(deps),
       serviceFile(deps),
       serviceSecrets(deps),

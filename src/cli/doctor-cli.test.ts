@@ -1309,6 +1309,8 @@ describe('doctor CLI', () => {
         serviceFile: null,
         buildToolchain: { make: true, cxx20: true },
         nodePty: 'found',
+        bunVersion: '1.4.2',
+        bunPin: '1.4.2',
         pythonEnv: { status: 'ok', evidence: 'python 3.12.12 (monad-venv) · required modules import' },
         substrate: { kubernetesServiceHost: false, serviceAccountNamespace: false, dockerenv: false, containerenv: false, cgroup: null, containerEnv: null },
         docker: { onPath: false },
@@ -1323,7 +1325,9 @@ describe('doctor CLI', () => {
     expect(formatted).toContain('  gh-auth: ok');
     expect(formatted).toContain('  install-path: ok');
     expect(formatted).toContain('  service-version: ok');
-    expect(formatted.indexOf('준비 상태:')).toBeLessThan(formatted.indexOf('할 수 있는 일:'));
+    // 준비 상태는 맨 끝(터미널에서 보이는 자리) — 능력 목록 «뒤», 마지막 줄은 할 일 요약.
+    expect(formatted.indexOf('준비 상태:')).toBeGreaterThan(formatted.indexOf('못 하는 일:'));
+    expect(formatted.trimEnd().split('\n').at(-1)).toMatch(/^할 일 (없음\.|\d+개: )/);
     expect(exitCodes).toEqual([]);
     expect(formatted).not.toContain('--fix');
   });

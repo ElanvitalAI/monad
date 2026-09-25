@@ -1,88 +1,107 @@
 # Install
 
-monad runs on **Bun** (not Node) on macOS, Linux and WSL2.
+monad runs on **Bun** (not Node) on macOS, Linux and WSL2; Windows native PowerShell is experimental.
 
-## What you need first
-
-| Tool | Why | Required? |
-|---|---|---|
-| `bash`, `curl`, `tar` | the installer | yes |
-| `git` | the harness works in git worktrees | yes |
-| `bun` | runtime | installed for you if missing (see below) |
-| `gh` (GitHub CLI) | the harness opens pull requests | only if you want PRs |
-
-## Install from a checkout
+## One line
 
 ```bash
-git clone <repository URL> monad && cd monad
-bash scripts/install.sh
+curl -fsSL https://github.com/ElanvitalAI/monad/releases/latest/download/install.sh | bash
 ```
 
 The installer:
 
-- installs `bun` with its official installer if it is missing (turn this off with `--no-bootstrap-bun`),
+- downloads the latest release and checks it against `SHA256SUMS` — a mismatch stops the install,
+- installs `bun` with its official installer if it is missing, at the version pinned in `.bun-version` (turn this off with `--no-bootstrap-bun`; `MONAD_BUN_VERSION=latest` lifts the pin),
 - installs into `~/.local/share/monad` (override with `--prefix PATH` or `MONAD_INSTALL_PREFIX`),
 - adds `~/.local/share/monad/bin` to your shell `PATH` (skip with `--no-modify-path`),
+- if a command it needs is missing, names **all** of them in one install line (without `sudo` when you are root),
 - ends by telling you the next step based on what it found (for example, whether you are logged in yet).
 
-Open a new shell (or add the `bin` directory to `PATH` yourself), then check:
+Open a new shell, then check:
 
 ```bash
-monad --version     # prints the version and the commit it was installed from
+monad --version     # prints the version and the commit it was built from
+monad doctor        # what this machine still needs — a report, not a gate
 ```
 
-## Install from a package file
-
-If you have a package tarball (`.tgz`) — a local file or a URL:
+Pin a version with `MONAD_VERSION`:
 
 ```bash
-bash scripts/install.sh --source ./monadagent-1.0.0.tgz
-curl -fsSL <install.sh URL> | bash -s -- --source <package .tgz URL>
+curl -fsSL https://github.com/ElanvitalAI/monad/releases/latest/download/install.sh | MONAD_VERSION=0.1.1 bash
 ```
 
 ## Windows (native PowerShell) — experimental
 
-WSL2 is the recommended way to run monad on Windows. A native install works for the command itself
-(verified on Windows 11 with Windows PowerShell 5.1 and PowerShell 7.6); deeper features (terminal sessions,
-the harness) are not verified there yet.
-
 ```powershell
-irm bun.sh/install.ps1 | iex                                            # bun, if you do not have it
-powershell -ExecutionPolicy Bypass -File scripts\install.ps1            # from a checkout
-powershell -ExecutionPolicy Bypass -File scripts\install.ps1 -Source .\monadagent-1.0.0.tgz
+irm https://github.com/ElanvitalAI/monad/releases/latest/download/install.ps1 | iex
 monad --version
 ```
 
-It installs into `%LOCALAPPDATA%\monad` (override with `-Prefix PATH` or `MONAD_INSTALL_PREFIX`) with the same
-layout as below — `current` is a directory junction, so no administrator rights are needed — and adds
-`bin` to your PowerShell profile (skip with `-NoModifyPath`).
+It installs into `%LOCALAPPDATA%\monad` (override with `-Prefix PATH` or `MONAD_INSTALL_PREFIX`) with the same layout as below — `current` is a directory junction, so no administrator rights are needed — and adds `bin` to your PowerShell profile (skip with `-NoModifyPath`). WSL2 remains the recommended way to run the harness on Windows.
+
+## From a bare Linux machine
+
+A bare image may not even have `curl`, so install the basics first:
+
+```bash
+sudo apt-get update && sudo apt-get install -y curl ca-certificates unzip git
+curl -fsSL https://github.com/ElanvitalAI/monad/releases/latest/download/install.sh | bash
+source ~/.bashrc
+monad --version && monad doctor
+```
+
+That is enough to boot. To run the daemon and the harness, let `doctor` install what they need — build tools and the node-pty rebuild, a pinned static `gh`, `rg`, Node and the Codex CLI (about 80 seconds on a bare Debian 12 VM):
+
+```bash
+monad doctor --fix --yes --sudo
+```
+
+- ⚠️ Do **not** install `gh` from Debian/Ubuntu apt — those packages (Debian 12: 2.23, Ubuntu 24.04: 2.45) are older than the 2.80 the harness needs. `monad doctor --fix --yes` fetches a pinned one.
+- If terminal features stay dark, run `monad doctor --fix --yes` again — it rebuilds `node-pty` for the installed version. Re-running the installer on the same version does not.
+- Prefer to install by hand? `sudo apt-get install -y build-essential ripgrep`, Node 20+ and `npm install -g @openai/codex` are the equivalent.
+
+## Run the daemon in the background
+
+```bash
+monad nexus install --systemd-user    # Linux: active, enabled, and survives reboots without a login
+monad nexus install --launchd         # macOS
+```
+
+The daemon's port answers about 30 seconds after it starts.
+
+## From a checkout
+
+```bash
+git clone https://github.com/ElanvitalAI/monad && cd monad
+bash scripts/install.sh               # same installer, installing this checkout (folder named by commit)
+```
 
 ## Layout
 
 ```
 ~/.local/share/monad/
-  versions/<version>-<commit>/   one folder per installed build (older ones are kept)
-  current -> versions/…          the active build
+  versions/<version>/            one folder per installed version (older ones are kept)
+  current -> versions/…          the active version
   bin/monad                      the command on your PATH
   install.json                   what is installed, from where, which commit
 ```
 
-Your settings, logins and logs live separately in `~/.monad` and are never touched by the installer.
+Your settings, logins, logs and memory live separately in `~/.monad` and are never touched by the installer or the uninstaller.
 
-## Upgrade and roll back
+## Update, roll back, uninstall
 
 ```bash
-cd monad && git pull && monad self-update            # install; tells you whether the service needs a restart
-monad self-update --restart                          # same, and restart the service only if it is needed
-ln -sfn versions/<previous build> ~/.local/share/monad/current      # roll back
+monad self-update                              # latest release; the previous version stays for rollback
+monad self-update --version 0.1.1              # a specific release
+ln -sfn versions/<previous> ~/.local/share/monad/current      # roll back
+curl -fsSL https://github.com/ElanvitalAI/monad/releases/latest/download/uninstall.sh | bash
 ```
 
-If you run the background service (`monad nexus`), restart it after an upgrade — see [troubleshooting](troubleshooting.md#the-service-still-runs-the-old-version).
+If you run the background service, restart it after an update — see [troubleshooting](troubleshooting.md#the-service-still-runs-the-old-version).
 
 ## Known limits
 
-- The **web app (PWA)** is not inside the installed package yet. To use it, build it from a checkout (`monad nexus build` in the checkout) and point the service at it with `MONAD_PWA_STATIC_DIR=<checkout>/apps/pwa/out`.
-- On Linux, `node-pty` has no prebuilt binary; monad falls back to Bun's own PTY and nothing breaks.
+- On Linux, `node-pty` has no prebuilt binary; monad falls back to Bun's own PTY and nothing breaks. `monad doctor --fix --yes` rebuilds it when a C++ toolchain is present.
 - If `bun install` silently skips an optional dependency on Linux, check whether `TMPDIR` and Bun's cache are on different filesystems — `monad doctor` reports it as `bun-tmpdir`, and `monad doctor --fix --yes` adds the fix to your shell startup file. See [troubleshooting](troubleshooting.md#bun-skips-an-optional-dependency).
 
 Next: [quickstart](quickstart.md).

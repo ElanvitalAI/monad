@@ -10,6 +10,7 @@ import {
   extractKeywords,
   memoryRoot, memoryIndexPath,
   selectJudgedMemories, buildMemoryInjectionLLM, buildMemoryJudgePrompt,
+  writeFileDurable,
 } from '../src/memory';
 
 let root: string;
@@ -316,5 +317,19 @@ describe('extractKeywords', () => {
   test('handles Korean / CJK', () => {
     const kw = extractKeywords('삼성전자 외국인 수급');
     expect(kw.length).toBeGreaterThan(0);
+  });
+});
+
+// 🩸 09-25 GCP debian-12: `memory add` 직후 전원 차단 → 새 파일과 MEMORY.md 가 크기만 남고 NUL. rename 은 원자적이지만 내구적이지 않다.
+describe('writeFileDurable — fsync before the rename, then the directory', () => {
+  test('the file is fsynced while still at the temp name, the directory after the rename', () => {
+    const dir = mkdtempSync(join(tmpdir(), 'memory-durable-'));
+    const target = join(dir, 'MEMORY.md');
+    const seen: Array<{ tmpExists: boolean; targetExists: boolean }> = [];
+    writeFileDurable(target, 'hello', () => { seen.push({ tmpExists: existsSync(`${target}.tmp`), targetExists: existsSync(target) }); });
+    expect(seen).toEqual([{ tmpExists: true, targetExists: false }, { tmpExists: false, targetExists: true }]);
+    expect(readFileSync(target, 'utf8')).toBe('hello');
+    expect(existsSync(`${target}.tmp`)).toBe(false);
+    rmSync(dir, { recursive: true, force: true });
   });
 });

@@ -4,6 +4,8 @@
 #   curl -fsSL https://github.com/ElanvitalAI/monad/releases/latest/download/uninstall.sh | bash
 #
 # 지우는 것: 설치 폴더($PREFIX — versions/·current·bin/·install.json) ⊕ 설치기가 쓴 PATH 블록(마커 사이 · ~/.zshrc·~/.bashrc·~/.profile).
+# ⛔ 설치 폴더를 «통째로» 지우지 않는다 — 설치물 넷만 지우고, 그 밖의 것이 남으면 폴더를 지킨다.
+#    🩸 09-25: 기억 저장소 기본 위치가 ${XDG_DATA_HOME:-~/.local/share}/monad/memory — 설치 폴더 «안»이라 `rm -rf $PREFIX` 가 사용자 기억을 지웠다.
 # ⛔ 지우지 «않는» 것: 상태 폴더 ~/.monad(로그인·로그·원장·설정) — 되돌릴 수 없으니 사람이 직접 지운다(경로만 알려 준다).
 # ⛔ 서비스(launchd·systemd)를 여기서 끄지 않는다 — 이 기계의 다른 설치본이 쓸 수 있다. 켜 뒀으면 먼저 `monad nexus uninstall --launchd|--systemd-user`.
 # ⛔ install.json 이 없는 폴더는 «설치 폴더가 아니다» — 지우지 않고 멈춘다(추측으로 지우지 않는다).
@@ -49,11 +51,13 @@ for f in "${MONAD_SHELL_STARTUP:-}" "$HOME/.zshrc" "$HOME/.bashrc" "$HOME/.profi
   [ -n "$f" ] && [ -f "$f" ] && grep -Fqx "$MARKER_START" "$f" && STARTUPS+=("$f")
 done
 
-echo "remove: $PREFIX"
+echo "remove: $PREFIX/{versions,current,bin,install.json}"
 if [ "$KEEP_PATH" -eq 0 ]; then for f in "${STARTUPS[@]+"${STARTUPS[@]}"}"; do echo "remove PATH block: $f"; done; fi
 if [ "$DRY" -eq 1 ]; then echo "(dry run — nothing changed)"; exit 0; fi
 
-rm -rf -- "$PREFIX"
+for item in versions current bin install.json; do rm -rf -- "${PREFIX:?}/$item"; done
+KEPT=""
+if ! rmdir -- "$PREFIX" 2>/dev/null; then KEPT="$(ls -A -- "$PREFIX" 2>/dev/null | tr '\n' ' ')"; fi
 if [ "$KEEP_PATH" -eq 0 ]; then
   for f in "${STARTUPS[@]+"${STARTUPS[@]}"}"; do
     tmp="$(mktemp "${TMPDIR:-/tmp}/monad-uninstall.XXXXXX")"
@@ -63,6 +67,9 @@ if [ "$KEEP_PATH" -eq 0 ]; then
 fi
 
 echo "Uninstalled monad from $PREFIX"
+if [ -n "$KEPT" ]; then
+  echo "  kept in $PREFIX: ${KEPT% } — not part of the installation (memory/ holds your memories) — remove it yourself if you want"
+fi
 if [ -d "$STATE_DIR" ]; then
   echo "  kept state: $STATE_DIR (logins, logs, ledgers, config) — remove it yourself if you want a clean slate"
 fi

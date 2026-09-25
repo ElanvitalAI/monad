@@ -45,3 +45,11 @@ Check after a run instead of assuming:
 ```bash
 monad logs --since 1h --grep <model id>
 ```
+
+## Enterprise endpoints (Bedrock, Vertex)
+
+Bedrock and Vertex are **not supported today** — they are deliberately
+blocked. The agent driver scrubs `CLAUDE_CODE_USE_BEDROCK` and
+`CLAUDE_CODE_USE_VERTEX` from the child environment so that child agents
+run on subscription OAuth rather than on metered API credentials.
+

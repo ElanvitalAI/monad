@@ -18,6 +18,7 @@ function fixture(version = '0.0.1'): { root: string; out: string } {
   writeFileSync(join(root, 'package.json'), JSON.stringify({ name: 'monadagent', version, files: ['scripts/'] }));
   writeFileSync(join(root, 'scripts/install.sh'), '#!/bin/sh\necho shell\n');
   writeFileSync(join(root, 'scripts/install.ps1'), 'Write-Output powershell\n');
+  writeFileSync(join(root, 'scripts/uninstall.sh'), '#!/bin/sh\necho remove\n');
   expect(spawnSync('git', ['init', '-q'], { cwd: root }).status).toBe(0);
   expect(spawnSync('git', ['add', '-A'], { cwd: root }).status).toBe(0);
   return { root, out };
@@ -31,10 +32,11 @@ test('packs only the supplied tree, copies installers, writes sorted SHA256SUMS 
   expect(result.version).toBe('0.0.1');
   expect(result.prerelease).toBe(false);
   expect(result.tag).toBeUndefined();
-  expect(readdirSync(out).sort()).toEqual(['SHA256SUMS', 'install.ps1', 'install.sh', 'monadagent.tgz']);
+  expect(readdirSync(out).sort()).toEqual(['SHA256SUMS', 'install.ps1', 'install.sh', 'monadagent.tgz', 'uninstall.sh']);
   expect(readFileSync(join(out, 'install.sh'), 'utf8')).toBe('#!/bin/sh\necho shell\n');
   expect(readFileSync(join(out, 'install.ps1'), 'utf8')).toBe('Write-Output powershell\n');
-  const names = ['install.ps1', 'install.sh', 'monadagent.tgz'];
+  expect(readFileSync(join(out, 'uninstall.sh'), 'utf8')).toBe('#!/bin/sh\necho remove\n');
+  const names = ['install.ps1', 'install.sh', 'monadagent.tgz', 'uninstall.sh'];
   expect(result.files.map((f) => f.name)).toEqual(names);
   const expected = names.map((name) => {
     const body = readFileSync(join(out, name));
@@ -56,13 +58,13 @@ test('CLI prints only JSON on stdout and warns once for missing PWA output', () 
   const child = spawnSync('bun', [script, '--root', root, '--out', out], { encoding: 'utf8' });
   expect(child.status).toBe(0);
   expect(child.stderr.trim().split('\n')).toEqual(['웹 화면 없는 판']);
-  expect(JSON.parse(child.stdout)).toEqual({ version: '0.0.1', files: ['install.ps1', 'install.sh', 'monadagent.tgz'].map((name) => {
+  expect(JSON.parse(child.stdout)).toEqual({ version: '0.0.1', files: ['install.ps1', 'install.sh', 'monadagent.tgz', 'uninstall.sh'].map((name) => {
     const body = readFileSync(join(out, name));
     return { name, sha256: createHash('sha256').update(body).digest('hex'), bytes: body.byteLength };
   }), prerelease: false });
 });
 
-test('CLI accepts matching stable tag and packs four files with the package version', () => {
+test('CLI accepts matching stable tag and packs five files with the package version', () => {
   const { root, out } = fixture('0.1.0');
   const child = spawnSync('bun', [script, '--root', root, '--out', out, '--tag', 'v0.1.0'], { encoding: 'utf8' });
   expect(child.status).toBe(0);
@@ -70,8 +72,8 @@ test('CLI accepts matching stable tag and packs four files with the package vers
   expect(result.version).toBe('0.1.0');
   expect(result.tag).toBe('v0.1.0');
   expect(result.prerelease).toBe(false);
-  expect(result.files.map((file: { name: string }) => file.name)).toEqual(['install.ps1', 'install.sh', 'monadagent.tgz']);
-  expect(readdirSync(out).sort()).toEqual(['SHA256SUMS', 'install.ps1', 'install.sh', 'monadagent.tgz']);
+  expect(result.files.map((file: { name: string }) => file.name)).toEqual(['install.ps1', 'install.sh', 'monadagent.tgz', 'uninstall.sh']);
+  expect(readdirSync(out).sort()).toEqual(['SHA256SUMS', 'install.ps1', 'install.sh', 'monadagent.tgz', 'uninstall.sh']);
   const pkg = spawnSync('tar', ['-xOzf', join(out, 'monadagent.tgz'), 'package/package.json'], { encoding: 'utf8' });
   expect(pkg.status).toBe(0);
   expect(JSON.parse(pkg.stdout).version).toBe('0.1.0');
@@ -93,7 +95,7 @@ test.each(['rc', 'alpha', 'beta'])('CLI accepts matching %s prerelease tag', (ch
   const child = spawnSync('bun', [script, '--root', root, '--out', out, '--tag', `v${version}`], { encoding: 'utf8' });
   expect(child.status).toBe(0);
   expect(JSON.parse(child.stdout)).toMatchObject({ version, tag: `v${version}`, prerelease: true });
-  expect(readdirSync(out)).toHaveLength(4);
+  expect(readdirSync(out)).toHaveLength(5);
 });
 
 test.each(['0.2.0', 'v0.2.0-preview.1', 'v0.2.0-rc', 'v0.2.0-rc.x'])('CLI rejects malformed tag %s before output', (tag) => {

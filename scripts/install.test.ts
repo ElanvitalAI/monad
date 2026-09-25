@@ -203,6 +203,67 @@ describe('scripts/install.sh', () => {
     }
   });
 
+  // 📏 09-25 베어 ubuntu:24.04(root · sudo 없음): unzip → 깔고 다시 → git 으로 또 멈췄고(세 판), 안내 줄마다 sudo 가 붙어 그대로 치면 실패했다.
+  test('a bare machine gets every missing prerequisite in one line, and root gets no sudo', () => {
+    for (const root of [false, true]) {
+      const env = setup();
+      const path = join(env.dir, 'path');
+      mkdirSync(path);
+      const osRelease = join(env.dir, 'os-release');
+      writeFileSync(osRelease, 'ID=ubuntu\n');
+      const stubs: Array<[string, string]> = [['uname', "#!/bin/sh\nprintf 'Linux\\n'\n"]];
+      if (root) stubs.push(['id', '#!/bin/sh\necho 0\n']);
+      for (const [name, body] of stubs) {
+        const file = join(path, name);
+        writeFileSync(file, body);
+        chmodSync(file, 0o755);
+      }
+      // bun·curl·unzip·git 이 전부 없다 — bun 은 설치기가 깔 것이므로 세지 않고, 그 설치에 드는 curl·unzip 을 센다.
+      const { result } = run(['--no-modify-path'], env, path, repoRoot,
+        { BUN_INSTALL: join(env.home, '.bun'), MONAD_INSTALL_OS_RELEASE_FILE: osRelease });
+      expect(result.status, result.stderr).toBe(127);
+      expect(result.stderr).toContain('required command missing: curl unzip git');
+      expect(result.stderr).toContain(`   ${root ? '' : 'sudo '}apt-get install -y curl unzip git`);
+      expect(result.stderr.match(/required command missing/g)?.length).toBe(1);
+      if (root) expect(result.stderr).not.toContain('sudo ');
+    }
+  });
+
+  test('bun bootstrap is pinned to the repository bun version (.bun-version)', () => {
+    const pin = readFileSync(join(repoRoot, '.bun-version'), 'utf8').trim();
+    expect(readFileSync(installer, 'utf8')).toContain(`BUN_PIN="\${MONAD_BUN_VERSION:-${pin}}"`);
+    // Pod 이미지 — build.sh 가 .bun-version 을 넘기지만, 인자 없이 빌드해도 같은 판이게 기본값도 맞춘다.
+    // docker/ 는 공개본에 안 실린다 — 있을 때만 대조한다(공개 저장소에서 «없는 파일»로 깨지지 않게).
+    const podDir = ['docker', 'harness'].join('/');
+    if (existsSync(join(repoRoot, podDir, 'Dockerfile'))) {
+      expect(readFileSync(join(repoRoot, podDir, 'Dockerfile'), 'utf8')).toContain(`ARG BUN_VERSION=${pin}`);
+      expect(readFileSync(join(repoRoot, podDir, 'build.sh'), 'utf8')).toContain('.bun-version');
+    }
+  });
+
+  // 🩸 09-25 GCP debian-12: 로그인 셸은 $PREFIX/bin 이 PATH 맨 앞 — 재설치 때 `command -v bun` 이 우리 링크 자신을 집어
+  //    `bin/bun -> bin/bun` 고리를 만들었다(설치 rc 127 · 이후 monad 전부 죽음). 업데이트 경로 전부가 여기를 지난다.
+  test('reinstalling with $PREFIX/bin first on PATH links bun to the real executable, and heals an existing loop', () => {
+    const packed = pack(fixture());
+    const env = setup();
+    const first = run(['--source', packed, '--no-modify-path'], env);
+    expect(first.result.status, first.result.stderr).toBe(0);
+    const bunLink = join(env.prefix, 'bin', 'bun');
+    const realBun = realpathSync(spawnSync('bun', ['-e', 'process.stdout.write(process.execPath)'], { encoding: 'utf8' }).stdout);
+    const loginPath = `${join(env.prefix, 'bin')}:${process.env.PATH ?? ''}`;
+    const again = run(['--source', packed, '--no-modify-path'], env, loginPath);
+    expect(again.result.status, again.result.stderr).toBe(0);
+    expect(realpathSync(bunLink)).toBe(realBun);
+    // 0.1.0 이 이미 만든 고리 — 새 설치기가 걷고 다시 잇는다.
+    rmSync(bunLink);
+    spawnSync('ln', ['-s', bunLink, bunLink]);
+    expect(() => realpathSync(bunLink)).toThrow();
+    const healed = run(['--source', packed, '--no-modify-path'], env, loginPath);
+    expect(healed.result.status, healed.result.stderr).toBe(0);
+    expect(healed.result.stderr).toContain('removing a broken bun link');
+    expect(realpathSync(bunLink)).toBe(realBun);
+  }, 300_000);
+
   test('portable mktemp ratchet catches a violating fixture and permits the installer', () => {
     const portable = (source: string) => !source.includes('mktemp -t');
     expect(portable(readFileSync(installer, 'utf8'))).toBe(true);

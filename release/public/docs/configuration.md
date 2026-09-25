@@ -54,3 +54,28 @@ See [providers](providers.md) for what each provider needs.
 | `MONAD_KEEP_ENV_KEYS=1` | Use environment variables instead of the key cache |
 | `--config-dir <dir>` (flag) | Use another config/state root — e.g. to keep a test setup apart |
 | `--test` (flag) | Run an isolated test instance rooted in the current git tree |
+
+## `config.json` sections
+
+`~/.monad/config.json` holds user-level settings beyond env vars.
+(Older builds wrote `~/.config/monad/config.json`; that path still appears in
+the source but the live config directory is `~/.monad` — check yours with
+`monad where`.)
+
+| Section     | Purpose                                                                  |
+|-------------|--------------------------------------------------------------------------|
+| `llm`       | provider (`auto`/`grok`/`openai`/`anthropic`/`local`/`openai-codex`),    |
+|             | `apiKey`, `model`, `baseUrl` (for local / codex proxies)                 |
+| `skills`    | `activeSet` preset + `dirs[]` — scan multiple SKILL.md roots at once     |
+| `obsidian`  | `vault` (absolute path)                                                  |
+| `telegram`  | `enabled`, `botToken`, `allowedUsers[]`, `homeChannel`                   |
+| `onboarding`| `completed`, `completedAt`, `version`                                    |
+
+**Skill dir presets** — `claudecode` (`~/.claude/skills`), `opencode`
+(`~/.config/opencode/skills`, default), `codex` (`~/.codex/skills`),
+`hermes` (`~/.hermes/skills`), `openclaw` (`~/.openclaw/workspace/skills`),
+or `custom` for your own paths. Multiple dirs can be scanned
+simultaneously (first-dir-wins on name collisions).
+
+Re-run the wizard any time: `monad setup`.
+

@@ -39,7 +39,9 @@ export function buildRelease(opts: ReleaseOptions): ReleaseResult {
   renameSync(join(out, tarballs[0]!), join(out, 'monadagent.tgz'));
   copyFileSync(join(root, 'scripts/install.sh'), join(out, 'install.sh'));
   copyFileSync(join(root, 'scripts/install.ps1'), join(out, 'install.ps1'));
-  const files = ['install.ps1', 'install.sh', 'monadagent.tgz'].map((name) => {
+  // 2026-09-25: 설치기의 짝 — 공개 사용자가 `curl …/releases/latest/download/uninstall.sh | bash` 로 제거한다.
+  copyFileSync(join(root, 'scripts/uninstall.sh'), join(out, 'uninstall.sh'));
+  const files = ['install.ps1', 'install.sh', 'monadagent.tgz', 'uninstall.sh'].map((name) => {
     const body = readFileSync(join(out, name));
     return { name, sha256: createHash('sha256').update(body).digest('hex'), bytes: body.byteLength };
   });

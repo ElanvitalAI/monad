@@ -26,8 +26,8 @@
 //     <uuid>-<slug>.md                  # one file per memory
 
 import {
-  existsSync, readFileSync, writeFileSync, mkdirSync, readdirSync,
-  unlinkSync, renameSync,
+  existsSync, readFileSync, mkdirSync, readdirSync,
+  unlinkSync, renameSync, openSync, writeSync, fsyncSync, closeSync,
 } from 'node:fs';
 import { homedir } from 'node:os';
 import { join } from 'node:path';
@@ -35,6 +35,28 @@ import { randomUUID, createHash } from 'node:crypto';
 import { debug } from './debug/log.js';
 import { estimateTokens } from './tokens.js';
 import { budgetModel } from './llm/model-defaults.js';
+
+/**
+ * 임시 파일 → fsync → rename → 폴더 fsync. rename 만으로는 «원자적»이지만 «내구적»이 아니다.
+ * 🩸 09-25 GCP debian-12(ext4): `memory add` 직후 전원 차단 재부팅 → 새 기억 파일과 MEMORY.md 가 크기만 남고
+ * 내용이 전부 NUL 이 됐다(같은 순간의 sqlite 넷은 무결 — sqlite 는 스스로 fsync 한다).
+ */
+export function writeFileDurable(path: string, data: string, fsync: (fd: number) => void = fsyncSync): void {
+  const tmp = path + '.tmp';
+  const fd = openSync(tmp, 'w');
+  try {
+    writeSync(fd, data, null, 'utf-8');
+    fsync(fd);
+  } finally {
+    closeSync(fd);
+  }
+  renameSync(tmp, path);
+  // 이름 바꾸기 자체도 폴더 항목이다 — 폴더를 fsync 해야 재부팅 뒤 새 이름이 남는다(윈도는 폴더를 못 연다 · 그땐 건너뛴다).
+  try {
+    const dir = openSync(join(path, '..'), 'r');
+    try { fsync(dir); } finally { closeSync(dir); }
+  } catch { /* 폴더 fsync 를 못 하는 플랫폼 */ }
+}
 
 // ── Types ────────────────────────────────────────────────────────────
 
@@ -193,9 +215,7 @@ export function saveMemory(opts: SaveMemoryOpts, root: string = memoryRoot()): M
   if (priority > 0) frontmatter.priority = String(Math.floor(priority));
   if (pinned) frontmatter.pinned = 'true';
   const raw = renderFrontmatter(frontmatter, opts.body);
-  const tmp = path + '.tmp';
-  writeFileSync(tmp, raw, 'utf-8');
-  renameSync(tmp, path);
+  writeFileDurable(path, raw);
 
   // Rebuild MEMORY.md after any write.
   rebuildIndex(root);
@@ -398,9 +418,7 @@ export function rebuildIndex(root: string = memoryRoot()): void {
     }
     lines.push('');
   }
-  const tmp = memoryIndexPath(root) + '.tmp';
-  writeFileSync(tmp, lines.join('\n'), 'utf-8');
-  renameSync(tmp, memoryIndexPath(root));
+  writeFileDurable(memoryIndexPath(root), lines.join('\n'));
 }
 
 /** Read the MEMORY.md index verbatim. Returns '' when missing (e.g.
