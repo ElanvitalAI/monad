@@ -1,0 +1,57 @@
+# monad
+
+> A self-healing coding harness: one sentence becomes a reviewed, merged change. Install with one line, then `monad doctor`.
+
+Full text of every page: https://elanvitalai.github.io/monad/llms-full.txt
+
+## Overview
+
+- [What is monad](https://elanvitalai.github.io/monad/): A self-healing coding harness: one sentence becomes a reviewed, merged change.
+
+## Get started
+
+- [Install](https://elanvitalai.github.io/monad/getting-started/install/): One-line install for macOS, Linux and Windows; bare Linux; background service.
+- [Quickstart](https://elanvitalai.github.io/monad/getting-started/quickstart/): From a fresh install to your first harness run.
+- [Update and uninstall](https://elanvitalai.github.io/monad/getting-started/update-and-uninstall/): Update with self-update; uninstall with one line. Your state folder is kept.
+
+## Using monad
+
+- [Commands you will use](https://elanvitalai.github.io/monad/using-monad/commands/): The handful of commands that cover daily use.
+- [The harness](https://elanvitalai.github.io/monad/using-monad/harness/): say, ask and goal documents.
+- [Sessions](https://elanvitalai.github.io/monad/using-monad/sessions/): Conversation history, resume, and one-shot chat.
+- [The TUI](https://elanvitalai.github.io/monad/using-monad/tui/): The 3-pane dashboard: attachments, slash commands, clipboard, terminals.
+
+## Concepts
+
+- [How monad works](https://elanvitalai.github.io/monad/concepts/architecture/): Observe, reason, heal — from a sentence to a merged change.
+- [Source layout](https://elanvitalai.github.io/monad/concepts/source-layout/): Where things live in the repository.
+
+## Models & providers
+
+- [Providers](https://elanvitalai.github.io/monad/models/providers/): Subscriptions, API keys and OpenRouter.
+- [Codex subscription (ChatGPT login)](https://elanvitalai.github.io/monad/models/codex-subscription/): Use your ChatGPT subscription instead of an API key.
+
+## Surfaces
+
+- [Telegram](https://elanvitalai.github.io/monad/surfaces/telegram/): Run monad as a Telegram bot.
+- [Discord voice channel](https://elanvitalai.github.io/monad/surfaces/discord/): Voice-channel round trips and voice attachments on Discord.
+
+## Operations
+
+- [Doctor](https://elanvitalai.github.io/monad/operations/doctor/): Find out what this machine still needs.
+
+## Reference
+
+- [Configuration](https://elanvitalai.github.io/monad/reference/configuration/): Where configuration lives and the keys you will touch.
+- [CLI reference](https://elanvitalai.github.io/monad/reference/cli/): Generated from `monad --help`.
+- [External commands](https://elanvitalai.github.io/monad/reference/external-commands/): The commands monad spawns and which capability each one gates.
+
+## Help
+
+- [Troubleshooting](https://elanvitalai.github.io/monad/help/troubleshooting/): Common failures and how to fix them.
+- [FAQ](https://elanvitalai.github.io/monad/help/faq/): Questions people ask — each answer carries the command that re-measures it.
+
+## Releases
+
+- [0.1.1](https://elanvitalai.github.io/monad/releases/0-1-1/): Bare-Linux install fixes, pinned Bun 1.4.2, memories survive power loss and uninstall.
+- [0.1.0](https://elanvitalai.github.io/monad/releases/0-1-0/): First public release (2026-09-25).
