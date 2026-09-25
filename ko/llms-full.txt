@@ -199,6 +199,28 @@ monad self-update --version 0.1.1  # a specific version
 
 A release install updates by re-running the release installer; the previous version stays under `versions/` for rollback.
 
+| Option | What it does |
+|---|---|
+| `--version <version>` | Install a specific release (default: latest) |
+| `--restart` | Also restart the background service so it runs the new version |
+| `--keep <n>` | How many recent versions to keep after installing (default 3; the current and previous are always kept) |
+| `--json` | Structured result |
+
+### `monad update` and automatic updates
+
+:::note Not in 0.1.1
+These arrive with the next release. On 0.1.1, use `monad self-update`.
+:::
+
+```bash
+monad update                # same as self-update
+monad update --auto on      # update every day
+monad update --auto status  # is it on?
+monad update --auto off
+```
+
+`--auto on` installs a daily job — a launchd agent on macOS, a systemd user timer on Linux — that runs `self-update --restart --alert` at 04:17 local time. It is not turned on if a cron entry already runs the update.
+
 ## Uninstall
 
 ```bash
@@ -1013,7 +1035,7 @@ Re-run the wizard any time: `monad setup`.
 
 Source: https://elanvitalai.github.io/monad/reference/cli/
 
-Generated from `monad <command> --help` for the 29 commands this manual uses. Every command also answers `--help`; `monad --help` lists all of them, including maintainer tools not covered here.
+Generated from `monad <command> --help` for the 31 commands this manual uses. Every command also answers `--help`; `monad --help` lists all of them, including maintainer tools not covered here.
 
 ## `monad acp`
 
@@ -1401,6 +1423,22 @@ monad registry [options] [command]
 | `drift [options]` | Audit whether routing pins (alias · tier-map · mission-router) match the catalog's active ids — proposes changes for a human (never applies them) |
 | `discover [options]` | Run the chosen discovery sources and merge into the existing snapshot — dry-run by default · --write to record · no S3 push |
 
+## `monad release`
+
+One public release — prepare (local) → publish (--yes) → verify
+
+```text
+monad release [options] [command]
+```
+
+| Subcommand | Description |
+|---|---|
+| `prepare [options]` | Clean source → public copy → commit on top of the public repository's history → PWA → bundle and checksums → local end-to-end (no network writes) |
+| `yank [options]` | Pull a release — demote it to pre-release and point Latest at the previous stable version (assets are kept · --undo reverts). Without --yes it only shows the plan |
+| `publish [options]` | ⛔ Cannot be undone — pushes to the public repository and creates the GitHub release. Without --yes it only shows the plan |
+| `verify [options]` | End to end from the public URL — in a clean temporary home: install → --version → self-update → uninstall |
+| `notes [options]` | Draft a changelog from the landings between two refs (edit it before publishing) |
+
 ## `monad repl`
 
 Sticky multi-turn REPL — same session across turns, no per-turn process boot. Drives chat / agent / scenario from one shell. Uses --new for a fresh session, --session <id> to resume, --scenario <yaml> for a scripted run, JSONL on stdin for piped automation.
@@ -1433,6 +1471,32 @@ monad self entrances [options]
 |---|---|
 | `--json` | Output as structured JSON |
 
+## `monad self orchestrate`
+
+Parallel self-dev — run several goals at once, each as an isolated-worktree self-implement subprocess, with a concurrency cap. Separate goals with `;;` (or one goal per argument). --concurrency sets how many jobs run at once (default 2).
+
+```text
+monad self orchestrate [options] [goals...]
+```
+
+| Option | Description |
+|---|---|
+| `--concurrency <n>` | Jobs to run at once (default 2) |
+| `--auto-merge` | Each job: merge automatically when the review is clean (passes --auto-merge to each self-implement, through the review node) |
+| `--auto-review` | Label each job's PR for opt-in auto-review (passes --auto-review to each self-implement · each job judges its own eligibility · fail-safe). Labelled PRs are finished unattended by the review poller. |
+| `--open-pr` | Each job: open a draft PR when the gate and review pass (passes --open-pr to each self-implement · promotion goes through the review node) |
+| `--base <branch>` | Base branch for each job's PR |
+| `--decompose` | Split one goal with an LLM into a dependency sub-DAG (parallel by topology, hot files serialized), then run it |
+| `--pod-skill-env` | pod: pass the keys (.env) of required skills (config pod-skills.txt) to this run as a Secret — explicit opt-in (paid credits) · never baked into the image |
+| `--pod-pool <spec>` | pod pool — context[@ssh-host][:cap], comma-separated, first wins (e.g. pool-a@host-a:12,pool-b@host-b:3) · otherwise MONAD_POD_POOL · otherwise the current context alone |
+| `--reduce` | At the end, gather the pieces that opened PRs into one integration branch (one gate run) and one PR — pairs with `--open-pr` · cannot be combined with `--auto-merge` (monad self reduce) |
+| `--substrate <kind>` | Where to run: local (default · isolated worktree) \| pod (Kubernetes Job · docker/harness image) |
+| `--pod-account <name>` | pod: codex account (~/.monad/auth.json openai-codex:&lt;name&gt; · a copy without the refresh token) · if omitted, a broker hands each Job the account with the most remaining quota |
+| `--no-pod-rebuild` | pod: do not rebuild the image even if its version (monad.commit) differs from HEAD — the measurement then measures the image's version |
+| `--pod-pass-env <keys>` | pod: keys to pass from the host environment into the Pod (comma-separated) — e.g. OPENROUTER_API_KEY,ANTHROPIC_API_KEY (benchmark billing path) |
+| `--bench-arms <spec>` | pod benchmark: clone one goal per arm, differing only in a single label line, and run them at once — "id=provider[:model][@KEY+KEY];…" (e.g. codex=openai-codex;or-kimi=openrouter:openrouter/moonshotai/kimi-k3@OPENROUTER_API_KEY) · refuses --auto-merge |
+| `--help-all` | Show every orchestrate option |
+
 ## `monad self parked`
 
 Backlog of goals blocked (failed/cancelled) in the unattended self-dev loop, for batch decisions. Mark handled with --resolve <runId> --reason <reason>. --json for structured output.
@@ -1464,6 +1528,23 @@ monad self recall [options] <query...>
 | `--include-test` | Include isolated test instances in the federation (excluded by default) |
 | `--include-observer-output` | Include output generated by observers in the recall (excluded by default) |
 
+## `monad self reduce`
+
+Fleet reduce — merge the open piece PRs one by one onto the base with merge --no-ff → on conflict, stop and name the piece and files → change-scope gate → one integration PR (piece PRs are not closed)
+
+```text
+monad self reduce [options]
+```
+
+| Option | Description |
+|---|---|
+| `--prs <numbers>` | Open PR numbers to combine (comma-separated · merged in the order given) |
+| `--base <branch>` | Base branch (default: "main") |
+| `--branch <name>` | Integration branch name (default reduce/&lt;time&gt;) |
+| `--title <text>` | Integration PR title |
+| `--dry-run` | Merge and gate only — no push, PR or comments |
+| `--skip-gate` | Skip the gate (not recommended) |
+
 ## `monad self repair-signals`
 
 Cluster parked failures into patterns (system repair candidates vs single-goal issues). Observation → system repair.
@@ -1494,10 +1575,10 @@ monad self run-ledger [options] <runId>
 
 ## `monad self-update`
 
-Update an installed copy from a release, a checkout from a clean checkout; restart the nexus when approved
+Update an installed copy from a release, a checkout from a clean checkout; restart the nexus when approved · same as `monad update` · with `--auto on`, runs every day
 
 ```text
-monad self-update [options]
+monad self-update|update [options]
 ```
 
 | Option | Description |
@@ -1508,6 +1589,7 @@ monad self-update [options]
 | `--json` | Print the result as JSON |
 | `--keep <n>` | Recent versions to keep after install (installed copy: current and previous; checkout: current and the daemon's version are protected · 0 = no cleanup) (default: "3") |
 | `--alert` | Also send failures (exit≠0) as an alert — for unattended cron runs |
+| `--auto <on|off|status>` | Automatic updates — a macOS launchd agent or Linux systemd timer runs `self-update --restart --alert` every day at 04:17 (not turned on if a cron entry already runs it) |
 
 ## `monad session`
 
@@ -1578,6 +1660,24 @@ monad tier [options] [command]
 | `resolve [options] <provider> [tier]` | Resolve provider (+tier) → model. Omit tier for all five. Aliases low/mid/high/max accepted. |
 | `list|ls [options] [provider]` | Full matrix (provider × 5 tiers) or one provider. A one-glance table to avoid tier confusion. |
 | `providers` | Providers that have a tier ladder. |
+
+## `monad update`
+
+Update an installed copy from a release, a checkout from a clean checkout; restart the nexus when approved · same as `monad update` · with `--auto on`, runs every day
+
+```text
+monad self-update|update [options]
+```
+
+| Option | Description |
+|---|---|
+| `--from <checkout>` | Checkout to install (default: releases for an installed copy, the current checkout for a checkout) |
+| `--version <version>` | Install this release version on an installed copy (default: latest) |
+| `--restart` | Approve restarting the nexus |
+| `--json` | Print the result as JSON |
+| `--keep <n>` | Recent versions to keep after install (installed copy: current and previous; checkout: current and the daemon's version are protected · 0 = no cleanup) (default: "3") |
+| `--alert` | Also send failures (exit≠0) as an alert — for unattended cron runs |
+| `--auto <on|off|status>` | Automatic updates — a macOS launchd agent or Linux systemd timer runs `self-update --restart --alert` every day at 04:17 (not turned on if a cron entry already runs it) |
 
 ## `monad usage`
 
@@ -1773,6 +1873,41 @@ Treat only capabilities with a written free fallback as dependable without payme
 ## How many steps from install to a first change?
 
 With a ChatGPT subscription and GitHub already signed in, three commands: `monad doctor`, `monad login openai-codex`, then `monad harness say "<what you want>"` from your project. See [install](/getting-started/install) and [quickstart](/getting-started/quickstart).
+
+---
+
+# 0.1.2
+
+Source: https://elanvitalai.github.io/monad/releases/0-1-2/
+
+Now on npm as **`@elanvitalai/monad`**, plus updates, rollbacks and fleet tools.
+
+## Install
+
+```bash
+curl -fsSL https://github.com/ElanvitalAI/monad/releases/latest/download/install.sh | bash   # one line
+npm install -g @elanvitalai/monad                                                            # or npm (needs Bun on PATH)
+```
+
+## Update and roll back
+
+- **`monad update`** — the same as `monad self-update`.
+- **`monad update --auto on|off|status`** — daily automatic updates: a launchd agent on macOS, a systemd user timer on Linux. It refuses to turn on when cron already runs `self-update`, and `status` shows every scheduler.
+- **`monad release yank --version <x.y.z>`** (maintainers) — pulls a release back without deleting it: demotes it to pre-release and gives Latest to the previous release. `--undo` restores it. It waits until `latest/download/install.sh` actually serves the expected version (about two minutes on GitHub's CDN).
+
+## Operations
+
+- The background service no longer depends on the folder you ran `monad nexus install` from — an installed copy runs from your home directory, and `monad doctor` flags a service that depends on a git working tree.
+- An installed copy starts its daemon regardless of which checkout is the development tree.
+
+## Fleet (self-development)
+
+- **`monad self reduce --prs 1,2,3`** — merges shard PRs into one integration branch, runs the changed-file gate once and opens one PR. A conflict names the shard and the files and stops.
+- **`monad self orchestrate … --open-pr --reduce`** — does that automatically at the end of a run.
+- Pod runs spread across Codex accounts by remaining quota when `--pod-account` is not given.
+- `monad release prepare|publish|verify|yank --json` print one JSON result line.
+
+[Release page](https://github.com/ElanvitalAI/monad/releases/tag/v0.1.2)
 
 ---
 

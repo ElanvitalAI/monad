@@ -53,5 +53,6 @@ Full text of every page: https://elanvitalai.github.io/monad/llms-full.txt
 
 ## Releases
 
+- [0.1.2](https://elanvitalai.github.io/monad/releases/0-1-2/): npm (@elanvitalai/monad), monad update --auto, release yank, fleet reduce.
 - [0.1.1](https://elanvitalai.github.io/monad/releases/0-1-1/): Bare-Linux install fixes, pinned Bun 1.4.2, memories survive power loss and uninstall.
 - [0.1.0](https://elanvitalai.github.io/monad/releases/0-1-0/): First public release (2026-09-25).
