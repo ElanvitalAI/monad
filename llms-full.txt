@@ -208,8 +208,8 @@ A release install updates by re-running the release installer; the previous vers
 
 ### `monad update` and automatic updates
 
-:::note Not in 0.1.1
-These arrive with the next release. On 0.1.1, use `monad self-update`.
+:::info Available from 0.1.2
+On 0.1.1, use `monad self-update` — it installs 0.1.2, and `monad update` works from then on.
 :::
 
 ```bash
