@@ -133,3 +133,5 @@ website/build/
 website/.docusaurus/
 website/docs/
 website/i18n/
+website/static/llms.txt
+website/static/llms-full.txt

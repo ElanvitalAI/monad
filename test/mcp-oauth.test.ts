@@ -21,12 +21,11 @@ import {
   mcpOAuthStorePath,
   McpOAuthError,
   refreshStoredAccessToken,
-  resetMcpOAuthStorePathForTesting,
   verifyAuthorizationCallback,
   type AuthorizationServerMetadata,
   type McpOAuthFetch,
 } from '../src/mcp/mcp-oauth';
-import { loadTokens, saveTokens } from '../src/oauth/store';
+import { authStorePath, loadTokens, saveTokens } from '../src/oauth/store';
 
 const RESOURCE_META = 'https://192.0.2.10/.well-known/oauth-protected-resource';
 const AS = 'https://192.0.2.20';
@@ -107,20 +106,27 @@ function makeOauthFetch(opts: {
 let storeDir: string;
 let storePath: string;
 let prevStateDir: string | undefined;
+let prevXdg: string | undefined;
+let universeDir: string;
 
 beforeEach(() => {
   storeDir = mkdtempSync(join(tmpdir(), 'mcp-oauth-'));
   storePath = join(storeDir, 'auth.json');
+  universeDir = mkdtempSync(join(tmpdir(), 'mcp-oauth-universe-'));
   prevStateDir = process.env.MONAD_STATE_DIR;
-  process.env.MONAD_STATE_DIR = storeDir;
-  resetMcpOAuthStorePathForTesting();
+  prevXdg = process.env.XDG_CONFIG_HOME;
+  // ⛔ 기본 자격 파일은 전역(authStorePath)이다 — 시험은 XDG 로 그 자리를 tmp 에 못 박는다.
+  process.env.XDG_CONFIG_HOME = storeDir;
+  process.env.MONAD_STATE_DIR = universeDir;
 });
 
 afterEach(() => {
   if (prevStateDir === undefined) delete process.env.MONAD_STATE_DIR;
   else process.env.MONAD_STATE_DIR = prevStateDir;
-  resetMcpOAuthStorePathForTesting();
+  if (prevXdg === undefined) delete process.env.XDG_CONFIG_HOME;
+  else process.env.XDG_CONFIG_HOME = prevXdg;
   rmSync(storeDir, { recursive: true, force: true });
+  rmSync(universeDir, { recursive: true, force: true });
 });
 
 describe('RFC 9728 / RFC 8414 discovery', () => {
@@ -211,12 +217,55 @@ describe('RFC 7591 dynamic registration', () => {
   });
 });
 
-describe('instance-rooted store path', () => {
-  test('credential file is under effectiveInstanceRoot(), not the home auth.json', () => {
+describe('global store path (isolation manual §6)', () => {
+  test('credential file is the global auth store, not under effectiveInstanceRoot()', () => {
     const path = mcpOAuthStorePath();
-    expect(path).toBe(join(resolve(storeDir), 'auth.json'));
+    expect(path).toBe(authStorePath());
+    expect(path).toBe(join(storeDir, 'monad', 'auth.json'));
+    expect(path.startsWith(resolve(universeDir))).toBe(false);
     expect(path).not.toBe(join(homedir(), '.monad', 'auth.json'));
-    expect(path.startsWith(resolve(storeDir))).toBe(true);
+  });
+
+  test('a credential stranded under the universe root is adopted once, add-only', () => {
+    const legacy = join(universeDir, 'auth.json');
+    saveTokens(
+      ISSUER,
+      { accessToken: 'stranded-access', refreshToken: 'stranded-refresh', expiresAt: Date.now() + 3600_000 },
+      { authMode: 'mcp-oauth', accountUuid: 'stranded-client', mirrorCodex: false },
+      legacy,
+    );
+    expect(loadStoredAccessToken(ISSUER)).toBe('stranded-access');
+    const adopted = loadTokens(ISSUER, mcpOAuthStorePath());
+    expect(adopted?.tokens.refreshToken).toBe('stranded-refresh');
+    expect(loadStoredRegistration(ISSUER)?.clientId).toBe('stranded-client');
+  });
+
+  test('adoption never overwrites a credential already in the global store', () => {
+    saveTokens(
+      ISSUER,
+      { accessToken: 'global-access', refreshToken: 'global-refresh', expiresAt: Date.now() + 3600_000 },
+      { authMode: 'mcp-oauth', mirrorCodex: false },
+      mcpOAuthStorePath(),
+    );
+    saveTokens(
+      ISSUER,
+      { accessToken: 'old-access', refreshToken: 'old-refresh', expiresAt: Date.now() + 3600_000 },
+      { authMode: 'mcp-oauth', mirrorCodex: false },
+      join(universeDir, 'auth.json'),
+    );
+    expect(loadStoredAccessToken(ISSUER)).toBe('global-access');
+    expect(loadTokens(ISSUER, mcpOAuthStorePath())?.tokens.refreshToken).toBe('global-refresh');
+  });
+
+  test('non-MCP records under the universe root are not adopted', () => {
+    saveTokens(
+      ISSUER,
+      { accessToken: 'other-mode', refreshToken: '', expiresAt: Date.now() + 3600_000 },
+      { authMode: 'chatgpt', mirrorCodex: false },
+      join(universeDir, 'auth.json'),
+    );
+    expect(loadStoredAccessToken(ISSUER)).toBeNull();
+    expect(loadTokens(ISSUER, mcpOAuthStorePath())).toBeNull();
   });
 
   test('isolated instance roots do not share credentials', async () => {

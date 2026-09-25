@@ -10,6 +10,7 @@ import {
   type ReadinessDeps,
   type ReadinessItem,
   type SubstrateSignals,
+  servicePathRefs,
 } from './doctor-readiness.js';
 
 const CODE = 'abc123def4567890abc123def4567890abc123de';
@@ -669,5 +670,22 @@ describe('L0 substrate · docker · kubernetes · memory (RFC docker·k8s ladder
     expect(parseDockerInfo('not json')).toBeNull();
     expect(parseKubectlServerVersion('{"clientVersion":{"gitVersion":"v1.31.0"},"serverVersion":{"gitVersion":"v1.30.2"}}')).toBe('v1.30.2');
     expect(parseKubectlServerVersion('{"clientVersion":{"gitVersion":"v1.31.0"}}')).toBeNull();
+  });
+});
+
+// 🩸 09-26: 운영 plist 가 사람 작업 트리(pilot)를 가리켰다 — WorkingDirectory ⊕ MONAD_PWA_STATIC_DIR.
+describe('service-file — a service that depends on a git working tree', () => {
+  const plist = `<dict>\n  <key>EnvironmentVariables</key>\n  <dict>\n    <key>MONAD_PWA_STATIC_DIR</key>\n    <string>/Users/u/work/checkout/apps/pwa/out</string>\n  </dict>\n  <key>ProgramArguments</key>\n  <array><string>/Users/u/.bun/bin/bun</string><string>/Users/u/.local/share/monad/current/node_modules/monadagent/bin/monad.mjs</string></array>\n  <key>WorkingDirectory</key>\n  <string>/Users/u/work/checkout</string>\n</dict>`;
+  test('servicePathRefs reads WorkingDirectory and the PWA dir from a plist and a systemd unit', () => {
+    expect(servicePathRefs(plist)).toEqual(['/Users/u/work/checkout/apps/pwa/out', '/Users/u/work/checkout']);
+    expect(servicePathRefs('[Service]\nWorkingDirectory=/home/u\nEnvironment="MONAD_PWA_STATIC_DIR=/home/u/src/apps/pwa/out"\n')).toEqual(['/home/u', '/home/u/src/apps/pwa/out']);
+  });
+  test('git-tree refs make it manual with a reinstall-from-home remedy; none keeps it ok', () => {
+    const by = (d: Parameters<typeof checkReadiness>[0]) => checkReadiness(d).items.find((e) => e.id === 'service-file')!;
+    const bad = by({ platform: 'darwin', serviceFile: { path: '/p.plist', text: plist }, serviceGitTreeRefs: ['/Users/u/work/checkout'] });
+    expect(bad.status).toBe('manual');
+    expect(bad.evidence).toContain('git working tree');
+    expect(bad.remedy).toBe('cd ~ && monad nexus install --launchd');
+    expect(by({ platform: 'darwin', serviceFile: { path: '/p.plist', text: plist }, serviceGitTreeRefs: [] }).status).toBe('ok');
   });
 });

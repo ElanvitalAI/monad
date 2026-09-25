@@ -3,6 +3,7 @@ import { homedir } from 'os';
 import { join, resolve } from 'path';
 import { lookupLlmTierSpec } from './model-tier/llm-tier-map.js';
 import { listSshHosts } from './ssh/ssh-hosts.js';
+import { isInstalledPackagePath } from './instance/installed-package.js';
 
 // ── User config ──
 export const REMOTE_HOME = homedir();
@@ -35,7 +36,7 @@ export function resolveDataDir(
     }
     return false;
   });
-  if (root.replace(/\\/g, '/').includes('/node_modules/monadagent') && !hasGit(root)) return stateData;   // 설치본
+  if (isInstalledPackagePath(root) && !hasGit(root)) return stateData;   // 설치본(설치기 · npm)
   const leaderTree = deps.leaderTree ?? (() => {
     try {
       const raw = JSON.parse(readFileSync(join(home, '.monad', 'leader.json'), 'utf-8')) as { tree?: unknown };

@@ -2,6 +2,10 @@
 /**
  * docs/site/dist/ — 공개 문서 정적 사이트 빌더.
  *
+ * ⛔ 은퇴 (2026-09-26): 공개 매뉴얼은 website/(Docusaurus) → GitHub Pages 다. Vercel 프로젝트는
+ *    docs/site/redirect/ 넘김 쪽만 싣는다 — 이 산출을 다시 배포하면 넘김이 덮인다.
+ *    트랙 표식 검사(coord-tracks.json)만 website/scripts/sync-docs.mjs 와 같은 규칙으로 남는다.
+ *
  * ⛔ 이 스크립트는 «공개» 산출을 만든다. 그래서 두 가지를 fail-closed 로 막는다:
  *   ① 내부 트랙 표식(🅢🅣🅕 · [S][T][F]) 이 한 글자라도 남으면 rc=1 — 공진화 규칙 ④.
  *   ② 사이트에 «없는» 문서로 가는 링크는 링크를 벗기고 «몇 건인지 센다».

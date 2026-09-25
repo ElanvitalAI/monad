@@ -36,3 +36,14 @@ describe('docs-cli-check — 문서의 monad 호출을 실제 CLI 에 대조', (
     expect(checkCommands(extractMonadCommands('x.md', '`monad doctor`'), down).map((x) => x.kind)).toEqual(['unmeasured']);
   });
 });
+
+// 09-26: 도움말은 별칭을 `self-update|update [options]` 로 찍는다 — 문서의 `monad update` 를 «없는 명령»으로 잡았다.
+describe('docs-cli-check — 별칭도 명령이다', () => {
+  test('primary|alias 줄에서 별칭으로 쓴 호출이 어긋남이 아니다', () => {
+    const help: HelpRunner = (args) => args.length === 0
+      ? { ok: true, out: 'Usage: monad\n\nCommands:\n  self-update|update [options]  갱신\n  doctor [options]  진단\n' }
+      : { ok: true, out: `Usage: monad ${args[0]}\n\nOptions:\n  --auto <x>\n  -h, --help\n` };
+    const f = checkCommands(extractMonadCommands('x.md', '`monad update --auto on` · `monad self-update` · `monad updat`'), help);
+    expect(f.filter((x) => x.kind === 'unknown-command').map((x) => x.detail)).toEqual(['monad updat']);
+  });
+});

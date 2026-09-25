@@ -143,3 +143,79 @@ describe('release verify — 공개 주소로 끝까지', () => {
     expect(lines.join('\n')).toContain('로그 왕복 안 잼');
   });
 });
+
+import { planYank, yankRelease, type ReleaseInfo } from './release-cli.js';
+describe('release yank — 내리기(지우지 않음 · 되돌릴 수 있음)', () => {
+  const rel: ReleaseInfo[] = [
+    { tagName: 'v0.1.1', isPrerelease: false, isDraft: false, isLatest: true, publishedAt: '2026-09-25T21:05:00Z' },
+    { tagName: 'v0.1.0', isPrerelease: false, isDraft: false, isLatest: false, publishedAt: '2026-09-25T11:30:00Z' },
+    { tagName: 'v0.2.0-rc.1', isPrerelease: true, isDraft: false, isLatest: false, publishedAt: '2026-09-26T00:00:00Z' },
+  ];
+  test('내리기 = 대상 강등 ⊕ 직전 «정식» 판(미리보기 제외)을 Latest 로', () => {
+    const steps = planYank(rel, 'v0.1.1', 'o/r');
+    expect(steps.map((s) => s.args.slice(0, 3).join(' '))).toEqual(['release edit v0.1.1', 'release edit v0.1.0']);
+    expect(steps[0]!.args).toContain('--prerelease');
+    expect(steps[0]!.args).toContain('--latest=false');
+    expect(steps[1]!.args).toContain('--latest');
+  });
+  test('정식 판이 하나뿐이면 내리지 않는다(Latest 가 비면 한 줄 설치가 전부 실패) · 없는 판·이미 강등된 판은 이름을 댄다', () => {
+    expect(() => planYank([rel[0]!], 'v0.1.1', 'o/r')).toThrow('정식 판이 없다');
+    expect(() => planYank(rel, 'v9.9.9', 'o/r')).toThrow('없는 릴리스');
+    expect(() => planYank(rel, 'v0.2.0-rc.1', 'o/r')).toThrow('이미 pre-release');
+  });
+  test('--undo = 정식 판 ⊕ Latest ⊕ 제목 원래대로', () => {
+    const [s] = planYank(rel, 'v0.1.1', 'o/r', true);
+    expect(s!.args).toEqual(['release', 'edit', 'v0.1.1', '--repo', 'o/r', '--prerelease=false', '--latest', '--title', 'monad v0.1.1']);
+  });
+  test('--yes 없으면 바꾸지 않는다 · --yes 면 실행 뒤 latest 설치기가 가리키는 판을 잰다', async () => {
+    const calls: string[] = [];
+    const run: Runner = (c, a) => {
+      calls.push(`${c} ${a.slice(0, 3).join(' ')}`);
+      if (c === 'gh' && a[1] === 'list') return { status: 0, stdout: JSON.stringify(rel), stderr: '' };
+      if (c === 'curl') return { status: 0, stdout: 'HTTP/2 302\nlocation: https://github.com/o/r/releases/download/v0.1.0/install.sh\n', stderr: '' };
+      return { status: 0, stdout: '', stderr: '' };
+    };
+    expect((await yankRelease({ version: '0.1.1', publicRepo: 'o/r', log: () => {} }, run)).applied).toBe(false);
+    expect(calls.filter((c) => c.startsWith('gh release edit'))).toHaveLength(0);
+    const r = await yankRelease({ version: '0.1.1', publicRepo: 'o/r', yes: true, log: () => {}, sleep: async () => {} }, run);
+    expect(r).toMatchObject({ applied: true, latestNow: 'v0.1.0', propagated: true, waitedMs: 0 });
+    expect(calls.filter((c) => c.startsWith('gh release edit'))).toHaveLength(2);
+  });
+});
+
+describe('release yank — 설치기 리다이렉트 반영을 기다린다(📏 CDN 약 100~120초)', () => {
+  const rel: ReleaseInfo[] = [
+    { tagName: 'v0.1.1', isPrerelease: false, isDraft: false, isLatest: true, publishedAt: '2026-09-25T21:05:00Z' },
+    { tagName: 'v0.1.0', isPrerelease: false, isDraft: false, isLatest: false, publishedAt: '2026-09-25T11:30:00Z' },
+  ];
+  const runWith = (redirects: string[]): Runner => (c, a) => {
+    if (c === 'gh' && a[1] === 'list') return { status: 0, stdout: JSON.stringify(rel), stderr: '' };
+    if (c === 'curl') return { status: 0, stdout: `location: https://github.com/o/r/releases/download/${redirects.shift() ?? 'v0.1.1'}/install.sh`, stderr: '' };
+    return { status: 0, stdout: '', stderr: '' };
+  };
+  test('옛 판을 주는 동안 기다렸다가, 바뀌면 걸린 시간과 함께 반영됐다고 말한다', async () => {
+    const r = await yankRelease({ version: '0.1.1', publicRepo: 'o/r', yes: true, log: () => {}, sleep: async () => {}, pollMs: 10_000 }, runWith(['v0.1.1', 'v0.1.1', 'v0.1.0']));
+    expect(r).toMatchObject({ propagated: true, latestNow: 'v0.1.0', waitedMs: 20_000 });
+  });
+  test('끝내 안 바뀌면 ✅ 가 아니다 — propagated false · rc 2', async () => {
+    const lines: string[] = [];
+    const before = process.exitCode;
+    const r = await yankRelease({ version: '0.1.1', publicRepo: 'o/r', yes: true, log: (l) => lines.push(l), sleep: async () => {}, pollMs: 10_000, timeoutMs: 30_000 }, runWith([]));
+    expect(r.propagated).toBe(false);
+    expect(lines.join('\n')).toContain('아직 v0.1.1 을 준다');
+    expect(process.exitCode).toBe(2);
+    process.exitCode = before;
+  });
+});
+
+describe('release --json — stdout 은 결과 한 줄(T-R 그래프 간선용)', () => {
+  test('yank --json 보기만: stdout 이 JSON 한 줄 · ok true · applied false', () => {
+    const r = Bun.spawnSync(['bun', 'bin/monad.mjs', 'release', 'yank', '--version', '9.9.9', '--json', '--public-repo', 'nobody-xyz/none'], { cwd: join(import.meta.dir, '..', '..'), stdout: 'pipe', stderr: 'pipe' });
+    const lines = r.stdout.toString().trim().split('\n');
+    expect(lines).toHaveLength(1);
+    const d = JSON.parse(lines[0]!);
+    expect(d.ok).toBe(false);   // 없는 저장소 → 오류도 JSON 한 줄
+    expect(typeof d.error).toBe('string');
+    expect(r.exitCode).toBe(1);
+  }, 60_000);
+});

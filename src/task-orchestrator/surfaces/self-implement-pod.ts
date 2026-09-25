@@ -31,6 +31,8 @@ export interface PodSpawnOptions {
   imageCommit?: string | null;
   /** codex 계정 이름(`~/.monad/auth.json` 의 `openai-codex:<이름>`). 기본 team. */
   account?: string;
+  /** Job 마다 계정을 고른다(pod-account-broker) — 있으면 `account` 보다 먼저. */
+  accountBroker?: () => string;
   namespace?: string;
   /** 클러스터 안 이미지(`docker/harness/run.sh` 가 만드는 `monad-harness:local`). */
   image?: string;
@@ -205,7 +207,9 @@ export function podSelfImplementSpawn(options: PodSpawnOptions = {}): SelfImplem
       try {
       const cleanupSecret = () => { kubectl(['-n', namespace, 'delete', 'secret', `${name}-creds`, '--ignore-not-found']); };
       try {
-        const creds = (options.credentials ?? (() => hostCredentials(options.account ?? 'team')))();
+        const account = options.accountBroker?.() ?? options.account ?? 'team';
+        debug.log('self-implement.pod', 'account', { spaceId: input.spaceId, account, brokered: Boolean(options.accountBroker) });
+        const creds = (options.credentials ?? (() => hostCredentials(account)))();
         const skillEnvs: Record<string, string> = options.skillEnv
           ? (options.readSkillEnv ?? (() => readSkillEnvFiles(resolvePodSkills(env).skills)))()
           : {};

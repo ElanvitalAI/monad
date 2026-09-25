@@ -1,5 +1,5 @@
-import { readFileSync } from 'node:fs';
-import { basename, relative, resolve } from 'node:path';
+import { existsSync, readFileSync } from 'node:fs';
+import { basename, join, relative, resolve } from 'node:path';
 import { createInterface } from 'node:readline';
 import type { Command } from 'commander';
 import {
@@ -16,6 +16,7 @@ import { iosFilesIn, runIosUnitTestGate } from '../../scripts/ci-ios-unit-tests.
 import { runMockModuleRestoreGate } from '../../scripts/ci-mock-module-restore-gate.js';
 import { runModelHardcodeGate } from '../../scripts/ci-model-hardcode-gate.js';
 import { runPublicLeakGate } from '../../scripts/ci-public-leak-gate.js';
+import { checkCommands, extractMonadCommands, type Finding as DocsCliFinding } from '../../scripts/docs-cli-check.js';
 import { runTestInterferenceGate } from '../../scripts/ci-test-interference-gate.js';
 import { isGoalDocumentFileName } from '../self-implement/goal-document.js';
 import { queryFederatedUnfinishedRunLedgers, type FederatedUnfinishedRunLedgerEntry, type FederatedUnfinishedRunLedgerQuery } from '../self-implement/run-ledger.js';
@@ -98,6 +99,8 @@ export interface PrLandDeps {
   runModelHardcodeGate?: (out: { log: (message: string) => void; error: (message: string) => void }) => boolean;
   /** 공개 유출 래칫(경고 전용) — 반환 0 통과 · 1 늘었다 · 2 못 쟀다. */
   runPublicLeakGate?: (changedFiles: readonly string[], out: { log: (message: string) => void; error: (message: string) => void }) => number;
+  /** 공개 문서의 `monad …` 호출 ↔ 실제 `--help` 대조(경고 전용) — 바뀐 공개 문서 경로를 받아 어긋남 목록을 돌려준다. */
+  runDocsCliCheck?: (docFiles: readonly string[]) => DocsCliFinding[];
   /** 변경 시험 파일 간 간섭 검사 심(시험 주입용). */
   runTestInterferenceGate?: (out: { log: (message: string) => void; error: (message: string) => void }, changedFiles: readonly string[]) => Promise<number>;
   /** 안드로이드 단위 시험 게이트 심(시험 주입용). */
@@ -287,6 +290,39 @@ export function publicLeakWarning(
     return;
   }
   out.log('⚠ public-leak-gate(경고 전용): 못 쟀다(기준선 없음 등).');
+}
+
+/** 공개 문서(`release/public/내부 문서 `**`` ⊕ `README.md`) 중 이번 착지가 바꾼 것만 — 지워진 파일은 뺀다. */
+export function publicDocPaths(changedFiles: readonly string[] | undefined, exists: (path: string) => boolean): string[] {
+  return [...new Set(changedFiles ?? [])].filter((f) => (f === 'README.md' || /^release\/public\/docs\/.+\.md$/.test(f)) && exists(f));
+}
+
+/** ⭐ 2026-09-26 — 공개 문서의 `monad …` 호출이 실제 CLI(`--help`)에 있나를 «경고만» 낸다(착지는 막지 않는다).
+ *  계기: 09-25 README·install.md 가 거짓이 된 원인이 전부 «CLI 가 바뀌었는데 문서가 모름»이었다(RFC 공개 매뉴얼 M3).
+ *  ⛔ 범위는 «바뀐 공개 문서»뿐 — 전 문서 대조는 38초라 착지마다 돌리지 않는다(문서 배포 때 `bun scripts/docs-cli-check.ts` 전수). */
+export function docsCliWarning(
+  docFiles: readonly string[],
+  check: (docFiles: readonly string[]) => DocsCliFinding[],
+  out: { log: (message: string) => void },
+): void {
+  if (docFiles.length === 0) return;
+  let findings: DocsCliFinding[];
+  try { findings = check(docFiles); } catch (error) {
+    out.log(`⚠ docs-cli-check(경고 전용): 못 쟀다 — ${error instanceof Error ? error.message : String(error)}`);
+    record('docs-cli-check', true, { warnOnly: true, measured: false, files: docFiles.length });
+    return;
+  }
+  const mismatches = findings.filter((f) => f.kind !== 'unmeasured');
+  const unmeasured = findings.length - mismatches.length;
+  record('docs-cli-check', true, { warnOnly: true, measured: true, files: docFiles.length, mismatches: mismatches.length, unmeasured });
+  if (findings.length === 0) { out.log(`✓ docs-cli-check(경고 전용): 바뀐 공개 문서 ${docFiles.length}개의 monad 호출이 실제 CLI 와 맞는다.`); return; }
+  out.log(`⚠ docs-cli-check(경고 전용 · 착지는 막지 않는다): 바뀐 공개 문서 ${docFiles.length}개 — 어긋남 ${mismatches.length} · 못 잰 것 ${unmeasured}`);
+  for (const f of findings) out.log(`   ${f.kind}  ${f.ref.file}:${f.ref.line}  ${f.detail}`);
+  out.log('   확인: bun scripts/docs-cli-check.ts <파일>');
+}
+
+function runPrLandDocsCliCheck(root: string): (docFiles: readonly string[]) => DocsCliFinding[] {
+  return (docFiles) => checkCommands(docFiles.flatMap((f) => extractMonadCommands(f, readFileSync(join(root, f), 'utf8'))));
 }
 
 function runPrLandMockModuleRestoreGate(out: { log: (message: string) => void; error: (message: string) => void }): boolean {
@@ -1239,6 +1275,11 @@ export async function runPrLand(opts: PrLandOpts = {}, deps: PrLandDeps = {}): P
 
   const changedPaths = currentChangePaths(run, cwd, staged, base, out);
   publicLeakWarning(changedPaths, deps.runPublicLeakGate ?? runPrLandPublicLeakGate, out);
+  if (publicDocPaths(changedPaths, () => true).length > 0) {
+    const top = run('git', ['rev-parse', '--show-toplevel'], { cwd });
+    const docsRoot = top.ok && top.out.trim() ? top.out.trim() : cwd;
+    docsCliWarning(publicDocPaths(changedPaths, (f) => existsSync(join(docsRoot, f))), deps.runDocsCliCheck ?? runPrLandDocsCliCheck(docsRoot), out);
+  }
   const testInterference = await testInterferenceGateVerdict(
     deps.runTestInterferenceGate ?? ((o, files) => runTestInterferenceGate({ args: ['--changed-files', ...files], log: o.log })),
     changedPaths,

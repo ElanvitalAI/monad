@@ -340,3 +340,17 @@ describe('readLeaderRefusal — 전체 스키마 검증 (must-fix #5492)', () =>
     }
   });
 });
+
+// 🩸 09-26: 운영 plist 의 작업 폴더를 pilot → 홈으로 옮기자 설치본 데몬이 «비-리더 트리» 로 거부됐다(1분 반 중단).
+describe('decideNexusRunRefusal — the installed copy is the operating body, not a tree', () => {
+  const base = { selfTree: '/Users/u', leaderTree: '/Users/u/work/checkout', root: '/Users/u/.monad', homeRoot: '/Users/u/.monad', depth: 0 };
+  test('installed copy at depth 0 starts even when its cwd is not the leader tree', () => {
+    const d = decideNexusRunRefusal({ ...base, installedCopy: true });
+    expect(d.refuse).toBe(false);
+    expect(d.normalOperation).toBe(true);
+  });
+  test('a non-leader checkout is still refused, and nesting is refused even for the installed copy', () => {
+    expect(decideNexusRunRefusal({ ...base, installedCopy: false }).refuse).toBe(true);
+    expect(decideNexusRunRefusal({ ...base, installedCopy: true, depth: 1 }).refuse).toBe(true);
+  });
+});

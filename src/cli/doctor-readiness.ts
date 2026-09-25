@@ -99,6 +99,8 @@ export interface ReadinessDeps {
    * 🩸 다르면 bun 이 optional 의존성(node-pty 등)을 «조용히» 빠뜨린다(EXDEV · oven-sh/bun#38079 · 2026-09-22 실측 4/4).
    */
   tmpdirSameFsAsBunCache?: boolean | null;
+  /** 서비스 파일이 가리키는 경로(작업 폴더 · PWA 폴더) 중 git 작업 트리 안인 것 — 못 쟀으면 undefined. */
+  serviceGitTreeRefs?: string[];
   /** 지금 도는 bun 판 · 저장소가 시험한 판(`.bun-version`) — 못 읽으면 null. */
   bunVersion?: string | null;
   bunPin?: string | null;
@@ -486,6 +488,15 @@ function serviceSecrets(deps: ReadinessDeps): ReadinessItem {
     : item('service-secrets', 'ok', 'no provider keys in service environment');
 }
 
+/** 서비스 파일에서 «운영이 기대는 경로»를 뽑는다 — launchd plist · systemd unit 둘 다(순수 함수). */
+export function servicePathRefs(text: string): string[] {
+  const refs: string[] = [];
+  const plist = /<key>(WorkingDirectory|MONAD_PWA_STATIC_DIR)<\/key>\s*<string>([^<]+)<\/string>/g;
+  for (const m of text.matchAll(plist)) refs.push(m[2]!.trim());
+  for (const m of text.matchAll(/^(?:WorkingDirectory=|Environment="?MONAD_PWA_STATIC_DIR=)([^"\n]+)"?$/gm)) refs.push(m[1]!.trim());
+  return [...new Set(refs)];
+}
+
 function serviceFile(deps: ReadinessDeps): ReadinessItem {
   if (deps.serviceFile === undefined) return item('service-file', 'unknown', 'service file was not measured');
   if (deps.serviceFile === null) return item('service-file', 'ok', 'no service file installed');
@@ -495,6 +506,10 @@ function serviceFile(deps: ReadinessDeps): ReadinessItem {
   }
   if (SERVICE_BARE_MONAD.test(text)) {
     return item('service-file', 'manual', `${path} runs a bare \`monad\` (resolved through PATH at boot)`, 'monad nexus install');
+  }
+  // 🩸 09-26: 운영 서비스가 사람 작업 트리(pilot)를 가리켰다 — 작업 폴더 ⊕ PWA 폴더. 화면이 데몬 코드보다 8시간 낡았다.
+  if (deps.serviceGitTreeRefs && deps.serviceGitTreeRefs.length > 0) {
+    return item('service-file', 'manual', `${path} depends on a git working tree (${deps.serviceGitTreeRefs.join(', ')}) — the service follows whatever that tree holds, not the installed version`, deps.platform === 'linux' ? 'cd ~ && monad nexus install --systemd-user' : 'cd ~ && monad nexus install --launchd');
   }
   return item('service-file', 'ok', `${path} uses a stable command path`);
 }

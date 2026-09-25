@@ -23,6 +23,7 @@
 // 본 페이즈(P1)는 **관측·기록만** 한다 — 아무것도 거부하지 않는다(거부 게이트=P4).
 // 설계 = 내부 문서 `DESIGN-instance-leader-and-default-test-2026-07-26` §5.
 
+import { INSTALLED_PACKAGE_MARKERS, isInstalledPackagePath } from './installed-package.js';
 import { existsSync, mkdirSync, readFileSync, realpathSync, renameSync, unlinkSync, writeFileSync } from 'node:fs';
 import { homedir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
@@ -180,12 +181,13 @@ export function treeFromScriptPath(scriptPath: string): string | null {
  *  아니라 «설치본»이라는 값이다. */
 export function installedCopyRoot(scriptPath: string): string | null {
   const normalized = normalizeTree(scriptPath).replace(/\\/g, '/');
-  const marker = '/node_modules/monadagent';
+  const marker = INSTALLED_PACKAGE_MARKERS.find((m) => normalized.includes(`${m}/`));
+  if (!marker) return null;
   const at = normalized.indexOf(`${marker}/`);
-  if (at < 0) return null;
   if (treeFromScriptPath(scriptPath) !== null) return null;
   return normalized.slice(0, at + marker.length);
 }
+
 
 /** `~/.bun/bin/monad` 심볼릭 링크가 가리키는 실제 스크립트 경로. */
 export function resolveBunLinkScript(binPath = join(homedir(), '.bun', 'bin', 'monad')): string | null {
@@ -249,7 +251,7 @@ export function isInstalledCopyScript(argv1 = process.argv[1] ?? ''): boolean {
   if (!argv1) return false;
   try {
     const real = realpathSync(argv1).replace(/\\/g, '/');
-    if (!real.includes('/node_modules/monadagent/')) return false;
+    if (!isInstalledPackagePath(real)) return false;
     return treeFromScriptPath(real) === null;
   } catch { return false; }
 }

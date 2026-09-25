@@ -18,7 +18,7 @@ import { normRoot, effectiveInstanceRoot } from './resolve.js';
 import { debug } from '../debug/log.js';
 import {
   clearLeaderRefusal, leaderRefusalFilePath, normalizeTree,
-  readLeader, resolveSelfTree, writeLeaderRefusal, type LeaderRefusalRecord,
+  isInstalledCopyScript, readLeader, resolveSelfTree, writeLeaderRefusal, type LeaderRefusalRecord,
 } from './leader.js';
 import { getNestDepth } from '../agent/nest-depth.js';
 
@@ -28,6 +28,8 @@ export interface NexusRunRefusalInput {
   root: string;
   homeRoot: string;
   depth: number;
+  /** 설치본(`…/node_modules/monadagent/…` · 위로 git 트리 없음)으로 도는가 — 설치본은 트리가 없어 selfTree 가 cwd 로 떨어진다. */
+  installedCopy?: boolean;
 }
 
 export interface NexusRunRefusalDecision {
@@ -65,6 +67,12 @@ export function decideNexusRunRefusal(input: NexusRunRefusalInput): NexusRunRefu
   if (input.depth > 0) {
     return { refuse: true, why: `중첩 depth ${input.depth}에서 운영 데몬 접수 금지`, observeAllowed: false, normalOperation: false };
   }
+  // 설치본 = 운영 몸 — 우주 해석기와 같은 규칙(설치본은 prod). 설치본엔 트리가 없어 selfTree 가 «작업 폴더»로 떨어진다.
+  // 🩸 09-26: 운영 plist 의 작업 폴더를 pilot → 홈으로 옮기자 «비-리더 트리» 로 거부 · launchd 재시작 루프(1분 반 중단).
+  //    지금까지 통과한 것은 작업 폴더가 우연히 리더(pilot)였기 때문 — 숨은 pilot 의존.
+  if (input.installedCopy) {
+    return { refuse: false, why: '설치본(운영 몸)의 최상위 운영 데몬 기동', observeAllowed: false, normalOperation: true };
+  }
   if (normRoot(input.selfTree) !== normRoot(input.leaderTree)) {
     return { refuse: true, why: '비-리더 트리의 운영 데몬 접수 금지', observeAllowed: false, normalOperation: false };
   }
@@ -94,6 +102,8 @@ export function renderNexusRunRefusal(input: NexusRunRefusalInput, decision: Nex
 
 export interface NexusRunGateDeps {
   selfTree?: string;
+  /** 설치본으로 도는가(시험 seam) — 기본 = `isInstalledCopyScript()`. */
+  installedCopy?: boolean;
   leaderTree?: string | null;
   root?: string;
   homeRoot?: string;
@@ -116,6 +126,7 @@ export function evaluateNexusRunRefusal(deps: NexusRunGateDeps = {}): string | n
   try {
     const input: NexusRunRefusalInput = {
       selfTree: deps.selfTree ?? resolveSelfTree(),
+      installedCopy: deps.installedCopy ?? isInstalledCopyScript(),
       leaderTree: deps.leaderTree !== undefined
         ? deps.leaderTree
         : (() => { const r = readLeader(); return r ? normalizeTree(r.tree) : null; })(),

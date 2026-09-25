@@ -133,9 +133,7 @@ export function resolveLaunchdEnvironment(opts: LaunchdOpts = {}): LaunchdEnviro
   const plistDir = opts.plistDir ?? joinPath(homedir(), 'Library', 'LaunchAgents');
   const plistPath = joinPath(plistDir, `${label}.plist`);
   const command = opts.command ?? defaultCommand();
-  // repo 에서 install 하면 그 트리를 cwd 로 — 데몬의 git SHA(daemonSha)·상대경로가
-  // 정확해진다. homedir 이면 git rev-parse 가 실패(unknown).
-  const workingDirectory = opts.workingDirectory ?? process.cwd();
+  const workingDirectory = opts.workingDirectory ?? defaultServiceWorkingDirectory();
   const stdoutPath = opts.stdoutPath ?? joinPath(nexusLogsDir(), 'nexus-stdout.log');
   const stderrPath = opts.stderrPath ?? joinPath(nexusLogsDir(), 'nexus-stderr.log');
   return {
@@ -151,6 +149,21 @@ export function resolveLaunchdEnvironment(opts: LaunchdOpts = {}): LaunchdEnviro
     bootstrapTarget: `gui/${uid}`,
     serviceTarget: `gui/${uid}/${label}`,
   };
+}
+
+/**
+ * 서비스의 작업 폴더 기본값.
+ * - 체크아웃에서 install → 그 트리(데몬의 git SHA(daemonSha)·상대경로가 정확해진다 · homedir 이면 rev-parse 실패).
+ * - **설치본**에서 install → 홈(systemd 와 같다). 설치본의 판은 `install.json` 이 말하므로 트리가 필요 없고,
+ *   cwd 를 쓰면 «install 을 친 폴더»가 박힌다 — 🩸 09-26 운영 plist 가 사람 작업 트리(pilot)를 가리켰다(로드맵 09-26 P: pilot 의존 완전 제거).
+ */
+export function defaultServiceWorkingDirectory(
+  script: string | undefined = process.argv[1],
+  cwd: string = process.cwd(),
+  home: string = homedir(),
+): string {
+  const installed = !!script && script.includes('/node_modules/monadagent/') && /\/(versions\/[^/]+|current)\/node_modules\//.test(script);
+  return installed ? home : cwd;
 }
 
 function defaultCommand(): string[] {

@@ -12,6 +12,7 @@ import { findRetiredConfigKeysInFile, getUserConfig, type RetiredConfigKey, type
 import { codeRevision } from '../version/code-revision.js';
 import {
   checkReadiness,
+  servicePathRefs,
   detectSubstrate,
   parseDockerInfo,
   parseKubectlServerVersion,
@@ -273,6 +274,8 @@ interface ReadinessLookup {
   ghAuthStatus: () => number | null;
   ghVersion?: () => string | null;
   tmpdirSameFsAsBunCache: () => boolean | null;
+  /** 경로가 git 작업 트리 안인가(시험 seam) — 기본은 위로 올라가며 `.git` 을 찾는다. */
+  isInsideGitTree?: (path: string) => boolean;
   /** 저장소가 시험한 bun 판(`.bun-version`) · 지금 도는 bun 판(시험 seam). */
   bunPin?: () => string | null;
   bunVersion?: () => string | null;
@@ -292,6 +295,17 @@ interface ReadinessLookup {
   readServiceFile?: () => { path: string; text: string } | null;
   /** 첫 PATH 의 `monad` 실경로(시험 seam). */
   monadOnPath?: (pathEntries: readonly string[]) => string | null;
+}
+
+/** 경로(또는 그 조상)에 `.git` 이 있나 — 읽기만. */
+export function defaultIsInsideGitTree(path: string, exists: (p: string) => boolean = existsSync): boolean {
+  let dir = resolve(path);
+  for (;;) {
+    if (exists(join(dir, '.git'))) return true;
+    const parent = dirname(dir);
+    if (parent === dir) return false;
+    dir = parent;
+  }
 }
 
 function safe(read: () => string | null): string | null {
@@ -396,6 +410,15 @@ function resolveReadinessDeps(lookup: ReadinessLookup): ReadinessDeps {
   } catch {
     serviceFile = undefined;
   }
+  // 서비스 파일이 가리키는 경로 중 git 작업 트리 안인 것(읽기만) — 못 읽으면 undefined(못 쟀다).
+  let serviceGitTreeRefs: string[] | undefined;
+  if (serviceFile) {
+    try {
+      serviceGitTreeRefs = servicePathRefs(serviceFile.text).filter((ref) => (lookup.isInsideGitTree ?? defaultIsInsideGitTree)(ref));
+    } catch {
+      serviceGitTreeRefs = undefined;
+    }
+  }
   let host: HostEnvironmentProbe | null = null;
   try {
     host = (lookup.probeHostEnvironment ?? (() => defaultProbeHostEnvironment({ env: lookup.env, platform: lookup.platform, commandExists: lookup.commandExists, pathEntries })))();
@@ -433,6 +456,7 @@ function resolveReadinessDeps(lookup: ReadinessLookup): ReadinessDeps {
     codeRevision: revision,
     platform: lookup.platform,
     tmpdirSameFsAsBunCache,
+    ...(serviceGitTreeRefs !== undefined ? { serviceGitTreeRefs } : {}),
     bunVersion: safe(lookup.bunVersion ?? (() => (typeof Bun !== 'undefined' ? Bun.version : null))),
     bunPin: safe(lookup.bunPin ?? (() => null)),
     serviceFile,

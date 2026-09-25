@@ -7,7 +7,7 @@ import { join } from 'node:path';
 
 import { runMcpDiagnose } from '../src/cli/mcp-diagnose.js';
 import { McpConnectionError } from '../src/mcp/client.js';
-import { mcpOAuthStorePath, resetMcpOAuthStorePathForTesting } from '../src/mcp/mcp-oauth.js';
+import { mcpOAuthStorePath } from '../src/mcp/mcp-oauth.js';
 import { saveTokens } from '../src/oauth/store.js';
 
 const REPO_ROOT = join(import.meta.dir, '..');
@@ -372,10 +372,9 @@ describe('runMcpDiagnose HTTP loopback', () => {
   });
 
   test('configured OAuth issuer reuses a stored credential without printing it', async () => {
-    const previousStateDir = process.env.MONAD_STATE_DIR;
-    const stateDir = mkdtempSync(join(tmpdir(), 'mcp-diagnose-oauth-'));
-    process.env.MONAD_STATE_DIR = stateDir;
-    resetMcpOAuthStorePathForTesting();
+    const previousXdg = process.env.XDG_CONFIG_HOME;
+    const configDir = mkdtempSync(join(tmpdir(), 'mcp-diagnose-oauth-'));
+    process.env.XDG_CONFIG_HOME = configDir;
     const issuer = 'https://issuer.example.test';
     const token = 'diagnose-stored-token';
     saveTokens(
@@ -416,17 +415,15 @@ describe('runMcpDiagnose HTTP loopback', () => {
       expect([...out.logs, ...out.errors].join('\n')).not.toContain(token);
     } finally {
       await loop.close();
-      if (previousStateDir === undefined) delete process.env.MONAD_STATE_DIR;
-      else process.env.MONAD_STATE_DIR = previousStateDir;
-      resetMcpOAuthStorePathForTesting();
+      if (previousXdg === undefined) delete process.env.XDG_CONFIG_HOME;
+      else process.env.XDG_CONFIG_HOME = previousXdg;
     }
   });
 
   test('OAuth authentication failure distinguishes missing credentials from rejected stored credentials', async () => {
-    const previousStateDir = process.env.MONAD_STATE_DIR;
-    const stateDir = mkdtempSync(join(tmpdir(), 'mcp-diagnose-oauth-failure-'));
-    process.env.MONAD_STATE_DIR = stateDir;
-    resetMcpOAuthStorePathForTesting();
+    const previousXdg = process.env.XDG_CONFIG_HOME;
+    const configDir = mkdtempSync(join(tmpdir(), 'mcp-diagnose-oauth-failure-'));
+    process.env.XDG_CONFIG_HOME = configDir;
     const issuer = 'https://issuer.example.test';
     const loop = await listenLoopback((_req, res) => {
       res.writeHead(401);
@@ -450,9 +447,8 @@ describe('runMcpDiagnose HTTP loopback', () => {
       expect(rejected.perServer.oauth!.reason).not.toContain('rejected-token');
     } finally {
       await loop.close();
-      if (previousStateDir === undefined) delete process.env.MONAD_STATE_DIR;
-      else process.env.MONAD_STATE_DIR = previousStateDir;
-      resetMcpOAuthStorePathForTesting();
+      if (previousXdg === undefined) delete process.env.XDG_CONFIG_HOME;
+      else process.env.XDG_CONFIG_HOME = previousXdg;
     }
   });
 

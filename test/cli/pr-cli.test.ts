@@ -8,7 +8,7 @@ import { PassThrough } from 'node:stream';
 import { Command } from 'commander';
 import { debug } from '../../src/debug/log.js';
 import { setGitCommandRunnerForTesting } from '../../src/git-fs/runner.js';
-import { parseNumstat, parsePorcelainStatus, registerPrCommands, runPrGranularity, runPrLand, decideOverlapLanding, overlapDecisionFromConfirm, publicLeakWarning, OVERLAP_DECISION_PROMPT, createOverlapConfirmChannel, formatCommitMessageFallbackNotice, formatLandReasonNotice, codePointLength, branchLineageSlug, findSiblingPrs } from '../../src/cli/pr-cli.js';
+import { parseNumstat, parsePorcelainStatus, registerPrCommands, runPrGranularity, runPrLand, decideOverlapLanding, overlapDecisionFromConfirm, publicLeakWarning, docsCliWarning, publicDocPaths, OVERLAP_DECISION_PROMPT, createOverlapConfirmChannel, formatCommitMessageFallbackNotice, formatLandReasonNotice, codePointLength, branchLineageSlug, findSiblingPrs } from '../../src/cli/pr-cli.js';
 import type { ConfirmOpts, ConfirmResult } from '../../src/hitl/confirm.js';
 import { LANDING_HISTORY_META_MARK, TOP_PREFIX_COUNT_LIMIT } from '../../src/cli/pr-granularity.js';
 import type { CmdRunner, FindPrForBranchOutcome, MergePrOutcome, PrManager, UpsertPrInput, UpsertPrOutcome } from '../../src/autopilot/pr-manager.js';
@@ -578,6 +578,36 @@ describe('monad pr land', () => {
     expect(logs[0]).toContain('못 쟀다');
     logs.length = 0;
     publicLeakWarning([], () => 1, out);
+    expect(logs).toEqual([]);
+  });
+
+  // 🆕 2026-09-26 — 공개 문서 ↔ 실제 CLI 대조도 «경고 전용»이고, 바뀐 «공개 문서»만 본다(전수는 38초라 착지마다 안 돈다).
+  it('docs-cli warning: only changed public docs are checked; mismatch warns with file:line; none → silent; throws → «못 쟀다»', () => {
+    const exists = (f: string) => f !== 'release/public/docs/gone.md';
+    expect(publicDocPaths(['src/a.ts', 'README.md', 'release/public/docs/install.md', 'release/public/docs/gone.md', 'docs/x.md', 'README.md'], exists))
+      .toEqual(['README.md', 'release/public/docs/install.md']);
+    expect(publicDocPaths(undefined, exists)).toEqual([]);
+
+    const logs: string[] = [];
+    const out = { log: (m: string) => logs.push(m) };
+    const seen: string[][] = [];
+    docsCliWarning(['README.md'], (files) => {
+      seen.push([...files]);
+      return [{ kind: 'unknown-flag', ref: { file: 'README.md', line: 7, text: 'monad doctor --nope', cmd: 'doctor', flags: ['--nope'] }, detail: '--nope (monad doctor)' }];
+    }, out);
+    expect(seen).toEqual([['README.md']]);
+    expect(logs.join('\n')).toContain('경고 전용 · 착지는 막지 않는다');
+    expect(logs.join('\n')).toContain('unknown-flag  README.md:7  --nope (monad doctor)');
+    logs.length = 0;
+    docsCliWarning(['README.md'], () => [], out);
+    expect(logs).toEqual(['✓ docs-cli-check(경고 전용): 바뀐 공개 문서 1개의 monad 호출이 실제 CLI 와 맞는다.']);
+    logs.length = 0;
+    docsCliWarning(['README.md'], () => { throw new Error('boom'); }, out);
+    expect(logs[0]).toContain('못 쟀다');
+    logs.length = 0;
+    let called = false;
+    docsCliWarning([], () => { called = true; return []; }, out);
+    expect(called).toBe(false);
     expect(logs).toEqual([]);
   });
 

@@ -47,7 +47,9 @@ const defaultHelp: HelpRunner = (args) => {
 
 function listed(help: string, name: string): boolean {
   const cmds = help.split(/\nCommands:\n/)[1] ?? '';
-  return new RegExp(`^\\s+${name.replace(/[-]/g, '\\-')}(?:\\|\\S+)?(?:\\s|\\[|<|$)`, 'm').test(cmds);
+  // 별칭도 명령이다 — 도움말은 `self-update|update [options]` 로 찍는다(09-26: 문서의 `monad update` 를 «없는 명령»으로 잡았다).
+  const n = name.replace(/[-]/g, '\\-');
+  return new RegExp(`^\\s+(?:\\S+\\|)*${n}(?:\\|\\S+)*(?:\\s|\\[|<|$)`, 'm').test(cmds);
 }
 
 export function checkCommands(refs: readonly DocCommand[], help: HelpRunner = defaultHelp): Finding[] {

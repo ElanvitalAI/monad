@@ -1,7 +1,7 @@
 // ── MCP OAuth (RFC 9728 + RFC 8414 + RFC 7591 + PKCE) ──
 //
-// 401 이 준 resource_metadata / scope 를 따라가 자격을 얻고, 인스턴스
-// 우주 아래 기존 oauth/store.ts 에 issuer 열쇠로 저장한 뒤 Bearer 로
+// 401 이 준 resource_metadata / scope 를 따라가 자격을 얻고, 전역 자격
+// 파일(oauth/store.ts `authStorePath()`)에 issuer 열쇠로 저장한 뒤 Bearer 로
 // 다시 실어 보내는 «잇는» 모듈. 주소를 코드에 박지 않는다 — 호스트는
 // 전부 그 401 안내에서 그때 얻는다.
 //
@@ -13,6 +13,7 @@
 import { join } from 'node:path';
 import { generatePkcePair } from '../oauth/pkce.js';
 import {
+  authStorePath,
   expiresAtFromSeconds,
   isExpiringSoon,
   loadTokens,
@@ -21,6 +22,7 @@ import {
   type ProviderAuthState,
 } from '../oauth/store.js';
 import { effectiveInstanceRoot } from '../instance/resolve.js';
+import { debug } from '../debug/log.js';
 
 const REFRESH_BUFFER_MS = 120_000;
 const AUTH_MODE = 'mcp-oauth';
@@ -131,23 +133,51 @@ export interface PrepareMcpOAuthAuthorizationOpts extends McpOAuthRuntimeOpts {
   scope?: string;
 }
 
-let cachedStorePath: string | undefined;
-
-/** Credential file under the current instance root — derived once. */
+/** ⛔⭐⭐ MCP 자격은 «우주를 따라가지 않는다» — 격리 매뉴얼 §6 의 전역 사용자 자산이다.
+ *
+ *  종전(2026-08-20 ~)엔 `effectiveInstanceRoot()/auth.json` 에 썼다. 그래서 작업 트리
+ *  TUI(격리 우주)에서 한 로그인은 `.monad-test/auth.json` 에 갇혀 운영 데몬이 못 봤고,
+ *  `config sync-test` 사본끼리는 회전형 refresh token 이 서로를 폐기했다(2026-09-26 실측:
+ *  자격 파일 셋에 MCP 발급자가 흩어져 있었다). ⇒ codex 로그인과 «같은» 파일을 쓴다. */
 export function mcpOAuthStorePath(): string {
-  if (!cachedStorePath) {
-    cachedStorePath = join(effectiveInstanceRoot(), 'auth.json');
-  }
-  return cachedStorePath;
+  return authStorePath();
 }
 
-/** Test seam — drop the cached path so a new instance root is picked up. */
-export function resetMcpOAuthStorePathForTesting(): void {
-  cachedStorePath = undefined;
+/** 옛 자리 — 우주 아래 자격 파일. «입양»의 읽기 원천일 뿐 다시 쓰지 않는다. */
+function legacyUniverseStorePath(): string {
+  return join(effectiveInstanceRoot(), 'auth.json');
 }
 
 function storePath(opts?: { storePath?: string }): string {
   return opts?.storePath ?? mcpOAuthStorePath();
+}
+
+/** 발급자 기록을 읽는다. 기본 자리에 없고 옛 우주 자리에 MCP 기록이 있으면 «더하기만» 한다.
+ *  ⛔ 기본 자리에 이미 있으면 절대 덮지 않는다(회전된 새 토큰을 옛 값으로 되돌리게 된다). */
+function loadIssuerState(
+  issuer: string,
+  opts?: { storePath?: string },
+): ProviderAuthState | null {
+  const path = storePath(opts);
+  const current = loadTokens(issuer, path);
+  if (current || opts?.storePath) return current;
+  const legacy = legacyUniverseStorePath();
+  if (legacy === path) return null;
+  const stranded = loadTokens(issuer, legacy);
+  if (!stranded || stranded.authMode !== AUTH_MODE) return null;
+  saveTokens(
+    issuer,
+    stranded.tokens,
+    {
+      authMode: AUTH_MODE,
+      ...(stranded.accountUuid ? { accountUuid: stranded.accountUuid } : {}),
+      ...(stranded.organizationUuid ? { organizationUuid: stranded.organizationUuid } : {}),
+      mirrorCodex: false,
+    },
+    path,
+  );
+  debug.log('mcp.oauth', 'legacy-credential-adopted', { issuer, from: legacy, to: path });
+  return loadTokens(issuer, path);
 }
 
 function fetchImpl(opts?: { fetch?: McpOAuthFetch }): McpOAuthFetch {
@@ -406,7 +436,7 @@ export function loadStoredRegistration(
   issuer: string,
   opts: McpOAuthRuntimeOpts = {},
 ): ClientRegistration | null {
-  return registrationFromState(loadTokens(issuer, storePath(opts)));
+  return registrationFromState(loadIssuerState(issuer, opts));
 }
 
 export async function ensureClientRegistration(
@@ -651,8 +681,8 @@ export async function exchangeAuthorizationCode(
 }
 
 /** In-flight refreshes, keyed by «issuer ⊕ 저장 파일». ⛔ 열쇠에 경로가 «같이»
- *  들어가는 이유: 격리 우주마다 자격 파일이 다르므로 issuer 만으로 묶으면
- *  다른 우주의 갱신이 서로를 기다린다. */
+ *  들어가는 이유: 호출자가 `storePath` 로 다른 파일을 줄 수 있으므로 issuer 만으로
+ *  묶으면 서로 다른 파일의 갱신이 서로를 기다린다. */
 const inFlightRefreshes = new Map<string, Promise<OAuthTokens>>();
 
 export async function refreshStoredAccessToken(
@@ -678,7 +708,7 @@ async function refreshStoredAccessTokenUncoalesced(
   opts: McpOAuthRuntimeOpts = {},
 ): Promise<OAuthTokens> {
   const path = storePath(opts);
-  const existing = loadTokens(metadata.issuer, path);
+  const existing = loadIssuerState(metadata.issuer, opts);
   const refreshToken = existing?.tokens.refreshToken?.trim();
   if (!existing || !refreshToken) {
     throw new McpOAuthError('refresh', 'no refresh_token is stored for this issuer');
@@ -709,7 +739,7 @@ export function loadStoredAccessToken(
   issuer: string,
   opts: McpOAuthRuntimeOpts = {},
 ): string | null {
-  const access = loadTokens(issuer, storePath(opts))?.tokens.accessToken?.trim();
+  const access = loadIssuerState(issuer, opts)?.tokens.accessToken?.trim();
   return access ? access : null;
 }
 
@@ -718,7 +748,7 @@ export async function getValidAccessToken(
   opts: McpOAuthRuntimeOpts & { tokenEndpoint?: string } = {},
 ): Promise<string | null> {
   const path = storePath(opts);
-  const existing = loadTokens(issuer, path);
+  const existing = loadIssuerState(issuer, opts);
   const access = existing?.tokens.accessToken?.trim();
   if (!existing || !access) return null;
   if (!isExpiringSoon(existing, REFRESH_BUFFER_MS)) return access;

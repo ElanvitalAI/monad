@@ -6,7 +6,6 @@ import { createServer } from 'node:http';
 import { runMcpLogin } from '../src/cli/mcp-login.js';
 import {
   mcpOAuthStorePath,
-  resetMcpOAuthStorePathForTesting,
   type McpOAuthFetch,
 } from '../src/mcp/mcp-oauth.js';
 import { loadTokens } from '../src/oauth/store.js';
@@ -18,18 +17,23 @@ const AUTHORIZE = 'https://auth.example.test/authorize';
 const TOKEN = 'https://auth.example.test/token';
 const REGISTER = 'https://auth.example.test/register';
 const dirs: string[] = [];
+const prevStateDir = process.env.MONAD_STATE_DIR;
+const prevXdg = process.env.XDG_CONFIG_HOME;
 
 afterEach(() => {
   for (const dir of dirs.splice(0)) rmSync(dir, { recursive: true, force: true });
-  delete process.env.MONAD_STATE_DIR;
-  resetMcpOAuthStorePathForTesting();
+  if (prevStateDir === undefined) delete process.env.MONAD_STATE_DIR;
+  else process.env.MONAD_STATE_DIR = prevStateDir;
+  if (prevXdg === undefined) delete process.env.XDG_CONFIG_HOME;
+  else process.env.XDG_CONFIG_HOME = prevXdg;
 });
 
 function isolated(): void {
   const dir = mkdtempSync(join(tmpdir(), 'mcp-login-'));
   dirs.push(dir);
-  process.env.MONAD_STATE_DIR = dir;
-  resetMcpOAuthStorePathForTesting();
+  // ⛔ MCP 자격은 전역 자격 파일(authStorePath)에 간다 — XDG 로 tmp 에 못 박는다.
+  process.env.XDG_CONFIG_HOME = join(dir, 'config');
+  process.env.MONAD_STATE_DIR = join(dir, 'universe');
 }
 
 function json(status: number, body: unknown): Response {
@@ -112,7 +116,9 @@ describe('runMcpLogin', () => {
     expect(stored?.tokens.accessToken).toBe('access-secret');
     expect(stored?.tokens.refreshToken).toBe('refresh-secret');
     expect(stored?.authMode).toBe('mcp-oauth');
-    expect(mcpOAuthStorePath().startsWith(process.env.MONAD_STATE_DIR!)).toBe(true);
+    // ⛔ 저장 위치는 «우주 밖» 전역 자격 파일이다(격리 매뉴얼 §6).
+    expect(mcpOAuthStorePath().startsWith(process.env.XDG_CONFIG_HOME!)).toBe(true);
+    expect(mcpOAuthStorePath().startsWith(process.env.MONAD_STATE_DIR!)).toBe(false);
   });
 
   test('⭐⭐ 기대 state 가 정해지기 «전»에 도착한 콜백도 유실되지 않는다', async () => {

@@ -86,7 +86,7 @@ bash scripts/install.sh               # same installer, installing this checkout
   install.json                   what is installed, from where, which commit
 ```
 
-Your settings, logins, logs and memory live separately in `~/.monad` and are never touched by the installer or the uninstaller.
+Your settings, logins and logs live in `~/.monad`; your memory lives in `~/.local/share/monad/memory` (inside the install folder). The installer never touches either, and the uninstaller removes only what the installer created (`versions/`, `current`, `bin/`, `install.json`) and names everything it keeps.
 
 ## Update, roll back, uninstall
 

@@ -16,6 +16,7 @@ import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, realpath
 import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import type { Command } from 'commander';
+import { debug } from '../debug/log.js';
 
 export const DEFAULT_PUBLIC_REPO = 'ElanvitalAI/monad';
 const SEMVER = /^\d+\.\d+\.\d+(?:-(?:rc|alpha|beta)\.\d+)?$/;
@@ -223,6 +224,76 @@ export async function publishRelease(opts: { dir: string; notesFile: string; yes
   return { published: true, steps };
 }
 
+// ── yank(릴리스 내리기 · 대표 09-26 승인 · 로드맵 #2) ─────────────────────────────────────────
+// 지우지 않고 «내린다»: 대상 판을 pre-release 로 강등 ⊕ Latest 해제 ⊕ 제목에 (yanked) → 직전 안정 판에 Latest.
+// 그러면 `latest/download/install.sh` 가 직전 판을 준다. 자산은 남는다 — 판을 고정한 사용자(`MONAD_VERSION=`)도
+// 받을 수 있고 `--undo` 로 되돌린다. (gemini-cli 의 `release-rollback` 과 같은 자리 · 참조 04 `~/source/ref`)
+
+export interface ReleaseInfo { tagName: string; isPrerelease: boolean; isDraft: boolean; isLatest: boolean; publishedAt: string }
+
+export function listReleases(repo: string, run: Runner, cwd: string): ReleaseInfo[] {
+  return JSON.parse(must(run('gh', ['release', 'list', '--repo', repo, '--limit', '50', '--json', 'tagName,isPrerelease,isDraft,isLatest,publishedAt'], cwd), `릴리스 목록 ${repo}`)) as ReleaseInfo[];
+}
+
+export function planYank(releases: readonly ReleaseInfo[], tag: string, repo: string, undo = false): PublishStep[] {
+  const target = releases.find((r) => r.tagName === tag);
+  if (!target) throw new Error(`없는 릴리스다: ${tag}`);
+  const version = tag.replace(/^v/, '');
+  if (undo) {
+    return [{ what: `${tag} 되돌리기 — 정식 판 ⊕ Latest ⊕ 제목 원래대로`, command: 'gh', args: ['release', 'edit', tag, '--repo', repo, '--prerelease=false', '--latest', '--title', `monad ${tag}`], cwd: '.' }];
+  }
+  if (target.isPrerelease) throw new Error(`이미 pre-release 다(yank 됐거나 미리보기): ${tag} — 되돌리려면 --undo`);
+  const previous = releases
+    .filter((r) => r.tagName !== tag && !r.isPrerelease && !r.isDraft)
+    .sort((a, b) => b.publishedAt.localeCompare(a.publishedAt))[0];
+  if (!previous) throw new Error(`${tag} 말고 정식 판이 없다 — 내리면 Latest 가 비어 한 줄 설치가 전부 실패한다. 내리지 않는다`);
+  return [
+    { what: `${tag} 내리기 — pre-release 로 강등 ⊕ Latest 해제 ⊕ 제목 (yanked) · 자산은 남긴다`, command: 'gh', args: ['release', 'edit', tag, '--repo', repo, '--prerelease', '--latest=false', '--title', `monad ${tag} (yanked)`], cwd: '.' },
+    { what: `${previous.tagName} 을 Latest 로 — latest/download/install.sh 가 이 판을 준다(v${version} 을 고정한 사용자는 MONAD_VERSION=${version} 로 여전히 받는다)`, command: 'gh', args: ['release', 'edit', previous.tagName, '--repo', repo, '--latest'], cwd: '.' },
+  ];
+}
+
+/** `latest/download/install.sh` 가 지금 어느 판으로 가나(리다이렉트 Location) — 못 읽으면 null. */
+export function latestInstallerTag(repo: string, run: Runner, cwd: string): string | null {
+  const r = run('curl', ['-sI', `https://github.com/${repo}/releases/latest/download/install.sh`], cwd);
+  return /\/releases\/download\/(v[^/\s]+)\//i.exec(r.stdout)?.[1] ?? null;
+}
+
+/** 📏 09-26 실측: API 의 Latest 는 즉시 · 다운로드 리다이렉트(`latest/download/…`)는 약 100~120초 늦게 따라온다(CDN).
+ *  그래서 실행 뒤 «설치기가 실제로 주는 판»이 기대한 판이 될 때까지 잰다 — API 만 보고 ✅ 를 내면 거짓이다(첫 실물에서 그랬다). */
+export const YANK_PROPAGATION_TIMEOUT_MS = 240_000;
+export const YANK_PROPAGATION_POLL_MS = 10_000;
+
+export async function yankRelease(opts: { version: string; publicRepo?: string; yes?: boolean; undo?: boolean; log?: (l: string) => void; sleep?: (ms: number) => Promise<void>; timeoutMs?: number; pollMs?: number }, run: Runner = defaultRunner): Promise<{ applied: boolean; latestNow: string | null; propagated?: boolean; waitedMs?: number }> {
+  const log = opts.log ?? ((l: string) => console.log(l));
+  if (!isReleaseVersion(opts.version)) throw new Error(`버전 모양이 아니다: ${opts.version}`);
+  const repo = opts.publicRepo ?? DEFAULT_PUBLIC_REPO;
+  const tag = `v${opts.version}`;
+  const cwd = tmpdir();
+  const steps = planYank(listReleases(repo, run, cwd), tag, repo, opts.undo);
+  for (const s of steps) log(`${opts.yes ? '▶' : '·'} ${s.what}
+    ${s.command} ${s.args.join(' ')}`);
+  if (!opts.yes) { log(`⛔ 보기만 했다 — 실행하려면 --yes (되돌리기: monad release yank --version ${opts.version} --undo --yes)`); return { applied: false, latestNow: null }; }
+  for (const s of steps) must(run(s.command, s.args, cwd), s.what);
+  // 기대 = 되돌림이면 그 판 · 내림이면 Latest 를 받은 직전 판(두 번째 단계의 대상).
+  const expected = opts.undo ? tag : steps[1]!.args[2]!;
+  const sleep = opts.sleep ?? ((ms: number) => new Promise<void>((r) => setTimeout(r, ms)));
+  const timeoutMs = opts.timeoutMs ?? YANK_PROPAGATION_TIMEOUT_MS;
+  const pollMs = opts.pollMs ?? YANK_PROPAGATION_POLL_MS;
+  let waited = 0;
+  let latestNow = latestInstallerTag(repo, run, cwd);
+  while (latestNow !== expected && waited < timeoutMs) {
+    await sleep(pollMs);
+    waited += pollMs;
+    latestNow = latestInstallerTag(repo, run, cwd);
+  }
+  const propagated = latestNow === expected;
+  debug.log('release.yank', opts.undo ? 'undone' : 'yanked', { tag, repo, expected, latestNow, propagated, waitedMs: waited });
+  if (propagated) log(`✅ ${opts.undo ? '되돌림' : '내림'}: ${tag} · latest/download/install.sh → ${latestNow} (${Math.round(waited / 1000)}초 뒤 반영)`);
+  else { log(`⚠️ ${opts.undo ? '되돌림' : '내림'}은 적용했지만 설치기가 아직 ${latestNow ?? '못 읽음'} 을 준다(기대 ${expected} · ${Math.round(waited / 1000)}초 기다림 · CDN 캐시) — 잠시 뒤 다시 확인: curl -sI https://github.com/${repo}/releases/latest/download/install.sh`); process.exitCode = 2; }
+  return { applied: true, latestNow, propagated, waitedMs: waited };
+}
+
 /** 공개 주소로 끝까지 — 깨끗한 임시 홈에서 설치 → --version → self-update → 제거. */
 /** 상태 왕복 — 설치본이 «쓰고 다른 프로세스에서 다시 읽나»(자격 불요). `--version` 은 일을 하는 증거가 아니다.
  *  ① 기억: `memory add`(stdin 본문에 nonce) → 새 프로세스 `memory search <nonce>` 가 찾는가.
@@ -246,7 +317,7 @@ export function stateRoundTrip(monad: string, home: string, env: NodeJS.ProcessE
   return { memory, logs: /"registeredStores":0\b/.test(`${read.stdout}${read.stderr}`) ? 'no-store' : 'fail' };
 }
 
-export async function verifyRelease(opts: { version?: string; publicRepo?: string; log?: (l: string) => void }, run: Runner = defaultRunner): Promise<{ ok: boolean; versionLine: string; installerUrl: string }> {
+export async function verifyRelease(opts: { version?: string; publicRepo?: string; log?: (l: string) => void }, run: Runner = defaultRunner): Promise<{ ok: boolean; versionLine: string; installerUrl: string; steps?: { install: number | null; selfUpdate: number | null; uninstall: number | null }; state?: { memory: boolean; logs: LogRoundTrip } }> {
   const log = opts.log ?? ((l: string) => console.log(l));
   if (opts.version !== undefined && !isReleaseVersion(opts.version)) throw new Error(`버전 모양이 아니다: ${opts.version}`);
   const repo = opts.publicRepo ?? DEFAULT_PUBLIC_REPO;
@@ -270,9 +341,23 @@ export async function verifyRelease(opts: { version?: string; publicRepo?: strin
       : { status: null, stdout: '', stderr: 'uninstall.sh 없음' };
     const ok = install.status === 0 && (opts.version ? versionLine.startsWith(`${opts.version} `) : versionLine.length > 0) && update.status === 0 && state.memory && state.logs !== 'fail';
     log(`${ok ? '✅' : '⛔'} ${installerUrl}\n  설치 rc=${install.status} · --version «${versionLine}» · 기억 왕복 ${state.memory ? 'ok' : 'FAIL'} · 로그 왕복 ${state.logs === 'ok' ? 'ok' : state.logs === 'fail' ? 'FAIL' : '안 잼(스토어 없음 — 데몬이 한 번 떠야 생긴다)'} · self-update rc=${update.status} · 제거 rc=${uninstall.status}`);
-    return { ok, versionLine, installerUrl };
+    return { ok, versionLine, installerUrl, steps: { install: install.status, selfUpdate: update.status, uninstall: uninstall.status }, state };
   } finally {
     rmSync(root, { recursive: true, force: true });
+  }
+}
+
+/** `--json` — 사람 줄은 stderr, stdout 엔 결과 한 줄(그래프 간선이 파이프로 읽는다 · 🅣 T-R 요청). */
+async function jsonAction<T>(json: boolean | undefined, body: (log: (l: string) => void) => Promise<T>, ok: (r: T) => boolean): Promise<void> {
+  const log = json ? (l: string) => console.error(l) : (l: string) => console.log(l);
+  try {
+    const r = await body(log);
+    if (json) process.stdout.write(`${JSON.stringify({ ok: ok(r), ...(r as object) })}\n`);
+    if (!ok(r) && !process.exitCode) process.exitCode = 1;
+  } catch (e) {
+    if (json) process.stdout.write(`${JSON.stringify({ ok: false, error: (e as Error).message })}\n`);
+    else console.error(`⛔ ${(e as Error).message}`);
+    process.exitCode = 1;
   }
 }
 
@@ -286,26 +371,40 @@ export function registerReleaseCommands(program: Command): void {
     .option('--notes-from <ref>', '변경 기록 초안의 시작 ref(직전 릴리스의 원본 커밋)')
     .option('--skip-e2e', '로컬 끝까지를 건너뛴다(권하지 않음)')
     .option('--public-repo <owner/name>', '공개 저장소', DEFAULT_PUBLIC_REPO)
-    .action(async (o: { version: string; source: string; out?: string; notesFrom?: string; skipE2e?: boolean; publicRepo: string }) => {
-      try { await prepareRelease({ version: o.version, source: o.source, out: o.out, notesFrom: o.notesFrom, skipE2e: o.skipE2e, publicRepo: o.publicRepo }); }
-      catch (e) { console.error(`⛔ ${(e as Error).message}`); process.exitCode = 1; }
+    .option('--json', '결과 한 줄 JSON(stdout) · 사람 줄은 stderr')
+    .action(async (o: { version: string; source: string; out?: string; notesFrom?: string; skipE2e?: boolean; publicRepo: string; json?: boolean }) => {
+      await jsonAction(o.json, async (log) => ({ manifest: await prepareRelease({ version: o.version, source: o.source, out: o.out, notesFrom: o.notesFrom, skipE2e: o.skipE2e, publicRepo: o.publicRepo, log }) }), (r) => !r.manifest.e2e.ran || r.manifest.e2e.ok === true);
+    });
+  release.command('yank')
+    .description('릴리스 내리기 — pre-release 로 강등 ⊕ Latest 를 직전 정식 판으로(자산은 남김 · --undo 로 되돌림). --yes 없으면 보기만')
+    .requiredOption('--version <x.y.z>', '내릴 판')
+    .option('--undo', '내린 판을 되돌린다(정식 판 ⊕ Latest)')
+    .option('--public-repo <owner/name>', '공개 저장소', DEFAULT_PUBLIC_REPO)
+    .option('--yes', '실제로 바꾼다')
+    .option('--json', '결과 한 줄 JSON(stdout) · 사람 줄은 stderr')
+    .action(async (o: { version: string; undo?: boolean; publicRepo: string; yes?: boolean; json?: boolean }) => {
+      await jsonAction(o.json, (log) => yankRelease({ version: o.version, undo: o.undo, publicRepo: o.publicRepo, yes: o.yes, log }), (r) => !r.applied || r.propagated !== false);
     });
   release.command('publish')
     .description('⛔ 되돌릴 수 없다 — 공개 저장소 푸시 ⊕ GitHub 릴리스. --yes 없으면 보기만')
     .requiredOption('--dir <dir>', 'prepare 산출 폴더')
     .requiredOption('--notes-file <file>', '공개용 릴리스 본문(내부 PR 번호·트랙 표식 없이)')
     .option('--yes', '실제로 공개한다')
-    .action(async (o: { dir: string; notesFile: string; yes?: boolean }) => {
-      try { await publishRelease({ dir: o.dir, notesFile: o.notesFile, yes: o.yes }); }
-      catch (e) { console.error(`⛔ ${(e as Error).message}`); process.exitCode = 1; }
+    .option('--json', '결과 한 줄 JSON(stdout) · 사람 줄은 stderr')
+    .action(async (o: { dir: string; notesFile: string; yes?: boolean; json?: boolean }) => {
+      await jsonAction(o.json, async (log) => {
+        const r = await publishRelease({ dir: o.dir, notesFile: o.notesFile, yes: o.yes, log });
+        const m = readManifest(o.dir);
+        return { ...r, tag: m.tag, publicRepo: m.publicRepo, publicCommit: m.publicCommit, assets: [...new Set([...m.files.map((f) => f.name), 'SHA256SUMS'])].map((name) => join(m.distDir, name)) };
+      }, () => true);
     });
   release.command('verify')
     .description('공개 주소로 끝까지 — 깨끗한 임시 홈에서 설치 → --version → self-update → 제거')
     .option('--version <x.y.z>', '고정 버전(없으면 latest)')
     .option('--public-repo <owner/name>', '공개 저장소', DEFAULT_PUBLIC_REPO)
-    .action(async (o: { version?: string; publicRepo: string }) => {
-      try { const r = await verifyRelease({ version: o.version, publicRepo: o.publicRepo }); if (!r.ok) process.exitCode = 1; }
-      catch (e) { console.error(`⛔ ${(e as Error).message}`); process.exitCode = 1; }
+    .option('--json', '결과 한 줄 JSON(stdout) · 사람 줄은 stderr')
+    .action(async (o: { version?: string; publicRepo: string; json?: boolean }) => {
+      await jsonAction(o.json, (log) => verifyRelease({ version: o.version, publicRepo: o.publicRepo, log }), (r) => r.ok);
     });
   release.command('notes')
     .description('두 ref 사이 착지로 변경 기록 초안(공개 전에 다듬는다)')

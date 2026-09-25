@@ -50,3 +50,16 @@ describe('nexusRunCommand — stable installed path', () => {
     expect(nexusRunCommand('/b/bun', '')).toEqual(['monad', 'nexus', 'run']);
   });
 });
+
+import { defaultServiceWorkingDirectory } from './launchd.js';
+// 🩸 09-26: 운영 plist 의 WorkingDirectory 가 사람 작업 트리(pilot)였다 — 설치본에서 install 했는데 cwd 가 박혔다.
+describe('defaultServiceWorkingDirectory — installed copy uses home, a checkout keeps its tree', () => {
+  test('installed (versions/<v> or current) → home · checkout → cwd · unknown argv → cwd', () => {
+    const home = '/Users/u';
+    const cwd = '/Users/u/work/checkout';
+    expect(defaultServiceWorkingDirectory('/Users/u/.local/share/monad/versions/0.1.1-abc/node_modules/monadagent/bin/monad.mjs', cwd, home)).toBe(home);
+    expect(defaultServiceWorkingDirectory('/Users/u/.local/share/monad/current/node_modules/monadagent/bin/monad.mjs', cwd, home)).toBe(home);
+    expect(defaultServiceWorkingDirectory('/Users/u/work/checkout/bin/monad.mjs', cwd, home)).toBe(cwd);
+    expect(defaultServiceWorkingDirectory(undefined, cwd, home)).toBe(cwd);
+  });
+});

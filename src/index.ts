@@ -932,14 +932,22 @@ pythonCmd.command('setup').description('monad venv(~/.local/share/monad/python/v
 });
 
 program.command('self-update')
-  .description('설치본은 릴리스로, 체크아웃은 깨끗한 체크아웃으로 갱신하고 승인 시 넥서스 재시작')
+  .alias('update')
+  .description('설치본은 릴리스로, 체크아웃은 깨끗한 체크아웃으로 갱신하고 승인 시 넥서스 재시작 · `monad update` 와 같다 · `--auto on` 이면 매일 자동')
   .option('--from <checkout>', '설치할 체크아웃 (기본: 설치본은 릴리스, 체크아웃은 현재 체크아웃)')
   .option('--version <version>', '설치본에서 지정한 릴리스 버전 설치 (기본: latest)')
   .option('--restart', '넥서스 재시작 승인')
   .option('--json', '결과 JSON 출력')
   .option('--keep <n>', '설치 뒤 남길 최근 판 수(설치본은 current·직전 판, 체크아웃은 current·데몬 판 보호 · 0 이면 정리 안 함)', '3')
   .option('--alert', '실패(exit≠0)를 알림으로도 보냄 — 크론(무인) 실행용')
-  .action(async (opts: { from?: string; version?: string; restart?: boolean; json?: boolean; keep?: string; alert?: boolean }) => {
+  .option('--auto <on|off|status>', '자동 갱신 — macOS launchd · Linux systemd 타이머가 매일 04:17 에 `self-update --restart --alert` (크론이 이미 부르면 켜지 않는다)')
+  .action(async (opts: { from?: string; version?: string; restart?: boolean; json?: boolean; keep?: string; alert?: boolean; auto?: string }) => {
+    if (opts.auto !== undefined) {
+      if (!['on', 'off', 'status'].includes(opts.auto)) { console.error(`--auto 는 on · off · status 중 하나: ${opts.auto}`); process.exitCode = 2; return; }
+      const { runAutoUpdate } = await import('./cli/update-auto.js');
+      process.exitCode = (await runAutoUpdate(opts.auto as 'on' | 'off' | 'status')).exitCode;
+      return;
+    }
     const { runUpdateForInstallation } = await import('./cli/self-update.js');
     // ⭐ 한 번 도는 CLI 는 logs.db 싱크를 스스로 붙여야 `debug.log('self-update', …)` 가 저장된다(없으면 조용히 사라진다 · 09-24 실측).
     try { const { registerStandaloneLogSink } = await import('./domains/standalone-log-sink.js'); await registerStandaloneLogSink('self-update'); } catch { /* 관측 실패가 갱신을 막지 않는다 */ }
@@ -4072,6 +4080,26 @@ selfCmd
     process.stdout.write(`${L.join('\n')}\n`, () => process.exit(outcome.exitCode));
   });
 
+// self reduce — 플릿 reduce(로드맵 09-26 #4): 여러 조각 PR 브랜치를 통합 브랜치 하나로 · 게이트 한 번 · PR 하나.
+selfCmd
+  .command('reduce')
+  .description('플릿 reduce — 열린 조각 PR 들을 기준 위에 차례로 merge --no-ff → 충돌이면 조각·파일을 대고 멈춤 → 변경 범위 게이트 → 통합 PR 하나(조각 PR 은 닫지 않음)')
+  .requiredOption('--prs <numbers>', '합칠 열린 PR 번호(쉼표 · 적은 순서대로 합친다)')
+  .option('--base <branch>', '기준 브랜치', 'main')
+  .option('--branch <name>', '통합 브랜치 이름(기본 reduce/<시각>)')
+  .option('--title <text>', '통합 PR 제목')
+  .option('--dry-run', '병합·게이트까지만 — 푸시·PR·코멘트 안 함')
+  .option('--skip-gate', '게이트를 건너뛴다(권하지 않음)')
+  .action(async (o: { prs: string; base: string; branch?: string; title?: string; dryRun?: boolean; skipGate?: boolean }) => {
+    const { reduceShards, shardsFromPrs } = await import('./self-dev/fleet-reduce.js');
+    try {
+      const prs = o.prs.split(',').map((x) => Number.parseInt(x.trim().replace(/^#/, ''), 10)).filter(Number.isFinite);
+      const shards = shardsFromPrs(prs, process.cwd());
+      const r = await reduceShards({ repoRoot: process.cwd(), shards, base: o.base, branch: o.branch, title: o.title, dryRun: o.dryRun, skipGate: o.skipGate });
+      process.exitCode = r.kind === 'pr-opened' || r.kind === 'dry-run' ? 0 : 1;
+    } catch (e) { console.error(`⛔ ${(e as Error).message}`); process.exitCode = 1; }
+  });
+
 // self orchestrate — 병렬 self-dev(S1·2026-07-21) — N개 독립 goal 을 각자 `monad self implement` 서브프로세스로
 //   TOX 디스패처 위에서 동시성캡 병렬 실행. 각 잡=자기 프로세스=자기 harness-space(병렬안전). 엔진(그래프/
 //   디스패처)은 기존 재사용·새 조각=self-implement surface 어댑터. [[PLAN-parallel-self-dev-orchestrator-2026-07-21]].
@@ -4086,8 +4114,9 @@ const selfOrchestrateCmd = selfCmd
   .option('--decompose', 'S2 — goal 1개를 LLM 으로 의존성 서브-DAG(위상 병렬 + hot-file 직렬)로 분해 후 실행')
   .option('--pod-skill-env', 'pod: 필수 스킬(설정 pod-skills.txt)의 키(.env)를 이 런의 Secret 으로 넘긴다 — 명시 opt-in(유료 크레딧) · 이미지엔 안 들어간다')
   .option('--pod-pool <spec>', 'pod 풀 — 컨텍스트[@ssh호스트][:상한] 을 쉼표로, 앞이 우선(예 pool-node-b@node-b:12,pool-node-c@node-c:3) · 없으면 MONAD_POD_POOL · 그것도 없으면 현재 컨텍스트 하나')
+  .option('--reduce', '끝에 PR 을 연 조각들을 통합 브랜치 하나로 모아(게이트 한 번) PR 하나 — `--open-pr` 과 짝 · `--auto-merge` 와는 함께 못 쓴다(monad self reduce)')
   .option('--substrate <kind>', '실행 칸: local(기본 · 격리 워크트리) | pod(k8s Job · docker/harness 이미지 · MANUAL-pods-for-monad-ops-and-dev)')
-  .option('--pod-account <name>', 'pod: codex 계정(~/.monad/auth.json openai-codex:<name> · refresh 제외 사본) · 기본 team')
+  .option('--pod-account <name>', 'pod: codex 계정(~/.monad/auth.json openai-codex:<name> · refresh 제외 사본) · 없으면 브로커가 Job 마다 잔량 많은 계정을 돌려 준다')
   .option('--no-pod-rebuild', 'pod: 이미지 판(monad.commit)이 HEAD 와 달라도 다시 굽지 않는다 — 측정은 «이미지 판»을 잰다')
   .option('--pod-pass-env <keys>', 'pod: 호스트 env 에서 Pod 로 넘길 키(쉼표) — 예 OPENROUTER_API_KEY,ANTHROPIC_API_KEY(벤치마크 과금 경로)')
   .option('--bench-arms <spec>', 'pod 벤치마크: 골 1개를 팔마다 «라벨 한 줄만 다르게» 복제해 동시에 — "id=provider[:model][@KEY+KEY];…" (예 codex=openai-codex;or-kimi=openrouter:openrouter/moonshotai/kimi-k3@OPENROUTER_API_KEY) · --auto-merge 거부 · RFC fleet 슈퍼바이저 §A3')
@@ -4097,6 +4126,7 @@ const selfOrchestrateCmd = selfCmd
     // goal 분리: 단일 인자에 `;;` 가 있으면 그걸로 split, 아니면 각 positional = 1 goal.
     const joined = parts.join(' ');
     let goalTexts = splitOrchestrateGoalTexts(parts);
+    if ((opts as { reduce?: boolean }).reduce && opts.autoMerge) { ui.error('--reduce 는 --auto-merge 와 함께 못 쓴다 — 조각을 하나씩 main 에 병합하는 것과 하나로 모으는 것은 반대다(--open-pr 과 짝)'); process.exit(2); }
     // ☸️ 벤치 팔 — 골 1개를 팔마다 라벨 한 줄만 다르게(A/B 매뉴얼 ②) · pod 전용 · 자동 머지 금지(한 팔이 머지되면 다른 팔의 밑 땅이 바뀐다).
     const benchSpec = (opts as { benchArms?: string }).benchArms;
     let benchArms: import('./task-orchestrator/surfaces/self-implement-pod.js').BenchArm[] | undefined;
@@ -4277,7 +4307,18 @@ const selfOrchestrateCmd = selfCmd
           poolMembers = synced;
         }
         const passEnv = String((opts as { podPassEnv?: string }).podPassEnv ?? '').split(',').map((k) => k.trim()).filter(Boolean);
-        const podBase = { account: (opts as { podAccount?: string }).podAccount ?? 'team', passEnv, ...(pool ? { pool } : {}), ...((opts as { podSkillEnv?: boolean }).podSkillEnv ? { skillEnv: true } : {}) };
+        // 계정 — 명시하면 그 하나 · 아니면 브로커가 Job 마다 잔량 많은 계정을 돌려 준다(로드맵 09-26 #7).
+        const explicitPodAccount = (opts as { podAccount?: string }).podAccount;
+        let accountBroker: (() => string) | undefined;
+        if (!explicitPodAccount) {
+          const { inspectCodexRotation } = await import('./oauth/codex-account-store.js');
+          const { planPodAccounts, makePodAccountBroker } = await import('./task-orchestrator/surfaces/pod-account-broker.js');
+          const plan = planPodAccounts(inspectCodexRotation().candidates);
+          debug.log('self-implement.pod', 'account-plan', { usable: plan.usable, excluded: plan.excluded });
+          try { accountBroker = makePodAccountBroker(plan); } catch (e) { ui.error(String((e as Error).message)); process.exit(2); }
+          if (!opts.json) ui.info(`[pod] 계정 배분(잔량 순 · 돌려 가며): ${plan.usable.join(' → ')}${plan.excluded.length ? ` · 뺌 ${plan.excluded.map((x) => `${x.name}(${x.why})`).join(', ')}` : ''}`);
+        }
+        const podBase = { account: explicitPodAccount ?? 'team', ...(accountBroker ? { accountBroker } : {}), passEnv, ...(pool ? { pool } : {}), ...((opts as { podSkillEnv?: boolean }).podSkillEnv ? { skillEnv: true } : {}) };
         if (benchArms) {
           const { benchPodSpawn } = await import('./task-orchestrator/surfaces/self-implement-pod.js');
           podSpawn = benchPodSpawn(benchArms, podBase);
@@ -4338,6 +4379,16 @@ const selfOrchestrateCmd = selfCmd
         process.exit(outcome.exitCode);
       }
       const results = outcome.results;
+      // 플릿 reduce(로드맵 09-26 #4) — PR 을 연 조각이 둘 이상이면 통합 브랜치 하나로.
+      if ((opts as { reduce?: boolean }).reduce) {
+        const { reduceShards, shardsFromResults } = await import('./self-dev/fleet-reduce.js');
+        const shards = shardsFromResults(results);
+        if (shards.length < 2) ui.warn(`[reduce] PR 을 연 조각이 ${shards.length}개 — 합칠 것이 없다(둘 이상일 때만)`);
+        else {
+          const r = await reduceShards({ repoRoot: process.cwd(), shards, ...(opts.base ? { base: opts.base } : {}) });
+          debug.log('self-dev.reduce', 'orchestrate-reduce', { runId, shards: shards.length, kind: r.kind });
+        }
+      }
       if (opts.json) { await writeStdoutJson(JSON.stringify(results) + '\n'); return; }
       const done = results.filter((r) => r.status === 'done').length;
       const promoted = results.filter((r) => r.prUrl).length;
