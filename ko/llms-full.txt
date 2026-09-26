@@ -764,19 +764,30 @@ A run can execute on your machine or on a remote pod. The **run contract** decid
 
 ## What ships today, what is in progress
 
-| | Status |
+| | Status (✅ in the latest release · 🟡 on main, in the next release · 🔄 in progress · 📋 designed) |
 |---|---|
 | Harness runs (implement · research · document · operate templates) | ✅ ships — the orchestrator drives them; the graph declaration is checked against every step |
 | Graph runner with approval pauses and resume (`elanous graph run` · `graph approve` · `graph run --resume`) | ✅ ships |
 | Run contract: local or remote (pod) | ✅ declared and resolved at run start |
-| Node catalog | ✅ declared and checked (judge, execute and observe roles built from existing parts); nodes do not yet execute by role name |
+| Node catalog | ✅ declared and checked (judge, execute and observe roles built from existing parts) · 🟡 heal roles execute through their recipes — other roles do not yet execute by role name |
 | New node kinds (observe · hitl · subgraph) | ✅ accepted by the graph parser |
-| Node outputs flowing to the next node · multi-way branching | 🔄 in progress |
-| Heal template with the resolution ladder | ✅ declared and checked · 🔄 the runner walking it is in progress |
+| Node outputs flowing to the next node · multi-way branching | 🟡 on main — next release (each node reads the run context; a node's last-line JSON `outcome` picks the edge) |
+| Heal template with the resolution ladder | 🟡 on main — next release: the runner walks it; the first observation step marks deleted files by itself and a real failure class closes without a human (example below) · 🔄 the deeper observation and outside-grounding steps are still being filled in |
 | Posture level and alert priority for market watching | ✅ in the code — the level is computed from regime inputs and tripwires, alert priority reads it, and each computation and change is logged |
 | Posture setting cadence, resolution floor/ceiling, loop budget and grounding breadth | 📋 designed — most of the response profile is not consumed yet |
+| Budget decision before a launch (`elanous harness budget --json` → proceed · next provider · wait for reset · stop, with reasons) | 🟡 on main — next release |
+| Grounding sources registry (`elanous grounding sources list · add · discover · status`) | 🟡 on main — next release |
 | Supervisor adding nodes at launch and while running | 📋 designed |
 | Workflows as graph nodes (`wf:`) · graphs as workflow nodes · tasks that start graphs | 📋 designed |
+
+### A real walk of the heal template
+
+A code change failed its gate with **zero failing tests** — the only complaint was that a file it deleted could not be verified. The same input, walked by the runner (`elanous graph run graphs/heal/heal-loop.yaml --input …`):
+
+- **Before the observation step could see deletions:** `collect → triage (needs deeper observation) → observe-deeper (empty) → triage (needs grounding) → ground-external (empty) → triage (exhausted) → failed`. The ladder climbed as designed, but each rung came back empty, so the loop ended with a person.
+- **After:** `collect` checks the working tree, marks the file as deleted, and `triage` classifies the failure as untestable: `collect → triage (untestable) → acknowledge → done`. No person involved, and the loop never had to climb.
+
+That difference — the same judgment reaching a different answer because an earlier node brought back a fact — is what the observation steps are for.
 
 To see what actually ran:
 
