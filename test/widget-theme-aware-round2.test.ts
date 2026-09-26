@@ -16,7 +16,7 @@ import {
 import {
   CATPPUCCIN_LATTE,
   CATPPUCCIN_MOCHA,
-  MONAD_PASTEL_DEFAULT,
+  ELANOUS_PASTEL_DEFAULT,
   NORD_LIGHT,
   ROSE_PINE_DAWN,
 } from '../src/themes/index.js';
@@ -159,10 +159,10 @@ describe('FU I ProgressBar — theme-aware', () => {
       total: 100,
       current: 20,
       status: 'running',
-      theme: MONAD_PASTEL_DEFAULT,
+      theme: ELANOUS_PASTEL_DEFAULT,
     });
     const out = renderToString(bar, 20, 1);
-    const info = resolveSemantic(MONAD_PASTEL_DEFAULT, 'info');
+    const info = resolveSemantic(ELANOUS_PASTEL_DEFAULT, 'info');
     expect(out).toContain(hexTriple(info.fg));
   });
 
@@ -253,10 +253,10 @@ describe('FU I ListView — theme-aware', () => {
       columns: [{ title: 'LABEL' }],
       rows: [],
       render: () => [],
-      theme: MONAD_PASTEL_DEFAULT,
+      theme: ELANOUS_PASTEL_DEFAULT,
     });
     const out = renderToString(list, 20, 2);
-    const muted = resolveSemantic(MONAD_PASTEL_DEFAULT, 'muted');
+    const muted = resolveSemantic(ELANOUS_PASTEL_DEFAULT, 'muted');
     expect(out).toContain(hexTriple(muted.fg));
     // Phase D-2 emits bold + fg as a single combined SGR (`\x1b[1;38;2;...m`);
     // match the bold code as a semicolon-or-close-delimited token.

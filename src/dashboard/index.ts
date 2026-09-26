@@ -13,7 +13,7 @@ import { buildAdRunSetup } from '../ad-pipeline/ad-run-setup.js';
 import type { CommandRunner } from '../ad-pipeline/higgsfield-backend.js';
 import type { ShootRunOptions } from '../ad-pipeline/shoot-run.js';
 import type { QcThresholds } from '../ad-pipeline/qc.js';
-import { monadStateRoot } from '../autopilot/state-paths.js';
+import { elanousStateRoot } from '../autopilot/state-paths.js';
 
 const dashboardDefaultShootRunOptions: Required<Pick<ShootRunOptions, 'pollIntervalMs' | 'maxPollsPerJob' | 'submitStaggerMs'>> = {
   pollIntervalMs: 3_000,
@@ -51,7 +51,7 @@ export interface DashboardAdAssetPreset {
 }
 
 /** Operator-owned, instance-scoped optional asset preset; never a repository asset path. */
-export function dashboardAdAssetPresetPath(stateRoot = monadStateRoot()): string {
+export function dashboardAdAssetPresetPath(stateRoot = elanousStateRoot()): string {
   return join(stateRoot, 'ad-assets.json');
 }
 
@@ -1685,7 +1685,7 @@ import { preservesHostChromeInput } from '../display/host-chrome-profile.js';
 // H3 #6 follow-up #1 — auto-persist on turn-end. Subscribes DRM +
 // BG managers to the H2 #5 persistence primitive so
 // `AcpSessionList` returns real records instead of empty arrays.
-// Mode controlled by MONAD_ACP_PERSIST_MODE env (default 'auto').
+// Mode controlled by ELANOUS_ACP_PERSIST_MODE env (default 'auto').
 import { wireAutoPersist } from '../acp/auto-persist.js';
 import { globalAcpSessionPersistence } from '../acp/session-persistence.js';
 import { AgentStatusStore } from '../agent-status/store.js';
@@ -1745,7 +1745,7 @@ const isPluginBusy = (host: { active(): { plugin: { isBusy?: (s: any) => boolean
 export interface ShowDashboardOptions {
   /** Force debug sinks on at launch (file + mirror). Equivalent to
    *  typing `/debug on` immediately after startup. Paired with
-   *  chatOnly=true by the `monad --debug` CLI flag so every traced
+   *  chatOnly=true by the `elanous --debug` CLI flag so every traced
    *  event shows up in a visible log pane on narrow screens/tablets. */
   debug?: boolean;
   /** Start in chat-only layout (log pane fills everything above the
@@ -1759,7 +1759,7 @@ export interface ShowDashboardOptions {
   /** Flip code-edit policy to unsupervised at boot — every Edit/Write
    *  from the LLM applies without an approval modal. Equivalent to
    *  typing `/code-edit policy unsupervised` right after launch.
-   *  Wired by `monad --yolo`. */
+   *  Wired by `elanous --yolo`. */
   yolo?: boolean;
   /** Benchmark-friendly boot. Starts straight in chat layout, keeps
    *  focus in the input row, and pairs naturally with per-turn Q&A
@@ -1767,14 +1767,14 @@ export interface ShowDashboardOptions {
   benchmark?: boolean;
   /** M2.4 — remote daemon target. When set, the dashboard's ACP
    *  session attaches to a remote daemon over WebSocket instead of
-   *  booting an in-process server. Driven by `MONAD_REMOTE` env var
+   *  booting an in-process server. Driven by `ELANOUS_REMOTE` env var
    *  (resolved in `main()`). Tool dispatch + history live on the
    *  daemon side; the local TUI is a thin client. */
   remote?: { url: string; token?: string; label?: string };
   /** M1.5 A.3 — local daemon counterpart of `remote`. When set, the
    *  dashboard's ACP session attaches to a running local daemon over
    *  unix socket instead of booting an in-process server. Driven by
-   *  `MONAD_USE_DAEMON=1` env (resolved in `main()`). `MONAD_NO_DAEMON=1`
+   *  `ELANOUS_USE_DAEMON=1` env (resolved in `main()`). `ELANOUS_NO_DAEMON=1`
    *  force-disables even when a daemon is alive. `remote` (above)
    *  takes precedence when both are somehow set. */
   localDaemon?: { socketPath: string };
@@ -1785,13 +1785,13 @@ export interface ShowDashboardOptions {
    *  endpoint is reachable, derived from `remote.url`) and replays
    *  them into `chat.history` so the user sees their conversation
    *  resume. Driven by `--resume <id>` CLI flag or
-   *  `MONAD_RESUME_SESSION` env (resolved in `main()`). Has no
+   *  `ELANOUS_RESUME_SESSION` env (resolved in `main()`). Has no
    *  effect in in-process mode (use TUI's `/session load` for that
    *  path). */
   resumeSessionId?: string;
 }
 
-// FileIndex cache keyed by absolute cwd. A single monad session can
+// FileIndex cache keyed by absolute cwd. A single elanous session can
 // switch cwd via `/wd` or session-working-dir — each distinct root
 // gets its own snapshot so paths stay relative to the active root
 // without tearing down on every swap. Lives at module scope so
@@ -1856,7 +1856,7 @@ export function buildDashboardTurnTypeaheadPromptZone(input: TurnTypeaheadPrompt
  *
  *  ⛔⚠️ **여전히 검사 밖인 한 겹**: 이 함수의 반환이 실제로 `zones` 배열에 **push 되는지**는
  *  `showDashboard` 안의 지역 조립부라 단위 검사가 닿지 않는다. ***무한 후퇴이므로 여기서 경계를 긋는다*** —
- *  그 한 겹은 **라이브 검증**(`dev --monad --hold` ⊕ `pty snapshot`)이 맡는다. */
+ *  그 한 겹은 **라이브 검증**(`dev --elanous --hold` ⊕ `pty snapshot`)이 맡는다. */
 export function observeDashboardTurnTypeaheadPromptZone(
   inner: LayoutZone,
   deps: {
@@ -2230,7 +2230,7 @@ export async function showDashboard(opts: ShowDashboardOptions = {}): Promise<Da
   // getDefaultPaneFactory() observe a shared session-scoped singleton.
   // Additive; no existing render path changes. See pane-substrate-boot.ts.
   // B1 (Phase 7) — overlay the user-config binding layer from
-  // ~/.monad/input-bindings.json + watch for changes so edits apply
+  // ~/.elanous/input-bindings.json + watch for changes so edits apply
   // without restart. Missing file is a no-op; validation violations
   // (reserved keys / malformed entries) are reported to the chat log
   // so the user has a pointer to their mistake. Dashboard lifecycle
@@ -2709,7 +2709,7 @@ export async function showDashboard(opts: ShowDashboardOptions = {}): Promise<Da
   };
 
   const chat = createChatState(
-    `You are MonadAgent's in-terminal assistant.
+    `You are ElanousAgent's in-terminal assistant.
 Answer in the user's language. Be concise.
 When a user's request matches an installed skill (they will see a "hint: /run-skill X" line above their message), you may suggest they run it. Otherwise respond with plain text.
 Mode- and sync-specific instructions are injected per-turn when relevant — do not assume sync/diff context unless the current turn's Context: block explicitly mentions them.`,
@@ -2781,9 +2781,9 @@ Mode- and sync-specific instructions are injected per-turn when relevant — do 
   // maxScr (the existing `next >= maxScr ? -1` branch in
   // handleLogPaneKey). See MANUAL-log-pane.md §scroll-freeze.
   let logFrozenTailIndex: number | null = null;
-  // MONAD_LOG_PAUSE_ON_SCROLL=0 disables the feature (legacy behavior
+  // ELANOUS_LOG_PAUSE_ON_SCROLL=0 disables the feature (legacy behavior
   // where new lines appear under the scrolled-up user). Default on.
-  const logFreezeEnabled = (process.env['MONAD_LOG_PAUSE_ON_SCROLL'] ?? '1') !== '0';
+  const logFreezeEnabled = (process.env['ELANOUS_LOG_PAUSE_ON_SCROLL'] ?? '1') !== '0';
   // Attachment row metadata — maps chatLines absolute index to the
   // attachment id whose `├─ [Kind #N] filename (size)` summary row
   // lives there. Populated in renderAttachmentSummary, cleared on
@@ -2794,10 +2794,10 @@ Mode- and sync-specific instructions are injected per-turn when relevant — do 
   // Turn-separator mode — inserts a thin rule / timestamp line
   // between user turns so long sessions are skimmable. `off` keeps
   // the legacy behaviour (no added lines). Configurable at runtime
-  // via `/log turn <mode>` or boot-time via `MONAD_LOG_TURN_SEPARATOR`
+  // via `/log turn <mode>` or boot-time via `ELANOUS_LOG_TURN_SEPARATOR`
   // env (rule | time | both | off).
   let logTurnSeparatorMode: LogTurnSeparatorMode = (() => {
-    const raw = (process.env['MONAD_LOG_TURN_SEPARATOR'] ?? '').toLowerCase().trim();
+    const raw = (process.env['ELANOUS_LOG_TURN_SEPARATOR'] ?? '').toLowerCase().trim();
     if (raw === 'rule' || raw === 'time' || raw === 'both' || raw === 'off') return raw;
     return 'off';
   })();
@@ -3699,7 +3699,7 @@ Mode- and sync-specific instructions are injected per-turn when relevant — do 
   // Chat-only mode: 3-pane grid collapses, log pane owns all space above
   // the input. Toggled by /chat or /dashboard. Input loop stays alive
   // across Escape while this is true — feels like a dedicated LLM REPL.
-  // Seeded from the launch flag so `monad --chat-only` / `monad --debug`
+  // Seeded from the launch flag so `elanous --chat-only` / `elanous --debug`
   // lands straight in this layout (tablet-friendly — debug events need
   // screen real estate). T0 이후 essential uiMode 가 기본 시드 —
   // essential 이면 chat 전체화면으로 부팅한다 (레거시
@@ -3716,12 +3716,12 @@ Mode- and sync-specific instructions are injected per-turn when relevant — do 
   // to keep the log pane clean — `/debug mirror on` when needed.
   {
     const dbgCfg = getUserConfig().debug;
-    // MONAD_DEBUG_LEVEL env wins over user-config so a one-shot
-    // `MONAD_DEBUG_LEVEL=keytrace bun run dev` doesn't require
+    // ELANOUS_DEBUG_LEVEL env wins over user-config so a one-shot
+    // `ELANOUS_DEBUG_LEVEL=keytrace bun run dev` doesn't require
     // editing config.json + reverting after the dogfood run.
-    const envLevel = process.env.MONAD_DEBUG_LEVEL?.trim().toLowerCase();
+    const envLevel = process.env.ELANOUS_DEBUG_LEVEL?.trim().toLowerCase();
     // ⚠️ 드리프트 수리(2026-07-27) — 여기는 **인스턴스 스코프 파일을 안 읽고 있었다**.
-    //   `monad logs level <lvl>` 이 그 파일에 영속하므로, 데몬(nexus)은 재기동 후 레벨이
+    //   `elanous logs level <lvl>` 이 그 파일에 영속하므로, 데몬(nexus)은 재기동 후 레벨이
     //   유지되는데 **L2 대시보드만 config 로 되돌아갔다**. 같은 리졸버를 쓰게 통일한다.
     //   ⊕ 테스트 우주 바닥도 함께 적용 — 격리로 띄운 L2 TUI 의 관측 해상도가 확보된다.
     const resolved = resolveStartupDebugLevel({
@@ -4036,7 +4036,7 @@ Mode- and sync-specific instructions are injected per-turn when relevant — do 
         sshLabel: sshStatusLabel,
         host: hostLabel,
         runningAgents: globalAgentRegistry.list().filter((agent) => agent.state === 'running').length,
-        controller: process.env.MONAD_CONTROLLER?.trim() || undefined,
+        controller: process.env.ELANOUS_CONTROLLER?.trim() || undefined,
         shellCount: liveShells,
         shellRollup: latestShellRollup ?? undefined,
         vw: vwSummary,
@@ -4193,8 +4193,8 @@ Mode- and sync-specific instructions are injected per-turn when relevant — do 
   // Subscribes to ShellRegistry posture transitions; when a shell dies
   // with a non-zero exit + recognizable error pattern, surfaces a
   // muted chat-line summary. Per HANDOFF §4.6 backout, gated behind
-  // `MONAD_PFC_REVERSE_FEEDBACK=0` for emergency disable.
-  const pfcReverseFeedbackEnabled = process.env.MONAD_PFC_REVERSE_FEEDBACK !== '0';
+  // `ELANOUS_PFC_REVERSE_FEEDBACK=0` for emergency disable.
+  const pfcReverseFeedbackEnabled = process.env.ELANOUS_PFC_REVERSE_FEEDBACK !== '0';
   const { getShellRegistry: pfcGetShellRegistry } = await import(
     '../shell-runner/registry.js'
   );
@@ -4708,7 +4708,7 @@ Mode- and sync-specific instructions are injected per-turn when relevant — do 
     // time. Surfaces only on dashboard (no skill-run surface).
     const { setAskUserQuestionDeps } = await import('../ask-user-question/index.js');
     // GT4 — worktree runtime deps. Session id keys the
-    // ~/.monad/worktrees/<sid>.json file so two concurrent monad
+    // ~/.elanous/worktrees/<sid>.json file so two concurrent elanous
     // instances don't step on each other's worktree session state.
     // process.pid is unique per process and stable for the dashboard
     // lifetime — good enough.
@@ -4747,8 +4747,8 @@ Mode- and sync-specific instructions are injected per-turn when relevant — do 
       return res.answer;
     });
     // self-implement 중첩 자식 격리 배선 (2026-07-26) — 현재 인스턴스의 config-dir/state-dir 를
-    // 자식 헤드리스 monad 에 전파한다. 미배선이면 TUI 자연어 SelfImplement 경로가 부모 격리를
-    // 물려받지 못해 자식이 prod ~/.monad 로 뜬다(격리 테스트 중 중첩이 운영 스토어 오염). CLI 경로
+    // 자식 헤드리스 elanous 에 전파한다. 미배선이면 TUI 자연어 SelfImplement 경로가 부모 격리를
+    // 물려받지 못해 자식이 prod ~/.elanous 로 뜬다(격리 테스트 중 중첩이 운영 스토어 오염). CLI 경로
     // (dev-pipeline)는 이미 부모 값을 미러링하므로 이 배선이 TUI 자연어 경로의 대칭 구멍을 닫는다.
     const { childInstanceScope } = await import('../instance/child-scope.js');
     setSelfImplementRuntimeDeps(childInstanceScope());
@@ -4834,14 +4834,14 @@ Mode- and sync-specific instructions are injected per-turn when relevant — do 
     });
   } catch { /* non-fatal — runtimes surface their own errors on dispatch */ }
   // T1-P3 — HITL callback listener. Starts an HTTP listener on
-  // 127.0.0.1:$MONAD_HITL_PORT (default 17645) so the iOS Shortcut
+  // 127.0.0.1:$ELANOUS_HITL_PORT (default 17645) so the iOS Shortcut
   // `monad-confirm-{yes,no}` can POST the user's answer back. Also
   // registers the Pushcut ConfirmChannel as a default so
   // requestConfirmation() / HitlConfirm tool reaches the iPhone.
   // Fire-and-forget: a listener start failure warns but doesn't
   // block dashboard init (HITL degrades to terminal-only / no-op).
   bootDashboardHitl({
-    enabled: process.env['MONAD_HITL_DISABLE'] !== '1',
+    enabled: process.env['ELANOUS_HITL_DISABLE'] !== '1',
     initDashboardHitl,
     stopDashboardHitl,
     debugLog: (scope, message) => { debug.log(scope, message); },
@@ -5336,7 +5336,7 @@ Mode- and sync-specific instructions are injected per-turn when relevant — do 
   };
   // IDX-6 Phase 6 — route theme-icons() through the dashboard's live
   // theme getter. Any module that imports `icon('error')` etc. now
-  // picks up the active preset + respects MONAD_ASCII_ICONS. Safe to
+  // picks up the active preset + respects ELANOUS_ASCII_ICONS. Safe to
   // call multiple times; replaces the getter each time.
   configureThemeIconsGetter(() => currentThemeTokens());
   // IDX-F8b — route mountViewAsModalSurface's backdrop resolver
@@ -5510,7 +5510,7 @@ Mode- and sync-specific instructions are injected per-turn when relevant — do 
   } catch { /* never break boot */ }
 
   // VW-term-infra Bundle B-2 — Phase 6 ArtifactStore foundation.
-  // Unified artifact persistence (`~/.monad/artifacts/<kind>/`) with
+  // Unified artifact persistence (`~/.elanous/artifacts/<kind>/`) with
   // ListArtifacts LLM tool. Consumer migration (Bundle B-3) threads
   // this singleton through recording-runtimes; future bundles add
   // layout persistence / BlockStore / captures.
@@ -5518,7 +5518,7 @@ Mode- and sync-specific instructions are injected per-turn when relevant — do 
   //
   // Bundle B-4 (P6-3) · legacy providers — pre-migration recordings
   // (Bundle 8T `rec-*.cast` · widget-team 8W `widget-timeline-*.cast`)
-  // under `~/.monad/timelines/` are surfaced in `ListArtifacts` with
+  // under `~/.elanous/timelines/` are surfaced in `ListArtifacts` with
   // synthesized meta · LLM sees one unified view across old + new paths.
   const artifactStore = createArtifactStore({
     legacyProviders: [
@@ -6047,7 +6047,7 @@ Mode- and sync-specific instructions are injected per-turn when relevant — do 
   // an OpenAI key set. Without one the host stays `null` and the
   // priority-route deps below short-circuit so voice paths are entirely
   // inactive (no kitty toggles, no key swallowing). Production users
-  // opt in by exporting OPENAI_API_KEY before launching monad. Status
+  // opt in by exporting OPENAI_API_KEY before launching elanous. Status
   // bar segment also stays empty because `voiceIndicatorLabel` never
   // transitions away from null.
   //
@@ -6160,10 +6160,10 @@ Mode- and sync-specific instructions are injected per-turn when relevant — do 
   });
   // 2026-04-30 — expose dictateTranscript for the PWA voice
   // `tui-bridge` dispatch mode. When the daemon and dashboard share a
-  // process (e.g. `monad start --http-port`), users with
+  // process (e.g. `elanous start --http-port`), users with
   // `voice.pwa.dispatch: 'tui-bridge'` will see their phone transcripts
   // injected into the focused dashboard input via this hook. The
-  // singleton stays unset in dashboard-less daemons (`monad serve`),
+  // singleton stays unset in dashboard-less daemons (`elanous serve`),
   // and the dispatcher short-circuits gracefully there.
   setDaemonInputHost({
     dictateTranscript: (text: string) => voiceRuntime.dictateTranscript(text),
@@ -6184,18 +6184,18 @@ Mode- and sync-specific instructions are injected per-turn when relevant — do 
   })();
   // ── V1 (Bundle 2) — PFC voice TTS report ──
   // Wires the PFC notification sink to the auto-tts controller. Opt-in
-  // via `MONAD_PFC_VOICE_REPORT=1` so first dogfood doesn't surprise.
+  // via `ELANOUS_PFC_VOICE_REPORT=1` so first dogfood doesn't surprise.
   pfcVoiceRuntimeRef.current = createPfcVoiceRuntime({
     getController: () => dashboardAutoTts.controller,
-    initiallyEnabled: process.env.MONAD_PFC_VOICE_REPORT === '1',
+    initiallyEnabled: process.env.ELANOUS_PFC_VOICE_REPORT === '1',
     logDebug: (category, event, data) => debug.log(category, event, data),
   });
   // ── X4 (Bundle 2) — PFC auto-Screenshot attachment ──
   // Async PNG capture for screenshot-capable surfaces; result attached
   // to the PfcReverseFeedbackNotification before downstream sinks
   // (voice + future vision LLM proposers in Bundle 3 X7) consume it.
-  // Opt-in via `MONAD_PFC_AUTO_SCREENSHOT=1`.
-  if (process.env.MONAD_PFC_AUTO_SCREENSHOT === '1') {
+  // Opt-in via `ELANOUS_PFC_AUTO_SCREENSHOT=1`.
+  if (process.env.ELANOUS_PFC_AUTO_SCREENSHOT === '1') {
     const { dispatchScreenshot: pfcDispatchScreenshot } = await import(
       '../capture/capture-tools.js'
     );
@@ -6477,9 +6477,9 @@ Mode- and sync-specific instructions are injected per-turn when relevant — do 
   // vs actual without grepping multiple categories.
   if (debug.enabled) {
     debug.log('voice.chat.boot', 'env', {
-      vad: process.env.MONAD_VOICE_VAD || '(default:server)',
-      multiTurn: process.env.MONAD_VOICE_CHAT_MULTI_TURN || '(default:off)',
-      autoTts: process.env.MONAD_AUTO_TTS || '(default:off)',
+      vad: process.env.ELANOUS_VOICE_VAD || '(default:server)',
+      multiTurn: process.env.ELANOUS_VOICE_CHAT_MULTI_TURN || '(default:off)',
+      autoTts: process.env.ELANOUS_AUTO_TTS || '(default:off)',
       sttProvider: process.env.STREAMING_STT_PROVIDER || '(default:openai-realtime-stt)',
       ttsProvider: process.env.TTS_PROVIDER || '(default:openai-tts)',
       providerId: dashboardVoiceChat.providerId,
@@ -6499,7 +6499,7 @@ Mode- and sync-specific instructions are injected per-turn when relevant — do 
             // experiment/voice-chat-realtime-rebind — D5 voice/dictation
             // state now flows into the same HUD segment as voice-chat
             // continuous mode. Single source of truth for "what is
-            // monad doing with audio right now".
+            // elanous doing with audio right now".
             //
             //   label === null         → segment cleared
             //   label like "🎤 hold…"  → dictation pending
@@ -6565,7 +6565,7 @@ Mode- and sync-specific instructions are injected per-turn when relevant — do 
    *  to avoid colliding with Ctrl+R (chat input reverse-history search).
    *  Korean ㄱ (R on 2-bul layout) is also accepted so the chord works
    *  with the IME engaged. macOS users may need to set their terminal
-   *  to "Option as Meta/Alt" so Option+R reaches monad as `alt+r` (the
+   *  to "Option as Meta/Alt" so Option+R reaches elanous as `alt+r` (the
    *  default Terminal.app sends ® instead). */
   const matchesVoiceChatRealtimeChord = (
     routeKey: import('../tui.js').Key,
@@ -6575,7 +6575,7 @@ Mode- and sync-specific instructions are injected per-turn when relevant — do 
     // (S = Streaming). Korean ㄴ (S on 2-bul layout) accepted so the
     // chord works with the IME engaged. macOS users may need to set
     // their terminal to "Option as Meta/Alt" so Option+S reaches
-    // monad as `alt+s`.
+    // elanous as `alt+s`.
     const isCandidate =
       routeKey.name === 's' || routeKey.name === 'S'
       || routeKey.name === 'ㄴ' /* 한글 s on 2-bul */;
@@ -7167,7 +7167,7 @@ Mode- and sync-specific instructions are injected per-turn when relevant — do 
 
   // ACP follow-up #1 — auto-persist on turn-end. DRM end_turn
   // transitions + BG terminal states flow into the H2 #5 persistence
-  // primitive automatically. Opt out with MONAD_ACP_PERSIST_MODE=off.
+  // primitive automatically. Opt out with ELANOUS_ACP_PERSIST_MODE=off.
   wireAutoPersist({
     drm: globalDualRoleManager(),
     bg: globalBackgroundManager(),
@@ -7175,13 +7175,13 @@ Mode- and sync-specific instructions are injected per-turn when relevant — do 
   });
 
   // ACP follow-up #6 — periodic sweep of terminal BG records. Keeps
-  // the in-memory BackgroundManager bounded for long-running monad
+  // the in-memory BackgroundManager bounded for long-running elanous
   // processes. Auto-persist (#1) already flushed the terminal record
   // to disk, so sweeping doesn't lose history · only the live stub.
-  // Opt out with MONAD_ACP_BG_SWEEP_MODE=off. Defaults: 24h TTL ·
+  // Opt out with ELANOUS_ACP_BG_SWEEP_MODE=off. Defaults: 24h TTL ·
   // 1h tick (matches Warp cloud-agent "stale after a day" heuristic).
   bootDashboardAcpBgSweep({
-    enabled: process.env['MONAD_ACP_BG_SWEEP_MODE'] !== 'off',
+    enabled: process.env['ELANOUS_ACP_BG_SWEEP_MODE'] !== 'off',
     backgroundManager: globalBackgroundManager(),
   });
 
@@ -8712,7 +8712,7 @@ Mode- and sync-specific instructions are injected per-turn when relevant — do 
         // Let the user opt into a richer terminfo (e.g. xterm-ghostty)
         // via env. Default stays universal (xterm-256color) so fresh
         // installs never hit "terminfo missing".
-        termName: process.env.MONAD_TERM || 'xterm-256color',
+        termName: process.env.ELANOUS_TERM || 'xterm-256color',
         onUpdate: () => { try { draw(); } catch { /* TUI torn down */ } },
         onExit: () => {
           previewTerminal = null;
@@ -9477,10 +9477,10 @@ Mode- and sync-specific instructions are injected per-turn when relevant — do 
   // into this store; NT3 renders unread badges on the sidebar and
   // NT4's bell modal exposes the full list.
   // NT-E2 — persistence adapter writes every event to a per-session
-  // jsonl under ~/.monad/notifications. replay() seeds the bell
+  // jsonl under ~/.elanous/notifications. replay() seeds the bell
   // modal with recent history on the next launch. Opt-out via
-  // MONAD_NOTIFICATION_DISABLE_PERSIST=1.
-  const persistence = process.env['MONAD_NOTIFICATION_DISABLE_PERSIST']
+  // ELANOUS_NOTIFICATION_DISABLE_PERSIST=1.
+  const persistence = process.env['ELANOUS_NOTIFICATION_DISABLE_PERSIST']
     ? createPersistence({ dir: null })
     : createPersistence();
   const notificationStore = new NotificationStore({ persistence });
@@ -11150,7 +11150,7 @@ Mode- and sync-specific instructions are injected per-turn when relevant — do 
   // ★ L2 코어 앱 도구(P3 · 2026-07-13) — 텔레그램/데몬챗/CLI 가 무조건 싣는 core-tools
   //   (ops_status·autopilot_missions·self_recall·memory_recall·session_manage·schedule_manage·
   //   fact_check)를 TUI 채팅에도 host tool 로 상속. 노출 게이트는 session-runtime 의 'self-ops'
-  //   family(전 surface 기본) — 이로써 TUI 에서도 "P2 왜 실패?" 를 모나드가 툴로 상황판단한다.
+  //   family(전 surface 기본) — 이로써 TUI 에서도 "P2 왜 실패?" 를 엘라누스가 툴로 상황판단한다.
   //   fail-soft: 코어 도구 로드 실패가 대시보드 부팅을 막지 않는다.
   try {
     const coreMod = require('../domains/core-tools.js') as typeof import('../domains/core-tools.js');
@@ -11215,7 +11215,7 @@ Mode- and sync-specific instructions are injected per-turn when relevant — do 
   });
   pluginHost.registerHostTool({
     name: 'view_saveConfig',
-    description: 'Persist dashboard view configuration to ~/.config/monad/config.json. If views is omitted, saves the current runtime registry. If views is provided, applies and saves it.',
+    description: 'Persist dashboard view configuration to ~/.config/elanous/config.json. If views is omitted, saves the current runtime registry. If views is provided, applies and saves it.',
     parameters: {
       type: 'object',
       properties: {
@@ -11909,7 +11909,7 @@ Mode- and sync-specific instructions are injected per-turn when relevant — do 
             const path = await import('node:path');
             const os = await import('node:os');
             const ts = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
-            const dest = path.join(os.tmpdir(), `monad-scratch-${ts}.txt`);
+            const dest = path.join(os.tmpdir(), `elanous-scratch-${ts}.txt`);
             await fs.writeFile(dest, text, 'utf8');
             return dest;
           });
@@ -12776,7 +12776,7 @@ Mode- and sync-specific instructions are injected per-turn when relevant — do 
     pushSurface: surface => display.pushModal(surface),
     redraw: () => { draw(); },
     // IDX-6 Phase 5 adoption — context menu gets a drop-shadow using
-    // the live theme. Obeys MONAD_MODAL_SHADOW=off for users who
+    // the live theme. Obeys ELANOUS_MODAL_SHADOW=off for users who
     // prefer the flatter look.
     getTheme: () => currentThemeTokens(),
   });
@@ -14393,7 +14393,7 @@ Mode- and sync-specific instructions are injected per-turn when relevant — do 
       );
     }
     const browserWidgetInstanceId = browserWidgetInstanceIdForView(workingDir.view);
-    const liveMode = resolveBrowserPreviewModalLiveMode(process.env.MONAD_PANE_MODAL_LIVE);
+    const liveMode = resolveBrowserPreviewModalLiveMode(process.env.ELANOUS_PANE_MODAL_LIVE);
     const openWindowLocalModelPicker = async (
       action: import('./modals/pane-multi.js').PaneMultiModalChromeAction,
     ): Promise<(() => void) | null> => {
@@ -14430,7 +14430,7 @@ Mode- and sync-specific instructions are injected per-turn when relevant — do 
           draw();
         },
         theme: currentThemeTokens(),
-        shadow: process.env.MONAD_MODAL_SHADOW === 'off'
+        shadow: process.env.ELANOUS_MODAL_SHADOW === 'off'
           ? undefined
           : { theme: currentThemeTokens() },
       });
@@ -14479,7 +14479,7 @@ Mode- and sync-specific instructions are injected per-turn when relevant — do 
   });
   const openBrowserOnlyModal = (): void => {
     const { cols: tc, rows: tr } = termSize();
-    const liveMode = resolveBrowserPreviewModalLiveMode(process.env.MONAD_PANE_MODAL_LIVE);
+    const liveMode = resolveBrowserPreviewModalLiveMode(process.env.ELANOUS_PANE_MODAL_LIVE);
     void openBrowserPaneModal({
       browserWidgetInstanceId: browserWidgetInstanceIdForView(workingDir.view),
       liveMode,
@@ -14507,7 +14507,7 @@ Mode- and sync-specific instructions are injected per-turn when relevant — do 
   });
   const openPreviewOnlyModal = (): void => {
     const { cols: tc, rows: tr } = termSize();
-    const liveMode = (process.env.MONAD_PANE_MODAL_LIVE ?? 'on').toLowerCase() !== 'off';
+    const liveMode = (process.env.ELANOUS_PANE_MODAL_LIVE ?? 'on').toLowerCase() !== 'off';
     void openPreviewPaneModal({
       preview: dockedPreview,
       previewWidgetInstanceId: 'wd-preview',
@@ -16828,7 +16828,7 @@ Mode- and sync-specific instructions are injected per-turn when relevant — do 
         //     user's real vim/nvim/helix/etc. gets the full
         //     screen. Works unless $EDITOR is unset.
         //   • Fallback: pane-embedded mini-vi editor (T3-C1).
-        //     Explicit opt-in via MONAD_USE_MINI_VI=1 or auto
+        //     Explicit opt-in via ELANOUS_USE_MINI_VI=1 or auto
         //     when no $EDITOR is available.
         case 'e': case 'ㄷ': {
           const browser = activeBrowserState() as WorkingDirState;
@@ -16866,7 +16866,7 @@ Mode- and sync-specific instructions are injected per-turn when relevant — do 
             });
             break;
           }
-          const useMini = process.env['MONAD_USE_MINI_VI'] === '1';
+          const useMini = process.env['ELANOUS_USE_MINI_VI'] === '1';
           if (!useMini && canLaunchEditor()) {
             // Fire-and-forget — launchEditor suspends the TUI,
             // runs $EDITOR blocking, then resumes. During that
@@ -17630,7 +17630,7 @@ Mode- and sync-specific instructions are injected per-turn when relevant — do 
     try { acpSessionIdRef.current = dashboardAcpSession.currentSessionId ?? null; } catch { /* 없으면 넣지 않는다 */ }
     pushDebugLine(C.muted('[acp-boot] dashboard ACP session ready'));
     // User-visible mode indicator. Without this, a user who set
-    // MONAD_REMOTE / MONAD_USE_DAEMON has no way to tell whether the
+    // ELANOUS_REMOTE / ELANOUS_USE_DAEMON has no way to tell whether the
     // Attach actually succeeded — attached daemon modes are useful
     // chat transcript context, but the local in-process fallback is
     // runtime plumbing and belongs in the debug log instead.
@@ -17641,7 +17641,7 @@ Mode- and sync-specific instructions are injected per-turn when relevant — do 
     } else if (opts.localDaemon) {
       chatLines.push(C.success(`  ✓ attached to local daemon: ${opts.localDaemon.socketPath}`));
     } else {
-      pushDebugLine(C.muted('  in-process ACP (no daemon attach · set MONAD_REMOTE or MONAD_USE_DAEMON to attach)'));
+      pushDebugLine(C.muted('  in-process ACP (no daemon attach · set ELANOUS_REMOTE or ELANOUS_USE_DAEMON to attach)'));
     }
     // Tier 1 daemon-resume status. Three branches:
     //   - resumed: attachExisting succeeded · the daemon's prior
@@ -18907,7 +18907,7 @@ Mode- and sync-specific instructions are injected per-turn when relevant — do 
             history: inputHistory,
             placeholder: anyProviderAvailable()
               ? '/command, or type a question (inline /path/to.pdf to attach)'
-              : '/quit /clear (run `monad setup` — no LLM provider available)',
+              : '/quit /clear (run `elanous setup` — no LLM provider available)',
             debugLog: debug.enabled ? (event, label, payload) => debug.log(event, label, payload) : undefined,
             textInputOpts: {
               // TUI 부활 후속 — Esc·Esc = /rewind 픽커 (codex backtrack
@@ -19431,7 +19431,7 @@ Mode- and sync-specific instructions are injected per-turn when relevant — do 
               },
               // 2026-04-30 — voice-chat controller's notifyResponseDone
               // used to live inside `autoTtsHooks.commit/cancel` wrappers,
-              // which meant MONAD_AUTO_TTS=off (the default) skipped the
+              // which meant ELANOUS_AUTO_TTS=off (the default) skipped the
               // call entirely → speaking phase stuck → ESC needed → ESC
               // close triggered "WebSocket closed unexpectedly" warning.
               // Wiring through `onTurnDone` (auto-TTS-independent) makes
@@ -19466,7 +19466,7 @@ Mode- and sync-specific instructions are injected per-turn when relevant — do 
           //     → replace the live chat-main buffer via the textInput
           //       host's external submit hook and inject Enter
           //     → main chat's normal `'plain'` dispatch path handles
-          //       in-process ACP / monad LLM
+          //       in-process ACP / elanous LLM
           //     → multi-turn's auto-relisten still kicks in via
           //       notifyResponseDone after that turn ends
           //
@@ -19490,7 +19490,7 @@ Mode- and sync-specific instructions are injected per-turn when relevant — do 
             // the transcript payload itself. textInput replaces the
             // live buffer, injects a synthetic Enter, and the main
             // readKey loop returns through the normal `'plain'`
-            // dispatch path (in-process ACP / monad LLM). Auto-TTS
+            // dispatch path (in-process ACP / elanous LLM). Auto-TTS
             // hooks fire there, and notifyResponseDone re-listens on
             // multi-turn.
             //
@@ -19774,7 +19774,7 @@ Mode- and sync-specific instructions are injected per-turn when relevant — do 
                       entries: ring,
                       placement,
                       theme: currentThemeTokens(),
-                      shadow: process.env.MONAD_MODAL_SHADOW === 'off'
+                      shadow: process.env.ELANOUS_MODAL_SHADOW === 'off'
                         ? undefined
                         : { theme: currentThemeTokens() },
                       onSwitch: async (entry) => {
@@ -19836,7 +19836,7 @@ Mode- and sync-specific instructions are injected per-turn when relevant — do 
                     getTheme: () => currentThemeTokens(),
                     draw,
                     launchPopupWizard: (step) => {
-                      const cmd = step ? `monad setup ${step}` : 'monad setup';
+                      const cmd = step ? `elanous setup ${step}` : 'elanous setup';
                       const s = TerminalPopup.shell()
                         .cwd(workingDir.cwd)
                         .command(cmd)
@@ -20749,7 +20749,7 @@ Mode- and sync-specific instructions are injected per-turn when relevant — do 
 
           // ── Q&A chat — requires at least one LLM provider ──
           if (!anyProviderAvailable()) {
-            chatLines.push(C.warning('No LLM provider available. Run `monad setup` or `monad codex setup`.'));
+            chatLines.push(C.warning('No LLM provider available. Run `elanous setup` or `elanous codex setup`.'));
             continue; // stay in input mode
           }
 
@@ -20934,7 +20934,7 @@ Mode- and sync-specific instructions are injected per-turn when relevant — do 
               detection = route.detection;
               // Observability (2026-07-20) — the routing DECISION had no
               // debug category (only surfaced as a UI hint). Emit it so
-              // `monad logs --category skill.router` shows trigger/triage
+              // `elanous logs --category skill.router` shows trigger/triage
               // decisions per active model (제1원칙: 계측 없으면 조회 불가).
               debug.log('skill.router', 'decision', {
                 text: tok.text.slice(0, 80),

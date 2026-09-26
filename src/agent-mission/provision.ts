@@ -1,21 +1,21 @@
 // ── 역량 프로비저닝 (P4 행동양식 · 2026-07-25) ────────────────────────────────────────
 //
-// 감독(monad)이 자율 미션 중 **자식(codex/claude)의 역량을 스스로 늘리는** 행동. 자식이 없는
+// 감독(elanous)이 자율 미션 중 **자식(codex/claude)의 역량을 스스로 늘리는** 행동. 자식이 없는
 // 패키지/도구에 막히면(command not found·module not found), 감독이 격리 worktree 안에 설치하고
 // "다시 시도하라"고 알린다. 자기치유(힐링)의 실행능력 확대판 = "bare→강한 에이전트" 스택 climb.
 //
 // ── 계층화된 역량 스택 (대표 co-design) ────────────────────────────────────────────────
-//   L4 지식(context/memory) · L3 하니스(skill/MCP/subagent·⭐monad 고유) · L2 앱/런타임 · L1 셸/pkg
+//   L4 지식(context/memory) · L3 하니스(skill/MCP/subagent·⭐elanous 고유) · L2 앱/런타임 · L1 셸/pkg
 //   이 첫 슬라이스 = **L1(pkg)** 반응형 수복(안전·보편). L2+/L3 는 후속(정책이 지금은 pkg 만 자율).
 //
 // ── 안전 (자율 설치 = 실행권 확대) ──────────────────────────────────────────────────────
 //   ① 정책 게이트: layer=pkg 만 자율·매니저 allowlist(node 전용)·**패키지명 셸메타/플래그/URL 금지**(주입 차단).
 //   ② worktree-local + no-scripts: node 매니저는 `<cwd>/node_modules` 에 설치(worktree-local) + `--ignore-scripts`
-//      로 **설치시 lifecycle 임의코드(RCE) 차단**. ⚠️ 정직: `cwd` 지정만으론 완전 sandbox 가 아니다 — monad
+//      로 **설치시 lifecycle 임의코드(RCE) 차단**. ⚠️ 정직: `cwd` 지정만으론 완전 sandbox 가 아니다 — elanous
 //      Write/Edit 경계(#4)는 **서브프로세스 write 를 못 막고**, 설치된 패키지 코드는 미션이 import 할 때 실행된다
 //      (단 미션은 이미 자식이 임의 코드를 쓰고 돌리는 신뢰 봉투 안). 이번 슬라이스가 닫는 신규 벡터=설치시 RCE.
 //      완전 sandbox(컨테이너·no-net)는 후속. argv spawn(셸 미경유).
-//   ③ 관측 3박자: monad logs --category autopilot.provision (denied/installed/install-fail/install-noop).
+//   ③ 관측 3박자: elanous logs --category autopilot.provision (denied/installed/install-fail/install-noop).
 //   미배선(브레인에 provision dep 미주입)이면 이 행동 자체가 no-op → 무회귀.
 //
 // ── 지원 범위(현재·정직) ────────────────────────────────────────────────────────────────
@@ -168,7 +168,7 @@ export function defaultProvisionPolicy(req: ProvisionRequest, cwd: string): Prov
 // ── L3 self 역량 프로비저닝 — skill/subagent 레지스트리 설치 (P4 · #7-5 · 2026-07-26) ─────────────────
 //
 // ⚠️ **대상 분리**: defaultProvisionPolicy(위)는 **외부 자식**(agent-mission·codex worktree) 전용 — pkg 만 자율.
-//    아래 self 정책/설치는 **monad 자신**(goal-loop)이 대상 — reload 훅이 in-process 라 재시작 없이 픽업 가능.
+//    아래 self 정책/설치는 **elanous 자신**(goal-loop)이 대상 — reload 훅이 in-process 라 재시작 없이 픽업 가능.
 //    codex/claude 하니스 설치(자식 재시작 필요)는 L3b(후속). 두 정책을 물리적으로 분리 → 외부 경로 무회귀.
 
 /** 안전 역량명 판정(순수) — path traversal·셸메타 차단. 스킬/에이전트 이름은 단순 슬러그만 허용. */
@@ -193,11 +193,11 @@ export function makeAllowlistResolver(
  *  (정책/HITL 강화·PLAN §7-5). buildSelfProvision 호출부가 allowlist resolver 를 주입해야 설치가 열린다. */
 export const denyAllArtifactResolver: ArtifactResolver = () => null;
 
-/** ★ self 정책(순수·테스트가능) — pkg(→monad repo argv·defaultProvisionPolicy 재사용) + skill/subagent(레지스트리
+/** ★ self 정책(순수·테스트가능) — pkg(→elanous repo argv·defaultProvisionPolicy 재사용) + skill/subagent(레지스트리
  *  설치·allowlist resolver). resolver 가 소스 못 주면 거부. mcp 등 나머지 계층은 후속(defer). */
 export function makeSelfProvisionPolicy(resolve: ArtifactResolver): ProvisionPolicy {
   return (req, cwd) => {
-    if (req.layer === 'pkg') return defaultProvisionPolicy(req, cwd); // pkg = 외부와 동일 argv 설치(cwd=monad repo)
+    if (req.layer === 'pkg') return defaultProvisionPolicy(req, cwd); // pkg = 외부와 동일 argv 설치(cwd=elanous repo)
     if (req.layer === 'skill' || req.layer === 'subagent') {
       if (!isSafeCapabilityName(req.spec)) return { allow: false, reason: `안전하지 않은 역량명(슬러그만): ${sanitizeForPtyInput(req.spec, 60)}` };
       const sourcePath = resolve(req.layer, req.spec);
@@ -209,7 +209,7 @@ export function makeSelfProvisionPolicy(resolve: ArtifactResolver): ProvisionPol
 }
 
 /** ★ 기본 레지스트리 설치 — skill=활성 skill dir 로 복사 후 reloadSkillIndex / subagent=agents dir 로 .md 복사 후
- *  invalidateLayeredCache. monad-self 는 in-process 훅이라 재시작 0. 소스 미존재/오류는 graceful({ok:false}). */
+ *  invalidateLayeredCache. elanous-self 는 in-process 훅이라 재시작 0. 소스 미존재/오류는 graceful({ok:false}). */
 async function defaultInstallRegistry(regLayer: 'skill' | 'subagent', name: string, sourcePath: string): Promise<{ ok: boolean; detail: string }> {
   try {
     if (!existsSync(sourcePath)) return { ok: false, detail: `설치 소스 미존재: ${sanitizeForPtyInput(sourcePath, 120)}` };
@@ -298,10 +298,10 @@ export function buildMissionProvision(
 }
 
 /**
- * ★ self 프로비저닝 배선 팩토리(L3 · #7-5) — **monad 자신**(goal-loop)을 대상으로 provision 콜백을 만든다.
+ * ★ self 프로비저닝 배선 팩토리(L3 · #7-5) — **elanous 자신**(goal-loop)을 대상으로 provision 콜백을 만든다.
  *  buildMissionProvision(외부 자식·pkg-only)과 **물리적으로 분리** → 외부 경로 무회귀. 차이:
  *   ① 정책 = makeSelfProvisionPolicy(pkg + skill/subagent·allowlist) — pkg 뿐 아니라 레지스트리 계층 개방.
- *   ② cwd = monad repoRoot(pkg 는 monad 자신의 node_modules 에 설치).
+ *   ② cwd = elanous repoRoot(pkg 는 elanous 자신의 node_modules 에 설치).
  *   ③ 레지스트리 설치는 in-process reload(reloadSkillIndex/invalidateLayeredCache) — 재시작 0.
  *  ⚠️ resolve 미주입 시 **deny-all**(skill/subagent 자율 설치 전면 차단) — L3 실행권 확대의 안전 기본값.
  *  DI: provisioner/installRegistry 는 테스트 주입점.

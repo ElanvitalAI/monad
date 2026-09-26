@@ -11,7 +11,7 @@ const hasCv2 = python !== null && spawnSync(python, ['-c', 'import cv2'], { enco
 const hasFfmpeg = spawnSync('ffmpeg', ['-version'], { encoding: 'utf8' }).status === 0;
 
 describe('focus_peak (OpenCV)', () => {
-  test.skipIf(!hasCv2 || !hasFfmpeg)('[needs monad python venv with cv2 and ffmpeg] a gblur=3 copy scores far below the sharp original, and a missing file is null', () => {
+  test.skipIf(!hasCv2 || !hasFfmpeg)('[needs elanous python venv with cv2 and ffmpeg] a gblur=3 copy scores far below the sharp original, and a missing file is null', () => {
     const dir = mkdtempSync(join(tmpdir(), 'focus-peak-'));
     try {
       const sharp = join(dir, 'sharp.mp4');

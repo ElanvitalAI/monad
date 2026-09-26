@@ -1,4 +1,4 @@
-// `monad telegram service` — 넥서스 밖 텔레그램 폴러(`monad telegram run`)의 서비스 정의를 «보여 주기만» 한다.
+// `elanous telegram service` — 넥서스 밖 텔레그램 폴러(`elanous telegram run`)의 서비스 정의를 «보여 주기만» 한다.
 //
 // ⛔ 쓰지도 싣지도 않는다: launchd 는 `RunAtLoad` 파일을 LaunchAgents 에 «두기만» 해도 다음 로그인에 켜진다.
 //   켜기(파일 설치 ⊕ `telegram.poller=standalone`)는 RFC-nexus-restart-minimization §R2 «켜기 전 볼 것» 뒤에 사람이 한다.
@@ -10,8 +10,8 @@ import { prodInstanceRoot } from './instance/resolve.js';
 import { renderLaunchdPlist, stableInstalledScriptPath } from './nexus/install/launchd.js';
 import { renderSystemdServiceUnit } from './nexus/install/systemd.js';
 
-export const TELEGRAM_LAUNCHD_LABEL = 'com.monad.telegram';
-export const TELEGRAM_SYSTEMD_UNIT_NAME = 'monad-telegram.service';
+export const TELEGRAM_LAUNCHD_LABEL = 'com.elanous.telegram';
+export const TELEGRAM_SYSTEMD_UNIT_NAME = 'elanous-telegram.service';
 
 export interface TelegramServiceFile {
   platform: 'darwin' | 'linux';
@@ -27,7 +27,7 @@ export function telegramRunCommand(
   exists?: (p: string) => boolean,
 ): string[] {
   if (execPath && script) return [execPath, stableInstalledScriptPath(script, exists), 'telegram', 'run'];
-  return ['monad', 'telegram', 'run'];
+  return ['elanous', 'telegram', 'run'];
 }
 
 export function renderTelegramServiceFile(opts: {
@@ -61,7 +61,7 @@ export function renderTelegramServiceFile(opts: {
     return {
       platform: 'linux',
       path,
-      content: renderSystemdServiceUnit({ ...common, description: 'monad telegram poller — standalone Q&A bot outside the nexus' }),
+      content: renderSystemdServiceUnit({ ...common, description: 'elanous telegram poller — standalone Q&A bot outside the nexus' }),
       enable: ['systemctl --user daemon-reload', `systemctl --user enable --now ${TELEGRAM_SYSTEMD_UNIT_NAME}`],
     };
   }
@@ -98,7 +98,7 @@ export function installTelegramService(
   deps: TelegramServiceInstallDeps,
 ): TelegramServiceInstallResult {
   if (poller !== 'standalone') {
-    return { ok: false, steps: [], reason: `telegram.poller=${poller ?? 'nexus(기본)'} — 먼저 \`monad config set telegram.poller '"standalone"'\` (운영 config)` };
+    return { ok: false, steps: [], reason: `telegram.poller=${poller ?? 'nexus(기본)'} — 먼저 \`elanous config set telegram.poller '"standalone"'\` (운영 config)` };
   }
   const steps: string[] = [];
   let backup: string | undefined;

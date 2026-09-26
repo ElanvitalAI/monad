@@ -10,7 +10,7 @@ import { makeTestSpawnBackend } from '../src/nexus/supervisor/spawn.js';
 import { createDefaultHealthProbeBackend } from '../src/nexus/supervisor/health.js';
 import { createDaemonTabSpec } from '../src/nexus/kinds/daemon.js';
 import type { PtyBackend } from '../src/nexus/webterm/pty.js';
-import { setMonadConfigDir, resetMonadConfigDir } from '../src/monad-config-dir.js';
+import { setElanousConfigDir, resetElanousConfigDir } from '../src/elanous-config-dir.js';
 
 let tmpRoot: string;
 let prevHome: string | undefined;
@@ -68,18 +68,18 @@ beforeEach(async () => {
   actualWebtermChildren = new Map();
   actualWebtermKills = new Map();
   failWebtermSpawn = false;
-  tmpRoot = mkdtempSync(join(tmpdir(), 'monad-nexus-n3-write-'));
+  tmpRoot = mkdtempSync(join(tmpdir(), 'elanous-nexus-n3-write-'));
   prevHome = process.env.HOME;
-  prevNexus = process.env.MONAD_NEXUS_DIR;
-  prevTg = process.env.MONAD_TELEGRAM_BOT_TOKEN;
-  prevDc = process.env.MONAD_DISCORD_BOT_TOKEN;
+  prevNexus = process.env.ELANOUS_NEXUS_DIR;
+  prevTg = process.env.ELANOUS_TELEGRAM_BOT_TOKEN;
+  prevDc = process.env.ELANOUS_DISCORD_BOT_TOKEN;
   process.env.HOME = tmpRoot;
-  mkdirSync(join(tmpRoot, '.monad'), { recursive: true });
-  writeFileSync(join(tmpRoot, '.monad', 'acp-token'), bearerToken);
-  process.env.MONAD_NEXUS_DIR = tmpRoot;
-  setMonadConfigDir(tmpRoot);
-  delete process.env.MONAD_TELEGRAM_BOT_TOKEN;
-  delete process.env.MONAD_DISCORD_BOT_TOKEN;
+  mkdirSync(join(tmpRoot, '.elanous'), { recursive: true });
+  writeFileSync(join(tmpRoot, '.elanous', 'acp-token'), bearerToken);
+  process.env.ELANOUS_NEXUS_DIR = tmpRoot;
+  setElanousConfigDir(tmpRoot);
+  delete process.env.ELANOUS_TELEGRAM_BOT_TOKEN;
+  delete process.env.ELANOUS_DISCORD_BOT_TOKEN;
   handle = await runNexus({
     detachForTesting: true,
     skipRuntimeApi: false,
@@ -105,13 +105,13 @@ afterEach(() => {
   handle = undefined;
   if (prevHome === undefined) delete process.env.HOME;
   else process.env.HOME = prevHome;
-  if (prevNexus === undefined) delete process.env.MONAD_NEXUS_DIR;
-  else process.env.MONAD_NEXUS_DIR = prevNexus;
-  resetMonadConfigDir();
-  if (prevTg === undefined) delete process.env.MONAD_TELEGRAM_BOT_TOKEN;
-  else process.env.MONAD_TELEGRAM_BOT_TOKEN = prevTg;
-  if (prevDc === undefined) delete process.env.MONAD_DISCORD_BOT_TOKEN;
-  else process.env.MONAD_DISCORD_BOT_TOKEN = prevDc;
+  if (prevNexus === undefined) delete process.env.ELANOUS_NEXUS_DIR;
+  else process.env.ELANOUS_NEXUS_DIR = prevNexus;
+  resetElanousConfigDir();
+  if (prevTg === undefined) delete process.env.ELANOUS_TELEGRAM_BOT_TOKEN;
+  else process.env.ELANOUS_TELEGRAM_BOT_TOKEN = prevTg;
+  if (prevDc === undefined) delete process.env.ELANOUS_DISCORD_BOT_TOKEN;
+  else process.env.ELANOUS_DISCORD_BOT_TOKEN = prevDc;
   try { rmSync(tmpRoot, { recursive: true, force: true }); } catch { /* ignore */ }
 });
 

@@ -15,24 +15,24 @@ import { NexusEventBus } from '../src/nexus/api/event-bus.js';
 import { createNexusState } from '../src/nexus/state/state.js';
 import { TabRegistry } from '../src/nexus/state/tab-registry.js';
 import { createChatTabSpec } from '../src/nexus/kinds/chat.js';
-import { setMonadConfigDir, resetMonadConfigDir } from '../src/monad-config-dir.js';
+import { setElanousConfigDir, resetElanousConfigDir } from '../src/elanous-config-dir.js';
 
 let tmpRoot: string;
 let prevEnv: string | undefined;
 
 beforeEach(() => {
-  tmpRoot = mkdtempSync(join(tmpdir(), 'monad-nexus-meta-api-'));
-  prevEnv = process.env.MONAD_NEXUS_DIR;
-  process.env.MONAD_NEXUS_DIR = tmpRoot;
+  tmpRoot = mkdtempSync(join(tmpdir(), 'elanous-nexus-meta-api-'));
+  prevEnv = process.env.ELANOUS_NEXUS_DIR;
+  process.env.ELANOUS_NEXUS_DIR = tmpRoot;
   // Ensure web-push subscriptions store + attachment store don't pollute
   // the user's $HOME during the test run.
-  setMonadConfigDir(tmpRoot);
+  setElanousConfigDir(tmpRoot);
 });
 
 afterEach(() => {
-  if (prevEnv === undefined) delete process.env.MONAD_NEXUS_DIR;
-  else process.env.MONAD_NEXUS_DIR = prevEnv;
-  resetMonadConfigDir();
+  if (prevEnv === undefined) delete process.env.ELANOUS_NEXUS_DIR;
+  else process.env.ELANOUS_NEXUS_DIR = prevEnv;
+  resetElanousConfigDir();
   try { rmSync(tmpRoot, { recursive: true, force: true }); } catch { /* ignore */ }
 });
 

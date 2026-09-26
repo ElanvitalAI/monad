@@ -1,6 +1,6 @@
 // R6.1 (2026-05-09) — Daily reflection aggregator.
 //
-// Builds a deterministic daily snapshot: how much did monad do
+// Builds a deterministic daily snapshot: how much did elanous do
 // today? Sources today's data from already-running services
 // (NotesMetricsCollector · DaemonSessionHistory) so the v1
 // aggregator runs in zero ms with no LLM call. The Hansei-style

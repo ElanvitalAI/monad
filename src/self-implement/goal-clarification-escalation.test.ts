@@ -538,7 +538,7 @@ describe('escalateGoalDocumentClarifications', () => {
 
   test('forwards dispatch context unchanged to every AskUserQuestion dispatch', async () => {
     const file = goalFile(unresolvedGoal);
-    const dispatchContext = { sessionId: 'monad-session-parent', signal: new AbortController().signal };
+    const dispatchContext = { sessionId: 'elanous-session-parent', signal: new AbortController().signal };
     try {
       let receivedContext: typeof dispatchContext | undefined;
       const result = await escalateGoalDocumentClarifications({
@@ -551,7 +551,7 @@ describe('escalateGoalDocumentClarifications', () => {
       });
       expect(result).toMatchObject({ outcome: 'delivered', answeredBy: 'none' });
       expect(receivedContext).toBe(dispatchContext);
-      expect(receivedContext?.sessionId).toBe('monad-session-parent');
+      expect(receivedContext?.sessionId).toBe('elanous-session-parent');
     } finally {
       file.clean();
     }
@@ -870,7 +870,7 @@ describe('escalateGoalDocumentClarifications', () => {
         goalFile: file.path,
         delivery: 'telegram',
         dispatch: async () => ({
-          output: 'AskUserQuestion failed (resolver): no monad/ask cap-able peer attached to session monad-session-6tidkn',
+          output: 'AskUserQuestion failed (resolver): no elanous/ask cap-able peer attached to session elanous-session-6tidkn',
           absenceReason: 'no-capable-peer',
         }),
         fallback: (message) => surfaced.push(message),

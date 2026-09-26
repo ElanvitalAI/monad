@@ -72,8 +72,8 @@ export function startEventLoopWatchdog(opts: WatchdogOptions): void {
   // ★ gate 격리(2026-07-21·병렬 dogfood 실측) — 무결성 게이트의 `bun test`/build 서브프로세스에선
   //   워치독을 끈다. 이유: ① 워치독 stall 로그가 gate 출력(bun test stderr)을 오염 ② 워커스레드+
   //   setInterval 가 병렬 부하(N goal-loop·N gate)에 오버헤드 가중. 워치독은 데몬/goal-loop 실행용이지
-  //   test 러너용이 아니다. gate(integrity-gate.defaultRunCmd)가 이 env 를 주입. [[ROADMAP-monad-is-all-pty-unified-autonomy-2026-07-21]].
-  if (process.env.MONAD_NO_WATCHDOG === '1') return;
+  //   test 러너용이 아니다. gate(integrity-gate.defaultRunCmd)가 이 env 를 주입. [[ROADMAP-elanous-is-all-pty-unified-autonomy-2026-07-21]].
+  if (process.env.ELANOUS_NO_WATCHDOG === '1') return;
   if (timer) return;
   const intervalMs = opts.intervalMs ?? 500;
   const stallMs = opts.stallMs ?? 5000;

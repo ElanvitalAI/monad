@@ -63,7 +63,7 @@ function activeQueueCanon(activePath: string, realpath: RealpathFn): string {
 
 /**
  * 한 우주의 deferred 큐 경로.
- * `conatusPath('outbound_deferred.jsonl')` 가 `MONAD_STATE_DIR=<universe>` 일 때 내는 값과 같다.
+ * `conatusPath('outbound_deferred.jsonl')` 가 `ELANOUS_STATE_DIR=<universe>` 일 때 내는 값과 같다.
  * LogTarget.dbPath 는 `<stateDir>/logs/logs.db`.
  */
 export function deferredQueuePathForTarget(target: Pick<LogTarget, 'dbPath'>): string {

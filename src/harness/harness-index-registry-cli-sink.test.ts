@@ -35,7 +35,7 @@ beforeEach(() => {
 
 describe('production registry CLI sink wiring', () => {
   test('the actual index registry drift action registers its sink before running', async () => {
-    await program.parseAsync(['node', 'monad', 'registry', 'drift', '--json']);
+    await program.parseAsync(['node', 'elanous', 'registry', 'drift', '--json']);
 
     expect(calls).toEqual(['sink:registry', 'action:drift']);
   });
@@ -43,7 +43,7 @@ describe('production registry CLI sink wiring', () => {
   test('the actual index registry drift action continues when sink registration fails', async () => {
     sinkShouldFail = true;
 
-    await program.parseAsync(['node', 'monad', 'registry', 'drift', '--json']);
+    await program.parseAsync(['node', 'elanous', 'registry', 'drift', '--json']);
 
     expect(calls).toEqual(['sink:registry', 'action:drift']);
   });

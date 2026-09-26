@@ -21,8 +21,8 @@
 
 import { debugLog } from './debug';
 
-const SUBSCRIPTION_ID_KEY = 'monad.pwa.pushSubscriptionId';
-const SUBSCRIPTION_LABEL_KEY = 'monad.pwa.pushSubscriptionLabel';
+const SUBSCRIPTION_ID_KEY = 'elanous.pwa.pushSubscriptionId';
+const SUBSCRIPTION_LABEL_KEY = 'elanous.pwa.pushSubscriptionLabel';
 
 export type EnableOutcome =
   | { status: 'enabled'; id: string }

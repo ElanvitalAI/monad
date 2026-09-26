@@ -57,9 +57,9 @@ describe('background-reasoning config loader', () => {
       const cfg = loadBackgroundReasoningConfig({
         path,
         env: {
-          MONAD_BG_MONTHLY_CLOUD_MAX_USD: '99',
-          MONAD_BG_PATCHER_CLOUD_ALLOWED: 'true',
-          MONAD_BG_THINKER_CLOUD_ALLOWED: 'false',
+          ELANOUS_BG_MONTHLY_CLOUD_MAX_USD: '99',
+          ELANOUS_BG_PATCHER_CLOUD_ALLOWED: 'true',
+          ELANOUS_BG_THINKER_CLOUD_ALLOWED: 'false',
         },
       });
       expect(cfg.monthlyCloudMaxUsd).toBe(99);

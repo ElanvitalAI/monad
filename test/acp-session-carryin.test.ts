@@ -12,11 +12,11 @@ import { createSession, appendMessage } from '../src/session/index';
 let root: string;
 beforeEach(() => {
   root = mkdtempSync(join(tmpdir(), 'acp-carryin-'));
-  process.env.MONAD_SESSION_ROOT = join(root, 'sessions');
+  process.env.ELANOUS_SESSION_ROOT = join(root, 'sessions');
 });
 afterEach(() => {
   rmSync(root, { recursive: true, force: true });
-  delete process.env.MONAD_SESSION_ROOT;
+  delete process.env.ELANOUS_SESSION_ROOT;
 });
 
 describe('buildAcpContextPreamble', () => {
@@ -32,7 +32,7 @@ describe('buildAcpContextPreamble', () => {
     const pre = buildAcpContextPreamble(42, undefined, 'BOT');
     expect(pre).toContain('최근 대화 맥락');
     expect(pre).toContain('사용자: add.ts 의 곱셈 함수');
-    expect(pre).toContain('monad: 네, mul(a,b)');
+    expect(pre).toContain('elanous: 네, mul(a,b)');
     expect(pre.endsWith('---\n')).toBe(true);
   });
 
@@ -43,7 +43,7 @@ describe('buildAcpContextPreamble', () => {
     appendMessage(s.id, { role: 'assistant', content: 'hi', ts: new Date().toISOString() });
     const pre = buildAcpContextPreamble(7, undefined, 'BOT');
     expect(pre).toContain('사용자: hello');
-    expect(pre).toContain('monad: hi');
+    expect(pre).toContain('elanous: hi');
     expect(pre).not.toContain('Bash');
   });
 

@@ -24,7 +24,7 @@ describe('executionBadge — 진짜-실행 뱃지', () => {
     expect(executionBadge({ delegatedBackend: 'grok' })).toBe('🤖 acp-grok');
   });
 
-  it('model 도 delegate 도 없으면 🧠 monad (guess 금지)', () => {
-    expect(executionBadge({})).toBe('🧠 monad');
+  it('model 도 delegate 도 없으면 🧠 elanous (guess 금지)', () => {
+    expect(executionBadge({})).toBe('🧠 elanous');
   });
 });

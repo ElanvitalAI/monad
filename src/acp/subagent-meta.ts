@@ -4,7 +4,7 @@
 // carried on the ACP `_meta` blob that rides every request/update.
 // Ported from Zed's `acp_thread.rs:70` canonical key so ACP peers
 // that already speak Zed's subagent extension round-trip transparently
-// through monad.
+// through elanous.
 //
 // Reference · Zed `crates/acp_thread/src/acp_thread.rs`:
 //   L70  pub const SUBAGENT_SESSION_INFO_META_KEY = "subagent_session_info";
@@ -13,7 +13,7 @@
 //   L440 AcpThread::is_subagent() guards on the info being present
 //
 // We extend Zed's shape minimally — we add `parentSessionId` because
-// monad's namespaced id scheme (`acp-cli:<brand>:<raw>`) is not
+// elanous's namespaced id scheme (`acp-cli:<brand>:<raw>`) is not
 // embedded in the child's sessionId. Zed relies on thread context for
 // the parent link; we make it explicit so meta alone can reconstruct
 // the graph after a cold restart.
@@ -33,14 +33,14 @@ import { unsafeBrandSessionUri } from '../mss/uri/brand.js';
 export const SUBAGENT_SESSION_INFO_META_KEY = 'subagent_session_info';
 
 export interface SubagentSessionInfo {
-  /** Monad-namespaced parent session id. Enables the child's consumer
+  /** Elanous-namespaced parent session id. Enables the child's consumer
    *  to navigate back without a side-table lookup. */
   parentSessionId: SessionUri;
   /** Child session id — echoed so consumers reading the meta blob
    *  don't have to infer it from request context. */
   sessionId: SessionUri;
   /** Optional — Zed uses this for tool_call slot reconstruction.
-   *  Monad doesn't yet (our one-shot spawn returns the id directly),
+   *  Elanous doesn't yet (our one-shot spawn returns the id directly),
    *  but we carry it through round-trip for forward compat. */
   outputIndex?: number;
 }
@@ -51,7 +51,7 @@ export interface SubagentSessionInfo {
  *
  *  Wire strings are branded via `unsafeBrandSessionUri`: the wire
  *  carries opaque ids whose grammar we do not enforce at this layer
- *  (round-trip with Zed peers that do not mint MonadUri). A stricter
+ *  (round-trip with Zed peers that do not mint ElanousUri). A stricter
  *  validator belongs in a future M1.2 where cross-peer URI grammar
  *  is negotiated. */
 export function readSubagentMeta(

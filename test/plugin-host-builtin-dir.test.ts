@@ -27,7 +27,7 @@ describe('PluginHost built-in plugin directory', () => {
     });
     expect(builtinPluginIds.length).toBeGreaterThan(0);
 
-    const emptyUserDir = mkdtempSync(join(tmpdir(), 'monad-empty-user-plugins-'));
+    const emptyUserDir = mkdtempSync(join(tmpdir(), 'elanous-empty-user-plugins-'));
     tempDirs.push(emptyUserDir);
     const host = new PluginHost(hooks, null, { userDir: emptyUserDir });
     await host.discover();

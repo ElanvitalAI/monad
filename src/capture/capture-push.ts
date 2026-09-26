@@ -197,7 +197,7 @@ export function createPushcutCaptureSink(args: {
     id: args.deviceLabel ?? 'default',
     async send(payload) {
       const body = {
-        title: payload.caption ?? `monad capture ${payload.surfaceLabel ?? ''}`.trim(),
+        title: payload.caption ?? `elanous capture ${payload.surfaceLabel ?? ''}`.trim(),
         // Pushcut accepts base64 attachments via `image` URL data scheme.
         image: `data:${payload.mimeType};base64,${payload.bodyBase64}`,
       };

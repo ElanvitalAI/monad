@@ -2,8 +2,8 @@
 // 실행 칸(Pod 등)이 사라지기 «전»에 자기 llm.usage 를 한 줄로 요약해 stdout 에 — 슈퍼바이저가 호스트로 가져간다.
 // RFC-fleet-supervisor-substrates-benchmark-and-token-accounting §A2·F2 · 2026-09-25.
 //   bun scripts/usage-rollup.ts [--since 6h]
-//   출력: MONAD_USAGE_ROLLUP {"substrate","runId","armId","truncated","rows":[{site,provider,model,calls,inputTokens,outputTokens,cacheReadInputTokens,usdKnown,unknownCostCalls}],"total":{…}}
-// ⛔ 의존성 없음(설치본 `monad` 만 부른다) — clone 에 node_modules 가 없어도 돈다.
+//   출력: ELANOUS_USAGE_ROLLUP {"substrate","runId","armId","truncated","rows":[{site,provider,model,calls,inputTokens,outputTokens,cacheReadInputTokens,usdKnown,unknownCostCalls}],"total":{…}}
+// ⛔ 의존성 없음(설치본 `elanous` 만 부른다) — clone 에 node_modules 가 없어도 돈다.
 // ⛔ 비용을 모르는 호출(cost.kind≠known)은 0 으로 합치지 않고 따로 센다.
 // ⛔ `--all --include-test` 로 «그 기계의 모든 우주»를 읽는다 — Pod(자기 스토어뿐)에서는 그것이 곧 그 칸의 사용량이지만,
 //    호스트(맥)에서 돌리면 테스트 우주·워크트리·다른 트랙의 런까지 섞인다(📏 09-25: 운영만 16회 vs 전체 124회). 호스트 집계용이 아니다.
@@ -42,13 +42,13 @@ export function rollup(lines: readonly string[]): { rows: UsageRow[]; truncated:
 if (import.meta.main) {
   const i = process.argv.indexOf('--since');
   const since = i > 0 ? process.argv[i + 1] ?? '6h' : '6h';
-  const r = spawnSync('monad', ['logs', '--all', '--include-test', '--event', 'llm-usage', '--since', since, '--limit', '50000', '--json', '--json-data'], { encoding: 'utf8', timeout: 120_000, maxBuffer: 256 * 1024 * 1024 });
+  const r = spawnSync('elanous', ['logs', '--all', '--include-test', '--event', 'llm-usage', '--since', since, '--limit', '50000', '--json', '--json-data'], { encoding: 'utf8', timeout: 120_000, maxBuffer: 256 * 1024 * 1024 });
   const { rows, truncated } = rollup(`${r.stdout ?? ''}\n${r.stderr ?? ''}`.split('\n'));
   const total = rows.reduce((t, x) => ({ calls: t.calls + x.calls, inputTokens: t.inputTokens + x.inputTokens, outputTokens: t.outputTokens + x.outputTokens, usdKnown: t.usdKnown + x.usdKnown, unknownCostCalls: t.unknownCostCalls + x.unknownCostCalls }), { calls: 0, inputTokens: 0, outputTokens: 0, usdKnown: 0, unknownCostCalls: 0 });
-  // ⭐ 무슨 판이 쟀나 — Pod 의 monad 는 이미지 판이다(BACKLOG E6).
-  const v = spawnSync('monad', ['--version'], { encoding: 'utf8', timeout: 20_000 });
-  const monadVersion = v.status === 0 ? (v.stdout ?? '').trim().split('\n').pop() ?? null : null;
+  // ⭐ 무슨 판이 쟀나 — Pod 의 elanous 는 이미지 판이다(BACKLOG E6).
+  const v = spawnSync('elanous', ['--version'], { encoding: 'utf8', timeout: 20_000 });
+  const elanousVersion = v.status === 0 ? (v.stdout ?? '').trim().split('\n').pop() ?? null : null;
   // ⭐ 런 출처 칸(🅣 RFC run-origin 이름 그대로) — 호스트 재방출이 그대로 받는다.
-  const origin = { podName: process.env.MONAD_POD_NAME ?? null, nodeName: process.env.MONAD_NODE_NAME ?? null, hostId: process.env.MONAD_HOST_ID ?? null, imageCommit: process.env.MONAD_IMAGE_COMMIT ?? null };
-  console.log(`MONAD_USAGE_ROLLUP ${JSON.stringify({ substrate: process.env.MONAD_SUBSTRATE ?? null, monadVersion, ...origin, runId: process.env.MONAD_RUN_ID ?? null, armId: process.env.MONAD_ARM_ID ?? null, measured: r.status === 0, truncated, rows, total })}`);
+  const origin = { podName: process.env.ELANOUS_POD_NAME ?? null, nodeName: process.env.ELANOUS_NODE_NAME ?? null, hostId: process.env.ELANOUS_HOST_ID ?? null, imageCommit: process.env.ELANOUS_IMAGE_COMMIT ?? null };
+  console.log(`ELANOUS_USAGE_ROLLUP ${JSON.stringify({ substrate: process.env.ELANOUS_SUBSTRATE ?? null, elanousVersion, ...origin, runId: process.env.ELANOUS_RUN_ID ?? null, armId: process.env.ELANOUS_ARM_ID ?? null, measured: r.status === 0, truncated, rows, total })}`);
 }

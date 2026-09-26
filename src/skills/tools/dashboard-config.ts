@@ -7,7 +7,7 @@
 //
 // Sensitive knobs (api keys, provider credentials, plugin roots,
 // memory paths) are NOT in the allow-list. The LLM should ask the
-// user to run `monad configure` or edit the config file directly.
+// user to run `elanous configure` or edit the config file directly.
 //
 // Schema:
 //

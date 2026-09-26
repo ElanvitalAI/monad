@@ -55,21 +55,21 @@ describe('isStructuralFailure — 조기 분할 게이트(대표 2026-07-13)', (
 describe('resolveSeImplementationAttempts — R1 Codex-first paid escalation boundary', () => {
   it('evidence-hitl policy keeps automatic retries on the active coding backend', () => {
     expect(resolveSeImplementationAttempts({
-      backend: 'monad-self:gpt-5.6-terra', ladder: [150, 400, 1000],
+      backend: 'elanous-self:gpt-5.6-terra', ladder: [150, 400, 1000],
       routePolicy: { mode: 'codex-first', opusEscalation: 'evidence-hitl' },
     })).toEqual([
-      { backend: 'monad-self:gpt-5.6-terra', maxTurns: 150 },
-      { backend: 'monad-self:gpt-5.6-terra', maxTurns: 400 },
-      { backend: 'monad-self:gpt-5.6-terra', maxTurns: 1000 },
+      { backend: 'elanous-self:gpt-5.6-terra', maxTurns: 150 },
+      { backend: 'elanous-self:gpt-5.6-terra', maxTurns: 400 },
+      { backend: 'elanous-self:gpt-5.6-terra', maxTurns: 1000 },
     ]);
   });
 
   it('authorized system repair remains the explicit Opus exception', () => {
     expect(resolveSeImplementationAttempts({
-      backend: 'monad-self:claude-opus-4-8', ladder: [150, 400],
+      backend: 'elanous-self:claude-opus-4-8', ladder: [150, 400],
       routePolicy: { opusEscalation: 'evidence-hitl' }, systemRepairAuthorized: true,
     }).map((attempt) => attempt.backend)).toEqual([
-      'monad-self:claude-opus-4-8', 'monad-self:claude-opus-4-8',
+      'elanous-self:claude-opus-4-8', 'elanous-self:claude-opus-4-8',
     ]);
   });
 });
@@ -171,7 +171,7 @@ describe('classifyPhaseKind — 조사 전용 선언 우선(price-guard 페이�
   it('크론/스케줄 등록(운영 액션) → operational (price-guard 페이즈4 회귀·2026-07-13)', () => {
     expect(classifyPhaseKind(mkTask({
       title: '장중 5분 크론 하나로 가격 가드를 등록하라',
-      description: '기존 price-guard-cycle.ts 를 monad schedule 로 장중 5분 주기 크론 1개 등록한다.',
+      description: '기존 price-guard-cycle.ts 를 elanous schedule 로 장중 5분 주기 크론 1개 등록한다.',
     }))).toBe('operational');
   });
 
@@ -260,7 +260,7 @@ describe('runImplementationPhaseViaSE — disarmed/armed 분기', () => {
   it('armed + built → ok + PR (runOne 실배선 주입)', async () => {
     let seenSlug = '';
     const r = await runImplementationPhaseViaSE('m1', task, {
-      armed: true, backend: 'monad-self', writePlan: writePlanStub, log: () => {},
+      armed: true, backend: 'elanous-self', writePlan: writePlanStub, log: () => {},
       makeDeps: (() => ({}) ) as never,
       runOne: async (target) => { seenSlug = target.slug; return { status: 'built', target, prUrl: 'http://pr/9', next: 'ok' } as NocturnalResult; },
     });
@@ -275,7 +275,7 @@ describe('runImplementationPhaseViaSE — disarmed/armed 분기', () => {
     const statuses = ['gate-failed', 'no-change'];
     let call = 0;
     const r = await runImplementationPhaseViaSE('m1', task, {
-      armed: true, backend: 'monad-self', writePlan: writePlanStub, log: () => {},
+      armed: true, backend: 'elanous-self', writePlan: writePlanStub, log: () => {},
       makeDeps: (() => ({})) as never,
       runOne: async (target) => ({ status: statuses[call++]!, target, next: 'x' }) as NocturnalResult,
       triageClassify: async () => 'retry-escalate',
@@ -289,7 +289,7 @@ describe('runImplementationPhaseViaSE — disarmed/armed 분기', () => {
     const statuses = ['gate-failed', 'no-change'];
     let call = 0;
     const r = await runImplementationPhaseViaSE('m1', task, {
-      armed: true, backend: 'monad-self', writePlan: writePlanStub, log: () => {},
+      armed: true, backend: 'elanous-self', writePlan: writePlanStub, log: () => {},
       makeDeps: (() => ({})) as never,
       runOne: async (target) => ({ status: statuses[call++]!, target, next: 'x' }) as NocturnalResult,
       triageClassify: async () => 'retry-escalate',
@@ -306,7 +306,7 @@ describe('runImplementationPhaseViaSE — disarmed/armed 분기', () => {
     const statuses = ['gate-failed', 'no-change', 'built'];
     let call = 0;
     const r = await runImplementationPhaseViaSE('m1', task, {
-      armed: true, backend: 'monad-self', writePlan: writePlanStub, log: () => {},
+      armed: true, backend: 'elanous-self', writePlan: writePlanStub, log: () => {},
       makeDeps: (() => ({})) as never,
       runOne: async (target) => (statuses[call] === 'built'
         ? { status: statuses[call++]!, target, prUrl: 'http://pr/42', next: 'ok' }
@@ -323,7 +323,7 @@ describe('runImplementationPhaseViaSE — disarmed/armed 분기', () => {
     const statuses = ['gate-failed', 'no-change', 'no-change'];
     let call = 0;
     const r = await runImplementationPhaseViaSE('m1', task, {
-      armed: true, backend: 'monad-self', writePlan: writePlanStub, log: () => {},
+      armed: true, backend: 'elanous-self', writePlan: writePlanStub, log: () => {},
       makeDeps: (() => ({})) as never,
       runOne: async (target) => ({ status: statuses[call++]!, target, next: 'x' }) as NocturnalResult,
       triageClassify: async () => 'retry-escalate',
@@ -340,7 +340,7 @@ describe('runImplementationPhaseViaSE — disarmed/armed 분기', () => {
     const statuses = ['gate-failed', 'no-change', 'gate-failed'];
     let call = 0;
     const r = await runImplementationPhaseViaSE('m1', task, {
-      armed: true, backend: 'monad-self', writePlan: writePlanStub, log: () => {},
+      armed: true, backend: 'elanous-self', writePlan: writePlanStub, log: () => {},
       makeDeps: (() => ({})) as never,
       runOne: async (target) => ({ status: statuses[call++]!, target, next: 'x' }) as NocturnalResult,
       triageClassify: async () => 'retry-escalate',
@@ -355,7 +355,7 @@ describe('runImplementationPhaseViaSE — disarmed/armed 분기', () => {
   it('재시도 전 grounded 충족 확증 → 재시도 중단·즉시 PASS(opus rung 낭비 0)', async () => {
     let runCount = 0;
     const r = await runImplementationPhaseViaSE('m1', task, {
-      armed: true, backend: 'monad-self', writePlan: writePlanStub, log: () => {},
+      armed: true, backend: 'elanous-self', writePlan: writePlanStub, log: () => {},
       makeDeps: (() => ({})) as never,
       runOne: async (target) => { runCount++; return { status: 'gate-failed', target, next: 'bun test 3 fail' } as NocturnalResult; },
       triageClassify: async () => 'retry-escalate',
@@ -370,7 +370,7 @@ describe('runImplementationPhaseViaSE — disarmed/armed 분기', () => {
     let runCount = 0;
     let verifyCalled = 0;
     const r = await runImplementationPhaseViaSE('m1', task, {
-      armed: true, backend: 'monad-self', writePlan: writePlanStub, log: () => {},
+      armed: true, backend: 'elanous-self', writePlan: writePlanStub, log: () => {},
       makeDeps: (() => ({})) as never,
       runOne: async (target) => {
         runCount++;
@@ -400,7 +400,7 @@ describe('runImplementationPhaseViaSE — disarmed/armed 분기', () => {
   //   grounded 검증을 태운다. 강한 모델이 게으르게 "됐다"고 dodge 해도 미충족이면 자동 PASS 금지.
   it('i=0 no-change + grounded 미충족(dodge) → 자동 PASS 안 함(false-PASS 차단)', async () => {
     const r = await runImplementationPhaseViaSE('m1', task, {
-      armed: true, backend: 'monad-self:claude-opus-4-8', writePlan: writePlanStub, log: () => {},
+      armed: true, backend: 'elanous-self:claude-opus-4-8', writePlan: writePlanStub, log: () => {},
       makeDeps: (() => ({})) as never,
       // 첫 시도부터 no-change (opus dodge 시나리오) — 리커버리도 no-change 로 미충족 유지.
       runOne: async (target) => ({ status: 'no-change', target, next: '변경 불필요' }) as NocturnalResult,
@@ -411,7 +411,7 @@ describe('runImplementationPhaseViaSE — disarmed/armed 분기', () => {
 
   it('i=0 no-change + grounded 충족 → 정당 no-op PASS(과교정 방지)', async () => {
     const r = await runImplementationPhaseViaSE('m1', task, {
-      armed: true, backend: 'monad-self', writePlan: writePlanStub, log: () => {},
+      armed: true, backend: 'elanous-self', writePlan: writePlanStub, log: () => {},
       makeDeps: (() => ({})) as never,
       runOne: async (target) => ({ status: 'no-change', target, next: 'no-op' }) as NocturnalResult,
       verifyNoop: async () => ({ satisfied: true, evidence: 'src/x.ts:42 이미 구현', missing: '', grounded: true }),
@@ -424,7 +424,7 @@ describe('runImplementationPhaseViaSE — disarmed/armed 분기', () => {
   it('baseBranch 지정 → seDeps.base 로 전달(페이즈 스택)', async () => {
     const bases: (string | undefined)[] = [];
     await runImplementationPhaseViaSE('m1', task, {
-      armed: true, backend: 'monad-self', writePlan: writePlanStub, log: () => {},
+      armed: true, backend: 'elanous-self', writePlan: writePlanStub, log: () => {},
       baseBranch: 'origin/se/prev-phase',
       makeDeps: ((o: { base?: string }) => { bases.push(o.base); return {}; }) as never,
       runOne: async (target) => ({ status: 'built', target, prUrl: 'http://pr/1', next: 'ok' } as NocturnalResult),
@@ -435,7 +435,7 @@ describe('runImplementationPhaseViaSE — disarmed/armed 분기', () => {
   it('baseBranch 미지정 → main(독립·기존 동작)', async () => {
     const bases: (string | undefined)[] = [];
     await runImplementationPhaseViaSE('m1', task, {
-      armed: true, backend: 'monad-self', writePlan: writePlanStub, log: () => {},
+      armed: true, backend: 'elanous-self', writePlan: writePlanStub, log: () => {},
       makeDeps: ((o: { base?: string }) => { bases.push(o.base); return {}; }) as never,
       runOne: async (target) => ({ status: 'built', target, prUrl: 'http://pr/1', next: 'ok' } as NocturnalResult),
     });
@@ -445,7 +445,7 @@ describe('runImplementationPhaseViaSE — disarmed/armed 분기', () => {
   it('armed + gate-failed → 계단 소진 후 triage split(에스컬레이션 전 계단 다 시도)', async () => {
     const backends: string[] = [];
     const r = await runImplementationPhaseViaSE('m1', task, {
-      armed: true, backend: 'monad-self:gpt-5.6-terra', writePlan: writePlanStub, log: () => {},
+      armed: true, backend: 'elanous-self:gpt-5.6-terra', writePlan: writePlanStub, log: () => {},
       makeDeps: ((o: { backend: string }) => { backends.push(o.backend); return {}; }) as never,
       runOne: async (target) => ({ status: 'gate-failed', target, next: '무결성 실패' } as NocturnalResult),
     });
@@ -456,15 +456,15 @@ describe('runImplementationPhaseViaSE — disarmed/armed 분기', () => {
     expect(r.summary).toContain('VERDICT: FAIL');
     // ★ 계단은 그대로 다 시도 — 첫 턴 terra(저비용), 이후 opus. 모델 전환은 유지.
     expect(backends).toEqual([
-      'monad-self:gpt-5.6-terra',
-      'monad-self:claude-opus-4-8', 'monad-self:claude-opus-4-8',
+      'elanous-self:gpt-5.6-terra',
+      'elanous-self:claude-opus-4-8', 'elanous-self:claude-opus-4-8',
     ]);
   });
 
   it('★ onProgress — 시도 시작·재시도·opus 폴백 변곡점 호출(대표 2026-07-12·진행 가시성)', async () => {
     const notes: string[] = [];
     await runImplementationPhaseViaSE('m1', task, {
-      armed: true, backend: 'monad-self:gpt-5.6-terra', writePlan: writePlanStub, log: () => {},
+      armed: true, backend: 'elanous-self:gpt-5.6-terra', writePlan: writePlanStub, log: () => {},
       makeDeps: (() => ({})) as never,
       onProgress: (n) => notes.push(n),
       runOne: async (target) => ({ status: 'gate-failed', target, next: 'x' } as NocturnalResult),
@@ -478,7 +478,7 @@ describe('runImplementationPhaseViaSE — disarmed/armed 분기', () => {
   it('★ opus 폴백 성공(대표 2026-07-12·최종 방어) — terra 다 실패 → opus 가 완주', async () => {
     let calls = 0;
     const r = await runImplementationPhaseViaSE('m1', task, {
-      armed: true, backend: 'monad-self:gpt-5.6-terra', writePlan: writePlanStub, log: () => {},
+      armed: true, backend: 'elanous-self:gpt-5.6-terra', writePlan: writePlanStub, log: () => {},
       makeDeps: (() => ({})) as never,
       runOne: async (target) => {
         calls += 1;
@@ -593,7 +593,7 @@ describe('runImplementationPhaseViaSE — 이식 #1 실행 전 적대적 플랜 
     writeFileSync(planPath, '# PLAN\n원 계획\n');
     let criticCalled = false;
     const r = await runImplementationPhaseViaSE('m1', mkTask({ title: '라벨 헬퍼 구현', criteria: ['high/med/low 경계', '단위테스트'] }), {
-      armed: true, backend: 'monad-self', log: () => {}, writePlan: () => planPath,
+      armed: true, backend: 'elanous-self', log: () => {}, writePlan: () => planPath,
       adversarialCritic: async () => { criticCalled = true; return JSON.stringify({ sound: false, issues: ['경계 0.8 포함 여부 모호'], revisedSteps: ['0.8 이상 high 로 명시', '경계 테스트 추가'] }); },
       runOne: async (target) => ({ status: 'built', target, prUrl: 'http://pr/1', next: 'ok' }) as NocturnalResult,
     });
@@ -612,7 +612,7 @@ describe('runImplementationPhaseViaSE — 이식 #1 실행 전 적대적 플랜 
     const planPath = join(mkdtempSync(join(tmpdir(), 'se-adv0-')), 'plan.md');
     writeFileSync(planPath, '# PLAN\n원 계획\n');
     await runImplementationPhaseViaSE('m1', mkTask({ title: 'x', criteria: ['a', 'b'] }), {
-      armed: true, backend: 'monad-self', log: () => {}, writePlan: () => planPath,
+      armed: true, backend: 'elanous-self', log: () => {}, writePlan: () => planPath,
       runOne: async (target) => ({ status: 'built', target, next: 'ok' }) as NocturnalResult,
     });
     expect(readFileSync(planPath, 'utf-8')).not.toContain('사전 레드팀');

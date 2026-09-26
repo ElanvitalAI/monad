@@ -71,7 +71,7 @@ describe('⑵ 힌트 합성 — 원문을 보존하고 실행 가능한 한 줄�
   });
 });
 
-describe('⑶ `monad acp login` 이 실제로 등록돼 있다 — spawn 함수의 «소비처»', () => {
+describe('⑶ `elanous acp login` 이 실제로 등록돼 있다 — spawn 함수의 «소비처»', () => {
   const INDEX_SRC = readFileSync(join(import.meta.dir, '..', 'index.ts'), 'utf-8');
 
   it('acp login 서브커맨드가 있다', () => {

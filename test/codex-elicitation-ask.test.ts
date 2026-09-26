@@ -10,7 +10,7 @@ import {
 import type { AskUserQuestionDispatchResult } from '../src/ask-user-question/tool.js';
 
 /** ⛔⭐⭐⭐ E-트랙. 2026-08-21 전수 실측: `setElicitationHandler` 의 프로덕션 호출자가 «0» 이라
- *  monad 는 코덱스의 물음을 ***구조적으로 전부 거절***하고 있었다. 사람에게 묻는 기계는 이미
+ *  elanous 는 코덱스의 물음을 ***구조적으로 전부 거절***하고 있었다. 사람에게 묻는 기계는 이미
  *  끝까지 있었고 끊긴 것은 배선 한 줄이었다 — 또 「있는데 그 경로가 안 쓴다」였다. */
 
 describe('elicitation schema → 고를 수 있는 물음', () => {

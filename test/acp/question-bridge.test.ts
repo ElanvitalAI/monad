@@ -39,9 +39,9 @@ describe('extractAcpQuestion', () => {
     expect(q!.questions[0]!.options).toHaveLength(2);
   });
 
-  test('detects __monadQuestion marker even without kind', () => {
+  test('detects __elanousQuestion marker even without kind', () => {
     const req = base({
-      __monadQuestion: true,
+      __elanousQuestion: true,
       questions: [{
         id: 'x',
         header: 'X',

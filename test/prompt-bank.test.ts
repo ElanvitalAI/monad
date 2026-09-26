@@ -12,7 +12,7 @@ let root = '';
 let store: PromptBankStore;
 
 beforeEach(() => {
-  root = mkdtempSync(join(tmpdir(), 'monad-prompt-bank-test-'));
+  root = mkdtempSync(join(tmpdir(), 'elanous-prompt-bank-test-'));
   store = openPromptBankStore(join(root, 'prompt-bank.sqlite'));
 });
 

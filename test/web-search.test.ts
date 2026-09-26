@@ -19,7 +19,7 @@ import { _resetTavilyKeyCacheForTests } from '../src/web-search/tavily';
 import { _resetKeyCacheForTests } from '../src/config';
 import { buildFirecrawlWebSearchProvider } from '../src/web-search/firecrawl';
 import { resetUserConfig } from '../src/user-config';
-import { setMonadConfigDir, resetMonadConfigDir } from '../src/monad-config-dir';
+import { setElanousConfigDir, resetElanousConfigDir } from '../src/elanous-config-dir';
 
 function stubProvider(overrides: Partial<WebSearchProvider> = {}): WebSearchProvider {
   return {
@@ -46,8 +46,8 @@ const ORIGINAL_KEYS = {
   // ⛔⭐ `getGrokApiKey` 는 `XAI_API_KEY` «다음»으로 이 이름도 본다 — 지우는 문이 하나 모자랐다.
   GROK_API_KEY: process.env.GROK_API_KEY,
   // ⛔⭐⭐ 그리고 해석기는 env «보다 먼저» ~/.cache 의 키 캐시 파일을 본다.
-  //   ⇒ env 를 아무리 지워도 ***캐시가 이긴다***. 이음매(MONAD_KEY_CACHE_DIR)로 그 문도 닫는다.
-  MONAD_KEY_CACHE_DIR: process.env.MONAD_KEY_CACHE_DIR,
+  //   ⇒ env 를 아무리 지워도 ***캐시가 이긴다***. 이음매(ELANOUS_KEY_CACHE_DIR)로 그 문도 닫는다.
+  ELANOUS_KEY_CACHE_DIR: process.env.ELANOUS_KEY_CACHE_DIR,
   FIRECRAWL_API_KEY: process.env.FIRECRAWL_API_KEY,
   TAVILY_KEY: process.env.TAVILY_KEY,
   TAVILY_API_KEY: process.env.TAVILY_API_KEY,
@@ -57,7 +57,7 @@ const ORIGINAL_KEYS = {
 beforeEach(() => {
   delete process.env.XAI_API_KEY;
   delete process.env.GROK_API_KEY;
-  process.env.MONAD_KEY_CACHE_DIR = '/nonexistent/monad-key-cache';
+  process.env.ELANOUS_KEY_CACHE_DIR = '/nonexistent/elanous-key-cache';
   _resetKeyCacheForTests();
   delete process.env.FIRECRAWL_API_KEY;
   delete process.env.TAVILY_KEY;
@@ -71,8 +71,8 @@ beforeEach(() => {
 afterAll(() => {
   if (ORIGINAL_KEYS.XAI_API_KEY !== undefined) process.env.XAI_API_KEY = ORIGINAL_KEYS.XAI_API_KEY;
   if (ORIGINAL_KEYS.GROK_API_KEY !== undefined) process.env.GROK_API_KEY = ORIGINAL_KEYS.GROK_API_KEY;
-  if (ORIGINAL_KEYS.MONAD_KEY_CACHE_DIR !== undefined) process.env.MONAD_KEY_CACHE_DIR = ORIGINAL_KEYS.MONAD_KEY_CACHE_DIR;
-  else delete process.env.MONAD_KEY_CACHE_DIR;
+  if (ORIGINAL_KEYS.ELANOUS_KEY_CACHE_DIR !== undefined) process.env.ELANOUS_KEY_CACHE_DIR = ORIGINAL_KEYS.ELANOUS_KEY_CACHE_DIR;
+  else delete process.env.ELANOUS_KEY_CACHE_DIR;
   _resetKeyCacheForTests();
   if (ORIGINAL_KEYS.FIRECRAWL_API_KEY !== undefined) process.env.FIRECRAWL_API_KEY = ORIGINAL_KEYS.FIRECRAWL_API_KEY;
   if (ORIGINAL_KEYS.TAVILY_KEY !== undefined) process.env.TAVILY_KEY = ORIGINAL_KEYS.TAVILY_KEY;
@@ -98,13 +98,13 @@ describe('Firecrawl web-search provider', () => {
 
   beforeEach(() => {
     configDir = mkdtempSync(join(tmpdir(), 'web-search-firecrawl-'));
-    setMonadConfigDir(configDir);
+    setElanousConfigDir(configDir);
     resetUserConfig();
   });
 
   afterEach(() => {
     globalThis.fetch = realFetch;
-    resetMonadConfigDir();
+    resetElanousConfigDir();
     rmSync(configDir, { recursive: true, force: true });
     configDir = '';
     resetUserConfig();

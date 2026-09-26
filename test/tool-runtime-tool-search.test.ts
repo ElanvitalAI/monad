@@ -418,7 +418,7 @@ describe('dispatchToolSearch — 서피스 spec 풀', () => {
   });
 });
 
-// ── 권위적 allowlist (monad self review #5460 must-fix) ─────────────
+// ── 권위적 allowlist (elanous self review #5460 must-fix) ─────────────
 // `specs` 를 넘겼는데도 전역 레지스트리로 fallback 하면, 호출 서피스가
 // dispatch 할 수 없는 스키마를 모델에 쥐여준다("unknown tool" 로 악화) —
 // 그리고 nest-cap 이 카탈로그에서 뺀 자식-spawn 툴이 되살아난다(cap 은
@@ -475,7 +475,7 @@ describe('dispatchToolSearch — spec 풀은 권위적 allowlist', () => {
   });
 });
 
-// ── 대시보드 래퍼가 하이드레이션 키를 전달하는가 (should-fix · monad review #5461) ──
+// ── 대시보드 래퍼가 하이드레이션 키를 전달하는가 (should-fix · elanous review #5461) ──
 // 이 래퍼는 원래 output/matched/unknown 만 투영해 **하이드레이션 스펙을 조용히 떨궜다**
 // → 대시보드 경로에선 소환해도 툴이 계속 호출 불가였다. 배선 주장을 직접 검증한다.
 describe('toolSearchRuntime — 하이드레이션 키 전달', () => {

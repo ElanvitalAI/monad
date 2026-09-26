@@ -17,7 +17,7 @@ describe('관련성 게이트 — 거짓 내부확인 방지(라이브 실증 �
     // "SpaceX Starship latest test flight outcome" → spacex/starship/flight 만 유의
     expect(significantTokens('SpaceX Starship latest test flight outcome')).toEqual(['spacex', 'starship', 'flight']);
   });
-  test('무관 히트(monad 자기 로그)는 관련성 탈락', () => {
+  test('무관 히트(elanous 자기 로그)는 관련성 탈락', () => {
     // 실제 오판 사례: backtest/delegate 로그가 test/outcome 로 매칭됐었음
     const toks = significantTokens('SpaceX Starship test flight outcome');
     expect(relevanceOk('[backtest] 가설 4 · tested 4 · outcome: aggressive', toks)).toBe(false);

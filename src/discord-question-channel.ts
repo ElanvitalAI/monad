@@ -8,7 +8,7 @@
 // **QUESTION만**(모델이 정말로 사용자 판단을 필요로 하는 갈림길).
 //
 // 형태: 질문당 메시지 1개 + 옵션 버튼(행당 5개·최대 25개), customId =
-// `monad-q:<sid>:<optIdx>`. 탭 → type 6 ACK(무소음 업데이트) → 메시지를
+// `elanous-q:<sid>:<optIdx>`. 탭 → type 6 ACK(무소음 업데이트) → 메시지를
 // 선택 결과로 편집 → 다음 질문 렌더 or resolve. 다지선다(multiSelect)는
 // v1에서 첫 탭을 단일 선택으로 수용(대부분의 질문 의도에 충분 — 완전한
 // 토글 위저드는 후속).
@@ -19,7 +19,7 @@ import type { QuestionChannel } from './hitl/question.js';
 import type { AskUserQuestionRequest, AskUserQuestionResult } from './ask-user-question/types.js';
 import { debug } from './debug/log.js';
 
-const CUSTOM_ID_PREFIX = 'monad-q';
+const CUSTOM_ID_PREFIX = 'elanous-q';
 const REST_BASE = 'https://discord.com/api/v10';
 const MAX_OPTIONS = 25; // 5 rows × 5 buttons
 
@@ -47,7 +47,7 @@ export interface DiscordQuestionRuntime {
   /** Per-chat QuestionChannel — pass into runAcpTurn hitlQuestionChannels. */
   channelFor(channelId: string): QuestionChannel;
   /** Route a raw INTERACTION_CREATE payload. Returns true when the
-   *  interaction was a monad-q button tap this runtime consumed. */
+   *  interaction was a elanous-q button tap this runtime consumed. */
   handleComponentInteraction(raw: Record<string, unknown>): Promise<boolean>;
 }
 

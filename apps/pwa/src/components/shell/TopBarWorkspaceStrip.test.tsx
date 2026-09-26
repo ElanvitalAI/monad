@@ -27,7 +27,7 @@ describe('TopBarWorkspaceStrip — provider gating', () => {
       </WorkspaceProvider>,
     );
     // tablist data attribute 가 없어야 함 (strip 자체 미렌더).
-    expect(html).not.toContain('data-monad-component="topbar-workspace-strip"');
-    expect(html).not.toContain('data-monad-component="topbar-workspace-strip-mobile"');
+    expect(html).not.toContain('data-elanous-component="topbar-workspace-strip"');
+    expect(html).not.toContain('data-elanous-component="topbar-workspace-strip-mobile"');
   });
 });

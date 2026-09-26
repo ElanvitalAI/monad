@@ -17,13 +17,13 @@ import type { TabSpec } from '../src/nexus/kinds/types.js';
 let tmpRoot: string;
 let prevEnv: string | undefined;
 beforeEach(() => {
-  tmpRoot = mkdtempSync(join(tmpdir(), 'monad-nexus-n2-health-'));
-  prevEnv = process.env.MONAD_NEXUS_DIR;
-  process.env.MONAD_NEXUS_DIR = tmpRoot;
+  tmpRoot = mkdtempSync(join(tmpdir(), 'elanous-nexus-n2-health-'));
+  prevEnv = process.env.ELANOUS_NEXUS_DIR;
+  process.env.ELANOUS_NEXUS_DIR = tmpRoot;
 });
 afterEach(() => {
-  if (prevEnv === undefined) delete process.env.MONAD_NEXUS_DIR;
-  else process.env.MONAD_NEXUS_DIR = prevEnv;
+  if (prevEnv === undefined) delete process.env.ELANOUS_NEXUS_DIR;
+  else process.env.ELANOUS_NEXUS_DIR = prevEnv;
   try { rmSync(tmpRoot, { recursive: true, force: true }); } catch { /* ignore */ }
 });
 

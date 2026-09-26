@@ -218,7 +218,7 @@ export async function dispatchPtyShellPoll(rawArgs: Record<string, unknown>): Pr
   await sleep(yieldMs);
   const delta = handle.drainDelta(args.max_bytes ?? DEFAULT_MAX_BYTES);
   const status = handle.isAlive() ? 'running' : `exited ${handle.exitCode}`;
-  // P15: spill large poll output to /tmp/monad-output so a noisy
+  // P15: spill large poll output to /tmp/elanous-output so a noisy
   // watch process doesn't dump 64KB of test logs into model context.
   const trimmed = truncateOutput(delta, { toolName: 'pty_shell_poll', ext: 'log' });
   return {
@@ -272,7 +272,7 @@ export async function dispatchPtyShellSend(rawArgs: Record<string, unknown>): Pr
   });
   if (outcome === 'denied') {
     return {
-      output: `PtyShellSend 쓰기 거부 process_id=${handle.id}: 이 PTY 는 사람이 쓰기 소유(human write ownership)를 가졌거나 자율 모드가 아니라 에이전트 쓰기가 막혔다. 사람에게 \`monad pty release ${handle.id}\` 로 자율에 돌려 달라고 요청하라.`,
+      output: `PtyShellSend 쓰기 거부 process_id=${handle.id}: 이 PTY 는 사람이 쓰기 소유(human write ownership)를 가졌거나 자율 모드가 아니라 에이전트 쓰기가 막혔다. 사람에게 \`elanous pty release ${handle.id}\` 로 자율에 돌려 달라고 요청하라.`,
       submitNormalized: false,
     };
   }
@@ -479,7 +479,7 @@ export async function dispatchPtyShellScreenshot(rawArgs: Record<string, unknown
   if (!png) {
     return { output: `PtyShellScreenshot process_id=${handle.id} — image unavailable (emulator/renderer missing). Use PtyShellSnapshot for the screen as text.` };
   }
-  const file = join(tmpdir(), `monad-pty-${handle.id}-${Date.now()}.png`);
+  const file = join(tmpdir(), `elanous-pty-${handle.id}-${Date.now()}.png`);
   try {
     writeFileSync(file, png);
   } catch (err) {

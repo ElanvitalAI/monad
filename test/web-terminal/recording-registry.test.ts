@@ -1,5 +1,5 @@
 // WT-C-1 — recording-registry: PreviewTerminal raw tap → asciicast
-// recorder + ~/.monad/timelines/<recorderId>.cast write.
+// recorder + ~/.elanous/timelines/<recorderId>.cast write.
 
 import { afterEach, describe, expect, test } from 'bun:test';
 import {

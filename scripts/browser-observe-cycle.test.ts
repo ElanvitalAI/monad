@@ -19,7 +19,7 @@ import {
   BROWSER_OBSERVE_UNOBSERVED,
   BROWSER_OBSERVE_WRONG_SCREEN,
   MCP_SESSION_HEADER,
-  MONAD_PWA_URL,
+  ELANOUS_PWA_URL,
   _resetBrowserObserveLogSinkForTest,
   buildBrowserObserveReplCode,
   classifyBrowserObserve,
@@ -29,8 +29,8 @@ import {
 } from './browser-observe-cycle.js';
 
 // 2026-08-24 실측 snapshot(page, {interactive:true}).tree — HTML 이 아닌 접근성 개요.
-const ACTUAL_MONAD_PWA_TREE = `# note: interactive (clickable / focusable) elements only.
-- title: "monad" [url=http://127.0.0.1:31415/app]
+const ACTUAL_ELANOUS_PWA_TREE = `# note: interactive (clickable / focusable) elements only.
+- title: "elanous" [url=http://127.0.0.1:31415/app]
 - banner:
   - button "open menu" [ref=e1]: "메뉴"
   - link "LIVE pty:tui:5043 · origin: system" [ref=e2]: "LIVE pty:tui:5043"
@@ -148,8 +148,8 @@ function createMcpHttpFixture(opts: {
             result:
               opts.result ??
               toolCallEnvelope(
-                opts.tree === undefined ? ACTUAL_MONAD_PWA_TREE : opts.tree,
-                opts.url === undefined ? MONAD_PWA_URL : opts.url,
+                opts.tree === undefined ? ACTUAL_ELANOUS_PWA_TREE : opts.tree,
+                opts.url === undefined ? ELANOUS_PWA_URL : opts.url,
               ),
           }),
       };
@@ -175,8 +175,8 @@ describe('classifyBrowserObserve — 공개 순수 분류', () => {
     }) as typeof fetch;
     try {
       const result = classifyBrowserObserve({
-        tree: ACTUAL_MONAD_PWA_TREE,
-        url: MONAD_PWA_URL,
+        tree: ACTUAL_ELANOUS_PWA_TREE,
+        url: ELANOUS_PWA_URL,
       });
       expect(result.status).toBe(BROWSER_OBSERVE_OK);
       expect(fetchCalls).toBe(0);
@@ -198,7 +198,7 @@ describe('classifyBrowserObserve — 공개 순수 분류', () => {
     const htmlGuess = '<main role="main" data-testid="app-shell"><div>hello</div></main>';
     const result = classifyBrowserObserve({
       tree: htmlGuess,
-      url: MONAD_PWA_URL,
+      url: ELANOUS_PWA_URL,
     });
     expect(result.status).toBe(BROWSER_OBSERVE_WRONG_SCREEN);
     expect(result.status).not.toBe(BROWSER_OBSERVE_OK);
@@ -206,29 +206,29 @@ describe('classifyBrowserObserve — 공개 순수 분류', () => {
 
   test('unread url is not treated as the expected PWA url', () => {
     const result = classifyBrowserObserve({
-      tree: ACTUAL_MONAD_PWA_TREE,
+      tree: ACTUAL_ELANOUS_PWA_TREE,
       url: null,
     });
     expect(result.status).toBe(BROWSER_OBSERVE_UNOBSERVED);
     expect(result.observedUrl).toBeNull();
-    expect(result.observedUrl).not.toBe(MONAD_PWA_URL);
+    expect(result.observedUrl).not.toBe(ELANOUS_PWA_URL);
     expect(result.reason).toBe('url-unreadable');
   });
 
   test('empty url string is unobserved, not the expected url', () => {
     const result = classifyBrowserObserve({
-      tree: ACTUAL_MONAD_PWA_TREE,
+      tree: ACTUAL_ELANOUS_PWA_TREE,
       url: '   ',
     });
     expect(result.status).toBe(BROWSER_OBSERVE_UNOBSERVED);
     expect(result.observedUrl).toBeNull();
-    expect(result.observedUrl).not.toBe(MONAD_PWA_URL);
+    expect(result.observedUrl).not.toBe(ELANOUS_PWA_URL);
   });
 
   test('blank tree is unobserved, not wrong-screen', () => {
     const result = classifyBrowserObserve({
       tree: '   \n',
-      url: MONAD_PWA_URL,
+      url: ELANOUS_PWA_URL,
     });
     expect(result.status).toBe(BROWSER_OBSERVE_UNOBSERVED);
     expect(result.status).not.toBe(BROWSER_OBSERVE_WRONG_SCREEN);
@@ -262,7 +262,7 @@ describe('observeBrowserCycle — MCP initialize + session HTTP path', () => {
       log: () => {},
     });
     expect(result.status).toBe(BROWSER_OBSERVE_OK);
-    expect(result.observedUrl).toBe(MONAD_PWA_URL);
+    expect(result.observedUrl).toBe(ELANOUS_PWA_URL);
     const call = toolsCallPost(fixture.posts);
     expect(call.method).toBe('tools/call');
   });
@@ -308,7 +308,7 @@ describe('observeBrowserCycle — MCP initialize + session HTTP path', () => {
   });
 
   test('blank tree from MCP envelope is unobserved, not wrong-screen', async () => {
-    const fixture = createMcpHttpFixture({ tree: '   ', url: MONAD_PWA_URL });
+    const fixture = createMcpHttpFixture({ tree: '   ', url: ELANOUS_PWA_URL });
     const result = await observeBrowserCycle({
       fetch: fixture.fetch,
       log: () => {},
@@ -339,7 +339,7 @@ describe('observeBrowserCycle — MCP initialize + session HTTP path', () => {
     expect(Object.keys(postedArgs ?? {}).sort()).toEqual(['code', 'title']);
   });
 
-  test('browser code navigates to the monad PWA address', async () => {
+  test('browser code navigates to the elanous PWA address', async () => {
     const fixture = createMcpHttpFixture();
     await observeBrowserCycle({
       fetch: fixture.fetch,
@@ -348,14 +348,14 @@ describe('observeBrowserCycle — MCP initialize + session HTTP path', () => {
     const call = toolsCallPost(fixture.posts);
     const postedArgs = call.params?.arguments as { code?: string } | undefined;
     const code = postedArgs?.code ?? '';
-    expect(code).toContain(MONAD_PWA_URL);
+    expect(code).toContain(ELANOUS_PWA_URL);
     expect(code).toContain('http://127.0.0.1:31415/app');
     expect(/openTab\s*\(|page\.goto\s*\(/.test(code)).toBe(true);
   });
 
   test('unread url from MCP envelope is not treated as the expected PWA url', async () => {
     const fixture = createMcpHttpFixture({
-      tree: ACTUAL_MONAD_PWA_TREE,
+      tree: ACTUAL_ELANOUS_PWA_TREE,
       url: null,
     });
     const result = await observeBrowserCycle({
@@ -364,7 +364,7 @@ describe('observeBrowserCycle — MCP initialize + session HTTP path', () => {
     });
     expect(result.status).toBe(BROWSER_OBSERVE_UNOBSERVED);
     expect(result.observedUrl).toBeNull();
-    expect(result.observedUrl).not.toBe(MONAD_PWA_URL);
+    expect(result.observedUrl).not.toBe(ELANOUS_PWA_URL);
   });
 
   test('non-PWA tree inside tools/call envelope is wrong-screen', async () => {
@@ -391,11 +391,11 @@ describe('observeBrowserCycle — standalone sink reaches logs.db', () => {
 
   async function withQueryableLogStore<T>(fn: () => Promise<T>): Promise<T> {
     const nodeEnv = process.env.NODE_ENV;
-    const stateDir = process.env.MONAD_STATE_DIR;
+    const stateDir = process.env.ELANOUS_STATE_DIR;
     const dir = mkdtempSync(join(tmpdir(), 'browser-observe-logs-'));
     temporaryRoots.push(dir);
     process.env.NODE_ENV = 'production';
-    process.env.MONAD_STATE_DIR = dir;
+    process.env.ELANOUS_STATE_DIR = dir;
     _resetDefaultLogStoreForTest();
     _resetBrowserObserveLogSinkForTest();
     try {
@@ -408,8 +408,8 @@ describe('observeBrowserCycle — standalone sink reaches logs.db', () => {
       _resetDefaultLogStoreForTest();
       if (nodeEnv === undefined) delete process.env.NODE_ENV;
       else process.env.NODE_ENV = nodeEnv;
-      if (stateDir === undefined) delete process.env.MONAD_STATE_DIR;
-      else process.env.MONAD_STATE_DIR = stateDir;
+      if (stateDir === undefined) delete process.env.ELANOUS_STATE_DIR;
+      else process.env.ELANOUS_STATE_DIR = stateDir;
     }
   }
 
@@ -444,8 +444,8 @@ describe('observeBrowserCycle — standalone sink reaches logs.db', () => {
         observedUrl?: string | null;
       };
       expect(data.status).toBe(BROWSER_OBSERVE_OK);
-      expect(data.reason).toBe('monad-pwa');
-      expect(data.observedUrl).toBe(MONAD_PWA_URL);
+      expect(data.reason).toBe('elanous-pwa');
+      expect(data.observedUrl).toBe(ELANOUS_PWA_URL);
     });
   });
 
@@ -477,7 +477,7 @@ describe('observeBrowserCycle — standalone sink reaches logs.db', () => {
 
 describe('buildBrowserObserveReplCode — injected browser execution', () => {
   const LEGACY_TOP_LEVEL_RETURN_REPL = [
-    `const pwaUrl = ${JSON.stringify(MONAD_PWA_URL)};`,
+    `const pwaUrl = ${JSON.stringify(ELANOUS_PWA_URL)};`,
     'const page = await openTab(pwaUrl);',
     'await page.goto(pwaUrl);',
     'await sleep(250);',
@@ -505,7 +505,7 @@ describe('buildBrowserObserveReplCode — injected browser execution', () => {
   }
 
   function withTopLevelConst(code: string): string {
-    return `const pwaUrl = ${JSON.stringify(MONAD_PWA_URL)};\n${code}`;
+    return `const pwaUrl = ${JSON.stringify(ELANOUS_PWA_URL)};\n${code}`;
   }
 
   function withTopLevelReturn(code: string): string {
@@ -615,12 +615,12 @@ describe('buildBrowserObserveReplCode — injected browser execution', () => {
     const code = buildBrowserObserveReplCode();
     const executed = executeReplCodeInInjectedBrowser(
       code,
-      ACTUAL_MONAD_PWA_TREE,
-      MONAD_PWA_URL,
+      ACTUAL_ELANOUS_PWA_TREE,
+      ELANOUS_PWA_URL,
     );
     const emitted = JSON.parse(executed.stdout) as { tree?: unknown; url?: unknown };
-    expect(emitted.tree).toBe(ACTUAL_MONAD_PWA_TREE);
-    expect(emitted.url).toBe(MONAD_PWA_URL);
+    expect(emitted.tree).toBe(ACTUAL_ELANOUS_PWA_TREE);
+    expect(emitted.url).toBe(ELANOUS_PWA_URL);
   });
 
   test('top-level return mutation fails at the same injected execution site', () => {
@@ -628,7 +628,7 @@ describe('buildBrowserObserveReplCode — injected browser execution', () => {
     expect(/^\s*return\b/m.test(mutated)).toBe(true);
     let failed = false;
     try {
-      executeReplCodeInInjectedBrowser(mutated, ACTUAL_MONAD_PWA_TREE, MONAD_PWA_URL);
+      executeReplCodeInInjectedBrowser(mutated, ACTUAL_ELANOUS_PWA_TREE, ELANOUS_PWA_URL);
     } catch {
       failed = true;
     }
@@ -641,8 +641,8 @@ describe('buildBrowserObserveReplCode — injected browser execution', () => {
     try {
       executeReplCodeInInjectedBrowser(
         LEGACY_TOP_LEVEL_RETURN_REPL,
-        ACTUAL_MONAD_PWA_TREE,
-        MONAD_PWA_URL,
+        ACTUAL_ELANOUS_PWA_TREE,
+        ELANOUS_PWA_URL,
       );
     } catch {
       failed = true;
@@ -653,8 +653,8 @@ describe('buildBrowserObserveReplCode — injected browser execution', () => {
   test('stdout JSON from injected execution classifies as ok, not unobserved', async () => {
     const executed = executeReplCodeInInjectedBrowser(
       buildBrowserObserveReplCode(),
-      ACTUAL_MONAD_PWA_TREE,
-      MONAD_PWA_URL,
+      ACTUAL_ELANOUS_PWA_TREE,
+      ELANOUS_PWA_URL,
     );
     const envelope = mcpToolResultFromReplStdout(executed.stdout);
     expect(envelope).not.toHaveProperty('tree');
@@ -668,8 +668,8 @@ describe('buildBrowserObserveReplCode — injected browser execution', () => {
     });
     expect(result.status).toBe(BROWSER_OBSERVE_OK);
     expect(result.status).not.toBe(BROWSER_OBSERVE_UNOBSERVED);
-    expect(result.observedUrl).toBe(MONAD_PWA_URL);
-    expect(result.reason).toBe('monad-pwa');
+    expect(result.observedUrl).toBe(ELANOUS_PWA_URL);
+    expect(result.reason).toBe('elanous-pwa');
   });
 
   test('generated code has no top-level const or let', () => {
@@ -680,13 +680,13 @@ describe('buildBrowserObserveReplCode — injected browser execution', () => {
     const code = buildBrowserObserveReplCode();
     const executed = executeReplCodeInInjectedBrowser(
       code,
-      ACTUAL_MONAD_PWA_TREE,
-      MONAD_PWA_URL,
+      ACTUAL_ELANOUS_PWA_TREE,
+      ELANOUS_PWA_URL,
       2,
     );
     const emitted = JSON.parse(executed.stdout) as { tree?: unknown; url?: unknown };
-    expect(emitted.tree).toBe(ACTUAL_MONAD_PWA_TREE);
-    expect(emitted.url).toBe(MONAD_PWA_URL);
+    expect(emitted.tree).toBe(ACTUAL_ELANOUS_PWA_TREE);
+    expect(emitted.url).toBe(ELANOUS_PWA_URL);
   });
 
   test('reintroducing a top-level const fails the same persistent-scope check', () => {
@@ -694,7 +694,7 @@ describe('buildBrowserObserveReplCode — injected browser execution', () => {
     expect(hasTopLevelConstOrLet(mutated)).toBe(true);
     let failed = false;
     try {
-      executeReplCodeInInjectedBrowser(mutated, ACTUAL_MONAD_PWA_TREE, MONAD_PWA_URL, 2);
+      executeReplCodeInInjectedBrowser(mutated, ACTUAL_ELANOUS_PWA_TREE, ELANOUS_PWA_URL, 2);
     } catch {
       failed = true;
     }
@@ -704,8 +704,8 @@ describe('buildBrowserObserveReplCode — injected browser execution', () => {
   test('injected execution closes the tab it opened', () => {
     const executed = executeReplCodeInInjectedBrowser(
       buildBrowserObserveReplCode(),
-      ACTUAL_MONAD_PWA_TREE,
-      MONAD_PWA_URL,
+      ACTUAL_ELANOUS_PWA_TREE,
+      ELANOUS_PWA_URL,
     );
     expectOpenedTabWasClosed(executed.calls);
   });
@@ -713,8 +713,8 @@ describe('buildBrowserObserveReplCode — injected browser execution', () => {
   test('snapshot failure still closes the opened tab', () => {
     const executed = executeReplCodeInInjectedBrowser(
       buildBrowserObserveReplCode(),
-      ACTUAL_MONAD_PWA_TREE,
-      MONAD_PWA_URL,
+      ACTUAL_ELANOUS_PWA_TREE,
+      ELANOUS_PWA_URL,
       1,
       { snapshotError: 'snapshot failed' },
     );
@@ -724,8 +724,8 @@ describe('buildBrowserObserveReplCode — injected browser execution', () => {
   test('closeTab failure keeps a successful observation as ok, not wrong-screen', async () => {
     const executed = executeReplCodeInInjectedBrowser(
       buildBrowserObserveReplCode(),
-      ACTUAL_MONAD_PWA_TREE,
-      MONAD_PWA_URL,
+      ACTUAL_ELANOUS_PWA_TREE,
+      ELANOUS_PWA_URL,
       1,
       { closeTabError: 'close failed' },
     );
@@ -745,8 +745,8 @@ describe('buildBrowserObserveReplCode — injected browser execution', () => {
     expect(mutated).not.toContain('closeTab');
     const success = executeReplCodeInInjectedBrowser(
       mutated,
-      ACTUAL_MONAD_PWA_TREE,
-      MONAD_PWA_URL,
+      ACTUAL_ELANOUS_PWA_TREE,
+      ELANOUS_PWA_URL,
     );
     let successCheckFailed = false;
     try {
@@ -758,8 +758,8 @@ describe('buildBrowserObserveReplCode — injected browser execution', () => {
 
     const snapshotFailed = executeReplCodeInInjectedBrowser(
       mutated,
-      ACTUAL_MONAD_PWA_TREE,
-      MONAD_PWA_URL,
+      ACTUAL_ELANOUS_PWA_TREE,
+      ELANOUS_PWA_URL,
       1,
       { snapshotError: 'snapshot failed' },
     );
@@ -775,12 +775,12 @@ describe('buildBrowserObserveReplCode — injected browser execution', () => {
 
 describe('observeBrowserCycle — mixed human text plus JSON', () => {
   const ASIDE_REPL_HUMAN_PREFIX =
-    '✔︎ Opened a new tab and set it active: tabs[1], page → monad (http://127.0.0.1:31415/app)';
+    '✔︎ Opened a new tab and set it active: tabs[1], page → elanous (http://127.0.0.1:31415/app)';
 
   test('prefixed result JSON classifies as ok, not unobserved', async () => {
     const mixed = `${ASIDE_REPL_HUMAN_PREFIX}\n${JSON.stringify({
-      tree: ACTUAL_MONAD_PWA_TREE,
-      url: MONAD_PWA_URL,
+      tree: ACTUAL_ELANOUS_PWA_TREE,
+      url: ELANOUS_PWA_URL,
     })}`;
     const fixture = createMcpHttpFixture({
       result: { content: [{ type: 'text', text: mixed }] },
@@ -791,8 +791,8 @@ describe('observeBrowserCycle — mixed human text plus JSON', () => {
     });
     expect(result.status).toBe(BROWSER_OBSERVE_OK);
     expect(result.status).not.toBe(BROWSER_OBSERVE_UNOBSERVED);
-    expect(result.observedUrl).toBe(MONAD_PWA_URL);
-    expect(result.reason).toBe('monad-pwa');
+    expect(result.observedUrl).toBe(ELANOUS_PWA_URL);
+    expect(result.reason).toBe('elanous-pwa');
   });
 
   test('human-readable prefix without result JSON is unobserved, not wrong-screen', async () => {
@@ -810,8 +810,8 @@ describe('observeBrowserCycle — mixed human text plus JSON', () => {
 
   test('prefixed result JSON still classifies as ok when the prefix contains braces', async () => {
     const mixed = `✔︎ Opened a new tab {not json} and set it active: tabs[1] {extra}\n${JSON.stringify({
-      tree: ACTUAL_MONAD_PWA_TREE,
-      url: MONAD_PWA_URL,
+      tree: ACTUAL_ELANOUS_PWA_TREE,
+      url: ELANOUS_PWA_URL,
     })}`;
     const fixture = createMcpHttpFixture({
       result: { content: [{ type: 'text', text: mixed }] },
@@ -822,14 +822,14 @@ describe('observeBrowserCycle — mixed human text plus JSON', () => {
     });
     expect(result.status).toBe(BROWSER_OBSERVE_OK);
     expect(result.status).not.toBe(BROWSER_OBSERVE_UNOBSERVED);
-    expect(result.observedUrl).toBe(MONAD_PWA_URL);
-    expect(result.reason).toBe('monad-pwa');
+    expect(result.observedUrl).toBe(ELANOUS_PWA_URL);
+    expect(result.reason).toBe('elanous-pwa');
   });
 
   test('result JSON after same-line brace noise classifies as ok, not unobserved', async () => {
     const payload = JSON.stringify({
-      tree: ACTUAL_MONAD_PWA_TREE,
-      url: MONAD_PWA_URL,
+      tree: ACTUAL_ELANOUS_PWA_TREE,
+      url: ELANOUS_PWA_URL,
     });
     const mixed = `note {not json} ${payload}`;
     const fixture = createMcpHttpFixture({
@@ -841,13 +841,13 @@ describe('observeBrowserCycle — mixed human text plus JSON', () => {
     });
     expect(result.status).toBe(BROWSER_OBSERVE_OK);
     expect(result.status).not.toBe(BROWSER_OBSERVE_UNOBSERVED);
-    expect(result.observedUrl).toBe(MONAD_PWA_URL);
+    expect(result.observedUrl).toBe(ELANOUS_PWA_URL);
   });
 
   test('trailing nested result JSON after leading braces uses the outer object', async () => {
     const payload = JSON.stringify({
-      tree: ACTUAL_MONAD_PWA_TREE,
-      url: MONAD_PWA_URL,
+      tree: ACTUAL_ELANOUS_PWA_TREE,
+      url: ELANOUS_PWA_URL,
       decoy: { tree: OTHER_PAGE_TREE, url: 'https://example.com/' },
     });
     const mixed = `✔︎ Opened a new tab {not json} and set it active: tabs[1] {extra} ${payload}`;
@@ -861,16 +861,16 @@ describe('observeBrowserCycle — mixed human text plus JSON', () => {
     expect(result.status).toBe(BROWSER_OBSERVE_OK);
     expect(result.status).not.toBe(BROWSER_OBSERVE_UNOBSERVED);
     expect(result.status).not.toBe(BROWSER_OBSERVE_WRONG_SCREEN);
-    expect(result.observedUrl).toBe(MONAD_PWA_URL);
-    expect(result.reason).toBe('monad-pwa');
+    expect(result.observedUrl).toBe(ELANOUS_PWA_URL);
+    expect(result.reason).toBe('elanous-pwa');
   });
 
   test('pretty-printed nested result JSON after leading braces uses the outer object', async () => {
     const inner = JSON.stringify({ tree: OTHER_PAGE_TREE, url: 'https://example.com/' });
     const payload = [
       '{',
-      `  "tree": ${JSON.stringify(ACTUAL_MONAD_PWA_TREE)},`,
-      `  "url": ${JSON.stringify(MONAD_PWA_URL)},`,
+      `  "tree": ${JSON.stringify(ACTUAL_ELANOUS_PWA_TREE)},`,
+      `  "url": ${JSON.stringify(ELANOUS_PWA_URL)},`,
       `  "decoy": ${inner}`,
       '}',
     ].join('\n');
@@ -885,8 +885,8 @@ describe('observeBrowserCycle — mixed human text plus JSON', () => {
     expect(result.status).toBe(BROWSER_OBSERVE_OK);
     expect(result.status).not.toBe(BROWSER_OBSERVE_UNOBSERVED);
     expect(result.status).not.toBe(BROWSER_OBSERVE_WRONG_SCREEN);
-    expect(result.observedUrl).toBe(MONAD_PWA_URL);
-    expect(result.reason).toBe('monad-pwa');
+    expect(result.observedUrl).toBe(ELANOUS_PWA_URL);
+    expect(result.reason).toBe('elanous-pwa');
   });
 });
 

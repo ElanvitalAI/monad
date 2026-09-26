@@ -442,8 +442,8 @@ describe('selfImplementRuntime — 관측 전용', () => {
   });
 
   test('records the enabled decision and its flag source', async () => {
-    const previous = process.env.MONAD_SELF_IMPLEMENT_OBSERVE_ONLY;
-    process.env.MONAD_SELF_IMPLEMENT_OBSERVE_ONLY = '1';
+    const previous = process.env.ELANOUS_SELF_IMPLEMENT_OBSERVE_ONLY;
+    process.env.ELANOUS_SELF_IMPLEMENT_OBSERVE_ONLY = '1';
     const logs: Record<string, unknown>[] = [];
     const log = spyOn(debug, 'log').mockImplementation(((_category: string, event: string, data?: Record<string, unknown>) => {
       if (event === 'runtime.observe-only-decision') logs.push(data ?? {});
@@ -452,7 +452,7 @@ describe('selfImplementRuntime — 관측 전용', () => {
       await selfImplementRuntime.run({ feature: 'flag source' }, ctx);
     } finally {
       log.mockRestore();
-      if (previous === undefined) delete process.env.MONAD_SELF_IMPLEMENT_OBSERVE_ONLY; else process.env.MONAD_SELF_IMPLEMENT_OBSERVE_ONLY = previous;
+      if (previous === undefined) delete process.env.ELANOUS_SELF_IMPLEMENT_OBSERVE_ONLY; else process.env.ELANOUS_SELF_IMPLEMENT_OBSERVE_ONLY = previous;
     }
     expect(logs).toContainEqual(expect.objectContaining({ observeOnly: true, observeOnlySource: 'flag' }));
   });
@@ -1205,7 +1205,7 @@ describe('selfImplementRuntime — 자연어 dispatch 출처', () => {
     let received: import('./orchestrator.js').SelfImplementOptions | undefined;
     await dispatchSelfImplement(
       { feature: 'CLI authoring regression' },
-      { cwd: '/tmp', signal: new AbortController().signal, entry: 'monad-apparatus', userText: 'CLI authoring regression' } as never,
+      { cwd: '/tmp', signal: new AbortController().signal, entry: 'elanous-apparatus', userText: 'CLI authoring regression' } as never,
       async (options) => {
         received = options;
         return { runId: 'run-cli', ok: true, stage: 'pr-declined', node: 'open-pr', outcome: 'completed' };
@@ -1368,7 +1368,7 @@ describe('관측 전용 판정의 출처는 하나다', () => {
     let daemonRunnerCalls = 0;
     const viaDaemon = await dispatchSelfImplement(
       { feature: '한 출처 검사' },
-      { cwd: '/tmp', signal: new AbortController().signal, entry: 'monad-apparatus' } as never,
+      { cwd: '/tmp', signal: new AbortController().signal, entry: 'elanous-apparatus' } as never,
       async () => { daemonRunnerCalls += 1; throw new Error('runner must not start'); },
     );
     expect(viaDaemon).toEqual({ observed: true });

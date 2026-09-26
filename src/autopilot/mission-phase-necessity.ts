@@ -149,7 +149,7 @@ export async function defaultNecessityResolve(
   const out = await streamLLM(
     [{ role: 'user', content: phaseNecessityPrompt(phases, context) }],
     () => {},
-    { model: process.env.MONAD_NECESSITY_MODEL || tierModel('budget'), reasoningEffort: 'low' },
+    { model: process.env.ELANOUS_NECESSITY_MODEL || tierModel('budget'), reasoningEffort: 'low' },
   );
   return parseNecessityJson(out);
 }

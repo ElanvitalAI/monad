@@ -34,7 +34,7 @@ export interface BuildOutboundEventOpts {
    *  route through the channel's own action handler (see SW push
    *  handler for the PWA path · App Intents for native iOS). */
   link?: string;
-  /** Override the title — defaults to `monad · <top label>`. */
+  /** Override the title — defaults to `elanous · <top label>`. */
   title?: string;
   /** Override source — defaults to 'thinker' since intent prediction
    *  is a "suggested next action" surface (Thinker territory in the
@@ -61,7 +61,7 @@ export function buildOutboundEventFromRanking(
       id: `intent-${ranking.sessionId}-${ranking.version}`,
       source: opts.source ?? 'thinker',
       urgency: opts.urgency ?? 'normal',
-      title: opts.title ?? 'monad',
+      title: opts.title ?? 'elanous',
       ...(opts.link ? { link: opts.link } : {}),
       payload: {
         kind: 'intent-prediction',
@@ -77,7 +77,7 @@ export function buildOutboundEventFromRanking(
   const sorted = [...ranking.candidates].sort((a, b) => b.confidence - a.confidence);
   const top = sorted[0]!;
   const next = sorted[1];
-  const title = opts.title ?? `monad · ${top.label}`;
+  const title = opts.title ?? `elanous · ${top.label}`;
   const body = next ? `또는 ${next.label}?` : undefined;
   return {
     id: `intent-${ranking.sessionId}-${ranking.version}`,

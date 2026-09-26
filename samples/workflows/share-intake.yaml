@@ -46,10 +46,10 @@ nodes:
 
   - id: save-to-inbox
     bash: |
-      OBSIDIAN_DIR="${MONAD_OBSIDIAN_DIR:-$HOME/Documents/Obsidian}"
+      OBSIDIAN_DIR="${ELANOUS_OBSIDIAN_DIR:-$HOME/Documents/Obsidian}"
       DIR="$OBSIDIAN_DIR/Inbox"
       mkdir -p "$DIR" 2>/dev/null || {
-        echo "ERROR: cannot create $DIR — set MONAD_OBSIDIAN_DIR to a writable path"
+        echo "ERROR: cannot create $DIR — set ELANOUS_OBSIDIAN_DIR to a writable path"
         exit 1
       }
       DATE=$(date +%Y-%m-%d)

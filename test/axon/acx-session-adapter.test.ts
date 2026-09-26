@@ -229,7 +229,7 @@ describe('AXON P6.2 — acx-session adapter error paths', () => {
 });
 
 describe('AXON P6.2 — acx-session adapter server brand', () => {
-  test("agentBrand='monad-self' forwarded to callable (server session support is callable's job)", async () => {
+  test("agentBrand='elanous-self' forwarded to callable (server session support is callable's job)", async () => {
     let seen: AcxAgentBrand | undefined;
     const adapter = createAcxSessionAdapter({
       callable: async (input) => {
@@ -245,9 +245,9 @@ describe('AXON P6.2 — acx-session adapter server brand', () => {
         };
       },
     });
-    const task = mkTask({ agentBrand: 'monad-self' });
+    const task = mkTask({ agentBrand: 'elanous-self' });
     const exec = await (await adapter(task, {})).promise;
-    expect(seen).toBe('monad-self');
+    expect(seen).toBe('elanous-self');
     expect(exec.status).toBe('failed');
     expect(exec.error?.code).toBe('SERVER_SESSION_NOT_DRIVEABLE');
   });

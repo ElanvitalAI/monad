@@ -9,7 +9,7 @@
 //   saveMission 안 함 → 증발)을 피한다. 모든 관계 mutation 은 in-memory 변경이 아니라 store.saveMission
 //   되쓰기로만 성립(attachChildMission·mission-registry.ts:311 검증된 패턴 미러). 동급이라 **양방향**.
 //
-// 제1원칙 준수 — 관계 변경을 ops_events(mission_linked)로 관측(monad ops timeline·autopilot trace fan-in).
+// 제1원칙 준수 — 관계 변경을 ops_events(mission_linked)로 관측(elanous ops timeline·autopilot trace fan-in).
 
 import type { TaskStore } from '../task-orchestrator/store.js';
 import type { MissionRelationLink } from '../task-orchestrator/mission.js';

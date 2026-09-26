@@ -40,7 +40,7 @@ interface ResolveKnowledgeDocsRootsOpts {
   gitRoot?: (cwd: string) => string | undefined;
 }
 
-const TOOL_PACKAGE_NAME = 'monadagent';
+const TOOL_PACKAGE_NAME = 'elanous';
 
 function defaultReadPackageName(packageJsonPath: string): string | undefined {
   try {

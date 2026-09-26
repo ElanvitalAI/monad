@@ -22,7 +22,7 @@ const BLOCK_SET: Set<string> = new Set(REDACT_KEY_BLOCKLIST.map((k) => k.toLower
 
 export interface RedactOpts {
   /** When true, utterance `value` is kept verbatim (opt-in via
-   *  `~/.monad/user-intents/opt-in.yaml`). Defaults to false. */
+   *  `~/.elanous/user-intents/opt-in.yaml`). Defaults to false. */
   logFullContent?: boolean;
 }
 

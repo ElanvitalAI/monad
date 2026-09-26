@@ -9,7 +9,7 @@
 // `'local'`.
 //
 // The host config is read via `getEffectiveHosts()` (reads
-// MONAD_LLM_HOSTS env + in-memory override). When no matching hosts
+// ELANOUS_LLM_HOSTS env + in-memory override). When no matching hosts
 // are configured, the source returns ok=true with models=[] so the
 // runner doesn't surface a misleading "missing-api-key" style error
 // (local hosts opt in by being declared, not by env presence).

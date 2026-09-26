@@ -1,7 +1,7 @@
 /**
  * 인스턴스 스코프 로그 레벨 — LF7-c 계약 (2026-07-13).
  *
- * 전부 temp 경로 — 실 ~/.monad 미접촉. 핵심: 레벨 영속이 공유 config 를
+ * 전부 temp 경로 — 실 ~/.elanous 미접촉. 핵심: 레벨 영속이 공유 config 를
  * 절대 만지지 않고 state dir 로컬 파일에만 간다(overlay persist 사건의
  * 오염 벡터 원천 제거).
  */
@@ -21,7 +21,7 @@ import {
 
 describe('scoped-level — 인스턴스 로컬 레벨 영속', () => {
   it('persist → read 왕복 (원자적 write · 디렉토리 자동 생성)', () => {
-    const dir = mkdtempSync(join(tmpdir(), 'monad-lvl-'));
+    const dir = mkdtempSync(join(tmpdir(), 'elanous-lvl-'));
     const p = join(dir, 'logs', 'level.json');
     persistScopedDebugLevel('diag', p);
     expect(readScopedDebugLevel(p)).toBe('diag');
@@ -31,7 +31,7 @@ describe('scoped-level — 인스턴스 로컬 레벨 영속', () => {
   });
 
   it('파일 없음/파손/무효 레벨 → null (config 기본값 fallback)', () => {
-    const dir = mkdtempSync(join(tmpdir(), 'monad-lvl-'));
+    const dir = mkdtempSync(join(tmpdir(), 'elanous-lvl-'));
     expect(readScopedDebugLevel(join(dir, 'nope.json'))).toBeNull();
     const bad = join(dir, 'bad.json');
     writeFileSync(bad, 'not-json');
@@ -43,7 +43,7 @@ describe('scoped-level — 인스턴스 로컬 레벨 영속', () => {
   });
 
   it('OH9 — render 필드 round-trip · level 과 read-merge(서로 안 덮음)', () => {
-    const dir = mkdtempSync(join(tmpdir(), 'monad-lvl-'));
+    const dir = mkdtempSync(join(tmpdir(), 'elanous-lvl-'));
     const p = join(dir, 'logs', 'level.json');
     persistScopedDebugLevel('diag', p);
     persistScopedRenderLogs(false, p);           // render off = 억제
@@ -59,7 +59,7 @@ describe('scoped-level — 인스턴스 로컬 레벨 영속', () => {
   });
 
   it('OH9 — render 부재/파손이면 null (시드로 폴백)', () => {
-    const dir = mkdtempSync(join(tmpdir(), 'monad-lvl-'));
+    const dir = mkdtempSync(join(tmpdir(), 'elanous-lvl-'));
     expect(readScopedRenderLogs(join(dir, 'nope.json'))).toBeNull();
     const noRender = join(dir, 'lvl-only.json');
     persistScopedDebugLevel('diag', noRender);
@@ -79,14 +79,14 @@ describe('scoped-level — 인스턴스 로컬 레벨 영속', () => {
     expect(resolveRenderSuppressed({ scopedRender: null, uiModeEssential: false })).toBe(false);
   });
 
-  it('경로는 MONAD_STATE_DIR 존중 — logs.db 와 같은 루트(격리 동형)', () => {
-    const prev = process.env.MONAD_STATE_DIR;
-    process.env.MONAD_STATE_DIR = '/tmp/monad-isolated';
+  it('경로는 ELANOUS_STATE_DIR 존중 — logs.db 와 같은 루트(격리 동형)', () => {
+    const prev = process.env.ELANOUS_STATE_DIR;
+    process.env.ELANOUS_STATE_DIR = '/tmp/elanous-isolated';
     try {
-      expect(scopedLevelPath()).toBe('/tmp/monad-isolated/logs/level.json');
+      expect(scopedLevelPath()).toBe('/tmp/elanous-isolated/logs/level.json');
     } finally {
-      if (prev === undefined) delete process.env.MONAD_STATE_DIR;
-      else process.env.MONAD_STATE_DIR = prev;
+      if (prev === undefined) delete process.env.ELANOUS_STATE_DIR;
+      else process.env.ELANOUS_STATE_DIR = prev;
     }
   });
 });

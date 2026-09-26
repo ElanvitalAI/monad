@@ -139,8 +139,8 @@ describe('defaultSkillDirs — bundled package skills', () => {
       const bundled = bundledSkillsDir(root);
       try {
         mkdirSync(bundled, { recursive: true });
-        mkdirSync(join(root, 'monad'), { recursive: true });
-        writeFileSync(join(root, 'monad', 'config.json'), '{not-json');
+        mkdirSync(join(root, 'elanous'), { recursive: true });
+        writeFileSync(join(root, 'elanous', 'config.json'), '{not-json');
         process.env.XDG_CONFIG_HOME = root;
         resetUserConfig();
 

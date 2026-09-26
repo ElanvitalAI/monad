@@ -249,7 +249,7 @@ function ledgerSection(ledger: PrEvidenceLedger): string[] {
     ...(isBlank(ledger.mergeReason) ? [] : [`- 병합 판정: \`${ledger.mergeReason!.trim()}\``]),
     ...(isBlank(ledger.provider) ? [] : [`- 구현 두뇌: \`${ledger.provider!.trim()}\``]),
     '',
-    `📏 이 런을 다시 보는 명령: \`monad logs --category self-implement --grep ${ledger.runId.trim()}\``,
+    `📏 이 런을 다시 보는 명령: \`elanous logs --category self-implement --grep ${ledger.runId.trim()}\``,
   ]);
 }
 

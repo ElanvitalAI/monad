@@ -125,7 +125,7 @@ function buildSummary(
     ? `${top.label}`
     : `shell ${shortId} 종료 — 분석할 단서 없음`;
   const applyHint = canApply ? ' · [Apply] [Show diff]' : ' · 제안만 (canWrite=false)';
-  return `🧠 monad · sh-${shortId}${exitFragment} · ${headline}${applyHint}`;
+  return `🧠 elanous · sh-${shortId}${exitFragment} · ${headline}${applyHint}`;
 }
 
 export function createPfcReverseFeedback(

@@ -85,7 +85,7 @@ export interface ShellResult {
   sandboxTool: 'sandbox-exec' | 'bwrap' | 'none';
   /** AU3 — populated when the Guardian flagged the command as
    *  destructive / escalated BEFORE it ran. Null on clean commands
-   *  and whenever `MONAD_GUARDIAN=off`. The runtime always forces
+   *  and whenever `ELANOUS_GUARDIAN=off`. The runtime always forces
    *  an approval upgrade when a finding is present; the field is
    *  retained on the result so the chat log can surface the reason
    *  regardless of the outcome. */

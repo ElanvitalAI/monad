@@ -2,7 +2,7 @@
 # 📏 2026-09-14 01:5x KST 실측: ad-pipeline.graph/pipeline-node-entry ***35행 · declared 35/35***
 #    = 간선 일곱 × 다섯 판. fail·empty·unknown 갈래는 «한 번도» 안 밟혔다(=0) — 그것도 실측이다.
 # ⛔ 이 수를 손으로 고치지 말고 «다시 재라»:
-#    bun bin/monad.mjs logs --category ad-pipeline.graph --event pipeline-node-entry --limit 400 --json --json-data
+#    bun bin/elanous.mjs logs --category ad-pipeline.graph --event pipeline-node-entry --limit 400 --json --json-data
 #    (data.gate|data.from · data.outcome · data.node 셋으로 묶어 센다)
 graph_id: ad-loop
 version: 1

@@ -300,20 +300,20 @@ const DEFAULT_DEPS: LogsDegenerateDeps = {
   writeError: console.error,
 };
 
-/** `monad logs degenerate` — 수치·boolean 필드의 퇴화와 검사·제외 수를 NDJSON으로 낸다. */
+/** `elanous logs degenerate` — 수치·boolean 필드의 퇴화와 검사·제외 수를 NDJSON으로 낸다. */
 export function runLogsDegenerate(opts: LogsDegenerateOpts, deps: LogsDegenerateDeps = DEFAULT_DEPS): number {
   const minSamples = Number(opts.minSamples ?? '50');
   if (!Number.isInteger(minSamples) || minSamples < 1) {
-    deps.writeError('monad logs degenerate: --min-samples 는 양의 정수');
+    deps.writeError('elanous logs degenerate: --min-samples 는 양의 정수');
     return 1;
   }
   const sinceMs = opts.since ? parseSince(opts.since) : undefined;
   if (opts.since && sinceMs === null) {
-    deps.writeError(`monad logs degenerate: --since 파싱 불가 '${opts.since}' (30s|15m|2h|7d 또는 ISO)`);
+    deps.writeError(`elanous logs degenerate: --since 파싱 불가 '${opts.since}' (30s|15m|2h|7d 또는 ISO)`);
     return 1;
   }
   const resolved = deps.resolveTargets({ test: opts.test, instance: opts.instance, all: opts.all, includeTest: opts.includeTest });
-  if (resolved.error) { deps.writeError(`monad logs degenerate: ${resolved.error}`); return 1; }
+  if (resolved.error) { deps.writeError(`elanous logs degenerate: ${resolved.error}`); return 1; }
   const validSinceMs: number | undefined = sinceMs ?? undefined;
   const query: LedgerDegenerateQuery = {
     ...(opts.category ? { categories: opts.category.split(',').map((value) => value.trim()).filter(Boolean) } : {}),
@@ -329,7 +329,7 @@ export function runLogsDegenerate(opts: LogsDegenerateOpts, deps: LogsDegenerate
     try {
       const scan = collectDegenerateRows(store, query);
       if (scan.truncated) {
-        deps.writeError(`monad logs degenerate: ${target.name} 스캔이 저장소 안전 상한에서 잘렸다 — 창을 좁혀라(--since).`);
+        deps.writeError(`elanous logs degenerate: ${target.name} 스캔이 저장소 안전 상한에서 잘렸다 — 창을 좁혀라(--since).`);
         return 1;
       }
       const dataScan = scanDegenerateDataFields(chronologicalDataRows(scan.rows), minSamples);
@@ -342,7 +342,7 @@ export function runLogsDegenerate(opts: LogsDegenerateOpts, deps: LogsDegenerate
     ledgerScan = deps.scanLedgerDegenerateFields(deps.runLedgerDir(), minSamples, query);
   } catch (error) {
     if (error instanceof LedgerScanLimitError) {
-      deps.writeError(`monad logs degenerate: run-ledger 스캔이 저장소 안전 상한에서 잘렸다 — 창을 좁혀라(--since).`);
+      deps.writeError(`elanous logs degenerate: run-ledger 스캔이 저장소 안전 상한에서 잘렸다 — 창을 좁혀라(--since).`);
       return 1;
     }
     throw error;

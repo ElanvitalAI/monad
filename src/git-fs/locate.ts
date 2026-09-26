@@ -5,7 +5,7 @@
 //
 // Ported conceptually from claude-code-fork/src/utils/git/gitFilesystem
 // + codex-rs/git-utils/src/info.rs::resolve_root_git_project_for_trust.
-// The monad version only needs the paths; trust enforcement lives
+// The elanous version only needs the paths; trust enforcement lives
 // elsewhere.
 
 import { existsSync, statSync, readFileSync, realpathSync } from 'node:fs';

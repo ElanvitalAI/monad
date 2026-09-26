@@ -44,7 +44,7 @@ export function resolveDashboardChatMainSetupCommand(
 export function dashboardSetupHelpLines(): string[] {
   return [
     '❯ /setup — setup entry',
-    '  기본 진입은 monad picker/modal 자산을 쓰는 inline flow.',
+    '  기본 진입은 elanous picker/modal 자산을 쓰는 inline flow.',
     '  legacy wizard step 은 기존 popup terminal fallback 유지.',
     '',
     '  · `/setup`                 inline category picker (env auto-detect)',

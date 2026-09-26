@@ -15,7 +15,7 @@ import {
   listToolRuntimes,
   registerToolRuntime,
 } from '../src/tool-runtime/registry';
-import { monadAutopilotLaunchRuntime } from '../src/tool-runtime/monad-autopilot-launch-runtime';
+import { elanousAutopilotLaunchRuntime } from '../src/tool-runtime/elanous-autopilot-launch-runtime';
 import type { ToolRuntime } from '../src/tool-runtime/types';
 import {
   setPtyAdapterForTesting, resetForTesting,
@@ -149,7 +149,7 @@ describe('MCP tools/list', () => {
 
     const runtimeNames = listToolRuntimes('mcp').map(runtime => runtime.id);
     expect(runtimeNames).toContain('aside.repl');
-    expect(runtimeNames).toContain('monad_autopilot_launch');
+    expect(runtimeNames).toContain('elanous_autopilot_launch');
     expect(runtimeNames.some(name => !name.startsWith('aside.') && !name.startsWith('xcodebuild.'))).toBe(true);
 
     const resp = await handleMcpRequest({
@@ -158,7 +158,7 @@ describe('MCP tools/list', () => {
     const result = resp.result as { tools: Array<{ name: string; description: string }> };
     const names = result.tools.map(t => t.name);
     expect(names).toContain('aside.repl');
-    expect(names).toContain('monad_autopilot_launch');
+    expect(names).toContain('elanous_autopilot_launch');
     expect(names).toContain('GetDashboardState');
     expect(names).toContain('PtyShellList');
     expect(names).not.toContain('Bash');
@@ -192,13 +192,13 @@ describe('MCP tools/call', () => {
   test('harness launch tools/call returns the identifier produced by its runtime', async () => {
     const runId = 'run-from-harness-seam';
     registerToolRuntime({
-      ...monadAutopilotLaunchRuntime,
+      ...elanousAutopilotLaunchRuntime,
       run: async () => ({ output: runId, runId }),
     });
 
     const resp = await handleMcpRequest({
       jsonrpc: '2.0', id: 5, method: 'tools/call',
-      params: { name: 'monad_autopilot_launch', arguments: { mission: 'start this harness run' } },
+      params: { name: 'elanous_autopilot_launch', arguments: { mission: 'start this harness run' } },
     });
     const result = resp.result as {
       content: Array<{ type: string; text: string }>;

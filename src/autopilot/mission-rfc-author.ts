@@ -57,8 +57,8 @@ export interface AuthoredRfc {
 /** RFC 저작 LLM resolver — primary failure 때 별 endpoint의 fallback으로 즉시 재시도한다.
  *
  * ⛔⭐⭐ 2026-09-23 — ***모델 «이름»을 여기 박지 않는다.*** 종전엔 두 줄이 이랬다:
- *     `process.env.MONAD_RFC_MODEL` 이 없으면 ***codex 심층 모델 이름을 문자열로*** 폴백,
- *     `MONAD_RFC_FALLBACK_MODEL` 이 없으면 ***opus 4-8 을 문자열로*** 폴백.
+ *     `process.env.ELANOUS_RFC_MODEL` 이 없으면 ***codex 심층 모델 이름을 문자열로*** 폴백,
+ *     `ELANOUS_RFC_FALLBACK_MODEL` 이 없으면 ***opus 4-8 을 문자열로*** 폴백.
  *   `llm/model-defaults.ts` 의 머리말이 ***그 모양을 예시로 들어*** 없애려던 것이고,
  *   회귀 가드(`model-defaults.test.ts`)가 이 파일을 위반으로 세고 있었다.
  *   ⚠️ ***그 가드는 주석도 센다*** — 그래서 여기 옛 문자열을 «그대로 인용하지 않는다».
@@ -78,8 +78,8 @@ export function createRfcResolver(missionId = 'harness-plan'): (prompt: string) 
   const rfcEffort = primary.reasoningEffort && primary.reasoningEffort !== 'off'
     ? primary.reasoningEffort
     : undefined;
-  const rfcPrimary = process.env.MONAD_RFC_MODEL || primary.model;
-  const rfcFallback = process.env.MONAD_RFC_FALLBACK_MODEL || tierModel('best', 'anthropic');
+  const rfcPrimary = process.env.ELANOUS_RFC_MODEL || primary.model;
+  const rfcFallback = process.env.ELANOUS_RFC_FALLBACK_MODEL || tierModel('best', 'anthropic');
   return async (prompt: string): Promise<string> => {
     try {
       return await streamLLM([{ role: 'user', content: prompt }], () => {}, { model: rfcPrimary, reasoningEffort: rfcEffort });
@@ -95,7 +95,7 @@ export function createRfcResolver(missionId = 'harness-plan'): (prompt: string) 
  *  순수 함수(테스트 가능). 어느 재료가 있으면 그것만 포함(조건부). */
 export function buildRfcAuthorPrompt(ctx: RfcAuthorContext): string {
   const lines: string[] = [];
-  lines.push(`너는 monad 미션의 설계자다. 아래 골과 조사 재료로 **RFC/DESIGN 문서**를 저작하라.`);
+  lines.push(`너는 elanous 미션의 설계자다. 아래 골과 조사 재료로 **RFC/DESIGN 문서**를 저작하라.`);
   lines.push(`목적: 이 설계문서에서 아크(설계 섹션)와 페이즈(작업항목)가 자연히 파생되고, 문서 자체가`);
   lines.push(`빌드 단계에 전달되는 **설계 계약**이 된다. 크기·경계를 여기서 확정해 이후 재분해가 없게 하라.`);
   lines.push('');

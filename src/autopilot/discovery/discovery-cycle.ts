@@ -28,7 +28,7 @@ export function seedFromAbsorption(c: AbsorptionCandidate): ProposalSeed {
     slug: `absorb-${c.repoKey}-${c.area.replace(/[^a-z0-9]+/gi, '-')}`.toLowerCase(),
     title: `[흡수] ${c.repoKey}/${c.area} (${c.commits} 커밋)`,
     source: 'external-repo',
-    rationale: `참조 repo ${c.repoKey} ${c.area} 영역 활동(커밋 ${c.commits}·파일 ${c.files}·관심점수 ${c.score}). monad에 이식할 가치 검토.`,
+    rationale: `참조 repo ${c.repoKey} ${c.area} 영역 활동(커밋 ${c.commits}·파일 ${c.files}·관심점수 ${c.score}). elanous에 이식할 가치 검토.`,
     evidence: [`${c.repoKey}:${c.area}`, ...c.whatChanged.slice(0, 3)],
     tier: c.commits > 10 ? 'heavy' : 'light',
     scopeSketch: c.whatChanged.slice(0, 4).map(m => `검토·이식: ${m.slice(0, 70)}`),

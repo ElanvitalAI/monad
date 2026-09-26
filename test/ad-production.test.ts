@@ -163,8 +163,8 @@ test('derives assembly output options from injected production identity', async 
   const result = await runAdPipeline({ kind: 'text', brief: 'serum campaign' }, deps);
 
   if (result.status !== 'gates-approved') throw new Error('Expected approved gates for output-identity assembly.');
-  expect(result.masterPath).toBe('/home/tester/Movies/monad-ad/2026-09-11-umbrella/umbrella_v3_9x16.mp4');
-  expect(calls.find((argv) => argv.includes('/home/tester/Movies/monad-ad/2026-09-11-umbrella/umbrella_v3_9x16.mp4'))).toEqual(expect.arrayContaining(['/home/tester/Movies/monad-ad/2026-09-11-umbrella/umbrella_v3_9x16.mp4']));
+  expect(result.masterPath).toBe('/home/tester/Movies/elanous-ad/2026-09-11-umbrella/umbrella_v3_9x16.mp4');
+  expect(calls.find((argv) => argv.includes('/home/tester/Movies/elanous-ad/2026-09-11-umbrella/umbrella_v3_9x16.mp4'))).toEqual(expect.arrayContaining(['/home/tester/Movies/elanous-ad/2026-09-11-umbrella/umbrella_v3_9x16.mp4']));
 });
 
 test('preserves explicit assembly options over output identity defaults', async () => {

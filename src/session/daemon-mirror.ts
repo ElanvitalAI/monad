@@ -21,14 +21,14 @@
 //   - Default OFF. Caller (dashboard boot) calls
 //     `activateDaemonMirrorIfReachable()` once after env detection.
 //   - Returns the deactivation handle (idempotent).
-//   - Daemon discovery uses ~/.monad/monad.runtime.json (httpPort) and
-//     ~/.monad/acp-token (auth). Same-host assumption matches PR 3
+//   - Daemon discovery uses ~/.elanous/elanous.runtime.json (httpPort) and
+//     ~/.elanous/acp-token (auth). Same-host assumption matches PR 3
 //     (telegram /resume) — cross-host mirror is out of arc scope.
 
 import { existsSync, readFileSync } from 'node:fs';
 import { join as joinPath } from 'node:path';
 
-import { monadDaemonDir, readMonadDaemonRuntime } from '../monad-daemon.js';
+import { elanousDaemonDir, readElanousDaemonRuntime } from '../elanous-daemon.js';
 import {
   loadSession,
   onMessageAppended,
@@ -60,10 +60,10 @@ export interface DaemonMirrorOpts {
   log?: (msg: string) => void;
 }
 
-/** Read ~/.monad/acp-token if it exists. Returns null when the file
+/** Read ~/.elanous/acp-token if it exists. Returns null when the file
  *  is missing (daemon ran with --no-http-auth). */
 function readAcpToken(): string | null {
-  const path = joinPath(monadDaemonDir(), 'acp-token');
+  const path = joinPath(elanousDaemonDir(), 'acp-token');
   if (!existsSync(path)) return null;
   try { return readFileSync(path, 'utf8').trim() || null; }
   catch { return null; }
@@ -72,7 +72,7 @@ function readAcpToken(): string | null {
 /** Production discovery — runtime.json -> httpPort + acp-token file.
  *  Returns null when daemon isn't reachable or didn't expose HTTP. */
 function defaultDiscover(): { baseUrl: string; token?: string } | null {
-  const runtime = readMonadDaemonRuntime();
+  const runtime = readElanousDaemonRuntime();
   if (!runtime || !runtime.httpPort) return null;
   const host = runtime.httpHost ?? '127.0.0.1';
   const baseUrl = `http://${host}:${runtime.httpPort}`;

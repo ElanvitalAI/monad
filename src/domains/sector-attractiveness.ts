@@ -1,6 +1,6 @@
 // ── 섹터 매력도 (valuechain.py sector_attractiveness TS 포팅 · 2026-07-07) ──
 //
-// 대표 이관 지시: sector 계산 로직을 외부 Conatus 파이썬(valuechain.py)에서 monad TS로
+// 대표 이관 지시: sector 계산 로직을 외부 Conatus 파이썬(valuechain.py)에서 elanous TS로
 // 재포팅. 캡스톤 패턴(계산=TS·데이터=로컬 재사용) 동일. 기존 파이썬은 달력 월봉 리샘플
 // (미완성 월 → stale)이었으나, 여기선 rolling window(오늘 기준 daily/weekly/monthly)로
 // 재설계 → stale 원천 해소. 데이터: screener.db prices(로컬·백필 완료) 재사용(omni-market

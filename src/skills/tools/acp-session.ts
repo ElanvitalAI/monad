@@ -449,7 +449,7 @@ export function buildAcpSessionResumeTool(): LLMToolSpec {
       'otherwise throws AcpLoadSessionUnsupportedError with a clear message. ' +
       'H4 Phase 2 · `codex-native` now advertises loadSession:true and restores ' +
       'real conversation context via `Codex.resumeThread` + disk-backed thread ' +
-      'index (monad synth-id → Codex thread_id, with original ThreadOptions ' +
+      'index (elanous synth-id → Codex thread_id, with original ThreadOptions ' +
       'replayed). Pinned ACP-shim backends (claude / codex / gemini) still ' +
       'return false today — their loadSession RPCs are not wired server-side.',
     parameters: {
@@ -638,7 +638,7 @@ export async function dispatchAcpSessionSpawnSub(
   // the child as a linked sub-thread. Opaque to non-Zed peers (per
   // ACP spec: "Implementations MUST NOT make assumptions about values
   // at these keys"), so it's safe to forward unconditionally.
-  // Namespaced ACP ids (`acp-cli:<brand>:<raw>`) are not MonadUri
+  // Namespaced ACP ids (`acp-cli:<brand>:<raw>`) are not ElanousUri
   // grammar, so we reapply the SessionUri brand at this boundary the
   // same way DRM does when feeding these ids into SessionUri-typed
   // events (dual-role-manager.ts). `readSubagentMeta` re-brands the
@@ -955,7 +955,7 @@ export function buildAcpSessionStartBackgroundTool(): LLMToolSpec {
       '`AcpSessionJoin` to retrieve the final output once state is terminal. ' +
       'Approval-pending / completion transitions fire iPhone push notifications ' +
       '(when Pushcut is configured). Warp Oz cloud-agent parity for long-running ' +
-      'subtasks that shouldn\'t block monad\'s main loop. Pass ' +
+      'subtasks that shouldn\'t block elanous\'s main loop. Pass ' +
       '`parentSessionId` to link the BG under an existing session (HOP_CAP ' +
       'chain-depth check applies; closing the parent cascades the BG cancel).',
     parameters: {

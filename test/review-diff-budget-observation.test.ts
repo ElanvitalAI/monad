@@ -14,11 +14,11 @@ import { buildHarnessSeams, postPrReview } from "../src/harness/harness-seams.js
 
 const roots: string[] = [];
 // ⚠️ delete 는 복원이 아니다 — 사전 설정값이 있으면 그 값을 잃는다. 원본을 잡아 두고 되돌린다.
-const originalDiffCharsEnv = process.env.MONAD_PR_REVIEW_DIFF_CHARS;
+const originalDiffCharsEnv = process.env.ELANOUS_PR_REVIEW_DIFF_CHARS;
 
 afterEach(() => {
-  if (originalDiffCharsEnv === undefined) delete process.env.MONAD_PR_REVIEW_DIFF_CHARS;
-  else process.env.MONAD_PR_REVIEW_DIFF_CHARS = originalDiffCharsEnv;
+  if (originalDiffCharsEnv === undefined) delete process.env.ELANOUS_PR_REVIEW_DIFF_CHARS;
+  else process.env.ELANOUS_PR_REVIEW_DIFF_CHARS = originalDiffCharsEnv;
   while (roots.length) rmSync(roots.pop()!, { recursive: true, force: true });
 });
 
@@ -89,7 +89,7 @@ function cliDeps(
 
 describe("review diff-budget transport", () => {
   it("returns the exact prompt budget for an oversized file while fail-soft results omit it", async () => {
-    process.env.MONAD_PR_REVIEW_DIFF_CHARS = "2000";
+    process.env.ELANOUS_PR_REVIEW_DIFF_CHARS = "2000";
     const prDiff = oversizedSingleFileDiff();
     let prompt = "";
     const result = await reviewPullRequest(
@@ -132,7 +132,7 @@ describe("review diff-budget transport", () => {
   });
 
   it("bounds referenced context per file, across files, and in total", async () => {
-    process.env.MONAD_PR_REVIEW_DIFF_CHARS = "2000";
+    process.env.ELANOUS_PR_REVIEW_DIFF_CHARS = "2000";
     const paths = Array.from({ length: 6 }, (_, index) => `src/file-${index}.ts`);
     const prDiff = `${oversizedSingleFileDiff()}\n${paths.join("\n")}`;
     const reads: string[] = [];
@@ -162,7 +162,7 @@ describe("review diff-budget transport", () => {
   });
 
   it("passes the injected repository reader to the actual review call and observes its reads", async () => {
-    process.env.MONAD_PR_REVIEW_DIFF_CHARS = "2000";
+    process.env.ELANOUS_PR_REVIEW_DIFF_CHARS = "2000";
     const logs: Array<{ event: string; data: Record<string, unknown> }> = [];
     const reader = (path: string) => ({ kind: "ok" as const, contents: `context for ${path}` });
     let capturedInput: Parameters<SelfReviewCliDeps["reviewPullRequest"]>[0] | undefined;
@@ -186,7 +186,7 @@ describe("review diff-budget transport", () => {
   });
 
   it("keeps CLI observation field names and values from the returned budget", async () => {
-    process.env.MONAD_PR_REVIEW_DIFF_CHARS = "2000";
+    process.env.ELANOUS_PR_REVIEW_DIFF_CHARS = "2000";
     const review = await reviewPullRequest(
       { prDiff: oversizedSingleFileDiff(), phaseIntent: "test" },
       async () => "VERDICT: PASS",
@@ -274,7 +274,7 @@ describe("review diff-budget transport", () => {
   });
 
   it("preserves the review budget through the self-implement control seam", async () => {
-    process.env.MONAD_PR_REVIEW_DIFF_CHARS = "2000";
+    process.env.ELANOUS_PR_REVIEW_DIFF_CHARS = "2000";
     const repo = tempRepo();
     const files = Array.from({ length: 8 }, (_, index) => `file-${index}.ts`);
     for (const file of files) writeFileSync(join(repo, file), "x".repeat(3_000));
@@ -293,7 +293,7 @@ describe("review diff-budget transport", () => {
   });
 
   it("emits a truncated budget from the self-implement review.done seam", async () => {
-    process.env.MONAD_PR_REVIEW_DIFF_CHARS = "2000";
+    process.env.ELANOUS_PR_REVIEW_DIFF_CHARS = "2000";
     const repo = tempRepo();
     const files = Array.from({ length: 8 }, (_, index) => `file-${index}.ts`);
     for (const file of files) writeFileSync(join(repo, file), "x".repeat(3_000));
@@ -386,7 +386,7 @@ describe("review diff-budget transport", () => {
   });
 
   it("emits the same fields from the harness critique review seam", async () => {
-    process.env.MONAD_PR_REVIEW_DIFF_CHARS = "2000";
+    process.env.ELANOUS_PR_REVIEW_DIFF_CHARS = "2000";
     const repo = tempRepo();
     const files = Array.from({ length: 8 }, (_, index) => `file-${index}.ts`);
     for (const file of files) writeFileSync(join(repo, file), "x".repeat(3_000));
@@ -426,7 +426,7 @@ describe("review diff-budget transport", () => {
   });
 
   it("emits budget fields from the harness deployed-review seam", async () => {
-    process.env.MONAD_PR_REVIEW_DIFF_CHARS = "2000";
+    process.env.ELANOUS_PR_REVIEW_DIFF_CHARS = "2000";
     const events: Record<string, unknown>[] = [];
     const log = spyOn(debug, "log").mockImplementation(((
       _category: string,

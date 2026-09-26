@@ -12,7 +12,7 @@ describe('resolveToolCwd', () => {
     expect(() => resolveToolCwd(
       { tools: 'readonly' },
       { instanceKind: 'test', envToolCwd: undefined, cwd: '/repo' },
-    )).toThrow('--tool-cwd <path> or set MONAD_TOOL_CWD');
+    )).toThrow('--tool-cwd <path> or set ELANOUS_TOOL_CWD');
   });
 
   test('flushes the refused decision before throwing in an isolated instance', () => {
@@ -27,7 +27,7 @@ describe('resolveToolCwd', () => {
       expect(() => resolveToolCwd(
         { tools: 'readonly' },
         { instanceKind: 'test', envToolCwd: undefined, cwd: '/repo' },
-      )).toThrow('--tool-cwd <path> or set MONAD_TOOL_CWD');
+      )).toThrow('--tool-cwd <path> or set ELANOUS_TOOL_CWD');
       expect(order).toEqual(['refused', 'flush']);
     } finally {
       flush.mockRestore();

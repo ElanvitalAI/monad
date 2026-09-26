@@ -17,13 +17,13 @@ const AUTHORIZE = 'https://auth.example.test/authorize';
 const TOKEN = 'https://auth.example.test/token';
 const REGISTER = 'https://auth.example.test/register';
 const dirs: string[] = [];
-const prevStateDir = process.env.MONAD_STATE_DIR;
+const prevStateDir = process.env.ELANOUS_STATE_DIR;
 const prevXdg = process.env.XDG_CONFIG_HOME;
 
 afterEach(() => {
   for (const dir of dirs.splice(0)) rmSync(dir, { recursive: true, force: true });
-  if (prevStateDir === undefined) delete process.env.MONAD_STATE_DIR;
-  else process.env.MONAD_STATE_DIR = prevStateDir;
+  if (prevStateDir === undefined) delete process.env.ELANOUS_STATE_DIR;
+  else process.env.ELANOUS_STATE_DIR = prevStateDir;
   if (prevXdg === undefined) delete process.env.XDG_CONFIG_HOME;
   else process.env.XDG_CONFIG_HOME = prevXdg;
 });
@@ -33,7 +33,7 @@ function isolated(): void {
   dirs.push(dir);
   // ⛔ MCP 자격은 전역 자격 파일(authStorePath)에 간다 — XDG 로 tmp 에 못 박는다.
   process.env.XDG_CONFIG_HOME = join(dir, 'config');
-  process.env.MONAD_STATE_DIR = join(dir, 'universe');
+  process.env.ELANOUS_STATE_DIR = join(dir, 'universe');
 }
 
 function json(status: number, body: unknown): Response {
@@ -118,7 +118,7 @@ describe('runMcpLogin', () => {
     expect(stored?.authMode).toBe('mcp-oauth');
     // ⛔ 저장 위치는 «우주 밖» 전역 자격 파일이다(격리 매뉴얼 §6).
     expect(mcpOAuthStorePath().startsWith(process.env.XDG_CONFIG_HOME!)).toBe(true);
-    expect(mcpOAuthStorePath().startsWith(process.env.MONAD_STATE_DIR!)).toBe(false);
+    expect(mcpOAuthStorePath().startsWith(process.env.ELANOUS_STATE_DIR!)).toBe(false);
   });
 
   test('⭐⭐ 기대 state 가 정해지기 «전»에 도착한 콜백도 유실되지 않는다', async () => {

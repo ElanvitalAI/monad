@@ -86,7 +86,7 @@ describe('DiscordBot onTriggerTap (FU-1)', () => {
     await (bot as unknown as {
       handleMessageCreate: (m: Record<string, unknown>) => Promise<void>;
     }).handleMessageCreate({
-      author: { id: 'self', bot: true, username: 'monad' },
+      author: { id: 'self', bot: true, username: 'elanous' },
       channel_id: 'CH',
       content: 'echo',
       id: 'msg',

@@ -4,16 +4,16 @@
 // R1b(se-mission-prepare)가 write, R2(추출기)가 read. 순수 저작/파싱은 mission-rfc-author.ts
 // (이 파일은 I/O 만·fail-soft·비파괴).
 //
-// 경로: ~/.monad state/conatus/missions/<id>/rfc.md
+// 경로: ~/.elanous state/conatus/missions/<id>/rfc.md
 
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
-import { monadStateRoot } from './state-paths.js';
+import { elanousStateRoot } from './state-paths.js';
 
 /** 미션 RFC 문서 경로(id 안전화 — grounding-cache 와 동일 규율). */
 export function rfcDocPath(missionId: string): string {
   const safe = missionId.replace(/[^A-Za-z0-9_-]/g, '_');
-  return join(monadStateRoot(), 'conatus/missions', safe, 'rfc.md');
+  return join(elanousStateRoot(), 'conatus/missions', safe, 'rfc.md');
 }
 
 /** RFC markdown 저장(디렉토리 보장·fail-soft). 성공 시 경로 반환, 실패 시 null. */

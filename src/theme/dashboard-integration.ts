@@ -33,7 +33,7 @@ let _singleton: ThemeService | null = null;
 
 export interface DashboardThemeServiceOptions {
   /** Override the persist path (tests point at a temp file). Defaults
-   *  to ~/.monad/theme.json. */
+   *  to ~/.elanous/theme.json. */
   persistPath?: string;
   /** Context-keys service — when supplied, the singleton mirrors
    *  themeName/themeIsDark/themeIsPastel on every switch. */

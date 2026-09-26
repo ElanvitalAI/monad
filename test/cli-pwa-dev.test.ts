@@ -45,7 +45,7 @@ describe('runPwaDev — preflight', () => {
   test('errors out when argv[1] does not resolve to apps/pwa', async () => {
     const out = makeOut();
     const result = await runPwaDev({
-      argvBin: '/nowhere/monad',
+      argvBin: '/nowhere/elanous',
       out,
       skipNodeModulesCheck: true,
       spawnFn: async () => 0,

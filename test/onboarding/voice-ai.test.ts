@@ -1,5 +1,5 @@
 // M1-5 (PLAN-friction-free-model-selection-ux-2026-05-12 · Phase 1) —
-// `monad setup` Voice & AI step. Drives the wizard through the three
+// `elanous setup` Voice & AI step. Drives the wizard through the three
 // modes (smart / preset / customize) with scriptedIO so the test
 // stays deterministic and offline.
 

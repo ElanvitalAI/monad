@@ -1,14 +1,14 @@
 // ── 미션 자기인지 관측 관문 (RFC 자기인지 3박자·P1 · 2026-07-14) ────────────────
 //
 // 문제(RFC §2b): 미션 셀프힐 분기 16+ 지점이 전부 log()->console.log(run.log 파일)로만
-// 흐르고 logs.db 에 한 줄도 안 간다. 그래서 `monad logs` 로 셀프힐이 0건 조회되고(실측),
+// 흐르고 logs.db 에 한 줄도 안 간다. 그래서 `elanous logs` 로 셀프힐이 0건 조회되고(실측),
 // 셀프판단(triage/heal)이 자기 관측을 소스로 쓸 수 없다 — 대표 넘버원 원칙의 병목.
 //
 // 설계(RFC §3.1): 모든 셀프힐 분기가 통과하는 단일 관문. 통과하면 3박자에 구조적으로
 // 팬아웃한다(fail-soft·새 저장소 없음·기존 인프라 재사용):
-//   ① 로그(항상)      — debug.log('mission.selfheal.<stage>', ...) → logs.db → `monad logs`
+//   ① 로그(항상)      — debug.log('mission.selfheal.<stage>', ...) → logs.db → `elanous logs`
 //   ② 자기인지(중대)  — injectSelfMemory(importance>=THRESHOLD) → self-memory ambient 회상
-//   ③ 운영전이(상태성) — recordOpsEventSafe(stateful) → ops_events → `monad ops` timeline
+//   ③ 운영전이(상태성) — recordOpsEventSafe(stateful) → ops_events → `elanous ops` timeline
 //
 // se-bridge 의 log() 는 삭제가 아니라 이 관문을 겸용한다(사람용 서사 유지 + 구조화 관측).
 // 회귀 0 지향(로그 라인 그대로·팬아웃 실패는 삼킨다).
@@ -52,7 +52,7 @@ export interface SelfHealEvent {
   missing?: string;
   /** triage 갈림길 종류(retry-escalate/split/revise/skip/escalate). */
   triageKind?: string;
-  /** 상태 전이인가 — true 면 ops_events(monad ops timeline)에도 기록. */
+  /** 상태 전이인가 — true 면 ops_events(elanous ops timeline)에도 기록. */
   stateful?: boolean;
   /** 0-10 현저성. >=SELF_MEMORY_IMPORTANCE 면 self-memory ambient 로도 흐른다. */
   importance?: number;
@@ -108,7 +108,7 @@ export function recordMissionObservation(ev: SelfHealEvent, sinks: ObservationSi
     } catch { /* fail-soft */ }
   }
 
-  // ③ 운영전이(상태성) — ops_events(monad ops timeline)에 상태 전이로 기록.
+  // ③ 운영전이(상태성) — ops_events(elanous ops timeline)에 상태 전이로 기록.
   if (ev.stateful) {
     try {
       const opsFn = sinks.opsSink ?? recordOpsEventSafe;

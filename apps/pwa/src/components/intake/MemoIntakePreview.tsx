@@ -109,12 +109,12 @@ export function MemoIntakePreview() {
   const [ocrBusy, setOcrBusy] = useState(false);
   // FU-I7a — real LLM toggle. Default off so first dogfood matches
   // the skeleton walkthrough; users flip on to test real decomposition
-  // (requires a configured LLM host in ~/.monad/config.json).
+  // (requires a configured LLM host in ~/.elanous/config.json).
   const [useRealLlm, setUseRealLlm] = useState(false);
   // FU-I7c — real-register toggle. Default off — the in-memory store
   // path keeps the cards UI safe for first dogfood. Flipping on routes
   // Register to /v1/intake/pipeline-commit which writes to the user's
-  // real ~/.monad/tasks/tasks.db + persists workflow YAMLs.
+  // real ~/.elanous/tasks/tasks.db + persists workflow YAMLs.
   const [commitToTox, setCommitToTox] = useState(false);
   // FU-I7b — enrich plugin toggle. Default off — the I2 phase emits
   // per-row "no plugin" diagnostics. Flipping on activates the URL
@@ -300,7 +300,7 @@ export function MemoIntakePreview() {
     setBusy(true);
     try {
       // FU-I7c — when commitToTox is on, hit the new endpoint that
-      // writes to the user's real ~/.monad/tasks/tasks.db; otherwise
+      // writes to the user's real ~/.elanous/tasks/tasks.db; otherwise
       // continue using preview-with-register against the in-memory
       // store. The two endpoints return the same shape.
       const reqBody = {
@@ -318,7 +318,7 @@ export function MemoIntakePreview() {
         const skipped = reg.skippedTaskKeys?.length ?? 0;
         setRegistered({ missions: reg.missionIds.length, tasks: reg.taskIds.length, skipped });
         const skippedSuffix = skipped > 0 ? ` · ${skipped} skipped` : '';
-        const destLabel = commitToTox ? '~/.monad/tasks/tasks.db' : 'in-memory';
+        const destLabel = commitToTox ? '~/.elanous/tasks/tasks.db' : 'in-memory';
         toast.success(`registered ${reg.missionIds.length} mission${reg.missionIds.length === 1 ? '' : 's'} · ${reg.taskIds.length} task${reg.taskIds.length === 1 ? '' : 's'} (${destLabel})${skippedSuffix}`);
       } else {
         toast.error('register skipped — endpoint returned no register payload');
@@ -363,7 +363,7 @@ export function MemoIntakePreview() {
             <strong className={useRealLlm ? 'text-foreground' : ''}>Enable Real LLM</strong>
             {' '}
             — {useRealLlm
-              ? '실 streamLLM 호출 (provider 는 ~/.monad/config.json · user-config 우선)'
+              ? '실 streamLLM 호출 (provider 는 ~/.elanous/config.json · user-config 우선)'
               : 'LLM 미호출 · skeleton fallback · pipeline 흐름 + cards 렌더만 검증'}
           </span>
         </label>
@@ -409,7 +409,7 @@ export function MemoIntakePreview() {
             <strong className={commitToTox ? 'text-rose-700 dark:text-rose-400' : ''}>Commit to real TOX</strong>
             {' '}
             — {commitToTox
-              ? 'Register 가 ~/.monad/tasks/tasks.db 에 실 mission/task 쓰기 + workflow YAML 디스크 저장 (되돌릴 수 없음)'
+              ? 'Register 가 ~/.elanous/tasks/tasks.db 에 실 mission/task 쓰기 + workflow YAML 디스크 저장 (되돌릴 수 없음)'
               : 'Register 가 in-memory store 만 사용 · 사용자 TOX 미터치'}
           </span>
         </label>

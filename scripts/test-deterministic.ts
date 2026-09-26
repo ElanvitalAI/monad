@@ -17,7 +17,7 @@
 //     an accidental live call succeed. Without a key the call fails fast
 //     instead of running up a bill — that is the boundary this buys, and the
 //     tiering plan in PLAN-test-suite-diet is what closes the rest.
-//   - It does not sweep leftover `monad-deterministic-test-*` directories from
+//   - It does not sweep leftover `elanous-deterministic-test-*` directories from
 //     earlier runs. That remains out of scope on purpose.
 //   - 2026-08-26 landed `child.kill` only and wrote that this wrapper "does not
 //     chase grandchildren of the direct `bun test` child. Those are out of
@@ -39,18 +39,18 @@ import { join } from 'node:path';
 // in the helper so an untested credential check cannot rot silently.
 import { isCredentialKey } from './lib/deterministic-env.js';
 
-export const TEMP_ROOT_PREFIX = 'monad-deterministic-test-';
+export const TEMP_ROOT_PREFIX = 'elanous-deterministic-test-';
 export const CHILD_EXIT_GRACE_MS = 2_000;
 
 // A deterministic test child is not a harness executor: these inherited
 // markers would activate write-boundary policy against each test's temp files.
 const HARNESS_TEST_ENV_KEYS = [
-  'MONAD_HARNESS_SPACE',
-  'MONAD_HARNESS_SPACE_ID',
-  'MONAD_HARNESS_BOUNDARY',
-  'MONAD_HARNESS_ROLE',
-  'MONAD_HARNESS_DETACHED',
-  'MONAD_RUN_ID',
+  'ELANOUS_HARNESS_SPACE',
+  'ELANOUS_HARNESS_SPACE_ID',
+  'ELANOUS_HARNESS_BOUNDARY',
+  'ELANOUS_HARNESS_ROLE',
+  'ELANOUS_HARNESS_DETACHED',
+  'ELANOUS_RUN_ID',
 ] as const;
 
 export type ShutdownSignal = 'SIGINT' | 'SIGTERM';
@@ -257,19 +257,19 @@ export function prepareIsolatedTestEnv(sourceEnv: NodeJS.ProcessEnv, testRoot: s
   );
   env.HOME = testRoot;
   env.XDG_CONFIG_HOME = join(testRoot, '.config');
-  // ⚠️ Redirect monad's OWN roots explicitly — do not merely inherit them.
-  // `MONAD_STATE_DIR` / `MONAD_CONFIG_DIR` are absolute paths that win over
+  // ⚠️ Redirect elanous's OWN roots explicitly — do not merely inherit them.
+  // `ELANOUS_STATE_DIR` / `ELANOUS_CONFIG_DIR` are absolute paths that win over
   // HOME, so a developer who exports either one keeps pointing the "isolated"
   // run straight back at their real state while every other signal says the run
   // is contained. Deleting them is not enough either: absence resolves to the
   // default under HOME, which is fine here, but pinning them makes the
   // isolation legible in the child's own environment rather than implied.
-  env.MONAD_STATE_DIR = join(testRoot, 'state');
-  env.MONAD_CONFIG_DIR = join(testRoot, 'config');
+  env.ELANOUS_STATE_DIR = join(testRoot, 'state');
+  env.ELANOUS_CONFIG_DIR = join(testRoot, 'config');
   // A deterministic test child must not inherit the harness run identity:
   // logger API-shape tests use its absence to validate legacy records.
-  delete env.MONAD_RUN_ID;
-  // ⚠️ No `MONAD_TEST_DETERMINISTIC` marker is exported. Nothing reads it yet,
+  delete env.ELANOUS_RUN_ID;
+  // ⚠️ No `ELANOUS_TEST_DETERMINISTIC` marker is exported. Nothing reads it yet,
   // and an env var with no consumer is a surface that looks like a contract
   // while guaranteeing nothing — a later test could branch on it believing it
   // means something. The tier work in PLAN-test-suite-diet introduces the

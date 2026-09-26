@@ -11,23 +11,23 @@ import {
 
 describe('reviewDiffCharLimit — 기본 예산·환경변수 계약', () => {
   it('기본 64,000자, 유효 override, 2,000 미만 무시 및 50,000자 diff 비절단', () => {
-    const original = process.env.MONAD_PR_REVIEW_DIFF_CHARS;
+    const original = process.env.ELANOUS_PR_REVIEW_DIFF_CHARS;
     try {
-      delete process.env.MONAD_PR_REVIEW_DIFF_CHARS;
+      delete process.env.ELANOUS_PR_REVIEW_DIFF_CHARS;
       expect(reviewDiffCharLimit()).toBe(64_000);
       const prefix = 'diff --git a/large.ts b/large.ts\n@@\n+';
       const diff = prefix + 'x'.repeat(50_000 - prefix.length);
       expect(diff).toHaveLength(50_000);
       expect(budgetedDiff(diff)).toMatchObject({ text: diff, truncated: false });
 
-      process.env.MONAD_PR_REVIEW_DIFF_CHARS = '5000';
+      process.env.ELANOUS_PR_REVIEW_DIFF_CHARS = '5000';
       expect(reviewDiffCharLimit()).toBe(5000);
 
-      process.env.MONAD_PR_REVIEW_DIFF_CHARS = '1999';
+      process.env.ELANOUS_PR_REVIEW_DIFF_CHARS = '1999';
       expect(reviewDiffCharLimit()).toBe(64_000);
     } finally {
-      if (original === undefined) delete process.env.MONAD_PR_REVIEW_DIFF_CHARS;
-      else process.env.MONAD_PR_REVIEW_DIFF_CHARS = original;
+      if (original === undefined) delete process.env.ELANOUS_PR_REVIEW_DIFF_CHARS;
+      else process.env.ELANOUS_PR_REVIEW_DIFF_CHARS = original;
     }
   });
 });
@@ -120,7 +120,7 @@ describe('reviewPullRequest — llmReview seam·fail-soft·reviewed 구분', () 
     ['runId와 round 모두', { runId: 'run-1', round: 2 }, { runId: 'run-1', round: 2 }],
     ['runId만', { runId: 'run-1' }, { runId: 'run-1' }],
     // ⭐ round 단독 — 「받은 값만 남긴다」 계약은 두 키가 **각각** 독립이라야 성립한다.
-    //   runId 만 검사하면 구현이 두 키를 묶어 다뤄도 통과한다(monad self review should-fix · #7664).
+    //   runId 만 검사하면 구현이 두 키를 묶어 다뤄도 통과한다(elanous self review should-fix · #7664).
     ['round만', { round: 5 }, { round: 5 }],
     ['조인 키 없음', undefined, {}],
   ])('리뷰어 컨텍스트 예산은 %s의 수치와 받은 조인 키만 관측에 남긴다', async (_label, reviewContext, joinKeys) => {
@@ -657,8 +657,8 @@ describe('reviewPullRequest — 분할 리뷰 배선', () => {
   it('⭐ 예산 초과 diff 를 여러 번 리뷰하고, 전부 봤으면 truncated=false 로 낸다', async () => {
     // ⚠️ reviewDiffCharLimit() 은 최소 2000 이 바닥이다 — 그 아래를 주면 «기본값으로 되돌아간다».
     const diff = Array.from({ length: 4 }, (_, i) => file(`f${i}.ts`, '+' + 'x'.repeat(800))).join('');
-    const prev = process.env.MONAD_PR_REVIEW_DIFF_CHARS;
-    process.env.MONAD_PR_REVIEW_DIFF_CHARS = '2000';
+    const prev = process.env.ELANOUS_PR_REVIEW_DIFF_CHARS;
+    process.env.ELANOUS_PR_REVIEW_DIFF_CHARS = '2000';
     try {
       const seen: string[] = [];
       const result = await reviewPullRequest(
@@ -671,16 +671,16 @@ describe('reviewPullRequest — 분할 리뷰 배선', () => {
       expect(result.diffBudget?.totalChars).toBe(diff.length);
       expect(result.diffBudget?.shownChars).toBe(diff.length);
     } finally {
-      if (prev === undefined) delete process.env.MONAD_PR_REVIEW_DIFF_CHARS;
-      else process.env.MONAD_PR_REVIEW_DIFF_CHARS = prev;
+      if (prev === undefined) delete process.env.ELANOUS_PR_REVIEW_DIFF_CHARS;
+      else process.env.ELANOUS_PR_REVIEW_DIFF_CHARS = prev;
     }
   });
 
   it('⛔ 조각 리뷰어에게 「몇 분의 몇을 보는지」를 알린다 — 없으면 SCOPE 규칙이 오작동한다', async () => {
     // ⚠️ reviewDiffCharLimit() 은 최소 2000 이 바닥이다 — 그 아래를 주면 «기본값으로 되돌아간다».
     const diff = Array.from({ length: 4 }, (_, i) => file(`f${i}.ts`, '+' + 'x'.repeat(800))).join('');
-    const prev = process.env.MONAD_PR_REVIEW_DIFF_CHARS;
-    process.env.MONAD_PR_REVIEW_DIFF_CHARS = '2000';
+    const prev = process.env.ELANOUS_PR_REVIEW_DIFF_CHARS;
+    process.env.ELANOUS_PR_REVIEW_DIFF_CHARS = '2000';
     try {
       const seen: string[] = [];
       await reviewPullRequest(
@@ -690,8 +690,8 @@ describe('reviewPullRequest — 분할 리뷰 배선', () => {
       expect(seen[0]).toContain('조각');
       expect(seen[0]).toMatch(/1번째 조각/);
     } finally {
-      if (prev === undefined) delete process.env.MONAD_PR_REVIEW_DIFF_CHARS;
-      else process.env.MONAD_PR_REVIEW_DIFF_CHARS = prev;
+      if (prev === undefined) delete process.env.ELANOUS_PR_REVIEW_DIFF_CHARS;
+      else process.env.ELANOUS_PR_REVIEW_DIFF_CHARS = prev;
     }
   });
 
@@ -708,17 +708,17 @@ describe('reviewPullRequest — 분할 리뷰 배선', () => {
 
 describe('reviewMaxPasses — 상한 계약', () => {
   it('기본 6 · env override · 1 미만은 무시', () => {
-    const prev = process.env.MONAD_PR_REVIEW_MAX_PASSES;
+    const prev = process.env.ELANOUS_PR_REVIEW_MAX_PASSES;
     try {
-      delete process.env.MONAD_PR_REVIEW_MAX_PASSES;
+      delete process.env.ELANOUS_PR_REVIEW_MAX_PASSES;
       expect(reviewMaxPasses()).toBe(6);
-      process.env.MONAD_PR_REVIEW_MAX_PASSES = '3';
+      process.env.ELANOUS_PR_REVIEW_MAX_PASSES = '3';
       expect(reviewMaxPasses()).toBe(3);
-      process.env.MONAD_PR_REVIEW_MAX_PASSES = '0';
+      process.env.ELANOUS_PR_REVIEW_MAX_PASSES = '0';
       expect(reviewMaxPasses()).toBe(6);
     } finally {
-      if (prev === undefined) delete process.env.MONAD_PR_REVIEW_MAX_PASSES;
-      else process.env.MONAD_PR_REVIEW_MAX_PASSES = prev;
+      if (prev === undefined) delete process.env.ELANOUS_PR_REVIEW_MAX_PASSES;
+      else process.env.ELANOUS_PR_REVIEW_MAX_PASSES = prev;
     }
   });
 });

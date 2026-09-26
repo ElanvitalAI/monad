@@ -32,7 +32,7 @@ export {
 } from './selectors.js';
 
 export {
-  type MonadState,
+  type ElanousState,
   type UISlice,
   type WidgetSlice,
   type Store,
@@ -46,7 +46,7 @@ export {
   type StoreInitializer,
   type SubscribeOptions,
   type EqualityFn,
-  defaultMonadState,
+  defaultElanousState,
 } from './types.js';
 
 export {

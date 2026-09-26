@@ -1,11 +1,11 @@
 // ── 분해 크래시 근본조사 조회 (대표 2026-07-17 관측성) ────────────────────────────
 // logDecomposeCrash 가 durable 로 남긴 decompose_crash.log(validationErrors·rawTextHead·컨텍스트)를
-// 사람이 읽을 수 있게 조회한다. `monad logs`(요약·structured) 너머 전문(LLM 원문·검증 에러) 진단 창구.
+// 사람이 읽을 수 있게 조회한다. `elanous logs`(요약·structured) 너머 전문(LLM 원문·검증 에러) 진단 창구.
 // 순수 파싱(parseCrashLines/formatCrashEntry)은 단위테스트, 파일 IO 는 read* 래퍼.
 
 import { readFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
-import { monadStateRoot } from './state-paths.js';
+import { elanousStateRoot } from './state-paths.js';
 
 export interface DecomposeCrashEntry {
   ts: string;
@@ -20,7 +20,7 @@ export interface DecomposeCrashEntry {
 }
 
 export function decomposeCrashLogPath(): string {
-  return join(monadStateRoot(), 'conatus/decompose_crash.log');
+  return join(elanousStateRoot(), 'conatus/decompose_crash.log');
 }
 
 /** JSONL 라인 → 엔트리(순수) — missionId 필터·최근 우선·limit. 깨진 라인 skip. */

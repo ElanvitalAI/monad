@@ -401,7 +401,7 @@ export type RetryCategory =
   | 'doom-loop'
   /** 이 프로바이더가 «구성되지 않아» 쓸 수 없다 — 자격 미설정·엔드포인트 미지정.
    *  실물 문면은 전부 `<프로바이더> unavailable: <설정법>` 꼴이다
-   *  (`Anthropic unavailable: configure apiKey via \`monad setup\``).
+   *  (`Anthropic unavailable: configure apiKey via \`elanous setup\``).
    *  ⭐ 이것은 「사용자 탓」도 「일시적」도 아니고 **프로바이더에 매인** 실패다 —
    *  다른 프로바이더는 자격이 있을 수 있으므로 폴백이 «말이 된다».
    *  ⛔ 401/403 자격 «거부»는 여기가 아니다(그건 자격이 있는데 거절당한 것). */

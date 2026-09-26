@@ -27,7 +27,7 @@ const DOC = `# Design
 
 ## Design direction
 
-- monad-pastel-default
+- elanous-pastel-default
 `;
 
 describe('readTokenSection — 기존 파서를 «그대로» 쓴다', () => {

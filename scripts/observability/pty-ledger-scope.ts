@@ -3,7 +3,7 @@
 //        내부 문서 `REPORT-run-ledger-gap-detection-and-daily-check-2026-08-11` (기계 판독 계약·일일 점검)
 //
 // ⛔⭐ 이 스크립트의 초판은 세 곳에서 «틀렸고», 무인 리뷰가 잡았다. 고친 자리를 남긴다:
-//   ① 원장을 두 곳(`~/.monad` ⊕ 현재 checkout)만 색인하면서 manifest 는 «연합 전체»를 셌다
+//   ① 원장을 두 곳(`~/.elanous` ⊕ 현재 checkout)만 색인하면서 manifest 는 «연합 전체»를 셌다
 //      ⇒ 다른 뿌리의 원장이 「없음」으로 «오분류»된다. 이 저장소가 온종일 밟은 「한 뿌리만 본다」의 내 판본이었다.
 //   ② runId 를 «전역 Set» 으로 합치면 서로 다른 뿌리의 동명 runId 가 거짓 양성이 된다 ⇒ 뿌리별로 짝짓는다.
 //   ③ manifest 의 `alive` «컬럼»은 하트비트 기반이라 프로세스 생존과 «다른 자»다(리포트 §2e)
@@ -280,21 +280,21 @@ export function renderPtyLedgerScope(scan: PtyLedgerScopeScan, measurement: RunL
 /**
  * 조회 대상 해석. 기본은 연합 전수(`ptyManifestTargets`)이고, 테스트는 env 로 «우주를 못 박는다».
  *
- * ⚠️ 이 심이 필요한 이유: `ptyManifestTargets` 는 prod(`~/.monad`)를 «항상» 포함하므로, 그것만으로는
+ * ⚠️ 이 심이 필요한 이유: `ptyManifestTargets` 는 prod(`~/.elanous`)를 «항상» 포함하므로, 그것만으로는
  *   격리 fixture 만 재는 실물 실행을 만들 수 없다(= 진입점 회귀 테스트가 기계 상태에 흔들린다).
  * ⛔ 값이 깨졌으면 «조용히 전수로 되돌아가지 않는다» — 어느 우주를 쟀는지 모르는 산출이 제일 나쁘다.
  */
 export function resolvePtyLedgerScopeTargets(env: NodeJS.ProcessEnv = process.env): PtyManifestTarget[] {
-  const raw = env.MONAD_PTY_LEDGER_SCOPE_TARGETS?.trim();
+  const raw = env.ELANOUS_PTY_LEDGER_SCOPE_TARGETS?.trim();
   if (!raw) return ptyManifestTargets({ includeTest: true });
   let parsed: unknown;
   try {
     parsed = JSON.parse(raw);
   } catch (error) {
-    throw new Error(`MONAD_PTY_LEDGER_SCOPE_TARGETS is not valid JSON: ${error instanceof Error ? error.message : String(error)}`);
+    throw new Error(`ELANOUS_PTY_LEDGER_SCOPE_TARGETS is not valid JSON: ${error instanceof Error ? error.message : String(error)}`);
   }
   if (!Array.isArray(parsed) || parsed.some((entry) => !entry || typeof entry !== 'object' || typeof (entry as PtyManifestTarget).name !== 'string' || typeof (entry as PtyManifestTarget).dbPath !== 'string')) {
-    throw new Error('MONAD_PTY_LEDGER_SCOPE_TARGETS must be a JSON array of { name, dbPath }');
+    throw new Error('ELANOUS_PTY_LEDGER_SCOPE_TARGETS must be a JSON array of { name, dbPath }');
   }
   return (parsed as PtyManifestTarget[]).map((entry) => ({ name: entry.name, dbPath: entry.dbPath }));
 }
@@ -324,7 +324,7 @@ export function runPtyLedgerScope(argv: readonly string[], targets: readonly Pty
 
 if (import.meta.main) {
   // ⛔⭐⭐ **관측 sink 를 «먼저» 건다** — `debug.log` 만으로는 `logs.db` 에 «안 닿는다».
-  //   📏 실측(2026-08-12): 이 줄 없이 돌렸더니 `monad logs --all --include-test --category
+  //   📏 실측(2026-08-12): 이 줄 없이 돌렸더니 `elanous logs --all --include-test --category
   //   self-implement.run-ledger-gaps` 가 «0건»이었다 — 계측은 있는데 sink 가 없던 것(「0 건의 세 뜻」 ⓒ).
   //   ⇒ fail-open: 관측 배선 실패가 «측정 자체»를 막지 않는다(`cli-doc-coverage.ts` 선례와 같은 자).
   try {

@@ -31,8 +31,8 @@ describe('headless-core guard — ACP server side stays TUI-free', () => {
     expect(hits).toEqual([]);
   });
 
-  test('src/acp/monad-extensions.ts has no forbidden imports', () => {
-    const source = readModule('src/acp/monad-extensions.ts');
+  test('src/acp/elanous-extensions.ts has no forbidden imports', () => {
+    const source = readModule('src/acp/elanous-extensions.ts');
     const hits = findForbiddenImports(source);
     expect(hits).toEqual([]);
   });
@@ -45,7 +45,7 @@ describe('headless-core guard — ACP server side stays TUI-free', () => {
 
   test('src/boot/acp-server.ts has no forbidden imports', () => {
     // U4b Step 3 — boot module wires the ACP server CLI path.
-    // Keeping it TUI-free is what lets `monad --acp-server` run
+    // Keeping it TUI-free is what lets `elanous --acp-server` run
     // as a headless daemon via launchd / systemd.
     const source = readModule('src/boot/acp-server.ts');
     // The guard's default forbidden prefixes assume `../something/`
@@ -100,11 +100,11 @@ describe('headless-core guard — ACP server side stays TUI-free', () => {
     // "reference client" — but to keep the boundary honest the
     // scaffold must not reach back into the dashboard either. When
     // consumers (future dashboard / web / iphone) plug a handler in,
-    // they bring their own renderer through the MonadUiHandler
+    // they bring their own renderer through the ElanousUiHandler
     // interface — tui-client never `import`s a renderer.
     const modules = [
       'src/tui-client/acp-transport-local.ts',
-      'src/tui-client/monad-ui-handler.ts',
+      'src/tui-client/elanous-ui-handler.ts',
       'src/tui-client/headless-core-guard.ts',
       'src/tui-client/index.ts',
       // U3b Step 3 scaffold additions — in-process transport

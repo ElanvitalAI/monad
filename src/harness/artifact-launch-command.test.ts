@@ -111,10 +111,10 @@ describe('resolveArtifactLaunchCommand', () => {
     ]);
   });
 
-  test('uses the monad CLI only after a clean injected help probe and never parses its help text', async () => {
+  test('uses the elanous CLI only after a clean injected help probe and never parses its help text', async () => {
     const root = repository({
-      'package.json': JSON.stringify({ name: 'monadagent', bin: { monad: './bin/monad.mjs' } }),
-      'bin/monad.mjs': '',
+      'package.json': JSON.stringify({ name: 'elanous', bin: { elanous: './bin/elanous.mjs' } }),
+      'bin/elanous.mjs': '',
       'src/app.ts': '',
     });
     const received: string[][] = [];
@@ -128,11 +128,11 @@ describe('resolveArtifactLaunchCommand', () => {
       runHelpProbe: () => ({ status: 1, stderr: 'unknown command launch' }),
     });
 
-    expect(received).toEqual([['bun', 'bin/monad.mjs', 'launch', '--help']]);
-    expect(accepted).toMatchObject({ command: 'bun bin/monad.mjs launch', candidates: [{ key: 'launch', sourceKind: 'monad-cli' }] });
+    expect(received).toEqual([['bun', 'bin/elanous.mjs', 'launch', '--help']]);
+    expect(accepted).toMatchObject({ command: 'bun bin/elanous.mjs launch', candidates: [{ key: 'launch', sourceKind: 'elanous-cli' }] });
     expect(rejected.reason).toBe('no-command-source');
     expect(rejected.candidates).toEqual([]);
-    expect(rejected.sources.some((item) => item.kind === 'monad-cli' && item.status === 'scanned')).toBeTrue();
+    expect(rejected.sources.some((item) => item.kind === 'elanous-cli' && item.status === 'scanned')).toBeTrue();
   });
 
   test('resolves the repository command fixtures without assigning source priority', async () => {

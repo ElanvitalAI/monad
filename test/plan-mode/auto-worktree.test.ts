@@ -44,7 +44,7 @@ const prevCwd = process.cwd();
 const dirs: string[] = [];
 
 function seedConfig(home: string, autoWorktree: boolean): void {
-  const cfgDir = join(home, 'monad');
+  const cfgDir = join(home, 'elanous');
   mkdirSync(cfgDir, { recursive: true });
   const cfg = autoWorktree ? { plan: { autoWorktree: true } } : {};
   writeFileSync(join(cfgDir, 'config.json'), JSON.stringify(cfg, null, 2));

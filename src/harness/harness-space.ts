@@ -1,26 +1,26 @@
 // 하니스 공간 자기인지 장치 (Docker식 컨테이너 자기인지 차용 · 2026-07-21 · 대표 co-design)
 //
-// 대표 지시: "특정 ENV 변수로 monad 이 스스로 self-dev-harness 격리 공간 안에 있음을 인지하게 하고,
+// 대표 지시: "특정 ENV 변수로 elanous 이 스스로 self-dev-harness 격리 공간 안에 있음을 인지하게 하고,
 // 그 위에 관측·프리앰블·병렬 좌표 등 여러 판단을 쌓는다." Docker 가 컨테이너에게 `container=docker`(+
 // `/.dockerenv`)·`HOSTNAME`(id)으로 "너는 격리됐다"를 알리는 방식을 차용한다.
 //
 //   Docker                         self-dev-harness (이 장치)
 //   ─────────────────────────────  ──────────────────────────────────────────────
-//   container=docker / .dockerenv  MONAD_HARNESS_SPACE=<kind>   (존재 = 격리 공간 안)
-//   HOSTNAME / container id        MONAD_HARNESS_SPACE_ID=<branch|runId>
+//   container=docker / .dockerenv  ELANOUS_HARNESS_SPACE=<kind>   (존재 = 격리 공간 안)
+//   HOSTNAME / container id        ELANOUS_HARNESS_SPACE_ID=<branch|runId>
 //   volume mount                   git worktree (격리 FS)
 //   stdin/stdout·exec              detached-hitl 라인 프로토콜(부모↔자식·이미 존재)
 //   docker logs <id>               공간별 관측 태깅(surface=harness:<kind>)
 //
-// ⚠️ `MONAD_HARNESS_DETACHED=1`(재귀 위임 가드)와 **직교** — 그건 "subprocess 로 재위임 말 것" 신호이고,
-//    이 SPACE 는 "나는 격리 하니스 공간의 monad 다"라는 **정체성/자기인지**. 둘은 함께 쓰일 수 있다.
+// ⚠️ `ELANOUS_HARNESS_DETACHED=1`(재귀 위임 가드)와 **직교** — 그건 "subprocess 로 재위임 말 것" 신호이고,
+//    이 SPACE 는 "나는 격리 하니스 공간의 elanous 다"라는 **정체성/자기인지**. 둘은 함께 쓰일 수 있다.
 //
 // 자기인지 헬퍼 getHarnessSpace() 하나 위에 (a) 관측 자동 태깅 (b) 자기인지 프리앰블 (c) 병렬 공간 좌표를
 // 쌓는다. 이 파일이 그 단일 진실원(SSOT).
 //
 // ⭐ run-identity (K · 2026-07-25 · PLAN-self-observation §K/K-5): spaceId 는 per-child(잡별 격리 공간)지만
 //    runId 는 per-RUN — 한 orchestrate 인보크(fan-out 부모)가 1개, N 자식이 공유한다. runId 를 SPACE 와 같은
-//    env 채널(MONAD_RUN_ID)로 자식에 전파해, 나중에 runId≡spaceId≡ptyId≡sessionId 를 join(pty_manifest 스탬프·
+//    env 채널(ELANOUS_RUN_ID)로 자식에 전파해, 나중에 runId≡spaceId≡ptyId≡sessionId 를 join(pty_manifest 스탬프·
 //    K3)할 anchor 로 쓴다. 불변식: **최외곽 coordinator 만 mint(ensureRunId), 자식은 env 상속(재mint 금지)** —
 //    spaceId 선례와 동형. 계약 = [[DESIGN-executor-pty-ref-contract-2026-07-25]] ExecutorPtyRef.runId.
 
@@ -34,32 +34,32 @@ import { ensureHostId } from '../platform/host-id.js';
 export type HarnessSpaceKind = 'self-implement' | 'dev-harness' | 'solve-mission' | 'dev-hold';
 
 /** ENV 마커 이름(계약·2026-07-21 대표 확정). 값 있으면 그 공간 안. */
-export const HARNESS_SPACE_ENV = 'MONAD_HARNESS_SPACE';
-export const HARNESS_SPACE_ID_ENV = 'MONAD_HARNESS_SPACE_ID';
+export const HARNESS_SPACE_ENV = 'ELANOUS_HARNESS_SPACE';
+export const HARNESS_SPACE_ID_ENV = 'ELANOUS_HARNESS_SPACE_ID';
 /** ⭐ per-run join anchor(K·2026-07-25). 값 있으면 그 run 소속. 최외곽만 mint·자식 상속. */
-export const HARNESS_RUN_ID_ENV = 'MONAD_RUN_ID';
+export const HARNESS_RUN_ID_ENV = 'ELANOUS_RUN_ID';
 
-/** ⭐ 역할 마커(2026-07-21 대표 co-design·"세포 분화") — 한 monad 바이너리(세포)가 env 에 따라
+/** ⭐ 역할 마커(2026-07-21 대표 co-design·"세포 분화") — 한 elanous 바이너리(세포)가 env 에 따라
  *  조율자/실행자로 분화. Docker 컨테이너가 자기 격리를 인지하듯, 하니스 세포는 자기 역할을 인지한다. */
-export const HARNESS_ROLE_ENV = 'MONAD_HARNESS_ROLE';
+export const HARNESS_ROLE_ENV = 'ELANOUS_HARNESS_ROLE';
 
 /** ⭐ 명시 쓰기 경계 마커(2026-07-25·#4 격리 누출 봉쇄·내부 문서 §2a).
  *  스포너(worktree 를 직접 만든 쪽)가 자식에 **격리 worktree 절대경로**를 실어, 자식이 부팅 시 쓰기 경계를
  *  **결정론적으로** 활성화하게 한다. cwd 자동추론(worktree vs 정본 vs shadow-standalone 은 git 시그니처가
  *  동일해 모호)의 한계를 제거 — 스포너는 자기가 만든 worktree 를 확실히 안다. Docker `--read-only`+`--tmpfs`
  *  로 쓰기 가능 영역을 명시 지정하는 것과 동형. */
-export const HARNESS_BOUNDARY_ENV = 'MONAD_HARNESS_BOUNDARY';
+export const HARNESS_BOUNDARY_ENV = 'ELANOUS_HARNESS_BOUNDARY';
 /** 부모가 자식의 경계 거부 요청을 받는 append-only mailbox 경로. */
-export const HARNESS_BOUNDARY_REQUESTS_ENV = 'MONAD_HARNESS_BOUNDARY_REQUESTS';
+export const HARNESS_BOUNDARY_REQUESTS_ENV = 'ELANOUS_HARNESS_BOUNDARY_REQUESTS';
 /** 부모가 자식의 경계 거부 요청에 회신을 남기는 mailbox 경로. */
-export const HARNESS_BOUNDARY_RESPONSES_ENV = 'MONAD_HARNESS_BOUNDARY_RESPONSES';
+export const HARNESS_BOUNDARY_RESPONSES_ENV = 'ELANOUS_HARNESS_BOUNDARY_RESPONSES';
 
 /** 부모 소유 임시 mailbox 경로를 자식에게 전달한다. 빈 식별자 또는 디렉터리 생성 실패는 fail-open으로 생략한다. */
 export function harnessBoundaryRequestsEnv(executionId: string): Record<string, string> {
   const id = (executionId || '').trim();
   if (!id) return {};
   try {
-    const parent = resolve(tmpdir(), 'monad-harness-boundary-requests');
+    const parent = resolve(tmpdir(), 'elanous-harness-boundary-requests');
     const filename = `${createHash('sha256').update(id).digest('hex')}.jsonl`;
     const path = resolve(parent, filename);
     const pathFromParent = relative(parent, path);
@@ -76,7 +76,7 @@ export function harnessBoundaryResponsesEnv(executionId: string): Record<string,
   const id = (executionId || '').trim();
   if (!id) return {};
   try {
-    const parent = resolve(tmpdir(), 'monad-harness-boundary-requests');
+    const parent = resolve(tmpdir(), 'elanous-harness-boundary-requests');
     const filename = `${createHash('sha256').update(id).digest('hex')}.responses.jsonl`;
     const path = resolve(parent, filename);
     const pathFromParent = relative(parent, path);
@@ -145,7 +145,7 @@ export type HarnessRole = 'coordinator' | 'executor';
 
 /**
  * ⭐ 역할 자기인지 — Docker 컨테이너가 자기 격리를 인지하듯, 하니스 세포는 자기 역할을 인지한다.
- * 우선순위: 명시 env(MONAD_HARNESS_ROLE) → 폴백(격리 공간 안이면 executor·밖이면 null=standalone).
+ * 우선순위: 명시 env(ELANOUS_HARNESS_ROLE) → 폴백(격리 공간 안이면 executor·밖이면 null=standalone).
  * 이 위에 (a) coordinator 는 중앙 관측/이력/조율 책임 (b) executor 는 관측 emit 책임을 분기한다. 순수.
  */
 export function getHarnessRole(env: NodeJS.ProcessEnv = process.env): HarnessRole | null {
@@ -163,7 +163,7 @@ export function executorRoleEnv(): Record<string, string> {
  * 자식(격리 공간)을 스폰할 때 실을 ENV 마커를 만든다. 스포너가 `{ ...process.env, ...harnessSpaceEnv(kind, id) }`
  * 로 자식에 전파 → 자식이 getHarnessSpace() 로 자기인지. id 는 정규화(로그/브랜치 안전 문자만·64자).
  *
- * ⭐ runId(K·per-run join anchor): 넘기면 MONAD_RUN_ID 로 명시 stamp(계약 가시화). 생략해도 스포너가 이미
+ * ⭐ runId(K·per-run join anchor): 넘기면 ELANOUS_RUN_ID 로 명시 stamp(계약 가시화). 생략해도 스포너가 이미
  *    `...process.env` 를 spread 하므로 coordinator 가 ensureRunId 로 심어둔 runId 는 자동 상속된다(둘 다 안전).
  */
 export function harnessSpaceEnv(kind: HarnessSpaceKind, id: string, runId?: string): Record<string, string> {
@@ -273,7 +273,7 @@ export function getHarnessRunId(env: NodeJS.ProcessEnv = process.env): string {
 }
 
 /**
- * ⭐ mint-once-at-outermost(K 불변식·spaceId 선례와 동형). env 에 MONAD_RUN_ID 있으면 그대로 상속(재mint 금지),
+ * ⭐ mint-once-at-outermost(K 불변식·spaceId 선례와 동형). env 에 ELANOUS_RUN_ID 있으면 그대로 상속(재mint 금지),
  * 없으면 mint 후 env 에 set 하고 반환한다. **coordinator(orchestrate·self implement·dispatch)가 자식 스폰 前
  * 1회 호출** → 이후 모든 `...process.env` spread 가 같은 runId 를 자식에 전파(fan-out N 자식이 runId 공유).
  * 부작용(env set)은 의도적 — 여러 자식에 걸쳐 동일 runId 를 보장하는 유일한 방법.

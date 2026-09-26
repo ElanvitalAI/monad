@@ -26,8 +26,8 @@ let tmp: string;
 let sockPath: string;
 
 beforeEach(() => {
-  tmp = mkdtempSync(joinPath(tmpdir(), 'monad-detach-test-'));
-  sockPath = joinPath(tmp, 'monad.sock');
+  tmp = mkdtempSync(joinPath(tmpdir(), 'elanous-detach-test-'));
+  sockPath = joinPath(tmp, 'elanous.sock');
 });
 
 afterEach(() => {

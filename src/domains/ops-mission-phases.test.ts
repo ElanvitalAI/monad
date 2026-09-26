@@ -31,7 +31,7 @@ async function makeFailedMission(store: TaskStore) {
     phaseId: p1.id, missionId: m.id, title: p1.title, index: 1, total: 3,
     status: 'failed', goal: 'heavy goal', failClass: 'budget-exhausted',
     attempts: [
-      { backend: 'monad-self:gpt-5.6-terra', maxTurns: 1000, gateResult: 'gate-failed' },
+      { backend: 'elanous-self:gpt-5.6-terra', maxTurns: 1000, gateResult: 'gate-failed' },
       { backend: 'opus-4.8', gateResult: 'gate-failed' },
     ],
   };

@@ -25,16 +25,16 @@
 //     frame-populating kind — e.g. 'preview' — from surprise-broadcasting;
 //     new self-reporting kinds opt in here deliberately.
 //   - fail-soft everywhere — a broken poll never touches the observed TUI.
-//   - killswitch `MONAD_TUI_FRAME_BROADCAST=0` for per-run disable
-//     (sibling to the producer's `MONAD_TUI_SELF_REPORT=0`).
+//   - killswitch `ELANOUS_TUI_FRAME_BROADCAST=0` for per-run disable
+//     (sibling to the producer's `ELANOUS_TUI_SELF_REPORT=0`).
 
 import { debug } from '../debug/log.js';
 import { listPtyManifest, type PtyManifestRow } from '../pty-shell/pty-manifest.js';
-import type { MonadTermPayload } from '../acp/monad-extensions.js';
+import type { ElanousTermPayload } from '../acp/elanous-extensions.js';
 
 /** Fleet broadcaster shape — `getActiveAcpAllSessionsTermFrameBroadcaster()`. */
 export type TermFrameBroadcaster = (
-  payload: MonadTermPayload<'terminalFrame'>,
+  payload: ElanousTermPayload<'terminalFrame'>,
 ) => Promise<{ delivered: number; fannedTo: number }>;
 
 export interface TuiFrameBroadcasterDeps {
@@ -105,7 +105,7 @@ export async function pollAndBroadcastTuiFrames(
 /** Start the manifest→terminalFrame poller. Returns a stop thunk.
  *  No-op (returns a no-op stop) when disabled via env killswitch. */
 export function startTuiFrameBroadcaster(deps: TuiFrameBroadcasterDeps = {}): () => void {
-  if (process.env.MONAD_TUI_FRAME_BROADCAST === '0') {
+  if (process.env.ELANOUS_TUI_FRAME_BROADCAST === '0') {
     if (debug.enabled) debug.log('capture.tui-frame-bcast', 'disabled', { reason: 'killswitch' });
     return () => {};
   }

@@ -1,6 +1,6 @@
 // ── P4 거부 게이트 (DESIGN §6) ───────────────────────────────────────────────
 //
-// ⚠️ 이 게이트의 오판은 **비대칭**이다. launchd `com.monad.nexus` 는 KeepAlive 로 재기동하므로
+// ⚠️ 이 게이트의 오판은 **비대칭**이다. launchd `com.elanous.nexus` 는 KeepAlive 로 재기동하므로
 // 잘못 거부하면 운영 데몬이 **크래시 루프로 내려앉는다.** 그래서 아래 테스트의 절반은
 // "거부하는가"가 아니라 **"거부하지 않는가"** 를 고정한다 — 그쪽이 위험한 방향이기 때문이다.
 
@@ -12,10 +12,10 @@ import { decideNexusRunRefusal, renderNexusRunRefusal, evaluateNexusRunRefusal }
 import { readLeaderRefusal, type LeaderRefusalRecord } from '../src/instance/leader';
 import { renderLeaderStatus } from '../src/cli/leader-cli';
 
-const HOME_ROOT = '/Users/x/.monad';
+const HOME_ROOT = '/Users/x/.elanous';
 const LEADER = '/Users/x/source/leader/monad-agent';
 const OTHER = '/Users/x/source/axon/monad-agent';
-const TEST_ROOT = '/Users/x/source/axon/monad-agent/.monad-test';
+const TEST_ROOT = '/Users/x/source/axon/monad-agent/.elanous-test';
 
 const base = { selfTree: OTHER, leaderTree: LEADER, root: HOME_ROOT, homeRoot: HOME_ROOT, depth: 0 };
 
@@ -23,8 +23,8 @@ const base = { selfTree: OTHER, leaderTree: LEADER, root: HOME_ROOT, homeRoot: H
 //    전후만 비교해서, **다른 테스트가 오염시켜도** before===after 로 통과했다. 여기서 스냅샷을 잡고
 //    afterAll 에서 대조하면 이 파일의 **어떤** 테스트가 실 파일을 건드려도 잡힌다.
 //    (실증: 파괴적 테스트를 재도입하는 뮤테이션에서 정확히 이 가드가 실패한다.)
-const REAL_REFUSAL = join(homedir(), '.monad', 'leader-refusal.json');
-const REAL_LEADER = join(homedir(), '.monad', 'leader.json');
+const REAL_REFUSAL = join(homedir(), '.elanous', 'leader-refusal.json');
+const REAL_LEADER = join(homedir(), '.elanous', 'leader.json');
 const snap = (p: string): string | null => (existsSync(p) ? readFileSync(p, 'utf-8') : null);
 let refusalAtStart: string | null = null;
 let leaderAtStart: string | null = null;
@@ -86,8 +86,8 @@ describe('decideNexusRunRefusal — 좁게 거부', () => {
 describe('renderNexusRunRefusal — 안내', () => {
   test('비-리더 거부는 claim 과 nexus install 을 함께 안내한다', () => {
     const out = renderNexusRunRefusal(base, decideNexusRunRefusal(base));
-    expect(out).toContain('monad leader claim --yes');
-    expect(out).toContain('monad nexus install');
+    expect(out).toContain('elanous leader claim --yes');
+    expect(out).toContain('elanous nexus install');
     expect(out).toContain('--test');
     expect(out).toContain(LEADER);
   });
@@ -96,7 +96,7 @@ describe('renderNexusRunRefusal — 안내', () => {
     const input = { ...base, selfTree: LEADER, depth: 2 };
     const out = renderNexusRunRefusal(input, decideNexusRunRefusal(input));
     expect(out).toContain('--test');
-    expect(out).not.toContain('monad leader claim');
+    expect(out).not.toContain('elanous leader claim');
   });
 });
 
@@ -147,7 +147,7 @@ describe('evaluateNexusRunRefusal — 기록·관측 껍질', () => {
   });
 
   // ⛔ 삭제됨(리뷰 must-fix #5492) — 종전 이 자리에 `writeLeaderRefusal` 실구현을 호출하는 테스트가
-  //    있었고, 그건 HOME 을 격리하지 않아 **실제 `~/.monad/leader-refusal.json` 을 가짜 레코드로
+  //    있었고, 그건 HOME 을 격리하지 않아 **실제 `~/.elanous/leader-refusal.json` 을 가짜 레코드로
   //    덮어썼다**(실측 확인 후 삭제). "운영 무접촉" 주장과 정면으로 모순되는 파괴적 테스트였다.
   //    fail-soft 성질은 위 '게이트가 예외를 던져도 통과' 케이스가 seam 주입으로 이미 덮는다.
 });
@@ -214,25 +214,25 @@ describe('라우팅 — 전역 --test 는 게이트보다 먼저 뿌리를 전�
     //    프로세스 전역 상태를 바꾸는 in-process 호출 대신 subprocess 라 이 러너를 오염시키지 않는다.
     const { execFileSync } = require('node:child_process') as typeof import('node:child_process');
     const run = (args: string[]): { kind?: string; root?: string } => {
-      const out = execFileSync('bun', ['bin/monad.mjs', 'where', '--json', ...args], {
+      const out = execFileSync('bun', ['bin/elanous.mjs', 'where', '--json', ...args], {
         encoding: 'utf8', timeout: 90_000, stdio: ['ignore', 'pipe', 'ignore'],
         // ⚠️ should-fix(3R): 인스턴스 뿌리에 영향을 주는 env 를 **명시적으로 비운다** — 개발자 셸이나
-        //    CI 가 이미 격리를 켜둔 상태면 `prod.root === ~/.monad` 단정이 환경 따라 깨진다.
-        env: { ...process.env, MONAD_STATE_DIR: undefined, MONAD_CONFIG_DIR: undefined, MONAD_TEST_STATE_DIR: undefined } as NodeJS.ProcessEnv,
+        //    CI 가 이미 격리를 켜둔 상태면 `prod.root === ~/.elanous` 단정이 환경 따라 깨진다.
+        env: { ...process.env, ELANOUS_STATE_DIR: undefined, ELANOUS_CONFIG_DIR: undefined, ELANOUS_TEST_STATE_DIR: undefined } as NodeJS.ProcessEnv,
       });
       return JSON.parse(out.slice(out.indexOf('{')));
     };
     // ⚠️ 운영 기준선은 **명시 플래그(1층)** 로 잡는다(2026-07-27) — 3층 스위치가 켜지면 "명시 없는
     //    호출"은 비-리더 트리에서 test 로 파생되므로, 그걸 운영 기준선으로 쓰면 이 테스트가
     //    **머신 설정에 의존**한다(실제로 스위치를 켜자 깨졌다). 명시는 3층보다 항상 우선이다.
-    const prodRoot = join(homedir(), '.monad');
+    const prodRoot = join(homedir(), '.elanous');
     const prod = run([`--config-dir=${prodRoot}`]);
     const isolated = run(['--test']);
     expect(prod.kind).toBe('prod');
     expect(prod.root).toBe(prodRoot);                        // 명시 운영 뿌리
     expect(isolated.kind).toBe('test');
     expect(isolated.root).not.toBe(prod.root);               // --test 는 다른 뿌리
-    expect(isolated.root).toContain('.monad-test');
+    expect(isolated.root).toContain('.elanous-test');
 
     // ⇒ 게이트가 볼 때 root 가 이미 격리이므로, 그 입력으로는 어떤 깊이여도 거부되지 않는다.
     for (const depth of [0, 1, 7]) {
@@ -270,19 +270,19 @@ describe('E2E — 격리 HOME 에서 nexus run 이 실제로 거부되고 exit 1
     const { execFileSync } = require('node:child_process') as typeof import('node:child_process');
     const home = mkdtempSync(join(tmpdir(), 'p4-e2e-home-'));
     try {
-      const monadDir = join(home, '.monad');
-      require('node:fs').mkdirSync(monadDir, { recursive: true });
+      const elanousDir = join(home, '.elanous');
+      require('node:fs').mkdirSync(elanousDir, { recursive: true });
       // 권위를 **존재하지 않는 다른 트리**로 지정 → 이 트리는 확실히 비-리더 → 거부.
-      writeFileSync(join(monadDir, 'leader.json'), JSON.stringify({
+      writeFileSync(join(elanousDir, 'leader.json'), JSON.stringify({
         tree: join(home, 'some-other-tree'), promotedAt: '2026-07-26T00:00:00.000Z',
       }));
 
       let status = 0;
       let stderr = '';
       try {
-        execFileSync('bun', ['bin/monad.mjs', 'nexus', 'run'], {
+        execFileSync('bun', ['bin/elanous.mjs', 'nexus', 'run'], {
           encoding: 'utf8', timeout: 120_000, stdio: ['ignore', 'pipe', 'pipe'],
-          env: { ...process.env, HOME: home, MONAD_STATE_DIR: undefined, MONAD_CONFIG_DIR: undefined, MONAD_NEST_DEPTH: undefined } as NodeJS.ProcessEnv,
+          env: { ...process.env, HOME: home, ELANOUS_STATE_DIR: undefined, ELANOUS_CONFIG_DIR: undefined, ELANOUS_NEST_DEPTH: undefined } as NodeJS.ProcessEnv,
         });
       } catch (e) {
         const err = e as { status?: number; stderr?: string };
@@ -292,10 +292,10 @@ describe('E2E — 격리 HOME 에서 nexus run 이 실제로 거부되고 exit 1
 
       expect(status).toBe(1);                                   // ← 실제 종료 코드
       expect(stderr).toContain('운영 데몬 기동 거부');
-      expect(stderr).toContain('monad leader claim');
+      expect(stderr).toContain('elanous leader claim');
 
       // 완화 ② — 거부 사유가 격리 HOME 에 기록됐다(실 HOME 이 아니라).
-      const rec = readLeaderRefusal(join(monadDir, 'leader-refusal.json'));
+      const rec = readLeaderRefusal(join(elanousDir, 'leader-refusal.json'));
       expect(rec?.why).toContain('비-리더');
     } finally { rmSync(home, { recursive: true, force: true }); }
   }, 180_000);
@@ -343,7 +343,7 @@ describe('readLeaderRefusal — 전체 스키마 검증 (must-fix #5492)', () =>
 
 // 🩸 09-26: 운영 plist 의 작업 폴더를 pilot → 홈으로 옮기자 설치본 데몬이 «비-리더 트리» 로 거부됐다(1분 반 중단).
 describe('decideNexusRunRefusal — the installed copy is the operating body, not a tree', () => {
-  const base = { selfTree: '/Users/u', leaderTree: '/Users/u/work/checkout', root: '/Users/u/.monad', homeRoot: '/Users/u/.monad', depth: 0 };
+  const base = { selfTree: '/Users/u', leaderTree: '/Users/u/work/checkout', root: '/Users/u/.elanous', homeRoot: '/Users/u/.elanous', depth: 0 };
   test('installed copy at depth 0 starts even when its cwd is not the leader tree', () => {
     const d = decideNexusRunRefusal({ ...base, installedCopy: true });
     expect(d.refuse).toBe(false);

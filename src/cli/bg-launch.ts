@@ -3,7 +3,7 @@ import { closeSync, mkdirSync, openSync, readFileSync } from 'node:fs';
 import { join as joinPath } from 'node:path';
 
 import { nexusLogsDir, getTestStateRoot } from '../nexus/paths.js';
-import { getMonadConfigDir } from '../monad-config-dir.js';
+import { getElanousConfigDir } from '../elanous-config-dir.js';
 import { isPidAlive } from '../process/pid-liveness.js';
 import {
   checkSetupStatus,
@@ -96,12 +96,12 @@ function httpSummary(opts: BgLaunchOpts): string {
 }
 
 function printExistingLock(out: { log: (s: string) => void; error: (s: string) => void }, lock: NexusLockMeta): void {
-  out.error('monad nexus already running:');
+  out.error('elanous nexus already running:');
   out.error(`  pid       ${lock.pid}`);
   out.error(`  host      ${lock.host}`);
   out.error(`  startedAt ${lock.startedAt}`);
   out.error('');
-  out.error('Use `monad nexus status` to inspect, `monad nexus stop` to terminate, or `--force` to take over.');
+  out.error('Use `elanous nexus status` to inspect, `elanous nexus stop` to terminate, or `--force` to take over.');
 }
 
 export async function runBgLaunch(opts: BgLaunchOpts = {}): Promise<BgLaunchResult> {
@@ -118,16 +118,16 @@ export async function runBgLaunch(opts: BgLaunchOpts = {}): Promise<BgLaunchResu
 
   const setup = opts.setupStatus ?? checkSetupStatus({ argvBin: process.argv[1] ?? '' });
   if (!setup.ok) {
-    out.error('✗ monad nexus --bg: setup incomplete');
+    out.error('✗ elanous nexus --bg: setup incomplete');
     renderSetupStatus(setup, out);
     out.log('');
-    out.log('  Run `monad nexus` (interactive) once to walk through the wizard.');
+    out.log('  Run `elanous nexus` (interactive) once to walk through the wizard.');
     return { exitCode: 1 };
   }
 
   const argvBin = process.argv[1] ?? '';
   if (!argvBin) {
-    out.error('monad nexus --bg: could not determine argv[1] for self-detach spawn.');
+    out.error('elanous nexus --bg: could not determine argv[1] for self-detach spawn.');
     return { exitCode: 1 };
   }
 
@@ -136,18 +136,18 @@ export async function runBgLaunch(opts: BgLaunchOpts = {}): Promise<BgLaunchResu
   mkdirSync(nexusLogsDir(), { recursive: true });
   const logFd = openSync(logPath, 'a', 0o644);
   // Child runs `nexus run` (no `--headless` — the new auto-detect path
-  // resolves lifecycle from TTY + MONAD_NEXUS_BG_PARENT=1 below). The
+  // resolves lifecycle from TTY + ELANOUS_NEXUS_BG_PARENT=1 below). The
   // env var pins inline mode even if the spawned harness somehow has a
   // TTY surface attached, so the child blocks here as a daemon
   // instead of trying to fork itself.
   // 2026-05-13 · config-dir-unify — propagate config-dir + test
   // state-root overrides to the detached daemon via argv rather than
-  // env vars (removed MONAD_DAEMON_DIR / MONAD_NEXUS_DIR inheritance).
+  // env vars (removed ELANOUS_DAEMON_DIR / ELANOUS_NEXUS_DIR inheritance).
   // The child's own `applyConfigDirFlagFromArgv` /
   // `applyTestStateDirFlagFromArgv` extractors run pre-Commander so
   // these flags never reach subcommand option parsing.
   const inheritedDirArgs: string[] = [];
-  const configDir = getMonadConfigDir();
+  const configDir = getElanousConfigDir();
   inheritedDirArgs.push('--config-dir', configDir);
   const testStateDir = getTestStateRoot();
   if (testStateDir !== undefined) {
@@ -166,27 +166,27 @@ export async function runBgLaunch(opts: BgLaunchOpts = {}): Promise<BgLaunchResu
     const child = spawnFn(process.execPath, args, {
       detached: true,
       stdio: ['ignore', logFd, logFd],
-      env: { ...process.env, MONAD_NEXUS_BG_PARENT: '1' },
+      env: { ...process.env, ELANOUS_NEXUS_BG_PARENT: '1' },
     });
     child.unref();
     await (opts.sleepFn ?? sleep)(opts.childProbeDelayMs ?? DEFAULT_CHILD_PROBE_DELAY_MS);
     const childState = (opts.probeChildFn ?? defaultProbeChild)(child);
     if (childState === 'exited') {
       const lastLine = lastMeaningfulLogLine(logPath);
-      out.error('monad nexus --bg: detached child exited during startup.');
+      out.error('elanous nexus --bg: detached child exited during startup.');
       if (lastLine) out.error(`  reason    ${lastLine}`);
       out.error(`  log       ${logPath}`);
       return { exitCode: 1, pid: child.pid, logPath };
     }
-    out.log('monad nexus: started in background');
+    out.log('elanous nexus: started in background');
     out.log(`  pid       ${child.pid ?? '(unknown)'}`);
     out.log(`  log       ${logPath}`);
     out.log(`  http      ${httpSummary(opts)}`);
-    out.log('  status    monad nexus status');
-    out.log('  stop      monad nexus stop');
+    out.log('  status    elanous nexus status');
+    out.log('  stop      elanous nexus stop');
     return { exitCode: 0, pid: child.pid, logPath };
   } catch (err) {
-    out.error(`monad nexus --bg: failed to spawn detached child: ${(err as Error).message}`);
+    out.error(`elanous nexus --bg: failed to spawn detached child: ${(err as Error).message}`);
     return { exitCode: 1 };
   } finally {
     try { closeSync(logFd); } catch { /* best-effort */ }

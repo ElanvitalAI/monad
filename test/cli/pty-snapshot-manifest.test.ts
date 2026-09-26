@@ -25,7 +25,7 @@ afterAll(() => {
 });
 
 function seedManifest(id: string, now: number): void {
-  upsertPtyManifest({ id, kind: 'tui', cmd: 'monad', startedAt: now, now });
+  upsertPtyManifest({ id, kind: 'tui', cmd: 'elanous', startedAt: now, now });
   expect(ptyManifestDbPath()).toBe(manifestDbPath);
   const store = new Database(manifestDbPath, { readonly: true });
   expect(store.query('SELECT id FROM pty_manifest WHERE id=?').get(id)).toEqual({ id });
@@ -143,7 +143,7 @@ test('CLI pty snapshot --ansi crosses IPC to the owner renderer and preserves it
       listRefs: () => [{ id, kind: 'tui', source: 'remote', alive: true }],
       log() {},
     });
-    await program.parseAsync(['node', 'monad', 'pty', 'snapshot', id, '--ansi']);
+    await program.parseAsync(['node', 'elanous', 'pty', 'snapshot', id, '--ansi']);
   } finally {
     process.stdout.write = stdout;
   }
@@ -178,7 +178,7 @@ test('registry batches UTF-8 output bytes into the manifest with the snapshot fl
     process.exit(0);
   `;
   try {
-    const child = Bun.spawn(['bun', '--eval', script], { env: { ...process.env, NODE_ENV: 'production', MONAD_STATE_DIR: state }, stdout: 'pipe' });
+    const child = Bun.spawn(['bun', '--eval', script], { env: { ...process.env, NODE_ENV: 'production', ELANOUS_STATE_DIR: state }, stdout: 'pipe' });
     expect(await child.exited).toBe(0);
     expect(JSON.parse(await new Response(child.stdout).text())).toEqual({
       first: Buffer.byteLength('한', 'utf8'),

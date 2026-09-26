@@ -8,14 +8,14 @@ import { join } from 'node:path';
 import type { SurfaceSink, SessionOutputEvent } from '../src/session/session-fanout.js';
 import type { SessionSurface } from '../src/session/index.js';
 
-const ORIG_SESS = process.env.MONAD_SESSION_ROOT;
+const ORIG_SESS = process.env.ELANOUS_SESSION_ROOT;
 let tmp: string;
 
 type FanoutObservation = { event: string; refs: Record<string, unknown> };
 
 beforeEach(async () => {
   tmp = mkdtempSync(join(tmpdir(), 'sess-p1-'));
-  process.env.MONAD_SESSION_ROOT = tmp;
+  process.env.ELANOUS_SESSION_ROOT = tmp;
   const { _clearSubscriberIndexForTest } = await import('../src/session/index.js');
   const { _clearSurfaceSinksForTest } = await import('../src/session/session-fanout.js');
   _clearSubscriberIndexForTest();
@@ -23,7 +23,7 @@ beforeEach(async () => {
 });
 afterEach(() => {
   if (tmp) rmSync(tmp, { recursive: true, force: true });
-  if (ORIG_SESS === undefined) delete process.env.MONAD_SESSION_ROOT; else process.env.MONAD_SESSION_ROOT = ORIG_SESS;
+  if (ORIG_SESS === undefined) delete process.env.ELANOUS_SESSION_ROOT; else process.env.ELANOUS_SESSION_ROOT = ORIG_SESS;
 });
 
 function collectSink(log: Array<[string, string]>, surface: string, fail = false): SurfaceSink {

@@ -111,7 +111,7 @@ export function handleSessionsStoreGet(req: Request, id: string, opts: MetaApiOp
  *  S3 타임트래블(PWA 파리티 P2 · 2026-07-12): JSON body `{ beforeUser?: N }` 로
  *  N번째(1-based) 사용자 발화 직전으로 절단해 분기 — CLI `--before-user` ·
  *  tg `/fork before:N` 과 의미론 동일(`forkSessionById` 단일 경로). body 없으면
- *  현행 풀카피(하위호환). `deps.fork` 는 테스트 주입점(세션 store 는 실 ~/.monad
+ *  현행 풀카피(하위호환). `deps.fork` 는 테스트 주입점(세션 store 는 실 ~/.elanous
  *  고정이라 spy 격리 — memory: 세션 저장소 테스트 격리). */
 export async function handleSessionsStoreFork(
   req: Request,

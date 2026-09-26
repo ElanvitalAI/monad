@@ -20,7 +20,7 @@ describe('parseOpenAIUsage — event shapes', () => {
     const ev = {
       choices: [{ delta: {}, finish_reason: 'stop' }],
       usage: {
-        // ⛔ prompt_tokens 는 캐시 적중분을 «포함»한다(1164 = 새 140 + 캐시 1024) — monad 는 새 입력만 inputTokens 에(BACKLOG C4).
+        // ⛔ prompt_tokens 는 캐시 적중분을 «포함»한다(1164 = 새 140 + 캐시 1024) — elanous 는 새 입력만 inputTokens 에(BACKLOG C4).
         prompt_tokens: 1164,
         completion_tokens: 320,
         total_tokens: 1484,

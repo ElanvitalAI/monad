@@ -279,7 +279,7 @@ export function ShowroomPanelView({
                   )}
                   {!personasResult.loading && personas.length === 0 && (
                     <p className="px-1.5 py-1 text-[10px] text-zinc-500">
-                      no personas (yaml in <code>~/.monad/personas/</code>)
+                      no personas (yaml in <code>~/.elanous/personas/</code>)
                     </p>
                   )}
                   {personas.map((p) => {
@@ -399,7 +399,7 @@ export function ShowroomPanelView({
           {/* DM stage 3 FU (HANDOFF §3.2 · 2026-05-09) — re-added the
               activity pill after the multi-llm-bridge began forwarding
               `tool_call` / `tool_call_update` events with
-              `_meta.monad.toolCall`. Click toggles a list under the
+              `_meta.elanous.toolCall`. Click toggles a list under the
               header (rendered in the message body section). */}
           {toolCalls.length > 0 && (
             <button

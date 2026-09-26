@@ -25,17 +25,17 @@ import {
   getSwitch,
   listSwitches,
 } from '../src/nexus/config/switch-registry.js';
-import { setMonadConfigDir, resetMonadConfigDir } from '../src/monad-config-dir.js';
+import { setElanousConfigDir, resetElanousConfigDir } from '../src/elanous-config-dir.js';
 
 let tmpRoot: string;
 beforeEach(() => {
-  tmpRoot = mkdtempSync(join(tmpdir(), 'monad-nexus-n35-builtins-'));
-  setMonadConfigDir(tmpRoot);
+  tmpRoot = mkdtempSync(join(tmpdir(), 'elanous-nexus-n35-builtins-'));
+  setElanousConfigDir(tmpRoot);
   clearSwitchRegistry();
   reloadAllBuiltins();
 });
 afterEach(() => {
-  resetMonadConfigDir();
+  resetElanousConfigDir();
   try { rmSync(tmpRoot, { recursive: true, force: true }); } catch { /* ignore */ }
   clearSwitchRegistry();
 });
@@ -81,8 +81,8 @@ describe('DAEMON_SWITCHES · Pushcut absorption (WT-N-3 D1/D2/D4)', () => {
     expect(sw.kind).toBe('secret-ref');
     expect(sw.redactInLogs).toBe(true);
     expect(sw.pwaPreferred).toBe(true);
-    expect(sw.envName).toBe('MONAD_PUSHCUT_WEBHOOK_SECRET');
-    expect(sw.legacyEnvName).toBe('MONAD_PUSHCUT_WEBHOOK_SECRET');
+    expect(sw.envName).toBe('ELANOUS_PUSHCUT_WEBHOOK_SECRET');
+    expect(sw.legacyEnvName).toBe('ELANOUS_PUSHCUT_WEBHOOK_SECRET');
   });
 
   test('pushcut.webhookPath default = /v1/pushcut + restartTabs daemon:1', () => {
@@ -92,9 +92,9 @@ describe('DAEMON_SWITCHES · Pushcut absorption (WT-N-3 D1/D2/D4)', () => {
     expect(sw.hotApplicable).toBe(false);
   });
 
-  test('per-instance daemon tools override carries envName MONAD_TOOLS', () => {
+  test('per-instance daemon tools override carries envName ELANOUS_TOOLS', () => {
     const sw = getSwitch('tabs.daemon:1.tools')!;
-    expect(sw.envName).toBe('MONAD_TOOLS');
+    expect(sw.envName).toBe('ELANOUS_TOOLS');
     expect(sw.kind).toBe('enum');
     expect(sw.appliesTo).toEqual(['daemon']);
     // empty default = "use global.tools"
@@ -103,7 +103,7 @@ describe('DAEMON_SWITCHES · Pushcut absorption (WT-N-3 D1/D2/D4)', () => {
 
   test('per-instance historyDir override', () => {
     const sw = getSwitch('tabs.daemon:1.historyDir')!;
-    expect(sw.envName).toBe('MONAD_HISTORY_DIR');
+    expect(sw.envName).toBe('ELANOUS_HISTORY_DIR');
     expect(sw.kind).toBe('path');
   });
 });
@@ -134,12 +134,12 @@ describe('PWA_HOST_SWITCHES', () => {
 });
 
 describe('Switch envName collision check', () => {
-  test('per-instance MONAD_TOOLS override does not break global switch lookup', () => {
-    // Both global.tools and tabs.daemon:1.tools declare envName=MONAD_TOOLS.
+  test('per-instance ELANOUS_TOOLS override does not break global switch lookup', () => {
+    // Both global.tools and tabs.daemon:1.tools declare envName=ELANOUS_TOOLS.
     // env-derive resolves per-tab switch first, so the override wins for
     // the daemon tab; the global one applies elsewhere.
-    expect(getSwitch('global.tools')!.envName).toBe('MONAD_TOOLS');
-    expect(getSwitch('tabs.daemon:1.tools')!.envName).toBe('MONAD_TOOLS');
+    expect(getSwitch('global.tools')!.envName).toBe('ELANOUS_TOOLS');
+    expect(getSwitch('tabs.daemon:1.tools')!.envName).toBe('ELANOUS_TOOLS');
     // Both registered (last write wins per id, but ids differ so both exist)
     const ids = listSwitches().map((s) => s.id);
     expect(ids.filter((id) => id.endsWith('.tools') || id === 'global.tools')).toEqual(['global.tools', 'tabs.daemon:1.tools']);

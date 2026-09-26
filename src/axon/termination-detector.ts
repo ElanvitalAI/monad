@@ -1,7 +1,7 @@
 // AXON P5 — 7-factor termination detector.
 //
 // Claude Code's public-facing guidance includes lines like "더 이상 할
-// 일 없어 ScheduleWakeup 호출하지 않습니다 — 루프 종료". monad's
+// 일 없어 ScheduleWakeup 호출하지 않습니다 — 루프 종료". elanous's
 // equivalent signal is this detector: a pure function that inspects
 // seven factors and returns a boolean verdict + confidence +
 // per-factor breakdown. The caller (loop-prompt renderer, auto-mode

@@ -91,7 +91,7 @@ describe('knowledge document path keys', () => {
     db.run(`CREATE TABLE docs(id TEXT PRIMARY KEY, ts TEXT NOT NULL, kind TEXT NOT NULL, sector_tags TEXT, text TEXT NOT NULL, source_ref TEXT, embed_model TEXT NOT NULL, embedding BLOB NOT NULL, domain TEXT)`);
     db.run(`CREATE VIRTUAL TABLE docs_fts USING fts5(id UNINDEXED, search_text, tokenize = 'porter')`);
     db.run(`CREATE TABLE docs_ingest_state(file TEXT PRIMARY KEY, mtime_ms INTEGER NOT NULL, chunk_count INTEGER NOT NULL, ingested_at TEXT NOT NULL)`);
-    db.prepare(`INSERT INTO docs VALUES (?, ?, 'docs', NULL, ?, ?, 'test-model', ?, 'monad')`)
+    db.prepare(`INSERT INTO docs VALUES (?, ?, 'docs', NULL, ?, ?, 'test-model', ?, 'elanous')`)
       .run('docs:PLAN-legacy.md#0', '2026-07-01T00:00:00.000Z', 'legacy text', source, originalEmbedding);
     db.prepare(`INSERT INTO docs_fts VALUES (?, ?)`).run('docs:PLAN-legacy.md#0', 'legacy text');
     db.prepare(`INSERT INTO docs_ingest_state VALUES (?, 1, 1, ?)`)
@@ -115,12 +115,12 @@ describe('knowledge document path keys', () => {
 
   test('migrates Windows absolute legacy ids and state keys in place', () => {
     const f = fixture();
-    const source = 'C:\\monad\\pilot\\docs\\PLAN-windows.md';
+    const source = 'C:\\elanous\\pilot\\docs\\PLAN-windows.md';
     let db = new Database(f.dbPath);
     db.run(`CREATE TABLE docs(id TEXT PRIMARY KEY, ts TEXT NOT NULL, kind TEXT NOT NULL, sector_tags TEXT, text TEXT NOT NULL, source_ref TEXT, embed_model TEXT NOT NULL, embedding BLOB NOT NULL, domain TEXT)`);
     db.run(`CREATE VIRTUAL TABLE docs_fts USING fts5(id UNINDEXED, search_text, tokenize = 'porter')`);
     db.run(`CREATE TABLE docs_ingest_state(file TEXT PRIMARY KEY, mtime_ms INTEGER NOT NULL, chunk_count INTEGER NOT NULL, ingested_at TEXT NOT NULL)`);
-    db.prepare(`INSERT INTO docs VALUES (?, ?, 'docs', NULL, ?, ?, 'test-model', ?, 'monad')`)
+    db.prepare(`INSERT INTO docs VALUES (?, ?, 'docs', NULL, ?, ?, 'test-model', ?, 'elanous')`)
       .run('docs:PLAN-windows.md#0', '2026-07-01T00:00:00.000Z', 'Windows legacy text', source, new Uint8Array([9, 8, 7]));
     db.prepare(`INSERT INTO docs_fts VALUES (?, ?)`).run('docs:PLAN-windows.md#0', 'Windows legacy text');
     db.prepare(`INSERT INTO docs_ingest_state VALUES (?, 1, 1, ?)`)
@@ -140,7 +140,7 @@ describe('knowledge document path keys', () => {
     db.run(`CREATE TABLE docs(id TEXT PRIMARY KEY, ts TEXT NOT NULL, kind TEXT NOT NULL, sector_tags TEXT, text TEXT NOT NULL, source_ref TEXT, embed_model TEXT NOT NULL, embedding BLOB NOT NULL, domain TEXT)`);
     db.run(`CREATE VIRTUAL TABLE docs_fts USING fts5(id UNINDEXED, search_text, tokenize = 'porter')`);
     db.run(`CREATE TABLE docs_ingest_state(file TEXT PRIMARY KEY, mtime_ms INTEGER NOT NULL, chunk_count INTEGER NOT NULL, ingested_at TEXT NOT NULL)`);
-    db.prepare(`INSERT INTO docs VALUES (?, ?, 'docs', NULL, ?, ?, 'test-model', ?, 'monad')`)
+    db.prepare(`INSERT INTO docs VALUES (?, ?, 'docs', NULL, ?, ?, 'test-model', ?, 'elanous')`)
       .run('docs:legacy-relative-doc.md#0', '2026-07-01T00:00:00.000Z', 'legacy text', 'legacy-relative-doc.md', new Uint8Array([9, 8, 7]));
     db.prepare(`INSERT INTO docs_fts VALUES (?, ?)`).run('docs:legacy-relative-doc.md#0', 'legacy text');
     db.prepare(`INSERT INTO docs_ingest_state VALUES (?, 1, 1, ?)`)
@@ -161,7 +161,7 @@ describe('knowledge document path keys', () => {
     let db = new Database(f.dbPath);
     db.run(`CREATE TABLE docs(id TEXT PRIMARY KEY, ts TEXT NOT NULL, kind TEXT NOT NULL, sector_tags TEXT, text TEXT NOT NULL, source_ref TEXT, embed_model TEXT NOT NULL, embedding BLOB NOT NULL, domain TEXT)`);
     db.run(`CREATE VIRTUAL TABLE docs_fts USING fts5(id UNINDEXED, search_text, tokenize = 'porter')`);
-    db.prepare(`INSERT INTO docs VALUES (?, ?, 'docs', NULL, ?, ?, 'test-model', ?, 'monad')`)
+    db.prepare(`INSERT INTO docs VALUES (?, ?, 'docs', NULL, ?, ?, 'test-model', ?, 'elanous')`)
       .run(currentId, '2026-07-01T00:00:00.000Z', 'current text', source, new Uint8Array([1, 2, 3]));
     db.prepare(`INSERT INTO docs_fts VALUES (?, ?)`).run(currentId, 'current text');
     db.close();
@@ -180,8 +180,8 @@ describe('knowledge document path keys', () => {
     db.run(`CREATE TABLE docs(id TEXT PRIMARY KEY, ts TEXT NOT NULL, kind TEXT NOT NULL, sector_tags TEXT, text TEXT NOT NULL, source_ref TEXT, embed_model TEXT NOT NULL, embedding BLOB NOT NULL, domain TEXT)`);
     db.run(`CREATE VIRTUAL TABLE docs_fts USING fts5(id UNINDEXED, search_text, tokenize = 'porter')`);
     db.run(`CREATE TABLE docs_ingest_state(file TEXT PRIMARY KEY, mtime_ms INTEGER NOT NULL, chunk_count INTEGER NOT NULL, ingested_at TEXT NOT NULL)`);
-    db.prepare(`INSERT INTO docs VALUES (?, ?, 'docs', NULL, ?, ?, 'test-model', ?, 'monad')`).run('docs:PLAN-collision.md#0', '2026-07-01T00:00:00.000Z', 'legacy text', source, new Uint8Array([1, 2, 3]));
-    db.prepare(`INSERT INTO docs VALUES (?, ?, 'docs', NULL, ?, ?, 'test-model', ?, 'monad')`).run(targetId, '2026-07-01T00:00:00.000Z', 'different text', source, new Uint8Array([4, 5, 6]));
+    db.prepare(`INSERT INTO docs VALUES (?, ?, 'docs', NULL, ?, ?, 'test-model', ?, 'elanous')`).run('docs:PLAN-collision.md#0', '2026-07-01T00:00:00.000Z', 'legacy text', source, new Uint8Array([1, 2, 3]));
+    db.prepare(`INSERT INTO docs VALUES (?, ?, 'docs', NULL, ?, ?, 'test-model', ?, 'elanous')`).run(targetId, '2026-07-01T00:00:00.000Z', 'different text', source, new Uint8Array([4, 5, 6]));
     db.prepare(`INSERT INTO docs_fts VALUES (?, ?)`).run('docs:PLAN-collision.md#0', 'legacy text');
     db.prepare(`INSERT INTO docs_fts VALUES (?, ?)`).run(targetId, 'different text');
     db.prepare(`INSERT INTO docs_ingest_state VALUES (?, 1, 1, ?)`).run('PLAN-collision.md', '2026-07-01T00:00:00.000Z');
@@ -204,7 +204,7 @@ describe('knowledge document path keys', () => {
     db.run(`CREATE TABLE docs(id TEXT PRIMARY KEY, ts TEXT NOT NULL, kind TEXT NOT NULL, sector_tags TEXT, text TEXT NOT NULL, source_ref TEXT, embed_model TEXT NOT NULL, embedding BLOB NOT NULL, domain TEXT)`);
     db.run(`CREATE VIRTUAL TABLE docs_fts USING fts5(id UNINDEXED, search_text, tokenize = 'porter')`);
     for (const id of ['docs:PLAN-duplicate.md#0', targetId]) {
-      db.prepare(`INSERT INTO docs VALUES (?, ?, 'docs', NULL, ?, ?, 'test-model', ?, 'monad')`).run(id, '2026-07-01T00:00:00.000Z', 'same text', source, embedding);
+      db.prepare(`INSERT INTO docs VALUES (?, ?, 'docs', NULL, ?, ?, 'test-model', ?, 'elanous')`).run(id, '2026-07-01T00:00:00.000Z', 'same text', source, embedding);
       db.prepare(`INSERT INTO docs_fts VALUES (?, ?)`).run(id, 'same text');
     }
     db.close();
@@ -225,7 +225,7 @@ describe('knowledge document path keys', () => {
     db.run(`CREATE TABLE docs(id TEXT PRIMARY KEY, ts TEXT NOT NULL, kind TEXT NOT NULL, sector_tags TEXT, text TEXT NOT NULL, source_ref TEXT, embed_model TEXT NOT NULL, embedding BLOB NOT NULL, domain TEXT)`);
     db.run(`CREATE VIRTUAL TABLE docs_fts USING fts5(id UNINDEXED, search_text, tokenize = 'porter')`);
     for (const id of ['docs:PLAN-partial-fts.md#0', targetId]) {
-      db.prepare(`INSERT INTO docs VALUES (?, ?, 'docs', NULL, ?, ?, 'test-model', ?, 'monad')`).run(id, '2026-07-01T00:00:00.000Z', 'searchable text', source, embedding);
+      db.prepare(`INSERT INTO docs VALUES (?, ?, 'docs', NULL, ?, ?, 'test-model', ?, 'elanous')`).run(id, '2026-07-01T00:00:00.000Z', 'searchable text', source, embedding);
     }
     // 부분 마이그레이션 — 대상 docs 행은 있지만 대상 FTS 행은 없고, 레거시만 FTS 색인됨.
     db.prepare(`INSERT INTO docs_fts VALUES (?, ?)`).run('docs:PLAN-partial-fts.md#0', 'searchable text');
@@ -261,7 +261,7 @@ describe('knowledge document path keys', () => {
     const f = fixture();
     let db = new Database(f.dbPath);
     db.run(`CREATE TABLE docs(id TEXT PRIMARY KEY, ts TEXT NOT NULL, kind TEXT NOT NULL, sector_tags TEXT, text TEXT NOT NULL, source_ref TEXT, embed_model TEXT NOT NULL, embedding BLOB NOT NULL, domain TEXT)`);
-    db.prepare(`INSERT INTO docs VALUES (?, ?, 'docs', NULL, ?, NULL, 'test-model', ?, 'monad')`)
+    db.prepare(`INSERT INTO docs VALUES (?, ?, 'docs', NULL, ?, NULL, 'test-model', ?, 'elanous')`)
       .run('docs:unrecoverable.md#0', '2026-07-01T00:00:00.000Z', 'unrecoverable text', new Uint8Array([1, 2, 3]));
     db.close();
 
@@ -275,7 +275,7 @@ describe('knowledge document path keys', () => {
     let db = openKnowledgeDb(f.dbPath);
     expect(db.prepare(`SELECT name FROM knowledge_schema_migrations`).all()).toEqual([{ name: 'doc-path-keys-v1' }]);
     const source = join(f.root, 'tree', 'docs', 'PLAN-late-legacy.md');
-    db.prepare(`INSERT INTO docs VALUES (?, ?, 'docs', NULL, ?, ?, 'test-model', ?, 'monad')`)
+    db.prepare(`INSERT INTO docs VALUES (?, ?, 'docs', NULL, ?, ?, 'test-model', ?, 'elanous')`)
       .run('docs:PLAN-late-legacy.md#0', '2026-07-01T00:00:00.000Z', 'late legacy text', source, new Uint8Array([1, 2, 3]));
     db.prepare(`INSERT INTO docs_fts VALUES (?, ?)`).run('docs:PLAN-late-legacy.md#0', 'late legacy text');
     db.close();
@@ -294,7 +294,7 @@ describe('knowledge document path keys', () => {
     db.run(`CREATE TABLE docs(id TEXT PRIMARY KEY, ts TEXT NOT NULL, kind TEXT NOT NULL, sector_tags TEXT, text TEXT NOT NULL, source_ref TEXT, embed_model TEXT NOT NULL, embedding BLOB NOT NULL, domain TEXT)`);
     db.run(`CREATE VIRTUAL TABLE docs_fts USING fts5(id UNINDEXED, search_text, tokenize = 'porter')`);
     db.run(`CREATE TABLE docs_ingest_state(file TEXT PRIMARY KEY, mtime_ms INTEGER NOT NULL, chunk_count INTEGER NOT NULL, ingested_at TEXT NOT NULL)`);
-    db.prepare(`INSERT INTO docs VALUES (?, ?, 'docs', NULL, ?, ?, 'test-model', ?, 'monad')`)
+    db.prepare(`INSERT INTO docs VALUES (?, ?, 'docs', NULL, ?, ?, 'test-model', ?, 'elanous')`)
       .run(legacyId, '2026-07-01T00:00:00.000Z', 'rollback text', source, new Uint8Array([1, 2, 3]));
     db.prepare(`INSERT INTO docs_fts VALUES (?, ?)`).run(legacyId, 'rollback text');
     db.prepare(`INSERT INTO docs_ingest_state VALUES (?, 1, 1, ?)`).run('PLAN-rollback.md', '2026-07-01T00:00:00.000Z');
@@ -319,7 +319,7 @@ describe('knowledge document path keys', () => {
     let db = new Database(f.dbPath);
     db.run(`CREATE TABLE docs(id TEXT PRIMARY KEY, ts TEXT NOT NULL, kind TEXT NOT NULL, sector_tags TEXT, text TEXT NOT NULL, source_ref TEXT, embed_model TEXT NOT NULL, embedding BLOB NOT NULL, domain TEXT)`);
     db.run(`CREATE VIRTUAL TABLE docs_fts USING fts5(id UNINDEXED, search_text, tokenize = 'porter')`);
-    db.prepare(`INSERT INTO docs VALUES (?, ?, 'memory', NULL, ?, ?, 'test-model', ?, 'monad')`)
+    db.prepare(`INSERT INTO docs VALUES (?, ?, 'memory', NULL, ?, ?, 'test-model', ?, 'elanous')`)
       .run('docs:REPORT-memory.md#0', '2026-07-01T00:00:00.000Z', 'legacy memory', source, originalEmbedding);
     db.prepare(`INSERT INTO docs_fts VALUES (?, ?)`).run('docs:REPORT-memory.md#0', 'legacy memory');
     db.close();

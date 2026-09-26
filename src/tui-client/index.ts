@@ -2,11 +2,11 @@
 //
 // This module collects the pieces a consumer (future TUI boot path,
 // Web client, iPhone app) needs to boot as an ACP client of a local
-// or remote Monad server:
+// or remote Elanous server:
 //
 //   - In-process transport bridge (`acp-transport-local`) for Same-
 //     Process wiring (TUI in the same bun process as the server).
-//   - `monad/ui/*` envelope dispatcher (`monad-ui-handler`).
+//   - `elanous/ui/*` envelope dispatcher (`elanous-ui-handler`).
 //   - Headless-core guard (`headless-core-guard`) — lint-level test
 //     seam for the "core runs without TUI" contract.
 
@@ -18,9 +18,9 @@ export {
 export {
   dispatchThoughtChunk,
   extractAgentThoughtText,
-  type MonadUiHandler,
+  type ElanousUiHandler,
   type ThoughtChunkOutcome,
-} from './monad-ui-handler.js';
+} from './elanous-ui-handler.js';
 
 export {
   extractImportSpecifiers,

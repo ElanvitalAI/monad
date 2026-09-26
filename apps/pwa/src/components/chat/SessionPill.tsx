@@ -307,7 +307,7 @@ export function SessionPill(props: SessionPillProps = {}) {
                 className="shrink-0 rounded p-1 hover:bg-secondary disabled:cursor-not-allowed disabled:opacity-50"
                 title={dropdownCopied ? '복사됨' : '세션 ID 전체 복사'}
                 aria-label="세션 ID 복사"
-                data-monad-action="session-id-copy-dropdown"
+                data-elanous-action="session-id-copy-dropdown"
               >
                 {dropdownCopied
                   ? <Check className="h-3 w-3 text-emerald-500" />

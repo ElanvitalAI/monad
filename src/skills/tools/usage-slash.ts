@@ -1,7 +1,7 @@
 // Slash command: /usage
 //
 // Screen does not compute. It prints the same structured report the
-// `monad usage` command produces.
+// `elanous usage` command produces.
 
 import { collectUnifiedUsage, formatUnifiedUsage, type UnifiedUsageDeps } from '../../budget/unified-usage.js';
 import type { SlashExecuteRequest, SlashExecuteResult } from './dashboard-slash.js';

@@ -16,7 +16,7 @@ function ev(layer: UserIntentLayer, kind = `${layer}.x`): UserIntentEvent {
     user_id: '',
     session_id: '',
     device_id: 'test',
-    monad_id: 'm',
+    elanous_id: 'm',
     surface: 'tui',
     intent: { layer, kind },
   } as UserIntentEvent;

@@ -10,7 +10,7 @@
 //   - hermes `tools/transcription_tools.py` — OpenAI provider 부분의 dispatch.
 //   - OpenAI API docs (https://platform.openai.com/docs/api-reference/audio/createTranscription).
 //   - claude-code-fork uses Anthropic's proprietary voice_stream WebSocket
-//     (not portable) — monad takes the public REST path instead.
+//     (not portable) — elanous takes the public REST path instead.
 
 import { debug } from '../../debug/log.js';
 import {

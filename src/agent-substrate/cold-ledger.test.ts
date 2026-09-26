@@ -4,14 +4,14 @@ import { existsSync, rmSync, mkdtempSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { coldLedgerPath, coldFilesDir, writeColdSnapshot, readColdSnapshot, hasColdSnapshot } from './cold-ledger.js';
-import { setMonadConfigDir, resetMonadConfigDir } from '../monad-config-dir.js';
+import { setElanousConfigDir, resetElanousConfigDir } from '../elanous-config-dir.js';
 
 interface DemoSnap { id: string; note: string; items: number[]; }
 
 describe('cold-ledger — 제네릭 냉동보관(kind·<T>)', () => {
   let dir: string;
-  beforeEach(() => { dir = mkdtempSync(join(tmpdir(), 'cold-ledger-c2-')); setMonadConfigDir(dir); });
-  afterEach(() => { resetMonadConfigDir(); try { rmSync(dir, { recursive: true, force: true }); } catch { /* noop */ } });
+  beforeEach(() => { dir = mkdtempSync(join(tmpdir(), 'cold-ledger-c2-')); setElanousConfigDir(dir); });
+  afterEach(() => { resetElanousConfigDir(); try { rmSync(dir, { recursive: true, force: true }); } catch { /* noop */ } });
 
   it('kind 네임스페이스로 경로 분리', () => {
     expect(coldLedgerPath('m1', 'lineage-cold')).toContain(join('archive', 'lineage-cold', 'm1'));

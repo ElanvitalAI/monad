@@ -90,9 +90,9 @@ export function formatCycleFiredDecision(decision: CycleFiredDecision): string {
 }
 
 export async function defaultLogQueryObserver(args: string[]): Promise<string> {
-  const child = Bun.spawn({ cmd: ['bun', 'bin/monad.mjs', '--test', 'logs', ...args], stdout: 'pipe', stderr: 'pipe' });
+  const child = Bun.spawn({ cmd: ['bun', 'bin/elanous.mjs', '--test', 'logs', ...args], stdout: 'pipe', stderr: 'pipe' });
   const [stdout, stderr, exitCode] = await Promise.all([new Response(child.stdout).text(), new Response(child.stderr).text(), child.exited]);
-  if (exitCode !== 0) throw new Error(stderr.trim() || `monad logs exited with ${exitCode}`);
+  if (exitCode !== 0) throw new Error(stderr.trim() || `elanous logs exited with ${exitCode}`);
   return stdout;
 }
 

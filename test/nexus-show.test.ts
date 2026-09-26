@@ -1,4 +1,4 @@
-// `monad nexus show` — consolidated daemon overview tests.
+// `elanous nexus show` — consolidated daemon overview tests.
 //
 // Composition: runNexusShow drives runPwaShow under a capturing sink,
 // derives REST + SSE URLs from the same base, and prints a single
@@ -36,7 +36,7 @@ function instance(overrides: Partial<PwaInstanceListing> = {}): PwaInstanceListi
     mode: 'static',
     kind: 'production',
     cwd: '/tmp/myproj',
-    daemonDir: '/Users/me/.monad/nexus',
+    daemonDir: '/Users/me/.elanous/nexus',
     shareMounted: false,
     https: false,
     startedAt: '2026-05-13T00:00:00.000Z',
@@ -59,7 +59,7 @@ function probe(host?: string): TailscaleProbe {
 
 function lifecycle(overrides: Partial<NexusLifecycleState> = {}): NexusLifecycleState {
   return {
-    root: '/Users/me/.monad/nexus',
+    root: '/Users/me/.elanous/nexus',
     lock: { pid: 54321 } as NexusLifecycleState['lock'],
     runtime: {
       pid: 54321,
@@ -78,16 +78,16 @@ describe('resolveNexusPwa', () => {
     expect(resolveNexusPwa({ cwd: '/tmp/myproj', listFn: () => [instance({ ports: [31415] })] })).toEqual({
       status: 'registered', loopback: 'http://127.0.0.1:31415/app/', url: 'http://127.0.0.1:31415/app/', source: 'local',
     });
-    expect(resolveNexusPwa({ cwd: '/tmp/myproj', listFn: () => [instance({ ports: [] })], lifecycleFn: () => lifecycle({ runtime: undefined }), nexusRootFn: () => '/Users/me/.monad/nexus' })).toEqual({
+    expect(resolveNexusPwa({ cwd: '/tmp/myproj', listFn: () => [instance({ ports: [] })], lifecycleFn: () => lifecycle({ runtime: undefined }), nexusRootFn: () => '/Users/me/.elanous/nexus' })).toEqual({
       status: 'unregistered', reason: 'pwa-url-unknown', pid: 54321,
     });
-    expect(resolveNexusPwa({ cwd: '/tmp/myproj', listFn: () => [instance({ ports: [65_536] })], lifecycleFn: () => lifecycle({ runtime: undefined }), nexusRootFn: () => '/Users/me/.monad/nexus' })).toEqual({
+    expect(resolveNexusPwa({ cwd: '/tmp/myproj', listFn: () => [instance({ ports: [65_536] })], lifecycleFn: () => lifecycle({ runtime: undefined }), nexusRootFn: () => '/Users/me/.elanous/nexus' })).toEqual({
       status: 'unregistered', reason: 'pwa-url-unknown', pid: 54321,
     });
-    expect(resolveNexusPwa({ cwd: '/tmp/myproj', listFn: () => [], lifecycleFn: () => lifecycle(), nexusRootFn: () => '/Users/me/.monad/nexus' })).toEqual({
+    expect(resolveNexusPwa({ cwd: '/tmp/myproj', listFn: () => [], lifecycleFn: () => lifecycle(), nexusRootFn: () => '/Users/me/.elanous/nexus' })).toEqual({
       status: 'unregistered', loopback: 'http://127.0.0.1:31416/app/', url: 'http://127.0.0.1:31416/app/', pid: 54321, source: 'local',
     });
-    expect(resolveNexusPwa({ cwd: '/tmp/myproj', listFn: () => [], lifecycleFn: () => lifecycle({ runtime: { ...lifecycle().runtime!, httpPort: undefined } }), nexusRootFn: () => '/Users/me/.monad/nexus' })).toEqual({
+    expect(resolveNexusPwa({ cwd: '/tmp/myproj', listFn: () => [], lifecycleFn: () => lifecycle({ runtime: { ...lifecycle().runtime!, httpPort: undefined } }), nexusRootFn: () => '/Users/me/.elanous/nexus' })).toEqual({
       status: 'unregistered', reason: 'pwa-url-unknown', pid: 54321,
     });
     expect(resolveNexusPwa({ cwd: '/tmp/myproj', listFn: () => [], lifecycleFn: () => null })).toEqual({
@@ -116,7 +116,7 @@ describe('resolveNexusPwa', () => {
       cwd: '/tmp/myproj',
       listFn: () => [],
       lifecycleFn: () => lifecycle({ runtime: { ...lifecycle().runtime!, tailnetUrl: 'https://mbp.tailnet.ts.net:31416/app/', tailnetRecordedAt: '2026-08-19T00:01:00.000Z' } }),
-      nexusRootFn: () => '/Users/me/.monad/nexus',
+      nexusRootFn: () => '/Users/me/.elanous/nexus',
     })).toEqual({
       status: 'unregistered',
       loopback: 'http://127.0.0.1:31416/app/',
@@ -134,7 +134,7 @@ describe('resolveNexusPwa', () => {
         cwd: '/tmp/myproj',
         listFn: () => [],
         lifecycleFn: () => lifecycle({ runtime: { ...lifecycle().runtime!, tailnetUrl: 'https://mbp.tailnet.ts.net:31416/app/', tailnetRecordedAt } }),
-        nexusRootFn: () => '/Users/me/.monad/nexus',
+        nexusRootFn: () => '/Users/me/.elanous/nexus',
       })).toEqual({
         status: 'unregistered',
         loopback: 'http://127.0.0.1:31416/app/',
@@ -155,7 +155,7 @@ describe('resolveNexusPwa', () => {
         cwd: '/tmp/myproj',
         listFn: () => [],
         lifecycleFn: () => lifecycle({ runtime: { ...lifecycle().runtime!, tailnetUrl: 'https://mbp.tailnet.ts.net:31416/app/', tailnetRecordedAt } }),
-        nexusRootFn: () => '/Users/me/.monad/nexus',
+        nexusRootFn: () => '/Users/me/.elanous/nexus',
       })).toEqual({
         status: 'unregistered',
         loopback: 'http://127.0.0.1:31416/app/',
@@ -187,7 +187,7 @@ describe('resolveNexusPwa', () => {
       cwd: '/tmp/myproj',
       listFn: () => [instance({ ports: [31415] })],
       lifecycleFn: () => lifecycle({ runtime: { ...lifecycle().runtime!, tailnetUrl: 'https://mbp.tailnet.ts.net:31416/app/' } }),
-      nexusRootFn: () => '/Users/me/.monad/nexus',
+      nexusRootFn: () => '/Users/me/.elanous/nexus',
     })).toEqual({
       status: 'registered',
       loopback: 'http://127.0.0.1:31415/app/',
@@ -203,7 +203,7 @@ describe('resolveNexusPwa', () => {
         cwd: '/tmp/myproj',
         listFn: () => [],
         lifecycleFn: () => lifecycle({ runtime: { ...lifecycle().runtime!, tailnetUrl } }),
-        nexusRootFn: () => '/Users/me/.monad/nexus',
+        nexusRootFn: () => '/Users/me/.elanous/nexus',
       })).toEqual({
         status: 'unregistered', loopback: 'http://127.0.0.1:31416/app/', url: 'http://127.0.0.1:31416/app/', pid: 54321, source: 'local',
       });
@@ -215,7 +215,7 @@ describe('runNexus · tailnet runtime sidecar producer', () => {
   let stateRoot: string;
 
   beforeEach(() => {
-    stateRoot = mkdtempSync(join(tmpdir(), 'monad-nexus-show-'));
+    stateRoot = mkdtempSync(join(tmpdir(), 'elanous-nexus-show-'));
     setTestStateRoot(stateRoot);
   });
 
@@ -285,8 +285,8 @@ describe('runNexusShow · no daemon registered', () => {
     expect(r.exitCode).toBe(0);
     expect(r.instance).toBeUndefined();
     expect(out.lines.some((l) => l.includes('no daemon registered for this project'))).toBe(true);
-    expect(out.lines.some((l) => l.includes('monad nexus run --hmr'))).toBe(true);
-    expect(out.lines.some((l) => l.includes('monad nexus pwa global status'))).toBe(true);
+    expect(out.lines.some((l) => l.includes('elanous nexus run --hmr'))).toBe(true);
+    expect(out.lines.some((l) => l.includes('elanous nexus pwa global status'))).toBe(true);
   });
 
   test('json format emits null instance + cwd', async () => {
@@ -315,7 +315,7 @@ describe('runNexusShow · unregistered lifecycle daemon', () => {
       cwd: '/tmp/myproj',
       listFn: () => [],
       lifecycleFn: () => lifecycle(),
-      nexusRootFn: () => '/Users/me/.monad/nexus',
+      nexusRootFn: () => '/Users/me/.elanous/nexus',
       format: 'json',
       out: jsonOut,
     });
@@ -338,14 +338,14 @@ describe('runNexusShow · unregistered lifecycle daemon', () => {
       cwd: '/tmp/myproj',
       listFn: () => [],
       lifecycleFn: () => lifecycle(),
-      nexusRootFn: () => '/Users/me/.monad/nexus',
+      nexusRootFn: () => '/Users/me/.elanous/nexus',
       out: humanOut,
     });
     const humanOutput = humanOut.lines.join('\n');
     expect(humanOutput).toContain('daemon alive but not registered for this project');
     expect(humanOutput).toContain('PWA UI    http://127.0.0.1:31416/app/');
     expect(humanOut.lines.filter((line) => line.includes("These addresses come from this daemon's runtime sidecar")).length).toBe(1);
-    expect(humanOutput).toContain('registry readers do not list this daemon: `monad nexus pwa global status`');
+    expect(humanOutput).toContain('registry readers do not list this daemon: `elanous nexus pwa global status`');
   });
 
   test('renders a daemon-recorded tailnet address with the sidecar source notice without attributing it to registration', async () => {
@@ -354,7 +354,7 @@ describe('runNexusShow · unregistered lifecycle daemon', () => {
       cwd: '/tmp/myproj',
       listFn: () => [],
       lifecycleFn: () => lifecycle({ runtime: { ...lifecycle().runtime!, tailnetUrl: 'https://mbp.tailnet.ts.net:31416/app/' } }),
-      nexusRootFn: () => '/Users/me/.monad/nexus',
+      nexusRootFn: () => '/Users/me/.elanous/nexus',
       out,
     });
     const output = out.lines.join('\n');
@@ -369,7 +369,7 @@ describe('runNexusShow · unregistered lifecycle daemon', () => {
       cwd: '/tmp/myproj',
       listFn: () => [],
       lifecycleFn: () => lifecycle({ runtime: { ...lifecycle().runtime!, httpPort: undefined } }),
-      nexusRootFn: () => '/Users/me/.monad/nexus',
+      nexusRootFn: () => '/Users/me/.elanous/nexus',
       format: 'json',
       out,
     });
@@ -385,7 +385,7 @@ describe('runNexusShow · unregistered lifecycle daemon', () => {
       cwd: '/tmp/myproj',
       listFn: () => [],
       lifecycleFn: () => lifecycle({ runtime: { ...lifecycle().runtime!, pid: 99999 } }),
-      nexusRootFn: () => '/Users/me/.monad/nexus',
+      nexusRootFn: () => '/Users/me/.elanous/nexus',
       format: 'json',
       out,
     });
@@ -404,7 +404,7 @@ describe('runNexusShow · unregistered lifecycle daemon', () => {
       cwd: '/tmp/myproj',
       listFn: () => [],
       lifecycleFn: () => lifecycle({ runtime: { ...lifecycle().runtime!, ...runtimeOverrides } }),
-      nexusRootFn: () => '/Users/me/.monad/nexus',
+      nexusRootFn: () => '/Users/me/.elanous/nexus',
       out,
     });
     expect(out.lines.join('\n')).toContain('HTTP      unknown (runtime sidecar metadata unavailable or invalid)');
@@ -420,7 +420,7 @@ describe('runNexusShow · unregistered lifecycle daemon', () => {
       cwd: '/tmp/myproj',
       listFn: () => [],
       lifecycleFn: () => lifecycle({ runtime: { ...lifecycle().runtime!, ...runtimeOverrides } }),
-      nexusRootFn: () => '/Users/me/.monad/nexus',
+      nexusRootFn: () => '/Users/me/.elanous/nexus',
       format: 'json',
       out,
     });
@@ -437,7 +437,7 @@ describe('runNexusShow · unregistered lifecycle daemon', () => {
       cwd: '/tmp/myproj',
       listFn: () => [],
       lifecycleFn: () => lifecycle({ runtime: { ...lifecycle().runtime!, ...runtimeOverrides } }),
-      nexusRootFn: () => '/Users/me/.monad/nexus',
+      nexusRootFn: () => '/Users/me/.elanous/nexus',
       format: 'json',
       out,
     });
@@ -451,7 +451,7 @@ describe('runNexusShow · unregistered lifecycle daemon', () => {
       cwd: '/tmp/myproj',
       listFn: () => [],
       lifecycleFn: () => lifecycle({ runtime: { ...lifecycle().runtime!, httpPort: 80 } }),
-      nexusRootFn: () => '/Users/me/.monad/nexus',
+      nexusRootFn: () => '/Users/me/.elanous/nexus',
       format: 'json',
       out,
     });
@@ -466,7 +466,7 @@ describe('runNexusShow · unregistered lifecycle daemon', () => {
       cwd: '/tmp/myproj',
       listFn: () => [],
       lifecycleFn: () => lifecycle({ runtime: { ...lifecycle().runtime!, httpHost: '[::1]' } }),
-      nexusRootFn: () => '/Users/me/.monad/nexus',
+      nexusRootFn: () => '/Users/me/.elanous/nexus',
       format: 'json',
       out,
     });
@@ -496,8 +496,8 @@ describe('runNexusShow · unregistered lifecycle daemon', () => {
     const r = await runNexusShow({
       cwd: '/tmp/myproj',
       listFn: () => [],
-      lifecycleFn: () => lifecycle({ root: '/other/.monad/nexus' }),
-      nexusRootFn: () => '/Users/me/.monad/nexus',
+      lifecycleFn: () => lifecycle({ root: '/other/.elanous/nexus' }),
+      nexusRootFn: () => '/Users/me/.elanous/nexus',
       format: 'json',
       out,
     });
@@ -512,7 +512,7 @@ describe('runNexusShow · unregistered lifecycle daemon', () => {
       cwd: '/tmp/myproj',
       listFn: () => [],
       lifecycleFn: () => lifecycle({ runtime: { ...lifecycle().runtime!, tailnetUrl: 'https://mbp.tailnet.ts.net:31416/app/', tailnetRecordedAt: '2026-08-19T09:01:00+09:00' } }),
-      nexusRootFn: () => '/Users/me/.monad/nexus',
+      nexusRootFn: () => '/Users/me/.elanous/nexus',
       format: 'json',
       out,
     });
@@ -573,7 +573,7 @@ describe('runNexusShow · unregistered lifecycle daemon', () => {
       listFn: () => [instance({ ports: [31416] })],
       probeFn: async () => probe(),
       lifecycleFn: () => lifecycle({ runtime: { ...lifecycle().runtime!, tailnetUrl: 'https://mbp.tailnet.ts.net:31416/app/', tailnetRecordedAt: '2026-08-19T00:01:00.000Z' } }),
-      nexusRootFn: () => '/Users/me/.monad/nexus',
+      nexusRootFn: () => '/Users/me/.elanous/nexus',
       format: 'json',
       out,
     });
@@ -599,7 +599,7 @@ describe('runNexusShow · unregistered lifecycle daemon', () => {
       listFn: () => [instance({ ports: [31415] })],
       probeFn: async () => probe(),
       lifecycleFn: () => lifecycle(),
-      nexusRootFn: () => '/Users/me/.monad/nexus',
+      nexusRootFn: () => '/Users/me/.elanous/nexus',
       format: 'json',
       out,
     });
@@ -623,7 +623,7 @@ describe('runNexusShow · alive daemon (loopback only)', () => {
       out,
     });
     const joined = out.lines.join('\n');
-    expect(joined).toContain('monad nexus daemon — ✓ alive');
+    expect(joined).toContain('elanous nexus daemon — ✓ alive');
     expect(joined).toContain('PWA UI    http://127.0.0.1:31415/app/');
     expect(joined).toContain('REST API  http://127.0.0.1:31415/v1/');
     expect(joined).toContain('SSE       http://127.0.0.1:31415/v1/events');

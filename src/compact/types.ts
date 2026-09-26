@@ -16,7 +16,7 @@ import type { LLMMessage } from '../llm.js';
  *  - `toolOutputTailLines`      — Gemini: keep the last 30 lines
  *    after pruning, replacing the head with a file pointer.
  *  - `archiveEnabled` / `archiveDir` — JSONL persistence of cleared
- *    content under `~/.monad/compact-archive/<sessionId>.jsonl`. */
+ *    content under `~/.elanous/compact-archive/<sessionId>.jsonl`. */
 export interface CompactPolicy {
   preserveLastN: number;
   /** ★ 핵심 앵커 보존(2026-07-21) — Layer 3 요약이 뭉개면 안 되는 **맨 앞 앵커**

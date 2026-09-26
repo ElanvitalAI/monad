@@ -57,7 +57,7 @@ const VOICE_BRAND_ALIASES: Readonly<Record<VoiceBrand, readonly string[]>> = {
   claude: ['claude-code', 'claude'],
   codex:  ['codex'],
   gemini: ['gemini'],
-  monad:  ['monad', 'monad-child'],
+  elanous:  ['elanous', 'elanous-child'],
 };
 
 export function createDashboardVoiceRuntime(

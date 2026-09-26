@@ -6,7 +6,7 @@ import {
   getTheme,
   listThemes,
   MOCHA_PASTEL_ACCENT,
-  MONAD_PASTEL_DEFAULT,
+  ELANOUS_PASTEL_DEFAULT,
   NORD_LIGHT,
   ROSE_PINE_DAWN,
   THEME_REGISTRY,
@@ -19,7 +19,7 @@ const ALL_PRESETS = [
   CATPPUCCIN_LATTE,
   ROSE_PINE_DAWN,
   NORD_LIGHT,
-  MONAD_PASTEL_DEFAULT,
+  ELANOUS_PASTEL_DEFAULT,
 ];
 
 describe('IDX-6 Phase 2 theme registry', () => {
@@ -34,7 +34,7 @@ describe('IDX-6 Phase 2 theme registry', () => {
     expect(getTheme('catppuccin-latte')).toBe(CATPPUCCIN_LATTE);
     expect(getTheme('rose-pine-dawn')).toBe(ROSE_PINE_DAWN);
     expect(getTheme('nord-light')).toBe(NORD_LIGHT);
-    expect(getTheme('monad-pastel-default')).toBe(MONAD_PASTEL_DEFAULT);
+    expect(getTheme('elanous-pastel-default')).toBe(ELANOUS_PASTEL_DEFAULT);
     expect(getTheme('mocha-pastel-accent')).toBe(MOCHA_PASTEL_ACCENT);
   });
 
@@ -56,7 +56,7 @@ describe('IDX-6 Phase 2 theme registry', () => {
     expect(names).toContain('catppuccin-latte');
     expect(names).toContain('rose-pine-dawn');
     expect(names).toContain('nord-light');
-    expect(names).toContain('monad-pastel-default');
+    expect(names).toContain('elanous-pastel-default');
     expect(names).toContain('mocha-pastel-accent');
   });
 
@@ -153,7 +153,7 @@ describe('IDX-6 Phase 2 preset completeness', () => {
     expect(CATPPUCCIN_LATTE.isPastel).toBe(true);
     expect(ROSE_PINE_DAWN.isPastel).toBe(true);
     expect(NORD_LIGHT.isPastel).toBe(true);
-    expect(MONAD_PASTEL_DEFAULT.isPastel).toBe(true);
+    expect(ELANOUS_PASTEL_DEFAULT.isPastel).toBe(true);
     expect(MOCHA_PASTEL_ACCENT.isPastel).toBe(true);
   });
 
@@ -166,6 +166,6 @@ describe('IDX-6 Phase 2 preset completeness', () => {
     expect(CATPPUCCIN_LATTE.isDark).toBe(false);
     expect(ROSE_PINE_DAWN.isDark).toBe(false);
     expect(NORD_LIGHT.isDark).toBe(false);
-    expect(MONAD_PASTEL_DEFAULT.isDark).toBe(false);
+    expect(ELANOUS_PASTEL_DEFAULT.isDark).toBe(false);
   });
 });

@@ -19,7 +19,7 @@ let cfgPath: string;
 
 beforeEach(() => {
   root = mkdtempSync(join(tmpdir(), 'grok-provider-'));
-  cfgPath = join(root, 'monad', 'config.json');
+  cfgPath = join(root, 'elanous', 'config.json');
   for (const k of ['XAI_API_KEY', 'GROK_API_KEY', 'OPENAI_API_KEY', 'ANTHROPIC_API_KEY', 'GEMINI_API_KEY', 'GOOGLE_API_KEY', 'LOCAL_LLM_URL']) {
     saved[k] = process.env[k];
     delete process.env[k];

@@ -1,7 +1,7 @@
 /**
  * config sync-test — 운영→테스트 물질화 동기화 계약 (ISO-1 · 2026-07-13).
  *
- * 전부 temp 디렉토리 — 실 ~/.monad 미접촉. 핵심 계약:
+ * 전부 temp 디렉토리 — 실 ~/.elanous 미접촉. 핵심 계약:
  *   1. raw 변환이 buildTestSafeDaemonConfig(overlay 정책 원전)와 의미론 동일
  *   2. 미지 필드 보존 (정규화 저장이 필드를 떨어뜨리는 사고 클래스 회피)
  *   3. 부속 복사는 허용 목록만 — 무장류/푸시 자격은 목록에 없어야 한다
@@ -72,9 +72,9 @@ describe('buildTestSafeRawConfig — overlay 정책의 raw 물질화', () => {
 
 describe('syncTestConfig — 파일 물질화 + 부속 복사', () => {
   function setup(): { dir: string; src: string; testDir: string } {
-    const dir = mkdtempSync(join(tmpdir(), 'monad-cfgsync-'));
+    const dir = mkdtempSync(join(tmpdir(), 'elanous-cfgsync-'));
     const src = join(dir, 'prod');
-    const testDir = join(dir, 'repo', '.monad-test');
+    const testDir = join(dir, 'repo', '.elanous-test');
     mkdirSync(src, { recursive: true });
     writeFileSync(join(src, 'config.json'), JSON.stringify(PROD_RAW));
     writeFileSync(join(src, 'secrets.json'), '{"k":"v"}');

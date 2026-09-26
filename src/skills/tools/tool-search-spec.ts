@@ -44,7 +44,7 @@ export const TOOL_SEARCH_NAME = 'ToolSearch';
  * loop knows nothing about ToolSearch. Stripped before rendering so the
  * schemas are not paid for twice in context.
  */
-export const HYDRATED_TOOLS_KEY = '__monadHydratedTools' as const;
+export const HYDRATED_TOOLS_KEY = '__elanousHydratedTools' as const;
 
 /** A hydrated entry is only usable if it can actually be **declared to a
  *  provider**. A bare `{name}` (or an empty name) would be serialized into the

@@ -1,12 +1,12 @@
 // ── session_search 공유 도구 (2026-07-09) — 전 표면 상속 + CLI + 외부 조회 ──
 //
-// 대표 지시: monad가 관리하는 **대화 세션**(TUI/CLI·텔레그램·PWA)을 **내용 기반으로
+// 대표 지시: elanous가 관리하는 **대화 세션**(TUI/CLI·텔레그램·PWA)을 **내용 기반으로
 // 검색**하고 **세션 하나의 전체 대화 내용을 열람**한다. 목적은 외부 코딩 에이전트
-// (codex·claude code)가 대화를 일일이 옮기지 않고도 `monad session search/show/list`
-// 로 조회 → 내용 확인할 수 있게 하는 것. skill(monad-session-search)이 이 CLI를 문서화.
+// (codex·claude code)가 대화를 일일이 옮기지 않고도 `elanous session search/show/list`
+// 로 조회 → 내용 확인할 수 있게 하는 것. skill(elanous-session-search)이 이 CLI를 문서화.
 //
 // READ-ONLY — 세션을 생성/수정/삭제하지 않는다(그건 session-store/CRUD 소관). 여기는
-// 조회 전용 창구. 데이터는 ~/.monad/sessions/<id>.jsonl(대화 전사) + index.json(메타).
+// 조회 전용 창구. 데이터는 ~/.elanous/sessions/<id>.jsonl(대화 전사) + index.json(메타).
 //
 // 검색 엔진: ripgrep 로 후보 파일을 빠르게 좁힌 뒤(대량 세션 대비) 각 후보를 JS로
 // 재스캔해 **message.content** 매칭만 깨끗한 스니펫으로 추린다(툴 JSON 노이즈 제외).
@@ -56,7 +56,7 @@ import { formatSessionDeepLink, resolveSessionDeepLink } from '../session/sessio
 export const SESSION_MANAGE_SPEC: LLMToolSpec = {
   name: 'session_manage',
   description:
-    "⭐ 대화 세션 관리 (코어) — monad가 관리하는 **과거 대화 세션**(TUI·CLI·텔레그램·PWA)을 **내용 기반 검색**하고, **세션 전체 대화를 열람**하고, 목록을 보고, **삭제**하고, **동시 구독**(여러 서피스가 한 세션을 같이 보기)을 관리한다. **'전에 X 얘기한 세션 찾아줘' '그 대화 내용 보여줘' '이 세션 지워줘' '이 세션 지금 누가 보고 있어?' '이 세션 구독할래/나갈래'** 류에 사용. action: search(내용 키워드 검색·rank 관련도순·source/instance/origin 필터)·show(전체 열람)·list(최근 목록)·delete(**파괴적**)·subscribe(구독 합류)·unsubscribe(이탈=leave)·subscribers(누가 보고 있나·presence)·context(세션 자기인지 문맥·결정론 grounded). search/show/list/subscribers/context 는 READ-ONLY. memory_recall(발송/통지 이벤트 원장)과 구분 — 여긴 실제 대화 전사. 외부 codex/claude code 도 `monad session ...` CLI 로 동일 조회.",
+    "⭐ 대화 세션 관리 (코어) — elanous가 관리하는 **과거 대화 세션**(TUI·CLI·텔레그램·PWA)을 **내용 기반 검색**하고, **세션 전체 대화를 열람**하고, 목록을 보고, **삭제**하고, **동시 구독**(여러 서피스가 한 세션을 같이 보기)을 관리한다. **'전에 X 얘기한 세션 찾아줘' '그 대화 내용 보여줘' '이 세션 지워줘' '이 세션 지금 누가 보고 있어?' '이 세션 구독할래/나갈래'** 류에 사용. action: search(내용 키워드 검색·rank 관련도순·source/instance/origin 필터)·show(전체 열람)·list(최근 목록)·delete(**파괴적**)·subscribe(구독 합류)·unsubscribe(이탈=leave)·subscribers(누가 보고 있나·presence)·context(세션 자기인지 문맥·결정론 grounded). search/show/list/subscribers/context 는 READ-ONLY. memory_recall(발송/통지 이벤트 원장)과 구분 — 여긴 실제 대화 전사. 외부 codex/claude code 도 `elanous session ...` CLI 로 동일 조회.",
   parameters: {
     type: 'object',
     properties: {
@@ -69,7 +69,7 @@ export const SESSION_MANAGE_SPEC: LLMToolSpec = {
       role: { type: 'string', description: 'subscribe 용 — rw(입력 가능·기본)|ro(관전).' },
       subscriberKey: { type: 'string', description: 'unsubscribe 용 — `<surface>:<endpoint>` 키(surface+endpoint 대신).' },
       source: { type: 'string', description: '필터(선택·search/list) — cli | telegram | discord | pwa | tui | voice | unknown.' },
-      instance: { type: 'string', description: '필터(선택·search/list) — 생성 인스턴스(prod | test:<repo>). 멀티 모나드 출처 구분.' },
+      instance: { type: 'string', description: '필터(선택·search/list) — 생성 인스턴스(prod | test:<repo>). 멀티 엘라누스 출처 구분.' },
       origin: { type: 'string', description: '필터(선택·search/list) — 표면 origin(cli | pwa | tg | dc | native | acp=백엔드 위임 전사).' },
       all: { type: 'boolean', description: 'list 용 — 빈 미션 세션(autopilot spawn)까지 포함(기본 숨김).' },
       minMessages: { type: 'number', description: 'list 용 — 최소 메시지 수 미만 세션 제외(빈 세션 정돈).' },
@@ -308,12 +308,12 @@ async function doListFleet(args: Record<string, unknown>, opts: SessionQueryOpts
   const { homedir } = await import('node:os');
   const limit = typeof args.limit === 'number' && args.limit > 0 ? Math.floor(args.limit) : 30;
   const hideEmpty = args.all !== true;
-  // 인스턴스 목록(stateDir=물리 identity 로 dedup). 실측 모드에선 레지스트리 + prod(~/.monad)
+  // 인스턴스 목록(stateDir=물리 identity 로 dedup). 실측 모드에선 레지스트리 + prod(~/.elanous)
   // 항상 포함. 테스트 주입(fleetInstances) 시엔 주어진 목록만(실 prod 스캔 안 함 — 결정론).
   const byDir = new Map<string, string>();
   let list = opts.fleetInstances;
   if (!list) {
-    byDir.set(join(homedir(), '.monad'), 'prod'); // prod 는 레지스트리 미등록이어도 항상
+    byDir.set(join(homedir(), '.elanous'), 'prod'); // prod 는 레지스트리 미등록이어도 항상
     const { readLogInstances } = await import('../mss/logging/instance-registry.js');
     // 격리 test 인스턴스는 기본 제외(세션 오염 방지 · Phase A) — includeTest 로 opt-in.
     const includeTest = args.includeTest === true;
@@ -387,7 +387,7 @@ async function doList(args: Record<string, unknown>, opts: SessionQueryOpts): Pr
   }, root)
     .sort((a, b) => (a.updatedAt < b.updatedAt ? 1 : -1)) // newest-first (listSessions keeps index order)
     .slice(0, limit);
-  // G3 (2026-07-18) — S2 백엔드 위임 전사(codex/claude ACP · ~/.monad/acp-sessions)를
+  // G3 (2026-07-18) — S2 백엔드 위임 전사(codex/claude ACP · ~/.elanous/acp-sessions)를
   // read-through 로 합류. source=cli/telegram·instance 필터 시 제외(S1 전용), origin 필터는
   // 'acp' 만 통과. A persisted SessionSource always means only that
   // source's store rows; ACP read-through is unfiltered-only. read-only(쓰기경로 무접촉).
@@ -561,7 +561,7 @@ function compactMeta(m: SessionMeta): Record<string, unknown> {
   };
 }
 
-/** session_search 실행 — 전 표면 공용(core-tools) + CLI(monad session) 공유 디스패처. */
+/** session_search 실행 — 전 표면 공용(core-tools) + CLI(elanous session) 공유 디스패처. */
 export async function dispatchSessionQuery(
   args: Record<string, unknown> = {},
   opts: SessionQueryOpts = {},

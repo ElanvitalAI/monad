@@ -1,20 +1,20 @@
 // RFC #2161 FU A6-real · P5 (2026-05-11) — interactive Firecrawl setup.
 //
-// Invoked via `monad nexus setup-firecrawl`. Walks the user through:
+// Invoked via `elanous nexus setup-firecrawl`. Walks the user through:
 //   1. CLI binary detection (`firecrawl --version` probe)
 //   2. API key entry (existing value reuse · prompt if absent)
 //   3. Persist key to `registry.discovery.firecrawl.apiKey` via
 //      patchUserConfig (atomic · file-locked)
 //
 // Why a dedicated setup helper instead of the catch-all
-// `monad config set` command:
+// `elanous config set` command:
 //   • Discovery of the CLI gate (missing-cli vs missing-key) gives
 //     users a precise next step (install · register · enter key).
 //   • Key entry uses `askValidated` with `secret: true` so the
 //     terminal doesn't echo characters — mirrors channel-bot-setup
 //     (Telegram/Discord token entry).
 //   • Persists to the canonical user-config path automatically;
-//     the dotted-path resolver in `monad config set` doesn't yet
+//     the dotted-path resolver in `elanous config set` doesn't yet
 //     know about `registry.discovery.firecrawl.apiKey`.
 //
 // The wizard is *non-interactive-friendly* — if the user passes the

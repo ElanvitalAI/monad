@@ -189,7 +189,7 @@ describe('Config + secrets', () => {
             { id: 'discord', label: 'Discord', status: 'connected', detail: 'token via secret-ref' },
             { id: 'telegram', label: 'Telegram', status: 'not-configured', detail: 'no token configured', hint: 'Set tabs.telegram:1.tokenRef …' },
             { id: 'pushcut', label: 'Pushcut', status: 'not-configured', detail: 'switch off' },
-            { id: 'acp', label: 'ACP', status: 'connected', detail: '~/.monad/acp-token present' },
+            { id: 'acp', label: 'ACP', status: 'connected', detail: '~/.elanous/acp-token present' },
             { id: 'tailscale', label: 'Tailscale Serve', status: 'not-configured', detail: 'switch off' },
           ],
         },
@@ -475,7 +475,7 @@ describe('createNexusClient · getChatBackendDetection', () => {
           provider: 'codex',
           label: 'OpenAI · Codex',
           paths: [
-            { tag: 'OAuth', hint: 'monad login codex', detected: true },
+            { tag: 'OAuth', hint: 'elanous login codex', detected: true },
             { tag: 'OPENAI_API_KEY', hint: 'export ...', detected: false },
           ],
         },

@@ -152,9 +152,9 @@ describe('LivePlaygroundHarness · theme / context-keys', () => {
 
   test('setContextKey / getContextKey round-trips via service', () => {
     const { harness, contextKeys } = makeHarness();
-    harness.setContextKey('themeName' as never, 'monad-pastel-default' as never);
-    expect(harness.getContextKey('themeName' as never)).toBe('monad-pastel-default');
-    expect(contextKeys.keys.themeName).toBe('monad-pastel-default');
+    harness.setContextKey('themeName' as never, 'elanous-pastel-default' as never);
+    expect(harness.getContextKey('themeName' as never)).toBe('elanous-pastel-default');
+    expect(contextKeys.keys.themeName).toBe('elanous-pastel-default');
   });
 });
 

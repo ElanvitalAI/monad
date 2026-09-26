@@ -15,7 +15,7 @@ describe('InputHistoryStore', () => {
   });
 
   test('records slash and chat inputs in sqlite', () => {
-    const root = mkdtempSync(join(tmpdir(), 'monad-input-history-'));
+    const root = mkdtempSync(join(tmpdir(), 'elanous-input-history-'));
     roots.push(root);
     const store = openInputHistoryStore(join(root, 'history.sqlite'));
 
@@ -30,7 +30,7 @@ describe('InputHistoryStore', () => {
   });
 
   test('searches text and kind', () => {
-    const root = mkdtempSync(join(tmpdir(), 'monad-input-history-'));
+    const root = mkdtempSync(join(tmpdir(), 'elanous-input-history-'));
     roots.push(root);
     const store = openInputHistoryStore(join(root, 'history.sqlite'));
 
@@ -49,11 +49,11 @@ describe('InputHistoryStore', () => {
   });
 
   test('json fallback stores and clears entries', () => {
-    const root = mkdtempSync(join(tmpdir(), 'monad-input-history-json-'));
+    const root = mkdtempSync(join(tmpdir(), 'elanous-input-history-json-'));
     roots.push(root);
-    process.env.MONAD_INPUT_HISTORY_STORE = 'json';
+    process.env.ELANOUS_INPUT_HISTORY_STORE = 'json';
     const store = openInputHistoryStore(join(root, 'ignored.sqlite'));
-    delete process.env.MONAD_INPUT_HISTORY_STORE;
+    delete process.env.ELANOUS_INPUT_HISTORY_STORE;
 
     store.record({ text: 'first' });
     store.record({ text: '/second' });

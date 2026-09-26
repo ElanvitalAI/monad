@@ -10,7 +10,7 @@ import {
   resetVoicePrefs,
 } from './voice-prefs';
 
-const STORAGE_KEY = 'monad.voice.prefs';
+const STORAGE_KEY = 'elanous.voice.prefs';
 
 // Minimal localStorage stub (Bun runtime doesn't ship one by default
 // in this test harness).

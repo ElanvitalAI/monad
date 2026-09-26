@@ -5,7 +5,7 @@ import { describe, expect, test } from 'bun:test';
 import {
   buildDiscordSlashWire,
   synthesizeCommandText,
-  MONAD_SLASH_COMMANDS,
+  ELANOUS_SLASH_COMMANDS,
 } from '../src/discord-slash-wire.js';
 import type { DcIncoming } from '../src/discord.js';
 import type { UserConfig } from '../src/user-config.js';
@@ -117,7 +117,7 @@ describe('registerCommands', () => {
     expect(puts).toHaveLength(1);
     expect(puts[0]!.url).toContain('/applications/app9/guilds/G7/commands');
     const names = (puts[0]!.body as Array<{ name: string }>).map((c) => c.name);
-    expect(names).toEqual(MONAD_SLASH_COMMANDS.map((c) => c.name));
+    expect(names).toEqual(ELANOUS_SLASH_COMMANDS.map((c) => c.name));
     expect(names).toContain('cc');
     expect(names).toContain('fork');
     expect(names).toContain('voice-join');

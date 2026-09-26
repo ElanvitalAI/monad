@@ -6,7 +6,7 @@
 // Use cases:
 //
 //   - Bug repro automation: a user reports a problem in session X. Run
-//     `monad repl --replay X --new --json` to re-execute the same prompts
+//     `elanous repl --replay X --new --json` to re-execute the same prompts
 //     in a fresh session against the current code, producing a side-by-side
 //     comparison without manually re-typing.
 //   - Provider comparison: replay against `--rotate opus` after recording

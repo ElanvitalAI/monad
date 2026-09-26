@@ -3,7 +3,7 @@ import { debug } from '../debug/log.js';
 import type { CoreTurnContext, CoreTurnResult } from './types.js';
 import { runGoalLoop } from './run-goal-loop.js';
 
-const RUN_ID_ENV = 'MONAD_RUN_ID';
+const RUN_ID_ENV = 'ELANOUS_RUN_ID';
 const originalRunId = process.env[RUN_ID_ENV];
 
 afterEach(() => {

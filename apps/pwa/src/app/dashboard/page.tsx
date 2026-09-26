@@ -3,7 +3,7 @@
 import { DashboardTabs } from '@/components/dashboard/DashboardTabs';
 
 export const metadata = {
-  title: 'Dashboard · monad',
+  title: 'Dashboard · elanous',
 };
 
 export default function DashboardPage() {

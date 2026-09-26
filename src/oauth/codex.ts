@@ -57,15 +57,15 @@ const DEFAULT_POLL_INTERVAL_MS = 3_000;
 //   codex_cli_rs/<version> (<os> <os_ver>; <arch>) <terminal>
 //
 // (ref: codex-rs/login/src/auth/default_client.rs `get_codex_user_agent`).
-// monad's Responses provider historically sent only the `originator` header
-// with NO User-Agent, so the backend treated monad as an unknown/old Codex
+// elanous's Responses provider historically sent only the `originator` header
+// with NO User-Agent, so the backend treated elanous as an unknown/old Codex
 // and rejected newer models with "The '<model>' model requires a newer
 // version of Codex. Please upgrade to the latest app or CLI" — even though
 // the user's own `codex` binary supports them (verified: `codex --yolo`
-// runs gpt-5.5 on the same machine where monad's Responses path 400s).
+// runs gpt-5.5 on the same machine where elanous's Responses path 400s).
 //
 // We advertise the version of the ACTUAL `codex` binary on PATH (the same
-// one the codex-app-server backend spawns), so monad tracks the user's
+// one the codex-app-server backend spawns), so elanous tracks the user's
 // upgrades automatically. Detection is memoized; when no `codex` is found we
 // fall back to a recent known-good constant.
 const CODEX_ORIGINATOR = 'codex_cli_rs';
@@ -323,7 +323,7 @@ export async function loginWithCodex(opts: CodexLoginOpts = {}): Promise<Provide
  *
  *   1. Reconcile with the `~/.codex` mirror → adopt whichever store holds the
  *      fresher access token. The official CLI may have rotated tokens since
- *      monad last wrote, so monad's own copy can be stale (and its refresh
+ *      elanous last wrote, so elanous's own copy can be stale (and its refresh
  *      token already revoked).
  *   2. Within validity → return as-is (no refresh).
  *   3. Otherwise refresh; rotating tokens persist to BOTH stores (saveTokens
@@ -480,7 +480,7 @@ export async function loadFreshCodexAuthState(
     return saved;
   } catch (err) {
     // Concurrent-refresh race: re-read both stores — the official codex CLI
-    // (or another monad turn) may have just refreshed, leaving a LIVE token
+    // (or another elanous turn) may have just refreshed, leaving a LIVE token
     // on file even though OUR refresh token got revoked.
     const reconciled = mirrorPath
       ? reconcileCodexTokensFromMirror(loadTokens(account.storeKey), authStorePath(), mirrorPath, account.storeKey)
@@ -504,7 +504,7 @@ export async function loadFreshCodexAuthState(
         'OpenAI Codex sign-in expired and token refresh was rejected '
         + `(${err instanceof Error ? err.message : String(err)}). The refresh `
         + 'token was likely rotated by the official `codex` CLI. Re-run '
-        + '`monad login openai-codex` to re-authenticate.',
+        + '`elanous login openai-codex` to re-authenticate.',
       );
     }
     // Access token still valid for its last buffer window — proceed with it.
@@ -519,7 +519,7 @@ export async function loadFreshCodexAuthState(
 
 /** Load + refresh if expiring soon, return a usable OAuthTokens.
  *  Returns null when no tokens are on file. Throws on refresh failure
- *  (caller decides whether to re-prompt `monad login`).
+ *  (caller decides whether to re-prompt `elanous login`).
  *
  *  Thin wrapper over `loadFreshCodexAuthState` (the canonical resolver) so
  *  every consumer follows the shared `~/.codex` source of truth + the

@@ -109,7 +109,7 @@ describe('/showroom v2 · 4-quad', () => {
     const buildRoom = fakeBuildRoom(4);
     const r = await executeAgentRoomSlash(
       { name: 'showroom', args: [
-        'plan:claude', 'build:codex', 'review:gemini', 'reflect:monad',
+        'plan:claude', 'build:codex', 'review:gemini', 'reflect:elanous',
       ] },
       reg, { buildRoom },
     );
@@ -118,7 +118,7 @@ describe('/showroom v2 · 4-quad', () => {
     expect(spec.preset).toBe('four-quad');
     expect(spec.members.length).toBe(4);
     expect(spec.members[3]).toEqual({
-      brandRef: 'monad', roleHint: 'reflect', title: 'reflect · monad · auto',
+      brandRef: 'elanous', roleHint: 'reflect', title: 'reflect · elanous · auto',
     });
   });
 });

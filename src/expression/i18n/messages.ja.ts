@@ -73,14 +73,14 @@ export const messagesJa: Messages = {
   notificationLevelError: 'エラー',
 
   // Setup wizard — banner + completion (PR α/3 of setup-tui-overhaul)
-  setupBanner: 'monad — セットアップウィザード',
+  setupBanner: 'elanous — セットアップウィザード',
   setupWritingTo: '保存先: {path}',
   setupComplete: 'セットアップ完了',
   setupRerunHint: '再実行: {cmd}',
 
   // Setup wizard — Step 1 (LLM provider)
   setupStepLLMTitle: 'LLM プロバイダー',
-  setupStepLLMExcerpt: 'monad が使用する LLM プロバイダーを選択してください。各プロバイダーに API キー (または Codex の OAuth) が必要です。',
+  setupStepLLMExcerpt: 'elanous が使用する LLM プロバイダーを選択してください。各プロバイダーに API キー (または Codex の OAuth) が必要です。',
 
   // Setup wizard — Step 2 (Skill directories)
   setupStepSkillsTitle: 'スキルディレクトリ',
@@ -89,17 +89,17 @@ export const messagesJa: Messages = {
   // Setup wizard — Step 3 (Obsidian vault)
   setupStepObsidianTitle: 'Obsidian ボルト',
   setupStepObsidianExcerpt: 'Obsidian ボルトのルート絶対パス。Obsidian ブラウザペインと vault-save スキルで使用されます。',
-  setupStepObsidianSkipBehavior: 'スキップ → vault-save / obsidian-browser スキル無効。後で追加: `monad setup obsidian`。',
+  setupStepObsidianSkipBehavior: 'スキップ → vault-save / obsidian-browser スキル無効。後で追加: `elanous setup obsidian`。',
 
   // Setup wizard — Step 4 (Telegram bot)
   setupStepTelegramTitle: 'Telegram ボット (オプション)',
   setupStepTelegramExcerpt: 'Telegram ボット経由で携帯電話からエージェントとチャット。',
-  setupStepTelegramSkipBehavior: 'スキップ → モバイルチャット利用不可。後で追加: `monad setup telegram`。',
+  setupStepTelegramSkipBehavior: 'スキップ → モバイルチャット利用不可。後で追加: `elanous setup telegram`。',
 
   // Setup wizard — Step 5 (Discord bot)
   setupStepDiscordTitle: 'Discord ボット (オプション)',
   setupStepDiscordExcerpt: '任意の Discord サーバー / DM でエージェントとチャット。',
-  setupStepDiscordSkipBehavior: 'スキップ → Discord チャット利用不可。後で追加: `monad setup discord`。',
+  setupStepDiscordSkipBehavior: 'スキップ → Discord チャット利用不可。後で追加: `elanous setup discord`。',
 
   // Setup wizard — Step 6 (Wrap-up · Sprint 12)
   setupWrapUpTitle: 'セットアップ完了 — 確認と保存',

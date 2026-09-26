@@ -28,7 +28,7 @@
  *  ## ⚠️ 이 자가 답하지 «않는» 것
  *
  *  그 관측이 «실제로 찍히나» — 그건 라이브 축이고 여기서는 소스를 읽을 뿐이다.
- *  ⇒ 라이브로는 `monad logs --category webterm.chat.runturn` 으로 본다. */
+ *  ⇒ 라이브로는 `elanous logs --category webterm.chat.runturn` 으로 본다. */
 
 import { describe, expect, test } from 'bun:test';
 import { readFileSync } from 'node:fs';
@@ -232,7 +232,7 @@ describe('턴 끝 관측 — 「세었으면 내보내라」', () => {
 
 /** ⛔⭐⭐ **사용자가 «보는» 실패가 관측에도 남는가 — 19차 `[F]`.**
  *
- *  📏 2026-08-22 라이브: 화면엔 `error: socket closed: 1006` 이 떴는데 `monad logs` 는 조용했다.
+ *  📏 2026-08-22 라이브: 화면엔 `error: socket closed: 1006` 이 떴는데 `elanous logs` 는 조용했다.
  *  `ChatLayout` 의 턴 `catch` 는 갈래가 둘인데 ***중단 갈래만 관측을 내고 「진짜 실패」는 안 냈다.***
  *
  *  ## ⚠️ 이 자가 답하지 «않는» 것 — ⛔ 여기서 과장하지 않는다

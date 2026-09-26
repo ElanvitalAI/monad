@@ -21,7 +21,7 @@ import { readUserConfig, readSwitchValue } from '../config/user-config.js';
  *
  *    1. opts.registerDaemonTab (test override)
  *    2. UserConfig switch `global.tabs.registerDaemon` (true/false)
- *    3. env `MONAD_REGISTER_DAEMON` truthy
+ *    3. env `ELANOUS_REGISTER_DAEMON` truthy
  *    4. detachForTesting → false (test fixture)
  *    5. else → false (production default-OFF · NEXUS SSoT 정책)
  *
@@ -34,7 +34,7 @@ export function shouldRegisterDaemon(opts: { registerDaemonTab?: boolean; detach
     if (v === true) return true;
     if (v === false) return false;
   } catch { /* swallow */ }
-  const env = process.env.MONAD_REGISTER_DAEMON?.trim().toLowerCase();
+  const env = process.env.ELANOUS_REGISTER_DAEMON?.trim().toLowerCase();
   if (env === '1' || env === 'true' || env === 'yes' || env === 'on') return true;
   return false;
 }
@@ -90,7 +90,7 @@ export function tryAutoStartDaemon({ state, registry, supervisor, registered, op
   if (autoStartDaemon && detection.outcome !== 'external') {
     void supervisor.startTab(DAEMON_DEFAULT_TAB_ID).catch(() => {
       // Spawn errors surface via tab status / events — swallow here so
-      // a missing `monad` binary doesn't block runNexus boot.
+      // a missing `elanous` binary doesn't block runNexus boot.
     });
   }
 }

@@ -129,6 +129,6 @@ export interface ApprovalPolicy {
    *  ask-user regardless of mode (incl. unsupervised), and the
    *  approval prompt carries a "self-edit · UndoTurn 자동 묶음"
    *  reason. Default = the monad-agent repo root (auto-detected via
-   *  the package-name walk). Disable via env `MONAD_SYSTEM_FILE_GUARD=off`. */
+   *  the package-name walk). Disable via env `ELANOUS_SYSTEM_FILE_GUARD=off`. */
   systemFileDirs?: string[];
 }

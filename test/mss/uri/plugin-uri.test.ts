@@ -7,11 +7,11 @@
 
 import { describe, expect, test } from 'bun:test';
 
-import { asPluginUri, mintPluginUri, newMonadUri } from '../../../src/mss/uri/builder.ts';
-import { parseMonadUri } from '../../../src/mss/uri/parser.ts';
+import { asPluginUri, mintPluginUri, newElanousUri } from '../../../src/mss/uri/builder.ts';
+import { parseElanousUri } from '../../../src/mss/uri/parser.ts';
 
 describe('mintPluginUri', () => {
-  test('returns a Tier 2 `plugin/<ULID>` MonadUri', () => {
+  test('returns a Tier 2 `plugin/<ULID>` ElanousUri', () => {
     const uri = mintPluginUri();
     expect(uri).toMatch(/^plugin\/[0-9A-HJKMNP-TV-Z]{26}$/);
   });
@@ -29,14 +29,14 @@ describe('mintPluginUri', () => {
 });
 
 describe('asPluginUri', () => {
-  test('accepts a fresh `plugin/<ULID>` MonadUri', () => {
-    const uri = newMonadUri('plugin');
+  test('accepts a fresh `plugin/<ULID>` ElanousUri', () => {
+    const uri = newElanousUri('plugin');
     expect(() => asPluginUri(uri)).not.toThrow();
   });
 
-  test('accepts a nested MonadUri whose path includes a plugin segment', () => {
-    const session = newMonadUri('session');
-    const withPlugin = newMonadUri('plugin', session);
+  test('accepts a nested ElanousUri whose path includes a plugin segment', () => {
+    const session = newElanousUri('session');
+    const withPlugin = newElanousUri('plugin', session);
     expect(() => asPluginUri(withPlugin)).not.toThrow();
   });
 
@@ -44,14 +44,14 @@ describe('asPluginUri', () => {
     expect(() => asPluginUri('not-a-uri')).toThrow(/Invalid PluginUri/);
   });
 
-  test('rejects MonadUri without any plugin segment', () => {
-    const session = newMonadUri('session');
+  test('rejects ElanousUri without any plugin segment', () => {
+    const session = newElanousUri('session');
     expect(() => asPluginUri(session)).toThrow(/Invalid PluginUri/);
   });
 
   test('parsed URI surfaces the plugin segment', () => {
     const uri = mintPluginUri();
-    const parsed = parseMonadUri(uri);
+    const parsed = parseElanousUri(uri);
     expect(parsed?.segments[0]?.kind).toBe('plugin');
   });
 });

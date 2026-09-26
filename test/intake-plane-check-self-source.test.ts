@@ -9,7 +9,7 @@ afterEach(() => { for (const root of roots.splice(0)) rmSync(root, { recursive: 
 
 // Assembled at run time so this file never matches its own search.
 const token = ['sample', 'self', 'source', 'k5'].join('-');
-const fact = { text: `monad 에 \`${token}\` 가 있다` };
+const fact = { text: `elanous 에 \`${token}\` 가 있다` };
 
 function fixture(): IntakeCheckDeps {
   const root = mkdtempSync(join(tmpdir(), 'intake-self-'));
@@ -25,7 +25,7 @@ function fixture(): IntakeCheckDeps {
 
 test('a name that only the intake tool itself quotes is not present', () => {
   const deps = fixture();
-  writeFileSync(join(deps.root, 'src/intake-plane/prompts.ts'), `export const example = 'monad 에 ${token} 가 있다';\n`);
+  writeFileSync(join(deps.root, 'src/intake-plane/prompts.ts'), `export const example = 'elanous 에 ${token} 가 있다';\n`);
   const item = runIntakeCheck([fact], deps).items[0]!;
   expect(item.verdict).not.toBe('있음');
   expect(item.evidence.some((row) => row.path?.startsWith('src/intake-plane/'))).toBe(false);

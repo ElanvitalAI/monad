@@ -41,7 +41,7 @@ export interface BuildCatalogOpts {
 
 /** Reserved ids per kind. User-declared entries that collide are
  *  skipped with a warn — we want to guarantee that builtins always
- *  resolve unambiguously (monad policy, opposite of OMC). */
+ *  resolve unambiguously (elanous policy, opposite of OMC). */
 export const RESERVED_IDS: Record<DeclarativeKind, readonly string[]> = {
   agents: ['general-purpose', 'aggregator', 'data-collector',
            'explore', 'plan', 'research', 'critic', 'executor'],

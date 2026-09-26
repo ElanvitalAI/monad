@@ -7,7 +7,7 @@
 // roundtrip + capabilities visible". Fuller scenarios (multi-turn,
 // approval routing) are tracked separately.
 //
-// Gated by MONAD_CODEX_TIER1_SMOKE=1 — see test/integration/_helpers.ts.
+// Gated by ELANOUS_CODEX_TIER1_SMOKE=1 — see test/integration/_helpers.ts.
 
 import { describe, test, expect } from 'bun:test';
 import { CodexAppServerAgent } from '../../src/acp/codex-app-server-agent.js';

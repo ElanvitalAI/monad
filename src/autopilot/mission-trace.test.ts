@@ -13,7 +13,7 @@ function cronRow(over: Partial<Parameters<typeof cronToDerived>[0]> = {}) {
   return {
     id: 'c1', name: 'x', source: 'crontab', cron: '0 8 * * *', interval_ms: null,
     command: 'bun x', category: 'report', domain: null, enabled: 1, last_seen: null,
-    last_run: null, note: null, managed_by: 'manual', raw: null, run_via: 'monad',
+    last_run: null, note: null, managed_by: 'manual', raw: null, run_via: 'elanous',
     ...over,
   } as Parameters<typeof cronToDerived>[0];
 }

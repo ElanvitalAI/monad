@@ -101,7 +101,7 @@ describe('triageClarifyPending', () => {
     const workingDirectory = mkdtempSync(join(tmpdir(), 'clarify-pending-outside-goals-'));
     const goalsDirectory = join(tmpdir(), 'clarify-pending-outside-goals-documents');
     directories.push(workingDirectory, goalsDirectory);
-    const stateDirectory = join(workingDirectory, '.monad-test', 'state');
+    const stateDirectory = join(workingDirectory, '.elanous-test', 'state');
     mkdirSync(goalsDirectory, { recursive: true });
     writeFileSync(join(goalsDirectory, 'GOAL-outside.md'), [
       '# Outside',
@@ -116,7 +116,7 @@ describe('triageClarifyPending', () => {
       '  - answer: DEFERRED-UNTIL: Choose a scope',
     ].join('\n'));
     const result = Bun.spawnSync({
-      cmd: [process.execPath, join(process.cwd(), 'bin', 'monad.mjs'), `--test=${stateDirectory}`, 'self', 'clarify', 'pending', '--dir', goalsDirectory],
+      cmd: [process.execPath, join(process.cwd(), 'bin', 'elanous.mjs'), `--test=${stateDirectory}`, 'self', 'clarify', 'pending', '--dir', goalsDirectory],
       cwd: workingDirectory,
       env: process.env,
       stdout: 'pipe',
@@ -134,14 +134,14 @@ describe('triageClarifyPending', () => {
     const workingDirectory = mkdtempSync(join(tmpdir(), 'clarify-pending-triage-cli-'));
     directories.push(workingDirectory);
     const goalsDirectory = join(workingDirectory, 'docs', 'goals');
-    const stateDirectory = join(workingDirectory, '.monad-test', 'state');
+    const stateDirectory = join(workingDirectory, '.elanous-test', 'state');
     mkdirSync(goalsDirectory, { recursive: true });
     const clarification = (id: string) => `- Clarification:\n  - id: ${id}\n  - header: Scope\n  - question: Choose a scope\n  - options:\n    - label: A\n      description: First scope\n  - includeOther: false\n  - answer: DEFERRED-UNTIL: Choose a scope`;
     const oldGoal = join(goalsDirectory, 'GOAL-old.md');
     const currentGoal = join(goalsDirectory, 'GOAL-current.md');
     writeFileSync(oldGoal, `# Old\n- GoalId: 0000000000000001\nsubmitted: 2026-08-10 KST\n${clarification('old')}`);
     writeFileSync(currentGoal, `# Current\n- GoalId: 0000000000000002\nsubmitted: 2026-08-11 KST\n${clarification('current')}`);
-    const cli = join(process.cwd(), 'bin', 'monad.mjs');
+    const cli = join(process.cwd(), 'bin', 'elanous.mjs');
     const result = Bun.spawnSync({
       cmd: [process.execPath, cli, `--test=${stateDirectory}`, 'self', 'clarify', 'pending'],
       cwd: workingDirectory,

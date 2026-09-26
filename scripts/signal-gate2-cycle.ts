@@ -12,7 +12,7 @@ import { runGate2, gate2AlertPriority } from '../src/domains/signal-gate2.js';
 import { loadMarketPosture } from '../src/domains/market-posture-store.js';
 import { registerStandaloneLogSink } from '../src/domains/standalone-log-sink.js';
 
-const LOG = join(homedir(), '.monad/conatus/signal_gate2_cycle.log');
+const LOG = join(homedir(), '.elanous/conatus/signal_gate2_cycle.log');
 const LIMIT = Number(process.env.GATE2_LIMIT || 50);
 
 function log(msg: string): void {

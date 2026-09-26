@@ -156,7 +156,7 @@ export interface AcpStreamer {
 
 /** Default soft focus budget for slash `/cc`·/cdx·/gem when the user
  *  hasn't set `acp.slashMaxTurns`. Targeted commands run tight; natural-
- *  language delegation (monad brain) is generous and never gets this. */
+ *  language delegation (elanous brain) is generous and never gets this. */
 export const SLASH_FOCUS_TURNS_DEFAULT = 8;
 
 /** Build the tight-budget directive prepended to a targeted slash
@@ -181,7 +181,7 @@ const inFlightTurns = new Map<string, { backendId: string; sessionId: SessionUri
 /** Per-chat abort registry for the NL brain turn (and its blocking
  *  `delegate_code_agent` sub-turn). The SLASH path (`inFlightTurns` +
  *  `cancelAcpTurn`) already cancels a `/cc` turn, but a natural-language
- *  delegation blocks inside monad's brain via `clientSessionSend` — a
+ *  delegation blocks inside elanous's brain via `clientSessionSend` — a
  *  different path that `/cancel` couldn't reach, so the only recourse was
  *  killing processes. The messenger registers a per-turn AbortController
  *  here; `/cancel` aborts it; the delegate tool (which forwards
@@ -310,7 +310,7 @@ export interface RunAcpTurnOpts {
    *  (`/cc`·/cdx·/gem). When set, a tight-budget directive is prepended
    *  to the prompt so the sub-agent stays focused (minimize re-reads /
    *  exploration). Advisory — not hard-enforced. Omit for natural-
-   *  language turns (monad brain stays generous). */
+   *  language turns (elanous brain stays generous). */
   focusTurns?: number;
   /** Surface-scoped HITL channels for this turn. When the delegated
    *  agent requests permission or asks a question, the prompt is

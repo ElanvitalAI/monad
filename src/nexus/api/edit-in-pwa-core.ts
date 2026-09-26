@@ -10,7 +10,7 @@
 //   - 5-min TTL                                       (token 노출 시 노출 윈도 짧게)
 //   - single-use nonce                                (replay 방지)
 //   - localhost audience claim                        (URL 이 외부로 나가도 사용 불가)
-//   - signing key 는 ~/.monad/nexus/edit-in-pwa.key 에 0o600 으로 보관
+//   - signing key 는 ~/.elanous/nexus/edit-in-pwa.key 에 0o600 으로 보관
 //
 // QR encoder 는 외부 의존성이 필요해 본 PR scope 외 — `/v1/nexus/edit-in-pwa`
 // 가 plain url 을 반환하므로 PWA 측에서 QR 렌더링은 별도 (또는 향후 별 PR).

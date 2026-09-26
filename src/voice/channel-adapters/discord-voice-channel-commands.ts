@@ -33,7 +33,7 @@ export interface DiscordVoiceChannelDispatcherDeps {
   adapter: DiscordVoiceChannelAdapter;
   defaultListenFilter?: VoiceDiscordChannelListenFilter;
   /** Optional hook fired right after a successful join. Wire this to
-   *  monad's voice-chat-mode controller so the audio session feeds
+   *  elanous's voice-chat-mode controller so the audio session feeds
    *  into the harness STT/TTS round-trip. */
   onSessionStart?: (session: DiscordVoiceChannelSession, opts: DiscordVoiceJoinOpts) => void;
   /** Optional hook on session leave (or error teardown). */

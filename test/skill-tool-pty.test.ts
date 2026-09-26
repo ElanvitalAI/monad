@@ -193,7 +193,7 @@ describe('PtyShellSend', () => {
       // ⛔ 거부문은 «셋»을 담는다 — 거부됐다 · 왜 · 무엇을 하면 되나(형제 거부문과 같은 한글 문면).
       expect(r.output).toContain('쓰기 거부');
       expect(r.output).toContain('사람이 쓰기 소유');
-      expect(r.output).toContain(`monad pty release ${id}`);
+      expect(r.output).toContain(`elanous pty release ${id}`);
     } finally { log.mockRestore(); }
     expect(settled).toEqual([{ id, action: 'input-text', actor: 'agent', outcome: 'denied' }]);
   });

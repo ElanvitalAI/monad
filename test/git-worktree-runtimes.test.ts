@@ -50,7 +50,7 @@ describe('EnterWorktree / ExitWorktree runtimes', () => {
     clearWorktreeSession(SID);
     repo = mkdtempSync(join(tmpdir(), 'gt4-repo-'));
     // ⛔⭐⭐ worktree 뿌리를 «임시 디렉터리로» 덮는다 — 안 덮으면 EnterWorktree 가 실제
-    //    `~/.monad/worktrees/` 아래에 worktree 를 만들고 사용자 디렉터리에 잔존물을 남긴다(리뷰 must-fix ②).
+    //    `~/.elanous/worktrees/` 아래에 worktree 를 만들고 사용자 디렉터리에 잔존물을 남긴다(리뷰 must-fix ②).
     //    ⚠️ 그리고 종전 `parentCleanupPath` 는 `worktreeParentDir(repo)` 를 «뿌리 인자 없이» 계산해
     //    옛 형제 경로를 가리켰다 — 즉 ***정리가 실제 생성 자리를 안 지우고 있었다.***
     worktreeRootDir = mkdtempSync(join(tmpdir(), 'gt4-wtroot-'));
@@ -97,9 +97,9 @@ describe('EnterWorktree / ExitWorktree runtimes', () => {
     const r = await enterWorktreeRuntime.run({ name: 'feat-provenance' }, { surface: 'dashboard' });
 
     expect(runGit(r.path, ['config', '--get', 'extensions.worktreeConfig']).trim()).toBe('true');
-    expect(runGit(r.path, ['config', '--worktree', '--get', 'monad.harness.owner']).trim()).toBe(`agent:${SID}`);
-    expect(runGit(r.path, ['config', '--worktree', '--get', 'monad.harness.command']).trim()).toBe('monad enter_worktree');
-    expect(runGit(r.path, ['config', '--worktree', '--get', 'monad.harness.createdAt']).trim()).toMatch(/^\d{4}-\d{2}-\d{2}T/);
+    expect(runGit(r.path, ['config', '--worktree', '--get', 'elanous.harness.owner']).trim()).toBe(`agent:${SID}`);
+    expect(runGit(r.path, ['config', '--worktree', '--get', 'elanous.harness.command']).trim()).toBe('elanous enter_worktree');
+    expect(runGit(r.path, ['config', '--worktree', '--get', 'elanous.harness.createdAt']).trim()).toMatch(/^\d{4}-\d{2}-\d{2}T/);
     expect(r.provenanceError).toBeUndefined();
   });
 

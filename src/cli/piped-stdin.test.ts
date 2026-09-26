@@ -1,5 +1,5 @@
 // ★ OBS-T3 회귀 — CLI 파이프 읽기가 **무한 대기하지 않는다**.
-// 실측 근거: `monad self log` 가 하니스 stdin(닫히지 않는 unix 소켓)에서 17분 넘게 행,
+// 실측 근거: `elanous self log` 가 하니스 stdin(닫히지 않는 unix 소켓)에서 17분 넘게 행,
 // 같은 명령이 `< /dev/null` 에서는 0.43초 완주. 에러가 아니라 행이라 기록이 조용히 유실됐다.
 import { describe, expect, test } from 'bun:test';
 import { debug } from '../debug/log.js';

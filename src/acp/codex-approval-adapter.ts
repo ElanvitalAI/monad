@@ -1,6 +1,6 @@
 // Codex approval adapter · H4 Phase 3.A scaffold.
 //
-// A thin bridge between monad's existing HITL primitives (`AcpPermissionApprover`
+// A thin bridge between elanous's existing HITL primitives (`AcpPermissionApprover`
 // + `AcpQuestionApprover`) and the Codex-specific approval events that
 // will land when we switch to app-server RPC in Phase 3.B:
 //
@@ -202,7 +202,7 @@ export function createCodexApprovalAdapter(
           message: (err as Error)?.message,
         });
       }
-      // Conservative fallback: deny on adapter failure. Matches monad's
+      // Conservative fallback: deny on adapter failure. Matches elanous's
       // "default deny" posture everywhere else.
       return { approved: false, comment: 'approver threw' };
     }

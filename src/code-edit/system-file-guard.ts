@@ -8,20 +8,20 @@
 // runtime — exactly the "robot building robot" footgun §4.2 names.
 //
 // Detection walks up from a candidate directory looking for a
-// `package.json` with `"name": "monadagent"`. The walk is cached so
+// `package.json` with `"name": "elanous"`. The walk is cached so
 // the cost is paid at most once per session per starting cwd.
 
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 
-const PACKAGE_NAME = 'monadagent';
+const PACKAGE_NAME = 'elanous';
 
 const cache = new Map<string, string | null>();
 
 /** Walk upward from `start` until a `package.json` with
- *  `name === "monadagent"` is found. Returns the directory holding
+ *  `name === "elanous"` is found. Returns the directory holding
  *  that file, or null when no such ancestor exists. */
-export function findMonadRepoRoot(start: string = process.cwd()): string | null {
+export function findElanousRepoRoot(start: string = process.cwd()): string | null {
   const cached = cache.get(start);
   if (cached !== undefined) return cached;
   let dir = path.resolve(start);
@@ -58,11 +58,11 @@ export function findMonadRepoRoot(start: string = process.cwd()): string | null 
 /** Default `systemFileDirs` value — `[repoRoot]` when the walk
  *  resolves, otherwise an empty list (the guard is then a no-op). */
 export function getDefaultSystemFileDirs(start?: string): string[] {
-  const root = findMonadRepoRoot(start);
+  const root = findElanousRepoRoot(start);
   return root ? [root] : [];
 }
 
-/** Module-level kill switch. Honours both `MONAD_SYSTEM_FILE_GUARD=off`
+/** Module-level kill switch. Honours both `ELANOUS_SYSTEM_FILE_GUARD=off`
  *  and an in-process flag flipped by tests / the future
  *  `harness.systemFileDirs.disable` config. */
 let runtimeDisabled = false;
@@ -73,7 +73,7 @@ export function setSystemFileGuardDisabled(disabled: boolean): void {
 
 export function isSystemFileGuardDisabled(): boolean {
   if (runtimeDisabled) return true;
-  const v = (process.env.MONAD_SYSTEM_FILE_GUARD ?? '').toLowerCase();
+  const v = (process.env.ELANOUS_SYSTEM_FILE_GUARD ?? '').toLowerCase();
   return v === 'off' || v === '0' || v === 'false';
 }
 

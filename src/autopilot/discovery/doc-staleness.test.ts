@@ -403,10 +403,10 @@ describe('sourceIdentifierInventoryAtRevision', () => {
   test('git archive 인벤토리를 만들고 작업 트리 밖 임시 디렉토리를 정리한다', () => {
     const root = mkdtempSync(join(tmpdir(), 'doc-staleness-git-'));
     // ⛔⭐ **고정 접두 «경로의 부재»를 보면 안 된다**(리뷰 must-fix ⑤ · Goodhart).
-    //   `mkdtempSync` 는 접두 뒤에 «무작위»를 붙이므로 `join(tmpdir(),'monad-doc-staleness-')` 자체는
+    //   `mkdtempSync` 는 접두 뒤에 «무작위»를 붙이므로 `join(tmpdir(),'elanous-doc-staleness-')` 자체는
     //   ***누수가 있든 없든 영영 존재하지 않는다*** ⇒ 그 단언은 항상 통과한다.
     //   ✅ 그래서 「그 접두로 «시작하는» 디렉토리의 «수»」를 전후로 센다.
-    const leaked = (): string[] => readdirSync(tmpdir()).filter((name) => name.startsWith('monad-doc-staleness-'));
+    const leaked = (): string[] => readdirSync(tmpdir()).filter((name) => name.startsWith('elanous-doc-staleness-'));
     const before = leaked();
     try {
       execFileSync('git', ['init'], { cwd: root });

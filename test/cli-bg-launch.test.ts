@@ -16,7 +16,7 @@ function okSetup(): SetupCheckResult {
 function badSetup(): SetupCheckResult {
   return {
     ok: false,
-    required: [{ id: 'llm', label: 'LLM provider', passed: false, hint: 'run `monad setup llm`' }],
+    required: [{ id: 'llm', label: 'LLM provider', passed: false, hint: 'run `elanous setup llm`' }],
     recommended: [],
   };
 }
@@ -33,14 +33,14 @@ function sink(): { log: (s: string) => void; error: (s: string) => void; logs: s
 }
 
 beforeEach(() => {
-  tmpRoot = mkdtempSync(joinPath(tmpdir(), 'monad-bg-launch-'));
-  prevNexusDir = process.env.MONAD_NEXUS_DIR;
-  process.env.MONAD_NEXUS_DIR = tmpRoot;
+  tmpRoot = mkdtempSync(joinPath(tmpdir(), 'elanous-bg-launch-'));
+  prevNexusDir = process.env.ELANOUS_NEXUS_DIR;
+  process.env.ELANOUS_NEXUS_DIR = tmpRoot;
 });
 
 afterEach(() => {
-  if (prevNexusDir === undefined) delete process.env.MONAD_NEXUS_DIR;
-  else process.env.MONAD_NEXUS_DIR = prevNexusDir;
+  if (prevNexusDir === undefined) delete process.env.ELANOUS_NEXUS_DIR;
+  else process.env.ELANOUS_NEXUS_DIR = prevNexusDir;
   rmSync(tmpRoot, { recursive: true, force: true });
 });
 
@@ -63,9 +63,9 @@ describe('Q.1 · runBgLaunch', () => {
     expect(calls).toHaveLength(1);
     expect(calls[0]!.args).toContain('nexus');
     expect(calls[0]!.args).toContain('run');
-    // headless/inline lifecycle is now pinned via env (MONAD_NEXUS_BG_PARENT=1),
+    // headless/inline lifecycle is now pinned via env (ELANOUS_NEXUS_BG_PARENT=1),
     // not a `--headless` argv flag (removed 2026-05-13 · auto-detect path).
-    expect((calls[0]!.opts.env as Record<string, string | undefined>).MONAD_NEXUS_BG_PARENT).toBe('1');
+    expect((calls[0]!.opts.env as Record<string, string | undefined>).ELANOUS_NEXUS_BG_PARENT).toBe('1');
     expect(calls[0]!.opts.detached).toBe(true);
   });
 
@@ -83,10 +83,10 @@ describe('Q.1 · runBgLaunch', () => {
     expect(result.exitCode).toBe(1);
     expect(spawnCalls).toBe(0);
     expect(out.errors.join('\n')).toContain('setup incomplete');
-    expect(out.logs.join('\n')).toContain('Run `monad nexus` (interactive) once');
+    expect(out.logs.join('\n')).toContain('Run `elanous nexus` (interactive) once');
   });
 
-  test('log path 가 ~/.monad/nexus/logs/ 아래', async () => {
+  test('log path 가 ~/.elanous/nexus/logs/ 아래', async () => {
     const result = await runBgLaunch({
       setupStatus: okSetup(),
       now: () => 1700000000000,
@@ -118,7 +118,7 @@ describe('Q.1 · runBgLaunch', () => {
     expect(readFileSync(logPath, 'utf-8')).toBe('');
   });
 
-  test('child env 에 MONAD_NEXUS_BG_PARENT=1 set', async () => {
+  test('child env 에 ELANOUS_NEXUS_BG_PARENT=1 set', async () => {
     let env: Record<string, string | undefined> | undefined;
     await runBgLaunch({
       setupStatus: okSetup(),
@@ -129,7 +129,7 @@ describe('Q.1 · runBgLaunch', () => {
       sleepFn: async () => {},
       probeChildFn: () => 'alive',
     });
-    expect(env?.MONAD_NEXUS_BG_PARENT).toBe('1');
+    expect(env?.ELANOUS_NEXUS_BG_PARENT).toBe('1');
   });
 
   test('forwardArgs 가 child argv 에 포함 (--http-host 등)', async () => {
@@ -165,7 +165,7 @@ describe('Q.1 · runBgLaunch', () => {
       },
       sleepFn: async () => {
         // ⛔ await 를 빼면 로그 «쓰기»와 부모의 «읽기»가 경쟁해 이 시험이 간헐적으로 갈린다.
-        await Bun.write(logPath, 'booting nexus\nerror: Isolated instance requires an explicit tool cwd; pass --tool-cwd <path> or set MONAD_TOOL_CWD.\n    at resolveToolCwd (/repo/src/boot/tool-cwd.ts:74:15)\n    at async <anonymous> (/repo/src/index.ts:10125:13)\n');
+        await Bun.write(logPath, 'booting nexus\nerror: Isolated instance requires an explicit tool cwd; pass --tool-cwd <path> or set ELANOUS_TOOL_CWD.\n    at resolveToolCwd (/repo/src/boot/tool-cwd.ts:74:15)\n    at async <anonymous> (/repo/src/index.ts:10125:13)\n');
       },
       probeChildFn: () => 'exited',
     });
@@ -174,7 +174,7 @@ describe('Q.1 · runBgLaunch', () => {
     expect(result.exitCode).toBe(1);
     expect(errors).toContain('detached child exited during startup');
     expect(errors).toContain('Isolated instance requires an explicit tool cwd');
-    expect(out.logs.join('\n')).not.toContain('monad nexus: started in background');
+    expect(out.logs.join('\n')).not.toContain('elanous nexus: started in background');
   });
 });
 

@@ -232,7 +232,7 @@ function configExistenceRoots(): string[] {
 }
 
 /** ★ grounding 발견 파일 → 검색 디렉토리(대표 2026-07-18 근본) — 공간을 미리 하드코딩(오픈 월드 불가)하지
- *  않고, 이 미션이 조사(grounding)에서 실제 touch 한 파일의 디렉토리를 검색 공간으로 쓴다. 스킬·.monad·유저
+ *  않고, 이 미션이 조사(grounding)에서 실제 touch 한 파일의 디렉토리를 검색 공간으로 쓴다. 스킬·.elanous·유저
  *  커스텀 어디든 미션이 발견한 곳이면 자동 포함. 순수(경로 목록 → 상위 디렉토리 집합). */
 export function groundingDirs(files: readonly string[]): string[] {
   const dirs = new Set<string>();
@@ -271,7 +271,7 @@ export function defaultExistenceSearch(opts: { repoRoot?: string; backupDirs?: s
 }
 
 function defaultBackupDirs(): string[] {
-  const base = join(homedir(), '.monad', 'backups');
+  const base = join(homedir(), '.elanous', 'backups');
   const out: string[] = [];
   try {
     // clean-slate-* 백업 트리(레거시 산출물 탐색용). readdir 대신 알려진 패턴만(fail-soft).

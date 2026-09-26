@@ -8,7 +8,7 @@ import { tmpdir } from 'node:os';
 import { delimiter, join } from 'node:path';
 
 export function nativeBuildShimDir(bunPath: string = process.execPath, base: string = tmpdir()): string {
-  const dir = mkdtempSync(join(base, 'monad-native-build-'));
+  const dir = mkdtempSync(join(base, 'elanous-native-build-'));
   symlinkSync(bunPath, join(dir, 'node'));
   const gyp = join(dir, 'node-gyp');
   writeFileSync(gyp, `#!/bin/sh\nexec "${bunPath}" x node-gyp@latest "$@"\n`);

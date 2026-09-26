@@ -7,19 +7,19 @@ import { join } from 'node:path';
 import { runFirecrawlSetup } from '../src/cli/firecrawl-setup.js';
 import { resetUserConfig } from '../src/user-config.js';
 import { scriptedIO } from '../src/onboarding.js';
-import { setMonadConfigDir, resetMonadConfigDir } from '../src/monad-config-dir.js';
+import { setElanousConfigDir, resetElanousConfigDir } from '../src/elanous-config-dir.js';
 
 let tmpDir: string;
 
 beforeEach(() => {
   tmpDir = mkdtempSync(join(tmpdir(), 'firecrawl-setup-'));
-  setMonadConfigDir(tmpDir);
+  setElanousConfigDir(tmpDir);
   delete process.env.FIRECRAWL_API_KEY;
   resetUserConfig();
 });
 
 afterEach(() => {
-  resetMonadConfigDir();
+  resetElanousConfigDir();
   rmSync(tmpDir, { recursive: true, force: true });
   delete process.env.FIRECRAWL_API_KEY;
   resetUserConfig();

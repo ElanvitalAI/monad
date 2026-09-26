@@ -8,7 +8,7 @@
  *
  * Keeping this as a registry (not a switch) means:
  *   - Tests can register mock adapters for any subset of surfaces
- *   - Surfaces depending on heavy monad infra (terminal-matrix,
+ *   - Surfaces depending on heavy elanous infra (terminal-matrix,
  *     VW stack, agent-team) can be added lazily from the boot code
  *     without touching the dispatcher core
  *   - Future additions (e.g. `acx-session` from AXON-P6) just register

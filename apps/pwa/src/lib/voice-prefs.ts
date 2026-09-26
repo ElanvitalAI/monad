@@ -8,7 +8,7 @@
 // higher (3.0+) to stop self-fires; quiet rooms with great AEC may
 // prefer 1.5 for a faster cut-in latency.
 //
-// Storage shape (localStorage key `monad.voice.prefs`):
+// Storage shape (localStorage key `elanous.voice.prefs`):
 //   { speakingThresholdMultiplier: number }
 //
 // Why localStorage (not S3 sync via daemon):
@@ -16,7 +16,7 @@
 //   Mac with high-quality DSP wants different tuning than iPad with
 //   built-in mic. Cross-device sync would force one rule on both.
 
-const STORAGE_KEY = 'monad.voice.prefs';
+const STORAGE_KEY = 'elanous.voice.prefs';
 
 export interface VoicePrefs {
   /** BI-2 RMS multiplier applied while TTS plays. 1.0 = no ducking

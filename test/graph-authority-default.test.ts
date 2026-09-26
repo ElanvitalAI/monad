@@ -2,7 +2,7 @@ import { describe, expect, test } from 'bun:test';
 import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { setMonadConfigDir, resetMonadConfigDir } from '../src/monad-config-dir.js';
+import { setElanousConfigDir, resetElanousConfigDir } from '../src/elanous-config-dir.js';
 import { buildUserConfig, resetUserConfig } from '../src/user-config.js';
 import { buildDevCliSpec, type DevCliExecutor } from '../src/self-dev/dev-cli.js';
 import { planDevPipeline, toSelfImplementOptions } from '../src/self-dev/dev-pipeline.js';
@@ -29,7 +29,7 @@ async function runThroughExistingEntry(input: {
   const ledger: Array<{ event: string; data: Record<string, unknown> }> = [];
   try {
     delete process.env.XDG_CONFIG_HOME;
-    setMonadConfigDir(configDir);
+    setElanousConfigDir(configDir);
     if (input.configValue !== undefined) {
       // This is the persisted raw shape produced by
       // `config set tools.selfImplement.graphAuthoritative <boolean>`.
@@ -74,7 +74,7 @@ async function runThroughExistingEntry(input: {
     };
   } finally {
     resetUserConfig();
-    resetMonadConfigDir();
+    resetElanousConfigDir();
     if (previousXdg === undefined) delete process.env.XDG_CONFIG_HOME;
     else process.env.XDG_CONFIG_HOME = previousXdg;
     rmSync(configDir, { recursive: true, force: true });

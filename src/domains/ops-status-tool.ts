@@ -1,6 +1,6 @@
 // ── ops_status 코어 도구 (Ops Observability P2 · 2026-07-10) — 전 표면 상속 ──
 //
-// L2 코어 도구: monad 가 "지금 무엇이 어떤 상태로 도나(미션·태스크·계약 루프·오케스트
+// L2 코어 도구: elanous 가 "지금 무엇이 어떤 상태로 도나(미션·태스크·계약 루프·오케스트
 // 레이터)"와 "이상은 없나"를 스스로/외부(telegram·PWA·CLI·자율루프·MCP)에서 조회.
 // P1(ops-status)의 순수 집계 함수를 감싼 READ-ONLY dispatch — 단일 출처.
 //
@@ -13,7 +13,7 @@ import type { OpsEntityType, OpsEventKind } from './ops-log.js';
 
 export const OPS_STATUS_SPEC: LLMToolSpec = {
   name: 'ops_status',
-  description: "⭐ 운영 상태 관측 (코어·READ-ONLY) — monad 가 **자기 자율 시스템이 지금 무엇을 어떤 상태로 돌리고 있나**를 인지. 오케스트레이터형 투자 루프(미션 → 3계약 루프[캡스톤·레버·자유스윙] → blackboard → 포트폴리오 오케스트레이터 → 집행) 4계층의 상태 전이·사이클·조율 결과를 집계한다. **'지금 뭐 돌고 있어?' '무슨 미션/태스크 도나' '이상 있어?' '오케스트레이터 잘 돌아?' '이 미션(apm_...) 상세 보여줘' '이 미션 관련 태스크/스케줄'** 류 질문에 사용. action: snapshot(미션/태스크 byStatus+두 플레인[스케줄실행 vs 디스패치대기]·계약 루프별 최신+arming·오케스트레이션·스케줄 헬스)·health(이상 판정)·timeline(상태 전이 최근순)·mission(id 지정 시 미션 1건 상세: 내용+**페이즈별 상태·저장 진단(failClass·근본원인·권장 힐)**+관련 태스크/스케줄/자율행동 fan-in+전이 이력+runLogPath. **'P2 왜 실패했어?' '어떻게 고쳐?'** 는 이 액션 1콜 — phases[].diagnosis 가 저장된 진단(재계산 불필요)). (예약 크론 CRUD=schedule_manage · 미션 arm/cancel/materialize=autopilot_missions · 발송원장=memory_recall 와 구분: 여긴 '지금 도는 자율 작업의 상태 관측'·READ-ONLY.)",
+  description: "⭐ 운영 상태 관측 (코어·READ-ONLY) — elanous 가 **자기 자율 시스템이 지금 무엇을 어떤 상태로 돌리고 있나**를 인지. 오케스트레이터형 투자 루프(미션 → 3계약 루프[캡스톤·레버·자유스윙] → blackboard → 포트폴리오 오케스트레이터 → 집행) 4계층의 상태 전이·사이클·조율 결과를 집계한다. **'지금 뭐 돌고 있어?' '무슨 미션/태스크 도나' '이상 있어?' '오케스트레이터 잘 돌아?' '이 미션(apm_...) 상세 보여줘' '이 미션 관련 태스크/스케줄'** 류 질문에 사용. action: snapshot(미션/태스크 byStatus+두 플레인[스케줄실행 vs 디스패치대기]·계약 루프별 최신+arming·오케스트레이션·스케줄 헬스)·health(이상 판정)·timeline(상태 전이 최근순)·mission(id 지정 시 미션 1건 상세: 내용+**페이즈별 상태·저장 진단(failClass·근본원인·권장 힐)**+관련 태스크/스케줄/자율행동 fan-in+전이 이력+runLogPath. **'P2 왜 실패했어?' '어떻게 고쳐?'** 는 이 액션 1콜 — phases[].diagnosis 가 저장된 진단(재계산 불필요)). (예약 크론 CRUD=schedule_manage · 미션 arm/cancel/materialize=autopilot_missions · 발송원장=memory_recall 와 구분: 여긴 '지금 도는 자율 작업의 상태 관측'·READ-ONLY.)",
   parameters: {
     type: 'object',
     properties: {
@@ -29,7 +29,7 @@ export const OPS_STATUS_SPEC: LLMToolSpec = {
 };
 
 export function projectScheduleHealth(schedules: OpsScheduleSnapshot | null): {
-  monadTotal: number;
+  elanousTotal: number;
   staleCount: number;
   erroredCount: number;
   noncanonicalCount: number;
@@ -41,7 +41,7 @@ export function projectScheduleHealth(schedules: OpsScheduleSnapshot | null): {
 } | null {
   if (!schedules) return null;
   return {
-    monadTotal: schedules.monadTotal,
+    elanousTotal: schedules.elanousTotal,
     staleCount: schedules.stale.length,
     erroredCount: schedules.errored.length,
     noncanonicalCount: schedules.noncanonical.length,

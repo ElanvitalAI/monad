@@ -80,7 +80,7 @@ describe('pty takeover CLI commands', () => {
 
   test('list --json exposes the monotonic output total without changing liveness fields', () => {
     const row: PtyManifestRow = {
-      id: 'pty_json', kind: 'tui', cmd: 'monad', ownerPid: 41, ptyPid: 42, instance: 'test', startedAt: 1,
+      id: 'pty_json', kind: 'tui', cmd: 'elanous', ownerPid: 41, ptyPid: 42, instance: 'test', startedAt: 1,
       alive: true, exitCode: null, snapshot: '', snapshotAt: 0, outputBytesTotal: 123, updatedAt: 1_000,
       frame: '', frameAt: 0, runId: '', runIdSource: '', spaceId: '', sessionId: '', parentPtyId: '', parentPid: 0, parentKind: '', closedAt: 0, codeSha: '',
     };
@@ -109,17 +109,17 @@ describe('pty takeover CLI commands', () => {
 
   test('list --all --json preserves colliding instance names while identifying each manifest root', () => {
     const roots = [
-      { name: 'axon', dbPath: '/roots/axon/monad-agent/.monad-test/pty/manifest.db' },
-      { name: 'pilot', dbPath: '/roots/pilot/monad-agent/.monad-test/pty/manifest.db' },
+      { name: 'axon', dbPath: '/roots/axon/monad-agent/.elanous-test/pty/manifest.db' },
+      { name: 'pilot', dbPath: '/roots/pilot/monad-agent/.elanous-test/pty/manifest.db' },
     ] as const;
     const rows: Record<string, PtyManifestRow[]> = {
       [roots[0].dbPath]: [{
-        id: 'pty_axon', kind: 'tui', cmd: 'monad', ownerPid: 41, ptyPid: 42, instance: 'test:monad-agent', startedAt: 1,
+        id: 'pty_axon', kind: 'tui', cmd: 'elanous', ownerPid: 41, ptyPid: 42, instance: 'test:monad-agent', startedAt: 1,
         alive: true, exitCode: null, snapshot: '', snapshotAt: 0, outputBytesTotal: 0, updatedAt: 1_000,
         frame: '', frameAt: 0, runId: '', runIdSource: '', spaceId: '', sessionId: '', parentPtyId: '', parentPid: 0, parentKind: '', closedAt: 0, codeSha: '',
       }],
       [roots[1].dbPath]: [{
-        id: 'pty_pilot', kind: 'tui', cmd: 'monad', ownerPid: 43, ptyPid: 44, instance: 'test:monad-agent', startedAt: 1,
+        id: 'pty_pilot', kind: 'tui', cmd: 'elanous', ownerPid: 43, ptyPid: 44, instance: 'test:monad-agent', startedAt: 1,
         alive: true, exitCode: null, snapshot: '', snapshotAt: 0, outputBytesTotal: 0, updatedAt: 1_000,
         frame: '', frameAt: 0, runId: '', runIdSource: '', spaceId: '', sessionId: '', parentPtyId: '', parentPid: 0, parentKind: '', closedAt: 0, codeSha: '',
       }],
@@ -213,7 +213,7 @@ describe('pty takeover CLI commands', () => {
 
   test('find tests every key axis and retire proves before deleting only with --yes', () => {
     const row: PtyManifestRow = {
-      id: 'pty_ghost', kind: 'tui', cmd: 'monad', ownerPid: 41, ptyPid: 42, instance: 'test', startedAt: 1,
+      id: 'pty_ghost', kind: 'tui', cmd: 'elanous', ownerPid: 41, ptyPid: 42, instance: 'test', startedAt: 1,
       alive: true, exitCode: null, snapshot: '', snapshotAt: 0, outputBytesTotal: 0, updatedAt: 1_000,
       frame: '', frameAt: 0, runId: 'run_42', runIdSource: '', spaceId: '', sessionId: '', parentPtyId: '', parentPid: 0, parentKind: '', closedAt: 0, codeSha: '',
     };
@@ -252,7 +252,7 @@ describe('pty takeover CLI commands', () => {
     const manifestPath = join(stateRoot, 'pty', 'manifest.db');
     setPtyManifestDbPathForTesting(manifestPath);
     try {
-      upsertPtyManifest({ id: 'pty_live_ghost', kind: 'tui', cmd: 'monad', startedAt: 1, now: 1, ptyPid: 999_999_999 });
+      upsertPtyManifest({ id: 'pty_live_ghost', kind: 'tui', cmd: 'elanous', startedAt: 1, now: 1, ptyPid: 999_999_999 });
       expect(runPtyFind('999999999')).toMatchObject({ exitCode: 0, message: expect.stringContaining('pty_live_ghost') });
       expect(runPtyRetire('pty_live_ghost')).toMatchObject({ exitCode: 0, message: expect.stringContaining('dry-run') });
       const retained = getPtyManifest('pty_live_ghost');
@@ -265,7 +265,7 @@ describe('pty takeover CLI commands', () => {
 
   test('retire --yes refuses a current alive manifest and preserves its row', () => {
     const row: PtyManifestRow = {
-      id: 'pty_active', kind: 'tui', cmd: 'monad', ownerPid: 41, ptyPid: 42, instance: 'test', startedAt: 1,
+      id: 'pty_active', kind: 'tui', cmd: 'elanous', ownerPid: 41, ptyPid: 42, instance: 'test', startedAt: 1,
       alive: true, exitCode: null, snapshot: '', snapshotAt: 0, outputBytesTotal: 0, updatedAt: 10_000,
       frame: '', frameAt: 0, runId: 'run_active', runIdSource: '', spaceId: '', sessionId: '', parentPtyId: '', parentPid: 0, parentKind: '', closedAt: 0, codeSha: '',
     };
@@ -291,7 +291,7 @@ describe('pty takeover CLI commands', () => {
     const originalOut = process.stdout.write;
     process.stdout.write = ((chunk: string) => { out.push(String(chunk)); return true; }) as typeof process.stdout.write;
     const row: PtyManifestRow = {
-      id: 'pty_cli', kind: 'tui', cmd: 'monad', ownerPid: 7, ptyPid: 8, instance: 'test', startedAt: 1,
+      id: 'pty_cli', kind: 'tui', cmd: 'elanous', ownerPid: 7, ptyPid: 8, instance: 'test', startedAt: 1,
       alive: false, exitCode: 0, snapshot: '', snapshotAt: 0, outputBytesTotal: 0, updatedAt: 1,
       frame: '', frameAt: 0, runId: '', runIdSource: '', spaceId: '', sessionId: '', parentPtyId: '', parentPid: 0, parentKind: '', closedAt: 2, codeSha: '',
     };
@@ -301,10 +301,10 @@ describe('pty takeover CLI commands', () => {
         getPty: () => undefined, requestPtyTakeover: () => false, requestRemote: async () => ({ status: 'unknown-pty' }), log() {},
         listManifestRows: () => [row], isProcessAlive: () => false, now: () => 1_000_000, removeManifest: (id) => { removed.push(id); },
       });
-      await program.parseAsync(['node', 'monad', 'pty', 'find', '8']);
-      await program.parseAsync(['node', 'monad', 'pty', 'retire', 'pty_cli']);
+      await program.parseAsync(['node', 'elanous', 'pty', 'find', '8']);
+      await program.parseAsync(['node', 'elanous', 'pty', 'retire', 'pty_cli']);
       expect(removed).toEqual([]);
-      await program.parseAsync(['node', 'monad', 'pty', 'retire', 'pty_cli', '--yes']);
+      await program.parseAsync(['node', 'elanous', 'pty', 'retire', 'pty_cli', '--yes']);
       expect(removed).toEqual(['pty_cli']);
       expect(out.join('')).toContain('matchedBy=ptyPid');
       expect(out.join('')).toContain('dry-run');
@@ -608,7 +608,7 @@ describe('pty takeover CLI commands', () => {
       requestRemote: async () => ({ status: 'unknown-pty' }),
       listRefs: () => [], log() {},
     };
-    const expected = { exitCode: 1 as const, message: 'pty: missing was not found in the current instance address book (0 live PTY refs); inspect all registered instances with monad pty list --all --include-test' };
+    const expected = { exitCode: 1 as const, message: 'pty: missing was not found in the current instance address book (0 live PTY refs); inspect all registered instances with elanous pty list --all --include-test' };
     await expect(runPtySnapshot('missing', deps)).resolves.toEqual(expected);
     await expect(runPtyText('missing', 'x', false, deps)).resolves.toEqual(expected);
   });
@@ -691,19 +691,19 @@ describe('pty takeover CLI commands', () => {
           : { status: 'unknown-pty' },
         log() {},
       });
-      await program.parseAsync(['node', 'monad', 'pty', 'takeover', 'pty_ok']);
+      await program.parseAsync(['node', 'elanous', 'pty', 'takeover', 'pty_ok']);
       expect(process.exitCode).toBe(0);
       expect(output.join('')).toContain('pty_ok');
       expect(errors).toEqual([]);
 
       output.splice(0);
       process.exitCode = 0;
-      await program.parseAsync(['node', 'monad', 'pty', 'list']);
+      await program.parseAsync(['node', 'elanous', 'pty', 'list']);
       expect(process.exitCode).toBe(1);
       expect(errors.join('')).toContain('reference listing is unavailable');
 
       process.exitCode = 0;
-      await program.parseAsync(['node', 'monad', 'pty', 'release', 'pty_missing']);
+      await program.parseAsync(['node', 'elanous', 'pty', 'release', 'pty_missing']);
       expect(process.exitCode).toBe(1);
       expect(errors.join('')).toContain('pty_missing');
     } finally {
@@ -727,13 +727,13 @@ describe('pty takeover CLI commands', () => {
         listRefs: () => [{ id: 'pty_cli_state', kind: 'tui', source: 'remote', alive: true }],
         now: () => clock, sleep: async (ms) => { polls.push(ms); clock += ms; }, log() {},
       });
-      await program.parseAsync(['node', 'monad', 'pty', 'state', 'pty_cli_state', '--json']);
+      await program.parseAsync(['node', 'elanous', 'pty', 'state', 'pty_cli_state', '--json']);
       expect(process.exitCode).toBe(0);
-      expect(JSON.parse(output.join(''))).toMatchObject({ id: 'pty_cli_state', state: 'working', label: 'monad-tui-turn-in-progress', at: 0 });
+      expect(JSON.parse(output.join(''))).toMatchObject({ id: 'pty_cli_state', state: 'working', label: 'elanous-tui-turn-in-progress', at: 0 });
 
       output.splice(0);
       process.exitCode = 0;
-      await program.parseAsync(['node', 'monad', 'pty', 'wait', 'pty_cli_state', '--until', 'idle', '--timeout', '7', '--poll-ms', '3']);
+      await program.parseAsync(['node', 'elanous', 'pty', 'wait', 'pty_cli_state', '--until', 'idle', '--timeout', '7', '--poll-ms', '3']);
       expect(process.exitCode).toBe(0);
       expect(output.join('')).toContain('reached idle after 3ms');
       expect(polls).toEqual([3]);
@@ -832,7 +832,7 @@ describe('pty CLI --actor', () => {
         listRefs: () => [{ id: 'pty_remote', kind: 'shell', source: 'remote', alive: true }],
         log() {},
       });
-      await program.parseAsync(['node', 'monad', 'pty', 'text', 'pty_remote', 'x', '--actor', 'brain']);
+      await program.parseAsync(['node', 'elanous', 'pty', 'text', 'pty_remote', 'x', '--actor', 'brain']);
       expect(process.exitCode).toBe(1);
       expect(errors.join('')).toContain("--actor must be 'human' or 'agent'");
       expect(remoteCalls).toBe(0);
@@ -857,7 +857,7 @@ describe('pty CLI 관측 sink 배선', () => {
         registerObservationSink: async () => { await Bun.sleep(20); order.push('sink'); },
         log: (event) => { order.push(`log:${event}`); },
       });
-      await program.parseAsync(['node', 'monad', 'pty', 'text', 'pty_remote', 'x']);
+      await program.parseAsync(['node', 'elanous', 'pty', 'text', 'pty_remote', 'x']);
       expect(order[0]).toBe('sink');
       expect(order).toContain('log:input-text');
     } finally {
@@ -876,7 +876,7 @@ describe('pty CLI 관측 sink 배선', () => {
         listRefs: () => [{ id: 'pty_remote', kind: 'shell', source: 'remote', alive: true }],
         log() {},   // registerObservationSink 미주입
       });
-      await program.parseAsync(['node', 'monad', 'pty', 'text', 'pty_remote', 'x']);
+      await program.parseAsync(['node', 'elanous', 'pty', 'text', 'pty_remote', 'x']);
       expect(process.exitCode).toBe(0);
     } finally {
       process.stdout.write = originalOut;
@@ -902,9 +902,9 @@ describe('pty CLI --all 배선(Commander → 연합 조회)', () => {
         listFederatedRefs: (o) => { seen.push(o); return { refs: [{ instance: 'test:wt-docs', id: 'self_a', kind: 'self', alive: true }], unreadable: [] }; },
         log() {},
       });
-      await program.parseAsync(['node', 'monad', 'pty', 'list', '--all', '--include-test']);
-      await program.parseAsync(['node', 'monad', 'pty', 'list', '--all']);
-      await program.parseAsync(['node', 'monad', 'pty', 'list']);
+      await program.parseAsync(['node', 'elanous', 'pty', 'list', '--all', '--include-test']);
+      await program.parseAsync(['node', 'elanous', 'pty', 'list', '--all']);
+      await program.parseAsync(['node', 'elanous', 'pty', 'list']);
       expect(seen).toEqual([{ includeTest: true }, { includeTest: false }]);   // ⭐ 3번째(플래그 없음)는 연합을 안 탄다
       expect(out.join('')).toContain('test:wt-docs\t-\tself_a');
       expect(out.join('')).toContain('local_only');
@@ -933,7 +933,7 @@ describe('pty CLI --ansi snapshot 배선(Commander → IPC)', () => {
         listRefs: () => [{ id: 'pty_remote', kind: 'shell', source: 'remote', alive: true }],
         log() {},
       });
-      await program.parseAsync(['node', 'monad', 'pty', 'snapshot', 'pty_remote', '--ansi']);
+      await program.parseAsync(['node', 'elanous', 'pty', 'snapshot', 'pty_remote', '--ansi']);
       expect(captured).toEqual([['snapshot', { ansi: true }]]);
       expect(output.join('')).toContain('PtyShellSnapshot process_id=pty_remote status=running source=live\n\u001b[31mREMOTE\u001b[0m');
       expect(process.exitCode).toBe(0);
@@ -958,15 +958,15 @@ describe('pty CLI state/wait wiring', () => {
         requestRemote: async () => ({ status: 'success', screen: '❯ /command, or type a question' }),
         listRefs: () => [{ id: 'pty_x', kind: 'tui', source: 'remote', alive: true }], now: () => clock, sleep: async (ms) => { clock += ms; }, log() {},
       });
-      await program.parseAsync(['node', 'monad', 'pty', 'state', 'pty_x', '--json']);
+      await program.parseAsync(['node', 'elanous', 'pty', 'state', 'pty_x', '--json']);
       expect(output.join('')).toContain('"state":"idle"');
       expect(process.exitCode).toBe(0);
       output.splice(0); process.exitCode = 0;
-      await program.parseAsync(['node', 'monad', 'pty', 'wait', 'pty_x', '--until', 'idle', '--timeout', '10', '--poll-ms', '1']);
+      await program.parseAsync(['node', 'elanous', 'pty', 'wait', 'pty_x', '--until', 'idle', '--timeout', '10', '--poll-ms', '1']);
       expect(output.join('')).toContain('reached idle after 0ms');
       expect(process.exitCode).toBe(0);
       process.exitCode = 0;
-      await program.parseAsync(['node', 'monad', 'pty', 'wait', 'pty_x', '--until', 'sleeping']);
+      await program.parseAsync(['node', 'elanous', 'pty', 'wait', 'pty_x', '--until', 'sleeping']);
       expect(errors.join('')).toContain('must be one of idle, working, blocked, waiting, done');
       expect(process.exitCode).toBe(2);
     } finally {
@@ -988,10 +988,10 @@ describe('pty CLI --actor 배선(Commander → IPC)', () => {
         listRefs: () => [{ id: 'pty_remote', kind: 'shell', source: 'remote', alive: true }],
         log() {},
       });
-      await program.parseAsync(['node', 'monad', 'pty', 'text', 'pty_remote', 'x', '--actor', 'agent']);
-      await program.parseAsync(['node', 'monad', 'pty', 'key', 'pty_remote', 'enter', '--actor', 'AGENT']);
-      await program.parseAsync(['node', 'monad', 'pty', 'resize', 'pty_remote', '120', '40', '--actor', 'agent']);
-      await program.parseAsync(['node', 'monad', 'pty', 'text', 'pty_remote', 'x']);   // 플래그 생략 = human
+      await program.parseAsync(['node', 'elanous', 'pty', 'text', 'pty_remote', 'x', '--actor', 'agent']);
+      await program.parseAsync(['node', 'elanous', 'pty', 'key', 'pty_remote', 'enter', '--actor', 'AGENT']);
+      await program.parseAsync(['node', 'elanous', 'pty', 'resize', 'pty_remote', '120', '40', '--actor', 'agent']);
+      await program.parseAsync(['node', 'elanous', 'pty', 'text', 'pty_remote', 'x']);   // 플래그 생략 = human
       expect(captured).toEqual([
         ['input-text', { actor: 'agent' }],
         ['input-key', { actor: 'agent' }],   // 대소문자 정규화도 이 경로를 탄다

@@ -22,11 +22,11 @@ export type LlmRuntime =
 
 /** Per-node descriptor · used by Manager + surfaced via `/llm nodes`. */
 export interface LlmNode {
-  /** Stable node id · `'local'` for monad host · ssh-host name otherwise. */
+  /** Stable node id · `'local'` for elanous host · ssh-host name otherwise. */
   readonly id: string;
   /** Human-readable label · typically same as id for clarity. */
   readonly label: string;
-  /** Whether this node is the local monad host (no SSH needed). */
+  /** Whether this node is the local elanous host (no SSH needed). */
   readonly isLocal: boolean;
   /** SSH host override · undefined for local node. */
   readonly sshHost?: string;

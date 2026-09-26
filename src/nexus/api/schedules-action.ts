@@ -1,12 +1,12 @@
 // NEXUS · POST /v1/schedules/action — 스케줄 쓰기 액션 (P2 · 2026-07-08)
 //
 // /scheduler PWA 가 read(/v1/dashboard/schedules) 옆에서 adopt/release/enable/
-// disable/delete/update/create 를 실행하는 창구. **CLI(monad cron)·tool
+// disable/delete/update/create 를 실행하는 창구. **CLI(elanous cron)·tool
 // (schedule_manage) 과 동일한 dispatchScheduleManage 백엔드를 재사용**해 전 표면이 한
 // 진실(schedule_registry)을 조작하도록 한다 — 표면별 로직 중복 없음.
 //
 // dashboard 계열 write(refresh-live) 과 같은 신뢰 수준(loopback + tailscale
-// serve 로만 노출). 파괴적 액션(delete/adopt)은 자동 백업(~/.monad/backups) 이
+// serve 로만 노출). 파괴적 액션(delete/adopt)은 자동 백업(~/.elanous/backups) 이
 // dispatchScheduleManage 안에서 보장.
 
 import { jsonResponse } from './http-server.js';

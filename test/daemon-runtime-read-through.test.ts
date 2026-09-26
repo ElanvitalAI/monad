@@ -1,6 +1,6 @@
 // S4 (2026-07-12) — standalone createDaemonRuntime도 R5 read-through를
 // 기본 장착: on-disk SessionStore의 세션 id로 history.get()하면 그
-// 맥락이 로드된다 (nexus 부트와 파리티). MONAD_SESSION_ROOT tmp 격리.
+// 맥락이 로드된다 (nexus 부트와 파리티). ELANOUS_SESSION_ROOT tmp 격리.
 
 import { afterEach, beforeEach, describe, expect, test } from 'bun:test';
 import { mkdtempSync, rmSync } from 'node:fs';
@@ -10,11 +10,11 @@ import { join } from 'node:path';
 let root: string;
 beforeEach(() => {
   root = mkdtempSync(join(tmpdir(), 'daemon-rt-'));
-  process.env.MONAD_SESSION_ROOT = join(root, 'sessions');
+  process.env.ELANOUS_SESSION_ROOT = join(root, 'sessions');
 });
 afterEach(() => {
   rmSync(root, { recursive: true, force: true });
-  delete process.env.MONAD_SESSION_ROOT;
+  delete process.env.ELANOUS_SESSION_ROOT;
 });
 
 describe('createDaemonRuntime store read-through (S4)', () => {

@@ -46,7 +46,7 @@ export const SELF_COGNITION_MCP_CATALOG_ENTRIES: readonly NativeToolCatalogEntry
   kind: 'other',
   aliases: [name],
   displayName: name,
-  description: 'Read-only self-cognition query over monad history, memory, operations, or logs.',
+  description: 'Read-only self-cognition query over elanous history, memory, operations, or logs.',
   promptSummary: `\`${name}\` (read-only self-cognition query)`,
   host: ['mcp'],
   safety: ['read-only'],

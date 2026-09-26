@@ -34,12 +34,12 @@
 
 import { debug } from '../../debug/log.js';
 import type { WidgetHost } from '../../widgets/host.js';
-import type { MonadState, Store, WidgetSlice } from '../types.js';
+import type { ElanousState, Store, WidgetSlice } from '../types.js';
 
 type Widgets = Record<string, WidgetSlice>;
 
 function setWidget(
-  store: Store<MonadState>,
+  store: Store<ElanousState>,
   id: string,
   type: string,
   state: unknown,
@@ -49,7 +49,7 @@ function setWidget(
   }));
 }
 
-function removeWidget(store: Store<MonadState>, id: string): void {
+function removeWidget(store: Store<ElanousState>, id: string): void {
   store.setState((s) => {
     if (!(id in s.widgets)) return {};
     const next = { ...s.widgets };
@@ -58,7 +58,7 @@ function removeWidget(store: Store<MonadState>, id: string): void {
   });
 }
 
-/** Attach bidirectional sync between a MonadState store's `widgets`
+/** Attach bidirectional sync between a ElanousState store's `widgets`
  *  slice and a WidgetHost.
  *
  *  Semantics:
@@ -79,7 +79,7 @@ function removeWidget(store: Store<MonadState>, id: string): void {
  *  need cross-process widget discovery must register types on the host
  *  before writing into the store. */
 export function bridgeWidgetHostToStore(
-  store: Store<MonadState>,
+  store: Store<ElanousState>,
   widgetHost: WidgetHost,
 ): () => void {
   // Per-id guard · blocks echo between forward/reverse handlers for

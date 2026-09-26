@@ -36,7 +36,7 @@ export function DeviceFleetTable({ api }: DeviceFleetTableProps): ReactElement {
       <div className="rounded border border-zinc-200 bg-zinc-50 p-4 text-sm">
         <p className="font-medium">No Apple devices detected yet.</p>
         <p className="mt-1 opacity-70">
-          The iOS Companion writes <code>~/.monad/devices.json</code> on iCloud sync.
+          The iOS Companion writes <code>~/.elanous/devices.json</code> on iCloud sync.
           Install it on at least one Apple device to populate this list.
         </p>
       </div>

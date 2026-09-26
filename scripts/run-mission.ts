@@ -16,9 +16,9 @@ ensureCronNodePath();
 
 
 // ★ 인스턴스 스코프 상속(ISO·2026-07-19 조율자 인프라 후속) — 부모 데몬(defaultSpawnRunMission)이
-// argv 로 넘긴 --config-dir 을 setMonadConfigDir 로 적용하고 argv 에서 strip. 이걸 store 열기
+// argv 로 넘긴 --config-dir 을 setElanousConfigDir 로 적용하고 argv 에서 strip. 이걸 store 열기
 // (openAutopilotMissionsDb·226행)·getUserConfig(270행)·argv[2] missionId(219행) 소비 전에 해야
-// 데몬과 같은 config(게이트·예산)/tasks.db 를 읽는다. 미적용 시 항상 ~/.monad 를 읽어 "데몬 시작 후
+// 데몬과 같은 config(게이트·예산)/tasks.db 를 읽는다. 미적용 시 항상 ~/.elanous 를 읽어 "데몬 시작 후
 // config 변경 미반영"(재시작 필요). strip 후 argv[2]=missionId 유지(플래그는 항상 뒤에 붙는다).
 // se-mission-prepare.ts:30 과 동형(#4095 형제 경로).
 import { applyConfigDirFlagFromArgv } from '../src/cli/config-dir-flag.js';
@@ -88,7 +88,7 @@ function classifyFailure(text: string): { reason: string; retryable: boolean } {
 async function llmRootCause(o: { title: string; goal?: string; failClass?: string; attempts: Array<{ backend: string; maxTurns?: number; gateResult: string }>; envSignals?: { ghAuth?: boolean }; gateReasons?: string }): Promise<string | undefined> {
   try {
     const { streamLLM } = await import('../src/llm.js');
-    const trail = o.attempts.map((a) => `${a.backend.replace(/^monad-self:/, '')}${a.maxTurns ? ' ' + a.maxTurns + '턴' : ''}->${a.gateResult}`).join(' -> ');
+    const trail = o.attempts.map((a) => `${a.backend.replace(/^elanous-self:/, '')}${a.maxTurns ? ' ' + a.maxTurns + '턴' : ''}->${a.gateResult}`).join(' -> ');
     const prompt = [
       '자율 미션 페이즈 실패의 사실이다. 근본원인을 1-2문장으로 추론하고, 이어서 권장 힐을 한 단어로 답하라.',
       '반드시 "추정"을 명시하고, 아래 사실에 근거하지 않은 원인은 만들지 마라(환각 금지).',
@@ -103,7 +103,7 @@ async function llmRootCause(o: { title: string; goal?: string; failClass?: strin
       '판단 가이드: 여러 시도가 dead-code(미배선)/범위밖/no-op 로 반복 실패 = 과대 페이즈 → 분할(split) 권장. 일시오류 → 재구현. 능력부재(gh 등) → 골정정.',
       '출력(한국어): 근본원인 추정 1-2문장. 마지막 줄에 "권장: <split|rebuild|revise|skip>".',
     ].filter(Boolean).join('\n');
-    const text = await streamLLM([{ role: 'user', content: prompt }], () => {}, { model: process.env.MONAD_DECOMPOSE_MODEL || 'gpt-5.6-sol', reasoningEffort: 'low' });
+    const text = await streamLLM([{ role: 'user', content: prompt }], () => {}, { model: process.env.ELANOUS_DECOMPOSE_MODEL || 'gpt-5.6-sol', reasoningEffort: 'low' });
     const out = text.trim().replace(/\s+/g, ' ');
     return out.length >= 10 ? out.slice(0, 500) : undefined;
   } catch { return undefined; }
@@ -125,7 +125,7 @@ async function systemLookbackRootCause(outcome: PhaseOutcome): Promise<{ root?: 
     const { streamLLM } = await import('../src/llm.js');
     const { report, investigated } = await runSystemLookback({
       phaseTitle: outcome.title, signals,
-      review: (prompt) => streamLLM([{ role: 'user', content: prompt }], () => {}, { model: process.env.MONAD_DECOMPOSE_MODEL || 'gpt-5.6-sol', reasoningEffort: 'medium' }),
+      review: (prompt) => streamLLM([{ role: 'user', content: prompt }], () => {}, { model: process.env.ELANOUS_DECOMPOSE_MODEL || 'gpt-5.6-sol', reasoningEffort: 'medium' }),
     });
     const out = report.trim();
     const root = investigated && out.length >= 20 ? `[R3 소스 룩백] ${out.slice(0, 700)}` : undefined;
@@ -158,8 +158,8 @@ function snapshotDirtyFiles(): Set<string> {
 }
 
 /** ★ 가드 일시정지 센티넬(대표 2026-07-13) — 사용자/외부 도구가 메인트리에서 시스템을 고치는
- *  중이면 이 파일을 두어 가드를 전면 비활성(사용자 의도 우선). `touch ~/.monad/guard-pause`. */
-const GUARD_PAUSE_FLAG = join(homedir(), '.monad/guard-pause');
+ *  중이면 이 파일을 두어 가드를 전면 비활성(사용자 의도 우선). `touch ~/.elanous/guard-pause`. */
+const GUARD_PAUSE_FLAG = join(homedir(), '.elanous/guard-pause');
 function guardPaused(): boolean {
   try { return existsSync(GUARD_PAUSE_FLAG); } catch { return false; }
 }
@@ -169,7 +169,7 @@ function backupBeforeRevert(f: string, stamp: string): string | null {
   try {
     const src = join(process.cwd(), f);
     if (!existsSync(src)) return null;
-    const dir = join(homedir(), '.monad/backups/guard-reverted', stamp);
+    const dir = join(homedir(), '.elanous/backups/guard-reverted', stamp);
     mkdirSync(dir, { recursive: true });
     const dest = join(dir, f.replace(/[/\\]/g, '__'));
     copyFileSync(src, dest);
@@ -182,7 +182,7 @@ export interface GuardResult { reverted: string[]; backupDir: string | null; ski
 /** ★ 코어 코드 편집 가드(대표 2026-07-12·안전화 2026-07-13) — task 미션이 실행 중 메인트리 코어
  *  코드(src/·apps/·test/)를 편집하면 되돌린다(범위 초과·미검토·라이브 위험). 3층 안전:
  *   1) 멀티페이즈/SE 미션은 격리 worktree 라 메인트리를 안 건드림 → 스킵(오탐 원천 제거).
- *   2) ~/.monad/guard-pause 존재 시 전면 비활성(사용자 개발 중·사용자 의도 우선).
+ *   2) ~/.elanous/guard-pause 존재 시 전면 비활성(사용자 개발 중·사용자 의도 우선).
  *   3) 되돌리기 전 현재 내용 백업(복구 가능·영구 파괴 금지).
  *  실행 전부터 dirty 였던 파일(beforeDirty)은 안 건드림. fail-soft. */
 function guardCoreCodeEdits(beforeDirty: Set<string>, opts: { multiphase?: boolean } = {}): GuardResult {
@@ -201,7 +201,7 @@ function guardCoreCodeEdits(beforeDirty: Set<string>, opts: { multiphase?: boole
       if (!f || beforeDirty.has(f) || !PROTECTED_RE.test(f)) continue;
       // 3) 되돌리기 전 백업(사용자 작업 복구 가능).
       const bak = backupBeforeRevert(f, stamp);
-      if (bak && !backupDir) backupDir = join(homedir(), '.monad/backups/guard-reverted', stamp);
+      if (bak && !backupDir) backupDir = join(homedir(), '.elanous/backups/guard-reverted', stamp);
       if (status.includes('?')) spawnSync('git', ['clean', '-f', '--', f], { cwd: process.cwd() });
       else spawnSync('git', ['checkout', '--', f], { cwd: process.cwd() });
       reverted.push(f);
@@ -211,7 +211,7 @@ function guardCoreCodeEdits(beforeDirty: Set<string>, opts: { multiphase?: boole
   } catch { return { reverted: [], backupDir: null, skipped: null }; }
 }
 
-/** 자율 미션 실행을 monad 자기인지 기억에 기록(적정 시점=완료). fail-soft. */
+/** 자율 미션 실행을 elanous 자기인지 기억에 기록(적정 시점=완료). fail-soft. */
 async function selfLogMissionRun(summary: string, text: string): Promise<void> {
   try { await injectSelfMemory({ tool: 'autopilot', summary, kind: 'autonomy', importance: 6, text }); }
   catch { /* fail-soft — 기억 주입 실패가 실행을 막지 않음 */ }
@@ -274,7 +274,7 @@ let respawnDone = false;
 //   거치고 idempotent(respawnDone). split 이면 락 해제 후 detached 재spawn·성공/실패 관측(mission-split-resume).
 const resumeSplitIfNeeded = (): void => {
   // ★ 런타임 리커버리 중단 장치(대표 2026-07-22) — 자율 재개/힐링(split respawn)을 **CLI signal 로 동적 차단**.
-  //   종전엔 respawn 이 signal 을 무시해 `monad autopilot signal <id> abort|pause` 후에도 재spawn 루프가 계속
+  //   종전엔 respawn 이 signal 을 무시해 `elanous autopilot signal <id> abort|pause` 후에도 재spawn 루프가 계속
   //   돌아 페이즈가 무한 확장됐다(라이브 실측). 여기서 미션 signal 이 abort|pause 면 respawn 을 스킵한다 —
   //   config(정적) 아니라 런타임 주입(CLI)으로 힐링 루프를 즉시 멈추는 장치. clear 로 재개. fail-soft(신호 못
   //   읽으면 종전대로 respawn·무회귀).
@@ -325,7 +325,7 @@ for (const sig of ['SIGTERM', 'SIGINT'] as const) {
 
 // ★ 자기인지 관측 store sink(RFC 3박자·P1·2026-07-14) — run-mission 은 별도 스폰 프로세스라
 //   데몬(nexus)의 StoreSink 를 상속하지 않는다. 등록 안 하면 셀프힐 관문(recordMissionObservation)
-//   의 debug.log 가 파일 트레일에만 남고 logs.db 에 안 닿아 `monad logs` 로 조회 불가(P1 무실효).
+//   의 debug.log 가 파일 트레일에만 남고 logs.db 에 안 닿아 `elanous logs` 로 조회 불가(P1 무실효).
 //   데몬과 같은 instanceName 으로 등록 → 통합 조회. fail-soft(실패해도 미션은 돈다).
 try {
   const [storeMod, dbgMod, cfgMod] = await Promise.all([
@@ -360,14 +360,14 @@ const execProviderLabel = cfg.llm.provider === 'auto'
   : `${cfg.llm.provider}:${cfg.llm.model || '?'}`;
 const session = ensureCliSession(cfg, undefined, { title: `mission:${missionId}` });
 const system =
-  '너는 monad 의 예약 미션 실행기다. 아래 미션 골을 지금 수행하고, 결과를 한국어로 ' +
+  '너는 elanous 의 예약 미션 실행기다. 아래 미션 골을 지금 수행하고, 결과를 한국어로 ' +
   '간결하고 실용적으로 정리해 보고하라. 최신 정보가 필요하면 도구를 사용하라. ' +
   '보고는 바로 대표에게 발송되니 인사말 없이 핵심부터.';
 
 // 2a) 멀티페이즈 우선 — 승인된 미션에 subagent 페이즈가 있으면 dependsOn 순서로 순회 집행
 //     (approve→멀티페이즈 executor 폐루프). 페이즈 없으면 아래 단일턴 폴백.
 const phaseSystem =
-  '너는 monad 의 멀티페이즈 미션 실행기다. 아래는 한 페이즈의 지시와 acceptance 다. ' +
+  '너는 elanous 의 멀티페이즈 미션 실행기다. 아래는 한 페이즈의 지시와 acceptance 다. ' +
   '지시를 지금 수행하고 acceptance 를 실제로 충족했는지 스스로 검증하라. 도구를 적극 사용하라. ' +
   '성공/실패와 핵심 근거를 한국어로 간결히 보고하라. ' +
   '★반드시 응답의 맨 마지막 줄에 판정을 정확히 이 형식으로 출력하라: ' +
@@ -376,7 +376,7 @@ const phaseSystem =
   '★범위 제한: 너는 스케줄 등록·기존 스크립트 실행·아티팩트/리포트 작성만 한다. ' +
   // ★ 크론 등록 가이드(대표 2026-07-13·walker fix) — walker 가 크론 등록 방법을 못 찾아 예산을
   //   소진하던 문제(price-guard 페이즈4). 정확한 도구·검증법을 명시.
-  '★크론/스케줄 등록은 반드시 `bun src/index.ts schedule create` 명령(또는 monad schedule 도구)으로 한다. ' +
+  '★크론/스케줄 등록은 반드시 `bun src/index.ts schedule create` 명령(또는 elanous schedule 도구)으로 한다. ' +
   'crontab 직접 편집·schedules.db 직접 write 는 금지다(대표 방침). 옵션이 헷갈리면 `bun src/index.ts schedule create --help` 로 확인하라. ' +
   '등록 직후 반드시 `bun src/index.ts schedule list` 로 그 잡이 실제 등록됐는지 눈으로 확인하고, 그 출력을 VERDICT PASS 근거로 보고에 인용하라. 등록을 확인하지 못하면 VERDICT FAIL 이다. ' +
   '코어 코드(src/·apps/·test/)는 절대 편집·생성하지 마라 — 필요해 보여도 하지 말고 그 사실을 보고에 남겨라. ' +
@@ -388,7 +388,7 @@ const phaseSystem =
   '★검증 스코프(대표 방침·touch-clean): 테스트·타입체크로 검증할 때 절대 전체 스위트(`bun test`)·전체 tsc 를 돌리지 마라. ' +
   '이 저장소 base 에는 네 변경과 무관한 기존 실패(약 80 tsc 에러·order-dependent 테스트 오염)가 있어 전체 검증은 구조적으로 통과 불가다. ' +
   '변경한 파일·디렉토리만 검증하라: 변경 디렉토리는 `bun test <디렉토리>`, 타입은 `bun run scripts/ci-typecheck-changed.ts`(변경된 .ts 만 검사). ' +
-  '스토어 경로(db·json)를 새로 추가/이동했으면 `bun run gate:isolation`(격리 하드코딩 ratchet 게이트)도 돌려라 — `join(homedir(), ".monad", …)` 직접 하드코딩은 test↔prod 격리를 깨므로 resolver(monadStateRoot/memoryDbPath/getMonadConfigDir)를 거쳐야 하고, 신규 하드코딩은 이 게이트가 차단한다. ' +
+  '스토어 경로(db·json)를 새로 추가/이동했으면 `bun run gate:isolation`(격리 하드코딩 ratchet 게이트)도 돌려라 — `join(homedir(), ".elanous", …)` 직접 하드코딩은 test↔prod 격리를 깨므로 resolver(elanousStateRoot/memoryDbPath/getElanousConfigDir)를 거쳐야 하고, 신규 하드코딩은 이 게이트가 차단한다. ' +
   'base 에 이미 있던 실패는 네 책임이 아니며 그것으로 VERDICT FAIL 하지 마라 — 네 변경이 "새로" 깨뜨린 것만 회귀다. ' +
   // ★ 조사 도구 가드(대표 지시 2026-07-12) — 조사/확인 페이즈가 동기 read 명령(git status·
   //   rev-parse·grep·파일읽기)에 비동기 PtyShell 을 골라 1회 폴링 후 출력이 아직 안 나오자
@@ -451,7 +451,7 @@ function recordPhaseWorkingMemory(
     // ★ premise 활용 관측(2026-07-21·제1원칙 point4) — wm-inject/premise-inject 는 "주입(도착)"만 남긴다.
     //   walker 가 그 전제를 실제 읽고 반영했는지의 증거 = 방출한 decisions/reusables + deviation(regrounded 등).
     //   이걸 mission.walker 로 각인해 "premise 도착 → walker 반응"의 짝을 조회 가능하게(도착↔활용 갭 종결).
-    //   ★조회: monad logs --category mission.walker (event=premise-applied). fail-soft.
+    //   ★조회: elanous logs --category mission.walker (event=premise-applied). fail-soft.
     try {
       debugLog.log('mission.walker', 'premise-applied', {
         missionId: mid, phaseId: task.id, kind: memKind,
@@ -520,7 +520,7 @@ const toExecPhaseStatus = (s: string): 'running' | 'done' | 'failed' | 'skipped'
   (s === 'done' || s === 'failed' || s === 'skipped' || s === 'blocked') ? s : 'done';
 // ★ S1 긍정 발산 스킵(execPhaseSkip opt-in·2026-07-19) — 이미 충족된 페이즈는 실행을 생략한다. 게이트는
 //   user-config(autopilot.execPhaseSkip·기본 OFF·비파괴). luna 판정기는 경량(effort low)·grounding 으로
-//   아크커버 판단. env override(MONAD_SATISFACTION_MODEL) 허용(디버그).
+//   아크커버 판단. env override(ELANOUS_SATISFACTION_MODEL) 허용(디버그).
 let execPhaseSkipEnabled = false;
 try { const ap = getUserConfig().raw?.autopilot as { execPhaseSkip?: unknown } | undefined; execPhaseSkipEnabled = ap?.execPhaseSkip === true; } catch { /* OFF */ }
 // ★ P4 셀프힐 자동집행 게이트(opt-in·기본 OFF·비파괴) — ON 이면 GoalBlocker 유형화로 실패 페이즈 자동힐
@@ -601,7 +601,7 @@ try {
 } catch { /* fail-soft — 커서 소비 실패는 정상 실행(재개 없음) */ }
 const satisfactionClassify = async (p: string): Promise<string> => {
   const { streamLLM } = await import('../src/llm.js');
-  return streamLLM([{ role: 'user', content: p }], () => {}, { model: process.env.MONAD_SATISFACTION_MODEL || 'gpt-5.6-luna', reasoningEffort: 'low' });
+  return streamLLM([{ role: 'user', content: p }], () => {}, { model: process.env.ELANOUS_SATISFACTION_MODEL || 'gpt-5.6-luna', reasoningEffort: 'low' });
 };
 // ★ walker 샌드박스 격리(opt-in·autopilot.missionWorktree·기본 OFF·대표 2026-07-21) — walker(operational)
 //   페이즈 도구가 main 트리에 써서 오염([feedback_walker_phase_main_tree_pollution]). 미션 worktree 를 만들어
@@ -778,7 +778,7 @@ const mp = await runMultiphaseMission(
               { prDiff, phaseIntent: task.title, ...(acceptance ? { acceptance } : {}), ...(wm ? { workingMemory: wm } : {}) },
               async (prompt) => {
                 const { streamLLM } = await import('../src/llm.js');
-                return streamLLM([{ role: 'user', content: prompt }], () => {}, { model: process.env.MONAD_PR_REVIEW_MODEL || 'gpt-5.6-sol', reasoningEffort: 'medium' });
+                return streamLLM([{ role: 'user', content: prompt }], () => {}, { model: process.env.ELANOUS_PR_REVIEW_MODEL || 'gpt-5.6-sol', reasoningEffort: 'medium' });
               },
             );
             debug.log('mission.review', 'reviewed', { missionId, phaseId: task.id, prUrl: res.prUrl, verdict: review.verdict, mustFix: review.mustFix.length, shouldFix: review.shouldFix.length });
@@ -817,7 +817,7 @@ const mp = await runMultiphaseMission(
             const outcome = decideReviewOutcome({
               review, priorFailFindings: priorFails.at(-1)?.findings ?? [], priorFailCount: priorFails.length,
               prevCritiqueVerdict: res.critiqueVerdict, prevCritiqueFindings: res.critiqueFindings,
-              ...(Number(process.env.MONAD_REVIEW_MAX_ROUNDS) > 0 ? { maxRounds: Number(process.env.MONAD_REVIEW_MAX_ROUNDS) } : {}),
+              ...(Number(process.env.ELANOUS_REVIEW_MAX_ROUNDS) > 0 ? { maxRounds: Number(process.env.ELANOUS_REVIEW_MAX_ROUNDS) } : {}),
             });
             // ★ patch 적용 — 결정 반영이 최우선·무조건(dogfood #4782/#4784: 관측/import 예외가 못 끊게·부수효과 前).
             if (outcome.patch.clearCritique) { res.critiqueVerdict = undefined; res.critiqueFindings = undefined; }
@@ -909,7 +909,7 @@ const mp = await runMultiphaseMission(
     const wmBlock = (() => { try { return formatWorkingMemoryForPrompt(wmEntries, { viewerPhaseId: task.id }); } catch { return ''; } })();
     // ★ 관측 보강(대표 2026-07-21·제1원칙) — walker 경로 build-context 주입 관측 비대칭 해소. se-isolated 는
     //   mission-se-bridge.ts:242 가 wm-inject 를 찍는데 walker 는 무관측이라 "플랜 컨텍스트(skill/code 팩트)가
-    //   구현에 전달됐나"를 logs 로 볼 수 없었다. 동형 관측을 심어 경로 무관 대칭. ★조회: monad logs --category
+    //   구현에 전달됐나"를 logs 로 볼 수 없었다. 동형 관측을 심어 경로 무관 대칭. ★조회: elanous logs --category
     //   mission.exec.context. (구조: 장차 Historian read seam 으로 방출+관측을 수렴할 자리 — 대표 구조검토.)
     try {
       const buildSeed = wmEntries.find((e) => e.provenance === 'build');
@@ -956,7 +956,7 @@ const mp = await runMultiphaseMission(
     // ★ ②RFC 설계 주입(근본·2026-07-22·핸드오프 3근본 #2) — RFC-preset 미션에서 walker 가 RFC 설계
     //   본문을 못 보고 즉흥 확장하던 근본 해소. rfcToProposedTasks 는 페이즈에 제목+아크명+경로만 넣어
     //   walker 는 경계·처분·무회귀를 몰랐다. rfc.md 본문을 계약 블록으로 직접 주입(경로만 주고 Read 기대
-    //   하지 않음). 비-RFC 미션은 ''(무영향). ★조회: monad logs --category mission.exec.context (event=rfc-inject).
+    //   하지 않음). 비-RFC 미션은 ''(무영향). ★조회: elanous logs --category mission.exec.context (event=rfc-inject).
     const rfcBlock = (() => { try { return formatRfcDesignForPrompt(missionId); } catch { return ''; } })();
     // ★ 근본 B — 제거-전 liveness 게이트(대표 설계·2026-07-22) — RFC 가 "제거" 지시한 심볼이 실제 live(운영
     //   call-site 존재)면 결정론 grep 으로 잡아 premise 교정 주입(제거 말고 불일치 보고). 저작 아닌 실행 시점
@@ -967,7 +967,7 @@ const mp = await runMultiphaseMission(
     // ★ premise 합성 관측(2026-07-21·제1원칙 point4) — 프롬프트에 실제 주입된 전제(premise) 블록 구성.
     //   wm-inject(도착)만으론 arcContext(C3 통합의도)/arcHandoff(C2)/coordCtx(C5)/wm 이 진짜 프롬프트에
     //   들어갔는지 불명. 각 블록 주입여부+총 promptChars 를 남겨 "walker 에게 전제 N종 실제 주입됨"을 조회.
-    //   ★조회: monad logs --category mission.exec.context (event=premise-inject).
+    //   ★조회: elanous logs --category mission.exec.context (event=premise-inject).
     try {
       const { debug } = await import('../src/debug/log.js');
       debug.log('mission.exec.context', 'premise-inject', {
@@ -986,9 +986,9 @@ const mp = await runMultiphaseMission(
     //   코딩 페이즈는 SE 격리(별도 예산)라 이 배열 영향 없음.
     //   ★대폭 상향(대표 2026-07-13): 급락·연관시장 심층 조사 같은 대형 조사가 128k 로도 산출물
     //   저장·검증까지 못 가 budget-exhausted(P2 실패 실측). 128k→256k→512k 로 4배 상향해 심층
-    //   조사가 완주. MONAD_WALKER_BUDGET(쉼표 구분·예 "200000,400000,800000")로 override 가능.
+    //   조사가 완주. ELANOUS_WALKER_BUDGET(쉼표 구분·예 "200000,400000,800000")로 override 가능.
     // ★ config-first 예산(대표 2026-07-14) — user-config(autopilot.budget.walker)→
-    //   env(MONAD_WALKER_BUDGET)→기본[128k·256k·512k]. SE 코딩 예산과 정책 통일(mission-budget.ts).
+    //   env(ELANOUS_WALKER_BUDGET)→기본[128k·256k·512k]. SE 코딩 예산과 정책 통일(mission-budget.ts).
     const budgets = resolveWalkerBudget();
     // ★ 적응형 재시도 triage(대표 2026-07-13) — 1번째 시도는 기계적, 2번째 시도부터 매 실패를 LLM 이
     //   관찰해 근본 갈림길을 분류한다. "3번째를 단순 예산 계단 상향"으로 반복하면 규율 실패(장황->
@@ -997,7 +997,7 @@ const mp = await runMultiphaseMission(
     const requiredArtifacts = extractRequiredArtifacts(`${basePrompt}\n${acceptanceText}`);
     const triageClassify = async (p: string): Promise<string> => {
       const { streamLLM } = await import('../src/llm.js');
-      return streamLLM([{ role: 'user', content: p }], () => {}, { model: process.env.MONAD_RETRY_TRIAGE_MODEL || process.env.MONAD_DECOMPOSE_MODEL || 'gpt-5.6-sol', reasoningEffort: 'medium' });
+      return streamLLM([{ role: 'user', content: p }], () => {}, { model: process.env.ELANOUS_RETRY_TRIAGE_MODEL || process.env.ELANOUS_DECOMPOSE_MODEL || 'gpt-5.6-sol', reasoningEffort: 'medium' });
     };
     const attemptsEv: RetryAttemptEvidence[] = [];
     const triageDecisions: RetryPath[] = [];
@@ -1089,7 +1089,7 @@ const mp = await runMultiphaseMission(
       // ★ goal-loop 관측(2026-07-21·제1원칙 point3) — 재시도 회차·실패 사유·진전 여부를 mission.walker 로.
       //   종전엔 실패가 run.log([multiphase] console.log)에만 있어 "몇 번째 재시도·왜 실패·진전 있었나"를
       //   logs.db 로 조회 불가(제1원칙 위반). progressed = 산출물 생성 or 실제 도구조사 흔적(hang/공회전 판별).
-      //   ★조회: monad logs --category mission.walker (event=goal-loop). fail-soft.
+      //   ★조회: elanous logs --category mission.walker (event=goal-loop). fail-soft.
       try {
         const artifactsPresent = attemptArtifacts.filter((a: { exists: boolean }) => a.exists).length;
         const { debug } = await import('../src/debug/log.js');
@@ -1207,7 +1207,7 @@ const mp = await runMultiphaseMission(
     } } : {}),
     // ★ 페이즈별 실시간 알림(대표 2026-07-12) — 각 페이즈 종결 즉시 발송. SE built PR 있으면
     //   "📖 PR #N 리뷰" URL 버튼(탭 → GitHub PR 바로 열림·클릭 리뷰). fail-soft.
-    // P7 — missionId 스레딩: 실패 카드의 📄 로그 안내(monad ops mission-log)가 미션을 특정하도록.
+    // P7 — missionId 스레딩: 실패 카드의 📄 로그 안내(elanous ops mission-log)가 미션을 특정하도록.
     onPhaseStart: (e) => {
       // ★ 신호 누수 차단(2026-07-23·리뷰 반영) — 무조건 clear(레이스: 직전 도착 정상 신호 삭제) 대신 소비자
       //   (consumeMissionSignal)가 phaseId 대조+TTL 로 다른 페이즈용/만료 신호를 소비 시점에 정리한다. 새 페이즈는
@@ -1226,7 +1226,7 @@ const mp = await runMultiphaseMission(
         const state = assembleMissionState(missionId);
         const step = coordinatorStep({ state, ...(e.total !== undefined ? { totalPhases: e.total } : {}) });
         // ★ 제1원칙 관측 — 중앙 State 가 이 스텝을 통과함을 mission.coordinator.step 으로(자기인지). ledger
-        //   판정은 mission.coordinator.ledger 로. 둘 다 `monad logs --category mission.coordinator` 로 회상.
+        //   판정은 mission.coordinator.ledger 로. 둘 다 `elanous logs --category mission.coordinator` 로 회상.
         for (const o of step.observations) observeCoordinator(o.event, missionId, o.data);
         logProgressLedger(missionId, step.ledger);
         persistMissionState(missionId, applyChannelUpdates(state, step.updates));
@@ -1298,8 +1298,8 @@ if (mp.multiphase) {
   console.log(`[run-mission] 멀티페이즈 완료 · sent=${ok} · done=${mp.done} failed=${mp.failed}`);
 
   // ★ 자기 관측성 영속(대표 2026-07-13·PLAN O1/O2) — 각 페이즈 결과를 진단으로 합성해
-  //   ① ops_events(task status_change·monad ops 가 읽음) ② task.notes(왜 실패했나 영속)에
-  //   남긴다. 그간 실패 이유가 휘발성 /tmp 로그에만 있어 monad 자신이 못 읽던 갭 해소. fail-soft.
+  //   ① ops_events(task status_change·elanous ops 가 읽음) ② task.notes(왜 실패했나 영속)에
+  //   남긴다. 그간 실패 이유가 휘발성 /tmp 로그에만 있어 elanous 자신이 못 읽던 갭 해소. fail-soft.
   try {
     const diagStore = new TaskStore();
     try {
@@ -1346,7 +1346,7 @@ if (mp.multiphase) {
             } else {
               // ★ ④ 신규구현형 인지(관측 보강·대표 2026-07-21·split 남발 ④) — reusables 경계 0 이라 reuse-existence
               //   교정이 원천 무력한 페이즈(신규 코드 작성형). 이 경로가 split 반복하면 수렴가드→reshape(②)가 잡는다.
-              //   "무엇이 reuse 교정에 안 잡히는가"를 표면화(관측 3박자) — 조회 monad logs --category mission.selfheal.reuse-skip.
+              //   "무엇이 reuse 교정에 안 잡히는가"를 표면화(관측 3박자) — 조회 elanous logs --category mission.selfheal.reuse-skip.
               try { const { debug } = await import('../src/debug/log.js'); debug.log('mission.selfheal.reuse-skip', 'new-impl-phase', { missionId, phaseId: p.phaseId, reason: '신규구현형(reusables 경계 0) — reuse 교정 무력·수렴가드/reshape 위임' }); } catch { /* fail-soft */ }
             }
           } catch { /* fail-soft — 탐색 실패면 원 진단(split) 유지 */ }
@@ -1390,7 +1390,7 @@ if (mp.multiphase) {
               const priorHeals = (taskRec?.notes ?? []).filter((n) => n.includes('권장 힐') || n.startsWith('[DIAGNOSIS')).slice(-4);
               const resolve = async (prompt: string): Promise<string> => {
                 const { streamLLM } = await import('../src/llm.js');
-                return streamLLM([{ role: 'user', content: prompt }], () => {}, { model: process.env.MONAD_HEAL_TRIAGE_MODEL || 'gpt-5.6-sol', reasoningEffort: 'medium' });
+                return streamLLM([{ role: 'user', content: prompt }], () => {}, { model: process.env.ELANOUS_HEAL_TRIAGE_MODEL || 'gpt-5.6-sol', reasoningEffort: 'medium' });
               };
               const decision = await decideHealTriage({
                 phaseTitle: p.title, phasePrompt, acceptanceCriteria: acceptance,
@@ -1606,7 +1606,7 @@ if (mp.multiphase) {
             }
           } catch { /* fail-soft */ }
         }
-        // ① ops 이벤트 — task 전이(monad ops timeline --entity-type task 가 노출).
+        // ① ops 이벤트 — task 전이(elanous ops timeline --entity-type task 가 노출).
         recordOpsEventSafe({
           entityType: 'task', entityId: p.phaseId, event: 'status_change',
           fromState: 'running', toState: p.status, actor: 'dispatcher',
@@ -1737,7 +1737,7 @@ if (mp.multiphase) {
   // ★ 멀티페이즈=SE 격리(대표 2026-07-13) — 격리 worktree 에서만 구현하므로 메인트리 변경은
   //   미션 산출이 아니라 외부 동시작업이다. 가드 스킵(사용자/다른 세션 작업 파괴 금지).
   guardCoreCodeEdits(beforeDirty, { multiphase: true });
-  // 자율 실행 self-log(적정 시점=완료) — monad 가 "내가 이 미션을 실행했다"를 자기인지 기억에 기록.
+  // 자율 실행 self-log(적정 시점=완료) — elanous 가 "내가 이 미션을 실행했다"를 자기인지 기억에 기록.
   await selfLogMissionRun(
     `자율 미션 실행: ${goal.slice(0, 80)} — 페이즈 ${mp.done}/${mp.executed} 완료${mp.failed ? `·${mp.failed} 실패` : ''}`,
     `골: ${goal}\n${mp.phases.map((p, i) => `${i + 1}. [${p.status}] ${p.title}`).join('\n')}`,
@@ -1797,7 +1797,7 @@ if (mp.multiphase) {
       const transientFailedCount = failedPhases.filter((p) => /transient|일시적|타임아웃|timeout|rate.?limit|연결.*실패/i.test(p.summary ?? '')).length;
       const escalateFailedCount = failedPhases.filter((p) => /escalate|provenance|보안|모순|security|prompt.?inject|문서.*명령/i.test(p.summary ?? '')).length;
       const res = decideStuckResolution({ doneCount: doneN, failedCount: failedN, totalCount: total, remainingCount: remainN, transientFailedCount, escalateFailedCount });
-      // 제1원칙 관측 — 종결 결정을 mission.exec.stuck-resolution 으로 각인(자기인지·`monad logs`).
+      // 제1원칙 관측 — 종결 결정을 mission.exec.stuck-resolution 으로 각인(자기인지·`elanous logs`).
       try { const { debug } = await import('../src/debug/log.js'); debug.log('mission.exec.stuck-resolution', res.action, { missionId, done: doneN, failed: failedN, total, remaining: remainN, transientFailedCount, escalateFailedCount, reason: res.reason.slice(0, 200) }); } catch { /* fail-soft */ }
       observeCoordinator('stuck-resolution', missionId, { action: res.action, done: doneN, failed: failedN, total });
       if (res.terminalStatus) {
@@ -1885,7 +1885,7 @@ try {
   autoTagNewSchedules(missionId, beforeScheduleIds); // 턴이 만든 스케줄 → 미션 계보 자동 태깅.
   // ★ task 단일턴 미션은 메인트리에서 스크립트 실행 → 코어 편집 시 되돌림(백업·pause 플래그 존중).
   const g = guardCoreCodeEdits(beforeDirty, { multiphase: false });
-  if (g.reverted.length) sendOutbound(`⚠️ 실행 중 범위 밖 코어 코드 ${g.reverted.length}건 변경 감지 → 되돌림(백업됨·복구 가능):\n${g.reverted.map((f) => `- ${f}`).join('\n')}\n백업: ${g.backupDir}\n※ 사용자 작업이었다면 백업에서 복원하고, 개발 중엔 \`touch ~/.monad/guard-pause\` 로 가드를 끄세요.\n· ${missionId}`, 'alert', missionOrigin);
+  if (g.reverted.length) sendOutbound(`⚠️ 실행 중 범위 밖 코어 코드 ${g.reverted.length}건 변경 감지 → 되돌림(백업됨·복구 가능):\n${g.reverted.map((f) => `- ${f}`).join('\n')}\n백업: ${g.backupDir}\n※ 사용자 작업이었다면 백업에서 복원하고, 개발 중엔 \`touch ~/.elanous/guard-pause\` 로 가드를 끄세요.\n· ${missionId}`, 'alert', missionOrigin);
   await selfLogMissionRun(`자율 미션 실행: ${goal.slice(0, 80)}`, `골: ${goal}\n\n${text.slice(0, 400)}`);
 } catch (e) {
   const err = e instanceof Error ? e.message : String(e);

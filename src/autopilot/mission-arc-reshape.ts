@@ -133,7 +133,7 @@ export function defaultArcReshapeExecutors(): ArcReshapeExecutors {
 
 export async function defaultArcReshapeResolve(input: ArcReshapeInput): Promise<RawArcReshape> {
   const { streamLLM } = await import('../llm.js');
-  const out = await streamLLM([{ role: 'user', content: arcReshapePrompt(input) }], () => {}, { model: process.env.MONAD_ARC_RESHAPE_MODEL || tierModel('best'), reasoningEffort: 'high' });
+  const out = await streamLLM([{ role: 'user', content: arcReshapePrompt(input) }], () => {}, { model: process.env.ELANOUS_ARC_RESHAPE_MODEL || tierModel('best'), reasoningEffort: 'high' });
   const start = out.indexOf('{'); const end = out.lastIndexOf('}');
   if (start < 0 || end < start) return {};
   try { return JSON.parse(out.slice(start, end + 1)) as RawArcReshape; } catch { return {}; }

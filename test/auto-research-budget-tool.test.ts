@@ -15,7 +15,7 @@ import { resolveGoalPaths } from '../src/auto-research/goal-paths';
 async function makeGoal(slug: string, budget?: { tokens?: number; usd?: number; weeklyUsd?: number; wallclockMs?: number }) {
   const home = mkdtempSync(join(tmpdir(), 'budget-tool-'));
   const vault = discoverObsidianVault({
-    env: { MONAD_OBSIDIAN_VAULT: join(home, 'vault') },
+    env: { ELANOUS_OBSIDIAN_VAULT: join(home, 'vault') },
     cwd: home,
   });
   const initInput: any = { action: 'init', goal_slug: slug, mission: 'test' };

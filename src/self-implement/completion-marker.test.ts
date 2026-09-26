@@ -14,7 +14,7 @@ import {
 
 describe('언급은 선언이 아니다 (오탐 방향 · 자기 참조 함정)', () => {
   it('자기 소스 한 줄이 화면에 떠도 완료가 아니다', () => {
-    // 실제 재현 형태 — 자식이 monad 소스를 Read/Grep 해 화면에 띄운 줄.
+    // 실제 재현 형태 — 자식이 elanous 소스를 Read/Grep 해 화면에 띄운 줄.
     const screen = [
       '  ⏺ Grep({"pattern":"GOAL-COMPLETE","path":"/w/src/self-implement"})',
       "     ↳ 550: const markerLine = findCompletionMarkerLine(stripAnsi(snap));",

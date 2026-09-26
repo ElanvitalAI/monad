@@ -28,7 +28,7 @@ import { HARNESS_SPACE_ENV, HARNESS_SPACE_ID_ENV, HARNESS_BOUNDARY_ENV, HARNESS_
 import { applyEdit } from '../code-edit/apply.js';
 import { ReadFileStateStore } from '../code-edit/read-state.js';
 import { EditErrorCode } from '../code-edit/types.js';
-import { formatBoundaryProgressLine, formatFrameStallProgressLine, formatSupervisionProgressLine, runHeadlessGoalLoopPty, watchHarnessBoundaryRequests } from '../self-implement/headless-monad-driver.js';
+import { formatBoundaryProgressLine, formatFrameStallProgressLine, formatSupervisionProgressLine, runHeadlessGoalLoopPty, watchHarnessBoundaryRequests } from '../self-implement/headless-elanous-driver.js';
 import { decideBoundaryApproval, parseBoundaryApprovalRequest, UNKNOWN_OBSERVED_RAW_SHELL_METACHARACTERS } from '../self-implement/auto-intervene.js';
 import { spawnSync } from 'node:child_process';
 import { EventEmitter } from 'node:events';
@@ -202,7 +202,7 @@ describe('harness boundary request mailbox', () => {
 
   it('확정된 경계 밖 경로 거부를 부모 지정 JSONL에 한 줄로 append하고 거부문은 보존한다', () => {
     const target = join(outside, 'secret.ts');
-    env.MONAD_RUN_ID = 'run-boundary-reject';
+    env.ELANOUS_RUN_ID = 'run-boundary-reject';
     const rejection = harnessMainTreeReject(target, env, boundary, 'test');
     const lines = readFileSync(requestPath, 'utf8').trim().split('\n');
     const request = JSON.parse(lines[0]!) as Record<string, unknown>;
@@ -224,7 +224,7 @@ describe('harness boundary request mailbox', () => {
       const noRun = log.mock.calls.find(([category, event]) => category === 'harness.boundary' && event === 'main-tree-reject')?.[2] as Record<string, unknown>;
       expect(noRun).toMatchObject({ runId: null, runIdState: 'none' });
       expect(noRun.runId).not.toBe('');
-      env.MONAD_RUN_ID = '///';
+      env.ELANOUS_RUN_ID = '///';
       expect(harnessMainTreeReject(target, env, boundary)).toContain('격리 경계 밖');
       const unavailable = log.mock.calls.filter(([category, event]) => category === 'harness.boundary' && event === 'main-tree-reject').at(-1)?.[2] as Record<string, unknown>;
       expect(unavailable).toMatchObject({ runId: null, runIdState: 'unavailable' });
@@ -745,7 +745,7 @@ describe('applyEdit × 격리 경계 (프로덕션 통합)', () => {
   });
 });
 
-// ── must-fix(리뷰 4R): 실제 스포너(headless-monad-driver)가 만든 env 가 SPACE+BOUNDARY 를 함께 싣는지 ──
+// ── must-fix(리뷰 4R): 실제 스포너(headless-elanous-driver)가 만든 env 가 SPACE+BOUNDARY 를 함께 싣는지 ──
 //   수동 주입이 아닌 runHeadlessGoalLoopPty 의 실 env 구성으로 검증(space 없이 부팅=무보호 배선갭 차단).
 describe('runHeadlessGoalLoopPty env 구성 (스포너 배선)', () => {
   it('자식 mailbox의 완결 줄을 부모 관측에 원문 그대로 한 번만 남긴다', async () => {
@@ -1480,7 +1480,7 @@ describe('runHeadlessGoalLoopPty env 구성 (스포너 배선)', () => {
     }
   });
 
-  it('spawn env 에 MONAD_HARNESS_SPACE 와 MONAD_HARNESS_BOUNDARY(=cwd) 를 함께 싣는다', async () => {
+  it('spawn env 에 ELANOUS_HARNESS_SPACE 와 ELANOUS_HARNESS_BOUNDARY(=cwd) 를 함께 싣는다', async () => {
     const tmp = realpathSync(mkdtempSync(join(tmpdir(), 'hwb-spawn-')));
     let captured: Record<string, string> = {};
     const fakeSpawn = ((o: { env: Record<string, string> }) => {
@@ -1808,7 +1808,7 @@ describe('harnessCommandWriteReject × 런타임 인터프리터 (자식이 자�
   it('경계 안에서 도는 검증 명령은 통과한다', () => {
     for (const cmd of [
       'bun test src/harness/harness-write-boundary.test.ts',
-      'bun bin/monad.mjs self typecheck',
+      'bun bin/elanous.mjs self typecheck',
       'bun run test:deterministic',
       'bun test',
       'bun test --coverage',
@@ -1830,7 +1830,7 @@ describe('harnessCommandWriteReject × 런타임 인터프리터 (자식이 자�
   it('경계 밖 cwd 에서 도는 인터프리터는 거부된다 (검증 명령 전종)', () => {
     for (const cmd of [
       'bun test x.test.ts',
-      'bun bin/monad.mjs self typecheck',
+      'bun bin/elanous.mjs self typecheck',
       'bun run test:deterministic',
       'node script.js',
       'node --version',
@@ -1848,30 +1848,30 @@ describe('harnessCommandWriteReject × 런타임 인터프리터 (자식이 자�
   //   그 문장이 아니다. ⇒ **원칙을 물고, 새로 준 능력(허용 목록을 «이름으로»)을 같이 문다.**
   //   📏 근거: 이 거부가 7일 창에 1,818건인데 *"허용된 명령 하나만"* 이라 해 놓고 그 목록이
   //     자식에게 «보이지 않았다»(목록은 이 소스 안에만 있었다).
-  it('검증 안내는 자식 작업 트리의 monad 엔트리 존재에만 의존하고 거부·경계·보편 예시는 보존한다', () => {
+  it('검증 안내는 자식 작업 트리의 elanous 엔트리 존재에만 의존하고 거부·경계·보편 예시는 보존한다', () => {
     const command = 'bun test src/harness/harness-write-boundary.test.ts & bun run check';
     const withoutEntrypoint = reject(command);
     expect(withoutEntrypoint).toContain('셸 합성 문법 토큰 &');
     expect(withoutEntrypoint).toContain(`격리 worktree(${boundary}) 내부다.`);
     expect(withoutEntrypoint).toContain('bun test <파일> · bun run <스크립트>');
-    expect(withoutEntrypoint).not.toContain('bun bin/monad.mjs self typecheck');
+    expect(withoutEntrypoint).not.toContain('bun bin/elanous.mjs self typecheck');
 
     mkdirSync(join(boundary, 'bin'));
-    writeFileSync(join(boundary, 'bin', 'monad.mjs'), '');
+    writeFileSync(join(boundary, 'bin', 'elanous.mjs'), '');
     const withEntrypoint = reject(command);
     expect(withEntrypoint).toContain('셸 합성 문법 토큰 &');
     expect(withEntrypoint).toContain(`격리 worktree(${boundary}) 내부다.`);
-    expect(withEntrypoint).toContain('bun test <파일> · bun run <스크립트> · bun bin/monad.mjs self typecheck');
+    expect(withEntrypoint).toContain('bun test <파일> · bun run <스크립트> · bun bin/elanous.mjs self typecheck');
   });
 
-  it('엔트리 확인 파일시스템 오류도 거부·보편 예시를 유지하고 monad 예시는 생략한다', () => {
+  it('엔트리 확인 파일시스템 오류도 거부·보편 예시를 유지하고 elanous 예시는 생략한다', () => {
     const exists = spyOn(fs, 'existsSync').mockImplementation(() => { throw new Error('entry check unavailable'); });
     try {
       const rejection = reject('bun test src/harness/harness-write-boundary.test.ts & bun run check');
       expect(rejection).toContain('셸 합성 문법 토큰 &');
       expect(rejection).toContain(`격리 worktree(${boundary}) 내부다.`);
       expect(rejection).toContain('bun test <파일> · bun run <스크립트>');
-      expect(rejection).not.toContain('bun bin/monad.mjs self typecheck');
+      expect(rejection).not.toContain('bun bin/elanous.mjs self typecheck');
     } finally {
       exists.mockRestore();
     }
@@ -2014,10 +2014,10 @@ describe('harnessCommandWriteReject × 런타임 인터프리터 (자식이 자�
   it('인라인 코드 거부는 «파일로 써서 bun 으로 실행»하는 길을 주고, 그 길은 실제로 판정을 통과한다', () => {
     const inline = reject('bun -e "console.log(1)"');
     expect(inline).toContain('런타임 해석기의 인라인 코드');
-    expect(inline).toContain('.monad-test/scratch/<이름>.ts');
+    expect(inline).toContain('.elanous-test/scratch/<이름>.ts');
     expect(inline).toContain('bun <그 파일>');
     // 안내한 길이 정말 열려 있는지 — 같은 판정기로 누른다.
-    const followed = inspectHarnessCommandWriteTargets(`bun ${join(boundary, '.monad-test', 'scratch', 'probe.ts')}`, boundary);
+    const followed = inspectHarnessCommandWriteTargets(`bun ${join(boundary, '.elanous-test', 'scratch', 'probe.ts')}`, boundary);
     expect(followed.known).toBe(true);
   });
 

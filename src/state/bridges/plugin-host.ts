@@ -33,9 +33,9 @@
 import { debug } from '../../debug/log.js';
 import type { PluginHost } from '../../plugins/core/host.js';
 import { installPluginSlice, uninstallPluginSlice } from '../store.js';
-import type { MonadState, Store } from '../types.js';
+import type { ElanousState, Store } from '../types.js';
 
-/** Attach plugin-lifecycle sync between a PluginHost and a MonadState
+/** Attach plugin-lifecycle sync between a PluginHost and a ElanousState
  *  store's `plugins` slice.
  *
  *  Semantics:
@@ -56,7 +56,7 @@ import type { MonadState, Store } from '../types.js';
  *  inside their ctx — their slice is already isolated under
  *  `plugins[pluginId]` per P1's installPluginSlice contract. */
 export function bridgePluginHostToStore(
-  store: Store<MonadState>,
+  store: Store<ElanousState>,
   pluginHost: PluginHost,
 ): () => void {
   // Capture originals via the prototype chain so `this`-binding is

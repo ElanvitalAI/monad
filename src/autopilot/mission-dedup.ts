@@ -42,8 +42,8 @@ export type CompareOverlap = (
   goal: string, catalog: CatalogItem[],
 ) => Promise<Array<{ id: string; overlap: string; consolidation: string }>>;
 
-const DMODEL = () => process.env.MONAD_DECOMPOSE_MODEL || tierModel('better');
-const DEFFORT = () => (process.env.MONAD_DECOMPOSE_EFFORT || 'high') as 'minimal'|'low'|'medium'|'high'|'xhigh'|'max';
+const DMODEL = () => process.env.ELANOUS_DECOMPOSE_MODEL || tierModel('better');
+const DEFFORT = () => (process.env.ELANOUS_DECOMPOSE_EFFORT || 'high') as 'minimal'|'low'|'medium'|'high'|'xhigh'|'max';
 
 async function defaultCompare(goal: string, catalog: CatalogItem[]): Promise<Array<{ id: string; overlap: string; consolidation: string }>> {
   const { streamLLM, resolveDefaultProvider } = await import('../llm.js');

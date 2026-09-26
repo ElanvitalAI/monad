@@ -43,7 +43,7 @@ export function setHealthIdentityResolversForTesting(
  */
 function captureDaemonSha(): string {
   // ⛔ 2026-09-24 — 종전엔 `process.cwd()` 의 HEAD 를 읽었다. 설치본 데몬은 WorkingDirectory 가 pilot 트리라
-  //   «데몬 코드»가 아니라 «작업 트리»의 커밋을 말했다(설치본 168eb32 ↔ 보고 7368f6a). `monad --version` 과 같은 해석기로.
+  //   «데몬 코드»가 아니라 «작업 트리»의 커밋을 말했다(설치본 168eb32 ↔ 보고 7368f6a). `elanous --version` 과 같은 해석기로.
   try {
     const revision = codeRevision();
     return revision ? revision.slice(0, 9) : UNKNOWN;

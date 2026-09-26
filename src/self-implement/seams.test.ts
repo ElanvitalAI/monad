@@ -6,7 +6,7 @@ import { EventEmitter } from 'node:events';
 import { chmodSync, mkdirSync, mkdtempSync, readdirSync, rmSync, rmdirSync, writeFileSync, readFileSync, existsSync, realpathSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
-import { worktreeHasChanges, preservationHasChanges, changedFiles, commitTitles, commitWorktree, unstageMonadRuntimeArtifacts, featurePrompt, defaultSeams, changedFileTypecheck, gateChangedFiles, gateWorktreeBehindMain, resolveBootFailureReason, toReviewIntentInput, worktreeDiff, reviewScopeDiff, REVIEW_SCOPE_UNMEASURABLE, type DefaultSeamsOptions } from './seams.js';
+import { worktreeHasChanges, preservationHasChanges, changedFiles, commitTitles, commitWorktree, unstageElanousRuntimeArtifacts, featurePrompt, defaultSeams, changedFileTypecheck, gateChangedFiles, gateWorktreeBehindMain, resolveBootFailureReason, toReviewIntentInput, worktreeDiff, reviewScopeDiff, REVIEW_SCOPE_UNMEASURABLE, type DefaultSeamsOptions } from './seams.js';
 import type { PrManager } from '../autopilot/pr-manager.js';
 import type { SelfImplementSeams } from './orchestrator.js';
 import { runSelfImplement } from './orchestrator.js';
@@ -50,7 +50,7 @@ describe('launchDevGoalFileDetached', () => {
   test('target을 --base 바로 뒤의 인접 argv 두 칸으로 전달한다', async () => {
     const received: SpawnObservation[] = [];
     await launchDevGoalFileDetached({ goalFile: 'g.md', base: 'main', target: '/tmp/x' }, fakeSpawn(received));
-    expect(received.map(({ args }) => args)).toEqual([['bin/monad.mjs', 'dev', '--file', 'g.md', '--base', 'main', '--target', '/tmp/x']]);
+    expect(received.map(({ args }) => args)).toEqual([['bin/elanous.mjs', 'dev', '--file', 'g.md', '--base', 'main', '--target', '/tmp/x']]);
   });
 
   function expectDetachedLaunch(observation: SpawnObservation, args: string[]): void {
@@ -65,7 +65,7 @@ describe('launchDevGoalFileDetached', () => {
     await launchDevGoalFileDetached({ goalFile: 'tmp/nonexistent-zzz.md', base: 'main', correlation: 'request-zzz' }, fakeSpawn(received));
     expect(received).toHaveLength(1);
     const argv = received[0]!.args;
-    expectDetachedLaunch(received[0]!, ['bin/monad.mjs', 'dev', '--file', 'tmp/nonexistent-zzz.md', '--base', 'main', '--correlation', 'request-zzz']);
+    expectDetachedLaunch(received[0]!, ['bin/elanous.mjs', 'dev', '--file', 'tmp/nonexistent-zzz.md', '--base', 'main', '--correlation', 'request-zzz']);
 
     const result = spawnSync(process.execPath, [argv[0]!, '--test', ...argv.slice(1)], {
       cwd: resolve(import.meta.dir, '../..'), encoding: 'utf8', timeout: 30_000,
@@ -629,29 +629,29 @@ describe('changedFiles / commitWorktree — 버그A(harness execute changes:[] �
     expect(changedFiles(repo)).toEqual([]);
   });
 
-  test('★ 사후 조건 — «새로 스테이징된» monad 런타임 산출물만 다시 내린다', () => {
-    // ⛔ 사전 제외만으로는 못 막는다 — `.monad-child-liveness.hb` 는 ***5초마다*** 쓰이므로
+  test('★ 사후 조건 — «새로 스테이징된» elanous 런타임 산출물만 다시 내린다', () => {
+    // ⛔ 사전 제외만으로는 못 막는다 — `.elanous-child-liveness.hb` 는 ***5초마다*** 쓰이므로
     //    `ls-files` 와 `add -A` «사이»에 생기면 그대로 담힌다.
     //    📏 2026-09-21: 그 경합 때문에 #19300·#19302 를 넣고도 빈 저장소 PR 에 또 들어갔다.
     writeFileSync(join(repo, 'user.ts'), 'export const u=1;\n');
-    writeFileSync(join(repo, '.monad-child-liveness.hb'), '{"at":1}');
-    mkdirSync(join(repo, '.monad-se'), { recursive: true });
-    writeFileSync(join(repo, '.monad-se', 's.json'), 'y');
+    writeFileSync(join(repo, '.elanous-child-liveness.hb'), '{"at":1}');
+    mkdirSync(join(repo, '.elanous-se'), { recursive: true });
+    writeFileSync(join(repo, '.elanous-se', 's.json'), 'y');
     git(repo, 'add', '-A');   // ← 경합이 «진» 상태를 그대로 재현한다
 
-    expect(unstageMonadRuntimeArtifacts(repo).sort()).toEqual(['.monad-child-liveness.hb', '.monad-se/s.json']);
+    expect(unstageElanousRuntimeArtifacts(repo).sort()).toEqual(['.elanous-child-liveness.hb', '.elanous-se/s.json']);
     expect(git(repo, 'diff', '--cached', '--name-only').stdout.trim().split('\n')).toEqual(['user.ts']);
   });
 
   test('★ 이미 추적 중이던 런타임 경로는 내리지 않는다 — 사람이 «일부러» 추적했을 수 있다', () => {
-    writeFileSync(join(repo, '.monad-child-liveness.hb'), '{"at":1}');
-    git(repo, 'add', '.monad-child-liveness.hb');
+    writeFileSync(join(repo, '.elanous-child-liveness.hb'), '{"at":1}');
+    git(repo, 'add', '.elanous-child-liveness.hb');
     git(repo, 'commit', '-m', 'tracked on purpose');
-    writeFileSync(join(repo, '.monad-child-liveness.hb'), '{"at":2}');
+    writeFileSync(join(repo, '.elanous-child-liveness.hb'), '{"at":2}');
     git(repo, 'add', '-A');
 
-    expect(unstageMonadRuntimeArtifacts(repo)).toEqual([]);   // --diff-filter=A 가 «새 파일»만 문다
-    expect(git(repo, 'diff', '--cached', '--name-only').stdout.trim()).toBe('.monad-child-liveness.hb');
+    expect(unstageElanousRuntimeArtifacts(repo)).toEqual([]);   // --diff-filter=A 가 «새 파일»만 문다
+    expect(git(repo, 'diff', '--cached', '--name-only').stdout.trim()).toBe('.elanous-child-liveness.hb');
   });
 
   test('★ untracked 신규파일 감지 (execute changes:[] 버그의 핵심)', () => {
@@ -661,14 +661,14 @@ describe('changedFiles / commitWorktree — 버그A(harness execute changes:[] �
   });
 
   test('비코드 산출물만 있으면 빈 목록 — deploy가 non-code 분기를 선택한다', () => {
-    mkdirSync(join(repo, '.monad-skill-artifacts', 'step-1'), { recursive: true });
-    writeFileSync(join(repo, '.monad-skill-artifacts', 'step-1', 'report.md'), '# published\n');
+    mkdirSync(join(repo, '.elanous-skill-artifacts', 'step-1'), { recursive: true });
+    writeFileSync(join(repo, '.elanous-skill-artifacts', 'step-1', 'report.md'), '# published\n');
     expect(changedFiles(repo)).toEqual([]);
   });
 
   test('비코드 산출물과 소스 변경이 함께 있으면 소스만 센다', () => {
-    mkdirSync(join(repo, '.monad-skill-artifacts', 'step-1'), { recursive: true });
-    writeFileSync(join(repo, '.monad-skill-artifacts', 'step-1', 'report.md'), '# published\n');
+    mkdirSync(join(repo, '.elanous-skill-artifacts', 'step-1'), { recursive: true });
+    writeFileSync(join(repo, '.elanous-skill-artifacts', 'step-1', 'report.md'), '# published\n');
     writeFileSync(join(repo, 'feature.ts'), 'export const published = true;\n');
     expect(changedFiles(repo)).toEqual(['feature.ts']);
   });
@@ -688,10 +688,10 @@ describe('changedFiles / commitWorktree — 버그A(harness execute changes:[] �
     expect(changedFiles(repo)).toEqual([]);
   });
 
-  test('미추적 monad 런타임 산출물은 제외하고 사용자 파일은 모두 커밋한다', () => {
-    writeFileSync(join(repo, '.monad-child-liveness.hb'), 'alive\n');
-    mkdirSync(join(repo, '.monad', 'runtime'), { recursive: true });
-    writeFileSync(join(repo, '.monad', 'runtime', 'state.json'), '{}\n');
+  test('미추적 elanous 런타임 산출물은 제외하고 사용자 파일은 모두 커밋한다', () => {
+    writeFileSync(join(repo, '.elanous-child-liveness.hb'), 'alive\n');
+    mkdirSync(join(repo, '.elanous', 'runtime'), { recursive: true });
+    writeFileSync(join(repo, '.elanous', 'runtime', 'state.json'), '{}\n');
     writeFileSync(join(repo, 'feature.ts'), 'export const feature = true;\n');
     writeFileSync(join(repo, 'README.md'), '# updated\n');
 
@@ -701,14 +701,14 @@ describe('changedFiles / commitWorktree — 버그A(harness execute changes:[] �
     expect(result.ok).toBe(true);
     expect(committed.sort()).toEqual(['README.md', 'feature.ts']);
     expect(git(repo, 'status', '--porcelain').stdout.trim().split('\n').sort()).toEqual([
-      '?? .monad-child-liveness.hb',
-      '?? .monad/',
+      '?? .elanous-child-liveness.hb',
+      '?? .elanous/',
     ]);
   });
 
-  test('한글 경로를 가진 미추적 monad 런타임 산출물은 커밋하지 않는다', () => {
-    mkdirSync(join(repo, '.monad', 'runtime'), { recursive: true });
-    writeFileSync(join(repo, '.monad', 'runtime', '한글.json'), '{}\n');
+  test('한글 경로를 가진 미추적 elanous 런타임 산출물은 커밋하지 않는다', () => {
+    mkdirSync(join(repo, '.elanous', 'runtime'), { recursive: true });
+    writeFileSync(join(repo, '.elanous', 'runtime', '한글.json'), '{}\n');
     writeFileSync(join(repo, 'feature.ts'), 'export const feature = true;\n');
 
     const result = commitWorktree(repo, 'feat: exclude unicode runtime artifact');
@@ -716,50 +716,50 @@ describe('changedFiles / commitWorktree — 버그A(harness execute changes:[] �
 
     expect(result.ok).toBe(true);
     expect(committed).toEqual(['feature.ts']);
-    expect(git(repo, 'status', '--porcelain').stdout).toContain('?? .monad/');
+    expect(git(repo, 'status', '--porcelain').stdout).toContain('?? .elanous/');
   });
 
   test('glob 문자가 든 미추적 런타임 산출물은 추적된 인접 경로의 변경을 제외하지 않는다', () => {
-    mkdirSync(join(repo, '.monad'), { recursive: true });
-    writeFileSync(join(repo, '.monad', 'state1.json'), '{"version": 1}\n');
+    mkdirSync(join(repo, '.elanous'), { recursive: true });
+    writeFileSync(join(repo, '.elanous', 'state1.json'), '{"version": 1}\n');
     git(repo, 'add', '-A');
     git(repo, 'commit', '-m', 'track runtime artifact');
-    writeFileSync(join(repo, '.monad', 'state1.json'), '{"version": 2}\n');
-    writeFileSync(join(repo, '.monad', 'state*.json'), '{}\n');
+    writeFileSync(join(repo, '.elanous', 'state1.json'), '{"version": 2}\n');
+    writeFileSync(join(repo, '.elanous', 'state*.json'), '{}\n');
 
     const result = commitWorktree(repo, 'chore: preserve tracked runtime artifact');
     const committed = git(repo, 'show', '--format=', '--name-only', 'HEAD').stdout.trim().split('\n').filter(Boolean);
 
     expect(result.ok).toBe(true);
-    expect(committed).toEqual(['.monad/state1.json']);
-    expect(git(repo, 'status', '--porcelain').stdout).toContain('?? .monad/state*.json');
+    expect(committed).toEqual(['.elanous/state1.json']);
+    expect(git(repo, 'status', '--porcelain').stdout).toContain('?? .elanous/state*.json');
   });
 
-  test('이미 추적된 monad 런타임 산출물의 변경은 커밋한다', () => {
-    writeFileSync(join(repo, '.monad-child-liveness.hb'), 'initial\n');
+  test('이미 추적된 elanous 런타임 산출물의 변경은 커밋한다', () => {
+    writeFileSync(join(repo, '.elanous-child-liveness.hb'), 'initial\n');
     git(repo, 'add', '-A');
     git(repo, 'commit', '-m', 'track runtime artifact');
-    writeFileSync(join(repo, '.monad-child-liveness.hb'), 'updated\n');
+    writeFileSync(join(repo, '.elanous-child-liveness.hb'), 'updated\n');
 
     const result = commitWorktree(repo, 'chore: update runtime artifact');
     const committed = git(repo, 'show', '--format=', '--name-only', 'HEAD').stdout.trim().split('\n').filter(Boolean);
 
     expect(result.ok).toBe(true);
-    expect(committed).toEqual(['.monad-child-liveness.hb']);
+    expect(committed).toEqual(['.elanous-child-liveness.hb']);
   });
 
   test('런타임 산출물만 있으면 nothing-to-commit no-op으로 남는다', () => {
-    writeFileSync(join(repo, '.monad-child-liveness.hb'), 'alive\n');
-    mkdirSync(join(repo, '.monad-se'), { recursive: true });
-    writeFileSync(join(repo, '.monad-se', 'state.json'), '{}\n');
+    writeFileSync(join(repo, '.elanous-child-liveness.hb'), 'alive\n');
+    mkdirSync(join(repo, '.elanous-se'), { recursive: true });
+    writeFileSync(join(repo, '.elanous-se', 'state.json'), '{}\n');
 
     const result = commitWorktree(repo, 'chore: runtime only');
 
     expect(result.ok).toBe(false);
     expect(result.out).toMatch(/nothing to commit|nothing added to commit/);
     expect(git(repo, 'status', '--porcelain').stdout.trim().split('\n').sort()).toEqual([
-      '?? .monad-child-liveness.hb',
-      '?? .monad-se/',
+      '?? .elanous-child-liveness.hb',
+      '?? .elanous-se/',
     ]);
   });
 });
@@ -934,7 +934,7 @@ describe('featurePrompt — 버그B(자식 PR 게이트 우회 차단)', () => {
     expect(p).toContain(cwd);
     expect(p).toContain('클린 빌드 규율:');
     expect(p).toContain('전체 `bun test` 스위트는 돌리지 마라');
-    expect(p).toContain('bun bin/monad.mjs self typecheck');
+    expect(p).toContain('bun bin/elanous.mjs self typecheck');
     expect(p).toContain('Ran 0 tests');
     expect(p).toMatch(/commit.*push.*PR.*금지|git commit.*금지/);
     expect(p).toContain('워킹트리에 변경만');
@@ -1061,7 +1061,7 @@ describe('featurePrompt — 버그B(자식 PR 게이트 우회 차단)', () => {
     }
   });
 
-  test('외부 cwd는 실행 중 monad 루트로 폴백하고 명시 루트·저장소 루트 우선순위를 보존한다', async () => {
+  test('외부 cwd는 실행 중 elanous 루트로 폴백하고 명시 루트·저장소 루트 우선순위를 보존한다', async () => {
     const outsideCwd = mkdtempSync(join(tmpdir(), 'seam-bin-root-outside-'));
     const repoCwd = mkdtempSync(join(tmpdir(), 'seam-bin-root-repo-'));
     const sourceRoot = resolve(import.meta.dir, '../..');
@@ -1072,17 +1072,17 @@ describe('featurePrompt — 버그B(자식 PR 게이트 우회 차단)', () => {
     };
     try {
       git(repoCwd, 'init', '-b', 'main');
-      const run = async (cwd: string, monadBinRoot?: string) => {
-        await defaultSeams({ ptyAvailable: () => true, runHeadlessGoalLoopPty: driver, ...(monadBinRoot ? { monadBinRoot } : {}) })
+      const run = async (cwd: string, elanousBinRoot?: string) => {
+        await defaultSeams({ ptyAvailable: () => true, runHeadlessGoalLoopPty: driver, ...(elanousBinRoot ? { elanousBinRoot } : {}) })
           .implement({ cwd, feature: 'bin root selection', runId: 'run-bin-root' });
       };
 
       await run(outsideCwd);
       await run(repoCwd);
-      await run(outsideCwd, '/explicit-monad-root');
+      await run(outsideCwd, '/explicit-elanous-root');
 
-      expect(captured).toEqual([sourceRoot, repoCwd, '/explicit-monad-root']);
-      expect(existsSync(join(captured[0]!, 'bin', 'monad.mjs'))).toBe(true);
+      expect(captured).toEqual([sourceRoot, repoCwd, '/explicit-elanous-root']);
+      expect(existsSync(join(captured[0]!, 'bin', 'elanous.mjs'))).toBe(true);
     } finally {
       rmSync(outsideCwd, { recursive: true, force: true });
       rmSync(repoCwd, { recursive: true, force: true });
@@ -1766,7 +1766,7 @@ describe('defaultSeams — worktree integration ancestry', () => {
     git(repo, 'push', '-u', 'origin', 'main');
   });
   afterEach(() => {
-    // ⛔⭐ 워크트리를 지워도 «인스턴스 뿌리»는 남는다 — `~/.monad/worktrees/<instance>/repo.worktrees/<wt>`
+    // ⛔⭐ 워크트리를 지워도 «인스턴스 뿌리»는 남는다 — `~/.elanous/worktrees/<instance>/repo.worktrees/<wt>`
     //   구조라 두 칸 위가 이 시험이 «만든» 디렉토리다. 그것을 안 걷으면 빈 껍데기가 쌓인다.
     //   🩸 실측 2026-09-08: `seam-integration-base-*` 가 **328개** 쌓여 있었고, 이 파일을 한 번 돌리면
     //     정확히 «1개» 는다(328→329 로 눌러 확인). 09-07 46개 · 09-08 33개 — «지금도» 자란다.
@@ -2885,11 +2885,11 @@ describe('defaultSeams.reviewDiff — reviewer context와 diff 밖 이행 주장
       await seams.reviewDiff!(repo, {
         goal: '## 목표\n증거 채널',
         round: 1,
-        diffOutsideClaims: [{ claim: '라이브에서 확인했다', verify: 'monad logs --category dev-pipeline' }],
+        diffOutsideClaims: [{ claim: '라이브에서 확인했다', verify: 'elanous logs --category dev-pipeline' }],
       });
       expect(seenIntent).toContain('자식이 주장하는 diff 밖 이행');
       expect(seenIntent).toContain('- 주장: 라이브에서 확인했다');
-      expect(seenIntent).toContain('verify: monad logs --category dev-pipeline');
+      expect(seenIntent).toContain('verify: elanous logs --category dev-pipeline');
       // ⛔ 주장만으로 must-fix 를 해제하지 말라는 지침이 함께 가야 한다.
       expect(seenIntent).toContain('must-fix 를 해제하지 마라');
       await seams.reviewDiff!(repo, {
@@ -3635,9 +3635,9 @@ describe('defaultSeams.createWorktree — self-implement ownership provenance', 
     git(repo, 'add', 'README.md');
     git(repo, 'commit', '-qm', 'base');
   });
-  // ⛔⭐⭐⭐ **`createWorktree` 는 워크트리를 «임시 저장소 밖»에 만든다** — `~/.monad/worktrees/<해시>/…`.
+  // ⛔⭐⭐⭐ **`createWorktree` 는 워크트리를 «임시 저장소 밖»에 만든다** — `~/.elanous/worktrees/<해시>/…`.
   //   그래서 `rmSync(root)` 로 임시 저장소를 지워도 ***그 워크트리들은 살아남는다.***
-  //   📏 2026-08-12 실측: `~/.monad/worktrees` 아래 `se-provenance-*` 가 ***522개*** 쌓여 있었고
+  //   📏 2026-08-12 실측: `~/.elanous/worktrees` 아래 `se-provenance-*` 가 ***522개*** 쌓여 있었고
   //     날짜 분포가 08-08:100 · 08-09:205 · 08-12:68 — ***테스트를 돌릴 때마다 셋씩 는다.***
   //     (전체 하니스 워크트리 1,134 중 소유 없는 것 747 · 그 절반 이상이 이 셋이었다)
   //   ⇒ 그래서 «만든 경로»를 세어 두고 여기서 지운다. ⛔ 전역 glob 으로 지우지 않는다 —
@@ -3712,11 +3712,11 @@ describe('defaultSeams.createWorktree — self-implement ownership provenance', 
     const createdAt = result.createdAt;
     if (!owner || !command || !createdAt) throw new Error('expected self-implement provenance');
     expect(owner).toBe('dev:run-owner-42');
-    expect(command).toBe('monad dev');
+    expect(command).toBe('elanous dev');
     expect(createdAt).toMatch(/^\d{4}-\d{2}-\d{2}T/);
-    expect(spawnSync('git', ['config', '--worktree', '--get', 'monad.harness.owner'], { cwd: result.path, encoding: 'utf8' }).stdout.trim()).toBe(owner);
-    expect(spawnSync('git', ['config', '--worktree', '--get', 'monad.harness.command'], { cwd: result.path, encoding: 'utf8' }).stdout.trim()).toBe(command);
-    expect(spawnSync('git', ['config', '--worktree', '--get', 'monad.harness.createdAt'], { cwd: result.path, encoding: 'utf8' }).stdout.trim()).toBe(createdAt);
+    expect(spawnSync('git', ['config', '--worktree', '--get', 'elanous.harness.owner'], { cwd: result.path, encoding: 'utf8' }).stdout.trim()).toBe(owner);
+    expect(spawnSync('git', ['config', '--worktree', '--get', 'elanous.harness.command'], { cwd: result.path, encoding: 'utf8' }).stdout.trim()).toBe(command);
+    expect(spawnSync('git', ['config', '--worktree', '--get', 'elanous.harness.createdAt'], { cwd: result.path, encoding: 'utf8' }).stdout.trim()).toBe(createdAt);
   });
 
   test('same goal rerun reuses a preserved failed artifact commit and exposes reuse state', async () => {
@@ -3747,7 +3747,7 @@ describe('defaultSeams.createWorktree — self-implement ownership provenance', 
       baseFreshness: 'reused',
       reused: true,
       owner: `dev:${runId}`,
-      command: 'monad dev',
+      command: 'elanous dev',
     });
     expect(events).toEqual([expect.objectContaining({
       path: first.path,
@@ -3776,10 +3776,10 @@ describe('defaultSeams.createWorktree — self-implement ownership provenance', 
     };
 
     const unowned = await refusal('se/reuse-unowned', (path) => {
-      git(path, 'config', '--worktree', '--unset-all', 'monad.harness.owner');
+      git(path, 'config', '--worktree', '--unset-all', 'elanous.harness.owner');
     });
     const foreign = await refusal('se/reuse-foreign', (path) => {
-      git(path, 'config', '--worktree', '--replace-all', 'monad.harness.owner', 'foreign:run');
+      git(path, 'config', '--worktree', '--replace-all', 'elanous.harness.owner', 'foreign:run');
     });
     const dirty = await refusal('se/reuse-dirty', (path) => {
       writeFileSync(join(path, 'uncommitted-failure.txt'), 'must not be silently reused\n');
@@ -3805,7 +3805,7 @@ describe('defaultSeams.createWorktree — self-implement ownership provenance', 
       baseFreshness: 'reused',
       reused: true,
       owner: `dev:${runId}`,
-      command: 'monad dev',
+      command: 'elanous dev',
     });
     expect(readFileSync(join(second.path, 'uncommitted-artifact.html'), 'utf8')).toBe('round-1 output that must survive repair\n');
     expect(git(second.path, 'status', '--porcelain').stdout).toBe(dirtBefore);
@@ -3837,7 +3837,7 @@ describe('defaultSeams.createWorktree — self-implement ownership provenance', 
       expect(events).toEqual([expect.objectContaining({
         path: result.path,
         owner: 'dev:run-owner-fail',
-        command: 'monad dev',
+        command: 'elanous dev',
         reason: 'metadata unavailable',
       })]);
     } finally {
@@ -4102,8 +4102,8 @@ describe('runSelfImplement — closePr seam 은 아직 부르지 않는다', () 
 describe('defaultSeams.forkSession — harness origin on child', () => {
   test('forkSessionById 에 origin=harness 를 넘겨 자식 신분을 남긴다', async () => {
     const sessionRoot = mkdtempSync(join(tmpdir(), 'seam-fork-harness-'));
-    const priorSessionRoot = process.env.MONAD_SESSION_ROOT;
-    process.env.MONAD_SESSION_ROOT = sessionRoot;
+    const priorSessionRoot = process.env.ELANOUS_SESSION_ROOT;
+    process.env.ELANOUS_SESSION_ROOT = sessionRoot;
     try {
       const { createSession, appendMessage, loadSession, HARNESS_SESSION_ORIGIN, isHarnessSessionOrigin } = await import('../session/index.js');
       const parent = createSession({ origin: 'cli', title: 'parent chat' }, sessionRoot);
@@ -4116,8 +4116,8 @@ describe('defaultSeams.forkSession — harness origin on child', () => {
       expect(child?.meta.forkedFromId).toBe(parent.id);
       expect(loadSession(parent.id, sessionRoot)?.meta.origin).toBe('cli');
     } finally {
-      if (priorSessionRoot === undefined) delete process.env.MONAD_SESSION_ROOT;
-      else process.env.MONAD_SESSION_ROOT = priorSessionRoot;
+      if (priorSessionRoot === undefined) delete process.env.ELANOUS_SESSION_ROOT;
+      else process.env.ELANOUS_SESSION_ROOT = priorSessionRoot;
       rmSync(sessionRoot, { recursive: true, force: true });
     }
   });

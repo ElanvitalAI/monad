@@ -31,7 +31,7 @@ function captureRecall<T>(fn: () => T): { result: T; events: Array<{ event: stri
 }
 
 describe('recordSelfEvent — 에피소드 주입', () => {
-  test('surface_events 에 domain=monad·surface=ext:<tool>·direction=inbound 기록', () => {
+  test('surface_events 에 domain=elanous·surface=ext:<tool>·direction=inbound 기록', () => {
     const db = surfaceDb();
     const id = recordSelfEvent(db, { tool: 'claude-code', summary: 'Phase C stop/budget 구현', kind: 'impl', refs: { pr: '3423' } });
     expect(id).toBeTruthy();
@@ -40,7 +40,7 @@ describe('recordSelfEvent — 에피소드 주입', () => {
     expect(rows[0]!.surface).toBe('ext:claude-code');
     expect(rows[0]!.direction).toBe('inbound');
     expect(rows[0]!.kind).toBe('impl');
-    expect(rows[0]!.domain).toBe('monad');
+    expect(rows[0]!.domain).toBe('elanous');
     expect(rows[0]!.importance).toBe(7);         // 기본 현저성
     expect(rows[0]!.refs).toContain('3423');     // refs JSON
     db.close();
@@ -73,7 +73,7 @@ describe('classifyRecalledObserverOutput', () => {
   });
 });
 
-describe('recallSelfEvents — 회상(domain=monad 격리)', () => {
+describe('recallSelfEvents — 회상(domain=elanous 격리)', () => {
   test('구현 요약 키워드로 회상 + finance 도메인은 섞이지 않음', () => {
     const db = surfaceDb();
     recordSelfEvent(db, { tool: 'claude-code', summary: 'M4 새벽 리플레이 armer 구현' });
@@ -83,7 +83,7 @@ describe('recallSelfEvents — 회상(domain=monad 격리)', () => {
 
     const hits = recallSelfEvents(db, '리플레이 armer', { bump: false });
     expect(hits.length).toBeGreaterThanOrEqual(1);
-    expect(hits.every(h => h.domain === 'monad')).toBe(true);   // finance 제외
+    expect(hits.every(h => h.domain === 'elanous')).toBe(true);   // finance 제외
     expect(hits.some(h => (h.summary ?? '').includes('리플레이'))).toBe(true);
     db.close();
   });
@@ -92,7 +92,7 @@ describe('recallSelfEvents — 회상(domain=monad 격리)', () => {
     const db = surfaceDb();
     recordSelfEvent(db, { tool: 'claude-code', summary: 'Phase C 구현' });
     const hits = recallSelfEvents(db, 'xyzzy 존재하지않는키워드', { bump: false });
-    expect(hits.every(h => h.domain === 'monad')).toBe(true);
+    expect(hits.every(h => h.domain === 'elanous')).toBe(true);
     db.close();
   });
 
@@ -142,8 +142,8 @@ describe('recallSelfEvents — 회상(domain=monad 격리)', () => {
     const runDir = mkdtempSync(join(tmpdir(), 'self-recall-cli-'));
     const stateDir = join(runDir, 'state');
     const fixtureRepo = join(runDir, 'repo');
-    const previousStateDir = process.env.MONAD_STATE_DIR;
-    process.env.MONAD_STATE_DIR = stateDir;
+    const previousStateDir = process.env.ELANOUS_STATE_DIR;
+    process.env.ELANOUS_STATE_DIR = stateDir;
     try {
       mkdirSync(fixtureRepo, { recursive: true });
       writeFileSync(join(fixtureRepo, 'package.json'), JSON.stringify({ type: 'module' }));
@@ -154,17 +154,17 @@ describe('recallSelfEvents — 회상(domain=monad 격리)', () => {
       } finally {
         db.close();
       }
-      const result = spawnSync('bun', [join(process.cwd(), 'bin/monad.mjs'), `--test=${stateDir}`, 'self', 'recall', 'cli observer marker probe', '-n', '2', '--include-observer-output'], {
+      const result = spawnSync('bun', [join(process.cwd(), 'bin/elanous.mjs'), `--test=${stateDir}`, 'self', 'recall', 'cli observer marker probe', '-n', '2', '--include-observer-output'], {
         cwd: fixtureRepo,
         encoding: 'utf-8',
-        env: { ...process.env, MONAD_STATE_DIR: stateDir },
+        env: { ...process.env, ELANOUS_STATE_DIR: stateDir },
         timeout: 15_000,
       });
       expect(result.status, result.stderr).toBe(0);
       expect(result.stdout).toContain('tui:5043: cli observer marker probe');
     } finally {
-      if (previousStateDir === undefined) delete process.env.MONAD_STATE_DIR;
-      else process.env.MONAD_STATE_DIR = previousStateDir;
+      if (previousStateDir === undefined) delete process.env.ELANOUS_STATE_DIR;
+      else process.env.ELANOUS_STATE_DIR = previousStateDir;
       rmSync(runDir, { recursive: true, force: true });
     }
   });
@@ -239,11 +239,11 @@ describe('injectSelfMemory — 이벤트 + 문서 벡터 인제스트', () => {
     const r = await injectSelfMemory({ tool: 'claude-code', summary: '단순 이벤트' }, { sdb });
     expect(r.eventId).toBeTruthy();
     expect(r.docChunks).toBe(0);
-    expect(queryEvents(sdb, { domain: 'monad' }).length).toBe(1);
+    expect(queryEvents(sdb, { domain: 'elanous' }).length).toBe(1);
     sdb.close();
   });
 
-  test('docPath 있으면 문서 청크 벡터 인제스트(kind=docs·domain=monad)', async () => {
+  test('docPath 있으면 문서 청크 벡터 인제스트(kind=docs·domain=elanous)', async () => {
     const sdb = surfaceDb();
     const kdb = openKnowledgeDb(':memory:');
     const dir = mkdtempSync(join(tmpdir(), 'self-doc-'));
@@ -253,12 +253,12 @@ describe('injectSelfMemory — 이벤트 + 문서 벡터 인제스트', () => {
     rmSync(dir, { recursive: true, force: true });
     expect(r.eventId).toBeTruthy();
     expect(r.docChunks).toBeGreaterThanOrEqual(1);
-    // knowledge.db 에 kind=docs·domain=monad 로 적재.
+    // knowledge.db 에 kind=docs·domain=elanous 로 적재.
     const docs = kdb.query(`SELECT kind, domain FROM docs`).all() as Array<{ kind: string; domain: string }>;
     expect(docs.length).toBeGreaterThanOrEqual(1);
-    expect(docs.every(d => d.kind === 'docs' && d.domain === 'monad')).toBe(true);
+    expect(docs.every(d => d.kind === 'docs' && d.domain === 'elanous')).toBe(true);
     // 이벤트에 doc 태그.
-    const ev = queryEvents(sdb, { domain: 'monad' })[0]!;
+    const ev = queryEvents(sdb, { domain: 'elanous' })[0]!;
     expect(ev.tags).toContain('HANDOFF-test');
     sdb.close(); kdb.close();
   });
@@ -274,13 +274,13 @@ describe('injectSelfMemory — 이벤트 + 문서 벡터 인제스트', () => {
     rmSync(dir, { recursive: true, force: true });
     expect(r.eventId).toBeTruthy();               // 이벤트는 기록됨
     expect(r.docChunks).toBe(0);                   // 문서는 skip
-    expect(queryEvents(sdb, { domain: 'monad' }).length).toBe(1);
+    expect(queryEvents(sdb, { domain: 'elanous' }).length).toBe(1);
     sdb.close(); kdb.close();
   });
 });
 
 describe('recentSelfChangesDigest — 데몬 ambient(P4)', () => {
-  test('최근 monad 변경을 요약(domain=monad·finance 무관)', () => {
+  test('최근 elanous 변경을 요약(domain=elanous·finance 무관)', () => {
     const db = surfaceDb();
     recordSelfEvent(db, { tool: 'claude-code', summary: 'L2 코어 도구 리팩토링', kind: 'refactor' });
     recordSelfEvent(db, { tool: 'codex', summary: 'self_recall 추가', kind: 'impl' });
@@ -322,7 +322,7 @@ describe('recentSelfChangesDigest — 데몬 ambient(P4)', () => {
     expect(ambient).toContain('recentSelfChangesContext()');
     expect(ambient).not.toContain('finance ? recentSelfChangesContext'); // finance 게이트 아님
     const turn = readFileSync(join(import.meta.dir, '..', 'agent', 'monad-agent-turn.ts'), 'utf-8') as string;
-    expect(turn).toContain('monadSelfAmbientParts'); // 공유 턴에 실제 배선
+    expect(turn).toContain('elanousSelfAmbientParts'); // 공유 턴에 실제 배선
   });
 });
 
@@ -336,19 +336,19 @@ describe('ingestDocsDir — docs/ 자동 벡터화(P3)', () => {
     expect(SELF_DOC_PATTERN.test('notes.txt')).toBe(false);
   });
 
-  test('디렉터리 순회 → 패턴 매칭 md 만 domain=monad·kind=docs 인제스트(멱등)', async () => {
+  test('디렉터리 순회 → 패턴 매칭 md 만 domain=elanous·kind=docs 인제스트(멱등)', async () => {
     const kdb = openKnowledgeDb(':memory:');
     const dir = mkdtempSync(join(tmpdir(), 'docs-dir-'));
     writeFileSync(join(dir, 'HANDOFF-a-2026-07-08.md'), '## s\n' + 'a'.repeat(40));
     writeFileSync(join(dir, 'REPORT-b-2026-07-08.md'), '## s\n' + 'b'.repeat(40));
     writeFileSync(join(dir, '_index.md'), 'skip me');            // 패턴 불일치 → 제외
-    const r = await ingestDocsDir(kdb, { dir, domain: 'monad', embed: mockEmbed });
+    const r = await ingestDocsDir(kdb, { dir, domain: 'elanous', embed: mockEmbed });
     expect(r.files).toBe(2);                                     // _index 제외
     expect(r.chunks).toBeGreaterThanOrEqual(2);
     const rows = kdb.query(`SELECT DISTINCT kind, domain FROM docs`).all() as Array<{ kind: string; domain: string }>;
-    expect(rows.every(x => x.kind === 'docs' && x.domain === 'monad')).toBe(true);
+    expect(rows.every(x => x.kind === 'docs' && x.domain === 'elanous')).toBe(true);
     // 멱등 — 재실행 시 신규 0.
-    const r2 = await ingestDocsDir(kdb, { dir, domain: 'monad', embed: mockEmbed });
+    const r2 = await ingestDocsDir(kdb, { dir, domain: 'elanous', embed: mockEmbed });
     expect(r2.chunks).toBe(0);
     rmSync(dir, { recursive: true, force: true });
     kdb.close();
@@ -440,15 +440,15 @@ describe('하이브리드 검색 (DocOps P2) — 벡터+BM25 RRF', () => {
   // mockEmbed 는 길이 기반이라 의미 유사도가 무의미 — 키워드 축 검증에 적합.
   async function seed(kdb: ReturnType<typeof openKnowledgeDb>) {
     const { ingestText } = await import('./knowledge.js');
-    await ingestText(kdb, { id: 'docs:A.md#0', ts: '2026-07-01T00:00:00Z', kind: 'docs', text: '격리 테스트 인스턴스 config 물질화 사본 설계', domain: 'monad' }, mockEmbed);
-    await ingestText(kdb, { id: 'docs:B.md#0', ts: '2026-07-02T00:00:00Z', kind: 'docs', text: 'PtyShell 스크린샷 첨부 디스코드 배선', domain: 'monad' }, mockEmbed);
+    await ingestText(kdb, { id: 'docs:A.md#0', ts: '2026-07-01T00:00:00Z', kind: 'docs', text: '격리 테스트 인스턴스 config 물질화 사본 설계', domain: 'elanous' }, mockEmbed);
+    await ingestText(kdb, { id: 'docs:B.md#0', ts: '2026-07-02T00:00:00Z', kind: 'docs', text: 'PtyShell 스크린샷 첨부 디스코드 배선', domain: 'elanous' }, mockEmbed);
   }
 
   test('키워드 축 — 고유명사(PtyShell)가 BM25 로 잡힌다 · matchedBy 표기', async () => {
     const { hybridQueryKnowledge } = await import('./knowledge.js');
     const kdb = openKnowledgeDb(':memory:');
     await seed(kdb);
-    const r = await hybridQueryKnowledge(kdb, 'PtyShell', { k: 5, domain: 'monad', embed: mockEmbed });
+    const r = await hybridQueryKnowledge(kdb, 'PtyShell', { k: 5, domain: 'elanous', embed: mockEmbed });
     expect(r.length).toBeGreaterThanOrEqual(1);
     expect(r[0]!.id).toBe('docs:B.md#0');
     expect(['keyword', 'both']).toContain(r[0]!.matchedBy);
@@ -460,7 +460,7 @@ describe('하이브리드 검색 (DocOps P2) — 벡터+BM25 RRF', () => {
     const kdb = openKnowledgeDb(':memory:');
     await seed(kdb);
     const down: EmbedFn = async () => { throw new Error('embed down'); };
-    const r = await hybridQueryKnowledge(kdb, '물질화 사본', { k: 5, domain: 'monad', embed: down });
+    const r = await hybridQueryKnowledge(kdb, '물질화 사본', { k: 5, domain: 'elanous', embed: down });
     expect(r.length).toBeGreaterThanOrEqual(1);
     expect(r[0]!.id).toBe('docs:A.md#0');
     expect(r[0]!.matchedBy).toBe('keyword');
@@ -470,7 +470,7 @@ describe('하이브리드 검색 (DocOps P2) — 벡터+BM25 RRF', () => {
   test('FTS 동기 — pruneKnowledge/구청크 삭제 후 키워드 매치도 사라진다', async () => {
     const { hybridQueryKnowledge, ingestText, pruneKnowledge } = await import('./knowledge.js');
     const kdb = openKnowledgeDb(':memory:');
-    await ingestText(kdb, { id: 'signal:old', ts: '2025-01-01T00:00:00Z', kind: 'signal', text: 'PtyShell 옛 신호', domain: 'monad' }, mockEmbed);
+    await ingestText(kdb, { id: 'signal:old', ts: '2025-01-01T00:00:00Z', kind: 'signal', text: 'PtyShell 옛 신호', domain: 'elanous' }, mockEmbed);
     pruneKnowledge(kdb, { maxAgeDays: 180 });
     const r = await hybridQueryKnowledge(kdb, 'PtyShell', { k: 5, embed: mockEmbed });
     expect(r.length).toBe(0);
@@ -483,10 +483,10 @@ describe('하이브리드 검색 (DocOps P2) — 벡터+BM25 RRF', () => {
     // fts 우회 직접 insert 로 "기존 코퍼스" 재현
     const v = new Float32Array(8).fill(0.1);
     kdb.prepare(`INSERT INTO docs(id, ts, kind, text, embed_model, embedding, domain) VALUES (?,?,?,?,?,?,?)`)
-      .run('docs:LEGACY.md#0', '2026-06-01T00:00:00Z', 'docs', 'LegacySymbol 레거시 본문', 'mock-embed', new Uint8Array(v.buffer), 'monad');
+      .run('docs:LEGACY.md#0', '2026-06-01T00:00:00Z', 'docs', 'LegacySymbol 레거시 본문', 'mock-embed', new Uint8Array(v.buffer), 'elanous');
     expect(backfillDocsFts(kdb)).toBe(1);
     expect(backfillDocsFts(kdb)).toBe(0); // 멱등
-    const r = await hybridQueryKnowledge(kdb, 'LegacySymbol', { k: 5, domain: 'monad', embed: mockEmbed });
+    const r = await hybridQueryKnowledge(kdb, 'LegacySymbol', { k: 5, domain: 'elanous', embed: mockEmbed });
     expect(r.some((m) => m.id === 'docs:LEGACY.md#0')).toBe(true);
     kdb.close();
   });
@@ -496,15 +496,15 @@ describe('capability registry — 미션이 만든 자원 인지·라이프사�
   test('recordCapability → listCapabilities 로 조회(핸들 포함)', async () => {
     const db = surfaceDb();
     await recordCapability({
-      name: 'monad local inventory CLI', summary: '전 노드 LLM 자원 발견',
-      missionId: 'apm_x', prUrls: ['https://.../4169'], cliCommand: 'monad local inventory',
+      name: 'elanous local inventory CLI', summary: '전 노드 LLM 자원 발견',
+      missionId: 'apm_x', prUrls: ['https://.../4169'], cliCommand: 'elanous local inventory',
       files: ['src/index.ts'], source: 'external:claude-code',
     }, { sdb: db });
     const caps = listCapabilities(db);
     expect(caps).toHaveLength(1);
-    expect(caps[0]!.name).toBe('monad local inventory CLI');
+    expect(caps[0]!.name).toBe('elanous local inventory CLI');
     expect(caps[0]!.status).toBe('active');
-    expect(caps[0]!.cliCommand).toBe('monad local inventory');
+    expect(caps[0]!.cliCommand).toBe('elanous local inventory');
     expect(caps[0]!.missionId).toBe('apm_x');
     expect(caps[0]!.source).toBe('external:claude-code');
   });

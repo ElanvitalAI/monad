@@ -4,7 +4,7 @@
 // Phase 2 (2026-04-19): widgets declare their styles via the 25
 // ColorToken + 4 emphasis tier surface defined in widget-types.ts.
 // Those tokens need to be resolved to terminal colors. This module
-// wraps an existing ThemeTokens (Catppuccin Mocha, monad-pastel, Nord
+// wraps an existing ThemeTokens (Catppuccin Mocha, elanous-pastel, Nord
 // Light, etc.) and exposes the ColorScheme API + ThemeRef
 // implementation widgets expect.
 //

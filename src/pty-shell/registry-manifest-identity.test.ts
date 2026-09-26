@@ -20,7 +20,7 @@ function runManifest(
   const childEnv: Record<string, string | undefined> = {
     ...process.env,
     NODE_ENV: 'production',
-    MONAD_STATE_DIR: stateDir,
+    ELANOUS_STATE_DIR: stateDir,
     ...env,
   };
   for (const [key, value] of Object.entries(childEnv)) {
@@ -51,17 +51,17 @@ function runManifest(
 
 function runManifestIdentity(stateDir: string): unknown {
   return runManifest(stateDir, {
-    MONAD_RUN_ID: 'run-manifest-identity',
-    MONAD_HARNESS_SPACE_ID: 'space-manifest-identity',
-    MONAD_SESSION_ID: 'session-manifest-identity',
-    MONAD_PARENT_PTY_ID: 'parent_1234abcd',
-    MONAD_PTY_ID: undefined,
-    MONAD_PTY_CHAIN_ORIGIN: 'identity-origin',
-    MONAD_NEST_DEPTH: '3',
-    MONAD_ORIGIN_ROOT: 'external-agent',
-    MONAD_ORIGIN_AGENT: 'codex',
-    MONAD_ORIGIN_SESSION: 'origin-session',
-    MONAD_CONTROLLER: 'automation',
+    ELANOUS_RUN_ID: 'run-manifest-identity',
+    ELANOUS_HARNESS_SPACE_ID: 'space-manifest-identity',
+    ELANOUS_SESSION_ID: 'session-manifest-identity',
+    ELANOUS_PARENT_PTY_ID: 'parent_1234abcd',
+    ELANOUS_PTY_ID: undefined,
+    ELANOUS_PTY_CHAIN_ORIGIN: 'identity-origin',
+    ELANOUS_NEST_DEPTH: '3',
+    ELANOUS_ORIGIN_ROOT: 'external-agent',
+    ELANOUS_ORIGIN_AGENT: 'codex',
+    ELANOUS_ORIGIN_SESSION: 'origin-session',
+    ELANOUS_CONTROLLER: 'automation',
   }, `
     const handle = startPty({ id: 'identity_1234abcd', kind: 'identity', cmd: 'synthetic', detach: true });
     const row = getPtyManifest(handle.id);
@@ -177,9 +177,9 @@ describe('registry manifest identity', () => {
 describe('registry manifest child identity', () => {
   test('uses the registrar PTY and PID when the registrar has no parent PTY', () => {
     const result = withStateDir({
-      MONAD_PTY_ID: 'pty_reg',
-      MONAD_PARENT_PTY_ID: undefined,
-      MONAD_HARNESS_SPACE_ID: undefined,
+      ELANOUS_PTY_ID: 'pty_reg',
+      ELANOUS_PARENT_PTY_ID: undefined,
+      ELANOUS_HARNESS_SPACE_ID: undefined,
     }, spawnedIdentity);
 
     expect(result.identity.parentPtyId).toBe('pty_reg');
@@ -189,9 +189,9 @@ describe('registry manifest child identity', () => {
 
   test('uses the registrar PTY rather than the registrar parent when child parent is absent', () => {
     const result = withStateDir({
-      MONAD_PTY_ID: 'pty_reg',
-      MONAD_PARENT_PTY_ID: 'pty_up',
-      MONAD_HARNESS_SPACE_ID: undefined,
+      ELANOUS_PTY_ID: 'pty_reg',
+      ELANOUS_PARENT_PTY_ID: 'pty_up',
+      ELANOUS_HARNESS_SPACE_ID: undefined,
     }, spawnedIdentity);
 
     expect(result.identity).toEqual({
@@ -203,8 +203,8 @@ describe('registry manifest child identity', () => {
   }, 15_000);
 
   test('uses explicit child space and parent identity overrides', () => {
-    const result = withStateDir({ MONAD_PTY_ID: 'pty_reg' }, `
-      const handle = startPty({ cmd: 'x', detach: true, env: { MONAD_HARNESS_SPACE_ID: 'dev-run-x', MONAD_PARENT_PTY_ID: 'pty_given' } });
+    const result = withStateDir({ ELANOUS_PTY_ID: 'pty_reg' }, `
+      const handle = startPty({ cmd: 'x', detach: true, env: { ELANOUS_HARNESS_SPACE_ID: 'dev-run-x', ELANOUS_PARENT_PTY_ID: 'pty_given' } });
       const { spaceId, parentPtyId, parentPid, parentKind } = getPtyManifest(handle.id);
       console.log(JSON.stringify({ identity: { spaceId, parentPtyId, parentPid, parentKind }, pid: process.pid }));
       unregisterPty(handle.id);
@@ -221,8 +221,8 @@ describe('registry manifest child identity', () => {
 
   test('preserves the registrar space when the child env omits it', () => {
     const result = withStateDir({
-      MONAD_PTY_ID: 'pty_reg',
-      MONAD_HARNESS_SPACE_ID: 'reg-space',
+      ELANOUS_PTY_ID: 'pty_reg',
+      ELANOUS_HARNESS_SPACE_ID: 'reg-space',
     }, spawnedIdentity);
 
     expect(result.identity.spaceId).toBe('reg-space');
@@ -230,25 +230,25 @@ describe('registry manifest child identity', () => {
 
   test('records a valid child nest depth while retaining registrar parentKind', () => {
     expect(childManifestDepth({
-      MONAD_NEST_DEPTH: undefined,
-      MONAD_PARENT_PTY_ID: undefined,
-      MONAD_PTY_ID: undefined,
-    }, "{ MONAD_NEST_DEPTH: '1' }")).toEqual({ nestDepth: 1, parentKind: 'process' });
+      ELANOUS_NEST_DEPTH: undefined,
+      ELANOUS_PARENT_PTY_ID: undefined,
+      ELANOUS_PTY_ID: undefined,
+    }, "{ ELANOUS_NEST_DEPTH: '1' }")).toEqual({ nestDepth: 1, parentKind: 'process' });
   }, 15_000);
 
   test('prefers a valid child nest depth over the registrar depth', () => {
     expect(childManifestDepth({
-      MONAD_NEST_DEPTH: '1',
-      MONAD_PARENT_PTY_ID: undefined,
-      MONAD_PTY_ID: undefined,
-    }, "{ MONAD_NEST_DEPTH: '2' }")).toEqual({ nestDepth: 2, parentKind: 'unknown' });
+      ELANOUS_NEST_DEPTH: '1',
+      ELANOUS_PARENT_PTY_ID: undefined,
+      ELANOUS_PTY_ID: undefined,
+    }, "{ ELANOUS_NEST_DEPTH: '2' }")).toEqual({ nestDepth: 2, parentKind: 'unknown' });
   }, 15_000);
 
   test('falls back to the registrar nest depth when the child depth is absent', () => {
     expect(childManifestDepth({
-      MONAD_NEST_DEPTH: '1',
-      MONAD_PARENT_PTY_ID: undefined,
-      MONAD_PTY_ID: undefined,
+      ELANOUS_NEST_DEPTH: '1',
+      ELANOUS_PARENT_PTY_ID: undefined,
+      ELANOUS_PTY_ID: undefined,
     }, '{}')).toEqual({ nestDepth: 1, parentKind: 'unknown' });
   }, 15_000);
 
@@ -258,34 +258,34 @@ describe('registry manifest child identity', () => {
     ['precision-losing', '9007199254740993'],
   ])('falls back to the registrar nest depth when the child depth is %s', (_label, childDepth) => {
     expect(childManifestDepth({
-      MONAD_NEST_DEPTH: '1',
-      MONAD_PARENT_PTY_ID: undefined,
-      MONAD_PTY_ID: undefined,
-    }, `{ MONAD_NEST_DEPTH: '${childDepth}' }`)).toEqual({ nestDepth: 1, parentKind: 'unknown' });
+      ELANOUS_NEST_DEPTH: '1',
+      ELANOUS_PARENT_PTY_ID: undefined,
+      ELANOUS_PTY_ID: undefined,
+    }, `{ ELANOUS_NEST_DEPTH: '${childDepth}' }`)).toEqual({ nestDepth: 1, parentKind: 'unknown' });
   }, 15_000);
 
   test.each(['0', '9007199254740992'])('records exactly representable child nest depth %s', (childDepth) => {
     expect(childManifestDepth({
-      MONAD_NEST_DEPTH: undefined,
-      MONAD_PARENT_PTY_ID: undefined,
-      MONAD_PTY_ID: undefined,
-    }, `{ MONAD_NEST_DEPTH: '${childDepth}' }`)).toEqual({ nestDepth: Number(childDepth), parentKind: 'process' });
+      ELANOUS_NEST_DEPTH: undefined,
+      ELANOUS_PARENT_PTY_ID: undefined,
+      ELANOUS_PTY_ID: undefined,
+    }, `{ ELANOUS_NEST_DEPTH: '${childDepth}' }`)).toEqual({ nestDepth: Number(childDepth), parentKind: 'process' });
   }, 15_000);
 
   test('persists a child-only controller', () => {
-    expect(childManifestController({ MONAD_CONTROLLER: undefined }, "{ MONAD_CONTROLLER: 'agent:claude-code' }")).toBe('agent:claude-code');
+    expect(childManifestController({ ELANOUS_CONTROLLER: undefined }, "{ ELANOUS_CONTROLLER: 'agent:claude-code' }")).toBe('agent:claude-code');
   }, 15_000);
 
   test('prefers a child controller over the registrar controller', () => {
-    expect(childManifestController({ MONAD_CONTROLLER: 'pty:pty_owner' }, "{ MONAD_CONTROLLER: 'pty:pty_child_ctl' }")).toBe('pty:pty_child_ctl');
+    expect(childManifestController({ ELANOUS_CONTROLLER: 'pty:pty_owner' }, "{ ELANOUS_CONTROLLER: 'pty:pty_child_ctl' }")).toBe('pty:pty_child_ctl');
   }, 15_000);
 
   test('falls back to the registrar controller when the child controller is absent', () => {
-    expect(childManifestController({ MONAD_CONTROLLER: 'pty:pty_owner' }, '{}')).toBe('pty:pty_owner');
+    expect(childManifestController({ ELANOUS_CONTROLLER: 'pty:pty_owner' }, '{}')).toBe('pty:pty_owner');
   }, 15_000);
 
   test('uses registrar depth for an identity-less manifest row', () => {
-    const result = withStateDir<{ nestDepth: number; parentKind: string }>({ MONAD_NEST_DEPTH: '1' }, `
+    const result = withStateDir<{ nestDepth: number; parentKind: string }>({ ELANOUS_NEST_DEPTH: '1' }, `
       upsertPtyManifest({ id: 'identity-less-depth', kind: 'pty', cmd: 'x', startedAt: 0, now: 0 });
       const { nestDepth, parentKind } = getPtyManifest('identity-less-depth');
       console.log(JSON.stringify({ nestDepth, parentKind }));
@@ -297,9 +297,9 @@ describe('registry manifest child identity', () => {
 
   test('classifies identity-less nested rows without a parent PTY as unknown', () => {
     const result = withStateDir({
-      MONAD_NEST_DEPTH: '1',
-      MONAD_PARENT_PTY_ID: undefined,
-      MONAD_PTY_ID: undefined,
+      ELANOUS_NEST_DEPTH: '1',
+      ELANOUS_PARENT_PTY_ID: undefined,
+      ELANOUS_PTY_ID: undefined,
     }, `
       upsertPtyManifest({ id: 'nested-unknown', kind: 'pty', cmd: 'x', startedAt: 0, now: 0 });
       const { spaceId, parentPtyId, parentPid, parentKind } = getPtyManifest('nested-unknown');
@@ -313,9 +313,9 @@ describe('registry manifest child identity', () => {
 
   test('classifies identity-less root rows without a parent PTY as process', () => {
     const result = withStateDir({
-      MONAD_NEST_DEPTH: undefined,
-      MONAD_PARENT_PTY_ID: undefined,
-      MONAD_PTY_ID: undefined,
+      ELANOUS_NEST_DEPTH: undefined,
+      ELANOUS_PARENT_PTY_ID: undefined,
+      ELANOUS_PTY_ID: undefined,
     }, `
       upsertPtyManifest({ id: 'root-process', kind: 'pty', cmd: 'x', startedAt: 0, now: 0 });
       const { spaceId, parentPtyId, parentPid, parentKind } = getPtyManifest('root-process');
@@ -328,7 +328,7 @@ describe('registry manifest child identity', () => {
   }, 15_000);
 
   test('classifies identity-supplied parent PTY rows as pty', () => {
-    const result = withStateDir({ MONAD_NEST_DEPTH: '2' }, `
+    const result = withStateDir({ ELANOUS_NEST_DEPTH: '2' }, `
       upsertPtyManifest({
         id: 'known-parent',
         kind: 'pty',

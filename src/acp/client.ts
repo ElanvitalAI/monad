@@ -49,7 +49,7 @@ import {
   buildClientDeclaration,
   checkProtocolVersion,
   parsePeerCapabilities,
-  type MonadCapabilities,
+  type ElanousCapabilities,
 } from './capabilities.js';
 import type {
   ForkSessionResponse,
@@ -67,22 +67,22 @@ export function resolveAcpClientTurnPerformer(backendId: string | null | undefin
   return backendId && backendId.trim().length > 0 ? backendId : ACP_UNKNOWN_EXTERNAL_PERFORMER;
 }
 
-/** MT3 — Prepare env for a nested monad (or agent) subprocess. The
+/** MT3 — Prepare env for a nested elanous (or agent) subprocess. The
  *  child must not inherit the parent's XDG_CONFIG_HOME so its hints/
  *  plugins/allowlist live in a separate directory. Generates a fresh
- *  MONAD_SESSION_ID if the caller didn't pin one. The returned object
+ *  ELANOUS_SESSION_ID if the caller didn't pin one. The returned object
  *  can be merged over process.env; the blocklist above handles
  *  stripping the parent-only identity vars. */
 export function prepareNestedChildEnv(
   overrides: Record<string, string> = {},
 ): Record<string, string> {
-  const xdgRoot = overrides['XDG_CONFIG_HOME'] ?? `/tmp/monad-nested-${process.pid}-${Date.now()}`;
-  const sessionId = overrides['MONAD_SESSION_ID']
+  const xdgRoot = overrides['XDG_CONFIG_HOME'] ?? `/tmp/elanous-nested-${process.pid}-${Date.now()}`;
+  const sessionId = overrides['ELANOUS_SESSION_ID']
     ?? `nested-${process.pid}-${Math.random().toString(36).slice(2, 8)}`;
   return {
     ...overrides,
     XDG_CONFIG_HOME: xdgRoot,
-    MONAD_SESSION_ID: sessionId,
+    ELANOUS_SESSION_ID: sessionId,
   };
 }
 
@@ -213,7 +213,7 @@ export interface AcpPermissionApprovalRequest {
 export type AcpPermissionApprover = (req: AcpPermissionApprovalRequest) => Promise<boolean>;
 
 /** AU5 — ACP question bridge. Shape of a structured question the
- *  ACP subprocess wants to surface. Mirrors monad's AskUserQuestion
+ *  ACP subprocess wants to surface. Mirrors elanous's AskUserQuestion
  *  request (1-3 questions × 2-4 options) so the hosting dashboard
  *  can route directly into the same modal.
  *
@@ -321,7 +321,7 @@ export interface AcpClientInfo {
 
 export type AcpPackageMetadataReader = () => unknown;
 
-const DEFAULT_CLIENT_INFO: AcpClientInfo = { name: 'monadagent', version: '0.0.0' };
+const DEFAULT_CLIENT_INFO: AcpClientInfo = { name: 'elanous', version: '0.0.0' };
 
 function readOwnPackageMetadata(): unknown {
   return JSON.parse(readFileSync(new URL('../../package.json', import.meta.url), 'utf8'));
@@ -356,13 +356,13 @@ export interface AcpAgentOpts {
   /** Session-scoped Codex app-server configuration arguments. Ignored by
    *  non-Codex ACP backends. */
   codexArgs?: readonly string[];
-  /** Logger — wired from monad's debug.log when running inside the
+  /** Logger — wired from elanous's debug.log when running inside the
    *  bot, or console.error when running standalone. Receives both
    *  ACP-level events and stderr lines from the subprocess. */
   log?: (msg: string) => void;
   /** Called after a successful initialize negotiation with the normalized
    *  peer capability snapshot. Observers must not affect ACP operation. */
-  onCapabilities?: (capabilities: MonadCapabilities) => void;
+  onCapabilities?: (capabilities: ElanousCapabilities) => void;
   /** Optional UI bridge for ACP session/request_permission. When
    *  omitted, sensitive tool calls are cancelled by default. */
   permissionApprover?: AcpPermissionApprover;
@@ -396,7 +396,7 @@ export class AcpAgent {
   private readonly env: NodeJS.ProcessEnv;
   private readonly billingEnvScrub: AcpBillingEnvScrubObservation;
   private readonly log: (msg: string) => void;
-  private readonly onCapabilities: ((capabilities: MonadCapabilities) => void) | undefined;
+  private readonly onCapabilities: ((capabilities: ElanousCapabilities) => void) | undefined;
   private proc: ChildProcessByStdio<Writable, Readable, Readable> | null = null;
   private connection: ClientSideConnection | null = null;
   private readonly pendingBySession = new Map<SessionId, PendingSession>();
@@ -412,7 +412,7 @@ export class AcpAgent {
    *  response. Null until start() completes. Consumers call
    *  `getCapabilities()` to feature-gate without plumbing the raw
    *  AgentCapabilities blob through every layer. */
-  private peerCapabilities: MonadCapabilities | null = null;
+  private peerCapabilities: ElanousCapabilities | null = null;
 
   constructor(opts: AcpAgentOpts) {
     this.spec = getAcpBackend(opts.backendId);
@@ -424,7 +424,7 @@ export class AcpAgent {
     // process is already a Claude Code session; claude-code-acp
     // refuses to start nested ("nested sessions share runtime
     // resources and will crash all active sessions"). Same problem
-    // hits anyone running monad inside a `claude` terminal — strip
+    // hits anyone running elanous inside a `claude` terminal — strip
     // proactively. Mirrors zed's env-strip pattern for provider
     // tokens (acp.rs:232-243), generalized here for any env that
     // breaks nested agents.
@@ -568,7 +568,7 @@ export class AcpAgent {
   ): void {
     const capabilities = parsePeerCapabilities(agentCapabilities, protocolVersion);
     this.peerCapabilities = capabilities;
-    const snapshot: MonadCapabilities = {
+    const snapshot: ElanousCapabilities = {
       ...capabilities,
       prompt: { ...capabilities.prompt },
       session: { ...capabilities.session },
@@ -616,7 +616,7 @@ export class AcpAgent {
    *  non-null after. Consumers (skill-tool, session-persistence,
    *  background-agent) feature-gate against this instead of re-parsing
    *  the wire response. */
-  getCapabilities(): MonadCapabilities | null {
+  getCapabilities(): ElanousCapabilities | null {
     return this.peerCapabilities;
   }
 
@@ -811,7 +811,7 @@ export class AcpAgent {
       // 한 줄을 잇는다. ⛔ 여기서 `grok login` 을 «자동으로 띄우지 않는다** —
       // 턴 도중에 브라우저를 여는 것은 침습적이라 codex 의 실배선
       // (codex-app-server-agent.ts:1457)도 힌트만 낸다. 실제 로그인 구동은
-      // 사용자가 부르는 `monad acp login grok` 이 소유한다.
+      // 사용자가 부르는 `elanous acp login grok` 이 소유한다.
       const grokAuthFailure = this.spec.id === 'grok' && isGrokAuthError(error);
       debug.log('acp.client', 'prompt-failed', {
         sessionId,
@@ -830,8 +830,8 @@ export class AcpAgent {
     }
   }
 
-  /** Inject text blocks into a live monad ACP turn when the peer supports
-   *  the monad/session/steer extension. */
+  /** Inject text blocks into a live elanous ACP turn when the peer supports
+   *  the elanous/session/steer extension. */
   async steer(sessionId: SessionId, blocks: readonly ContentBlock[]): Promise<boolean> {
     if (!this.connection) return false;
     const text = blocks
@@ -841,7 +841,7 @@ export class AcpAgent {
       .join('\n');
     if (text.trim().length === 0) return false;
     try {
-      const response = await this.connection.extMethod('monad/session/steer', { sessionId, text }) as {
+      const response = await this.connection.extMethod('elanous/session/steer', { sessionId, text }) as {
         accepted?: unknown;
       };
       return response?.accepted === true;
@@ -909,7 +909,7 @@ export class AcpAgent {
 
         // AU5 — detect a structured question piggybacked on the
         // permission request. Subprocesses that emit toolCall.kind
-        // === 'ask-user-question' (OR set rawInput.__monadQuestion:
+        // === 'ask-user-question' (OR set rawInput.__elanousQuestion:
         // true with a questions array) route through the dashboard's
         // AskUserQuestion modal instead of a yes/no prompt. Graceful
         // fallback to the normal permission flow if the question
@@ -1018,7 +1018,7 @@ export function chooseAcpPermissionOption(options: PermissionOption[], approved:
 /** AU5 — heuristic: detect a structured question piggybacked on
  *  a request_permission call. Two signal paths:
  *    1. `toolCall.kind === 'ask-user-question'` (future-standard name)
- *    2. `toolCall.rawInput.__monadQuestion === true` with a
+ *    2. `toolCall.rawInput.__elanousQuestion === true` with a
  *       `questions: [...]` array (opt-in extension)
  *  Returns null when neither matches. Stays side-effect-free so the
  *  normal permission path is unchanged when ACP subprocesses don't
@@ -1028,10 +1028,10 @@ export function extractAcpQuestion(
   backendId: string,
 ): AcpQuestionRequest | null {
   const kind = String(params.toolCall.kind ?? '');
-  const raw = params.toolCall.rawInput as { __monadQuestion?: boolean; questions?: unknown } | undefined;
+  const raw = params.toolCall.rawInput as { __elanousQuestion?: boolean; questions?: unknown } | undefined;
 
   const hasKind = kind === 'ask-user-question' || kind === 'ask_user_question';
-  const hasMarker = !!(raw && raw.__monadQuestion === true);
+  const hasMarker = !!(raw && raw.__elanousQuestion === true);
   if (!hasKind && !hasMarker) return null;
 
   const arr = raw && Array.isArray(raw.questions) ? raw.questions : null;

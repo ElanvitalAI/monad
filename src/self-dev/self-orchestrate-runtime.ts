@@ -1,4 +1,4 @@
-// SelfOrchestrate 네이티브 툴 런타임 (D · front door · 2026-07-21) — monad 가 자연어("이것들 병렬로
+// SelfOrchestrate 네이티브 툴 런타임 (D · front door · 2026-07-21) — elanous 가 자연어("이것들 병렬로
 // 구현해줘")를 인식해 **병렬 self-dev 오케스트레이터**(orchestrateSelfDev)를 자율 호출하는 ToolRuntime.
 //
 // 재발명0: 단일 SelfImplement 툴(self-implement-runtime)의 패턴을 그대로 이식 — 다른 건 코어가
@@ -545,7 +545,7 @@ export function _setFabricDecomposeConfigReaderForTesting(reader?: FabricDecompo
  *  ⇒ 🔑 두 문이 같은 곳으로 가므로 둘째 문은 «능력»이 아니라 ***파편화***다.
  *
  *  ⛔ 이것은 「덜 쓰니까 내린다」가 «아니다» — 호출 수와 «무관한» 결정이다(대표).
- *  ⚠️ CLI(`monad self orchestrate`)는 «남는다» — 모델 표면만 내린다(RunDevHarness 선례와 동형).
+ *  ⚠️ CLI(`elanous self orchestrate`)는 «남는다» — 모델 표면만 내린다(RunDevHarness 선례와 동형).
  *  🩹 되돌리려면 `tools.selfOrchestrate.modelSurface = true`. */
 export function isSelfOrchestrateModelSurfaceEnabled(): boolean {
   // ⛔ 동적 require 를 쓰지 «않는다» — 이 파일은 ESM 이고 getUserConfig 는 «이미 import» 돼 있다.
@@ -648,7 +648,7 @@ function formatResults(results: SelfDevJobResult[]): string {
     const tail = r.prUrl ? ` — ${r.prUrl}` : r.worktreePath ? ` — ${r.worktreePath}` : r.error ? ` — ${r.error.code}` : '';
     lines.push(`${head}: ${r.feature.slice(0, 60)}${tail}`);
   }
-  if (failed.length) lines.push('실패/막힌 goal 은 `monad self parked` 로 정황(화면 outcome 포함)·`repair-signals` 로 수리 신호 확인.');
+  if (failed.length) lines.push('실패/막힌 goal 은 `elanous self parked` 로 정황(화면 outcome 포함)·`repair-signals` 로 수리 신호 확인.');
   return lines.join('\n');
 }
 

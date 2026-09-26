@@ -55,7 +55,7 @@ content
 /**
  * ⭐ 근거는 이제 **집계기 산출(CodebaseGrounding)** 이다 — 종류별로 갈려 있고 배열이 아니다.
  * ⛔ 2026-07-28 실측: #5823 이 헬퍼만 새 계약으로 바꾸고 호출부·테스트를 안 고쳐
- *   `monad self author` 가 `ReferenceError` 로 크래시한 채 **자동 머지**됐다.
+ *   `elanous self author` 가 `ReferenceError` 로 크래시한 채 **자동 머지**됐다.
  *   이 fixture 가 그 반쪽 상태를 다시 통과시키지 않는다.
  */
 const facts = {
@@ -202,50 +202,50 @@ describe('goal author', () => {
     expect(classifyGoalCommandExecution({ status: 0, stderr: "error: unknown command 'frobnicate'" }).kind).toBe('success');
   });
 
-  test('records successful inline monad command help probes in Complication', async () => {
+  test('records successful inline elanous command help probes in Complication', async () => {
     const runHelpProbe = mock(async (argv: readonly string[]) => {
-      expect(argv).toEqual(['bun', 'bin/monad.mjs', 'self', 'author', '--help']);
+      expect(argv).toEqual(['bun', 'bin/elanous.mjs', 'self', 'author', '--help']);
       return { status: 0, stderr: '' };
     });
-    const authored = await authorGoal('Run `bun bin/monad.mjs self author`.', { ...deps, runHelpProbe });
+    const authored = await authorGoal('Run `bun bin/elanous.mjs self author`.', { ...deps, runHelpProbe });
     expect(runHelpProbe).toHaveBeenCalledTimes(1);
-    expect(authored.document).toContain('`bun bin/monad.mjs self author --help` — success — command completed successfully.');
+    expect(authored.document).toContain('`bun bin/elanous.mjs self author --help` — success — command completed successfully.');
   });
 
-  test('records a missing inline monad command as potentially not yet implemented', async () => {
-    const authored = await authorGoal('Run `bun bin/monad.mjs frobnicate`.', {
+  test('records a missing inline elanous command as potentially not yet implemented', async () => {
+    const authored = await authorGoal('Run `bun bin/elanous.mjs frobnicate`.', {
       ...deps,
       runHelpProbe: async () => ({ status: 1, stderr: "error: unknown command 'frobnicate'" }),
     });
-    expect(authored.document).toContain('`bun bin/monad.mjs frobnicate --help` — missing-command');
+    expect(authored.document).toContain('`bun bin/elanous.mjs frobnicate --help` — missing-command');
     expect(authored.document).toContain('this may be not yet implemented rather than a defect');
   });
 
-  test('does not probe monad command text outside inline code', async () => {
+  test('does not probe elanous command text outside inline code', async () => {
     const runHelpProbe = mock(async () => ({ status: 0, stderr: '' }));
-    const authored = await authorGoal('Run bun bin/monad.mjs self author.', { ...deps, runHelpProbe });
+    const authored = await authorGoal('Run bun bin/elanous.mjs self author.', { ...deps, runHelpProbe });
     expect(runHelpProbe).not.toHaveBeenCalled();
-    expect(authored.document).toContain('no inline `bun bin/monad.mjs` command was named');
+    expect(authored.document).toContain('no inline `bun bin/elanous.mjs` command was named');
   });
 
-  test('probes only fence-outside inline monad commands', async () => {
+  test('probes only fence-outside inline elanous commands', async () => {
     const runHelpProbe = mock(async (argv: readonly string[]) => {
-      expect(argv).toEqual(['bun', 'bin/monad.mjs', 'self', 'author', '--help']);
+      expect(argv).toEqual(['bun', 'bin/elanous.mjs', 'self', 'author', '--help']);
       return { status: 0, stderr: '' };
     });
     const authored = await authorGoal([
       '```sh',
-      '`bun bin/monad.mjs fenced-backtick`',
+      '`bun bin/elanous.mjs fenced-backtick`',
       '```',
       '~~~sh',
-      'bun bin/monad.mjs tilde-fenced',
+      'bun bin/elanous.mjs tilde-fenced',
       '~~~',
-      '    `bun bin/monad.mjs indented`',
-      'Run `bun bin/monad.mjs self author`.',
+      '    `bun bin/elanous.mjs indented`',
+      'Run `bun bin/elanous.mjs self author`.',
     ].join('\n'), { ...deps, runHelpProbe });
 
     expect(runHelpProbe).toHaveBeenCalledTimes(1);
-    expect(authored.document).toContain('`bun bin/monad.mjs self author --help` — success');
+    expect(authored.document).toContain('`bun bin/elanous.mjs self author --help` — success');
     expect(authored.document).not.toContain('fenced-backtick --help');
     expect(authored.document).not.toContain('tilde-fenced --help');
     expect(authored.document).not.toContain('indented --help');
@@ -256,20 +256,20 @@ describe('goal author', () => {
     const authored = await authorGoal([
       '```sh',
       '```not-a-close',
-      '`bun bin/monad.mjs still-fenced`',
+      '`bun bin/elanous.mjs still-fenced`',
       '```',
     ].join('\n'), { ...deps, runHelpProbe });
 
     expect(runHelpProbe).not.toHaveBeenCalled();
-    expect(authored.document).toContain('no inline `bun bin/monad.mjs` command was named');
+    expect(authored.document).toContain('no inline `bun bin/elanous.mjs` command was named');
     expect(authored.document).not.toContain('still-fenced --help');
   });
 
-  test('does not probe inline code that does not start with bun bin/monad.mjs', async () => {
+  test('does not probe inline code that does not start with bun bin/elanous.mjs', async () => {
     const runHelpProbe = mock(async () => ({ status: 0, stderr: '' }));
     const authored = await authorGoal('Run `bun test src/self-implement/goal-author.test.ts`.', { ...deps, runHelpProbe });
     expect(runHelpProbe).not.toHaveBeenCalled();
-    expect(authored.document).toContain('no inline `bun bin/monad.mjs` command was named');
+    expect(authored.document).toContain('no inline `bun bin/elanous.mjs` command was named');
   });
 
   test('records a thrown probe failure and continues probing subsequent commands', async () => {
@@ -277,24 +277,24 @@ describe('goal author', () => {
       if (argv.includes('first-command')) throw new Error('probe executor unavailable');
       return { status: 0, stderr: '' };
     });
-    const authored = await authorGoal('Run `bun bin/monad.mjs first-command` then `bun bin/monad.mjs self author`.', { ...deps, runHelpProbe });
+    const authored = await authorGoal('Run `bun bin/elanous.mjs first-command` then `bun bin/elanous.mjs self author`.', { ...deps, runHelpProbe });
     expect(runHelpProbe).toHaveBeenCalledTimes(2);
-    expect(authored.document).toContain('`bun bin/monad.mjs first-command --help` — probe-failure');
-    expect(authored.document).toContain('`bun bin/monad.mjs self author --help` — success');
+    expect(authored.document).toContain('`bun bin/elanous.mjs first-command --help` — probe-failure');
+    expect(authored.document).toContain('`bun bin/elanous.mjs self author --help` — success');
   });
 
-  test('rejects unsafe inline monad command syntax without invoking the argv probe', async () => {
+  test('rejects unsafe inline elanous command syntax without invoking the argv probe', async () => {
     const runHelpProbe = mock(async () => ({ status: 0, stderr: '' }));
     const unsafeCommands = [
-      'bun bin/monad.mjs self author; touch /tmp/pwned',
-      'bun bin/monad.mjs self author && touch /tmp/pwned',
-      'bun bin/monad.mjs self author | cat',
-      'bun bin/monad.mjs self author > /tmp/pwned',
-      'bun bin/monad.mjs self $(touch /tmp/pwned)',
-      'bun bin/monad.mjs self author\ntouch /tmp/pwned',
-      'bun bin/monad.mjs -- --help',
-      'bun bin/monad.mjs self -- --help',
-      'bun bin/monad.mjs self author -- --help',
+      'bun bin/elanous.mjs self author; touch /tmp/pwned',
+      'bun bin/elanous.mjs self author && touch /tmp/pwned',
+      'bun bin/elanous.mjs self author | cat',
+      'bun bin/elanous.mjs self author > /tmp/pwned',
+      'bun bin/elanous.mjs self $(touch /tmp/pwned)',
+      'bun bin/elanous.mjs self author\ntouch /tmp/pwned',
+      'bun bin/elanous.mjs -- --help',
+      'bun bin/elanous.mjs self -- --help',
+      'bun bin/elanous.mjs self author -- --help',
     ];
     for (const command of unsafeCommands) {
       const authored = await authorGoal(`Run \`${command}\`.`, { ...deps, runHelpProbe });
@@ -304,8 +304,8 @@ describe('goal author', () => {
   });
 
   test('records unavailable capability when no help probe is supplied', async () => {
-    const authored = await authorGoal('Run `bun bin/monad.mjs self author`.', deps);
-    expect(authored.document).toContain('`bun bin/monad.mjs self author --help` — unavailable — no execution capability was provided.');
+    const authored = await authorGoal('Run `bun bin/elanous.mjs self author`.', deps);
+    expect(authored.document).toContain('`bun bin/elanous.mjs self author --help` — unavailable — no execution capability was provided.');
   });
 
   // Observed focused callback duration: 1.63s (one run); the 5s child timeout leaves 3.37s headroom.
@@ -317,19 +317,19 @@ describe('goal author', () => {
     const script = `import { writeAuthoredGoal } from ${JSON.stringify(moduleUrl)};
 const facts = { grounded: true, context: '', files: [], persistentEvidence: [], codeFacts: [], skillFacts: [], memoryFacts: [], documentFacts: [], refFacts: [], ptyFacts: [] };
 const deps = { ground: async () => facts, enhance: async (ask) => ({ original: ask, checklist: [], verbatimPreserved: true }), slugFn: async () => 'default-help-probe' };
-const result = await writeAuthoredGoal('Run \`bun bin/monad.mjs self author\`.', ${JSON.stringify(process.cwd())}, deps, { mkdir: () => {}, write: () => {} });
+const result = await writeAuthoredGoal('Run \`bun bin/elanous.mjs self author\`.', ${JSON.stringify(process.cwd())}, deps, { mkdir: () => {}, write: () => {} });
 console.log(result.authored.document);`;
     // Measured callback: 1.63s; 5s grants 3.37s child headroom.
     const document = execFileSync(process.execPath, ['-e', script], { cwd: externalCwd, encoding: 'utf8', timeout: 5_000 });
 
-    expect(document).toContain('`bun bin/monad.mjs self author --help` — success — command completed successfully.');
+    expect(document).toContain('`bun bin/elanous.mjs self author --help` — success — command completed successfully.');
   // Observed child probe completes within 5s; 10s leaves assertion headroom.
   }, 10_000);
 
   test('records execution-failure but continues authoring when the authoring cwd is not a repository', async () => {
     const directory = mkdtempSync(join(tmpdir(), 'goal-author-default-help-probe-non-repository-'));
     temporaryDirectories.push(directory);
-    const result = await writeAuthoredGoal('Run `bun bin/monad.mjs self author`.', directory, {
+    const result = await writeAuthoredGoal('Run `bun bin/elanous.mjs self author`.', directory, {
       ground: async () => facts,
       enhance: deps.enhance,
       slugFn: deps.slugFn,
@@ -338,7 +338,7 @@ console.log(result.authored.document);`;
       write: (path, document) => writeFileSync(path, document, { flag: 'wx' }),
     });
 
-    expect(result.authored.document).toContain('`bun bin/monad.mjs self author --help` — execution-failure — command execution failed with code 1.');
+    expect(result.authored.document).toContain('`bun bin/elanous.mjs self author --help` — execution-failure — command execution failed with code 1.');
   });
 
   test('classifies explicit evidence commands with a per-kind default fallback table', () => {
@@ -347,9 +347,9 @@ console.log(result.authored.document);`;
       ['compile the changed source without a named command', 'default'],
       ['run bun test src/self-implement/goal-author.test.ts', 'test'],
       ['verify the focused check without a named command', 'default'],
-      ['run monad dev with the isolated TUI', 'live'],
+      ['run elanous dev with the isolated TUI', 'live'],
       ['inspect the user interface without a named command', 'default'],
-      ['query monad logs for the emitted event', 'log'],
+      ['query elanous logs for the emitted event', 'log'],
       ['inspect emitted events without a named command', 'default'],
       ['perform a mutation check and report the failure', 'mutation'],
       ['break the rule and report the failure', 'default'],
@@ -1203,7 +1203,7 @@ console.log(result.authored.document);`;
       expect(authored.document).toMatch(/## PROBLEM[\s\S]*## WHAT TO BUILD[\s\S]*## ACCEPTANCE CRITERIA[\s\S]*## REQUIRED EVIDENCE[\s\S]*## TRACED PATHS[\s\S]*## SCOPE BOUNDARY[\s\S]*## 불변식[\s\S]*## 판정 신호/);
       // A previously authored RULES section consumed 1,215 characters per document.
       // New artifacts omit that duplicate while the unchanged policy remains available
-      // to child entrypoints through MONAD_HARNESS_POLICY.
+      // to child entrypoints through ELANOUS_HARNESS_POLICY.
       expect(authored.document).not.toContain('## RULES');
       expect(GOAL_RULES_POLICY).toHaveLength(14);
       const acceptance = authored.document.slice(authored.document.indexOf('## ACCEPTANCE CRITERIA'), authored.document.indexOf('## REQUIRED EVIDENCE'));
@@ -3143,7 +3143,7 @@ ${report}`);
   // Observed focused callback duration: 1.82s (one run); each 5s CLI child timeout leaves at least 3.18s headroom.
   // `scenario()` 를 «두 번» 부른다 — 최악은 5s×2=10s ⇒ 바깥 예산은 20s (최악의 합 + 여유 10s).
   test('exposes unexecuted and measured-zero aggregate states through the read-only CLI path', () => {
-    const directory = mkdtempSync(join(tmpdir(), 'monad-test-scenario-aggregate-'));
+    const directory = mkdtempSync(join(tmpdir(), 'elanous-test-scenario-aggregate-'));
     try {
       const scenario = (name: string, report: string) => {
         const file = join(directory, name);
@@ -3157,7 +3157,7 @@ ${report}`);
 ## 결과 보고 양식
 ${report}`);
         // Measured callback: 1.82s for both inspections; each 5s CLI child timeout leaves at least 3.18s headroom.
-        return JSON.parse(execFileSync('bun', ['bin/monad.mjs', 'self', 'author', '--inspect-test-scenario', file], { encoding: 'utf8', timeout: 5_000 }));
+        return JSON.parse(execFileSync('bun', ['bin/elanous.mjs', 'self', 'author', '--inspect-test-scenario', file], { encoding: 'utf8', timeout: 5_000 }));
       };
       expect(scenario('unexecuted.md', '**집계**: 초록 `-` / 빨강 `-` / **못 잼 `-`**')).toMatchObject({
         extracted: true,
@@ -3176,7 +3176,7 @@ ${report}`);
   // Observed focused CLI aggregate callback duration: 1.82s (one run); the 5s child timeout leaves 3.18s headroom.
   // The explicit 10s test budget remains 5s above the child timeout for cleanup and assertions.
   test('runs test scenario inspection through the read-only CLI path', () => {
-    const directory = mkdtempSync(join(tmpdir(), 'monad-test-scenario-'));
+    const directory = mkdtempSync(join(tmpdir(), 'elanous-test-scenario-'));
     const file = join(directory, 'scenario.md');
     try {
       writeFileSync(file, `> **산출물 종류**: unknown
@@ -3189,7 +3189,7 @@ ${report}`);
 ## 결과 보고 양식
 **집계**: 초록 \`0\` / 빨강 \`0\` / **못 잼 \`1\`**`);
       // Measured CLI aggregate callback: 1.82s; the 5s child timeout leaves 3.18s headroom.
-      const output = execFileSync('bun', ['bin/monad.mjs', 'self', 'author', '--inspect-test-scenario', file], { encoding: 'utf8', timeout: 5_000 });
+      const output = execFileSync('bun', ['bin/elanous.mjs', 'self', 'author', '--inspect-test-scenario', file], { encoding: 'utf8', timeout: 5_000 });
       expect(JSON.parse(output)).toEqual({
         declared: true,
         extracted: true,
@@ -5543,7 +5543,7 @@ ${report}`);
         'run bun test test/goal-author-runtime.test.ts',
         'run bun test test/goal-author-lint-cli.test.ts',
         'run bun test test/goal-author-clarify-cli.test.ts',
-        'query monad logs for the emitted event',
+        'query elanous logs for the emitted event',
       ]),
       author(['preserve ordinary behavior']),
     ]);
@@ -6439,8 +6439,8 @@ ${report}`);
   });
 
   test('keeps skill documents in their contract channel and out of implementation candidates', async () => {
-    const skillPath = '/Users/example/.claude/skills/monad-logs/SKILL.md';
-    const skillFact = '[skill:monad-logs] Query cross-surface debug logs.';
+    const skillPath = '/Users/example/.claude/skills/elanous-logs/SKILL.md';
+    const skillFact = '[skill:elanous-logs] Query cross-surface debug logs.';
     const authored = await authorGoal('Separate skill evidence from source candidates.', {
       ground: async () => ({
         ...facts,
@@ -6462,11 +6462,11 @@ ${report}`);
   });
 
   test('keeps skill documents in their contract channel when groundMissionInCodebase produces the mixed input', async () => {
-    const skillPath = '/Users/example/.claude/skills/monad-logs/SKILL.md';
+    const skillPath = '/Users/example/.claude/skills/elanous-logs/SKILL.md';
     const sourcePath = 'src/self-implement/goal-author.ts';
     const skill: SkillIndexEntry = {
-      name: 'monad-logs', description: 'Query cross-surface debug logs.', triggers: [], extractedTriggers: [], triggerSource: 'none',
-      autoTrigger: false, composes: [], skillDir: '/Users/example/.claude/skills/monad-logs', rootDir: '/Users/example/.claude/skills',
+      name: 'elanous-logs', description: 'Query cross-surface debug logs.', triggers: [], extractedTriggers: [], triggerSource: 'none',
+      autoTrigger: false, composes: [], skillDir: '/Users/example/.claude/skills/elanous-logs', rootDir: '/Users/example/.claude/skills',
     };
     const facts = await groundMissionInCodebase('Separate skill evidence from source candidates.', {
       searchTerms: async () => [],
@@ -6477,7 +6477,7 @@ ${report}`);
           return { finalText: '', iterations: 1, stopReason: 'goal_complete', goalComplete: true };
         },
       },
-      skillIndex: () => [skill], pickSkills: async () => ['monad-logs'], recallMemory: () => [], recallSelf: async () => [], refDigest: () => '',
+      skillIndex: () => [skill], pickSkills: async () => ['elanous-logs'], recallMemory: () => [], recallSelf: async () => [], refDigest: () => '',
     });
     const authored = await authorGoal('Separate skill evidence from source candidates.', {
       ground: async () => facts,
@@ -6491,7 +6491,7 @@ ${report}`);
     expect(problem).toContain('Persistent grounding evidence is listed in the traced-path section below.');
     expect(authored.document.slice(authored.document.indexOf('## TRACED PATHS'), authored.document.indexOf('## SCOPE BOUNDARY'))).toContain('src/self-implement/goal-author.ts');
     expect(problem).not.toContain('Skill evidence (skill contract facts):');
-    expect(problem).not.toContain('[skill:monad-logs] Query cross-surface debug logs.');
+    expect(problem).not.toContain('[skill:elanous-logs] Query cross-surface debug logs.');
     expect(problem).not.toContain(skillPath);
     expect(whatToBuild).toContain('Candidate leads remain in the repository evidence above; do not select or implement them until the requested clarification traces a behavior and call path.');
     expect(whatToBuild).not.toContain('Candidate requiring path tracing: `src/self-implement/goal-author.ts`');
@@ -6756,7 +6756,7 @@ ${report}`);
    * ⛔ 그래서 «지우지 않고» 새 계약으로 «뒤집어» 둔다 — 지우면 「수집은 여전히 도는가」를
    *   아무도 안 재게 된다(파일 열거·정렬·하위 디렉토리 배제는 «그대로» 살아 있어야 한다).
    * 🚨 그리고 이 테스트가 «어떻게 놓쳤는지»가 이 PR 의 교훈이다 — 계약을 바꾼 커밋이
-   *   이 «테스트 파일»을 안 건드려서 `monad self gate --changed` 가 아예 «안 돌렸다».
+   *   이 «테스트 파일»을 안 건드려서 `elanous self gate --changed` 가 아예 «안 돌렸다».
    *   ⇒ [T] 의 #7736(지워진 테스트는 「실패」가 아니라 「없음」)과 기전은 달라도 뿌리가 같다.
    */
   test('collects top-level goal-context Markdown but keeps it out of the authored document', async () => {
@@ -6893,7 +6893,7 @@ ${report}`);
     expect(result.path).toMatch(/GOAL-author-42-readable-goal-author-contract-[a-f0-9]{8}-2026-07-29\.md$/);
     expect(result.path).not.toContain('hangukeo');
     expect(result.path).not.toContain('gyeyak');
-    // ⛔⭐ 머리말은 **파일 끝**이다 — 둘째 줄에 두면 `monad dev --file` 이 그것을 PR 제목·브랜치명으로
+    // ⛔⭐ 머리말은 **파일 끝**이다 — 둘째 줄에 두면 `elanous dev --file` 이 그것을 PR 제목·브랜치명으로
     //   집는다(실측 2026-07-29: `track: S` 가 브랜치가 되어 자식이 어긋난 제목을 받고 런이 죽었다).
     // ⭐ 2026-08-09 — 「왜」 절이 «은퇴»했다(대표 · 파싱 0 · 읽는 표면 0). 머리 계약 자체는 그대로고,
     //   이제 머리 블록 «바로 뒤»에 첫 골 절이 온다. 그 순서가 깨지면 goalId 파싱이 죽는다.
@@ -6966,7 +6966,7 @@ ${report}`);
       { name: 'multiple absent', cwd: '/tmp/unknown-tree', request: 'agent: author\nWrite goal', expected: ['agent: author', `submitted: ${STAMPED}`], absent: ['track:', 'session:'] },
       // ⛔ 빈 값은 **줄을 안 쓴다** — 부재와 미지를 같은 값으로 만들지 않기 위해서다. `submitted` 만 시계에서 온다.
       { name: 'all blank', cwd: '/tmp/unknown-tree', request: '---\nagent: \ntrack:\nsession:   \nsubmitted:\n---\nWrite goal', expected: [`submitted: ${STAMPED}`], absent: ['agent:', 'track:', 'session:'] },
-      { name: 'track inferred', cwd: '/work/pilot/monad', request: 'Write goal', expected: ['track: S', `submitted: ${STAMPED}`], absent: ['agent:', 'session:'] },
+      { name: 'track inferred', cwd: '/work/pilot/elanous', request: 'Write goal', expected: ['track: S', `submitted: ${STAMPED}`], absent: ['agent:', 'session:'] },
       // ⭐ 환경에서 온다 — 주입한 env 만 본다(실제 프로세스 env 가 새면 테스트가 비결정이 된다).
       { name: 'agent and session from env', cwd: '/tmp/unknown-tree', request: 'Write goal', env: { AI_AGENT: 'env-agent', CLAUDE_CODE_SESSION_ID: 'env-session' }, expected: ['agent: env-agent', 'session: env-session', `submitted: ${STAMPED}`], absent: ['track:'] },
     ];
@@ -8019,9 +8019,9 @@ await writeAuthoredGoal('Crash after temporary backlink write.', ${JSON.stringif
     ]) {
       // Measured callback: 1.75s for both argument cases; each 5s validation child timeout leaves at least 3.25s headroom.
       const result = Bun.spawnSync({
-        cmd: ['bun', 'bin/monad.mjs', '--test', 'self', 'author', 'Trace the origin.', ...args],
+        cmd: ['bun', 'bin/elanous.mjs', '--test', 'self', 'author', 'Trace the origin.', ...args],
         cwd: process.cwd(),
-        env: { ...process.env, MONAD_STATE_DIR: join(tmpdir(), `goal-author-parent-state-${crypto.randomUUID()}`) },
+        env: { ...process.env, ELANOUS_STATE_DIR: join(tmpdir(), `goal-author-parent-state-${crypto.randomUUID()}`) },
         stdout: 'pipe',
         stderr: 'pipe',
         timeout: 5_000,

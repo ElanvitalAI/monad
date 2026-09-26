@@ -3,7 +3,7 @@
 // se-doc-map(READ-ONLY 감지)을 주기화 — docs/ 실태·갭을 주 1회 텔레그램
 // report 채널로. 파일 생성/이동/삭제 없음(정리 실행은 P1 정리 루프 소관·HITL).
 //
-// cron: 0 9 * * 1 (KST 월요일 아침) — `monad schedule` registry 관리.
+// cron: 0 9 * * 1 (KST 월요일 아침) — `elanous schedule` registry 관리.
 // 사용: bun scripts/doc-map-report.ts [--dry-run]  (dry-run = 콘솔만·발송 안 함)
 //
 // PLAN: 내부 문서 `PLAN-doc-knowledge-infra-overhaul-2026-07-13` §4 P0.

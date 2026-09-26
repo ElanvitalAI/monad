@@ -1,6 +1,6 @@
 // ★ CW3 signal control(RFC-coordinator-walker-control-plane P4·2026-07-21) — 조율자→walker mid-phase 신호.
 //
-// ★ 신호 누수 근본수복(2026-07-23 대표 자율주행 실증 + 모나드 리뷰 2라운드 반영):
+// ★ 신호 누수 근본수복(2026-07-23 대표 자율주행 실증 + 엘라누스 리뷰 2라운드 반영):
 //   근본 = mid-phase 신호는 발신 당시 walker 를 위한 1회성인데 walker-dead 시 clear 안 되고 영속 → 이후
 //   모든 페이즈의 respawn·pollSignal 이 상속해 self-abort/halt(systemic 데드락·1.5h+ 손실).
 //   방어(리뷰 반영):

@@ -108,7 +108,7 @@ export async function runFirstBootWizard(
 
   const out = deps.out ?? console;
   deps.io.print('');
-  deps.io.print('  monad NEXUS · first-boot setup');
+  deps.io.print('  elanous NEXUS · first-boot setup');
   deps.io.print('  Press Ctrl-C anytime to skip remaining steps.');
   deps.io.print('');
 

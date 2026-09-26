@@ -1,16 +1,16 @@
 // ── RunUri brand tests (MSS M1.2 sub-PR #B) ──
 //
-// RunUri is a `MonadUri` subtype — runs are fresh-from-scratch entities
+// RunUri is a `ElanousUri` subtype — runs are fresh-from-scratch entities
 // with no legacy wire format, so the canonical Tier 2 `run/<ULID>` shape
 // is enforced from day one.
 
 import { describe, expect, test } from 'bun:test';
 
-import { asRunUri, mintRunUri, newMonadUri } from '../../../src/mss/uri/builder.ts';
-import { parseMonadUri } from '../../../src/mss/uri/parser.ts';
+import { asRunUri, mintRunUri, newElanousUri } from '../../../src/mss/uri/builder.ts';
+import { parseElanousUri } from '../../../src/mss/uri/parser.ts';
 
 describe('mintRunUri', () => {
-  test('returns a Tier 2 `run/<ULID>` MonadUri', () => {
+  test('returns a Tier 2 `run/<ULID>` ElanousUri', () => {
     const uri = mintRunUri();
     expect(uri).toMatch(/^run\/[0-9A-HJKMNP-TV-Z]{26}$/);
   });
@@ -21,23 +21,23 @@ describe('mintRunUri', () => {
     expect(seen.size).toBe(50);
   });
 
-  test('minted value parses as a single-segment run MonadUri', () => {
+  test('minted value parses as a single-segment run ElanousUri', () => {
     const uri = mintRunUri();
-    const parsed = parseMonadUri(uri);
+    const parsed = parseElanousUri(uri);
     expect(parsed?.tier).toBe(2);
     expect(parsed?.segments[0]?.kind).toBe('run');
   });
 });
 
 describe('asRunUri', () => {
-  test('accepts a fresh `run/<ULID>` MonadUri', () => {
-    const uri = newMonadUri('run');
+  test('accepts a fresh `run/<ULID>` ElanousUri', () => {
+    const uri = newElanousUri('run');
     expect(() => asRunUri(uri)).not.toThrow();
   });
 
-  test('accepts a nested MonadUri whose path includes a run segment', () => {
-    const session = newMonadUri('session');
-    const withRun = newMonadUri('run', session);
+  test('accepts a nested ElanousUri whose path includes a run segment', () => {
+    const session = newElanousUri('session');
+    const withRun = newElanousUri('run', session);
     expect(() => asRunUri(withRun)).not.toThrow();
   });
 
@@ -45,8 +45,8 @@ describe('asRunUri', () => {
     expect(() => asRunUri('not-a-uri')).toThrow(/Invalid RunUri/);
   });
 
-  test('rejects MonadUri without any run segment', () => {
-    const session = newMonadUri('session');
+  test('rejects ElanousUri without any run segment', () => {
+    const session = newElanousUri('session');
     expect(() => asRunUri(session)).toThrow(/Invalid RunUri/);
   });
 

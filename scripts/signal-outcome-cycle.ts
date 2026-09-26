@@ -16,7 +16,7 @@ import { debug } from '../src/debug/log.js';
 
 ensureCronNodePath();
 
-const LOG = join(homedir(), '.monad/conatus/signal_outcome_cycle.log');
+const LOG = join(homedir(), '.elanous/conatus/signal_outcome_cycle.log');
 const HORIZON = Number(process.env.SIGNAL_OUTCOME_HORIZON_DAYS || 3);
 
 function log(msg: string): void {

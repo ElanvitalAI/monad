@@ -3,7 +3,7 @@ import { runPythonSetup, type PythonSetupDeps } from './python-cli.js';
 import { evaluatePythonEnv } from '../python/resolve-python.js';
 
 test('python setup rebuilds an existing 3.10 Windows venv with the uv 3.12 base and installs requirements', () => {
-  const venv = 'C:\\Users\\u\\.local\\share\\monad\\python\\venv';
+  const venv = 'C:\\Users\\u\\.local\\share\\elanous\\python\\venv';
   const venvPy = `${venv}\\Scripts\\python.exe`;
   const uv = 'C:\\Users\\u\\AppData\\Roaming\\uv\\python\\cpython-3.12-windows-x86_64-none\\python.exe';
   const actions: string[] = [];
@@ -21,7 +21,7 @@ test('python setup rebuilds an existing 3.10 Windows venv with the uv 3.12 base 
       if (command === uv) version = [3, 12, 0];
       return { status: 0 };
     }) as typeof import('node:child_process').spawnSync,
-    check: () => evaluatePythonEnv({ platform: 'win32', resolution: { path: venvPy, source: 'monad-venv' },
+    check: () => evaluatePythonEnv({ platform: 'win32', resolution: { path: venvPy, source: 'elanous-venv' },
       declared: null, probe: { version, missing: [], hasPip: true }, venvExists: true }),
   };
   expect(runPythonSetup({}, deps)).toBe(0);

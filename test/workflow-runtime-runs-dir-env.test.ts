@@ -1,5 +1,5 @@
-// HANDOFF §4.4 follow-up — verify `MONAD_WORKFLOWS_RUNS_DIR` env var
-// overrides the default `~/.monad/workflows-runs/` root for both the
+// HANDOFF §4.4 follow-up — verify `ELANOUS_WORKFLOWS_RUNS_DIR` env var
+// overrides the default `~/.elanous/workflows-runs/` root for both the
 // executor (write path) and the Nexus disk-hydration loader (read
 // path). This lets a dogfood NEXUS isolate its run state from the
 // user's primary instance.
@@ -44,18 +44,18 @@ function makeDeps(): WorkflowDeps {
 
 const TWO_NODE_WF: WorkflowDefinition = {
   name: 'env-root-demo',
-  description: 'verifies MONAD_WORKFLOWS_RUNS_DIR honored',
+  description: 'verifies ELANOUS_WORKFLOWS_RUNS_DIR honored',
   nodes: [
     { id: 'first', bash: 'echo one' },
     { id: 'second', bash: 'echo two', depends_on: ['first'] },
   ],
 };
 
-describe('MONAD_WORKFLOWS_RUNS_DIR override (HANDOFF §4.4)', () => {
+describe('ELANOUS_WORKFLOWS_RUNS_DIR override (HANDOFF §4.4)', () => {
   let prevEnv: string | undefined;
 
   beforeEach(() => {
-    prevEnv = process.env.MONAD_WORKFLOWS_RUNS_DIR;
+    prevEnv = process.env.ELANOUS_WORKFLOWS_RUNS_DIR;
     // Make sure the test-only override doesn't mask env behaviour from
     // a previously-run test in the same file.
     _setWorkflowRunsRootForTest(null);
@@ -63,14 +63,14 @@ describe('MONAD_WORKFLOWS_RUNS_DIR override (HANDOFF §4.4)', () => {
   });
 
   afterEach(() => {
-    if (prevEnv === undefined) delete process.env.MONAD_WORKFLOWS_RUNS_DIR;
-    else process.env.MONAD_WORKFLOWS_RUNS_DIR = prevEnv;
+    if (prevEnv === undefined) delete process.env.ELANOUS_WORKFLOWS_RUNS_DIR;
+    else process.env.ELANOUS_WORKFLOWS_RUNS_DIR = prevEnv;
     _setWorkflowRunsRootForTest(null);
   });
 
   it('executor writes run state under the env-pointed root', async () => {
     const root = makeRoot();
-    process.env.MONAD_WORKFLOWS_RUNS_DIR = root;
+    process.env.ELANOUS_WORKFLOWS_RUNS_DIR = root;
 
     const result = await runWorkflowToCompletion(
       { workflow: TWO_NODE_WF, arguments: '' },
@@ -89,7 +89,7 @@ describe('MONAD_WORKFLOWS_RUNS_DIR override (HANDOFF §4.4)', () => {
 
   it('disk-hydration handler reads runs from the env-pointed root', async () => {
     const root = makeRoot();
-    process.env.MONAD_WORKFLOWS_RUNS_DIR = root;
+    process.env.ELANOUS_WORKFLOWS_RUNS_DIR = root;
 
     await runWorkflowToCompletion(
       { workflow: TWO_NODE_WF, arguments: '' },
@@ -113,7 +113,7 @@ describe('MONAD_WORKFLOWS_RUNS_DIR override (HANDOFF §4.4)', () => {
   });
 
   it('trims whitespace and falls back to default when empty', async () => {
-    process.env.MONAD_WORKFLOWS_RUNS_DIR = '   ';
+    process.env.ELANOUS_WORKFLOWS_RUNS_DIR = '   ';
     // Empty after trim → executor uses homedir default. We assert via
     // persistRun:false to avoid touching the real home dir, just
     // proving that whitespace doesn't get spliced into the run path

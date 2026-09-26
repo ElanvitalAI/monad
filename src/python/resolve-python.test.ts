@@ -1,23 +1,23 @@
 import { describe, expect, test } from 'bun:test';
-import { declaredPythonVersion, evaluatePythonEnv, monadVenvDir, parseRequirements, probePython, resolvePython, venvBasePython, venvNeedsRecreation, versionAtLeast, windowsPythonRemedy } from './resolve-python.js';
+import { declaredPythonVersion, evaluatePythonEnv, elanousVenvDir, parseRequirements, probePython, resolvePython, venvBasePython, venvNeedsRecreation, versionAtLeast, windowsPythonRemedy } from './resolve-python.js';
 
 const home = '/home/u';
-const venvPy = '/home/u/.local/share/monad/python/venv/bin/python';
+const venvPy = '/home/u/.local/share/elanous/python/venv/bin/python';
 const pyenvPy = '/home/u/.pyenv/versions/3.12.12/bin/python3';
 
-describe('resolvePython — order MONAD_PYTHON > monad venv > pyenv > PATH', () => {
+describe('resolvePython — order ELANOUS_PYTHON > elanous venv > pyenv > PATH', () => {
   const all = new Set(['/opt/py', venvPy, pyenvPy, '/usr/bin/python3']);
   const exists = (p: string) => all.has(p);
   const base = { home, exists, declared: '3.12.12' as string | null };
   test('each layer wins over the next', () => {
-    expect(resolvePython({ ...base, env: { MONAD_PYTHON: '/opt/py', PATH: '/usr/bin' } })).toEqual({ path: '/opt/py', source: 'env' });
-    expect(resolvePython({ ...base, env: { PATH: '/usr/bin' } })).toEqual({ path: venvPy, source: 'monad-venv' });
+    expect(resolvePython({ ...base, env: { ELANOUS_PYTHON: '/opt/py', PATH: '/usr/bin' } })).toEqual({ path: '/opt/py', source: 'env' });
+    expect(resolvePython({ ...base, env: { PATH: '/usr/bin' } })).toEqual({ path: venvPy, source: 'elanous-venv' });
     expect(resolvePython({ ...base, env: { PATH: '/usr/bin' }, exists: (p) => p !== venvPy && exists(p) })).toEqual({ path: pyenvPy, source: 'pyenv' });
     expect(resolvePython({ ...base, declared: null, env: { PATH: '/usr/bin' }, exists: (p) => p === '/usr/bin/python3' })).toEqual({ path: '/usr/bin/python3', source: 'path' });
     expect(resolvePython({ ...base, env: { PATH: '' }, exists: () => false })).toBeNull();
   });
   test('XDG_DATA_HOME moves the venv; the venv base never resolves to the venv itself', () => {
-    expect(monadVenvDir({ XDG_DATA_HOME: '/x' }, home)).toBe('/x/monad/python/venv');
+    expect(elanousVenvDir({ XDG_DATA_HOME: '/x' }, home)).toBe('/x/elanous/python/venv');
     expect(venvBasePython({ ...base, env: { PATH: '/usr/bin' } })).toEqual({ path: pyenvPy, source: 'pyenv' });
   });
 });
@@ -59,32 +59,32 @@ describe('Windows python discovery', () => {
   });
   test('an existing 3.10 venv needs rebuilding after uv installs 3.12, not just installing uv', () => {
     const windowsHome = 'C:\\Users\\u';
-    const venv = 'C:\\Users\\u\\.local\\share\\monad\\python\\venv\\Scripts\\python.exe';
+    const venv = 'C:\\Users\\u\\.local\\share\\elanous\\python\\venv\\Scripts\\python.exe';
     const oldProbe = { version: [3, 10, 14] as [number, number, number], missing: [], hasPip: true };
     const deps = { platform: 'win32' as const, home: windowsHome, declared: null, env: { PATH: '' },
       exists: (p: string) => p === venv || p === uv,
       runUv: () => ({ status: 0, stdout: uv }), probeUv: () => ({ version: [3, 12, 0] as [number, number, number], missing: [] }) };
-    expect(resolvePython(deps)).toEqual({ path: venv, source: 'monad-venv' });
+    expect(resolvePython(deps)).toEqual({ path: venv, source: 'elanous-venv' });
     expect(venvBasePython(deps)).toEqual({ path: uv, source: 'managed' });
-    expect(evaluatePythonEnv({ platform: 'win32', resolution: { path: venv, source: 'monad-venv' }, declared: null, probe: oldProbe, venvExists: true }))
-      .toMatchObject({ status: 'manual', remedy: 'uv python install 3.12; if ($LASTEXITCODE -eq 0) { monad python setup --yes }' });
+    expect(evaluatePythonEnv({ platform: 'win32', resolution: { path: venv, source: 'elanous-venv' }, declared: null, probe: oldProbe, venvExists: true }))
+      .toMatchObject({ status: 'manual', remedy: 'uv python install 3.12; if ($LASTEXITCODE -eq 0) { elanous python setup --yes }' });
     expect(venvNeedsRecreation(oldProbe, 'win32')).toBe(true);
-    expect(evaluatePythonEnv({ platform: 'win32', resolution: { path: venv, source: 'monad-venv' }, declared: null,
+    expect(evaluatePythonEnv({ platform: 'win32', resolution: { path: venv, source: 'elanous-venv' }, declared: null,
       probe: { version: null, missing: [], hasPip: false }, venvExists: true }).remedy)
-      .toBe('uv python install 3.12; if ($LASTEXITCODE -eq 0) { monad python setup --yes }');
+      .toBe('uv python install 3.12; if ($LASTEXITCODE -eq 0) { elanous python setup --yes }');
     expect(venvNeedsRecreation(oldProbe, 'darwin')).toBe(false);
     expect(venvNeedsRecreation({ version: [3, 12, 0], missing: [], hasPip: true }, 'win32')).toBe(false);
     expect(resolvePython({ ...deps, exists: (p) => p === uv })).toEqual({ path: uv, source: 'managed' });
     const rebuilt = { version: [3, 12, 0] as [number, number, number], missing: [], hasPip: true };
-    expect(resolvePython(deps)).toEqual({ path: venv, source: 'monad-venv' });
+    expect(resolvePython(deps)).toEqual({ path: venv, source: 'elanous-venv' });
     expect(venvNeedsRecreation(rebuilt, 'win32')).toBe(false);
-    expect(evaluatePythonEnv({ platform: 'win32', resolution: { path: venv, source: 'monad-venv' }, declared: null, probe: rebuilt, venvExists: true }).status).toBe('ok');
+    expect(evaluatePythonEnv({ platform: 'win32', resolution: { path: venv, source: 'elanous-venv' }, declared: null, probe: rebuilt, venvExists: true }).status).toBe('ok');
   });
-  // Review must-fix (09-25): an explicit MONAD_PYTHON on 3.10 keeps winning the resolution order, so "install 3.12"
-  // alone repeats the same error. The remedy must re-point (and persist) MONAD_PYTHON — keyed by the source.
-  test('an explicit MONAD_PYTHON below the floor is re-pointed, not just «install 3.12» again', () => {
+  // Review must-fix (09-25): an explicit ELANOUS_PYTHON on 3.10 keeps winning the resolution order, so "install 3.12"
+  // alone repeats the same error. The remedy must re-point (and persist) ELANOUS_PYTHON — keyed by the source.
+  test('an explicit ELANOUS_PYTHON below the floor is re-pointed, not just «install 3.12» again', () => {
     const old = 'C:\\Python310\\python.exe';
-    const deps = { platform: 'win32' as const, home: 'C:\\Users\\u', declared: null, env: { PATH: '', MONAD_PYTHON: old },
+    const deps = { platform: 'win32' as const, home: 'C:\\Users\\u', declared: null, env: { PATH: '', ELANOUS_PYTHON: old },
       exists: (p: string) => p === old || p === uv,
       runUv: () => ({ status: 0, stdout: uv }), probeUv: () => ({ version: [3, 12, 0] as [number, number, number], missing: [] }) };
     // before: the explicit old interpreter still wins even though uv has 3.12
@@ -92,23 +92,23 @@ describe('Windows python discovery', () => {
     const before = evaluatePythonEnv({ platform: 'win32', resolution: { path: old, source: 'env' }, declared: null,
       probe: { version: [3, 10, 14], missing: [], hasPip: true }, venvExists: false });
     expect(before.status).toBe('manual');
-    expect(before.remedy).toContain("SetEnvironmentVariable('MONAD_PYTHON'");
+    expect(before.remedy).toContain("SetEnvironmentVariable('ELANOUS_PYTHON'");
     expect(before.remedy).toContain('uv python find 3.12');
     expect(windowsPythonRemedy('env')).not.toBe(windowsPythonRemedy('path'));
-    // after: MONAD_PYTHON points at the uv 3.12 interpreter — resolution follows it and the floor passes
-    const after = { ...deps, env: { PATH: '', MONAD_PYTHON: uv } };
+    // after: ELANOUS_PYTHON points at the uv 3.12 interpreter — resolution follows it and the floor passes
+    const after = { ...deps, env: { PATH: '', ELANOUS_PYTHON: uv } };
     expect(resolvePython(after)).toEqual({ path: uv, source: 'env' });
     expect(evaluatePythonEnv({ platform: 'win32', resolution: { path: uv, source: 'env' }, declared: null,
       probe: { version: [3, 12, 0], missing: [], hasPip: true }, venvExists: false }).status).not.toBe('manual');
   });
-  test('Windows venv wins over PATH and a WindowsApps MONAD_PYTHON is ignored', () => {
+  test('Windows venv wins over PATH and a WindowsApps ELANOUS_PYTHON is ignored', () => {
     const windowsHome = 'C:\\Users\\u';
-    const venv = 'C:\\Users\\u\\.local\\share\\monad\\python\\venv\\Scripts\\python.exe';
+    const venv = 'C:\\Users\\u\\.local\\share\\elanous\\python\\venv\\Scripts\\python.exe';
     const onPath = 'C:\\Python312\\python.exe';
-    const deps = { platform: 'win32' as const, home: windowsHome, declared: null, env: { MONAD_PYTHON: stub, PATH: 'C:\\Python312' },
+    const deps = { platform: 'win32' as const, home: windowsHome, declared: null, env: { ELANOUS_PYTHON: stub, PATH: 'C:\\Python312' },
       exists: (p: string) => [stub, venv, onPath].includes(p), probePath: () => ({ version: [3, 12, 0] as [number, number, number], missing: [] }) };
-    expect(monadVenvDir({}, windowsHome)).toBe('C:\\Users\\u\\.local\\share\\monad\\python\\venv');
-    expect(resolvePython(deps)).toEqual({ path: venv, source: 'monad-venv' });
+    expect(elanousVenvDir({}, windowsHome)).toBe('C:\\Users\\u\\.local\\share\\elanous\\python\\venv');
+    expect(resolvePython(deps)).toEqual({ path: venv, source: 'elanous-venv' });
     expect(venvBasePython(deps)).toEqual({ path: onPath, source: 'path' });
   });
   test('uses a real python.exe on PATH first; missing or old python suggests uv, never pyenv', () => {
@@ -153,7 +153,7 @@ describe('evaluatePythonEnv', () => {
     // 📏 2026-09-25 debian:12 — 3.11 은 하한을 넘는다(선언 pin 3.12.12 와 무관).
     expect(evaluatePythonEnv({ resolution: r, declared: '3.12.12', probe: { version: [3, 11, 2], missing: [] }, venvExists: false }).status).toBe('fixable');
     expect(evaluatePythonEnv({ resolution: r, declared: '3.12.12', probe: { version: [3, 10, 12], missing: [] }, venvExists: false }).status).toBe('manual');
-    expect(evaluatePythonEnv({ resolution: r, declared: '3.12.12', probe: { version: [3, 12, 12], missing: [] }, venvExists: false })).toMatchObject({ status: 'fixable', remedy: 'monad python setup --yes' });
+    expect(evaluatePythonEnv({ resolution: r, declared: '3.12.12', probe: { version: [3, 12, 12], missing: [] }, venvExists: false })).toMatchObject({ status: 'fixable', remedy: 'elanous python setup --yes' });
     expect(evaluatePythonEnv({ resolution: r, declared: '3.12.12', probe: { version: [3, 12, 12], missing: ['pykrx'] }, venvExists: true })).toMatchObject({ status: 'fixable', evidence: expect.stringContaining('pykrx') });
     expect(evaluatePythonEnv({ resolution: r, declared: '3.12.12', probe: { version: [3, 13, 1], missing: [] }, venvExists: true }).status).toBe('ok');
   });
@@ -180,8 +180,8 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { spawnSync } from 'node:child_process';
 describe('shell resolver agrees with the TS resolver', () => {
-  test('pyenv layer, then venv layer, then MONAD_PYTHON', () => {
-    const h = realpathSync(mkdtempSync(join(tmpdir(), 'monad-py-')));
+  test('pyenv layer, then venv layer, then ELANOUS_PYTHON', () => {
+    const h = realpathSync(mkdtempSync(join(tmpdir(), 'elanous-py-')));
     try {
       const exe = (p: string) => { mkdirSync(join(p, '..'), { recursive: true }); writeFileSync(p, '#!/bin/sh\n'); chmodSync(p, 0o755); };
       const script = join(import.meta.dir, '..', '..', 'scripts', 'lib', 'resolve-python.sh');
@@ -190,19 +190,19 @@ describe('shell resolver agrees with the TS resolver', () => {
       exe(join(h, '.pyenv/versions/3.12.12/bin/python3'));
       expect(sh({})).toBe(join(h, '.pyenv/versions/3.12.12/bin/python3'));
       expect(ts({})).toBe(sh({}));
-      exe(join(h, '.local/share/monad/python/venv/bin/python'));
-      expect(sh({})).toBe(join(h, '.local/share/monad/python/venv/bin/python'));
+      exe(join(h, '.local/share/elanous/python/venv/bin/python'));
+      expect(sh({})).toBe(join(h, '.local/share/elanous/python/venv/bin/python'));
       expect(ts({})).toBe(sh({}));
       exe(join(h, 'opt/py'));
-      expect(sh({ MONAD_PYTHON: join(h, 'opt/py') })).toBe(join(h, 'opt/py'));
-      expect(ts({ MONAD_PYTHON: join(h, 'opt/py') })).toBe(sh({ MONAD_PYTHON: join(h, 'opt/py') }));
+      expect(sh({ ELANOUS_PYTHON: join(h, 'opt/py') })).toBe(join(h, 'opt/py'));
+      expect(ts({ ELANOUS_PYTHON: join(h, 'opt/py') })).toBe(sh({ ELANOUS_PYTHON: join(h, 'opt/py') }));
     } finally { rmSync(h, { recursive: true, force: true }); }
   });
 });
 
 // 🆕 09-24 빈 Ubuntu VM 실측 — 선언 파일 없음(거짓 ok) · pip 없는 venv · ensurepip 없는 기반.
 describe('evaluatePythonEnv — fresh-machine cases', () => {
-  const r = { path: '/v/bin/python', source: 'monad-venv' as const };
+  const r = { path: '/v/bin/python', source: 'elanous-venv' as const };
   const good = { version: [3, 12, 3] as [number, number, number], missing: [] };
   test('missing declarations are manual, never a vacuous ok', () => {
     expect(evaluatePythonEnv({ resolution: r, declared: null, probe: good, venvExists: true, declarationsFound: false }).status).toBe('manual');
@@ -213,6 +213,6 @@ describe('evaluatePythonEnv — fresh-machine cases', () => {
   });
   test('a base without ensurepip is manual with the distro venv line', () => {
     expect(evaluatePythonEnv({ resolution: { path: '/usr/bin/python3', source: 'path' }, declared: '3.12.12', probe: good, venvExists: false, baseHasEnsurepip: false, venvRemedy: 'sudo apt-get install -y python3-venv' }))
-      .toMatchObject({ status: 'manual', remedy: 'sudo apt-get install -y python3-venv && monad python setup --yes' });
+      .toMatchObject({ status: 'manual', remedy: 'sudo apt-get install -y python3-venv && elanous python setup --yes' });
   });
 });

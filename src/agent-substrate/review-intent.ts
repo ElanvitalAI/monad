@@ -134,7 +134,7 @@ function runFactsBlock(i: Readonly<ReviewIntentInput>): Block | undefined {
   //     **PR 본문과 리뷰어 프롬프트 «둘 다»**에 닿는다.
   //   ⛔ `runId` 범주 «안»에 둔다 — 새 범주를 만들면 예산 배분(범주별 최소 몫 예약)이 바뀐다.
   const trimmedRunId = i.runId?.trim();
-  const runId = trimmedRunId ? [`runId: ${trimmedRunId}`, `원장: monad self run-ledger ${trimmedRunId}`] : [];
+  const runId = trimmedRunId ? [`runId: ${trimmedRunId}`, `원장: elanous self run-ledger ${trimmedRunId}`] : [];
   const commits = i.commits?.map((commit) => commit.trim()).filter(Boolean).map((commit) => `커밋: ${commit}`) ?? [];
   const changedFiles = [...new Set(i.changedFiles?.map((file) => file.trim()).filter(Boolean) ?? [])].map((file) => `변경 파일: ${file}`);
   const categories = [runId, commits, changedFiles]

@@ -1,6 +1,6 @@
 // ── ⭐ tools.selfImplement.autoOpenPr — operator 사전 승인 (2026-07-26 대표 결정) ──
 //
-// CLI `monad self implement --open-pr` 은 **플래그가 곧 사람의 명시 승인**이라 무인 진행이
+// CLI `elanous self implement --open-pr` 은 **플래그가 곧 사람의 명시 승인**이라 무인 진행이
 // 되지만, 툴(ACP/데몬/텔레그램) 경로엔 등가물이 없어 매번 대화형 확인을 받거나(무인이면)
 // **완성 산출이 worktree 에 좌초**했다. 이 노브가 그 갭을 닫는다 — 승인 주체는 사람으로
 // 유지되고 시점만 앞당겨진다(툴 파라미터로 열면 LLM 자기승인이 되므로 config 가 옳은 자리).
@@ -17,9 +17,9 @@ import { join } from 'node:path';
 const REPO_ROOT = join(import.meta.dir, '..');
 const ENTRY = join(REPO_ROOT, 'src/index.ts');
 
-/** 격리 config 디렉토리에 config.json 을 쓰고 로드한다(운영 ~/.monad 무접촉). */
+/** 격리 config 디렉토리에 config.json 을 쓰고 로드한다(운영 ~/.elanous 무접촉). */
 function loadWith(toolsRaw: unknown): ReturnType<typeof buildUserConfig> {
-  const dir = mkdtempSync(join(tmpdir(), 'monad-cfg-autoopenpr-'));
+  const dir = mkdtempSync(join(tmpdir(), 'elanous-cfg-autoopenpr-'));
   mkdirSync(dir, { recursive: true });
   const path = join(dir, 'config.json');
   writeFileSync(path, JSON.stringify(toolsRaw === undefined ? {} : { tools: toolsRaw }));
@@ -32,7 +32,7 @@ describe('tools.selfImplement.autoOpenPr', () => {
     expect(selfImplement.autoOpenPr).toBe(true);
     expect(selfImplement.observeOnly).toBe(false);
     // ⭐ 설정 졸업 1-a(2026-09-24): 감독 셋은 기본 켬(운영이 늘 켜 두던 값). `enabled` 는 폐기 키다.
-    //   ⚠️ autoAssist 는 `monad drive --monad` 도 읽는다 — 새 설치에서도 drive 가 감독 입력을 받는다(의도).
+    //   ⚠️ autoAssist 는 `elanous drive --elanous` 도 읽는다 — 새 설치에서도 drive 가 감독 입력을 받는다(의도).
     expect(selfImplement.autoStop).toEqual({ enabled: true, minRung: 2 });
     expect(selfImplement.autoAssist).toEqual({ enabled: true, minRung: 2 });
     expect(selfImplement.screenStallTermination).toEqual({ enabled: true, minRung: 2 });
@@ -77,7 +77,7 @@ describe('tools.selfImplement.autoOpenPr', () => {
   });
 
   test('격리 CLI config get은 selfImplement의 기존 필드와 observeOnly를 함께 노출한다', () => {
-    const dir = mkdtempSync(join(tmpdir(), 'monad-cfg-observe-only-cli-'));
+    const dir = mkdtempSync(join(tmpdir(), 'elanous-cfg-observe-only-cli-'));
     try {
       writeFileSync(join(dir, 'config.json'), JSON.stringify({
         tools: { selfImplement: { observeOnly: true, autoOpenPr: false } },
@@ -85,7 +85,7 @@ describe('tools.selfImplement.autoOpenPr', () => {
       const result = spawnSync('bun', [ENTRY, '--config-dir', dir, 'config', 'get', 'tools.selfImplement'], {
         cwd: REPO_ROOT,
         encoding: 'utf-8',
-        env: { ...process.env, MONAD_SUPPRESS_XDG_WARNING: '1' },
+        env: { ...process.env, ELANOUS_SUPPRESS_XDG_WARNING: '1' },
         timeout: 15_000,
       });
       expect(result.status).toBe(0);
@@ -104,13 +104,13 @@ describe('tools.selfImplement.autoOpenPr', () => {
   // ⛔⭐ 리뷰 must-fix(인수 라운드) — 위 검사는 `--config-dir`(1층 명시)만 지나므로 **격리 그 자체**를
   //   검증하지 않는다. 코퍼스 측정이 서는 자리는 `--test`(트리 파생 격리)이고, 그 경로에서 계약이
   //   조회되지 않으면 스위치는 있어도 **닿지 않는다**. ⇒ 실제 `--test` 를 임시 git 트리에서 돌린다
-  //   (이 저장소의 .monad-test 를 건드리지 않게 cwd 를 임시 트리로 둔다).
+  //   (이 저장소의 .elanous-test 를 건드리지 않게 cwd 를 임시 트리로 둔다).
   test('⭐ --test 격리(트리 파생)에서도 config get 이 observeOnly 를 낸다', () => {
-    const tree = mkdtempSync(join(tmpdir(), 'monad-testtree-observe-only-'));
+    const tree = mkdtempSync(join(tmpdir(), 'elanous-testtree-observe-only-'));
     try {
       const init = spawnSync('git', ['init', '-q', tree], { encoding: 'utf-8', timeout: 15_000 });
       expect(init.status).toBe(0);
-      const isolatedRoot = join(tree, '.monad-test');
+      const isolatedRoot = join(tree, '.elanous-test');
       mkdirSync(isolatedRoot, { recursive: true });
       writeFileSync(join(isolatedRoot, 'config.json'), JSON.stringify({
         tools: { selfImplement: { observeOnly: true } },
@@ -118,7 +118,7 @@ describe('tools.selfImplement.autoOpenPr', () => {
       const result = spawnSync('bun', [ENTRY, '--test', 'config', 'get', 'tools.selfImplement'], {
         cwd: tree,
         encoding: 'utf-8',
-        env: { ...process.env, MONAD_SUPPRESS_XDG_WARNING: '1', MONAD_STATE_DIR: '' },
+        env: { ...process.env, ELANOUS_SUPPRESS_XDG_WARNING: '1', ELANOUS_STATE_DIR: '' },
         timeout: 60_000,
       });
       expect(result.status).toBe(0);

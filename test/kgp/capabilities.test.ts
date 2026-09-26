@@ -8,7 +8,7 @@ import { detectKgpSupport, isKgpTerminal, _resetForTest } from '../../src/kgp/ca
 // bleed-through will give false positives. This helper snapshots +
 // restores the small set of vars we care about.
 const ENV_KEYS = [
-  'MONAD_KGP',
+  'ELANOUS_KGP',
   'TERM',
   'TERM_PROGRAM',
   'KITTY_WINDOW_ID',
@@ -79,26 +79,26 @@ describe('capabilities — brand detection', () => {
 });
 
 describe('capabilities — overrides', () => {
-  test('MONAD_KGP=0 forces null even on Ghostty', () => {
+  test('ELANOUS_KGP=0 forces null even on Ghostty', () => {
     process.env.TERM = 'xterm-ghostty';
-    process.env.MONAD_KGP = '0';
+    process.env.ELANOUS_KGP = '0';
     expect(detectKgpSupport()).toBeNull();
   });
 
-  test('MONAD_KGP=1 forces kgp on xterm', () => {
+  test('ELANOUS_KGP=1 forces kgp on xterm', () => {
     process.env.TERM = 'xterm-256color';
-    process.env.MONAD_KGP = '1';
+    process.env.ELANOUS_KGP = '1';
     expect(detectKgpSupport()).toBe('kgp');
   });
 
-  test('MONAD_KGP=old forces kgp-old', () => {
-    process.env.MONAD_KGP = 'old';
+  test('ELANOUS_KGP=old forces kgp-old', () => {
+    process.env.ELANOUS_KGP = 'old';
     expect(detectKgpSupport()).toBe('kgp-old');
   });
 
-  test('MONAD_KGP=off reads as falsey', () => {
+  test('ELANOUS_KGP=off reads as falsey', () => {
     process.env.TERM = 'xterm-kitty';
-    process.env.MONAD_KGP = 'off';
+    process.env.ELANOUS_KGP = 'off';
     expect(detectKgpSupport()).toBeNull();
   });
 });

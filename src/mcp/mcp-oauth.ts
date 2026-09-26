@@ -136,7 +136,7 @@ export interface PrepareMcpOAuthAuthorizationOpts extends McpOAuthRuntimeOpts {
 /** ⛔⭐⭐ MCP 자격은 «우주를 따라가지 않는다» — 격리 매뉴얼 §6 의 전역 사용자 자산이다.
  *
  *  종전(2026-08-20 ~)엔 `effectiveInstanceRoot()/auth.json` 에 썼다. 그래서 작업 트리
- *  TUI(격리 우주)에서 한 로그인은 `.monad-test/auth.json` 에 갇혀 운영 데몬이 못 봤고,
+ *  TUI(격리 우주)에서 한 로그인은 `.elanous-test/auth.json` 에 갇혀 운영 데몬이 못 봤고,
  *  `config sync-test` 사본끼리는 회전형 refresh token 이 서로를 폐기했다(2026-09-26 실측:
  *  자격 파일 셋에 MCP 발급자가 흩어져 있었다). ⇒ codex 로그인과 «같은» 파일을 쓴다. */
 export function mcpOAuthStorePath(): string {

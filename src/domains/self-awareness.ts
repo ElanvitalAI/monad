@@ -1,20 +1,20 @@
 // ── Self-Awareness Memory (2026-07-08 · P1 MVP) ───────────────────────────
 //
-// 문제: Claude Code·Codex 등 외부 도구가 monad 자체의 루프/로직을 바꾸거나 기능을
-// 구현해도, 정작 monad(자율 데몬/에이전트)는 그 맥락을 모른다(self-awareness 갭).
+// 문제: Claude Code·Codex 등 외부 도구가 elanous 자체의 루프/로직을 바꾸거나 기능을
+// 구현해도, 정작 elanous(자율 데몬/에이전트)는 그 맥락을 모른다(self-awareness 갭).
 //
-// 해결: 외부 도구가 "무엇을 구현/변경했나"(+남긴 문서)를 monad 기억에 **주입**하고,
-// monad 가 그것을 **회상**하게 하는 얇은 계층. 새 저장소를 만들지 않고 기존 이중 기억을
+// 해결: 외부 도구가 "무엇을 구현/변경했나"(+남긴 문서)를 elanous 기억에 **주입**하고,
+// elanous 가 그것을 **회상**하게 하는 얇은 계층. 새 저장소를 만들지 않고 기존 이중 기억을
 // 재사용한다:
 //   - 에피소드(해마): surface_events (surface='ext:<tool>'·direction='inbound'·
-//     kind='impl'·domain='monad'). recordEvent 재사용 → memory_recall(domain='monad')로 회상.
-//   - 의미(신피질): knowledge.db (kind='docs'·domain='monad'). ingestDocFile 로 문서 벡터화
-//     → finance_knowledge(domain='monad') / 벡터 회상.
+//     kind='impl'·domain='elanous'). recordEvent 재사용 → memory_recall(domain='elanous')로 회상.
+//   - 의미(신피질): knowledge.db (kind='docs'·domain='elanous'). ingestDocFile 로 문서 벡터화
+//     → finance_knowledge(domain='elanous') / 벡터 회상.
 //
 // P1(MVP·이 파일): 주입 함수(recordSelfEvent·injectSelfMemory) + 회상(recallSelfEvents) +
-//   CLI(monad self log/recall). P2=HTTP /v1/self-event + LLM 도구 · P3=스킬 · P4=데몬 ambient.
+//   CLI(elanous self log/recall). P2=HTTP /v1/self-event + LLM 도구 · P3=스킬 · P4=데몬 ambient.
 //
-// 거버넌스: 순수 기록·회상(READ-ONLY 회상). 매매/발송과 무관·격리(domain='monad').
+// 거버넌스: 순수 기록·회상(READ-ONLY 회상). 매매/발송과 무관·격리(domain='elanous').
 
 import { Database } from 'bun:sqlite';
 import { existsSync } from 'node:fs';
@@ -26,7 +26,7 @@ import { debug } from '../debug/log.js';
 import { within } from '../time/db-window.js';
 
 /** self-awareness 기억의 공유 도메인 축(finance 신호와 격리). */
-export const SELF_DOMAIN = 'monad';
+export const SELF_DOMAIN = 'elanous';
 /** 기본 이벤트 kind. */
 export const SELF_KIND = 'impl';
 /** 기본 현저성 — 구현/변경은 중요(alert 급). */
@@ -52,7 +52,7 @@ export interface SelfEventInput {
 }
 
 /** 외부 도구의 구현/변경 이벤트를 self-awareness 에피소드 기억(surface_events)에 기록.
- *  recordEvent 얇은 래퍼 — domain='monad'·category='awareness'·direction='inbound'. */
+ *  recordEvent 얇은 래퍼 — domain='elanous'·category='awareness'·direction='inbound'. */
 export function recordSelfEvent(db: Database, input: SelfEventInput, opts: { now?: () => string } = {}): string {
   // 미션 귀속 시 refs.missionId(구조 조회) + tags mission:<id>(FTS/grep) 둘 다에 심어 미션 히스토리 합류.
   const refs = input.missionId ? { ...(input.refs ?? {}), missionId: input.missionId } : input.refs;
@@ -78,7 +78,7 @@ export function recordSelfEvent(db: Database, input: SelfEventInput, opts: { now
 export interface UtteranceInput {
   /** 발화 원문. */
   text: string;
-  /** 발화 주체 — claude-code | codex | gemini | monad-self | … */
+  /** 발화 주체 — claude-code | codex | gemini | elanous-self | … */
   origin: string;
   sessionId?: string;
   gitHash?: string;
@@ -90,8 +90,8 @@ export interface UtteranceInput {
 }
 
 /** 외부/자기 발화를 surface_events 에 **provenance 태그와 함께** 기록(inbound·kind='utterance').
- *  회상이 origin/git/branch/cwd/시간으로 "누가 언제 어디서" 발화했나 구분. domain='monad'.
- *  Claude Code/Codex/Gemini hook 이 `monad self utterance` CLI 로 호출 → 이 함수. */
+ *  회상이 origin/git/branch/cwd/시간으로 "누가 언제 어디서" 발화했나 구분. domain='elanous'.
+ *  Claude Code/Codex/Gemini hook 이 `elanous self utterance` CLI 로 호출 → 이 함수. */
 export function injectUtterance(input: UtteranceInput, db?: Database): { eventId: string } {
   const prov: Provenance = {
     origin: input.origin,
@@ -122,7 +122,7 @@ export function injectUtterance(input: UtteranceInput, db?: Database): { eventId
       ...(input.sessionId ? { sessionId: input.sessionId } : {}),
       ...(input.ts ? { ts: input.ts } : {}),
     });
-    // 제1원칙 관측 — 외부 도구 발화 ingress 가 logs.db 에 닿게(memory 이벤트만으론 `monad logs` 조회 불가).
+    // 제1원칙 관측 — 외부 도구 발화 ingress 가 logs.db 에 닿게(memory 이벤트만으론 `elanous logs` 조회 불가).
     // fail-open: 관측 실패가 기억 편입을 막지 않음.
     try {
       debug.log('memory.utterance', 'ingress', {
@@ -142,7 +142,7 @@ export function injectUtterance(input: UtteranceInput, db?: Database): { eventId
 }
 
 /**
- * 미션 귀속 외부 변경 조회(RFC L1) — surface_events domain=monad 에서 refs.missionId===missionId
+ * 미션 귀속 외부 변경 조회(RFC L1) — surface_events domain=elanous 에서 refs.missionId===missionId
  * 이벤트를 최근순으로. buildMissionHistory 의 external 소스가 소비. 순수 조회.
  */
 export function listMissionExternalChanges(
@@ -184,8 +184,8 @@ export function classifyRecalledObserverOutput(hit: { surface?: unknown; tags?: 
     : 'not-observer-generated';
 }
 
-/** self-awareness 기억 회상 — surface_events domain='monad' 에피소드(READ-ONLY·결정론).
- *  "내가 최근 뭘 구현했지" 질의. 벡터(docs) 회상은 finance_knowledge(domain='monad')가 담당. */
+/** self-awareness 기억 회상 — surface_events domain='elanous' 에피소드(READ-ONLY·결정론).
+ *  "내가 최근 뭘 구현했지" 질의. 벡터(docs) 회상은 finance_knowledge(domain='elanous')가 담당. */
 export function recallSelfEvents(db: Database, query: string, opts: { sinceHours?: number; limit?: number; bump?: boolean; excludeObserverOutput?: boolean } = {}): RecallHit[] {
   const sinceHours = opts.sinceHours ?? 24 * 30; // 기본 30일(구현 이력은 오래 유의)
   const limit = opts.limit ?? 8;
@@ -206,7 +206,7 @@ export function recallSelfEvents(db: Database, query: string, opts: { sinceHours
   // 🚨 왜 중요한가 — 「회상」에 진입 경로가 «둘»인데 ***한쪽만 계측돼 있었다***:
   //   계측됨    `dispatchSelfRecall`(툴) · `searchMemories`(파일 기억)
   //   ***안 됨***  ***이 함수*** — 그런데 이걸 부르는 자리가 «넷»이고 그중에
-  //     ⓐ ***1급 CLI `monad self recall`***          (CLAUDE.md 가 «이걸 쓰라»고 말하는 그 명령)
+  //     ⓐ ***1급 CLI `elanous self recall`***          (CLAUDE.md 가 «이걸 쓰라»고 말하는 그 명령)
   //     ⓑ ***자식의 기억 컨텍스트***(`recallMemoryContext`) ← 「자식이 기억을 갖나」의 «진짜» 경로
   //   ⇒ 📌 즉 ***가장 알고 싶은 두 경로가 정확히 안 보이는 쪽에 있었다***(`F12`).
   // ⭐ 그리고 「몇 건 받았나」와 「어느 창에서 찾았나」를 «같이» 남긴다 —
@@ -244,9 +244,9 @@ export function recallSelfEvents(db: Database, query: string, opts: { sinceHours
   return returnedHits;
 }
 
-/** ★ P4 데몬 ambient — 최근 monad(자기) 구현/변경 요약(빈 문자열=변경 없음). Block5 자매:
+/** ★ P4 데몬 ambient — 최근 elanous(자기) 구현/변경 요약(빈 문자열=변경 없음). Block5 자매:
  *  발송(recentSentDigest)이 "내가 뭘 보냈나"라면 이건 "외부 도구가 내 코드를 뭘 바꿨나".
- *  systemPrompt 주입용·bounded. domain=monad 이벤트만(격리). */
+ *  systemPrompt 주입용·bounded. domain=elanous 이벤트만(격리). */
 export function recentSelfChangesDigest(db: Database, opts: { sinceHours?: number; limit?: number } = {}): string {
   const sinceHours = opts.sinceHours ?? 24 * 7; // 구현은 발송보다 저빈도 → 기본 1주
   const limit = opts.limit ?? 5;
@@ -269,7 +269,7 @@ export function recentSelfChangesDigest(db: Database, opts: { sinceHours?: numbe
     return `- [${day(r.ts)} ${tool}${r.kind ? `·${r.kind}` : ''}] ${body}`;
   };
   const days = Math.round(sinceHours / 24);
-  return `최근 monad(나 자신)에 반영된 구현/변경 (최근 ${days}일 · 외부 도구가 내 코드/루프를 바꾼 이력 · 이걸 알고 답하라 · 더 필요하면 self_recall):\n${rows.map(line).join('\n')}`;
+  return `최근 elanous(나 자신)에 반영된 구현/변경 (최근 ${days}일 · 외부 도구가 내 코드/루프를 바꾼 이력 · 이걸 알고 답하라 · 더 필요하면 self_recall):\n${rows.map(line).join('\n')}`;
 }
 
 /** recentSelfChangesDigest 의 db 래퍼 — 매 턴 fresh·fail-soft(주입 실패가 답변을 막지 않음).
@@ -287,7 +287,7 @@ export function recentSelfChangesContext(): string {
 // 갭: 미션은 "실행됐다(서사)"는 self-awareness 에 자동으로 남기지만, "무엇을 만들었나(능력·모듈·CLI·
 // 툴)"는 어느 registry 에도 전역 인지에도 구조적으로 안 남긴다(능력 catalog 는 정적 손배선·산출
 // 데이터는 미션과 함께 소멸). → 누가 만들었든(미션 자율 빌드 or 외부 도구 수습) "미션 귀속 + 태깅 +
-// 자기인지 등록"이 성립하는 정식 통로. 새 저장소 없이 surface_events(domain=monad·kind=capability)
+// 자기인지 등록"이 성립하는 정식 통로. 새 저장소 없이 surface_events(domain=elanous·kind=capability)
 // 재사용 → self recall 과 능력 조회가 같은 척추에서 잡는다(self-awareness 무결).
 
 /** 능력 이벤트 kind — self recall 은 이걸 포함해 회상, listCapabilities 는 이것만 조회. */
@@ -307,11 +307,11 @@ export interface CapabilityInput {
   prUrls?: readonly string[];
   /** 추가/변경 핵심 파일·export. */
   files?: readonly string[];
-  /** ★ 자원 핸들 — 이 능력이 만든 크론(monad schedule id). 삭제/수정 라우팅용. */
+  /** ★ 자원 핸들 — 이 능력이 만든 크론(elanous schedule id). 삭제/수정 라우팅용. */
   scheduleIds?: readonly string[];
-  /** ★ 자원 핸들 — 이 능력이 만든 태스크(monad autopilot/task id). */
+  /** ★ 자원 핸들 — 이 능력이 만든 태스크(elanous autopilot/task id). */
   taskIds?: readonly string[];
-  /** ★ 노출한 CLI(예: "monad local inventory"). */
+  /** ★ 노출한 CLI(예: "elanous local inventory"). */
   cliCommand?: string;
   /** 라이프사이클 상태(기본 active). removed/superseded 로 논리 삭제·교체. */
   status?: CapabilityStatus;
@@ -339,7 +339,7 @@ export interface CapabilityRecord {
 /**
  * 미션/외부가 만든 "능력(자원)"을 self-awareness 에 정식 등록. injectSelfMemory 재사용(kind=capability).
  * 귀속(missionId)·PR·파일·**자원 핸들(scheduleIds·taskIds·cli)**·상태를 refs 로 구조화 → self recall +
- * listCapabilities 가 잡고, 핸들로 삭제/수정을 기존 CRUD(monad schedule·autopilot)에 라우팅한다.
+ * listCapabilities 가 잡고, 핸들로 삭제/수정을 기존 CRUD(elanous schedule·autopilot)에 라우팅한다.
  * update/remove 는 같은 name 으로 재기록(append-supersede·로그 무결). 외부 도구 산출도 source=external:<tool>
  * + missionId 로 **미션 귀속** 등록(목표: 누가 만들었든 미션 자원·스스로 인지·라이프사이클 관리).
  */
@@ -426,7 +426,7 @@ export function recordCapabilitySync(input: CapabilityInput, deps: { sdb?: Datab
 }
 
 /**
- * 등록된 능력 조회 — surface_events domain=monad kind=capability. name 으로 dedupe(최신 이벤트=현재 상태·
+ * 등록된 능력 조회 — surface_events domain=elanous kind=capability. name 으로 dedupe(최신 이벤트=현재 상태·
  * append-supersede). 기본 removed 제외(includeRemoved 로 포함). missionId 필터. READ-ONLY·결정론.
  */
 export function listCapabilities(db: Database, opts: { missionId?: string; includeRemoved?: boolean; limit?: number } = {}): CapabilityRecord[] {

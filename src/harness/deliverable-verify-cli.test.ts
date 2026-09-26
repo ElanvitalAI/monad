@@ -8,7 +8,7 @@ import type { DeployVerifyResult } from './browser-verify.js';
 import { defaultPortOwnerPid, installDeliverableVerifyCliCommand, launchAndVerifyGoalDeliverable, renderDeliverableVerifyReport, verifyGoalDeliverable } from './deliverable-verify-cli.js';
 
 const repoRoot = resolve(import.meta.dir, '../..');
-const monadBin = join(repoRoot, 'bin/monad.mjs');
+const elanousBin = join(repoRoot, 'bin/elanous.mjs');
 const bunBin = process.execPath;
 const stackFramePattern = /\n\s+at\s+[^\n]+/g;
 
@@ -154,7 +154,7 @@ describe('installDeliverableVerifyCliCommand', () => {
       setExitCode: (code) => { exitCode = code; },
     });
 
-    await program.parseAsync(['node', 'monad', 'harness', 'deliverable-verify', '/goals/forwarded.md']);
+    await program.parseAsync(['node', 'elanous', 'harness', 'deliverable-verify', '/goals/forwarded.md']);
     expect(output.join('')).toContain('[deliverable verify] /goals/forwarded.md');
     expect(exitCode).toBeUndefined();
   });
@@ -170,7 +170,7 @@ describe('installDeliverableVerifyCliCommand', () => {
       setExitCode: (code) => { exitCode = code; },
     });
 
-    await program.parseAsync(['node', 'monad', 'harness', 'deliverable-verify', '/goals/missing.md']);
+    await program.parseAsync(['node', 'elanous', 'harness', 'deliverable-verify', '/goals/missing.md']);
     expect(exitCode).toBe(1);
     expect(output.join('')).toBe('[deliverable verify] /goals/missing.md\nstatus: read-error\nerror: missing goal\n');
   });
@@ -183,8 +183,8 @@ type CliRun = {
   readonly output: string;
 };
 
-function runMonadCli(args: string[], cwd = repoRoot, env: NodeJS.ProcessEnv = process.env): CliRun {
-  const result = spawnSync(bunBin, [monadBin, `--test=${join(cwd, '.monad-test')}`, ...args], {
+function runElanousCli(args: string[], cwd = repoRoot, env: NodeJS.ProcessEnv = process.env): CliRun {
+  const result = spawnSync(bunBin, [elanousBin, `--test=${join(cwd, '.elanous-test')}`, ...args], {
     cwd,
     encoding: 'utf8',
     timeout: 30_000,
@@ -254,8 +254,8 @@ function createMockCdpServer(root: string): { port: string; stop: () => void } {
 
 describe('actual harness CLI exit-code contract', () => {
   test('deliverable-verify missing goal exits non-zero while preserving prose and hiding stacks', () => {
-    const missingPath = '/tmp/monad-deliverable-verify-cli-missing-goal.md';
-    const run = runMonadCli(['harness', 'deliverable-verify', missingPath]);
+    const missingPath = '/tmp/elanous-deliverable-verify-cli-missing-goal.md';
+    const run = runElanousCli(['harness', 'deliverable-verify', missingPath]);
 
     expect(run.status).not.toBe(0);
     expect(run.stdout).toBe(`[deliverable verify] ${missingPath}\nstatus: read-error\nerror: ENOENT: no such file or directory, open '${missingPath}'\n`);
@@ -263,11 +263,11 @@ describe('actual harness CLI exit-code contract', () => {
   });
 
   test('deliverable-verify reports a signal-present missing declaration distinctly', () => {
-    const root = mkdtempSync(join(tmpdir(), 'monad-deliverable-verify-cli-signal-'));
+    const root = mkdtempSync(join(tmpdir(), 'elanous-deliverable-verify-cli-signal-'));
     const goalPath = join(root, 'goal.md');
     writeFileSync(goalPath, '# Goal\n\n대상 경로: src/server.ts\n');
     try {
-      const run = runMonadCli(['harness', 'deliverable-verify', goalPath], root);
+      const run = runElanousCli(['harness', 'deliverable-verify', goalPath], root);
 
       expect(run.status).toBe(0);
       expect(run.stdout).toBe(`[deliverable verify] ${goalPath}\nstatus: no-launch-declaration\nlaunch-declaration-classification: absent-with-signal\n`);
@@ -278,11 +278,11 @@ describe('actual harness CLI exit-code contract', () => {
   });
 
   test('deliverable-verify preserves the signal-absent missing-declaration output exactly', () => {
-    const root = mkdtempSync(join(tmpdir(), 'monad-deliverable-verify-cli-no-signal-'));
+    const root = mkdtempSync(join(tmpdir(), 'elanous-deliverable-verify-cli-no-signal-'));
     const goalPath = join(root, 'goal.md');
     writeFileSync(goalPath, '# Goal\n\n대상 경로: src/example.ts\n');
     try {
-      const run = runMonadCli(['harness', 'deliverable-verify', goalPath], root);
+      const run = runElanousCli(['harness', 'deliverable-verify', goalPath], root);
 
       expect(run.status).toBe(0);
       expect(run.stdout).toBe(`[deliverable verify] ${goalPath}\nstatus: no-launch-declaration\n`);
@@ -293,11 +293,11 @@ describe('actual harness CLI exit-code contract', () => {
   });
 
   test('deliverable-verify preserves declared-goal report, output, exit code, and flow', () => {
-    const root = mkdtempSync(join(tmpdir(), 'monad-deliverable-verify-cli-declared-'));
+    const root = mkdtempSync(join(tmpdir(), 'elanous-deliverable-verify-cli-declared-'));
     const goalPath = join(root, 'goal.md');
     writeFileSync(goalPath, goalWith('Entrypoint: src/server.ts'));
     try {
-      const run = runMonadCli(['harness', 'deliverable-verify', goalPath], root);
+      const run = runElanousCli(['harness', 'deliverable-verify', goalPath], root);
 
       expect(run.status).toBe(0);
       expect(run.stdout).toBe(`[deliverable verify] ${goalPath}\nstatus: no-port-declaration\n`);
@@ -310,8 +310,8 @@ describe('actual harness CLI exit-code contract', () => {
   /**
    * ⛔⭐⭐ **이 시험의 «전제»는 「기본 CDP 포트에 아무도 없다」이고, 그것은 «주변 환경»이다.**
    *
-   * 🚨 2026-08-28 에 드러난 것: 이 시험은 목 CDP 서버를 세우고 `MONAD_CDP_PORT` 로 가리켰는데
-   *    ***그 환경변수를 읽는 코드가 «0곳»이다***(`rg -uu 'MONAD_CDP_PORT' src/` ⇒ 0줄).
+   * 🚨 2026-08-28 에 드러난 것: 이 시험은 목 CDP 서버를 세우고 `ELANOUS_CDP_PORT` 로 가리켰는데
+   *    ***그 환경변수를 읽는 코드가 «0곳»이다***(`rg -uu 'ELANOUS_CDP_PORT' src/` ⇒ 0줄).
    *    ⇒ 격리가 «가짜»였다. 같은 파일의 다른 두 시험은 진짜 플래그 `--port` 를 쓴다.
    *    ⇒ 브라우저가 떠 있는 기계(= 봇을 모는 이 저장소의 «정상» 상태)에서는 실제 브라우저를 보고
    *       `cdp-error` 를 내므로 ***영영 빨갛다***. 나는 이 빨강을 「남의 것」으로 격리해 뒀고,
@@ -328,14 +328,14 @@ describe('actual harness CLI exit-code contract', () => {
       .then(() => true).catch(() => false);
     if (cdpBusy) {
       console.log('⚪ 못 쟀다: 기본 CDP 포트(9222)에 브라우저가 «있다» — 이 시험의 전제는 「없다」이고,'
-        + ' 이 경로는 포트를 인자로 못 받는다(MONAD_CDP_PORT 를 읽는 코드가 0곳). 판정 불가 — «통과가 아니다».');
+        + ' 이 경로는 포트를 인자로 못 받는다(ELANOUS_CDP_PORT 를 읽는 코드가 0곳). 판정 불가 — «통과가 아니다».');
       return;
     }
-    const root = mkdtempSync(join(tmpdir(), 'monad-deliverable-verify-cli-default-'));
+    const root = mkdtempSync(join(tmpdir(), 'elanous-deliverable-verify-cli-default-'));
     const goalPath = join(root, 'goal.md');
     writeFileSync(goalPath, goalWith('Port: 4312'));
     try {
-      const run = runMonadCli(['harness', 'deliverable-verify', goalPath], root);
+      const run = runElanousCli(['harness', 'deliverable-verify', goalPath], root);
 
       expect(run.status).toBe(0);
       expect(run.stdout).toBe(`[deliverable verify] ${goalPath}\nstatus: observed\ntarget: http://127.0.0.1:4312\nunmeasured: no-cdp\n`);
@@ -346,14 +346,14 @@ describe('actual harness CLI exit-code contract', () => {
   });
 
   test('deliverable-verify forwards aside to the browser backend', () => {
-    const root = mkdtempSync(join(tmpdir(), 'monad-deliverable-verify-cli-aside-'));
+    const root = mkdtempSync(join(tmpdir(), 'elanous-deliverable-verify-cli-aside-'));
     const goalPath = join(root, 'goal.md');
     writeFileSync(goalPath, goalWith('Port: 4312'));
     const asidePath = join(root, 'aside');
     writeFileSync(asidePath, '#!/bin/sh\nprintf \'{"title":"Aside","bodyLength":42,"unloadedImageCount":0,"screenshotBytes":5}\\n[ok | fake]\\n\'\n');
     chmodSync(asidePath, 0o755);
     try {
-      const run = runMonadCli(['harness', 'deliverable-verify', '--backend', 'aside', goalPath], root, { ...process.env, PATH: root });
+      const run = runElanousCli(['harness', 'deliverable-verify', '--backend', 'aside', goalPath], root, { ...process.env, PATH: root });
 
       expect(run.status).toBe(0);
       expect(run.stdout).toBe(`[deliverable verify] ${goalPath}\nstatus: observed\ntarget: http://127.0.0.1:4312\nunmeasured: javascript-errors\n`);
@@ -364,7 +364,7 @@ describe('actual harness CLI exit-code contract', () => {
   }, 15_000);
 
   test('deliverable-verify rejects an invalid backend without a stack trace', () => {
-    const run = runMonadCli(['harness', 'deliverable-verify', '--backend', 'unknown', '/tmp/goal.md']);
+    const run = runElanousCli(['harness', 'deliverable-verify', '--backend', 'unknown', '/tmp/goal.md']);
 
     expect(run.status).not.toBe(0);
     expect(run.output).toContain("option '--backend <backend>' argument 'unknown' is invalid. Allowed choices are cdp, aside.");
@@ -372,17 +372,17 @@ describe('actual harness CLI exit-code contract', () => {
   });
 
   test('verify-url invalid URL exits non-zero while preserving prose and hiding stacks', () => {
-    const root = mkdtempSync(join(tmpdir(), 'monad-verify-url-cli-'));
+    const root = mkdtempSync(join(tmpdir(), 'elanous-verify-url-cli-'));
     const server = createMockCdpServer(root);
     try {
-      const run = runMonadCli(['harness', 'verify-url', '--port', server.port, '::::not-a-url::::'], root);
+      const run = runElanousCli(['harness', 'verify-url', '--port', server.port, '::::not-a-url::::'], root);
 
       expect(run.status).not.toBe(0);
       expect(run.stdout).toBe(`\n━━ 배포 검증: ::::not-a-url:::: ━━\n  ⚠️ 문제 감지\n  title: (없음)\n  본문 길이: ? · 스크린샷: 0 bytes\n  - CDP 검증 오류: Cannot navigate to invalid URL\n`);
       expect(run.output.match(stackFramePattern)?.length ?? 0).toBe(0);
     } finally {
       // ⛔⭐ 🚨 이 한 줄이 «없어서» 이 시험은 매 실행마다 ***고아 프로세스를 하나씩 남겼다***.
-      //    📏 2026-08-29 실측: `ppid=1` 인 `…/monad-verify-url-cli-XXXX/cdp-version-server` 가 «셋» 살아 있었고
+      //    📏 2026-08-29 실측: `ppid=1` 인 `…/elanous-verify-url-cli-XXXX/cdp-version-server` 가 «셋» 살아 있었고
       //       가장 오래된 것은 ***1일 2시간째***였다(접미사 없는 이름 = 정확히 이 시험).
       //    ⚠️ 바로 아래 형제 시험(`-success-`)에는 이 줄이 «있었다» — 그래서 눈에 안 띄었다.
       //    ⛔ 죽이는 것이 «먼저»다: 서버가 그 디렉터리에서 돌고 있으므로 지우기 전에 멎어야 한다.
@@ -392,10 +392,10 @@ describe('actual harness CLI exit-code contract', () => {
   });
 
   test('verify-url omits backend and preserves the existing stdout exactly', () => {
-    const root = mkdtempSync(join(tmpdir(), 'monad-verify-url-cli-success-'));
+    const root = mkdtempSync(join(tmpdir(), 'elanous-verify-url-cli-success-'));
     const server = createMockCdpServer(root);
     try {
-      const run = runMonadCli(['harness', 'verify-url', '--port', server.port, 'http://example.test/'], root);
+      const run = runElanousCli(['harness', 'verify-url', '--port', server.port, 'http://example.test/'], root);
 
       expect(run.status).toBe(0);
       expect(run.stdout).toBe(`\n━━ 배포 검증: http://example.test/ ━━\n  ✅ 렌더 정상\n  title: OK\n  본문 길이: 42 · 스크린샷: 5 bytes\n`);
@@ -407,7 +407,7 @@ describe('actual harness CLI exit-code contract', () => {
   });
 
   test('verify-url rejects an invalid backend without a stack trace', () => {
-    const run = runMonadCli(['harness', 'verify-url', '--backend', 'unknown', 'http://example.test/']);
+    const run = runElanousCli(['harness', 'verify-url', '--backend', 'unknown', 'http://example.test/']);
 
     expect(run.status).not.toBe(0);
     expect(run.output).toContain("option '--backend <backend>' argument 'unknown' is invalid. Allowed choices are cdp, aside.");
@@ -415,11 +415,11 @@ describe('actual harness CLI exit-code contract', () => {
   });
 
   test('verify-url aside without its executable reports a non-blocking backend-specific skip', () => {
-    const root = mkdtempSync(join(tmpdir(), 'monad-verify-url-cli-aside-'));
+    const root = mkdtempSync(join(tmpdir(), 'elanous-verify-url-cli-aside-'));
     try {
       // ⛔ PATH 만 비우면 안 된다 — `src/ensure-bin-path.ts` 가 `~/.local/bin` 등을 뒤에 붙여, aside 가 깔린 기계에선
       //   진짜 aside 로 검증이 돈다(2026-09-24 이 맥에서 fail). HOME 도 비워 보강 후보를 없는 자리로 만든다.
-      const run = runMonadCli(['harness', 'verify-url', '--backend', 'aside', 'http://example.test/'], root, { ...process.env, PATH: root, HOME: root });
+      const run = runElanousCli(['harness', 'verify-url', '--backend', 'aside', 'http://example.test/'], root, { ...process.env, PATH: root, HOME: root });
 
       expect(run.status).toBe(0);
       expect(run.stdout).toBe('⚠️ aside 실행 파일을 찾을 수 없음 — 검증 skip. aside 부재는 배포 검증을 막지 않습니다.\n');

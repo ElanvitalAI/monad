@@ -246,7 +246,7 @@ function resolveTakeoverTtlMs(options: PtyControlProcessOptions): number {
   if (options.takeoverTtlMs !== undefined) {
     return positiveInteger(options.takeoverTtlMs) ?? DEFAULT_PTY_TAKEOVER_TTL_MS;
   }
-  return positiveInteger(Number(process.env.MONAD_PTY_TAKEOVER_TTL_MS))
+  return positiveInteger(Number(process.env.ELANOUS_PTY_TAKEOVER_TTL_MS))
     ?? DEFAULT_PTY_TAKEOVER_TTL_MS;
 }
 

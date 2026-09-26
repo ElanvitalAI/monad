@@ -966,7 +966,7 @@ export function runGate(io: Partial<GateIo> = {}): void {
 //      ⇒ ***틀린 답이 아니라 «다른 질문의 맞는 답»이 나왔고, 그것이 답으로 읽힐 뻔했다.***
 //   ⭐ 그래서 막는 자리는 «여기»뿐이다 — 인-프로세스 호출자(`pr-cli.ts`·`seams.ts`)는
 //      argv 를 안 넘기고, 만약 여기서 `process.argv` 를 «읽으면» 형제 게이트가 경고한 그 사고가 난다
-//      (`monad pr land` 의 인자를 자기 인자로 읽는다 — `src/cli/pr-cli.ts` 의 `args: []` 주석).
+//      (`elanous pr land` 의 인자를 자기 인자로 읽는다 — `src/cli/pr-cli.ts` 의 `args: []` 주석).
 if (import.meta.main) {
   const cliArgs = process.argv.slice(2);
   if (cliArgs.length > 0) {

@@ -27,7 +27,7 @@ You:
 You do **not**:
 - change the plan without parent approval
 - skip phases
-- batch-commit multiple phases (one commit per phase — Monad convention)
+- batch-commit multiple phases (one commit per phase — Elanous convention)
 - `git push` without explicit instruction
 
 ## Workflow per phase
@@ -42,7 +42,7 @@ You do **not**:
 
 ## Budget discipline
 
-Monad phases are usually 50-500 LOC each. If a phase explodes past 800 LOC you've probably misunderstood the scope — **stop and ask**.
+Elanous phases are usually 50-500 LOC each. If a phase explodes past 800 LOC you've probably misunderstood the scope — **stop and ask**.
 
 Don't pre-optimise, don't refactor adjacent code, don't add features not in the plan. The PLAN is the contract.
 

@@ -7,7 +7,7 @@
 // per-provider HTTP infrastructure.
 //
 // State is kept in-process. A JSON snapshot persists to
-// `~/.monad/registry.json` (flat path, per the Phase 5 entry decision)
+// `~/.elanous/registry.json` (flat path, per the Phase 5 entry decision)
 // so a daemon restart preserves the manual overrides — env-driven
 // fields are recomputed on boot, not read from disk.
 //
@@ -20,7 +20,7 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { getCatalog } from './loader.js';
 import type { Catalog } from './types.js';
-import { getMonadConfigDir, getMonadConfigDirOverride } from '../monad-config-dir.js';
+import { getElanousConfigDir, getElanousConfigDirOverride } from '../elanous-config-dir.js';
 
 export type ProviderAvailability =
   | 'available'      // apiKey present (env or override) AND no manual disable
@@ -61,14 +61,14 @@ type Listener = (event: LiveStoreEvent) => void;
 const SNAPSHOT_VERSION = 1;
 
 function defaultSnapshotPath(): string {
-  // An explicit `--config-dir` / `setMonadConfigDir()` is authoritative.
-  // Otherwise MONAD_TEST_HOME isolates direct test execution even when the
+  // An explicit `--config-dir` / `setElanousConfigDir()` is authoritative.
+  // Otherwise ELANOUS_TEST_HOME isolates direct test execution even when the
   // instance-root resolver memoized the production default before the test.
-  const explicitConfigDir = getMonadConfigDirOverride();
+  const explicitConfigDir = getElanousConfigDirOverride();
   if (explicitConfigDir) return join(explicitConfigDir, 'registry.json');
-  const testHome = process.env.MONAD_TEST_HOME?.trim();
-  if (testHome) return join(testHome, '.monad', 'registry.json');
-  return join(getMonadConfigDir(), 'registry.json');
+  const testHome = process.env.ELANOUS_TEST_HOME?.trim();
+  if (testHome) return join(testHome, '.elanous', 'registry.json');
+  return join(getElanousConfigDir(), 'registry.json');
 }
 
 function ensureDir(path: string): void {

@@ -1,4 +1,4 @@
-// `monad nexus show` — current project's daemon overview (2026-05-13).
+// `elanous nexus show` — current project's daemon overview (2026-05-13).
 //
 // Superset of `pwa show`: surfaces the PWA UI URLs (loopback + tailnet)
 // PLUS the daemon's other consumer-facing surface endpoints (REST API
@@ -86,7 +86,7 @@ export interface ResolveNexusPwaOpts {
 }
 
 /** 바인드 «와일드카드»(`0.0.0.0` · `[::]`)는 접속 주소가 아니다 — 루프백 URL 은 127.0.0.1 로.
- *  🩸 2026-09-24: 운영 데몬이 `MONAD_NEXUS_HTTP_HOST=0.0.0.0` 로 돌 때 `nexus show` 가 `http://0.0.0.0:31415/…` 를
+ *  🩸 2026-09-24: 운영 데몬이 `ELANOUS_NEXUS_HTTP_HOST=0.0.0.0` 로 돌 때 `nexus show` 가 `http://0.0.0.0:31415/…` 를
  *  «loopback» 으로 냈고, 데몬은 그 Host 를 **403** 으로 거절한다 — `nexus restart-needed` 가 「데몬 무응답」으로 읽었다. */
 export function toLoopbackUrl(url: string | undefined): string | undefined {
   return url?.replace(/^(https?:\/\/)(?:0\.0\.0\.0|\[::\])(?=[:/]|$)/, '$1127.0.0.1');
@@ -381,7 +381,7 @@ export async function runNexusShow(opts: NexusShowOpts = {}): Promise<NexusShowR
         }, null, 2));
         return { exitCode: 0, status: 'unregistered', urls };
       }
-      out.log('monad nexus show — daemon alive but not registered for this project.');
+      out.log('elanous nexus show — daemon alive but not registered for this project.');
       out.log(`  pid       ${pwa.pid}`);
       out.log(`  cwd       ${cwd}`);
       if (!urls) {
@@ -392,7 +392,7 @@ export async function runNexusShow(opts: NexusShowOpts = {}): Promise<NexusShowR
       if (revision) out.log(`  ${revision}`);
       out.log('');
       out.log('Links:');
-      out.log('  Source    These addresses come from this daemon\'s runtime sidecar, not the registry; registry readers do not list this daemon: `monad nexus pwa global status`');
+      out.log('  Source    These addresses come from this daemon\'s runtime sidecar, not the registry; registry readers do not list this daemon: `elanous nexus pwa global status`');
       out.log(`  PWA UI    ${urls.pwa.loopback}`);
       if (urls.pwa.tailnet) out.log(`            ${urls.pwa.tailnet}  (tailnet)`);
       out.log(`  REST API  ${urls.rest.loopback}`);
@@ -406,13 +406,13 @@ export async function runNexusShow(opts: NexusShowOpts = {}): Promise<NexusShowR
       out.log(JSON.stringify({ status: 'absent', instance: null, urls: null, cwd }, null, 2));
       return { exitCode: 0, status: 'absent' };
     }
-    out.log('monad nexus show — no daemon registered for this project.');
+    out.log('elanous nexus show — no daemon registered for this project.');
     out.log(`  cwd: ${cwd}`);
     out.log('');
     out.log('Bring one up:');
-    out.log('  monad nexus run --hmr');
+    out.log('  elanous nexus run --hmr');
     out.log('Other instances on this host:');
-    out.log('  monad nexus pwa global status');
+    out.log('  elanous nexus pwa global status');
     return { exitCode: 0, status: 'absent' };
   }
 
@@ -446,7 +446,7 @@ export async function runNexusShow(opts: NexusShowOpts = {}): Promise<NexusShowR
   // then groups URLs by surface (PWA UI / REST API / SSE) with both
   // loopback + tailnet variants printed beside each.
   const aliveTag = instance.alive ? '✓ alive' : '✗ stale (pid dead)';
-  out.log(`monad nexus daemon — ${aliveTag}`);
+  out.log(`elanous nexus daemon — ${aliveTag}`);
   out.log('');
   out.log(`  pid       ${instance.pid}`);
   out.log(`  mode      ${instance.mode}${instance.kind === 'test' ? ' (test)' : ''}`);
@@ -468,7 +468,7 @@ export async function runNexusShow(opts: NexusShowOpts = {}): Promise<NexusShowR
   } else if (instance.shareMounted) {
     out.log('            (tailnet — Tailscale unreachable; re-run when ts is up)');
   } else {
-    out.log('            (tailnet off — `monad nexus pwa share enable` to expose)');
+    out.log('            (tailnet off — `elanous nexus pwa share enable` to expose)');
   }
   out.log(`  REST API  ${urls.rest.loopback}`);
   if (urls.rest.tailnet) {

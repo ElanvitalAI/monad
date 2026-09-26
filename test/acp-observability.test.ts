@@ -1,11 +1,11 @@
 // ACP 세션 계측 + 테스트 우주 로그 바닥 (2026-07-27)
 //
-// 발단(실측): `monad attach --message` 로 자연어를 데몬(L2)에 던졌는데 **4분간 무출력**으로
+// 발단(실측): `elanous attach --message` 로 자연어를 데몬(L2)에 던졌는데 **4분간 무출력**으로
 // 끝났고, 연결됐는지·프롬프트가 처리됐는지조차 판정할 수 없었다. 운영 로그 6시간 전수에서
 // `acp` 계열은 `acp.termframe`(프레임 팬아웃)뿐 — **"agent → L2" 왕복이 통째로 암흑**이었다.
 //
 // ⚠️ 처음엔 `debug.enabled` 게이트가 닫혀서라고 진단했으나 **틀렸다** — 실측하니
-//    `~/.monad/logs/level.json` 이 `detail` 이라 게이트는 열려 있었다. 원인은 게이트가 아니라
+//    `~/.elanous/logs/level.json` 이 `detail` 이라 게이트는 열려 있었다. 원인은 게이트가 아니라
 //    **계측 자체의 부재**였다. 이 테스트는 그 계측의 계약을 고정한다.
 
 import { describe, expect, test } from 'bun:test';
@@ -49,7 +49,7 @@ describe('summarizeToolArgs — 관측용 요약(원문 통째 금지·비밀 �
 });
 
 describe('describeToolResult — 거부가 성공처럼 보이면 안 된다', () => {
-  test('★{error} 반환은 ok:false — monad 툴은 throw 대신 이 형태로 거부한다(nest-cap 등)', () => {
+  test('★{error} 반환은 ok:false — elanous 툴은 throw 대신 이 형태로 거부한다(nest-cap 등)', () => {
     const r = describeToolResult({ error: 'nest-cap: 재귀 상한(5중) 도달 — SelfImplement 비활성' });
     expect(r.ok).toBe(false);
     expect(r.error).toContain('nest-cap');
@@ -87,7 +87,7 @@ describe('resolveStartupDebugLevel — 테스트 우주 바닥', () => {
     expect(r.source).toBe('test-floor');
   });
 
-  // ★리뷰 must-fix — 스코프 파일은 `monad logs level off` 의 영속처이자 **사람의 명시**다.
+  // ★리뷰 must-fix — 스코프 파일은 `elanous logs level off` 의 영속처이자 **사람의 명시**다.
   //   바닥이 그걸 덮으면 "꺼둔 게 재기동마다 되살아난다".
   test('★스코프 파일의 명시 off/trail 은 테스트 우주에서도 덮지 않는다', () => {
     expect(resolveStartupDebugLevel({ scopedLevel: 'off', configLevel: 'detail', isTestInstance: true }))

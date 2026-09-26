@@ -20,7 +20,7 @@ import {
   browserNavEnter,
 } from '../src/working-dir/browser-nav.js';
 
-const ROOT = join(tmpdir(), `monad-wd-nav-test-${Date.now()}`);
+const ROOT = join(tmpdir(), `elanous-wd-nav-test-${Date.now()}`);
 const CHILD = join(ROOT, 'child');
 
 beforeAll(() => {

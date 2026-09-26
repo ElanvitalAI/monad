@@ -119,12 +119,12 @@ describe('session chat terminal-capable turns', () => {
     activeProvider = undefined;
     nextDispatchCtx = OMIT_DISPATCH_CTX;
     if (sessionRoot) rmSync(sessionRoot, { recursive: true, force: true });
-    delete process.env.MONAD_SESSION_ROOT;
+    delete process.env.ELANOUS_SESSION_ROOT;
   });
 
   test('wires PtyShell-family tools through the canonical terminal-capable turn', async () => {
-    sessionRoot = mkdtempSync(join(tmpdir(), 'monad-chat-terminal-'));
-    process.env.MONAD_SESSION_ROOT = sessionRoot;
+    sessionRoot = mkdtempSync(join(tmpdir(), 'elanous-chat-terminal-'));
+    process.env.ELANOUS_SESSION_ROOT = sessionRoot;
 
     await runToolTurn([tool('PtyShellStart')]);
 
@@ -138,8 +138,8 @@ describe('session chat terminal-capable turns', () => {
   });
 
   test('does not wire ordinary non-terminal tool turns', async () => {
-    sessionRoot = mkdtempSync(join(tmpdir(), 'monad-chat-ordinary-'));
-    process.env.MONAD_SESSION_ROOT = sessionRoot;
+    sessionRoot = mkdtempSync(join(tmpdir(), 'elanous-chat-ordinary-'));
+    process.env.ELANOUS_SESSION_ROOT = sessionRoot;
 
     await runToolTurn([tool('Read')]);
 
@@ -153,8 +153,8 @@ describe('session chat terminal-capable turns', () => {
   });
 
   test('does not treat matching budget and prompt values as already terminal-capable', async () => {
-    sessionRoot = mkdtempSync(join(tmpdir(), 'monad-chat-terminal-values-'));
-    process.env.MONAD_SESSION_ROOT = sessionRoot;
+    sessionRoot = mkdtempSync(join(tmpdir(), 'elanous-chat-terminal-values-'));
+    process.env.ELANOUS_SESSION_ROOT = sessionRoot;
 
     const matchingValuesOnly: LLMOpts = { budgetGrant: PTY_BUDGET_GRANT };
     await runToolTurn([tool('PtyShellStart')], matchingValuesOnly);
@@ -177,12 +177,12 @@ describe('session chat dispatchTool ctx forwarding', () => {
     activeProvider = undefined;
     nextDispatchCtx = OMIT_DISPATCH_CTX;
     if (sessionRoot) rmSync(sessionRoot, { recursive: true, force: true });
-    delete process.env.MONAD_SESSION_ROOT;
+    delete process.env.ELANOUS_SESSION_ROOT;
   });
 
   test('forwards the human sentence as ctx.userText through runTurn', async () => {
-    sessionRoot = mkdtempSync(join(tmpdir(), 'monad-chat-dispatch-usertext-'));
-    process.env.MONAD_SESSION_ROOT = sessionRoot;
+    sessionRoot = mkdtempSync(join(tmpdir(), 'elanous-chat-dispatch-usertext-'));
+    process.env.ELANOUS_SESSION_ROOT = sessionRoot;
 
     const human = 'please inspect the harness mention';
     nextDispatchCtx = { callId: 'call-1', userText: human };
@@ -202,8 +202,8 @@ describe('session chat dispatchTool ctx forwarding', () => {
   });
 
   test('preserves the injected ctx key set through the wrapper', async () => {
-    sessionRoot = mkdtempSync(join(tmpdir(), 'monad-chat-dispatch-keys-'));
-    process.env.MONAD_SESSION_ROOT = sessionRoot;
+    sessionRoot = mkdtempSync(join(tmpdir(), 'elanous-chat-dispatch-keys-'));
+    process.env.ELANOUS_SESSION_ROOT = sessionRoot;
 
     const injected = {
       callId: 'call-2',
@@ -228,8 +228,8 @@ describe('session chat dispatchTool ctx forwarding', () => {
   });
 
   test('keeps two-argument dispatch behavior when ctx is omitted', async () => {
-    sessionRoot = mkdtempSync(join(tmpdir(), 'monad-chat-dispatch-omit-'));
-    process.env.MONAD_SESSION_ROOT = sessionRoot;
+    sessionRoot = mkdtempSync(join(tmpdir(), 'elanous-chat-dispatch-omit-'));
+    process.env.ELANOUS_SESSION_ROOT = sessionRoot;
 
     const recorded: Array<Parameters<CoreTurnDispatchTool>[2]> = [];
     const expected = { ok: true, via: 'two-arg' };
@@ -247,8 +247,8 @@ describe('session chat dispatchTool ctx forwarding', () => {
   });
 
   test('forwards core-turn synthesized userText on the goal-loop hop', async () => {
-    sessionRoot = mkdtempSync(join(tmpdir(), 'monad-chat-dispatch-goal-loop-'));
-    process.env.MONAD_SESSION_ROOT = sessionRoot;
+    sessionRoot = mkdtempSync(join(tmpdir(), 'elanous-chat-dispatch-goal-loop-'));
+    process.env.ELANOUS_SESSION_ROOT = sessionRoot;
 
     const human = 'please inspect the harness mention';
     const recorded: Array<Parameters<CoreTurnDispatchTool>[2]> = [];

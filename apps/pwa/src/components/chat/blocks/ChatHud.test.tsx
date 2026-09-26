@@ -43,51 +43,51 @@ describe('ChatHudView — rendered strip', () => {
     const html = renderToStaticMarkup(
       <ChatHudView
         segments={[
-          seg('variant', 'override · monad', { glyph: '↯', tone: 'info' }),
+          seg('variant', 'override · elanous', { glyph: '↯', tone: 'info' }),
           seg('ssh-remote', 'server-1', { glyph: '🌐', priority: 2 }),
         ]}
       />,
     );
-    expect(html).toMatch(/data-monad-hud="strip"/);
-    expect(html).toMatch(/data-monad-hud-row="top"/);
-    expect(html).toMatch(/data-monad-hud-row="bottom"/);
-    expect(html).toContain('override · monad');
+    expect(html).toMatch(/data-elanous-hud="strip"/);
+    expect(html).toMatch(/data-elanous-hud-row="top"/);
+    expect(html).toMatch(/data-elanous-hud-row="bottom"/);
+    expect(html).toContain('override · elanous');
     expect(html).toContain('server-1');
   });
 
   it('tone enum surfaces via data attribute', () => {
     const html = renderToStaticMarkup(
-      <ChatHudView segments={[seg('variant', 'monad', { tone: 'warn' })]} />,
+      <ChatHudView segments={[seg('variant', 'elanous', { tone: 'warn' })]} />,
     );
-    expect(html).toMatch(/data-monad-hud-key="variant"/);
-    expect(html).toMatch(/data-monad-hud-tone="warn"/);
+    expect(html).toMatch(/data-elanous-hud-key="variant"/);
+    expect(html).toMatch(/data-elanous-hud-tone="warn"/);
   });
 
   it('priority attribute reflects segment.priority', () => {
     const html = renderToStaticMarkup(
       <ChatHudView segments={[seg('reasoning', 'diag', { priority: 4 })]} />,
     );
-    expect(html).toMatch(/data-monad-hud-priority="4"/);
+    expect(html).toMatch(/data-elanous-hud-priority="4"/);
   });
 
   it('renders only the top row when bottom row would be empty', () => {
     const html = renderToStaticMarkup(
-      <ChatHudView segments={[seg('variant', 'monad')]} />,
+      <ChatHudView segments={[seg('variant', 'elanous')]} />,
     );
-    expect(html).toMatch(/data-monad-hud-row="top"/);
-    expect(html).not.toMatch(/data-monad-hud-row="bottom"/);
+    expect(html).toMatch(/data-elanous-hud-row="top"/);
+    expect(html).not.toMatch(/data-elanous-hud-row="bottom"/);
   });
 
   it('bottom row carries the `hidden sm:flex` mobile class', () => {
     const html = renderToStaticMarkup(
       <ChatHudView
         segments={[
-          seg('variant', 'monad'),
+          seg('variant', 'elanous'),
           seg('ssh-remote', 'server-1'),
         ]}
       />,
     );
-    expect(html).toMatch(/data-monad-hud-row="bottom"[^>]*class="[^"]*hidden sm:flex/);
+    expect(html).toMatch(/data-elanous-hud-row="bottom"[^>]*class="[^"]*hidden sm:flex/);
   });
 });
 
@@ -98,17 +98,17 @@ describe('ChatHudView — gauge promotion', () => {
         segments={[seg('token-gauge', 'ctx 87%', { glyph: '🍞' })]}
       />,
     );
-    expect(html).toMatch(/data-monad-hud-key="token-gauge"/);
-    expect(html).toMatch(/data-monad-hud-gauge="true"/);
-    expect(html).toMatch(/data-monad-hud-percent="87"/);
+    expect(html).toMatch(/data-elanous-hud-key="token-gauge"/);
+    expect(html).toMatch(/data-elanous-hud-gauge="true"/);
+    expect(html).toMatch(/data-elanous-hud-percent="87"/);
   });
 
   it('ctx key (alias) also renders as a gauge', () => {
     const html = renderToStaticMarkup(
       <ChatHudView segments={[seg('ctx', '60%')]} />,
     );
-    expect(html).toMatch(/data-monad-hud-key="ctx"/);
-    expect(html).toMatch(/data-monad-hud-gauge="true"/);
+    expect(html).toMatch(/data-elanous-hud-key="ctx"/);
+    expect(html).toMatch(/data-elanous-hud-gauge="true"/);
   });
 });
 
@@ -117,7 +117,7 @@ describe('ChatHudGaugeBar — color ramp', () => {
     const html = renderToStaticMarkup(
       <ChatHudGaugeBar segmentKey="ctx" value="30%" />,
     );
-    expect(html).toMatch(/data-monad-hud-percent="30"/);
+    expect(html).toMatch(/data-elanous-hud-percent="30"/);
     expect(html).toMatch(/bg-emerald/);
   });
 
@@ -139,7 +139,7 @@ describe('ChatHudGaugeBar — color ramp', () => {
     const html = renderToStaticMarkup(
       <ChatHudGaugeBar segmentKey="ctx" value="some text" />,
     );
-    expect(html).toMatch(/data-monad-hud-gauge="false"/);
+    expect(html).toMatch(/data-elanous-hud-gauge="false"/);
     expect(html).toContain('some text');
   });
 

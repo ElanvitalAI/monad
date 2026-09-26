@@ -1,11 +1,11 @@
 // PWA · Nexus runtime discovery (Phase N-4 PR ν)
 //
-// Reads `~/.monad/nexus/runtime.json` to find the nexus HTTP URL. Server
+// Reads `~/.elanous/nexus/runtime.json` to find the nexus HTTP URL. Server
 // component / route handler usage only — the file system is unavailable
 // from the browser. The discovered URL is then injected into client
 // components via a context provider (see hooks/use-nexus-state.ts).
 //
-// Override: `MONAD_NEXUS_URL` env wins (production deployments where
+// Override: `ELANOUS_NEXUS_URL` env wins (production deployments where
 // nexus runs on a known address can skip the discovery step).
 
 import type { NexusRuntimeMeta } from './types';
@@ -24,7 +24,7 @@ export function discoverNexusUrl(opts: {
   fallbackUrl?: string;
 } = {}): DiscoveredNexus {
   const env = opts.envSource ?? (process.env as Record<string, string | undefined>);
-  const explicit = env.MONAD_NEXUS_URL?.trim();
+  const explicit = env.ELANOUS_NEXUS_URL?.trim();
   if (explicit) {
     return { url: explicit.replace(/\/$/, ''), source: 'env' };
   }
@@ -58,9 +58,9 @@ function defaultReadRuntimeFile(): NexusRuntimeMeta | null {
 function nexusRuntimePath(): string {
   const os = require('node:os') as typeof import('node:os');
   const path = require('node:path') as typeof import('node:path');
-  const override = process.env.MONAD_NEXUS_DIR?.trim();
+  const override = process.env.ELANOUS_NEXUS_DIR?.trim();
   const root = override && override.length > 0
     ? override
-    : path.join(os.homedir(), '.monad', 'nexus');
+    : path.join(os.homedir(), '.elanous', 'nexus');
   return path.join(root, 'runtime.json');
 }

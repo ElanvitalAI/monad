@@ -1,6 +1,6 @@
 // Archon-port T2.1 (2026-05-08) — skill node executor.
 //
-// Delegates to the monad skill registry via `deps.runSkill(slug, args)`.
+// Delegates to the elanous skill registry via `deps.runSkill(slug, args)`.
 // MVP: returns the skill's display string as the node's output. The
 // skill executes inside its own `executeSkill` envelope (T1.1 ensures
 // its tool roster is filtered by skill manifest's allow/deny).

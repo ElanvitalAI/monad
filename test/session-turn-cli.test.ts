@@ -20,18 +20,18 @@ let previousStateDir: string | undefined;
 
 function run(args: string[]) {
   return Bun.spawnSync({
-    cmd: ['bun', 'bin/monad.mjs', '--config-dir', configDir, ...args],
+    cmd: ['bun', 'bin/elanous.mjs', '--config-dir', configDir, ...args],
     cwd: repoRoot,
-    env: { ...process.env, MONAD_HOME: join(root, 'global-monad'), MONAD_SESSION_ROOT: root, MONAD_STATE_DIR: join(root, 'state') },
+    env: { ...process.env, ELANOUS_HOME: join(root, 'global-elanous'), ELANOUS_SESSION_ROOT: root, ELANOUS_STATE_DIR: join(root, 'state') },
     stdout: 'pipe',
     stderr: 'pipe',
   });
 }
 
 async function runAsync(args: string[]): Promise<{ exitCode: number; output: string }> {
-  const child = Bun.spawn(['bun', 'bin/monad.mjs', '--config-dir', configDir, ...args], {
+  const child = Bun.spawn(['bun', 'bin/elanous.mjs', '--config-dir', configDir, ...args], {
     cwd: repoRoot,
-    env: { ...process.env, MONAD_HOME: join(root, 'global-monad'), MONAD_SESSION_ROOT: root, MONAD_STATE_DIR: join(root, 'state') },
+    env: { ...process.env, ELANOUS_HOME: join(root, 'global-elanous'), ELANOUS_SESSION_ROOT: root, ELANOUS_STATE_DIR: join(root, 'state') },
     stdout: 'pipe',
     stderr: 'pipe',
   });
@@ -58,14 +58,14 @@ function startServer(): NexusHttpServer {
 }
 
 beforeEach(() => {
-  root = mkdtempSync(join(tmpdir(), 'monad-session-turn-cli-'));
+  root = mkdtempSync(join(tmpdir(), 'elanous-session-turn-cli-'));
   configDir = join(root, 'config');
-  previousSessionRoot = process.env.MONAD_SESSION_ROOT;
-  previousStateDir = process.env.MONAD_STATE_DIR;
-  process.env.MONAD_SESSION_ROOT = root;
-  process.env.MONAD_STATE_DIR = join(root, 'state');
+  previousSessionRoot = process.env.ELANOUS_SESSION_ROOT;
+  previousStateDir = process.env.ELANOUS_STATE_DIR;
+  process.env.ELANOUS_SESSION_ROOT = root;
+  process.env.ELANOUS_STATE_DIR = join(root, 'state');
   mkdirSync(join(configDir, 'nexus'), { recursive: true });
-  mkdirSync(join(root, 'global-monad'), { recursive: true });
+  mkdirSync(join(root, 'global-elanous'), { recursive: true });
   writeFileSync(join(configDir, 'acp-token'), token);
   _clearTurnsForTest();
 });
@@ -74,10 +74,10 @@ afterEach(() => {
   server?.stop();
   server = undefined;
   _clearTurnsForTest();
-  if (previousSessionRoot === undefined) delete process.env.MONAD_SESSION_ROOT;
-  else process.env.MONAD_SESSION_ROOT = previousSessionRoot;
-  if (previousStateDir === undefined) delete process.env.MONAD_STATE_DIR;
-  else process.env.MONAD_STATE_DIR = previousStateDir;
+  if (previousSessionRoot === undefined) delete process.env.ELANOUS_SESSION_ROOT;
+  else process.env.ELANOUS_SESSION_ROOT = previousSessionRoot;
+  if (previousStateDir === undefined) delete process.env.ELANOUS_STATE_DIR;
+  else process.env.ELANOUS_STATE_DIR = previousStateDir;
   rmSync(root, { recursive: true, force: true });
 });
 
@@ -102,11 +102,11 @@ describe('session turn CLI', () => {
     writeFileSync(join(configDir, 'nexus', 'runtime.json'), JSON.stringify({
       pid: process.pid, startedAt: new Date().toISOString(), nexusVersion: 'test', phase: 'test', httpPort: server.port, httpHost: '127.0.0.1',
     }));
-    writeFileSync(join(root, 'global-monad', 'pwa-registry.json'), JSON.stringify({
+    writeFileSync(join(root, 'global-elanous', 'pwa-registry.json'), JSON.stringify({
       version: 1,
       instances: [{
         pid: process.pid, ports: [globallyRegisteredDaemonPort], mode: 'static', kind: 'production', cwd: repoRoot,
-        daemonDir: join(root, 'global-monad', 'nexus'), shareMounted: false, https: false, startedAt: new Date().toISOString(),
+        daemonDir: join(root, 'global-elanous', 'nexus'), shareMounted: false, https: false, startedAt: new Date().toISOString(),
       }],
     }));
     const session = createSession({}, root);
@@ -117,7 +117,7 @@ describe('session turn CLI', () => {
 
     const remoteRun = async (args: string[]) => {
       const result = await runAsync(args);
-      const command = ['bun', 'bin/monad.mjs', '--config-dir', configDir, ...args].join(' ');
+      const command = ['bun', 'bin/elanous.mjs', '--config-dir', configDir, ...args].join(' ');
       expect(result.exitCode, `command failed: ${command}\n${result.output}`).toBe(0);
       return result.output;
     };

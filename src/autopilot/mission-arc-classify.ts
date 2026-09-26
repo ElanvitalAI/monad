@@ -185,7 +185,7 @@ export async function classifyArcs(
 /** 프로덕션 LLM classify — 분해/triage 와 동일 sol 리즈닝. */
 async function defaultArcClassify(prompt: string): Promise<string> {
   const { streamLLM, resolveDefaultProvider } = await import('../llm.js');
-  const model = process.env.MONAD_ARC_CLASSIFY_MODEL || process.env.MONAD_DECOMPOSE_MODEL || tierModel('better');
+  const model = process.env.ELANOUS_ARC_CLASSIFY_MODEL || process.env.ELANOUS_DECOMPOSE_MODEL || tierModel('better');
   const provider = resolveDefaultProvider(model);
   return streamLLM([{ role: 'user', content: prompt }], () => {}, { model, reasoningEffort: 'medium', ...(provider ? { provider } : {}) });
 }

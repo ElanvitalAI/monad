@@ -68,7 +68,7 @@ export function BudgetGuardWatcher(props: BudgetGuardWatcherProps): React.ReactN
       if (choice === 'continue') {
         dismissBudget(status.monthYYYYMM, status.status === 'ok' ? 'warning' : status.status);
         setStatus({ ...status, status: 'ok' }); // local-state hide
-        toast.message('Continuing at current tier — monad will nag again at next threshold.');
+        toast.message('Continuing at current tier — elanous will nag again at next threshold.');
         return;
       }
       // Switch + Local-only both apply the recommended fallback today.

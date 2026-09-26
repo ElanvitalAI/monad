@@ -4,7 +4,7 @@
 // capture / OpenAI Whisper API. Replays a curated set of transcript
 // scenarios through the actual `voice-input-bridge` against a fake
 // live-session registry that mirrors a 4-pane room (codex / claude-code
-// / gemini / monad). The resolveSession + submitToSession logic is
+// / gemini / elanous). The resolveSession + submitToSession logic is
 // transcribed from `dashboard/index.ts` so the script proves the wiring
 // chain a real Ctrl+Shift+V → Space hold → STT round-trip would take.
 //
@@ -57,7 +57,7 @@ const FAKE_LIVE_SESSIONS: FakeLiveSession[] = [
   { id: 'sess-codex',  launchBrand: 'codex',       transport: 'pty', paneId: 'pane-1', windowId: 1 },
   { id: 'sess-claude', launchBrand: 'claude-code', transport: 'pty', paneId: 'pane-2', windowId: 1 },
   { id: 'sess-gemini', launchBrand: 'gemini',      transport: 'pty', paneId: 'pane-3', windowId: 1 },
-  { id: 'sess-acp-1',  launchBrand: 'monad',       transport: 'acp', paneId: 'pane-4', windowId: 1 },
+  { id: 'sess-acp-1',  launchBrand: 'elanous',       transport: 'acp', paneId: 'pane-4', windowId: 1 },
 ];
 
 // Focused conversation popup id — simulates dashboard's
@@ -73,7 +73,7 @@ const BRAND_ALIASES: Readonly<Record<VoiceBrand, readonly string[]>> = {
   claude: ['claude-code', 'claude'],
   codex:  ['codex'],
   gemini: ['gemini'],
-  monad:  ['monad', 'monad-child'],
+  elanous:  ['elanous', 'elanous-child'],
 };
 
 function findLiveById(id: string): FakeLiveSession | undefined {
@@ -173,9 +173,9 @@ const SCENARIOS: Scenario[] = [
     expectRouterEcho: false,
   },
   {
-    label: 'Korean — 모나드에게 (ACP transport)',
-    transcript: '모나드에게 status report',
-    expectBrand: 'monad',
+    label: 'Korean — 엘라누스에게 (ACP transport)',
+    transcript: '엘라누스에게 status report',
+    expectBrand: 'elanous',
     expectSessionId: 'sess-acp-1',
     expectStripped: 'status report',
     expectTransport: 'acp',

@@ -2,7 +2,7 @@
 // ── 세션 S3 백업/복원 CLI · 2026-07-10 ────────────────────────────────────
 //
 // 데몬 wireSessionS3Backup 이 변경분을 상시 백업하지만, 이 CLI 로 수동 전량 백업/
-// 복원/상태 확인. S3 s3://<bucket>/monad/<monad_id>/sessions/.
+// 복원/상태 확인. S3 s3://<bucket>/monad/<elanous_id>/sessions/.
 //
 //   bun scripts/session-s3.ts status          # S3 가용 + 로컬 세션 수
 //   bun scripts/session-s3.ts backup-all       # 로컬 세션 전량 업로드 + index.json

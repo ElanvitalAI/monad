@@ -1,6 +1,6 @@
 // Daemon-tool surface for PtyShell* interactive-terminal LLM tools.
 //
-// The PtyShell* family (skills/tools/pty.ts) is monad's direct analog of
+// The PtyShell* family (skills/tools/pty.ts) is elanous's direct analog of
 // codex's `unified_exec` (exec_command + write_stdin): the LLM spawns a
 // long-running process *under a real PTY*, then poll/send/kill drives it
 // turn-by-turn. Unlike WebTerminal* (which *attaches* to a pre-existing
@@ -13,7 +13,7 @@
 // exist and are exercised by the skill-runner. This module re-exposes
 // them through the daemon-tool surface, gated behind the existing
 // `'webterm'` kind (the "heavier PTY risk" opt-in surface) so an
-// operator running `monad nexus --tools webterm` gets interactive
+// operator running `elanous nexus --tools webterm` gets interactive
 // terminal control without polluting the request-response `chat`
 // baseline (PWA · iOS).
 //

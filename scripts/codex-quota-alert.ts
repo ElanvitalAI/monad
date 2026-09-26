@@ -2,7 +2,7 @@
 // ── Codex/LLM 한도 → 텔레그램 경고 폴러 (2026-09-18) ─────────────────────
 //
 // 🩸 왜 생겼나: 2026-09-18 에 ***codex 세 계정이 «전부» 100% 소진돼 있었는데 아무도 몰랐다.***
-//   `monad usage` 는 «묻는» 표면이라 사람이 치지 않으면 영영 안 보인다. 미는 경로가 없었다.
+//   `elanous usage` 는 «묻는» 표면이라 사람이 치지 않으면 영영 안 보인다. 미는 경로가 없었다.
 //
 // 🔥 2026-09-18 «둘째» 발견 — 소진보다 이쪽이 돈이 나가는 자리다:
 //   ***주간이 100% 인데 `hasCredits: true` 면 요청이 «안 죽는다».*** 레이트리밋 오류가 안 나니
@@ -20,7 +20,7 @@
 //     세려면 계정 홈마다 `CODEX_HOME=<홈> … reset-credits list` 를 따로 쳐야 한다(여기서는 안 한다).
 //
 // cron: 0 * * * *  (한 시간마다 · 상태가 «바뀔 때»만 발송 — 같은 상태 반복 발송 금지)
-// state: ~/.monad/conatus/codex_quota_alert_state.json
+// state: ~/.elanous/conatus/codex_quota_alert_state.json
 
 import { sendOutbound } from '../src/domains/outbound-alert.js';
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
@@ -30,7 +30,7 @@ import { dirname, join } from 'node:path';
 import { ensureCronNodePath } from '../src/domains/cron-path.js';
 import { registerStandaloneLogSink } from '../src/domains/standalone-log-sink.js';
 
-const STATE = join(homedir(), '.monad/conatus/codex_quota_alert_state.json');
+const STATE = join(homedir(), '.elanous/conatus/codex_quota_alert_state.json');
 /** 잔여가 이 % 이하로 내려간 계정을 «임박»으로 본다. */
 const LOW_REMAINING_PERCENT = 10;
 /** 리셋권 만료가 이 일수 안이면 알린다. */
@@ -51,8 +51,8 @@ function readUsage(): { rows: AccountRow[] } | { error: string } {
     // ⭐ 크론은 pilot(리더 트리)에서 도니 그냥 치면 운영 config 를 읽는다.
     //   ⛔ 그런데 «비-리더 트리»에서는 격리 config 로 떨어져 행이 0개가 된다 —
     //   그러면 이 자를 «알려진 양성»에 눌러 볼 수가 없다. 그 문을 하나 낸다(운영은 무변경).
-    const configDir = process.env.MONAD_QUOTA_ALERT_CONFIG_DIR?.trim();
-    const args = ['bin/monad.mjs', 'usage', '--json', ...(configDir ? ['--config-dir', configDir] : [])];
+    const configDir = process.env.ELANOUS_QUOTA_ALERT_CONFIG_DIR?.trim();
+    const args = ['bin/elanous.mjs', 'usage', '--json', ...(configDir ? ['--config-dir', configDir] : [])];
     const raw = execFileSync('bun', args, {
       cwd: repoRoot, encoding: 'utf8', timeout: 120_000, maxBuffer: 8 * 1024 * 1024,
     });

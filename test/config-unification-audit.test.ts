@@ -1,12 +1,12 @@
-// Phase 5 (PLAN-config-unification-monad-root-2026-05-10) — Consumer audit:
-//   regression guard against re-introducing `~/.config/monad/{config.json,
+// Phase 5 (PLAN-config-unification-elanous-root-2026-05-10) — Consumer audit:
+//   regression guard against re-introducing `~/.config/elanous/{config.json,
 //   policy, budget}` literals in production code outside the legacy
 //   migrate helpers.
 //
 // Phase 6 (same PLAN) — XDG_CONFIG_HOME deprecation:
 //   userConfigPath() emits a one-time stderr warning when the legacy XDG
-//   path is in use · suppressible via MONAD_SUPPRESS_XDG_WARNING=1 ·
-//   silent inside the test harness (MONAD_TEST_HOME).
+//   path is in use · suppressible via ELANOUS_SUPPRESS_XDG_WARNING=1 ·
+//   silent inside the test harness (ELANOUS_TEST_HOME).
 
 import { describe, test, expect, beforeEach, afterEach } from 'bun:test';
 import { readdirSync, readFileSync, statSync } from 'node:fs';
@@ -17,18 +17,18 @@ import {
 
 const SRC_ROOT = join(import.meta.dir, '..', 'src');
 
-// Files where the legacy `~/.config/monad/{...}` literal is intentional
+// Files where the legacy `~/.config/elanous/{...}` literal is intentional
 // — they are the migrate helpers that need to read FROM the old location.
 const LEGACY_LITERAL_ALLOWLIST = new Set([
-  'src/storage/legacy-monad-config-migrate.ts',
-  'src/storage/legacy-monad-dir-migrate.ts',
+  'src/storage/legacy-elanous-config-migrate.ts',
+  'src/storage/legacy-elanous-dir-migrate.ts',
 ]);
 
 const LEGACY_PATTERNS: RegExp[] = [
-  // join(homedir(), '.config', 'monad', ...)
-  /join\([^)]*,\s*['"`]\.config['"`]\s*,\s*['"`]monad['"`]/,
-  // ~/.config/monad/{config,policy,budget}
-  /['"`]~\/\.config\/monad\/(config|policy|budget)/,
+  // join(homedir(), '.config', 'elanous', ...)
+  /join\([^)]*,\s*['"`]\.config['"`]\s*,\s*['"`]elanous['"`]/,
+  // ~/.config/elanous/{config,policy,budget}
+  /['"`]~\/\.config\/elanous\/(config|policy|budget)/,
   // FU2 Tier 2/3: monad-agent legacy roots.
   /join\(\s*['"`]\.config['"`]\s*,\s*['"`]monad-agent['"`]/,
   /joinPath\([^)]*,\s*['"`]\.config['"`]\s*,\s*['"`]monad-agent['"`]/,
@@ -54,7 +54,7 @@ function* walkTs(dir: string, base: string): Iterable<{ rel: string; abs: string
 }
 
 describe('Phase 5 · consumer audit · grep guard', () => {
-  test('production code has no `~/.config/monad/{config,policy,budget}` literals outside legacy migrate helpers', () => {
+  test('production code has no `~/.config/elanous/{config,policy,budget}` literals outside legacy migrate helpers', () => {
     const offenders: string[] = [];
     for (const { rel, abs } of walkTs(SRC_ROOT, '')) {
       if (LEGACY_LITERAL_ALLOWLIST.has(rel)) continue;
@@ -98,8 +98,8 @@ describe('Phase 5 · consumer audit · grep guard', () => {
 
 describe('Phase 6 · XDG_CONFIG_HOME deprecation warning', () => {
   const prevXdg = process.env.XDG_CONFIG_HOME;
-  const prevForce = process.env.MONAD_TEST_FORCE_XDG_WARNING;
-  const prevSuppress = process.env.MONAD_SUPPRESS_XDG_WARNING;
+  const prevForce = process.env.ELANOUS_TEST_FORCE_XDG_WARNING;
+  const prevSuppress = process.env.ELANOUS_SUPPRESS_XDG_WARNING;
   const prevWrite = process.stderr.write;
   let captured: string[];
 
@@ -114,18 +114,18 @@ describe('Phase 6 · XDG_CONFIG_HOME deprecation warning', () => {
     }) as unknown as typeof process.stderr.write;
     __resetXdgDeprecationWarningForTests();
     // Test runtime is silent by default · opt in for warning assertions.
-    process.env.MONAD_TEST_FORCE_XDG_WARNING = '1';
-    delete process.env.MONAD_SUPPRESS_XDG_WARNING;
+    process.env.ELANOUS_TEST_FORCE_XDG_WARNING = '1';
+    delete process.env.ELANOUS_SUPPRESS_XDG_WARNING;
   });
 
   afterEach(() => {
     process.stderr.write = prevWrite;
     if (prevXdg === undefined) delete process.env.XDG_CONFIG_HOME;
     else process.env.XDG_CONFIG_HOME = prevXdg;
-    if (prevForce === undefined) delete process.env.MONAD_TEST_FORCE_XDG_WARNING;
-    else process.env.MONAD_TEST_FORCE_XDG_WARNING = prevForce;
-    if (prevSuppress === undefined) delete process.env.MONAD_SUPPRESS_XDG_WARNING;
-    else process.env.MONAD_SUPPRESS_XDG_WARNING = prevSuppress;
+    if (prevForce === undefined) delete process.env.ELANOUS_TEST_FORCE_XDG_WARNING;
+    else process.env.ELANOUS_TEST_FORCE_XDG_WARNING = prevForce;
+    if (prevSuppress === undefined) delete process.env.ELANOUS_SUPPRESS_XDG_WARNING;
+    else process.env.ELANOUS_SUPPRESS_XDG_WARNING = prevSuppress;
     __resetXdgDeprecationWarningForTests();
   });
 
@@ -140,27 +140,27 @@ describe('Phase 6 · XDG_CONFIG_HOME deprecation warning', () => {
     process.env.XDG_CONFIG_HOME = '/tmp/xdg-fake';
     const path1 = userConfigPath();
     const path2 = userConfigPath();
-    expect(path1).toBe('/tmp/xdg-fake/monad/config.json');
+    expect(path1).toBe('/tmp/xdg-fake/elanous/config.json');
     expect(path1).toBe(path2);
 
     const merged = captured.join('');
     expect(merged).toContain('XDG_CONFIG_HOME is set');
-    expect(merged).toContain('/tmp/xdg-fake/monad/config.json');
-    expect(merged).toContain('~/.monad/config.json');
+    expect(merged).toContain('/tmp/xdg-fake/elanous/config.json');
+    expect(merged).toContain('~/.elanous/config.json');
     // Only emitted once even across repeated calls.
     expect(merged.match(/XDG_CONFIG_HOME is set/g)?.length).toBe(1);
   });
 
-  test('MONAD_SUPPRESS_XDG_WARNING=1 silences warning', () => {
+  test('ELANOUS_SUPPRESS_XDG_WARNING=1 silences warning', () => {
     process.env.XDG_CONFIG_HOME = '/tmp/xdg-fake';
-    process.env.MONAD_SUPPRESS_XDG_WARNING = '1';
+    process.env.ELANOUS_SUPPRESS_XDG_WARNING = '1';
     userConfigPath();
     expect(captured.join('')).toBe('');
   });
 
-  test('test-runtime default: silent unless MONAD_TEST_FORCE_XDG_WARNING=1 set', () => {
+  test('test-runtime default: silent unless ELANOUS_TEST_FORCE_XDG_WARNING=1 set', () => {
     process.env.XDG_CONFIG_HOME = '/tmp/xdg-fake';
-    delete process.env.MONAD_TEST_FORCE_XDG_WARNING;
+    delete process.env.ELANOUS_TEST_FORCE_XDG_WARNING;
     userConfigPath();
     expect(captured.join('')).toBe('');
   });

@@ -38,8 +38,8 @@ function fixture(decision: RestartNeededResult = { exitCode: 11, verdict: 'resta
 
 describe('runReleaseUpdate — release installer', () => {
   function setup() {
-    const prefix = mkdtempSync(join(tmpdir(), 'monad-release-update-'));
-    const packageRoot = join(prefix, 'versions', 'old', 'node_modules', 'monadagent');
+    const prefix = mkdtempSync(join(tmpdir(), 'elanous-release-update-'));
+    const packageRoot = join(prefix, 'versions', 'old', 'node_modules', 'elanous');
     mkdirSync(packageRoot, { recursive: true });
     writeFileSync(join(prefix, 'install.json'), JSON.stringify({ version: '0.1.0' }));
     const calls: Array<{ command: string; args: string[]; cwd: string; input?: string; env?: NodeJS.ProcessEnv }> = [];
@@ -64,8 +64,8 @@ describe('runReleaseUpdate — release installer', () => {
     const f = setup();
     try {
       const result = await runReleaseUpdate({}, f.deps);
-      expect(f.urls).toEqual(['https://github.com/ElanvitalAI/monad/releases/latest/download/install.sh']);
-      expect(f.calls).toEqual([{ command: 'bash', args: ['-s', '--', '--no-modify-path', '--prefix', f.prefix], cwd: f.prefix, input: 'echo verified installer', env: { MONAD_VERSION: '', MONAD_INSTALL_SOURCE: '' } }]);
+      expect(f.urls).toEqual(['https://github.com/ElanvitalAI/elanous/releases/latest/download/install.sh']);
+      expect(f.calls).toEqual([{ command: 'bash', args: ['-s', '--', '--no-modify-path', '--prefix', f.prefix], cwd: f.prefix, input: 'echo verified installer', env: { ELANOUS_VERSION: '', ELANOUS_INSTALL_SOURCE: '' } }]);
       expect(result).toMatchObject({ exitCode: 0, installedVersion: '0.2.0', restarted: false });
     } finally { f.cleanup(); }
   });
@@ -75,9 +75,9 @@ describe('runReleaseUpdate — release installer', () => {
     f.setInstalledVersion('0.2.0-rc.1');
     try {
       const result = await runReleaseUpdate({ version: '0.2.0-rc.1', restart: true, json: true }, f.deps);
-      expect(f.urls).toEqual(['https://github.com/ElanvitalAI/monad/releases/download/v0.2.0-rc.1/install.sh']);
-      expect(f.calls[0]?.env).toEqual({ MONAD_VERSION: '0.2.0-rc.1', MONAD_INSTALL_SOURCE: '' });
-      expect(f.calls[1]).toEqual({ command: 'launchctl', args: ['kickstart', '-k', 'gui/501/com.monad.nexus'], cwd: f.prefix, input: undefined, env: undefined });
+      expect(f.urls).toEqual(['https://github.com/ElanvitalAI/elanous/releases/download/v0.2.0-rc.1/install.sh']);
+      expect(f.calls[0]?.env).toEqual({ ELANOUS_VERSION: '0.2.0-rc.1', ELANOUS_INSTALL_SOURCE: '' });
+      expect(f.calls[1]).toEqual({ command: 'launchctl', args: ['kickstart', '-k', 'gui/501/com.elanous.nexus'], cwd: f.prefix, input: undefined, env: undefined });
       expect(result).toMatchObject({ exitCode: 0, installedVersion: '0.2.0-rc.1', restarted: true });
       expect(JSON.parse(f.lines[0]!)).toEqual(result);
     } finally { f.cleanup(); }
@@ -153,10 +153,10 @@ describe('runReleaseUpdate — release installer', () => {
 
 describe('self-update installation routing', () => {
   test('installed CLI forwards --alert and --keep; explicit checkout keeps its existing options', async () => {
-    const prefix = mkdtempSync(join(tmpdir(), 'monad-update-options-'));
-    const packageRoot = join(prefix, 'versions', 'old', 'node_modules', 'monadagent');
+    const prefix = mkdtempSync(join(tmpdir(), 'elanous-update-options-'));
+    const packageRoot = join(prefix, 'versions', 'old', 'node_modules', 'elanous');
     mkdirSync(packageRoot, { recursive: true });
-    writeFileSync(join(prefix, 'install.json'), JSON.stringify({ version: '0.1.0', versionDir: 'versions/old', source: 'https://github.com/ElanvitalAI/monad/releases/latest/download/monadagent.tgz' }));
+    writeFileSync(join(prefix, 'install.json'), JSON.stringify({ version: '0.1.0', versionDir: 'versions/old', source: 'https://github.com/ElanvitalAI/elanous/releases/latest/download/elanous.tgz' }));
     const alerts: string[] = [];
     const plans: Array<{ current: string; previous: string; keep: number; prefix: string }> = [];
     const f = fixture();
@@ -185,10 +185,10 @@ describe('self-update installation routing', () => {
   });
 
   test('installed CLI selects the release installer; an explicit checkout keeps the git path', async () => {
-    const prefix = mkdtempSync(join(tmpdir(), 'monad-update-routing-'));
-    const packageRoot = join(prefix, 'versions', '0.1.0', 'node_modules', 'monadagent');
+    const prefix = mkdtempSync(join(tmpdir(), 'elanous-update-routing-'));
+    const packageRoot = join(prefix, 'versions', '0.1.0', 'node_modules', 'elanous');
     mkdirSync(packageRoot, { recursive: true });
-    writeFileSync(join(prefix, 'install.json'), JSON.stringify({ version: '0.1.0', source: 'https://github.com/ElanvitalAI/monad/releases/latest/download/monadagent.tgz' }));
+    writeFileSync(join(prefix, 'install.json'), JSON.stringify({ version: '0.1.0', source: 'https://github.com/ElanvitalAI/elanous/releases/latest/download/elanous.tgz' }));
     const releaseCalls: string[] = [];
     const f = fixture();
     try {
@@ -202,7 +202,7 @@ describe('self-update installation routing', () => {
         checkout: f.deps,
       });
       expect(release).toMatchObject({ exitCode: 0, installedVersion: '0.2.0', restarted: false });
-      expect(releaseCalls).toEqual(['https://github.com/ElanvitalAI/monad/releases/download/v0.2.0/install.sh', 'bash']);
+      expect(releaseCalls).toEqual(['https://github.com/ElanvitalAI/elanous/releases/download/v0.2.0/install.sh', 'bash']);
       expect(f.calls).toEqual([]);
       const checkoutResult = await runUpdateForInstallation({ from: checkout }, { cliRoot: packageRoot, checkout: f.deps });
       expect(checkoutResult).toMatchObject({ exitCode: 0, installedVersion: '1.0.0-abcdef123456' });
@@ -214,8 +214,8 @@ describe('self-update installation routing', () => {
 
 describe('self-update routing by install source (2026-09-25 🅣)', () => {
   function installed(source: string | undefined) {
-    const prefix = mkdtempSync(join(tmpdir(), 'monad-update-source-'));
-    const packageRoot = join(prefix, 'versions', '1.0.0-abcdef123456', 'node_modules', 'monadagent');
+    const prefix = mkdtempSync(join(tmpdir(), 'elanous-update-source-'));
+    const packageRoot = join(prefix, 'versions', '1.0.0-abcdef123456', 'node_modules', 'elanous');
     mkdirSync(packageRoot, { recursive: true });
     writeFileSync(join(prefix, 'install.json'), JSON.stringify({ version: '1.0.0', ...(source === undefined ? {} : { source }) }));
     return { prefix, packageRoot };
@@ -249,8 +249,8 @@ describe('self-update routing by install source (2026-09-25 🅣)', () => {
     } finally { rmSync(inst.prefix, { recursive: true, force: true }); }
   });
 
-  test('the release installer URL follows MONAD_RELEASE_BASE (mirror or file:// fixture)', async () => {
-    const inst = installed('file:///tmp/rel/latest/download/monadagent.tgz');
+  test('the release installer URL follows ELANOUS_RELEASE_BASE (mirror or file:// fixture)', async () => {
+    const inst = installed('file:///tmp/rel/latest/download/elanous.tgz');
     const urls: string[] = [];
     try {
       await runReleaseUpdate({}, {
@@ -270,7 +270,7 @@ describe('self-update — injected commands only', () => {
     expect(f.calls).toEqual([
       'git rev-parse --show-toplevel', 'git rev-parse --verify HEAD', 'git diff --quiet HEAD --',
       `decide ${sha} ${checkout}`, `bash ${checkout}/scripts/install.sh --no-modify-path`,
-      'prune 1.0.0-abcdef123456  3', 'launchctl kickstart -k gui/501/com.monad.nexus', 'verify abcdef123456',
+      'prune 1.0.0-abcdef123456  3', 'launchctl kickstart -k gui/501/com.elanous.nexus', 'verify abcdef123456',
     ]);
     expect(JSON.parse(f.lines[0]!)).toEqual(result);
   });
@@ -312,7 +312,7 @@ describe('self-update — injected commands only', () => {
   });
   test('missing checkout rejects with reason', async () => {
     const f = fixture();
-    const result = await runSelfUpdate({ from: '/nonexistent-monad-self-update-checkout' }, f.deps);
+    const result = await runSelfUpdate({ from: '/nonexistent-elanous-self-update-checkout' }, f.deps);
     expect(result.exitCode).toBe(2);
     expect(result.reason).toContain('체크아웃 없음');
     expect(f.calls).toHaveLength(0);
@@ -337,7 +337,7 @@ describe('self-update — injected commands only', () => {
   test('linux restarts via systemctl user', async () => {
     const f = fixture(); f.deps.os = 'linux';
     await runSelfUpdate({ restart: true }, f.deps);
-    expect(f.calls.at(-2)).toBe('systemctl --user restart monad-nexus');
+    expect(f.calls.at(-2)).toBe('systemctl --user restart elanous-nexus');
     expect(f.calls.at(-1)).toBe('verify abcdef123456');
   });
 });
@@ -461,7 +461,7 @@ describe('self-update — relay (T5 · 2026-09-24)', () => {
     const out = updateRelay(decision, '/co', true, { relayFiles, os: 'darwin', uid: 501 }, gitWith(['src/relay/core.ts', 'docs/x.md']),
       (command, args) => { calls.push(`${command} ${args.join(' ')}`); return { status: 0, stderr: '' }; });
     expect(out).toMatchObject({ verdict: 'restarted', paths: ['src/relay/core.ts'] });
-    expect(calls).toEqual(['launchctl kickstart -k gui/501/com.monad.openai-relay']);
+    expect(calls).toEqual(['launchctl kickstart -k gui/501/com.elanous.openai-relay']);
   });
 
   test('does nothing when no relay file changed, without --restart, or when the daemon commit is unknown', () => {

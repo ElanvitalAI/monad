@@ -67,7 +67,7 @@ describe('세 소비자가 소유권을 직접 판정하지 않는다 (구조 �
   const CONSUMERS = [
     'src/agent-mission/driver.ts',                      // A
     'src/autopilot/pty-control-loop.ts',                // B
-    'src/self-implement/headless-monad-driver.ts',      // C
+    'src/self-implement/headless-elanous-driver.ts',      // C
   ];
 
   /** 주석·문자열 설명은 뺀 실행 코드만. 설명문에 심볼 이름이 나오는 것은 정상이다. */

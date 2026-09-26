@@ -5,7 +5,7 @@ import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { program } from '../index.js';
-import { getMonadConfigDirOverride, resetMonadConfigDir, setMonadConfigDir } from '../monad-config-dir.js';
+import { getElanousConfigDirOverride, resetElanousConfigDir, setElanousConfigDir } from '../elanous-config-dir.js';
 import { RemotesStore, type RemoteEntry } from './remotes.js';
 import {
   liveFetchRemoteWorktrees,
@@ -16,7 +16,7 @@ import {
 } from './harness-worktrees-remote.js';
 
 const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
-const BIN = resolve(REPO_ROOT, 'bin/monad.mjs');
+const BIN = resolve(REPO_ROOT, 'bin/elanous.mjs');
 const SPAWN_TIMEOUT_MS = 60_000;
 
 const dirs: string[] = [];
@@ -443,8 +443,8 @@ describe('harness worktrees CLI wiring', () => {
     }));
     const dir = mkdtempSync(join(tmpdir(), 'harness-worktrees-r-'));
     dirs.push(dir);
-    const prevConfigDir = getMonadConfigDirOverride();
-    setMonadConfigDir(dir);
+    const prevConfigDir = getElanousConfigDirOverride();
+    setElanousConfigDir(dir);
     const store = new RemotesStore();
     store.addRemote('home', entry(dir, 'home', `ws://127.0.0.1:${server.port}/v1/acp`, 'tok'), { setDefault: true });
     store.addRemote('other', entry(dir, 'other', 'ws://127.0.0.1:1/v1/acp', 'other-tok'));
@@ -465,12 +465,12 @@ describe('harness worktrees CLI wiring', () => {
     }) as typeof process.exit;
     process.exitCode = 0;
     try {
-      await program.parseAsync(['node', 'monad', 'harness', 'worktrees', '-r']);
+      await program.parseAsync(['node', 'elanous', 'harness', 'worktrees', '-r']);
     } finally {
       process.stdout.write = originalOut;
       process.exit = originalExit;
-      if (prevConfigDir === undefined) resetMonadConfigDir();
-      else setMonadConfigDir(prevConfigDir);
+      if (prevConfigDir === undefined) resetElanousConfigDir();
+      else setElanousConfigDir(prevConfigDir);
     }
     expect(exitCalls).toBe(0);
     expect(process.exitCode).toBe(0);
@@ -493,17 +493,17 @@ describe('harness worktrees CLI wiring', () => {
     let server: Awaited<ReturnType<typeof startOutOfProcessWorktreeServer>> | undefined;
     try {
       server = await startOutOfProcessWorktreeServer(home, { worktrees: [{ path: '/should-not-appear' }] });
-      const cfg = join(home, '.monad');
+      const cfg = join(home, '.elanous');
       writeBookmark(cfg, 'home', server.port, 'tok');
       const res = spawnSync(process.execPath, [BIN, '--test', '--config-dir', cfg, 'harness', 'worktrees', '--json'], {
         cwd: repo,
         env: {
           ...process.env,
           PATH: `${binDir}:${process.env.PATH ?? ''}`,
-          MONAD_DEBUG_LEVEL: 'off',
+          ELANOUS_DEBUG_LEVEL: 'off',
           HOME: home,
-          MONAD_STATE_DIR: cfg,
-          MONAD_CONFIG_DIR: cfg,
+          ELANOUS_STATE_DIR: cfg,
+          ELANOUS_CONFIG_DIR: cfg,
         },
         encoding: 'utf8',
         timeout: SPAWN_TIMEOUT_MS,
@@ -518,7 +518,7 @@ describe('harness worktrees CLI wiring', () => {
   }, SPAWN_TIMEOUT_MS);
 });
 
-describe('bin/monad.mjs harness worktrees -r', () => {
+describe('bin/elanous.mjs harness worktrees -r', () => {
   test('LIVE CLI: harness worktrees --remote box hits /v1/worktrees with the bookmark token', async () => {
     const home = mkdtempSync(join(tmpdir(), 'harness-worktrees-live-'));
     dirs.push(home);
@@ -529,14 +529,14 @@ describe('bin/monad.mjs harness worktrees -r', () => {
         worktrees: [{ path: '/remote/repo/live-wt', branch: 'feat/live', sha: 'deadbeef', isMain: false, isLocked: false, isDetached: false, session: null, orphan: false }],
         orphanedSessions: [],
       });
-      const cfg = join(home, '.monad');
+      const cfg = join(home, '.elanous');
       writeBookmark(cfg, 'box', server.port, 'remote-token');
       const proc = Bun.spawn({
         cmd: ['bun', BIN, '--test', '--config-dir', cfg, 'harness', 'worktrees', '--remote', 'box'],
         cwd: REPO_ROOT,
         stdout: 'pipe',
         stderr: 'pipe',
-        env: { ...process.env, MONAD_DEBUG_LEVEL: 'off', HOME: home, MONAD_STATE_DIR: cfg, MONAD_CONFIG_DIR: cfg },
+        env: { ...process.env, ELANOUS_DEBUG_LEVEL: 'off', HOME: home, ELANOUS_STATE_DIR: cfg, ELANOUS_CONFIG_DIR: cfg },
       });
       const killer = setTimeout(() => proc.kill(), SPAWN_TIMEOUT_MS);
       const [stdout, stderr, exitCode] = await Promise.all([
@@ -563,11 +563,11 @@ describe('bin/monad.mjs harness worktrees -r', () => {
     let server: Awaited<ReturnType<typeof startOutOfProcessWorktreeServer>> | undefined;
     try {
       server = await startOutOfProcessWorktreeServer(home, { error: 'unauthorized' }, 401);
-      const cfg = join(home, '.monad');
+      const cfg = join(home, '.elanous');
       writeBookmark(cfg, 'box', server.port, 'remote-token');
       const res = spawnSync(process.execPath, [BIN, '--test', '--config-dir', cfg, 'harness', 'worktrees', '--remote', 'box'], {
         cwd: REPO_ROOT,
-        env: { ...process.env, MONAD_DEBUG_LEVEL: 'off', HOME: home, MONAD_STATE_DIR: cfg, MONAD_CONFIG_DIR: cfg },
+        env: { ...process.env, ELANOUS_DEBUG_LEVEL: 'off', HOME: home, ELANOUS_STATE_DIR: cfg, ELANOUS_CONFIG_DIR: cfg },
         encoding: 'utf8',
         timeout: SPAWN_TIMEOUT_MS,
       });
@@ -584,11 +584,11 @@ describe('bin/monad.mjs harness worktrees -r', () => {
   test('LIVE CLI: -r --remove names --remove, -r, and the default bookmark', () => {
     const home = mkdtempSync(join(tmpdir(), 'harness-worktrees-remove-'));
     dirs.push(home);
-    const cfg = join(home, '.monad');
+    const cfg = join(home, '.elanous');
     writeBookmark(cfg, 'home-box', '1', 'tok');
     const res = spawnSync(process.execPath, [BIN, '--test', '--config-dir', cfg, 'harness', 'worktrees', '-r', '--remove'], {
       cwd: REPO_ROOT,
-      env: { ...process.env, MONAD_DEBUG_LEVEL: 'off', HOME: home, MONAD_STATE_DIR: cfg, MONAD_CONFIG_DIR: cfg },
+      env: { ...process.env, ELANOUS_DEBUG_LEVEL: 'off', HOME: home, ELANOUS_STATE_DIR: cfg, ELANOUS_CONFIG_DIR: cfg },
       encoding: 'utf8',
       timeout: SPAWN_TIMEOUT_MS,
     });
@@ -621,14 +621,14 @@ describe('bin/monad.mjs harness worktrees -r', () => {
         worktrees,
         orphanedSessions: [],
       });
-      const cfg = join(home, '.monad');
+      const cfg = join(home, '.elanous');
       writeBookmark(cfg, 'box', server.port, 'remote-token');
       const proc = Bun.spawn({
         cmd: ['bun', BIN, '--test', '--config-dir', cfg, 'harness', 'worktrees', '--remote', 'box', '--json'],
         cwd: REPO_ROOT,
         stdout: 'pipe',
         stderr: 'pipe',
-        env: { ...process.env, MONAD_DEBUG_LEVEL: 'off', HOME: home, MONAD_STATE_DIR: cfg, MONAD_CONFIG_DIR: cfg },
+        env: { ...process.env, ELANOUS_DEBUG_LEVEL: 'off', HOME: home, ELANOUS_STATE_DIR: cfg, ELANOUS_CONFIG_DIR: cfg },
       });
       const killer = setTimeout(() => proc.kill(), SPAWN_TIMEOUT_MS);
       const [stdout, stderr, exitCode] = await Promise.all([
@@ -677,18 +677,18 @@ describe('bin/monad.mjs harness worktrees -r', () => {
     while (!existsSync(portFile) && Date.now() < deadline) await Bun.sleep(50);
     if (!existsSync(portFile)) { child.kill('SIGKILL'); throw new Error('hang server never reported a port'); }
     try {
-      const cfg = join(home, '.monad');
+      const cfg = join(home, '.elanous');
       writeBookmark(cfg, 'slow', readFileSync(portFile, 'utf8').trim(), 'tok');
       const started = Date.now();
       const res = spawnSync(process.execPath, [BIN, '--test', '--config-dir', cfg, 'harness', 'worktrees', '--remote', 'slow'], {
         cwd: REPO_ROOT,
         env: {
           ...process.env,
-          MONAD_DEBUG_LEVEL: 'off',
+          ELANOUS_DEBUG_LEVEL: 'off',
           HOME: home,
-          MONAD_STATE_DIR: cfg,
-          MONAD_CONFIG_DIR: cfg,
-          MONAD_HARNESS_WORKTREES_REMOTE_TIMEOUT_MS: '200',
+          ELANOUS_STATE_DIR: cfg,
+          ELANOUS_CONFIG_DIR: cfg,
+          ELANOUS_HARNESS_WORKTREES_REMOTE_TIMEOUT_MS: '200',
         },
         encoding: 'utf8',
         timeout: SPAWN_TIMEOUT_MS,

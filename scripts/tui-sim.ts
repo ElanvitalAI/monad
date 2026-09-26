@@ -1,11 +1,11 @@
-// ── monad TUI Simulator (self-dogfood harness · 2026-07-19) ──
+// ── elanous TUI Simulator (self-dogfood harness · 2026-07-19) ──
 //
 // drive-tui.ts 는 one-shot(부팅→프롬프트→대기→최종캡처→종료)라 실행 중 PTY 가 죽어
 // mid-run 입력이 불가능하다. tui-sim 은 그 한계를 넘는 **상태유지·ID추적·인터랙티브**
 // 시뮬레이터다:
 //
-//   • start  — monad TUI 를 PTY 로 띄우고 **붙잡은 채** inbox 커맨드를 폴링(백그라운드 데몬).
-//              ID 부여 → `.monad-test/sim/<id>/` 에 meta·스냅샷·로그를 ID 로 추적.
+//   • start  — elanous TUI 를 PTY 로 띄우고 **붙잡은 채** inbox 커맨드를 폴링(백그라운드 데몬).
+//              ID 부여 → `.elanous-test/sim/<id>/` 에 meta·스냅샷·로그를 ID 로 추적.
 //   • dump   — 실행 중 화면 텍스트+PNG 스냅샷(중간중간 덤프).  text — 보이는 그리드 텍스트만.
 //   • transcript — 첫 시작~현재 전체 PTY 트랜스크립트(스크롤아웃 포함·h.snapshot()) → transcript.txt.
 //              정지 시에도 자동 저장. renderScreen(보이는 그리드)이 놓치는 전문 회수(drive-tui --transcript 동형).
@@ -14,7 +14,7 @@
 //   • mouse  — SGR 마우스 클릭(옵션 클릭 좌표).
 //   • status/list/stop — 관측·정리.
 //
-// monad 내부 PTY 시드(startPty/renderScreen/renderScreenPng — pty-shell/registry)를 재사용.
+// elanous 내부 PTY 시드(startPty/renderScreen/renderScreenPng — pty-shell/registry)를 재사용.
 // 화면 녹화(video)는 후속 페이즈(별도).
 //
 // 클라↔데몬 프로토콜: 클라가 inbox/<seq>.json(atomic rename)을 떨구면 데몬이 폴링·실행 후
@@ -70,7 +70,7 @@ function pidAlive(pid: number): boolean {
 }
 
 const repoRoot = process.cwd();
-const simRoot = `${repoRoot}/.monad-test/sim`;
+const simRoot = `${repoRoot}/.elanous-test/sim`;
 const dir = (id: string) => `${simRoot}/${id}`;
 const inboxDir = (id: string) => `${dir(id)}/inbox`;
 const outDir = (id: string) => `${dir(id)}/out`;
@@ -140,12 +140,12 @@ async function runDaemon(args: string[]): Promise<void> {
   const rows = Number(argVal(args, '--rows')) || 60;
   const bootSec = Number(argVal(args, '--boot')) || 8;
   const autoDumpSec = Number(argVal(args, '--auto-dump')) || 0;
-  // 인스턴스별 격리 state-dir(멀티모델 벤치 하네스용) — 기본은 공유 `.monad-test`.
+  // 인스턴스별 격리 state-dir(멀티모델 벤치 하네스용) — 기본은 공유 `.elanous-test`.
   // tui-sim-bench 가 모델마다 별도 config+state 를 주려면 각기 다른 --state-dir 로 띄운다.
-  const testDir = argVal(args, '--state-dir') ?? `${repoRoot}/.monad-test`;
+  const testDir = argVal(args, '--state-dir') ?? `${repoRoot}/.elanous-test`;
   // Live human-readable forward → /tmp (tail -f friendly). Default ON; override
-  // path with `--forward <path>`. The drive IS a monad — its readable story is
-  // the logs.db timeline (monad logs timeline · #4654), not the redraw byte
+  // path with `--forward <path>`. The drive IS a elanous — its readable story is
+  // the logs.db timeline (elanous logs timeline · #4654), not the redraw byte
   // buffer. We append only NEW rows each tick so `tail -f` streams naturally.
   const forwardPath = argVal(args, '--forward') ?? `/tmp/tui-sim-${id}.log`;
 
@@ -166,7 +166,7 @@ async function runDaemon(args: string[]): Promise<void> {
     worktreeCreated = workdir;
   }
   const worktreeMode = workdir !== repoRoot;
-  const binPath = worktreeMode ? `${repoRoot}/bin/monad.mjs` : 'bin/monad.mjs';
+  const binPath = worktreeMode ? `${repoRoot}/bin/elanous.mjs` : 'bin/elanous.mjs';
   const isoArgs = testMode ? ['--config-dir', testDir, '--test-state-dir', testDir] : [];
 
   // fresh forward file + up-front announce so the operator knows where to tail.
@@ -178,7 +178,7 @@ async function runDaemon(args: string[]): Promise<void> {
   console.error(`[tui-sim] 📡 live timeline → ${forwardPath}   (follow:  tail -f ${forwardPath})`);
   const h: PtyHandle = startPty({
     cmd: 'bun', args: [binPath, ...isoArgs], cols, rows, workdir,
-    env: { MONAD_DRIVE_TUI: '1', ...(testMode ? { MONAD_STATE_DIR: testDir } : {}) },
+    env: { ELANOUS_DRIVE_TUI: '1', ...(testMode ? { ELANOUS_STATE_DIR: testDir } : {}) },
   });
 
   const meta: Meta = {
@@ -196,7 +196,7 @@ async function runDaemon(args: string[]): Promise<void> {
   let forwardAfterId = 0;
   function flushForward(): void {
     try {
-      const dbPath = `${testMode ? testDir : (process.env.MONAD_STATE_DIR ?? testDir)}/logs/logs.db`;
+      const dbPath = `${testMode ? testDir : (process.env.ELANOUS_STATE_DIR ?? testDir)}/logs/logs.db`;
       if (!existsSync(dbPath)) return;
       const store = LogStore.openReadOnly(dbPath);
       try {
@@ -231,14 +231,14 @@ async function runDaemon(args: string[]): Promise<void> {
   console.error(`[tui-sim] id=${id} READY (boot.txt written). artifacts → ${dir(id)}`);
   console.error(`[tui-sim] 📡 follow live:  tail -f ${forwardPath}`);
 
-  // Human-readable transcript — the drive IS a monad; its story lives in
+  // Human-readable transcript — the drive IS a elanous; its story lives in
   // logs.db, not the full-screen PTY byte buffer (h.snapshot() collapses to a
   // few lines when the TUI redraws in place). Render the structured timeline
   // (goal iterations · tool calls+results · reasoning · runaway signals) from
   // the drive's own logs.db since this session's start. Fail-soft.
   function writeTimeline(): void {
     try {
-      const dbPath = `${testMode ? testDir : (process.env.MONAD_STATE_DIR ?? testDir)}/logs/logs.db`;
+      const dbPath = `${testMode ? testDir : (process.env.ELANOUS_STATE_DIR ?? testDir)}/logs/logs.db`;
       if (!existsSync(dbPath)) return;
       const store = LogStore.openReadOnly(dbPath);
       try {

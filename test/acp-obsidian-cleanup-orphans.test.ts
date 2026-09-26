@@ -22,7 +22,7 @@ async function seed(path: string, body: string, mtimeMs: number) {
 }
 
 beforeAll(async () => {
-  vault = await mkdtemp(join(tmpdir(), 'monad-orphan-test-'));
+  vault = await mkdtemp(join(tmpdir(), 'elanous-orphan-test-'));
   // Old empty drafts (orphans).
   await seed('drafts/empty-old-1.md', '', NOW_MS - 10 * 60 * 1000);
   await seed('drafts/empty-old-2.md', '\n  \n  ', NOW_MS - 30 * 60 * 1000);
@@ -122,7 +122,7 @@ describe('findOrphanNotes — limit + thresholds', () => {
 
 describe('findOrphanNotes — error path', () => {
   test('non-existent vault root → error envelope', async () => {
-    const r = await findOrphanNotes({ vaultRoot: '/nope/this/path/does/not/exist-monad' });
+    const r = await findOrphanNotes({ vaultRoot: '/nope/this/path/does/not/exist-elanous' });
     expect(r.orphans).toEqual([]);
     expect(typeof r.error).toBe('string');
   });

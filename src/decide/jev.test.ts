@@ -134,7 +134,7 @@ describe('보내는 곳 — 로컬 Jev 호환 서버로 바꿀 수 있다', () =
   });
 
   test('설정이 환경보다 앞서고, 다른 서버는 키 없이도 된다', () => {
-    const env = { MONAD_JEV_ENDPOINT: 'http://env/v1/systemone', TYPESAFE_API_KEY: 'typesafe' };
+    const env = { ELANOUS_JEV_ENDPOINT: 'http://env/v1/systemone', TYPESAFE_API_KEY: 'typesafe' };
     const r = resolveJevAccess({ config: { endpoint: 'http://cfg/v1/systemone', model: 'multilingual' }, env, readFile: files({}), typesafeCachePath: cache });
     // Typesafe 키를 남의 서버로 보내지 않는다.
     expect(r).toEqual({ ok: true, access: { endpoint: 'http://cfg/v1/systemone', endpointSource: 'config', model: 'multilingual' } });
@@ -142,8 +142,8 @@ describe('보내는 곳 — 로컬 Jev 호환 서버로 바꿀 수 있다', () =
     expect(e.ok && e.access.endpointSource).toBe('env');
   });
 
-  test('다른 서버의 키는 설정 keyFile > 환경 MONAD_JEV_KEY', () => {
-    const env = { MONAD_JEV_ENDPOINT: 'http://env/v1/systemone', MONAD_JEV_KEY: 'from-env' };
+  test('다른 서버의 키는 설정 keyFile > 환경 ELANOUS_JEV_KEY', () => {
+    const env = { ELANOUS_JEV_ENDPOINT: 'http://env/v1/systemone', ELANOUS_JEV_KEY: 'from-env' };
     const fromFile = resolveJevAccess({ config: { keyFile: 'kf' }, env, readFile: files({ kf: 'from-file\n' }), typesafeCachePath: cache });
     expect(fromFile.ok && fromFile.access.key).toBe('from-file');
     const fromEnv = resolveJevAccess({ env, readFile: files({}), typesafeCachePath: cache });

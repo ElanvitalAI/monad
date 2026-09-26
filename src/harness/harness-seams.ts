@@ -7,7 +7,7 @@
 //
 // ★ 제1원칙(코드-레벨 로깅 규율·대표 상시 지시): worktree 생성·execute·review·deploy 판정을 모두 관측
 //   (observe=debug.log('harness.seams'))한다. 관측이 없으면 프레임워크가 자기인지·힐링 못 하고 디버깅도 불가.
-//   조회 = monad logs --category harness.seams.
+//   조회 = elanous logs --category harness.seams.
 
 import { spawnSync } from 'node:child_process';
 import { existsSync } from 'node:fs';
@@ -159,7 +159,7 @@ export function adversarialThreshold(heft: PlanHeft): number {
 }
 
 /** 외부 research intent-gate(보수적·경량) — objective 가 **명시적으로** 외부/최신 지식을 요할 때만 true.
- *  평소 monad-self 코딩 objective 는 내부 grounding 으로 충분 → false(비용 0). smarter LLM 게이트는 후속. */
+ *  평소 elanous-self 코딩 objective 는 내부 grounding 으로 충분 → false(비용 0). smarter LLM 게이트는 후속. */
 function needsExternalResearch(objective: string): boolean {
   return /리서치|research|조사해|최신|latest\b|how to|공식 문서|official docs|외부 api|spec\b|rfc\s?\d/i.test(objective);
 }
@@ -191,7 +191,7 @@ async function buildPrBody(
   objective: string, files: readonly string[], summary: string, diff: string,
   llmReview?: (p: string) => Promise<string>, shouldFix?: readonly string[],
 ): Promise<string> {
-  const footer = '🤖 monad **dev-harness** (Planner→Executor→Reviewer→Deployer) 자율 생성';
+  const footer = '🤖 elanous **dev-harness** (Planner→Executor→Reviewer→Deployer) 자율 생성';
   const shouldFixBlock = (shouldFix && shouldFix.length)
     ? ['', '## 후속 개선 (should-fix · 비블로킹 · 리뷰가 경미로 판정 — 머지 차단 아님)', ...shouldFix.slice(0, 10).map((f) => `- ${f}`)]
     : [];
@@ -333,9 +333,9 @@ export function buildHarnessSeams(deps: HarnessSeamsDeps): StagedHarnessSeams {
 
   // ⭐ run identity(K) — #5476 이 implement seam 의 `runId` 를 **필수**로 만든 이유가 "새 seam 이 전파를
   //   조용히 빠뜨리는 걸 컴파일 시점에 막는다" 였는데, 정작 이 하니스 경로가 그 갭으로 남아 있었다
-  //   (execute 가 runId 없이 호출 → 자식 goal-loop 이 join anchor 상실 → `monad self run <runId>` 미조인).
+  //   (execute 가 runId 없이 호출 → 자식 goal-loop 이 join anchor 상실 → `elanous self run <runId>` 미조인).
   //   ★ 라운드마다 mint 하면 리워크 전체가 흩어지므로 **seams 1회 확정**(orchestrator:281 과 동일 규율).
-  //   리졸버 계약: 상속(env `MONAD_RUN_ID`) 있으면 채택 → 없으면 canonical mint · env 무변경.
+  //   리졸버 계약: 상속(env `ELANOUS_RUN_ID`) 있으면 채택 → 없으면 canonical mint · env 무변경.
   //   ⚠️ `inherited: getHarnessSpace()?.runId` 를 명시로 넘기지 **않는다** — 리졸버가 미지정 시 읽는
   //      env 와 공간 객체의 출처가 동일(`getHarnessRunId`)이라 하중을 지지 않는 중복 인자이고,
   //      "배선돼 있다"는 인상만 만든다(#5484 리뷰 2R). 재발명 0 = SSOT 를 그대로 부른다.
@@ -627,8 +627,8 @@ export function buildHarnessSeams(deps: HarnessSeamsDeps): StagedHarnessSeams {
       setEventLoopActivity(`harness:execute:round-${round}:implement`);   // #24 — 자식 goal-loop 구동 구간
       // ★ K run-identity — implement seam 은 runId 를 **필수**로 받는다(전파 누락을 타입이 막음).
       //   ⚠️ #5485 는 이 자리에서 `resolveRunIdentity()` 를 호출했는데, 리졸버는 **env 를 변경하지
-      //      않으므로**(장수 데몬 identity bleed 방지 규율) `MONAD_RUN_ID` 미상속 경로에서는
-      //      **라운드마다 새로 mint** 됐다 → 리워크 전체가 흩어져 `monad self run <runId>` 미조인.
+      //      않으므로**(장수 데몬 identity bleed 방지 규율) `ELANOUS_RUN_ID` 미상속 경로에서는
+      //      **라운드마다 새로 mint** 됐다 → 리워크 전체가 흩어져 `elanous self run <runId>` 미조인.
       //      그래서 seams 생성 시 1회 확정한 `runId` 를 쓴다(orchestrator:281 과 동일 규율).
       const r = await deps.seams.implement({ cwd, feature, runId, ...(judge ? { onProgress: judge } : {}) });
       // ⚠️ 버그A 수정(dogfood 2026-07-20): 하드코딩 `[]` 대신 워크트리 실 변경목록을 산출 —
@@ -703,7 +703,7 @@ export function buildHarnessSeams(deps: HarnessSeamsDeps): StagedHarnessSeams {
       //   객관 증거 실존. verdict 미존재(방어)면 증거 없음→비적격(라벨 안 붙음·fail-safe·비-TS/도메인 오라벨 방지).
       // ★ G9 P1(2026-07-25) — G8 라벨 해석은 resolveAutoReviewLabels SSOT 공유(개발 라인 orchestrator §G8 과
       //   verbatim 중복 제거). ★제1원칙(관측·자기인지): auto-review 무인완결 자율 결정을 **서피스 무관 canonical
-      //   카테고리 `autoreview.decision`** 로 관측 → `monad logs --category autoreview.decision` 로 harness/
+      //   카테고리 `autoreview.decision`** 로 관측 → `elanous logs --category autoreview.decision` 로 harness/
       //   self-implement/미래 runDevPipeline 결정을 한 창구로 전수 조회(기존 harness.seams·self-implement 분산 해소).
       const originalAsk = verbatimOriginalAsk(objective);
       const { labels, declineReasons, eligibility } = resolveAutoReviewLabels(!!deps.autoReview, {

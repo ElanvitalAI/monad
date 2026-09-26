@@ -8,14 +8,14 @@ const repoRoot = join(import.meta.dir, '..');
 async function runSetup(answerFilePath: string): Promise<{ code: number; stderr: string }> {
   const stateRoot = mkdtempSync(join(tmpdir(), 'setup-cli-state-'));
   try {
-    const proc = Bun.spawn(['bun', 'bin/monad.mjs', 'setup', '--non-interactive', '--config', answerFilePath], {
+    const proc = Bun.spawn(['bun', 'bin/elanous.mjs', 'setup', '--non-interactive', '--config', answerFilePath], {
       cwd: repoRoot,
       env: {
         ...process.env,
         HOME: stateRoot,
         XDG_CONFIG_HOME: join(stateRoot, 'config'),
-        MONAD_STATE_DIR: join(stateRoot, 'state'),
-        MONAD_SUPPRESS_XDG_WARNING: '1',
+        ELANOUS_STATE_DIR: join(stateRoot, 'state'),
+        ELANOUS_SUPPRESS_XDG_WARNING: '1',
         PATH: process.env.PATH ?? '',
       },
       stdout: 'ignore',

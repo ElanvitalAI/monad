@@ -2,7 +2,7 @@ import { existsSync, mkdirSync, readdirSync, readFileSync, renameSync, writeFile
 // ⛔ 관측을 내는 쪽과 «같은» 상수를 쓴다 — 문자열이 갈리면 이 조회가 조용히 0건을 낸다.
 import { BROWSER_ACT_CATEGORY, BROWSER_ACT_EVENT } from './browser-act-step.js';
 import { join } from 'node:path';
-import { monadStateRoot } from '../autopilot/state-paths.js';
+import { elanousStateRoot } from '../autopilot/state-paths.js';
 import { LogStore, logsDbPath } from '../mss/logging/log-store.js';
 import type { ComputerUseTrajectoryStep } from '../ux-sim/computer-use.js';
 import { extractBrowserActStep } from './browser-act-step.js';
@@ -148,7 +148,7 @@ function trajectoryName(name: string): string {
 }
 
 /** State-root-scoped location for named, replayable browser trajectories. */
-export function browserTrajectoryDirectory(root = monadStateRoot()): string {
+export function browserTrajectoryDirectory(root = elanousStateRoot()): string {
   return join(root, 'harness', 'browser-trajectories');
 }
 
@@ -183,7 +183,7 @@ function savedTrajectoryFrom(value: unknown, name: string): SavedBrowserActionTr
 export function saveBrowserActionTrajectory(
   name: string,
   replay: Pick<BrowserActionTrajectoryReadResult, 'runId' | 'status' | 'trajectory'>,
-  root = monadStateRoot(),
+  root = elanousStateRoot(),
 ): SavedBrowserActionTrajectory {
   const normalizedName = trajectoryName(name);
   if (replay.status !== 'ready') throw new Error(`cannot save browser trajectory '${normalizedName}' from ${replay.status}`);
@@ -203,7 +203,7 @@ export function saveBrowserActionTrajectory(
 }
 
 /** Read one named trajectory. Missing names fail loudly rather than replaying an empty path. */
-export function readSavedBrowserActionTrajectory(name: string, root = monadStateRoot()): SavedBrowserActionTrajectory {
+export function readSavedBrowserActionTrajectory(name: string, root = elanousStateRoot()): SavedBrowserActionTrajectory {
   const normalizedName = trajectoryName(name);
   const path = browserTrajectoryPath(normalizedName, root);
   if (!existsSync(path)) throw new Error(`browser trajectory '${normalizedName}' was not found`);
@@ -216,7 +216,7 @@ export function readSavedBrowserActionTrajectory(name: string, root = monadState
 }
 
 /** List named trajectories with provenance, without exposing page bodies or images. */
-export function listSavedBrowserActionTrajectories(root = monadStateRoot()): SavedBrowserActionTrajectory[] {
+export function listSavedBrowserActionTrajectories(root = elanousStateRoot()): SavedBrowserActionTrajectory[] {
   const directory = browserTrajectoryDirectory(root);
   if (!existsSync(directory)) return [];
   return readdirSync(directory)

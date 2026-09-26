@@ -397,13 +397,13 @@ export function roleKeywordsFor(role: ShowroomRoleHint): readonly string[] {
 
 /** R6 FU.5 (2026-05-09) — localStorage helpers for the PWA backend
  *  toggle. Storage keys mirror the daemon env shape:
- *    monad.showroom.roleJudgeBackend = 'keyword' | 'local-llm'
- *    monad.showroom.roleJudgeModel   = '<model id>' (optional)
+ *    elanous.showroom.roleJudgeBackend = 'keyword' | 'local-llm'
+ *    elanous.showroom.roleJudgeModel   = '<model id>' (optional)
  *  Defaults to 'keyword' (opt-in safe). */
 export type ShowroomRoleJudgeBackend = 'keyword' | 'local-llm';
 
-const ROLE_JUDGE_BACKEND_KEY = 'monad.showroom.roleJudgeBackend';
-const ROLE_JUDGE_MODEL_KEY = 'monad.showroom.roleJudgeModel';
+const ROLE_JUDGE_BACKEND_KEY = 'elanous.showroom.roleJudgeBackend';
+const ROLE_JUDGE_MODEL_KEY = 'elanous.showroom.roleJudgeModel';
 
 export function readRoleJudgeBackendFromStorage(): ShowroomRoleJudgeBackend {
   if (typeof window === 'undefined') return 'keyword';
@@ -978,7 +978,7 @@ export function composeForwardText(
  *  OFF override (legacy fallback safety hatch · also lets existing
  *  `'true'` values keep working). Read returns `true` unless the key
  *  is explicitly stored as `'false'`. */
-export const DM_MODE_LOCALSTORAGE_KEY = 'monad.showroom.dmMode';
+export const DM_MODE_LOCALSTORAGE_KEY = 'elanous.showroom.dmMode';
 
 export function readDmModeFromStorage(): boolean {
   if (typeof window === 'undefined' || !window.localStorage) return true;
@@ -999,7 +999,7 @@ export function writeDmModeToStorage(enabled: boolean): void {
   }
 }
 
-/** DM-2 — daemon multi-LLM hint (server-side `_meta.monad.multiLlm`
+/** DM-2 — daemon multi-LLM hint (server-side `_meta.elanous.multiLlm`
  *  shape mirror). client-side helpers build this from the live panel
  *  state so daemon's `bridgeMultiLlmCoreTurnsToAcp` fans out into N
  *  parallel `runCoreTurn`s.
@@ -1037,7 +1037,7 @@ export interface MultiLlmHintWire {
   historyMode?: 'isolated' | 'mixed';
 }
 
-/** Build the `_meta.monad.multiLlm` blob from active panel state.
+/** Build the `_meta.elanous.multiLlm` blob from active panel state.
  *  Targets only `live` panels (mute / freeze 는 dispatch 제외 · D11).
  *
  *  DM stage 2 (FU · #1976) — `includeAgent` opts 으로 agent panel 도
@@ -1115,7 +1115,7 @@ export function extractLastAssistantText(
  *  modal (PR #2192) ships first so unexpected token spend is gated by
  *  user confirm. Users who prefer panel isolation opt out via the
  *  Showroom header pill, which writes 'isolated' to storage. */
-const HISTORY_MODE_KEY = 'monad.showroom.historyMode';
+const HISTORY_MODE_KEY = 'elanous.showroom.historyMode';
 
 export function readHistoryModeFromStorage(): 'isolated' | 'mixed' {
   if (typeof window === 'undefined') return 'mixed';
@@ -1137,15 +1137,15 @@ export function writeHistoryModeToStorage(mode: 'isolated' | 'mixed'): void {
   }
 }
 
-/** Wrap the hint inside the `_meta.monad.multiLlm` envelope so
+/** Wrap the hint inside the `_meta.elanous.multiLlm` envelope so
  *  callers ship it verbatim as `prompt._meta`. */
 export function wrapMultiLlmMeta(hint: MultiLlmHintWire): {
-  monad: { multiLlm: MultiLlmHintWire };
+  elanous: { multiLlm: MultiLlmHintWire };
 } {
-  return { monad: { multiLlm: hint } };
+  return { elanous: { multiLlm: hint } };
 }
 
-/** DM-2 — parse `update._meta.monad` to extract per-panel routing
+/** DM-2 — parse `update._meta.elanous` to extract per-panel routing
  *  info. Returns null when the update is the legacy single-LLM
  *  shape (no `modelId`). */
 export interface MultiLlmUpdateMeta {
@@ -1368,9 +1368,9 @@ export function parseMultiLlmUpdateMeta(
   if (!update || typeof update !== 'object') return null;
   const meta = (update as { _meta?: unknown })._meta;
   if (!meta || typeof meta !== 'object') return null;
-  const monad = (meta as { monad?: unknown }).monad;
-  if (!monad || typeof monad !== 'object') return null;
-  const m = monad as Record<string, unknown>;
+  const elanous = (meta as { elanous?: unknown }).elanous;
+  if (!elanous || typeof elanous !== 'object') return null;
+  const m = elanous as Record<string, unknown>;
   if (typeof m.modelId !== 'string' || m.modelId.length === 0) return null;
   const out: MultiLlmUpdateMeta = { modelId: m.modelId };
   if (typeof m.provider === 'string') out.provider = m.provider;

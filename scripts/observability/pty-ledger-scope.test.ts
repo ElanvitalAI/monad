@@ -343,9 +343,9 @@ describe('pty-ledger-scope output contract', () => {
   });
 
   it('rejects a malformed target override instead of silently measuring the whole fleet', () => {
-    expect(() => resolvePtyLedgerScopeTargets({ MONAD_PTY_LEDGER_SCOPE_TARGETS: '{' })).toThrow(/not valid JSON/);
-    expect(() => resolvePtyLedgerScopeTargets({ MONAD_PTY_LEDGER_SCOPE_TARGETS: '[{"name":"x"}]' })).toThrow(/array of/);
-    expect(resolvePtyLedgerScopeTargets({ MONAD_PTY_LEDGER_SCOPE_TARGETS: '[{"name":"x","dbPath":"/tmp/x.db"}]' })).toEqual([{ name: 'x', dbPath: '/tmp/x.db' }]);
+    expect(() => resolvePtyLedgerScopeTargets({ ELANOUS_PTY_LEDGER_SCOPE_TARGETS: '{' })).toThrow(/not valid JSON/);
+    expect(() => resolvePtyLedgerScopeTargets({ ELANOUS_PTY_LEDGER_SCOPE_TARGETS: '[{"name":"x"}]' })).toThrow(/array of/);
+    expect(resolvePtyLedgerScopeTargets({ ELANOUS_PTY_LEDGER_SCOPE_TARGETS: '[{"name":"x","dbPath":"/tmp/x.db"}]' })).toEqual([{ name: 'x', dbPath: '/tmp/x.db' }]);
   });
 });
 
@@ -356,12 +356,12 @@ describe('pty-ledger-scope entrypoint', () => {
   function childEnv(root: string, extra: Record<string, string>): Record<string, string> {
     const env: Record<string, string> = {};
     for (const [key, value] of Object.entries(process.env)) if (key !== 'NODE_ENV' && value !== undefined) env[key] = value;
-    env.MONAD_STATE_DIR = root;                                                   // 관측 기록도 격리 우주로
+    env.ELANOUS_STATE_DIR = root;                                                   // 관측 기록도 격리 우주로
     return { ...env, ...extra };
   }
 
   function runEntrypoint(root: string, dbPath: string): { stdout: string; exitCode: number | null } {
-    const env = childEnv(root, { MONAD_PTY_LEDGER_SCOPE_TARGETS: JSON.stringify([{ name: 'fixture', dbPath }]) });
+    const env = childEnv(root, { ELANOUS_PTY_LEDGER_SCOPE_TARGETS: JSON.stringify([{ name: 'fixture', dbPath }]) });
     const child = Bun.spawnSync(['bun', 'scripts/observability/pty-ledger-scope.ts', '--json'], { cwd: repoRoot, stdout: 'pipe', stderr: 'pipe', env });
     return { stdout: new TextDecoder().decode(child.stdout).trim(), exitCode: child.exitCode };
   }
@@ -399,7 +399,7 @@ describe('pty-ledger-scope entrypoint', () => {
   });
 
   // ⛔⭐ 「관측을 남겼다」와 「관측이 도착했다」는 다른 축이다 — sink 를 안 걸면 `debug.log` 는 logs.db 에 «안 닿는다»
-  //   (2026-08-12 실측: sink 배선 전 `monad logs --category self-implement.run-ledger-gaps` 가 0건).
+  //   (2026-08-12 실측: sink 배선 전 `elanous logs --category self-implement.run-ledger-gaps` 가 0건).
   it('records the measurement in the log store of the universe it ran in', () => {
     const root = makeStateRoot('entry-observed');
     const dbPath = writeManifest(root, [{ id: 'p1', kind: 'self-implement', runId: 'run-covered' }]);
@@ -410,7 +410,7 @@ describe('pty-ledger-scope entrypoint', () => {
     type LogRow = { event?: string; data?: { roots?: number; complete?: boolean } };
     const measured = (): LogRow | undefined => {
       const logs = Bun.spawnSync(
-        ['bun', 'bin/monad.mjs', 'logs', '--category', 'self-implement.run-ledger-gaps', '--limit', '20', '--json', '--json-data'],
+        ['bun', 'bin/elanous.mjs', 'logs', '--category', 'self-implement.run-ledger-gaps', '--limit', '20', '--json', '--json-data'],
         { cwd: repoRoot, stdout: 'pipe', stderr: 'pipe', env: childEnv(root, {}) },
       );
       if (logs.exitCode !== 0) return undefined;

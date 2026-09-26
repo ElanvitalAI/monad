@@ -257,8 +257,8 @@ function resolveMcpEndpoint(opts: McpListOpts):
       ok: false,
       classification: 'mcp-remote-error',
       message: named
-        ? `--remote ${named}: unknown bookmark. Run \`monad nexus list\` to see available remotes.`
-        : 'no default remote bookmark. Run `monad nexus connect <host> --default` to set one.',
+        ? `--remote ${named}: unknown bookmark. Run \`elanous nexus list\` to see available remotes.`
+        : 'no default remote bookmark. Run `elanous nexus connect <host> --default` to set one.',
     };
   }
 

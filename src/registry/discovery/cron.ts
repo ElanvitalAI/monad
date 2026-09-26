@@ -3,7 +3,7 @@
 // Wires `runDiscovery` to a setInterval loop that fires inside the
 // long-running NEXUS daemon. Default = opt-in: the loop only starts
 // when `registry.discovery.cron.intervalMs` (or legacy env
-// `MONAD_DISCOVERY_CRON_INTERVAL_MS`) is set to a positive integer
+// `ELANOUS_DISCOVERY_CRON_INTERVAL_MS`) is set to a positive integer
 // (so a fresh install pays zero CPU/network for nothing).
 //
 // User-config wiring (2026-05-11 retroactive fix · memory
@@ -76,7 +76,7 @@ const MAX_INTERVAL_MS = 86_400_000; // 24 hours — anything beyond is "manual"
  *  helper is preserved for tests that specifically exercise env clamping
  *  in isolation. */
 export function readCronIntervalMsFromEnv(env: NodeJS.ProcessEnv = process.env): number {
-  const raw = env.MONAD_DISCOVERY_CRON_INTERVAL_MS?.trim() ?? '';
+  const raw = env.ELANOUS_DISCOVERY_CRON_INTERVAL_MS?.trim() ?? '';
   if (!raw) return 0;
   const parsed = Number.parseInt(raw, 10);
   if (!Number.isFinite(parsed) || parsed <= 0) return 0;
@@ -92,7 +92,7 @@ export function startDiscoveryCron(
   opts: StartDiscoveryCronOpts = {},
 ): DiscoveryCronHandle {
   // Resolution order: explicit opts.intervalMs > user-config >
-  // legacy env (`MONAD_DISCOVERY_CRON_INTERVAL_MS`) > 0 (dormant).
+  // legacy env (`ELANOUS_DISCOVERY_CRON_INTERVAL_MS`) > 0 (dormant).
   // `getDiscoveryCronConfig()` already handles user-config + env
   // fallback + clamp; we just pass the resolved value through.
   const intervalMs = opts.intervalMs ?? getDiscoveryCronConfig().intervalMs;

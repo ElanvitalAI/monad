@@ -1,7 +1,7 @@
 // ── §5-③ Phase C2: continuation scheduler ──
 //
 // The idle-gated ticker that drives the active auto-mode goal. codex's
-// `on_thread_idle → continue_if_idle` in monad shape: on each tick, if
+// `on_thread_idle → continue_if_idle` in elanous shape: on each tick, if
 // the host is idle AND a goal is Active, fire one ContinuationDriver
 // step (build completion-audit prompt → run a turn → re-check
 // termination → no-progress andon). A dedicated scheduler (not the
@@ -17,7 +17,7 @@
 import { debug } from '../debug/log.js';
 import type { ContinuationStepResult } from './continuation-driver.js';
 
-/** `monad logs --category` category for continuation scheduler decisions. */
+/** `elanous logs --category` category for continuation scheduler decisions. */
 export const SCHEDULER_LOG_CATEGORY = 'dispatch.continuation.scheduler';
 
 /** 억제 대상인 대기 갈래 넷 — 리터럴로 좁혀 오타가 억제 상태를 조용히 깨지 못하게 한다. */

@@ -5,7 +5,7 @@
 // future TestFlight-equivalent verification of D1.1–D1.2 substrate.
 //
 // Usage (registered in src/index.ts):
-//   monad autopilot run "<mission>" [--backend claude] [--max-iterations 8]
+//   elanous autopilot run "<mission>" [--backend claude] [--max-iterations 8]
 //     [--max-wallclock-ms 300000] [--max-output-chars 200000] [--cwd .]
 //     [--verbose]
 //

@@ -3,11 +3,11 @@
 // Owns trigger source lifecycle: load workflows → subscribe schedule
 // + webhook entries → start → ... → stop. Each emit dispatches a real
 // `runWorkflow` against the workflow definition. Run results land in
-// `~/.monad/workflows-runs/<runId>/` (handled by `executor.ts` ·
+// `~/.elanous/workflows-runs/<runId>/` (handled by `executor.ts` ·
 // unchanged here).
 //
 // Pure orchestration — no global state, no boot-time side effects.
-// Callers (CLI `monad wf daemon`, NEXUS server, tests) instantiate +
+// Callers (CLI `elanous wf daemon`, NEXUS server, tests) instantiate +
 // invoke `start()` / `stop()` explicitly.
 
 import { findWorkflow } from './discovery.js';
@@ -101,7 +101,7 @@ export interface WorkflowRuntimeDaemon {
    *  trigger kinds register silently for those — they simply will not
    *  fire until the next daemon restart. */
   registerWorkflow(entry: WorkflowEntry): void;
-  /** Snapshot for `monad wf daemon status`. */
+  /** Snapshot for `elanous wf daemon status`. */
   status(): {
     started: boolean;
     schedule: { active: number; activeIntervals: number; activeCrons: number; skipped: number };

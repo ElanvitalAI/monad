@@ -136,7 +136,7 @@ describe('handleDevProxyHttpRequest', () => {
     const body = await res.json();
     expect(body.error).toBe('dev_proxy_upstream_unreachable');
     expect(body.upstream).toBe('http://localhost:3210');
-    expect(body.hint).toContain('monad nexus pwa dev');
+    expect(body.hint).toContain('elanous nexus pwa dev');
   });
 
   test('strips hop-by-hop headers in both directions', async () => {

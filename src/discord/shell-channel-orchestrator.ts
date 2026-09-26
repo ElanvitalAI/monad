@@ -1,7 +1,7 @@
 // ── C1 (Phase 3 Bundle 3) — shell as Discord channel entity ──
 //
 // HANDOFF Phase 3 / ROADMAP §6 C1: "shell 이 Discord 채널 entity".
-// Discord 채널 (또는 thread) 의 slash command 를 monad shell spawn 으로
+// Discord 채널 (또는 thread) 의 slash command 를 elanous shell spawn 으로
 // route + 결과를 같은 채널에 post.
 //
 // 흐름:

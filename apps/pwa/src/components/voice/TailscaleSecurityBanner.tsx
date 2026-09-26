@@ -10,7 +10,7 @@ import { useEffect, useState } from 'react';
 import { AlertTriangle, X } from 'lucide-react';
 import { checkSecureContext, type SecureContextStatus } from '@/lib/secure-context-guard';
 
-const DISMISS_SESSION_KEY = 'monad.webterm.voiceBanner.dismissed';
+const DISMISS_SESSION_KEY = 'elanous.webterm.voiceBanner.dismissed';
 const INITIAL_STATUS: SecureContextStatus = {
   isSecure: false,
   reason: 'unknown',

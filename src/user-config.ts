@@ -3,9 +3,9 @@
 // Reads the ACTIVE instance config for user-tunable behaviour that lives
 // outside environment variables and outside individual SKILL.md frontmatter.
 //
-// ⛔ The path is NOT fixed — it is the resolved config dir (`monad where`).
-//    📏 2026-09-22 실측: `~/.config/monad/config.json` 은 «없다»(그 자리는 legacy)이고
-//       실물은 `~/.monad/config.json` 이다. 옛 경로는 legacy-monad-config-migrate.ts 가 «정당하게» 쓴다.
+// ⛔ The path is NOT fixed — it is the resolved config dir (`elanous where`).
+//    📏 2026-09-22 실측: `~/.config/elanous/config.json` 은 «없다»(그 자리는 legacy)이고
+//       실물은 `~/.elanous/config.json` 이다. 옛 경로는 legacy-elanous-config-migrate.ts 가 «정당하게» 쓴다.
 //    ⚠️ 그래서 여기에 경로를 «박지 않는다» — 박으면 또 늙는다(이 줄이 그렇게 늙었다).
 //
 // Sections:
@@ -58,7 +58,7 @@ import { userConfigPath as nexusUserConfigPath } from './nexus/config/paths.js';
 import { type StreamingMode, isStreamingMode } from './session/streaming/stream-compositor.js';
 import type { DevRequestRoutingConfig } from './skills/dev-request-router.js';
 import type { UrlRoutingConfig } from './skills/url-router.js';
-import { migrateLegacyXdgUserConfig } from './storage/legacy-monad-config-migrate.js';
+import { migrateLegacyXdgUserConfig } from './storage/legacy-elanous-config-migrate.js';
 import { withFileLockSync } from './storage/file-lock.js';
 import { debug } from './debug/log.js';
 import type { FoldMode } from './log-entry.js';
@@ -139,7 +139,7 @@ export const CONFIG_LLM_PROVIDER_NAMES: readonly LLMProviderName[] = [
   'auto', 'grok', 'openai', 'anthropic', 'local', 'openai-codex', 'gemini', 'openrouter',
 ];
 
-/** `MONAD_LLM_PROVIDER` additionally permits every declared runtime provider. */
+/** `ELANOUS_LLM_PROVIDER` additionally permits every declared runtime provider. */
 export const RUNTIME_LLM_PROVIDER_NAMES: readonly LLMProviderName[] = [
   'auto', 'grok', 'openai', 'anthropic', 'local', 'openai-codex', 'gemini', 'kimi', 'qwen', 'glm', 'openrouter',
 ];
@@ -166,7 +166,7 @@ export interface LLMConfig {
   model?: string;
   baseUrl?: string;
   /** Ordered rotation of providers the user can cycle through with
-   *  `monad provider:rotate` / `/provider next`. Each entry is a
+   *  `elanous provider:rotate` / `/provider next`. Each entry is a
    *  full (provider, model, apiKey, baseUrl) tuple that gets
    *  promoted to the active LLMConfig top-level fields when
    *  selected. Optional label used for `/provider use <label>`
@@ -202,9 +202,9 @@ export interface LLMConfig {
    *
    *  값: `['codex-rotate', 'grok']` — 아는 칸은 그 둘뿐이고, 모르는 이름은 버린다(관측에 남는다).
    *  ⛔ **미설정이면 `DEFAULT_FALLBACK_CHAIN`(`src/oauth/fallback-chain.ts`) = `['codex-rotate','grok']`** — 설정이 없어도 grok 으로 샌다(#10575).
-   *    막으려면 `['codex-rotate']` 를 «명시»한다. 이 인스턴스의 값은 `monad config get llm.fallbackChain` 으로 잰다.
+   *    막으려면 `['codex-rotate']` 를 «명시»한다. 이 인스턴스의 값은 `elanous config get llm.fallbackChain` 으로 잰다.
    *
-   *  ⭐ `grok` 칸이 안전한 이유: monad 의 grok 경로는 ACP·프로바이더 «둘 다» 구독으로
+   *  ⭐ `grok` 칸이 안전한 이유: elanous 의 grok 경로는 ACP·프로바이더 «둘 다» 구독으로
    *    나간다(env 스크럽 ⊕ `resolveGrokCredential` 구독 1순위). 소진을 피하려다
    *    «다른 지갑을 여는» 일이 없다.
    *  ⚠️ 회전을 끄고(`codexAccountRotation: false`) `['grok']` 만 두는 구성도 성립한다 —
@@ -242,7 +242,7 @@ export interface LLMConfig {
   /** Tier 2 across-turn goal-execution loop 아밍(2026-07-19 goal-exec). enabled=true 면
    *  codex-family 턴을 `runGoalLoop` 으로 감싸 목표 완료(증거게이트·GOAL-COMPLETE 마커)까지
    *  across-turn 지속·continuation 재주입. 기본 미설정=off(비-아밍·안전). maxIterations 는
-   *  폭주 하드캡(기본 8). config-first 아밍(`monad config set llm.goalLoop.enabled true`). */
+   *  폭주 하드캡(기본 8). config-first 아밍(`elanous config set llm.goalLoop.enabled true`). */
   goalLoop?: {
     enabled?: boolean;
     maxIterations?: number;
@@ -250,7 +250,7 @@ export interface LLMConfig {
   /** LLM-judge memory recall(2026-07-19 · 대표 지시 기본 ON). 세션 턴의 기억 주입이 키워드
    *  매칭 대신 경량 LLM 의미판정(WSD·claude-code findRelevantMemories 이식)으로 관련 기억을
    *  고른다. **미설정=ON**(judge 실패 시 키워드 fallback·fail-soft 라 항상 켜도 안전). 끄려면
-   *  `enabled: false`. model 미지정 시 luna(경량). `monad config set llm.memoryJudge.enabled false`. */
+   *  `enabled: false`. model 미지정 시 luna(경량). `elanous config set llm.memoryJudge.enabled false`. */
   memoryJudge?: {
     enabled?: boolean;
     model?: string;
@@ -326,7 +326,7 @@ export interface LLMConfig {
    *
    *  - `'predefined'` (default · undefined) — match the local model
    *    id against the built-in `presets.yaml` (overlaid by
-   *    `~/.monad/local-llm-presets.yaml` when present). Qwen3 family
+   *    `~/.elanous/local-llm-presets.yaml` when present). Qwen3 family
    *    gets the official thinking-mode recipe (temp 0.6 · top_p 0.95
    *    · top_k 20 · max 8192 · auto `/no_think`); other families get
    *    their vendor-recommended values; unknown ids fall through to
@@ -411,7 +411,7 @@ export interface RotationEntry {
   model?: string;
   apiKey?: string;
   baseUrl?: string;
-  /** Optional short name for CLI / slash picks: `monad provider:use opus`. */
+  /** Optional short name for CLI / slash picks: `elanous provider:use opus`. */
   label?: string;
 }
 
@@ -716,7 +716,7 @@ function normalizeReportChannel(raw: unknown): TelegramReportChannel | undefined
   return botToken ? { chatId, botToken } : { chatId };
 }
 
-/** A SEPARATE bot for `monad telegram-test` — the standalone, isolated test
+/** A SEPARATE bot for `elanous telegram-test` — the standalone, isolated test
  *  messenger that runs outside the production daemon. `botToken` (required)
  *  is a distinct BotFather token so getUpdates never 409s against prod;
  *  `allowedUsers` is optional (falls back to the main allowlist). */
@@ -750,7 +750,7 @@ function normalizeTestChannel(raw: unknown): TelegramTestChannel | undefined {
   };
 }
 
-/** 멀티 봇/채널 — 채널 하나 = 봇 토큰 하나(monad 전용) + chat + 역할 + 상호작용 여부.
+/** 멀티 봇/채널 — 채널 하나 = 봇 토큰 하나(elanous 전용) + chat + 역할 + 상호작용 여부.
  *  `interactive:true` 면 getUpdates Q&A 폴러를 띄우고, `false` 면 발송 전용(noti-only).
  *  `roles` 는 발송 라우팅 태그(qa/alert/report/digest 등). 변경은 재시작 시 적용(정적).
  *  channels 미지정 시 legacy botToken/homeChannel/reportChannel 에서 자동 파생. */
@@ -800,11 +800,11 @@ export interface TelegramConfig {
   reportChannel?: TelegramReportChannel;
   /** ★ 멀티 채널(명시). 지정 시 legacy 파생 대신 이 목록을 쓴다. resolveTelegramChannels 참조. */
   channels?: TelegramChannel[];
-  /** Standalone `monad telegram-test` bot — separate token, isolated,
+  /** Standalone `elanous telegram-test` bot — separate token, isolated,
    *  runs outside the production daemon. */
   testChannel?: TelegramTestChannel;
   /** 누가 Q&A 폴링을 하나 — 기본(없음·`'nexus'`)은 넥서스 데몬, `'standalone'` 이면
-   *  넥서스는 폴링하지 않고 `monad telegram run` 이 맡는다. */
+   *  넥서스는 폴링하지 않고 `elanous telegram run` 이 맡는다. */
   poller?: 'nexus' | 'standalone';
 }
 
@@ -813,20 +813,14 @@ const TELEGRAM_DEFAULTS: TelegramConfig = { enabled: false, allowedUsers: [] };
 // Discord mirrors Telegram's shape. User / channel IDs are Discord
 // snowflakes (64-bit integers) — kept as strings since JS numbers
 // can't represent full 64-bit range safely.
-//
-// Sprint 21 wiring (2026-05-01) adds a nested `sprint21` sub-block
-// that holds the slash + persona feature config. Future communications
-// schema migration (PLAN-communications-category-migration) will lift
-// this entire block under `cfg.comms.discord` alongside telegram /
-// slack / whatsapp / msteams.
-/** `monad discord-test` scope (PLAN-multi-surface-pty-shell M4a-0) —
+/** `elanous discord-test` scope (PLAN-multi-surface-pty-shell M4a-0) —
  *  SAME app/token as production (Discord gateway allows concurrent
  *  sessions per token, unlike telegram's 409-forced split; 실측
  *  2026-07-12), isolated by CHANNEL: the test runner only processes
  *  messages in `channelId`. `botToken` is an optional escape hatch
  *  for full-app isolation if ever needed. */
 export interface DiscordTestChannel {
-  /** Dedicated guild text channel snowflake (e.g. #monad_test). */
+  /** Dedicated guild text channel snowflake (e.g. #elanous_test). */
   channelId: string;
   /** Optional allowlist override (falls back to discord.allowedUsers). */
   allowedUsers?: string[];
@@ -863,34 +857,9 @@ export interface DiscordConfig {
   allowedUsers: string[];
   /** Channel snowflake for cron / push output (optional). */
   homeChannel?: string;
-  /** Standalone `monad discord-test` scope — same token, dedicated
+  /** Standalone `elanous discord-test` scope — same token, dedicated
    *  channel, isolated state. See DiscordTestChannel. */
   testChannel?: DiscordTestChannel;
-  /** Sprint 21 wiring (2026-05-01) — slash commands + persona
-   *  registry + reaction HITL. All env-vars in this block (DISCORD_
-   *  APP_ID etc) were dropped in favor of explicit config — env
-   *  vars are no longer consulted. */
-  sprint21?: DiscordSprint21Config;
-}
-
-export interface DiscordSprint21Config {
-  /** Master kill-switch. Default = true (wiring active when
-   *  parent DiscordConfig is enabled). Set false to run the legacy
-   *  bot without persona/slash/reaction wiring. */
-  enabled?: boolean;
-  /** Discord application ID — required for slash command registration.
-   *  Find at: https://discord.com/developers/applications/<your-app>/general
-   *  When unset, slash commands won't appear in Discord but
-   *  INTERACTION dispatch is still wired (commands invoked via raw
-   *  application interactions API would still respond). */
-  appId?: string;
-  /** Optional dev-guild snowflake — when set, slash commands
-   *  register to this guild only (immediate propagation). When unset,
-   *  commands register globally (~5 min propagation). */
-  devGuildId?: string;
-  /** Path to personas/ directory. Default = './personas' relative to
-   *  monad cwd. yaml hot-reload via fs.watch. */
-  personasDir?: string;
 }
 
 const DISCORD_DEFAULTS: DiscordConfig = { enabled: false, allowedUsers: [] };
@@ -1038,7 +1007,7 @@ export interface RunDevHarnessToolConfig {
  *  전부 받고, 그 인자가 있으면 ***`SelfOrchestrate` 와 «같은 함수»***(`runSelfOrchestrateCliCommand`)로 간다.
  *  ⇒ 🔑 두 툴이 같은 곳으로 가므로 «둘째 문»은 능력이 아니라 ***파편화***다.
  *  ⛔ 이것은 「덜 쓰니까 내린다」가 «아니다» — 호출 수와 무관한 «결정»이다(대표).
- *  ⚠️ CLI(`monad self orchestrate`)는 «남는다» — 모델 표면만 내린다(RunDevHarness 선례와 동형).
+ *  ⚠️ CLI(`elanous self orchestrate`)는 «남는다» — 모델 표면만 내린다(RunDevHarness 선례와 동형).
  *  🩹 되돌리려면 `tools.selfOrchestrate.modelSurface = true`. */
 export interface SelfOrchestrateToolConfig {
   modelSurface?: boolean;
@@ -1094,7 +1063,7 @@ const TOOLS_DEFAULTS: ToolsConfig = {
   selfOrchestrate: {},
   nativeStructure: { enabled: false },
   // 대표 결정(2026-07-26): 오토 선호 — 기본 ON.
-  selfImplement: { worktreeRoot: join(homedir(), '.monad', 'worktrees'), childInstanceMode: 'isolated', prApprovalDelivery: 'terminal' as const, observeOnly: false, fabricDecompose: false, graphAuthoritative: true, fabricDecomposeAutoPathThreshold: 5, autoOpenPr: true, autoStop: { enabled: true, minRung: 2 }, autoAssist: { enabled: true, minRung: 2 }, screenStallTermination: { enabled: true, minRung: 2 }, reworkBudget: { shadowStop: false, maxRounds: 3 }, decompositionShadow: { enabled: false }, clarificationEscalation: { enabled: false } },
+  selfImplement: { worktreeRoot: join(homedir(), '.elanous', 'worktrees'), childInstanceMode: 'isolated', prApprovalDelivery: 'terminal' as const, observeOnly: false, fabricDecompose: false, graphAuthoritative: true, fabricDecomposeAutoPathThreshold: 5, autoOpenPr: true, autoStop: { enabled: true, minRung: 2 }, autoAssist: { enabled: true, minRung: 2 }, screenStallTermination: { enabled: true, minRung: 2 }, reworkBudget: { shadowStop: false, maxRounds: 3 }, decompositionShadow: { enabled: false }, clarificationEscalation: { enabled: false } },
 };
 
 // ── Debug ────────────────────────────────────────────────────────────
@@ -1103,7 +1072,7 @@ const TOOLS_DEFAULTS: ToolsConfig = {
 
 export interface DebugConfig {
   /** File sink — when true (default) every run writes a per-session
-   *  JSONL log under ~/.local/share/monad/debug/. Set to false to
+   *  JSONL log under ~/.local/share/elanous/debug/. Set to false to
    *  disable disk persistence; the in-memory ring buffer still feeds
    *  `/debug tail` when needed. */
   file: boolean;
@@ -1140,7 +1109,7 @@ export interface DebugConfig {
 const DEBUG_DEFAULTS: DebugConfig = { file: true, level: 'trail', exposeFullLlmTools: true, renderLogs: false };
 
 // ── Logs (통합 로그 패브릭 · 2026-07-13) ─────────────────────────────
-// 크로스서피스 조회 스토어(~/.monad/logs/logs.db)의 보존정책 노브.
+// 크로스서피스 조회 스토어(~/.elanous/logs/logs.db)의 보존정책 노브.
 // 파일 트레일(debug.file)과 별개 축 — 스토어는 조회면이라 보존이 유한.
 // 설계: 내부 문서 `PLAN-unified-log-fabric-2026-07-13` §LF0.
 
@@ -1152,7 +1121,7 @@ export interface LogsConfig {
     maxDbMb: number;
   };
   /** 로그 출처 이름 오버라이드 (LF7-a). 미설정 시 자동 유도 —
-   *  prod(기본) 또는 `test:<repo폴더명>` (MONAD_STATE_DIR 기준). */
+   *  prod(기본) 또는 `test:<repo폴더명>` (ELANOUS_STATE_DIR 기준). */
   instanceName?: string;
 }
 
@@ -1206,7 +1175,7 @@ export interface ShellConfig {
    *
    *  2026-05-03 PM++ — Added for stabilization mode: TUI tool
    *  exposure (DashboardState always-on + TerminalModal always-added)
-   *  diverges from JSON-test (`monad repro`) tool exposure and
+   *  diverges from JSON-test (`elanous repro`) tool exposure and
    *  potentially confounds codex behavior measurement (W5-G's
    *  no-content-read streak counts dashboard tool calls toward the
    *  streak even though they're not Read/Edit/Write/Lsp). Setting
@@ -1289,7 +1258,6 @@ export type ChatRenderingToolDisplayMode = 'legacy' | 'inline-to-block';
 
 export interface ChatRenderingToolConfig {
   displayMode: ChatRenderingToolDisplayMode;
-  inlineOneLine: boolean;
   blockMaxLines: number;
 }
 
@@ -1310,8 +1278,6 @@ export interface ChatRenderingDiffConfig {
 }
 
 export interface ChatRenderingHudConfig {
-  variantBadge: boolean;
-  tokenGauge: boolean;
   gaugeWarnRatio: number;
   gaugeDangerRatio: number;
 }
@@ -1328,7 +1294,7 @@ export interface ChatRenderingConfig {
 /** PR2 (HANDOFF 2026-05-04 §5.2) — knobs for the 4-layer compact
  *  pipeline. `verifyProbe` opts into Wave 5's Gemini-style verify
  *  step before accepting a Layer 3 summary. `archive*` controls the
- *  per-session JSONL archive at ~/.monad/compact-archive/. */
+ *  per-session JSONL archive at ~/.elanous/compact-archive/. */
 export interface ChatCompactConfig {
   verifyProbe: boolean;
   archiveEnabled: boolean;
@@ -1405,7 +1371,6 @@ export const CHAT_DEFAULTS: ChatConfig = {
     },
     tool: {
       displayMode: 'inline-to-block',
-      inlineOneLine: true,
       blockMaxLines: 8,
     },
       diff: {
@@ -1420,8 +1385,6 @@ export const CHAT_DEFAULTS: ChatConfig = {
         turnBrowserMode: 'all',
       },
     hud: {
-      variantBadge: true,
-      tokenGauge: true,
       gaugeWarnRatio: 0.7,
       gaugeDangerRatio: 0.85,
     },
@@ -1518,7 +1481,6 @@ export interface VwConfig {
   windowNames: Record<string, string>;
   paneNames: Record<string, string>;
   entries: Record<VwKnownName, VwEntryConfig>;
-  acpResident: boolean;
   simResident: boolean;
   iulResident: boolean;
   iulForegroundOnStartup: boolean;
@@ -1541,7 +1503,6 @@ const VW_DEFAULTS: VwConfig = {
     sim: { ...VW_ENTRY_DEFAULTS.sim },
     iul: { ...VW_ENTRY_DEFAULTS.iul },
   },
-  acpResident: true,
   simResident: false,
   iulResident: false,
   iulForegroundOnStartup: false,
@@ -1579,7 +1540,7 @@ export interface AcpConfig {
   binaryPaths?: Record<string, string>;
   /** Soft tool-turn budget injected as a focus directive into slash
    *  `/cc`·`/cdx`·`/gem` prompts (targeted commands → tight). Natural-
-   *  language delegation (monad brain) stays generous and ignores this.
+   *  language delegation (elanous brain) stays generous and ignores this.
    *  Advisory (not hard-enforced). Omit ⇒ SLASH_FOCUS_TURNS_DEFAULT (8). */
   slashMaxTurns?: number;
   /** Edit-approval oversight for delegated (ACP) coding. Default OFF =
@@ -1659,7 +1620,7 @@ const GOALS_DEFAULTS: GoalsConfig = {
 // ── Registry (Phase 6 FU · 2026-05-11) ──────────────────────────────
 //
 // Discovery wiring user-config. RFC #2161 Phase 6 originally shipped
-// the omni-crawl bridge + cron interval as MONAD_* env vars (#2206 /
+// the omni-crawl bridge + cron interval as ELANOUS_* env vars (#2206 /
 // #2209). That violated the "신규 옵션은 user-config 만 노출" rule
 // (`내부 문서 `MANUAL-user-config`` §2 · memory
 // `feedback_user_config_over_env.md`). This section is the canonical
@@ -1668,12 +1629,12 @@ const GOALS_DEFAULTS: GoalsConfig = {
 // A6-real P4 (2026-05-11) retired the omni-crawl bridge entirely —
 // its replacement is the grok-crawl (mandatory) + firecrawl-crawl
 // (optional) source pair (P2 + P3). The bridge's user-config field
-// and its `MONAD_OMNI_CRAWL_*` env fallbacks are no longer consulted.
+// and its `ELANOUS_OMNI_CRAWL_*` env fallbacks are no longer consulted.
 
 export interface RegistryDiscoveryCronConfig {
   /** Discovery cron tick interval (ms). Clamped to [60_000, 86_400_000].
    *  Undefined / 0 = cron dormant (default · zero CPU on fresh install).
-   *  Legacy env fallback: `MONAD_DISCOVERY_CRON_INTERVAL_MS`. */
+   *  Legacy env fallback: `ELANOUS_DISCOVERY_CRON_INTERVAL_MS`. */
   intervalMs?: number;
 }
 
@@ -1775,7 +1736,7 @@ function parseTasteConfig(raw: unknown): TasteConfig | undefined {
  *  ***「싸다」와 「늘 켜 둔다」는 다른 축이다.*** 그래서 «능력은 남기고 상시성만» 끈다 —
  *  구현(`src/web-search/tavily.ts`)은 그대로 두고 등록만 이 스위치가 정한다.
  *
- *  ⚠️ 켜기: `monad config set webSearch.tavily.enabled true` (또는 config.json 직접).
+ *  ⚠️ 켜기: `elanous config set webSearch.tavily.enabled true` (또는 config.json 직접).
  */
 export interface WebSearchConfig {
   tavily?: { enabled?: boolean };
@@ -1960,7 +1921,7 @@ export interface NotificationsConfig {
 // `enabled` defaults to true; set false to keep a config row but
 // suppress boot (useful when the binary isn't installed yet).
 //
-// See `내부 문서 `RFC-monad-mcp-client-2026-05-12`` for the design.
+// See `내부 문서 `RFC-elanous-mcp-client-2026-05-12`` for the design.
 
 /** MCP client transport. `streamable-http` is accepted as an alias of `http`. */
 export type McpTransport = 'stdio' | 'http';
@@ -2015,7 +1976,7 @@ export interface McpConfig {
    *  / undefined = enabled. Set when one chatty server (e.g.
    *  `xcrun mcpbridge` whose `tools/list` hangs daemon-side · 2026-05-13
    *  dogfood) drags every startup through its 8s timeout. Toggle from
-   *  the CLI with `monad nexus run --no-mcp`. */
+   *  the CLI with `elanous nexus run --no-mcp`. */
   enabled?: boolean;
   /** Trusted MCP server id for widget tool calls (`POST /v1/mcp/widgets/call`).
    *  Sparse — omitted means the HTTP route keeps its sole-ready fallback. */
@@ -2596,7 +2557,7 @@ const LSP_DEFAULTS: LspConfig = {
 // Single source of truth for voice subsystem config — STT provider,
 // TTS provider + auto-TTS toggle, VAD mode + tuning, voice-chat
 // multi-turn. User explicitly preferred user-config over scattered
-// env vars (`MONAD_VOICE_*`, `MONAD_AUTO_TTS`, `TTS_PROVIDER`,
+// env vars (`ELANOUS_VOICE_*`, `ELANOUS_AUTO_TTS`, `TTS_PROVIDER`,
 // `STREAMING_STT_PROVIDER`). Env is kept as backward-compat fallback
 // (resolver helpers in voice/* still read it when config is absent),
 // but new opts should land here first.
@@ -2662,11 +2623,11 @@ export interface VoiceTtsConfig {
   provider?: VoiceTtsProviderId;
   /** When true, assistant chunks are spoken aloud automatically as
    *  they stream. Equivalent to running `/auto-tts on` at boot.
-   *  Falls back to `MONAD_AUTO_TTS` env then `false`. */
+   *  Falls back to `ELANOUS_AUTO_TTS` env then `false`. */
   auto?: boolean;
   /** Hard cap on segmenter buffer per-sentence (chars). When omitted
    *  the segmenter default (~2000) applies. Env fallback:
-   *  `MONAD_AUTO_TTS_MAX_LENGTH`. */
+   *  `ELANOUS_AUTO_TTS_MAX_LENGTH`. */
   maxSentenceChars?: number;
   /** Drain cooldown (ms) inserted between auto-TTS commit/cancel and
    *  voice-chat `notifyResponseDone`. Without this gap the controller
@@ -2687,16 +2648,16 @@ export interface VoiceVadConfig {
    *  (default — works on OpenAI realtime). `local` runs energy-based
    *  VAD inside the pipeline (good for whisper-cpp-local). `manual`
    *  requires explicit ESC to finalize. Env fallback:
-   *  `MONAD_VOICE_VAD`. */
+   *  `ELANOUS_VOICE_VAD`. */
   mode?: VoiceVadMode;
   /** RMS energy threshold for `local` mode. Higher = less sensitive.
-   *  Env fallback: `MONAD_VOICE_VAD_THRESHOLD`. Default 0.012. */
+   *  Env fallback: `ELANOUS_VOICE_VAD_THRESHOLD`. Default 0.012. */
   threshold?: number;
   /** Below-threshold duration that triggers turn end (ms). Env
-   *  fallback: `MONAD_VOICE_VAD_SILENCE_MS`. Default 800. */
+   *  fallback: `ELANOUS_VOICE_VAD_SILENCE_MS`. Default 800. */
   silenceMs?: number;
   /** Minimum above-threshold duration that counts as speech (ms).
-   *  Env fallback: `MONAD_VOICE_VAD_MIN_SPEECH_MS`. Default 200. */
+   *  Env fallback: `ELANOUS_VOICE_VAD_MIN_SPEECH_MS`. Default 200. */
   minSpeechMs?: number;
 }
 
@@ -2705,7 +2666,7 @@ export interface VoiceChatConfig {
    *  the user can keep talking hands-free. Combined with VAD's
    *  automatic turn end and (sticky-aware) auto-submit, this yields
    *  a 5-min hands-free conversation cycle. Env fallback:
-   *  `MONAD_VOICE_CHAT_MULTI_TURN`. */
+   *  `ELANOUS_VOICE_CHAT_MULTI_TURN`. */
   multiTurn?: boolean;
 }
 
@@ -2769,17 +2730,17 @@ export interface VoiceDiscordConfig {
      *  the bot's point of view. */
     leaveOnEmpty?: boolean;
     /** 재생 중 청취 정책 — true 면 barge-in(지속 발화 인터럽트), false/
-     *  미설정이면 half-duplex. env `MONAD_VOICE_BARGE_IN` 은 backward-
+     *  미설정이면 half-duplex. env `ELANOUS_VOICE_BARGE_IN` 은 backward-
      *  compat fallback (user-config 우선 · 갭 #4 2026-07-12). */
     bargeIn?: boolean;
     /** barge-in 인터럽트 인정에 필요한 지속 발화 길이(ms). 기본 350.
-     *  env fallback `MONAD_VOICE_BARGE_IN_SUSTAIN_MS`. */
+     *  env fallback `ELANOUS_VOICE_BARGE_IN_SUSTAIN_MS`. */
     bargeInSustainMs?: number;
     /** half-duplex 꼬리 여유(ms) — TTS 재생 지평선 뒤로 이만큼 더 인바운드
-     *  를 무시. 기본 350. env fallback `MONAD_VOICE_SELF_ECHO_TAIL_MS`. */
+     *  를 무시. 기본 350. env fallback `ELANOUS_VOICE_SELF_ECHO_TAIL_MS`. */
     selfEchoTailMs?: number;
     /** 마지막 인바운드 패킷 후 STT 를 강제 finalize 하는 침묵 갭(ms).
-     *  기본 700. env fallback `MONAD_VOICE_STT_SILENCE_FINALIZE_MS`. */
+     *  기본 700. env fallback `ELANOUS_VOICE_STT_SILENCE_FINALIZE_MS`. */
     sttSilenceFinalizeMs?: number;
   };
   /** 디스코드 보이스 채널 전용 STT provider override (config화 2026-07-12
@@ -2881,7 +2842,7 @@ function normalizeIntakeAmbientCaptureMode(v: unknown): IntakeAmbientCaptureMode
 // and — later — first-class finance tools + trade gate) is an OPTIONAL
 // domain pack. Core stays generic; when `enabled` is false (default) none
 // of the finance orientation loads, so a non-investment deployment gets a
-// plain agent. See docs/ROADMAP-conatus-monad-knowledge-absorption §0.
+// plain agent. See docs/ROADMAP-conatus-elanous-knowledge-absorption §0.
 export interface FinanceConfig {
   enabled: boolean;
   /** Layer an LLM qualitative narrative (관전 포인트) on top of the
@@ -2949,7 +2910,7 @@ const FINANCE_DEFAULTS: FinanceConfig = {
 
 // ── Top-level ────────────────────────────────────────────────────────
 
-/** G8 무인 리뷰루프 opt-in 라벨(auto-review) 자동부착 모드(sparse·기본 opt-in). §2b ROADMAP-monad-is-all. */
+/** G8 무인 리뷰루프 opt-in 라벨(auto-review) 자동부착 모드(sparse·기본 opt-in). §2b ROADMAP-elanous-is-all. */
 export interface AutoReviewConfig {
   /** 'off'=전면 금지(kill switch·--auto-review 플래그도 무시) · 'opt-in'=플래그 있을 때만(기본) ·
    *  'auto'=플래그 없어도 저위험 작업(assessAutonomyEligibility 통과)에 자동 부착(G10 안전봉투 그물 위). */
@@ -3017,7 +2978,7 @@ export interface ModelResolution {
 /** ⭐ export 인 이유 — **문서가 이 값을 「재게」 하기 위해서다**(AGENTS.md §페이즈별 LLM ⑹ⓐ).
  *  ⛔ 진입 문서에 역할별 기본 티어·env 이름을 «적으면» 그 표가 늙는다. 그래서 적지 않고 여기서 읽는다. */
 export const ROLE_MODEL_DEFAULTS: Record<ModelRole, { environment: string; tier: ModelTier }> = {
-  implement: { environment: 'MONAD_SELF_IMPLEMENT_MODEL', tier: 'better' },
+  implement: { environment: 'ELANOUS_SELF_IMPLEMENT_MODEL', tier: 'better' },
   // ⭐⭐ 2026-09-23 (대표 승인) — ***`loaded` → `best`.*** 「천장」이 상시 레인이 돼 있었다.
   //
   // 🩸 무엇이 어긋나 있었나 — ***바로 위 주석이 이 값을 반박한다***:
@@ -3037,11 +2998,11 @@ export const ROLE_MODEL_DEFAULTS: Record<ModelRole, { environment: string; tier:
   // ⛔ 사람이 «명시로» 고르는 길은 «안» 막는다 — `--tier max` · `/model astra` 는 그대로다
   //    (`llm-tier-map` 의 별칭 max/deep/maxi → loaded 는 손대지 않았다).
   // 🔲 ***안 쟀다*** — 「리뷰 품질이 떨어지나」. 떨어지면 되돌릴 자리는 이 한 줄이다.
-  review: { environment: 'MONAD_PR_REVIEW_MODEL', tier: 'best' },
-  research: { environment: 'MONAD_MEMORY_JUDGE_MODEL', tier: 'better' },
-  planning: { environment: 'MONAD_SKILL_PLAN_MODEL', tier: 'best' },
-  audit: { environment: 'MONAD_MEMORY_JUDGE_MODEL', tier: 'better' },
-  classify: { environment: 'MONAD_ACTION_CLASSIFIER_MODEL', tier: 'budget' },
+  review: { environment: 'ELANOUS_PR_REVIEW_MODEL', tier: 'best' },
+  research: { environment: 'ELANOUS_MEMORY_JUDGE_MODEL', tier: 'better' },
+  planning: { environment: 'ELANOUS_SKILL_PLAN_MODEL', tier: 'best' },
+  audit: { environment: 'ELANOUS_MEMORY_JUDGE_MODEL', tier: 'better' },
+  classify: { environment: 'ELANOUS_ACTION_CLASSIFIER_MODEL', tier: 'budget' },
 };
 
 /** Resolve `auto` through the same runtime provider selector that dispatches LLM calls.
@@ -3255,7 +3216,7 @@ export interface UserConfig {
   taste?: TasteConfig;
   /** 웹 검색 프로바이더 게이트(기본 OFF — `isTavilySearchEnabled()` 로만 읽는다). */
   webSearch?: WebSearchConfig;
-  /** G8 무인 리뷰루프 auto-review 라벨 자동부착 모드(sparse·기본 opt-in). §2b ROADMAP-monad-is-all. */
+  /** G8 무인 리뷰루프 auto-review 라벨 자동부착 모드(sparse·기본 opt-in). §2b ROADMAP-elanous-is-all. */
   autoReview?: AutoReviewConfig;
   /** 표시·집계 시간대 (IANA 이름 · 예 `Asia/Seoul`). 2026-07-24 신설.
    *
@@ -3276,7 +3237,7 @@ export interface UserConfig {
   //   to 'transport-not-configured' if a route attempts to send).
   //   See `src/notifications/outbound-boot.ts` for the boot wire.
   notifications?: NotificationsConfig;
-  // B 트랙 Phase 2 (RFC-monad-mcp-client-2026-05-12 · 2026-05-12):
+  // B 트랙 Phase 2 (RFC-elanous-mcp-client-2026-05-12 · 2026-05-12):
   //   External MCP servers (xcrun mcpbridge · xcodebuildmcp · …)
   //   that the NEXUS boot wire spawns + registers as proxy
   //   ToolRuntimes. Sparse — undefined or empty servers[] = no-op.
@@ -3303,10 +3264,10 @@ export interface UserConfig {
    *  이 게이트가 armed 여도 항상 제외. 대표 결정 전까지 undefined=false. */
   ops?: { selfHeal?: { armed?: boolean } };
   raw: Record<string, unknown>;
-  // Phase 2 (PLAN-config-unification-monad-root-2026-05-10):
-  //   NEXUS schema co-resident at root of `~/.monad/config.json`.
+  // Phase 2 (PLAN-config-unification-elanous-root-2026-05-10):
+  //   NEXUS schema co-resident at root of `~/.elanous/config.json`.
   //   Read by `src/nexus/config/user-config.ts:readUserConfig` for daemon
-  //   state · exposed here so `monad config get/set global.nexus.*` and
+  //   state · exposed here so `elanous config get/set global.nexus.*` and
   //   `tabs.<id>.*` resolve through the same dotted-path resolver as
   //   Path A keys (llm.provider · skillRouter.* · etc.). Type 'version'
   //   matches the on-disk key — there is no Path A collision.
@@ -3529,7 +3490,6 @@ function defaultConfig(): UserConfig {
         sim: { ...VW_ENTRY_DEFAULTS.sim },
         iul: { ...VW_ENTRY_DEFAULTS.iul },
       },
-      acpResident: true,
       simResident: false,
       iulResident: false,
       iulForegroundOnStartup: false,
@@ -3559,9 +3519,9 @@ function defaultConfig(): UserConfig {
 
 let cache: UserConfig | null = null;
 let cachedPath: string | null = null;
-// Phase 4 (PLAN-config-unification-monad-root-2026-05-10):
+// Phase 4 (PLAN-config-unification-elanous-root-2026-05-10):
 //   Cache invalidation across modules / processes that share the unified
-//   `~/.monad/config.json`. NEXUS daemon's `patchUserConfig` (Path B
+//   `~/.elanous/config.json`. NEXUS daemon's `patchUserConfig` (Path B
 //   writer) atomically renames the file behind us; without an mtime
 //   check the in-memory cache here would keep serving stale state.
 let cachedMtimeMs: number | null = null;
@@ -3572,7 +3532,7 @@ let cachedMtimeMs: number | null = null;
 // [ISO-2 · 2026-07-13 은퇴] 종전에는 test-state-dir-flag.ts 가
 // `buildTestSafeDaemonConfig` 를 여기 걸어 격리 테스트 데몬의 아웃바운드를
 // in-memory 로 가렸다. overlay 뷰가 디스크에 박제되는 오염 사건(#4029) 후
-// config 완전 격리(물질화 사본 + `monad config sync-test`)로 대체 — 이제
+// config 완전 격리(물질화 사본 + `elanous config sync-test`)로 대체 — 이제
 // 프로덕션 설치 지점은 없다. 메커니즘은 테스트 주입용으로만 남긴다.
 let configOverlay: ((c: UserConfig) => UserConfig) | null = null;
 
@@ -3588,7 +3548,7 @@ function applyOverlay(cfg: UserConfig): UserConfig {
 }
 
 /** test-safe 변환 정책의 원전(pure). [ISO-2] 이제 overlay 로 걸리지 않고
- *  `monad config sync-test`(config-test-sync.ts 의 raw 동형 변환)가 물질화
+ *  `elanous config sync-test`(config-test-sync.ts 의 raw 동형 변환)가 물질화
  *  시점에 같은 정책을 적용한다 — 파리티 테스트가 두 구현의 의미론 일치를
  *  고정. Telegram: test token 스왑(없으면 off) + 운영 아웃바운드 경로
  *  (report/home/channels) 제거. Discord: off. */
@@ -3619,12 +3579,12 @@ function readMtimeMsOrNull(path: string): number | null {
   catch { return null; }
 }
 
-// Phase 1 (PLAN-config-unification-monad-root-2026-05-10):
+// Phase 1 (PLAN-config-unification-elanous-root-2026-05-10):
 //   XDG_CONFIG_HOME explicit  → legacy XDG path (test isolation + Phase 6 deprecation)
-//   else                      → NEXUS canonical helper (~/.monad/config.json · honors MONAD_DAEMON_DIR)
+//   else                      → NEXUS canonical helper (~/.elanous/config.json · honors ELANOUS_DAEMON_DIR)
 //
 // Phase 3 (same PLAN): on first call from a non-XDG environment, migrate
-// any legacy ~/.config/monad/config.json into ~/.monad/config.json (top-
+// any legacy ~/.config/elanous/config.json into ~/.elanous/config.json (top-
 // level merge · idempotent · legacy → .bak). Subsequent calls short-
 // circuit via the once-per-process flag inside the migrate helper.
 //
@@ -3642,22 +3602,22 @@ function isInsideBunTest(): boolean {
 function emitXdgDeprecationWarningOnce(xdgPath: string): void {
   if (xdgDeprecationWarned) return;
   xdgDeprecationWarned = true;
-  if (process.env.MONAD_SUPPRESS_XDG_WARNING === '1') return;
+  if (process.env.ELANOUS_SUPPRESS_XDG_WARNING === '1') return;
   // Test runtimes are silent by default to keep suite output clean. The
-  // dedicated assertion test passes MONAD_TEST_FORCE_XDG_WARNING=1 to
+  // dedicated assertion test passes ELANOUS_TEST_FORCE_XDG_WARNING=1 to
   // bypass this gate.
-  if (isInsideBunTest() && process.env.MONAD_TEST_FORCE_XDG_WARNING !== '1') return;
+  if (isInsideBunTest() && process.env.ELANOUS_TEST_FORCE_XDG_WARNING !== '1') return;
   process.stderr.write(
-    `[monad config] XDG_CONFIG_HOME is set; reading ${xdgPath} (legacy).\n`
-    + `  Canonical path is now ~/.monad/config.json (since 2026-05-10).\n`
-    + `  Unset XDG_CONFIG_HOME to migrate · MONAD_SUPPRESS_XDG_WARNING=1 to silence.\n`,
+    `[elanous config] XDG_CONFIG_HOME is set; reading ${xdgPath} (legacy).\n`
+    + `  Canonical path is now ~/.elanous/config.json (since 2026-05-10).\n`
+    + `  Unset XDG_CONFIG_HOME to migrate · ELANOUS_SUPPRESS_XDG_WARNING=1 to silence.\n`,
   );
 }
 
 export function userConfigPath(): string {
   const xdg = process.env.XDG_CONFIG_HOME?.trim();
   if (xdg) {
-    const xdgPath = join(xdg, 'monad', 'config.json');
+    const xdgPath = join(xdg, 'elanous', 'config.json');
     emitXdgDeprecationWarningOnce(xdgPath);
     return xdgPath;
   }
@@ -3667,12 +3627,12 @@ export function userConfigPath(): string {
 
 function defaultPath(): string { return userConfigPath(); }
 
-/** Sibling path to the primary config: `~/.monad/llm-fallback.json`.
+/** Sibling path to the primary config: `~/.elanous/llm-fallback.json`.
  *  User-curated · daemon writes NEVER touch this file (read-only contract).
  *  When the primary config's `llm` section is missing or effectively empty
  *  (provider absent / 'auto' / 'none'), `buildUserConfig` merges from this
  *  fallback so the setup gate (`checkLlm`) stays satisfied even when
- *  `~/.monad/config.json` gets sparse-wiped by a misbehaving writer.
+ *  `~/.elanous/config.json` gets sparse-wiped by a misbehaving writer.
  *
  *  Suggested permissions: `chmod 0444` to prevent accidental in-place edits. */
 export function llmFallbackPath(): string {
@@ -3684,7 +3644,7 @@ export function llmFallbackPath(): string {
  *
  *  The fallback file's top level IS the `llm` shape (provider · baseUrl ·
  *  apiKey · model · rotation · …). It is NOT a full UserConfig — only the
- *  `llm` section.  Mirrors `jq '.llm' ~/.monad/config.json > llm-fallback.json`. */
+ *  `llm` section.  Mirrors `jq '.llm' ~/.elanous/config.json > llm-fallback.json`. */
 export function readLlmFallback(): Record<string, unknown> | null {
   const path = llmFallbackPath();
   if (!existsSync(path)) return null;
@@ -3721,13 +3681,13 @@ function logFallbackUsedOnce(): void {
 }
 
 /** Resolve the process-scoped provider override before credential parsing.
- * `MONAD_LLM_PROVIDER` intentionally wins over config so one invocation and
+ * `ELANOUS_LLM_PROVIDER` intentionally wins over config so one invocation and
  * inherited child processes can select a provider without mutating user config. */
 function runtimeLlmProviderOverride(): LLMProviderName | undefined {
-  const requested = process.env.MONAD_LLM_PROVIDER?.trim();
+  const requested = process.env.ELANOUS_LLM_PROVIDER?.trim();
   if (!requested) return undefined;
   if (!(RUNTIME_LLM_PROVIDER_NAMES as readonly string[]).includes(requested)) {
-    throw new Error(`Invalid MONAD_LLM_PROVIDER "${requested}". Allowed providers: ${RUNTIME_LLM_PROVIDER_NAMES.join(', ')}`);
+    throw new Error(`Invalid ELANOUS_LLM_PROVIDER "${requested}". Allowed providers: ${RUNTIME_LLM_PROVIDER_NAMES.join(', ')}`);
   }
   return requested as LLMProviderName;
 }
@@ -3800,7 +3760,7 @@ function defaultModelForProvider(provider: LLMProviderName): string | undefined 
     case 'grok': return GROK_MODEL;
     case 'openai': return OPENAI_MODEL;
     // ⛔ 2026-09-25 — 구독(codex) 경로를 API 상수(`OPENAI_MODEL`=gpt-4o-mini)로 접지 않는다.
-    //   실측: Pod 에 `MONAD_LLM_PROVIDER=openai-codex` 만 주자 `Codex API 400: The 'gpt-4o-mini' model is
+    //   실측: Pod 에 `ELANOUS_LLM_PROVIDER=openai-codex` 만 주자 `Codex API 400: The 'gpt-4o-mini' model is
     //   not supported when using Codex with a ChatGPT account.` 로 첫 호출에서 죽었다. ⇒ CODEX 사다리에서 파생.
     case 'openai-codex': return lookupLlmTierSpec('openai-codex', 'balanced').model;
     case 'anthropic': return ANTHROPIC_MODEL;
@@ -3819,8 +3779,8 @@ function resolveRuntimeLlmModel(
   configuredModel: string | undefined,
   escalationProvider: string | undefined,
 ): string | undefined {
-  if (escalationProvider) return process.env.MONAD_ESCALATE_MODEL?.trim() || configuredModel;
-  const explicitModel = process.env.MONAD_LLM_MODEL?.trim();
+  if (escalationProvider) return process.env.ELANOUS_ESCALATE_MODEL?.trim() || configuredModel;
+  const explicitModel = process.env.ELANOUS_LLM_MODEL?.trim();
   if (explicitModel) {
     // Model env still wins. A foreign family is named before the request,
     // not rewritten — same-provider overrides stay silent.
@@ -3847,7 +3807,7 @@ function defaultConfigWithRuntimeProvider(): UserConfig {
   // ⛔⭐ 두 env 의 우선순위는 **모든 경로에서 같아야 한다**(무인 리뷰 must-fix 2R).
   //   파싱 경로가 `escalate → runtime → config` 인데 이 경로만 `runtime` 우선이면,
   //   같은 환경에서 config 파일이 «있느냐 없느냐»로 provider 가 갈린다.
-  const escalationProvider = process.env.MONAD_ESCALATE_PROVIDER?.trim();
+  const escalationProvider = process.env.ELANOUS_ESCALATE_PROVIDER?.trim();
   if (!override && !escalationProvider) {
     cfg.llm = {
       ...cfg.llm,
@@ -3857,7 +3817,7 @@ function defaultConfigWithRuntimeProvider(): UserConfig {
   }
   const selected = escalationProvider ? normalizeProvider(escalationProvider) : override!;
   // ⭐ provider 를 바꾸는 자리는 **키도 함께** 해석한다 — 그러지 않으면 새 기기에서
-  //   `MONAD_LLM_PROVIDER=grok` 이 provider 만 바꾸고 자격이 없어 401 로 죽는다(파싱 경로와 같은 규율).
+  //   `ELANOUS_LLM_PROVIDER=grok` 이 provider 만 바꾸고 자격이 없어 401 로 죽는다(파싱 경로와 같은 규율).
   const baseProvider = cfg.llm.provider ?? 'auto';
   const cred = resolveProviderCredential({ provider: selected, rotation: cfg.llm.rotation, baseApiKey: cfg.llm.apiKey, baseProvider });
   observeCredentialResolution(selected, cred, 'escalate');
@@ -3876,7 +3836,7 @@ function defaultConfigWithRuntimeProvider(): UserConfig {
 }
 
 /** 설정에서 «졸업»하거나 죽어서 더는 읽지 않는 키. 설정 파일에 남아 있으면 로더는 값을 쓰지 않고
- *  관측 한 줄(프로세스당 한 번)과 `monad doctor` 한 줄로 알린다 — 조용히 무시하지 않는다(설정 졸업 원칙 2). */
+ *  관측 한 줄(프로세스당 한 번)과 `elanous doctor` 한 줄로 알린다 — 조용히 무시하지 않는다(설정 졸업 원칙 2). */
 export interface RetiredConfigKey {
   /** 점 경로(예: `tools.selfImplement.decompositionShadow`). */
   readonly path: string;
@@ -3889,6 +3849,12 @@ export const RETIRED_CONFIG_KEYS: readonly RetiredConfigKey[] = [
   { path: 'tools.selfImplement.autoStop.enabled', reason: '기본 켬으로 졸업 — 지워도 된다 · 조율은 minRung (2026-09-24)' },
   { path: 'tools.selfImplement.autoAssist.enabled', reason: '기본 켬으로 졸업 — 지워도 된다 · 조율은 minRung (2026-09-24)' },
   { path: 'tools.selfImplement.screenStallTermination.enabled', reason: '기본 켬으로 졸업 — 지워도 된다 · 조율은 minRung (2026-09-24)' },
+  // 설정 졸업 단계 2(2026-09-26): 로더가 싣기만 하고 읽는 곳이 없던 넷 — 저장소 전수 rg(시험 제외) 결과 user-config.ts 밖 소비자 0.
+  { path: 'chat.rendering.hud.variantBadge', reason: '읽는 곳이 없다 — 지워도 된다 (2026-09-26 설정 졸업 2)' },
+  { path: 'chat.rendering.hud.tokenGauge', reason: '읽는 곳이 없다 — 지워도 된다 (2026-09-26 설정 졸업 2)' },
+  { path: 'chat.rendering.tool.inlineOneLine', reason: '읽는 곳이 없다 — 지워도 된다 (2026-09-26 설정 졸업 2)' },
+  { path: 'vw.acpResident', reason: '읽는 곳이 없다 — 지워도 된다 (2026-09-26 설정 졸업 2 · vw.acp.resident 도 소비자 없음)' },
+  { path: 'discord.sprint21', reason: '읽는 곳이 없다 — 지워도 된다 (2026-09-26 설정 졸업 2 · 런타임 sprint21-runtime 은 호출처 0·휴면)' },
 ];
 
 /** 설정 원문(JSON 객체)에서 폐기 키가 «있는» 항목만 돌려준다. 순수. */
@@ -3942,7 +3908,7 @@ export function buildUserConfig(path: string = defaultPath()): UserConfig {
   const sr = (rawObj.skillRouter ?? {}) as Record<string, unknown>;
   let llm = (rawObj.llm ?? {}) as Record<string, unknown>;
   // LLM fallback substrate (2026-05-13) — when primary's `llm` section is
-  // sparse / wiped, merge from `~/.monad/llm-fallback.json`. The fallback
+  // sparse / wiped, merge from `~/.elanous/llm-fallback.json`. The fallback
   // file is user-curated + read-only (0444), so even if a misbehaving
   // writer flattens config.json the daemon can still boot.
   if (isLlmSectionEmpty(llm)) {
@@ -3958,7 +3924,7 @@ export function buildUserConfig(path: string = defaultPath()): UserConfig {
     }
   }
   const runtimeProvider = runtimeLlmProviderOverride();
-  const escalationProvider = process.env.MONAD_ESCALATE_PROVIDER?.trim();
+  const escalationProvider = process.env.ELANOUS_ESCALATE_PROVIDER?.trim();
   const baseProvider = normalizeProvider(llm.provider);
   // Per-run provider selection wins over saved config, but an explicit escalation
   // provider remains the narrower existing override for its child process.
@@ -4009,7 +3975,7 @@ export function buildUserConfig(path: string = defaultPath()): UserConfig {
   const acpHopCap = (acp.hopCap ?? {}) as Record<string, unknown>;
   const lspRaw = (rawObj.lsp ?? {}) as Record<string, unknown>;
 
-  // RFC #2161 (PLAN-config-unification-monad-root) — `monad nexus config
+  // RFC #2161 (PLAN-config-unification-elanous-root) — `elanous nexus config
   // set` writes user-level entries under `global.<...>`. The Phase 2
   // typed-root surface (below) exposes `global` but legacy parsers still
   // reach for top-level keys. For schemas that have already migrated to
@@ -4038,7 +4004,7 @@ export function buildUserConfig(path: string = defaultPath()): UserConfig {
     },
     llm: {
       // ★ 자율 escalation 장치(#2·2026-07-22 대표) — self-dev rework 마지막 라운드가 강한 모델(opus)로 뜨도록
-      //   driver 가 escalate 스폰의 자식 env 에 MONAD_ESCALATE_MODEL/PROVIDER 를 심으면 여기서 llm 티어 override.
+      //   driver 가 escalate 스폰의 자식 env 에 ELANOUS_ESCALATE_MODEL/PROVIDER 를 심으면 여기서 llm 티어 override.
       //   config 파일 무변경·escalate 스폰에만 존재하는 env escape-hatch(자기완결). 미설정=종전.
       ...(() => {
         // ⭐ escalate 401 근본수리(2026-07-26 · 대표 결정) — 종전엔 `provider` 만 전환하고
@@ -4072,11 +4038,11 @@ export function buildUserConfig(path: string = defaultPath()): UserConfig {
         };
       })(),
       model: resolveRuntimeLlmModel(baseProvider, selectedProvider, str(llm.model), escalationProvider || undefined),
-      // ★ escalate effort override(#2·2026-07-22 대표) — MONAD_ESCALATE_EFFORT 있으면 reasoning effort 를 그 값으로
+      // ★ escalate effort override(#2·2026-07-22 대표) — ELANOUS_ESCALATE_EFFORT 있으면 reasoning effort 를 그 값으로
       //   (sol high 등 강한 시도). reasoningLevel(anthropic/일반)+codexReasoning(openai-codex/sol) 둘 다 커버. 미설정=종전.
-      reasoningLevel: parseReasoningLevel(process.env.MONAD_ESCALATE_EFFORT?.trim() || llm.reasoningLevel),
+      reasoningLevel: parseReasoningLevel(process.env.ELANOUS_ESCALATE_EFFORT?.trim() || llm.reasoningLevel),
       codexReasoning: (() => {
-        const esc = process.env.MONAD_ESCALATE_EFFORT?.trim();
+        const esc = process.env.ELANOUS_ESCALATE_EFFORT?.trim();
         const base = parseCodexReasoning(llm.codexReasoning);
         return esc ? { ...base, effort: esc as NonNullable<LLMConfig['codexReasoning']>['effort'] } : base;
       })(),
@@ -4158,7 +4124,6 @@ export function buildUserConfig(path: string = defaultPath()): UserConfig {
         : typeof dc.homeChannel === 'number' ? String(dc.homeChannel) : undefined,
       testChannel: normalizeDiscordTestChannel((dc as Record<string, unknown>).testChannel),
       // Sprint 21 wiring sub-block (2026-05-01)
-      sprint21: parseDiscordSprint21((dc as Record<string, unknown>).sprint21),
     },
     finance: {
       enabled: fin.enabled === true,
@@ -4385,11 +4350,6 @@ export function buildUserConfig(path: string = defaultPath()): UserConfig {
               ? ((chatRendering as Record<string, unknown>).tool as Record<string, unknown>).displayMode
               : undefined,
           ),
-          inlineOneLine: chatRendering && typeof (chatRendering as Record<string, unknown>).tool === 'object'
-            ? (((chatRendering as Record<string, unknown>).tool as Record<string, unknown>).inlineOneLine === false)
-              ? false
-              : CHAT_DEFAULTS.rendering.tool.inlineOneLine
-            : CHAT_DEFAULTS.rendering.tool.inlineOneLine,
           blockMaxLines: clampNum(
             chatRendering && typeof (chatRendering as Record<string, unknown>).tool === 'object'
               ? ((chatRendering as Record<string, unknown>).tool as Record<string, unknown>).blockMaxLines
@@ -4426,12 +4386,6 @@ export function buildUserConfig(path: string = defaultPath()): UserConfig {
           turnBrowserMode: normalizeChatRenderingDiffTurnBrowserMode(chatRenderingDiff.turnBrowserMode),
         },
         hud: {
-          variantBadge: chatRenderingHud.variantBadge === false
-            ? false
-            : CHAT_DEFAULTS.rendering.hud.variantBadge,
-          tokenGauge: chatRenderingHud.tokenGauge === false
-            ? false
-            : CHAT_DEFAULTS.rendering.hud.tokenGauge,
           gaugeWarnRatio: clampNum(
             chatRenderingHud.gaugeWarnRatio,
             CHAT_DEFAULTS.rendering.hud.gaugeWarnRatio,
@@ -4626,7 +4580,7 @@ export function buildUserConfig(path: string = defaultPath()): UserConfig {
     },
     vw: (() => {
       const entries = {
-        acp: parseVwEntry('acp', vw.acp, { resident: vw.acpResident === false ? false : VW_DEFAULTS.acpResident }),
+        acp: parseVwEntry('acp', vw.acp, {}),
         sim: parseVwEntry('sim', vw.sim, { resident: vw.simResident === true ? true : VW_DEFAULTS.simResident }),
         iul: parseVwEntry('iul', vw.iul, {
           resident: vw.iulResident === true ? true : VW_DEFAULTS.iulResident,
@@ -4642,7 +4596,6 @@ export function buildUserConfig(path: string = defaultPath()): UserConfig {
         windowNames: stringRecord(vw.windowNames),
         paneNames: stringRecord(vw.paneNames),
         entries,
-        acpResident: entries.acp.resident,
         simResident: entries.sim.resident,
         iulResident: entries.iul.resident,
         iulForegroundOnStartup: entries.iul.foregroundOnStartup,
@@ -4688,8 +4641,8 @@ export function buildUserConfig(path: string = defaultPath()): UserConfig {
     ...spreadIfDefined('mcp', parseMcpConfig(rawObj.mcp)),
     ...spreadIfDefined('backgroundReasoning', parseBackgroundReasoningConfig(rawObj.backgroundReasoning)),
     raw: rawObj,
-    // Phase 2 (PLAN-config-unification-monad-root-2026-05-10):
-    //   NEXUS schema fields surface at the typed root so `monad config
+    // Phase 2 (PLAN-config-unification-elanous-root-2026-05-10):
+    //   NEXUS schema fields surface at the typed root so `elanous config
     //   get global.<...>` resolves through the shared dotted-path
     //   resolver. Daemon-side reader (`src/nexus/config/user-config.ts`)
     //   continues to read these directly from the same JSON file.
@@ -4963,7 +4916,7 @@ export function resetUserConfig(): void {
   __resetClaudePackageSkillDirsCacheForTests();
 }
 
-/** Default backup path — sits next to config.json so `monad provider
+/** Default backup path — sits next to config.json so `elanous provider
  *  restore` can find it without extra arguments. A/B comparison: if
  *  you want multiple named backups, use `saveUserConfigBackupTo(path)`. */
 export function backupConfigPath(path: string = defaultPath()): string {
@@ -4972,7 +4925,7 @@ export function backupConfigPath(path: string = defaultPath()): string {
 
 /** Copy the current config.json to its `.bak` sibling. Returns true
  *  if a backup was written, false if the source doesn't exist. Throws
- *  on IO failure (bad permissions etc). Used by `monad provider set`
+ *  on IO failure (bad permissions etc). Used by `elanous provider set`
  *  before mutating config so the user can always roll back. */
 export function backupUserConfig(
   path: string = defaultPath(),
@@ -5000,8 +4953,8 @@ export function restoreUserConfig(
 // ── Rotation helpers ──
 //
 // The user maintains an ordered list of provider-shaped entries
-// (provider, model, apiKey, baseUrl, label). `monad provider:rotate`
-// / `/provider next` advance through the list; `monad provider:use
+// (provider, model, apiKey, baseUrl, label). `elanous provider:rotate`
+// / `/provider next` advance through the list; `elanous provider:use
 // <label>` jumps to a specific entry by label / provider name /
 // model substring. The active LLMConfig fields at the top level
 // (provider, apiKey, model, baseUrl) are copied FROM the selected
@@ -5018,8 +4971,8 @@ export function rotationEntryLabel(e: RotationEntry): string {
 /** Vendor-default model identifier per provider. Used by the model
  *  picker (status-bar pill popup) to surface a real model name even
  *  when a rotation entry was added without an explicit `model` field
- *  (e.g. `monad provider:rotate add anthropic` with no `-m`). Sourced
- *  from the same defaults `monad provider:rotate add` uses; lives
+ *  (e.g. `elanous provider:rotate add anthropic` with no `-m`). Sourced
+ *  from the same defaults `elanous provider:rotate add` uses; lives
  *  here so UI consumers don't import from src/index.ts (which would
  *  pull in the entire CLI surface). */
 export const PROVIDER_DEFAULT_MODEL: Record<LLMProviderName, string> = {
@@ -5227,7 +5180,7 @@ export function saveUserConfig(
   delete rawRest.controlPlane;
   // Phase 2: NEXUS schema fields are written explicitly below so the
   // round-trip preserves any cfg.global / cfg.tabs / cfg.version mutations
-  // applied between read and write (e.g. `monad config set global.x ...`).
+  // applied between read and write (e.g. `elanous config set global.x ...`).
   delete rawRest.version;
   delete rawRest.global;
   delete rawRest.tabs;
@@ -5355,14 +5308,6 @@ export function saveUserConfig(
             botToken: cfg.discord.testChannel.botToken,
           })
         : undefined,
-      sprint21: cfg.discord.sprint21
-        ? stripUndef({
-            enabled: cfg.discord.sprint21.enabled,
-            appId: cfg.discord.sprint21.appId,
-            devGuildId: cfg.discord.sprint21.devGuildId,
-            personasDir: cfg.discord.sprint21.personasDir,
-          })
-        : undefined,
     }),
     // ★ finance 직렬화 whitelist 를 스키마 전체와 정합(2026-07-22). 종전엔 enabled/morningNarrative/
     //   autoLoop 3개만 저장 → morningHeatmapImage·dig·kg·replay·conatusNativePort·liveOrders 는 `config set`
@@ -5428,7 +5373,6 @@ export function saveUserConfig(
         }),
         tool: stripUndef({
           displayMode: chatRendering.tool.displayMode,
-          inlineOneLine: chatRendering.tool.inlineOneLine,
           blockMaxLines: chatRendering.tool.blockMaxLines,
         }),
         diff: stripUndef({
@@ -5443,8 +5387,6 @@ export function saveUserConfig(
           turnBrowserMode: chatRendering.diff.turnBrowserMode,
         }),
         hud: stripUndef({
-          variantBadge: chatRendering.hud.variantBadge,
-          tokenGauge: chatRendering.hud.tokenGauge,
           gaugeWarnRatio: chatRendering.hud.gaugeWarnRatio,
           gaugeDangerRatio: chatRendering.hud.gaugeDangerRatio,
         }),
@@ -5666,23 +5608,6 @@ function positiveIntOr(v: unknown, fallback: number): number {
 
 function str(v: unknown): string | undefined {
   return typeof v === 'string' && v.length > 0 ? v : undefined;
-}
-
-/** Sprint 21 wiring (2026-05-01) — parse the optional `discord.sprint21`
- *  sub-block. Returns undefined when absent so an empty config doesn't
- *  carry a hollow `{}` placeholder. */
-function parseDiscordSprint21(v: unknown): DiscordSprint21Config | undefined {
-  if (v === null || v === undefined || typeof v !== 'object' || Array.isArray(v)) return undefined;
-  const r = v as Record<string, unknown>;
-  const out: DiscordSprint21Config = {};
-  if (typeof r['enabled'] === 'boolean') out.enabled = r['enabled'];
-  const a = str(r['appId']);            if (a) out.appId = a;
-  const g = str(r['devGuildId']);       if (g) out.devGuildId = g;
-  const p = str(r['personasDir']);      if (p) out.personasDir = p;
-  // Return undefined if the sub-block contributed nothing parseable —
-  // keeps `cfg.discord.sprint21 === undefined` distinguishable from
-  // an explicit empty object.
-  return Object.keys(out).length > 0 ? out : undefined;
 }
 
 function strArray(v: unknown, fallback: string[]): string[] {

@@ -37,12 +37,12 @@ describe('rankByTrigramFts — trigram BM25(CJK)', () => {
 });
 
 describe('dispatchSessionQuery search — rank + origin', () => {
-  const ORIG = process.env.MONAD_SESSION_ROOT;
+  const ORIG = process.env.ELANOUS_SESSION_ROOT;
   let tmp: string;
-  beforeEach(() => { tmp = mkdtempSync(join(tmpdir(), 'sess-p5-')); process.env.MONAD_SESSION_ROOT = tmp; });
+  beforeEach(() => { tmp = mkdtempSync(join(tmpdir(), 'sess-p5-')); process.env.ELANOUS_SESSION_ROOT = tmp; });
   afterEach(() => {
     if (tmp) rmSync(tmp, { recursive: true, force: true });
-    if (ORIG === undefined) delete process.env.MONAD_SESSION_ROOT; else process.env.MONAD_SESSION_ROOT = ORIG;
+    if (ORIG === undefined) delete process.env.ELANOUS_SESSION_ROOT; else process.env.ELANOUS_SESSION_ROOT = ORIG;
   });
 
   test('rank=true → 관련도순(ranked 플래그) · 기본 최신순', async () => {

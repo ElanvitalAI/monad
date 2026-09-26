@@ -1,12 +1,12 @@
 // src/autopilot/system-prompt.ts
 //
 // MB-12 (2026-05-15) — mission-aware system prompt composition for the
-// monad-builtin autopilot runner. 직전 cut 의 빈 systemPrompt 가 LLM
+// elanous-builtin autopilot runner. 직전 cut 의 빈 systemPrompt 가 LLM
 // quality 한계 (mission 의 context 0 · tool 선택 noise) 였음.
 //
 // 본 helper 는 mission text 의 keyword pattern 으로 5 mission-type 분류
 // 후 type-aware system prompt 발행. 다른 backend (ACP CLI) 의 vendor
-// 내장 system prompt 와 비교해 monad-builtin path 의 첫 cut quality
+// 내장 system prompt 와 비교해 elanous-builtin path 의 첫 cut quality
 // 보강.
 //
 // Mission types (priority 순):
@@ -21,7 +21,7 @@
 //
 // 사용:
 //   const prompt = composeAutopilotSystemPrompt(mission, { terminalAgency: true });
-//   const runner = new MonadBuiltinTurnRunner({ ..., systemPrompt: prompt });
+//   const runner = new ElanousBuiltinTurnRunner({ ..., systemPrompt: prompt });
 
 import { debug } from '../debug/log.js';
 
@@ -95,7 +95,7 @@ export interface AutopilotPromptContext {
 
 /**
  * Compose a system prompt tailored to the mission. 본 함수 의 출력은
- * `MonadBuiltinTurnRunner({ systemPrompt })` 로 직접 전달.
+ * `ElanousBuiltinTurnRunner({ systemPrompt })` 로 직접 전달.
  *
  * Output 의 first paragraph 는 항상 autopilot 의 role 정의 + tool 사용
  * 통제 — 모든 mission-type 공유. 후속 paragraph 가 type-specific guidance.
@@ -128,7 +128,7 @@ export function composeAutopilotSystemPrompt(
   return result;
 }
 
-const CORE_PROMPT = `You are monad-builtin autopilot — an autonomous coding agent operating in-process within the user's monad daemon. Each iteration you receive a mission or follow-up prompt and may call any tool from your registered toolset.
+const CORE_PROMPT = `You are elanous-builtin autopilot — an autonomous coding agent operating in-process within the user's elanous daemon. Each iteration you receive a mission or follow-up prompt and may call any tool from your registered toolset.
 
 Operating principles:
 - One tool call per turn unless the task obviously benefits from parallel reads.

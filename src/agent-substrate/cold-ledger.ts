@@ -12,7 +12,7 @@
 
 import { existsSync, mkdirSync, readFileSync, writeFileSync, readdirSync } from 'node:fs';
 import { join, dirname } from 'node:path';
-import { getMonadConfigDir } from '../monad-config-dir.js';
+import { getElanousConfigDir } from '../elanous-config-dir.js';
 
 function safeSlug(id: string): string {
   return (id || 'unknown').replace(/[^\w.-]/g, '_').slice(0, 80);
@@ -20,12 +20,12 @@ function safeSlug(id: string): string {
 
 /** 냉동보관 스냅샷 경로. `kind` 가 archive 네임스페이스. */
 export function coldLedgerPath(id: string, kind: string): string {
-  return join(getMonadConfigDir(), 'archive', kind, safeSlug(id), 'snapshot.json');
+  return join(getElanousConfigDir(), 'archive', kind, safeSlug(id), 'snapshot.json');
 }
 
 /** 냉동보관 파일 디렉토리 — 고아 파일(run-lock·state 등)을 여기로 move. */
 export function coldFilesDir(id: string, kind: string): string {
-  return join(getMonadConfigDir(), 'archive', kind, safeSlug(id), 'files');
+  return join(getElanousConfigDir(), 'archive', kind, safeSlug(id), 'files');
 }
 
 /** 냉동보관 스냅샷 저장(never prune·덮어씀). fail-soft — 보관 실패가 상위 작업을 막지 않음. */
@@ -54,7 +54,7 @@ export function hasColdSnapshot(id: string, kind: string): boolean {
 /** kind 아래 모든 스냅샷 id(safeSlug 된 dir 명) 나열 — 검색/집계 소스용. 없으면 []. fail-soft. */
 export function listColdSnapshotIds(kind: string): string[] {
   try {
-    const base = join(getMonadConfigDir(), 'archive', kind);
+    const base = join(getElanousConfigDir(), 'archive', kind);
     if (!existsSync(base)) return [];
     return readdirSync(base, { withFileTypes: true }).filter((d) => d.isDirectory()).map((d) => d.name);
   } catch { return []; }

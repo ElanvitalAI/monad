@@ -129,7 +129,7 @@ describe('terminal modal router', () => {
   // Regression: typing `exit` + Enter at the popup terminal closes
   // it. claude / codex don't recognize a bare `exit` (their command
   // is /exit), so the user's natural mental model would otherwise
-  // leave the popup wedged open. monad intercepts the exact streak
+  // leave the popup wedged open. elanous intercepts the exact streak
   // at the router so plain shell + agent popups behave the same way.
   test('typed `exit` + Enter closes the modal', () => {
     const r = createTerminalModalRouter();

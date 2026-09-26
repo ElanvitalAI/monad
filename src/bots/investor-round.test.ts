@@ -1,6 +1,6 @@
 /**
  * 📈 `investor-round` 반증 — ⛔ ***실물 픽스처***로 문다(지어낸 문자열이 아니라).
- * 🔑 픽스처 출처 = `~/.monad/botlab/investor/<UTC>/` 의 진짜 회차(2026-09-02T22:40Z · mailbox 본문만 제거).
+ * 🔑 픽스처 출처 = `~/.elanous/botlab/investor/<UTC>/` 의 진짜 회차(2026-09-02T22:40Z · mailbox 본문만 제거).
  */
 import { describe, test, expect } from 'bun:test';
 import { readFileSync } from 'node:fs';

@@ -1,39 +1,39 @@
-# MonadAgent
+# ElanousAgent
 
-> Named after Leibniz's monad — a self-contained individual that mirrors
+> Named after Leibniz's elanous — a self-contained individual that mirrors
 > the whole. The agent observes itself, reasons about what it sees, and
 > repairs itself; a person is called only when it cannot (一約之觀).
 
 **A self-healing coding harness where eyes, hands, and memory all turn on
 one sentence — an agent that develops agents.**
 
-You describe a change in one sentence. monad writes the goal document,
+You describe a change in one sentence. elanous writes the goal document,
 creates an isolated git worktree, runs a child agent inside it, gates the
 result with tests, reviews it unattended, and merges. You are called when
 the system cannot converge — not at every step.
 
 ```bash
-monad harness say "add a --json flag to the status command"
+elanous harness say "add a --json flag to the status command"
 ```
 ## Install
 
 One line — the installer fetches the latest release, verifies it against
 `SHA256SUMS`, installs Bun first if it is missing (the pinned version in
-[`.bun-version`](.bun-version)), and puts `monad` on your `PATH`:
+[`.bun-version`](.bun-version)), and puts `elanous` on your `PATH`:
 
 ```bash
-curl -fsSL https://github.com/ElanvitalAI/monad/releases/latest/download/install.sh | bash
+curl -fsSL https://github.com/ElanvitalAI/elanous/releases/latest/download/install.sh | bash
 ```
 
 Windows (PowerShell):
 
 ```powershell
-irm https://github.com/ElanvitalAI/monad/releases/latest/download/install.ps1 | iex
+irm https://github.com/ElanvitalAI/elanous/releases/latest/download/install.ps1 | iex
 ```
 
-Pin a version with `MONAD_VERSION=0.1.1` in front of `bash`. Each version
-lives in its own folder under `~/.local/share/monad/versions/`, and
-`~/.local/share/monad/current` points at the active one, so older versions
+Pin a version with `ELANOUS_VERSION=0.1.1` in front of `bash`. Each version
+lives in its own folder under `~/.local/share/elanous/versions/`, and
+`~/.local/share/elanous/current` points at the active one, so older versions
 stay on disk for rollback.
 
 ### From a bare Linux machine
@@ -44,9 +44,9 @@ install line (without `sudo` when you are root):
 
 ```bash
 sudo apt-get update && sudo apt-get install -y curl ca-certificates unzip git
-curl -fsSL https://github.com/ElanvitalAI/monad/releases/latest/download/install.sh | bash
+curl -fsSL https://github.com/ElanvitalAI/elanous/releases/latest/download/install.sh | bash
 source ~/.bashrc                      # or open a new shell
-monad --version && monad doctor
+elanous --version && elanous doctor
 ```
 
 To run the daemon and the harness, let `doctor` install the tools it needs —
@@ -54,69 +54,69 @@ build tools and the node-pty rebuild, a pinned static `gh`, `rg`, Node and
 the Codex CLI (about 80 seconds on a bare Debian 12 VM):
 
 ```bash
-monad doctor --fix --yes --sudo
-monad login openai-codex              # ChatGPT subscription, device code, no API key
+elanous doctor --fix --yes --sudo
+elanous login openai-codex              # ChatGPT subscription, device code, no API key
 gh auth login
-monad nexus run                       # daemon · web app at http://127.0.0.1:31415/app/
+elanous nexus run                       # daemon · web app at http://127.0.0.1:31415/app/
 ```
 
 ⚠️ Do not install `gh` from Debian/Ubuntu apt — those packages are older
 than the 2.80 the harness needs; `doctor --fix --yes` fetches a pinned one.
-To keep the daemon running across reboots: `monad nexus install --systemd-user`
-(Linux) or `monad nexus install --launchd` (macOS).
+To keep the daemon running across reboots: `elanous nexus install --systemd-user`
+(Linux) or `elanous nexus install --launchd` (macOS).
 
 ### Update and uninstall
 
 ```bash
-monad self-update                     # latest release (keeps the previous version for rollback)
-curl -fsSL https://github.com/ElanvitalAI/monad/releases/latest/download/uninstall.sh | bash
+elanous self-update                     # latest release (keeps the previous version for rollback)
+curl -fsSL https://github.com/ElanvitalAI/elanous/releases/latest/download/uninstall.sh | bash
 ```
 
 Uninstall removes what the installer created (`versions/`, `current`, `bin/`,
 `install.json`) and the `PATH` lines it added. Your memories
-(`~/.local/share/monad/memory`) and your state in `~/.monad` — logins, logs,
+(`~/.local/share/elanous/memory`) and your state in `~/.elanous` — logins, logs,
 ledgers, config — stay.
 
-## What you still need — `monad doctor`
+## What you still need — `elanous doctor`
 
 ```bash
-monad doctor        # every credential the code reads: is it resolved, and from where
+elanous doctor        # every credential the code reads: is it resolved, and from where
 ```
 
-`monad doctor` is a **report, not a gate** — **nothing is required to boot**.
-`monad --version`, `monad where`, `monad config get` and `monad usage` all
+`elanous doctor` is a **report, not a gate** — **nothing is required to boot**.
+`elanous --version`, `elanous where`, `elanous config get` and `elanous usage` all
 work with zero credentials. Each key you add unlocks one capability; see
 [`.env.example`](.env.example). The primary path for LLM access is a
-**subscription**, not an API key (`monad login openai-codex`) — details in
-[Codex subscription](https://elanvitalai.github.io/monad/models/codex-subscription/).
+**subscription**, not an API key (`elanous login openai-codex`) — details in
+[Codex subscription](https://elanvitalai.github.io/elanous/models/codex-subscription/).
 
 ## Quick start
 
 ```bash
-monad harness say "add a --json flag to the status command"   # one sentence
-monad harness ask 내부 문서 `MY-ASK`                        # a written goal
+elanous harness say "add a --json flag to the status command"   # one sentence
+elanous harness ask 내부 문서 `MY-ASK`                        # a written goal
 ```
 
-See the [Quickstart](https://elanvitalai.github.io/monad/getting-started/quickstart/).
+See the [Quickstart](https://elanvitalai.github.io/elanous/getting-started/quickstart/).
 ## What makes it different
 
-Most agents do one of these well. monad's claim is that **all three
+Most agents do one of these well. elanous's claim is that **all three
 engage on a single request**.
 
 | | What it means | The real commands |
 |---|---|---|
-| **Eyes** | Read another process's screen, the web, a live browser — without owning them | `monad pty snapshot <ref>` · firecrawl · omni-crawl · aside · CDP |
-| **Hands** | Actually type — into files, and into someone else's TUI | tool loop (Read/Edit/Write/Bash) · `monad pty text\|key <ref>` |
-| **Memory** | What it went through is loaded into the next turn automatically | `monad memory` · `monad self recall` |
+| **Eyes** | Read another process's screen, the web, a live browser — without owning them | `elanous pty snapshot <ref>` · firecrawl · omni-crawl · aside · CDP |
+| **Hands** | Actually type — into files, and into someone else's TUI | tool loop (Read/Edit/Write/Bash) · `elanous pty text\|key <ref>` |
+| **Memory** | What it went through is loaded into the next turn automatically | `elanous memory` · `elanous self recall` |
 
 Two more properties follow from that:
 
 - **Rigid *and* dynamic.** The contract — gates, unattended review, the
   run ledger — is fixed. The path taken through it is not.
   ⚠️ Today these are *two* runtimes (the harness pipeline and
-  `monad wf`'s DAG); connecting them is open work.
+  `elanous wf`'s DAG); connecting them is open work.
 - **The eyes are partly borrowed.** Web and browser sight leans on paid
-  services (firecrawl, grok inside omni-crawl, aside, CDP). monad records
+  services (firecrawl, grok inside omni-crawl, aside, CDP). elanous records
   *what stops working without each one* in `catalog/resources.yaml`.
   ⚠️ 20 of 27 credentialed entries have that field empty today.
 
@@ -126,71 +126,71 @@ Two more properties follow from that:
 > of the project.
 ## The harness — how a sentence becomes a merged change
 
-`monad` carries a **self-implementation harness**. You describe a change
+`elanous` carries a **self-implementation harness**. You describe a change
 in one sentence or one file; the harness writes a goal document, creates
 an isolated git worktree, runs a child agent inside it, gates the result
 with the test suite, and opens a pull request.
 
 ```bash
-monad harness say "add a --json flag to the status command"   # one sentence
-monad harness ask 내부 문서 `MY-ASK`                        # a written goal
-monad harness plan "..."                                      # write an RFC, do not execute
-monad harness worktrees                                       # what worktrees exist, and who owns them
+elanous harness say "add a --json flag to the status command"   # one sentence
+elanous harness ask 내부 문서 `MY-ASK`                        # a written goal
+elanous harness plan "..."                                      # write an RFC, do not execute
+elanous harness worktrees                                       # what worktrees exist, and who owns them
 ```
 
 What each run leaves behind, so a failure can be read afterwards:
 
 - a **goal document** under `docs/goals/`
 - an isolated **worktree** and branch, owned by the run id
-- a **run ledger** entry (`monad self run-ledger <id>`)
-- structured logs (`monad logs --category <c>`)
+- a **run ledger** entry (`elanous self run-ledger <id>`)
+- structured logs (`elanous logs --category <c>`)
 
 ⚠️ The harness currently assumes it is operating on *this* repository in
 several places — notably the default integrity gate runs
-`bun bin/monad.mjs --help`, which does not exist in a foreign project.
+`bun bin/elanous.mjs --help`, which does not exist in a foreign project.
 Running the harness against another repository is **not supported yet**.
 ## Documentation
 
-All documentation lives at **[elanvitalai.github.io/monad](https://elanvitalai.github.io/monad/)** (한국어: [/ko](https://elanvitalai.github.io/monad/ko/)).
+All documentation lives at **[elanvitalai.github.io/elanous](https://elanvitalai.github.io/elanous/)** (한국어: [/ko](https://elanvitalai.github.io/elanous/ko/)).
 
 | Goal | Start here |
 |---|---|
-| Install, update, uninstall | [Install](https://elanvitalai.github.io/monad/getting-started/install/) · [Update and uninstall](https://elanvitalai.github.io/monad/getting-started/update-and-uninstall/) |
-| First run | [Quickstart](https://elanvitalai.github.io/monad/getting-started/quickstart/) · [Commands you will use](https://elanvitalai.github.io/monad/using-monad/commands/) |
-| Models and logins | [Providers](https://elanvitalai.github.io/monad/models/providers/) · [Codex subscription](https://elanvitalai.github.io/monad/models/codex-subscription/) |
-| Sessions and the TUI | [Sessions](https://elanvitalai.github.io/monad/using-monad/sessions/) · [The TUI](https://elanvitalai.github.io/monad/using-monad/tui/) |
-| Chat channels | [Telegram](https://elanvitalai.github.io/monad/surfaces/telegram/) · [Discord](https://elanvitalai.github.io/monad/surfaces/discord/) |
-| Settings and tools | [Configuration](https://elanvitalai.github.io/monad/reference/configuration/) · [External commands](https://elanvitalai.github.io/monad/reference/external-commands/) · [Source layout](https://elanvitalai.github.io/monad/concepts/source-layout/) |
-| Something failed | [Troubleshooting](https://elanvitalai.github.io/monad/help/troubleshooting/) |
-| What shipped | [Releases](https://elanvitalai.github.io/monad/releases/0-1-0/) |
+| Install, update, uninstall | [Install](https://elanvitalai.github.io/elanous/getting-started/install/) · [Update and uninstall](https://elanvitalai.github.io/elanous/getting-started/update-and-uninstall/) |
+| First run | [Quickstart](https://elanvitalai.github.io/elanous/getting-started/quickstart/) · [Commands you will use](https://elanvitalai.github.io/elanous/using-elanous/commands/) |
+| Models and logins | [Providers](https://elanvitalai.github.io/elanous/models/providers/) · [Codex subscription](https://elanvitalai.github.io/elanous/models/codex-subscription/) |
+| Sessions and the TUI | [Sessions](https://elanvitalai.github.io/elanous/using-elanous/sessions/) · [The TUI](https://elanvitalai.github.io/elanous/using-elanous/tui/) |
+| Chat channels | [Telegram](https://elanvitalai.github.io/elanous/surfaces/telegram/) · [Discord](https://elanvitalai.github.io/elanous/surfaces/discord/) |
+| Settings and tools | [Configuration](https://elanvitalai.github.io/elanous/reference/configuration/) · [External commands](https://elanvitalai.github.io/elanous/reference/external-commands/) · [Source layout](https://elanvitalai.github.io/elanous/concepts/source-layout/) |
+| Something failed | [Troubleshooting](https://elanvitalai.github.io/elanous/help/troubleshooting/) |
+| What shipped | [Releases](https://elanvitalai.github.io/elanous/releases/0-1-0/) |
 ## Requirements
 
 - **bun** — the tested version is pinned in [`.bun-version`](.bun-version); the
-  installer, the pod image and `monad doctor` all follow it. Node cannot run
-  monad (`bin/monad.mjs` imports TypeScript directly).
+  installer, the pod image and `elanous doctor` all follow it. Node cannot run
+  elanous (`bin/elanous.mjs` imports TypeScript directly).
 - **macOS** is the primary target; **Linux** and **WSL2** are exercised (on
   WSL2 keep the repository on the Linux filesystem, not `/mnt/c`);
   **Windows** native PowerShell is experimental.
-## Develop on monad itself
+## Develop on elanous itself
 
 ```bash
-git clone https://github.com/ElanvitalAI/monad && cd monad
+git clone https://github.com/ElanvitalAI/elanous && cd elanous
 bun install
 bun run src/index.ts        # dashboard (TUI)
 bun test                    # full suite (4,199 test files) — see AGENTS.md for the gate discipline
 ```
 
-Link the CLI so `monad` works anywhere:
+Link the CLI so `elanous` works anywhere:
 ```bash
 bun link                    # in this repo
-bun link monadagent         # in any other project (or just globally)
-monad                       # launches the dashboard (interactive TUI)
-monad nexus run             # launches the NEXUS daemon (PWA + meta-api · headless)
+bun link elanous         # in any other project (or just globally)
+elanous                       # launches the dashboard (interactive TUI)
+elanous nexus run             # launches the NEXUS daemon (PWA + meta-api · headless)
 ```
 
-Or run the first-run wizard (persists to `~/.monad/config.json`):
+Or run the first-run wizard (persists to `~/.elanous/config.json`):
 ```bash
-monad setup
+elanous setup
 ```
 ## License
 

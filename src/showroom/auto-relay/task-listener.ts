@@ -8,7 +8,7 @@
 //   2. on `kind: 'nudge'`, spawn the 3-lane (analyzer / proposer / motivator)
 //      showroom against the injected ShowroomLaneCallable
 //   3. emit a `NudgeRecord` so the caller can persist
-//      `~/.monad/task-nudges/<id>/<ts>.json` + push the user
+//      `~/.elanous/task-nudges/<id>/<ts>.json` + push the user
 //
 // The listener stores no state across processes — `history` is provided
 // by the caller (or `createInMemoryNudgeHistoryStore` for tests/dev).

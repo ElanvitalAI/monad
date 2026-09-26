@@ -49,17 +49,17 @@ describe('F3 — setCapturedEnvForTesting / getCapturedEnv', () => {
     expect(env).not.toEqual({ PATH: '/mock/bin', HELLO: 'world' });
   });
 
-  test('MONAD_SKIP_LOGIN_ENV=1 opt-out returns process.env without spawning', () => {
-    const prev = process.env.MONAD_SKIP_LOGIN_ENV;
-    process.env.MONAD_SKIP_LOGIN_ENV = '1';
+  test('ELANOUS_SKIP_LOGIN_ENV=1 opt-out returns process.env without spawning', () => {
+    const prev = process.env.ELANOUS_SKIP_LOGIN_ENV;
+    process.env.ELANOUS_SKIP_LOGIN_ENV = '1';
     try {
       resetCapturedEnvForTesting();
       const env = getCapturedEnv();
       // Exact identity: we returned process.env itself (cast).
       expect(env.PATH).toBe(process.env.PATH);
     } finally {
-      if (prev === undefined) delete process.env.MONAD_SKIP_LOGIN_ENV;
-      else process.env.MONAD_SKIP_LOGIN_ENV = prev;
+      if (prev === undefined) delete process.env.ELANOUS_SKIP_LOGIN_ENV;
+      else process.env.ELANOUS_SKIP_LOGIN_ENV = prev;
     }
   });
 });

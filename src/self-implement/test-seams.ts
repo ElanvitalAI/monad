@@ -4,7 +4,7 @@
 //     이 헬퍼가 여러 파일에서 보여야 한다.
 //   기본 무동작: quota 신호 갱신은 빈 계정 결과만 돌려주고, run ledger 기록은 하지 않는다.
 //   이것을 채우지 않으면 테스트가 실제 계정 스토어를 읽어 codex 자식을 띄우고
-//   `~/.monad/budget`에 신호를 쓰며, 운영 쿼터를 소모할 수 있다.
+//   `~/.elanous/budget`에 신호를 쓰며, 운영 쿼터를 소모할 수 있다.
 import type { SelfImplementSeams } from './orchestrator.js';
 
 export function seams(over: Partial<SelfImplementSeams> & { gateResults?: boolean[]; features?: string[] }): SelfImplementSeams {
@@ -17,7 +17,7 @@ export function seams(over: Partial<SelfImplementSeams> & { gateResults?: boolea
     stdinIsInteractive: () => true,
     // ⛔⭐⭐⭐⭐ 기본을 «무동작»으로 둔다(리뷰 must-fix). 안 채우면 이 헬퍼를 쓰는 «모든» 단위
     //   테스트가 실제 경로를 탄다 — 정본 계정 스토어를 읽고, ***codex 자식을 실제로 띄우고***,
-    //   `~/.monad/budget` 에 신호를 쓴다. 즉 테스트가 «운영 쿼터를 소모»한다.
+    //   `~/.elanous/budget` 에 신호를 쓴다. 즉 테스트가 «운영 쿼터를 소모»한다.
     //   ⭐ 실제 경로는 그것을 «의도한» 전용 테스트에서만 탄다(그 테스트가 심을 명시로 준다).
     refreshCodexQuotaSignals: async () => ({ accounts: [] }),
     writeRunLedger: () => {},

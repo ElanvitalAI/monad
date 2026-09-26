@@ -89,7 +89,7 @@ describe('AskUserQuestion dispatch observability', () => {
   test('AskBridgeUnavailable with no SSE channel still records absenceReason no-capable-peer', async () => {
     const { logs, restore } = captureLogs();
     const resolver: AskUserQuestionResolver = async () => {
-      const error = new Error('no monad/ask cap-able peer attached');
+      const error = new Error('no elanous/ask cap-able peer attached');
       error.name = 'AskBridgeUnavailable';
       throw error;
     };

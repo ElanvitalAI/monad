@@ -130,7 +130,7 @@ describe('compactSessionHistory', () => {
     expect(r.reason).toBe('disabled');
   });
 
-  // force — the external `monad session compact --force` trigger bypasses the
+  // force — the external `elanous session compact --force` trigger bypasses the
   // token-ratio gate and compacts unconditionally (runs Layer3 summarize).
   test('force bypasses the token-ratio gate below threshold', async () => {
     const id = seed(6);

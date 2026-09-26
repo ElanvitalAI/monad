@@ -74,7 +74,7 @@ export function summarizeToolResult(result: unknown): string | undefined {
     return first.slice(0, 80) + (first.length > 80 ? '…' : '');
   }
   if (typeof o.runId === 'string' && o.runId) {
-    return `run ${o.runId} — monad self run ${o.runId}`;
+    return `run ${o.runId} — elanous self run ${o.runId}`;
   }
   // generic: count fields so the pill shows something
   const keys = Object.keys(o);
@@ -107,7 +107,7 @@ export async function runDaemonPromptTurn(opts: {
   surfaceQuestionChannels?: QuestionChannel[];
   /** CWD for fs-bound tool dispatch (Read / Grep). Defaults to
    *  `process.cwd()` when omitted; pair with the daemon's
-   *  `--tool-cwd` / `MONAD_TOOL_CWD` to keep `/v1/prompt` and ACP WS
+   *  `--tool-cwd` / `ELANOUS_TOOL_CWD` to keep `/v1/prompt` and ACP WS
    *  on the same path-guard boundary. */
   toolCwd?: string;
   /** Phase 4 (WT-A-3b) — external abort signal. When provided and
@@ -214,8 +214,8 @@ export async function runDaemonPromptTurn(opts: {
             ...(opts.surfaceHitlChannels ? { surfaceHitlChannels: opts.surfaceHitlChannels } : {}),
             ...(opts.surfaceQuestionChannels ? { surfaceQuestionChannels: opts.surfaceQuestionChannels } : {}),
             ...(perCallCtx?.callId !== undefined ? { toolCallId: perCallCtx.callId } : {}),
-            // Monad's own LLM assembles tool arguments from natural language.
-            entry: 'monad-apparatus',
+            // Elanous's own LLM assembles tool arguments from natural language.
+            entry: 'elanous-apparatus',
             // M5 PR 2 — thread the FeedbackEnvelope emitter so
             // progressive tools (Grep · future Read) push hit/progress
             // envelopes back to chat surfaces. Absent when caller didn't

@@ -12,7 +12,7 @@
 //   • user can split the VW to get the agent + a notes pane side-
 //     by-side
 //   • @pane:<id> prompt expansion inlines the agent's latest
-//     output in the next Monad chat turn
+//     output in the next Elanous chat turn
 //   • PaneInject (approval-gated) feeds user messages back in
 //   • multiple agents can run in multiple VWs simultaneously
 //
@@ -162,7 +162,7 @@ export async function dispatchSpawnCodingAgentInVW(
       // here too so the env is self-contained for downstream readers.
       COLORTERM: 'truecolor',
       CLICOLOR_FORCE: '1',
-      MONAD_AGENT_BRAND: brand,
+      ELANOUS_AGENT_BRAND: brand,
     },
   };
   const window = registry.spawn({

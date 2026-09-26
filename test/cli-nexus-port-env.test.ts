@@ -1,14 +1,14 @@
-// Archon-port follow-up (2026-05-08) — `MONAD_NEXUS_HTTP_PORT` env var.
+// Archon-port follow-up (2026-05-08) — `ELANOUS_NEXUS_HTTP_PORT` env var.
 //
 // The user's request: per-project port override that does NOT mutate
-// global user-config (other monad projects share that file). The env
+// global user-config (other elanous projects share that file). The env
 // var is a stateless, scoped knob that satisfies this. Verified end-
 // to-end via subprocess so commander parsing + the resolver stays
 // honest.
 //
 // We can't fully boot NEXUS from a unit test (it would attempt to
 // bind a port + acquire a lock); instead we exercise the resolver via
-// a `--status` subprocess call. With MONAD_NEXUS_DIR pointed at an
+// a `--status` subprocess call. With ELANOUS_NEXUS_DIR pointed at an
 // empty tmp dir the call exits without booting and we get a clean
 // signal that env vars + flags both flow through the action.
 
@@ -29,7 +29,7 @@ afterEach(() => {
 });
 
 function tmpNexusDir(): string {
-  const d = mkdtempSync(join(tmpdir(), 'monad-nexus-test-'));
+  const d = mkdtempSync(join(tmpdir(), 'elanous-nexus-test-'));
   tmpRoots.push(d);
   return d;
 }
@@ -37,7 +37,7 @@ function tmpNexusDir(): string {
 function run(args: string[], env: Record<string, string> = {}): { code: number; stdout: string; stderr: string } {
   const r = spawnSync('bun', [ENTRY, ...args], {
     encoding: 'utf-8',
-    env: { ...process.env, MONAD_NEXUS_DIR: tmpNexusDir(), ...env },
+    env: { ...process.env, ELANOUS_NEXUS_DIR: tmpNexusDir(), ...env },
     timeout: 8000,
   });
   return {
@@ -47,20 +47,20 @@ function run(args: string[], env: Record<string, string> = {}): { code: number; 
   };
 }
 
-describe('monad nexus --http-port env-var override', () => {
-  it('--help references the MONAD_NEXUS_HTTP_PORT env var', () => {
+describe('elanous nexus --http-port env-var override', () => {
+  it('--help references the ELANOUS_NEXUS_HTTP_PORT env var', () => {
     // `--http-port` lives on the `run` subcommand (default action).
     const r = run(['nexus', 'run', '--help']);
     expect(r.code).toBe(0);
-    expect(r.stdout).toContain('MONAD_NEXUS_HTTP_PORT');
+    expect(r.stdout).toContain('ELANOUS_NEXUS_HTTP_PORT');
   });
 
-  it('`monad nexus --status` runs without booting + does not write global user-config', () => {
+  it('`elanous nexus --status` runs without booting + does not write global user-config', () => {
     // The point of this test isn't to boot NEXUS — it's to confirm
     // the resolver code path can be entered with env vars set without
     // throwing. A passing exit (status command short-circuits before
     // bind) means env-var + flag handling didn't blow up.
-    const r = run(['nexus', '--status'], { MONAD_NEXUS_HTTP_PORT: '47101' });
+    const r = run(['nexus', '--status'], { ELANOUS_NEXUS_HTTP_PORT: '47101' });
     // status exits 0 even when no lock exists.
     expect(r.code).toBe(0);
   });
@@ -71,7 +71,7 @@ describe('monad nexus --http-port env-var override', () => {
     // assert the process didn't hang or crash on the precedence path.
     const r = run(
       ['nexus', '--status', '--http-port', '47102'],
-      { MONAD_NEXUS_HTTP_PORT: '47101' },
+      { ELANOUS_NEXUS_HTTP_PORT: '47101' },
     );
     expect(r.code).toBe(0);
   });

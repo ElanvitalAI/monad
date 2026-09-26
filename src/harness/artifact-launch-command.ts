@@ -1,7 +1,7 @@
 import { existsSync, lstatSync, readFileSync, realpathSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 
-type ArtifactLaunchCommandSourceKind = 'package-json' | 'makefile' | 'procfile' | 'monad-cli';
+type ArtifactLaunchCommandSourceKind = 'package-json' | 'makefile' | 'procfile' | 'elanous-cli';
 type ArtifactLaunchCommandSourceStatus = 'scanned' | 'read-error' | 'parse-error';
 type ArtifactLaunchCommandReason = 'missing-entrypoint' | 'invalid-target-path' | 'invalid-repository-root' | 'no-command-source' | 'ambiguous-command-source';
 
@@ -149,16 +149,16 @@ function addDefinitions(
   }
 }
 
-function isMonadRepository(repositoryRoot: string): boolean {
+function isElanousRepository(repositoryRoot: string): boolean {
   const packagePath = join(repositoryRoot, 'package.json');
-  const launcherPath = join(repositoryRoot, 'bin', 'monad.mjs');
+  const launcherPath = join(repositoryRoot, 'bin', 'elanous.mjs');
   if (!existsSync(launcherPath)) return false;
   const packageSource = readSource(packagePath, 'package-json');
   if (!packageSource?.text) return false;
   try {
     const parsed: unknown = JSON.parse(packageSource.text);
     const bin = parsed && typeof parsed === 'object' ? (parsed as { bin?: unknown }).bin : undefined;
-    return !!bin && typeof bin === 'object' && !Array.isArray(bin) && (bin as Record<string, unknown>).monad === './bin/monad.mjs';
+    return !!bin && typeof bin === 'object' && !Array.isArray(bin) && (bin as Record<string, unknown>).elanous === './bin/elanous.mjs';
   } catch {
     return false;
   }
@@ -166,7 +166,7 @@ function isMonadRepository(repositoryRoot: string): boolean {
 
 /**
  * Resolves an artifact launch name only from exact, repository-bounded source matches.
- * It never executes a chosen command; a clean help probe merely proves a monad subcommand exists.
+ * It never executes a chosen command; a clean help probe merely proves a elanous subcommand exists.
  */
 export async function resolveArtifactLaunchCommand(input: ArtifactLaunchCommandInput): Promise<ArtifactLaunchCommandResult> {
   const entrypoint = input.entrypoint;
@@ -208,14 +208,14 @@ export async function resolveArtifactLaunchCommand(input: ArtifactLaunchCommandI
   }
 
   const root = directories[directories.length - 1];
-  if (input.runHelpProbe && isMonadRepository(root)) {
-    const monadPath = join(root, 'bin', 'monad.mjs');
+  if (input.runHelpProbe && isElanousRepository(root)) {
+    const elanousPath = join(root, 'bin', 'elanous.mjs');
     try {
-      const probe = await input.runHelpProbe(['bun', 'bin/monad.mjs', entrypoint, '--help']);
-      sources.push(source(monadPath, 'monad-cli', 'scanned'));
-      if (probe.status === 0) candidates.push(candidate(monadPath, 'monad-cli', { key: entrypoint, command: `bun bin/monad.mjs ${entrypoint}` }));
+      const probe = await input.runHelpProbe(['bun', 'bin/elanous.mjs', entrypoint, '--help']);
+      sources.push(source(elanousPath, 'elanous-cli', 'scanned'));
+      if (probe.status === 0) candidates.push(candidate(elanousPath, 'elanous-cli', { key: entrypoint, command: `bun bin/elanous.mjs ${entrypoint}` }));
     } catch {
-      sources.push(source(monadPath, 'monad-cli', 'read-error'));
+      sources.push(source(elanousPath, 'elanous-cli', 'read-error'));
     }
   }
 

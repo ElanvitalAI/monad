@@ -2,7 +2,7 @@
 
 // BackendPickerChip — PWA port of the iOS chip (P2-1 · 2026-05-14).
 //
-// Visual + behavioral parity with `apps/ios/MonadiOS/MonadiOS/Chat/
+// Visual + behavioral parity with `apps/ios/ElanousiOS/ElanousiOS/Chat/
 // AgentCli/BackendPickerChip.swift`:
 //   • Tinted capsule (brand fill · white label · optional mission tag
 //     stacked below) — primary tap cycles backend.
@@ -20,7 +20,7 @@ import { Pin, ChevronsUpDown, Check } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 export type AgentCliBackend =
-  | 'monad-builtin'
+  | 'elanous-builtin'
   | 'codex-app-server'
   | 'claude'
   | 'gemini'
@@ -46,7 +46,7 @@ interface BackendMeta {
 }
 
 export const BACKEND_ORDER: ReadonlyArray<AgentCliBackend> = [
-  'monad-builtin',
+  'elanous-builtin',
   'codex-app-server',
   'claude',
   'gemini',
@@ -54,9 +54,9 @@ export const BACKEND_ORDER: ReadonlyArray<AgentCliBackend> = [
 ];
 
 const BACKEND_META: Record<AgentCliBackend, BackendMeta> = {
-  'monad-builtin': {
-    kind: 'monad-builtin',
-    label: 'monad',
+  'elanous-builtin': {
+    kind: 'elanous-builtin',
+    label: 'elanous',
     emoji: '🌀',
     description: 'NEXUS internal LLM rotation (default)',
     tint: 'bg-[rgb(125,87,235)]',

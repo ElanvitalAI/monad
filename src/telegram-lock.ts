@@ -1,6 +1,6 @@
 // ── Telegram runtime lock ────────────────────────────────────────
 //
-// Only ONE `monad telegram run` daemon (or dashboard-embedded poller)
+// Only ONE `elanous telegram run` daemon (or dashboard-embedded poller)
 // should be polling a given bot token at a time. Two pollers split
 // update deliveries via Telegram's `offset` contract — whichever hits
 // /getUpdates first consumes the update and moves the offset, so the
@@ -8,7 +8,7 @@
 // Conflict when two pollers overlap (see telegram.ts start loop) but
 // detecting that mid-flight doesn't help us avoid corrupted state.
 //
-// Lock strategy: a JSON file at `~/.config/monad/telegram.lock` keyed
+// Lock strategy: a JSON file at `~/.config/elanous/telegram.lock` keyed
 // on (pid, host, startedAt, label). Startup:
 //   1. If no file → we acquire, write our meta, register cleanup.
 //   2. If file exists:
@@ -118,7 +118,7 @@ export function isAliveLock(meta: LockMeta): boolean {
     return isPidAlive(meta.pid);
 }
 
-/** Default lock path under the user's monad config dir. Derived via
+/** Default lock path under the user's elanous config dir. Derived via
  *  a callback so the caller can substitute paths in tests. */
 export function defaultLockPath(configDir: string): string {
   return `${configDir.replace(/\/$/, '')}/telegram.lock`;

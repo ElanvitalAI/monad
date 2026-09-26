@@ -166,7 +166,7 @@ export function listToolRuntimes(surface?: ToolSurface): ToolRuntime[] {
  *
  *  ⭐ 왜 프로덕션 경로인가 (2026-09-10 실측): `registerToolRuntime` 은 같은 id 의
  *     «다른» 런타임을 **던져서** 막는다. 그래서 이 자리가 없으면 한 번 등록된 프록시
- *     툴은 프로세스가 죽을 때까지 못 갈아 끼운다 — `monad mcp reload` 가 서버 다섯 개
+ *     툴은 프로세스가 죽을 때까지 못 갈아 끼운다 — `elanous mcp reload` 가 서버 다섯 개
  *     «전부»를 `ToolRuntime id collision: <server>.<tool>` 로 실패했다.
  *     즉 이것은 테스트 편의가 아니라 ***재장전이 성립하기 위한 전제***다. */
 export function unregisterToolRuntime(id: string): ToolRuntime | undefined {

@@ -1,7 +1,7 @@
 // AXON P3.1 — Terminal image capability detection tests.
 //
 // The detector is env-driven (TERM / TERM_PROGRAM / KITTY_WINDOW_ID /
-// MONAD_IMAGE) + PATH-driven (chafa probe). Tests flip env vars,
+// ELANOUS_IMAGE) + PATH-driven (chafa probe). Tests flip env vars,
 // reset the cached state via `_resetForTest()`, and check the
 // resolved `protocol` + description.
 
@@ -14,8 +14,8 @@ import {
 import { _resetForTest as _resetKgp } from '../src/kgp/capabilities.js';
 
 const ENV_KEYS = [
-  'MONAD_IMAGE',
-  'MONAD_KGP',
+  'ELANOUS_IMAGE',
+  'ELANOUS_KGP',
   'TERM',
   'TERM_PROGRAM',
   'KITTY_WINDOW_ID',
@@ -59,46 +59,46 @@ afterEach(() => {
 
 // ── Override path ────────────────────────────────────────────────────
 
-describe('detectImageCapability · MONAD_IMAGE override', () => {
-  test('MONAD_IMAGE=kitty → kitty', () => {
-    process.env.MONAD_IMAGE = 'kitty';
+describe('detectImageCapability · ELANOUS_IMAGE override', () => {
+  test('ELANOUS_IMAGE=kitty → kitty', () => {
+    process.env.ELANOUS_IMAGE = 'kitty';
     expect(detectImageCapability().protocol).toBe('kitty');
   });
 
-  test('MONAD_IMAGE=iterm2 → iterm2', () => {
-    process.env.MONAD_IMAGE = 'iterm2';
+  test('ELANOUS_IMAGE=iterm2 → iterm2', () => {
+    process.env.ELANOUS_IMAGE = 'iterm2';
     expect(detectImageCapability().protocol).toBe('iterm2');
   });
 
-  test('MONAD_IMAGE=sixel → sixel', () => {
-    process.env.MONAD_IMAGE = 'sixel';
+  test('ELANOUS_IMAGE=sixel → sixel', () => {
+    process.env.ELANOUS_IMAGE = 'sixel';
     expect(detectImageCapability().protocol).toBe('sixel');
   });
 
-  test('MONAD_IMAGE=chafa → chafa-fallback', () => {
-    process.env.MONAD_IMAGE = 'chafa';
+  test('ELANOUS_IMAGE=chafa → chafa-fallback', () => {
+    process.env.ELANOUS_IMAGE = 'chafa';
     expect(detectImageCapability().protocol).toBe('chafa-fallback');
   });
 
-  test('MONAD_IMAGE=none → none', () => {
-    process.env.MONAD_IMAGE = 'none';
+  test('ELANOUS_IMAGE=none → none', () => {
+    process.env.ELANOUS_IMAGE = 'none';
     expect(detectImageCapability().protocol).toBe('none');
   });
 
-  test('MONAD_IMAGE=off → none', () => {
-    process.env.MONAD_IMAGE = 'off';
+  test('ELANOUS_IMAGE=off → none', () => {
+    process.env.ELANOUS_IMAGE = 'off';
     expect(detectImageCapability().protocol).toBe('none');
   });
 
-  test('MONAD_IMAGE case-insensitive', () => {
-    process.env.MONAD_IMAGE = 'KITTY';
+  test('ELANOUS_IMAGE case-insensitive', () => {
+    process.env.ELANOUS_IMAGE = 'KITTY';
     expect(detectImageCapability().protocol).toBe('kitty');
   });
 
   test('unknown override falls through to detection', () => {
-    process.env.MONAD_IMAGE = 'banana';
-    process.env.MONAD_IMAGE = '';  // unset → re-detect
-    delete process.env.MONAD_IMAGE;
+    process.env.ELANOUS_IMAGE = 'banana';
+    process.env.ELANOUS_IMAGE = '';  // unset → re-detect
+    delete process.env.ELANOUS_IMAGE;
     process.env.TERM = 'xterm-kitty';
     expect(detectImageCapability().protocol).toBe('kitty');
   });
@@ -140,32 +140,32 @@ describe('detectImageCapability · auto-detect', () => {
 
 describe('detectImageCapability · cache + reset', () => {
   test('result cached after first call', () => {
-    process.env.MONAD_IMAGE = 'kitty';
+    process.env.ELANOUS_IMAGE = 'kitty';
     expect(detectImageCapability().protocol).toBe('kitty');
     // Flip env without reset — cached result wins.
-    delete process.env.MONAD_IMAGE;
-    process.env.MONAD_IMAGE = 'iterm2';
+    delete process.env.ELANOUS_IMAGE;
+    process.env.ELANOUS_IMAGE = 'iterm2';
     expect(detectImageCapability().protocol).toBe('kitty');
   });
 
   test('_resetForTest clears the cache', () => {
-    process.env.MONAD_IMAGE = 'kitty';
+    process.env.ELANOUS_IMAGE = 'kitty';
     expect(detectImageCapability().protocol).toBe('kitty');
     _resetForTest();
-    delete process.env.MONAD_IMAGE;
-    process.env.MONAD_IMAGE = 'none';
+    delete process.env.ELANOUS_IMAGE;
+    process.env.ELANOUS_IMAGE = 'none';
     expect(detectImageCapability().protocol).toBe('none');
   });
 });
 
 describe('hasImageSupport', () => {
   test('true for any non-none protocol', () => {
-    process.env.MONAD_IMAGE = 'kitty';
+    process.env.ELANOUS_IMAGE = 'kitty';
     expect(hasImageSupport()).toBe(true);
   });
 
   test('false for none', () => {
-    process.env.MONAD_IMAGE = 'none';
+    process.env.ELANOUS_IMAGE = 'none';
     expect(hasImageSupport()).toBe(false);
   });
 });
@@ -182,15 +182,15 @@ describe('detectImageCapability · description text', () => {
     for (const [override, expected] of cases) {
       _resetForTest();
       _resetKgp();
-      delete process.env.MONAD_IMAGE;
-      process.env.MONAD_IMAGE = override;
+      delete process.env.ELANOUS_IMAGE;
+      process.env.ELANOUS_IMAGE = override;
       const cap = detectImageCapability();
       expect(cap.description.toLowerCase()).toContain(expected.toLowerCase());
     }
   });
 
   test('cellPx defaults to (8, 16)', () => {
-    process.env.MONAD_IMAGE = 'kitty';
+    process.env.ELANOUS_IMAGE = 'kitty';
     const cap = detectImageCapability();
     expect(cap.cellPx).toEqual({ w: 8, h: 16 });
   });

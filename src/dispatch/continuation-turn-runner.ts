@@ -18,7 +18,7 @@ import { debug } from '../debug/log.js';
 import { getSessionCwd } from '../session/working-dir.js';
 import type { ContinuationTurnResult } from './continuation-bridge.js';
 
-/** Agent tool surface — mirrors `monad agent` so continuation turns can
+/** Agent tool surface — mirrors `elanous agent` so continuation turns can
  *  make real file/shell progress toward the goal's termination.
  *  Replicates the CLI's buildCliAgentTools (kept in sync deliberately;
  *  importing index.ts here would pull the whole CLI graph). */

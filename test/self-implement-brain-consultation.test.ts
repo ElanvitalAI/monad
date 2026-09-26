@@ -1,7 +1,7 @@
 import { describe, expect, it, spyOn } from 'bun:test';
 import type { RunSupervisor } from '../src/autopilot/pty-control-loop.js';
 import { shouldConsultBrain, brainTrigger } from '../src/self-implement/brain-consultation.js';
-import { runHeadlessGoalLoopPty } from '../src/self-implement/headless-monad-driver.js';
+import { runHeadlessGoalLoopPty } from '../src/self-implement/headless-elanous-driver.js';
 import { debug } from '../src/debug/log.js';
 
 function makeBrainHandle(canWrite = true) {

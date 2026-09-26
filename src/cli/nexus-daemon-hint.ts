@@ -1,15 +1,15 @@
-// CLI · NEXUS daemon liveness hint for the bare-`monad` boot banner.
+// CLI · NEXUS daemon liveness hint for the bare-`elanous` boot banner.
 //
-// History (why this file is so small): bare `monad` used to route
+// History (why this file is so small): bare `elanous` used to route
 // through an entry-mode switch (`global.entry.defaultMode` · N-1
 // cleanup PR f/g) that could send it to the headless NEXUS daemon
 // instead of the dashboard. T3/T4 (PLAN-tui-redundancy-cleanup,
 // 2026-05-16) deleted the NEXUS interactive TUI, which made every
 // non-dashboard route a dead-end. The switch, `resolveEntryMode`, the
-// `monad legacy` escape hatch, and the whole enum were removed
-// (2026-07-24) once it was clear bare `monad` has exactly one sensible
+// `elanous legacy` escape hatch, and the whole enum were removed
+// (2026-07-24) once it was clear bare `elanous` has exactly one sensible
 // destination: the dashboard. The daemon's canonical entry is
-// `monad nexus run`.
+// `elanous nexus run`.
 //
 // What survives is only the useful half: telling the user, when they
 // land on the dashboard, that a NEXUS daemon is ALSO live on this host
@@ -42,7 +42,7 @@ export function isNexusDaemonLive(opts: NexusDaemonHintOpts = {}): boolean {
 /** One-line boot banner shown when the dashboard launches while a NEXUS
  *  daemon is live on this host. Pure formatter; never thrown. */
 export function nexusDaemonLiveHint(): string {
-  return '[monad] entry: dashboard (a NEXUS daemon is live — `monad nexus pwa show`)';
+  return '[elanous] entry: dashboard (a NEXUS daemon is live — `elanous nexus pwa show`)';
 }
 
 /** Production lock probe — reads the NEXUS lock, verifies the holder

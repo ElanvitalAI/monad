@@ -11,7 +11,7 @@ export type WorktreeStatus = 'main' | 'active' | 'orphan' | 'detached' | 'idle';
  *    2. main (primary repo)
  *    3. detached (HEAD only, no branch) — exists but no working session
  *    4. active (owner pid alive)        — currently in use
- *    5. idle (worktree exists, no monad session)
+ *    5. idle (worktree exists, no elanous session)
  *
  *  The order encodes "what does the user need to know first" — a
  *  user scanning the table should spot orphans before anything

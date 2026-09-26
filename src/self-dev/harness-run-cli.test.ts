@@ -28,7 +28,7 @@ async function dispatched(opts: HarnessRunCliOpts): Promise<DevHarnessDispatchAr
 
 describe('harness run — deprecated entrance', () => {
   it('help exposes deprecation and the canonical replacement', () => {
-    expect(HARNESS_RUN_REPLACEMENT).toBe('monad harness say <objective>');
+    expect(HARNESS_RUN_REPLACEMENT).toBe('elanous harness say <objective>');
     expect(HARNESS_RUN_DEPRECATION_HELP).toContain('DEPRECATED');
     expect(HARNESS_RUN_DEPRECATION_HELP).toContain(HARNESS_RUN_REPLACEMENT);
     expect(HARNESS_RUN_DEPRECATION_NOTICE).toContain(HARNESS_RUN_REPLACEMENT);
@@ -99,7 +99,7 @@ describe('harness run — deprecated entrance', () => {
     const originalStderrWrite = process.stderr.write.bind(process.stderr);
     const originalDebugLog = debug.log;
     const previousExitCode = process.exitCode;
-    const previousRunId = process.env.MONAD_RUN_ID;
+    const previousRunId = process.env.ELANOUS_RUN_ID;
     const output: string[] = [];
     console.log = (...args: unknown[]) => { output.push(args.map(String).join(' ')); };
     console.error = (...args: unknown[]) => { output.push(args.map(String).join(' ')); };
@@ -112,8 +112,8 @@ describe('harness run — deprecated entrance', () => {
     (debug as { log: typeof debug.log }).log = (() => {}) as typeof debug.log;
     process.exitCode = undefined;
     try {
-      await program.parseAsync(['node', 'monad', 'harness', 'run', 'objective']);
-      expect(output.join('\n')).toContain('monad harness say <objective>');
+      await program.parseAsync(['node', 'elanous', 'harness', 'run', 'objective']);
+      expect(output.join('\n')).toContain('elanous harness say <objective>');
       const exitCode = Number(process.exitCode);
       expect(exitCode).not.toBe(0);
       expect(exitCode).toBe(1);
@@ -123,8 +123,8 @@ describe('harness run — deprecated entrance', () => {
       process.stderr.write = originalStderrWrite;
       (debug as { log: typeof debug.log }).log = originalDebugLog;
       process.exitCode = previousExitCode ?? 0;
-      if (previousRunId === undefined) delete process.env.MONAD_RUN_ID;
-      else process.env.MONAD_RUN_ID = previousRunId;
+      if (previousRunId === undefined) delete process.env.ELANOUS_RUN_ID;
+      else process.env.ELANOUS_RUN_ID = previousRunId;
     }
   });
 });
@@ -206,7 +206,7 @@ describe('harness run — unified plan-staged reroute', () => {
 
   const dispatchCases: Array<[DevDispatch, DevPipelineSpec]> = [
     ['self-mission', { input: { text: 'x' } }],
-    ['monad-tui', { input: { text: 'x' }, monad: { goal: 'g' } }],
+    ['elanous-tui', { input: { text: 'x' }, elanous: { goal: 'g' } }],
     ['agent-mission-pty', { input: { text: 'x' }, executor: { kind: 'external', backend: 'codex' }, branch: 'b' }],
     ['acp', { input: { text: 'x' }, executor: { kind: 'external', backend: 'codex', transport: 'acp' } }],
     ['parallel', { input: { text: 'x' }, parallel: { goals: [{ feature: 'g' }] } }],

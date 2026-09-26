@@ -2,12 +2,12 @@ import { describe, test, expect } from 'bun:test';
 import { executionFooter, selfToolArgHint } from '../src/telegram-exec-footer';
 
 describe('executionFooter', () => {
-  test('self turn → 🧠 monad · <model>', () => {
-    expect(executionFooter({ model: 'gpt-5.6-terra' })).toBe('— 🧠 monad · gpt-5.6-terra');
+  test('self turn → 🧠 elanous · <model>', () => {
+    expect(executionFooter({ model: 'gpt-5.6-terra' })).toBe('— 🧠 elanous · gpt-5.6-terra');
   });
 
   test('self turn with no model → (default)', () => {
-    expect(executionFooter({})).toBe('— 🧠 monad · (default)');
+    expect(executionFooter({})).toBe('— 🧠 elanous · (default)');
   });
 
   test('ACP delegate → 🤖 acp-<backend>, canonicalized', () => {
@@ -24,7 +24,7 @@ describe('executionFooter', () => {
 
   test('self footer shows model(effort) compactly', () => {
     expect(executionFooter({ model: 'gpt-5.6-terra', effort: 'high' }))
-      .toBe('— 🧠 monad · gpt-5.6-terra(high)');
+      .toBe('— 🧠 elanous · gpt-5.6-terra(high)');
   });
 
   test('acp footer shows model(effort) when both known', () => {

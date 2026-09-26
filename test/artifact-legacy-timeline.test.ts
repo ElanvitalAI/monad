@@ -1,6 +1,6 @@
 // ── VW-term-infra Bundle B-4 · P6-3 — legacy timeline provider tests ──
 //
-// Hermetic · uses fake LegacyProviderFs · no real `~/.monad/timelines/`.
+// Hermetic · uses fake LegacyProviderFs · no real `~/.elanous/timelines/`.
 
 import { describe, expect, test } from 'bun:test';
 

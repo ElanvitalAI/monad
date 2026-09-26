@@ -1,4 +1,4 @@
-// `monad session watch` — live session tail. Covers the two non-trivial
+// `elanous session watch` — live session tail. Covers the two non-trivial
 // pure pieces: tool-row filtering (--debug gate) and the incremental
 // byte-chunk → complete-lines split (a read can land mid-line). The
 // fs.watch follow loop itself is verified by the manual CLI E2E.

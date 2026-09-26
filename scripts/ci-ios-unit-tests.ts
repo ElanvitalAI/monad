@@ -4,7 +4,7 @@
  * 🚨 왜: 2026-09-08 실측으로 `apps/ios/` 에 Swift **101개**인데 시험 **0개**였다.
  *   ⛔ 원인은 「아무도 안 썼다」가 아니라 «구조»였다 — 순수 로직이 3176줄·8 import
  *      파일에 묶여 격리 호출이 불가능했다. 묶이지 않은 파일만 모은 SwiftPM 패키지가
- *      `apps/ios/MonadiOSKitTests` 이고, 이 게이트가 그것을 «문»으로 만든다.
+ *      `apps/ios/ElanousiOSKitTests` 이고, 이 게이트가 그것을 «문»으로 만든다.
  *
  * ⭐ 안드로이드 게이트(`ci-android-unit-tests.ts`)와 «같은 판정 규율»을 쓴다:
  *      1급 판정은 「실패가 있나」가 아니라 ***「몇 개가 «돌았나»」***다. ⛔ 0개는 통과가 아니다.
@@ -85,7 +85,7 @@ export function runIosUnitTestGate(io: IosGateIo = {}): number {
     log(`[ios-gate] 대상 ${hits.length}개 — 시험을 돌린다.`);
   }
 
-  const pkgDir = join(root, 'apps', 'ios', 'MonadiOSKitTests');
+  const pkgDir = join(root, 'apps', 'ios', 'ElanousiOSKitTests');
   if (!existsSync(join(pkgDir, 'Package.swift'))) {
     error(`[ios-gate] FAIL — ${pkgDir}/Package.swift 가 없다. 「없어서 통과」로 두지 않는다.`);
     return 1;

@@ -38,7 +38,7 @@ describe('location-context-snapshot — YAML shape', () => {
 });
 
 describe('location-context-snapshot — runtime', () => {
-  it('runs full chain when MONAD_LOCATION_PLACE provides the place', async () => {
+  it('runs full chain when ELANOUS_LOCATION_PLACE provides the place', async () => {
     const wf = loadWorkflow();
     let saveBody = '';
     const deps: WorkflowDeps = {
@@ -47,7 +47,7 @@ describe('location-context-snapshot — runtime', () => {
         return 'Office · 3 PRs to review · sync at 2pm.';
       },
       runBash: async (body) => {
-        if (body.includes('MONAD_LOCATION_PLACE')) {
+        if (body.includes('ELANOUS_LOCATION_PLACE')) {
           return { stdout: 'place=Office', stderr: '', exitCode: 0 };
         }
         if (body.includes('OBSIDIAN_DIR') && body.includes('grep')) {
@@ -76,7 +76,7 @@ describe('location-context-snapshot — router cascade', () => {
     const prevCwd = process.cwd();
     process.chdir(tmpDir);
     try {
-      mkdirSync(join(tmpDir, '.monad', 'workflows'), { recursive: true });
+      mkdirSync(join(tmpDir, '.elanous', 'workflows'), { recursive: true });
       let llmCalls = 0;
       const fakeLLM: RouterLLMCaller = async () => { llmCalls += 1; return ''; };
       const r = await routeWorkflow(

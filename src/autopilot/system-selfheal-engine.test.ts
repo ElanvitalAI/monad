@@ -1,6 +1,6 @@
 // ── 셀프힐 엔진 코어 테스트 (PR1 · 2026-07-13) ─────────────────────────────
 // R3 룩백 러너 + 수리 미션 스폰 + phaseGateInputs/systemSuspect 추출. Opus 강제는 se-bridge
-// 통합(별도) — 여기선 순수/seam 주입 경계를 검증(실 LLM·실 ~/.monad·실 spawn 미접촉).
+// 통합(별도) — 여기선 순수/seam 주입 경계를 검증(실 LLM·실 ~/.elanous·실 spawn 미접촉).
 
 import { describe, expect, it } from 'bun:test';
 import { phaseGateInputs, phaseSystemSuspectSignals, buildPhaseOutcomeFromSummary } from './mission-phase-diagnosis.js';

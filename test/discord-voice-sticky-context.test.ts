@@ -56,12 +56,12 @@ describe('createDiscordVoiceStickyContextRuntime', () => {
 
   it('records voice-join sessions as declared voice provenance while retaining dc origin', async () => {
     const root = mkdtempSync(join(tmpdir(), 'dc-voice-source-'));
-    const previousRoot = process.env.MONAD_SESSION_ROOT;
-    const previousGate = process.env.MONAD_DISCORD_VOICE_CHANNEL;
+    const previousRoot = process.env.ELANOUS_SESSION_ROOT;
+    const previousGate = process.env.ELANOUS_DISCORD_VOICE_CHANNEL;
     const created: Array<{ source: string; sourceSource?: string; origin?: string; title: string }> = [];
     const unsubscribe = onSessionCreated((meta) => { created.push(meta); });
-    process.env.MONAD_SESSION_ROOT = join(root, 'sessions');
-    process.env.MONAD_DISCORD_VOICE_CHANNEL = '1';
+    process.env.ELANOUS_SESSION_ROOT = join(root, 'sessions');
+    process.env.ELANOUS_DISCORD_VOICE_CHANNEL = '1';
     const wire = buildDiscordVoiceWire({
       userConfig: { llm: { provider: 'test', model: 'test-model' }, discord: { botToken: '' } } as unknown as UserConfig,
       runTurnImpl: (async () => ({ text: 'ok' })) as unknown as typeof runTurn,
@@ -81,10 +81,10 @@ describe('createDiscordVoiceStickyContextRuntime', () => {
     } finally {
       unsubscribe();
       await wire.shutdown();
-      if (previousRoot === undefined) delete process.env.MONAD_SESSION_ROOT;
-      else process.env.MONAD_SESSION_ROOT = previousRoot;
-      if (previousGate === undefined) delete process.env.MONAD_DISCORD_VOICE_CHANNEL;
-      else process.env.MONAD_DISCORD_VOICE_CHANNEL = previousGate;
+      if (previousRoot === undefined) delete process.env.ELANOUS_SESSION_ROOT;
+      else process.env.ELANOUS_SESSION_ROOT = previousRoot;
+      if (previousGate === undefined) delete process.env.ELANOUS_DISCORD_VOICE_CHANNEL;
+      else process.env.ELANOUS_DISCORD_VOICE_CHANNEL = previousGate;
       rmSync(root, { recursive: true, force: true });
     }
   });

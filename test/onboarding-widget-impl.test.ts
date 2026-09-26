@@ -61,7 +61,7 @@ describe('onboarding/widget-impl · buildWizardSpec', () => {
       { id: 'token', label: 'Token', secret: true },
     ]);
     expect(spec.kind).toBe('interactive-modal');
-    expect(spec.id).toBe('monad-setup-wizard');
+    expect(spec.id).toBe('elanous-setup-wizard');
     expect(spec.steps.length).toBe(2);
     expect(spec.steps[0]).toEqual({
       kind: 'text',

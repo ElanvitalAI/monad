@@ -1,7 +1,7 @@
 // ── NEXUS /v1/llm/rotation handlers (iOS Phase 1.5 · 2026-05-13) ──
 //
 // PR1 of the iOS chat basics cascade — model chip tap-to-cycle wire.
-// `~/.monad/config.json` の `llm.rotation` 가 SoT · top-level `llm.provider/
+// `~/.elanous/config.json` の `llm.rotation` 가 SoT · top-level `llm.provider/
 // model` 가 active. handleLlmRotationGet 가 list+active 반환 · handleLlmRotationNext
 // 가 rotateNextProvider 호출 + saveUserConfig + reloadUserConfig.
 
@@ -9,17 +9,17 @@ import { describe, test, expect, beforeEach, afterEach } from 'bun:test';
 import { mkdtempSync, rmSync, writeFileSync, readFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { setMonadConfigDir, resetMonadConfigDir } from '../src/monad-config-dir';
+import { setElanousConfigDir, resetElanousConfigDir } from '../src/elanous-config-dir';
 
 let root: string;
 
 beforeEach(() => {
   root = mkdtempSync(join(tmpdir(), 'nexus-llm-rotation-'));
-  setMonadConfigDir(root);
+  setElanousConfigDir(root);
 });
 afterEach(() => {
   rmSync(root, { recursive: true, force: true });
-  resetMonadConfigDir();
+  resetElanousConfigDir();
 });
 
 function configPath(): string {

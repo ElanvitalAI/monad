@@ -9,7 +9,7 @@ const ENTRY = resolve(REPO_ROOT, 'src', 'index.ts');
 const prompt = '두 더하기 두는 얼마인가';
 const rejection = 'Harness chat goal-loop requires `dev --implement`';
 const missingSession = 'chat-harness-goal-loop-guard-missing-session';
-const compatibilityNotice = '`chat --tools` is a compatibility entrypoint; use `monad agent` for tool-loop calls.';
+const compatibilityNotice = '`chat --tools` is a compatibility entrypoint; use `elanous agent` for tool-loop calls.';
 
 type ChatResult = ReturnType<typeof spawnSync>;
 
@@ -66,13 +66,13 @@ function runCommand(command: 'agent' | 'chat', args: readonly string[], env: Rec
       encoding: 'utf-8',
       // The focused test can itself run inside a harness child; clear that
       // inherited identity so each scenario controls its own classification.
-      env: { ...process.env, MONAD_HARNESS_SPACE: '', MONAD_TOOL_CWD: runDir, ...env },
+      env: { ...process.env, ELANOUS_HARNESS_SPACE: '', ELANOUS_TOOL_CWD: runDir, ...env },
       timeout: 15_000,
     });
     // 🪞⭐⭐ 2026-08-26 — 옛 판은 `join(runDir, 'log')` «한 자리»를 박아 두고 읽었다.
-    //   📏 실측: `debugLogDir()` 는 ***`<runDir>/.monad/debug`*** 를 낸다.
+    //   📏 실측: `debugLogDir()` 는 ***`<runDir>/.elanous/debug`*** 를 낸다.
     //      기전 = src/debug/log.ts `resolveLogDir()` —
-    //        `isWithinSourceRoot(sessionCwd)` 면 `<sessionCwd>/log`, ***아니면*** `<projectRoot>/.monad/debug`.
+    //        `isWithinSourceRoot(sessionCwd)` 면 `<sessionCwd>/log`, ***아니면*** `<projectRoot>/.elanous/debug`.
     //      이 시험의 runDir 은 «임시 디렉토리»라 «아니면» 쪽이다.
     //   ⛔ 그래서 ENOENT 가 났고, 그 산출은 ***「계약이 깨졌다」와 「자리가 옮겨졌다」를 «안 갈랐다».***
     //   🩹 ⇒ 자리를 «다시 박지 않는다». tempRoot 아래를 «훑어» 찾는다 —
@@ -145,7 +145,7 @@ describe('chat --tools compatibility notice', () => {
 describe('chat harness goal-loop guard', () => {
   test('rejects the legacy tools + goal-loop entrypoint in a harness process', () => {
     const { result } = runChat(['--tools', '--goal-loop', prompt], {
-      MONAD_HARNESS_SPACE: 'self-implement',
+      ELANOUS_HARNESS_SPACE: 'self-implement',
     });
 
     expectCompletedProcess(result);
@@ -156,9 +156,9 @@ describe('chat harness goal-loop guard', () => {
   });
 
   const allowedCases: Array<{ name: string; args: string[]; env: Record<string, string> }> = [
-    { name: 'explicit bypass', args: ['--tools', '--goal-loop', '--implement', '--session', missingSession, prompt], env: { MONAD_HARNESS_SPACE: 'self-implement' } },
+    { name: 'explicit bypass', args: ['--tools', '--goal-loop', '--implement', '--session', missingSession, prompt], env: { ELANOUS_HARNESS_SPACE: 'self-implement' } },
     { name: 'non-harness path', args: ['--tools', '--goal-loop', '--session', missingSession, prompt], env: {} },
-    { name: 'tools-only harness path', args: ['--tools', '--session', missingSession, prompt], env: { MONAD_HARNESS_SPACE: 'self-implement' } },
+    { name: 'tools-only harness path', args: ['--tools', '--session', missingSession, prompt], env: { ELANOUS_HARNESS_SPACE: 'self-implement' } },
   ];
 
   test.each(allowedCases)('allows $name to reach the downstream chat session lookup', ({ args, env }) => {

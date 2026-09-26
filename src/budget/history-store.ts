@@ -4,11 +4,11 @@
 // history` slash can query rolling windows without re-scanning raw
 // Codex/Claude logs on every invocation.
 //
-// Design (PLAN D1): history → SQLite (WAL), separate file from monad's
+// Design (PLAN D1): history → SQLite (WAL), separate file from elanous's
 // main sync.db so budget retention doesn't compete with sync history
 // for TTL scans. State (current snapshot) + limits use plain JSON.
 //
-// File: `~/.config/monad/budget/history.sqlite` · 56-day retention to
+// File: `~/.config/elanous/budget/history.sqlite` · 56-day retention to
 // match CodexBar's `HistoricalUsageHistoryStore` · WAL mode for
 // concurrent read during write (the refresher runs on one thread · UI
 // queries on another).
@@ -30,7 +30,7 @@ const DEFAULT_RETENTION_MS = 56 * DAY_MS;
 export const DEFAULT_HISTORY_DB_PATH = join(
   homedir(),
   '.config',
-  'monad',
+  'elanous',
   'budget',
   'history.sqlite',
 );

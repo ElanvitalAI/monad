@@ -1,7 +1,7 @@
 // PR-S1V.12 (sprint 22 Phase 6 wire · 2026-04-30) — PCM resampling
 // helpers for the Discord voice channel adapter.
 //
-// Discord's voice gateway transports Opus at 48 kHz / stereo. monad's
+// Discord's voice gateway transports Opus at 48 kHz / stereo. elanous's
 // streaming-stt expects 16 kHz mono (Phase 3 contract); auto-tts emits
 // 24 kHz mono (Phase 1 contract). Two conversions are needed:
 //

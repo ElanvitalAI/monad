@@ -193,7 +193,7 @@ describe('composeVertical', () => {
   });
 
   it('handles a realistic dashboard shape', () => {
-    // Mirrors the monad bottom zone: grid (grow) + log (grow weight 0.3?)
+    // Mirrors the elanous bottom zone: grid (grow) + log (grow weight 0.3?)
     // + input-deco rows + status rows. We just check zoneRows for a
     // representative mixed layout.
     const result = composeVertical(

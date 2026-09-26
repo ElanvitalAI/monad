@@ -141,7 +141,7 @@ export async function dispatchEdit(
   // ── Self-healing 툴콜링(2026-07-11) — partial-read Edit 자동복구 ───────────
   // 파일을 "부분 읽기(offset/limit)" 한 뒤 Edit 하면 partialView 가드로 막힌다(전체
   // 재읽기 필요). codex 계열(gpt-5.6-sol/terra)은 큰 파일을 offset/limit 로 부분 읽는
-  // 습관이 있어 이 가드에 걸려 편집 자체를 시작 못 하는 병리가 있었다(monad-self 튜닝
+  // 습관이 있어 이 가드에 걸려 편집 자체를 시작 못 하는 병리가 있었다(elanous-self 튜닝
   // dogfood 2026-07-11). 이 경우 에러가 지시하는 행동(전체 파일 재읽기)을 자동 수행 후
   // 1회 재시도한다 — 모델이 파일을 이미 본(부분이라도) 상태이므로 안전하고, 전체 재읽기
   // 후 old_string 이 매칭되면 적용, 아니면 명확한 mismatch 로 실패. 반면 "한 번도 안 읽음"

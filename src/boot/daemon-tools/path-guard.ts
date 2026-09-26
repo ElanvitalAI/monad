@@ -26,8 +26,8 @@ export const SENSITIVE_PATTERNS: readonly RegExp[] = [
   /(^|\/)\.ssh\//,
   /(^|\/)\.env(\.[^/]+)?$/,
   /(^|\/)id_(rsa|ed25519|ecdsa|dsa)(\.pub)?$/,
-  /(^|\/)\.monad\/acp-token$/,
-  /(^|\/)\.monad\/auth\.json$/,
+  /(^|\/)\.elanous\/acp-token$/,
+  /(^|\/)\.elanous\/auth\.json$/,
   /(^|\/)\.aws\/credentials$/,
   /(^|\/)\.aws\/config$/,
   /(^|\/)\.gnupg\//,
@@ -47,7 +47,7 @@ export const SENSITIVE_PATTERNS: readonly RegExp[] = [
 export const SENSITIVE_GLOBS: readonly string[] = [
   '.ssh', '.env', '.env.*',
   'id_rsa', 'id_rsa.pub', 'id_ed25519', 'id_ed25519.pub', 'id_ecdsa', 'id_dsa',
-  '.aws', '.gnupg', '.netrc', '.kube', '.npmrc', '.pypirc', 'acp-token', '.monad/auth.json',
+  '.aws', '.gnupg', '.netrc', '.kube', '.npmrc', '.pypirc', 'acp-token', '.elanous/auth.json',
   '*.pem', '*.key', '*.p12', '*.pfx',
 ];
 

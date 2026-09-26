@@ -26,7 +26,7 @@ beforeEach(() => {
   // Override the disk root explicitly — `os.homedir()` caches its
   // first-call result so flipping process.env.HOME doesn't move the
   // path.
-  _setWorkflowRunsRootForTest(join(tmpHome, '.monad', 'workflows-runs'));
+  _setWorkflowRunsRootForTest(join(tmpHome, '.elanous', 'workflows-runs'));
   _resetWorkflowRunRegistryForTest();
 });
 
@@ -49,7 +49,7 @@ function seedRun(runId: string, body: {
   outputs?: Record<string, { ok: boolean; output: unknown; durationMs: number }>;
   args?: string;
 }): void {
-  const runDir = join(tmpHome, '.monad', 'workflows-runs', runId);
+  const runDir = join(tmpHome, '.elanous', 'workflows-runs', runId);
   mkdirSync(join(runDir, 'nodes'), { recursive: true });
   const runJson = {
     runId,
@@ -149,7 +149,7 @@ describe('GET /v1/workflows/runs/<id> — disk fallback (Caveat #2)', () => {
     });
     // Wipe the per-node file but leave run.json intact.
     const fs = await import('fs');
-    fs.rmSync(join(tmpHome, '.monad', 'workflows-runs', 'wf-missing-node-001', 'nodes', 'a.json'));
+    fs.rmSync(join(tmpHome, '.elanous', 'workflows-runs', 'wf-missing-node-001', 'nodes', 'a.json'));
     const res = handleWorkflowRunGet(reqGet('/v1/workflows/runs/wf-missing-node-001'), 'wf-missing-node-001', opts);
     expect(res.status).toBe(200);
     const body = (await res.json()) as { events: Array<{ type: string; nodeId?: string; result?: { ok: boolean; output: unknown } }> };
@@ -228,7 +228,7 @@ describe('GET /v1/workflows/runs — disk listing (Caveat #2)', () => {
   it('skips dirs with no run.json', async () => {
     seedRun('wf-good-001', { workflowName: 'a', status: 'done', startedAt: 100 });
     // Stray empty dir — should NOT appear in the listing.
-    mkdirSync(join(tmpHome, '.monad', 'workflows-runs', 'wf-empty-002'), { recursive: true });
+    mkdirSync(join(tmpHome, '.elanous', 'workflows-runs', 'wf-empty-002'), { recursive: true });
     const res = handleWorkflowRunsList(reqGet('/v1/workflows/runs'), opts);
     const body = (await res.json()) as { runs: { runId: string }[] };
     expect(body.runs.map(r => r.runId)).toEqual(['wf-good-001']);

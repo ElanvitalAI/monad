@@ -16,7 +16,7 @@ function scratchVault() {
   mkdirSync(join(home, 'Obsidian'), { recursive: true });
   // discover picks the fallback via Documents; easier to use env override.
   const vault = discoverObsidianVault({
-    env: { MONAD_OBSIDIAN_VAULT: join(home, 'vault') },
+    env: { ELANOUS_OBSIDIAN_VAULT: join(home, 'vault') },
     cwd: home,
   });
   return { home, vault };

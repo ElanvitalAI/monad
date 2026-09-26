@@ -1,7 +1,7 @@
 // debug-bundle.ts — POST /v1/debug-bundle
 //
 // iOS (or any client) posts a symptom + recent in-memory debug log; the
-// daemon stitches it together with its own ~/.monad/log/debug-*.log tail
+// daemon stitches it together with its own ~/.elanous/log/debug-*.log tail
 // and uploads the bundle to S3 under the `debug-bundle/` feature prefix.
 // The response carries the public HTTPS URL plus a paste-ready prompt
 // so the user can drop it into any external LLM (Claude / GPT / Grok
@@ -12,9 +12,9 @@
 import { existsSync, readdirSync, statSync, writeFileSync, mkdtempSync, rmSync } from 'node:fs';
 import { readFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
-import { monadStateRoot } from '../../autopilot/state-paths.js';
+import { elanousStateRoot } from '../../autopilot/state-paths.js';
 import { join } from 'node:path';
-import { isS3Available, s3MonadKey, s3PublicUrl, s3Uri, uploadFile } from '../../storage/s3.js';
+import { isS3Available, s3ElanousKey, s3PublicUrl, s3Uri, uploadFile } from '../../storage/s3.js';
 
 export interface DebugBundleRequest {
   symptom: string;
@@ -44,8 +44,8 @@ const DAEMON_LOG_TAIL_BYTES = 64 * 1024; // 64 KB ≈ ~500 lines · enough for r
 
 /** Resolve the most recent daemon debug log file, if any.
  *
- *  LF0 수리(2026-07-13): 종전엔 `~/.monad/log/` 만 스캔했는데 실제 debug.log
- *  파일 트레일은 `<cwd>/log/debug-*.log`(프로젝트-로컬)라 cwd 가 `~/.monad`
+ *  LF0 수리(2026-07-13): 종전엔 `~/.elanous/log/` 만 스캔했는데 실제 debug.log
+ *  파일 트레일은 `<cwd>/log/debug-*.log`(프로젝트-로컬)라 cwd 가 `~/.elanous`
  *  가 아닌 데몬에서 번들에 데몬 로그가 통째로 누락됐다. 1순위 = 살아있는
  *  트레이서 자신의 활성 파일(`debug.path()`), 폴백 = 구 경로 스캔. */
 async function findLatestDaemonLog(): Promise<string | null> {
@@ -54,7 +54,7 @@ async function findLatestDaemonLog(): Promise<string | null> {
     const live = debug.path();
     if (live && existsSync(live)) return live;
   } catch { /* fallthrough */ }
-  const dir = join(monadStateRoot(), 'log');
+  const dir = join(elanousStateRoot(), 'log');
   try {
     const entries = readdirSync(dir).filter((n) => n.startsWith('debug-') && n.endsWith('.log'));
     if (entries.length === 0) return null;
@@ -161,13 +161,13 @@ export function composePrompt(
 /** Build the S3 key for the bundle. Per-second granularity is enough —
  *  the user is unlikely to hit the same second twice during dogfood. */
 function bundleKey(now: Date): string {
-  return s3MonadKey('debugBundle', `${bundleStamp(now)}.md`);
+  return s3ElanousKey('debugBundle', `${bundleStamp(now)}.md`);
 }
 
 /** 2026-05-19 — screenshot key paired to the bundle. Same stamp + `.png`
  *  suffix so the markdown link is trivially derivable. */
 function screenshotKey(now: Date): string {
-  return s3MonadKey('debugBundle', `${bundleStamp(now)}.png`);
+  return s3ElanousKey('debugBundle', `${bundleStamp(now)}.png`);
 }
 
 function bundleStamp(now: Date): string {
@@ -199,7 +199,7 @@ export async function buildAndUploadBundle(
   // `aws s3 cp` works on local paths and the temp lifetime is bounded by
   // this scope. Screenshot uploads first so the bundle markdown can
   // embed its public URL.
-  const tmpDir = mkdtempSync(join(tmpdir(), 'monad-debug-bundle-'));
+  const tmpDir = mkdtempSync(join(tmpdir(), 'elanous-debug-bundle-'));
   const key = bundleKey(now);
   let screenshotUrl: string | null = null;
   try {

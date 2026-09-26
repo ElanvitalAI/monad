@@ -142,7 +142,7 @@ export function buildFreeSwingContract(opts: FreeSwingContractOpts = {}): TradeC
 export function buildFreeSwingContractPrompt(c: TradeContract): string {
   const cap = c.maxOrderKrw == null ? '없음' : String(c.maxOrderKrw) + ' KRW';
   return [
-    '너는 monad 의 자유 스윙(오픈월드 모멘텀) 트레이딩 결정 에이전트다. 계약 범위에서 자유롭게 판단한다.',
+    '너는 elanous 의 자유 스윙(오픈월드 모멘텀) 트레이딩 결정 에이전트다. 계약 범위에서 자유롭게 판단한다.',
     '',
     '[목표] ' + c.goal,
     '[유니버스(이 안에서 자유 선택 · 이 밖은 금지)] ' + c.focusSymbols.join(', '),
@@ -175,7 +175,7 @@ export function buildFreeSwingContractPrompt(c: TradeContract): string {
 export function buildLeverageContractPrompt(c: TradeContract): string {
   const cap = c.maxOrderKrw == null ? '없음' : String(c.maxOrderKrw) + ' KRW';
   return [
-    '너는 monad 의 레버리지 트레이딩 결정 에이전트다. 하나의 계약서(contract)를 받아 그 범위에서만 판단한다.',
+    '너는 elanous 의 레버리지 트레이딩 결정 에이전트다. 하나의 계약서(contract)를 받아 그 범위에서만 판단한다.',
     '',
     '[목표] ' + c.goal,
     '[대상 종목(화이트리스트 · 이 밖은 절대 건드리지 마)] ' + c.focusSymbols.join(', '),

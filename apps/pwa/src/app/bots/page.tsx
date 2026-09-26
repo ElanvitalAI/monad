@@ -1,7 +1,7 @@
 import { BotsPageContent } from '@/components/bots/BotsPanel';
 
 export const metadata = {
-  title: 'Bots · monad',
+  title: 'Bots · elanous',
 };
 
 export default function BotsPage() {

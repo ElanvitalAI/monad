@@ -1,10 +1,10 @@
 // ── B (H1) (Phase 4 Bundle 2) — ACP native shell API generalization ──
 //
 // HANDOFF Phase 4 / ROADMAP §7 B: "ACP native shell API". A1 (Phase 2)
-// 의 monad-specific JSON-RPC method 들을 일반화 — 모든 ACP server 가 따를
+// 의 elanous-specific JSON-RPC method 들을 일반화 — 모든 ACP server 가 따를
 // 수 있는 표준 surface 와 typed interfaces 정의.
 //
-// A1 = monad/shell.{spawn,write,read,close} (monad-namespaced)
+// A1 = elanous/shell.{spawn,write,read,close} (elanous-namespaced)
 // B  = acp/shell.* (ACP standard 후보)
 //
 // 차이:
@@ -14,8 +14,8 @@
 
 import type { ShellMode, ShellRegistry, ShellRequest } from '../shell-runner/types.js';
 import type {
-  MonadShellRpcDeps,
-  MonadShellRpcHandlers,
+  ElanousShellRpcDeps,
+  ElanousShellRpcHandlers,
   ShellSpawnRequest,
   ShellSpawnResponse,
   ShellWriteRequest,
@@ -24,8 +24,8 @@ import type {
   ShellReadResponse,
   ShellCloseRequest,
   ShellCloseResponse,
-} from './monad-shell-rpc.js';
-import { createMonadShellRpcHandlers } from './monad-shell-rpc.js';
+} from './elanous-shell-rpc.js';
+import { createElanousShellRpcHandlers } from './elanous-shell-rpc.js';
 
 // ── Standard JSON-RPC method namespace ──────────────────────────────
 
@@ -47,7 +47,7 @@ export interface ShellCapabilityDescriptor {
   readonly supportedActions: readonly AcpShellAction[];
   /** Which shell modes can spawn. */
   readonly supportedModes: readonly ShellMode[];
-  /** Server identifier (예: 'monad', 'cursor-acp', 'zed-acp'). */
+  /** Server identifier (예: 'elanous', 'cursor-acp', 'zed-acp'). */
   readonly serverName: string;
   /** Server version. */
   readonly serverVersion?: string;
@@ -92,12 +92,12 @@ export type {
 
 // ── Native handlers (B = A1 + list + capabilities) ──────────────────
 
-export interface AcpNativeShellHandlers extends MonadShellRpcHandlers {
+export interface AcpNativeShellHandlers extends ElanousShellRpcHandlers {
   list(req: ShellListRequest): Promise<ShellListResponse>;
   capabilities(): Promise<ShellCapabilityDescriptor>;
 }
 
-export interface AcpNativeShellDeps extends MonadShellRpcDeps {
+export interface AcpNativeShellDeps extends ElanousShellRpcDeps {
   /** Server descriptor. */
   serverName: string;
   serverVersion?: string;
@@ -111,7 +111,7 @@ const DEFAULT_MAX_READ = 16 * 1024;
 export function createAcpNativeShellHandlers(
   deps: AcpNativeShellDeps,
 ): AcpNativeShellHandlers {
-  const a1Handlers = createMonadShellRpcHandlers(deps);
+  const a1Handlers = createElanousShellRpcHandlers(deps);
 
   const capabilities = async (): Promise<ShellCapabilityDescriptor> => ({
     supportedActions: deps.defaultCapabilities?.supportedActions ?? ['spawn', 'read', 'list', 'capabilities'],

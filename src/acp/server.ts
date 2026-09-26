@@ -1,7 +1,7 @@
-// MT5 — ACP server mode for monad.
+// MT5 — ACP server mode for elanous.
 //
-// Lets a parent program (another monad, claude-code, zed, …) drive
-// this monad instance over stdio-bound ACP JSON-RPC. The parent acts
+// Lets a parent program (another elanous, claude-code, zed, …) drive
+// this elanous instance over stdio-bound ACP JSON-RPC. The parent acts
 // as an ACP client; this module wires an AgentSideConnection onto
 // process.stdin/stdout and implements the minimum Agent methods.
 //
@@ -21,10 +21,10 @@
 //   - File system methods — parent should fall back to its own.
 //
 // Usage (parent side):
-//   spawn('monad', ['--acp-server'])
+//   spawn('elanous', ['--acp-server'])
 //   → stdio becomes the bidirectional JSON-RPC stream.
 //
-// Related: src/acp/client.ts (monad-as-client path — pre-MT5 work).
+// Related: src/acp/client.ts (elanous-as-client path — pre-MT5 work).
 
 import { AgentSideConnection, ndJsonStream, RequestError } from '@agentclientprotocol/sdk';
 import type {
@@ -48,34 +48,34 @@ import {
 } from './dual-role-manager.js';
 import {
   buildAgentDeclaration,
-  MONAD_PROTOCOL_VERSION,
+  ELANOUS_PROTOCOL_VERSION,
   parseClientCapabilities,
 } from './capabilities.js';
 import {
-  formatMonadFeedbackEnvelope,
-  formatMonadUiEnvelope,
-  formatMonadTermEnvelope,
-  MONAD_UI_DISABLED,
-  MONAD_TERM_DISABLED,
-  type MonadUiClientCapabilities,
-  type MonadUiShowModalPayload,
-  type MonadUiShowToastPayload,
-  type MonadUiUpdateStatusPillPayload,
-  type MonadUiUsagePayload,
-  type MonadTermClientCapabilities,
-  type MonadTermMethod,
-  type MonadTermPayload,
-} from './monad-extensions.js';
+  formatElanousFeedbackEnvelope,
+  formatElanousUiEnvelope,
+  formatElanousTermEnvelope,
+  ELANOUS_UI_DISABLED,
+  ELANOUS_TERM_DISABLED,
+  type ElanousUiClientCapabilities,
+  type ElanousUiShowModalPayload,
+  type ElanousUiShowToastPayload,
+  type ElanousUiUpdateStatusPillPayload,
+  type ElanousUiUsagePayload,
+  type ElanousTermClientCapabilities,
+  type ElanousTermMethod,
+  type ElanousTermPayload,
+} from './elanous-extensions.js';
 import { createMissionTurnEmitter } from './mission-turn-emit.js';
 import { enqueuePendingUserInput } from '../session/pending-input.js';
 import {
-  MONAD_ASK_CANCEL_METHOD,
-  MONAD_ASK_DISABLED,
-  MONAD_ASK_REQUEST_METHOD,
+  ELANOUS_ASK_CANCEL_METHOD,
+  ELANOUS_ASK_DISABLED,
+  ELANOUS_ASK_REQUEST_METHOD,
   coerceAskResult,
-  type MonadAskCancelPayload,
-  type MonadAskClientCapabilities,
-  type MonadAskRequestPayload,
+  type ElanousAskCancelPayload,
+  type ElanousAskClientCapabilities,
+  type ElanousAskRequestPayload,
 } from './ask-extensions.js';
 import type { AskUserQuestionResult } from '../ask-user-question/types.js';
 import type { FeedbackEnvelope } from '../feedback/envelope.js';
@@ -111,7 +111,7 @@ import {
 import type { ModelTier } from '../model-tier/types.js';
 import { setSessionTierOverride } from '../model-tier/session-override.js';
 
-export const ACP_SERVER_SELF_PERFORMER = 'monad:self';
+export const ACP_SERVER_SELF_PERFORMER = 'elanous:self';
 
 type AcpSessionModelCatalog = Readonly<Partial<Record<LlmTierProvider, Readonly<Partial<Record<ModelTier, LlmTierSpec>>>>>>;
 
@@ -184,7 +184,7 @@ export function buildAcpSessionCodexArgs(
 }
 
 /** Minimum per-session record the server keeps in memory. The real
- *  monad engine adds working dir, conversation history, tool registry
+ *  elanous engine adds working dir, conversation history, tool registry
  *  scoping, etc. — this stub is just enough to route cancel() back
  *  to the right turn. Exported so F1 test helpers can construct
  *  server-state fixtures without re-declaring the shape. */
@@ -234,7 +234,7 @@ export interface AcpServerOptions {
    *  echo / runTurn. Return `'consume'` to indicate the hook has
    *  fully handled the prompt (stopReason will be 'end_turn' with
    *  no additional chunk). Use this to treat specially-formatted
-   *  prompts as cross-monad notification payloads. */
+   *  prompts as cross-elanous notification payloads. */
   onPromptReceived?: (ctx: AcpTurnContext) => Promise<'consume' | void> | ('consume' | void);
   /** M2.3 — does the server-wide ledger know this session id? When
    *  provided, the `loadSession` handler validates incoming requests
@@ -347,9 +347,9 @@ export interface AcpServerOptions {
     flush: (sessionId: string) => Promise<void> | void;
   };
   /** W8-A 후속 #1 (2026-05-14) — NEXUS-wide conversation aggregator.
-   *  monad-builtin ACP turn (user prompt + agent response) 을 본 store 에
-   *  push 하면 agent-cli `historyMode='rebuild'` 호출 시 monad-builtin
-   *  turn 도 prefix 에 포함 → 진정한 양방향 통합 (monad-builtin ↔ agent-
+   *  elanous-builtin ACP turn (user prompt + agent response) 을 본 store 에
+   *  push 하면 agent-cli `historyMode='rebuild'` 호출 시 elanous-builtin
+   *  turn 도 prefix 에 포함 → 진정한 양방향 통합 (elanous-builtin ↔ agent-
    *  cli). nexus/index.ts boot 시 globalConversationAggregator wire. test
    *  / standalone 환경은 undefined → push skip (legacy behavior). */
   conversationAggregator?: {
@@ -362,7 +362,7 @@ export interface AcpServerOptions {
   };
   /** PLAN-codex-app-server-hermes-parity §5 Phase H2·2 (2026-05-16) —
    *  daemon-side bridge to `fetchCodexPlugins(activeCodexClient)`. The
-   *  `monad/codex/plugins` handler calls this to project the codex
+   *  `elanous/codex/plugins` handler calls this to project the codex
    *  `plugin/list` RPC into the BackendPickerChip-ready shape. When
    *  omitted (no codex client wired), the handler returns an empty
    *  list — UI shows no sub-chips, never errors. NEXUS boot supplies
@@ -394,31 +394,31 @@ export interface AcpServerHandle {
   /** RC — broadcast a Block commit. Same wrapping as `notify`, kind
    *  fixed to `block`, body carries a capped preview of the text. */
   block(sessionId: string, blk: AcpRelayBlock): Promise<void>;
-  /** UI-Core arc Phase U2 — `monad/ui/showModal` envelope. No-op when
+  /** UI-Core arc Phase U2 — `elanous/ui/showModal` envelope. No-op when
    *  the bound client hasn't advertised `showModal` in its
-   *  ClientCapabilities._meta.monad.ui blob. Caller supplies the id;
+   *  ClientCapabilities._meta.elanous.ui blob. Caller supplies the id;
    *  action-click responses come back in-band via the next prompt's
-   *  user-text (parsed via `parseMonadUiResponse`). */
-  showModal(sessionId: string, payload: MonadUiShowModalPayload): Promise<boolean>;
+   *  user-text (parsed via `parseElanousUiResponse`). */
+  showModal(sessionId: string, payload: ElanousUiShowModalPayload): Promise<boolean>;
   /** UI-Core arc Phase U2 — fire-and-forget toast notification. */
-  showToast(sessionId: string, payload: MonadUiShowToastPayload): Promise<boolean>;
+  showToast(sessionId: string, payload: ElanousUiShowToastPayload): Promise<boolean>;
   /** UI-Core arc Phase U2 — update a status-bar pill (empty text clears). */
-  updateStatusPill(sessionId: string, payload: MonadUiUpdateStatusPillPayload): Promise<boolean>;
+  updateStatusPill(sessionId: string, payload: ElanousUiUpdateStatusPillPayload): Promise<boolean>;
   /** UI-Core arc Phase U2 — read the bound client's negotiated UI
-   *  capabilities. Falls back to `MONAD_UI_DISABLED` before initialize. */
-  uiCapabilities(): MonadUiClientCapabilities;
+   *  capabilities. Falls back to `ELANOUS_UI_DISABLED` before initialize. */
+  uiCapabilities(): ElanousUiClientCapabilities;
   /** WT-S-1 — broadcast a PreviewTerminal raw stdout chunk to every
    *  peer attached to this session. Read-only direction (daemon →
-   *  browser). Wire: `agent_thought_chunk` + `monad/term/terminalOutput`
+   *  browser). Wire: `agent_thought_chunk` + `elanous/term/terminalOutput`
    *  envelope (sibling to `pushUiEnvelope`). Caps-gated by
-   *  `MonadTermClientCapabilities.terminalOutput`. */
+   *  `ElanousTermClientCapabilities.terminalOutput`. */
   terminalOutput(sessionId: string, terminalId: string, data: string): Promise<boolean>;
   /** WT-S-1 — broadcast PTY exit. Same wire as `terminalOutput`. */
   terminalExit(sessionId: string, terminalId: string, code: number): Promise<boolean>;
   /** WT-M-1 — emit a `terminalInputActivity` envelope so peers attached
    *  to the same terminal can show "another device typed" indicators.
    *  No-op on clients that didn't opt in via
-   *  `MonadTermClientCapabilities.terminalInputActivity`.
+   *  `ElanousTermClientCapabilities.terminalInputActivity`.
    *  - `peerId` — short opaque tag from the originating PWA (or empty
    *    when the input came from a legacy client). Receivers compare
    *    to their own tag to skip self-echo.
@@ -432,13 +432,13 @@ export interface AcpServerHandle {
     bytes: number,
   ): Promise<boolean>;
   /** WT-S-1 — read the bound client's negotiated term capabilities.
-   *  Falls back to `MONAD_TERM_DISABLED` before initialize. */
-  termCapabilities(): MonadTermClientCapabilities;
+   *  Falls back to `ELANOUS_TERM_DISABLED` before initialize. */
+  termCapabilities(): ElanousTermClientCapabilities;
   /** AskUserQuestion cross-surface (2026-05-13) — push a structured
    *  question to the first cap-able peer attached to `sessionId` and
-   *  await the user's answer. Wire: `connection.extMethod('monad/ask/
+   *  await the user's answer. Wire: `connection.extMethod('elanous/ask/
    *  request', payload)`. Returns `null` immediately when no peer has
-   *  advertised `_meta.monad.ask.askUserQuestion=true` — caller (the
+   *  advertised `_meta.elanous.ask.askUserQuestion=true` — caller (the
    *  AskUserQuestionResolver in `ask-question-bridge.ts`) falls through
    *  to TUI deps / resolver / 구조화 error.
    *
@@ -446,20 +446,20 @@ export interface AcpServerHandle {
    *  연결 → 어디서든 답할 수 있어야 함) 는 후속 PR. */
   pushAskRequest(
     sessionId: string,
-    payload: MonadAskRequestPayload,
+    payload: ElanousAskRequestPayload,
   ): Promise<AskUserQuestionResult | null>;
   /** AskUserQuestion cancel propagation. Server-side turn abort 시 fan
-   *  out `monad/ask/cancel` notification to every peer attached to
+   *  out `elanous/ask/cancel` notification to every peer attached to
    *  `sessionId` (best-effort · errors swallowed). Receivers dismiss
    *  any open sheet matching the id. Server-side pending Promise reject
    *  는 bridge (별 path) 가 책임. */
   pushAskCancel(
     sessionId: string,
-    payload: MonadAskCancelPayload,
+    payload: ElanousAskCancelPayload,
   ): Promise<void>;
   /** Read the bound client's negotiated ask capabilities. Falls back to
-   *  `MONAD_ASK_DISABLED` before initialize. */
-  askCapabilities(): MonadAskClientCapabilities;
+   *  `ELANOUS_ASK_DISABLED` before initialize. */
+  askCapabilities(): ElanousAskClientCapabilities;
   /** Active session ids the server currently knows about. Lets the
    *  host skip work when nothing is bound. */
   sessionIds(): string[];
@@ -522,7 +522,7 @@ export function summarizeToolArgs(args: unknown, maxKeys = 6, maxChars = 200): R
 }
 
 /** 툴 결과 판정(순수) — **거부/실패가 성공처럼 보이지 않게** 한다.
- *  monad 툴은 throw 대신 `{ error: string }` 을 돌려주는 경로가 있다(예: nest-cap 거부). */
+ *  elanous 툴은 throw 대신 `{ error: string }` 을 돌려주는 경로가 있다(예: nest-cap 거부). */
 export function describeToolResult(result: unknown): { ok: boolean; error?: string; shape: string } {
   if (result && typeof result === 'object' && !Array.isArray(result)) {
     const err = (result as Record<string, unknown>).error;
@@ -560,10 +560,10 @@ const PROMPT_RELAY_RE = /^\[notify:([a-z]+)\]\s*(.*)$/;
 
 /** Mint the unique suffix of an ACP session id: 6 chars of base36.
  *
- *  Was a process-local counter (`monad-session-1`, `-2`, …) that reset to
+ *  Was a process-local counter (`elanous-session-1`, `-2`, …) that reset to
  *  1 on every daemon restart, so unrelated conversations collided on one
  *  id — the 2026-07-09 chat and a 2026-07-23 chat both landed on
- *  `monad-session-1`, and the on-disk mirror (`~/.monad/sessions/<id>.jsonl`)
+ *  `elanous-session-1`, and the on-disk mirror (`~/.elanous/sessions/<id>.jsonl`)
  *  would have merged them into a single file.
  *
  *  base36 (not hex) keeps the id 6 chars — short enough to retype for
@@ -598,12 +598,12 @@ export function acpServerRegisterSession(
   cwd: string,
   codexArgs: readonly string[] = [],
 ): AcpServerSession {
-  let id = `monad-session-${nextSessionToken()}`;
+  let id = `elanous-session-${nextSessionToken()}`;
   // Random tokens collide only rarely, but a live collision would splice
   // two conversations onto one stream — re-mint instead of clobbering.
   const REMINT_BUDGET = 8;
   for (let i = 0; i < REMINT_BUDGET && sessions.has(id); i += 1) {
-    id = `monad-session-${nextSessionToken()}`;
+    id = `elanous-session-${nextSessionToken()}`;
   }
   if (sessions.has(id)) {
     // Re-mint budget exhausted — only reachable with a degenerate token
@@ -700,7 +700,7 @@ export function acpServerDisposeSessions(
 }
 
 /** RC — parse a relayed prompt. Inverse of formatRelayNotify — lets
- *  the receiving monad's onPromptReceived hook pull a structured
+ *  the receiving elanous's onPromptReceived hook pull a structured
  *  event out of the incoming text. Returns null when the prompt
  *  doesn't match the relay shape. */
 export function parseRelayNotify(text: string): (AcpRelayEvent & { body?: string; meta?: Record<string, unknown> }) | null {
@@ -757,7 +757,7 @@ export interface AcpTurnContext {
    *  a session/update notification. */
   push: (chunk: string) => Promise<void>;
   /** CV-3 DM-1 — Push a text chunk with `_meta` annotation (e.g.
-   *  `{ monad: { modelId: 'panel-1', provider: 'claude' } }`).
+   *  `{ elanous: { modelId: 'panel-1', provider: 'claude' } }`).
    *  daemon multi-LLM dispatch routes N parallel streams through this
    *  method so the client can demultiplex per `modelId`. The wrap is
    *  identical to `push` except the `_meta` field is forwarded as the
@@ -781,7 +781,7 @@ export interface AcpTurnContext {
    *  emit a verbatim ACP SessionUpdate with optional `_meta` annotation.
    *  multi-llm-bridge uses this to forward an agent CLI sub-process's
    *  `tool_call` / `tool_call_update` events through the daemon's
-   *  session/update channel with `_meta.monad = { modelId, provider }`
+   *  session/update channel with `_meta.elanous = { modelId, provider }`
    *  so the Showroom client demultiplexes per panel. Generic enough
    *  to forward any SessionUpdate variant without growing the typed
    *  push API surface. */
@@ -790,10 +790,10 @@ export interface AcpTurnContext {
     _meta?: Readonly<Record<string, unknown>>,
   ) => Promise<void>;
   /** P2-bridge-ext — emit per-request LLM usage telemetry via the
-   *  `monad/ui/usage` envelope (ACP's `UsageUpdate` is session-level
+   *  `elanous/ui/usage` envelope (ACP's `UsageUpdate` is session-level
    *  context-window info, not a per-turn token breakdown — so this
    *  piggybacks on `agent_thought_chunk`). No-op when the client
-   *  didn't advertise `monad.ui.usage` in its ClientCapabilities. */
+   *  didn't advertise `elanous.ui.usage` in its ClientCapabilities. */
   pushUsage: (usage: {
     provider?: 'anthropic' | 'openai';
     inputTokens?: number;
@@ -847,7 +847,7 @@ let activeAcpBroadcaster:
   | ((sessionId: string, update: unknown) => Promise<{ delivered: number }>)
   | null = null;
 
-// P0b(DESIGN-cross-surface-autonomy-membrane §10) — ACP ask pusher(monad/ask → iPhone/PWA 시트)를 모듈-레벨로
+// P0b(DESIGN-cross-surface-autonomy-membrane §10) — ACP ask pusher(elanous/ask → iPhone/PWA 시트)를 모듈-레벨로
 // 노출. daemon-runtime 이 코어 데몬 턴(SelfImplement dispatch)에 SurfaceUx confirm/question 채널을 주입할 때
 // createAcp*Channel(sessionId, getActiveAcpAskPusher()) 로 사용. sessionPeers 로 라우팅(연결 무관)·fail-soft(null=drop).
 let activeAcpAskPusher: AcpServerHandle['pushAskRequest'] | null = null;
@@ -863,7 +863,7 @@ export function getActiveAcpBroadcaster():
 
 /** PLAN-ios-rich-dev-feedback-hydrate · M1-S (2026-05-13) — typed
  *  adapter on top of `activeAcpBroadcaster` that fans out a
- *  `FeedbackEnvelope` as a `monad/feedback/emit` envelope packaged
+ *  `FeedbackEnvelope` as a `elanous/feedback/emit` envelope packaged
  *  inside an `agent_thought_chunk` sessionUpdate.
  *
  *  Why `agent_thought_chunk` instead of a native `sessionUpdate:
@@ -874,7 +874,7 @@ export function getActiveAcpBroadcaster():
  *
  *  Single source of truth for the wire format — iOS `FeedbackEnvelope`
  *  Codable mirror and PWA accumulator (when it switches off SSE) both
- *  parse the same shape via `parseMonadFeedbackEnvelope`. Returns
+ *  parse the same shape via `parseElanousFeedbackEnvelope`. Returns
  *  `null` when no daemon is up; PWA SSE wire (`write('feedback', env)`
  *  in meta-api.ts) is unaffected and remains the legacy carrier. */
 export function getActiveAcpFeedbackBroadcaster():
@@ -883,7 +883,7 @@ export function getActiveAcpFeedbackBroadcaster():
   const inner = activeAcpBroadcaster;
   if (!inner) return null;
   return (sessionId, env) => {
-    const text = formatMonadFeedbackEnvelope({ method: 'emit', payload: env });
+    const text = formatElanousFeedbackEnvelope({ method: 'emit', payload: env });
     return inner(sessionId, {
       sessionUpdate: 'agent_thought_chunk',
       content: { type: 'text', text },
@@ -924,11 +924,11 @@ export function getActiveAcpAllSessionsFeedbackBroadcaster():
  *  legacy peers never see the envelope text bleed. Returns null when no
  *  daemon is up. */
 let activeAcpAllSessionsTermFrameBroadcaster:
-  | ((payload: MonadTermPayload<'terminalFrame'>) => Promise<{ delivered: number; fannedTo: number }>)
+  | ((payload: ElanousTermPayload<'terminalFrame'>) => Promise<{ delivered: number; fannedTo: number }>)
   | null = null;
 
 export function getActiveAcpAllSessionsTermFrameBroadcaster():
-  | ((payload: MonadTermPayload<'terminalFrame'>) => Promise<{ delivered: number; fannedTo: number }>)
+  | ((payload: ElanousTermPayload<'terminalFrame'>) => Promise<{ delivered: number; fannedTo: number }>)
   | null {
   return activeAcpAllSessionsTermFrameBroadcaster;
 }
@@ -968,26 +968,26 @@ interface AcpServerContext {
 
 /** BACKLOG #2.5 — per-connection broadcast entry. `sessionUpdate`
  *  closes over the bound AgentSideConnection, `getUiCaps` reads the
- *  connection's negotiated `MonadUiClientCapabilities` (lazy so
+ *  connection's negotiated `ElanousUiClientCapabilities` (lazy so
  *  caps captured at initialize time stay fresh). */
 interface SessionPeer {
   sessionUpdate: (u: unknown) => Promise<void>;
-  getUiCaps: () => MonadUiClientCapabilities;
+  getUiCaps: () => ElanousUiClientCapabilities;
   /** WT-S-1 — same lazy pattern as `getUiCaps`. Returns the peer's
-   *  negotiated `MonadTermClientCapabilities`. */
-  getTermCaps: () => MonadTermClientCapabilities;
+   *  negotiated `ElanousTermClientCapabilities`. */
+  getTermCaps: () => ElanousTermClientCapabilities;
   /** AskUserQuestion cross-surface (2026-05-13) — same lazy pattern as
-   *  `getUiCaps`. Returns the peer's negotiated `monad/ask` caps. */
-  getAskCaps: () => MonadAskClientCapabilities;
+   *  `getUiCaps`. Returns the peer's negotiated `elanous/ask` caps. */
+  getAskCaps: () => ElanousAskClientCapabilities;
   /** SDK-level `AgentSideConnection.extMethod` accessor — server →
-   *  client JSON-RPC request for monad-extension methods. Returns the
+   *  client JSON-RPC request for elanous-extension methods. Returns the
    *  client's response. Used by `pushAskRequest` to await user answer.
    *  Resolves to `null`-ish if connection closed before response. */
   extMethod: (method: string, params: unknown) => Promise<unknown>;
   /** SDK-level `AgentSideConnection.extNotification` accessor — one-way
    *  notification (no response). Used by `pushAskCancel`. */
   extNotification: (method: string, params: unknown) => Promise<void>;
-  /** V2 (2026-05-18) — logical peer identifier from V1 ACP `_meta.monad
+  /** V2 (2026-05-18) — logical peer identifier from V1 ACP `_meta.elanous
    *  .origin.peerId` envelope. null until the connection's first prompt
    *  arrives (legacy peers that never set origin stay null = treated as
    *  distinct peers). `broadcast` uses this to dedupe multiple physical
@@ -1008,7 +1008,7 @@ function wireAcpConnection(
 ): AgentSideConnection {
   const { sessions, sessionPeers, dualRole, opts } = ctx;
   // 2026-05-13 (M2 of AskUserQuestion cross-surface) — bound connection
-  // widened to expose `extMethod` + `extNotification` (SDK's monad
+  // widened to expose `extMethod` + `extNotification` (SDK's elanous
   // extension escape hatch). pushAskRequest / pushAskCancel route through
   // these instead of the legacy envelope-in-text path.
   let boundConnection:
@@ -1018,9 +1018,9 @@ function wireAcpConnection(
         extNotification: (method: string, params: unknown) => Promise<void>;
       }
     | null = null;
-  let clientUiCaps: MonadUiClientCapabilities = { ...MONAD_UI_DISABLED };
-  let clientTermCaps: MonadTermClientCapabilities = { ...MONAD_TERM_DISABLED };
-  let clientAskCaps: MonadAskClientCapabilities = { ...MONAD_ASK_DISABLED };
+  let clientUiCaps: ElanousUiClientCapabilities = { ...ELANOUS_UI_DISABLED };
+  let clientTermCaps: ElanousTermClientCapabilities = { ...ELANOUS_TERM_DISABLED };
+  let clientAskCaps: ElanousAskClientCapabilities = { ...ELANOUS_ASK_DISABLED };
 
   // BACKLOG #2.5 — this connection's peer entry + the set of session
   // ids it has registered. Cleanup on `.closed` walks `ownedSessionIds`
@@ -1084,8 +1084,8 @@ function wireAcpConnection(
     sessionId: string,
     update: unknown,
     opts2?: {
-      uiGate?: keyof MonadUiClientCapabilities;
-      termGate?: keyof MonadTermClientCapabilities;
+      uiGate?: keyof ElanousUiClientCapabilities;
+      termGate?: keyof ElanousTermClientCapabilities;
     },
   ): Promise<{ delivered: number }> => {
     const peers = sessionPeers.get(sessionId);
@@ -1140,10 +1140,10 @@ function wireAcpConnection(
   const pushUiEnvelope = async (
     sessionId: string,
     method: 'showModal' | 'showToast' | 'updateStatusPill',
-    payload: MonadUiShowModalPayload | MonadUiShowToastPayload | MonadUiUpdateStatusPillPayload,
+    payload: ElanousUiShowModalPayload | ElanousUiShowToastPayload | ElanousUiUpdateStatusPillPayload,
   ): Promise<boolean> => {
     if (!sessions.has(sessionId)) return false;
-    const text = formatMonadUiEnvelope({ method, payload } as Parameters<typeof formatMonadUiEnvelope>[0]);
+    const text = formatElanousUiEnvelope({ method, payload } as Parameters<typeof formatElanousUiEnvelope>[0]);
     const { delivered } = await broadcast(
       sessionId,
       {
@@ -1156,17 +1156,17 @@ function wireAcpConnection(
   };
 
   /** WT-S-1 — sibling helper to `pushUiEnvelope`. Wraps a
-   *  `monad/term/<method>` envelope in an `agent_thought_chunk` text
+   *  `elanous/term/<method>` envelope in an `agent_thought_chunk` text
    *  payload and broadcasts to every term-capable peer attached to the
    *  session. Caps gate prevents envelope text from leaking to peers
    *  that can't render it. */
-  const pushTermEnvelope = async <M extends MonadTermMethod>(
+  const pushTermEnvelope = async <M extends ElanousTermMethod>(
     sessionId: string,
     method: M,
-    payload: MonadTermPayload<M>,
+    payload: ElanousTermPayload<M>,
   ): Promise<boolean> => {
     if (!sessions.has(sessionId)) return false;
-    const text = formatMonadTermEnvelope({ method, payload } as Parameters<typeof formatMonadTermEnvelope>[0]);
+    const text = formatElanousTermEnvelope({ method, payload } as Parameters<typeof formatElanousTermEnvelope>[0]);
     if (debug.enabled) {
       debug.log('webterm.acp', 'envelope.out', {
         sessionId,
@@ -1262,7 +1262,7 @@ function wireAcpConnection(
       }
       let raw: unknown;
       try {
-        raw = await target.extMethod(MONAD_ASK_REQUEST_METHOD, payload);
+        raw = await target.extMethod(ELANOUS_ASK_REQUEST_METHOD, payload);
       } catch (err) {
         if (debug.enabled) {
           debug.log('acp.ask.push', 'request.error', {
@@ -1294,7 +1294,7 @@ function wireAcpConnection(
       for (const p of peers) {
         if (!p.getAskCaps().askUserQuestion) continue;
         tasks.push(
-          p.extNotification(MONAD_ASK_CANCEL_METHOD, payload).catch((err) => {
+          p.extNotification(ELANOUS_ASK_CANCEL_METHOD, payload).catch((err) => {
             if (debug.enabled) {
               debug.log('acp.ask.cancel', 'fanout.error', {
                 sessionId,
@@ -1341,10 +1341,10 @@ function wireAcpConnection(
       // change vs. the previous hardcoded shape; single source of truth.
       //
       // UI-Core arc Phase U2 — parse client's ClientCapabilities +
-      // _meta.monad.ui extension blob so the handle gates push calls
+      // _meta.elanous.ui extension blob so the handle gates push calls
       // correctly. Fall back to DISABLED when the client is
       // extension-unaware.
-      const parsed = parseClientCapabilities(req.clientCapabilities, MONAD_PROTOCOL_VERSION);
+      const parsed = parseClientCapabilities(req.clientCapabilities, ELANOUS_PROTOCOL_VERSION);
       clientUiCaps = parsed.ui;
       clientTermCaps = parsed.term;
       clientAskCaps = parsed.ask;
@@ -1354,7 +1354,7 @@ function wireAcpConnection(
         clientVersion: req.clientInfo?.version ?? 'absent',
       });
       return {
-        protocolVersion: MONAD_PROTOCOL_VERSION,
+        protocolVersion: ELANOUS_PROTOCOL_VERSION,
         agentInfo: { name: ctx.agentName, version: ctx.agentVersion },
         agentCapabilities: opts.agentBrand !== undefined && opts.agentModel !== undefined
           ? buildAgentDeclaration({ brand: opts.agentBrand, model: opts.agentModel })
@@ -1395,7 +1395,7 @@ function wireAcpConnection(
       registerPeer(record.id);
       // ⭐ ACP 세션 계측(2026-07-27) — 이 구간은 종전 **완전 암흑**이었다. 운영 6시간 전수에서
       //   `acp` 계열은 `acp.termframe`(프레임 팬아웃)뿐이라 "agent → L2 데몬" 왕복이 통째로
-      //   관측 불가였다(제1원칙 위반). 실측 사건: `monad attach --message` 가 4분간 무출력으로
+      //   관측 불가였다(제1원칙 위반). 실측 사건: `elanous attach --message` 가 4분간 무출력으로
       //   끝났는데 **연결됐는지·프롬프트가 처리됐는지조차 판정할 수 없었다.**
       //   ⚠️ `if (debug.enabled)` 로 감싸지 않는다 — 그건 핫패스 게이트라 운영에서 꺼져 있고,
       //      기존 `acp.peer-id` 가 그 뒤에 있어 안 보였다. 세션 lifecycle 은 저빈도라 항상 남긴다.
@@ -1468,7 +1468,7 @@ function wireAcpConnection(
       // prompt to every peer attached to req.sessionId so non-active
       // surfaces (e.g. a Telegram chat watching a PWA-driven session)
       // see what the user just asked. ACP standard doesn't define
-      // user_message_chunk; this is a monad extension. Peers that
+      // user_message_chunk; this is a elanous extension. Peers that
       // don't recognize the kind drop it harmlessly (their interceptor
       // switch falls through). When the prompt is empty (image-only
       // turn etc.), skip the broadcast.
@@ -1477,7 +1477,7 @@ function wireAcpConnection(
       // multiple connection 중 1개에만 send. iOS app 안 multiple ACP socket
       // 시 agent_message_chunk N번 yield → interleave 화면 echo 차단.
       const originRaw = (((req as PromptRequest & { _meta?: Record<string, unknown> })
-        ._meta?.monad) as Record<string, unknown> | undefined)?.origin;
+        ._meta?.elanous) as Record<string, unknown> | undefined)?.origin;
       if (originRaw
           && typeof (originRaw as Record<string, unknown>).peerId === 'string'
           && (originRaw as Record<string, unknown>).peerId !== '') {
@@ -1496,7 +1496,7 @@ function wireAcpConnection(
 
       if (userText.length > 0) {
         // V1 (2026-05-18) — multi-peer first-class substrate. 발신
-        // peer 의 origin (`_meta.monad.origin`) 을 broadcast envelope 에
+        // peer 의 origin (`_meta.elanous.origin`) 을 broadcast envelope 에
         // transparent propagate → 수신 peer 가 self-broadcast filter
         // 가능 (자기 originator 면 mirror skip). multi-surface 동기화
         // (PWA + iOS + Telegram) 는 그대로 작동.
@@ -1505,7 +1505,7 @@ function wireAcpConnection(
           content: { type: 'text', text: userText },
         };
         if (originRaw) {
-          userUpdate._meta = { monad: { origin: originRaw } };
+          userUpdate._meta = { elanous: { origin: originRaw } };
         }
         await broadcast(req.sessionId, userUpdate);
       }
@@ -1561,8 +1561,8 @@ function wireAcpConnection(
         }
       };
       // CV-3 DM-1 — `pushWithMeta` mirrors `push` but forwards a
-      // monad-namespaced `_meta` blob on the ACP session/update.
-      // The chat REST surface (PR #1908) reads update._meta.monad.modelId
+      // elanous-namespaced `_meta` blob on the ACP session/update.
+      // The chat REST surface (PR #1908) reads update._meta.elanous.modelId
       // (when present) to demultiplex parallel streams in Showroom UI.
       // TTS bridge is intentionally NOT wired here — multi-LLM N stream
       // would interleave the per-model audio; the chat REST single-LLM
@@ -1727,7 +1727,7 @@ function wireAcpConnection(
         }
       };
       const pushUsage: AcpTurnContext['pushUsage'] = async (usage) => {
-        const payload: MonadUiUsagePayload = {
+        const payload: ElanousUiUsagePayload = {
           id: `turn:${Date.now()}`,
           ...(usage.provider !== undefined ? { provider: usage.provider } : {}),
           ...(usage.inputTokens !== undefined ? { inputTokens: usage.inputTokens } : {}),
@@ -1739,9 +1739,9 @@ function wireAcpConnection(
             ? { cacheCreationInputTokens: usage.cacheCreationInputTokens }
             : {}),
         };
-        const text = formatMonadUiEnvelope({ method: 'usage', payload });
+        const text = formatElanousUiEnvelope({ method: 'usage', payload });
         // BACKLOG #2.5 — broadcast with per-peer caps gate so peers
-        // that didn't advertise `monad.ui.usage` simply get skipped.
+        // that didn't advertise `elanous.ui.usage` simply get skipped.
         // Replaces the single-conn `if (!clientUiCaps.usage) return`.
         await broadcast(
           req.sessionId,
@@ -1755,7 +1755,7 @@ function wireAcpConnection(
 
       // U20 (§7.4 follow-up cascade · 2026-05-18) — daemon-side LLM
       // context capture. iOS popup chat (chatAutoCaptureOnSend ON) 가
-      // `_meta.monad.terminalContext: { terminalId, mode, region? }`
+      // `_meta.elanous.terminalContext: { terminalId, mode, region? }`
       // 를 보내면 daemon 이 그 PTY 의 context 를 자체 inject.
       // round-trip 절약 + PNG 가 client ↔ daemon 안 흐름 (bandwidth).
       // 기존 user-facing capture path (terminal/screenshot ACP method ·
@@ -1768,9 +1768,9 @@ function wireAcpConnection(
       //             (사용자 insight · 토큰 절약 priority).
       // iOS 측 default 는 현재 'image' hardcoded (회귀 0) · U22·b 에서
       // 'auto' 으로 swap 예정.
-      const monadMeta = (((req as PromptRequest & { _meta?: Record<string, unknown> })
-        ._meta?.monad) as Record<string, unknown> | undefined);
-      const termCtx = (monadMeta?.terminalContext as {
+      const elanousMeta = (((req as PromptRequest & { _meta?: Record<string, unknown> })
+        ._meta?.elanous) as Record<string, unknown> | undefined);
+      const termCtx = (elanousMeta?.terminalContext as {
         terminalId?: unknown;
         mode?: unknown;
         region?: { rowStart?: unknown; rowEnd?: unknown };
@@ -1815,7 +1815,7 @@ function wireAcpConnection(
             ? { rowStart: termCtx.region.rowStart, rowEnd: termCtx.region.rowEnd }
             : undefined;
           // U22·c (2026-05-18) — caller-side LLM hint pass-through.
-          // iOS popupChatBackend 의 brand 가 nil 이면 (monadBuiltin) hint
+          // iOS popupChatBackend 의 brand 가 nil 이면 (elanousBuiltin) hint
           // 자체 미생성 → daemon 이 alt-screen 휴리스틱만으로 mode 결정.
           const llmHint = (termCtx.llmHint
               && typeof termCtx.llmHint.brand === 'string'
@@ -1942,7 +1942,7 @@ function wireAcpConnection(
         } else {
           // Echo stub — demonstrates round-trip. Real engine lands in MT5b.
           if (!s.aborted) {
-            await push(`monad-acp echo: ${userText}`);
+            await push(`elanous-acp echo: ${userText}`);
           }
         }
         // FU-2 webterm wire — flush any buffered partial sentence before
@@ -1955,10 +1955,10 @@ function wireAcpConnection(
         await missionEmitter.end(s.aborted ? 'error' : 'done');
         // C5d — ACP 청크 producer 턴 마감(라이브핸들 finalize·청크 parity 기록). fail-soft.
         if (c5dProducer) { try { await c5dProducer.final(aggregatorAgentText); } catch { /* fail-soft */ } }
-        // W8-A 후속 #1 — NEXUS-wide conversation aggregator push (monad-
+        // W8-A 후속 #1 — NEXUS-wide conversation aggregator push (elanous-
         // builtin path). agent-cli 의 turn-end 와 같은 store · 같은 chatId
         // (= req.sessionId). agent-cli `historyMode='rebuild'` 호출 시 본
-        // monad-builtin turn 도 prefix 에 포함 → 진정한 양방향. error
+        // elanous-builtin turn 도 prefix 에 포함 → 진정한 양방향. error
         // status / aborted 시 push skip (partial agent text 가치 낮음).
         if (!s.aborted) {
           try {
@@ -1975,7 +1975,7 @@ function wireAcpConnection(
             if (userText.length > 0) {
               opts.conversationAggregator.append(req.sessionId, {
                 role: 'user',
-                backendId: 'monad-builtin',
+                backendId: 'elanous-builtin',
                 text: userText,
                 at: turnStartedAt,
               });
@@ -1983,7 +1983,7 @@ function wireAcpConnection(
             if (aggregatorAgentText.length > 0) {
               opts.conversationAggregator.append(req.sessionId, {
                 role: 'agent',
-                backendId: 'monad-builtin',
+                backendId: 'elanous-builtin',
                 text: aggregatorAgentText,
                 at: Date.now(),
               });
@@ -2041,7 +2041,7 @@ function wireAcpConnection(
           terminalId: (params as { terminalId?: unknown })?.terminalId,
         });
       }
-      if (method === 'monad/session/steer') {
+      if (method === 'elanous/session/steer') {
         const p = params as { sessionId?: unknown; text?: unknown };
         const sessionId = typeof p.sessionId === 'string' ? p.sessionId : '';
         const text = typeof p.text === 'string' ? p.text : '';
@@ -2113,7 +2113,7 @@ function wireAcpConnection(
           // ★ P0b-2 (실행 substrate 통합·기본 off) — 이 진짜 PWA/iOS 라이브 셸을 공유 registry 버스로
           //   흡수(정체성·크로스서피스 goto·3-스택 통합). 라이브 렌더(yazi/마우스/커서/alt-screen) 검증이
           //   기기 왕복을 요하므로 per-run env 로만 켠다(대표가 별도 부팅해 수습). 미설정=기존 dup-fd(무회귀).
-          useRegistry: process.env.MONAD_PREVIEW_TERMINAL_REGISTRY === '1',
+          useRegistry: process.env.ELANOUS_PREVIEW_TERMINAL_REGISTRY === '1',
           ...(typeof p.shell === 'string' && p.shell.length > 0 ? { shell: p.shell } : {}),
           onExit: () => {
             void import('../web-terminal/preview-tap-registry.js')
@@ -2675,7 +2675,7 @@ function wireAcpConnection(
           frameIndex: result.frameIndex,
         };
       }
-      if (method === 'monad/debug-logs/ingest') {
+      if (method === 'elanous/debug-logs/ingest') {
         // ⛔⭐⭐⭐⭐ **관측의 «대체 통로» — HTTP 가 굶어도 여기로 온다**(19차 `[F]` · 2026-08-22).
         //
         // 📏 실측: SSE 가 브라우저의 HTTP/1.1 커넥션 한도(6)를 먹으면
@@ -2689,7 +2689,7 @@ function wireAcpConnection(
         // ⚠️ 이것은 «폴백»이다 — 정상 경로는 여전히 HTTP 다(배치 효율·백프레셔가 거기 있다).
         const p = params as { records?: unknown };
         if (!Array.isArray(p.records)) {
-          throw new Error('monad/debug-logs/ingest: records[] required');
+          throw new Error('elanous/debug-logs/ingest: records[] required');
         }
         const { ingestDebugLogRecords } = await import('../nexus/api/debug-logs.js');
         // ⛔ 적재는 REST 와 «같은 함수»를 쓴다 — 갈리면 한쪽만 redaction 을 타게 된다.
@@ -2704,7 +2704,7 @@ function wireAcpConnection(
         }
         return { ok: true, accepted: out.accepted, rejected: out.rejected };
       }
-      if (method === 'monad/fs/list') {
+      if (method === 'elanous/fs/list') {
         // Phase 2·A (RESEARCH-ios-companion-tui-parity §1.1·A · 2026-05-17) +
         // PLAN-ipad-server-side-file-browser §4.1 (F1·1, F1·6 · 2026-05-16) —
         // working directory entries for the `@` picker AND the iPad server-
@@ -2717,7 +2717,7 @@ function wireAcpConnection(
           sessionId?: unknown; cwd?: unknown; query?: unknown; limit?: unknown; root?: unknown;
         };
         if (typeof p.sessionId !== 'string') {
-          throw new Error('monad/fs/list: sessionId required');
+          throw new Error('elanous/fs/list: sessionId required');
         }
         const fs = await import('node:fs/promises');
         const root: FsRootKind = p.root === 'obsidian' ? 'obsidian' : 'cwd';
@@ -2759,7 +2759,7 @@ function wireAcpConnection(
           return { cwd, root, entries: [], error: String(e instanceof Error ? e.message : e) };
         }
       }
-      if (method === 'monad/fs/read') {
+      if (method === 'elanous/fs/read') {
         // PLAN-ipad-server-side-file-browser §4.2 (F1·2 · 2026-05-16) —
         // single-file read for the iPad preview pane. detectMime branches the
         // payload between text (`content` utf8) and binary (`bytes` base64).
@@ -2770,10 +2770,10 @@ function wireAcpConnection(
           sessionId?: unknown; path?: unknown; root?: unknown; maxBytes?: unknown;
         };
         if (typeof p.sessionId !== 'string') {
-          throw new Error('monad/fs/read: sessionId required');
+          throw new Error('elanous/fs/read: sessionId required');
         }
         if (typeof p.path !== 'string' || p.path.length === 0) {
-          throw new Error('monad/fs/read: path required');
+          throw new Error('elanous/fs/read: path required');
         }
         const fs = await import('node:fs/promises');
         const root: FsRootKind = p.root === 'obsidian' ? 'obsidian' : 'cwd';
@@ -2825,17 +2825,17 @@ function wireAcpConnection(
           return { path: resolved, root, error: String(e instanceof Error ? e.message : e) };
         }
       }
-      if (method === 'monad/fs/stat') {
+      if (method === 'elanous/fs/stat') {
         // PLAN-ipad-server-side-file-browser §4 (F1·3 · 2026-05-16) —
         // pre-flight check used by the iPad preview before issuing fs/read.
         // Returns mime + size + mtime so the UI can decide whether to skip the
         // read (huge binary), show a confirmation, or render directly.
         const p = params as { sessionId?: unknown; path?: unknown; root?: unknown };
         if (typeof p.sessionId !== 'string') {
-          throw new Error('monad/fs/stat: sessionId required');
+          throw new Error('elanous/fs/stat: sessionId required');
         }
         if (typeof p.path !== 'string' || p.path.length === 0) {
-          throw new Error('monad/fs/stat: path required');
+          throw new Error('elanous/fs/stat: path required');
         }
         const fs = await import('node:fs/promises');
         const root: FsRootKind = p.root === 'obsidian' ? 'obsidian' : 'cwd';
@@ -2863,7 +2863,7 @@ function wireAcpConnection(
           return { path: resolved, root, error: String(e instanceof Error ? e.message : e) };
         }
       }
-      if (method === 'monad/obsidian/info') {
+      if (method === 'elanous/obsidian/info') {
         // PLAN-ipad-server-side-file-browser §4 (F1·4 · 2026-05-16) — vault
         // discovery for the iPad root chip. Reports the resolution `source`
         // alongside `available` so the UI can hint where the path came from
@@ -2871,7 +2871,7 @@ function wireAcpConnection(
         // post-wipe restoration silently swapped the active vault.
         const p = params as { sessionId?: unknown };
         if (typeof p.sessionId !== 'string') {
-          throw new Error('monad/obsidian/info: sessionId required');
+          throw new Error('elanous/obsidian/info: sessionId required');
         }
         const r = resolveObsidianRoot();
         if (r.available) {
@@ -2879,7 +2879,7 @@ function wireAcpConnection(
         }
         return { available: false, source: r.source };
       }
-      if (method === 'monad/obsidian/search') {
+      if (method === 'elanous/obsidian/search') {
         // PLAN-ipad-server-side-file-browser §6 F5·1 (FU·5a · 2026-05-16) —
         // ripgrep-backed full-text search over the Obsidian vault. iPad
         // browser surfaces a search bar that fans out matches with file
@@ -2890,7 +2890,7 @@ function wireAcpConnection(
           sessionId?: unknown; query?: unknown; limit?: unknown;
         };
         if (typeof p.sessionId !== 'string') {
-          throw new Error('monad/obsidian/search: sessionId required');
+          throw new Error('elanous/obsidian/search: sessionId required');
         }
         const queryRaw = typeof p.query === 'string' ? p.query.trim() : '';
         if (queryRaw.length === 0) {
@@ -2911,7 +2911,7 @@ function wireAcpConnection(
         if (!res.ok) return { matches: [], error: `rg-exit-${res.code}: ${res.stderr.slice(0, 200)}` };
         return { matches: res.matches.map((m) => ({ path: m.path, snippet: m.text, lineNumber: m.line })) };
       }
-      if (method === 'monad/obsidian/backlinks') {
+      if (method === 'elanous/obsidian/backlinks') {
         // PLAN-ipad-notes-obsidian-typora §5 Phase O3·1 (2026-05-17) —
         // vault reverse index. Given a target note basename (without
         // `.md`), returns every other `.md` file that wikilinks it
@@ -2920,7 +2920,7 @@ function wireAcpConnection(
         // rename refactor surfaces only true dangling pointers.
         const p = params as { sessionId?: unknown; target?: unknown; limit?: unknown };
         if (typeof p.sessionId !== 'string') {
-          throw new Error('monad/obsidian/backlinks: sessionId required');
+          throw new Error('elanous/obsidian/backlinks: sessionId required');
         }
         const target = typeof p.target === 'string' ? p.target.trim() : '';
         if (target.length === 0) {
@@ -2937,16 +2937,16 @@ function wireAcpConnection(
         const result = await findBacklinks({ vaultRoot: obsidian.root, target, limit });
         return { ...result };
       }
-      if (method === 'monad/obsidian/templates') {
+      if (method === 'elanous/obsidian/templates') {
         // PLAN-ipad-notes-obsidian-typora §5 Phase O3·3 (2026-05-17) —
         // `<vault>/Templates/*.md` enumeration. Read-only: caller reads
-        // the chosen template via `monad/fs/read` then writes a new
+        // the chosen template via `elanous/fs/read` then writes a new
         // note via `notes-save`. Empty `templates` array means no
         // Templates folder exists yet — iPad UI shows "Create a
         // Templates folder…" hint.
         const p = params as { sessionId?: unknown };
         if (typeof p.sessionId !== 'string') {
-          throw new Error('monad/obsidian/templates: sessionId required');
+          throw new Error('elanous/obsidian/templates: sessionId required');
         }
         const obsidian = resolveObsidianRoot();
         if (!obsidian.available) {
@@ -2956,7 +2956,7 @@ function wireAcpConnection(
         const result = await findTemplates({ vaultRoot: obsidian.root });
         return { ...result };
       }
-      if (method === 'monad/obsidian/notes') {
+      if (method === 'elanous/obsidian/notes') {
         // PLAN-ipad-notes-obsidian-typora §5 Phase O2 — PR Q (2026-05-17) —
         // Recursive vault `.md` enumeration for the iPad CodeMirror
         // editor's `[[wikilink]]` autocomplete. Hidden + `.obsidian` +
@@ -2967,7 +2967,7 @@ function wireAcpConnection(
           sessionId?: unknown; query?: unknown; limit?: unknown;
         };
         if (typeof p.sessionId !== 'string') {
-          throw new Error('monad/obsidian/notes: sessionId required');
+          throw new Error('elanous/obsidian/notes: sessionId required');
         }
         const obsidian = resolveObsidianRoot();
         if (!obsidian.available) {
@@ -2979,27 +2979,27 @@ function wireAcpConnection(
         const result = await findNotes({ vaultRoot: obsidian.root, query, limit });
         return { ...result };
       }
-      if (method === 'monad/sync/status') {
+      if (method === 'elanous/sync/status') {
         // PLAN-ipad-notes-obsidian-typora §9 Phase O.S (2026-05-17) —
         // obsidian-headless wrapper status snapshot. Pure poll — no
         // side effects. iPad Notes header pill calls this on view
         // appear + sync trigger completion.
         const p = params as { sessionId?: unknown };
         if (typeof p.sessionId !== 'string') {
-          throw new Error('monad/sync/status: sessionId required');
+          throw new Error('elanous/sync/status: sessionId required');
         }
         const { getSharedObsidianHeadless } = await import('../nexus/sync/obsidian-headless.js');
         const status = await getSharedObsidianHeadless().getStatus();
         return { ...status };
       }
-      if (method === 'monad/sync/trigger') {
+      if (method === 'elanous/sync/trigger') {
         // PLAN-ipad-notes-obsidian-typora §9 Phase O.S (2026-05-17) —
         // one-shot push. Optional `vaultPath` overrides whatever the
         // wrapper was last configured with; absent → use the cached
         // path or the resolved obsidian vault root as a default.
         const p = params as { sessionId?: unknown; vaultPath?: unknown };
         if (typeof p.sessionId !== 'string') {
-          throw new Error('monad/sync/trigger: sessionId required');
+          throw new Error('elanous/sync/trigger: sessionId required');
         }
         const explicit = typeof p.vaultPath === 'string' && p.vaultPath.length > 0
           ? p.vaultPath
@@ -3010,14 +3010,14 @@ function wireAcpConnection(
         const status = await runner.syncOnce(fallback);
         return { ...status };
       }
-      if (method === 'monad/sync/configure') {
+      if (method === 'elanous/sync/configure') {
         // PLAN-ipad-notes-obsidian-typora §9 Phase O.S (2026-05-17) —
         // persist a vault path on the wrapper so subsequent triggers
         // don't need to pass it. Currently in-process state only;
-        // a future polish stores it under ~/.monad/sync.json.
+        // a future polish stores it under ~/.elanous/sync.json.
         const p = params as { sessionId?: unknown; vaultPath?: unknown };
         if (typeof p.sessionId !== 'string') {
-          throw new Error('monad/sync/configure: sessionId required');
+          throw new Error('elanous/sync/configure: sessionId required');
         }
         const vaultPath = typeof p.vaultPath === 'string' ? p.vaultPath.trim() : '';
         if (vaultPath.length === 0) {
@@ -3027,7 +3027,7 @@ function wireAcpConnection(
         getSharedObsidianHeadless().configure(vaultPath);
         return { ok: true, vaultPath };
       }
-      if (method === 'monad/obsidian/template-expand') {
+      if (method === 'elanous/obsidian/template-expand') {
         // PLAN-ipad-notes-obsidian-typora §5 Phase O4·7 (2026-05-17) —
         // Templates smart fill. Reads a vault template file, expands
         // Obsidian-style `{{date}}` / `{{date:FORMAT}}` / `{{time}}` /
@@ -3039,10 +3039,10 @@ function wireAcpConnection(
           sessionId?: unknown; templatePath?: unknown; title?: unknown;
         };
         if (typeof p.sessionId !== 'string') {
-          throw new Error('monad/obsidian/template-expand: sessionId required');
+          throw new Error('elanous/obsidian/template-expand: sessionId required');
         }
         if (typeof p.templatePath !== 'string' || p.templatePath.trim().length === 0) {
-          throw new Error('monad/obsidian/template-expand: templatePath required');
+          throw new Error('elanous/obsidian/template-expand: templatePath required');
         }
         const obsidian = resolveObsidianRoot();
         if (!obsidian.available) {
@@ -3057,7 +3057,7 @@ function wireAcpConnection(
         });
         return { ...result };
       }
-      if (method === 'monad/obsidian/cleanup-orphans') {
+      if (method === 'elanous/obsidian/cleanup-orphans') {
         // PLAN-ipad-notes-obsidian-typora R1·c (2026-05-17) —
         // orphan-note enumeration. Returns vault `.md` files that look
         // like abandoned auto-save drafts (old enough · empty body
@@ -3068,7 +3068,7 @@ function wireAcpConnection(
           minBodyBytes?: unknown; limit?: unknown;
         };
         if (typeof p.sessionId !== 'string') {
-          throw new Error('monad/obsidian/cleanup-orphans: sessionId required');
+          throw new Error('elanous/obsidian/cleanup-orphans: sessionId required');
         }
         const obsidian = resolveObsidianRoot();
         if (!obsidian.available) {
@@ -3086,7 +3086,7 @@ function wireAcpConnection(
         });
         return { ...result };
       }
-      if (method === 'monad/obsidian/poll-changes') {
+      if (method === 'elanous/obsidian/poll-changes') {
         // PLAN-ipad-notes-obsidian-typora §5 Phase O4·6 (2026-05-17) —
         // external-change indicator. Walks the vault `.md` files and
         // counts those with mtime > sinceMs. iPad Notes polls every
@@ -3098,7 +3098,7 @@ function wireAcpConnection(
           samplePathCap?: unknown; walkCap?: unknown;
         };
         if (typeof p.sessionId !== 'string') {
-          throw new Error('monad/obsidian/poll-changes: sessionId required');
+          throw new Error('elanous/obsidian/poll-changes: sessionId required');
         }
         const obsidian = resolveObsidianRoot();
         if (!obsidian.available) {
@@ -3116,7 +3116,7 @@ function wireAcpConnection(
         });
         return { ...result };
       }
-      if (method === 'monad/obsidian/graph') {
+      if (method === 'elanous/obsidian/graph') {
         // PLAN-ipad-notes-obsidian-typora §5 Phase O4·1 (2026-05-17) —
         // vault graph (nodes + edges) for the iPad Notes Graph view.
         // Returns every `.md` file as a node and every resolved
@@ -3130,7 +3130,7 @@ function wireAcpConnection(
           focus?: unknown; hops?: unknown;
         };
         if (typeof p.sessionId !== 'string') {
-          throw new Error('monad/obsidian/graph: sessionId required');
+          throw new Error('elanous/obsidian/graph: sessionId required');
         }
         const obsidian = resolveObsidianRoot();
         if (!obsidian.available) {
@@ -3149,7 +3149,7 @@ function wireAcpConnection(
         });
         return { ...result };
       }
-      if (method === 'monad/obsidian/tags') {
+      if (method === 'elanous/obsidian/tags') {
         // PLAN-ipad-notes-obsidian-typora §5 Phase O3·2 (2026-05-17) —
         // vault-wide tag aggregate. Returns each unique inline `#tag`
         // with occurrence count + sample referencing paths. Inline tags
@@ -3157,7 +3157,7 @@ function wireAcpConnection(
         // O3·6 (frontmatter editor needs a real YAML parser anyway).
         const p = params as { sessionId?: unknown; limit?: unknown };
         if (typeof p.sessionId !== 'string') {
-          throw new Error('monad/obsidian/tags: sessionId required');
+          throw new Error('elanous/obsidian/tags: sessionId required');
         }
         const limit = typeof p.limit === 'number' && p.limit > 0 && p.limit <= 1000
           ? Math.floor(p.limit)
@@ -3170,7 +3170,7 @@ function wireAcpConnection(
         const result = await findTags({ vaultRoot: obsidian.root, limit });
         return { ...result };
       }
-      if (method === 'monad/codex/plugins') {
+      if (method === 'elanous/codex/plugins') {
         // PLAN-codex-app-server-hermes-parity §5 Phase H2·2 (2026-05-16) —
         // project the active codex client's `plugin/list` response into
         // the BackendPickerChip-ready shape. Cached at the fetcher layer
@@ -3178,7 +3178,7 @@ function wireAcpConnection(
         // is wired or the RPC throws — UI hides sub-chips, never errors.
         const p = params as { sessionId?: unknown };
         if (typeof p.sessionId !== 'string') {
-          throw new Error('monad/codex/plugins: sessionId required');
+          throw new Error('elanous/codex/plugins: sessionId required');
         }
         if (!opts.fetchCodexPlugins) {
           return { plugins: [] };
@@ -3190,22 +3190,22 @@ function wireAcpConnection(
           return { plugins: [], error: String(e instanceof Error ? e.message : e) };
         }
       }
-      if (method === 'monad/skills/list') {
+      if (method === 'elanous/skills/list') {
         // Phase 2·B (RESEARCH-ios-companion-tui-parity §1.1·B · 2026-05-17) —
-        // skills under `~/.monad/skills/*` for the `$` picker on iOS/PWA chat
+        // skills under `~/.elanous/skills/*` for the `$` picker on iOS/PWA chat
         // surfaces. TUI src/chat/index.ts 의 SkillCandidate 의 daemon-side
         // enumeration. 각 skill = directory name (parsed YAML metadata optional ·
         // 본 cut 은 name + description first-line only).
         const p = params as { sessionId?: unknown; query?: unknown };
         if (typeof p.sessionId !== 'string') {
-          throw new Error('monad/skills/list: sessionId required');
+          throw new Error('elanous/skills/list: sessionId required');
         }
-        // ★ G9 P5b — 공유 런타임(dispatchMonadSkillsList) 재사용: router/executor 와 동일한 user-config
-        //   skill dir(defaultSkillDirs·P5a)로 통일 + 중복 제거. 종전 하드코딩 ~/.monad/skills 는 빈 디렉토리라
+        // ★ G9 P5b — 공유 런타임(dispatchElanousSkillsList) 재사용: router/executor 와 동일한 user-config
+        //   skill dir(defaultSkillDirs·P5a)로 통일 + 중복 제거. 종전 하드코딩 ~/.elanous/skills 는 빈 디렉토리라
         //   iOS/PWA `$` 피커가 빈 목록을 보이던 버그(실 skill 은 ~/.claude/skills).
-        const { dispatchMonadSkillsList } = await import('../tool-runtime/monad-skills-list-runtime.js');
+        const { dispatchElanousSkillsList } = await import('../tool-runtime/elanous-skills-list-runtime.js');
         const query = typeof p.query === 'string' ? p.query : '';
-        const res = await dispatchMonadSkillsList({ query });
+        const res = await dispatchElanousSkillsList({ query });
         return { skillsDir: res.skillsDir, skillsDirs: res.skillsDirs, entries: res.entries, ...(res.error ? { error: res.error } : {}) };
       }
       if (method === 'terminal/peers/count') {
@@ -3360,7 +3360,7 @@ export async function runAcpServer(opts: AcpServerOptions = {}): Promise<void> {
       if (peers.size === 0) continue;
       fannedTo += 1;
       const env = { ...envProto, sessionId } as FeedbackEnvelope;
-      const text = formatMonadFeedbackEnvelope({ method: 'emit', payload: env });
+      const text = formatElanousFeedbackEnvelope({ method: 'emit', payload: env });
       for (const peer of peers) {
         try {
           await peer.sessionUpdate({
@@ -3384,7 +3384,7 @@ export async function runAcpServer(opts: AcpServerOptions = {}): Promise<void> {
   activeAcpAllSessionsTermFrameBroadcaster = async (payload) => {
     let fannedTo = 0;
     let delivered = 0;
-    const text = formatMonadTermEnvelope({ method: 'terminalFrame', payload });
+    const text = formatElanousTermEnvelope({ method: 'terminalFrame', payload });
     for (const [sessionId, peers] of sessionPeers) {
       if (peers.size === 0) continue;
       let any = false;

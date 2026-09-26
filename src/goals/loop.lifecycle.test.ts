@@ -11,32 +11,32 @@ import { publishGoalLifecycle, shouldContinueAfterAssistantTurn } from './loop.j
 import { resumeGoalFromUserFollowUp, runGoalLoopHook } from './chat-loop-bridge.js';
 import type { JudgeResult } from './judge.js';
 
-const originalRunId = process.env.MONAD_RUN_ID;
-const originalPtyId = process.env.MONAD_PTY_ID;
-const originalNestDepth = process.env.MONAD_NEST_DEPTH;
-const originalStateDir = process.env.MONAD_STATE_DIR;
+const originalRunId = process.env.ELANOUS_RUN_ID;
+const originalPtyId = process.env.ELANOUS_PTY_ID;
+const originalNestDepth = process.env.ELANOUS_NEST_DEPTH;
+const originalStateDir = process.env.ELANOUS_STATE_DIR;
 let isolatedStateDir = '';
 
 function setLifecycleIdentity(runId = 'run-goals-lifecycle', ptyId = 'pty-goals-lifecycle', depth = '2'): void {
-  process.env.MONAD_RUN_ID = runId;
-  process.env.MONAD_PTY_ID = ptyId;
-  process.env.MONAD_NEST_DEPTH = depth;
+  process.env.ELANOUS_RUN_ID = runId;
+  process.env.ELANOUS_PTY_ID = ptyId;
+  process.env.ELANOUS_NEST_DEPTH = depth;
 }
 
 function restoreEnvironment(): void {
-  if (originalRunId === undefined) delete process.env.MONAD_RUN_ID;
-  else process.env.MONAD_RUN_ID = originalRunId;
-  if (originalPtyId === undefined) delete process.env.MONAD_PTY_ID;
-  else process.env.MONAD_PTY_ID = originalPtyId;
-  if (originalNestDepth === undefined) delete process.env.MONAD_NEST_DEPTH;
-  else process.env.MONAD_NEST_DEPTH = originalNestDepth;
-  if (originalStateDir === undefined) delete process.env.MONAD_STATE_DIR;
-  else process.env.MONAD_STATE_DIR = originalStateDir;
+  if (originalRunId === undefined) delete process.env.ELANOUS_RUN_ID;
+  else process.env.ELANOUS_RUN_ID = originalRunId;
+  if (originalPtyId === undefined) delete process.env.ELANOUS_PTY_ID;
+  else process.env.ELANOUS_PTY_ID = originalPtyId;
+  if (originalNestDepth === undefined) delete process.env.ELANOUS_NEST_DEPTH;
+  else process.env.ELANOUS_NEST_DEPTH = originalNestDepth;
+  if (originalStateDir === undefined) delete process.env.ELANOUS_STATE_DIR;
+  else process.env.ELANOUS_STATE_DIR = originalStateDir;
 }
 
 beforeEach(() => {
-  isolatedStateDir = mkdtempSync(join(tmpdir(), 'monad-goals-lifecycle-'));
-  process.env.MONAD_STATE_DIR = isolatedStateDir;
+  isolatedStateDir = mkdtempSync(join(tmpdir(), 'elanous-goals-lifecycle-'));
+  process.env.ELANOUS_STATE_DIR = isolatedStateDir;
 });
 
 const continueJudge = async (): Promise<JudgeResult> => ({
@@ -83,7 +83,7 @@ describe('goal status transition ledger', () => {
   });
 
   test('preserves the status transition when its injected ledger writer fails', () => {
-    process.env.MONAD_RUN_ID = 'run-goal-transition-writer-failure';
+    process.env.ELANOUS_RUN_ID = 'run-goal-transition-writer-failure';
     const log = spyOn(debug, 'log').mockImplementation(() => {});
     _setGoalTransitionLedgerWriterForTesting(() => { throw new Error('ledger unavailable'); });
     try {
@@ -103,7 +103,7 @@ describe('goal status transition ledger', () => {
   });
 
   test('records the goal-self fallback when no enclosing run identity exists', () => {
-    delete process.env.MONAD_RUN_ID;
+    delete process.env.ELANOUS_RUN_ID;
     const started = startGoal({ objective: 'use goal self as the fallback run identity' });
     if (!started.ok) throw new Error('expected goal start');
     expect(setStatus('paused', 'missing enclosing run identity')).toMatchObject({ ok: true });
@@ -392,8 +392,8 @@ describe('GoalLoop lifecycle publication', () => {
   });
 
   test('skips records and observes missing identity', async () => {
-    delete process.env.MONAD_RUN_ID;
-    delete process.env.MONAD_PTY_ID;
+    delete process.env.ELANOUS_RUN_ID;
+    delete process.env.ELANOUS_PTY_ID;
     const log = spyOn(debug, 'log').mockImplementation(() => {});
     const bus = new ChannelBus();
     startGoal({ objective: 'x', budget: { maxTurns: 1 } });
@@ -460,7 +460,7 @@ describe('automatic follow-up routing', () => {
     if (!started.ok) throw new Error('expected goal start');
     expect(setStatus('paused', 'user-preempt')).toMatchObject({ ok: true });
 
-    _resetForTesting(); // simulate process restart without deleting MONAD_STATE_DIR
+    _resetForTesting(); // simulate process restart without deleting ELANOUS_STATE_DIR
     expect(hydrateGoalFromSnapshot()).toMatchObject({ id: started.goal.id, status: 'paused' });
     expect(resumeGoalFromUserFollowUp('거시 경제는 bco로 시작하는 디렉토리입니다.').kind).toBe('continue');
     expect(getCurrentGoal()).toMatchObject({ id: started.goal.id, status: 'active' });
@@ -485,8 +485,8 @@ describe('goal lifecycle — a successful publish must be observable', () => {
   afterEach(() => { _resetForTesting(); });
 
   test('emits lifecycle.published so a federated query can tell publish from no-op', () => {
-    process.env.MONAD_RUN_ID = 'run-obs';
-    process.env.MONAD_PTY_ID = 'self_0badc0de';
+    process.env.ELANOUS_RUN_ID = 'run-obs';
+    process.env.ELANOUS_PTY_ID = 'self_0badc0de';
     const log = spyOn(debug, 'log').mockImplementation(() => {});
     try {
       const bus = new ChannelBus();
@@ -507,8 +507,8 @@ describe('goal lifecycle — a successful publish must be observable', () => {
       expect(snapshotRunLifecycle(bus, 'run-obs')).toHaveLength(2);
     } finally {
       log.mockRestore();
-      delete process.env.MONAD_RUN_ID;
-      delete process.env.MONAD_PTY_ID;
+      delete process.env.ELANOUS_RUN_ID;
+      delete process.env.ELANOUS_PTY_ID;
     }
   });
 });

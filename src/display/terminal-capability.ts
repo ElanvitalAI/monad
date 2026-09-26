@@ -36,10 +36,10 @@ const DEFAULT_CELL_PX = { w: 8, h: 16 };
 let cached: TerminalImageCapability | undefined;
 
 /** Manual override (test/debug):
- *  - `MONAD_IMAGE=kitty|iterm2|sixel|chafa|none` — force a protocol
+ *  - `ELANOUS_IMAGE=kitty|iterm2|sixel|chafa|none` — force a protocol
  *  - unset → auto-detect via env + chafa probe */
 function readOverride(): ImageProtocol | null {
-  const v = process.env.MONAD_IMAGE;
+  const v = process.env.ELANOUS_IMAGE;
   if (!v) return null;
   switch (v.toLowerCase()) {
     case 'kitty':           return 'kitty';
@@ -63,7 +63,7 @@ function chafaAvailable(): boolean {
   // Only probe a handful of common paths — full PATH walk is overkill
   // for a UI capability probe. Homebrew (Apple Silicon + Intel) +
   // /usr/bin + /usr/local/bin covers ~all desktops; users with custom
-  // installs can set MONAD_IMAGE=chafa explicitly.
+  // installs can set ELANOUS_IMAGE=chafa explicitly.
   const candidates = [
     '/opt/homebrew/bin/chafa',
     '/usr/local/bin/chafa',
@@ -91,7 +91,7 @@ export function detectImageCapability(): TerminalImageCapability {
   // path is more widely supported than KGP on these terminals. We
   // explicitly route them before the KGP env heuristic so e.g.
   // WezTerm with KGP-on builds still picks IIP (the default mode).
-  // Users who prefer KGP on these terminals can set MONAD_IMAGE=kitty.
+  // Users who prefer KGP on these terminals can set ELANOUS_IMAGE=kitty.
   const program = process.env.TERM_PROGRAM ?? '';
   if (program === 'iTerm.app') { cached = makeCapability('iterm2'); return cached; }
   if (program === 'WezTerm')   { cached = makeCapability('iterm2'); return cached; }

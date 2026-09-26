@@ -83,14 +83,14 @@ export function reportScheduleLoadFailure(reason: string, notify: (message: stri
 }
 
 const RUN_VIA_TONE: Record<string, string> = {
-  monad: 'bg-emerald-500/15 text-emerald-300 ring-emerald-500/30',
+  elanous: 'bg-emerald-500/15 text-emerald-300 ring-emerald-500/30',
   daemon: 'bg-sky-500/15 text-sky-200 ring-sky-500/30',
   crontab: 'bg-muted text-muted-foreground ring-border',
 };
 
 const DOMAIN_LABEL: Record<string, string> = {
   finance: 'Finance',
-  monad: 'monad (core)',
+  elanous: 'elanous (core)',
   general: 'General',
 };
 
@@ -237,7 +237,7 @@ function JobRow({
             {job.runVia === 'crontab' && (
               <ActionBtn label="adopt" onClick={() => onAction('adopt', job)} disabled={acting} />
             )}
-            {job.runVia === 'monad' && (
+            {job.runVia === 'elanous' && (
               <ActionBtn label="release" onClick={() => onAction('release', job)} disabled={acting} />
             )}
             <ActionBtn
@@ -370,8 +370,8 @@ export function SchedulerPanel() {
       list.push(job);
       byDomain.set(key, list);
     }
-    // finance -> monad -> general -> 기타 순, 각 그룹 내 last_run 최신 우선.
-    const order = ['finance', 'monad', 'general'];
+    // finance -> elanous -> general -> 기타 순, 각 그룹 내 last_run 최신 우선.
+    const order = ['finance', 'elanous', 'general'];
     return [...byDomain.entries()]
       .sort((a, b) => {
         const ia = order.indexOf(a[0]);
@@ -402,7 +402,7 @@ export function SchedulerPanel() {
                 <div className="text-sm font-semibold">{data.total}</div>
               </div>
               <div className="rounded-lg border border-border bg-card px-3 py-2 text-xs">
-                <div className="text-muted-foreground">adopted (monad)</div>
+                <div className="text-muted-foreground">adopted (elanous)</div>
                 <div className="text-sm font-semibold">{data.adopted}</div>
               </div>
             </>

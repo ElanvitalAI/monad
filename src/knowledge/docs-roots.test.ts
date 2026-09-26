@@ -19,7 +19,7 @@ function fixture(): { root: string; toolDocs: string; workDocs: string; moduleUr
   mkdirSync(toolSrc, { recursive: true });
   mkdirSync(toolDocs, { recursive: true });
   mkdirSync(workDocs, { recursive: true });
-  writeFileSync(join(toolHome, 'package.json'), JSON.stringify({ name: 'monadagent' }));
+  writeFileSync(join(toolHome, 'package.json'), JSON.stringify({ name: 'elanous' }));
   writeFileSync(join(work, '.git'), '');
   return {
     root,
@@ -52,14 +52,14 @@ describe('resolveKnowledgeDocsRoots', () => {
       toolDocsSegments: ['..', 'docs'],
       cwd: join(fx.root, 'empty-cwd'),
       exists: (p) => p === fx.toolDocs,
-      readPackageName: () => 'monadagent',
+      readPackageName: () => 'elanous',
       gitRoot: () => undefined,
     });
     expect(got.roots).toEqual([{ path: fx.toolDocs, source: 'tool-checkout' }]);
     expect(got.source).toBe('tool-checkout');
   });
 
-  test('package.json 이름이 monadagent 가 아니면 도구 체크아웃을 넣지 않는다', () => {
+  test('package.json 이름이 elanous 가 아니면 도구 체크아웃을 넣지 않는다', () => {
     const fx = fixture();
     const got = resolveKnowledgeDocsRoots({
       toolModuleUrl: fx.scriptUrl,
@@ -93,7 +93,7 @@ describe('resolveKnowledgeDocsRoots', () => {
       toolDocsSegments: ['..', 'docs'],
       cwd: join(fx.root, 'work'),
       exists: () => true,
-      readPackageName: () => 'monadagent',
+      readPackageName: () => 'elanous',
       gitRoot: () => join(fx.root, 'tool'),
     });
     expect(got.roots).toEqual([{ path: fx.toolDocs, source: 'tool-checkout' }]);

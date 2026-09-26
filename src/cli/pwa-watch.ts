@@ -1,4 +1,4 @@
-// PWA file watcher — runtime auto-rebuild for `monad nexus run` static
+// PWA file watcher — runtime auto-rebuild for `elanous nexus run` static
 // mode. Lives inside the nexus daemon process so the watcher survives
 // shell close and is reaped when the daemon shuts down.
 

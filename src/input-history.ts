@@ -75,7 +75,7 @@ export function resetInputHistoryStoreForTests(): void {
 }
 
 export function openInputHistoryStore(path: string = inputHistoryDbPath()): InputHistoryStore {
-  if (process.env.MONAD_INPUT_HISTORY_STORE === 'json') {
+  if (process.env.ELANOUS_INPUT_HISTORY_STORE === 'json') {
     return new JsonInputHistoryStore(jsonFallbackPath(path));
   }
   try {

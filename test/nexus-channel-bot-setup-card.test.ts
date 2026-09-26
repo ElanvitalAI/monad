@@ -11,17 +11,17 @@ import { buildChannelBotSetupHint } from '../src/nexus/kinds/channel-bot.js';
 describe('T2.A · buildChannelBotSetupHint SSoT', () => {
   test('telegram hint includes BotFather URL + 3 setup paths', () => {
     const hint = buildChannelBotSetupHint('telegram');
-    expect(hint.tokenEnvName).toBe('MONAD_TELEGRAM_BOT_TOKEN');
+    expect(hint.tokenEnvName).toBe('ELANOUS_TELEGRAM_BOT_TOKEN');
     expect(hint.pwaPath).toContain('PWA Settings');
-    expect(hint.wizardCmd).toBe('monad setup telegram');
-    expect(hint.envSnippet).toContain('MONAD_TELEGRAM_BOT_TOKEN');
+    expect(hint.wizardCmd).toBe('elanous setup telegram');
+    expect(hint.envSnippet).toContain('ELANOUS_TELEGRAM_BOT_TOKEN');
     expect(hint.tokenSource).toContain('BotFather');
     expect(hint.wizardOnlyNote).toContain('Allowlist');
   });
 
   test('discord hint points to developer portal + guild note', () => {
     const hint = buildChannelBotSetupHint('discord');
-    expect(hint.tokenEnvName).toBe('MONAD_DISCORD_BOT_TOKEN');
+    expect(hint.tokenEnvName).toBe('ELANOUS_DISCORD_BOT_TOKEN');
     expect(hint.tokenSource).toContain('discord.com/developers');
     expect(hint.wizardOnlyNote).toContain('Guild');
   });

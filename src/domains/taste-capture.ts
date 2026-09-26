@@ -137,7 +137,7 @@ export function imprintTasteItems(
       direction: 'inbound',
       kind: 'taste',
       category: `taste.capture`,
-      domain: 'monad',
+      domain: 'elanous',
       text: it.text,
       summary: `[${it.type}] ${it.text.slice(0, 120)}`,
       importance: importanceOf(it.confidence),
@@ -160,7 +160,7 @@ export async function captureTaste(input: CaptureTasteInput): Promise<void> {
     if (text.length < 8) return; // 잡음(짧은 확인·이모지)은 스킵.
 
     // distill seam — 미주입 & test 면 no-op(실 LLM 방지). 운영은 luna 디폴트.
-    const model = cfg.model || process.env.MONAD_TASTE_MODEL || budgetModel();
+    const model = cfg.model || process.env.ELANOUS_TASTE_MODEL || budgetModel();
     const distill = input.distill
       ?? (process.env.NODE_ENV === 'test' ? undefined : (p: string) => defaultDistill(p, model));
     if (!distill) return;

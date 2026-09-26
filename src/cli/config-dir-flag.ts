@@ -1,14 +1,14 @@
 // `--config-dir <dir>` global CLI flag (2026-05-12).
 //
 // Both forms are accepted at any position in argv:
-//   monad --config-dir /tmp/x nexus run
-//   monad nexus run --config-dir /tmp/x
-//   monad wf validate --config-dir=/tmp/x ./flow.yaml
+//   elanous --config-dir /tmp/x nexus run
+//   elanous nexus run --config-dir /tmp/x
+//   elanous wf validate --config-dir=/tmp/x ./flow.yaml
 //
 // The flag is extracted *before* Commander parses, so it never
 // counts as an unknown subcommand argument and there is no need
 // to thread an option through every nested .command(). When set,
-// it routes through `setMonadConfigDir()` in src/monad-config-dir.ts
+// it routes through `setElanousConfigDir()` in src/elanous-config-dir.ts
 // — the single source of truth that every consumer now imports.
 //
 // Empty / whitespace-only values are silently dropped.
@@ -58,7 +58,7 @@ export function extractConfigDirFlag(argv: readonly string[]): ConfigDirFlagResu
 }
 
 /** Removes the flag from `process.argv` + routes the value through
- *  `setMonadConfigDir()`. Spawned children inherit the override via
+ *  `setElanousConfigDir()`. Spawned children inherit the override via
  *  `--config-dir <dir>` re-appended to argv (see `bg-launch.ts` —
  *  2026-05-13 config-dir-unify removed the previous env-var
  *  inheritance path). Idempotent — repeated calls with no flag are
@@ -68,8 +68,8 @@ export function applyConfigDirFlagFromArgv(): string | undefined {
   if (dir === undefined) return undefined;
   // Lazy import — avoids a circular dep when this module is pulled
   // in by tooling that itself imports the resolver.
-  const { setMonadConfigDir } = require('../monad-config-dir.js') as typeof import('../monad-config-dir.js');
-  setMonadConfigDir(dir);
+  const { setElanousConfigDir } = require('../elanous-config-dir.js') as typeof import('../elanous-config-dir.js');
+  setElanousConfigDir(dir);
   process.argv = argv;
   return dir;
 }

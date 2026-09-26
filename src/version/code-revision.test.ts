@@ -13,7 +13,7 @@ const CHECKOUT_COMMIT = 'c'.repeat(40);
 const folders: string[] = [];
 
 function packageFolder(): string {
-  const root = mkdtempSync(join(tmpdir(), 'monad-package-revision-'));
+  const root = mkdtempSync(join(tmpdir(), 'elanous-package-revision-'));
   folders.push(root);
   mkdirSync(join(root, 'src', 'version'), { recursive: true });
   setCodeRevisionRootForTesting(root);
@@ -52,7 +52,7 @@ test('git checkout rev-parse has priority over install.json and packaged commit'
 });
 
 test('installer-owned package nested inside another checkout uses its packaged commit, not the enclosing HEAD', () => {
-  const parent = mkdtempSync(join(tmpdir(), 'monad-parent-checkout-'));
+  const parent = mkdtempSync(join(tmpdir(), 'elanous-parent-checkout-'));
   folders.push(parent);
   const init = spawnSync('git', ['init', '--quiet', parent], { encoding: 'utf8' });
   expect(init.status).toBe(0);
@@ -61,26 +61,26 @@ test('installer-owned package nested inside another checkout uses its packaged c
   const commit = spawnSync('git', ['-C', parent, '-c', 'user.name=Fixture', '-c', 'user.email=fixture@example.invalid',
     'commit', '--quiet', '-m', 'fixture'], { encoding: 'utf8' });
   expect(commit.status, commit.stderr).toBe(0);
-  const root = join(parent, 'node_modules', 'monadagent');
+  const root = join(parent, 'node_modules', 'elanous');
   mkdirSync(join(root, 'src', 'version'), { recursive: true });
   mkdirSync(join(root, 'bin'));
   mkdirSync(join(parent, 'node_modules', '.bin'), { recursive: true });
   mkdirSync(join(parent, 'bin'));
-  writeFileSync(join(root, 'bin', 'monad.mjs'), '#!/usr/bin/env bun\n');
-  symlinkSync(join(root, 'bin', 'monad.mjs'), join(parent, 'node_modules', '.bin', 'monad'));
-  symlinkSync('../node_modules/.bin/monad', join(parent, 'bin', 'monad'));
+  writeFileSync(join(root, 'bin', 'elanous.mjs'), '#!/usr/bin/env bun\n');
+  symlinkSync(join(root, 'bin', 'elanous.mjs'), join(parent, 'node_modules', '.bin', 'elanous'));
+  symlinkSync('../node_modules/.bin/elanous', join(parent, 'bin', 'elanous'));
   setCodeRevisionRootForTesting(root);
   writeFileSync(join(root, 'src', 'version', 'packed-revision.json'), JSON.stringify({ commit: PACKED_COMMIT }));
   expect(codeRevision()).toBe(PACKED_COMMIT);
 });
 
-test('source package at node_modules/monadagent under a monorepo uses rev-parse without installer evidence', () => {
-  const parent = mkdtempSync(join(tmpdir(), 'monad-node-modules-source-'));
+test('source package at node_modules/elanous under a monorepo uses rev-parse without installer evidence', () => {
+  const parent = mkdtempSync(join(tmpdir(), 'elanous-node-modules-source-'));
   folders.push(parent);
-  const root = join(parent, 'node_modules', 'monadagent');
+  const root = join(parent, 'node_modules', 'elanous');
   mkdirSync(join(root, 'src', 'version'), { recursive: true });
   mkdirSync(join(root, 'bin'));
-  writeFileSync(join(root, 'bin', 'monad.mjs'), '#!/usr/bin/env bun\n');
+  writeFileSync(join(root, 'bin', 'elanous.mjs'), '#!/usr/bin/env bun\n');
   writeFileSync(join(root, 'install.json'), JSON.stringify({ commit: INSTALLED_COMMIT }));
   writeFileSync(join(root, 'src', 'version', 'packed-revision.json'), JSON.stringify({ commit: PACKED_COMMIT }));
   expect(spawnSync('git', ['init', '--quiet', parent], { encoding: 'utf8' }).status).toBe(0);
@@ -98,16 +98,16 @@ test('source package at node_modules/monadagent under a monorepo uses rev-parse 
 });
 
 test('installer-owned package nested in a checkout cannot inherit its HEAD even without packaged metadata', () => {
-  const parent = mkdtempSync(join(tmpdir(), 'monad-installer-owned-'));
+  const parent = mkdtempSync(join(tmpdir(), 'elanous-installer-owned-'));
   folders.push(parent);
-  const root = join(parent, 'node_modules', 'monadagent');
+  const root = join(parent, 'node_modules', 'elanous');
   mkdirSync(join(root, 'src', 'version'), { recursive: true });
   mkdirSync(join(root, 'bin'));
   mkdirSync(join(parent, 'node_modules', '.bin'), { recursive: true });
   mkdirSync(join(parent, 'bin'));
-  writeFileSync(join(root, 'bin', 'monad.mjs'), '#!/usr/bin/env bun\n');
-  symlinkSync(join(root, 'bin', 'monad.mjs'), join(parent, 'node_modules', '.bin', 'monad'));
-  symlinkSync('../node_modules/.bin/monad', join(parent, 'bin', 'monad'));
+  writeFileSync(join(root, 'bin', 'elanous.mjs'), '#!/usr/bin/env bun\n');
+  symlinkSync(join(root, 'bin', 'elanous.mjs'), join(parent, 'node_modules', '.bin', 'elanous'));
+  symlinkSync('../node_modules/.bin/elanous', join(parent, 'bin', 'elanous'));
   expect(spawnSync('git', ['init', '--quiet', parent], { encoding: 'utf8' }).status).toBe(0);
   writeFileSync(join(parent, 'fixture'), 'parent');
   expect(spawnSync('git', ['-C', parent, 'add', 'fixture'], { encoding: 'utf8' }).status).toBe(0);
@@ -121,9 +121,9 @@ test('installer-owned package nested in a checkout cannot inherit its HEAD even 
 });
 
 test('source package under a monorepo git root keeps rev-parse priority and can be packed', () => {
-  const parent = mkdtempSync(join(tmpdir(), 'monad-source-monorepo-'));
+  const parent = mkdtempSync(join(tmpdir(), 'elanous-source-monorepo-'));
   folders.push(parent);
-  const root = join(parent, 'packages', 'monad');
+  const root = join(parent, 'packages', 'elanous');
   mkdirSync(join(root, 'src', 'version'), { recursive: true });
   setCodeRevisionRootForTesting(root);
   writeFileSync(join(root, 'install.json'), JSON.stringify({ commit: INSTALLED_COMMIT }));
@@ -174,7 +174,7 @@ test('pack writer records git HEAD in package-owned metadata and refuses unknown
 
 test('bun pm pack and bash install.sh --source preserve commit for installed version, health, doctor and restart', async () => {
   const repo = join(import.meta.dir, '..', '..');
-  const dest = mkdtempSync(join(tmpdir(), 'monad-pack-'));
+  const dest = mkdtempSync(join(tmpdir(), 'elanous-pack-'));
   folders.push(dest);
   const packed = spawnSync('bun', ['pm', 'pack', '--destination', dest, '--quiet'], { cwd: repo, encoding: 'utf8', timeout: 120_000 });
   expect(packed.status).toBe(0);
@@ -192,13 +192,13 @@ test('bun pm pack and bash install.sh --source preserve commit for installed ver
     env: { ...process.env, HOME: dest, BUN_INSTALL_CACHE_DIR: join(repo, 'node_modules', '.cache') },
   });
   expect(installed.status, `${installed.stdout}\n${installed.stderr}`).toBe(0);
-  const installedRoot = join(prefix, 'current', 'node_modules', 'monadagent');
+  const installedRoot = join(prefix, 'current', 'node_modules', 'elanous');
   const installedMetadata = join(installedRoot, 'src', 'version', 'packed-revision.json');
   expect(JSON.parse(readFileSync(installedMetadata, 'utf8'))).toEqual({ commit: head.stdout.trim() });
   expect(JSON.parse(readFileSync(join(prefix, 'current', 'install.json'), 'utf8')).commit).toBeUndefined();
-  const version = spawnSync(join(prefix, 'bin', 'monad'), ['--version'], {
+  const version = spawnSync(join(prefix, 'bin', 'elanous'), ['--version'], {
     cwd: dest, encoding: 'utf8', timeout: 30_000,
-    env: { ...process.env, HOME: dest, MONAD_TEST: '1' },
+    env: { ...process.env, HOME: dest, ELANOUS_TEST: '1' },
   });
   expect(version.status, version.stderr).toBe(0);
   expect(version.stdout.trim()).toBe(`${packageVersion()} ${head.stdout.trim()}`);
@@ -225,19 +225,19 @@ test('bun pm pack and bash install.sh --source preserve commit for installed ver
   const registryDir = join(dest, 'registry');
   mkdirSync(registryDir, { recursive: true });
   writeFileSync(join(registryDir, 'config.json'), JSON.stringify({ llm: { provider: 'local', baseUrl: 'http://127.0.0.1:1' } }));
-  mkdirSync(join(dest, '.config', 'monad'), { recursive: true });
-  writeFileSync(join(dest, '.config', 'monad', 'config.json'), JSON.stringify({ llm: { provider: 'local', baseUrl: 'http://127.0.0.1:1' } }));
+  mkdirSync(join(dest, '.config', 'elanous'), { recursive: true });
+  writeFileSync(join(dest, '.config', 'elanous', 'config.json'), JSON.stringify({ llm: { provider: 'local', baseUrl: 'http://127.0.0.1:1' } }));
   const pwaDir = join(dest, 'pwa-static');
   mkdirSync(pwaDir);
   writeFileSync(join(pwaDir, 'index.html'), '<!doctype html><title>test</title>');
   // The process captures the older packaged revision at boot; the checkout is newer.
   writeFileSync(installedMetadata, JSON.stringify({ commit: previousCommit }));
-  const daemon = spawn(join(prefix, 'bin', 'monad'), [`--test=${registryDir}`, 'nexus', 'run',
+  const daemon = spawn(join(prefix, 'bin', 'elanous'), [`--test=${registryDir}`, 'nexus', 'run',
     '--port', String(daemonPort), '--tool-cwd', checkout, '--no-auto-build', '--no-watch', '--no-mcp'], {
     cwd: dest, stdio: ['ignore', 'pipe', 'pipe'],
-    env: { ...process.env, HOME: dest, MONAD_HOME: registryDir, MONAD_NEXUS_HTTP_HOST: '127.0.0.1',
-      XDG_CONFIG_HOME: join(dest, '.config'), MONAD_CONFIG_DIR: registryDir,
-      MONAD_STATE_DIR: registryDir, MONAD_PWA_STATIC_DIR: pwaDir },
+    env: { ...process.env, HOME: dest, ELANOUS_HOME: registryDir, ELANOUS_NEXUS_HTTP_HOST: '127.0.0.1',
+      XDG_CONFIG_HOME: join(dest, '.config'), ELANOUS_CONFIG_DIR: registryDir,
+      ELANOUS_STATE_DIR: registryDir, ELANOUS_PWA_STATIC_DIR: pwaDir },
   });
   let daemonOutput = '';
   daemon.stdout.on('data', (chunk) => { daemonOutput += String(chunk); });
@@ -253,10 +253,10 @@ test('bun pm pack and bash install.sh --source preserve commit for installed ver
       await delay(200);
     }
     expect(liveHealth?.daemonSha, daemonOutput).toBe(previousCommit.slice(0, 9));
-    const update = spawnSync(join(prefix, 'bin', 'monad'), [`--test=${registryDir}`, 'self-update',
+    const update = spawnSync(join(prefix, 'bin', 'elanous'), [`--test=${registryDir}`, 'self-update',
       '--from', checkout, '--json', '--keep', '0'], {
       cwd: checkout, encoding: 'utf8', timeout: 60_000,
-      env: { ...process.env, HOME: dest, MONAD_HOME: registryDir,
+      env: { ...process.env, HOME: dest, ELANOUS_HOME: registryDir,
         BUN_INSTALL_CACHE_DIR: join(repo, 'node_modules', '.cache') },
     });
     expect(update.status, update.stderr).toBe(0);
@@ -286,7 +286,7 @@ test('bun pm pack and bash install.sh --source preserve commit for installed ver
       startPort: 35000 + Math.floor(Math.random() * 20000), portRange: 10,
       portProbe: () => 'available' });
     const port = Number(new URL(server.url).port);
-    const registryDir = process.env.MONAD_HOME;
+    const registryDir = process.env.ELANOUS_HOME;
     mkdirSync(registryDir, { recursive: true });
     writeFileSync(join(registryDir, 'pwa-registry.json'), JSON.stringify({ version: 1, instances: [{
       pid: process.pid, ports: [port], mode: 'static', kind: 'test', cwd: checkout,
@@ -306,9 +306,9 @@ test('bun pm pack and bash install.sh --source preserve commit for installed ver
         setCodeRevisionRootForTesting(daemonRoot);
         resetDaemonShaForTesting();
         const liveHealth = await (await fetch(server.url + '/v1/health')).json();
-        const child = Bun.spawn([${JSON.stringify(join(prefix, 'bin', 'monad'))}, '--test=' + registryDir, 'self-update', '--from', checkout, '--json', '--keep', '0'], {
+        const child = Bun.spawn([${JSON.stringify(join(prefix, 'bin', 'elanous'))}, '--test=' + registryDir, 'self-update', '--from', checkout, '--json', '--keep', '0'], {
           cwd: process.cwd(),
-          env: { ...process.env, HOME: ${JSON.stringify(dest)}, MONAD_HOME: registryDir,
+          env: { ...process.env, HOME: ${JSON.stringify(dest)}, ELANOUS_HOME: registryDir,
             BUN_INSTALL_CACHE_DIR: ${JSON.stringify(join(repo, 'node_modules', '.cache'))} },
           stdout: 'pipe', stderr: 'pipe',
         });
@@ -328,7 +328,7 @@ test('bun pm pack and bash install.sh --source preserve commit for installed ver
       server.stop();
     }`], {
     cwd: installedRoot, encoding: 'utf8', timeout: 60_000,
-    env: { ...process.env, HOME: dest, MONAD_HOME: join(dest, 'registry'), MONAD_TEST: '1' },
+    env: { ...process.env, HOME: dest, ELANOUS_HOME: join(dest, 'registry'), ELANOUS_TEST: '1' },
   });
   expect(healthProbe.status, healthProbe.stderr).toBe(0);
   const probe = JSON.parse(healthProbe.stdout) as {

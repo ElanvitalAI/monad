@@ -27,8 +27,8 @@ const existingRequiredFor = {
 };
 
 const existingFreeFallback = {
-  anthropic: 'subscription via `monad login`; llm.fallbackChain',
-  openai: '`monad login openai-codex` (device code, no API key)',
+  anthropic: 'subscription via `elanous login`; llm.fallbackChain',
+  openai: '`elanous login openai-codex` (device code, no API key)',
   xai: 'llm.fallbackChain ends at grok',
   tavily: 'ddg + jina — skills/omni-crawl/src/free.ts (freeAvailable() is unconditionally true)',
   firecrawl: 'ddg + jina — skills/omni-crawl/src/free.ts',
@@ -53,20 +53,20 @@ const baselineEnvByResourceId: Record<string, string[]> = {
   'google-speech': ['GOOGLE_API_KEY'],
   supadata: ['SUPADATA_API_KEY'],
   upstage: ['UPSTAGE_API_KEY'],
-  'telegram-bot': ['TELEGRAM_BOT_TOKEN', 'MONAD_TELEGRAM_BOT_TOKEN'],
+  'telegram-bot': ['TELEGRAM_BOT_TOKEN', 'ELANOUS_TELEGRAM_BOT_TOKEN'],
   'telegram-mtproto': ['TELEGRAM_API_ID', 'TELEGRAM_API_HASH'],
   github: ['GITHUB_TOKEN'],
   eodhd: ['EODHD_API_KEY'],
   financialdatasets: ['FDS_API_KEY'],
   'korea-investment': ['KIS_APP_KEY', 'KIS_APP_SECRET'],
   tossinvest: ['TOSSINVEST_CLIENT_SECRET'],
-  'monad-control-token': ['MONAD_TOKEN'],
-  'monad-hitl-secret': ['MONAD_HITL_SECRET'],
-  'monad-openai-relay': ['MONAD_OPENAI_RELAY_SHARED_SECRET'],
-  'discord-bot': ['MONAD_DISCORD_BOT_TOKEN'],
+  'elanous-control-token': ['ELANOUS_TOKEN'],
+  'elanous-hitl-secret': ['ELANOUS_HITL_SECRET'],
+  'elanous-openai-relay': ['ELANOUS_OPENAI_RELAY_SHARED_SECRET'],
+  'discord-bot': ['ELANOUS_DISCORD_BOT_TOKEN'],
   'aws-s3': ['AWS_ACCESS_KEY_ID', 'AWS_SECRET_ACCESS_KEY'],
   'typesafe-jev': ['TYPESAFE_API_KEY'],
-  'monad-llm-bridge': ['MONAD_LLM_API_KEY'],
+  'elanous-llm-bridge': ['ELANOUS_LLM_API_KEY'],
 };
 
 function nonEmpty(value: unknown): boolean {

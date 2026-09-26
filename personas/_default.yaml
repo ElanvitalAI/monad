@@ -12,8 +12,8 @@
 # PLAN: 내부 문서 `PLAN-discord-rich-light-persona-2026-05-01` §7
 
 personaId: _default
-displayName: Monad
-description: Default monad persona — fallback identity for webhook execute when no specific persona is bound.
+displayName: Elanous
+description: Default elanous persona — fallback identity for webhook execute when no specific persona is bound.
 brandColor: "#6d28d9"
 browserPort: 9222
 # avatarUrl: (omitted — webhook will fall back to bot's default avatar)

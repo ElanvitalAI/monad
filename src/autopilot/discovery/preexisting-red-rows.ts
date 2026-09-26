@@ -3,7 +3,7 @@
 // 로그 조회 산출을 받아 scanPreexistingRed 가 먹을 수 있는 행 목록과 셈을 낸다.
 // 조회 자체는 하지 않는다. 순수 함수. fs/db/network 없음.
 //
-// CLI(`monad logs`) 배선은 이 골 밖 — 다음 골. 좁혀야 착지한다.
+// CLI(`elanous logs`) 배선은 이 골 밖 — 다음 골. 좁혀야 착지한다.
 // 의도된 소비자: scanPreexistingRed(result.rows).
 
 const GATE_BASELINE_EVENT = 'gate.baseline';

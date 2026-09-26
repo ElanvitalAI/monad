@@ -19,7 +19,7 @@ import {
   __resetModalAdapterThemeForTests,
 } from '../src/ui/modal-adapter.js';
 import { SelectView } from '../src/ui/widgets/select-view.js';
-import { MONAD_PASTEL_DEFAULT } from '../src/themes/index.js';
+import { ELANOUS_PASTEL_DEFAULT } from '../src/themes/index.js';
 import { ansiForPair, resolveWidgetTokens } from '../src/theme/tokens.js';
 
 function makeView(): SelectView<string> {
@@ -30,13 +30,13 @@ function makeView(): SelectView<string> {
 }
 
 const PASTEL_BACKDROP_ANSI = ansiForPair(
-  resolveWidgetTokens(MONAD_PASTEL_DEFAULT, 'modal').backdrop,
+  resolveWidgetTokens(ELANOUS_PASTEL_DEFAULT, 'modal').backdrop,
 );
 
-const originalEnv = process.env.MONAD_MODAL_BACKDROP;
+const originalEnv = process.env.ELANOUS_MODAL_BACKDROP;
 afterEach(() => {
-  if (originalEnv === undefined) delete process.env.MONAD_MODAL_BACKDROP;
-  else process.env.MONAD_MODAL_BACKDROP = originalEnv;
+  if (originalEnv === undefined) delete process.env.ELANOUS_MODAL_BACKDROP;
+  else process.env.ELANOUS_MODAL_BACKDROP = originalEnv;
   __resetModalAdapterThemeForTests();
 });
 
@@ -47,7 +47,7 @@ describe('resolveBackdropAnsi', () => {
 
   test('returns ANSI when theme is provided + tier is not skipped', () => {
     const ansi = resolveBackdropAnsi({
-      theme: MONAD_PASTEL_DEFAULT,
+      theme: ELANOUS_PASTEL_DEFAULT,
       tier: 'dialog',
     });
     expect(ansi).toBe(PASTEL_BACKDROP_ANSI);
@@ -56,7 +56,7 @@ describe('resolveBackdropAnsi', () => {
 
   test('falls back to shadowTheme when theme is absent', () => {
     const ansi = resolveBackdropAnsi({
-      shadowTheme: MONAD_PASTEL_DEFAULT,
+      shadowTheme: ELANOUS_PASTEL_DEFAULT,
       tier: 'dialog',
     });
     expect(ansi).toBe(PASTEL_BACKDROP_ANSI);
@@ -66,8 +66,8 @@ describe('resolveBackdropAnsi', () => {
     // Same theme both places — we just verify the precedence path
     // doesn't drop the ANSI.
     const ansi = resolveBackdropAnsi({
-      theme: MONAD_PASTEL_DEFAULT,
-      shadowTheme: MONAD_PASTEL_DEFAULT,
+      theme: ELANOUS_PASTEL_DEFAULT,
+      shadowTheme: ELANOUS_PASTEL_DEFAULT,
       tier: 'dialog',
     });
     expect(ansi).toBe(PASTEL_BACKDROP_ANSI);
@@ -75,7 +75,7 @@ describe('resolveBackdropAnsi', () => {
 
   test('backdrop=false overrides theme+tier', () => {
     const ansi = resolveBackdropAnsi({
-      theme: MONAD_PASTEL_DEFAULT,
+      theme: ELANOUS_PASTEL_DEFAULT,
       tier: 'dialog',
       backdrop: false,
     });
@@ -85,7 +85,7 @@ describe('resolveBackdropAnsi', () => {
   test('backdrop=true bypasses the tier skip list', () => {
     // vw is normally skipped, but an explicit backdrop:true wins.
     const ansi = resolveBackdropAnsi({
-      theme: MONAD_PASTEL_DEFAULT,
+      theme: ELANOUS_PASTEL_DEFAULT,
       tier: 'vw',
       backdrop: true,
     });
@@ -95,7 +95,7 @@ describe('resolveBackdropAnsi', () => {
   test('skip-list tiers omit backdrop by default', () => {
     for (const t of BACKDROP_SKIP_TIERS) {
       expect(resolveBackdropAnsi({
-        theme: MONAD_PASTEL_DEFAULT,
+        theme: ELANOUS_PASTEL_DEFAULT,
         tier: t,
       })).toBe('');
     }
@@ -105,24 +105,24 @@ describe('resolveBackdropAnsi', () => {
     const tiers = ['dialog', 'terminal'] as const;
     for (const t of tiers) {
       expect(resolveBackdropAnsi({
-        theme: MONAD_PASTEL_DEFAULT,
+        theme: ELANOUS_PASTEL_DEFAULT,
         tier: t,
       })).toBe(PASTEL_BACKDROP_ANSI);
     }
   });
 
-  test('MONAD_MODAL_BACKDROP=off disables backdrop globally', () => {
-    process.env.MONAD_MODAL_BACKDROP = 'off';
+  test('ELANOUS_MODAL_BACKDROP=off disables backdrop globally', () => {
+    process.env.ELANOUS_MODAL_BACKDROP = 'off';
     expect(resolveBackdropAnsi({
-      theme: MONAD_PASTEL_DEFAULT,
+      theme: ELANOUS_PASTEL_DEFAULT,
       tier: 'dialog',
     })).toBe('');
   });
 
   test('env kill-switch wins even with backdrop=true', () => {
-    process.env.MONAD_MODAL_BACKDROP = 'off';
+    process.env.ELANOUS_MODAL_BACKDROP = 'off';
     expect(resolveBackdropAnsi({
-      theme: MONAD_PASTEL_DEFAULT,
+      theme: ELANOUS_PASTEL_DEFAULT,
       tier: 'dialog',
       backdrop: true,
     })).toBe('');
@@ -136,7 +136,7 @@ describe('mountViewAsModalSurface — backdrop paint integration', () => {
       bounds: { row: 1, col: 1, width: 20, height: 5 },
       view: makeView(),
       tier: 'dialog',
-      theme: MONAD_PASTEL_DEFAULT,
+      theme: ELANOUS_PASTEL_DEFAULT,
     });
     const out = h.surface.paint();
     expect(out).toContain(PASTEL_BACKDROP_ANSI);
@@ -159,7 +159,7 @@ describe('mountViewAsModalSurface — backdrop paint integration', () => {
       bounds: { row: 1, col: 1, width: 20, height: 5 },
       view: makeView(),
       tier: 'vw',
-      theme: MONAD_PASTEL_DEFAULT,
+      theme: ELANOUS_PASTEL_DEFAULT,
     });
     const out = h.surface.paint();
     expect(out).not.toContain(PASTEL_BACKDROP_ANSI);
@@ -171,7 +171,7 @@ describe('mountViewAsModalSurface — backdrop paint integration', () => {
       bounds: { row: 1, col: 1, width: 20, height: 5 },
       view: makeView(),
       tier: 'dialog',
-      theme: MONAD_PASTEL_DEFAULT,
+      theme: ELANOUS_PASTEL_DEFAULT,
       backdrop: false,
     });
     const out = h.surface.paint();
@@ -184,7 +184,7 @@ describe('mountViewAsModalSurface — backdrop paint integration', () => {
       bounds: { row: 1, col: 1, width: 20, height: 5 },
       view: makeView(),
       tier: 'popup',
-      theme: MONAD_PASTEL_DEFAULT,
+      theme: ELANOUS_PASTEL_DEFAULT,
     });
     const out = h.surface.paint();
     expect(out).not.toContain(PASTEL_BACKDROP_ANSI);
@@ -196,7 +196,7 @@ describe('mountViewAsModalSurface — backdrop paint integration', () => {
       bounds: { row: 1, col: 1, width: 20, height: 5 },
       view: makeView(),
       tier: 'popup',
-      shadow: { theme: MONAD_PASTEL_DEFAULT },
+      shadow: { theme: ELANOUS_PASTEL_DEFAULT },
     });
     const out = h.surface.paint();
     expect(out).not.toContain(PASTEL_BACKDROP_ANSI);
@@ -208,7 +208,7 @@ describe('mountViewAsModalSurface — backdrop paint integration', () => {
       bounds: { row: 1, col: 1, width: 20, height: 5 },
       view: makeView(),
       tier: 'popup',
-      theme: MONAD_PASTEL_DEFAULT,
+      theme: ELANOUS_PASTEL_DEFAULT,
       backdrop: true,
     });
     const out = h.surface.paint();
@@ -218,7 +218,7 @@ describe('mountViewAsModalSurface — backdrop paint integration', () => {
 
 describe('configureModalAdapterTheme — ambient fallback', () => {
   test('ambient getter seeds backdrop when spec omits theme + shadow', () => {
-    configureModalAdapterTheme(() => MONAD_PASTEL_DEFAULT);
+    configureModalAdapterTheme(() => ELANOUS_PASTEL_DEFAULT);
     const h = mountViewAsModalSurface({
       id: 'bd-ambient',
       bounds: { row: 1, col: 1, width: 20, height: 5 },
@@ -236,7 +236,7 @@ describe('configureModalAdapterTheme — ambient fallback', () => {
       bounds: { row: 1, col: 1, width: 20, height: 5 },
       view: makeView(),
       tier: 'dialog',
-      theme: MONAD_PASTEL_DEFAULT,
+      theme: ELANOUS_PASTEL_DEFAULT,
     });
     expect(h.surface.paint()).toContain(PASTEL_BACKDROP_ANSI);
   });
@@ -248,7 +248,7 @@ describe('configureModalAdapterTheme — ambient fallback', () => {
   });
 
   test('reset clears the ambient getter', () => {
-    configureModalAdapterTheme(() => MONAD_PASTEL_DEFAULT);
+    configureModalAdapterTheme(() => ELANOUS_PASTEL_DEFAULT);
     __resetModalAdapterThemeForTests();
     expect(resolveBackdropAnsi({ tier: 'dialog' })).toBe('');
   });
@@ -274,7 +274,7 @@ describe('Backdrop auto-preservation via mergeStyle (formerly Option D)', () => 
       bounds: { row: 1, col: 1, width: 30, height: 5 },
       view: makeView(),
       tier: 'dialog',
-      theme: MONAD_PASTEL_DEFAULT,
+      theme: ELANOUS_PASTEL_DEFAULT,
     });
     const out = h.surface.paint();
     const bdIdx = out.indexOf(PASTEL_BACKDROP_ANSI);
@@ -292,7 +292,7 @@ describe('Backdrop auto-preservation via mergeStyle (formerly Option D)', () => 
       bounds: { row: 1, col: 1, width: 30, height: 5 },
       view: makeView(),
       tier: 'dialog',
-      theme: MONAD_PASTEL_DEFAULT,
+      theme: ELANOUS_PASTEL_DEFAULT,
       backdrop: false,
     });
     const out = h.surface.paint();
@@ -319,7 +319,7 @@ describe('Backdrop auto-preservation via mergeStyle (formerly Option D)', () => 
       bounds: { row: 1, col: 1, width: 40, height: 5 },
       view: viewWithDesc,
       tier: 'dialog',
-      theme: MONAD_PASTEL_DEFAULT,
+      theme: ELANOUS_PASTEL_DEFAULT,
     });
     const out = h.surface.paint();
     expect(out).toContain(PASTEL_BACKDROP_ANSI);

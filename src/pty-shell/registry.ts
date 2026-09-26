@@ -6,7 +6,7 @@
 // to keep model context bounded across long-lived runs.
 //
 // Differences from codex:
-//   • Max 8 concurrent (codex: 64) — monad runs single-user with
+//   • Max 8 concurrent (codex: 64) — elanous runs single-user with
 //     tighter context budgets.
 //   • 256 KB head+tail (codex: ~500 KB) — same reasoning.
 //   • Auto-kill on skill-runner return UNLESS the start args set
@@ -352,6 +352,8 @@ export interface StartOpts {
   args?: string[];
   workdir?: string;
   env?: Record<string, string>;
+  /** 합성 «뒤»에 지울 키 — `env` 에서 뺀 키가 로그인 셸 캡처본에서 되살아나지 않게(과금 경로 스크럽 · `buildPtyEnv`). */
+  unsetEnv?: readonly string[];
   shell?: string;
   cols?: number;
   rows?: number;
@@ -725,12 +727,12 @@ export function startPty(opts: StartOpts): PtyHandle {
   getGlobalElementRegistry().register('pty', id, { kind: 'pty', id });
   // ★ 크로스-프로세스 관측 — startPty 를 공유 매니페스트에 등록(다른 프로세스 데몬이 /v1/terminals 로 봄). fail-soft.
   //   ⚠️ 테스트 런(NODE_ENV=test·bun test)은 skip — 테스트가 띄우는 임시 셸(self-implement gate·CI·수동 bun test)이
-  //   운영 매니페스트(~/.monad/pty)로 새어들어 관측소를 오염시키던 근본 차단(격리). 실 세션(NODE_ENV≠test)만 등록.
+  //   운영 매니페스트(~/.elanous/pty)로 새어들어 관측소를 오염시키던 근본 차단(격리). 실 세션(NODE_ENV≠test)만 등록.
   if (PTY_MANIFEST_ENABLED) {
-    const childSpaceId = opts.env?.MONAD_HARNESS_SPACE_ID;
-    const childParentPtyId = opts.env?.MONAD_PARENT_PTY_ID ?? getCurrentPtyId();
-    const childController = opts.env?.MONAD_CONTROLLER?.trim();
-    const childNestDepth = opts.env?.MONAD_NEST_DEPTH;
+    const childSpaceId = opts.env?.ELANOUS_HARNESS_SPACE_ID;
+    const childParentPtyId = opts.env?.ELANOUS_PARENT_PTY_ID ?? getCurrentPtyId();
+    const childController = opts.env?.ELANOUS_CONTROLLER?.trim();
+    const childNestDepth = opts.env?.ELANOUS_NEST_DEPTH;
     const parsedChildNestDepth = childNestDepth !== undefined && /^\d+$/.test(childNestDepth)
       ? Number(childNestDepth)
       : undefined;
@@ -758,7 +760,7 @@ export function startPty(opts: StartOpts): PtyHandle {
       const participant = { id, kind: 'pty' as const, transports: [{ kind: 'pty' as const, id }], registeredAt: Date.now(), runIdSource };
       const localDir = selfDevRunsDir();
       addSelfDevRunParticipant(runId, participant, localDir);
-      const parentDir = process.env.MONAD_PARENT_SELF_DEV_RUNS_DIR;
+      const parentDir = process.env.ELANOUS_PARENT_SELF_DEV_RUNS_DIR;
       const parentRegistered = parentDir !== undefined && parentDir !== localDir;
       if (parentRegistered) addSelfDevRunParticipant(runId, participant, parentDir);
       debug.log('pty-shell.registry', 'run-participant-registered', { runId, ptyId: id, directories: parentRegistered ? [localDir, parentDir] : [localDir] });
@@ -999,7 +1001,7 @@ export function resolveSpawnShape(o: StartOpts): {
   //    here. Changing that is a separate decision, not part of this fix.
   // ⛔ Callers must NOT pre-quote tokens: quoting is a shell concern and the
   //    token path has no shell. (Pre-quoting used to be required here and is
-  //    now removed from every caller — see headless-monad-driver / spawn-
+  //    now removed from every caller — see headless-elanous-driver / spawn-
   //    coding-agent-headless.)
   const hasArgs = (o.args?.length ?? 0) > 0;
   const cmdHasShellSyntax = /[ \t|&;<>$`(){}[\]"'\\*?]/.test(o.cmd);
@@ -1024,7 +1026,7 @@ export function resolveSpawnShape(o: StartOpts): {
     COLORTERM: 'truecolor',
     ...(o.env ?? {}),
     TERM: term,
-  });
+  }, process.env, { unset: o.unsetEnv });
   return {
     file,
     args,

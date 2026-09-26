@@ -7,7 +7,7 @@
 
 import { join, dirname } from 'node:path';
 import { existsSync, mkdirSync, writeFileSync, readFileSync, rmSync } from 'node:fs';
-import { monadStateRoot } from './state-paths.js';
+import { elanousStateRoot } from './state-paths.js';
 
 /** 승인 대기 중인 revise 초안 — recommender 가 생성. 승인 탭이 comment 를 집행. */
 export interface PendingRevise {
@@ -24,7 +24,7 @@ export interface PendingRevise {
 /** 미션별 pending revise 슬롯 경로(working-memory 옆·같은 safe-slug 규칙). */
 export function pendingRevisePath(missionId: string): string {
   const safe = (missionId || 'unknown').replace(/[^\w.-]/g, '_').slice(0, 80);
-  return join(monadStateRoot(), 'conatus/missions', safe, 'pending-revise.json');
+  return join(elanousStateRoot(), 'conatus/missions', safe, 'pending-revise.json');
 }
 
 /** 초안 저장(단일 슬롯·최신 우선). fail-soft. */

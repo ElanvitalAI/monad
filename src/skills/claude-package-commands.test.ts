@@ -76,10 +76,10 @@ function withCommandFlag(enabled: boolean, run: () => void): void {
   const savedXdg = process.env.XDG_CONFIG_HOME;
   const xdg = mkdtempSync(join(tmpdir(), 'xdg-cmd-flag-'));
   try {
-    mkdirSync(join(xdg, 'monad'), { recursive: true });
+    mkdirSync(join(xdg, 'elanous'), { recursive: true });
     const skills: Record<string, unknown> = {};
     if (enabled) skills.includeClaudePackageCommands = true;
-    writeFileSync(join(xdg, 'monad', 'config.json'), JSON.stringify({ skills }));
+    writeFileSync(join(xdg, 'elanous', 'config.json'), JSON.stringify({ skills }));
     process.env.XDG_CONFIG_HOME = xdg;
     resetUserConfig();
     resetSkillIndex();
@@ -382,8 +382,8 @@ describe('buildSkillIndex — includeClaudePackageCommands wiring', () => {
       const saved = process.env.XDG_CONFIG_HOME;
       const xdg = mkdtempSync(join(tmpdir(), 'xdg-skills-only-'));
       try {
-        mkdirSync(join(xdg, 'monad'), { recursive: true });
-        writeFileSync(join(xdg, 'monad', 'config.json'), JSON.stringify({
+        mkdirSync(join(xdg, 'elanous'), { recursive: true });
+        writeFileSync(join(xdg, 'elanous', 'config.json'), JSON.stringify({
           skills: { includeClaudePackageSkills: true },
         }));
         process.env.XDG_CONFIG_HOME = xdg;

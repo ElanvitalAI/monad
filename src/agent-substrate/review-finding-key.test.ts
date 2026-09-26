@@ -17,9 +17,9 @@ describe('review finding key', () => {
   });
 
   test('uses a sorted cited-symbol set instead of prose and omits empty citations', () => {
-    const first = 'Verify arrival logs from `debug.log` and `.monad-test/logs.db`';
-    const second = 'Confirm both ` .monad-test/logs.db ` and `debug.log` receive the event';
-    const symbolKey = 'symbol:[".monad-test/logs.db","debug.log"]';
+    const first = 'Verify arrival logs from `debug.log` and `.elanous-test/logs.db`';
+    const second = 'Confirm both ` .elanous-test/logs.db ` and `debug.log` receive the event';
+    const symbolKey = 'symbol:[".elanous-test/logs.db","debug.log"]';
     expect(reviewFindingKey(first)).toEqual({ key: symbolKey, source: 'symbol' });
     expect(reviewFindingKey(second)).toEqual({ key: symbolKey, source: 'symbol' });
     expect(reviewFindingKey('Only `` is cited')).toEqual({ key: 'only is cited', source: 'prose' });

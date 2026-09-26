@@ -86,7 +86,7 @@ describe('self-dev run-store (S3 persistence)', () => {
       const resumed = Bun.spawnSync({
         cmd: [process.execPath, 'src/index.ts', 'self', 'orchestrate', 'noop', '--resume', state.runId, '--json'],
         cwd: process.cwd(),
-        env: { ...process.env, MONAD_STATE_DIR: stateDir },
+        env: { ...process.env, ELANOUS_STATE_DIR: stateDir },
         stdout: 'pipe',
         stderr: 'pipe',
       });
@@ -238,7 +238,7 @@ describe('self-implement UNCONVERGEABLE ledger summary', () => {
     expect(notice).toContain(runIds[0]);
     expect(notice).toContain(runIds[1]);
     expect(notice).toContain('이 런들이 열어 둔 draft PR');
-    expect(notice).toContain('monad logs abandoned-draft-prs --all --include-test');
+    expect(notice).toContain('elanous logs abandoned-draft-prs --all --include-test');
     expect(notice).toContain('그중 지금도 아직 열려 있는지는 이 명령이 안 봅니다');
     expect(notice).toContain('gh pr list --state open --draft');
   });
@@ -264,7 +264,7 @@ describe('self-implement UNCONVERGEABLE ledger summary', () => {
     expect(zero).not.toContain('원장을 못 읽어');
     expect(unreadable).toContain('원장을 못 읽어 집계하지 못했습니다');
     expect(unreadable).toContain('이 런들이 열어 둔 draft PR');
-    expect(unreadable).toContain('monad logs abandoned-draft-prs --all --include-test');
+    expect(unreadable).toContain('elanous logs abandoned-draft-prs --all --include-test');
     expect(unreadable).toContain('gh pr list --state open --draft');
     expect(unreadable).not.toContain('런 식별자:');
   });
@@ -483,11 +483,11 @@ describe('listCombinedParkedGoals', () => {
     ].map((entry) => JSON.stringify(entry)).join('\n')}\n`, 'utf8');
     writeFileSync(join(ledgerDir, `${completedRun}.jsonl`), `${JSON.stringify({ event: 'run-status', runId: completedRun, goalId: 'goal-cli', timestamp: '2026-08-22T00:00:01.000Z', data: { runStatus: 'completed' } })}\n`, 'utf8');
 
-    const result = spawnSync('bun', ['bin/monad.mjs', 'self', 'parked', '--json'], {
+    const result = spawnSync('bun', ['bin/elanous.mjs', 'self', 'parked', '--json'], {
       cwd: process.cwd(),
       encoding: 'utf8',
       timeout: 60_000,
-      env: { ...process.env, MONAD_DEBUG_LEVEL: 'off', MONAD_STATE_DIR: stateDir },
+      env: { ...process.env, ELANOUS_DEBUG_LEVEL: 'off', ELANOUS_STATE_DIR: stateDir },
     });
 
     expect(result.error).toBeUndefined();
@@ -518,11 +518,11 @@ describe('listCombinedParkedGoals', () => {
     expect(Object.keys(rows.get(withoutGoalFile) ?? {})).not.toContain('goalFile');
     expect(listing.counts).toEqual({ total: 2, selfDevRun: 0, selfImplementLedger: 2 });
 
-    const human = spawnSync('bun', ['bin/monad.mjs', 'self', 'parked'], {
+    const human = spawnSync('bun', ['bin/elanous.mjs', 'self', 'parked'], {
       cwd: process.cwd(),
       encoding: 'utf8',
       timeout: 60_000,
-      env: { ...process.env, MONAD_DEBUG_LEVEL: 'off', MONAD_STATE_DIR: stateDir },
+      env: { ...process.env, ELANOUS_DEBUG_LEVEL: 'off', ELANOUS_STATE_DIR: stateDir },
     });
 
     expect(human.error).toBeUndefined();
@@ -615,17 +615,17 @@ describe('listCombinedParkedGoals', () => {
   test('self parked CLI renders the same population and limitation metadata in JSON and human output at zero results', () => {
     const stateDir = tmp();
     const expectedStores = [join(stateDir, 'self-dev-runs'), join(stateDir, 'run-ledger')];
-    const result = spawnSync('bun', ['bin/monad.mjs', 'self', 'parked', '--json'], {
+    const result = spawnSync('bun', ['bin/elanous.mjs', 'self', 'parked', '--json'], {
       cwd: process.cwd(),
       encoding: 'utf8',
       timeout: 60_000,
-      env: { ...process.env, MONAD_DEBUG_LEVEL: 'off', MONAD_STATE_DIR: stateDir },
+      env: { ...process.env, ELANOUS_DEBUG_LEVEL: 'off', ELANOUS_STATE_DIR: stateDir },
     });
-    const human = spawnSync('bun', ['bin/monad.mjs', 'self', 'parked'], {
+    const human = spawnSync('bun', ['bin/elanous.mjs', 'self', 'parked'], {
       cwd: process.cwd(),
       encoding: 'utf8',
       timeout: 60_000,
-      env: { ...process.env, MONAD_DEBUG_LEVEL: 'off', MONAD_STATE_DIR: stateDir },
+      env: { ...process.env, ELANOUS_DEBUG_LEVEL: 'off', ELANOUS_STATE_DIR: stateDir },
     });
 
     expect(result.error).toBeUndefined();

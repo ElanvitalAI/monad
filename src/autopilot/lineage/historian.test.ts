@@ -5,7 +5,7 @@ import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { coldArchiveMissionFiles } from './historian.js';
 import { coldFilesDir } from './cold-ledger.js';
-import { setMonadConfigDir, resetMonadConfigDir } from '../../monad-config-dir.js';
+import { setElanousConfigDir, resetElanousConfigDir } from '../../elanous-config-dir.js';
 import { groundingCachePath } from '../mission-grounding-cache.js';
 import { framePath } from '../pipeline/frame-journal.js';
 import { execFramePath } from '../pipeline/exec-frame-journal.js';
@@ -23,13 +23,13 @@ describe('coldArchiveMissionFiles — 고아 파일 냉동보관 move(H3)', () =
   beforeEach(() => {
     stateDir = mkdtempSync(join(tmpdir(), 'lineage-state-'));
     configDir = mkdtempSync(join(tmpdir(), 'lineage-config-'));
-    prevState = process.env.MONAD_STATE_DIR;
-    process.env.MONAD_STATE_DIR = stateDir;
-    setMonadConfigDir(configDir);
+    prevState = process.env.ELANOUS_STATE_DIR;
+    process.env.ELANOUS_STATE_DIR = stateDir;
+    setElanousConfigDir(configDir);
   });
   afterEach(() => {
-    resetMonadConfigDir(); // ★ 전역 config-dir override 복원(누수 방지 — config-isolation 등 후속 테스트 오염 차단)
-    if (prevState === undefined) delete process.env.MONAD_STATE_DIR; else process.env.MONAD_STATE_DIR = prevState;
+    resetElanousConfigDir(); // ★ 전역 config-dir override 복원(누수 방지 — config-isolation 등 후속 테스트 오염 차단)
+    if (prevState === undefined) delete process.env.ELANOUS_STATE_DIR; else process.env.ELANOUS_STATE_DIR = prevState;
     try { rmSync(stateDir, { recursive: true, force: true }); } catch { /* */ }
     try { rmSync(configDir, { recursive: true, force: true }); } catch { /* */ }
   });

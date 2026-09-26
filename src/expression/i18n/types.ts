@@ -100,7 +100,7 @@ export interface Messages {
   setupWritingTo: string;
   /** Banner shown after the wizard saves the config. */
   setupComplete: string;
-  /** Template — supplies `{cmd}` (typically `monad setup`). */
+  /** Template — supplies `{cmd}` (typically `elanous setup`). */
   setupRerunHint: string;
 
   // ── Setup wizard — Step 1 (LLM provider) ─────────────────────────

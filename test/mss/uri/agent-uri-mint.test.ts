@@ -7,10 +7,10 @@
 import { describe, expect, test } from 'bun:test';
 
 import { asAgentUri, mintAgentUri } from '../../../src/mss/uri/builder.ts';
-import { parseMonadUri } from '../../../src/mss/uri/parser.ts';
+import { parseElanousUri } from '../../../src/mss/uri/parser.ts';
 
 describe('mintAgentUri', () => {
-  test('returns a Tier 2 `agent/<ULID>` MonadUri', () => {
+  test('returns a Tier 2 `agent/<ULID>` ElanousUri', () => {
     const uri = mintAgentUri();
     expect(uri).toMatch(/^agent\/[0-9A-HJKMNP-TV-Z]{26}$/);
   });
@@ -21,9 +21,9 @@ describe('mintAgentUri', () => {
     expect(seen.size).toBe(50);
   });
 
-  test('minted value parses as a single-segment agent MonadUri', () => {
+  test('minted value parses as a single-segment agent ElanousUri', () => {
     const uri = mintAgentUri();
-    const parsed = parseMonadUri(uri);
+    const parsed = parseElanousUri(uri);
     expect(parsed?.tier).toBe(2);
     expect(parsed?.segments[0]?.kind).toBe('agent');
   });

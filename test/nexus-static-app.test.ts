@@ -12,7 +12,7 @@ import {
 } from '../src/nexus/api/static-app.js';
 
 function mkStaticRoot(): { dir: string; cleanup: () => void } {
-  const dir = mkdtempSync(joinPath(tmpdir(), 'monad-static-'));
+  const dir = mkdtempSync(joinPath(tmpdir(), 'elanous-static-'));
   return { dir, cleanup: () => rmSync(dir, { recursive: true }) };
 }
 

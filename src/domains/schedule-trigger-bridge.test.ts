@@ -7,7 +7,7 @@ function seedJob(db: ReturnType<typeof openSchedulesDb>, over: Partial<ScheduleR
   const row: ScheduleRow = {
     id: 'job_abc', name: 'collect', source: 'crontab', cron: '5,35 9-15 * * 1-5',
     interval_ms: null, command: 'bun scripts/collect.ts', category: 'ingest', domain: 'finance',
-    enabled: 1, last_seen: null, last_run: null, note: null, managed_by: 'monad',
+    enabled: 1, last_seen: null, last_run: null, note: null, managed_by: 'elanous',
     raw: null, run_via: 'trigger', ...over,
   };
   db.run(
@@ -94,14 +94,14 @@ describe('recordTriggerRunToSchedule', () => {
 });
 
 describe('scheduleHealth — trigger 잡 추적(U3b)', () => {
-  it('run_via=trigger 잡도 monadTotal 에 포함·stale 탐지', () => {
+  it('run_via=trigger 잡도 elanousTotal 에 포함·stale 탐지', () => {
     const db = openSchedulesDb(':memory:');
     try {
       // last_run 없는 trigger 잡 → 직전 예정 지났으면 stale
       seedJob(db, { id: 'job_trig', cron: '0 8 * * *', run_via: 'trigger' });
       const rows = listSchedules(db);
       const h = scheduleHealth(rows, { now: new Date('2026-07-09T12:00:00Z') });
-      expect(h.monadTotal).toBeGreaterThanOrEqual(1);
+      expect(h.elanousTotal).toBeGreaterThanOrEqual(1);
       expect(h.stale.some((s) => s.id === 'job_trig')).toBe(true);
     } finally { db.close(); }
   });

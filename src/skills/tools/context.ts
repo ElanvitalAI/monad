@@ -336,7 +336,7 @@ export async function dispatchContextSessionsList(
 // Surface-unification v2.2 V2.2-5 (2026-05-11) — `context.jobs.list`
 // tool retired together with the dashboard scheduler view. Scheduled
 // work is now first-class workflow surface (`scheduleTrigger` nodes ·
-// `/workflows` listing · `~/.monad/workflows-runs/`). LLMs that need a
+// `/workflows` listing · `~/.elanous/workflows-runs/`). LLMs that need a
 // "what's scheduled" view consult the workflows path directly.
 
 export async function dispatchContextWidgetsList(): Promise<{

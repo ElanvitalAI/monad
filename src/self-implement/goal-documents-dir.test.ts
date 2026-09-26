@@ -38,7 +38,7 @@ function resolution(
 }
 
 describe('resolveGoalDocumentsDir', () => {
-  test('selects config, an existing docs/goals, then .monad/goals, and logs a distinct reason for each', () => {
+  test('selects config, an existing docs/goals, then .elanous/goals, and logs a distinct reason for each', () => {
     const empty = temporaryGitRepository();
     const existing = temporaryGitRepository();
     mkdirSync(join(existing, 'docs', 'goals'), { recursive: true });
@@ -49,12 +49,12 @@ describe('resolveGoalDocumentsDir', () => {
     const existingResolution = resolution(existing, undefined, events);
     const configuredResolution = resolution(configured, 'custom/goals', events);
 
-    expect(emptyResolution).toEqual({ directory: join(empty, '.monad', 'goals'), reason: 'default-dot-monad' });
+    expect(emptyResolution).toEqual({ directory: join(empty, '.elanous', 'goals'), reason: 'default-dot-elanous' });
     expect(existingResolution).toEqual({ directory: join(existing, 'docs', 'goals'), reason: 'existing-docs-goals' });
     expect(configuredResolution).toEqual({ directory: join(configured, 'custom', 'goals'), reason: 'config' });
     expect(existsSync(join(empty, 'docs', 'goals'))).toBe(false);
     expect(new Set(events.map((event) => (event.data as { reason: GoalDocumentsDirReason }).reason))).toEqual(
-      new Set(['default-dot-monad', 'existing-docs-goals', 'config']),
+      new Set(['default-dot-elanous', 'existing-docs-goals', 'config']),
     );
     for (const event of events) {
       expect(event.category).toBe('harness.goals-dir');
@@ -65,7 +65,7 @@ describe('resolveGoalDocumentsDir', () => {
   test('ignores an absolute, empty, or repository-escaping configured path', () => {
     const repo = temporaryGitRepository();
     for (const goalsDir of ['/tmp/outside', '', '   ', '../outside']) {
-      expect(resolution(repo, goalsDir, []).reason).toBe('default-dot-monad');
+      expect(resolution(repo, goalsDir, []).reason).toBe('default-dot-elanous');
     }
   });
 
@@ -78,8 +78,8 @@ describe('resolveGoalDocumentsDir', () => {
     }) as typeof debug.log;
     try {
       const resolved = resolveGoalDocumentsDir(repo, { readConfig: () => configWithGoalsDir(undefined) });
-      expect(resolved.reason).toBe('default-dot-monad');
-      expect(logged).toEqual([{ repoRoot: repo, directory: join(repo, '.monad', 'goals'), reason: 'default-dot-monad' }]);
+      expect(resolved.reason).toBe('default-dot-elanous');
+      expect(logged).toEqual([{ repoRoot: repo, directory: join(repo, '.elanous', 'goals'), reason: 'default-dot-elanous' }]);
     } finally {
       debug.log = original;
     }
@@ -97,13 +97,13 @@ describe('goal document directory callers', () => {
     slugFn: async () => 'goal-documents-dir',
   };
 
-  test('writeAuthoredGoal writes under .monad/goals and does not create docs/goals', async () => {
+  test('writeAuthoredGoal writes under .elanous/goals and does not create docs/goals', async () => {
     const repo = temporaryGitRepository();
     const authored = await writeAuthoredGoal('Write the goal beside the repository, not into docs.', repo, deps, {
       now: () => new Date('2026-09-24T00:00:00Z'),
     });
 
-    expect(authored.path.startsWith(`${join(repo, '.monad', 'goals')}/`)).toBe(true);
+    expect(authored.path.startsWith(`${join(repo, '.elanous', 'goals')}/`)).toBe(true);
     expect(existsSync(authored.path)).toBe(true);
     expect(existsSync(join(repo, 'docs', 'goals'))).toBe(false);
     expect(readFileSync(authored.path, 'utf8')).toContain('Write the goal beside the repository, not into docs.');
@@ -127,8 +127,8 @@ describe('goal document directory callers', () => {
       process.chdir(repo);
       const single = queryUnfinishedRunLedgers({ dir: join(repo, 'missing-ledger'), list: () => [] });
       const federated = queryFederatedUnfinishedRunLedgers({ ledgerDirectories: [], list: () => [] });
-      expect(single.goalsDirectory).toBe(join(repo, '.monad', 'goals'));
-      expect(federated.goalsDirectory).toBe(join(repo, '.monad', 'goals'));
+      expect(single.goalsDirectory).toBe(join(repo, '.elanous', 'goals'));
+      expect(federated.goalsDirectory).toBe(join(repo, '.elanous', 'goals'));
     } finally {
       process.chdir(previous);
     }

@@ -44,7 +44,7 @@ interface FeedbackEnvelopeVectors {
   kinds: string[];
 }
 
-const feedbackEnvelopeVectorsPath = join(import.meta.dir, '..', 'monad-feedback-envelope-vectors.json');
+const feedbackEnvelopeVectorsPath = join(import.meta.dir, '..', 'elanous-feedback-envelope-vectors.json');
 const canonicalFeedbackEnvelopeVectorsPath = realpathSync(feedbackEnvelopeVectorsPath);
 const feedbackEnvelopeVectors = JSON.parse(
   readFileSync(feedbackEnvelopeVectorsPath, 'utf8'),

@@ -10,7 +10,7 @@
 // frame or a writable identity file.
 
 import { getFlags } from './feature-flags.js';
-import { getOrCreateMonadId } from './identity.js';
+import { getOrCreateElanousId } from './identity.js';
 import { getParentSpanId, getSpanId, getTraceId } from './trace-context.js';
 import { inferCategoryFromPath } from './category-infer.js';
 
@@ -42,7 +42,7 @@ export interface EnrichedLog {
   trace_id?: string;
   span_id?: string;
   parent_span_id?: string;
-  monad_id?: string;
+  elanous_id?: string;
   source?: { file?: string; line?: number; fn?: string };
   pid: number;
 }
@@ -78,8 +78,8 @@ export function enrichLogRecord(raw: RawLogInput): EnrichedLog {
   if (parent) out.parent_span_id = parent;
 
   try {
-    out.monad_id = getOrCreateMonadId();
-  } catch { /* identity write failed — leave monad_id undefined */ }
+    out.elanous_id = getOrCreateElanousId();
+  } catch { /* identity write failed — leave elanous_id undefined */ }
 
   const source: { file?: string; line?: number; fn?: string } = {};
   if (raw.filePath) source.file = raw.filePath;

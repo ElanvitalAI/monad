@@ -78,7 +78,7 @@ export function createSearchEvalFixture(
 export async function runSearchEval(
   opts: { complexity?: SearchEvalComplexity; root?: string; keepFixture?: boolean } = {},
 ): Promise<SearchEvalResult> {
-  const root = opts.root ?? mkdtempSync(join(tmpdir(), 'monad-search-eval-'));
+  const root = opts.root ?? mkdtempSync(join(tmpdir(), 'elanous-search-eval-'));
   const fixture = createSearchEvalFixture(root, { complexity: opts.complexity });
   try {
     const metrics: SearchEvalMetrics[] = [];

@@ -15,7 +15,7 @@ import { tmpdir } from 'node:os';
 import { basename, dirname, join } from 'node:path';
 import { debug } from '../debug/log.js';
 import { runGitCommand } from '../git-fs/runner.js';
-import { MONAD_RUNTIME_ARTIFACT_DIRS, MONAD_RUNTIME_ARTIFACT_PATHS } from './gate-scope.js';
+import { ELANOUS_RUNTIME_ARTIFACT_DIRS, ELANOUS_RUNTIME_ARTIFACT_PATHS } from './gate-scope.js';
 
 const GIT_TIMEOUT_MS = 30_000;
 const RSYNC_TIMEOUT_MS = 120_000;
@@ -47,7 +47,7 @@ export function stageNonGitDir(opts: { target: string; branch: string }): StageN
 
   // ① 임시 그림자 경로(대상 부모 밖·tmpdir). mkdtemp 대신 예측가능 슬러그+pid 로(관측/정리 용이).
   const slug = basename(target).replace(/[^a-zA-Z0-9._-]/g, '-');
-  const shadowPath = join(tmpdir(), `monad-shadow-${slug}-${process.pid}`);
+  const shadowPath = join(tmpdir(), `elanous-shadow-${slug}-${process.pid}`);
   // 이전 세대 잔여 정리(고아 방지·createWorktree resetExisting 정합).
   try { spawnSync('rm', ['-rf', shadowPath], { timeout: GIT_TIMEOUT_MS }); } catch { /* fail-soft */ }
 
@@ -56,8 +56,8 @@ export function stageNonGitDir(opts: { target: string; branch: string }): StageN
 
   // ③ git init + 베이스라인 커밋. 그림자 로컬 아이덴티티(전역 config 무의존).
   git(shadowPath, ['init', '-b', 'shadow-base']);
-  git(shadowPath, ['config', 'user.email', 'monad-shadow@local']);
-  git(shadowPath, ['config', 'user.name', 'monad-shadow']);
+  git(shadowPath, ['config', 'user.email', 'elanous-shadow@local']);
+  git(shadowPath, ['config', 'user.name', 'elanous-shadow']);
   git(shadowPath, ['add', '-A']);
   const commit = git(shadowPath, ['commit', '-m', 'shadow baseline (pre-edit)', '--allow-empty']);
   const base = git(shadowPath, ['rev-parse', 'HEAD']).out.trim() || 'HEAD';
@@ -93,15 +93,15 @@ export function stageFile(opts: { target: string; branch: string }): StageFileRe
   if (statSync(target).isDirectory()) throw new Error(`stageFile: 파일 아님(디렉토리) — ${target}`);
   const fileName = basename(target);
   const slug = fileName.replace(/[^a-zA-Z0-9._-]/g, '-');
-  const shadowPath = join(tmpdir(), `monad-shadow-file-${slug}-${process.pid}`);
+  const shadowPath = join(tmpdir(), `elanous-shadow-file-${slug}-${process.pid}`);
   try { spawnSync('rm', ['-rf', shadowPath], { timeout: GIT_TIMEOUT_MS }); } catch { /* fail-soft */ }
 
   spawnSync('mkdir', ['-p', shadowPath], { timeout: GIT_TIMEOUT_MS });
   cpSync(target, join(shadowPath, fileName));
 
   git(shadowPath, ['init', '-b', 'shadow-base']);
-  git(shadowPath, ['config', 'user.email', 'monad-shadow@local']);
-  git(shadowPath, ['config', 'user.name', 'monad-shadow']);
+  git(shadowPath, ['config', 'user.email', 'elanous-shadow@local']);
+  git(shadowPath, ['config', 'user.name', 'elanous-shadow']);
   git(shadowPath, ['add', '-A']);
   const commit = git(shadowPath, ['commit', '-m', 'shadow baseline (pre-edit)', '--allow-empty']);
   const base = git(shadowPath, ['rev-parse', 'HEAD']).out.trim() || 'HEAD';
@@ -172,7 +172,7 @@ export function applyShadowToTarget(opts: { shadowPath: string; target: string; 
     return { backup, applied: false, log: 'rsync 미설치 → 적용 안 함(백업만 생성·fail-closed). 수동 적용 필요.' };
   }
   // rsync 는 후행 슬래시로 "디렉토리 내용" 을 복사한다(src/ → dst/). 둘 다 슬래시 붙임.
-  const runtimeExcludes = [...MONAD_RUNTIME_ARTIFACT_PATHS, ...MONAD_RUNTIME_ARTIFACT_DIRS]
+  const runtimeExcludes = [...ELANOUS_RUNTIME_ARTIFACT_PATHS, ...ELANOUS_RUNTIME_ARTIFACT_DIRS]
     .map((path) => `--exclude=${path}`);
   const r = spawnSync('rsync', ['-a', '--delete', '--exclude=.git', ...runtimeExcludes, `${shadowPath}/`, `${target}/`], {
     encoding: 'utf8', timeout: RSYNC_TIMEOUT_MS, maxBuffer: 16 * 1024 * 1024,

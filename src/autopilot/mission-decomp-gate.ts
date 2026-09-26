@@ -52,7 +52,7 @@ export type GateJudge = (prompt: string) => Promise<string>;
 /** 게이팅 판단 모델 = sol(대표 2026-07-18·계층 재정립) — decomp-gate 는 전체 분해를 종합해 아크 정합·
  *  의존성·범위를 판정하는 **코어/조율** 판단이다. 조율은 최고 모델(sol)이 값어치 있고, 게이팅은 미션당
  *  1~2회라 비용 감당 가능. per-phase critique(개별·병렬 20개)는 terra 로 내린다(단순 반복 판정). */
-const GATE_MODEL = process.env.MONAD_DECOMP_GATE_MODEL || tierModel('best');
+const GATE_MODEL = process.env.ELANOUS_DECOMP_GATE_MODEL || tierModel('best');
 
 async function defaultGateJudge(prompt: string): Promise<string> {
   const { streamLLM, resolveDefaultProvider } = await import('../llm.js');
@@ -65,9 +65,9 @@ async function defaultGateJudge(prompt: string): Promise<string> {
 /** 게이팅 프롬프트(순수·ASCII+한글) — 정황 + 페이즈 → verdict JSON 요청. */
 export function buildGatePrompt(phases: readonly DecompCritiquePhase[], ctx: DecompGateContext): string {
   const lines: string[] = [
-    'You are a decomposition GATE agent for the monad codebase. Judge whether a mission decomposition is',
+    'You are a decomposition GATE agent for the elanous codebase. Judge whether a mission decomposition is',
     'ready to BUILD, or needs revision, or should be rejected. You gate quality — natural-language judgment,',
-    'NOT rigid schema. monad is a large mature codebase; extending existing assets across MULTIPLE ARCS in one',
+    'NOT rigid schema. elanous is a large mature codebase; extending existing assets across MULTIPLE ARCS in one',
     'mission is normal and GOOD. Do NOT reject merely for breadth if arcs/phases cover it coherently.',
     '',
     'Verdict rules:',

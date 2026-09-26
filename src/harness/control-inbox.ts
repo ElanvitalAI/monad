@@ -1,13 +1,13 @@
 import { existsSync, linkSync, mkdirSync, readdirSync, readFileSync, renameSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { randomUUID } from 'node:crypto';
 import { basename, dirname, isAbsolute, join } from 'node:path';
-import { monadStateRoot } from '../autopilot/state-paths.js';
+import { elanousStateRoot } from '../autopilot/state-paths.js';
 import { debug } from '../debug/log.js';
 import { normalizeSpaceId } from './harness-space.js';
 import { decodeDetachedFrame, encodeDetachedFrame } from './dispatch-detached.js';
 
 /** Final parent-resolved inbox directory handed to a child across state-root boundaries. */
-export const CONTROL_INBOX_DIR_ENV = 'MONAD_CONTROL_INBOX_DIR';
+export const CONTROL_INBOX_DIR_ENV = 'ELANOUS_CONTROL_INBOX_DIR';
 
 export interface ControlInboxOptions {
   env?: NodeJS.ProcessEnv;
@@ -88,8 +88,8 @@ export function decodeControlMemoFrame(line: string): ControlMemoPayload | null 
 }
 
 function stateRoot(env: NodeJS.ProcessEnv): string {
-  const configured = env.MONAD_STATE_DIR?.trim();
-  return configured || monadStateRoot();
+  const configured = env.ELANOUS_STATE_DIR?.trim();
+  return configured || elanousStateRoot();
 }
 
 /** Resolve the legacy inbox directory from the unchanged harness-space identifier. */

@@ -39,7 +39,7 @@ export const PTY_BUDGET_GRANT: NonNullable<LLMOpts['budgetGrant']> = {
 };
 
 /** ④ Surface-agnostic terminal mission discipline (extracted verbatim
- *  from the telegram agent's monadSelfAccessPrompt, 2026-07-12). Joined
+ *  from the telegram agent's elanousSelfAccessPrompt, 2026-07-12). Joined
  *  into the system prompt of every terminal-capable self turn. */
 export const TERMINAL_MISSION_DISCIPLINE = [
   '[터미널 미션 규율]',
@@ -107,7 +107,7 @@ export interface TerminalCapableBase {
   inlineImages?: boolean;
 }
 
-const TERMINAL_CAPABLE_TURN_BRAND = Symbol('monad.terminal-capable-turn');
+const TERMINAL_CAPABLE_TURN_BRAND = Symbol('elanous.terminal-capable-turn');
 
 export interface TerminalCapableTurn {
   specs: LLMToolSpec[];

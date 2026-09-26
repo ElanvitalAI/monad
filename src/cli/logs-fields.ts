@@ -150,25 +150,25 @@ export function findLogFields(rows: readonly LogStoreRow[], withinQueryWindow: b
   }).sort((a, b) => a.category.localeCompare(b.category) || a.event.localeCompare(b.event) || a.field.localeCompare(b.field));
 }
 
-/** `monad logs fields` — 모든 최상위 data 필드의 존재 기간을 target별 NDJSON으로 낸다. */
+/** `elanous logs fields` — 모든 최상위 data 필드의 존재 기간을 target별 NDJSON으로 낸다. */
 export function runLogsFields(opts: LogsFieldsOpts, deps: LogsFieldsDeps = DEFAULT_DEPS): number {
   const sinceMs = opts.since ? parseSince(opts.since) : undefined;
   if (opts.since && sinceMs === null) {
-    deps.writeError(`monad logs fields: --since 파싱 불가 '${opts.since}' (30s|15m|2h|7d 또는 ISO)`);
+    deps.writeError(`elanous logs fields: --since 파싱 불가 '${opts.since}' (30s|15m|2h|7d 또는 ISO)`);
     return 1;
   }
   const limit = opts.limit === undefined ? undefined : Number(opts.limit);
   if (limit !== undefined && (!Number.isInteger(limit) || limit < 1)) {
-    deps.writeError('monad logs fields: --limit 은 양의 정수');
+    deps.writeError('elanous logs fields: --limit 은 양의 정수');
     return 1;
   }
   const valueLimit = opts.values === undefined ? undefined : opts.values === true ? DEFAULT_VALUE_LIMIT : Number(opts.values);
   if (valueLimit !== undefined && (!Number.isInteger(valueLimit) || valueLimit < 1)) {
-    deps.writeError('monad logs fields: --values 는 양의 정수');
+    deps.writeError('elanous logs fields: --values 는 양의 정수');
     return 1;
   }
   const resolved = deps.resolveTargets({ test: opts.test, instance: opts.instance, all: opts.all, includeTest: opts.includeTest });
-  if (resolved.error) { deps.writeError(`monad logs fields: ${resolved.error}`); return 1; }
+  if (resolved.error) { deps.writeError(`elanous logs fields: ${resolved.error}`); return 1; }
   const validSinceMs: number | undefined = sinceMs ?? undefined;
   const query: Omit<LogQuery, 'beforeId' | 'limit'> = {
     ...(csv(opts.category) ? { categories: csv(opts.category) } : {}),

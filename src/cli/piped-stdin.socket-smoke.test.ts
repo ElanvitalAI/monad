@@ -1,6 +1,6 @@
 // ★ I-21(2026-07-31) — **자동화에서만 나는 결함을 자동화에서 잰다.**
 //
-// `OBS-T3` 는 `monad self log` 가 **17분 32초** 행이었던 사건이다. 원인은
+// `OBS-T3` 는 `elanous self log` 가 **17분 32초** 행이었던 사건이다. 원인은
 // `if (!process.stdin.isTTY) { for await (const c of process.stdin) … }` 인데, 하니스의 stdin 은
 // **닫히지 않는 unix 소켓**이라 EOF 가 영원히 안 온다. ⛔ 사람이 터미널에서 치면 `isTTY` 라 **안 난다.**
 //

@@ -1,6 +1,6 @@
 /**
  * logs_query 도구 계약 (통합 로그 패브릭 LF3 · 2026-07-13).
- * MONAD_STATE_DIR 을 임시 디렉토리로 — 실 ~/.monad/logs 미접촉.
+ * ELANOUS_STATE_DIR 을 임시 디렉토리로 — 실 ~/.elanous/logs 미접촉.
  */
 import { afterEach, beforeEach, describe, expect, it, spyOn } from 'bun:test';
 import { mkdtempSync, rmSync } from 'node:fs';
@@ -15,13 +15,13 @@ let dir: string;
 let prevStateDir: string | undefined;
 
 beforeEach(() => {
-  prevStateDir = process.env.MONAD_STATE_DIR;
+  prevStateDir = process.env.ELANOUS_STATE_DIR;
   dir = mkdtempSync(join(tmpdir(), 'logs-tool-'));
-  process.env.MONAD_STATE_DIR = dir;
+  process.env.ELANOUS_STATE_DIR = dir;
 });
 afterEach(() => {
-  if (prevStateDir === undefined) delete process.env.MONAD_STATE_DIR;
-  else process.env.MONAD_STATE_DIR = prevStateDir;
+  if (prevStateDir === undefined) delete process.env.ELANOUS_STATE_DIR;
+  else process.env.ELANOUS_STATE_DIR = prevStateDir;
   try { rmSync(dir, { recursive: true, force: true }); } catch { /* noop */ }
 });
 
@@ -142,7 +142,7 @@ describe('logs_query 도구', () => {
     seed();
     const r = await dispatchLogsQuery({ grep: 'list.ok' }) as Record<string, unknown>;
     expect(r.count).toBe(1);
-    expect(r.note).toBe('크로스서피스 디버그 로그(최근순·READ-ONLY). 레벨 변경은 CLI `monad logs level <lvl>` 또는 PWA 대시보드에서.');
+    expect(r.note).toBe('크로스서피스 디버그 로그(최근순·READ-ONLY). 레벨 변경은 CLI `elanous logs level <lvl>` 또는 PWA 대시보드에서.');
     expect('zeroReason' in r).toBe(false);
     expect('retryGrepTokens' in r).toBe(false);
   });

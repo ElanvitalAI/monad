@@ -45,14 +45,14 @@ export function buildSessionGuidanceAddendum(
   const items: string[] = [];
 
   // Skill auto-trigger (BLOCKING REQUIREMENT pattern from ref's
-  // SkillTool/prompt.ts:190). monad's skill activation isn't a tool
+  // SkillTool/prompt.ts:190). elanous's skill activation isn't a tool
   // call — it's slash-router driven (`/<skill-name>` → harness routes
   // to skill runner). The model never invokes skills directly. But
   // when the user's prompt MATCHES an available skill, the model
   // should suggest the slash form rather than answering inline with
   // anchor-only synthesis. This directive doesn't fire on tool match
-  // (monad has no SkillTool) — it fires whenever a Skill-aware
-  // surface is in play (most monad surfaces). Keep this concise; the
+  // (elanous has no SkillTool) — it fires whenever a Skill-aware
+  // surface is in play (most elanous surfaces). Keep this concise; the
   // skill-route-runtime emits matched-skill hints in tool_results
   // when detection fires.
   items.push(
@@ -91,7 +91,7 @@ export function buildSessionGuidanceAddendum(
     );
   }
 
-  // EnterPlanMode / ExitPlanMode — plan mode discipline. monad-
+  // EnterPlanMode / ExitPlanMode — plan mode discipline. elanous-
   // specific (no direct ref equivalent). When the user enters plan
   // mode, only the plan file is writable; investigation tools are
   // read-only. The model should draft a decision-complete plan
@@ -102,7 +102,7 @@ export function buildSessionGuidanceAddendum(
     );
   }
 
-  // Self-conversation via `monad chat` — only meaningful when Bash is
+  // Self-conversation via `elanous chat` — only meaningful when Bash is
   // exposed (we shell out to the CLI). The capability is opt-in via
   // user judgement: the model should self-spawn when a multi-turn
   // refinement is genuinely useful (debugging its own response, log
@@ -110,7 +110,7 @@ export function buildSessionGuidanceAddendum(
   // 내부 문서 `MANUAL-llm-pipeline-validation` (Part B).
   if (hasTool(active, 'Bash', 'bash')) {
     items.push(
-      'For self-driven multi-turn work (refining your own answer, analyzing your own forensic log, delegating a sub-task), you may shell out to the CLI: `monad chat --new --json "<text>"` returns `{sessionId, ...}`; follow up with `monad chat --session <id> --json "<text>"`. Provider rotation between turns is fine — same session id keeps the history. Use only when genuinely useful; do not self-spawn for ordinary single-turn answers. Full reference: `docs/manual/MANUAL-llm-pipeline-validation.md` (Part B).',
+      'For self-driven multi-turn work (refining your own answer, analyzing your own forensic log, delegating a sub-task), you may shell out to the CLI: `elanous chat --new --json "<text>"` returns `{sessionId, ...}`; follow up with `elanous chat --session <id> --json "<text>"`. Provider rotation between turns is fine — same session id keeps the history. Use only when genuinely useful; do not self-spawn for ordinary single-turn answers. Full reference: `docs/manual/MANUAL-llm-pipeline-validation.md` (Part B).',
     );
   }
 

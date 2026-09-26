@@ -14,9 +14,9 @@ import {
 
 function frameEnvelope(terminalId: string, frame: string, instance: string, at: number): string {
   return [
-    `[monad/term/terminalFrame] ${terminalId}`,
+    `[elanous/term/terminalFrame] ${terminalId}`,
     JSON.stringify({ terminalId, frame, instance, at }),
-    `<<monad-term-end ${terminalId}>>`,
+    `<<elanous-term-end ${terminalId}>>`,
   ].join('\n');
 }
 
@@ -58,7 +58,7 @@ describe('applyTuiFrameEnvelope', () => {
   });
 
   it('returns the same reference for non-frame envelopes', () => {
-    const out = '[monad/term/terminalOutput] t\n{"terminalId":"t","data":"x"}\n<<monad-term-end t>>';
+    const out = '[elanous/term/terminalOutput] t\n{"terminalId":"t","data":"x"}\n<<elanous-term-end t>>';
     expect(applyTuiFrameEnvelope(emptyTuiObserveState, out)).toBe(emptyTuiObserveState);
   });
 
@@ -98,7 +98,7 @@ describe('stripAnsi', () => {
   });
 
   it('leaves plain text (incl. box-drawing) untouched', () => {
-    expect(stripAnsi('┌─ monad ─┐\n│ hi │')).toBe('┌─ monad ─┐\n│ hi │');
+    expect(stripAnsi('┌─ elanous ─┐\n│ hi │')).toBe('┌─ elanous ─┐\n│ hi │');
   });
 });
 

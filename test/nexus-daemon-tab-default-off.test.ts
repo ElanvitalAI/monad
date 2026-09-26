@@ -4,15 +4,15 @@ import { describe, expect, test, beforeEach, afterEach } from 'bun:test';
 
 import { shouldRegisterDaemon } from '../src/nexus/index.js';
 
-const ORIGINAL_ENV = process.env.MONAD_REGISTER_DAEMON;
+const ORIGINAL_ENV = process.env.ELANOUS_REGISTER_DAEMON;
 
 beforeEach(() => {
-  delete process.env.MONAD_REGISTER_DAEMON;
+  delete process.env.ELANOUS_REGISTER_DAEMON;
 });
 
 afterEach(() => {
-  if (ORIGINAL_ENV !== undefined) process.env.MONAD_REGISTER_DAEMON = ORIGINAL_ENV;
-  else delete process.env.MONAD_REGISTER_DAEMON;
+  if (ORIGINAL_ENV !== undefined) process.env.ELANOUS_REGISTER_DAEMON = ORIGINAL_ENV;
+  else delete process.env.ELANOUS_REGISTER_DAEMON;
 });
 
 describe('T5.F · shouldRegisterDaemon', () => {
@@ -28,23 +28,23 @@ describe('T5.F · shouldRegisterDaemon', () => {
     expect(shouldRegisterDaemon({ registerDaemonTab: false })).toBe(false);
   });
 
-  test('MONAD_REGISTER_DAEMON=1 → true', () => {
-    process.env.MONAD_REGISTER_DAEMON = '1';
+  test('ELANOUS_REGISTER_DAEMON=1 → true', () => {
+    process.env.ELANOUS_REGISTER_DAEMON = '1';
     expect(shouldRegisterDaemon({})).toBe(true);
   });
 
-  test('MONAD_REGISTER_DAEMON=true → true', () => {
-    process.env.MONAD_REGISTER_DAEMON = 'true';
+  test('ELANOUS_REGISTER_DAEMON=true → true', () => {
+    process.env.ELANOUS_REGISTER_DAEMON = 'true';
     expect(shouldRegisterDaemon({})).toBe(true);
   });
 
-  test('MONAD_REGISTER_DAEMON=on → true', () => {
-    process.env.MONAD_REGISTER_DAEMON = 'on';
+  test('ELANOUS_REGISTER_DAEMON=on → true', () => {
+    process.env.ELANOUS_REGISTER_DAEMON = 'on';
     expect(shouldRegisterDaemon({})).toBe(true);
   });
 
-  test('MONAD_REGISTER_DAEMON=0 → false', () => {
-    process.env.MONAD_REGISTER_DAEMON = '0';
+  test('ELANOUS_REGISTER_DAEMON=0 → false', () => {
+    process.env.ELANOUS_REGISTER_DAEMON = '0';
     expect(shouldRegisterDaemon({})).toBe(false);
   });
 
@@ -53,7 +53,7 @@ describe('T5.F · shouldRegisterDaemon', () => {
   });
 
   test('opts override beats env (registerDaemonTab=false + env=1 → false)', () => {
-    process.env.MONAD_REGISTER_DAEMON = '1';
+    process.env.ELANOUS_REGISTER_DAEMON = '1';
     expect(shouldRegisterDaemon({ registerDaemonTab: false })).toBe(false);
   });
 });

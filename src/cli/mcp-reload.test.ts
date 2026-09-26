@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, test } from 'bun:test';
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { resetMonadConfigDir, setMonadConfigDir } from '../monad-config-dir.js';
+import { resetElanousConfigDir, setElanousConfigDir } from '../elanous-config-dir.js';
 import { runMcpReload } from './mcp-reload.js';
 
 const recorder = () => {
@@ -16,7 +16,7 @@ const jsonRes = (body: unknown, status = 200) =>
 
 const withConfigDir = (token?: string | null) => {
   const dir = mkdtempSync(join(tmpdir(), 'mcp-reload-acp-'));
-  setMonadConfigDir(dir);
+  setElanousConfigDir(dir);
   if (typeof token === 'string') writeFileSync(join(dir, 'acp-token'), token, { mode: 0o600 });
   return dir;
 };
@@ -25,18 +25,18 @@ let isolatedDir: string | undefined;
 
 beforeEach(() => {
   isolatedDir = mkdtempSync(join(tmpdir(), 'mcp-reload-iso-'));
-  setMonadConfigDir(isolatedDir);
+  setElanousConfigDir(isolatedDir);
 });
 
 afterEach(() => {
-  resetMonadConfigDir();
+  resetElanousConfigDir();
   if (isolatedDir) {
     rmSync(isolatedDir, { recursive: true, force: true });
     isolatedDir = undefined;
   }
 });
 
-describe('monad mcp reload', () => {
+describe('elanous mcp reload', () => {
   test('데몬 admin 경로로 POST 한다', async () => {
     const seen: { url?: string; method?: string } = {};
     const r = recorder();
@@ -250,7 +250,7 @@ describe('monad mcp reload', () => {
 
   test('토큰 파일이 안 열려도 죽지 않고 헤더 없이 보낸다', async () => {
     const dir = mkdtempSync(join(tmpdir(), 'mcp-reload-unreadable-'));
-    setMonadConfigDir(dir);
+    setElanousConfigDir(dir);
     mkdirSync(join(dir, 'acp-token'));
     try {
       const seen: { headers?: HeadersInit } = {};

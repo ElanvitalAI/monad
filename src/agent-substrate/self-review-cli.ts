@@ -1,4 +1,4 @@
-// ── `monad self review` 액션 seam (2026-07-27) ────────────────────────────────
+// ── `elanous self review` 액션 seam (2026-07-27) ────────────────────────────────
 //
 // ⚠️ **왜 뽑았나** — 이 트랙이 고친 결함이 payload 가 아니라 **배선**이었다:
 // `registerStandaloneLogSink('self-review')` 가 `if (useAcp) { … }` 블록 **안**에 있어
@@ -753,7 +753,7 @@ function finalShardEntry(entries: readonly RunLedgerEntry[]): RunLedgerEntry | u
 
 function runIdsFromReviewText(text: string): string[] {
   const ids = new Set<string>();
-  for (const match of text.matchAll(/\b(?:runId:\s*|monad\s+self\s+run-ledger\s+)([A-Za-z0-9._:-]{3,160})/g)) {
+  for (const match of text.matchAll(/\b(?:runId:\s*|elanous\s+self\s+run-ledger\s+)([A-Za-z0-9._:-]{3,160})/g)) {
     const id = match[1]?.replace(/[),.;]+$/g, '');
     if (id) ids.add(id);
   }
@@ -1132,7 +1132,7 @@ export function renderReviewerContextStatus(loaded: LoadedReviewerContext, decom
   return `Reviewer context: ${loaded.items.length} loaded, ${loaded.failed.length} not loaded.${source}${truncation}${decompositionStatus}${labels ? `\n${labels}` : ''}${failures ? `\n${failures}` : ''}`;
 }
 
-/** `monad self review <pr...>` 본문. read-only — 머지하지 않는다. */
+/** `elanous self review <pr...>` 본문. read-only — 머지하지 않는다. */
 export async function runSelfReviewCliCommand(
   prArgs: string[],
   opts: SelfReviewCliOpts,
@@ -1149,7 +1149,7 @@ export async function runSelfReviewCliCommand(
       invalidPrArgsCount: invalidPrArgs.length,
       invalidPrArgs: safeInvalidPrArgs,
     }, { level: 'warn' });
-    deps.error(`PR 인자가 올바르지 않습니다: ${safeInvalidPrArgs.join(', ')}. PR 번호는 숫자 형식이어야 합니다 (예: monad self review 5502).`);
+    deps.error(`PR 인자가 올바르지 않습니다: ${safeInvalidPrArgs.join(', ')}. PR 번호는 숫자 형식이어야 합니다 (예: elanous self review 5502).`);
     return { results: [] };
   }
 
@@ -1395,7 +1395,7 @@ export async function runSelfReviewCliCommand(
       { level: review.reviewed === false ? 'warn' : 'info' });
     // --acp 는 대표가 명시 요청한 리뷰 — fail-soft(reviewed=false)면 조용히 pass 하지 말고 표면화(관측=acp-review).
     if (useAcp && review.reviewed === false) {
-      const err = 'ACP 리뷰 실행 실패(reviewed=false) — 관측: monad logs --category acp-review';
+      const err = 'ACP 리뷰 실행 실패(reviewed=false) — 관측: elanous logs --category acp-review';
       const contextOutput = reviewerContextOutput(reviewerContext, decompositionContext);
       if (opts.json) results.push({ pr, error: err, ...review, verdict: null, ...reviewProvenance, ...provenance, ...contextOutput });
       else deps.error(`PR ${pr}: ${err}\n${renderProvenance(diffRead)}\n${reviewerContextStatus}`);

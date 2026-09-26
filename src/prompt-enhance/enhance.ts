@@ -1,9 +1,9 @@
-// ── monad 내부 프롬프트 인핸서 (범용·가산적) ──
+// ── elanous 내부 프롬프트 인핸서 (범용·가산적) ──
 //
 // **범용 프롬프트 인핸서** — 어떤 실행자(코딩 에이전트·내부 스킬·goal-loop·오케스트레이터)의
 // 어떤 작업(코드·콘텐츠·리서치·집행)이든, 들어온 원문 스펙을 실행 가능하게 **가산 보강**한다.
-// monad 실행 substrate 의 L2 능력 모듈(cross-cutting) — 특정 스킬/산출물 전용이 아니다.
-//   (2계층: 외부=원문 verbatim 전송·재해석 금지 / monad 내부=이 인핸서가 가산 보강.)
+// elanous 실행 substrate 의 L2 능력 모듈(cross-cutting) — 특정 스킬/산출물 전용이 아니다.
+//   (2계층: 외부=원문 verbatim 전송·재해석 금지 / elanous 내부=이 인핸서가 가산 보강.)
 //
 // ⭐제1 불변식 — 원문 verbatim 보존: 원문은 절대 수정/요약/삭제/재해석하지 않는다.
 //   인핸싱은 **가산(additive)** 만 — 원문을 그대로 임베딩하고 그 위에 실행 스캐폴드(목표·제약·
@@ -89,7 +89,7 @@ export interface EnhanceResult {
 export type ChecklistUse = 'coverage-gate' | 'authoring';
 
 export interface EnhanceOpts {
-  /** 스캐폴드 생성 모델(기본 MONAD_PROMPT_ENHANCE_MODEL || MONAD_PR_REVIEW_MODEL || tierModel('better')). */
+  /** 스캐폴드 생성 모델(기본 ELANOUS_PROMPT_ENHANCE_MODEL || ELANOUS_PR_REVIEW_MODEL || tierModel('better')). */
   model?: string;
   /**
    * 체크리스트의 «용도». 생략하면 `coverage-gate`(종전 동작).
@@ -128,12 +128,12 @@ function askMarkerCount(ask: string): number {
 }
 
 const defaultModel = (): string =>
-  process.env.MONAD_PROMPT_ENHANCE_MODEL || process.env.MONAD_PR_REVIEW_MODEL || tierModel('better');
+  process.env.ELANOUS_PROMPT_ENHANCE_MODEL || process.env.ELANOUS_PR_REVIEW_MODEL || tierModel('better');
 
 /** 스캐폴드 생성 LLM 시스템 프롬프트 — 가산·원문불가침 규율. */
 const enhanceSystem = (deliverableHint?: string, wantsScqa = false, checklistUse: ChecklistUse = 'coverage-gate'): string =>
   [
-    '너는 monad 의 범용 프롬프트 인핸서다. 사용자 원문(스펙)을 실행자(코딩 에이전트·내부 스킬·goal-loop 등)가 완수하도록 **가산적으로만** 보강한다.',
+    '너는 elanous 의 범용 프롬프트 인핸서다. 사용자 원문(스펙)을 실행자(코딩 에이전트·내부 스킬·goal-loop 등)가 완수하도록 **가산적으로만** 보강한다.',
     '',
     // openclaw content-class 통찰: 사용자 원문은 "지시 컨텍스트"(요약 대상 아님)지, 외부 웹 콘텐츠(요약 대상)가 아니다.
     '원문은 "지시 컨텍스트"다 — 외부 웹 콘텐츠가 아니다. 요약·압축·일반화 대상이 아니라, 그대로 보존하고 그 위에 스캐폴드만 얹는 대상이다.',
@@ -303,7 +303,7 @@ function assemble(original: string, goal: string, constraints: string[], checkli
     original,
     FENCE,
     '',
-    '[monad 인핸싱 — 가산 스캐폴드. 충돌 시 위 원문이 항상 우선]',
+    '[elanous 인핸싱 — 가산 스캐폴드. 충돌 시 위 원문이 항상 우선]',
   ];
   if (goal) parts.push(`## 목표\n${goal}`);
   if (directoryMeasurement) parts.push(`## 저작기 관측 실물 수\n${directoryMeasurement}`);

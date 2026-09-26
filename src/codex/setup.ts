@@ -4,7 +4,7 @@
 // three pieces already shipped (oauth-codex.loginWithCodex, the model
 // catalog, the user-config writer) into one UX:
 //
-//   monad codex setup
+//   elanous codex setup
 //   /codex-setup          (from the TUI chat input)
 //   onboarding wizard (step 1, codex branch)
 //
@@ -95,7 +95,7 @@ export async function pickCodexAuthMode(io: WizardIO): Promise<CodexAuthMode> {
     [
       { key: '1', label: 'OAuth (recommended — ChatGPT account via device code)', value: 'oauth' },
       { key: '2', label: 'API key (developer key from platform.openai.com)', value: 'apikey' },
-      { key: '3', label: 'Skip — configure later via `monad login openai-codex`', value: 'skip' },
+      { key: '3', label: 'Skip — configure later via `elanous login openai-codex`', value: 'skip' },
     ],
     { defaultIndex: 0 },
     undefined,
@@ -107,7 +107,7 @@ export async function pickCodexAuthMode(io: WizardIO): Promise<CodexAuthMode> {
 //
 // When a user has previously configured `provider: local` against LM
 // Studio / Ollama / vLLM, their `llm.baseUrl` lands on a LAN host
-// (e.g. http://192.168.0.50:1234/v1). Running `monad codex setup`
+// (e.g. http://192.168.0.50:1234/v1). Running `elanous codex setup`
 // flips `provider` to openai-codex but — by design, for users who run
 // a Codex-compatible proxy — preserves baseUrl. The result is every
 // Codex request being routed to the local OpenAI-compatible server,
@@ -270,7 +270,7 @@ async function runCodexSetupImpl(
     } catch (err: any) {
       io.print(`  ! OAuth failed: ${err?.message ?? err}`);
       io.print(`    Navigate to ${CODEX_DEVICE_LOGIN_URL} manually if the browser didn't open,`);
-      io.print(`    or re-run \`monad login openai-codex\` later.`);
+      io.print(`    or re-run \`elanous login openai-codex\` later.`);
     }
   } else if (authMode === 'oauth-keep') {
     // User chose to keep the existing tokens — no network call, just
@@ -290,7 +290,7 @@ async function runCodexSetupImpl(
       io.print('  ! No key entered. You\'ll need to add llm.apiKey later.');
     }
   } else {
-    io.print('  → skipped auth. Run `monad login openai-codex` before first use.');
+    io.print('  → skipped auth. Run `elanous login openai-codex` before first use.');
   }
 
   // 2) Model pick
@@ -323,7 +323,7 @@ async function runCodexSetupImpl(
       authMode === 'oauth'      ? codexFreshLoginAuthLabel() :
       authMode === 'oauth-keep' ? 'OAuth (kept existing tokens)' :
       authMode === 'apikey'     ? (apiKey ? 'API key' : 'API key (unset — add llm.apiKey later)') :
-                                  'skipped — run `monad login openai-codex` before use';
+                                  'skipped — run `elanous login openai-codex` before use';
     io.print(`  Auth mode : ${authLabel}`);
   }
   io.print(`  Model     : ${model}`);
@@ -331,10 +331,10 @@ async function runCodexSetupImpl(
   if (m) io.print(`              ${m.label} — ${m.description}`);
   io.print('');
   io.print('  Try it:');
-  io.print('    monad chat "write a function that reverses a linked list"');
+  io.print('    elanous chat "write a function that reverses a linked list"');
   io.print('');
-  io.print('  Change model later:  edit llm.model in ~/.config/monad/config.json');
-  io.print('                       or re-run `monad codex setup`.');
+  io.print('  Change model later:  edit llm.model in ~/.config/elanous/config.json');
+  io.print('                       or re-run `elanous codex setup`.');
   io.print('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
 
   return { authMode, model, config: marked };

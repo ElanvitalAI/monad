@@ -4,7 +4,7 @@ import { mkdtempSync, mkdirSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { buildImporterTestIndex } from './importer-test-index.js';
-import { deriveRelatedTests, isMonadRuntimeArtifactPath, resolveGateScope } from './gate-scope.js';
+import { deriveRelatedTests, isElanousRuntimeArtifactPath, resolveGateScope } from './gate-scope.js';
 import { runIntegrityGate } from '../autopilot/build/integrity-gate.js';
 
 /** 존재 판정 스텁 — 실제 파일시스템 무접촉(순수 계약 검증). */
@@ -75,30 +75,30 @@ describe('deriveRelatedTests — 실측된 레포 관례 3종', () => {
   });
 });
 
-describe('monad 런타임 산출물 분리와 출력 관측', () => {
+describe('elanous 런타임 산출물 분리와 출력 관측', () => {
   test('알려진 상태 경로만 산출물로 판정하고 유사 사용자 경로는 제외한다', () => {
-    for (const path of ['.monad/debug/debug-x.log', '.monad-child-liveness.hb', '.monad-se/state.json', '.monad-goal-grounding-build/state.json', '.monad-session/state.json']) {
-      expect(isMonadRuntimeArtifactPath(path)).toBe(true);
+    for (const path of ['.elanous/debug/debug-x.log', '.elanous-child-liveness.hb', '.elanous-se/state.json', '.elanous-goal-grounding-build/state.json', '.elanous-session/state.json']) {
+      expect(isElanousRuntimeArtifactPath(path)).toBe(true);
     }
-    for (const path of ['src/.monaco/x.ts', 'src/greet.ts', 'package.json', 'monad/debug/debug-x.log']) {
-      expect(isMonadRuntimeArtifactPath(path)).toBe(false);
+    for (const path of ['src/.monaco/x.ts', 'src/greet.ts', 'package.json', 'elanous/debug/debug-x.log']) {
+      expect(isElanousRuntimeArtifactPath(path)).toBe(false);
     }
   });
 
-  test('혼합 변경은 사용자 미검증과 monad 산출물을 보존하고 출력에서 각각의 수를 알린다', () => {
-    const scope = resolveGateScope(['src/greet.ts', 'package.json', '.monad/debug/debug-x.log', '.monad-child-liveness.hb'], none);
+  test('혼합 변경은 사용자 미검증과 elanous 산출물을 보존하고 출력에서 각각의 수를 알린다', () => {
+    const scope = resolveGateScope(['src/greet.ts', 'package.json', '.elanous/debug/debug-x.log', '.elanous-child-liveness.hb'], none);
 
     expect(scope.reason).toBe('no-related-tests');
     expect(scope.unverified).toEqual(['src/greet.ts', 'package.json']);
-    expect(scope.monadRuntimeArtifacts).toEqual(['.monad/debug/debug-x.log', '.monad-child-liveness.hb']);
+    expect(scope.elanousRuntimeArtifacts).toEqual(['.elanous/debug/debug-x.log', '.elanous-child-liveness.hb']);
   });
 
   test('산출물만 변경돼도 버리지 않고 unverified 0과 산출물 수를 따로 출력한다', () => {
-    const scope = resolveGateScope(['.monad/debug/chat-x.log', '.monad-child-liveness.hb'], none);
+    const scope = resolveGateScope(['.elanous/debug/chat-x.log', '.elanous-child-liveness.hb'], none);
 
     expect(scope.reason).toBe('no-changes');
     expect(scope.unverified).toEqual([]);
-    expect(scope.monadRuntimeArtifacts).toEqual(['.monad/debug/chat-x.log', '.monad-child-liveness.hb']);
+    expect(scope.elanousRuntimeArtifacts).toEqual(['.elanous/debug/chat-x.log', '.elanous-child-liveness.hb']);
   });
 });
 
@@ -412,42 +412,42 @@ describe('deriveRelatedTests — 같은 stem 확장자 변형은 충돌이 아�
   });
 });
 
-// ── monad 런타임 산출물: 사용자 변경과 분리하되 경로 보존 ───────────────────────────────
-describe('resolveGateScope — monad 런타임 산출물은 미검증 사용자 변경이 아니다', () => {
+// ── elanous 런타임 산출물: 사용자 변경과 분리하되 경로 보존 ───────────────────────────────
+describe('resolveGateScope — elanous 런타임 산출물은 미검증 사용자 변경이 아니다', () => {
   test('닫힌 상태 경로만 산출물로 판정하고 유사 사용자 경로는 제외한다', () => {
-    for (const path of ['.monad/debug/debug-x.log', '.monad-child-liveness.hb', '.monad-se/run.log', '.monad-goal-grounding-build/x', '.monad-session/x']) {
-      expect(isMonadRuntimeArtifactPath(path)).toBe(true);
+    for (const path of ['.elanous/debug/debug-x.log', '.elanous-child-liveness.hb', '.elanous-se/run.log', '.elanous-goal-grounding-build/x', '.elanous-session/x']) {
+      expect(isElanousRuntimeArtifactPath(path)).toBe(true);
     }
-    for (const path of ['src/.monaco/x.ts', 'monad/debug/debug-x.log', '.monadish/x', 'package.json']) {
-      expect(isMonadRuntimeArtifactPath(path)).toBe(false);
+    for (const path of ['src/.monaco/x.ts', 'elanous/debug/debug-x.log', '.elanousish/x', 'package.json']) {
+      expect(isElanousRuntimeArtifactPath(path)).toBe(false);
     }
   });
 
   test('런타임 산출물은 보존하면서 unverified 에서 제외하고 사용자 변경은 남긴다', () => {
-    const s = resolveGateScope(['.monad/debug/debug-x.log', '.monad-child-liveness.hb', 'src/greet.ts', 'package.json', 'src/.monaco/x.ts'], none);
-    expect(s.monadRuntimeArtifacts).toEqual(['.monad/debug/debug-x.log', '.monad-child-liveness.hb']);
+    const s = resolveGateScope(['.elanous/debug/debug-x.log', '.elanous-child-liveness.hb', 'src/greet.ts', 'package.json', 'src/.monaco/x.ts'], none);
+    expect(s.elanousRuntimeArtifacts).toEqual(['.elanous/debug/debug-x.log', '.elanous-child-liveness.hb']);
     expect(s.unverified).toEqual(['src/greet.ts', 'package.json', 'src/.monaco/x.ts']);
     expect(s.reason).toBe('no-related-tests');
   });
 
   test('산출물만 바뀌면 경로를 보존하고 사용자 변경 없음으로 판정한다', () => {
-    const s = resolveGateScope(['.monad/debug/chat-x.log', '.monad-child-liveness.hb'], none);
-    expect(s.monadRuntimeArtifacts).toEqual(['.monad/debug/chat-x.log', '.monad-child-liveness.hb']);
+    const s = resolveGateScope(['.elanous/debug/chat-x.log', '.elanous-child-liveness.hb'], none);
+    expect(s.elanousRuntimeArtifacts).toEqual(['.elanous/debug/chat-x.log', '.elanous-child-liveness.hb']);
     expect(s.unverified).toEqual([]);
     expect(s.reason).toBe('no-changes');
     expect(s.skipTestStep).toBe(true);
   });
 
   test('혼합 입력에서도 기존 changed-tests와 derived 판정을 보존한다', () => {
-    const changedTests = resolveGateScope(['.monad/debug/debug-x.log', 'src/a.ts', 'src/a.test.ts'], has('src/a.test.ts'));
+    const changedTests = resolveGateScope(['.elanous/debug/debug-x.log', 'src/a.ts', 'src/a.test.ts'], has('src/a.test.ts'));
     expect(changedTests.reason).toBe('changed-tests');
     expect(changedTests.testArgs).toEqual(['src/a.test.ts']);
-    expect(changedTests.monadRuntimeArtifacts).toEqual(['.monad/debug/debug-x.log']);
+    expect(changedTests.elanousRuntimeArtifacts).toEqual(['.elanous/debug/debug-x.log']);
 
-    const derived = resolveGateScope(['.monad-child-liveness.hb', 'src/a.ts'], has('src/a.test.ts'));
+    const derived = resolveGateScope(['.elanous-child-liveness.hb', 'src/a.ts'], has('src/a.test.ts'));
     expect(derived.reason).toBe('derived');
     expect(derived.testArgs).toEqual(['src/a.test.ts']);
-    expect(derived.monadRuntimeArtifacts).toEqual(['.monad-child-liveness.hb']);
+    expect(derived.elanousRuntimeArtifacts).toEqual(['.elanous-child-liveness.hb']);
   });
 });
 

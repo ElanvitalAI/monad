@@ -40,7 +40,7 @@ export function bootstrapInputCore(): void {
   });
   registerAction({
     id: 'app.quit',
-    description: 'Quit monad.',
+    description: 'Quit elanous.',
     handler: () => {},
     reserved: true,
     allowOverwrite: true,

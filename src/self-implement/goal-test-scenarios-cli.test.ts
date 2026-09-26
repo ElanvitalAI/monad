@@ -6,7 +6,7 @@ import { join, resolve } from 'node:path';
 const directories: string[] = [];
 const stateDirectories: string[] = [];
 const REPO_ROOT = resolve(import.meta.dir, '..', '..');
-const BIN = resolve(REPO_ROOT, 'bin/monad.mjs');
+const BIN = resolve(REPO_ROOT, 'bin/elanous.mjs');
 
 afterEach(() => {
   for (const directory of directories.splice(0)) rmSync(directory, { recursive: true, force: true });

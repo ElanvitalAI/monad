@@ -12,7 +12,7 @@ function overrides(
   repoRoot: string | null,
   files: Record<string, string>,
   dirs: Record<string, string[]>,
-  craftDirectory = '/monad/docs/design/craft',
+  craftDirectory = '/elanous/docs/design/craft',
 ): Partial<DesignCheckRouteDeps> {
   return {
     repoRoot: () => repoRoot,
@@ -30,7 +30,7 @@ function overrides(
   };
 }
 
-const CRAFT = '/monad/docs/design/craft';
+const CRAFT = '/elanous/docs/design/craft';
 
 describe('GET /v1/design-check — healthy repository', () => {
   test('carries all three rulebook lists plus the CLI exit code', () => {
@@ -48,10 +48,10 @@ describe('GET /v1/design-check — healthy repository', () => {
     expect(body.exitCode).toBe(0);
   });
 
-  test('⭐ the two roots are DIFFERENT — DESIGN.md from the repo, craft/ from monad', () => {
+  test('⭐ the two roots are DIFFERENT — DESIGN.md from the repo, craft/ from elanous', () => {
     // This is the rule `#11793` established. If the route ever resolved the
     // craft directory relative to the inspected repository, a project outside
-    // the monad tree would report every rulebook as unavailable — which is
+    // the elanous tree would report every rulebook as unavailable — which is
     // indistinguishable from a genuinely broken DESIGN.md.
     const body = buildDesignCheckView(overrides(
       '/somewhere/else/entirely',
@@ -124,12 +124,12 @@ describe('GET /v1/design-check — B5 방향', () => {
   test('같은 문서에서 방향을 읽어 «같이» 실어 보낸다', () => {
     const body = buildDesignCheckView(overrides(
       '/work/project',
-      { '/work/project/DESIGN.md': '## Craft rulebooks\n\n- color\n\n## Design direction\n\n- monad-pastel-default\n' },
+      { '/work/project/DESIGN.md': '## Craft rulebooks\n\n- color\n\n## Design direction\n\n- elanous-pastel-default\n' },
       { [CRAFT]: ['color.md'] },
     ));
     expect(body.ok).toBe(true);
     const dirs = body.directions as { declared: string | null; unavailable: string | null; available: unknown[] };
-    expect(dirs.declared).toBe('monad-pastel-default');
+    expect(dirs.declared).toBe('elanous-pastel-default');
     expect(dirs.unavailable).toBeNull();
     // ⛔ 두 번째 라우트를 만들지 않았다 — 같은 문서·같은 뿌리 규칙을 쓴다.
     expect(dirs.available.length).toBeGreaterThan(0);

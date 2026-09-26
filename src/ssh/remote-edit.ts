@@ -4,9 +4,9 @@
 // can edit it with `$EDITOR` (or the mini-vi fallback) and the
 // result is scp'd back on save. Mirrors the shell pattern:
 //
-//   scp host:path /tmp/monad-ssh-XXXXXX
-//   $EDITOR /tmp/monad-ssh-XXXXXX
-//   scp /tmp/monad-ssh-XXXXXX host:path
+//   scp host:path /tmp/elanous-ssh-XXXXXX
+//   $EDITOR /tmp/elanous-ssh-XXXXXX
+//   scp /tmp/elanous-ssh-XXXXXX host:path
 //
 // Safety guard: before uploading, we compare the ORIGINAL file's
 // checksum against the remote's current checksum. If someone else
@@ -50,7 +50,7 @@ function sha1Hex(body: string): string {
 }
 
 function makeTempPath(remotePath: string): string {
-  const dir = mkdtempSync(joinPath(tmpdir(), 'monad-ssh-'));
+  const dir = mkdtempSync(joinPath(tmpdir(), 'elanous-ssh-'));
   const basename = remotePath.split('/').pop() || 'file';
   return joinPath(dir, basename);
 }

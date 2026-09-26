@@ -53,7 +53,7 @@ describe('entityExtractorCallable', () => {
       '/v1/chat/completions': () => ({
         status: 200,
         body: { choices: [{ message: { content: JSON.stringify({
-          entities: [{ id: 'monad', label: 'Monad' }],
+          entities: [{ id: 'elanous', label: 'Elanous' }],
           relations: [],
         }) } }] },
       }),
@@ -64,9 +64,9 @@ describe('entityExtractorCallable', () => {
     }, { fetchImpl: mock.fetchImpl })!;
     const out = await res.entityExtractorCallable({
       prompt: '',
-      records: [{ source: 'user_intent', ts: '2026-05-12T00:00:00.000Z', kind: 'utterance', text: 'hello monad' }],
+      records: [{ source: 'user_intent', ts: '2026-05-12T00:00:00.000Z', kind: 'utterance', text: 'hello elanous' }],
     });
-    expect(out.entities).toEqual([{ id: 'monad', label: 'Monad' }]);
+    expect(out.entities).toEqual([{ id: 'elanous', label: 'Elanous' }]);
     expect(mock.calls[0]!.url).toBe('http://localhost:1234/v1/chat/completions');
     expect(mock.calls[0]!.method).toBe('POST');
     expect((mock.calls[0]!.body as { model: string }).model).toBe('test-model');

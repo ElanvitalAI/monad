@@ -1,7 +1,7 @@
 // PLAN §4.1 · Phase 1.1 — Turn checkpoint persistence.
 //
 // One JSONL file per `TurnUri`, append-only, under
-// `~/.monad/checkpoints/`. The directory is created lazily on the first
+// `~/.elanous/checkpoints/`. The directory is created lazily on the first
 // write so a fresh install with no checkpoints leaves no on-disk
 // footprint.
 //
@@ -10,15 +10,15 @@
 
 import * as fs from 'node:fs';
 import * as path from 'node:path';
-import { monadStateRoot } from '../autopilot/state-paths.js';
+import { elanousStateRoot } from '../autopilot/state-paths.js';
 import { debug } from '../debug/log.js';
 import type { TurnCheckpoint } from './types.js';
 
-const DEFAULT_DIR = path.join(monadStateRoot(), 'checkpoints');
+const DEFAULT_DIR = path.join(elanousStateRoot(), 'checkpoints');
 let overrideDir: string | null = null;
 
 /** Override the on-disk directory used by `writeCheckpoint` / readers.
- *  Pass `null` to restore the default `~/.monad/checkpoints/`. */
+ *  Pass `null` to restore the default `~/.elanous/checkpoints/`. */
 export function setCheckpointDir(dir: string | null): void {
   overrideDir = dir;
 }

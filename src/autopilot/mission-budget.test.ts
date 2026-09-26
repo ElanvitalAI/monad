@@ -7,12 +7,12 @@ import {
 } from './mission-budget.js';
 import { setUserConfigOverlay } from '../user-config.js';
 
-const savedSe = process.env.MONAD_SE_BUDGET;
-const savedWalker = process.env.MONAD_WALKER_BUDGET;
+const savedSe = process.env.ELANOUS_SE_BUDGET;
+const savedWalker = process.env.ELANOUS_WALKER_BUDGET;
 afterEach(() => {
   setUserConfigOverlay(null);
-  if (savedSe === undefined) delete process.env.MONAD_SE_BUDGET; else process.env.MONAD_SE_BUDGET = savedSe;
-  if (savedWalker === undefined) delete process.env.MONAD_WALKER_BUDGET; else process.env.MONAD_WALKER_BUDGET = savedWalker;
+  if (savedSe === undefined) delete process.env.ELANOUS_SE_BUDGET; else process.env.ELANOUS_SE_BUDGET = savedSe;
+  if (savedWalker === undefined) delete process.env.ELANOUS_WALKER_BUDGET; else process.env.ELANOUS_WALKER_BUDGET = savedWalker;
 });
 
 describe('parseBudgetList', () => {
@@ -33,22 +33,22 @@ describe('parseBudgetList', () => {
 
 describe('resolveSeBudgetLadder — config→env→기본', () => {
   test('아무것도 없으면 기본값', () => {
-    delete process.env.MONAD_SE_BUDGET;
+    delete process.env.ELANOUS_SE_BUDGET;
     setUserConfigOverlay(null);
     expect(resolveSeBudgetLadder()).toEqual([...SE_BUDGET_LADDER_DEFAULT]);
   });
   test('env 오버라이드(이제 있다 — 전엔 전무)', () => {
-    delete process.env.MONAD_SE_BUDGET;
-    process.env.MONAD_SE_BUDGET = '200,600,1600';
+    delete process.env.ELANOUS_SE_BUDGET;
+    process.env.ELANOUS_SE_BUDGET = '200,600,1600';
     expect(resolveSeBudgetLadder()).toEqual([200, 600, 1600]);
   });
   test('user-config 가 env 보다 우선(config-first)', () => {
-    process.env.MONAD_SE_BUDGET = '200,600,1600';
+    process.env.ELANOUS_SE_BUDGET = '200,600,1600';
     setUserConfigOverlay((c) => ({ ...c, autopilot: { budget: { se: [300, 800, 2000] } } } as typeof c));
     expect(resolveSeBudgetLadder()).toEqual([300, 800, 2000]);
   });
   test('config 가 "a,b,c" 문자열이어도 파싱', () => {
-    delete process.env.MONAD_SE_BUDGET;
+    delete process.env.ELANOUS_SE_BUDGET;
     setUserConfigOverlay((c) => ({ ...c, autopilot: { budget: { se: '250,700,1800' } } } as typeof c));
     expect(resolveSeBudgetLadder()).toEqual([250, 700, 1800]);
   });
@@ -56,19 +56,19 @@ describe('resolveSeBudgetLadder — config→env→기본', () => {
 
 describe('resolveWalkerBudget — 정책 통일', () => {
   test('기본값', () => {
-    delete process.env.MONAD_WALKER_BUDGET;
+    delete process.env.ELANOUS_WALKER_BUDGET;
     setUserConfigOverlay(null);
     expect(resolveWalkerBudget()).toEqual([...WALKER_BUDGET_DEFAULT]);
   });
   test('config 가 env 보다 우선', () => {
-    process.env.MONAD_WALKER_BUDGET = '100000';
+    process.env.ELANOUS_WALKER_BUDGET = '100000';
     setUserConfigOverlay((c) => ({ ...c, autopilot: { budget: { walker: [200000, 400000] } } } as typeof c));
     expect(resolveWalkerBudget()).toEqual([200000, 400000]);
   });
   // ★ 2026-07-19 회귀가드 — 실 디스크 config 는 autopilot 을 .raw 아래 둔다(typed 필드 아님). budgetFromConfig
   //   가 .raw.autopilot.budget 을 읽어야 config 노브가 실제로 먹는다(종전엔 typed .autopilot 만 읽어 죽어 있었음).
   test('raw.autopilot.budget 경로에서 읽는다(실 디스크 config 형태)', () => {
-    delete process.env.MONAD_WALKER_BUDGET;
+    delete process.env.ELANOUS_WALKER_BUDGET;
     setUserConfigOverlay((c) => ({ ...c, raw: { ...(c as { raw?: object }).raw, autopilot: { budget: { walker: [8000] } } } } as typeof c));
     expect(resolveWalkerBudget()).toEqual([8000]);
   });

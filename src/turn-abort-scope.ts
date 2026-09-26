@@ -23,8 +23,8 @@ export type TurnAbortScope =
   | 'kill-children';
 
 /** `AbortController.abort(reason)` 에 실리는 값. 문자열이라 프로세스·직렬화 경계를 넘어도 산다. */
-export const TURN_ABORT_TURN_ONLY = 'monad:turn-abort/turn-only' as const;
-export const TURN_ABORT_KILL_CHILDREN = 'monad:turn-abort/kill-children' as const;
+export const TURN_ABORT_TURN_ONLY = 'elanous:turn-abort/turn-only' as const;
+export const TURN_ABORT_KILL_CHILDREN = 'elanous:turn-abort/kill-children' as const;
 
 /** 턴만 멈춘다 — 자식은 살려 둔다. */
 export function abortTurnOnly(controller: AbortController): void {

@@ -36,15 +36,15 @@ const SAMPLE: PipelineRunRecord = {
 };
 
 describe('intake-plane/pipeline-metrics · path resolution', () => {
-  test('intakeDir honours MONAD_INTAKE_DIR env', () => {
-    const prev = process.env.MONAD_INTAKE_DIR;
-    process.env.MONAD_INTAKE_DIR = '/tmp/xyz-fake';
+  test('intakeDir honours ELANOUS_INTAKE_DIR env', () => {
+    const prev = process.env.ELANOUS_INTAKE_DIR;
+    process.env.ELANOUS_INTAKE_DIR = '/tmp/xyz-fake';
     try {
       expect(intakeDir()).toBe('/tmp/xyz-fake');
       expect(pipelineRunsPath()).toBe(`/tmp/xyz-fake/${RUNS_FILE}`);
     } finally {
-      if (prev === undefined) delete process.env.MONAD_INTAKE_DIR;
-      else process.env.MONAD_INTAKE_DIR = prev;
+      if (prev === undefined) delete process.env.ELANOUS_INTAKE_DIR;
+      else process.env.ELANOUS_INTAKE_DIR = prev;
     }
   });
 });

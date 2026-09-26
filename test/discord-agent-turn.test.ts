@@ -1,7 +1,7 @@
-// M4a — Discord flavor of the monad self turn.
+// M4a — Discord flavor of the elanous self turn.
 //
 // makeDiscordAgentRunTurn shares the full assembly with telegram via
-// makeMonadAgentRunTurn (see telegram-coding-model-terra.test.ts for
+// makeElanousAgentRunTurn (see telegram-coding-model-terra.test.ts for
 // the shared behaviors: terra routing, cancel marker, footer). Here we
 // lock the flavor delta: the cross-surface memory record carries
 // surface='discord', and the footer still lands.
@@ -22,14 +22,14 @@ beforeEach(() => {
   root = mkdtempSync(join(tmpdir(), 'dc-agent-'));
   process.env.XDG_DATA_HOME = root;
   process.env.XDG_STATE_HOME = join(root, '_state');
-  process.env.MONAD_SESSION_ROOT = join(root, 'sessions');
+  process.env.ELANOUS_SESSION_ROOT = join(root, 'sessions');
   resetGlobalMissionRouter();
 });
 afterEach(() => {
   rmSync(root, { recursive: true, force: true });
   delete process.env.XDG_DATA_HOME;
   delete process.env.XDG_STATE_HOME;
-  delete process.env.MONAD_SESSION_ROOT;
+  delete process.env.ELANOUS_SESSION_ROOT;
   resetGlobalMissionRouter();
   mock.restore();
 });
@@ -80,6 +80,6 @@ describe('makeDiscordAgentRunTurn', () => {
 
     expect(recorded).toEqual([{ surface: 'discord', userText: '안녕' }]);
     expect(result.text).toContain('discord says hi');
-    expect(result.text).toContain('🧠 monad'); // execution footer (self path)
+    expect(result.text).toContain('🧠 elanous'); // execution footer (self path)
   });
 });

@@ -14,7 +14,7 @@ import { DisplayCoordinator } from '../src/display/coordinator.js';
 import type { PreviewTerminalOpts, PreviewTerminal } from '../src/preview/terminal.js';
 
 function tmpFile(): string {
-  const dir = joinPath(tmpdir(), `monad-term-persist-${Date.now()}-${Math.random().toString(36).slice(2)}`);
+  const dir = joinPath(tmpdir(), `elanous-term-persist-${Date.now()}-${Math.random().toString(36).slice(2)}`);
   mkdirSync(dir, { recursive: true });
   return joinPath(dir, 'sessions.json');
 }

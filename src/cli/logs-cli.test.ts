@@ -1,5 +1,5 @@
 /**
- * monad logs CLI — 파서/포맷 계약 (통합 로그 패브릭 LF3 · 2026-07-13).
+ * elanous logs CLI — 파서/포맷 계약 (통합 로그 패브릭 LF3 · 2026-07-13).
  * DB/네트워크 미접촉 — 순수 함수만.
  */
 import { describe, expect, it } from 'bun:test';
@@ -17,7 +17,7 @@ import {
 import { LogStore, type LogQuery, type LogStoreRow } from '../mss/logging/log-store.js';
 import type { LogInstanceView } from '../mss/logging/instance-registry.js';
 import { RemotesStore } from './remotes.js';
-import { setMonadConfigDir, getMonadConfigDirOverride, resetMonadConfigDir } from '../monad-config-dir.js';
+import { setElanousConfigDir, getElanousConfigDirOverride, resetElanousConfigDir } from '../elanous-config-dir.js';
 import { program } from '../index.js';
 import { HARNESS_SPACE_KINDS } from '../harness/harness-space.js';
 
@@ -268,7 +268,7 @@ describe('log axes — read-side exact category expansion', () => {
       '알려진 로그 축 2개:\n'
       + 'dev (5개): dev-pipeline, self-implement, harness.frontdoor, harness.membrane, harness.sequencer\n'
       + 'pty (10개): pty.takeover, pty.arbiter, pty.spawn, pty.drive, pty.special-key, pty.shell-send, nexus.pty.write.error, nexus.pty.resize.error, nexus.pty.kill.error, pane-spawner.pty.start\n'
-      + '축을 고른 뒤: monad logs --axis <name> --explain',
+      + '축을 고른 뒤: elanous logs --axis <name> --explain',
     );
   });
 });
@@ -305,12 +305,12 @@ describe('renderGatedHint — 렌더 게이팅 빈결과 넛지', () => {
     );
     expect(readCalls).toBe(0);
     expect(hint).toContain("대상 인스턴스 'test:other '\\''quoted'\\'''의 렌더 억제 상태는 확인하지 못했다");
-    // ⛔⭐⭐⭐ 종전엔 여기서 `monad logs --instance '<이름>' level` 을 «기대»했다.
+    // ⛔⭐⭐⭐ 종전엔 여기서 `elanous logs --instance '<이름>' level` 을 «기대»했다.
     //   그런데 ***`logs level` 은 `--instance` 를 안 받는다***(옵션은 `--json`·`--render` 뿐) —
     //   그 명령은 «돌긴 하는데 호출자 자신의 레벨»을 보여 준다(실측). 즉 이 단언은
     //   ***「돌지만 다른 것을 보는 명령」을 계약으로 굳히고 있었다***(#7480 review must-fix).
     //   ⇒ 방향을 뒤집는다: 이 넛지는 명령을 «주지 않는다».
-    expect(hint).not.toContain('monad logs');
+    expect(hint).not.toContain('elanous logs');
     expect(hint).not.toContain('level`');
     expect(hint).not.toContain('빈 결과라면 실제로 이벤트가 없는 것이다');
   });
@@ -380,7 +380,7 @@ describe('0건 인스턴스 · 상한 힌트 — 구조적 판정', () => {
       category: 'self-implement', since: '1h', limit: '20',
     })).toBe(
       '  ↳ 다른 인스턴스에는 있다 — test:monad-agent 12건 · test:foo 3건\n'
-      + "    전체를 보려면: monad logs --all --include-test --category 'self-implement' --since '1h' --limit '20'",
+      + "    전체를 보려면: elanous logs --all --include-test --category 'self-implement' --since '1h' --limit '20'",
     );
   });
 
@@ -419,7 +419,7 @@ describe('0건 인스턴스 · 상한 힌트 — 구조적 판정', () => {
   });
 
   it('read-only 탐침은 비타겟 등록 스토어의 같은 필터만 세고 완전 연합은 건너뛴다', () => {
-    const dir = mkdtempSync(join(tmpdir(), 'monad-log-probe-'));
+    const dir = mkdtempSync(join(tmpdir(), 'elanous-log-probe-'));
     const dbPath = join(dir, 'logs.db');
     const writer = new LogStore(dbPath, { instance: 'test:fixture' });
     writer.insertBatch([
@@ -491,7 +491,7 @@ describe('0건 인스턴스 · 상한 힌트 — 구조적 판정', () => {
 
   it('JSON stdout 메타를 제거한 소비자도 stderr 신호로 상한 도달과 비도달을 구별한다', () => {
     expect(limitReachedStderrSignal(limitReachedJsonMeta(2, 2, 2, 1))).toBe(
-      'monad logs: result may be truncated (limitReached=true)',
+      'elanous logs: result may be truncated (limitReached=true)',
     );
     expect(limitReachedStderrSignal(limitReachedJsonMeta(1, 2, 2, 1))).toBeNull();
   });
@@ -560,14 +560,14 @@ describe('런 커버리지 안내', () => {
 
 describe('runLogsCli — 사람용 출력 wiring', () => {
   function runLogs(args: string[], home: string, env: NodeJS.ProcessEnv = {}) {
-    return spawnSync(process.execPath, ['bin/monad.mjs', 'logs', ...args], {
+    return spawnSync(process.execPath, ['bin/elanous.mjs', 'logs', ...args], {
       cwd: process.cwd(), env: { ...process.env, HOME: home, TZ: 'UTC', ...env }, encoding: 'utf8', maxBuffer: 16 * 1024 * 1024, timeout: 30_000,
     });
   }
 
   it('기본 조회와 --all --include-test는 등록 스토어 모집단의 안 본 수를 scope·queryStatus로 같은 값으로 말한다', () => {
-    const home = mkdtempSync(join(tmpdir(), 'monad-logs-unopened-stores-'));
-    const prodState = join(home, '.monad');
+    const home = mkdtempSync(join(tmpdir(), 'elanous-logs-unopened-stores-'));
+    const prodState = join(home, '.elanous');
     const siblingState = join(home, 'sibling-state');
     const testState = join(home, 'test-state');
     for (const [stateDir, instance] of [[prodState, 'prod'], [siblingState, 'sibling'], [testState, 'test:fixture']] as const) {
@@ -581,7 +581,7 @@ describe('runLogsCli — 사람용 출력 wiring', () => {
       { name: 'test:fixture', stateDir: testState, kind: 'test', configDir: testState, pid: 0, startedAt: '' },
     ] }));
     try {
-      const fixtureEnv = { MONAD_STATE_DIR: prodState };
+      const fixtureEnv = { ELANOUS_STATE_DIR: prodState };
       const defaultResult = runLogs(['--limit', '1'], home, fixtureEnv);
       expect(defaultResult.status).toBe(0);
       expect(defaultResult.stdout).toContain('scope');
@@ -616,10 +616,10 @@ describe('runLogsCli — 사람용 출력 wiring', () => {
   }, 15_000);
 
   it('레지스트리 또는 대상 DB가 없으면 등록·안 본 스토어를 0으로 거짓 보고하지 않는다', () => {
-    const home = mkdtempSync(join(tmpdir(), 'monad-logs-no-registered-store-'));
-    const stateDir = join(home, '.monad');
+    const home = mkdtempSync(join(tmpdir(), 'elanous-logs-no-registered-store-'));
+    const stateDir = join(home, '.elanous');
     try {
-      const fixtureEnv = { MONAD_STATE_DIR: stateDir };
+      const fixtureEnv = { ELANOUS_STATE_DIR: stateDir };
       const missingRegistry = runLogs(['--limit', '1'], home, fixtureEnv);
       expect(missingRegistry.status).toBe(1);
       expect(missingRegistry.stderr).toContain('열 수 있는 로그 스토어 없음');
@@ -641,12 +641,12 @@ describe('runLogsCli — 사람용 출력 wiring', () => {
   }, 15_000);
 
   it('손상되거나 읽을 수 없는 레지스트리는 등록 스토어 0개로 거짓 보고하지 않는다', () => {
-    const home = mkdtempSync(join(tmpdir(), 'monad-logs-malformed-registry-'));
-    const stateDir = join(home, '.monad');
+    const home = mkdtempSync(join(tmpdir(), 'elanous-logs-malformed-registry-'));
+    const stateDir = join(home, '.elanous');
     const dbPath = join(stateDir, 'logs', 'logs.db');
     new LogStore(dbPath).close();
     try {
-      const fixtureEnv = { MONAD_STATE_DIR: stateDir };
+      const fixtureEnv = { ELANOUS_STATE_DIR: stateDir };
       const registryPath = join(stateDir, 'logs', 'instances.json');
       writeFileSync(registryPath, '{ malformed');
       const malformed = runLogs(['--limit', '1'], home, fixtureEnv);
@@ -679,8 +679,8 @@ describe('runLogsCli — 사람용 출력 wiring', () => {
   }, 15_000);
 
   it('--explain만으로 축을 모르더라도 발견 목록을 출력한다', () => {
-    const home = mkdtempSync(join(tmpdir(), 'monad-logs-axis-discovery-'));
-    const dbPath = join(home, '.monad', 'logs', 'logs.db');
+    const home = mkdtempSync(join(tmpdir(), 'elanous-logs-axis-discovery-'));
+    const dbPath = join(home, '.elanous', 'logs', 'logs.db');
     new LogStore(dbPath).close();
     try {
       const discovery = runLogs(['--instance', 'prod', '--explain'], home);
@@ -688,15 +688,15 @@ describe('runLogsCli — 사람용 출력 wiring', () => {
       expect(discovery.stdout).toContain('알려진 로그 축 2개:');
       expect(discovery.stdout).toContain('dev (5개): dev-pipeline, self-implement');
       expect(discovery.stdout).toContain('pty (10개): pty.takeover');
-      expect(discovery.stdout).toContain('축을 고른 뒤: monad logs --axis <name> --explain');
+      expect(discovery.stdout).toContain('축을 고른 뒤: elanous logs --axis <name> --explain');
     } finally {
       rmSync(home, { recursive: true, force: true });
     }
   });
 
   it('--axis pty는 접두 밖 네 카테고리를 exact 조회하고 --explain은 세 칸을 낸다', () => {
-    const home = mkdtempSync(join(tmpdir(), 'monad-logs-axis-'));
-    const dbPath = join(home, '.monad', 'logs', 'logs.db');
+    const home = mkdtempSync(join(tmpdir(), 'elanous-logs-axis-'));
+    const dbPath = join(home, '.elanous', 'logs', 'logs.db');
     const writer = new LogStore(dbPath);
     writer.insertBatch([
       { rec: { ts: '2026-08-01T00:00:00.000Z', category: 'pty.takeover', event: 'ok' }, surface: 'nexus' },
@@ -726,15 +726,15 @@ describe('runLogsCli — 사람용 출력 wiring', () => {
   });
 
   it('연 열린 스토어 수는 항상 안내하고 경로는 일반 조회의 기여 인스턴스만 낸다', () => {
-    const home = mkdtempSync(join(tmpdir(), 'monad-logs-opened-store-'));
-    const prodDbPath = join(home, '.monad', 'logs', 'logs.db');
+    const home = mkdtempSync(join(tmpdir(), 'elanous-logs-opened-store-'));
+    const prodDbPath = join(home, '.elanous', 'logs', 'logs.db');
     const otherState = join(home, 'other-state');
     const otherDbPath = join(otherState, 'logs', 'logs.db');
     const prodStore = new LogStore(prodDbPath);
     prodStore.insertBatch([{ rec: { ts: '2026-08-10T00:00:00.000Z', category: 'contributing.category', event: 'only-prod' }, surface: 'nexus' }]);
     prodStore.close();
     new LogStore(otherDbPath).close();
-    writeFileSync(join(home, '.monad', 'logs', 'instances.json'), JSON.stringify({ instances: [{
+    writeFileSync(join(home, '.elanous', 'logs', 'instances.json'), JSON.stringify({ instances: [{
       name: 'other', stateDir: otherState, kind: 'prod', configDir: otherState, pid: 0, startedAt: '',
     }] }));
     try {
@@ -749,7 +749,7 @@ describe('runLogsCli — 사람용 출력 wiring', () => {
       const sameNameState = join(home, 'same-name-state');
       const sameNameDbPath = join(sameNameState, 'logs', 'logs.db');
       new LogStore(sameNameDbPath).close();
-      writeFileSync(join(home, '.monad', 'logs', 'instances.json'), JSON.stringify({ instances: [
+      writeFileSync(join(home, '.elanous', 'logs', 'instances.json'), JSON.stringify({ instances: [
         { name: 'prod', stateDir: otherState, kind: 'prod', configDir: otherState, pid: 0, startedAt: '' },
         { name: 'prod', stateDir: sameNameState, kind: 'prod', configDir: sameNameState, pid: 0, startedAt: '' },
       ] }));
@@ -759,7 +759,7 @@ describe('runLogsCli — 사람용 출력 wiring', () => {
       expect(duplicateName.stderr).not.toContain(`log store: ${otherDbPath} (prod)`);
       expect(duplicateName.stderr).not.toContain(`log store: ${sameNameDbPath} (prod)`);
       expect(duplicateName.stderr.match(/^log store:/gm)).toHaveLength(1);
-      writeFileSync(join(home, '.monad', 'logs', 'instances.json'), JSON.stringify({ instances: [{
+      writeFileSync(join(home, '.elanous', 'logs', 'instances.json'), JSON.stringify({ instances: [{
         name: 'other', stateDir: otherState, kind: 'prod', configDir: otherState, pid: 0, startedAt: '',
       }] }));
 
@@ -794,8 +794,8 @@ describe('runLogsCli — 사람용 출력 wiring', () => {
   }, 15_000);
 
   it('rework recurrence disagreement 필터는 최근 절단 배치 밖의 오래된 일치 행까지 페이지로 채운다', () => {
-    const home = mkdtempSync(join(tmpdir(), 'monad-logs-rework-recurrence-filter-'));
-    const dbPath = join(home, '.monad', 'logs', 'logs.db');
+    const home = mkdtempSync(join(tmpdir(), 'elanous-logs-rework-recurrence-filter-'));
+    const dbPath = join(home, '.elanous', 'logs', 'logs.db');
     const writer = new LogStore(dbPath);
     const rows = Array.from({ length: 101_002 }, (_, i) => ({
       rec: {
@@ -816,15 +816,15 @@ describe('runLogsCli — 사람용 출력 wiring', () => {
       expect(payloadRows).toHaveLength(1);
       expect(payloadRows[0]).toMatchObject({ event: 'rework-budget' });
       expect(JSON.parse(payloadRows[0]!.data)).toEqual({ recurrenceDisagreement: true });
-      expect(result.stderr).toContain('monad logs: result may be truncated (limitReached=true)');
+      expect(result.stderr).toContain('elanous logs: result may be truncated (limitReached=true)');
     } finally {
       rmSync(home, { recursive: true, force: true });
     }
   }, 30_000);
 
   it('반환된 제한 행의 런 커버리지는 stderr에만 내고 빈 결과와 JSON NDJSON은 바꾸지 않는다', () => {
-    const home = mkdtempSync(join(tmpdir(), 'monad-logs-run-coverage-'));
-    const dbPath = join(home, '.monad', 'logs', 'logs.db');
+    const home = mkdtempSync(join(tmpdir(), 'elanous-logs-run-coverage-'));
+    const dbPath = join(home, '.elanous', 'logs', 'logs.db');
     const writer = new LogStore(dbPath);
     writer.insertBatch([
       { rec: { ts: '2026-08-10T00:00:00.000Z', category: 'run-coverage', event: 'first', data: { runId: 'run-a' } }, surface: 'nexus' },
@@ -842,7 +842,7 @@ describe('runLogsCli — 사람용 출력 wiring', () => {
       const json = runLogs(['--instance', 'prod', '--json', '--category', 'run-coverage', '--limit', '2'], home);
       expect(json.status).toBe(0);
       expect(json.stderr).not.toContain('식별 가능한 런');
-      expect(json.stderr).toContain('monad logs: result may be truncated (limitReached=true)');
+      expect(json.stderr).toContain('elanous logs: result may be truncated (limitReached=true)');
       const jsonRows = json.stdout.split('\n').filter(Boolean).map((line) => JSON.parse(line));
       expect(jsonRows).toEqual([
         expect.objectContaining({ _meta: expect.objectContaining({ type: 'log-query-opened-stores' }) }),
@@ -872,7 +872,7 @@ describe('runLogsCli — 사람용 출력 wiring', () => {
 
       const uncapped = runLogs(['--instance', 'prod', '--json', '--category', 'run-coverage', '--limit', '4'], home);
       expect(uncapped.status).toBe(0);
-      expect(uncapped.stderr).not.toContain('monad logs: result may be truncated');
+      expect(uncapped.stderr).not.toContain('elanous logs: result may be truncated');
       expect(filtered(expressions[0]!.args, uncapped.stdout).stdout.trim()).toBe('3');
       for (const { args } of expressions.slice(1)) {
         const result = filtered(args, uncapped.stdout);
@@ -890,8 +890,8 @@ describe('runLogsCli — 사람용 출력 wiring', () => {
   }, 15_000);
 
   it('--json은 같은 ts·category·event의 다중 표면 그룹 메타를 내고 행 자체와 사람용 출력은 접지 않는다', () => {
-    const home = mkdtempSync(join(tmpdir(), 'monad-logs-multi-surface-duplicate-'));
-    const dbPath = join(home, '.monad', 'logs', 'logs.db');
+    const home = mkdtempSync(join(tmpdir(), 'elanous-logs-multi-surface-duplicate-'));
+    const dbPath = join(home, '.elanous', 'logs', 'logs.db');
     const writer = new LogStore(dbPath);
     writer.insertBatch([
       { rec: { ts: '2026-08-23T00:00:00.000Z', category: 'self-implement', event: 'run-status' }, surface: 'harness' },
@@ -945,10 +945,10 @@ describe('runLogsCli — 사람용 출력 wiring', () => {
   }, 15_000);
 
   it('follow는 열린 스토어 개수를 배너에서 정확히 한 번만 안내한다', async () => {
-    const home = mkdtempSync(join(tmpdir(), 'monad-logs-follow-opened-store-'));
-    const dbPath = join(home, '.monad', 'logs', 'logs.db');
+    const home = mkdtempSync(join(tmpdir(), 'elanous-logs-follow-opened-store-'));
+    const dbPath = join(home, '.elanous', 'logs', 'logs.db');
     new LogStore(dbPath).close();
-    const child = spawn(process.execPath, ['bin/monad.mjs', 'logs', '--instance', 'prod', '--follow'], {
+    const child = spawn(process.execPath, ['bin/elanous.mjs', 'logs', '--instance', 'prod', '--follow'], {
       cwd: process.cwd(), env: { ...process.env, HOME: home, TZ: 'UTC' }, stdio: ['ignore', 'pipe', 'pipe'],
     });
     let stderr = '';
@@ -975,8 +975,8 @@ describe('runLogsCli — 사람용 출력 wiring', () => {
   }, 15_000);
 
   it('0건 --event 오타는 찍힌 가까운 이름을 stderr에만 내고 저장소 부재를 단정하지 않는다', () => {
-    const home = mkdtempSync(join(tmpdir(), 'monad-logs-event-name-hint-'));
-    const dbPath = join(home, '.monad', 'logs', 'logs.db');
+    const home = mkdtempSync(join(tmpdir(), 'elanous-logs-event-name-hint-'));
+    const dbPath = join(home, '.elanous', 'logs', 'logs.db');
     const writer = new LogStore(dbPath);
     writer.insertBatch([
       { rec: { ts: new Date().toISOString(), category: 'goal-author', event: 'plan-sizing' }, surface: 'nexus' },
@@ -1014,8 +1014,8 @@ describe('runLogsCli — 사람용 출력 wiring', () => {
   }, 15_000);
 
   it('찍힌 이름이 없는 창의 0건 --event는 안내 불가를 말하고 빈 목록만 남기지 않는다', () => {
-    const home = mkdtempSync(join(tmpdir(), 'monad-logs-event-name-hint-empty-'));
-    const dbPath = join(home, '.monad', 'logs', 'logs.db');
+    const home = mkdtempSync(join(tmpdir(), 'elanous-logs-event-name-hint-empty-'));
+    const dbPath = join(home, '.elanous', 'logs', 'logs.db');
     new LogStore(dbPath).close();
     try {
       const empty = runLogs(['--instance', 'prod', '--event', 'zzz-no-such-event-xyz'], home);
@@ -1033,8 +1033,8 @@ describe('runLogsCli — 사람용 출력 wiring', () => {
   }, 15_000);
 
   it('0건 단일 --event 는 목록에 있는 이름의 판정을 stderr 에 소비한다', () => {
-    const home = mkdtempSync(join(tmpdir(), 'monad-logs-event-verdict-known-'));
-    const dbPath = join(home, '.monad', 'logs', 'logs.db');
+    const home = mkdtempSync(join(tmpdir(), 'elanous-logs-event-verdict-known-'));
+    const dbPath = join(home, '.elanous', 'logs', 'logs.db');
     new LogStore(dbPath).close();
     try {
       const known = runLogs(['--instance', 'prod', '--event', 'plan-sizing'], home);
@@ -1048,8 +1048,8 @@ describe('runLogsCli — 사람용 출력 wiring', () => {
   }, 15_000);
 
   it('0건 다중 --event 는 판정을 내지 않는다', () => {
-    const home = mkdtempSync(join(tmpdir(), 'monad-logs-event-verdict-multi-'));
-    const dbPath = join(home, '.monad', 'logs', 'logs.db');
+    const home = mkdtempSync(join(tmpdir(), 'elanous-logs-event-verdict-multi-'));
+    const dbPath = join(home, '.elanous', 'logs', 'logs.db');
     new LogStore(dbPath).close();
     try {
       const multi = runLogs(['--instance', 'prod', '--event', 'plan-sizing,ledger'], home);
@@ -1064,8 +1064,8 @@ describe('runLogsCli — 사람용 출력 wiring', () => {
   }, 15_000);
 
   it('0건 --event 선행·후행 쉼표와 빈 토큰은 판정을 내지 않는다', () => {
-    const home = mkdtempSync(join(tmpdir(), 'monad-logs-event-verdict-comma-'));
-    const dbPath = join(home, '.monad', 'logs', 'logs.db');
+    const home = mkdtempSync(join(tmpdir(), 'elanous-logs-event-verdict-comma-'));
+    const dbPath = join(home, '.elanous', 'logs', 'logs.db');
     new LogStore(dbPath).close();
     try {
       for (const event of ['plan-sizing,', ',plan-sizing', 'plan-sizing,,other', 'plan-sizing, ,ledger']) {
@@ -1082,8 +1082,8 @@ describe('runLogsCli — 사람용 출력 wiring', () => {
   }, 15_000);
 
   it('0건 카테고리 조회는 저장소에 없는 이름만 안내하고 존재하는 이름은 안내하지 않는다', () => {
-    const home = mkdtempSync(join(tmpdir(), 'monad-logs-category-candidate-'));
-    const dbPath = join(home, '.monad', 'logs', 'logs.db');
+    const home = mkdtempSync(join(tmpdir(), 'elanous-logs-category-candidate-'));
+    const dbPath = join(home, '.elanous', 'logs', 'logs.db');
     const writer = new LogStore(dbPath);
     writer.insertBatch([
       { rec: { ts: new Date().toISOString(), category: 'present.prefix.child', event: 'ok' }, surface: 'nexus' },
@@ -1111,16 +1111,16 @@ describe('runLogsCli — 사람용 출력 wiring', () => {
   }, 15_000);
 
   it('0건 prod 조회는 다른 test 인스턴스의 안전하게 인용된 재조회 힌트를 출력하고 JSON은 불변이다', () => {
-    const home = mkdtempSync(join(tmpdir(), 'monad-logs-cli-'));
+    const home = mkdtempSync(join(tmpdir(), 'elanous-logs-cli-'));
     const testState = join(home, 'fixture-state');
     const dbPath = join(testState, 'logs', 'logs.db');
-    const prodDbPath = join(home, '.monad', 'logs', 'logs.db');
-    mkdirSync(join(home, '.monad', 'logs'), { recursive: true });
+    const prodDbPath = join(home, '.elanous', 'logs', 'logs.db');
+    mkdirSync(join(home, '.elanous', 'logs'), { recursive: true });
     new LogStore(prodDbPath).close();
     const writer = new LogStore(dbPath, { instance: 'test:fixture' });
     writer.insertBatch([{ rec: { ts: new Date().toISOString(), category: 'wanted', event: "foo bar * 'single' \"double\"" }, surface: 'nexus' }]);
     writer.close();
-    writeFileSync(join(home, '.monad', 'logs', 'instances.json'), JSON.stringify({ instances: [{
+    writeFileSync(join(home, '.elanous', 'logs', 'instances.json'), JSON.stringify({ instances: [{
       name: 'test:fixture', stateDir: testState, kind: 'test', configDir: testState, pid: 0, startedAt: '',
     }] }));
     try {
@@ -1149,7 +1149,7 @@ describe('runLogsCli — 사람용 출력 wiring', () => {
   });
 
   it('runLogsCli wiring은 비현재 스코프 0건에서 caller seam을 읽지 않고 불확실성 힌트를 stderr에 낸다', async () => {
-    const root = mkdtempSync(join(tmpdir(), 'monad-logs-render-gated-wiring-'));
+    const root = mkdtempSync(join(tmpdir(), 'elanous-logs-render-gated-wiring-'));
     const dbPath = join(root, 'other', 'logs', 'logs.db');
     new LogStore(dbPath).close();
     const errors: string[] = [];
@@ -1186,8 +1186,8 @@ describe('runLogsCli — 사람용 출력 wiring', () => {
   });
 
   it('JSON 메타는 비-harness 두 표면의 동일 ts·category·event 그룹을 알리고 행은 접지 않는다', () => {
-    const home = mkdtempSync(join(tmpdir(), 'monad-logs-multi-surface-any-surface-'));
-    const stateDir = join(home, '.monad');
+    const home = mkdtempSync(join(tmpdir(), 'elanous-logs-multi-surface-any-surface-'));
+    const stateDir = join(home, '.elanous');
     const writer = new LogStore(join(stateDir, 'logs', 'logs.db'));
     writer.insertBatch([
       { rec: { ts: '2026-08-23T00:00:00.000Z', category: 'same-event', event: 'duplicated' }, surface: 'telegram' },
@@ -1196,7 +1196,7 @@ describe('runLogsCli — 사람용 출력 wiring', () => {
     ]);
     writer.close();
     try {
-      const result = runLogs(['--instance', 'prod', '--json', '--exact-category', 'same-event', '--limit', '10'], home, { MONAD_STATE_DIR: stateDir });
+      const result = runLogs(['--instance', 'prod', '--json', '--exact-category', 'same-event', '--limit', '10'], home, { ELANOUS_STATE_DIR: stateDir });
       expect(result.status).toBe(0);
       const jsonRows = result.stdout.trim().split('\n').filter(Boolean).map((line) => JSON.parse(line));
       const duplicateMeta = jsonRows.find((row) => row._meta?.type === 'log-query-multi-surface-duplicates');
@@ -1222,8 +1222,8 @@ describe('runLogsCli — 사람용 출력 wiring', () => {
   });
 
   it('JSON 메타는 비-harness 단일 표면 입력에서도 중복 그룹 0을 명시한다', () => {
-    const home = mkdtempSync(join(tmpdir(), 'monad-logs-multi-surface-single-non-harness-'));
-    const stateDir = join(home, '.monad');
+    const home = mkdtempSync(join(tmpdir(), 'elanous-logs-multi-surface-single-non-harness-'));
+    const stateDir = join(home, '.elanous');
     const writer = new LogStore(join(stateDir, 'logs', 'logs.db'));
     writer.insertBatch([
       { rec: { ts: '2026-08-23T00:00:00.000Z', category: 'single-surface', event: 'first' }, surface: 'telegram' },
@@ -1231,7 +1231,7 @@ describe('runLogsCli — 사람용 출력 wiring', () => {
     ]);
     writer.close();
     try {
-      const result = runLogs(['--instance', 'prod', '--json', '--exact-category', 'single-surface', '--limit', '10'], home, { MONAD_STATE_DIR: stateDir });
+      const result = runLogs(['--instance', 'prod', '--json', '--exact-category', 'single-surface', '--limit', '10'], home, { ELANOUS_STATE_DIR: stateDir });
       expect(result.status).toBe(0);
       const jsonRows = result.stdout.trim().split('\n').filter(Boolean).map((line) => JSON.parse(line));
       const duplicateMeta = jsonRows.find((row) => row._meta?.type === 'log-query-multi-surface-duplicates');
@@ -1249,8 +1249,8 @@ describe('runLogsCli — 사람용 출력 wiring', () => {
   });
 
   it('rework recurrence disagreement 필터는 rework-budget data 값으로 단일 조회 표본을 좁힌다', () => {
-    const home = mkdtempSync(join(tmpdir(), 'monad-logs-rework-recurrence-disagreement-'));
-    const stateDir = join(home, '.monad');
+    const home = mkdtempSync(join(tmpdir(), 'elanous-logs-rework-recurrence-disagreement-'));
+    const stateDir = join(home, '.elanous');
     const writer = new LogStore(join(stateDir, 'logs', 'logs.db'));
     writer.insertBatch([
       { rec: { ts: '2026-08-23T00:00:00.000Z', category: 'self-implement', event: 'rework-budget', data: { runId: 'same', recurrenceDisagreement: false, recurrenceDisagreementTerminalUnconvergeable: false } }, surface: 'harness:self-implement' },
@@ -1259,7 +1259,7 @@ describe('runLogsCli — 사람용 출력 wiring', () => {
     ]);
     writer.close();
     try {
-      const result = runLogs(['--exact-category', 'self-implement', '--event', 'rework-budget', '--rework-recurrence-disagreement', 'true', '--json', '--json-data'], home, { MONAD_STATE_DIR: stateDir });
+      const result = runLogs(['--exact-category', 'self-implement', '--event', 'rework-budget', '--rework-recurrence-disagreement', 'true', '--json', '--json-data'], home, { ELANOUS_STATE_DIR: stateDir });
       expect(result.status).toBe(0);
       const rows = result.stdout.trim().split('\n').filter(Boolean).map((line) => JSON.parse(line));
       expect(rows.filter((row) => row._meta === undefined)).toEqual([
@@ -1287,7 +1287,7 @@ describe('runLogsCli — 사람용 출력 wiring', () => {
   });
 
   it('runLogsCli는 0건 space 조회에서 파생 grep까지 뺀 한 번의 재계수만 하고, 비빈 결과에는 재계수하지 않는다', async () => {
-    const root = mkdtempSync(join(tmpdir(), 'monad-logs-filter-relaxation-wiring-'));
+    const root = mkdtempSync(join(tmpdir(), 'elanous-logs-filter-relaxation-wiring-'));
     const emptyDbPath = join(root, 'empty', 'logs', 'logs.db');
     const presentDbPath = join(root, 'present', 'logs', 'logs.db');
     new LogStore(emptyDbPath).close();
@@ -1321,13 +1321,13 @@ describe('runLogsCli — 사람용 출력 wiring', () => {
   });
 
   it('--instance와 --all의 비현재 스코프 0건 조회는 발화 ON 단언 대신 억제 상태 미확인을 출력한다', () => {
-    const home = mkdtempSync(join(tmpdir(), 'monad-logs-render-gated-instance-'));
-    const prodDbPath = join(home, '.monad', 'logs', 'logs.db');
+    const home = mkdtempSync(join(tmpdir(), 'elanous-logs-render-gated-instance-'));
+    const prodDbPath = join(home, '.elanous', 'logs', 'logs.db');
     const otherState = join(home, 'other-state');
     const otherDbPath = join(otherState, 'logs', 'logs.db');
     new LogStore(prodDbPath).close();
     new LogStore(otherDbPath).close();
-    writeFileSync(join(home, '.monad', 'logs', 'instances.json'), JSON.stringify({ instances: [{
+    writeFileSync(join(home, '.elanous', 'logs', 'instances.json'), JSON.stringify({ instances: [{
       name: 'other', stateDir: otherState, kind: 'prod', configDir: otherState, pid: 0, startedAt: '',
     }] }));
     try {
@@ -1349,8 +1349,8 @@ describe('runLogsCli — 사람용 출력 wiring', () => {
   });
 
   it('실제 연속 문자열과 매치되는 나열형 --grep도 레코드는 stdout, 경고는 stderr에 항상 출력한다', () => {
-    const home = mkdtempSync(join(tmpdir(), 'monad-logs-grep-phrase-'));
-    const dbPath = join(home, '.monad', 'logs', 'logs.db');
+    const home = mkdtempSync(join(tmpdir(), 'elanous-logs-grep-phrase-'));
+    const dbPath = join(home, '.elanous', 'logs', 'logs.db');
     const writer = new LogStore(dbPath);
     writer.insertBatch([{
       rec: { ts: new Date().toISOString(), category: 'headless', event: 'headless OR progress' }, surface: 'nexus',
@@ -1367,8 +1367,8 @@ describe('runLogsCli — 사람용 출력 wiring', () => {
   });
 
   it('긴 데이터 행의 절단은 stdout 형식을 유지한 채 stderr로 한 번만 알리고 JSON은 알리지 않는다', () => {
-    const home = mkdtempSync(join(tmpdir(), 'monad-logs-truncation-'));
-    const dbPath = join(home, '.monad', 'logs', 'logs.db');
+    const home = mkdtempSync(join(tmpdir(), 'elanous-logs-truncation-'));
+    const dbPath = join(home, '.elanous', 'logs', 'logs.db');
     const writer = new LogStore(dbPath);
     const longData = JSON.stringify({ why: 'x'.repeat(240) });
     writer.insertBatch([
@@ -1420,8 +1420,8 @@ describe('runLogsCli — 사람용 출력 wiring', () => {
   });
 
   it('저장 절단 마커가 있는 긴 데이터는 JSON 복구 안내 대신 비복구 안내를 낸다', () => {
-    const home = mkdtempSync(join(tmpdir(), 'monad-logs-write-truncation-'));
-    const dbPath = join(home, '.monad', 'logs', 'logs.db');
+    const home = mkdtempSync(join(tmpdir(), 'elanous-logs-write-truncation-'));
+    const dbPath = join(home, '.elanous', 'logs', 'logs.db');
     const writer = new LogStore(dbPath);
     const storedData = JSON.stringify({ why: `${'x'.repeat(240)}«+100c»` });
     writer.insertBatch([{
@@ -1448,8 +1448,8 @@ describe('runLogsCli — 사람용 출력 wiring', () => {
   });
 
   it('짧은 데이터만 있으면 절단 경고를 내지 않는다', () => {
-    const home = mkdtempSync(join(tmpdir(), 'monad-logs-no-truncation-'));
-    const dbPath = join(home, '.monad', 'logs', 'logs.db');
+    const home = mkdtempSync(join(tmpdir(), 'elanous-logs-no-truncation-'));
+    const dbPath = join(home, '.elanous', 'logs', 'logs.db');
     const writer = new LogStore(dbPath);
     writer.insertBatch([{ rec: { ts: new Date().toISOString(), category: 'short-data', event: 'ok', data: 'short' }, surface: 'nexus' }]);
     writer.close();
@@ -1465,8 +1465,8 @@ describe('runLogsCli — 사람용 출력 wiring', () => {
   });
 
   it('--event에 카테고리를 주어 0건이면 힌트는 stderr에만 출력하고 JSON stdout은 비운다', () => {
-    const home = mkdtempSync(join(tmpdir(), 'monad-logs-event-category-'));
-    const dbPath = join(home, '.monad', 'logs', 'logs.db');
+    const home = mkdtempSync(join(tmpdir(), 'elanous-logs-event-category-'));
+    const dbPath = join(home, '.elanous', 'logs', 'logs.db');
     const writer = new LogStore(dbPath);
     writer.insertBatch([{
       rec: { ts: new Date().toISOString(), category: 'dev-pipeline', event: 'plan' }, surface: 'nexus',
@@ -1492,8 +1492,8 @@ describe('runLogsCli — 사람용 출력 wiring', () => {
   });
 
   it('--json 파이프는 느린 소비자에도 파일 출력과 같은 모든 NDJSON 행을 전달한다', async () => {
-    const home = mkdtempSync(join(tmpdir(), 'monad-logs-json-pipe-'));
-    const dbPath = join(home, '.monad', 'logs', 'logs.db');
+    const home = mkdtempSync(join(tmpdir(), 'elanous-logs-json-pipe-'));
+    const dbPath = join(home, '.elanous', 'logs', 'logs.db');
     const expectedCount = 200;
     const writer = new LogStore(dbPath);
     writer.insertBatch(Array.from({ length: expectedCount }, (_, index) => ({
@@ -1518,7 +1518,7 @@ describe('runLogsCli — 사람용 출력 wiring', () => {
       });
 
       const outputPath = join(home, 'slow-consumer.ndjson');
-      const pipeline = spawnSync('sh', ['-c', `${JSON.stringify(process.execPath)} bin/monad.mjs logs --instance prod --json --category pipe --limit ${expectedCount} | while IFS= read -r line; do printf '%s\\n' "$line"; sleep 0.001; done > ${JSON.stringify(outputPath)}`], {
+      const pipeline = spawnSync('sh', ['-c', `${JSON.stringify(process.execPath)} bin/elanous.mjs logs --instance prod --json --category pipe --limit ${expectedCount} | while IFS= read -r line; do printf '%s\\n' "$line"; sleep 0.001; done > ${JSON.stringify(outputPath)}`], {
         cwd: process.cwd(), env: { ...process.env, HOME: home }, encoding: 'utf8', timeout: 120_000,
       });
       expect(pipeline.status).toBe(0);
@@ -1533,8 +1533,8 @@ describe('runLogsCli — 사람용 출력 wiring', () => {
   });
 
   it('--json 상한 메타는 레코드 JSONL과 같은 완료 대기 stdout write에 포함된다', async () => {
-    const repo = mkdtempSync(join(tmpdir(), 'monad-logs-json-limit-write-'));
-    const dbPath = join(repo, '.monad-test', 'logs', 'logs.db');
+    const repo = mkdtempSync(join(tmpdir(), 'elanous-logs-json-limit-write-'));
+    const dbPath = join(repo, '.elanous-test', 'logs', 'logs.db');
     const writer = new LogStore(dbPath);
     writer.insertBatch(Array.from({ length: 2 }, (_, index) => ({
       rec: { ts: new Date(Date.UTC(2026, 6, 30, 0, 0, index)).toISOString(), category: 'write-batch', event: String(index) }, surface: 'nexus',
@@ -1577,8 +1577,8 @@ describe('runLogsCli — 사람용 출력 wiring', () => {
   });
 
   it('--json은 단일·연합 모두 독립 파싱 가능한 같은 레코드 NDJSON을 순서대로 출력한다', () => {
-    const home = mkdtempSync(join(tmpdir(), 'monad-logs-json-'));
-    const prodDbPath = join(home, '.monad', 'logs', 'logs.db');
+    const home = mkdtempSync(join(tmpdir(), 'elanous-logs-json-'));
+    const prodDbPath = join(home, '.elanous', 'logs', 'logs.db');
     const instanceState = join(home, 'instance-state');
     const instanceDbPath = join(instanceState, 'logs', 'logs.db');
     const timestamp = '2026-07-28T09:00:00.000Z';
@@ -1594,7 +1594,7 @@ describe('runLogsCli — 사람용 출력 wiring', () => {
     };
     writeFixture(prodDbPath, 'prod');
     writeFixture(instanceDbPath, 'test:fixture');
-    writeFileSync(join(home, '.monad', 'logs', 'instances.json'), JSON.stringify({ instances: [{
+    writeFileSync(join(home, '.elanous', 'logs', 'instances.json'), JSON.stringify({ instances: [{
       name: 'test:fixture', stateDir: instanceState, kind: 'test', configDir: instanceState, pid: 0, startedAt: '',
     }] }));
     try {
@@ -1632,15 +1632,15 @@ describe('runLogsCli — 사람용 출력 wiring', () => {
   }, 15_000);
 
   it('손상된 다른 인스턴스 탐침은 빈 결과와 성공 종료코드를 바꾸지 않는다', () => {
-    const home = mkdtempSync(join(tmpdir(), 'monad-logs-corrupt-'));
-    const prodDbPath = join(home, '.monad', 'logs', 'logs.db');
+    const home = mkdtempSync(join(tmpdir(), 'elanous-logs-corrupt-'));
+    const prodDbPath = join(home, '.elanous', 'logs', 'logs.db');
     const corruptState = join(home, 'corrupt-state');
     const corruptDbPath = join(corruptState, 'logs', 'logs.db');
-    mkdirSync(join(home, '.monad', 'logs'), { recursive: true });
+    mkdirSync(join(home, '.elanous', 'logs'), { recursive: true });
     mkdirSync(join(corruptState, 'logs'), { recursive: true });
     new LogStore(prodDbPath).close();
     writeFileSync(corruptDbPath, 'not a sqlite database');
-    writeFileSync(join(home, '.monad', 'logs', 'instances.json'), JSON.stringify({ instances: [{
+    writeFileSync(join(home, '.elanous', 'logs', 'instances.json'), JSON.stringify({ instances: [{
       name: 'test:corrupt', stateDir: corruptState, kind: 'test', configDir: corruptState, pid: 0, startedAt: '',
     }] }));
     try {
@@ -1654,8 +1654,8 @@ describe('runLogsCli — 사람용 출력 wiring', () => {
   });
 
   it('연합 조회에서 한 인스턴스 읽기가 실패하면 사람·JSON 산출에 이름을 싣고 커서와 같은 종료값 2를 낸다', () => {
-    const home = mkdtempSync(join(tmpdir(), 'monad-logs-unreadable-'));
-    const prodDbPath = join(home, '.monad', 'logs', 'logs.db');
+    const home = mkdtempSync(join(tmpdir(), 'elanous-logs-unreadable-'));
+    const prodDbPath = join(home, '.elanous', 'logs', 'logs.db');
     const unreadableState = join(home, 'unreadable-state');
     const unreadableDbPath = join(unreadableState, 'logs', 'logs.db');
     const seed = (dbPath: string, instance: string) => {
@@ -1666,7 +1666,7 @@ describe('runLogsCli — 사람용 출력 wiring', () => {
     seed(prodDbPath, 'prod');
     mkdirSync(join(unreadableState, 'logs'), { recursive: true });
     new Database(unreadableDbPath).close(); // Opens read-only but has no logs table, so query() fails after opening.
-    writeFileSync(join(home, '.monad', 'logs', 'instances.json'), JSON.stringify({ instances: [{
+    writeFileSync(join(home, '.elanous', 'logs', 'instances.json'), JSON.stringify({ instances: [{
       name: 'test:unreadable', stateDir: unreadableState, kind: 'test', configDir: unreadableState, pid: 0, startedAt: '',
     }] }));
     try {
@@ -1692,8 +1692,8 @@ describe('runLogsCli — 사람용 출력 wiring', () => {
   });
 
   it('연합 조회의 모든 인스턴스를 읽으면 실패 머리·JSON 필드 없이 종료값 0을 유지한다', () => {
-    const home = mkdtempSync(join(tmpdir(), 'monad-logs-readable-'));
-    const prodDbPath = join(home, '.monad', 'logs', 'logs.db');
+    const home = mkdtempSync(join(tmpdir(), 'elanous-logs-readable-'));
+    const prodDbPath = join(home, '.elanous', 'logs', 'logs.db');
     const instanceState = join(home, 'readable-state');
     const instanceDbPath = join(instanceState, 'logs', 'logs.db');
     const seed = (dbPath: string, instance: string) => {
@@ -1703,7 +1703,7 @@ describe('runLogsCli — 사람용 출력 wiring', () => {
     };
     seed(prodDbPath, 'prod');
     seed(instanceDbPath, 'test:readable');
-    writeFileSync(join(home, '.monad', 'logs', 'instances.json'), JSON.stringify({ instances: [{
+    writeFileSync(join(home, '.elanous', 'logs', 'instances.json'), JSON.stringify({ instances: [{
       name: 'test:readable', stateDir: instanceState, kind: 'test', configDir: instanceState, pid: 0, startedAt: '',
     }] }));
     try {
@@ -1728,8 +1728,8 @@ describe('runLogsCli — 사람용 출력 wiring', () => {
   });
 
   it('연합 JSON 커서는 중간에 소진된 인스턴스를 보존하며 3쪽 이상에서 누락·중복·순서 역행 없이 이어진다', () => {
-    const home = mkdtempSync(join(tmpdir(), 'monad-logs-federated-cursor-'));
-    const prodDbPath = join(home, '.monad', 'logs', 'logs.db');
+    const home = mkdtempSync(join(tmpdir(), 'elanous-logs-federated-cursor-'));
+    const prodDbPath = join(home, '.elanous', 'logs', 'logs.db');
     const instanceState = join(home, 'fixture-state');
     const instanceDbPath = join(instanceState, 'logs', 'logs.db');
     const seed = (dbPath: string, instance: string, count: number, startSecond: number) => {
@@ -1741,7 +1741,7 @@ describe('runLogsCli — 사람용 출력 wiring', () => {
     };
     seed(prodDbPath, 'prod', 9, 0);
     seed(instanceDbPath, 'test:fixture', 2, 9);
-    writeFileSync(join(home, '.monad', 'logs', 'instances.json'), JSON.stringify({ instances: [{
+    writeFileSync(join(home, '.elanous', 'logs', 'instances.json'), JSON.stringify({ instances: [{
       name: 'test:fixture', stateDir: instanceState, kind: 'test', configDir: instanceState, pid: 0, startedAt: '',
     }] }));
     try {
@@ -1790,8 +1790,8 @@ describe('runLogsCli — 사람용 출력 wiring', () => {
   }, 15_000);
 
   it('상한 도달은 비-JSON stdout과 JSON 마지막 메타 행에 고지하며 JSON stdout은 순수 NDJSON이다', () => {
-    const home = mkdtempSync(join(tmpdir(), 'monad-logs-limit-'));
-    const dbPath = join(home, '.monad', 'logs', 'logs.db');
+    const home = mkdtempSync(join(tmpdir(), 'elanous-logs-limit-'));
+    const dbPath = join(home, '.elanous', 'logs', 'logs.db');
     const writer = new LogStore(dbPath);
     writer.insertBatch(Array.from({ length: 1201 }, (_, index) => ({
       rec: { ts: new Date(Date.now() + index).toISOString(), category: 'limit', event: String(index) }, surface: 'nexus',
@@ -1876,8 +1876,8 @@ describe('runLogsCli — 사람용 출력 wiring', () => {
   }, 30_000);
 
   it('--json nextCursor는 역순 id·동일 시각에서도 실제 --before 페이지 경계와 일치한다', () => {
-    const home = mkdtempSync(join(tmpdir(), 'monad-logs-json-cursor-boundary-'));
-    const dbPath = join(home, '.monad', 'logs', 'logs.db');
+    const home = mkdtempSync(join(tmpdir(), 'elanous-logs-json-cursor-boundary-'));
+    const dbPath = join(home, '.elanous', 'logs', 'logs.db');
     const writer = new LogStore(dbPath);
     const base = Date.UTC(2026, 6, 30, 0, 0, 0);
     const offsets = [4, 1, 3, 1, 5, 0, 2, 3];
@@ -1924,8 +1924,8 @@ describe('runLogsCli — 사람용 출력 wiring', () => {
   }, 15_000);
 
   it('--list-events lists multiple events in a category by descending count (human and JSON)', () => {
-    const home = mkdtempSync(join(tmpdir(), 'monad-logs-list-events-multi-'));
-    const dbPath = join(home, '.monad', 'logs', 'logs.db');
+    const home = mkdtempSync(join(tmpdir(), 'elanous-logs-list-events-multi-'));
+    const dbPath = join(home, '.elanous', 'logs', 'logs.db');
     const writer = new LogStore(dbPath);
     writer.insertBatch([
       { rec: { ts: '2026-09-06T00:00:00.000Z', category: 'harness.boundary', event: 'request-received' }, surface: 'nexus' },
@@ -1962,8 +1962,8 @@ describe('runLogsCli — 사람용 출력 wiring', () => {
   }, 15_000);
 
   it('--list-events respects category filters including zero results', () => {
-    const home = mkdtempSync(join(tmpdir(), 'monad-logs-list-events-zero-'));
-    const dbPath = join(home, '.monad', 'logs', 'logs.db');
+    const home = mkdtempSync(join(tmpdir(), 'elanous-logs-list-events-zero-'));
+    const dbPath = join(home, '.elanous', 'logs', 'logs.db');
     const writer = new LogStore(dbPath);
     writer.insertBatch([
       { rec: { ts: '2026-09-06T00:00:00.000Z', category: 'harness.boundary', event: 'request-received' }, surface: 'nexus' },
@@ -1986,8 +1986,8 @@ describe('runLogsCli — 사람용 출력 wiring', () => {
   }, 15_000);
 
   it('--list-events merges counts across stores and keeps descending order', () => {
-    const home = mkdtempSync(join(tmpdir(), 'monad-logs-list-events-merge-'));
-    const prodState = join(home, '.monad');
+    const home = mkdtempSync(join(tmpdir(), 'elanous-logs-list-events-merge-'));
+    const prodState = join(home, '.elanous');
     const otherState = join(home, 'other-state');
     const prod = new LogStore(join(prodState, 'logs', 'logs.db'));
     prod.insertBatch([
@@ -2016,8 +2016,8 @@ describe('runLogsCli — 사람용 출력 wiring', () => {
   }, 15_000);
 
   it('--list-events surfaces truncation and excludes _meta truncation-warning rows', () => {
-    const home = mkdtempSync(join(tmpdir(), 'monad-logs-list-events-trunc-'));
-    const dbPath = join(home, '.monad', 'logs', 'logs.db');
+    const home = mkdtempSync(join(tmpdir(), 'elanous-logs-list-events-trunc-'));
+    const dbPath = join(home, '.elanous', 'logs', 'logs.db');
     const writer = new LogStore(dbPath);
     writer.insertBatch([
       { rec: { ts: '2026-09-06T00:00:00.000Z', category: 'harness.boundary', event: 'request-received' }, surface: 'nexus' },
@@ -2038,7 +2038,7 @@ describe('runLogsCli — 사람용 출력 wiring', () => {
 
       const capped = runLogs(['--instance', 'prod', '--json', '--list-events', '--exact-category', 'harness.boundary', '--limit', '2'], home);
       expect(capped.status).toBe(0);
-      expect(capped.stderr).toContain('monad logs: result may be truncated (limitReached=true)');
+      expect(capped.stderr).toContain('elanous logs: result may be truncated (limitReached=true)');
       const listing = capped.stdout.trim().split('\n').filter(Boolean).map((line) => JSON.parse(line))
         .find((row) => Array.isArray(row.events));
       expect(listing.truncated).toBe(true);
@@ -2049,8 +2049,8 @@ describe('runLogsCli — 사람용 출력 wiring', () => {
   }, 15_000);
 
   it('--list-events sets truncated only when a probe row exists beyond fetchLimit', () => {
-    const home = mkdtempSync(join(tmpdir(), 'monad-logs-list-events-probe-'));
-    const dbPath = join(home, '.monad', 'logs', 'logs.db');
+    const home = mkdtempSync(join(tmpdir(), 'elanous-logs-list-events-probe-'));
+    const dbPath = join(home, '.elanous', 'logs', 'logs.db');
     const writer = new LogStore(dbPath);
     writer.insertBatch([
       { rec: { ts: '2026-09-06T00:00:00.000Z', category: 'harness.boundary', event: 'alpha' }, surface: 'nexus' },
@@ -2081,7 +2081,7 @@ describe('runLogsCli — 사람용 출력 wiring', () => {
 
       const over = runLogs(['--instance', 'prod', '--json', '--list-events', '--exact-category', 'harness.boundary', '--limit', '2'], home);
       expect(over.status).toBe(0);
-      expect(over.stderr).toContain('monad logs: result may be truncated (limitReached=true)');
+      expect(over.stderr).toContain('elanous logs: result may be truncated (limitReached=true)');
       const overListing = parseListing(over.stdout);
       expect(overListing.truncated).toBe(true);
       expect(counted(overListing)).toBe(2);
@@ -2092,8 +2092,8 @@ describe('runLogsCli — 사람용 출력 wiring', () => {
   }, 15_000);
 
   it('--list-events continues with a warning when one store fails to read', () => {
-    const home = mkdtempSync(join(tmpdir(), 'monad-logs-list-events-failsoft-'));
-    const prodState = join(home, '.monad');
+    const home = mkdtempSync(join(tmpdir(), 'elanous-logs-list-events-failsoft-'));
+    const prodState = join(home, '.elanous');
     const otherState = join(home, 'other-state');
     const prod = new LogStore(join(prodState, 'logs', 'logs.db'));
     prod.insertBatch([
@@ -2133,8 +2133,8 @@ describe('runLogsCli — 사람용 출력 wiring', () => {
   });
 
   it('--list-events applies --limit globally after merging stores, not per store', () => {
-    const home = mkdtempSync(join(tmpdir(), 'monad-logs-list-events-global-limit-'));
-    const prodState = join(home, '.monad');
+    const home = mkdtempSync(join(tmpdir(), 'elanous-logs-list-events-global-limit-'));
+    const prodState = join(home, '.elanous');
     const otherState = join(home, 'other-state');
     const prod = new LogStore(join(prodState, 'logs', 'logs.db'));
     prod.insertBatch([
@@ -2159,7 +2159,7 @@ describe('runLogsCli — 사람용 출력 wiring', () => {
       expect(listing.truncated).toBe(true);
       expect(listing.events).toEqual([{ event: 'newer-store', count: 2 }]);
       expect(listing.events.reduce((sum: number, row: { count: number }) => sum + row.count, 0)).toBe(2);
-      expect(json.stderr).toContain('monad logs: result may be truncated (limitReached=true)');
+      expect(json.stderr).toContain('elanous logs: result may be truncated (limitReached=true)');
     } finally {
       rmSync(home, { recursive: true, force: true });
     }
@@ -2329,7 +2329,7 @@ describe('renderLogJsonLine — 레거시 surrogate JSONL 방어', () => {
       expect(legacy).toMatch(/\\u[dD][89a-fA-F][0-9a-fA-F]{2}/);
       const parsed = JSON.parse(renderLogJsonLine(row(malformed), 'prod')) as Record<string, unknown>;
       expect(parsed.data).toBe('before\uFFFDafter');
-      expect(parsed._monadJsonlSanitized).toBe(true);
+      expect(parsed._elanousJsonlSanitized).toBe(true);
     }
   });
 
@@ -2339,17 +2339,17 @@ describe('renderLogJsonLine — 레거시 surrogate JSONL 방어', () => {
     const line = renderLogJsonLine(ordinary, 'prod');
     expect(line).toBe(legacy);
     const parsed = JSON.parse(line) as Record<string, unknown>;
-    expect(parsed).not.toHaveProperty('_monadJsonlSanitized');
+    expect(parsed).not.toHaveProperty('_elanousJsonlSanitized');
     expect(parsed.data).toBe(ordinary.data);
   });
 
   it('jsonData의 중첩 문자열과 객체 키를 비변이로 손질하고 표시 키 충돌을 피한다', () => {
-    const stored = JSON.stringify({ nested: ['safe', 'left\uD800right'], _monadJsonlSanitized: 'preserve' });
-    const original = Object.assign(row(stored), { _monadJsonlSanitized: 'preserve' });
+    const stored = JSON.stringify({ nested: ['safe', 'left\uD800right'], _elanousJsonlSanitized: 'preserve' });
+    const original = Object.assign(row(stored), { _elanousJsonlSanitized: 'preserve' });
     const parsed = JSON.parse(renderLogJsonLine(original, 'prod', true)) as Record<string, unknown>;
-    expect(parsed.data).toEqual({ nested: ['safe', 'left\uFFFDright'], _monadJsonlSanitized: 'preserve' });
-    expect(parsed._monadJsonlSanitized).toBe('preserve');
-    expect(parsed.__monadJsonlSanitized).toBe(true);
+    expect(parsed.data).toEqual({ nested: ['safe', 'left\uFFFDright'], _elanousJsonlSanitized: 'preserve' });
+    expect(parsed._elanousJsonlSanitized).toBe('preserve');
+    expect(parsed.__elanousJsonlSanitized).toBe(true);
     expect(original.data).toBe(stored);
   });
 
@@ -2361,7 +2361,7 @@ describe('renderLogJsonLine — 레거시 surrogate JSONL 방어', () => {
     expect(line).not.toMatch(/\\u[dD][89a-fA-F][0-9a-fA-F]{2}/);
     expect(parsed['top\uFFFD']).toBe('top-high');
     expect(parsed.data).toEqual({ nested: { 'left\uFFFD': 'high', 'right\uFFFD': 'low' } });
-    expect(parsed._monadJsonlSanitized).toBe(true);
+    expect(parsed._elanousJsonlSanitized).toBe(true);
     expect(original['top\uD800']).toBe('top-high');
     expect(original.data).toBe(stored);
   });
@@ -2373,10 +2373,10 @@ describe('renderLogJsonLine — 레거시 surrogate JSONL 방어', () => {
     expect(first).toEqual(second);
     expect(first.data).toEqual({
       '�': 'ordinary',
-      '�__monadJsonlSanitizedKey1': 'legacy',
-      nested: { '�': 'nested-ordinary', '�__monadJsonlSanitizedKey1': 'nested-legacy' },
+      '�__elanousJsonlSanitizedKey1': 'legacy',
+      nested: { '�': 'nested-ordinary', '�__elanousJsonlSanitizedKey1': 'nested-legacy' },
     });
-    expect(first._monadJsonlSanitized).toBe(true);
+    expect(first._elanousJsonlSanitized).toBe(true);
   });
 
   it('혼합 여러 행에서는 전체 행과 손질된 행 수가 모두 0이 아니고 나머지 행을 보존한다', () => {
@@ -2384,7 +2384,7 @@ describe('renderLogJsonLine — 레거시 surrogate JSONL 방어', () => {
       .map((item) => renderLogJsonLine(item, 'prod'));
     const parsed = lines.map((line) => JSON.parse(line) as Record<string, unknown>);
     expect(parsed).toHaveLength(3);
-    expect(parsed.filter((item) => item._monadJsonlSanitized === true)).toHaveLength(1);
+    expect(parsed.filter((item) => item._elanousJsonlSanitized === true)).toHaveLength(1);
     expect(parsed.map((item) => item.data)).toEqual(['ordinary', 'broken\uFFFDvalue', '😀 intact']);
   });
 });
@@ -2430,9 +2430,9 @@ describe('resolveLogTargets — 인스턴스 타겟 해석 (LF7-b)', () => {
   // ── 기본 동선 = 내 우주 ⊕ 운영 (P5 · 2026-07-27) ───────────────────────────
   //
   // ⚠️ 실측 사건: 3층 스위치를 켜자 비-리더 트리의 조회가 **자기도 test 로 파생**돼, 방금 전까지
-  //   보이던 운영 로그가 `monad logs` 에서 통째로 사라졌다(관측 도구가 우주를 바꿔 자기 로그를 못 찾음).
+  //   보이던 운영 로그가 `elanous logs` 에서 통째로 사라졌다(관측 도구가 우주를 바꿔 자기 로그를 못 찾음).
   //   격리는 실행에 필요한 것이지 조회를 좁힐 이유가 아니다.
-  const PROD: LogTarget = { name: 'prod', dbPath: '/home/u/.monad/logs/logs.db' };
+  const PROD: LogTarget = { name: 'prod', dbPath: '/home/u/.elanous/logs/logs.db' };
 
   it('플래그 없음 · 현재 우주가 운영 → 단일 타겟(무회귀)', () => {
     const r = resolveLogTargets({}, { instances: [], self: { ...PROD }, prod: PROD });
@@ -2441,27 +2441,27 @@ describe('resolveLogTargets — 인스턴스 타겟 해석 (LF7-b)', () => {
   });
 
   it('★ 플래그 없음 · 현재 우주가 파생/격리 → 내 것 + 운영 둘 다', () => {
-    const self: LogTarget = { name: 'test:axon', dbPath: '/x/axon/.monad-test/logs/logs.db' };
+    const self: LogTarget = { name: 'test:axon', dbPath: '/x/axon/.elanous-test/logs/logs.db' };
     const r = resolveLogTargets({}, { instances: [], self, prod: PROD });
     expect(r.targets.map((t) => t.name)).toEqual(['test:axon', 'prod']);
   });
 
   it('명시 스코프는 기본 합류에 영향받지 않는다(--instance 는 **요청한 그것** 하나만)', () => {
     // ⚠️ 길이만 보면 "엉뚱한 단일 타겟"도 통과한다(리뷰 should-fix) — 이름·경로까지 단정한다.
-    const self: LogTarget = { name: 'test:axon', dbPath: '/x/axon/.monad-test/logs/logs.db' };
+    const self: LogTarget = { name: 'test:axon', dbPath: '/x/axon/.elanous-test/logs/logs.db' };
     const r = resolveLogTargets({ instance: 'prod' }, { instances: [], self, prod: PROD });
-    expect(r.targets).toEqual([{ name: 'prod', dbPath: join(homedir(), '.monad', 'logs', 'logs.db') }]);
+    expect(r.targets).toEqual([{ name: 'prod', dbPath: join(homedir(), '.elanous', 'logs', 'logs.db') }]);
 
-    const views = [inst('test:monad-agent', '/x/monad-agent/.monad-test')];
+    const views = [inst('test:monad-agent', '/x/monad-agent/.elanous-test')];
     const t = resolveLogTargets({ instance: 'monad-agent' }, { instances: views, self, prod: PROD });
-    expect(t.targets).toEqual([{ name: 'test:monad-agent', dbPath: '/x/monad-agent/.monad-test/logs/logs.db' }]);
+    expect(t.targets).toEqual([{ name: 'test:monad-agent', dbPath: '/x/monad-agent/.elanous-test/logs/logs.db' }]);
   });
 
   it('실 해석 경로(주입 없음) — 현재 우주가 반드시 포함되고, 비-prod 면 prod 도 합류한다', () => {
     // ⚠️ "1~2개" 는 약하다(리뷰 should-fix) — 실제 구성을 단정한다.
     const r = resolveLogTargets({}, { instances: [] });
     expect(r.error).toBeUndefined();
-    const prodPath = join(homedir(), '.monad', 'logs', 'logs.db');
+    const prodPath = join(homedir(), '.elanous', 'logs', 'logs.db');
     const paths = r.targets.map((t) => t.dbPath);
     expect(paths[0]).toBeTruthy();                 // 첫 타겟 = 현재 우주
     expect(paths).toContain(prodPath);             // 운영은 언제나 조회 대상
@@ -2476,21 +2476,21 @@ describe('resolveLogTargets — 인스턴스 타겟 해석 (LF7-b)', () => {
   it('--all --include-test --instance 는 연합 후보군을 지정 인스턴스 하나로 좁힌다', () => {
     const views = [
       inst('axon', '/x/axon-state'),
-      inst('test:monad-agent', '/x/monad-agent/.monad-test'),
+      inst('test:monad-agent', '/x/monad-agent/.elanous-test'),
     ];
     const r = resolveLogTargets({ all: true, includeTest: true, instance: 'test:monad-agent' }, { instances: views });
     expect(r.error).toBeUndefined();
-    expect(r.targets).toEqual([{ name: 'test:monad-agent', dbPath: '/x/monad-agent/.monad-test/logs/logs.db' }]);
+    expect(r.targets).toEqual([{ name: 'test:monad-agent', dbPath: '/x/monad-agent/.elanous-test/logs/logs.db' }]);
   });
 
   it('--instance prod → 홈 스토어', () => {
     const r = resolveLogTargets({ instance: 'prod' }, { instances: [] });
     expect(r.targets[0]!.name).toBe('prod');
-    expect(r.targets[0]!.dbPath.endsWith('/.monad/logs/logs.db')).toBe(true);
+    expect(r.targets[0]!.dbPath.endsWith('/.elanous/logs/logs.db')).toBe(true);
   });
 
   it('--instance 이름 매치 (test: 접두 생략 허용) · 미등록은 목록 포함 에러', () => {
-    const views = [inst('test:monad-agent', '/x/monad-agent/.monad-test')];
+    const views = [inst('test:monad-agent', '/x/monad-agent/.elanous-test')];
     expect(resolveLogTargets({ instance: 'test:monad-agent' }, { instances: views }).targets[0]!.name).toBe('test:monad-agent');
     expect(resolveLogTargets({ instance: 'monad-agent' }, { instances: views }).targets[0]!.name).toBe('test:monad-agent');
     const miss = resolveLogTargets({ instance: 'ghost' }, { instances: views });
@@ -2499,7 +2499,7 @@ describe('resolveLogTargets — 인스턴스 타겟 해석 (LF7-b)', () => {
   });
 
   it('같은 stateDir 중복은 비모호성, 서로 다른 경로는 모든 후보를 보고하며 거부한다', () => {
-    const duplicateStateDir = '/Users/example/source/temp/monad-agent/.monad-test';
+    const duplicateStateDir = '/Users/example/source/temp/monad-agent/.elanous-test';
     const duplicate = resolveLogTargets({ instance: 'test:monad-agent' }, {
       instances: [
         inst('test:monad-agent', duplicateStateDir),
@@ -2511,9 +2511,9 @@ describe('resolveLogTargets — 인스턴스 타겟 해석 (LF7-b)', () => {
 
     const stateDirs = [
       duplicateStateDir,
-      '/Users/example/source/elan/monad-agent/.monad-test',
-      '/Users/example/source/demo/monad-agent/.monad-test',
-      '/Users/example/source/axon/monad-agent/.monad-test',
+      '/Users/example/source/elan/monad-agent/.elanous-test',
+      '/Users/example/source/demo/monad-agent/.elanous-test',
+      '/Users/example/source/axon/monad-agent/.elanous-test',
     ];
     const result = resolveLogTargets({ instance: 'test:monad-agent' }, {
       instances: [
@@ -2528,53 +2528,53 @@ describe('resolveLogTargets — 인스턴스 타겟 해석 (LF7-b)', () => {
 
   it('단일 이름 조회는 기존처럼 단일 타겟을 돌려준다', () => {
     const result = resolveLogTargets({ instance: 'test:monad-agent' }, {
-      instances: [inst('test:monad-agent', '/x/monad-agent/.monad-test')],
+      instances: [inst('test:monad-agent', '/x/monad-agent/.elanous-test')],
     });
     expect(result.error).toBeUndefined();
-    expect(result.targets).toEqual([{ name: 'test:monad-agent', dbPath: '/x/monad-agent/.monad-test/logs/logs.db' }]);
+    expect(result.targets).toEqual([{ name: 'test:monad-agent', dbPath: '/x/monad-agent/.elanous-test/logs/logs.db' }]);
   });
 
   it('--all → prod-kind 만 연합, 격리 test 는 기본 제외(Phase A), prod 등록 항목은 dedup', () => {
-    const home = join(homedir(), '.monad');
+    const home = join(homedir(), '.elanous');
     const views = [
       inst('prod', home),                                  // prod 자신의 등록 — dedup 대상
       inst('axon', '/x/axon-state'),                       // 병렬 비-test 인스턴스 → 포함
-      inst('test:monad-agent', '/x/monad-agent/.monad-test'), // 격리 test → 기본 제외
-      inst('test:monad-2', '/x/monad-2/.monad-test', false),  // 스토어 없음 → 제외
+      inst('test:monad-agent', '/x/monad-agent/.elanous-test'), // 격리 test → 기본 제외
+      inst('test:elanous-2', '/x/elanous-2/.elanous-test', false),  // 스토어 없음 → 제외
     ];
     const r = resolveLogTargets({ all: true }, { instances: views });
     expect(r.targets.map((t) => t.name)).toEqual(['prod', 'axon']);
   });
 
   it('--all --include-test → 격리 test 도 포함', () => {
-    const home = join(homedir(), '.monad');
+    const home = join(homedir(), '.elanous');
     const views = [
       inst('prod', home),
-      inst('test:monad-agent', '/x/monad-agent/.monad-test'),
+      inst('test:monad-agent', '/x/monad-agent/.elanous-test'),
     ];
     const r = resolveLogTargets({ all: true, includeTest: true }, { instances: views });
     expect(r.targets.map((t) => t.name)).toEqual(['prod', 'test:monad-agent']);
   });
 
-  it('--test 는 cwd 상위에서 .monad-test 탐색 · 없으면 에러', () => {
-    const dir = mkdtempSync(join(tmpdir(), 'monad-logtgt-'));
+  it('--test 는 cwd 상위에서 .elanous-test 탐색 · 없으면 에러', () => {
+    const dir = mkdtempSync(join(tmpdir(), 'elanous-logtgt-'));
     const repo = join(dir, 'my-repo');
-    mkdirSync(join(repo, '.monad-test'), { recursive: true });
+    mkdirSync(join(repo, '.elanous-test'), { recursive: true });
     const sub = join(repo, 'src', 'deep');
     mkdirSync(sub, { recursive: true });
     const r = resolveLogTargets({ test: true }, { cwd: sub });
     expect(r.targets[0]!.name).toBe('test:my-repo');
-    expect(r.targets[0]!.dbPath).toBe(join(repo, '.monad-test', 'logs', 'logs.db'));
-    expect(resolveLogTargets({ test: true }, { cwd: dir }).error).toContain('.monad-test');
+    expect(r.targets[0]!.dbPath).toBe(join(repo, '.elanous-test', 'logs', 'logs.db'));
+    expect(resolveLogTargets({ test: true }, { cwd: dir }).error).toContain('.elanous-test');
     rmSync(dir, { recursive: true, force: true });
   });
 });
 
 describe('formatLogInstance — 인스턴스 목록 모호성 표시', () => {
   const view = (ambiguous: boolean, stateDirCount: number): LogInstanceView => ({
-    name: 'test:monad-agent', stateDir: '/x/monad-agent/.monad-test', stateDirCount, ambiguous,
-    kind: 'test', configDir: '/x/monad-agent/.monad-test', pid: 1, startedAt: '', alive: true, liveness: 'alive', dbExists: true,
-    dbPath: '/x/monad-agent/.monad-test/logs/logs.db',
+    name: 'test:monad-agent', stateDir: '/x/monad-agent/.elanous-test', stateDirCount, ambiguous,
+    kind: 'test', configDir: '/x/monad-agent/.elanous-test', pid: 1, startedAt: '', alive: true, liveness: 'alive', dbExists: true,
+    dbPath: '/x/monad-agent/.elanous-test/logs/logs.db',
   });
 
   it('중복 이름 행은 여러 state 경로에 걸렸음을 표시한다', () => {
@@ -2630,7 +2630,7 @@ describe('renderGatedHint — 확정 억제면 질의 모양과 무관하게 알
     // 종전 힌트가 주던 것: 억제 상태 · 켜는 법 · 대체 관측 · 근거 문서
     expect(hint).toContain('억제 ON(무음) 상태다');
     expect(hint).toContain('빈 결과가 정상이다');
-    expect(hint).toContain('monad logs level --render on');
+    expect(hint).toContain('elanous logs level --render on');
     expect(hint).toContain('화면 관측=tmux `capture-pane`');
     expect(hint).toContain('REPORT §9-3');
     // ⚠️ 그리고 카테고리 없는 질의용 새 문구가 **섞이지 않아야** 한다.
@@ -2708,9 +2708,9 @@ describe('runLogsCli — remote /v1/logs', () => {
         return Response.json({ ok: true, count: 0, logs: [] });
       },
     });
-    const dir = mkdtempSync(join(tmpdir(), 'monad-logs-session-'));
-    const prev = getMonadConfigDirOverride();
-    setMonadConfigDir(dir);
+    const dir = mkdtempSync(join(tmpdir(), 'elanous-logs-session-'));
+    const prev = getElanousConfigDirOverride();
+    setElanousConfigDir(dir);
     const tok = join(dir, 'toksess');
     writeFileSync(tok, 'tok');
     const store = new RemotesStore();
@@ -2725,8 +2725,8 @@ describe('runLogsCli — remote /v1/logs', () => {
       expect(received[1]).not.toContain('sessionId=');
     } finally {
       io.restore();
-      if (prev === undefined) resetMonadConfigDir();
-      else setMonadConfigDir(prev);
+      if (prev === undefined) resetElanousConfigDir();
+      else setElanousConfigDir(prev);
       rmSync(dir, { recursive: true, force: true });
       server.stop(true);
     }
@@ -2741,9 +2741,9 @@ describe('runLogsCli — remote /v1/logs', () => {
         return Response.json({ ok: true, count: 0, logs: [] });
       },
     });
-    const dir = mkdtempSync(join(tmpdir(), 'monad-logs-space-'));
-    const prev = getMonadConfigDirOverride();
-    setMonadConfigDir(dir);
+    const dir = mkdtempSync(join(tmpdir(), 'elanous-logs-space-'));
+    const prev = getElanousConfigDirOverride();
+    setElanousConfigDir(dir);
     const tok = join(dir, 'toksp');
     writeFileSync(tok, 'tok');
     const store = new RemotesStore();
@@ -2765,8 +2765,8 @@ describe('runLogsCli — remote /v1/logs', () => {
       expect(received[2]).not.toContain('grep=');
     } finally {
       io.restore();
-      if (prev === undefined) resetMonadConfigDir();
-      else setMonadConfigDir(prev);
+      if (prev === undefined) resetElanousConfigDir();
+      else setElanousConfigDir(prev);
       rmSync(dir, { recursive: true, force: true });
       server.stop(true);
     }
@@ -2776,9 +2776,9 @@ describe('runLogsCli — remote /v1/logs', () => {
   //   🔑 넷 다 `resolveLogTargets` 의 로컬 스토어 스코프다. 원격 데몬은 자기 스코프를 «스스로» 정한다.
   //   ⛔ 조용히 무시하면 사람이 「전 인스턴스를 봤다」고 «잘못 믿는다» — 그게 이 판이 내내 고친 형태다.
   it('remote rejects EVERY local-store scope flag, and each one names itself', async () => {
-    const dir = mkdtempSync(join(tmpdir(), 'monad-logs-scope-'));
-    const prev = getMonadConfigDirOverride();
-    setMonadConfigDir(dir);
+    const dir = mkdtempSync(join(tmpdir(), 'elanous-logs-scope-'));
+    const prev = getElanousConfigDirOverride();
+    setElanousConfigDir(dir);
     const tok = join(dir, 'toks');
     writeFileSync(tok, 'tok');
     const store = new RemotesStore();
@@ -2807,8 +2807,8 @@ describe('runLogsCli — remote /v1/logs', () => {
       expect(fetched).toBe(1);
     } finally {
       io.restore();
-      if (prev === undefined) resetMonadConfigDir();
-      else setMonadConfigDir(prev);
+      if (prev === undefined) resetElanousConfigDir();
+      else setElanousConfigDir(prev);
       rmSync(dir, { recursive: true, force: true });
     }
   });
@@ -2818,9 +2818,9 @@ describe('runLogsCli — remote /v1/logs', () => {
   //      가리킨다는 보장이 없다 — 그러면 사람은 「그 지점부터 봤다」고 믿는데 실제로는 다른 곳부터 본다.
   //   ⛔ 그리고 내 PR 본문은 이미 「거절한다」고 «말하고 있었다» — 말과 코드가 어긋난 것도 결함이다.
   it('remote `--before` is rejected outright (both numeric row ids and federated cursors)', async () => {
-    const dir = mkdtempSync(join(tmpdir(), 'monad-logs-before-'));
-    const prev = getMonadConfigDirOverride();
-    setMonadConfigDir(dir);
+    const dir = mkdtempSync(join(tmpdir(), 'elanous-logs-before-'));
+    const prev = getElanousConfigDirOverride();
+    setElanousConfigDir(dir);
     const tok = join(dir, 'tokb');
     writeFileSync(tok, 'tok');
     const store = new RemotesStore();
@@ -2849,8 +2849,8 @@ describe('runLogsCli — remote /v1/logs', () => {
       expect(fetched).toBe(1);
     } finally {
       io.restore();
-      if (prev === undefined) resetMonadConfigDir();
-      else setMonadConfigDir(prev);
+      if (prev === undefined) resetElanousConfigDir();
+      else setElanousConfigDir(prev);
       rmSync(dir, { recursive: true, force: true });
     }
   });
@@ -2860,9 +2860,9 @@ describe('runLogsCli — remote /v1/logs', () => {
   //   ⚠️ 실제 20초를 기다리지 «않는다» — 주입된 fetch 가 그 실패 «모양»을 그대로 낸다.
   //      (실시간 상한 자체는 `AbortSignal.timeout` 의 계약이고 이 시험의 축이 아니다.)
   it('[렌더링] a time-based failure is worded distinctly (⛔ 배선 자체는 위 LIVE hang-server 시험이 잰다)', async () => {
-    const dir = mkdtempSync(join(tmpdir(), 'monad-logs-timeout-'));
-    const prev = getMonadConfigDirOverride();
-    setMonadConfigDir(dir);
+    const dir = mkdtempSync(join(tmpdir(), 'elanous-logs-timeout-'));
+    const prev = getElanousConfigDirOverride();
+    setElanousConfigDir(dir);
     const tok = join(dir, 'tok3');
     writeFileSync(tok, 'tok');
     const store = new RemotesStore();
@@ -2880,8 +2880,8 @@ describe('runLogsCli — remote /v1/logs', () => {
       expect(io.stdout.join('')).toBe('');
     } finally {
       io.restore();
-      if (prev === undefined) resetMonadConfigDir();
-      else setMonadConfigDir(prev);
+      if (prev === undefined) resetElanousConfigDir();
+      else setElanousConfigDir(prev);
       rmSync(dir, { recursive: true, force: true });
     }
   });
@@ -2928,15 +2928,15 @@ describe('runLogsCli — remote /v1/logs', () => {
   //   🩸 앞 판은 `--remote <name>` 만 실물로 쟀다. 그래서 ***action 에서 `r` 전달을 끊어도 초록***이었다.
   //      두 축은 `src/index.ts` 의 «다른 갈래»(`o.remote` ↔ `o.r`)라 하나가 다른 하나를 안 덮는다.
   it('LIVE CLI: bare `-r` uses the DEFAULT bookmark through the real production wiring', async () => {
-    const home = mkdtempSync(join(tmpdir(), 'monad-logs-live-r-'));
+    const home = mkdtempSync(join(tmpdir(), 'elanous-logs-live-r-'));
     let server: Awaited<ReturnType<typeof startOutOfProcessLogServer>> | undefined;
     try {
       server = await startOutOfProcessLogServer(home, 'via-bare-r');
-      const cfg = join(home, '.monad');
+      const cfg = join(home, '.elanous');
       writeTwoBookmarks(cfg, server.port, 'named');
-      const res = spawnSync(process.execPath, ['bin/monad.mjs', 'logs', '-r', '--limit', '1'], {
+      const res = spawnSync(process.execPath, ['bin/elanous.mjs', 'logs', '-r', '--limit', '1'], {
         cwd: process.cwd(),
-        env: { ...process.env, HOME: home, MONAD_STATE_DIR: cfg, MONAD_CONFIG_DIR: cfg, TZ: 'UTC' },
+        env: { ...process.env, HOME: home, ELANOUS_STATE_DIR: cfg, ELANOUS_CONFIG_DIR: cfg, TZ: 'UTC' },
         encoding: 'utf8', maxBuffer: 16 * 1024 * 1024, timeout: 120_000,
       });
       const out = `${res.stdout ?? ''}${res.stderr ?? ''}`;
@@ -2957,8 +2957,8 @@ describe('runLogsCli — remote /v1/logs', () => {
   //   ⛔ 판정은 «둘»이다 — ⓐ 서버가 받은 것(hits) ⊕ ⓑ 자식이 그린 것. 하나만으론 각각 우회된다.
   //   📏 이 형태에 이른 궤적(복제 action → in-process 목 → 오류문만 봄)은 PR #14994 본문에 있다.
   it('LIVE CLI: `--remote <name>` fetches from THAT bookmark and renders the response', async () => {
-    const home = mkdtempSync(join(tmpdir(), 'monad-logs-live-ok-'));
-    const cfg = join(home, '.monad');
+    const home = mkdtempSync(join(tmpdir(), 'elanous-logs-live-ok-'));
+    const cfg = join(home, '.elanous');
     const hits = join(home, 'hits.jsonl');
     const serverJs = join(home, 'server.mjs');
     writeFileSync(serverJs, `
@@ -2992,9 +2992,9 @@ describe('runLogsCli — remote /v1/logs', () => {
         },
       }));
 
-      const res = spawnSync(process.execPath, ['bin/monad.mjs', 'logs', '--remote', 'named', '--limit', '1'], {
+      const res = spawnSync(process.execPath, ['bin/elanous.mjs', 'logs', '--remote', 'named', '--limit', '1'], {
         cwd: process.cwd(),
-        env: { ...process.env, HOME: home, MONAD_STATE_DIR: cfg, MONAD_CONFIG_DIR: cfg, TZ: 'UTC' },
+        env: { ...process.env, HOME: home, ELANOUS_STATE_DIR: cfg, ELANOUS_CONFIG_DIR: cfg, TZ: 'UTC' },
         encoding: 'utf8', maxBuffer: 16 * 1024 * 1024, timeout: 120_000,
       });
       const out = `${res.stdout ?? ''}${res.stderr ?? ''}`;
@@ -3033,7 +3033,7 @@ describe('runLogsCli — remote /v1/logs', () => {
               surface: 'nexus',
               category: 'remote.probe',
               event: 'from-mock-server',
-              data: { stateDir: '/home/box/.monad' },
+              data: { stateDir: '/home/box/.elanous' },
             }],
             count: 1,
           });
@@ -3041,9 +3041,9 @@ describe('runLogsCli — remote /v1/logs', () => {
         return new Response('not-found', { status: 404 });
       },
     });
-    const dir = mkdtempSync(join(tmpdir(), 'monad-logs-remote-ok-'));
-    const prev = getMonadConfigDirOverride();
-    setMonadConfigDir(dir);
+    const dir = mkdtempSync(join(tmpdir(), 'elanous-logs-remote-ok-'));
+    const prev = getElanousConfigDirOverride();
+    setElanousConfigDir(dir);
     const tok = join(dir, 'tok');
     writeFileSync(tok, 'http-token');
     const store = new RemotesStore();
@@ -3060,12 +3060,12 @@ describe('runLogsCli — remote /v1/logs', () => {
       expect(seen).toEqual([{ path: '/v1/logs', auth: 'Bearer http-token', search: '' }]);
       expect(io.stdout.join('')).toContain('from-mock-server');
       expect(io.stdout.join('')).toContain('remote.probe');
-      expect(io.stdout.join('')).not.toContain('stateDir=/home/box/.monad');
+      expect(io.stdout.join('')).not.toContain('stateDir=/home/box/.elanous');
       expect(io.stdout.join('')).toContain('⟨remote:iso⟩');
     } finally {
       io.restore();
-      if (prev === undefined) resetMonadConfigDir();
-      else setMonadConfigDir(prev);
+      if (prev === undefined) resetElanousConfigDir();
+      else setElanousConfigDir(prev);
       rmSync(dir, { recursive: true, force: true });
       server.stop(true);
     }
@@ -3076,9 +3076,9 @@ describe('runLogsCli — remote /v1/logs', () => {
       port: 0,
       fetch() { return Response.json({ error: 'unauthorized' }, { status: 401 }); },
     });
-    const dir = mkdtempSync(join(tmpdir(), 'monad-logs-remote-401-'));
-    const prev = getMonadConfigDirOverride();
-    setMonadConfigDir(dir);
+    const dir = mkdtempSync(join(tmpdir(), 'elanous-logs-remote-401-'));
+    const prev = getElanousConfigDirOverride();
+    setElanousConfigDir(dir);
     const tok = join(dir, 'tok');
     writeFileSync(tok, 'bad-token');
     const store = new RemotesStore();
@@ -3105,17 +3105,17 @@ describe('runLogsCli — remote /v1/logs', () => {
       expect(io.stderr.join('')).toMatch(/HTTP 401|unauthorized/i);
     } finally {
       io.restore();
-      if (prev === undefined) resetMonadConfigDir();
-      else setMonadConfigDir(prev);
+      if (prev === undefined) resetElanousConfigDir();
+      else setElanousConfigDir(prev);
       rmSync(dir, { recursive: true, force: true });
       server.stop(true);
     }
   });
 
   it('-r 과 --follow 는 북마크 이름을 대고 거절한다', async () => {
-    const dir = mkdtempSync(join(tmpdir(), 'monad-logs-remote-follow-'));
-    const prev = getMonadConfigDirOverride();
-    setMonadConfigDir(dir);
+    const dir = mkdtempSync(join(tmpdir(), 'elanous-logs-remote-follow-'));
+    const prev = getElanousConfigDirOverride();
+    setElanousConfigDir(dir);
     const tok = join(dir, 'tok');
     writeFileSync(tok, 'http-token');
     const store = new RemotesStore();
@@ -3141,16 +3141,16 @@ describe('runLogsCli — remote /v1/logs', () => {
       expect(io.stderr.join('')).toMatch(/follow.*not supported|지원되지 않/i);
     } finally {
       io.restore();
-      if (prev === undefined) resetMonadConfigDir();
-      else setMonadConfigDir(prev);
+      if (prev === undefined) resetElanousConfigDir();
+      else setElanousConfigDir(prev);
       rmSync(dir, { recursive: true, force: true });
     }
   });
 
   it('-r 없이 부르면 원격 조회 함수가 안 불린다', async () => {
     const fetches: string[] = [];
-    const home = mkdtempSync(join(tmpdir(), 'monad-logs-no-remote-'));
-    const dbPath = join(home, '.monad', 'logs', 'logs.db');
+    const home = mkdtempSync(join(tmpdir(), 'elanous-logs-no-remote-'));
+    const dbPath = join(home, '.elanous', 'logs', 'logs.db');
     const writer = new LogStore(dbPath);
     writer.insertBatch([{ rec: { ts: '2026-09-01T00:00:00.000Z', category: 'local.only', event: 'stay-local' }, surface: 'nexus' }]);
     writer.close();

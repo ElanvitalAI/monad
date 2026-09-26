@@ -7,12 +7,12 @@ describe('parseOffDiffEvidence', () => {
   test('claim 과 verify 를 둘 다 가진 줄만 항목이 된다', () => {
     const r = parseOffDiffEvidence([
       '작업을 마쳤다.',
-      'EVIDENCE: 격리 인스턴스에서 실제로 draft PR 이 열리는 것을 봤다 || bun bin/monad.mjs logs --category dev-pipeline',
+      'EVIDENCE: 격리 인스턴스에서 실제로 draft PR 이 열리는 것을 봤다 || bun bin/elanous.mjs logs --category dev-pipeline',
       'GOAL-COMPLETE',
     ].join('\n'));
     expect(r.items).toEqual([{
       claim: '격리 인스턴스에서 실제로 draft PR 이 열리는 것을 봤다',
-      verify: 'bun bin/monad.mjs logs --category dev-pipeline',
+      verify: 'bun bin/elanous.mjs logs --category dev-pipeline',
     }]);
     expect(r.discardedMissingVerify).toBe(0);
   });
@@ -183,7 +183,7 @@ describe('자식 프롬프트가 자기모순을 만들지 않는다', () => {
   //    자식은 **어떻게 하라는 것인지 몰라 3~4번의 툴 호출 뒤 조용히 죽었다**(`soft-timeout`).
   //    ⭐ 가드는 옳다(prod 스토어 보호). **없던 것은 "이렇게 하라" 다.**
   //    ⇒ 이 계열의 규율: ***금지만 주면 자식이 멈춘다 — 대체 명령을 같이 준다.***
-  test('중첩 monad 안내가 금지가 아니라 대체 명령(--test)을 준다', () => {
+  test('중첩 elanous 안내가 금지가 아니라 대체 명령(--test)을 준다', () => {
     const p = featurePrompt('아무 기능');
     expect(p).toContain('--test');                 // 무엇을 붙여야 하나
     expect(p).toContain('중첩');                    // 언제 붙여야 하나

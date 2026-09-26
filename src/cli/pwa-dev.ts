@@ -1,4 +1,4 @@
-// `monad nexus pwa dev` — Next.js dev server with HMR, paired with
+// `elanous nexus pwa dev` — Next.js dev server with HMR, paired with
 // hot-swap of the running nexus's reverse-proxy upstream.
 //
 // User-driven design (2026-05-07): "거의 개발 간 default 이면 컨픽으로
@@ -153,12 +153,12 @@ export async function runPwaDev(opts: PwaDevOpts = {}): Promise<PwaDevResult> {
   const argvBin = opts.argvBin ?? process.argv[1] ?? '';
   const cwd = opts.cwd ?? resolvePwaCwd(argvBin);
   if (!cwd) {
-    out.error(`monad nexus pwa dev: could not locate apps/pwa (argv[1]=${argvBin || '(empty)'})`);
+    out.error(`elanous nexus pwa dev: could not locate apps/pwa (argv[1]=${argvBin || '(empty)'})`);
     out.error('Pass --cwd <path> or run from a checkout of the monad-agent repo.');
     return { exitCode: 1, cwd: '', port, hotSwappedOnStart: false, clearedOnExit: false, reregisterCount: 0 };
   }
   if (!opts.skipNodeModulesCheck && !existsSync(joinPath(cwd, 'node_modules'))) {
-    out.error(`monad nexus pwa dev: ${cwd}/node_modules is missing.`);
+    out.error(`elanous nexus pwa dev: ${cwd}/node_modules is missing.`);
     out.error('apps/pwa is a standalone bun package — run once:');
     out.error(`  cd ${cwd} && bun install`);
     return { exitCode: 1, cwd, port, hotSwappedOnStart: false, clearedOnExit: false, reregisterCount: 0 };
@@ -169,7 +169,7 @@ export async function runPwaDev(opts: PwaDevOpts = {}): Promise<PwaDevResult> {
   const isAliveFn = opts.isAliveNexusLockFn ?? isAliveNexusLock;
   const baseUrl = opts.nexusBaseUrl ?? DEFAULT_NEXUS_BASE;
 
-  out.log(`monad nexus pwa dev: ${cwd}`);
+  out.log(`elanous nexus pwa dev: ${cwd}`);
   const hostShown = opts.host ?? DEFAULT_DEV_HOST;
   out.log(`  bun run dev  (Next.js dev server · ${hostShown}:${port} · HMR enabled)`);
 
@@ -196,7 +196,7 @@ export async function runPwaDev(opts: PwaDevOpts = {}): Promise<PwaDevResult> {
         out.error('  nexus: admin POST failed — falling back to cross-origin dev only');
       }
     } else {
-      out.log('  nexus: no live lock — start one with `monad nexus run`.');
+      out.log('  nexus: no live lock — start one with `elanous nexus run`.');
     }
   } else {
     out.log('  --no-auto-config — admin endpoint untouched.');

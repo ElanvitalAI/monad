@@ -37,7 +37,7 @@ async function dispatchChild(rows: readonly Row[], snapshot: (id: string, manife
 
 describe('/child harness screen slash', () => {
   test('includes an isolated-root live child in the dashboard list and opens its screen', async () => {
-    const isolatedManifest = '/monad-test/pty/manifest.db';
+    const isolatedManifest = '/elanous-test/pty/manifest.db';
     const calls: Array<{ includeTest?: boolean }> = [];
     const isolatedRow = {
       id: 'self_isolated',
@@ -90,7 +90,7 @@ describe('/child harness screen slash', () => {
   });
 
   test('chooses an isolated-root live child and rejects a foreign run', async () => {
-    const isolatedManifest = '/monad-test/pty/manifest.db';
+    const isolatedManifest = '/elanous-test/pty/manifest.db';
     const modal = await dispatchChild([
       { id: 'self_ended', kind: 'self', runId: 'run-current', alive: false },
       { id: 'self_isolated', kind: 'self', runId: 'run-current', alive: true, manifestDbPath: isolatedManifest },

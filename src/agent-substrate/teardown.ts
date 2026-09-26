@@ -2,7 +2,7 @@
 //
 // ★ RESEARCH-orchestrator-free-system-core #6. 조율자 유무 무관 "lifecycle 종료 시 결정론적 자원 회수"
 //   substrate 프리미티브. Claude Code runAgent.ts:816-859 `finally`(자식 프로세스 kill·MCP cleanup·캐시/hook/
-//   todos 해제) 동형 — orchestrator 없으면 각 루프가 자기 finally 에서 청소해야 한다. monad 는 run-lock·
+//   todos 해제) 동형 — orchestrator 없으면 각 루프가 자기 finally 에서 청소해야 한다. elanous 는 run-lock·
 //   pending-write 회수가 **산재·부분** → 이 계약이 등록형 teardown 스택으로 통일(어느 종료 경로든 1회 실행).
 //
 // ★ 제1원칙 3박자(대표 지시 2026-07-19): ①관측 — run()이 스텝별 결과(ok/error) 반환·caller 방출. ②자기인지 —

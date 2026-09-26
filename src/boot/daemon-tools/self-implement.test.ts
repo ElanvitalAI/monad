@@ -46,10 +46,10 @@ function fakeBase(over: Partial<SelfImplementSeams> = {}): SelfImplementSeams {
 }
 
 describe('resolveDispatchEntry — conservative entry fallback', () => {
-  const ctx = (entry?: 'monad-apparatus' | 'external-verbatim') => ({ cwd: '/tmp', signal: new AbortController().signal, ...(entry ? { entry } : {}) });
+  const ctx = (entry?: 'elanous-apparatus' | 'external-verbatim') => ({ cwd: '/tmp', signal: new AbortController().signal, ...(entry ? { entry } : {}) });
 
-  test("ctx.entry='monad-apparatus'면 monad-apparatus", () => {
-    expect(resolveDispatchEntry(ctx('monad-apparatus'))).toBe('monad-apparatus');
+  test("ctx.entry='elanous-apparatus'면 elanous-apparatus", () => {
+    expect(resolveDispatchEntry(ctx('elanous-apparatus'))).toBe('elanous-apparatus');
   });
 
   test('미지정이면 external-verbatim', () => {
@@ -96,13 +96,13 @@ describe('dispatchSelfImplement — result addressability', () => {
     };
     const result = await dispatchSelfImplement(
       { feature: 'surface result addressability' },
-      { cwd: '/tmp', signal: new AbortController().signal, entry: 'monad-apparatus' },
+      { cwd: '/tmp', signal: new AbortController().signal, entry: 'elanous-apparatus' },
       async () => expected,
     );
     expect(result).toEqual(expected);
     const payload = JSON.parse(JSON.stringify(result)) as Record<string, unknown>;
     expect(payload.runId).toBe(expected.runId);
-    expect(summarizeToolResult(payload)).toBe(`run ${expected.runId} — monad self run ${expected.runId}`);
+    expect(summarizeToolResult(payload)).toBe(`run ${expected.runId} — elanous self run ${expected.runId}`);
   });
 
   test('default runner passes through the central CLI seam with one approval seam and unchanged result', async () => {
@@ -112,14 +112,14 @@ describe('dispatchSelfImplement — result addressability', () => {
     let calls = 0;
     const result = await dispatchSelfImplement(
       { feature: 'daemon central seam', base: 'main', draft: false, ground: true },
-      { cwd: '/tmp', signal: new AbortController().signal, entry: 'monad-apparatus', sessionId: 'acp-session' },
+      { cwd: '/tmp', signal: new AbortController().signal, entry: 'elanous-apparatus', sessionId: 'acp-session' },
       undefined,
       undefined,
       async (feature, opts, deps) => {
         calls += 1;
         expect(feature).toBe('daemon central seam');
         expect(opts).toMatchObject({
-          base: 'main', draft: false, ground: true, parentSessionId: 'acp-session', entry: 'monad-apparatus',
+          base: 'main', draft: false, ground: true, parentSessionId: 'acp-session', entry: 'elanous-apparatus',
           naturalLanguageDispatch: true, openPr: true,
         });
         expect(opts.approver).toBeUndefined();
@@ -139,7 +139,7 @@ describe('dispatchSelfImplement — result addressability', () => {
     };
     await dispatchSelfImplement(
       { feature: 'caller auto merge', autoMerge: true },
-      { cwd: '/tmp', signal: new AbortController().signal, entry: 'monad-apparatus' },
+      { cwd: '/tmp', signal: new AbortController().signal, entry: 'elanous-apparatus' },
       undefined,
       undefined,
       async (_feature, opts) => {
@@ -150,13 +150,13 @@ describe('dispatchSelfImplement — result addressability', () => {
     let runOpts: import('../../self-implement/orchestrator.js').SelfImplementOptions | undefined;
     await dispatchSelfImplement(
       { feature: 'caller auto merge' },
-      { cwd: '/tmp', signal: new AbortController().signal, entry: 'monad-apparatus', autoMerge: true },
+      { cwd: '/tmp', signal: new AbortController().signal, entry: 'elanous-apparatus', autoMerge: true },
       async (opts) => { runOpts = opts; return expected; },
     );
     expect(runOpts?.autoMerge).toBe(true);
     await dispatchSelfImplement(
       { feature: 'caller auto merge' },
-      { cwd: '/tmp', signal: new AbortController().signal, entry: 'monad-apparatus', autoMerge: false },
+      { cwd: '/tmp', signal: new AbortController().signal, entry: 'elanous-apparatus', autoMerge: false },
       undefined,
       undefined,
       async (_feature, opts) => {
@@ -174,7 +174,7 @@ describe('dispatchSelfImplement — result addressability', () => {
     let seamOptions: DefaultSeamsOptions | undefined;
     await dispatchSelfImplement(
       { feature: 'daemon isolation preservation' },
-      { cwd: '/tmp', signal: new AbortController().signal, entry: 'monad-apparatus' },
+      { cwd: '/tmp', signal: new AbortController().signal, entry: 'elanous-apparatus' },
       undefined,
       undefined,
       async (_feature, _opts, deps) => {
@@ -202,7 +202,7 @@ describe('dispatchSelfImplement — result addressability', () => {
     try {
       await dispatchSelfImplement(
         { feature: 'session attribution' },
-        { cwd: '/tmp', signal: new AbortController().signal, entry: 'monad-apparatus', sessionId },
+        { cwd: '/tmp', signal: new AbortController().signal, entry: 'elanous-apparatus', sessionId },
         async (opts) => {
           received = opts;
           return expected;
@@ -226,19 +226,19 @@ describe('dispatchSelfImplement — result addressability', () => {
     try {
       await dispatchSelfImplement(
         { feature: 'harness mention' },
-        { cwd: '/tmp', signal: new AbortController().signal, entry: 'monad-apparatus', userText: '하니스로 구현해줘!' },
+        { cwd: '/tmp', signal: new AbortController().signal, entry: 'elanous-apparatus', userText: '하니스로 구현해줘!' },
         async () => expected,
         async () => ({ path: '/goal' }),
       );
       await dispatchSelfImplement(
         { feature: 'plain mention' },
-        { cwd: '/tmp', signal: new AbortController().signal, entry: 'monad-apparatus', userText: '그냥 구현해줘' },
+        { cwd: '/tmp', signal: new AbortController().signal, entry: 'elanous-apparatus', userText: '그냥 구현해줘' },
         async () => expected,
         async () => ({ path: '/goal' }),
       );
       await dispatchSelfImplement(
         { feature: 'absent mention' },
-        { cwd: '/tmp', signal: new AbortController().signal, entry: 'monad-apparatus' },
+        { cwd: '/tmp', signal: new AbortController().signal, entry: 'elanous-apparatus' },
         async () => expected,
       );
       const dispatches = log.mock.calls
@@ -259,7 +259,7 @@ describe('dispatchSelfImplement — result addressability', () => {
     try {
       await dispatchSelfImplement(
         { feature: 'absent session attribution' },
-        { cwd: '/tmp', signal: new AbortController().signal, entry: 'monad-apparatus' },
+        { cwd: '/tmp', signal: new AbortController().signal, entry: 'elanous-apparatus' },
         async (opts) => {
           received = opts;
           return expected;
@@ -283,7 +283,7 @@ describe('dispatchSelfImplement — result addressability', () => {
     try {
       await dispatchSelfImplement(
         { feature: 'natural language provenance' },
-        { cwd, signal: new AbortController().signal, entry: 'monad-apparatus', userText: original },
+        { cwd, signal: new AbortController().signal, entry: 'elanous-apparatus', userText: original },
         async (opts) => {
           received = opts;
           return expected;
@@ -316,7 +316,7 @@ describe('dispatchSelfImplement — result addressability', () => {
     await dispatchSelfImplement(
       { feature: 'goal author progress' },
       {
-        cwd: '/tmp', signal: new AbortController().signal, entry: 'monad-apparatus', userText: 'author this goal',
+        cwd: '/tmp', signal: new AbortController().signal, entry: 'elanous-apparatus', userText: 'author this goal',
         emitFeedback: (event) => {
           if (event.kind === 'tool.progress') progress.push(...event.payload.lines);
         },
@@ -341,7 +341,7 @@ describe('dispatchSelfImplement — result addressability', () => {
     await dispatchSelfImplement(
       { feature: 'goal author summary' },
       {
-        cwd: '/tmp', signal: new AbortController().signal, entry: 'monad-apparatus', userText: 'author this goal',
+        cwd: '/tmp', signal: new AbortController().signal, entry: 'elanous-apparatus', userText: 'author this goal',
         emitFeedback: (event) => {
           if (event.kind === 'tool.progress') progress.push(...event.payload.lines);
         },
@@ -362,7 +362,7 @@ describe('dispatchSelfImplement — result addressability', () => {
     await dispatchSelfImplement(
       { feature: 'goal author skipped' },
       {
-        cwd: '/tmp', signal: new AbortController().signal, entry: 'monad-apparatus',
+        cwd: '/tmp', signal: new AbortController().signal, entry: 'elanous-apparatus',
         emitFeedback: (event) => {
           if (event.kind === 'tool.progress') progress.push(...event.payload.lines);
         },
@@ -379,7 +379,7 @@ describe('dispatchSelfImplement — result addressability', () => {
     const result = await dispatchSelfImplement(
       { feature: 'goal author feedback failure' },
       {
-        cwd: '/tmp', signal: new AbortController().signal, entry: 'monad-apparatus', userText: 'author this goal',
+        cwd: '/tmp', signal: new AbortController().signal, entry: 'elanous-apparatus', userText: 'author this goal',
         emitFeedback: () => { throw new Error('display unavailable'); },
       },
       async () => expected,
@@ -396,7 +396,7 @@ describe('dispatchSelfImplement — result addressability', () => {
     let authored = false;
     await dispatchSelfImplement(
       { feature: 'legacy natural language dispatch' },
-      { cwd: '/tmp', signal: new AbortController().signal, entry: 'monad-apparatus' },
+      { cwd: '/tmp', signal: new AbortController().signal, entry: 'elanous-apparatus' },
       async (opts) => {
         received = opts;
         return expected;
@@ -474,7 +474,7 @@ describe('dispatchSelfImplement — recentStepCounts wiring', () => {
     let receivedOnProgress: unknown;
     await dispatchSelfImplement(
       { feature: 'forward recent step counts', adversarialReview: true },
-      { cwd: '/tmp', signal, entry: 'monad-apparatus', userText: 'author this goal' },
+      { cwd: '/tmp', signal, entry: 'elanous-apparatus', userText: 'author this goal' },
       async () => expected,
       async (_ask, _cwd, deps) => {
         authorCalls += 1;
@@ -503,7 +503,7 @@ describe('dispatchSelfImplement — recentStepCounts wiring', () => {
     let authorCalls = 0;
     const result = await dispatchSelfImplement(
       { feature: 'reader failure fail-open' },
-      { cwd: '/tmp', signal: new AbortController().signal, entry: 'monad-apparatus', userText: 'author this goal' },
+      { cwd: '/tmp', signal: new AbortController().signal, entry: 'elanous-apparatus', userText: 'author this goal' },
       async () => expected,
       async (_ask, _cwd, deps) => {
         authorCalls += 1;
@@ -530,7 +530,7 @@ describe('dispatchSelfImplement — recentStepCounts wiring', () => {
     });
     await dispatchSelfImplement(
       { feature: 'empty recent step counts' },
-      { cwd: '/tmp', signal: new AbortController().signal, entry: 'monad-apparatus', userText: 'author this goal' },
+      { cwd: '/tmp', signal: new AbortController().signal, entry: 'elanous-apparatus', userText: 'author this goal' },
       async () => expected,
       async () => ({ path: '/goal' }),
     );
@@ -542,7 +542,7 @@ describe('dispatchSelfImplement — recentStepCounts wiring', () => {
 });
 
 describe('dispatchSelfImplement — observe-only', () => {
-  const ctx = { cwd: '/tmp', signal: new AbortController().signal, entry: 'monad-apparatus' as const };
+  const ctx = { cwd: '/tmp', signal: new AbortController().signal, entry: 'elanous-apparatus' as const };
 
   test('ON: dispatch 기록 후 runner를 시작하지 않고 호출 사실만 반환한다', async () => {
     let calls = 0;
@@ -605,10 +605,10 @@ describe('dispatchSelfImplement — observe-only', () => {
 });
 
 describe('daemon natural-language dispatch entry wiring', () => {
-  test('three daemon dispatch contexts explicitly use monad-apparatus', () => {
+  test('three daemon dispatch contexts explicitly use elanous-apparatus', () => {
     const root = join(import.meta.dir, '..');
     for (const file of ['daemon-runtime.ts', 'daemon-prompt-turn.ts', 'daemon-multi-llm-runtime.ts']) {
-      expect(readFileSync(join(root, file), 'utf8')).toContain("entry: 'monad-apparatus'");
+      expect(readFileSync(join(root, file), 'utf8')).toContain("entry: 'elanous-apparatus'");
     }
   });
 });

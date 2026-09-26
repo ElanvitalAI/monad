@@ -220,7 +220,7 @@ describe('dispatchRead — error paths', () => {
     // Pick a path that's almost certainly absent under $HOME to test
     // expansion: we expect a "does not exist" error (proves tilde was
     // expanded — otherwise the earlier absolute-path guard would fire).
-    await expect(dispatchRead({ file_path: '~/__monad_read_tool_nonexistent__' }))
+    await expect(dispatchRead({ file_path: '~/__elanous_read_tool_nonexistent__' }))
       .rejects.toThrow('does not exist');
   });
 });

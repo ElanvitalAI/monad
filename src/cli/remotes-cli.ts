@@ -1,4 +1,4 @@
-// CLI · `monad nexus connect|list|switch|remove` action handlers (T4.B)
+// CLI · `elanous nexus connect|list|switch|remove` action handlers (T4.B)
 //
 // Subcommand action functions are split out from src/index.ts so the
 // commander wiring stays declarative + the action logic can be unit-
@@ -47,7 +47,7 @@ export async function connectRemote(opts: ConnectRemoteOpts): Promise<number> {
   try {
     parsed = normalizeHost(opts.host, opts.port ?? 31415);
   } catch (err) {
-    out.error(`monad nexus connect: ${(err as Error).message}`);
+    out.error(`elanous nexus connect: ${(err as Error).message}`);
     return 1;
   }
   const name = opts.name ?? deriveNameFromHost(parsed.host);
@@ -121,7 +121,7 @@ export async function connectRemote(opts: ConnectRemoteOpts): Promise<number> {
   out.log(`  acp_url    ${entry.acp_url}`);
   if (entry.voice_url) out.log(`  voice_url  ${entry.voice_url}`);
   out.log(`  token      ${tokenPath} (mode 0o600)`);
-  if (setDefault) out.log(`  default    ${name} (use \`monad\` no-arg)`);
+  if (setDefault) out.log(`  default    ${name} (use \`elanous\` no-arg)`);
   return 0;
 }
 
@@ -143,7 +143,7 @@ export async function listRemotesCmd(opts: ListRemotesOpts): Promise<number> {
     return 0;
   }
   if (entries.length === 0) {
-    out.log('(no remotes bookmarked) — `monad nexus connect <host>` to add.');
+    out.log('(no remotes bookmarked) — `elanous nexus connect <host>` to add.');
     return 0;
   }
   for (const { name, entry, isDefault } of entries) {
@@ -182,7 +182,7 @@ export async function switchRemote(opts: SwitchRemoteOpts): Promise<number> {
   const store = opts.store ?? new RemotesStore();
   const ok = store.setDefaultRemote(opts.name);
   if (!ok) {
-    out.error(`unknown remote: ${opts.name} — run \`monad nexus list\` to see bookmarks.`);
+    out.error(`unknown remote: ${opts.name} — run \`elanous nexus list\` to see bookmarks.`);
     return 1;
   }
   out.log(`default remote → ${opts.name}`);

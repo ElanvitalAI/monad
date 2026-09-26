@@ -1,7 +1,7 @@
 // MVP cleanup C12 — DaemonSessionHistory GC + summary tests.
 //
 // Validate the new lastTurnAt tracking + gc() + summary() introduced
-// in C10/C12. The GC is wired as a 1h interval in `monad serve`; here
+// in C10/C12. The GC is wired as a 1h interval in `elanous serve`; here
 // we test the underlying primitive directly so the timer logic in
 // index.ts can stay un-touched (it just calls history.gc(ttl)).
 

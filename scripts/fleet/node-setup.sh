@@ -8,9 +8,9 @@
 set -u
 HOST="${1:?usage: node-setup.sh <host> [--check]}"; CHECK=0; [ "${2:-}" = "--check" ] && CHECK=1
 ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
-K3S_IMAGE="${MONAD_FLEET_K3S_IMAGE:-rancher/k3s:v1.36.4-k3s1}"   # 풀의 모든 노드가 «같은 판» — 판이 갈리면 같은 Job 이 노드마다 다르게 돈다
-API_PORT="${MONAD_FLEET_API_PORT:-6550}"
-CLUSTER=monad-pool; CTX="pool-$HOST"
+K3S_IMAGE="${ELANOUS_FLEET_K3S_IMAGE:-rancher/k3s:v1.36.4-k3s1}"   # 풀의 모든 노드가 «같은 판» — 판이 갈리면 같은 Job 이 노드마다 다르게 돈다
+API_PORT="${ELANOUS_FLEET_API_PORT:-6550}"
+CLUSTER=elanous-pool; CTX="pool-$HOST"
 BUN_VER="$(bun --version 2>/dev/null)"                              # 이 맥과 같은 bun
 unset HTTPS_PROXY https_proxy HTTP_PROXY http_proxy ALL_PROXY all_proxy
 R() { ssh -o BatchMode=yes -o ConnectTimeout=10 "$HOST" "export PATH=\$HOME/.bun/bin:/opt/homebrew/bin:/usr/local/bin:\$HOME/.orbstack/bin:\$PATH HOMEBREW_NO_AUTO_UPDATE=1; unset HTTPS_PROXY https_proxy HTTP_PROXY http_proxy ALL_PROXY all_proxy; $1"; }
@@ -28,10 +28,10 @@ if R 'docker info --format "{{.ServerVersion}}"' >/dev/null 2>&1; then ok "docke
 if ssh -o BatchMode=yes -o ConnectTimeout=10 "$HOST" 'command -v docker >/dev/null && command -v brew >/dev/null'; then ok "ssh 비로그인 PATH(docker·brew)"
 elif [ $CHECK = 1 ]; then todo "~/.zshenv 에 PATH 블록(비로그인 ssh 가 docker·brew 를 찾게)"
 elif [ "$(R 'basename "$SHELL"')" != "zsh" ]; then bad "기본 셸이 zsh 가 아니다 — 비로그인 PATH 를 손으로(사람이)"
-else R 'grep -q ">>> monad fleet >>>" ~/.zshenv 2>/dev/null || printf "%s\n" "# >>> monad fleet >>> (scripts/fleet/node-setup.sh · 비로그인 ssh 가 docker·brew·k3d 를 찾게)" "export PATH=\"/opt/homebrew/bin:/usr/local/bin:\$HOME/.orbstack/bin:\$PATH\"" "# <<< monad fleet <<<" >> ~/.zshenv'
+else R 'grep -q ">>> elanous fleet >>>" ~/.zshenv 2>/dev/null || printf "%s\n" "# >>> elanous fleet >>> (scripts/fleet/node-setup.sh · 비로그인 ssh 가 docker·brew·k3d 를 찾게)" "export PATH=\"/opt/homebrew/bin:/usr/local/bin:\$HOME/.orbstack/bin:\$PATH\"" "# <<< elanous fleet <<<" >> ~/.zshenv'
   ssh -o BatchMode=yes -o ConnectTimeout=10 "$HOST" 'command -v docker >/dev/null' && ok "ssh 비로그인 PATH (~/.zshenv 블록 추가)" || bad "~/.zshenv 를 넣었는데도 docker 를 못 찾는다"; fi
 # 2c. 플릿 전용 docker 설정 — 기본 설정이 자격을 macOS 키체인(credsStore)에서 꺼내면 비대화형 ssh 에선 키체인이 잠겨 공개 이미지 받기도 막힌다(09-25 node-c).
-#     ~/.docker-fleet = 자격 저장소 없이 «현재 컨텍스트»만 그대로 ⊕ cli-plugins(buildx) 링크 — 빠지면 옛 빌더로 떨어져 TARGETARCH 가 비고 아키텍처별 단계가 깨진다(09-25 node-c). 원격 빌드(build.sh MONAD_BUILD_REMOTE)가 이것을 쓴다.
+#     ~/.docker-fleet = 자격 저장소 없이 «현재 컨텍스트»만 그대로 ⊕ cli-plugins(buildx) 링크 — 빠지면 옛 빌더로 떨어져 TARGETARCH 가 비고 아키텍처별 단계가 깨진다(09-25 node-c). 원격 빌드(build.sh ELANOUS_BUILD_REMOTE)가 이것을 쓴다.
 if R 'test -f ~/.docker-fleet/config.json && DOCKER_CONFIG=~/.docker-fleet docker info >/dev/null 2>&1 && DOCKER_CONFIG=~/.docker-fleet docker buildx version >/dev/null 2>&1'; then ok "플릿 docker 설정(~/.docker-fleet · buildx)"
 elif [ $CHECK = 1 ]; then todo "~/.docker-fleet(키체인 없는 docker 설정)"
 else R 'mkdir -p ~/.docker-fleet && ctx=$(python3 -c "import json,os;print(json.load(open(os.path.expanduser(\"~/.docker/config.json\"))).get(\"currentContext\",\"\"))" 2>/dev/null); printf "{\"currentContext\": \"%s\"}\n" "$ctx" > ~/.docker-fleet/config.json; [ -e ~/.docker-fleet/contexts ] || ln -s ~/.docker/contexts ~/.docker-fleet/contexts; [ -e ~/.docker-fleet/cli-plugins ] || [ ! -d ~/.docker/cli-plugins ] || ln -s ~/.docker/cli-plugins ~/.docker-fleet/cli-plugins'
@@ -54,7 +54,7 @@ else R 'brew install --cask google-chrome >/tmp/fleet-chrome.log 2>&1' && ok "Ch
 if R 'command -v k3d' >/dev/null; then ok "k3d $(R 'k3d version | head -1 | cut -d" " -f3')"
 elif [ $CHECK = 1 ]; then todo "k3d 설치"
 else R 'brew install k3d >/tmp/fleet-k3d.log 2>&1' && ok "k3d (설치)" || bad "k3d 설치 실패"; fi
-# 6. 클러스터 monad-pool — API 를 0.0.0.0:<포트> 로 · 인증서 SAN = 호스트 이름 ⊕ tailnet 이름
+# 6. 클러스터 elanous-pool — API 를 0.0.0.0:<포트> 로 · 인증서 SAN = 호스트 이름 ⊕ tailnet 이름
 TSNAME="$(R '(tailscale status --self --json 2>/dev/null || /Applications/Tailscale.app/Contents/MacOS/Tailscale status --self --json 2>/dev/null) | python3 -c "import json,sys;print(json.load(sys.stdin)[\"Self\"][\"DNSName\"].rstrip(\".\"))"' 2>/dev/null)"
 if R "k3d cluster list $CLUSTER" >/dev/null 2>&1; then ok "클러스터 $CLUSTER"
 elif [ $CHECK = 1 ]; then todo "클러스터 $CLUSTER 생성($K3S_IMAGE · API :$API_PORT · SAN $HOST ${TSNAME:-})"
@@ -73,21 +73,21 @@ import re, sys
 p, host, port = sys.argv[1:]
 s = open(p).read()
 s = re.sub(r'server: https://[^\n]+', f'server: https://{host}:{port}', s)
-s = s.replace('k3d-monad-pool', f'pool-{host}')
+s = s.replace('k3d-elanous-pool', f'pool-{host}')
 open(p, 'w').write(s)
 PY
   cp ~/.kube/config ~/.kube/config.bak-fleet-"$HOST"-"$(date +%Y%m%d%H%M%S)"
   KUBECONFIG=~/.kube/config:"$TMP/kc.yaml" kubectl config view --flatten > "$TMP/merged.yaml" && chmod 600 "$TMP/merged.yaml" && mv "$TMP/merged.yaml" ~/.kube/config && ok "kubeconfig 컨텍스트 $CTX (추가 · 현재 컨텍스트는 그대로)" || bad "kubeconfig 병합 실패"
 fi
 # 8. 네임스페이스 ⊕ 격리 정책
-if kubectl --context "$CTX" --request-timeout=10s get ns monad-test >/dev/null 2>&1; then ok "monad-test 네임스페이스"
+if kubectl --context "$CTX" --request-timeout=10s get ns elanous-test >/dev/null 2>&1; then ok "elanous-test 네임스페이스"
 elif [ $CHECK = 1 ]; then todo "base.yaml ⊕ policy-internet.yaml 적용"
-else kubectl --context "$CTX" apply -f "$ROOT/docker/h1/base.yaml" -f "$ROOT/docker/h1/policy-internet.yaml" >/dev/null && ok "monad-test 네임스페이스 ⊕ 정책 (적용)" || bad "적용 실패"; fi
+else kubectl --context "$CTX" apply -f "$ROOT/docker/h1/base.yaml" -f "$ROOT/docker/h1/policy-internet.yaml" >/dev/null && ok "elanous-test 네임스페이스 ⊕ 정책 (적용)" || bad "적용 실패"; fi
 # 9. 판 대조 — k3s · 노드 준비
 v="$(kubectl --context "$CTX" --request-timeout=10s get nodes -o jsonpath='{.items[0].status.nodeInfo.kubeletVersion}' 2>/dev/null)"
 want="${K3S_IMAGE##*:}"; want="${want/-k3s/+k3s}"
 [ "$v" = "$want" ] && ok "k3s $v" || bad "k3s ${v:-응답 없음} ≠ 기대 $want"
 echo
 if [ $FAIL = 0 ] && [ $TODO -gt 0 ]; then echo "→ $HOST 할 일 $TODO — --check 없이 다시 돌리면 채운다"; exit 2
-elif [ $FAIL = 0 ]; then echo "✓ $HOST 준비됨 — 풀에 넣기: MONAD_POD_POOL='…,$CTX@$HOST:<상한>'"; else echo "✗ $HOST 미완 — 위 ✗ 를 먼저"; fi
+elif [ $FAIL = 0 ]; then echo "✓ $HOST 준비됨 — 풀에 넣기: ELANOUS_POD_POOL='…,$CTX@$HOST:<상한>'"; else echo "✗ $HOST 미완 — 위 ✗ 를 먼저"; fi
 exit $FAIL

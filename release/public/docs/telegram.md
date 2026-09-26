@@ -12,11 +12,11 @@ Set up in the wizard (step 4) or edit `config.json` directly:
 
 Run the bot daemon (long-polling, Ctrl+C to exit):
 ```bash
-monad telegram
+elanous telegram
 ```
 
 Every incoming chat+thread maps to a per-conversation session. Messages
-persist to the same session store as CLI chats; you can `monad session
+persist to the same session store as CLI chats; you can `elanous session
 list --source telegram` to audit. Replies chunk automatically at 4000
 chars; `parameters.retry_after` on 429 is respected.
 

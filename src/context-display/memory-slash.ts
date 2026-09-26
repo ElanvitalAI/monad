@@ -2,7 +2,7 @@
 //
 // Mirrors Gemini's memoryCommand.ts surface — `list` enumerates
 // the auto-memory index, `show <name>` prints one entry, `reload`
-// re-reads from disk. monad's auto-memory lives at
+// re-reads from disk. elanous's auto-memory lives at
 // ~/.claude/projects/<encoded-cwd>/memory/ with a top-level
 // `MEMORY.md` index + per-entry .md files.
 
@@ -27,7 +27,7 @@ export function buildMemorySlashCommand(): MemorySlashCommandDescriptor {
     name: 'memory',
     aliases: ['mem'],
     description:
-      'Inspect monad auto-memory: `/memory list` enumerates entries, `/memory show <name>` prints one.',
+      'Inspect elanous auto-memory: `/memory list` enumerates entries, `/memory show <name>` prints one.',
     render(args): string {
       const dir = args.memoryDir ?? defaultMemoryDir();
       const sub = (args.sub ?? 'list').toLowerCase();

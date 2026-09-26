@@ -23,8 +23,8 @@ import type { ValidationResult } from './schema.js';
 import type { WorkflowSource } from './types.js';
 
 export interface SaveOpts {
-  /** 'project' (`<cwd>/.monad/workflows/`) or 'global'
-   *  (`~/.monad/workflows/`). Built-in samples are not user-writable. */
+  /** 'project' (`<cwd>/.elanous/workflows/`) or 'global'
+   *  (`~/.elanous/workflows/`). Built-in samples are not user-writable. */
   scope: 'project' | 'global';
   cwd?: string;
 }

@@ -10,13 +10,13 @@
 // 거버넌스: READ-ONLY(gh api 조회만·write 없음). 흡수는 제안까지, 채택/PR/merge 는 HITL.
 
 import { Database } from 'bun:sqlite';
-import { monadStateRoot } from './state-paths.js';
+import { elanousStateRoot } from './state-paths.js';
 import { execFileSync } from 'node:child_process';
 import { mkdirSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 
-/** [ISO-3] MONAD_STATE_DIR 존중(lazy). */
-export function repoWatchDbPath(): string { return join(monadStateRoot(), 'conatus/repo_watch.db'); }
+/** [ISO-3] ELANOUS_STATE_DIR 존중(lazy). */
+export function repoWatchDbPath(): string { return join(elanousStateRoot(), 'conatus/repo_watch.db'); }
 
 /** 감시 대상 참조 repo — 대표 지시(hermes/openclaw/codex). owner/repo GitHub slug. */
 export const WATCHED_REPOS = [
@@ -44,7 +44,7 @@ export function diffNewCommits(commits: CommitInfo[], lastSha: string | null): C
   return out;
 }
 
-/** 흡수 관심도 휴리스틱 — monad 가 흡수할 가치가 있을 법한 커밋 키워드 매칭(0-5). */
+/** 흡수 관심도 휴리스틱 — elanous 가 흡수할 가치가 있을 법한 커밋 키워드 매칭(0-5). */
 export function absorptionScore(msg: string): number {
   const m = msg.toLowerCase();
   const kws = ['agent', 'loop', 'memory', 'tool', 'plan', 'goal', 'schedul', 'orchestr',

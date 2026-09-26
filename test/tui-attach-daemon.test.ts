@@ -21,8 +21,8 @@ let tmp: string;
 let sockPath: string;
 
 beforeEach(() => {
-  tmp = mkdtempSync(joinPath(tmpdir(), 'monad-tui-attach-test-'));
-  sockPath = joinPath(tmp, 'monad.sock');
+  tmp = mkdtempSync(joinPath(tmpdir(), 'elanous-tui-attach-test-'));
+  sockPath = joinPath(tmp, 'elanous.sock');
 });
 
 afterEach(() => {
@@ -103,7 +103,7 @@ describe('DashboardSession.attach over unix socket', () => {
   });
 });
 
-describe('monad attach one-shot assertions', () => {
+describe('elanous attach one-shot assertions', () => {
   async function runRawAttach(args: string[]): Promise<{ exitCode: number; stdout: string; stderr: string }> {
     const proc = Bun.spawn({
       cmd: ['bun', 'src/index.ts', 'attach', '--socket', sockPath, ...args],
@@ -130,9 +130,9 @@ describe('monad attach one-shot assertions', () => {
     expect(output).toContain(`No listening or usable Unix socket found at ${sockPath}`);
     expect(output).toContain('only the local Unix-socket transport was checked');
     expect(output).toContain('A daemon may be listening on TCP only');
-    expect(output).toContain('monad attach --host <host>:<port>');
-    expect(output).toContain('For a remote daemon, pass --host <tailnet>:<port> or set MONAD_REMOTE.');
-    expect(output).not.toContain('No monad daemon listening');
+    expect(output).toContain('elanous attach --host <host>:<port>');
+    expect(output).toContain('For a remote daemon, pass --host <tailnet>:<port> or set ELANOUS_REMOTE.');
+    expect(output).not.toContain('No elanous daemon listening');
   });
 
   test('does not claim a stale Unix socket path lacks a file', async () => {
@@ -153,27 +153,27 @@ describe('monad attach one-shot assertions', () => {
     expect(output).toContain(`No listening or usable Unix socket found at ${sockPath}`);
     expect(output).not.toContain('No Unix socket file found');
     expect(output).toContain('A daemon may be listening on TCP only');
-    expect(output).toContain('monad attach --host <host>:<port>');
-    expect(output).toContain('For a remote daemon, pass --host <tailnet>:<port> or set MONAD_REMOTE.');
+    expect(output).toContain('elanous attach --host <host>:<port>');
+    expect(output).toContain('For a remote daemon, pass --host <tailnet>:<port> or set ELANOUS_REMOTE.');
   });
 
   test('rejects assertions outside one-shot mode before connecting to a daemon', async () => {
     const noMessage = await runRawAttach(['--assert-text-contains', 'confirmed']);
     expect(noMessage.exitCode).not.toBe(0);
     expect(noMessage.stderr).toContain('--assert-* options require --message and cannot be used with --interactive');
-    expect(noMessage.stderr).not.toContain('No monad daemon listening');
+    expect(noMessage.stderr).not.toContain('No elanous daemon listening');
 
     const interactive = await runRawAttach(['--message', 'inspect tools', '--interactive', '--assert-tool-min', 'Read=1']);
     expect(interactive.exitCode).not.toBe(0);
     expect(interactive.stderr).toContain('--assert-* options require --message and cannot be used with --interactive');
-    expect(interactive.stderr).not.toContain('No monad daemon listening');
+    expect(interactive.stderr).not.toContain('No elanous daemon listening');
   });
 
   test('rejects malformed tool assertions before connecting or sending a turn', async () => {
     const result = await runRawAttach(['--message', 'inspect tools', '--assert-tool-min', 'Read=one']);
     expect(result.exitCode).not.toBe(0);
     expect(result.stderr).toContain('invalid --assert-tool-min value "Read=one"; expected ToolName=N');
-    expect(result.stderr).not.toContain('No monad daemon listening');
+    expect(result.stderr).not.toContain('No elanous daemon listening');
   });
 
   test('passes min/max and text assertions from daemon tool_call callbacks', async () => {

@@ -14,7 +14,7 @@ function capture<T>(fn: () => T): { result: T; events: Array<{ event: string; da
 
 /**
  * ⛔⭐⭐ 이 자리에 관측이 «하나도» 없었다 — 그런데 부르는 자리 넷 중 둘이
- * ***1급 CLI(`monad self recall`)*** 와 ***자식의 기억 컨텍스트***였다(`F12`).
+ * ***1급 CLI(`elanous self recall`)*** 와 ***자식의 기억 컨텍스트***였다(`F12`).
  * ⇒ 「자식이 기억을 갖나」의 진짜 경로가 정확히 안 보이는 쪽에 있었다.
  */
 describe('recallSelfEvents 가 「몇 건 받았나」를 남긴다', () => {
@@ -33,7 +33,7 @@ describe('recallSelfEvents 가 「몇 건 받았나」를 남긴다', () => {
 
   test('⭐ 찾으면 그 수가 남는다 ⊕ 좁힌 창이 값으로 보인다', () => {
     const db = openSurfaceEventsDb(':memory:');
-    recordEvent(db, { domain: 'monad', surface: 'test', kind: 'impl', direction: 'outbound', text: '하니스 관측 계측을 붙였다' });
+    recordEvent(db, { domain: 'elanous', surface: 'test', kind: 'impl', direction: 'outbound', text: '하니스 관측 계측을 붙였다' });
     const { result, events } = capture(() => recallSelfEvents(db, '하니스 관측', { limit: 3, sinceHours: 24 }));
     const observed = events.find((e) => e.event === 'recall-result');
     expect(observed!.data.hits).toBe(result.length);
@@ -47,10 +47,10 @@ describe('recallSelfEvents 가 「몇 건 받았나」를 남긴다', () => {
       '<task-notification>\n<summary>observer recall counts</summary>',
       'observer recall counts pty_a4c9f0: capture',
     ]) {
-      recordEvent(db, { domain: 'monad', surface: 'test', kind: 'utterance', direction: 'outbound', text, importance: 10 });
+      recordEvent(db, { domain: 'elanous', surface: 'test', kind: 'utterance', direction: 'outbound', text, importance: 10 });
     }
     for (const text of ['intentional recall counts one', 'intentional recall counts two', 'intentional recall counts three', 'intentional recall counts four']) {
-      recordEvent(db, { domain: 'monad', surface: 'test', kind: 'impl', direction: 'outbound', text, importance: 1 });
+      recordEvent(db, { domain: 'elanous', surface: 'test', kind: 'impl', direction: 'outbound', text, importance: 1 });
     }
 
     const { result, events } = capture(() => recallSelfEvents(db, 'recall counts', { limit: 2, excludeObserverOutput: true }));

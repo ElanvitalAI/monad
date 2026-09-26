@@ -37,7 +37,7 @@ done
 # ⛔ 규율 ③ — «판»을 적는다. 문서는 코드보다 빨리 늙고, 늙은 줄 모르고 인용하면 조용히 틀린다.
 VER=$(/usr/libexec/PlistBuddy -c 'Print :CFBundleShortVersionString' \
   /Applications/Affinity.app/Contents/Info.plist 2>/dev/null || echo unknown)
-printf 'source: Affinity 내장 MCP (read_sdk_documentation_topic)\napp_version: %s\nfetched: %s\ntopics: %s/%s\nrefetch: bash <monad>/scripts/affinity/fetch-sdk.sh\n' \
+printf 'source: Affinity 내장 MCP (read_sdk_documentation_topic)\napp_version: %s\nfetched: %s\ntopics: %s/%s\nrefetch: bash <elanous>/scripts/affinity/fetch-sdk.sh\n' \
   "$VER" "$(date '+%Y-%m-%d %H:%M %Z')" "$ok" "$n" > "$OUT/MANIFEST.txt"
 echo "📚 시도 $n · 받음 $ok · 못 받음 $((n - ok))  ·  판 $VER  →  $OUT"
 [ "$ok" -gt 0 ] || exit 1

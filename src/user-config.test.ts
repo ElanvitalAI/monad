@@ -63,19 +63,19 @@ function resolveAutoRoleTier(defaultProvider: 'anthropic' | 'grok'): { model: st
 beforeEach(() => {
   root = mkdtempSync(join(tmpdir(), 'role-model-tier-'));
   configPath = join(root, 'config.json');
-  priorReviewModel = process.env.MONAD_PR_REVIEW_MODEL;
-  delete process.env.MONAD_PR_REVIEW_MODEL;
+  priorReviewModel = process.env.ELANOUS_PR_REVIEW_MODEL;
+  delete process.env.ELANOUS_PR_REVIEW_MODEL;
   setProcessEnv({
-    MONAD_LLM_PROVIDER: undefined,
-    MONAD_LLM_MODEL: undefined,
-    MONAD_ESCALATE_PROVIDER: undefined,
-    MONAD_ESCALATE_MODEL: undefined,
+    ELANOUS_LLM_PROVIDER: undefined,
+    ELANOUS_LLM_MODEL: undefined,
+    ELANOUS_ESCALATE_PROVIDER: undefined,
+    ELANOUS_ESCALATE_MODEL: undefined,
   });
 });
 
 afterEach(() => {
-  if (priorReviewModel === undefined) delete process.env.MONAD_PR_REVIEW_MODEL;
-  else process.env.MONAD_PR_REVIEW_MODEL = priorReviewModel;
+  if (priorReviewModel === undefined) delete process.env.ELANOUS_PR_REVIEW_MODEL;
+  else process.env.ELANOUS_PR_REVIEW_MODEL = priorReviewModel;
   for (const [key, value] of savedEnv) {
     if (value === undefined) delete process.env[key];
     else process.env[key] = value;
@@ -122,13 +122,13 @@ describe('role model tiers', () => {
     const withoutTier = buildUserConfig(configPath);
     expect(withoutTier.roleModelTiers).toBeUndefined();
 
-    process.env.MONAD_PR_REVIEW_MODEL = 'environment-review-model';
+    process.env.ELANOUS_PR_REVIEW_MODEL = 'environment-review-model';
     expect(resolveRoleModel('review', withoutTier)).toEqual({
       model: 'environment-review-model',
       source: 'environment',
     });
 
-    delete process.env.MONAD_PR_REVIEW_MODEL;
+    delete process.env.ELANOUS_PR_REVIEW_MODEL;
     // ⭐ 기본값도 «활성 provider 의 티어»로 푼다 — 모델 이름을 박지 않는다(대표 2026-08-18).
     //    review 의 기본 티어는 loaded 이고, grok 의 loaded 는 grok-4.7 이다(2026-09-22 승격).
     expect(resolveRoleModel('review', withoutTier)).toEqual({
@@ -140,7 +140,7 @@ describe('role model tiers', () => {
   test('the default (no tier · no env) still follows the active provider', () => {
     // ⛔ 회귀 가드 — 예전에는 기본값이 'gpt-5.6-sol' 로 «박혀» 있어 provider 를 바꿔도
     //    따라오지 않았다. 같은 역할·같은 경로가 provider 에 따라 «갈려야» 한다.
-    delete process.env.MONAD_PR_REVIEW_MODEL;
+    delete process.env.ELANOUS_PR_REVIEW_MODEL;
 
     writeConfig({ llm: { provider: 'grok' } });
     const onGrok = resolveRoleModel('review', buildUserConfig(configPath));
@@ -318,7 +318,7 @@ describe('runtime llm model/provider compatibility', () => {
 
   test('model-only env mismatch names both provider and model before a request', () => {
     writeConfig({ llm: { provider: 'openai-codex', model: 'gpt-5.6-terra' } });
-    setProcessEnv({ MONAD_LLM_PROVIDER: undefined, MONAD_LLM_MODEL: 'grok-4.6' });
+    setProcessEnv({ ELANOUS_LLM_PROVIDER: undefined, ELANOUS_LLM_MODEL: 'grok-4.6' });
     let cfg;
     const observed = captureStderr(() => {
       cfg = buildUserConfig(configPath);
@@ -332,7 +332,7 @@ describe('runtime llm model/provider compatibility', () => {
 
   test('same-provider model-only env stays silent', () => {
     writeConfig({ llm: { provider: 'openai-codex', model: 'gpt-5.6-terra' } });
-    setProcessEnv({ MONAD_LLM_PROVIDER: undefined, MONAD_LLM_MODEL: 'gpt-5.6-sol' });
+    setProcessEnv({ ELANOUS_LLM_PROVIDER: undefined, ELANOUS_LLM_MODEL: 'gpt-5.6-sol' });
     let cfg;
     const observed = captureStderr(() => {
       cfg = buildUserConfig(configPath);
@@ -344,7 +344,7 @@ describe('runtime llm model/provider compatibility', () => {
 
   test('exact o3 model-only env mismatch names both provider and model before a request', () => {
     writeConfig({ llm: { provider: 'grok', model: 'grok-4.6' } });
-    setProcessEnv({ MONAD_LLM_PROVIDER: undefined, MONAD_LLM_MODEL: 'o3' });
+    setProcessEnv({ ELANOUS_LLM_PROVIDER: undefined, ELANOUS_LLM_MODEL: 'o3' });
     let cfg;
     const observed = captureStderr(() => {
       cfg = buildUserConfig(configPath);
@@ -358,7 +358,7 @@ describe('runtime llm model/provider compatibility', () => {
 
   test('openai provider with gpt-5.6-sol model-only env names both values', () => {
     writeConfig({ llm: { provider: 'openai', model: 'gpt-4o' } });
-    setProcessEnv({ MONAD_LLM_PROVIDER: undefined, MONAD_LLM_MODEL: 'gpt-5.6-sol' });
+    setProcessEnv({ ELANOUS_LLM_PROVIDER: undefined, ELANOUS_LLM_MODEL: 'gpt-5.6-sol' });
     let cfg;
     const observed = captureStderr(() => {
       cfg = buildUserConfig(configPath);
@@ -372,7 +372,7 @@ describe('runtime llm model/provider compatibility', () => {
 
   test('provider env alone picks a subscription model for openai-codex, not the API default', () => {
     writeConfig({ llm: { provider: 'grok', model: 'grok-4.6' } });
-    setProcessEnv({ MONAD_LLM_PROVIDER: 'openai-codex', MONAD_LLM_MODEL: undefined });
+    setProcessEnv({ ELANOUS_LLM_PROVIDER: 'openai-codex', ELANOUS_LLM_MODEL: undefined });
     const cfg = buildUserConfig(configPath);
     expect(cfg.llm.provider).toBe('openai-codex');
     expect(cfg.llm.model).toBe(lookupLlmTierSpec('openai-codex', 'balanced').model);
@@ -381,7 +381,7 @@ describe('runtime llm model/provider compatibility', () => {
 
   test('both env set keep prior provider and model selection', () => {
     writeConfig({ llm: { provider: 'openai-codex', model: 'gpt-5.6-terra' } });
-    setProcessEnv({ MONAD_LLM_PROVIDER: 'grok', MONAD_LLM_MODEL: 'grok-4.6-custom' });
+    setProcessEnv({ ELANOUS_LLM_PROVIDER: 'grok', ELANOUS_LLM_MODEL: 'grok-4.6-custom' });
     let cfg;
     const observed = captureStderr(() => {
       cfg = buildUserConfig(configPath);
@@ -393,7 +393,7 @@ describe('runtime llm model/provider compatibility', () => {
 
   test('neither env set keeps config provider and model', () => {
     writeConfig({ llm: { provider: 'openai-codex', model: 'gpt-5.6-terra' } });
-    setProcessEnv({ MONAD_LLM_PROVIDER: undefined, MONAD_LLM_MODEL: undefined });
+    setProcessEnv({ ELANOUS_LLM_PROVIDER: undefined, ELANOUS_LLM_MODEL: undefined });
     let cfg;
     const observed = captureStderr(() => {
       cfg = buildUserConfig(configPath);
@@ -405,7 +405,7 @@ describe('runtime llm model/provider compatibility', () => {
 
   test('runtimeLlmProviderOverride stays undefined when provider env is absent', () => {
     writeConfig({ llm: { provider: 'openai-codex', model: 'gpt-5.6-terra' } });
-    setProcessEnv({ MONAD_LLM_PROVIDER: undefined, MONAD_LLM_MODEL: 'grok-4.6' });
+    setProcessEnv({ ELANOUS_LLM_PROVIDER: undefined, ELANOUS_LLM_MODEL: 'grok-4.6' });
     const cfg = buildUserConfig(configPath);
     expect(cfg.llm.provider).toBe('openai-codex');
   });
@@ -578,6 +578,25 @@ describe('mcp.widgetServerId', () => {
 });
 
 describe('retired config keys (설정 졸업 0-a)', () => {
+  // 설정 졸업 단계 2(2026-09-26) — 읽는 곳이 없던 넷: 파일에 남아 있으면 «폐기»로 대고, 값은 로더가 무시한다.
+  test('stage 2: the four dead display/vw keys are reported as retired and their values are ignored', () => {
+    const raw = { chat: { rendering: { hud: { variantBadge: false, tokenGauge: false }, tool: { inlineOneLine: false } } }, vw: { acpResident: false }, discord: { sprint21: { enabled: true } } };
+    expect(findRetiredConfigKeys(raw).map(({ path: p }) => p).sort()).toEqual([
+      'chat.rendering.hud.tokenGauge', 'chat.rendering.hud.variantBadge', 'chat.rendering.tool.inlineOneLine', 'discord.sprint21', 'vw.acpResident',
+    ]);
+    const dir = mkdtempSync(join(tmpdir(), 'retired-config-2-'));
+    const path = join(dir, 'config.json');
+    try {
+      writeFileSync(path, JSON.stringify(raw));
+      const cfg = buildUserConfig(path);
+      expect(cfg.vw.entries.acp.resident).toBe(true); // 평평한 옛 키는 더는 이 값을 못 바꾼다 · 중첩 vw.acp.resident 는 여전히 읽힌다(위 named registry 시험)
+      expect('variantBadge' in cfg.chat.rendering.hud).toBe(false);
+      expect('inlineOneLine' in cfg.chat.rendering.tool).toBe(false);
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
   test('finds a retired key in the raw config and observes it once without using its value', () => {
     const dir = mkdtempSync(join(tmpdir(), 'retired-config-'));
     const path = join(dir, 'config.json');

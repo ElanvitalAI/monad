@@ -256,16 +256,16 @@ export class PreviewTerminal {
     //
     // ⚠️ 의미론 정정(self review #5472) — 종전 `this.opts.env ?? captured` 는 명시 env 를
     //    **통째 대체**로 취급했다. 그런데 실제 호출자(terminal-matrix transport)가 넘기는 것은
-    //    `{MONAD_REMOTE_HOST,…}` 같은 **소형 overlay** 라, 대체 의미론에서는 자식이 PATH·HOME
+    //    `{ELANOUS_REMOTE_HOST,…}` 같은 **소형 overlay** 라, 대체 의미론에서는 자식이 PATH·HOME
     //    조차 없는 env 로 뜬다(잠복 결함). registry 경로는 이미 merge 였어서 **경로별로 결과가
     //    갈리기도 했다**. merge 로 통일 — 호출자가 같은 키를 명시하면 여전히 호출자가 이긴다.
     const overlay: Record<string, string> = { ...(this.opts.env ?? {}) };
     // COLORTERM=truecolor — captured env strips COLORTERM in the seed
     // phase (shell-env-bootstrap.ts), and SSH does not forward it by
     // default, so prompt themes (powerlevel10k, starship) fall back to
-    // a dim 16-color rendering. monad's xterm.js renderer accepts
+    // a dim 16-color rendering. elanous's xterm.js renderer accepts
     // 24-bit RGB, so claiming truecolor is safe regardless of how
-    // monad itself was launched.
+    // elanous itself was launched.
     // Force claude code into fullscreen (alt-screen) UI inside the
     // popup terminal. claude code v2.1.119+ for an external user
     // defaults to inline mode (DECSC/DECRC + cursor forward) when

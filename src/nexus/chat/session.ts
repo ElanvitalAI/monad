@@ -12,7 +12,7 @@
 //   - PR b: lifecycle (idle → streaming → idle/error), message log
 //     append, lazy ACP agent attach + session creation,
 //     sendUserMessage(text) → prompt + chunk accumulation.
-//   - PR c: input wiring (`monad nexus` TUI key dispatch), slash
+//   - PR c: input wiring (`elanous nexus` TUI key dispatch), slash
 //     pickers, attachment, esc-cancel binding.
 //   - Future: tool-call rendering, plan model, thought chunks.
 //

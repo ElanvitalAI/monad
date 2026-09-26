@@ -1,7 +1,7 @@
 // U2 명명 중립화 관측(순수) — 레거시 `codex` alias 진입 판정.
 //
 // canonical=`agent-mission` · deprecated alias=`codex`(commander .alias). cron/스크립트가 옛 이름을
-// 계속 쓰는지 관측해 alias 제거 안전시점을 판정한다(관측=monad logs --category agent-cli.alias).
+// 계속 쓰는지 관측해 alias 제거 안전시점을 판정한다(관측=elanous logs --category agent-cli.alias).
 //
 // ⚠️ argv[2] 고정 인덱스 판정은 브리틀 — 옵션 플래그가 명령 앞에 올 수 있고, 미션 텍스트에
 //   'codex'/'agent-mission' 문자열이 섞일 수도 있다. top-level 명령 토큰은 **첫 positional** 이므로
@@ -13,7 +13,7 @@
 //   플래그+값을 통째로 제거한다(process.argv = argv). 따라서 훅이 보는 argv 엔 값-옵션이 없어
 //   첫 positional == 명령 토큰이 성립한다(E2E: --config-dir 경로가 있어도 alias 정확 판정).
 
-/** `monad logs --category` 로 조회하는 브레드크럼 카테고리(제1원칙 관측). */
+/** `elanous logs --category` 로 조회하는 브레드크럼 카테고리(제1원칙 관측). */
 export const AGENT_ALIAS_LOG_CATEGORY = 'agent-cli.alias';
 
 /**

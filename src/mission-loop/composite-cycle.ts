@@ -2,7 +2,7 @@ import { mkdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
 import { isAbsolute, join, relative, resolve } from 'node:path';
 import { loadMissionBlueprint, type MissionBlueprintLoadResult } from '../mission-blueprints/loader.js';
 import type { CapabilityRef, MissionBlueprint, RuntimeFileDeliveryOutcome } from '../mission-blueprints/types.js';
-import { getMonadConfigDir } from '../monad-config-dir.js';
+import { getElanousConfigDir } from '../elanous-config-dir.js';
 import { debug } from '../debug/log.js';
 import { capabilityProviders, type CapabilityProbeResult, type CapabilityProvider } from '../mission-capabilities/registry.js';
 import { judgeMissionRequests, type MissionRequestJudgeResult } from './judge.js';
@@ -177,7 +177,7 @@ async function handleProbeFailure(root: string, requestId: string, capabilityId:
 export function persistBlueprintBody(requestId: string, body: string, dependencies: Pick<CompositeCycleDependencies, 'resolveDeliveryRoot' | 'persistBody'> = {}): RuntimeFileDeliveryOutcome {
   try {
     if (body.length === 0) throw new Error('blueprint body is empty');
-    const deliveryRoot = dependencies.resolveDeliveryRoot?.() ?? getMonadConfigDir();
+    const deliveryRoot = dependencies.resolveDeliveryRoot?.() ?? getElanousConfigDir();
     const path = join(deliveryRoot, 'mission-delivery', `${requestId.replace(/[^a-zA-Z0-9._-]/g, '_')}.md`);
     if (dependencies.persistBody) dependencies.persistBody(path, body);
     else {

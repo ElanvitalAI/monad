@@ -1,6 +1,6 @@
 #!/usr/bin/env bun
 // 배포판 컨테이너 매트릭스 «정례화»(ROADMAP 프로덕션 × Docker·k8s A1 · 2026-09-25).
-// `scripts/docker-verify.sh` 를 돌려 줄마다 판정하고, «회귀»면 알린다. 관측 = monad logs --category docker-verify.
+// `scripts/docker-verify.sh` 를 돌려 줄마다 판정하고, «회귀»면 알린다. 관측 = elanous logs --category docker-verify.
 //   회귀 = build FAILED · fix_rc≠0 · 로그인(gh-auth·provider-decision) 밖의 manual 이 남음.
 //   ⛔ Docker 엔진이 꺼져 있으면(야간 OrbStack 미기동 등) «못 쟀다»로 남기고 알리지 않는다 — 「0 회귀」로 읽지 않는다.
 //   bun scripts/docker-verify-cycle.ts [--alert] [BASE…]
@@ -35,7 +35,7 @@ export function regressions(lines: readonly VerifyLine[]): Array<{ base: string;
 }
 
 if (import.meta.main) {
-  // 단독 스크립트의 debug.log 는 싱크를 등록해야 logs.db 에 닿는다(안 하면 `monad logs --category docker-verify` 가 0 — 09-25 실측).
+  // 단독 스크립트의 debug.log 는 싱크를 등록해야 logs.db 에 닿는다(안 하면 `elanous logs --category docker-verify` 가 0 — 09-25 실측).
   try { const { registerStandaloneLogSink } = await import('../src/domains/standalone-log-sink.js'); await registerStandaloneLogSink('docker-verify'); } catch { /* 관측 실패가 검증을 막지 않는다 */ }
   const args = process.argv.slice(2);
   const alert = args.includes('--alert');
@@ -66,7 +66,7 @@ if (import.meta.main) {
   }
   if (bad.length && alert) {
     const { sendOutbound } = await import('../src/domains/outbound-alert.js');
-    await sendOutbound(`🐳 배포판 매트릭스 회귀 ${bad.length}: ${bad.map((b) => `${b.base} (${b.reason})`).join(' · ')} — 로그: monad logs --category docker-verify`, 'alert');
+    await sendOutbound(`🐳 배포판 매트릭스 회귀 ${bad.length}: ${bad.map((b) => `${b.base} (${b.reason})`).join(' · ')} — 로그: elanous logs --category docker-verify`, 'alert');
   }
   process.exit(bad.length ? 1 : 0);
 }

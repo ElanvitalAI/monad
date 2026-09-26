@@ -1,6 +1,6 @@
 // ── VW-term-infra Bundle B-5 · P6-4 — Legacy layout provider ──
 //
-// Scans `~/.monad/layouts/` for `*.layout.json` files saved BEFORE
+// Scans `~/.elanous/layouts/` for `*.layout.json` files saved BEFORE
 // Bundle B-5's layout migration · synthesizes `ArtifactMeta` from
 // filename + optional JSON parse · surfaces them via
 // `ArtifactStore.list('layout')`.

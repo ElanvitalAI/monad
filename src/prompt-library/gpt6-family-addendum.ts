@@ -54,7 +54,7 @@
 //    ⇒ astra 때만큼 이 addendum 이 «무겁게» 필요하진 않을 수 있다. ⛔ 그러나 빼지 않는다 —
 //      「필요 없다」는 측정이 아직 없고, 빼는 쪽이 되돌리기 비싼 방향이다.
 //
-// 📌 도구 표면도 갈렸다(monad 가 «아직 안 쓰는» 것들이지만 기록해 둔다):
+// 📌 도구 표면도 갈렸다(elanous 가 «아직 안 쓰는» 것들이지만 기록해 둔다):
 //      experimental_supported_tools   GPT-6 = ["send_user_message_async","clock"] · 5.6 = []
 //      include_plugin/apps_usage_instructions  GPT-6 = false · 5.6 = true
 //        └ 이유: GPT-6 의 base_instructions 에 `# Apps (Connectors)`·`# Plugins` 절이 «이미» 있다.

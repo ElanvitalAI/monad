@@ -32,7 +32,7 @@ interface LifecycleEnvelope {
   readonly ptyId: string;
   /** Subject PTY: the PTY this lifecycle declaration describes. */
   readonly subjectPtyId: string;
-  /** Nested MONAD_NEST_DEPTH, validated as a non-negative integer. */
+  /** Nested ELANOUS_NEST_DEPTH, validated as a non-negative integer. */
   readonly depth: number;
   readonly role: SignalRole;
   /** Monotonic only within this ptyId producer. */

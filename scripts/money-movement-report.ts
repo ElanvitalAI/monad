@@ -2,7 +2,7 @@
 // A2.2b — 13F money-movement report + knowledge.db persistence.
 //
 // Fetches notable funds' latest 2 quarters of 13F (SEC EDGAR direct),
-// persists holdings to ~/.monad/knowledge_13f.db (fact_13f_holdings), and
+// persists holdings to ~/.elanous/knowledge_13f.db (fact_13f_holdings), and
 // aggregates cross-fund QoQ moves into a brief report. Run:
 //   bun run scripts/money-movement-report.ts
 
@@ -16,7 +16,7 @@ const FUNDS = [
   'coatue', 'duquesne',
 ];
 
-const DB = knowledge13fDbPath(); // M0.1: 13F DB(구 ~/.monad/knowledge.db) 분리
+const DB = knowledge13fDbPath(); // M0.1: 13F DB(구 ~/.elanous/knowledge.db) 분리
 const db = new Database(DB);
 db.run(`CREATE TABLE IF NOT EXISTS fact_13f_holdings (
   cik TEXT, fund TEXT, period TEXT, filed TEXT, issuer TEXT, cusip TEXT,

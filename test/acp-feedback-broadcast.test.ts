@@ -35,7 +35,7 @@ import {
   type AgentThinkingPayload,
   type ToolSearchHitPayload,
 } from '../src/feedback/envelope.js';
-import { parseMonadFeedbackEnvelope } from '../src/acp/monad-extensions.js';
+import { parseElanousFeedbackEnvelope } from '../src/acp/elanous-extensions.js';
 
 interface ClientChannel {
   conn: ClientSideConnection;
@@ -148,9 +148,9 @@ function feedbackEnvelopesOf(channel: ClientChannel, sessionId: string): Feedbac
         u.sessionUpdate === 'agent_thought_chunk' &&
         u.content?.type === 'text' &&
         typeof u.content.text === 'string' &&
-        u.content.text.startsWith('[monad/feedback/'),
+        u.content.text.startsWith('[elanous/feedback/'),
     )
-    .map((u) => parseMonadFeedbackEnvelope(u.content!.text!))
+    .map((u) => parseElanousFeedbackEnvelope(u.content!.text!))
     .filter((parsed): parsed is NonNullable<typeof parsed> => parsed !== null)
     .map((parsed) => parsed.payload);
 }
@@ -286,7 +286,7 @@ describe('getActiveAcpFeedbackBroadcaster — wire shape', () => {
     expect(delivered).toBe(0);
   });
 
-  test('wraps payload as monad/feedback/emit inside agent_thought_chunk', async () => {
+  test('wraps payload as elanous/feedback/emit inside agent_thought_chunk', async () => {
     harness = await bootFanoutServer({ numClients: 1 });
     const sid = await harness.initializeAndNewSession(0);
 
@@ -306,9 +306,9 @@ describe('getActiveAcpFeedbackBroadcaster — wire shape', () => {
     };
     expect(update.sessionUpdate).toBe('agent_thought_chunk');
     expect(update.content.type).toBe('text');
-    expect(update.content.text.startsWith(`[monad/feedback/emit] ${env.blockId}`)).toBe(true);
-    expect(update.content.text.includes(`<<monad-feedback-end ${env.blockId}>>`)).toBe(true);
-    const parsed = parseMonadFeedbackEnvelope(update.content.text);
+    expect(update.content.text.startsWith(`[elanous/feedback/emit] ${env.blockId}`)).toBe(true);
+    expect(update.content.text.includes(`<<elanous-feedback-end ${env.blockId}>>`)).toBe(true);
+    const parsed = parseElanousFeedbackEnvelope(update.content.text);
     expect(parsed).not.toBeNull();
     expect(parsed!.method).toBe('emit');
     expect(parsed!.payload).toEqual(env);

@@ -39,7 +39,7 @@ export interface InitContextMenuRegistryDeps {
   presenter?: MenuPresenter;
   /** IDX-6 Phase 5 adoption — live theme accessor. When provided,
    *  the default presenter paints each opened context menu with a
-   *  drop-shadow using `theme.modal.shadow`. Set `MONAD_MODAL_SHADOW=off`
+   *  drop-shadow using `theme.modal.shadow`. Set `ELANOUS_MODAL_SHADOW=off`
    *  env to globally disable even when the getter is present. */
   getTheme?: () => import('../../theme/tokens.js').ThemeTokens | null | undefined;
 }
@@ -68,7 +68,7 @@ export function initDashboardContextMenuRegistry(
 ): ContextMenuRegistry {
   const reg = getDashboardContextMenuRegistry();
   const resolveAmbientTheme = deps.getTheme
-    ? () => (process.env.MONAD_MODAL_SHADOW === 'off' ? undefined : deps.getTheme!())
+    ? () => (process.env.ELANOUS_MODAL_SHADOW === 'off' ? undefined : deps.getTheme!())
     : undefined;
   const presenter = deps.presenter ?? createDefaultMenuPresenter({
     termSize: deps.termSize,

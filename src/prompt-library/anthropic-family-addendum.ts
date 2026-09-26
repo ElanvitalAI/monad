@@ -3,12 +3,12 @@
 // Mirrors codex-family-addendum + gemini-family-addendum pattern.
 // Where codex addendum directly attacked the re-read pathology and
 // gemini addendum forced multi-turn against single-turn termination,
-// the claude family already shows good baseline behavior on monad's
+// the claude family already shows good baseline behavior on elanous's
 // multi-turn-cache-rate scenario (15-17 tool calls / 9-10K chars on
 // claude-opus-4-7). The goal here is NOT a quality push (none needed)
 // but consistency: enforce the engineering standards the model is
 // trained on — don't gold-plate, diagnose before retry, faithful
-// reporting, verification before claiming complete — so monad's
+// reporting, verification before claiming complete — so elanous's
 // claude path matches the rigor the model is capable of.
 //
 // Pattern source — ref/claude-code-fork `src/constants/prompts.ts`:
@@ -20,13 +20,13 @@
 //
 // Directives that are NOT brought over:
 //   - getOutputEfficiencySection (≤25 words / ≤100 final) — collides
-//     with monad's analysis benchmark length floor (gemini addendum
+//     with elanous's analysis benchmark length floor (gemini addendum
 //     §"Conciseness Applies To Tool Narration, Not To Final Answer").
 //   - getSimpleToneAndStyleSection's "responses should be short and
-//     concise" — same conflict; monad analysis prompts want depth.
+//     concise" — same conflict; elanous analysis prompts want depth.
 //   - feature('PROACTIVE') / feature('VERIFICATION_AGENT') / `ant`
 //     gating — those are Anthropic-internal A/B tracks not relevant
-//     to monad's multi-provider gateway.
+//     to elanous's multi-provider gateway.
 
 import type { LLMMessage } from '../llm.js';
 

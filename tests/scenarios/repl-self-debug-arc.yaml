@@ -7,9 +7,9 @@ description: |
   log/latest to diagnose turn 1's tool-loop behavior.
 
   Run:
-    monad repl --new --json --scenario tests/scenarios/repl-self-debug-arc.yaml
+    elanous repl --new --json --scenario tests/scenarios/repl-self-debug-arc.yaml
   CI-style:
-    monad repl --new --json \
+    elanous repl --new --json \
       --scenario tests/scenarios/repl-self-debug-arc.yaml \
       --exit-after-scenario
 

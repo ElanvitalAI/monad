@@ -5,7 +5,7 @@ import { debug } from '../src/debug/log.js';
 /** ⛔⭐⭐⭐ 계측은 «조용히 사라지는» 것이 본성이다 — 그래서 문다.
  *
  *  📏 2026-08-21 라이브: 같은 위젯 조회가 한 번은 17.96초, 다음엔 10분 넘게 안 돌아왔는데
- *  `monad logs` 에 ***25분간 한 줄도 없었다.*** ⇒ 「요청이 나갔나·상대가 느린가·우리가 멈췄나」를
+ *  `elanous logs` 에 ***25분간 한 줄도 없었다.*** ⇒ 「요청이 나갔나·상대가 느린가·우리가 멈췄나」를
  *  아무도 못 갈랐다. 이 파일이 그 네 갈래가 «값으로» 남는지 문다. */
 
 function captured(): { events: Array<{ event: string; data: Record<string, unknown> }>; restore: () => void } {
@@ -53,7 +53,7 @@ describe('widget resource read — the four outcomes are values, not silence', (
     expect(ok!.data.bytes).toBe('<main/>'.length);
     expect(ok!.data.mimeType).toBe('text/html;profile=mcp-app');
     // ⭐ 이 칸이 핵심이다 — 비면 위젯 CSP 가 전부 거부로 서고 「Connecting…」 에서 멈춘다.
-    expect(ok!.data.cspHeaders).toEqual(['x-monad-mcp-app-connect-domains']);
+    expect(ok!.data.cspHeaders).toEqual(['x-elanous-mcp-app-connect-domains']);
     expect(typeof ok!.data.elapsedMs).toBe('number');
   });
 

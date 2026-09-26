@@ -41,11 +41,11 @@ describe('capabilities()', () => {
     const handlers = createAcpNativeShellHandlers({
       registry: fakeRegistry(),
       spawnShell: async () => null,
-      serverName: 'monad',
+      serverName: 'elanous',
       serverVersion: '1.0.0',
     });
     const cap = await handlers.capabilities();
-    expect(cap.serverName).toBe('monad');
+    expect(cap.serverName).toBe('elanous');
     expect(cap.serverVersion).toBe('1.0.0');
     expect(cap.supportedActions).toContain('spawn');
     expect(cap.supportedModes).toContain('vw');
@@ -56,7 +56,7 @@ describe('capabilities()', () => {
     const handlers = createAcpNativeShellHandlers({
       registry: fakeRegistry(),
       spawnShell: async () => null,
-      serverName: 'monad',
+      serverName: 'elanous',
       defaultCapabilities: {
         supportedModes: ['vw'],
         streamingSupported: true,

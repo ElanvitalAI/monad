@@ -1,4 +1,4 @@
-// ── monad repro --scenario — multi-prompt batch evaluator ────────────────
+// ── elanous repro --scenario — multi-prompt batch evaluator ────────────────
 //
 // Sister of eval-prompt-cli.ts. Reads a YAML scenario file with N prompts
 // + per-prompt assertions, executes them in parallel (concurrency-capped)

@@ -1,6 +1,6 @@
 // NEXUS · Secret backend interface (Phase N-3.5 PR σ)
 //
-// PR μ shipped a single FileBackend (`~/.monad/secrets.json`). PR σ
+// PR μ shipped a single FileBackend (`~/.elanous/secrets.json`). PR σ
 // generalises the interface so PR υ can plug in Keychain / AWS Secrets
 // Manager / GCP Secret Manager / 1Password without touching any
 // caller. The default selection stays 'file' for zero-cost migration.

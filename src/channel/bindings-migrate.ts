@@ -36,7 +36,7 @@ interface LegacyFile {
 
 export interface MigrateOpts {
   /** Daemon directory holding the legacy file. Required so tests
-   *  can point at a tmp dir; production callers pass monadDaemonDir(). */
+   *  can point at a tmp dir; production callers pass elanousDaemonDir(). */
   daemonDir: string;
   /** Channel store the migrated entries land in. */
   store: ChannelBindingsStore;

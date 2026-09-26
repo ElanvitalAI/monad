@@ -1,5 +1,5 @@
 // codex native structured-question routing — `item/tool/requestUserInput`
-// ↔ monad's generic AcpQuestion (which the surface HITL QuestionChannel
+// ↔ elanous's generic AcpQuestion (which the surface HITL QuestionChannel
 // backs). Tests the pure mappers that carry the logic.
 
 import { describe, expect, test } from 'bun:test';

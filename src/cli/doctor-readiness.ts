@@ -17,8 +17,8 @@ import { win32 } from 'node:path';
  *   `$PATH` stays outside the quotes so the shell expands the existing PATH.
  * - service restart, darwin only: `내부 문서 `RFC-install-cutover-pilot-to-installed-2026-09-24``
  *   and `src/autopilot/daemon-control.ts`
- *   (`launchctl kickstart -k gui/$(id -u)/com.monad.nexus`).
- *   linux: `src/nexus/install/systemd.ts` (`systemctl --user restart monad-nexus`).
+ *   (`launchctl kickstart -k gui/$(id -u)/com.elanous.nexus`).
+ *   linux: `src/nexus/install/systemd.ts` (`systemctl --user restart elanous-nexus`).
  *   An omitted platform does not assume darwin.
  */
 
@@ -77,10 +77,10 @@ export interface ReadinessDeps {
   /** PATH directories, already split. Absent means PATH was not measured. */
   pathEntries?: readonly string[] | null;
   /**
-   * Real path of the first `monad` found on PATH. `null` = none found · absent = not measured.
-   * 🩸 2026-09-24: 전역 `~/.bun/bin/monad` 가 설치본으로 링크돼 있어도 «설치본 bin 이 PATH 에 없다»고 fixable 을 냈다.
+   * Real path of the first `elanous` found on PATH. `null` = none found · absent = not measured.
+   * 🩸 2026-09-24: 전역 `~/.bun/bin/elanous` 가 설치본으로 링크돼 있어도 «설치본 bin 이 PATH 에 없다»고 fixable 을 냈다.
    */
-  monadOnPath?: string | null;
+  elanousOnPath?: string | null;
   /**
    * Parsed `/v1/health` body. `null` means no response — not "the service is down".
    * Absent means the probe was not run.
@@ -109,7 +109,7 @@ export interface ReadinessDeps {
   buildToolchain?: { make: boolean | null; cxx20: boolean | null } | null;
   /** node-pty 외부 명령 탐침 결과(`require` · spawn-helper). null = 못 잼. */
   nodePty?: 'found' | 'missing' | 'broken' | null;
-  /** monad 파이썬 환경(`monad python check` 와 같은 판정) — null = 못 쟀다. */
+  /** elanous 파이썬 환경(`elanous python check` 와 같은 판정) — null = 못 쟀다. */
   pythonEnv?: { status: 'ok' | 'fixable' | 'manual'; evidence: string; remedy?: string } | null;
   distro?: DistroFamily;
   /** 어디서 도나(L0 · RFC docker·k8s 사다리) — 원 신호만. 판정은 `detectSubstrate`. 없으면(undefined/null) 못 쟀다. */
@@ -179,11 +179,11 @@ const GH_AUTH_REMEDY = 'gh auth login';
 const GH_INSTALL_LINUX = 'sudo apt-get install -y gh';
 const GH_INSTALL_DARWIN = 'brew install gh';
 const GH_INSTALL_WINDOWS = 'winget install --id GitHub.cli -e';
-// 운영이 설치본(`~/.local/share/monad/current`)으로 돌면 재시작만으로는 새 코드가 안 들어간다 — 체크아웃에서 설치 «뒤» 재시작.
+// 운영이 설치본(`~/.local/share/elanous/current`)으로 돌면 재시작만으로는 새 코드가 안 들어간다 — 체크아웃에서 설치 «뒤» 재시작.
 //   ⛔ 한 줄로 «실행 가능»해야 한다 — 중간에 `#` 주석을 두면 뒤의 재시작이 주석으로 먹힌다.
 const INSTALL_FIRST = 'bash scripts/install.sh --no-modify-path &&';   // 최신 체크아웃에서
-const DARWIN_RESTART = `${INSTALL_FIRST} launchctl kickstart -k gui/$(id -u)/com.monad.nexus`;
-const LINUX_RESTART = `${INSTALL_FIRST} systemctl --user restart monad-nexus`;
+const DARWIN_RESTART = `${INSTALL_FIRST} launchctl kickstart -k gui/$(id -u)/com.elanous.nexus`;
+const LINUX_RESTART = `${INSTALL_FIRST} systemctl --user restart elanous-nexus`;
 
 /** GitHub token shapes plus sk-/pk-/rk- and bearer values. Never printed. */
 const SECRET_TEXT = /(?:sk|pk|rk)-[A-Za-z0-9_-]{8,}|gh[pousr]_[A-Za-z0-9_]{8,}|github_pat_[A-Za-z0-9_]{8,}|bearer\s+[A-Za-z0-9._~+/-]+=*/gi;
@@ -224,14 +224,14 @@ function providerDecision(deps: ReadinessDeps): ReadinessItem {
   }
   // 🩸 2026-09-24 빈 VM(🅢 #20263): 로그인도 키도 없는데 여기서 `ok` 가 나왔다(거짓 초록) — auto 가 고를 것이 없다.
   if (deps.llmCredentialAvailable === false) {
-    return item('provider-decision', 'manual', 'llm.provider=auto but no LLM login or key was found — LLM commands will fail', 'monad login openai-codex');
+    return item('provider-decision', 'manual', 'llm.provider=auto but no LLM login or key was found — LLM commands will fail', 'elanous login openai-codex');
   }
   return item('provider-decision', 'ok', 'llm.provider=auto and no codex login');
 }
 
 /** Debian 계열 apt 의 gh 는 GH_MIN_VERSION 미만이다(📏 09-25: Debian 12 = 2.23 · Ubuntu 24.04 = 2.45) — apt 로 깔면 곧바로
  *  「낡았다」로 다시 걸린다(GCP debian-12 에서 `--sudo` 가 실제로 2.23 을 깔았다). `--fix` 는 고정 판 정적 gh 를 받는다. */
-const GH_INSTALL_PINNED = 'monad doctor --fix --yes';
+const GH_INSTALL_PINNED = 'elanous doctor --fix --yes';
 
 function ghInstallRemedy(platform: NodeJS.Platform | undefined, distro?: DistroFamily): string | undefined {
   if (platform === 'linux' && (distro === undefined || distro === 'debian')) return GH_INSTALL_PINNED;
@@ -262,7 +262,7 @@ function ghAuth(deps: ReadinessDeps): ReadinessItem {
     return item('gh-auth', 'manual', 'gh is not on PATH', ghInstallRemedy(deps.platform, deps.distro));
   }
   if (deps.ghVersion && !ghVersionAtLeast(deps.ghVersion)) {
-    const remedy = deps.platform === 'linux' ? 'monad doctor --fix --yes' : deps.platform === 'darwin' ? 'brew upgrade gh' : undefined;
+    const remedy = deps.platform === 'linux' ? 'elanous doctor --fix --yes' : deps.platform === 'darwin' ? 'brew upgrade gh' : undefined;
     return item('gh-auth', 'manual', `gh ${deps.ghVersion} is older than ${GH_MIN_VERSION} — \`gh pr\` GraphQL queries fail (Projects classic deprecation · cli/cli#12476)`, remedy);
   }
   if (deps.ghAuthStatus === null || deps.ghAuthStatus === undefined) {
@@ -281,7 +281,7 @@ function harnessTools(deps: ReadinessDeps): ReadinessItem {
   const nodeMissing = nodeOnPath === false && !(codexOnPath === true && deps.codexNeedsNode === false);
   // 🩸 2026-09-25 L2: codex 바이너리만 있고 짝이 없으면 `--version` 은 되고 실제 작업은 「shell tool failed to start」.
   if (codexOnPath === true && deps.codexCodeModeHost === false) {
-    return item('harness-tools', 'manual', 'codex binary has no codex-code-mode-host next to it — its shell tool cannot start', deps.platform === 'linux' ? 'monad doctor --fix --yes' : undefined);
+    return item('harness-tools', 'manual', 'codex binary has no codex-code-mode-host next to it — its shell tool cannot start', deps.platform === 'linux' ? 'elanous doctor --fix --yes' : undefined);
   }
   if (!missing.length && !nodeMissing) {
     return rgOnPath == null || codexOnPath == null || nodeOnPath == null
@@ -337,10 +337,10 @@ function installPath(deps: ReadinessDeps): ReadinessItem {
   if (present) {
     return item('install-path', 'ok', `${shownBin} is on PATH`);
   }
-  if (typeof deps.monadOnPath === 'string' && (windows
-    ? windowsKey(deps.monadOnPath).startsWith(`${windowsKey(prefix)}\\`)
-    : deps.monadOnPath.startsWith(`${prefix}/`))) {
-    return item('install-path', 'ok', `monad on PATH resolves into the install (${displayPath(deps.monadOnPath)})`);
+  if (typeof deps.elanousOnPath === 'string' && (windows
+    ? windowsKey(deps.elanousOnPath).startsWith(`${windowsKey(prefix)}\\`)
+    : deps.elanousOnPath.startsWith(`${prefix}/`))) {
+    return item('install-path', 'ok', `elanous on PATH resolves into the install (${displayPath(deps.elanousOnPath)})`);
   }
   if (shown !== prefix) {
     // 경로를 가려야 하면 실행 가능한 명령을 줄 수 없다 — 자리표시자 명령 대신 사람 몫으로 둔다.
@@ -370,8 +370,8 @@ function daemonMatchesCode(daemonSha: string, revision: string): boolean {
 function restartRemedy(platform: NodeJS.Platform | undefined, installed: boolean): string | undefined {
   // 설치본에서 도는 doctor 면 코드는 이미 설치본에 있다 — 재시작만 하면 된다(`doctor` 의 재시작 플래그가 같은 줄을 대신 친다).
   if (installed) {
-    if (platform === 'linux') return 'systemctl --user restart monad-nexus';
-    if (platform === 'darwin') return 'launchctl kickstart -k gui/$(id -u)/com.monad.nexus';
+    if (platform === 'linux') return 'systemctl --user restart elanous-nexus';
+    if (platform === 'darwin') return 'launchctl kickstart -k gui/$(id -u)/com.elanous.nexus';
     return undefined;
   }
   if (platform === 'linux') return LINUX_RESTART;
@@ -423,32 +423,32 @@ function nodePty(deps: ReadinessDeps): ReadinessItem {
   if (deps.nodePty === undefined || deps.nodePty === null) return item('node-pty', 'unknown', 'node-pty was not measured');
   if (deps.nodePty === 'found') return item('node-pty', 'ok', 'node-pty loads');
   const toolchain = buildToolchain(deps);
-  if (toolchain.status === 'ok') return item('node-pty', 'fixable', `node-pty is ${deps.nodePty} and the build toolchain is present — rebuild it`, 'monad doctor --fix --yes');
-  return item('node-pty', 'manual', `node-pty is ${deps.nodePty} — install the build toolchain first (see build-toolchain), then run monad doctor --fix --yes (re-running the installer on the same version does not rebuild it)`, remediesFor(deps.distro ?? 'unknown')?.buildToolchain);
+  if (toolchain.status === 'ok') return item('node-pty', 'fixable', `node-pty is ${deps.nodePty} and the build toolchain is present — rebuild it`, 'elanous doctor --fix --yes');
+  return item('node-pty', 'manual', `node-pty is ${deps.nodePty} — install the build toolchain first (see build-toolchain), then run elanous doctor --fix --yes (re-running the installer on the same version does not rebuild it)`, remediesFor(deps.distro ?? 'unknown')?.buildToolchain);
 }
 
-/** 파이썬 환경 — RFC #20265 A3 · 대표 결정: 표준 = monad 소유 venv. 판정 자체는 `src/python/resolve-python.ts` `evaluatePythonEnv`. */
+/** 파이썬 환경 — RFC #20265 A3 · 대표 결정: 표준 = elanous 소유 venv. 판정 자체는 `src/python/resolve-python.ts` `evaluatePythonEnv`. */
 function pythonEnv(deps: ReadinessDeps): ReadinessItem {
   if (deps.pythonEnv === undefined || deps.pythonEnv === null) return item('python-env', 'unknown', 'python environment was not measured');
   const { status, evidence, remedy } = deps.pythonEnv;
-  if (status === 'fixable') return item('python-env', 'fixable', evidence, 'monad doctor --fix --yes');
+  if (status === 'fixable') return item('python-env', 'fixable', evidence, 'elanous doctor --fix --yes');
   if (status === 'manual') {
     if (deps.platform === 'win32') return item('python-env', 'manual', evidence, remedy);
     // 버전 미달·파이썬 없음 — pyenv 빌드 의존성을 계열별로 앞에 붙인다(모르는 계열은 추측하지 않는다).
     // ensurepip 가 없는 경우(Ubuntu python3-venv)는 처방이 이미 venv 한 줄이다 — pyenv 빌드 의존성(십여 패키지)을 붙이지 않는다(09-24 빈 VM 에서 불필요하게 깔렸다).
     // 파이썬이 아예 없고 배포판 파이썬이 선언을 넘는 계열이면 — 빌드가 아니라 배포판 패키지 한 줄(2026-09-25 컨테이너 실측).
     const base = /^no python3 found/.test(evidence) ? remediesFor(deps.distro ?? 'unknown')?.pythonBase : undefined;
-    if (base) return item('python-env', 'manual', evidence, `${base} && monad python setup --yes`);
+    if (base) return item('python-env', 'manual', evidence, `${base} && elanous python setup --yes`);
     // 선언 파일이 설치본에 없는 경우도 빌드 의존성과 무관하다 — 처방은 판 올림 하나(09-25 베어 ubuntu:24.04 · v0.1.0 이 선언 파일 없이 나갔다).
-    const deps2 = /ensurepip|was not found next to this monad/.test(evidence) ? undefined : remediesFor(deps.distro ?? 'unknown')?.pythonBuildDeps;
+    const deps2 = /ensurepip|was not found next to this elanous/.test(evidence) ? undefined : remediesFor(deps.distro ?? 'unknown')?.pythonBuildDeps;
     return item('python-env', 'manual', evidence, [deps2, remedy].filter(Boolean).join(' && ') || undefined);
   }
   return item('python-env', 'ok', evidence);
 }
 
-/** 판 폴더(`…/versions/<판>/node_modules/monadagent/…`)를 가리키는 서비스 파일 — 그 판이 정리되면 서비스가 죽는다(#20237 이전에 깐 기계). */
-export const SERVICE_VERSION_FOLDER = /\/versions\/[^/<\s"']+\/node_modules\/monadagent\//;
-const SERVICE_BARE_MONAD = /<string>monad<\/string>\s*<string>nexus<\/string>|ExecStart=monad\s/;
+/** 판 폴더(`…/versions/<판>/node_modules/elanous/…`)를 가리키는 서비스 파일 — 그 판이 정리되면 서비스가 죽는다(#20237 이전에 깐 기계). */
+export const SERVICE_VERSION_FOLDER = /\/versions\/[^/<\s"']+\/node_modules\/elanous\//;
+const SERVICE_BARE_ELANOUS = /<string>elanous<\/string>\s*<string>nexus<\/string>|ExecStart=elanous\s/;
 
 export interface ServiceSecretEntry { name: string; value: string; start: number; end: number }
 
@@ -484,16 +484,16 @@ function serviceSecrets(deps: ReadinessDeps): ReadinessItem {
   if (deps.serviceFile === null) return item('service-secrets', 'ok', 'no service file installed');
   const names = [...new Set(serviceSecretEntries(deps.serviceFile.text).map((entry) => entry.name))].sort();
   return names.length
-    ? item('service-secrets', 'fixable', `provider keys in service environment: ${names.join(', ')} (names only)`, 'monad doctor --fix --yes')
+    ? item('service-secrets', 'fixable', `provider keys in service environment: ${names.join(', ')} (names only)`, 'elanous doctor --fix --yes')
     : item('service-secrets', 'ok', 'no provider keys in service environment');
 }
 
 /** 서비스 파일에서 «운영이 기대는 경로»를 뽑는다 — launchd plist · systemd unit 둘 다(순수 함수). */
 export function servicePathRefs(text: string): string[] {
   const refs: string[] = [];
-  const plist = /<key>(WorkingDirectory|MONAD_PWA_STATIC_DIR)<\/key>\s*<string>([^<]+)<\/string>/g;
+  const plist = /<key>(WorkingDirectory|ELANOUS_PWA_STATIC_DIR)<\/key>\s*<string>([^<]+)<\/string>/g;
   for (const m of text.matchAll(plist)) refs.push(m[2]!.trim());
-  for (const m of text.matchAll(/^(?:WorkingDirectory=|Environment="?MONAD_PWA_STATIC_DIR=)([^"\n]+)"?$/gm)) refs.push(m[1]!.trim());
+  for (const m of text.matchAll(/^(?:WorkingDirectory=|Environment="?ELANOUS_PWA_STATIC_DIR=)([^"\n]+)"?$/gm)) refs.push(m[1]!.trim());
   return [...new Set(refs)];
 }
 
@@ -502,14 +502,14 @@ function serviceFile(deps: ReadinessDeps): ReadinessItem {
   if (deps.serviceFile === null) return item('service-file', 'ok', 'no service file installed');
   const { path, text } = deps.serviceFile;
   if (SERVICE_VERSION_FOLDER.test(text)) {
-    return item('service-file', 'fixable', `${path} points at a version folder (versions/<ver>) — it breaks when that version is pruned`, 'monad doctor --fix --yes');
+    return item('service-file', 'fixable', `${path} points at a version folder (versions/<ver>) — it breaks when that version is pruned`, 'elanous doctor --fix --yes');
   }
-  if (SERVICE_BARE_MONAD.test(text)) {
-    return item('service-file', 'manual', `${path} runs a bare \`monad\` (resolved through PATH at boot)`, 'monad nexus install');
+  if (SERVICE_BARE_ELANOUS.test(text)) {
+    return item('service-file', 'manual', `${path} runs a bare \`elanous\` (resolved through PATH at boot)`, 'elanous nexus install');
   }
   // 🩸 09-26: 운영 서비스가 사람 작업 트리(pilot)를 가리켰다 — 작업 폴더 ⊕ PWA 폴더. 화면이 데몬 코드보다 8시간 낡았다.
   if (deps.serviceGitTreeRefs && deps.serviceGitTreeRefs.length > 0) {
-    return item('service-file', 'manual', `${path} depends on a git working tree (${deps.serviceGitTreeRefs.join(', ')}) — the service follows whatever that tree holds, not the installed version`, deps.platform === 'linux' ? 'cd ~ && monad nexus install --systemd-user' : 'cd ~ && monad nexus install --launchd');
+    return item('service-file', 'manual', `${path} depends on a git working tree (${deps.serviceGitTreeRefs.join(', ')}) — the service follows whatever that tree holds, not the installed version`, deps.platform === 'linux' ? 'cd ~ && elanous nexus install --systemd-user' : 'cd ~ && elanous nexus install --launchd');
   }
   return item('service-file', 'ok', `${path} uses a stable command path`);
 }
@@ -522,7 +522,7 @@ function bunVersionItem(deps: ReadinessDeps): ReadinessItem {
   if (!deps.bunVersion || !deps.bunPin) return item('bun-version', 'unknown', `bun ${deps.bunVersion ?? '?'} · tested ${deps.bunPin ?? '?'} (.bun-version) — one side could not be read`);
   if (deps.bunVersion === deps.bunPin) return item('bun-version', 'ok', `bun ${deps.bunVersion} = the tested version (.bun-version)`);
   const remedy = deps.platform === 'win32' ? undefined : `curl -fsSL https://bun.sh/install | bash -s bun-v${deps.bunPin}`;
-  return item('bun-version', 'manual', `bun ${deps.bunVersion} differs from the tested ${deps.bunPin} (.bun-version) — monad is verified on that one`, remedy);
+  return item('bun-version', 'manual', `bun ${deps.bunVersion} differs from the tested ${deps.bunPin} (.bun-version) — elanous is verified on that one`, remedy);
 }
 
 function bunTmpdir(deps: ReadinessDeps): ReadinessItem {

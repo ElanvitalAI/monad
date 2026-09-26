@@ -8,7 +8,7 @@ import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 import { readBotRounds, readBotRoundsFromQuery, dirNameToUtc, isSafeSegment, isArtifactFile } from './rounds-source.js';
 
-const ROOT = join(tmpdir(), `monad-rounds-test-${process.pid}`);
+const ROOT = join(tmpdir(), `elanous-rounds-test-${process.pid}`);
 const round = (persona: string, dir: string, meta: unknown, files: Record<string, string> = {}) => {
   const d = join(ROOT, 'botlab', persona, dir);
   mkdirSync(d, { recursive: true });

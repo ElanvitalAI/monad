@@ -1,7 +1,7 @@
 // M7 (2026-04-28) — unit tests for Tier 1 helper module.
 //
 // The integration scenario files themselves are env-gated (only run
-// when `MONAD_CODEX_TIER1_SMOKE=1`). These unit tests verify the
+// when `ELANOUS_CODEX_TIER1_SMOKE=1`). These unit tests verify the
 // gate + detection logic itself runs every test cycle so a regression
 // in skip-logic doesn't go unnoticed.
 
@@ -20,45 +20,45 @@ describe('M7 · Tier 1 helpers · env gate', () => {
   });
 
   test('tier1GateEnabled false when env unset', () => {
-    const prev = process.env.MONAD_CODEX_TIER1_SMOKE;
-    delete process.env.MONAD_CODEX_TIER1_SMOKE;
+    const prev = process.env.ELANOUS_CODEX_TIER1_SMOKE;
+    delete process.env.ELANOUS_CODEX_TIER1_SMOKE;
     try {
       expect(tier1GateEnabled()).toBe(false);
     } finally {
-      if (prev !== undefined) process.env.MONAD_CODEX_TIER1_SMOKE = prev;
+      if (prev !== undefined) process.env.ELANOUS_CODEX_TIER1_SMOKE = prev;
     }
   });
 
   test('tier1GateEnabled true when env=1', () => {
-    const prev = process.env.MONAD_CODEX_TIER1_SMOKE;
-    process.env.MONAD_CODEX_TIER1_SMOKE = '1';
+    const prev = process.env.ELANOUS_CODEX_TIER1_SMOKE;
+    process.env.ELANOUS_CODEX_TIER1_SMOKE = '1';
     try {
       expect(tier1GateEnabled()).toBe(true);
     } finally {
-      if (prev === undefined) delete process.env.MONAD_CODEX_TIER1_SMOKE;
-      else process.env.MONAD_CODEX_TIER1_SMOKE = prev;
+      if (prev === undefined) delete process.env.ELANOUS_CODEX_TIER1_SMOKE;
+      else process.env.ELANOUS_CODEX_TIER1_SMOKE = prev;
     }
   });
 
   test('tier1GateEnabled true when env=true (case-insensitive)', () => {
-    const prev = process.env.MONAD_CODEX_TIER1_SMOKE;
-    process.env.MONAD_CODEX_TIER1_SMOKE = 'True';
+    const prev = process.env.ELANOUS_CODEX_TIER1_SMOKE;
+    process.env.ELANOUS_CODEX_TIER1_SMOKE = 'True';
     try {
       expect(tier1GateEnabled()).toBe(true);
     } finally {
-      if (prev === undefined) delete process.env.MONAD_CODEX_TIER1_SMOKE;
-      else process.env.MONAD_CODEX_TIER1_SMOKE = prev;
+      if (prev === undefined) delete process.env.ELANOUS_CODEX_TIER1_SMOKE;
+      else process.env.ELANOUS_CODEX_TIER1_SMOKE = prev;
     }
   });
 
   test('tier1GateEnabled false for non-truthy strings', () => {
-    const prev = process.env.MONAD_CODEX_TIER1_SMOKE;
-    process.env.MONAD_CODEX_TIER1_SMOKE = 'no';
+    const prev = process.env.ELANOUS_CODEX_TIER1_SMOKE;
+    process.env.ELANOUS_CODEX_TIER1_SMOKE = 'no';
     try {
       expect(tier1GateEnabled()).toBe(false);
     } finally {
-      if (prev === undefined) delete process.env.MONAD_CODEX_TIER1_SMOKE;
-      else process.env.MONAD_CODEX_TIER1_SMOKE = prev;
+      if (prev === undefined) delete process.env.ELANOUS_CODEX_TIER1_SMOKE;
+      else process.env.ELANOUS_CODEX_TIER1_SMOKE = prev;
     }
   });
 });
@@ -96,19 +96,19 @@ describe('M7 · Tier 1 helpers · skipReason composition', () => {
   });
 
   test('skipReason mentions env when env unset', () => {
-    const prev = process.env.MONAD_CODEX_TIER1_SMOKE;
-    delete process.env.MONAD_CODEX_TIER1_SMOKE;
+    const prev = process.env.ELANOUS_CODEX_TIER1_SMOKE;
+    delete process.env.ELANOUS_CODEX_TIER1_SMOKE;
     try {
       const reason = tier1SkipReason();
-      expect(reason).toContain('MONAD_CODEX_TIER1_SMOKE');
+      expect(reason).toContain('ELANOUS_CODEX_TIER1_SMOKE');
     } finally {
-      if (prev !== undefined) process.env.MONAD_CODEX_TIER1_SMOKE = prev;
+      if (prev !== undefined) process.env.ELANOUS_CODEX_TIER1_SMOKE = prev;
     }
   });
 
   test('skipReason null when env set AND binary present', () => {
-    const prev = process.env.MONAD_CODEX_TIER1_SMOKE;
-    process.env.MONAD_CODEX_TIER1_SMOKE = '1';
+    const prev = process.env.ELANOUS_CODEX_TIER1_SMOKE;
+    process.env.ELANOUS_CODEX_TIER1_SMOKE = '1';
     try {
       const binary = detectCodexBinary();
       const reason = tier1SkipReason();
@@ -118,8 +118,8 @@ describe('M7 · Tier 1 helpers · skipReason composition', () => {
         expect(reason).toContain('codex binary');
       }
     } finally {
-      if (prev === undefined) delete process.env.MONAD_CODEX_TIER1_SMOKE;
-      else process.env.MONAD_CODEX_TIER1_SMOKE = prev;
+      if (prev === undefined) delete process.env.ELANOUS_CODEX_TIER1_SMOKE;
+      else process.env.ELANOUS_CODEX_TIER1_SMOKE = prev;
     }
   });
 });

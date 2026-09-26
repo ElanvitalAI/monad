@@ -31,13 +31,13 @@ export interface SelfUpdateDeps {
   relinkCurrent?: (versionName: string) => void;
   /** 무인 실패 알림(주입 안 하면 sendOutbound 'alert' — 야간 무음 규칙 포함). */
   alert?: (text: string) => void;
-  /** 판 폴더 정리 — 주입하지 않으면 `~/.local/share/monad/versions` 를 실제로 지운다. */
+  /** 판 폴더 정리 — 주입하지 않으면 `~/.local/share/elanous/versions` 를 실제로 지운다. */
   pruneVersions?: (plan: { current: string; daemonSha: string; keep: number }) => VersionPruneOutcome;
   os?: NodeJS.Platform;
   uid?: number;
   /** relay 가 싣는 파일(저장소 상대) — 주입 안 하면 `scripts/openai-relay-server.ts` 에서 상대 import 를 따라 모은다. */
   relayFiles?: (checkout: string) => string[];
-  /** 텔레그램 러너 서비스(`monad telegram service --install`)가 깔려 있나 — 주입 안 하면 서비스 파일 존재로 본다. */
+  /** 텔레그램 러너 서비스(`elanous telegram service --install`)가 깔려 있나 — 주입 안 하면 서비스 파일 존재로 본다. */
   telegramRunnerInstalled?: () => boolean;
   out?: { log: (s: string) => void; error: (s: string) => void };
 }
@@ -53,9 +53,9 @@ export interface SelfUpdateResult {
   /** 재시작 뒤 건강 — ok · rolled-back(직전 판으로 되돌려 회복) · rollback-failed · no-rollback-target. */
   health?: 'ok' | 'rolled-back' | 'rollback-failed' | 'no-rollback-target' | 'unmeasured';
   rolledBackTo?: string;
-  /** relay(`com.monad.openai-relay`) 판정 — 넥서스와 «따로» 본다(T5 · 2026-09-24). */
+  /** relay(`com.elanous.openai-relay`) 판정 — 넥서스와 «따로» 본다(T5 · 2026-09-24). */
   relay?: RelayUpdateOutcome;
-  /** 텔레그램 러너(`com.monad.telegram` · `monad-telegram.service`) 판정 — 🆕 2026-09-25. */
+  /** 텔레그램 러너(`com.elanous.telegram` · `elanous-telegram.service`) 판정 — 🆕 2026-09-25. */
   telegramRunner?: RelayUpdateOutcome;
 }
 
@@ -67,7 +67,7 @@ export interface RelayUpdateOutcome {
 }
 
 export const RELAY_ENTRY = 'scripts/openai-relay-server.ts';
-export const RELAY_LAUNCHD_LABEL = 'com.monad.openai-relay';
+export const RELAY_LAUNCHD_LABEL = 'com.elanous.openai-relay';
 
 /** 데몬 커밋→새 커밋 구간에 relay 파일이 바뀌었으면(그리고 `--restart` 면) relay 만 재시작한다. 순수에 가깝게 — 부작용은 `run` 하나. */
 export function updateRelay(
@@ -117,8 +117,8 @@ export function updateTelegramRunner(
 ): RelayUpdateOutcome {
   const os = deps.os ?? platform();
   const installed = (deps.telegramRunnerInstalled ?? (() => existsSync(os === 'darwin'
-    ? join(homedir(), 'Library', 'LaunchAgents', 'com.monad.telegram.plist')
-    : join(homedir(), '.config', 'systemd', 'user', 'monad-telegram.service'))))();
+    ? join(homedir(), 'Library', 'LaunchAgents', 'com.elanous.telegram.plist')
+    : join(homedir(), '.config', 'systemd', 'user', 'elanous-telegram.service'))))();
   if (!installed) return { verdict: 'skipped', reason: '러너 서비스 없음(telegram.poller=nexus) — 해당 없음' };
   const from = decision.from?.trim();
   const to = decision.to?.trim();
@@ -126,8 +126,8 @@ export function updateTelegramRunner(
   if (to.startsWith(from) || from.startsWith(to)) return { verdict: 'unchanged', reason: '같은 커밋 — 러너 재시작 불필요' };
   if (!restart) return { verdict: 'skipped', reason: '--restart 없음: 러너 재시작하지 않음' };
   const [command, args] = os === 'darwin'
-    ? ['launchctl', ['kickstart', '-k', `gui/${deps.uid ?? process.getuid?.() ?? userInfo().uid}/com.monad.telegram`]] as const
-    : os === 'linux' ? ['systemctl', ['--user', 'restart', 'monad-telegram.service']] as const : [null, []] as const;
+    ? ['launchctl', ['kickstart', '-k', `gui/${deps.uid ?? process.getuid?.() ?? userInfo().uid}/com.elanous.telegram`]] as const
+    : os === 'linux' ? ['systemctl', ['--user', 'restart', 'elanous-telegram.service']] as const : [null, []] as const;
   if (!command) return { verdict: 'skipped', reason: `러너 재시작 미지원 플랫폼: ${os}` };
   try {
     const r = run(command, [...args], cwd);
@@ -169,7 +169,7 @@ export function rollbackTarget(versions: readonly string[], daemonSha: string, i
   return hits.length ? [...hits].sort().at(-1)! : null;
 }
 
-const VERSIONS_DIR = () => join(homedir(), '.local/share/monad/versions');
+const VERSIONS_DIR = () => join(homedir(), '.local/share/elanous/versions');
 
 /** `unmeasured` = 건강을 «잴 수» 없었다(REST 주소를 한 번도 못 얻음) — 「건강하지 않다」와 다르다. 되돌리지 않는다. */
 export interface VerifyRestartResult { ok: boolean; daemonSha?: string; reason?: string; unmeasured?: boolean }
@@ -202,7 +202,7 @@ export async function defaultVerifyRestart(expectedCommit: string): Promise<Veri
 }
 
 function defaultRelinkCurrent(versionName: string): void {
-  const root = join(homedir(), '.local/share/monad');
+  const root = join(homedir(), '.local/share/elanous');
   const tmp = join(root, `.current-rollback-${process.pid}`);
   rmSync(tmp, { force: true });
   symlinkSync(`versions/${versionName}`, tmp);
@@ -247,7 +247,7 @@ export function planVersionPrune(
 }
 
 function defaultPruneVersions(plan: { current: string; daemonSha: string; keep: number }): VersionPruneOutcome {
-  const dir = join(homedir(), '.local/share/monad/versions');
+  const dir = join(homedir(), '.local/share/elanous/versions');
   const entries = readdirSync(dir, { withFileTypes: true })
     .filter((d) => d.isDirectory())
     .map((d) => ({ name: d.name, mtimeMs: statSync(join(dir, d.name)).mtimeMs }));
@@ -290,7 +290,7 @@ export interface ReleaseUpdateDeps {
   out?: { log: (text: string) => void; error: (text: string) => void };
   alert?: (text: string) => void;
   pruneVersions?: (plan: { current: string; previous: string; keep: number; prefix: string }) => VersionPruneOutcome;
-  /** 릴리스 기준 URL 주입(시험) — 없으면 `MONAD_RELEASE_BASE` → 공개 저장소. */
+  /** 릴리스 기준 URL 주입(시험) — 없으면 `ELANOUS_RELEASE_BASE` → 공개 저장소. */
   releaseBase?: string;
 }
 
@@ -315,7 +315,7 @@ function pruneReleaseVersions(plan: { current: string; previous: string; keep: n
 export async function runReleaseUpdate(options: ReleaseUpdateOptions = {}, deps: ReleaseUpdateDeps = {}): Promise<SelfUpdateResult> {
   const out = deps.out ?? console;
   const finish = (result: SelfUpdateResult): SelfUpdateResult => {
-    if (options.alert && result.exitCode !== 0) (deps.alert ?? defaultAlert)(`⛔ monad self-update 실패(exit ${result.exitCode}): ${result.reason}`);
+    if (options.alert && result.exitCode !== 0) (deps.alert ?? defaultAlert)(`⛔ elanous self-update 실패(exit ${result.exitCode}): ${result.reason}`);
     if (options.json) out.log(JSON.stringify(result));
     else out.log(`release-update: installed=${result.installedVersion ?? 'none'} restarted=${result.restarted} reason=${result.reason}`);
     return result;
@@ -334,8 +334,8 @@ export async function runReleaseUpdate(options: ReleaseUpdateOptions = {}, deps:
   if (options.version !== undefined && (!version || !/^[0-9]+\.[0-9]+\.[0-9]+(?:-[0-9A-Za-z.-]+)?$/.test(version))) {
     return fail(2, `잘못된 릴리스 버전: ${options.version}`);
   }
-  // ⭐ 설치기와 같은 기준(`MONAD_RELEASE_BASE` · 없으면 공개 저장소 릴리스) — 사설 미러·시험 픽스처(file://)도 같은 길로 간다.
-  const base = (deps.releaseBase ?? process.env.MONAD_RELEASE_BASE ?? 'https://github.com/ElanvitalAI/monad/releases').replace(/\/+$/, '');
+  // ⭐ 설치기와 같은 기준(`ELANOUS_RELEASE_BASE` · 없으면 공개 저장소 릴리스) — 사설 미러·시험 픽스처(file://)도 같은 길로 간다.
+  const base = (deps.releaseBase ?? process.env.ELANOUS_RELEASE_BASE ?? 'https://github.com/ElanvitalAI/elanous/releases').replace(/\/+$/, '');
   const url = `${base}/${version ? `download/v${version}` : 'latest/download'}/install.sh`;
   let installer: string;
   try {
@@ -361,7 +361,7 @@ export async function runReleaseUpdate(options: ReleaseUpdateOptions = {}, deps:
     return { status: result.status, stderr: result.error?.message ?? result.stderr ?? '' };
   });
   try {
-    const install = run('bash', ['-s', '--', '--no-modify-path', '--prefix', prefix], prefix, installer, { MONAD_VERSION: version ?? '', MONAD_INSTALL_SOURCE: '' });
+    const install = run('bash', ['-s', '--', '--no-modify-path', '--prefix', prefix], prefix, installer, { ELANOUS_VERSION: version ?? '', ELANOUS_INSTALL_SOURCE: '' });
     if (install.status !== 0) return fail(1, `설치 실패: ${install.stderr.trim() || install.status}`);
     const metadata: unknown = JSON.parse(readFileSync(join(prefix, 'install.json'), 'utf8'));
     const installedVersion = typeof metadata === 'object' && metadata !== null && 'version' in metadata && typeof metadata.version === 'string'
@@ -380,7 +380,7 @@ export async function runReleaseUpdate(options: ReleaseUpdateOptions = {}, deps:
     const os = deps.os ?? platform();
     const command = os === 'darwin' ? 'launchctl' : os === 'linux' ? 'systemctl' : null;
     if (!command) return finish({ exitCode: 1, installedVersion, decision: null, restarted: false, prune, reason: `지원하지 않는 플랫폼: ${os}` });
-    const args = os === 'darwin' ? ['kickstart', '-k', `gui/${deps.uid ?? process.getuid?.() ?? userInfo().uid}/com.monad.nexus`] : ['--user', 'restart', 'monad-nexus'];
+    const args = os === 'darwin' ? ['kickstart', '-k', `gui/${deps.uid ?? process.getuid?.() ?? userInfo().uid}/com.elanous.nexus`] : ['--user', 'restart', 'elanous-nexus'];
     const restart = run(command, args, prefix);
     return finish({ exitCode: restart.status === 0 ? 0 : 1, installedVersion, decision: null, restarted: restart.status === 0, prune, reason: restart.status === 0 ? '재시작 완료' : `재시작 실패: ${restart.stderr.trim() || restart.status}` });
   } catch (error) {
@@ -418,7 +418,7 @@ export async function runUpdateForInstallation(
     || exists(join(holder, 'install.json'));
   if (!options.from && installed) {
     // ⛔⭐ 설치본이라고 전부 «릴리스» 설치본이 아니다 — 이 기계의 설치본은 체크아웃에서 깔렸고 `install.json.source` 가 그 경로다
-    //   (2026-09-25 실측: `~/.local/share/monad/install.json` source = pilot 체크아웃). 그것을 릴리스로 보내면 없는 공개판을 받으러 간다.
+    //   (2026-09-25 실측: `~/.local/share/elanous/install.json` source = pilot 체크아웃). 그것을 릴리스로 보내면 없는 공개판을 받으러 간다.
     //   ⇒ source 가 http(s) 면 릴리스 · 로컬 경로면 그 체크아웃으로 git 갱신 · 못 읽으면 멈춘다(추측하지 않는다).
     const source = readInstallSource(cliRoot, exists, deps.readText);
     if (source && /^https?:\/\/|^file:\/\//.test(source)) {
@@ -455,8 +455,8 @@ export async function runSelfUpdate(options: SelfUpdateOptions = {}, deps: SelfU
   const emit = (raw: SelfUpdateResult): SelfUpdateResult => {
     const withRelay: SelfUpdateResult = relayOutcome && !raw.relay ? { ...raw, relay: relayOutcome } : raw;
     const result: SelfUpdateResult = runnerOutcome && !withRelay.telegramRunner ? { ...withRelay, telegramRunner: runnerOutcome } : withRelay;
-    // ⭐ 셀프힐(되돌림) 로직이라 관측을 logs.db 에 남긴다 — /tmp 로그 한 줄로는 `monad logs` 가 못 본다.
-    //   조회: monad logs --category self-update --event finished
+    // ⭐ 셀프힐(되돌림) 로직이라 관측을 logs.db 에 남긴다 — /tmp 로그 한 줄로는 `elanous logs` 가 못 본다.
+    //   조회: elanous logs --category self-update --event finished
     try {
       debug.log('self-update', 'finished', {
         exitCode: result.exitCode, installedVersion: result.installedVersion, verdict: result.decision?.verdict ?? null,
@@ -467,7 +467,7 @@ export async function runSelfUpdate(options: SelfUpdateOptions = {}, deps: SelfU
         reason: result.reason, checkout,
       });
     } catch { /* 관측 실패가 갱신을 막지 않는다 */ }
-    if (options.alert && result.exitCode !== 0 && !alerted) alertOnce(`⛔ monad self-update 실패(exit ${result.exitCode}): ${result.reason}`);
+    if (options.alert && result.exitCode !== 0 && !alerted) alertOnce(`⛔ elanous self-update 실패(exit ${result.exitCode}): ${result.reason}`);
     if (options.json) out.log(JSON.stringify(result));
     else out.log(`self-update: installed=${result.installedVersion ?? 'none'} decision=${result.decision?.verdict ?? 'unknown'} restarted=${result.restarted} pruned=${result.prune ? (result.prune.skipped ? `skip(${result.prune.skipped})` : result.prune.removed.length) : 'n/a'} reason=${result.reason}`);
     return result;
@@ -498,7 +498,7 @@ export async function runSelfUpdate(options: SelfUpdateOptions = {}, deps: SelfU
     if (install.status !== 0) return emit({ exitCode: 1, installedVersion: null, decision, restarted: false, reason: `설치 실패: ${install.stderr}` });
     let installedVersion: string;
     try {
-      installedVersion = (deps.installedVersion ?? (() => basename(readlinkSync(join(homedir(), '.local/share/monad/current')))))();
+      installedVersion = (deps.installedVersion ?? (() => basename(readlinkSync(join(homedir(), '.local/share/elanous/current')))))();
     } catch (error) {
       return emit({ exitCode: 1, installedVersion: null, decision, restarted: false, reason: `설치판 확인 실패: ${String(error)}` });
     }
@@ -515,7 +515,7 @@ export async function runSelfUpdate(options: SelfUpdateOptions = {}, deps: SelfU
     try { debug.log('self-update', 'relay', { ...relay, installedVersion }); } catch { /* 관측 실패가 갱신을 막지 않는다 */ }
     runnerOutcome = updateTelegramRunner(decision, options.restart === true, deps, run, checkout);
     try { debug.log('self-update', 'telegram-runner', { ...runnerOutcome, installedVersion }); } catch { /* */ }
-    if (runnerOutcome.verdict === 'failed' && options.alert) alertOnce(`⚠️ monad self-update: 텔레그램 러너 재시작 실패 — ${runnerOutcome.reason}`);
+    if (runnerOutcome.verdict === 'failed' && options.alert) alertOnce(`⚠️ elanous self-update: 텔레그램 러너 재시작 실패 — ${runnerOutcome.reason}`);
     if (decision.verdict !== 'restart' || decision.exitCode !== 11) {
       return emit({ exitCode: 0, installedVersion, decision, restarted: false, prune, relay, reason: decision.exitCode === 2 ? `판정 모름: ${decision.reason ?? '이유 없음'}` : `판정 ${decision.verdict ?? 'unknown'}: 재시작 불필요` });
     }
@@ -523,7 +523,7 @@ export async function runSelfUpdate(options: SelfUpdateOptions = {}, deps: SelfU
     const os = deps.os ?? platform();
     const command = os === 'darwin' ? 'launchctl' : os === 'linux' ? 'systemctl' : null;
     if (!command) return emit({ exitCode: 1, installedVersion, decision, restarted: false, prune, reason: `지원하지 않는 플랫폼: ${os}` });
-    const args = os === 'darwin' ? ['kickstart', '-k', `gui/${deps.uid ?? process.getuid?.() ?? userInfo().uid}/com.monad.nexus`] : ['--user', 'restart', 'monad-nexus'];
+    const args = os === 'darwin' ? ['kickstart', '-k', `gui/${deps.uid ?? process.getuid?.() ?? userInfo().uid}/com.elanous.nexus`] : ['--user', 'restart', 'elanous-nexus'];
     try {
       const restarted = run(command, args, checkout);
       if (restarted.status !== 0) return emit({ exitCode: 1, installedVersion, decision, restarted: false, prune, reason: `재시작 실패: ${restarted.stderr}` });
@@ -535,12 +535,12 @@ export async function runSelfUpdate(options: SelfUpdateOptions = {}, deps: SelfU
       if (first.ok) return emit({ exitCode: 0, installedVersion, decision, restarted: true, prune, health: 'ok', reason: '재시작 완료 · 건강 확인' });
       const alert = alertOnce;
       if (first.unmeasured) {
-        alert(`⚠️ monad self-update: ${installedVersion} 재시작 뒤 건강을 «잴 수» 없었다(${first.reason ?? '이유 없음'}) — 되돌리지 않음. 확인: monad nexus show · monad doctor`);
+        alert(`⚠️ elanous self-update: ${installedVersion} 재시작 뒤 건강을 «잴 수» 없었다(${first.reason ?? '이유 없음'}) — 되돌리지 않음. 확인: elanous nexus show · elanous doctor`);
         return emit({ exitCode: 1, installedVersion, decision, restarted: true, prune, health: 'unmeasured', reason: `재시작 뒤 건강 측정 불가: ${first.reason ?? '이유 없음'} · 되돌리지 않음` });
       }
       const target = rollbackTarget((deps.listVersions ?? (() => readdirSync(VERSIONS_DIR())))(), decision.from ?? '', installedVersion);
       if (!target) {
-        alert(`⛔ monad self-update: ${installedVersion} 재시작 뒤 건강 실패(${first.reason ?? '이유 없음'}) — 되돌릴 판을 못 찾았습니다. 확인: monad doctor · launchctl print gui/$(id -u)/com.monad.nexus`);
+        alert(`⛔ elanous self-update: ${installedVersion} 재시작 뒤 건강 실패(${first.reason ?? '이유 없음'}) — 되돌릴 판을 못 찾았습니다. 확인: elanous doctor · launchctl print gui/$(id -u)/com.elanous.nexus`);
         return emit({ exitCode: 1, installedVersion, decision, restarted: true, prune, health: 'no-rollback-target', reason: `재시작 뒤 건강 실패: ${first.reason ?? '이유 없음'} · 되돌릴 판 없음` });
       }
       try { debug.log('self-update', 'rollback-start', { installedVersion, target, reason: first.reason ?? null }); } catch { /* */ }
@@ -548,7 +548,7 @@ export async function runSelfUpdate(options: SelfUpdateOptions = {}, deps: SelfU
       const again = run(command, args, checkout);
       const second = again.status === 0 ? await verify(versionCommit(target)) : { ok: false, reason: `재시작 실패: ${again.stderr}` };
       const health = second.ok ? 'rolled-back' as const : 'rollback-failed' as const;
-      alert(`${second.ok ? '⚠️' : '⛔'} monad self-update: ${installedVersion} 가 재시작 뒤 건강 실패(${first.reason ?? '이유 없음'}) → ${target} 로 되돌림 — ${second.ok ? '회복' : `회복 실패(${second.reason ?? ''})`}. 원인 확인 전까지 야간 설치는 같은 판을 다시 깔 수 있다.`);
+      alert(`${second.ok ? '⚠️' : '⛔'} elanous self-update: ${installedVersion} 가 재시작 뒤 건강 실패(${first.reason ?? '이유 없음'}) → ${target} 로 되돌림 — ${second.ok ? '회복' : `회복 실패(${second.reason ?? ''})`}. 원인 확인 전까지 야간 설치는 같은 판을 다시 깔 수 있다.`);
       return emit({ exitCode: 1, installedVersion, decision, restarted: true, prune, health, rolledBackTo: target, reason: `재시작 뒤 건강 실패: ${first.reason ?? '이유 없음'} → ${target} 로 되돌림(${second.ok ? '회복' : '회복 실패'})` });
     } catch (error) {
       return emit({ exitCode: 1, installedVersion, decision, restarted: false, prune, reason: `재시작 실패: ${String(error)}` });

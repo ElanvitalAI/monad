@@ -14,11 +14,11 @@ import {
   getGlobalWorkflowDir,
 } from '../src/workflow-runtime/index.js';
 import {
-  getMonadConfigDir,
-  getMonadConfigDirOverride,
-  setMonadConfigDir,
-  resetMonadConfigDir,
-} from '../src/monad-config-dir.js';
+  getElanousConfigDir,
+  getElanousConfigDirOverride,
+  setElanousConfigDir,
+  resetElanousConfigDir,
+} from '../src/elanous-config-dir.js';
 
 const VALID_YAML = `name: t-demo
 description: Test demo workflow
@@ -33,32 +33,32 @@ description: missing nodes
 
 let tmpRoot: string;
 let projectDir: string;
-let monadConfigOverride: string | undefined;
-let monadConfigDir: string | undefined;
-let monadStateDir: string | undefined;
+let elanousConfigOverride: string | undefined;
+let elanousConfigDir: string | undefined;
+let elanousStateDir: string | undefined;
 
-function restoreEnv(name: 'MONAD_CONFIG_DIR' | 'MONAD_STATE_DIR', value: string | undefined): void {
+function restoreEnv(name: 'ELANOUS_CONFIG_DIR' | 'ELANOUS_STATE_DIR', value: string | undefined): void {
   if (value === undefined) delete process.env[name];
   else process.env[name] = value;
 }
 
 beforeEach(() => {
-  monadConfigOverride = getMonadConfigDirOverride();
-  monadConfigDir = process.env.MONAD_CONFIG_DIR;
-  monadStateDir = process.env.MONAD_STATE_DIR;
-  resetMonadConfigDir();
-  delete process.env.MONAD_CONFIG_DIR;
-  delete process.env.MONAD_STATE_DIR;
+  elanousConfigOverride = getElanousConfigDirOverride();
+  elanousConfigDir = process.env.ELANOUS_CONFIG_DIR;
+  elanousStateDir = process.env.ELANOUS_STATE_DIR;
+  resetElanousConfigDir();
+  delete process.env.ELANOUS_CONFIG_DIR;
+  delete process.env.ELANOUS_STATE_DIR;
   tmpRoot = mkdtempSync(join(tmpdir(), 'wf-storage-'));
-  projectDir = join(tmpRoot, '.monad', 'workflows');
+  projectDir = join(tmpRoot, '.elanous', 'workflows');
   mkdirSync(projectDir, { recursive: true });
 });
 
 afterEach(() => {
-  resetMonadConfigDir();
-  if (monadConfigOverride !== undefined) setMonadConfigDir(monadConfigOverride);
-  restoreEnv('MONAD_CONFIG_DIR', monadConfigDir);
-  restoreEnv('MONAD_STATE_DIR', monadStateDir);
+  resetElanousConfigDir();
+  if (elanousConfigOverride !== undefined) setElanousConfigDir(elanousConfigOverride);
+  restoreEnv('ELANOUS_CONFIG_DIR', elanousConfigDir);
+  restoreEnv('ELANOUS_STATE_DIR', elanousStateDir);
   try {
     rmSync(tmpRoot, { recursive: true, force: true });
   } catch {
@@ -66,19 +66,19 @@ afterEach(() => {
   }
 });
 
-describe('getGlobalWorkflowDir · setMonadConfigDir honour', () => {
+describe('getGlobalWorkflowDir · setElanousConfigDir honour', () => {
   it('uses the central config-dir default when no override set', () => {
-    expect(getGlobalWorkflowDir()).toBe(join(getMonadConfigDir(), 'workflows'));
+    expect(getGlobalWorkflowDir()).toBe(join(getElanousConfigDir(), 'workflows'));
   });
 
-  it('lands under <override>/workflows when setMonadConfigDir is set', () => {
-    setMonadConfigDir('/tmp/monad-isolation-fixture');
-    expect(getGlobalWorkflowDir()).toBe('/tmp/monad-isolation-fixture/workflows');
+  it('lands under <override>/workflows when setElanousConfigDir is set', () => {
+    setElanousConfigDir('/tmp/elanous-isolation-fixture');
+    expect(getGlobalWorkflowDir()).toBe('/tmp/elanous-isolation-fixture/workflows');
   });
 
   it('trims a stray newline in the override', () => {
-    setMonadConfigDir('/tmp/monad-trim\n');
-    expect(getGlobalWorkflowDir()).toBe('/tmp/monad-trim/workflows');
+    setElanousConfigDir('/tmp/elanous-trim\n');
+    expect(getGlobalWorkflowDir()).toBe('/tmp/elanous-trim/workflows');
   });
 });
 
@@ -145,7 +145,7 @@ describe('discoverWorkflows', () => {
   it('returns empty array when no workflows exist', () => {
     rmSync(projectDir, { recursive: true, force: true });
     // Pass a temp HOME so global / builtin don't leak in. We can't
-    // easily isolate the real ~/.monad — but the *project* dir under
+    // easily isolate the real ~/.elanous — but the *project* dir under
     // tmpRoot is empty, and shadowed global/builtin entries (if any)
     // are accepted as long as project-only doesn't crash.
     const list = discoverWorkflows({ cwd: tmpRoot });

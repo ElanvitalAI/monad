@@ -172,7 +172,7 @@ describe('editRemoteFile end-to-end', () => {
     }, deps);
     expect(r.ok).toBe(true);
     if (r.ok) expect(r.uploadedBytes).toBe(11);
-    expect(launchedPath).toContain('monad-ssh');
+    expect(launchedPath).toContain('elanous-ssh');
   });
 
   test('editor failure skips upload', async () => {

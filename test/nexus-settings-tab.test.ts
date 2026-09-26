@@ -15,9 +15,9 @@ let tmpRoot: string;
 let prevEnv: string | undefined;
 
 beforeEach(() => {
-  tmpRoot = mkdtempSync(joinPath(tmpdir(), 'monad-nexus-alpha-prime-'));
-  prevEnv = process.env.MONAD_NEXUS_DIR;
-  process.env.MONAD_NEXUS_DIR = tmpRoot;
+  tmpRoot = mkdtempSync(joinPath(tmpdir(), 'elanous-nexus-alpha-prime-'));
+  prevEnv = process.env.ELANOUS_NEXUS_DIR;
+  process.env.ELANOUS_NEXUS_DIR = tmpRoot;
   // Force a reload because other nexus test files clear the registry
   // singleton in their teardown — relying on loadAllBuiltins's
   // 'already loaded' guard would leave us with an empty registry.
@@ -25,8 +25,8 @@ beforeEach(() => {
 });
 
 afterEach(() => {
-  if (prevEnv === undefined) delete process.env.MONAD_NEXUS_DIR;
-  else process.env.MONAD_NEXUS_DIR = prevEnv;
+  if (prevEnv === undefined) delete process.env.ELANOUS_NEXUS_DIR;
+  else process.env.ELANOUS_NEXUS_DIR = prevEnv;
   try { rmSync(tmpRoot, { recursive: true, force: true }); } catch { /* ignore */ }
 });
 

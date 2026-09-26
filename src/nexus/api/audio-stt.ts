@@ -6,7 +6,7 @@
 // source uses this to auto-fill `ShowroomAudioContext.transcript` when
 // the user picks an audio file.
 //
-// Backend reuse: monad TUI's voice dictation already runs OpenAI
+// Backend reuse: elanous TUI's voice dictation already runs OpenAI
 // Whisper (`whisper-1`) — same provider abstraction, same
 // OPENAI_API_KEY, same cost posture (~$0.006/min for whisper-1).
 // `whisper-cpp` / local STT is a future PR (provider enum already
@@ -57,7 +57,7 @@ function corsPreflight(): Response {
 /** Resolve the provider id from env > opts > default. Exported for
  *  tests so the resolution table is locked. */
 export function resolveAudioSttProviderId(opts: AudioSttRouteOpts): STTProviderId {
-  const env = process.env.MONAD_AUDIO_STT_PROVIDER;
+  const env = process.env.ELANOUS_AUDIO_STT_PROVIDER;
   if (env === 'openai-whisper' || env === 'openai-realtime' ||
       env === 'elevenlabs-scribe' || env === 'whisper-cpp') {
     return env;

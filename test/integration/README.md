@@ -1,17 +1,17 @@
 # Tier 1 e2e smoke (M7 · 2026-04-28)
 
 Tier 1 시나리오 (S1-S7) 의 자동화 진입점. 7 file 모두 환경 변수
-`MONAD_CODEX_TIER1_SMOKE=1` 일 때만 실행 — 평소 `bun test` 회귀에
+`ELANOUS_CODEX_TIER1_SMOKE=1` 일 때만 실행 — 평소 `bun test` 회귀에
 영향 없음.
 
 ## 수동 실행
 
 ```bash
 # 풀 Tier 1 suite
-MONAD_CODEX_TIER1_SMOKE=1 bun test test/integration/acp-tier1-*.test.ts
+ELANOUS_CODEX_TIER1_SMOKE=1 bun test test/integration/acp-tier1-*.test.ts
 
 # 단일 시나리오
-MONAD_CODEX_TIER1_SMOKE=1 bun test test/integration/acp-tier1-s4-codex-app-server.test.ts
+ELANOUS_CODEX_TIER1_SMOKE=1 bun test test/integration/acp-tier1-s4-codex-app-server.test.ts
 ```
 
 ## 시나리오 매트릭스
@@ -26,7 +26,7 @@ MONAD_CODEX_TIER1_SMOKE=1 bun test test/integration/acp-tier1-s4-codex-app-serve
 | **S4** | **codex-app-server real binary** | ✅ active | initialize handshake + capability echo |
 | **S5** | multi-backend session 격리 | stub | 2 backend concurrent + session bleed check |
 | **S6** | LLM-driven background turn | stub | task #8 (holistic) 후 작성 |
-| **S7** | monad-as-server (MT5b) echo | stub | acp/server.ts 회귀 검증 |
+| **S7** | elanous-as-server (MT5b) echo | stub | acp/server.ts 회귀 검증 |
 
 S4 는 본 sprint 3 의 **active scenario** — 실 codex binary 로
 sprint 1+2+3 capability flip (planMode / fileOps / loadSession / ui)
@@ -45,7 +45,7 @@ skip — 실패가 아닌 skip 으로 분류되어 회귀 noise 0.
 ## CI 등록
 
 본 repo 는 현재 GitHub Actions workflow 미사용. Tier 1 smoke 는 사용자
-manual `MONAD_CODEX_TIER1_SMOKE=1 bun test test/integration/...` 로
+manual `ELANOUS_CODEX_TIER1_SMOKE=1 bun test test/integration/...` 로
 실행한다. CI 도입 시 본 suite 가 첫 후보 — `tier1SkipReason()` 이
 secret/binary 부재 시 clean skip 처리하므로 nightly cron 등록만 남음.
 

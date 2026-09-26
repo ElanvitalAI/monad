@@ -1,4 +1,4 @@
-// ── Presentation track P1 · MonadState tree + Store types ──
+// ── Presentation track P1 · ElanousState tree + Store types ──
 //
 // Zustand-shape vanilla store · React dep 0. Single source of truth for
 // cross-cutting UI state (theme · focus · modal stack · widget instances
@@ -70,7 +70,7 @@ export type StoreInitializer<S> = (
   store: Store<S>,
 ) => S;
 
-// ── MonadState tree (bridge 전제) ─────────────────────────
+// ── ElanousState tree (bridge 전제) ─────────────────────────
 //
 // 본 P1 번들은 **tree 선언 + 기본 인스턴스** 만 제공. 실제 wiring (대시보드
 // 가 읽고 쓰기) 는 후속 번들 P1.5/P1.6/P1.7 에서 ContextKeys / widget-host /
@@ -90,7 +90,7 @@ export interface UISlice {
    *  Dashboard publishes via `deriveViewMode(signals)` at each
    *  flag-change junction; `bridgeContextKeysToStore` projects to
    *  `viewMode.is*` context keys. Optional on UISlice for back-compat
-   *  with pre-U-0 `defaultMonadState()` consumers that don't know
+   *  with pre-U-0 `defaultElanousState()` consumers that don't know
    *  about the slice; treat absence as `{kind: 'idle'}`. */
   viewMode?: import('../input-core/view-mode.js').ViewMode;
   /** U-1 · currently-focused widget id · widget-host bridge target.
@@ -114,8 +114,8 @@ export interface WidgetSlice {
  *  `UISlice` for back-compat with pre-U-1 store consumers. */
 export type FocusedWidgetId = string | null;
 
-/** MonadState · 전역 트리. 본 P1 번들은 "이 shape 이 있다" 만 선언. */
-export interface MonadState {
+/** ElanousState · 전역 트리. 본 P1 번들은 "이 shape 이 있다" 만 선언. */
+export interface ElanousState {
   readonly ui: UISlice;
   readonly widgets: Record<string, WidgetSlice>;
   /** Plugin-owned slices · flat namespace · isolation 보장. */
@@ -125,7 +125,7 @@ export interface MonadState {
 }
 
 /** Default empty state · 테스트 + 초기 mount 용. */
-export function defaultMonadState(): MonadState {
+export function defaultElanousState(): ElanousState {
   return {
     ui: {
       themeName: 'default',

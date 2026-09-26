@@ -159,9 +159,9 @@ function makeSpawnStubs(opts: { failAtIndex?: number; failAcpAtIndex?: number } 
   };
 }
 
-/** PR-CL7 (C.3 · 2026-04-29) — most legacy tests assume codex / monad
+/** PR-CL7 (C.3 · 2026-04-29) — most legacy tests assume codex / elanous
  *  spawn through the PTY path. After CL6 introduced the brand × lane
- *  matrix (codex/monad default to ACP), tests need to either provide
+ *  matrix (codex/elanous default to ACP), tests need to either provide
  *  an ACP stub or pin transportPref to 'pty'. The latter is more
  *  explicit and keeps each legacy assertion's PTY intent intact, so
  *  this helper applies the pin to every member. */
@@ -239,7 +239,7 @@ describe('buildAgentRoom · happy path', () => {
           { brandRef: 'codex' },
           { brandRef: 'claude' },
           { brandRef: 'gemini' },
-          // PR-CL7 — `monad` is ACP-only (LANE_MATRIX_BY_BRAND), so a
+          // PR-CL7 — `elanous` is ACP-only (LANE_MATRIX_BY_BRAND), so a
           // PTY-only legacy assertion needs another brand. local-llm
           // defaults to PTY which preserves the original "1 init + 3
           // into-pane" expectation.
@@ -579,17 +579,17 @@ describe('buildAgentRoom · initial focus', () => {
 // ── PR-CL7 (C.3 · 2026-04-29) — Mixed-lane room ─────────────────────
 //
 // Verifies that an agent-room composed of brands with different default
-// lanes routes each member through the correct spawn entry. Codex/monad
+// lanes routes each member through the correct spawn entry. Codex/elanous
 // default to ACP (CL6 lane matrix); claude/gemini default to PTY. The
-// expected outcome for `/agent-room 4 codex claude gemini monad` is:
+// expected outcome for `/agent-room 4 codex claude gemini elanous` is:
 //
 //   member 0 (codex)  → spawnAcpInitial
 //   member 1 (claude) → spawnIntoPane (PTY split)
 //   member 2 (gemini) → spawnIntoPane (PTY split)
-//   member 3 (monad)  → spawnAcpIntoPane (ACP split)
+//   member 3 (elanous)  → spawnAcpIntoPane (ACP split)
 
 describe('buildAgentRoom · mixed-lane (PR-CL7)', () => {
-  test('codex/monad default to ACP · claude/gemini default to PTY · room mounts via correct spawners', async () => {
+  test('codex/elanous default to ACP · claude/gemini default to PTY · room mounts via correct spawners', async () => {
     const registry = new AgentRoomRegistry();
     const stubs = makeSpawnStubs();
     const { room, resolvedBrands, warnings } = await buildAgentRoom(
@@ -599,7 +599,7 @@ describe('buildAgentRoom · mixed-lane (PR-CL7)', () => {
           { brandRef: 'codex' },
           { brandRef: 'claude' },
           { brandRef: 'gemini' },
-          { brandRef: 'monad' },
+          { brandRef: 'elanous' },
         ],
         layoutMode: 'single-vw',
       },
@@ -624,9 +624,9 @@ describe('buildAgentRoom · mixed-lane (PR-CL7)', () => {
     expect(stubs.log.intoPane).toHaveLength(2);
     expect(stubs.log.intoPane[0]?.brand).toBe('claude');
     expect(stubs.log.intoPane[1]?.brand).toBe('gemini');
-    // Member 3 (monad) → ACP split.
+    // Member 3 (elanous) → ACP split.
     expect(stubs.log.acpIntoPane).toHaveLength(1);
-    expect(stubs.log.acpIntoPane[0]?.backendId).toBe('monad');
+    expect(stubs.log.acpIntoPane[0]?.backendId).toBe('elanous');
     // resolvedBrands.laneKind reflects the matrix.
     expect(resolvedBrands.map((r) => r.laneKind)).toEqual(['acp', 'pty', 'pty', 'acp']);
     expect(warnings).toEqual([]);
@@ -641,7 +641,7 @@ describe('buildAgentRoom · mixed-lane (PR-CL7)', () => {
           { brandRef: 'codex' },
           { brandRef: 'claude' },
           { brandRef: 'gemini' },
-          { brandRef: 'monad' },
+          { brandRef: 'elanous' },
         ],
         layoutMode: 'single-vw',
       },
@@ -658,7 +658,7 @@ describe('buildAgentRoom · mixed-lane (PR-CL7)', () => {
       },
     );
     // 4-quad ratio pattern: split index 0 = 1/4, 1 = 1/3, 2 = 1/2.
-    // claude (split 0) + gemini (split 1) go through PTY; monad (split 2)
+    // claude (split 0) + gemini (split 1) go through PTY; elanous (split 2)
     // through ACP. The ratio sequence is shared because the room-builder
     // computes it from the member index regardless of lane.
     expect(stubs.log.intoPane[0]?.ratio).toBeCloseTo(1 / 4, 6);

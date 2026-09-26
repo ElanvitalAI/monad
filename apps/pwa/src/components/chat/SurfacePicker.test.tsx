@@ -7,8 +7,8 @@
 // Bun's PWA test env has no React Testing Library, so we drive the
 // component through react-dom/server's renderToStaticMarkup and grep
 // for structural markers a future regression would lose:
-//   - data-monad-surface-picker on the button
-//   - data-monad-surface-current carries the active kind label
+//   - data-elanous-surface-picker on the button
+//   - data-elanous-surface-current carries the active kind label
 //   - aria-label hints at the next target
 //   - cycle math (nextSurfacePreference) covers the full rotation
 
@@ -65,7 +65,7 @@ describe('SurfacePicker — render contract (cycle button)', () => {
 
   test('renders a single button with the surface-picker data marker', () => {
     const html = renderToStaticMarkup(<SurfacePicker />);
-    expect(html).toMatch(/data-monad-surface-picker/);
+    expect(html).toMatch(/data-elanous-surface-picker/);
     // Single button — no role="radiogroup"/"radio" remnants.
     expect(html).not.toMatch(/role="radiogroup"/);
     expect(html).not.toMatch(/role="radio"/);
@@ -73,14 +73,14 @@ describe('SurfacePicker — render contract (cycle button)', () => {
 
   test('default state surfaces "default" via data marker + label text', () => {
     const html = renderToStaticMarkup(<SurfacePicker />);
-    expect(html).toMatch(/data-monad-surface-current="default"/);
+    expect(html).toMatch(/data-elanous-surface-current="default"/);
     expect(html).toMatch(/>default</);
   });
 
   test('stored "chat" preference renders the chat surface as current', () => {
     env.store[SURFACE_PREFERENCE_KEY] = 'chat';
     const html = renderToStaticMarkup(<SurfacePicker />);
-    expect(html).toMatch(/data-monad-surface-current="chat"/);
+    expect(html).toMatch(/data-elanous-surface-current="chat"/);
     expect(html).toMatch(/>chat</);
     // The hover hint advertises the next target in the cycle.
     expect(html).toMatch(/aria-label="[^"]*chat[^"]*switch to webterm/);
@@ -89,7 +89,7 @@ describe('SurfacePicker — render contract (cycle button)', () => {
   test('setSurfacePreference("webterm") flips the rendered current marker', () => {
     setSurfacePreference('webterm');
     const html = renderToStaticMarkup(<SurfacePicker />);
-    expect(html).toMatch(/data-monad-surface-current="webterm"/);
+    expect(html).toMatch(/data-elanous-surface-current="webterm"/);
     expect(html).toMatch(/>webterm</);
   });
 

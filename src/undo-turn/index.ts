@@ -63,14 +63,14 @@ export function endTurn(): void {
 }
 
 /** Disable snapshotting for the remainder of the session. Used by
- *  the `MONAD_UNDO=off` bootflag and the `/undo off` slash. */
+ *  the `ELANOUS_UNDO=off` bootflag and the `/undo off` slash. */
 export function setUndoDisabled(disabled: boolean): void {
   undoDisabledForSession = disabled;
 }
 
 export function isUndoDisabled(): boolean {
   if (undoDisabledForSession) return true;
-  const v = (process.env.MONAD_UNDO ?? '').toLowerCase();
+  const v = (process.env.ELANOUS_UNDO ?? '').toLowerCase();
   return v === 'off' || v === '0' || v === 'false';
 }
 

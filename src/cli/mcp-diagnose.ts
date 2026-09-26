@@ -1,4 +1,4 @@
-// `monad mcp diagnose [serverId]` — PR3 (D · 2026-05-13) deep
+// `elanous mcp diagnose [serverId]` — PR3 (D · 2026-05-13) deep
 // trace for external MCP servers (`xcrun mcpbridge`,
 // `xcodebuildmcp`, …). Reproduces what `register-mcp-clients` does on
 // boot but in a single-shot, verbose form: spawn the child, do the
@@ -7,7 +7,7 @@
 //
 // The signal we're after is "where does daemon-side boot differ from
 // a manual stdin trace?" — when a user reports `xcrun mcpbridge` hang
-// inside `monad nexus run` but `echo …| xcrun mcpbridge` answers
+// inside `elanous nexus run` but `echo …| xcrun mcpbridge` answers
 // fine, this command lets them spawn under both the current shell
 // env AND a stripped env approximating bg-launch child, then diff
 // the two outputs.
@@ -83,14 +83,14 @@ export async function runMcpDiagnose(opts: McpDiagnoseOpts = {}): Promise<McpDia
     : allServers.filter((s) => s.enabled !== false);
   const timeout = opts.perCallTimeoutMs ?? 10_000;
 
-  out.log(`monad mcp diagnose — ${filtered.length} server${filtered.length === 1 ? '' : 's'} to probe`);
+  out.log(`elanous mcp diagnose — ${filtered.length} server${filtered.length === 1 ? '' : 's'} to probe`);
   out.log('');
 
   const perServer: Record<string, McpDiagnosePerServer> = {};
 
   if (opts.serverId && filtered.length === 0) {
     out.error(`✗ server id '${opts.serverId}' not found in user-config mcp.servers[]`);
-    out.error('  Try `monad config get mcp.servers` to list available ids.');
+    out.error('  Try `elanous config get mcp.servers` to list available ids.');
     perServer[opts.serverId] = { status: 'not-found', stderrLines: [] };
     return { exitCode: 1, perServer };
   }

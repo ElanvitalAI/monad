@@ -1,6 +1,6 @@
 // ── ref-grounding — 로컬 canonical 소스 자동 그라운딩 (2026-07-19) ──
 //
-// 갭(실증): 골이 참조 이름(lazycodex·ouroboros·mattpocock 등)만 주면, monad 이
+// 갭(실증): 골이 참조 이름(lazycodex·ouroboros·mattpocock 등)만 주면, elanous 이
 // 로컬 `~/source/ref/<name>/`(대표 canonical 사본)이 있는 줄 모르고 WebSearch/
 // GitHub raw 로 우회한다 — 원문 대신 요약이거나, 로컬보다 느리고 lossy.
 // → 골 토큰이 ref 루트 아래 **실존 디렉터리**면 그 경로를 주입해 "웹 대신 이걸

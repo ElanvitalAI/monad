@@ -16,7 +16,7 @@ except ImportError:
     print("pykrx 미설치 — pip install pykrx", file=sys.stderr)
     sys.exit(1)
 
-DB = os.path.expanduser("~/.monad/conatus/screener.db")
+DB = os.path.expanduser("~/.elanous/conatus/screener.db")
 years = int(sys.argv[1]) if len(sys.argv) > 1 else 2
 codes = [ln.strip() for ln in sys.stdin if ln.strip()]
 if not codes:

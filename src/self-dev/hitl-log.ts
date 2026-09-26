@@ -3,13 +3,13 @@
  *
  * 무인 self-dev 루프에서 사람에게 올라가는 결정(escalation·parked 리뷰·수리 신호)과 그
  * 결정을 **두 곳에 남긴다**:
- *   ① logs.db 관측 — `monad logs --category self-dev.hitl` 로 회고(언제 무슨 결정이
+ *   ① logs.db 관측 — `elanous logs --category self-dev.hitl` 로 회고(언제 무슨 결정이
  *      올라왔고 무엇으로 결정됐나). 값싸고 상시.
- *   ② monad 기억 — 반복되는 HITL 패턴(특히 system 수리 신호)을 self-awareness 에 주입해
+ *   ② elanous 기억 — 반복되는 HITL 패턴(특히 system 수리 신호)을 self-awareness 에 주입해
  *      **패턴 학습**(다음엔 자동화 후보인지·러버스탬프였는지). significant 만.
  *
  * 북극성 HITL 철학(개수↓·품질↑)의 계측 기반 — 회고로 "이 HITL 이 진짜 결정이었나"를 본다.
- * Cf. [[ROADMAP-monad-is-all-pty-unified-autonomy-2026-07-21]] G7·§0.
+ * Cf. [[ROADMAP-elanous-is-all-pty-unified-autonomy-2026-07-21]] G7·§0.
  */
 import { debug } from '../debug/log.js';
 
@@ -27,7 +27,7 @@ export interface HitlEvent {
   detail?: Record<string, unknown>;
 }
 
-/** ① logs.db 관측 — 회고 가능(`monad logs --category self-dev.hitl`). fail-soft. */
+/** ① logs.db 관측 — 회고 가능(`elanous logs --category self-dev.hitl`). fail-soft. */
 export function recordHitlEvent(ev: HitlEvent): void {
   try {
     debug.log('self-dev.hitl', ev.kind, {
@@ -46,7 +46,7 @@ export type SelfMemoryInject = (input: {
 }) => Promise<unknown>;
 
 /**
- * ② monad 기억 주입 — 반복 HITL 패턴을 self-awareness 에 넣어 패턴 학습. significant
+ * ② elanous 기억 주입 — 반복 HITL 패턴을 self-awareness 에 넣어 패턴 학습. significant
  * (system 수리 신호·중요 결정)만. fire-and-forget·fail-soft(기억 주입 실패가 루프 무영향).
  * inject 미주입 시 lazy import(prod)·테스트는 fake 주입.
  */

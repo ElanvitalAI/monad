@@ -20,7 +20,7 @@ let tmpDir = '';
 let storePath = '';
 
 beforeEach(() => {
-  tmpDir = mkdtempSync(joinPath(tmpdir(), 'monad-channel-bindings-'));
+  tmpDir = mkdtempSync(joinPath(tmpdir(), 'elanous-channel-bindings-'));
   storePath = joinPath(tmpDir, 'channel-bindings.json');
 });
 afterEach(() => {

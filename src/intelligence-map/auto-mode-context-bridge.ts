@@ -34,7 +34,7 @@ import {
 
 export interface StartBridgeOpts {
   /** Test seam — inject a config loader so fixtures don't depend on
-   *  the real ~/.monad/cost-config.json. */
+   *  the real ~/.elanous/cost-config.json. */
   loadConfig?: () => ReturnType<typeof loadCostConfig>;
   /** Test seam — inject a cost snapshot builder. */
   snapshot?: () => ReturnType<typeof snapshotCost>;

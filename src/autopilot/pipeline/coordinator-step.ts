@@ -29,7 +29,7 @@ export interface CoordinatorStepOutput {
   updates: Array<{ channel: string; value: unknown }>;
   /** ★ 제1원칙 관측(자기인지) — caller 가 observeCoordinator(event, missionId, data)로 방출할 대상.
    *  순수성 유지를 위해 스텝은 관측을 "산출"만 하고 I/O(방출)는 caller 가. 중앙 State 가 루프를 통과하는
-   *  매스텝을 mission.coordinator.* 로 남겨 `monad logs --category mission.coordinator` 로 회상 가능. */
+   *  매스텝을 mission.coordinator.* 로 남겨 `elanous logs --category mission.coordinator` 로 회상 가능. */
   observations: Array<{ event: string; data: Record<string, unknown> }>;
 }
 

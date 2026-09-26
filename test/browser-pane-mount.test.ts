@@ -14,7 +14,7 @@ import {
 import { BrowserPaneRegistry } from '../src/browser-pane/registry.js';
 import { DEFAULT_THEME_TOKENS } from '../src/theme/tokens.js';
 
-const ROOT = join(tmpdir(), `monad-browser-pane-mount-${Date.now()}`);
+const ROOT = join(tmpdir(), `elanous-browser-pane-mount-${Date.now()}`);
 const CHILD = join(ROOT, 'child');
 const FILE_A = join(ROOT, 'a.txt');
 

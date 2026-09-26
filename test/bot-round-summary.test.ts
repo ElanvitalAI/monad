@@ -8,7 +8,7 @@ import { describeStepDrift, summarizeBotRound } from '../src/bots/round-summary.
 /** 📏 실물 `RESULT.json`(2026-09-01 investor 회차)에서 «모양만» 옮겼다. */
 const REAL = {
   personaId: 'investor', steps: 4, failed: 0, ok: true, source: 'cron',
-  runId: 'botlab-investor-2026-09-01T22-40-01-741Z', stateRoot: '/Users/x/.monad',
+  runId: 'botlab-investor-2026-09-01T22-40-01-741Z', stateRoot: '/Users/x/.elanous',
   finishedAtUtc: '2026-09-01T22:40:19.940Z',
   tree: { cwd: '/x', head: '142505185', behindMain: 0 },
   results: [

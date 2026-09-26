@@ -1,23 +1,23 @@
-// monad/ask/* ACP extension — cross-surface AskUserQuestion wire.
+// elanous/ask/* ACP extension — cross-surface AskUserQuestion wire.
 //
 // **2026-05-13 정정**: SDK v0.14.1 의 양방향 `extMethod` / `extNotification`
-// 활용. 초안 (envelope-in-text 패턴 · monad/ui/*, monad/feedback/* sibling) 폐기.
+// 활용. 초안 (envelope-in-text 패턴 · elanous/ui/*, elanous/feedback/* sibling) 폐기.
 // 근거: chunk boundary safety + LLM history 0-leak + SDK correlation 자동 +
 // Codex `request_user_input` wire 정합.
 // 자세한 결정 record: docs/research/RESEARCH-ask-user-question-cross-surface-
 // 2026-05-13.md §3 Axis 1 + §5 D1.
 //
 // Wire:
-//   server → client request  : connection.extMethod('monad/ask/request', payload)
+//   server → client request  : connection.extMethod('elanous/ask/request', payload)
 //                              → AskUserQuestionResult (Promise)
-//   server → client cancel   : connection.extNotification('monad/ask/cancel', payload)
+//   server → client cancel   : connection.extNotification('elanous/ask/cancel', payload)
 //                              → fire-and-forget
 //
 // Capability negotiation:
-//   client 가 _meta.monad.ask = { askUserQuestion: true } 선언 시 server 가 push.
+//   client 가 _meta.elanous.ask = { askUserQuestion: true } 선언 시 server 가 push.
 //   미선언 peer 에는 dispatcher 가 fallthrough (TUI deps → resolver → 구조화 error).
 //
-// 기존 3 namespace (monad/ui/* · monad/term/* · monad/feedback/*) 의 envelope-
+// 기존 3 namespace (elanous/ui/* · elanous/term/* · elanous/feedback/*) 의 envelope-
 // in-text 패턴은 production 검증 + ROI 낮음으로 본 사이클 변경 0. 후속 backlog
 // 항목 ("ext-migration: 3 namespace extMethod 통일") 으로 분리.
 
@@ -28,31 +28,31 @@ import type {
 
 // ── method names ──────────────────────────────────────────────────
 
-/** Server → client RPC. Payload = MonadAskRequestPayload · result =
+/** Server → client RPC. Payload = ElanousAskRequestPayload · result =
  *  AskUserQuestionResult. SDK 가 JSON-RPC id 매칭 자동 + Promise 자동 resolve. */
-export const MONAD_ASK_REQUEST_METHOD = 'monad/ask/request' as const;
+export const ELANOUS_ASK_REQUEST_METHOD = 'elanous/ask/request' as const;
 
-/** Server → client notification. Payload = MonadAskCancelPayload.
+/** Server → client notification. Payload = ElanousAskCancelPayload.
  *  Server 가 turn abort 또는 session/cancel 받았을 때 push. 클라이언트는
  *  open sheet 가 매칭되면 dismiss · 매칭 없으면 무해히 drop. 서버측 pending
  *  Promise 는 별 path 로 reject (SDK 는 timeout/cancel 없으므로). */
-export const MONAD_ASK_CANCEL_METHOD = 'monad/ask/cancel' as const;
+export const ELANOUS_ASK_CANCEL_METHOD = 'elanous/ask/cancel' as const;
 
-export type MonadAskMethod = typeof MONAD_ASK_REQUEST_METHOD | typeof MONAD_ASK_CANCEL_METHOD;
+export type ElanousAskMethod = typeof ELANOUS_ASK_REQUEST_METHOD | typeof ELANOUS_ASK_CANCEL_METHOD;
 
 // ── payload types ─────────────────────────────────────────────────
 
 /** Server → client request payload. `id` 는 server-side correlation /
  *  telemetry 용 (debug.log · audit) — SDK 의 JSON-RPC id 와 다른 별 식별자.
  *  pending Promise 매칭에는 사용하지 않음 (SDK 가 자동). */
-export interface MonadAskRequestPayload {
+export interface ElanousAskRequestPayload {
   id: string;
   request: AskUserQuestionRequest;
 }
 
 /** Server → client cancel notification payload. 클라이언트는 open sheet 의
  *  내부 id (server push 시 받은 동일 id) 와 매칭 → dismiss. */
-export interface MonadAskCancelPayload {
+export interface ElanousAskCancelPayload {
   id: string;
   /** Optional human-readable reason. Logged on receiver side; not
    *  required for the cancel path. */
@@ -66,7 +66,7 @@ export interface MonadAskCancelPayload {
 // 본 파일 lightweight 유지). 실패 시 null 반환 — caller 가 RequestError.invalidParams
 // 던지도록.
 
-export function parseMonadAskRequestPayload(raw: unknown): MonadAskRequestPayload | null {
+export function parseElanousAskRequestPayload(raw: unknown): ElanousAskRequestPayload | null {
   if (!raw || typeof raw !== 'object') return null;
   const o = raw as { id?: unknown; request?: unknown };
   if (typeof o.id !== 'string' || !o.id) return null;
@@ -78,7 +78,7 @@ export function parseMonadAskRequestPayload(raw: unknown): MonadAskRequestPayloa
   return { id: o.id, request: o.request as AskUserQuestionRequest };
 }
 
-export function parseMonadAskCancelPayload(raw: unknown): MonadAskCancelPayload | null {
+export function parseElanousAskCancelPayload(raw: unknown): ElanousAskCancelPayload | null {
   if (!raw || typeof raw !== 'object') return null;
   const o = raw as { id?: unknown; reason?: unknown };
   if (typeof o.id !== 'string' || !o.id) return null;
@@ -122,7 +122,7 @@ export function coerceAskResult(raw: unknown): AskUserQuestionResult {
 
 // ── capabilities ─────────────────────────────────────────────────
 
-export interface MonadAskClientCapabilities {
+export interface ElanousAskClientCapabilities {
   /** True when the peer can render a structured AskUserQuestion sheet
    *  natively. Daemon-side resolver gates emission on this — peers
    *  without the capability fall through to TUI deps → resolver →
@@ -130,31 +130,31 @@ export interface MonadAskClientCapabilities {
   askUserQuestion: boolean;
 }
 
-export const MONAD_ASK_DISABLED: MonadAskClientCapabilities = {
+export const ELANOUS_ASK_DISABLED: ElanousAskClientCapabilities = {
   askUserQuestion: false,
 };
 
-export const MONAD_ASK_FULL: MonadAskClientCapabilities = {
+export const ELANOUS_ASK_FULL: ElanousAskClientCapabilities = {
   askUserQuestion: true,
 };
 
-/** Parse the `_meta.monad.ask` capability blob from ClientCapabilities.
+/** Parse the `_meta.elanous.ask` capability blob from ClientCapabilities.
  *  Missing / malformed → all-false (conservative, matches sibling
- *  `parseMonadUiCapabilities`). */
-export function parseMonadAskCapabilities(
+ *  `parseElanousUiCapabilities`). */
+export function parseElanousAskCapabilities(
   meta: unknown,
-): MonadAskClientCapabilities {
-  if (!meta || typeof meta !== 'object') return { ...MONAD_ASK_DISABLED };
-  const m = meta as { monad?: { ask?: Record<string, unknown> } };
-  const ask = m.monad?.ask;
-  if (!ask || typeof ask !== 'object') return { ...MONAD_ASK_DISABLED };
+): ElanousAskClientCapabilities {
+  if (!meta || typeof meta !== 'object') return { ...ELANOUS_ASK_DISABLED };
+  const m = meta as { elanous?: { ask?: Record<string, unknown> } };
+  const ask = m.elanous?.ask;
+  if (!ask || typeof ask !== 'object') return { ...ELANOUS_ASK_DISABLED };
   return {
     askUserQuestion: ask.askUserQuestion === true,
   };
 }
 
-export function emitMonadAskCapabilitiesMeta(
-  caps: MonadAskClientCapabilities,
-): { monad: { ask: MonadAskClientCapabilities } } {
-  return { monad: { ask: { ...caps } } };
+export function emitElanousAskCapabilitiesMeta(
+  caps: ElanousAskClientCapabilities,
+): { elanous: { ask: ElanousAskClientCapabilities } } {
+  return { elanous: { ask: { ...caps } } };
 }

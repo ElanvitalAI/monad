@@ -2,7 +2,7 @@
 //
 // Drives the linear executor with in-memory dispatchers so step
 // sequencing, handoff, and onError policies can be exercised without
-// hitting the filesystem shell / LLM dispatcher. `.monad/workflows/`
+// hitting the filesystem shell / LLM dispatcher. `.elanous/workflows/`
 // handoff file writes use tmp dirs that get auto-cleaned by the OS.
 
 import { describe, test, expect, beforeEach } from 'bun:test';
@@ -69,7 +69,7 @@ describe('PX-4 P4 — WorkflowRunner linear', () => {
     expect(state.steps.every(s => s.status === 'done')).toBe(true);
   });
 
-  test('writes handoff file to .monad/workflows/<wf>-<run>/step-N.md', async () => {
+  test('writes handoff file to .elanous/workflows/<wf>-<run>/step-N.md', async () => {
     const root = scratchDir();
     const runner = new WorkflowRunner({
       workflowsRoot: root,
@@ -82,7 +82,7 @@ describe('PX-4 P4 — WorkflowRunner linear', () => {
     const state = await runner.run(workflow([
       { kind: 'tool', id: 'Bash', handoff: { outputPath: 'custom.md' } },
     ]));
-    const outPath = join(root, '.monad', 'workflows', `wf-${state.runId}`, 'custom.md');
+    const outPath = join(root, '.elanous', 'workflows', `wf-${state.runId}`, 'custom.md');
     expect(existsSync(outPath)).toBe(true);
     expect(readFileSync(outPath, 'utf-8')).toBe('hello world');
   });
@@ -101,7 +101,7 @@ describe('PX-4 P4 — WorkflowRunner linear', () => {
       { kind: 'tool', id: 'a', handoff: {} },  // minimal handoff; falls back to default name
       { kind: 'tool', id: 'b', handoff: {} },
     ]));
-    const dir = join(root, '.monad', 'workflows', `wf-${state.runId}`);
+    const dir = join(root, '.elanous', 'workflows', `wf-${state.runId}`);
     expect(existsSync(join(dir, 'step-1.md'))).toBe(true);
     expect(existsSync(join(dir, 'step-2.md'))).toBe(true);
   });

@@ -3,7 +3,7 @@
 // Couples `runAcpServer` + `bridgeCoreTurnToAcp` + an in-process
 // transport so the dashboard can send prompts to "its own" ACP
 // server without opening a socket. Phase 5c-2 (2026-04-25) retired
-// the previous `MONAD_TUI_VIA_ACP` flag: every dashboard turn now
+// the previous `ELANOUS_TUI_VIA_ACP` flag: every dashboard turn now
 // routes through this scaffold.
 //
 // Scope of this scaffold:
@@ -45,9 +45,9 @@ import {
   type CoreTurnBridgeDeps,
 } from '../acp/core-turn-bridge.js';
 import {
-  parseMonadUiEnvelope,
-  type MonadUiUsagePayload,
-} from '../acp/monad-extensions.js';
+  parseElanousUiEnvelope,
+  type ElanousUiUsagePayload,
+} from '../acp/elanous-extensions.js';
 import {
   buildAcpPrompt,
   type NormalizedAttachment,
@@ -93,7 +93,7 @@ export interface DashboardSessionToolResult {
   result: unknown;
 }
 
-export type DashboardSessionUsage = Omit<MonadUiUsagePayload, 'id'>;
+export type DashboardSessionUsage = Omit<ElanousUiUsagePayload, 'id'>;
 
 export interface DashboardSendRequest {
   userText: string;
@@ -126,7 +126,7 @@ export interface DashboardSendRequest {
    *  with `status: 'completed'`. Carries the same `rawOutput` the
    *  direct dispatchTool caller returned. */
   onToolResult?(call: DashboardSessionToolResult): void;
-  /** P2-bridge-ext — fires on each `monad/ui/usage` envelope (one or
+  /** P2-bridge-ext — fires on each `elanous/ui/usage` envelope (one or
    *  more per turn, provider-dependent). Shape matches
    *  `StreamWithToolsHandlers.onUsage` modulo the correlation id. */
   onUsage?(usage: DashboardSessionUsage): void;
@@ -246,11 +246,11 @@ export class DashboardSession {
       protocolVersion: 1,
       clientCapabilities: {
         fs: { readTextFile: false, writeTextFile: false },
-        // P2-bridge-ext — advertise `monad.ui.usage` so the server's
+        // P2-bridge-ext — advertise `elanous.ui.usage` so the server's
         // `pushUsage` gate passes. showModal/showToast/updateStatusPill
         // stay off because the scaffold doesn't render them yet; they
         // light up in U3c Phase 4.
-        _meta: { monad: { ui: { usage: true } } },
+        _meta: { elanous: { ui: { usage: true } } },
       },
     });
     const { sessionId } = await client.newSession({ cwd: opts.cwd, mcpServers: [] });
@@ -304,7 +304,7 @@ export class DashboardSession {
       protocolVersion: 1,
       clientCapabilities: {
         fs: { readTextFile: false, writeTextFile: false },
-        _meta: { monad: { ui: { usage: true } } },
+        _meta: { elanous: { ui: { usage: true } } },
       },
     });
     const { sessionId } = await client.newSession({ cwd: opts.cwd, mcpServers: [] });
@@ -328,7 +328,7 @@ export class DashboardSession {
    *  `session/load` instead of `session/new` so the daemon's
    *  history is reused (same prompts behave as if continuing a
    *  conversation). The peer must advertise
-   *  `AgentCapabilities.loadSession: true` (monad daemons do, post
+   *  `AgentCapabilities.loadSession: true` (elanous daemons do, post
    *  M2.3); otherwise the SDK throws "method not implemented".
    *
    *  Throws when the daemon's `hasSession` check returns false —
@@ -360,7 +360,7 @@ export class DashboardSession {
         protocolVersion: 1,
         clientCapabilities: {
           fs: { readTextFile: false, writeTextFile: false },
-          _meta: { monad: { ui: { usage: true } } },
+          _meta: { elanous: { ui: { usage: true } } },
         },
       });
       // ACP `session/load` returns LoadSessionResponse (no sessionId
@@ -572,9 +572,9 @@ function buildSendInterceptor(req: DashboardSendRequest): SessionUpdateIntercept
       case 'agent_thought_chunk': {
         if (!req.onUsage || inner.content?.type !== 'text') return;
         const text = inner.content.text ?? '';
-        const env = parseMonadUiEnvelope(text);
+        const env = parseElanousUiEnvelope(text);
         if (!env || env.method !== 'usage') return;
-        const { id: _id, ...rest } = env.payload as unknown as MonadUiUsagePayload;
+        const { id: _id, ...rest } = env.payload as unknown as ElanousUiUsagePayload;
         req.onUsage(rest);
         return;
       }

@@ -1,19 +1,19 @@
 // PLAN §11 F3 (#5) — 크로스-프로세스 이벤트 로그 + wait 프리미티브.
-// 격리 tmp MONAD_STATE_DIR(store) + 주입 deps(wait·db/시간 무관). herdr events_after/wait_for_agent 계약.
+// 격리 tmp ELANOUS_STATE_DIR(store) + 주입 deps(wait·db/시간 무관). herdr events_after/wait_for_agent 계약.
 import { afterAll, beforeEach, test, expect, describe } from 'bun:test';
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
 // ⚠️ 첫 db() 전에 격리 경로를 강제하고, 종료 시 호출 전 환경을 복원한다.
-const previousStateDir = process.env.MONAD_STATE_DIR;
+const previousStateDir = process.env.ELANOUS_STATE_DIR;
 const stateDir = mkdtempSync(join(tmpdir(), 'pty-eventlog-'));
-process.env.MONAD_STATE_DIR = stateDir;
+process.env.ELANOUS_STATE_DIR = stateDir;
 
 afterAll(() => {
   resetPtyEventLogForTesting();
-  if (previousStateDir === undefined) delete process.env.MONAD_STATE_DIR;
-  else process.env.MONAD_STATE_DIR = previousStateDir;
+  if (previousStateDir === undefined) delete process.env.ELANOUS_STATE_DIR;
+  else process.env.ELANOUS_STATE_DIR = previousStateDir;
   rmSync(stateDir, { recursive: true, force: true });
 });
 
@@ -29,8 +29,8 @@ beforeEach(() => {
 });
 
 describe('pty-event-log store (크로스-프로세스)', () => {
-  test('경로가 MONAD_STATE_DIR 스코프(격리)', () => {
-    expect(ptyEventLogDbPath()).toContain(process.env.MONAD_STATE_DIR!);
+  test('경로가 ELANOUS_STATE_DIR 스코프(격리)', () => {
+    expect(ptyEventLogDbPath()).toContain(process.env.ELANOUS_STATE_DIR!);
     expect(ptyEventLogDbPath()).toEndWith('pty/events.db');
   });
 
@@ -79,7 +79,7 @@ describe('pty-event-log store (크로스-프로세스)', () => {
   });
 
   test('recordSurfaceStateTransition — agent 만 바뀌어도 전이(재사용 surface 식별)', () => {
-    recordSurfaceStateTransition({ instance: 'prod', surfaceId: 'tui:a', state: 'idle', agent: 'monad', now: 1 });
+    recordSurfaceStateTransition({ instance: 'prod', surfaceId: 'tui:a', state: 'idle', agent: 'elanous', now: 1 });
     const changed = recordSurfaceStateTransition({ instance: 'prod', surfaceId: 'tui:a', state: 'idle', agent: 'codex', now: 2 });
     expect(changed).not.toBeNull();
     expect(latestSurfaceState('tui:a')).toMatchObject({ state: 'idle', agent: 'codex' });
@@ -128,7 +128,7 @@ describe('eventMatchesWait (순수 매처·identity 핀)', () => {
   test('agent 핀 — 지정 시 정확 일치만(재시작 자식 오만족 차단)', () => {
     const spec = { ...base, agent: 'codex' };
     expect(eventMatchesWait(ev({ agent: 'codex' }), spec)).toBe(true);
-    expect(eventMatchesWait(ev({ agent: 'monad' }), spec)).toBe(false); // 다른 점유자
+    expect(eventMatchesWait(ev({ agent: 'elanous' }), spec)).toBe(false); // 다른 점유자
     expect(eventMatchesWait(ev({ agent: null }), spec)).toBe(false);    // unknown 도 거부
   });
   test('instance 핀', () => {
@@ -140,7 +140,7 @@ describe('eventMatchesWait (순수 매처·identity 핀)', () => {
   test('eventIsForWait — identity 대상 판정(until 무관)', () => {
     const spec = { ...base, agent: 'codex' };
     expect(eventIsForWait(ev({ agent: 'codex', state: 'working' }), spec)).toBe(true); // until 밖이어도 identity 대상
-    expect(eventIsForWait(ev({ agent: 'monad' }), spec)).toBe(false);                  // 타 점유자 아님
+    expect(eventIsForWait(ev({ agent: 'elanous' }), spec)).toBe(false);                  // 타 점유자 아님
   });
 });
 
@@ -193,8 +193,8 @@ describe('waitForSurfaceState', () => {
   });
 
   test('stall 은 타 점유자(agent 불일치) 이벤트로 리셋되지 않음 (review must-fix ②)', async () => {
-    // 같은 surface 에 다른 agent(monad) 이벤트가 계속 와도, codex 로 핀된 wait 는 stall 진행.
-    const deps = harness([[ev({ seq: 5, state: 'working', agent: 'monad' })], [], [], []]);
+    // 같은 surface 에 다른 agent(elanous) 이벤트가 계속 와도, codex 로 핀된 wait 는 stall 진행.
+    const deps = harness([[ev({ seq: 5, state: 'working', agent: 'elanous' })], [], [], []]);
     const r = await waitForSurfaceState(
       { surfaceId: 'tui:1', afterSeq: 0, agent: 'codex', until: ['done'], timeoutMs: 10_000, pollMs: 100, stallMs: 250 },
       deps,

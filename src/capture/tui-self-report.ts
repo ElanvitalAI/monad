@@ -80,7 +80,7 @@ export function createTuiFrameObserver(
       instance: cfg.instance,
       kind: 'tui',
       mode: 'self-report',
-      // Keep ANSI (colours) — richer for `monad self screen`/PWA render;
+      // Keep ANSI (colours) — richer for `elanous self screen`/PWA render;
       // text-only consumers (memory summary) strip via stripScreenAnsi.
       text: textOf(lines, dims),
       cols: dims.cols,
@@ -141,7 +141,7 @@ export interface TuiSelfReportDeps {
   publishFrame?: (frame: SelfReportFrame) => void;
   registerRow?: (surfaceId: string, now: number) => void;
   writeFrame?: (surfaceId: string, text: string, now: number) => void;
-  /** B(harness-screens 파일) sink — `monad self screen` 이 읽는 substrate.
+  /** B(harness-screens 파일) sink — `elanous self screen` 이 읽는 substrate.
    *  자식 harness 발행과 대칭(tmux 없이 L2 대시보드 자기 화면 관측). */
   writeScreen?: (surfaceId: string, text: string) => void;
   heartbeat?: (surfaceId: string, now: number) => void;
@@ -156,7 +156,7 @@ export interface TuiSelfReportDeps {
   driveTicks?: (tick: () => void, ms: number) => (() => void);
   /** P1b-2 full-fidelity screen mirror (base + overlay + cursor). Seam —
    *  default creates a real `TuiScreenMirror` (tapping process.stdout)
-   *  unless `MONAD_TUI_SELF_REPORT=0`. Returns null → fall back to the
+   *  unless `ELANOUS_TUI_SELF_REPORT=0`. Returns null → fall back to the
    *  P1b base layer (`_lastFrameLines`). */
   createMirror?: () => TuiScreenMirrorLike | null;
   createControlTarget?: (surfaceId: string) => TuiControlTarget;
@@ -190,7 +190,7 @@ export function startTuiSelfReport(deps: TuiSelfReportDeps = {}): () => void {
   let instance = 'prod';
   try { instance = resolveInstanceName(); } catch { /* fail-soft default */ }
   // ★ K4 run-identity(2026-07-25·[[PLAN §K/K4]]) — 이 서피스 프레임을 run 에 join. K1/K2 가 env 로 전파한
-  //   MONAD_RUN_ID(없으면 ''=run 밖·생략). 발행 프레임(emitText)+observer 둘 다 스탬프.
+  //   ELANOUS_RUN_ID(없으면 ''=run 밖·생략). 발행 프레임(emitText)+observer 둘 다 스탬프.
   let runId = '';
   try { runId = getHarnessRunId(); } catch { /* fail-soft */ }
 
@@ -259,7 +259,7 @@ export function startTuiSelfReport(deps: TuiSelfReportDeps = {}): () => void {
     // `at` is shared with the manifest write → its internal throttle keys
     // off the SAME clock and can never drift from ours.
     try { writeFrame(surfaceId, text, at); } catch { /* fail-soft */ }
-    // B(harness-screens 파일) — `monad self screen` 이 읽는 substrate. 자식 harness 와
+    // B(harness-screens 파일) — `elanous self screen` 이 읽는 substrate. 자식 harness 와
     // 대칭으로 발행해 tmux 없이 L2 대시보드 자기 화면을 관측한다(뷰어·TUI 동일 state-dir 전제).
     try { writeScreen(surfaceId, text); } catch { /* fail-soft */ }
   };
@@ -322,7 +322,7 @@ export function startTuiSelfReport(deps: TuiSelfReportDeps = {}): () => void {
 /** Default mirror factory — creates the real stdout-tapping screen
  *  mirror sized to the live terminal, unless disabled by kill-switch. */
 function defaultCreateMirror(): TuiScreenMirrorLike | null {
-  if (process.env.MONAD_TUI_SELF_REPORT === '0') return null;   // kill-switch
+  if (process.env.ELANOUS_TUI_SELF_REPORT === '0') return null;   // kill-switch
   try {
     const { rows, cols } = tuiTermSize();
     return createTuiScreenMirror({ cols, rows });
@@ -348,7 +348,7 @@ function defaultPublishFrame(frame: SelfReportFrame): void {
 }
 
 function defaultRegisterRow(surfaceId: string, now: number): void {
-  upsertPtyManifest({ id: surfaceId, kind: 'tui', cmd: 'monad', startedAt: now, now });
+  upsertPtyManifest({ id: surfaceId, kind: 'tui', cmd: 'elanous', startedAt: now, now });
 }
 
 function defaultWriteFrame(surfaceId: string, text: string, now: number): void {

@@ -2,7 +2,7 @@
 //
 // Canonical shape for any persisted output artifact monad-agent
 // produces. The unified store (`src/artifact/store.ts`) organises
-// them under `~/.monad/artifacts/<kind>/<ts>-<origin>.<ext>` with a
+// them under `~/.elanous/artifacts/<kind>/<ts>-<origin>.<ext>` with a
 // JSON sidecar carrying provenance.
 //
 // `ArtifactKind` is a closed discriminator — new kinds require a

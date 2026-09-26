@@ -138,7 +138,7 @@ describe('surfaceUxFromDispatchCtx — DaemonToolDispatchCtx 부분집합 수용
 
 describe('wrapAutonomousTool', () => {
   test('정상 실행 — spec.run 에 SurfaceUx 주입, 결과 반환', async () => {
-    delete process.env.MONAD_NEST_DEPTH;
+    delete process.env.ELANOUS_NEST_DEPTH;
     const cap = captureEmit();
     let seenInteractive = false;
     const out = await wrapAutonomousTool(
@@ -156,7 +156,7 @@ describe('wrapAutonomousTool', () => {
   });
 
   test('render spill → spillFile 위임 + 요약만 반환', async () => {
-    delete process.env.MONAD_NEST_DEPTH;
+    delete process.env.ELANOUS_NEST_DEPTH;
     const fs = captureFileSink();
     const out = await wrapAutonomousTool(
       {
@@ -172,8 +172,8 @@ describe('wrapAutonomousTool', () => {
   });
 
   test('nest-cap 초과 → 코어 미실행 + 구조화 거부', async () => {
-    process.env.MONAD_NEST_DEPTH = '9';
-    process.env.MONAD_MAX_NEST_DEPTH = '3';
+    process.env.ELANOUS_NEST_DEPTH = '9';
+    process.env.ELANOUS_MAX_NEST_DEPTH = '3';
     let ran = false;
     const out = await wrapAutonomousTool(
       { toolNames: ['Demo'], label: 'Demo', async run() { ran = true; return {}; } },
@@ -182,12 +182,12 @@ describe('wrapAutonomousTool', () => {
     );
     expect(ran).toBe(false);
     expect((out as { error: string }).error).toContain('nest cap reached');
-    delete process.env.MONAD_NEST_DEPTH;
-    delete process.env.MONAD_MAX_NEST_DEPTH;
+    delete process.env.ELANOUS_NEST_DEPTH;
+    delete process.env.ELANOUS_MAX_NEST_DEPTH;
   });
 
   test('run throw → 구조화 에러 반환(턴 안 죽음)', async () => {
-    delete process.env.MONAD_NEST_DEPTH;
+    delete process.env.ELANOUS_NEST_DEPTH;
     const out = await wrapAutonomousTool(
       { toolNames: ['Demo'], label: 'Demo', async run() { throw new Error('boom'); } },
       {},

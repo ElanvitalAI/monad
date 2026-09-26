@@ -15,7 +15,7 @@ import { resolveGoalPaths } from '../src/auto-research/goal-paths';
 async function makeGoal(slug = 'q1') {
   const home = mkdtempSync(join(tmpdir(), 'qq-tool-'));
   const vault = discoverObsidianVault({
-    env: { MONAD_OBSIDIAN_VAULT: join(home, 'vault') },
+    env: { ELANOUS_OBSIDIAN_VAULT: join(home, 'vault') },
     cwd: home,
   });
   await dispatchResearchPlan({ action: 'init', goal_slug: slug, mission: 'test' }, { vault });
@@ -141,7 +141,7 @@ describe('PFC-S4 P2 — QuestionQueue tool', () => {
   test('auto-creates queue file if goal init skipped it', async () => {
     const home = mkdtempSync(join(tmpdir(), 'qq-noinit-'));
     const vault = discoverObsidianVault({
-      env: { MONAD_OBSIDIAN_VAULT: join(home, 'vault') },
+      env: { ELANOUS_OBSIDIAN_VAULT: join(home, 'vault') },
       cwd: home,
     });
     // No init — but QuestionQueue should tolerantly create the queue file

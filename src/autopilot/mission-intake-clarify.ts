@@ -217,7 +217,7 @@ function normalizeOptions(raw: unknown): IntakeOption[] {
 //   분해 방향을 좌우하는 최고-임팩트 판단이라 최상위 리즈닝 모델을 쓴다. sol=최고, terra=중간,
 //   luna=경량. 종전 luna-low(2026-07-16)는 아크/범위를 최소로만 마름질했다 → sol + high 로 상향.
 //   env override 유지. [[feedback_mission_fabric_llm_logic_balance_2026_07_16]] 갱신.
-const INTAKE_JUDGE_MODEL = process.env.MONAD_INTAKE_MODEL || tierModel('better');
+const INTAKE_JUDGE_MODEL = process.env.ELANOUS_INTAKE_MODEL || tierModel('better');
 async function defaultJudge(prompt: string): Promise<string> {
   const { streamLLM } = await import('../llm.js');
   return streamLLM([{ role: 'user', content: prompt }], () => {}, {

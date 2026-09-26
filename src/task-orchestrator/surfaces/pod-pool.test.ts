@@ -4,10 +4,10 @@ import { podSelfImplementSpawn, type Kubectl } from './self-implement-pod.js';
 
 describe('pod pool — priority ⊕ per-node capacity', () => {
   test('parses context[@ssh][:capacity] in priority order', () => {
-    expect(parsePodPool('pool-node-b@node-b:12, k3d-monad-h1, pool-node-c@node-c:3')).toEqual([
-      { context: 'pool-node-b', sshHost: 'node-b', capacity: 12, k3dCluster: 'monad-pool' },
-      { context: 'k3d-monad-h1', capacity: 2, k3dCluster: 'monad-h1' },
-      { context: 'pool-node-c', sshHost: 'node-c', capacity: 3, k3dCluster: 'monad-pool' },
+    expect(parsePodPool('pool-node-b@node-b:12, k3d-elanous-h1, pool-node-c@node-c:3')).toEqual([
+      { context: 'pool-node-b', sshHost: 'node-b', capacity: 12, k3dCluster: 'elanous-pool' },
+      { context: 'k3d-elanous-h1', capacity: 2, k3dCluster: 'elanous-h1' },
+      { context: 'pool-node-c', sshHost: 'node-c', capacity: 3, k3dCluster: 'elanous-pool' },
     ]);
     expect(() => parsePodPool('a:0')).toThrow('상한은 1 이상');
     expect(() => parsePodPool('a,a')).toThrow('겹친다');
@@ -15,8 +15,8 @@ describe('pod pool — priority ⊕ per-node capacity', () => {
   });
 
   test('explicit spec wins over env; neither → null (single current context)', () => {
-    expect(resolvePodPoolSpec('a:1', { MONAD_POD_POOL: 'b:1' })).toBe('a:1');
-    expect(resolvePodPoolSpec(undefined, { MONAD_POD_POOL: 'b:1' })).toBe('b:1');
+    expect(resolvePodPoolSpec('a:1', { ELANOUS_POD_POOL: 'b:1' })).toBe('a:1');
+    expect(resolvePodPoolSpec(undefined, { ELANOUS_POD_POOL: 'b:1' })).toBe('b:1');
     expect(resolvePodPoolSpec(undefined, {})).toBeNull();
   });
 
@@ -32,7 +32,7 @@ describe('pod pool — priority ⊕ per-node capacity', () => {
   test('check drops unreachable nodes with the reason, never silently', () => {
     const kubectl = (args: readonly string[]) => args[1] === 'bad'
       ? { status: 1, stdout: '', stderr: 'Unable to connect to the server: dial tcp: i/o timeout' }
-      : { status: 0, stdout: 'monad-test', stderr: '' };
+      : { status: 0, stdout: 'elanous-test', stderr: '' };
     const r = checkPodPool(parsePodPool('good:1,bad:1'), kubectl);
     expect(r.ok).toBe(true);
     expect(r.ready.map((m) => m.context)).toEqual(['good']);
@@ -42,7 +42,7 @@ describe('pod pool — priority ⊕ per-node capacity', () => {
 
   test('image sync is a no-op for a local node and for a remote node already on the same commit', () => {
     const run: RemoteRun = () => ({ status: 0, stdout: 'abc123\n', stderr: '' });
-    const [local, remote] = parsePodPool('k3d-monad-h1:1,pool-node-b@node-b:1');
+    const [local, remote] = parsePodPool('k3d-elanous-h1:1,pool-node-b@node-b:1');
     expect(syncPoolImage(local!, 'img', 'abc123', run)).toMatchObject({ ok: true, action: 'local' });
     expect(syncPoolImage(remote!, 'img', 'abc123', run)).toMatchObject({ ok: true, action: 'fresh' });
   });
@@ -57,7 +57,7 @@ describe('pod pool — priority ⊕ per-node capacity', () => {
     const pool = new PodPoolScheduler(parsePodPool('pool-node-b@node-b:1'));
     const spawn = podSelfImplementSpawn({
       kubectl, pool, pollMs: 1, imageCommit: null, sleep: async () => {},
-      credentials: () => ({ monadAuth: '{}', codexAuth: '{}', ghToken: 't' }),
+      credentials: () => ({ elanousAuth: '{}', codexAuth: '{}', ghToken: 't' }),
     });
     const done = await spawn({ spaceId: 's1', feature: 'f' } as Parameters<typeof spawn>[0]).done;
     expect(done.exitCode).toBe(0);
@@ -80,9 +80,9 @@ describe('pod pool — priority ⊕ per-node capacity', () => {
       return { ok: true, detail: 'built' };
     };
     const ship = (m: { sshHost?: string }) => { labels.set(m.sshHost!, 'new'); return { ok: true, action: 'shipped' as const, detail: 'old → new' }; };
-    const r = await syncPoolImages(parsePodPool('k3d-monad-h1:1,pool-node-b@node-b:2,pool-node-c@node-c:1'), 'img', 'new', { run, remoteBuild, ship });
+    const r = await syncPoolImages(parsePodPool('k3d-elanous-h1:1,pool-node-b@node-b:2,pool-node-c@node-c:1'), 'img', 'new', { run, remoteBuild, ship });
     expect(maxInFlight).toBe(2);                       // 동시에
-    expect(r.get('k3d-monad-h1')?.action).toBe('local');
+    expect(r.get('k3d-elanous-h1')?.action).toBe('local');
     expect(r.get('pool-node-b')).toMatchObject({ ok: true, action: 'built' });
     expect(r.get('pool-node-c')).toMatchObject({ ok: true, action: 'shipped' });
     expect(r.get('pool-node-c')!.detail).toContain('keychain locked');

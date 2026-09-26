@@ -11,9 +11,9 @@ import * as os from 'node:os';
 import * as path from 'node:path';
 
 import {
-  resetMonadConfigDir,
-  setMonadConfigDir,
-} from '../../monad-config-dir';
+  resetElanousConfigDir,
+  setElanousConfigDir,
+} from '../../elanous-config-dir';
 import { resetUserConfig } from '../../user-config';
 import {
   handleLlmProvidersList,
@@ -22,13 +22,13 @@ import {
   type LlmProviderSetResponse,
 } from './setup-llm-provider';
 
-const TEST_DIR_PREFIX = path.join(os.tmpdir(), 'monad-setup-llm-test-');
+const TEST_DIR_PREFIX = path.join(os.tmpdir(), 'elanous-setup-llm-test-');
 
 let testConfigDir: string;
 
 beforeEach(() => {
   testConfigDir = fs.mkdtempSync(TEST_DIR_PREFIX);
-  setMonadConfigDir(testConfigDir);
+  setElanousConfigDir(testConfigDir);
   // user-config caches by path — bust between tests so each one sees
   // the fresh tmpdir.
   resetUserConfig();
@@ -40,7 +40,7 @@ beforeEach(() => {
 });
 
 afterEach(() => {
-  resetMonadConfigDir();
+  resetElanousConfigDir();
   resetUserConfig();
   try { fs.rmSync(testConfigDir, { recursive: true, force: true }); } catch { /* ignore */ }
 });
@@ -176,7 +176,7 @@ describe('POST /v1/setup/llm-provider — codex/local flow', () => {
     const body = (await res.json()) as { error: string; flow: string; hint: string };
     expect(body.error).toBe('flow-not-supported-in-pwa');
     expect(body.flow).toBe('codex');
-    expect(body.hint).toContain('monad setup llm');
+    expect(body.hint).toContain('elanous setup llm');
   });
 
   test('local flow returns 422 with probe hint', async () => {

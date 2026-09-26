@@ -2,7 +2,7 @@
 //
 // "지금 신호"에 "과거 유사국면"을 붙여 해상도를 올린다. 주간/월간 증류 후
 // raw(breaking_signals)는 90일 휘발하되, 유의 신호·디깅·알파 리포트는
-// 벡터로 영속 (~/.monad/conatus/knowledge.db — 13F용 ~/.monad/knowledge.db와 별개).
+// 벡터로 영속 (~/.elanous/conatus/knowledge.db — 13F용 ~/.elanous/knowledge.db와 별개).
 //
 // 임베딩(D2): 로컬 LM Studio nomic(768d) 1순위 → OpenAI text-embedding-3-small
 // (dimensions:768) 폴백. 문서에 embed_model 태깅 — 질의와 같은 모델 공간끼리만 매칭.
@@ -30,8 +30,8 @@ import { conatusPath } from './conatus-data-dir.js';
 
 // managed memory 네임스페이스(2026-07-19 일반화) — 시맨틱 self-memory. ★scoped(Phase E · 2026-07-24):
 // 종전 global(인스턴스 무관 단일 공유)은 격리 test 가 prod 회상 코퍼스(self-recall docs·taste)를 오염시켰다
-// (대표 결정: 격리 우선·재구축 비용 감수). memoryDbPath scoped → prod=`~/.monad/memory/knowledge.db`(불변)·
-// 격리 test=`<MONAD_STATE_DIR>/knowledge.db`(빈 시작). 종전 `~/.monad/conatus/` legacy 는 prod open 시 자가치유 이전.
+// (대표 결정: 격리 우선·재구축 비용 감수). memoryDbPath scoped → prod=`~/.elanous/memory/knowledge.db`(불변)·
+// 격리 test=`<ELANOUS_STATE_DIR>/knowledge.db`(빈 시작). 종전 `~/.elanous/conatus/` legacy 는 prod open 시 자가치유 이전.
 export function knowledgeDbPath(): string { return memoryDbPath('knowledge.db'); }
 const ALPHA_REPORTS_DIR = conatusPath('alpha_reports');
 
@@ -44,12 +44,12 @@ export interface KnowledgeDoc {
   id: string; ts: string;
   // xreport/morning = Conatus 소급 인제스트(2026-07-07 — openclaw 시절
   // X 데일리·아침 종합 리포트 md 아카이브 · 1회 backfill · 신규 생성 없음).
-  // outbound = 크로스서피스 기억 편입(Block 2 · 2026-07-07): monad가 발송한
+  // outbound = 크로스서피스 기억 편입(Block 2 · 2026-07-07): elanous가 발송한
   //   유의(importance>=floor) 알림/신호를 의미(벡터) 회상 대상으로 영속. FTS
   //   키워드 회상(memory_recall)의 크로스링구얼 한계("수급"↔"순매수")를 임베딩이 보완.
   //   docs = self-awareness(2026-07-08): 외부 도구(Claude Code/Codex)가 구현 후 남긴
-  //     HANDOFF/REPORT/PLAN 문서를 벡터 회상 대상으로 영속. monad 가 "내가 뭘 구현했나"를
-  //     의미검색으로 회상(domain='monad'). [[self-awareness]].
+  //     HANDOFF/REPORT/PLAN 문서를 벡터 회상 대상으로 영속. elanous 가 "내가 뭘 구현했나"를
+  //     의미검색으로 회상(domain='elanous'). [[self-awareness]].
   //   memory = M3 consolidation(2026-07-08): 흐린 에피소드 다수를 의미 umbrella 1건으로
   //     압축·영속(에피소드→의미·수면 공고화). 원본은 consolidated 마킹.
   kind: 'signal' | 'dig' | 'alpha' | 'xreport' | 'morning' | 'outbound' | 'docs' | 'memory' | 'taste';
@@ -67,7 +67,7 @@ export type EmbedFn = (text: string) => Promise<{ vector: Float32Array; model: s
 
 export function openKnowledgeDb(path: string = knowledgeDbPath()): Database {
   // 기본 경로일 때만 legacy conatus/ → memory/ 자가치유 이전(명시경로 side-effect 방지). scoped 라
-  // 격리 test(MONAD_STATE_DIR)는 migrateLegacyMemoryDb 가 early-return → prod legacy 무접촉.
+  // 격리 test(ELANOUS_STATE_DIR)는 migrateLegacyMemoryDb 가 early-return → prod legacy 무접촉.
   if (path === knowledgeDbPath()) migrateLegacyMemoryDb('knowledge.db');
   mkdirSync(dirname(path), { recursive: true });
   const db = new Database(path);
@@ -204,7 +204,7 @@ function docChunkId(path: string, chunk: number, kind: KnowledgeDoc['kind'] = 'd
 
 /** ★ self-awareness(2026-07-08) — 단일 문서 파일(md)을 벡터 회상 대상으로 인제스트.
  *  청킹(chunkReport 재사용) + 임베딩(defaultEmbed) + 멱등(id=docs:<절대경로>#<i>·기존 skip).
- *  기본 domain='monad'·kind='docs' — finance 신호와 격리 검색. 외부 도구 구현 문서 주입용.
+ *  기본 domain='elanous'·kind='docs' — finance 신호와 격리 검색. 외부 도구 구현 문서 주입용.
  *  임베딩/삽입 실패 청크는 skip(fail-soft — 다음 재시도). */
 export async function ingestDocFile(
   db: Database,
@@ -224,7 +224,7 @@ export async function ingestDocFile(
     try {
       await insertDoc(db, {
         id, ts, kind, sector_tags: null,
-        text: chunks[i]!, source_ref: path, domain: opts.domain ?? 'monad',
+        text: chunks[i]!, source_ref: path, domain: opts.domain ?? 'elanous',
       }, embed);
       ok++;
     } catch { skipped++; }
@@ -450,7 +450,7 @@ export async function ingestDocsDir(
     const deleted = deleteDocChunks(db, full);
     const wasStale = state !== null || deleted > 0;
     const r = await ingestDocFile(db, {
-      path: full, domain: opts.domain ?? 'monad',
+      path: full, domain: opts.domain ?? 'elanous',
       ...(opts.embed ? { embed: opts.embed } : {}),
     });
     // 임베딩 전체 실패 시 상태를 기록하지 않는다 — 다음 주기 재시도(fail-soft 유지).

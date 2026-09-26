@@ -36,7 +36,7 @@ export interface EmbodiedTimelineEntry {
   readonly at: string;
   /** Monotonic time since timeline start (ms). */
   readonly atMs: number;
-  /** Free-form actor — agent id / persona / 'user' / 'monad'. */
+  /** Free-form actor — agent id / persona / 'user' / 'elanous'. */
   readonly actor: string;
   /** Optional channel context (Discord channel / TUI session / Telegram chat). */
   readonly channelId?: string;

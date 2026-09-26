@@ -66,11 +66,11 @@ let activeRecorder: ChildProcess | null = null;
 export async function checkRecordingAvailability(): Promise<RecordingAvailability> {
   // Remote attach has no local microphone — point users at the
   // dual-attach pattern (UX matrix §6).
-  if (process.env.MONAD_REMOTE) {
+  if (process.env.ELANOUS_REMOTE) {
     return {
       available: false,
       reason:
-        'Voice mode requires microphone access. Remote attach (MONAD_REMOTE) has no local audio device — use the dual-attach pattern (SSH-TUI text + PWA voice on the same device).',
+        'Voice mode requires microphone access. Remote attach (ELANOUS_REMOTE) has no local audio device — use the dual-attach pattern (SSH-TUI text + PWA voice on the same device).',
     };
   }
 
@@ -83,7 +83,7 @@ export async function checkRecordingAvailability(): Promise<RecordingAvailabilit
   }
 
   const wslNoAudioReason =
-    'Voice mode could not access an audio device in WSL.\nWSL2 with WSLg (Windows 11) provides audio via PulseAudio — if you are on Windows 10 or WSL1, run monad on native macOS/Linux instead.';
+    'Voice mode could not access an audio device in WSL.\nWSL2 with WSLg (Windows 11) provides audio via PulseAudio — if you are on Windows 10 or WSL1, run elanous on native macOS/Linux instead.';
 
   // On Linux (incl. WSL), probe arecord first. hasCommand() is not
   // sufficient: the binary can exist while open() fails (WSL1 / Win10-
@@ -159,7 +159,7 @@ export async function startRecording(
   // the same downstream pipeline (PCM accumulator → wrapPcmInWav →
   // STT). Designed for two recurring scenarios:
   //
-  //   1. SSH/remote dogfood — host running monad has no usable mic
+  //   1. SSH/remote dogfood — host running elanous has no usable mic
   //      (developer is on a different machine via SSH). Inject a
   //      pre-recorded WAV to exercise the toggle/STT/transcript pipe
   //      end-to-end without needing audio routing.

@@ -1,6 +1,6 @@
 // CLI · NEXUS daemon liveness hint (survivor of the 2026-07-24
 // entry-mode switch removal). `isNexusDaemonLive` is a query, not a
-// router — it can never send bare `monad` anywhere but the dashboard.
+// router — it can never send bare `elanous` anywhere but the dashboard.
 
 import { describe, expect, test } from 'bun:test';
 
@@ -27,6 +27,6 @@ describe('nexusDaemonLiveHint · banner copy', () => {
   test('names the daemon + how to reach it', () => {
     const s = nexusDaemonLiveHint();
     expect(s).toContain('NEXUS daemon');
-    expect(s).toContain('monad nexus pwa show');
+    expect(s).toContain('elanous nexus pwa show');
   });
 });

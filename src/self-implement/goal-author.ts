@@ -50,7 +50,7 @@ export interface GoalAuthorDeps {
   repositoryRoot?: string;
   /** Answers keyed by the clarification IDs rendered into the authored goal. */
   clarificationAnswers?: Readonly<Record<string, string | undefined>>;
-  /** Monadic answer author used only during this authoring run; omitted keeps tests and callers offline. */
+  /** Elanousic answer author used only during this authoring run; omitted keeps tests and callers offline. */
   selfResolveClarification?: (context: import('./goal-author-clarification.js').GoalAuthorSelfResolutionContext) => Promise<GoalAuthorSelfResolution>;
   /** 검증 시나리오 «의뢰» 심. 기본은 test-scenario-request 의 순수 생성기다(RFC T3). */
   requestTestScenario?: (input: TestScenarioRequestInput) => TestScenarioRequestResult;
@@ -75,7 +75,7 @@ export interface GoalAuthorDeps {
   slugFn?: (goal: string) => Promise<string>;
   /** Repository-bounded reader used to expose ask-mentioned symbol signatures in Complication. */
   readSourceFile?: (repositoryRelativePath: string) => string | null | ReferencedFileReadResult;
-  /** Optional read-only argv executor for validated inline `bun bin/monad.mjs … --help` capability probes. */
+  /** Optional read-only argv executor for validated inline `bun bin/elanous.mjs … --help` capability probes. */
   runHelpProbe?: (argv: readonly string[]) => GoalCommandExecutionResult | Promise<GoalCommandExecutionResult>;
   /** Bounded additive evidence rendered in PROBLEM; never changes the verbatim ask. */
   groundingEvidence?: readonly string[];
@@ -2114,7 +2114,7 @@ export interface GoalFileDeps {
 
 // The authored `## RULES` section was removed because it cost 1,215 characters per
 // generated document in the existing corpus. The policy remains here, unchanged:
-// child entrypoints serialize this array into MONAD_HARNESS_POLICY instead of
+// child entrypoints serialize this array into ELANOUS_HARNESS_POLICY instead of
 // duplicating it in every goal artifact.
 const CONSTANT_DOCUMENT_INSTRUCTION_POLICY = [
   '- If this change touches code: name the focused test file(s) it adds or touches, run only those, and report each summary-line pass count. If it does not touch code: name the artifact produced and the command or query that shows it exists.',
@@ -2334,7 +2334,7 @@ export function groundedFilesNotMentionedInAskNarrative(facts: CodebaseGrounding
   return omitted === 0
     ? `- Grounding files not mentioned in ask (${files.length}): ${rendered}`
     : `- Grounding files not mentioned in ask (${files.length}): ${rendered}`
-      + ` … 외 ${omitted}개 — 전체 목록은 «재는 명령»으로: \`monad self recall\` 또는 골의 접지 기록.`;
+      + ` … 외 ${omitted}개 — 전체 목록은 «재는 명령»으로: \`elanous self recall\` 또는 골의 접지 기록.`;
 }
 
 function escapeRegularExpression(value: string): string {
@@ -2439,10 +2439,10 @@ function askMentionedSymbolSignaturesNarrative(
   });
 }
 
-const MONAD_HELP_PROBE_PREFIX = ['bun', 'bin/monad.mjs'] as const;
-const SAFE_MONAD_HELP_PROBE_TOKEN = /^[A-Za-z0-9_./:=@+,-]+$/;
+const ELANOUS_HELP_PROBE_PREFIX = ['bun', 'bin/elanous.mjs'] as const;
+const SAFE_ELANOUS_HELP_PROBE_TOKEN = /^[A-Za-z0-9_./:=@+,-]+$/;
 
-interface InlineMonadCommand {
+interface InlineElanousCommand {
   readonly command: string;
   readonly argv: readonly string[] | null;
 }
@@ -2466,15 +2466,15 @@ function inlineCodeContents(markdown: string): string[] {
   return Array.from(outsideBlocks.matchAll(/`([^`]+)`/g), ([, code]) => code);
 }
 
-function inlineMonadCommands(ask: string): InlineMonadCommand[] {
+function inlineElanousCommands(ask: string): InlineElanousCommand[] {
   return inlineCodeContents(ask).map((code) => code.trim())
-    .filter((code) => code.startsWith('bun bin/monad.mjs'))
+    .filter((code) => code.startsWith('bun bin/elanous.mjs'))
     .map((command) => {
       const argv = command.split(/\s+/);
       const safe = !/[\r\n]/.test(command)
-        && argv.length >= MONAD_HELP_PROBE_PREFIX.length
-        && MONAD_HELP_PROBE_PREFIX.every((token, index) => argv[index] === token)
-        && argv.every((token) => token !== '--' && SAFE_MONAD_HELP_PROBE_TOKEN.test(token));
+        && argv.length >= ELANOUS_HELP_PROBE_PREFIX.length
+        && ELANOUS_HELP_PROBE_PREFIX.every((token, index) => argv[index] === token)
+        && argv.every((token) => token !== '--' && SAFE_ELANOUS_HELP_PROBE_TOKEN.test(token));
       return { command, argv: safe ? [...argv, '--help'] : null };
     });
 }
@@ -2504,12 +2504,12 @@ function observeAskExportGrounding(ask: string, facts: CodebaseGrounding | null,
   }
 }
 
-async function inlineMonadCommandProbeNarrative(
+async function inlineElanousCommandProbeNarrative(
   ask: string,
   runHelpProbe: GoalAuthorDeps['runHelpProbe'],
 ): Promise<string[]> {
-  const commands = inlineMonadCommands(ask);
-  if (!commands.length) return ['- Command help probe: no inline `bun bin/monad.mjs` command was named in the ask.'];
+  const commands = inlineElanousCommands(ask);
+  if (!commands.length) return ['- Command help probe: no inline `bun bin/elanous.mjs` command was named in the ask.'];
 
   return Promise.all(commands.map(async ({ command, argv }) => {
     const helpCommand = `${command} --help`;
@@ -2659,7 +2659,7 @@ const IMPLEMENTATION_TARGET_QUESTION_ID = 'implementation_target';
 /** ⛔ 코드 접지 «채널»이 실패했을 때의 문면 — 사람의 ask 를 탓하지 않는다.
  *  ⭐ 처방이 반대다: ***ask 를 고치지 말고 다시 친다***(고치면 다음 저작이 「다른 골」이 된다). */
 const CODE_CHANNEL_FAILED_QUESTION_ID = 'code_channel_failed';
-const CODE_CHANNEL_FAILED_CLARIFICATION = 'The code grounding channel did NOT complete for this authoring run (it failed, or it stopped before finishing its goal), so the empty code candidate list means "not measured", not "not present". Do NOT rewrite the ask to add anchors — that changes the goal without fixing the cause. Re-run the same ask; if it keeps happening, check the grounding channel (monad logs --category grounding.persistent) before editing anything.';
+const CODE_CHANNEL_FAILED_CLARIFICATION = 'The code grounding channel did NOT complete for this authoring run (it failed, or it stopped before finishing its goal), so the empty code candidate list means "not measured", not "not present". Do NOT rewrite the ask to add anchors — that changes the goal without fixing the cause. Re-run the same ask; if it keeps happening, check the grounding channel (elanous logs --category grounding.persistent) before editing anything.';
 const IMPLEMENTATION_ANCHOR_QUESTION_ID = 'implementation_anchor';
 const IMPLEMENTATION_ANCHOR_CLARIFICATION = 'Grounding did not find a code candidate matching a path named in the ask. Provide an identifier anchor: which function, which constant, or which line should the implementation target contain?';
 const IMPLEMENTATION_ANCHOR_OPTIONS: Question['options'] = [
@@ -3100,8 +3100,8 @@ type AcceptanceCriterionEvidenceType = 'tsc' | 'test' | 'live' | 'log' | 'mutati
 const ACCEPTANCE_CRITERION_EVIDENCE_MARKERS: Readonly<Record<Exclude<AcceptanceCriterionEvidenceType, 'default'>, readonly string[]>> = {
   tsc: ['tsc', 'ci-typecheck-changed.ts'],
   test: ['bun test'],
-  live: ['monad dev', 'monad self screen'],
-  log: ['monad logs'],
+  live: ['elanous dev', 'elanous self screen'],
+  log: ['elanous logs'],
   mutation: ['mutation'],
 };
 
@@ -4946,7 +4946,7 @@ async function authorGoalWithSupersededRootIntent(
     startAssembleSubphase('assemble-inputs');
 
   // ⛔ 반쪽 마이그레이션 수복(2026-07-28 실측): #5823 이 헬퍼만 새 계약으로 바꾸고 **호출부를
-  //   안 고쳐** `verifiedFacts` (삭제된 함수)를 부르고 있었다 ⇒ `monad self author` 가 크래시했다.
+  //   안 고쳐** `verifiedFacts` (삭제된 함수)를 부르고 있었다 ⇒ `elanous self author` 가 크래시했다.
   //   ⇒ 근거 유무 판정을 **집계기 계약(`grounded`)** 하나로 모은다.
   const hasEvidence = !!facts?.grounded;
   const goalType = deps.goalType ?? 'implement';
@@ -5153,7 +5153,7 @@ async function authorGoalWithSupersededRootIntent(
     situation: enhancement.situation === undefined ? 'template' : 'summary',
     complication: enhancement.complication === undefined ? 'template' : 'summary',
   });
-  const helpProbeNarrative = await inlineMonadCommandProbeNarrative(ask, deps.runHelpProbe);
+  const helpProbeNarrative = await inlineElanousCommandProbeNarrative(ask, deps.runHelpProbe);
   observeAskExportGrounding(ask, facts, authorRunId);
   const launchPreflightHistory = deps.launchPreflight === undefined
     ? []
@@ -5740,7 +5740,7 @@ export async function writeAuthoredGoal(
     const stampedAt = fileDeps.now?.() ?? new Date();
   const identity = identityLines(ask, cwd, fileDeps.env ?? process.env, stampedAt);
   if (identity.length) {
-    // ⛔⭐ 머리말은 **파일 끝**이다. 둘째 줄에 두면 `monad dev --file` 이 그것을 PR 제목·브랜치명으로
+    // ⛔⭐ 머리말은 **파일 끝**이다. 둘째 줄에 두면 `elanous dev --file` 이 그것을 PR 제목·브랜치명으로
     //   집는다(실측 2026-07-29: `track: S` 가 브랜치가 되어 자식이 어긋난 제목을 받고 런이 죽었다).
     //   첫 줄은 **제목 전용**이어야 한다.
     authored.document = `${authored.document.replace(/\n+$/, '')}\n\n${artifactLaunchTailBoundary(authored.document)}---\n${identity.join('\n')}\n`;

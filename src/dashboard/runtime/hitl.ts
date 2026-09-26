@@ -24,19 +24,19 @@
 //
 // Env knobs:
 //
-//   MONAD_HITL_PORT              — override default 17645; scan on
+//   ELANOUS_HITL_PORT              — override default 17645; scan on
 //                                  EADDRINUSE up to PORT_SCAN_RANGE
-//   MONAD_HITL_CALLBACK_PORT     — strict port (no scan). 0 =
+//   ELANOUS_HITL_CALLBACK_PORT     — strict port (no scan). 0 =
 //                                  OS-assigned. Takes precedence
-//                                  over MONAD_HITL_PORT. Use this
+//                                  over ELANOUS_HITL_PORT. Use this
 //                                  when the Pushcut Shortcut URL is
 //                                  already baked to a specific port
 //                                  and you want the dashboard to
 //                                  fail fast instead of sliding
 //                                  silently (CB4).
-//   MONAD_HITL_PORT_SCAN_RANGE   — forward-scan distance (default 20)
-//   MONAD_HITL_SECRET            — require X-Monad-Secret header on POSTs
-//   MONAD_HITL_NOTIFY            — pushcut notification name (default
+//   ELANOUS_HITL_PORT_SCAN_RANGE   — forward-scan distance (default 20)
+//   ELANOUS_HITL_SECRET            — require X-Elanous-Secret header on POSTs
+//   ELANOUS_HITL_NOTIFY            — pushcut notification name (default
 //                                  monad-confirm)
 
 import {
@@ -65,7 +65,7 @@ export interface DashboardHitlDeps {
   /** Override env-based config. */
   port?: number;
   /** How many ports to try starting at `port` before giving up.
-   *  Default 20 (CB1). env override: MONAD_HITL_PORT_SCAN_RANGE. */
+   *  Default 20 (CB1). env override: ELANOUS_HITL_PORT_SCAN_RANGE. */
   portScanRange?: number;
   /** Called once when the listener binds to a port other than the
    *  one requested. Used to notify the user their Pushcut Shortcut
@@ -97,10 +97,10 @@ let state: DashboardHitlState | null = null;
 export async function initDashboardHitl(deps: DashboardHitlDeps = {}): Promise<DashboardHitlState> {
   if (state) return state;
   const factory = deps.serverFactory ?? createHitlCallbackServer;
-  // CB4 — MONAD_HITL_CALLBACK_PORT is a strict requirement (no scan),
-  //       wins over MONAD_HITL_PORT when both are set. =0 means OS-
+  // CB4 — ELANOUS_HITL_CALLBACK_PORT is a strict requirement (no scan),
+  //       wins over ELANOUS_HITL_PORT when both are set. =0 means OS-
   //       assigned. Absent → fall through to scan-friendly PORT.
-  const envCallbackPort = process.env['MONAD_HITL_CALLBACK_PORT'];
+  const envCallbackPort = process.env['ELANOUS_HITL_CALLBACK_PORT'];
   const envCallbackParsed = envCallbackPort !== undefined
     ? Number.parseInt(envCallbackPort, 10)
     : NaN;
@@ -108,20 +108,20 @@ export async function initDashboardHitl(deps: DashboardHitlDeps = {}): Promise<D
     ? envCallbackParsed
     : null;
   const port = deps.port ?? strictCallbackPort ?? (() => {
-    const envPort = process.env['MONAD_HITL_PORT'];
+    const envPort = process.env['ELANOUS_HITL_PORT'];
     const parsed = envPort ? Number.parseInt(envPort, 10) : NaN;
     return Number.isFinite(parsed) && parsed >= 0 ? parsed : 17645;
   })();
   // Strict env pins range to 1 (no scan). Test/dev can override via
   // deps.portScanRange which wins.
   const portScanRange = deps.portScanRange ?? (strictCallbackPort !== null ? 1 : (() => {
-    const envRange = process.env['MONAD_HITL_PORT_SCAN_RANGE'];
+    const envRange = process.env['ELANOUS_HITL_PORT_SCAN_RANGE'];
     const parsed = envRange ? Number.parseInt(envRange, 10) : NaN;
     return Number.isFinite(parsed) && parsed > 0 ? parsed : 20;
   })());
-  const secret = deps.secret ?? process.env['MONAD_HITL_SECRET'];
+  const secret = deps.secret ?? process.env['ELANOUS_HITL_SECRET'];
   const notificationName = deps.notificationName
-    ?? process.env['MONAD_HITL_NOTIFY']
+    ?? process.env['ELANOUS_HITL_NOTIFY']
     ?? 'monad-confirm';
 
   let shiftInfo: { wanted: number; actual: number } | null = null;

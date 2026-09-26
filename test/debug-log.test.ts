@@ -9,7 +9,7 @@ import { debug, formatLine, redactSecrets, type DebugEvent } from '../src/debug/
  *  than relying on the production default (file ON). `enable()`/
  *  `disable()` only move the mirror gate; tests that care about
  *  complete isolation toggle both explicitly. */
-const RUN_ID_ENV = 'MONAD_RUN_ID';
+const RUN_ID_ENV = 'ELANOUS_RUN_ID';
 const inheritedRunId = process.env[RUN_ID_ENV];
 
 function resetDebug(): void {
@@ -271,10 +271,10 @@ describe('debug — defaults + path', () => {
 
   test('path() sits under <cwd>/log (project-local) or falls back to XDG', () => {
     const p = debug.path();
-    // Accept either cwd/log/ (primary) or ~/.local/share/monad/debug/
+    // Accept either cwd/log/ (primary) or ~/.local/share/elanous/debug/
     // (fallback when cwd was read-only at module load).
     expect(
-      p.includes('/log/debug-') || p.includes('.local/share/monad/debug/'),
+      p.includes('/log/debug-') || p.includes('.local/share/elanous/debug/'),
     ).toBe(true);
   });
 

@@ -11,20 +11,20 @@ import { join } from 'node:path';
 import { createCodexFetcher as createCodexFetcherWithStorage } from '../../src/budget/fetchers/codex';
 
 // ⛔⭐⭐ 이 파일은 이제 «디스크에 신호를 남기는» 경로를 탄다(quota signal).
-//   격리하지 않으면 실제 `~/.monad/budget/…` 을 덮어써 운영 상태와 다른 테스트를 오염시킨다(2R must-fix).
+//   격리하지 않으면 실제 `~/.elanous/budget/…` 을 덮어써 운영 상태와 다른 테스트를 오염시킨다(2R must-fix).
 //   ⊕ env 를 «복원»한다 — 안 하면 같은 프로세스의 뒤 테스트가 실행 «순서»에 의존한다(2R should-fix).
 let stateDir: string;
 const createCodexFetcher = (opts: Parameters<typeof createCodexFetcherWithStorage>[0] = {}) =>
   createCodexFetcherWithStorage({ ...opts, quotaSignalStorage: { root: stateDir } });
 let priorStateDir: string | undefined;
 beforeEach(() => {
-  priorStateDir = process.env.MONAD_STATE_DIR;
+  priorStateDir = process.env.ELANOUS_STATE_DIR;
   stateDir = mkdtempSync(join(tmpdir(), 'codex-fetcher-'));
-  process.env.MONAD_STATE_DIR = join(stateDir, 'unrelated-instance-state');
+  process.env.ELANOUS_STATE_DIR = join(stateDir, 'unrelated-instance-state');
 });
 afterEach(() => {
-  if (priorStateDir === undefined) delete process.env.MONAD_STATE_DIR;
-  else process.env.MONAD_STATE_DIR = priorStateDir;
+  if (priorStateDir === undefined) delete process.env.ELANOUS_STATE_DIR;
+  else process.env.ELANOUS_STATE_DIR = priorStateDir;
   try { rmSync(stateDir, { recursive: true, force: true }); } catch { /* best-effort */ }
 });
 

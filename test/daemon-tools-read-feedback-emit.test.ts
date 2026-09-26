@@ -34,7 +34,7 @@ import type { FeedbackEnvelope } from '../src/feedback/envelope.js';
 let cwd: string;
 
 beforeEach(() => {
-  cwd = mkdtempSync(joinPath(tmpdir(), 'monad-read-fb-'));
+  cwd = mkdtempSync(joinPath(tmpdir(), 'elanous-read-fb-'));
 });
 
 afterEach(() => {

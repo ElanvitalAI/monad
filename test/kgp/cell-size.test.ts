@@ -4,15 +4,15 @@ import { cellSize, cellsToPixels, _resetForTest } from '../../src/kgp/cell-size.
 let snap: { w?: string; h?: string };
 
 beforeEach(() => {
-  snap = { w: process.env.MONAD_KGP_CELL_W, h: process.env.MONAD_KGP_CELL_H };
-  delete process.env.MONAD_KGP_CELL_W;
-  delete process.env.MONAD_KGP_CELL_H;
+  snap = { w: process.env.ELANOUS_KGP_CELL_W, h: process.env.ELANOUS_KGP_CELL_H };
+  delete process.env.ELANOUS_KGP_CELL_W;
+  delete process.env.ELANOUS_KGP_CELL_H;
   _resetForTest();
 });
 
 afterEach(() => {
-  if (snap.w === undefined) delete process.env.MONAD_KGP_CELL_W; else process.env.MONAD_KGP_CELL_W = snap.w;
-  if (snap.h === undefined) delete process.env.MONAD_KGP_CELL_H; else process.env.MONAD_KGP_CELL_H = snap.h;
+  if (snap.w === undefined) delete process.env.ELANOUS_KGP_CELL_W; else process.env.ELANOUS_KGP_CELL_W = snap.w;
+  if (snap.h === undefined) delete process.env.ELANOUS_KGP_CELL_H; else process.env.ELANOUS_KGP_CELL_H = snap.h;
   _resetForTest();
 });
 
@@ -28,13 +28,13 @@ describe('cell-size', () => {
   });
 
   test('env override wins over default', () => {
-    process.env.MONAD_KGP_CELL_W = '10';
-    process.env.MONAD_KGP_CELL_H = '20';
+    process.env.ELANOUS_KGP_CELL_W = '10';
+    process.env.ELANOUS_KGP_CELL_H = '20';
     expect(cellSize()).toEqual({ cellW: 10, cellH: 20 });
   });
 
   test('bogus env values fall back to default', () => {
-    process.env.MONAD_KGP_CELL_W = 'NaN';
+    process.env.ELANOUS_KGP_CELL_W = 'NaN';
     expect(cellSize().cellW).toBe(9); // default
   });
 

@@ -20,7 +20,7 @@
 
 import { existsSync, readFileSync, writeFileSync, mkdirSync, rmSync } from 'node:fs';
 import { join, dirname } from 'node:path';
-import { monadStateRoot } from './state-paths.js';
+import { elanousStateRoot } from './state-paths.js';
 
 /** 이전 분해 아크 뷰(baseline 섹션 렌더용·순수). */
 export interface BaselineArcView {
@@ -133,7 +133,7 @@ export function formatBaselineSection(baseline: DecompBaseline, maxChars = 2000)
 // ── fingerprint I/O seam(fail-soft·미션 sidecar) ────────────────────────────────
 export function baselineFingerprintPath(missionId: string): string {
   const safe = (missionId || 'unknown').replace(/[^a-zA-Z0-9_-]/g, '_').slice(0, 80);
-  return join(monadStateRoot(), 'conatus/missions', safe, 'decompose-baseline.json');
+  return join(elanousStateRoot(), 'conatus/missions', safe, 'decompose-baseline.json');
 }
 
 /** 분해 성공 시 지문 저장(다음 재분해 무효화 비교용). fail-soft. */

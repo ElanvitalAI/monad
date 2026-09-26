@@ -13,7 +13,7 @@ import type {
 } from './types.js';
 
 const VALID_BRANDS: ReadonlySet<PersonaBrand> = new Set([
-  'claude', 'codex', 'gemini', 'monad-as-child', 'local-llm', 'auto',
+  'claude', 'codex', 'gemini', 'elanous-as-child', 'local-llm', 'auto',
 ]);
 
 /** 🏠 거처 — RFC §25e. ⛔ 「어느 화면(browserPort)」과 «다른 축»이다. */

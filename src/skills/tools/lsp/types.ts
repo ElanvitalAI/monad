@@ -1,4 +1,4 @@
-// ── LSP types (subset used by monad's L1 client) ──
+// ── LSP types (subset used by elanous's L1 client) ──
 //
 // LSP spec v3.17 is large — we carry only the shapes we actually read
 // or write. Additional ops in L2/L3/L4 extend this file rather than

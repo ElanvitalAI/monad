@@ -20,12 +20,12 @@ import type { RunTurnResult } from '../src/session/chat.js';
 let root: string;
 beforeEach(() => {
   root = mkdtempSync(join(tmpdir(), 'dc-self-msg-'));
-  process.env.MONAD_SESSION_ROOT = join(root, 'sessions');
+  process.env.ELANOUS_SESSION_ROOT = join(root, 'sessions');
   _resetActiveDelegationForTests();
 });
 afterEach(() => {
   rmSync(root, { recursive: true, force: true });
-  delete process.env.MONAD_SESSION_ROOT;
+  delete process.env.ELANOUS_SESSION_ROOT;
   _resetActiveDelegationForTests();
   mock.restore();
 });

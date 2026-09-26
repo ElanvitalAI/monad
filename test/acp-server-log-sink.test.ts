@@ -2,8 +2,8 @@
 //
 // ACP 서버는 nexus 데몬의 StoreSink 를 **상속하지 않는 별도 프로세스**다. 등록이 없으면
 // 이 프로세스의 `debug.log`(capability.resolve · tool-hydrated · daemon-tools.self-implement
-// 등)가 파일 트레일에만 남고 logs.db 에 안 닿아 `monad logs` 로 **조회 불가** = 관측 안 한
-// 것(제1원칙). `monad agent` 가 #5441 로 고친 것과 같은 계열이고, 여기가 마지막 사각이었다.
+// 등)가 파일 트레일에만 남고 logs.db 에 안 닿아 `elanous logs` 로 **조회 불가** = 관측 안 한
+// 것(제1원칙). `elanous agent` 가 #5441 로 고친 것과 같은 계열이고, 여기가 마지막 사각이었다.
 //
 // seam 은 **배선돼야** 의미가 있으므로 실제 `bootAcpServer` 를 태운다. 소켓 수명은 이
 // 테스트의 관심사가 아니라 **사전-abort 신호**로 즉시 내린다(싱크 초기화는 boot 최선두라
@@ -19,8 +19,8 @@ let tmp: string;
 let sockPath: string;
 
 beforeEach(() => {
-  tmp = mkdtempSync(join(tmpdir(), 'monad-acp-logsink-'));
-  sockPath = join(tmp, 'monad.sock');
+  tmp = mkdtempSync(join(tmpdir(), 'elanous-acp-logsink-'));
+  sockPath = join(tmp, 'elanous.sock');
 });
 afterEach(() => {
   try { rmSync(tmp, { recursive: true, force: true }); } catch { /* best-effort */ }
@@ -114,7 +114,7 @@ describe('bootAcpServer — logs.db 싱크', () => {
     `;
     const proc = Bun.spawnSync({
       cmd: ['bun', '-e', probe, join(tmp, 'prod.sock')],
-      env: { ...process.env, MONAD_STATE_DIR: tmp },   // logs.db 도 tmp 로 격리
+      env: { ...process.env, ELANOUS_STATE_DIR: tmp },   // logs.db 도 tmp 로 격리
       stdout: 'pipe', stderr: 'pipe',
     });
     const out = proc.stdout.toString();

@@ -4,7 +4,7 @@
 //
 // Pre-W9c the W5 Patcher Agent (Y3) was substrate-only: PatcherBridge,
 // PatcherInputSources, tickPatcher, KgsSqliteStore all existed but the
-// daemon never wired them, so `~/.monad/kgs/kgs.db` stayed at 0 rows
+// daemon never wired them, so `~/.elanous/kgs/kgs.db` stayed at 0 rows
 // even after weeks of user activity. U5 closes that loop:
 //
 //   logger.addSink(bridge.asSink())   ← UserIntent → PatcherBridge

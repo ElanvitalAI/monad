@@ -18,8 +18,8 @@ afterEach(() => {
 
 describe('Codex fresh-login token path messages', () => {
   test.each([
-    ['without XDG_CONFIG_HOME', undefined, '.monad/auth.json'],
-    ['with XDG_CONFIG_HOME', 'xdg-config', 'xdg-config/monad/auth.json'],
+    ['without XDG_CONFIG_HOME', undefined, '.elanous/auth.json'],
+    ['with XDG_CONFIG_HOME', 'xdg-config', 'xdg-config/elanous/auth.json'],
   ])('%s reports authStorePath()', async (_name, xdgDir, expectedSuffix) => {
     const root = mkdtempSync(join(tmpdir(), 'cli-login-message-env-'));
     try {

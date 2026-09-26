@@ -11,7 +11,7 @@ import { createCapabilityGrantStore } from '../../src/conductor/capability-grant
 
 function defaultDeps(overrides = {}) {
   return {
-    serverName: 'monad',
+    serverName: 'elanous',
     serverVersion: '1.0.0',
     speak: async (s: string) => ({ ok: true, durationMs: s.length * 10 }),
     listen: async () => ({ transcript: 'hello', confidence: 0.9, ok: true }),
@@ -151,7 +151,7 @@ describe('capabilities', () => {
   test('returns server descriptor', async () => {
     const h = createVoiceBrainHandlers(defaultDeps());
     const cap = await h.capabilities();
-    expect(cap.serverName).toBe('monad');
+    expect(cap.serverName).toBe('elanous');
     expect(cap.serverVersion).toBe('1.0.0');
     expect(cap.supportedActions).toContain('speak');
   });
@@ -176,6 +176,6 @@ describe('bindVoiceBrainMethods', () => {
     expect(typeof map['acp/voice-brain.speak']).toBe('function');
     expect(typeof map['acp/voice-brain.capabilities']).toBe('function');
     const cap = await map['acp/voice-brain.capabilities']!({}) as { serverName: string };
-    expect(cap.serverName).toBe('monad');
+    expect(cap.serverName).toBe('elanous');
   });
 });

@@ -37,7 +37,7 @@ describe('runPwaDevBgLaunch', () => {
   test('aborts when an existing lock is alive', async () => {
     const out = makeOut();
     const r = await runPwaDevBgLaunch({
-      argvBin: '/usr/local/bin/monad',
+      argvBin: '/usr/local/bin/elanous',
       out,
       readLockFn: () => aliveLock(),
       isAliveFn: () => true,
@@ -53,7 +53,7 @@ describe('runPwaDevBgLaunch', () => {
     const out = makeOut();
     let lockWritten: PwaDevLockMeta | null = null;
     const r = await runPwaDevBgLaunch({
-      argvBin: '/usr/local/bin/monad',
+      argvBin: '/usr/local/bin/elanous',
       port: 4321,
       out,
       readLockFn: () => aliveLock(),
@@ -79,7 +79,7 @@ describe('runPwaDevBgLaunch', () => {
     const out = makeOut();
     const spawnArgs: Array<{ args: string[] }> = [];
     await runPwaDevBgLaunch({
-      argvBin: '/usr/local/bin/monad',
+      argvBin: '/usr/local/bin/elanous',
       port: 5555,
       out,
       readLockFn: () => null,
@@ -100,7 +100,7 @@ describe('runPwaDevBgLaunch', () => {
     const out = makeOut();
     const spawnArgs: Array<{ args: string[] }> = [];
     await runPwaDevBgLaunch({
-      argvBin: '/usr/local/bin/monad',
+      argvBin: '/usr/local/bin/elanous',
       port: 3210,
       host: '127.0.0.1',
       out,
@@ -121,7 +121,7 @@ describe('runPwaDevBgLaunch', () => {
   test('errors out when spawn returns no pid', async () => {
     const out = makeOut();
     const r = await runPwaDevBgLaunch({
-      argvBin: '/usr/local/bin/monad',
+      argvBin: '/usr/local/bin/elanous',
       out,
       readLockFn: () => null,
       isAliveFn: () => false,

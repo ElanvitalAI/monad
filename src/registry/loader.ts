@@ -1,7 +1,7 @@
 // RFC #2161 Phase 1 — Layer A Static Catalog loader.
 //
 // 2-tier merge: builtin (`monad-agent/catalog/`) + global
-// (`~/.monad/catalog/`). Reads YAML at startup. JSON dist artifact
+// (`~/.elanous/catalog/`). Reads YAML at startup. JSON dist artifact
 // (RFC §6.5.1 build-time compile) is intentionally deferred to Phase 8 ·
 // the YAML read is fast enough for daemon boot (<5ms typical) and gives
 // us simpler Phase 1 scope.
@@ -21,7 +21,7 @@ import { homedir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parse as parseYaml } from 'yaml';
-import { getMonadConfigDir } from '../monad-config-dir.js';
+import { getElanousConfigDir } from '../elanous-config-dir.js';
 import type {
   Catalog,
   ModelPatternFallback,
@@ -39,7 +39,7 @@ const HERE = dirname(fileURLToPath(import.meta.url));
  *  `<repo>/catalog/`. Walks up until it finds the catalog dir. */
 function resolveBuiltinCatalogDir(): string {
   // Test override — allows test isolation without monkey-patching cwd.
-  const override = process.env.MONAD_BUILTIN_CATALOG_DIR?.trim();
+  const override = process.env.ELANOUS_BUILTIN_CATALOG_DIR?.trim();
   if (override) return override;
   // Walk up from `src/registry/` to repo root.
   let cur = HERE;
@@ -53,15 +53,15 @@ function resolveBuiltinCatalogDir(): string {
 }
 
 function resolveGlobalCatalogDir(): string {
-  // Central resolver (`--config-dir` / `setMonadConfigDir` / legacy
-  // `MONAD_DAEMON_DIR`) wins. When it falls through to the home
-  // default, `MONAD_TEST_HOME` gets a chance to redirect — preserves
+  // Central resolver (`--config-dir` / `setElanousConfigDir` / legacy
+  // `ELANOUS_DAEMON_DIR`) wins. When it falls through to the home
+  // default, `ELANOUS_TEST_HOME` gets a chance to redirect — preserves
   // the alternate test isolation pattern used elsewhere in the
   // registry layer.
-  const central = getMonadConfigDir();
-  if (central === join(homedir(), '.monad')) {
-    const testHome = process.env.MONAD_TEST_HOME?.trim();
-    if (testHome) return join(testHome, '.monad', 'catalog');
+  const central = getElanousConfigDir();
+  if (central === join(homedir(), '.elanous')) {
+    const testHome = process.env.ELANOUS_TEST_HOME?.trim();
+    if (testHome) return join(testHome, '.elanous', 'catalog');
   }
   return join(central, 'catalog');
 }
@@ -386,10 +386,10 @@ function buildCatalog(): Catalog {
 }
 
 /** 폴드할 스냅숏을 고른다. ⛔ 시험 런타임은 preload 가 config-dir 를 격리하지 않아 실제
- *  `~/.monad/discovery-snapshot.json` 을 읽게 되므로(=기계마다 다른 카탈로그), 경로를 «명시»했을
+ *  `~/.elanous/discovery-snapshot.json` 을 읽게 되므로(=기계마다 다른 카탈로그), 경로를 «명시»했을
  *  때만 접는다. 운영은 기본 경로를 읽고, 없으면 «모른다»(null) — 접을 것이 없을 뿐 오류가 아니다. */
 function loadFoldSnapshot(): DiscoverySnapshot | null {
-  const explicit = process.env.MONAD_CATALOG_DISCOVERY_SNAPSHOT?.trim();
+  const explicit = process.env.ELANOUS_CATALOG_DISCOVERY_SNAPSHOT?.trim();
   if (explicit) return readDiscoveryCache({ cachePath: explicit });
   if (process.env.NODE_ENV === 'test') return null;
   return readDiscoveryCache();

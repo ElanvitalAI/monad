@@ -1,8 +1,8 @@
 // Archon-port T2.2 (2026-05-08) — workflow storage + discovery.
 //
 // Three sources, project > global > builtin precedence (Archon parity):
-//   1. <cwd>/.monad/workflows/*.yaml      — project-local, git committable
-//   2. ~/.monad/workflows/*.yaml          — user global
+//   1. <cwd>/.elanous/workflows/*.yaml      — project-local, git committable
+//   2. ~/.elanous/workflows/*.yaml          — user global
 //   3. samples/workflows/*.yaml           — repo-bundled built-ins
 //
 // Same name in multiple sources → project wins, builtin loses (the
@@ -11,12 +11,12 @@
 
 import { readdirSync, readFileSync, existsSync, statSync } from 'fs';
 import { join, basename } from 'path';
-import { getMonadConfigDir } from '../monad-config-dir.js';
+import { getElanousConfigDir } from '../elanous-config-dir.js';
 import { parseWorkflowYaml } from './parser.js';
 import type { ValidationResult } from './schema.js';
 import type { WorkflowDefinition, WorkflowEntry, WorkflowSource } from './types.js';
 
-/** Built-in samples shipped with monad. Resolves at runtime via the
+/** Built-in samples shipped with elanous. Resolves at runtime via the
  *  module dirname so source-tree and bun-built CLIs both find it. */
 function builtinDir(): string {
   // import.meta.dir is the directory of this file (`src/workflow-runtime`).
@@ -26,16 +26,16 @@ function builtinDir(): string {
 }
 
 export function getProjectWorkflowDir(cwd: string = process.cwd()): string {
-  return join(cwd, '.monad', 'workflows');
+  return join(cwd, '.elanous', 'workflows');
 }
 
 export function getGlobalWorkflowDir(): string {
   // Routes through the central config-dir resolver so the
-  // `--config-dir <dir>` CLI flag, programmatic `setMonadConfigDir()`,
-  // and the legacy `MONAD_DAEMON_DIR` env var all map a test /
+  // `--config-dir <dir>` CLI flag, programmatic `setElanousConfigDir()`,
+  // and the legacy `ELANOUS_DAEMON_DIR` env var all map a test /
   // isolated daemon's registered workflows away from the user's
-  // real `~/.monad/workflows/`.
-  return join(getMonadConfigDir(), 'workflows');
+  // real `~/.elanous/workflows/`.
+  return join(getElanousConfigDir(), 'workflows');
 }
 
 export function getBuiltinWorkflowDir(): string {

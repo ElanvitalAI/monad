@@ -64,7 +64,7 @@ export interface ReviewLoopOpts {
   reuseOwnedWorktree?: boolean;
   /** 심판 모델 tier 별칭 (opus|sonnet|haiku). 지정 시 ACP session/set_model 로 고정(백엔드 기본 위임 아님). */
   judgeModel?: string;
-  /** ★ G10 안전봉투(2026-07-23·[[ROADMAP-monad-is-all §2b]]) — 자율머지 후 머지 커밋의 변경파일을
+  /** ★ G10 안전봉투(2026-07-23·[[ROADMAP-elanous-is-all §2b]]) — 자율머지 후 머지 커밋의 변경파일을
    *  최신 main 격리 worktree 에서 tsc 재검, 통합 회귀면 revert PR 자동 생성+알림(자동 push 아님·사람 원클릭). */
   verifyMerge?: boolean;
   /** ★ 2계층 리뷰(2026-07-23·§2b) — 1차 리뷰 결과를 gh 대신 주입(자동 초기리뷰어). classifyReview 우회. */
@@ -152,7 +152,7 @@ const G9_MIN_SAMPLES = 5;
 
 /** 무게 판정 — gh pr view files → light/heavy. heavy=2차 심판 머스트. 미상/오류=보수적 heavy.
  *  ★ G9 학습루프(안전 방향만): light 판정이라도 최근 light 회귀율이 높으면 heavy 로 자동 승격(더 신중히).
- *  위험 방향(heavy→light 완화)은 절대 자동 안 함 — 그건 제안(HITL·monad codex review-stats). */
+ *  위험 방향(heavy→light 완화)은 절대 자동 안 함 — 그건 제안(HITL·elanous codex review-stats). */
 function resolveReviewDepth(pr: string, cfg?: ReviewDepthConfig, runGh: (args: string[]) => string = gh): { depth: ReviewDepth; changedFiles: string[] } {
   let input: ReturnType<typeof parseReviewDepthFromFilesJson>;
   try { input = parseReviewDepthFromFilesJson(runGh(['pr', 'view', pr, '--json', 'files'])); }
@@ -275,7 +275,7 @@ interface AppliedReviewItems {
   readonly headlineComments: number;
 }
 
-const REVIEW_REINFORCEMENT_HEADLINE = '✅ 리뷰 보강 자동 반영(codex-in-monad·제1원칙 렌즈):';
+const REVIEW_REINFORCEMENT_HEADLINE = '✅ 리뷰 보강 자동 반영(codex-in-elanous·제1원칙 렌즈):';
 const ACP_REWORK_HEADLINE = '🔁 ACP Claude Code 2차 심판: **REWORK**';
 const MAX_CARRIED_APPLIED_ITEMS = 12;
 
@@ -383,7 +383,7 @@ function describeThrownValue(value: unknown): string {
 /** 리뷰 본문 → verdict + 구조화된 지적(asks). */
 export async function classifyReview(body: string): Promise<ReviewClassification> {
   if (!body.trim()) return { verdict: 'ambiguous', asks: [], reason: '리뷰 본문 없음', classificationSource: 'empty-review' };
-  const sys = `너는 monad 다. PR 리뷰 본문을 읽고 판정과 구체 지적을 JSON 으로만 반환하라.
+  const sys = `너는 elanous 다. PR 리뷰 본문을 읽고 판정과 구체 지적을 JSON 으로만 반환하라.
 verdict:
 - "ok": 승인/LGTM/머지해도 좋음.
 - "reinforce": 보강/수정 요청(request-changes)·must-fix·"관측성 없음" 등 고칠 것을 지적.
@@ -441,7 +441,7 @@ ${askList}${reviewerContext}
 
 ⭐제1원칙 렌즈(반영 시 반드시 준수):
 - 관측성: self-heal/상태전이 로직엔 debug.log('<comp>.<sub>', event, data) 를 남긴다(관측 없으면 완료 아님).
-- 자기인지: 변경의 의도를 코드/주석으로 명확히(monad 가 자기 변경을 인지하도록).
+- 자기인지: 변경의 의도를 코드/주석으로 명확히(elanous 가 자기 변경을 인지하도록).
 - 셀프힐링: 실패/엣지 케이스에 방어적 처리, 안 되는 건 명확히 표시.
 
 제약: 기존 코드 스타일 준수. bunx tsc --noEmit 0 유지. 관련 테스트 통과. 변경은 이 워크트리 안에서만. git commit/push/PR 은 하지 마라(내가 한다). 자율 수행. 완성+tsc0 이면 마지막 줄에 정확히 MISSION-COMPLETE.`;
@@ -537,7 +537,7 @@ export async function runReviewLoop(pr: string, opts: ReviewLoopOpts = {}): Prom
 
     // 3) L1(2차 심판 없음·light): 반영+push 후 재리뷰 대기
     if (!effectiveFinalJudge) {
-      try { gh(['pr', 'comment', pr, '--body', `✅ 리뷰 보강 자동 반영(codex-in-monad·제1원칙 렌즈):\n${asks.map(a => `- ${a}`).join('\n')}\n\n(tsc/test 통과·push·소작업 light). 재리뷰 부탁.`]); } catch { /* noop */ }
+      try { gh(['pr', 'comment', pr, '--body', `✅ 리뷰 보강 자동 반영(codex-in-elanous·제1원칙 렌즈):\n${asks.map(a => `- ${a}`).join('\n')}\n\n(tsc/test 통과·push·소작업 light). 재리뷰 부탁.`]); } catch { /* noop */ }
       return { pr, branch, verdict: 'reinforce', asks, action: 'reworked', reworkOk: true, pushed: lastPushed, rounds: round, detail: '보강 반영+push(light·재리뷰 대기)' };
     }
 

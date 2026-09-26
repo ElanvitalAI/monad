@@ -17,7 +17,7 @@
 //
 // This module intentionally does NOT read / write user-config file
 // — rebind operates on the RUNTIME layer. Export writes a file the
-// user can later move into ~/.monad/input-bindings.json if they
+// user can later move into ~/.elanous/input-bindings.json if they
 // want the override to persist across restarts.
 
 import { readFileSync, writeFileSync } from 'node:fs';

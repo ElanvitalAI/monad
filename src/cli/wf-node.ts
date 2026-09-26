@@ -1,4 +1,4 @@
-// M4-5 (2026-05-12 · Phase 4 N5-5) — `monad wf node {list,spec,search}` CLI.
+// M4-5 (2026-05-12 · Phase 4 N5-5) — `elanous wf node {list,spec,search}` CLI.
 //
 // Thin printer over `src/workflow-runtime/node-catalog.ts`. The
 // catalog itself is the single source of truth (F6 default · ROADMAP
@@ -52,7 +52,7 @@ export function wfNodeSpec(kind: string): number {
       ui.info('Did you mean:');
       for (const r of suggestion) console.log(`  ${r.spec.kind}`);
     } else {
-      ui.info('Run `monad wf node list` to see all kinds.');
+      ui.info('Run `elanous wf node list` to see all kinds.');
     }
     return 1;
   }

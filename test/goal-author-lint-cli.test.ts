@@ -64,9 +64,9 @@ function runIn(cwd: string, ...args: string[]) {
   return Bun.spawnSync({
     // ⛔ cwd 를 픽스처 트리로 옮기므로 진입점은 «절대 경로»여야 한다 — 상대 경로면 그 트리에 없어
     //   명령이 조용히 안 돌고 findings 가 0 이 된다(실측: 그렇게 해서 한 번 빨갰다).
-    cmd: ['bun', join(process.cwd(), 'bin', 'monad.mjs'), '--test', 'self', 'author', ...args],
+    cmd: ['bun', join(process.cwd(), 'bin', 'elanous.mjs'), '--test', 'self', 'author', ...args],
     cwd,
-    env: { ...process.env, MONAD_STATE_DIR: join(tmpdir(), `goal-author-lint-state-${crypto.randomUUID()}`) },
+    env: { ...process.env, ELANOUS_STATE_DIR: join(tmpdir(), `goal-author-lint-state-${crypto.randomUUID()}`) },
     stdout: 'pipe',
     stderr: 'pipe',
   });

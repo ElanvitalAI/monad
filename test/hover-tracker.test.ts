@@ -73,30 +73,30 @@ const pillTarget: HoverTarget = {
 };
 
 describe('IDX-5 Phase 1 hover-tracker — delay resolution', () => {
-  const origEnv = process.env.MONAD_HOVER_DELAY_MS;
+  const origEnv = process.env.ELANOUS_HOVER_DELAY_MS;
   afterEach(() => {
-    if (origEnv === undefined) delete process.env.MONAD_HOVER_DELAY_MS;
-    else process.env.MONAD_HOVER_DELAY_MS = origEnv;
+    if (origEnv === undefined) delete process.env.ELANOUS_HOVER_DELAY_MS;
+    else process.env.ELANOUS_HOVER_DELAY_MS = origEnv;
   });
 
   test('readHoverDelayMs defaults to 500', () => {
-    delete process.env.MONAD_HOVER_DELAY_MS;
+    delete process.env.ELANOUS_HOVER_DELAY_MS;
     expect(readHoverDelayMs()).toBe(DEFAULT_HOVER_STABLE_MS);
     expect(DEFAULT_HOVER_STABLE_MS).toBe(500);
   });
 
-  test('MONAD_HOVER_DELAY_MS override is honored', () => {
-    expect(readHoverDelayMs({ MONAD_HOVER_DELAY_MS: '250' })).toBe(250);
+  test('ELANOUS_HOVER_DELAY_MS override is honored', () => {
+    expect(readHoverDelayMs({ ELANOUS_HOVER_DELAY_MS: '250' })).toBe(250);
   });
 
   test('non-positive + garbage env values fall back to default', () => {
-    expect(readHoverDelayMs({ MONAD_HOVER_DELAY_MS: '0' })).toBe(
+    expect(readHoverDelayMs({ ELANOUS_HOVER_DELAY_MS: '0' })).toBe(
       DEFAULT_HOVER_STABLE_MS,
     );
-    expect(readHoverDelayMs({ MONAD_HOVER_DELAY_MS: '-5' })).toBe(
+    expect(readHoverDelayMs({ ELANOUS_HOVER_DELAY_MS: '-5' })).toBe(
       DEFAULT_HOVER_STABLE_MS,
     );
-    expect(readHoverDelayMs({ MONAD_HOVER_DELAY_MS: 'abc' })).toBe(
+    expect(readHoverDelayMs({ ELANOUS_HOVER_DELAY_MS: 'abc' })).toBe(
       DEFAULT_HOVER_STABLE_MS,
     );
   });

@@ -192,7 +192,7 @@ export function PushcutSettingsCard() {
       </div>
 
       <p className="mt-2 text-[11px] text-muted-foreground">
-        Audit log: <span className="font-mono">$MONAD_DIR/hitl-log.jsonl</span>{' '}
+        Audit log: <span className="font-mono">$ELANOUS_DIR/hitl-log.jsonl</span>{' '}
         (rotates at 100 MB · cv-3 β-4)
       </p>
     </section>

@@ -78,7 +78,7 @@ describe('BackgroundNotifier · pushcut dispatch', () => {
     h.signalWaiting();
     await flush();
     expect(calls).toHaveLength(1);
-    expect(calls[0]?.name).toBe('monad-background-agent');
+    expect(calls[0]?.name).toBe('elanous-background-agent');
     expect(calls[0]?.payload.title).toContain('needs your approval');
     h.notifier.dispose();
   });

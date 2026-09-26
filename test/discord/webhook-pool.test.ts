@@ -50,10 +50,10 @@ function makeFakeRest(): {
 
 describe('webhookNameForPersona / personaIdFromWebhookName roundtrip', () => {
   test('encodes persona id with prefix', () => {
-    expect(webhookNameForPersona('sage')).toBe('monad-persona:sage');
+    expect(webhookNameForPersona('sage')).toBe('elanous-persona:sage');
   });
   test('extracts persona id from matching name', () => {
-    expect(personaIdFromWebhookName('monad-persona:sage')).toBe('sage');
+    expect(personaIdFromWebhookName('elanous-persona:sage')).toBe('sage');
   });
   test('returns null for non-matching name', () => {
     expect(personaIdFromWebhookName('Other Bot')).toBeNull();
@@ -64,7 +64,7 @@ describe('webhookNameForPersona / personaIdFromWebhookName roundtrip', () => {
 describe('webhookExecuteUrl', () => {
   test('builds the v10 execute path with id + token', () => {
     const url = webhookExecuteUrl({
-      id: 'wh-7', token: 'tok-7', name: 'monad-persona:sage', channelId: 'ch-1',
+      id: 'wh-7', token: 'tok-7', name: 'elanous-persona:sage', channelId: 'ch-1',
     });
     expect(url).toBe('https://discord.com/api/v10/webhooks/wh-7/tok-7');
   });
@@ -75,7 +75,7 @@ describe('WebhookPool.ensure', () => {
     const { rest, state } = makeFakeRest();
     const pool = new WebhookPool(rest);
     const r1 = await pool.ensure('ch-1', 'sage');
-    expect(r1.name).toBe('monad-persona:sage');
+    expect(r1.name).toBe('elanous-persona:sage');
     expect(state.created).toHaveLength(1);
 
     const r2 = await pool.ensure('ch-1', 'sage');
@@ -114,7 +114,7 @@ describe('WebhookPool.rehydrate', () => {
   test('adopts existing webhooks matching the convention', async () => {
     const { rest, state } = makeFakeRest();
     state.listResponses.set('ch-1', [
-      { id: 'wh-99', token: 'tok-99', name: 'monad-persona:sage', channelId: 'ch-1' },
+      { id: 'wh-99', token: 'tok-99', name: 'elanous-persona:sage', channelId: 'ch-1' },
       { id: 'wh-100', token: 'tok-100', name: 'Other Bot', channelId: 'ch-1' },
     ]);
     const pool = new WebhookPool(rest);

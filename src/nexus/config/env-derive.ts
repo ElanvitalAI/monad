@@ -7,7 +7,7 @@
 // Resolution priority (per switch):
 //   1. UserConfig switch value (read via switch id)
 //   2. secret-ref → readSecrets().secrets[<id>]
-//   3. legacy MONAD_* env (D-13 backwards-compat path; deprecation log
+//   3. legacy ELANOUS_* env (D-13 backwards-compat path; deprecation log
 //      surfaces via env-migrate.ts at boot)
 //   4. switch.default
 //

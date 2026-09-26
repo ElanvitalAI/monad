@@ -1,11 +1,11 @@
 /** Parent-only markers that make a spawned coding agent reject nested execution. */
 export const NESTED_AGENT_ENV_BLOCKLIST = new Set<string>([
   'CLAUDECODE',
-  'MONAD_SESSION_ID',
-  'MONAD_UNDO_REF',
-  'MONAD_GUARDIAN',
-  'MONAD_UNDO',
-  'MONAD_HITL_CALLBACK_PORT',
-  'MONAD_HITL_PORT',
-  'MONAD_HITL_PORT_SCAN_RANGE',
+  'ELANOUS_SESSION_ID',
+  'ELANOUS_UNDO_REF',
+  'ELANOUS_GUARDIAN',
+  'ELANOUS_UNDO',
+  'ELANOUS_HITL_CALLBACK_PORT',
+  'ELANOUS_HITL_PORT',
+  'ELANOUS_HITL_PORT_SCAN_RANGE',
 ]);

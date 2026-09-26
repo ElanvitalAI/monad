@@ -8,7 +8,7 @@
 // audit log survives crashes.
 //
 // Architecture decisions (PLAN §4.3.2):
-//   - Append-only JSONL at `~/.monad/voice-cost-events.jsonl` — no
+//   - Append-only JSONL at `~/.elanous/voice-cost-events.jsonl` — no
 //     locking; each event is self-contained so concurrent appends from
 //     the TUI process and the daemon REST handler can interleave
 //     without logical loss.
@@ -24,7 +24,7 @@
 import { appendFileSync, existsSync, mkdirSync, readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { debug } from '../debug/log.js';
-import { getMonadConfigDir } from '../monad-config-dir.js';
+import { getElanousConfigDir } from '../elanous-config-dir.js';
 import {
   costForStt,
   costForTts,
@@ -91,8 +91,8 @@ export interface VoiceCostTracker {
 export function defaultVoiceCostEventPath(): string {
   // Honour the centralized config-dir resolver (#2384) so
   // `--config-dir <dir>` reroutes the JSONL log too. Falls back to
-  // `~/.monad/voice-cost-events.jsonl` when no override is set.
-  return join(getMonadConfigDir(), 'voice-cost-events.jsonl');
+  // `~/.elanous/voice-cost-events.jsonl` when no override is set.
+  return join(getElanousConfigDir(), 'voice-cost-events.jsonl');
 }
 
 function monthKey(ts: number): string {

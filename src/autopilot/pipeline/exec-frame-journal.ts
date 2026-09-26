@@ -2,7 +2,7 @@
 //
 // ★ 저수준 재사용(대표 결정 2026-07-19) — jsonl append/read·safeId·frameDir 는 frame-journal.ts 것을
 //   그대로 쓰고, 타입(ExecutionFrame)과 파일(<id>.exec.jsonl)만 분리한다. 빌드 PipelineFrame 무변경.
-// ★ 관측: append 마다 debug.log('mission.exec.frame') 로 logs.db 에도 흘려 `monad logs` 조회. fail-soft.
+// ★ 관측: append 마다 debug.log('mission.exec.frame') 로 logs.db 에도 흘려 `elanous logs` 조회. fail-soft.
 
 import { join } from 'node:path';
 import { frameDir, safeId, appendJsonlLine, readJsonlLines } from './frame-journal.js';
@@ -58,7 +58,7 @@ export function appendExecFrame(frame: ExecutionFrame): void {
       missionId: frame.missionId, seq: frame.seq, phaseId: frame.phaseId, status: frame.status,
       ...(frame.framework ? { framework: frame.framework } : {}),
       // ★ 실시간 관측(대표 2026-07-19) — 어느 아크의 페이즈인지 로그에서 바로 보이게(arcId 해시가 아니라
-      //   사람이 읽는 arcSeq/arcName). `monad logs --category mission.exec.frame` 로 아크 진행을 와칭.
+      //   사람이 읽는 arcSeq/arcName). `elanous logs --category mission.exec.frame` 로 아크 진행을 와칭.
       ...(frame.arcSeq ? { arcSeq: frame.arcSeq } : {}),
       ...(frame.arcName ? { arcName: frame.arcName } : {}),
       ...(frame.arcId ? { arcId: frame.arcId } : {}),

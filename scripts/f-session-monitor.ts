@@ -4,7 +4,7 @@
  *
  * ⛔ 무엇을 답하나 — 「지금 이 세션이 로드맵의 «어느 칸»에 있고, 그 칸의 «나가는 조건»이
  *    몇 개나 서 있나」 하나뿐이다. 새 관측 기질(substrate)을 짓지 «않는다» —
- *    1급 CLI(`monad self running-runs` · `monad harness worktrees` · `monad gh`)를
+ *    1급 CLI(`elanous self running-runs` · `elanous harness worktrees` · `elanous gh`)를
  *    «합성»할 뿐이다. (관측·하니스 툴 소유는 🅣 — 이 자는 세션 스코프 합성자다.)
  *
  * ⛔⭐ 이 자가 «가르는» 것 셋 — 이것이 이 자의 존재 이유다:
@@ -23,7 +23,7 @@
  *   bun scripts/f-session-monitor.ts --phase Ⓕ      # ⭐ «실제» 칸을 적는다 (시계 칸과 가른다)
  *   bun scripts/f-session-monitor.ts --window 22    # ⭐ 창 «길이»를 바꾼다(연장) — ⛔ 앵커는 안 건드린다
  *
- * ⛔ 시각 앵커는 파일로 못 박는다(`.monad-session/f-session.json`) — 「경과 시간」을
+ * ⛔ 시각 앵커는 파일로 못 박는다(`.elanous-session/f-session.json`) — 「경과 시간」을
  *    매번 어림하면 로드맵 칸 판정이 조용히 미끄러진다.
  */
 
@@ -41,10 +41,10 @@ const REPO = new URL("..", import.meta.url).pathname.replace(/\/$/, "");
 function anchorPathFrom(argv: readonly string[]): string {
   const i = argv.indexOf("--anchor-file");
   const given = i >= 0 ? argv[i + 1] : undefined;
-  return given && !given.startsWith("-") ? given : join(REPO, ".monad-session", "f-session.json");
+  return given && !given.startsWith("-") ? given : join(REPO, ".elanous-session", "f-session.json");
 }
 const ANCHOR_PATH = anchorPathFrom(process.argv.slice(2));
-const MONAD = ["bin/monad.mjs"];
+const ELANOUS = ["bin/elanous.mjs"];
 /** ⛔ 탐침마다 시한을 준다 — 하나가 느리다고 스냅숏 전체가 멎으면 감시자가 아니다 */
 const PROBE_TIMEOUT_MS = 90_000;
 /** `--fast` — 가장 느린 탐침(워크트리 148개 훑기)을 «안 잰다». ⛔ 「0」이 아니라 ⚪ 로 낸다 */
@@ -171,7 +171,7 @@ export interface LiveProcView {
  * ⛔ 「손으로 돌린다」는 관측이 아니다 — 그 문면이 이 칸을 여러 창 동안 ⚪ 로 붙들고 있었다.
  * 형식(한 줄에 하나): `<이름>\t<맞음>\t<전체>\t<잰 날>`
  *
- * ⛔⭐⭐ 🩸 첫 판은 이것을 `.monad-session/` 에 뒀다 — ***그 디렉토리는 `.gitignore` 안이다.***
+ * ⛔⭐⭐ 🩸 첫 판은 이것을 `.elanous-session/` 에 뒀다 — ***그 디렉토리는 `.gitignore` 안이다.***
  *    ⇒ 「재는 자리」를 만들었는데 그 자리가 «이 트리에서만» 살았다. 관문은 초록인데 기록은 «안 따라간다».
  *    🔑 이 저장소가 이미 못 박은 규율의 또 한 판 — ***「있다」와 「닿는다」는 다르다.***
  *    ⇒ 추적되는 자리(`docs/`)로 옮긴다. 원장은 세션 상태가 «아니라» 기록이다.
@@ -212,7 +212,7 @@ export function readTemplateConformance(
 }
 
 export function parseWorktreeProcess(command: string): { tree: string; worktree: string } | null {
-  const m = /\/\.monad\/worktrees\/([a-z0-9]+)-[0-9a-f]+\/[^/]*\.worktrees\/([^/]+)/i.exec(command);
+  const m = /\/\.elanous\/worktrees\/([a-z0-9]+)-[0-9a-f]+\/[^/]*\.worktrees\/([^/]+)/i.exec(command);
   return m ? { tree: m[1], worktree: m[2] } : null;
 }
 
@@ -235,7 +235,7 @@ function collectLiveProcesses(myTree: string): Cell<LiveProcView> {
 }
 
 function collectRuns(): Cell<RunsView> {
-  const r = run([...MONAD, "self", "running-runs", "--include-test", "--json"], PROBE_TIMEOUT_MS);
+  const r = run([...ELANOUS, "self", "running-runs", "--include-test", "--json"], PROBE_TIMEOUT_MS);
   if (!r.ok && !r.out.trim()) return errored<RunsView>(`running-runs 실패: ${r.err.slice(0, 200)}`);
   let parsed: any;
   try {
@@ -267,7 +267,7 @@ function collectRuns(): Cell<RunsView> {
 // ── 워크트리 수명 사다리 ────────────────────────────────
 function collectWorktrees(): Cell<Record<string, number>> {
   if (SKIP_WORKTREES) return unmeasured<Record<string, number>>("--fast — 이번 스냅숏에서 «안 쟀다»(0이 아니다)");
-  const r = run([...MONAD, "harness", "worktrees"], PROBE_TIMEOUT_MS);
+  const r = run([...ELANOUS, "harness", "worktrees"], PROBE_TIMEOUT_MS);
   if (!r.ok && !r.out.trim()) return errored<Record<string, number>>(`harness worktrees 실패: ${r.err.slice(0, 160)}`);
   const counts: Record<string, number> = {};
   let matched = 0;
@@ -327,7 +327,7 @@ export function targetOf(pr: { headRefName: string; title: string }): string {
 }
 
 function collectPrs(): Cell<PrView> {
-  const r = run([...MONAD, "gh", "pr", "list", "--limit", "100", "--json", "number,title,headRefName,createdAt"], PROBE_TIMEOUT_MS);
+  const r = run([...ELANOUS, "gh", "pr", "list", "--limit", "100", "--json", "number,title,headRefName,createdAt"], PROBE_TIMEOUT_MS);
   const body = r.out.trim();
   if (!body) return errored<PrView>(`gh pr list 산출 0바이트: ${r.err.slice(0, 200)}`);
   // ⛔ 상태 줄은 stderr 라 stdout 은 «원 바이트 그대로»다 — 그래도 방어적으로 첫 배열만 집는다
@@ -413,7 +413,7 @@ export function stacksOf(webclone: PrView["webclone"]): PrView["stacks"] {
  */
 function collectLandings(sinceIso: string, prefixes: readonly string[]): Cell<LandingView> {
   const LIMIT = 100;
-  const r = run([...MONAD, "gh", "pr", "list", "--state", "merged", "--limit", String(LIMIT), "--json", "number,title,mergedAt,headRefName"], PROBE_TIMEOUT_MS);
+  const r = run([...ELANOUS, "gh", "pr", "list", "--state", "merged", "--limit", String(LIMIT), "--json", "number,title,mergedAt,headRefName"], PROBE_TIMEOUT_MS);
   const body = r.out.trim();
   if (!body) return errored<LandingView>(`gh pr list --state merged 산출 0바이트: ${r.err.slice(0, 160)}`);
   let list: { number: number; title: string; mergedAt: string; headRefName: string }[];
@@ -464,7 +464,7 @@ const CHANNEL_COMMENT_CAP = 2500;
 function collectChannel(anchor: Anchor, advance: boolean): Cell<{ pr: number; count: number; delta: number | null; headroom: number }> {
   const ch = channelNumber();
   if (ch.status !== "measured" || ch.value === null) return unmeasured(ch.note ?? "채널 번호 미상");
-  const r = run([...MONAD, "gh", "api", `repos/{owner}/{repo}/issues/${ch.value}`, "--jq", ".comments"], PROBE_TIMEOUT_MS);
+  const r = run([...ELANOUS, "gh", "api", `repos/{owner}/{repo}/issues/${ch.value}`, "--jq", ".comments"], PROBE_TIMEOUT_MS);
   const n = Number(r.out.trim().split("\n").filter(Boolean).pop());
   if (!Number.isFinite(n)) return errored(`채널 코멘트 수 조회 실패: ${r.err.slice(0, 160)}`);
   const prev = anchor.channelLastCount;

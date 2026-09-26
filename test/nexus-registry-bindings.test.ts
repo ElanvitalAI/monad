@@ -22,20 +22,20 @@ import { parseBindingPath } from '../src/nexus/api/registry.js';
 import { nexusBindingsDir } from '../src/nexus/paths.js';
 import { runNexus, type RunNexusHandle } from '../src/nexus/index.js';
 import { makeTestSpawnBackend } from '../src/nexus/supervisor/spawn.js';
-import { setMonadConfigDir, resetMonadConfigDir } from '../src/monad-config-dir.js';
+import { setElanousConfigDir, resetElanousConfigDir } from '../src/elanous-config-dir.js';
 
 let tmpRoot: string;
 let prevNexus: string | undefined;
 beforeEach(() => {
-  tmpRoot = mkdtempSync(join(tmpdir(), 'monad-nexus-n35-reg-'));
-  prevNexus = process.env.MONAD_NEXUS_DIR;
-  process.env.MONAD_NEXUS_DIR = tmpRoot;
-  setMonadConfigDir(tmpRoot);
+  tmpRoot = mkdtempSync(join(tmpdir(), 'elanous-nexus-n35-reg-'));
+  prevNexus = process.env.ELANOUS_NEXUS_DIR;
+  process.env.ELANOUS_NEXUS_DIR = tmpRoot;
+  setElanousConfigDir(tmpRoot);
 });
 afterEach(() => {
-  if (prevNexus === undefined) delete process.env.MONAD_NEXUS_DIR;
-  else process.env.MONAD_NEXUS_DIR = prevNexus;
-  resetMonadConfigDir();
+  if (prevNexus === undefined) delete process.env.ELANOUS_NEXUS_DIR;
+  else process.env.ELANOUS_NEXUS_DIR = prevNexus;
+  resetElanousConfigDir();
   try { rmSync(tmpRoot, { recursive: true, force: true }); } catch { /* ignore */ }
 });
 

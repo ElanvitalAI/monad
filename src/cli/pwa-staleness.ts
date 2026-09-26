@@ -1,5 +1,5 @@
 // PWA staleness check — decides whether `apps/pwa/out/` reflects the
-// current source tree, so `monad nexus run` (static mode) can auto-build
+// current source tree, so `elanous nexus run` (static mode) can auto-build
 // when the user has pulled new commits / edited source.
 //
 // The comparison is mtime-based:

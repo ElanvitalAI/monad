@@ -2,7 +2,7 @@
 // ── 버즈 사전 자율진화 (P2d) · 주1회 크론 · 2026-07-09 ────────────────────────
 //
 // 폐루프: 버즈 제목에서 미지 고빈도 토큰 발굴 → 로컬 LLM 분류 → slang_dict 성장.
-// 무거워서 상시(10분) 아님·주1회. 등록: monad schedule create --cron '0 6 * * 1'
+// 무거워서 상시(10분) 아님·주1회. 등록: elanous schedule create --cron '0 6 * * 1'
 //   --command 'scripts/buzz-dict-evolve.ts'
 // 진화 항목은 source=llm·confidence 0.6(HITL 검토 대상). seed 는 안 덮음.
 
@@ -27,7 +27,7 @@ import { makeLocalLlm, localLlmAvailable } from '../src/domains/community-buzz/l
 import { listPendingSlang, pendingSlangCount } from '../src/domains/community-buzz/slang-review.js';
 import { sendOutbound } from '../src/domains/outbound-alert.js';
 
-const LOG = join(homedir(), '.monad/conatus/buzz_dict_evolve.log');
+const LOG = join(homedir(), '.elanous/conatus/buzz_dict_evolve.log');
 function log(s: string): void {
   console.log(s);
   try { if (!existsSync(dirname(LOG))) mkdirSync(dirname(LOG), { recursive: true }); appendFileSync(LOG, `${new Date().toISOString()} ${s}\n`); } catch { /* */ }

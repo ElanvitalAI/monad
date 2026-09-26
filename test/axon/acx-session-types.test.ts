@@ -27,7 +27,7 @@ import { createTask } from '../../src/task-orchestrator/types.js';
 
 describe('AXON P6.1 — AcxAgentBrand', () => {
   test('exports all 4 canonical brands', () => {
-    expect(ACX_AGENT_BRANDS).toEqual(['claude-code', 'codex', 'gemini-cli', 'monad-self']);
+    expect(ACX_AGENT_BRANDS).toEqual(['claude-code', 'codex', 'gemini-cli', 'elanous-self']);
   });
 
   test('isAcxAgentBrand accepts known brands + rejects unknown', () => {
@@ -183,7 +183,7 @@ function _exhaustiveTypeCheck(brand: AcxAgentBrand): string {
     case 'claude-code': return '◆';
     case 'codex':       return '◇';
     case 'gemini-cli':  return '◈';
-    case 'monad-self':  return '●';
+    case 'elanous-self':  return '●';
   }
 }
 // Reference so the unused check isn't dead-code elimination:
@@ -191,5 +191,5 @@ test('AXON P6.1 — AcxAgentBrand exhaustiveness compile-time', () => {
   expect(_exhaustiveTypeCheck('claude-code')).toBeTruthy();
   expect(_exhaustiveTypeCheck('codex')).toBeTruthy();
   expect(_exhaustiveTypeCheck('gemini-cli')).toBeTruthy();
-  expect(_exhaustiveTypeCheck('monad-self')).toBeTruthy();
+  expect(_exhaustiveTypeCheck('elanous-self')).toBeTruthy();
 });

@@ -2,7 +2,7 @@
  * POST /v1/sessions/store/:id/fork 계약 테스트 (PWA 파리티 P2 · 2026-07-12).
  *
  * beforeUser 파라미터 파싱/검증 + forkSessionById 위임 계약만 검증한다.
- * 세션 store 는 실 ~/.monad 고정(homedir·XDG 거부)이라 실제 fork 를 부르면
+ * 세션 store 는 실 ~/.elanous 고정(homedir·XDG 거부)이라 실제 fork 를 부르면
  * 실 데이터가 오염된다 — deps.fork 주입으로 격리(memory: 세션 저장소 테스트
  * 격리). 절단 엔진 자체(truncateBeforeNthUser)는 acp/session-fork 테스트 소관.
  */
@@ -108,17 +108,17 @@ describe('handleSessionsStoreList — harness origin default hide', () => {
 
   beforeEach(() => {
     sessionRoot = mkdtempSync(join(tmpdir(), 'sessions-store-list-'));
-    priorSessionRoot = process.env.MONAD_SESSION_ROOT;
-    priorHarness = process.env.MONAD_HARNESS_SPACE;
-    process.env.MONAD_SESSION_ROOT = sessionRoot;
-    delete process.env.MONAD_HARNESS_SPACE;
+    priorSessionRoot = process.env.ELANOUS_SESSION_ROOT;
+    priorHarness = process.env.ELANOUS_HARNESS_SPACE;
+    process.env.ELANOUS_SESSION_ROOT = sessionRoot;
+    delete process.env.ELANOUS_HARNESS_SPACE;
   });
 
   afterEach(() => {
-    if (priorSessionRoot === undefined) delete process.env.MONAD_SESSION_ROOT;
-    else process.env.MONAD_SESSION_ROOT = priorSessionRoot;
-    if (priorHarness === undefined) delete process.env.MONAD_HARNESS_SPACE;
-    else process.env.MONAD_HARNESS_SPACE = priorHarness;
+    if (priorSessionRoot === undefined) delete process.env.ELANOUS_SESSION_ROOT;
+    else process.env.ELANOUS_SESSION_ROOT = priorSessionRoot;
+    if (priorHarness === undefined) delete process.env.ELANOUS_HARNESS_SPACE;
+    else process.env.ELANOUS_HARNESS_SPACE = priorHarness;
     rmSync(sessionRoot, { recursive: true, force: true });
   });
 

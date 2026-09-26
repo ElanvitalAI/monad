@@ -60,9 +60,9 @@ function ToolPill({
     .join(' → ');
   return (
     <div
-      data-monad-block-kind="tool_use"
-      data-monad-tool-name={block.name}
-      data-monad-tool-status={block.status}
+      data-elanous-block-kind="tool_use"
+      data-elanous-tool-name={block.name}
+      data-elanous-tool-status={block.status}
       className={cn(
         'rounded border bg-muted/40 px-2 py-1 text-xs font-mono',
         tone,
@@ -117,8 +117,8 @@ function BlocksBody({ blocks }: { blocks: ChatBlock[] }) {
               src={block.src}
               alt={block.alt ?? `inline image (${block.mediaType})`}
               className="max-w-full rounded border border-border"
-              data-monad-block-kind="image"
-              data-monad-media-type={block.mediaType}
+              data-elanous-block-kind="image"
+              data-elanous-media-type={block.mediaType}
             />
           );
         }

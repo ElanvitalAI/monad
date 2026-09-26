@@ -9,8 +9,8 @@ import type { PatcherBridge, PatcherBridgeInput } from '../user-intent/sinks/pat
 
 export type PatcherInputKind =
   | 'user_intent'        // PatcherBridge live stream (U4)
-  | 'jsonl_log'          // ~/.monad/debug-log, intent-motion-feedback, ambient-triggers
-  | 'skill_results'      // ~/.monad/skill-runs/<id>/*
+  | 'jsonl_log'          // ~/.elanous/debug-log, intent-motion-feedback, ambient-triggers
+  | 'skill_results'      // ~/.elanous/skill-runs/<id>/*
   | 'session_transcripts'
   | 'mission_audit'
   | 'workflow_runs'

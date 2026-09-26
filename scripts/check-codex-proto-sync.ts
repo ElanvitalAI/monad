@@ -2,18 +2,18 @@
 // M9 (2026-04-28) — codex-app-server proto sync lint.
 //
 // Runs `codex app-server generate-ts --out <tmpdir>` and compares the
-// JSON-RPC method surface against the methods monad references in
+// JSON-RPC method surface against the methods elanous references in
 // `src/acp/codex-app-server-*.ts`. Surfaces:
 //
 //   ✅  proto in sync                 (no drift)
 //   ⚠️  N codex methods not used      (informational — codex added new RPCs)
-//   ❌  M monad methods missing       (CRITICAL — we reference a method
+//   ❌  M elanous methods missing       (CRITICAL — we reference a method
 //                                       that doesn't exist in the current
 //                                       codex spec; rename / removal)
 //
 // Exit codes:
 //   0   sync OR informational drift only
-//   1   monad-side method missing from codex spec (action required)
+//   1   elanous-side method missing from codex spec (action required)
 //   2   codex generate-ts failed (binary missing / permission / etc.)
 //
 // Manual run:
@@ -54,7 +54,7 @@ export function extractMethodsFromGenerated(source: string): Set<string> {
   return out;
 }
 
-/** Extract method literals from monad's hand-written acp source. We
+/** Extract method literals from elanous's hand-written acp source. We
  *  scan for the 3 wire-touching call shapes:
  *
  *      client.request<...>('method/name', ...)
@@ -80,7 +80,7 @@ export function extractMethodsFromHandWritten(source: string): Set<string> {
     /\bclient\.setServerRequestHandler\s*\(\s*['"]([^'"]+)['"]/g,
     // method-list constants like APPROVAL_METHODS · MCP_BRIDGE_METHODS
     // declare the same strings.
-    /['"]((?:fs|turn|thread|mcpServer|item|account|model|review|config|skills|plugin|app|device|command|experimentalFeature|windowsSandbox|feedback|externalAgentConfig|configRequirements|getConversationSummary|gitDiffToRemote|getAuthStatus|fuzzyFileSearch|marketplace|monad)\/[A-Za-z0-9_/]+)['"]/g,
+    /['"]((?:fs|turn|thread|mcpServer|item|account|model|review|config|skills|plugin|app|device|command|experimentalFeature|windowsSandbox|feedback|externalAgentConfig|configRequirements|getConversationSummary|gitDiffToRemote|getAuthStatus|fuzzyFileSearch|marketplace|elanous)\/[A-Za-z0-9_/]+)['"]/g,
   ];
   for (const re of callPatterns) {
     let match: RegExpExecArray | null;
@@ -93,30 +93,30 @@ export function extractMethodsFromHandWritten(source: string): Set<string> {
 }
 
 export interface MethodDiff {
-  /** Methods monad uses that aren't in the codex spec — RENAME / REMOVAL alarm. */
-  readonly monadOnly: string[];
-  /** Methods in codex spec that monad doesn't use — informational. */
+  /** Methods elanous uses that aren't in the codex spec — RENAME / REMOVAL alarm. */
+  readonly elanousOnly: string[];
+  /** Methods in codex spec that elanous doesn't use — informational. */
   readonly codexOnly: string[];
   /** Shared count for telemetry. */
   readonly shared: number;
 }
 
 export function computeMethodDiff(
-  monad: ReadonlySet<string>,
+  elanous: ReadonlySet<string>,
   codex: ReadonlySet<string>,
 ): MethodDiff {
-  const monadOnly: string[] = [];
+  const elanousOnly: string[] = [];
   const codexOnly: string[] = [];
   let shared = 0;
-  for (const m of monad) {
+  for (const m of elanous) {
     if (codex.has(m)) shared++;
-    else monadOnly.push(m);
+    else elanousOnly.push(m);
   }
   for (const c of codex) {
-    if (!monad.has(c)) codexOnly.push(c);
+    if (!elanous.has(c)) codexOnly.push(c);
   }
   return {
-    monadOnly: monadOnly.sort(),
+    elanousOnly: elanousOnly.sort(),
     codexOnly: codexOnly.sort(),
     shared,
   };
@@ -137,7 +137,7 @@ interface RunResult {
  *      | "acceptForSession"
  *      | { "acceptWithExecpolicyAmendment": {...} }
  *      | "decline" | "cancel";
- *  We collect only the plain string-literal members (the ones monad emits
+ *  We collect only the plain string-literal members (the ones elanous emits
  *  as a bare `{decision:"..."}`); object variants carry data and aren't
  *  what the boolean approval path produces. Returns an empty set when the
  *  type isn't found (caller decides how to treat that). */
@@ -160,7 +160,7 @@ export function extractEnumMembersFromGenerated(source: string, typeName: string
   return members;
 }
 
-/** Diff monad's emitted approval-decision values against codex's generated
+/** Diff elanous's emitted approval-decision values against codex's generated
  *  enum members. Returns, per contract entry, any emitted value that is NOT
  *  a valid member (⇒ drift) plus whether the enum type was found at all. */
 export function computeDecisionDrift(
@@ -224,7 +224,7 @@ function readHandWrittenSources(): string {
 }
 
 export function main(): number {
-  const tmp = mkdtempSync(join(tmpdir(), 'monad-codex-proto-sync-'));
+  const tmp = mkdtempSync(join(tmpdir(), 'elanous-codex-proto-sync-'));
   try {
     const run = runGenerateTs(tmp);
     if (run.exitCode !== 0) {
@@ -236,7 +236,7 @@ export function main(): number {
     //   ClientNotification → notifications CLIENT sends
     //   ServerRequest      → server-initiated requests CLIENT must handle
     //   ServerNotification → notifications CLIENT subscribes to
-    // Monad uses methods from all four (request/notify outbound +
+    // Elanous uses methods from all four (request/notify outbound +
     // setServerRequestHandler/onNotification inbound), so we union the
     // method names from every union before computing the diff.
     const codexMethods = new Set<string>();
@@ -259,18 +259,18 @@ export function main(): number {
     }
 
     const handWritten = readHandWrittenSources();
-    const monadMethods = extractMethodsFromHandWritten(handWritten);
+    const elanousMethods = extractMethodsFromHandWritten(handWritten);
 
-    const diff = computeMethodDiff(monadMethods, codexMethods);
+    const diff = computeMethodDiff(elanousMethods, codexMethods);
 
     console.log(
-      `monad references ${monadMethods.size} method(s) · codex spec exposes ${codexMethods.size}`,
+      `elanous references ${elanousMethods.size} method(s) · codex spec exposes ${codexMethods.size}`,
     );
     console.log(`shared: ${diff.shared}`);
 
     // Approval-decision value drift — the check that would have caught the
     // approve/deny → accept/decline breakage (method names alone missed it).
-    // For each contract entry, assert every value monad emits is a member of
+    // For each contract entry, assert every value elanous emits is a member of
     // codex's generated enum. Enum lives in a per-type file (v2/<Type>.ts).
     const drift = computeDecisionDrift(CODEX_APPROVAL_DECISION_CONTRACT, (enumType) => {
       try {
@@ -284,7 +284,7 @@ export function main(): number {
       console.log(`note: decision enum ${d.enumType}.ts not generated — skipping value check`);
     }
     if (broken.length > 0) {
-      console.error('❌ approval-decision value drift — monad emits values codex no longer accepts:');
+      console.error('❌ approval-decision value drift — elanous emits values codex no longer accepts:');
       for (const d of broken) {
         console.error(`    - ${d.method} → ${d.enumType}: [${d.missing.join(', ')}] not in codex enum`);
       }
@@ -293,23 +293,23 @@ export function main(): number {
     }
     console.log(`✅ approval-decision values in sync (${drift.filter((d) => d.enumFound).length} enum(s) checked)`);
 
-    if (diff.monadOnly.length > 0) {
+    if (diff.elanousOnly.length > 0) {
       console.error(
-        `❌ ${diff.monadOnly.length} monad method(s) missing from codex spec — likely rename or removal:`,
+        `❌ ${diff.elanousOnly.length} elanous method(s) missing from codex spec — likely rename or removal:`,
       );
-      for (const m of diff.monadOnly) console.error(`    - ${m}`);
+      for (const m of diff.elanousOnly) console.error(`    - ${m}`);
       return 1;
     }
     if (diff.codexOnly.length > 0) {
       console.log(
-        `⚠️  ${diff.codexOnly.length} codex method(s) not referenced by monad (informational):`,
+        `⚠️  ${diff.codexOnly.length} codex method(s) not referenced by elanous (informational):`,
       );
       for (const m of diff.codexOnly.slice(0, 20)) console.log(`    + ${m}`);
       if (diff.codexOnly.length > 20) {
         console.log(`    + ... ${diff.codexOnly.length - 20} more`);
       }
     } else {
-      console.log('✅ proto in sync — every codex method referenced by monad');
+      console.log('✅ proto in sync — every codex method referenced by elanous');
     }
     return 0;
   } finally {

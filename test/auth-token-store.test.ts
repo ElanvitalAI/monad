@@ -21,8 +21,8 @@ import {
 let tmpHome = '';
 
 beforeEach(() => {
-  tmpHome = mkdtempSync(joinPath(tmpdir(), 'monad-token-store-'));
-  mkdirSync(joinPath(tmpHome, '.monad'), { recursive: true });
+  tmpHome = mkdtempSync(joinPath(tmpdir(), 'elanous-token-store-'));
+  mkdirSync(joinPath(tmpHome, '.elanous'), { recursive: true });
 });
 
 afterEach(() => {
@@ -35,8 +35,8 @@ describe('ensureAdminToken', () => {
   test('mints a fresh token when nothing exists', () => {
     const tok = ensureAdminToken(opts());
     expect(tok).toMatch(/^[0-9a-f]{64}$/);
-    expect(existsSync(joinPath(tmpHome, '.monad', ACP_TOKEN_FILE))).toBe(true);
-    expect(existsSync(joinPath(tmpHome, '.monad', ACP_TOKEN_ENVELOPE_FILE))).toBe(true);
+    expect(existsSync(joinPath(tmpHome, '.elanous', ACP_TOKEN_FILE))).toBe(true);
+    expect(existsSync(joinPath(tmpHome, '.elanous', ACP_TOKEN_ENVELOPE_FILE))).toBe(true);
   });
 
   test('idempotent — returns existing on subsequent calls', () => {
@@ -46,10 +46,10 @@ describe('ensureAdminToken', () => {
   });
 
   test('migrates raw file to envelope', () => {
-    writeFileSync(joinPath(tmpHome, '.monad', ACP_TOKEN_FILE), 'legacy-raw-token', 'utf-8');
+    writeFileSync(joinPath(tmpHome, '.elanous', ACP_TOKEN_FILE), 'legacy-raw-token', 'utf-8');
     const tok = ensureAdminToken(opts());
     expect(tok).toBe('legacy-raw-token');
-    const envelope = JSON.parse(readFileSync(joinPath(tmpHome, '.monad', ACP_TOKEN_ENVELOPE_FILE), 'utf-8'));
+    const envelope = JSON.parse(readFileSync(joinPath(tmpHome, '.elanous', ACP_TOKEN_ENVELOPE_FILE), 'utf-8'));
     expect(envelope.active).toBe('legacy-raw-token');
   });
 });
@@ -184,10 +184,10 @@ describe('resolveToken', () => {
 describe('clearTokenStore', () => {
   test('removes both files', () => {
     ensureAdminToken(opts());
-    expect(existsSync(joinPath(tmpHome, '.monad', ACP_TOKEN_FILE))).toBe(true);
-    expect(existsSync(joinPath(tmpHome, '.monad', ACP_TOKEN_ENVELOPE_FILE))).toBe(true);
+    expect(existsSync(joinPath(tmpHome, '.elanous', ACP_TOKEN_FILE))).toBe(true);
+    expect(existsSync(joinPath(tmpHome, '.elanous', ACP_TOKEN_ENVELOPE_FILE))).toBe(true);
     clearTokenStore(opts());
-    expect(existsSync(joinPath(tmpHome, '.monad', ACP_TOKEN_FILE))).toBe(false);
-    expect(existsSync(joinPath(tmpHome, '.monad', ACP_TOKEN_ENVELOPE_FILE))).toBe(false);
+    expect(existsSync(joinPath(tmpHome, '.elanous', ACP_TOKEN_FILE))).toBe(false);
+    expect(existsSync(joinPath(tmpHome, '.elanous', ACP_TOKEN_ENVELOPE_FILE))).toBe(false);
   });
 });

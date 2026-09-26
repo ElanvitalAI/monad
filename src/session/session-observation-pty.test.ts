@@ -5,15 +5,15 @@
 import { afterEach, describe, expect, test } from 'bun:test';
 import { recordSessionObservation } from './session-observation.js';
 
-const prior = process.env.MONAD_PTY_ID;
+const prior = process.env.ELANOUS_PTY_ID;
 afterEach(() => {
-  if (prior === undefined) delete process.env.MONAD_PTY_ID;
-  else process.env.MONAD_PTY_ID = prior;
+  if (prior === undefined) delete process.env.ELANOUS_PTY_ID;
+  else process.env.ELANOUS_PTY_ID = prior;
 });
 
 describe('recordSessionObservation — refs.ptyId', () => {
   test('PTY 안에서 나면 refs 에 ptyId 가 실린다', () => {
-    process.env.MONAD_PTY_ID = 'pty_abcdef01';
+    process.env.ELANOUS_PTY_ID = 'pty_abcdef01';
     const rows: Array<{ data: unknown }> = [];
     recordSessionObservation(
       { sessionId: 's1', subsystem: 'handoff', event: 'attached' },
@@ -23,7 +23,7 @@ describe('recordSessionObservation — refs.ptyId', () => {
   });
 
   test('무관한 refs 는 보존한다 (⚠️ ptyId 키 자체는 관문이 이긴다 — 아래 테스트가 그 정책을 고정한다)', () => {
-    process.env.MONAD_PTY_ID = 'pty_abcdef01';
+    process.env.ELANOUS_PTY_ID = 'pty_abcdef01';
     const rows: Array<{ data: unknown }> = [];
     recordSessionObservation(
       { sessionId: 's1', subsystem: 'fanout', event: 'delivered', refs: { streamId: 'x' } },
@@ -37,7 +37,7 @@ describe('recordSessionObservation — refs.ptyId', () => {
   test('refs.ptyId 가 이미 있어도 관문 값이 이긴다 (충돌 정책)', () => {
     // ⛔ 호출부가 손으로 넣은 값보다 **환경이 말하는 실제 PTY** 를 믿는다 —
     //    관측 태그가 호출부의 오기로 거짓이 되면 안 된다.
-    process.env.MONAD_PTY_ID = 'pty_abcdef01';
+    process.env.ELANOUS_PTY_ID = 'pty_abcdef01';
     const rows: Array<{ data: unknown }> = [];
     recordSessionObservation(
       { sessionId: 's1', subsystem: 'handoff', event: 'attached', refs: { ptyId: 'pty_00000000' } },
@@ -47,7 +47,7 @@ describe('recordSessionObservation — refs.ptyId', () => {
   });
 
   test('PTY 밖이면 ptyId 를 만들지 않는다 (빈 경로)', () => {
-    delete process.env.MONAD_PTY_ID;
+    delete process.env.ELANOUS_PTY_ID;
     const rows: Array<{ data: unknown }> = [];
     recordSessionObservation(
       { sessionId: 's1', subsystem: 'handoff', event: 'attached' },

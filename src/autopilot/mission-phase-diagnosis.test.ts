@@ -12,7 +12,7 @@ function outcome(over: Partial<PhaseOutcome> = {}): PhaseOutcome {
     index: 2, total: 7, status: 'failed', attempts: [], ...over,
   };
 }
-const A = (o: Partial<PhaseAttempt>): PhaseAttempt => ({ backend: 'monad-self:gpt-5.6-terra', gateResult: 'gate-failed', ...o });
+const A = (o: Partial<PhaseAttempt>): PhaseAttempt => ({ backend: 'elanous-self:gpt-5.6-terra', gateResult: 'gate-failed', ...o });
 
 describe('O1 · classifyFailClass', () => {
   it('환경 제약(gh 인증 부재)은 텍스트보다 우선 → missing-capability', () => {
@@ -24,7 +24,7 @@ describe('O1 · classifyFailClass', () => {
   it('★ P0 — LLM/API 인증 401·delegate command-failed → missing-capability (budget-exhausted 오귀속 차단·2a014e)', () => {
     expect(classifyFailClass({ text: 'ApiHttpError: Anthropic API 401: invalid x-api-key' })).toBe('missing-capability');
     expect(classifyFailClass({ text: 'authentication_error' })).toBe('missing-capability');
-    expect(classifyFailClass({ text: 'delegate 오류: Command failed: bun scripts/se-monad-self-impl.ts' })).toBe('missing-capability');
+    expect(classifyFailClass({ text: 'delegate 오류: Command failed: bun scripts/se-elanous-self-impl.ts' })).toBe('missing-capability');
     // gate 실패는 여전히 gate-failed-tests (auth 패턴에 안 삼켜짐)
     expect(classifyFailClass({ text: '무결성 게이트 실패 3 test fail' })).toBe('gate-failed-tests');
   });
@@ -101,7 +101,7 @@ describe('renderAttemptTrail', () => {
     expect(t).not.toContain('→built'); // no-op 을 built 로 위장 안 함
   });
   it('★ 누적(rebuild 여러 번)로 6회 초과면 "누적 N회(앞 M 생략)" + 최근 6만', () => {
-    const many = Array.from({ length: 9 }, (_, i) => A({ backend: i % 2 ? 'opus-4.8' : 'monad-self:gpt-5.6-terra', gateResult: 'no-change' }));
+    const many = Array.from({ length: 9 }, (_, i) => A({ backend: i % 2 ? 'opus-4.8' : 'elanous-self:gpt-5.6-terra', gateResult: 'no-change' }));
     const t = renderAttemptTrail(many);
     expect(t).toContain('누적 9회');
     expect(t).toContain('앞 3 생략');                       // 9 - 6 = 3
@@ -263,7 +263,7 @@ describe('isTooBig requireSizeSignal — split 남발 교정(대표 2026-07-21)'
     expect(isTooBig(bigDiff, { requireSizeSignal: true })).toBe(true);
   });
   it('ON: 계단소진(opus)+반복이면 big=true(강신호)', () => {
-    const escalated = outcome({ attempts: [A({ gateResult: 'gate-failed' }), A({ gateResult: 'gate-failed', backend: 'monad-self:opus-4-8' })] });
+    const escalated = outcome({ attempts: [A({ gateResult: 'gate-failed' }), A({ gateResult: 'gate-failed', backend: 'elanous-self:opus-4-8' })] });
     expect(isTooBig(escalated, { requireSizeSignal: true })).toBe(true);
   });
   it('ON: recommendHeal 도 재시도만이면 split 아닌 rebuild(예산 리셋 재시도)', () => {
@@ -278,7 +278,7 @@ describe('grounding-rejected — walker 완주·grounding 반려 = split 아닌 
     expect(classifyFailClass({ text: '[grounding 실패] 조사 증거 합성 없이 완료 참칭 — 재조사 필요(grounding·missing_evidence).' })).toBe('grounding-rejected');
   });
   it('grounding-rejected → rebuild (opus 계단·재시도로 big 이어도 split 아님)', () => {
-    const escalated = outcome({ failClass: 'grounding-rejected', attempts: [A({ gateResult: 'gate-failed' }), A({ gateResult: 'gate-failed', backend: 'monad-self:opus-4-8' })] });
+    const escalated = outcome({ failClass: 'grounding-rejected', attempts: [A({ gateResult: 'gate-failed' }), A({ gateResult: 'gate-failed', backend: 'elanous-self:opus-4-8' })] });
     expect(recommendHeal(escalated).kind).toBe('rebuild');
     // strictOversize 무관하게도 rebuild.
     expect(recommendHeal(escalated, { requireSizeSignal: true }).kind).toBe('rebuild');

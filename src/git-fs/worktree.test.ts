@@ -115,7 +115,7 @@ describe('createWorktree — resetExisting 견고화', () => {
   });
 });
 
-describe('createWorktree — monad dev 기본 브랜치 분기', () => {
+describe('createWorktree — elanous dev 기본 브랜치 분기', () => {
   let tmp: string, origin: string, repo: string, mainSha: string, callerSha: string;
 
   beforeEach(() => {
@@ -290,7 +290,7 @@ describe('createWorktree — node_modules 링크(시스템 보강 2026-07-21·�
     mkdirSync(join(repo, 'node_modules'), { recursive: true });
     const created = createWorktree({ repoRoot: repo, worktreeRoot: dirname(repo), branch: 'se/reuse-deps', base: 'HEAD', resetExisting: true });
     mkdirSync(join(repo, 'apps', 'pwa', 'node_modules', 'pwa-pkg'), { recursive: true });
-    recordHarnessWorktreeProvenance(created.path, { owner: 'dev:reuse-deps', command: 'monad dev', createdAt: '2026-08-16T00:00:00.000Z' });
+    recordHarnessWorktreeProvenance(created.path, { owner: 'dev:reuse-deps', command: 'elanous dev', createdAt: '2026-08-16T00:00:00.000Z' });
 
     const reused = createWorktree({ repoRoot: repo, worktreeRoot: dirname(repo), branch: 'se/reuse-deps', reuseOwnedWorktree: true });
 
@@ -927,7 +927,7 @@ describe('createWorktree — 소유 워크트리 재사용', () => {
     return { ...created, path: real(created.path) };
   };
   const stamp = (path: string, owner = 'dev:run-abcdef12') =>
-    recordHarnessWorktreeProvenance(path, { owner, command: 'monad dev', createdAt: new Date().toISOString() });
+    recordHarnessWorktreeProvenance(path, { owner, command: 'elanous dev', createdAt: new Date().toISOString() });
   const reuse = (branch: string, currentOwner?: string) =>
     createWorktree({
       repoRoot: repo,
@@ -1094,7 +1094,7 @@ describe('createWorktree — 소유 워크트리 재사용', () => {
       if (args[0] === 'config' && args[1] === '--worktree') {
         const key = args[args.length - 1];
         if (key.endsWith('.owner')) return overrides.owner ?? ok('dev:run-1\n');
-        if (key.endsWith('.command')) return overrides.command ?? ok('monad dev\n');
+        if (key.endsWith('.command')) return overrides.command ?? ok('elanous dev\n');
         return overrides.createdAt ?? ok('2026-08-11T00:00:00.000Z\n');
       }
       if (args[0] === 'status') return overrides.status ?? ok('');

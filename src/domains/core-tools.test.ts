@@ -27,9 +27,9 @@ describe('buildCoreTools — L2 코어 앱 도구', () => {
   test('memory_recall 설명이 멀티 도메인을 명시(finance 강결합 아님)', () => {
     const spec = core.specs.find(s => s.name === 'memory_recall')!;
     expect(spec.description).toContain('멀티 도메인');
-    // domain 파라미터가 finance 고정이 아니라 멀티(finance·monad·ops) 안내.
+    // domain 파라미터가 finance 고정이 아니라 멀티(finance·elanous·ops) 안내.
     const domainParam = (spec.parameters as any).properties.domain.description as string;
-    expect(domainParam).toContain('monad');
+    expect(domainParam).toContain('elanous');
   });
 
   test('dispatch — 미등록 이름은 error(throw 안 함)', async () => {

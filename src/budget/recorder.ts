@@ -5,7 +5,7 @@
 //
 // Why log-scan instead of adapter hook (PLAN §5 D2 adjustment B, see
 // HANDOFF 2026-04-22):
-//   monad's PTY adapters expose raw byte streams only — there's no
+//   elanous's PTY adapters expose raw byte streams only — there's no
 //   structured `turn-completed` event on the transport, so we can't
 //   hook token counts from `session.transports[0].on(...)` like the
 //   PLAN §4.4 originally proposed. The CLI itself writes a JSONL file
@@ -46,6 +46,8 @@ export interface RecorderOpts {
   /** Override Codex log root (tests). Default `$CODEX_HOME/sessions`
    *  or `~/.codex/sessions`. */
   readonly codexRoot?: string;
+  /** Restrict scans to sessions whose session_meta cwd is the child worktree. */
+  readonly codexSessionCwd?: string;
   /** Override Claude project roots (tests). Default `$CLAUDE_CONFIG_DIR
    *  /projects` split by `,` · else `~/.config/claude/projects` +
    *  `~/.claude/projects`. */
@@ -137,9 +139,11 @@ interface CodexLine {
   event_msg?: CodexEventMsg;
   turn_context?: { model?: string };
   session_id?: string;
+  type?: string;
+  payload?: { cwd?: string; id?: string };
 }
 
-function parseCodexFile(path: string, sessionIdFromName: string): TurnSummary[] {
+function parseCodexFile(path: string, sessionIdFromName: string, sessionCwd?: string): TurnSummary[] {
   let text: string;
   try {
     text = readFileSync(path, 'utf-8');
@@ -149,6 +153,7 @@ function parseCodexFile(path: string, sessionIdFromName: string): TurnSummary[] 
   const turns: TurnSummary[] = [];
   let currentModel = 'codex-unknown';
   let sessionId = sessionIdFromName;
+  let fileCwd: string | undefined;
   for (const rawLine of text.split('\n')) {
     const line = rawLine.trim();
     if (line.length === 0) continue;
@@ -160,6 +165,10 @@ function parseCodexFile(path: string, sessionIdFromName: string): TurnSummary[] 
     }
     if (obj.session_id && typeof obj.session_id === 'string') {
       sessionId = obj.session_id;
+    }
+    if (obj.type === 'session_meta' && typeof obj.payload?.cwd === 'string') {
+      fileCwd = obj.payload.cwd;
+      if (sessionCwd !== undefined && typeof obj.payload.id === 'string') sessionId = obj.payload.id;
     }
     if (obj.turn_context?.model) {
       currentModel = obj.turn_context.model;
@@ -181,7 +190,7 @@ function parseCodexFile(path: string, sessionIdFromName: string): TurnSummary[] 
       completedAt,
     });
   }
-  return turns;
+  return sessionCwd !== undefined && fileCwd !== sessionCwd ? [] : turns;
 }
 
 // ─── Claude log parser ───────────────────────────────────────────────
@@ -283,7 +292,7 @@ export function scanCodexTurns(opts: RecorderOpts = {}): {
   for (const file of walkJsonl(root, cutoff)) {
     files++;
     try {
-      allTurns.push(...parseCodexFile(file, basenameNoExt(file)));
+      allTurns.push(...parseCodexFile(file, basenameNoExt(file), opts.codexSessionCwd));
     } catch (err) {
       errors++;
       if (debug.enabled) {

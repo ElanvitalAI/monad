@@ -6,7 +6,7 @@
 //   3. dashboard-context-menu-registry (getTheme → presenter shadow)
 //
 // Asserts that pushing `shadow: { theme }` through these layers
-// produces a painted shadow band, and that `MONAD_MODAL_SHADOW=off`
+// produces a painted shadow band, and that `ELANOUS_MODAL_SHADOW=off`
 // env disables the band even when the theme is supplied.
 
 import { afterEach, beforeEach, describe, expect, test } from 'bun:test';
@@ -23,16 +23,16 @@ import type { ModalSurface } from '../src/display/modal-stack.js';
 import type { Menu } from '../src/ui/context-menu-registry.js';
 
 const ORIG_CHALK = chalk.level;
-const ORIG_SHADOW = process.env.MONAD_MODAL_SHADOW;
+const ORIG_SHADOW = process.env.ELANOUS_MODAL_SHADOW;
 
 beforeEach(() => {
   chalk.level = 3;
-  delete process.env.MONAD_MODAL_SHADOW;
+  delete process.env.ELANOUS_MODAL_SHADOW;
 });
 afterEach(() => {
   chalk.level = ORIG_CHALK;
-  if (ORIG_SHADOW === undefined) delete process.env.MONAD_MODAL_SHADOW;
-  else process.env.MONAD_MODAL_SHADOW = ORIG_SHADOW;
+  if (ORIG_SHADOW === undefined) delete process.env.ELANOUS_MODAL_SHADOW;
+  else process.env.ELANOUS_MODAL_SHADOW = ORIG_SHADOW;
 });
 
 const placement: PopupPlacement = {

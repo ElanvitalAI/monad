@@ -1,6 +1,6 @@
 // Verifies the MSS M2.1 wire-up of src/debug/log.ts — proves:
 //   1. API signature is unchanged (ts / category / event / data)
-//   2. MSS fields (trace_id / span_id / parent_span_id / monad_id) are
+//   2. MSS fields (trace_id / span_id / parent_span_id / elanous_id) are
 //      appended *only* when MSS_ENABLED + a live trace scope exists
 //   3. MSS_ENABLED=false reproduces pre-MSS shape exactly (PLAN §11.4)
 
@@ -69,13 +69,13 @@ describe('src/debug/log — MSS M2.1 backward-compat integration', () => {
     expect(ev.parent_span_id).toBeUndefined();
   });
 
-  test('inside withTraceContext → trace_id + span_id + monad_id stamped', () => {
+  test('inside withTraceContext → trace_id + span_id + elanous_id stamped', () => {
     startTurnTrace(() => {
       debug.log('pfc.classify', 'in-turn');
       const ev = mostRecentEvent()!;
       expect(ev.trace_id).toHaveLength(26);
       expect(ev.span_id).toHaveLength(26);
-      expect(ev.monad_id).toHaveLength(26);
+      expect(ev.elanous_id).toHaveLength(26);
     });
   });
 
@@ -99,7 +99,7 @@ describe('src/debug/log — MSS M2.1 backward-compat integration', () => {
       const ev = mostRecentEvent()!;
       expect(ev.trace_id).toBeUndefined();
       expect(ev.span_id).toBeUndefined();
-      expect(ev.monad_id).toBeUndefined();
+      expect(ev.elanous_id).toBeUndefined();
       expect(ev.category).toBe('pfc.classify');
       expect(ev.event).toBe('off');
     });
@@ -112,7 +112,7 @@ describe('src/debug/log — MSS M2.1 backward-compat integration', () => {
       const ev = mostRecentEvent()!;
       const line = JSON.stringify(ev);
       expect(line).toContain('"trace_id"');
-      expect(line).toContain('"monad_id"');
+      expect(line).toContain('"elanous_id"');
       // legacy fields unchanged
       expect(line).toContain('"category":"mss.smoke"');
       expect(line).toContain('"event":"jsonl-check"');
@@ -134,7 +134,7 @@ describe('src/debug/log — MSS M2.1 backward-compat integration', () => {
       const evs = debug.events(3);
       const ids = new Set(evs.map(e => e.trace_id));
       expect(ids.size).toBe(1); // same turn → same trace_id
-      for (const e of evs) expect(e.monad_id).toHaveLength(26);
+      for (const e of evs) expect(e.elanous_id).toHaveLength(26);
     });
   });
 });

@@ -19,7 +19,7 @@
         "widget": "markdown",
         "title": "Mailbox",
         "config": {
-          "text": "# Team Mailbox\n\nInter-agent messages land here when the plugin is active.\n\nLayout: `.monad/team-mailbox/<team>/<recipient>.mbox` (JSONL).\n\n_Dynamic refresh via SendMessage → pane content: PX-8._"
+          "text": "# Team Mailbox\n\nInter-agent messages land here when the plugin is active.\n\nLayout: `.elanous/team-mailbox/<team>/<recipient>.mbox` (JSONL).\n\n_Dynamic refresh via SendMessage → pane content: PX-8._"
         }
       }
     ],

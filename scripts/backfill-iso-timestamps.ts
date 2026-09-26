@@ -9,7 +9,7 @@
 // 외부 도구가 쓴 DB, 오래된 백업 복원, 가드 도입 이전 잔재 같은 경우다.
 //
 //   # 세어만 본다(기본)
-//   bun scripts/backfill-iso-timestamps.ts --db ~/.monad/conatus/community_buzz.db \
+//   bun scripts/backfill-iso-timestamps.ts --db ~/.elanous/conatus/community_buzz.db \
 //        --table slang_dict --column last_seen
 //
 //   # 실제 기록

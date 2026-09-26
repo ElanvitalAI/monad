@@ -1,6 +1,6 @@
 // ── Self-Evolution SE2 · 로드맵 → 멀티페이즈 플랜 (기존 TOX 재사용·2026-07-11) ──
 //
-// 발굴된 미구현 로드맵을 monad 정식 TOX 분해(TaskGenerator.decompose·dependsOn 그래프·
+// 발굴된 미구현 로드맵을 elanous 정식 TOX 분해(TaskGenerator.decompose·dependsOn 그래프·
 // acceptance 검증·재귀·비용)로 "검토 가능한 멀티페이즈 플랜"으로 렌더. 새 분해기 금지.
 // 프롬프트는 4대 에이전트 보강본(generator-prompt.ts·[[RESEARCH-multiphase-decomposition-4agents]]).
 //
@@ -26,7 +26,7 @@ export function buildRoadmapObjective(seed: ProposalSeed, roadmapText: string): 
   const openItems = extractOpenItems(roadmapText);
   const title = (roadmapText.match(/^#\s*(.+)$/m)?.[1] ?? seed.title).trim();
   return [
-    `내부 미구현 로드맵 "${title}"을 monad 에 구현한다.`,
+    `내부 미구현 로드맵 "${title}"을 elanous 에 구현한다.`,
     `근거: ${seed.rationale}`,
     `미완 항목 ${openItems.length}개(발췌):`,
     ...openItems.map((it, i) => `  ${i + 1}. ${it}`),

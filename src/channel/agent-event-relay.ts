@@ -74,7 +74,7 @@ export interface RelayRender {
 //    inline before we truncate the head and spill the full body as a
 //    file (P1.4). Telegram-message-friendly.
 //  • DELEGATE_AGGREGATE_CAP — the NL `delegate_code_agent` tool RESULT
-//    returned to monad's LLM. Bounds the model's context, NOT the chat.
+//    returned to elanous's LLM. Bounds the model's context, NOT the chat.
 //    The full per-tool bodies still reach the user via the file spill;
 //    this only clips what the orchestrating LLM re-reads.
 //

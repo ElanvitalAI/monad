@@ -12,7 +12,7 @@
 //
 //   - SINGLE `Bash` tool, no language-specific runners. python/node/
 //     tsx/bun all invoke via `bash -c "python3 foo.py"` etc. PATH is
-//     inherited from the process (which monad launched from the user's
+//     inherited from the process (which elanous launched from the user's
 //     zsh / bash), so the relevant binaries are reachable.
 //
 //   - Default 120s timeout, cap 600s — matches claude-code's
@@ -46,7 +46,7 @@ import {
 
 /** Per-invocation tuning knobs. Defaults come from SkillManifest
  *  fields (`shell`, `bashTimeoutMs`) so skill authors can tweak
- *  without editing monad. */
+ *  without editing elanous. */
 export interface BashToolOpts {
   /** CWD for spawned subprocesses. Almost always the skill directory —
    *  that's where scripts/ lives in a typical claude-code skill. */

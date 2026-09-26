@@ -1,13 +1,13 @@
-// monad 가 쓰는 파이썬을 «한 곳»에서 정한다 — RFC-doctor-fix-build-toolchain-and-python-by-distro-2026-09-24 A5 (대표 결정: 표준 = monad 소유 venv).
+// elanous 가 쓰는 파이썬을 «한 곳»에서 정한다 — RFC-doctor-fix-build-toolchain-and-python-by-distro-2026-09-24 A5 (대표 결정: 표준 = elanous 소유 venv).
 // 🩸 종전: `~/.pyenv/versions/3.12.12/bin/python3` 하드코딩 5곳 · bare `python3` · 크론 PATH 에 pyenv shims 끼우기 — 필요 패키지 선언 0곳.
 // 해석 순서(셸판 scripts/lib/resolve-python.sh 와 «같은» 순서):
-//   ① MONAD_PYTHON  ② monad venv(~/.local/share/monad/python/venv)  ③ pyenv 의 .python-version 판  ④ PATH 의 python3
+//   ① ELANOUS_PYTHON  ② elanous venv(~/.local/share/elanous/python/venv)  ③ pyenv 의 .python-version 판  ④ PATH 의 python3
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { homedir } from 'node:os';
 import { delimiter, join, resolve, win32 } from 'node:path';
 import { spawnSync } from 'node:child_process';
 
-export type PythonSource = 'env' | 'monad-venv' | 'pyenv' | 'managed' | 'path';
+export type PythonSource = 'env' | 'elanous-venv' | 'pyenv' | 'managed' | 'path';
 export interface PythonResolution { path: string; source: PythonSource }
 
 export interface PythonDeps {
@@ -30,17 +30,17 @@ export interface PythonDeps {
 
 export const REPO_ROOT = resolve(import.meta.dir, '..', '..');
 
-/** 설치물 영역(상태 폴더 ~/.monad 가 «아니다» — 도구 체인이고 판 정리와 무관). */
-export function monadVenvDir(env: NodeJS.ProcessEnv = process.env, home: string = homedir()): string {
+/** 설치물 영역(상태 폴더 ~/.elanous 가 «아니다» — 도구 체인이고 판 정리와 무관). */
+export function elanousVenvDir(env: NodeJS.ProcessEnv = process.env, home: string = homedir()): string {
   const path = process.platform === 'win32' || /^[a-z]:[\\/]/i.test(home) ? win32 : { join };
   const data = env.XDG_DATA_HOME?.trim() || path.join(home, '.local', 'share');
-  return path.join(data, 'monad', 'python', 'venv');
+  return path.join(data, 'elanous', 'python', 'venv');
 }
 
 /** uv 로 받은 «관리형» 파이썬 뿌리(`doctor --fix` 의 python-managed · 2026-09-25) — 배포판 파이썬이 없거나 하한 미만인 기계용. */
 export function managedPythonRoot(env: NodeJS.ProcessEnv = process.env, home: string = homedir()): string {
   const data = env.XDG_DATA_HOME?.trim() || join(home, '.local', 'share');
-  return join(data, 'monad', 'python', 'cpython');
+  return join(data, 'elanous', 'python', 'cpython');
 }
 
 /** 관리형 파이썬 후보 — `cpython-<ver>-…` 폴더들 중 가장 새 판(이름 역순)의 `bin/python3`. */
@@ -73,10 +73,10 @@ export function resolvePython(deps: PythonDeps = {}): PythonResolution | null {
   const exists = deps.exists ?? existsSync;
   const windows = (deps.platform ?? process.platform) === 'win32';
   const usable = (p: string) => !(windows && /[\\/]WindowsApps[\\/]/i.test(p)) && exists(p);
-  const explicit = env.MONAD_PYTHON?.trim();
+  const explicit = env.ELANOUS_PYTHON?.trim();
   if (explicit && usable(explicit)) return { path: explicit, source: 'env' };
-  const venv = windows ? win32.join(monadVenvDir(env, home), 'Scripts', 'python.exe') : join(monadVenvDir(env, home), 'bin', 'python');
-  if (usable(venv)) return { path: venv, source: 'monad-venv' };
+  const venv = windows ? win32.join(elanousVenvDir(env, home), 'Scripts', 'python.exe') : join(elanousVenvDir(env, home), 'bin', 'python');
+  if (usable(venv)) return { path: venv, source: 'elanous-venv' };
   const version = deps.declared !== undefined ? deps.declared : declaredPythonVersion(deps.repoRoot ?? REPO_ROOT);
   if (version && !windows) {
     const pyenv = join(env.PYENV_ROOT?.trim() || join(home, '.pyenv'), 'versions', version, 'bin', 'python3');
@@ -152,10 +152,10 @@ export const PYTHON_MIN_SUPPORTED = '3.11';
  *  not help while an explicit setting or an old venv keeps winning the resolution order. */
 export function windowsPythonRemedy(source: PythonSource): string {
   if (source === 'env') {
-    // MONAD_PYTHON is explicit and wins over every other candidate — point it at a supported interpreter (or clear it).
-    return "uv python install 3.12; if ($LASTEXITCODE -eq 0) { $py = (uv python find 3.12); [Environment]::SetEnvironmentVariable('MONAD_PYTHON', $py, 'User'); $env:MONAD_PYTHON = $py; monad python setup --yes }";
+    // ELANOUS_PYTHON is explicit and wins over every other candidate — point it at a supported interpreter (or clear it).
+    return "uv python install 3.12; if ($LASTEXITCODE -eq 0) { $py = (uv python find 3.12); [Environment]::SetEnvironmentVariable('ELANOUS_PYTHON', $py, 'User'); $env:ELANOUS_PYTHON = $py; elanous python setup --yes }";
   }
-  if (source === 'monad-venv') return 'uv python install 3.12; if ($LASTEXITCODE -eq 0) { monad python setup --yes }';
+  if (source === 'elanous-venv') return 'uv python install 3.12; if ($LASTEXITCODE -eq 0) { elanous python setup --yes }';
   return 'uv python install 3.12';
 }
 
@@ -184,17 +184,17 @@ export function evaluatePythonEnv(input: {
   platform?: NodeJS.Platform;
 }): PythonEnvCheck {
   const { resolution, declared, probe, venvExists } = input;
-  if (input.declarationsFound === false) return { status: 'manual', evidence: 'requirements-python.txt was not found next to this monad — the install is missing its python declarations', remedy: 'monad self-update (this release shipped without requirements-python.txt — 0.1.0 did)', resolution };
+  if (input.declarationsFound === false) return { status: 'manual', evidence: 'requirements-python.txt was not found next to this elanous — the install is missing its python declarations', remedy: 'elanous self-update (this release shipped without requirements-python.txt — 0.1.0 did)', resolution };
   if (input.baseHasEnsurepip === false && (!venvExists || probe?.hasPip === false)) {
-    return { status: 'manual', evidence: 'the base python cannot create a venv with pip (ensurepip missing)', ...(input.venvRemedy ? { remedy: `${input.venvRemedy} && monad python setup --yes` } : { remedy: 'install the venv/ensurepip package for your python, then: monad python setup --yes' }), resolution };
+    return { status: 'manual', evidence: 'the base python cannot create a venv with pip (ensurepip missing)', ...(input.venvRemedy ? { remedy: `${input.venvRemedy} && elanous python setup --yes` } : { remedy: 'install the venv/ensurepip package for your python, then: elanous python setup --yes' }), resolution };
   }
   // 하한(floor)으로 판정하고, 처방(pyenv)은 개발 고정판(pin)을 댄다.
   const floor = PYTHON_MIN_SUPPORTED;
   const pin = declared ?? floor;
   const windows = (input.platform ?? process.platform) === 'win32';
   if (!resolution) return windows
-    ? { status: 'manual', evidence: 'no python.exe found (MONAD_PYTHON · monad venv · PATH · uv)', remedy: 'uv python install 3.12', resolution }
-    : { status: 'manual', evidence: 'no python3 found (MONAD_PYTHON · monad venv · pyenv · PATH)', remedy: `install Python ${floor}+ (pyenv install ${pin}) — see RFC-doctor-fix-build-toolchain-and-python-by-distro A2`, resolution };
+    ? { status: 'manual', evidence: 'no python.exe found (ELANOUS_PYTHON · elanous venv · PATH · uv)', remedy: 'uv python install 3.12', resolution }
+    : { status: 'manual', evidence: 'no python3 found (ELANOUS_PYTHON · elanous venv · pyenv · PATH)', remedy: `install Python ${floor}+ (pyenv install ${pin}) — see RFC-doctor-fix-build-toolchain-and-python-by-distro A2`, resolution };
   if (!probe?.version) return { status: 'manual', evidence: `${resolution.path} did not run: ${probe?.error ?? 'not probed'}`, remedy: windows
     ? windowsPythonRemedy(resolution.source)
     : `install Python ${floor}+`, resolution };
@@ -202,12 +202,12 @@ export function evaluatePythonEnv(input: {
   if (!versionAtLeast(probe.version, floor)) {
     const remedy = windows
       ? windowsPythonRemedy(resolution.source)
-      : `pyenv install ${pin} (build deps per distro: RFC-doctor-fix-build-toolchain-and-python-by-distro A2) · then: monad python setup --yes`;
+      : `pyenv install ${pin} (build deps per distro: RFC-doctor-fix-build-toolchain-and-python-by-distro A2) · then: elanous python setup --yes`;
     return { status: 'manual', evidence: `${resolution.source} python ${v} is older than the minimum ${floor}`, remedy, resolution };
   }
-  if (!venvExists) return { status: 'fixable', evidence: `python ${v} (${resolution.source}) · monad venv missing`, remedy: 'monad python setup --yes', resolution };
-  if (probe.hasPip === false) return { status: 'fixable', evidence: `monad venv python ${v} has no pip — recreate it`, remedy: 'monad python setup --yes', resolution };
-  if (probe.missing.length) return { status: 'fixable', evidence: `monad venv python ${v} · missing modules: ${probe.missing.join(', ')}`, remedy: 'monad python setup --yes', resolution };
+  if (!venvExists) return { status: 'fixable', evidence: `python ${v} (${resolution.source}) · elanous venv missing`, remedy: 'elanous python setup --yes', resolution };
+  if (probe.hasPip === false) return { status: 'fixable', evidence: `elanous venv python ${v} has no pip — recreate it`, remedy: 'elanous python setup --yes', resolution };
+  if (probe.missing.length) return { status: 'fixable', evidence: `elanous venv python ${v} · missing modules: ${probe.missing.join(', ')}`, remedy: 'elanous python setup --yes', resolution };
   return { status: 'ok', evidence: `python ${v} (${resolution.source}) · required modules import`, resolution };
 }
 
@@ -217,7 +217,7 @@ export function venvBasePython(deps: PythonDeps = {}): PythonResolution | null {
   const home = deps.home ?? homedir();
   const exists = deps.exists ?? existsSync;
   const venv = (deps.platform ?? process.platform) === 'win32'
-    ? win32.join(monadVenvDir(env, home), 'Scripts', 'python.exe')
-    : join(monadVenvDir(env, home), 'bin', 'python');
+    ? win32.join(elanousVenvDir(env, home), 'Scripts', 'python.exe')
+    : join(elanousVenvDir(env, home), 'bin', 'python');
   return resolvePython({ ...deps, env, exists: (p) => p !== venv && exists(p) });
 }

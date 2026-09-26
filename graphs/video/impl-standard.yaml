@@ -1,4 +1,4 @@
-# 표준 «구현» 템플릿 — 외부 프로젝트용 (monad RFC-graph-engineering-for-external-projects-2026-09-09 §4)
+# 표준 «구현» 템플릿 — 외부 프로젝트용 (elanous RFC-graph-engineering-for-external-projects-2026-09-09 §4)
 # ⛔ 이 파일은 «선언»이다. 걷는 것은 scripts/graph-walk.ts 다.
 graph_id: impl-standard
 version: 1

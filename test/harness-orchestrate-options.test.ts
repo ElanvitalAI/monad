@@ -3,7 +3,7 @@ import { spawnSync } from 'node:child_process';
 import { resolve } from 'node:path';
 import { buildHarnessOrchestratePlan, runHarnessOrchestrateExecution, type HarnessOrchestrateExecutionPlan } from '../src/index.js';
 
-const CLI = resolve(import.meta.dir, '..', 'bin', 'monad.mjs');
+const CLI = resolve(import.meta.dir, '..', 'bin', 'elanous.mjs');
 
 function runCli(args: string[]): { code: number; out: string } {
   const result = spawnSync('bun', [CLI, '--test', ...args], {
@@ -13,7 +13,7 @@ function runCli(args: string[]): { code: number; out: string } {
   return { code: result.status ?? 1, out: `${result.stdout ?? ''}${result.stderr ?? ''}` };
 }
 
-describe('monad harness orchestrate — self orchestrate option parity', () => {
+describe('elanous harness orchestrate — self orchestrate option parity', () => {
   it('--help exposes --auto-review and --decompose', () => {
     const result = runCli(['harness', 'orchestrate', '--help']);
     expect(result.code, result.out).toBe(0);

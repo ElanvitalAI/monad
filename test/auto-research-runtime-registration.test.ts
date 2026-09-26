@@ -64,10 +64,10 @@ describe('PFC-S4 P6 — ToolRuntime registration', () => {
     for (const rt of ALL_AUTO_RESEARCH_RUNTIMES) registerToolRuntime(rt);
     const home = mkdtempSync(join(tmpdir(), 'rt-dispatch-'));
     const vault = discoverObsidianVault({
-      env: { MONAD_OBSIDIAN_VAULT: join(home, 'vault') },
+      env: { ELANOUS_OBSIDIAN_VAULT: join(home, 'vault') },
       cwd: home,
     });
-    process.env.MONAD_OBSIDIAN_VAULT = join(home, 'vault');
+    process.env.ELANOUS_OBSIDIAN_VAULT = join(home, 'vault');
     try {
       // Initialise a goal so subsequent dispatches have something to read
       await dispatchResearchPlan(
@@ -81,7 +81,7 @@ describe('PFC-S4 P6 — ToolRuntime registration', () => {
       );
       expect((res as any).mission).toBe('rt test');
     } finally {
-      delete process.env.MONAD_OBSIDIAN_VAULT;
+      delete process.env.ELANOUS_OBSIDIAN_VAULT;
     }
   });
 

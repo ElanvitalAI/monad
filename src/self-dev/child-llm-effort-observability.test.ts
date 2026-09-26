@@ -2,7 +2,7 @@ import { expect, test, spyOn, beforeAll, afterAll } from 'bun:test';
 import { debug } from '../debug/log.js';
 import { buildDevCliSpec, setLaunchGrokQuotaReaderForTesting, type DevCliExecutor } from './dev-cli.js';
 
-// 실시간 `monad usage`(grok 잔량)를 부르지 않는다 — 이 파일은 effort 관측만 잰다.
+// 실시간 `elanous usage`(grok 잔량)를 부르지 않는다 — 이 파일은 effort 관측만 잰다.
 beforeAll(() => setLaunchGrokQuotaReaderForTesting(() => 'unknown'));
 afterAll(() => setLaunchGrokQuotaReaderForTesting(undefined));
 

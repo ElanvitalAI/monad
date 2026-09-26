@@ -1,10 +1,10 @@
 // ── Session URI minter (MSS M1.1 Phase B1) ──
 //
 // Single helper for minting a fresh Tier 2 `SessionUri`. Wraps the
-// generic `newMonadUri('session')` + `asSessionUri()` pair so every
+// generic `newElanousUri('session')` + `asSessionUri()` pair so every
 // call site gets a typed `SessionUri` without repeating the validation
 // step — and so the bifurcation between "this is a SessionUri" and
-// "this is some other MonadUri" is encoded in one place.
+// "this is some other ElanousUri" is encoded in one place.
 //
 // PLAN §7 (URI grammar) + §11.2 (Migration). The ACP backend agent
 // feeds this into its `mintSessionId()` and cross-casts the result
@@ -13,7 +13,7 @@
 // where a SessionUri was expected?" drift.
 
 import type { SessionUri } from './brand.js';
-import { asSessionUri, newMonadUri } from './builder.js';
+import { asSessionUri, newElanousUri } from './builder.js';
 
 /** Mint a fresh Tier 2 SessionUri of the form `session/<ULID>`.
  *
@@ -24,5 +24,5 @@ import { asSessionUri, newMonadUri } from './builder.js';
  *  deterministic ordering should pair the URI with an explicit
  *  monotonic counter. */
 export function mintSessionUri(): SessionUri {
-  return asSessionUri(newMonadUri('session'));
+  return asSessionUri(newElanousUri('session'));
 }

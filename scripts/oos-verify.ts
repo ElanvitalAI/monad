@@ -4,7 +4,7 @@
 // 과거 CONFIRMED 페이퍼 체결(horizon 경과) → 실제 forward 종가 대조 → 게이트
 // 신뢰도(hitRate·IC) 실증. confirmed 4/4 과최적화 경보의 실데이터 검증.
 // 사용: bun scripts/oos-verify.ts [--horizons 5,20]. 크론(장마감 후) 권장.
-// 결과: backtest.db oos_checks. 로그: ~/.monad/conatus/oos_verify.log.
+// 결과: backtest.db oos_checks. 로그: ~/.elanous/conatus/oos_verify.log.
 
 import { existsSync, appendFileSync } from 'node:fs';
 import { homedir } from 'node:os';
@@ -14,7 +14,7 @@ import { openBacktestDb, BACKTEST_DB_PATH } from '../src/domains/backtest-store.
 import { loadDueFills, computeOOSChecks, insertOOSChecks, oosStats } from '../src/domains/backtest-oos.js';
 import { SCREENER_DB_PATH, US_PULSE_DB_PATH } from '../src/domains/sector-store.js';
 
-const LOG = join(homedir(), '.monad/conatus/oos_verify.log');
+const LOG = join(homedir(), '.elanous/conatus/oos_verify.log');
 const log = (m: string): void => { try { appendFileSync(LOG, `${new Date().toISOString()} ${m}\n`); } catch { /* */ } };
 
 const arg = (f: string, d: string): string => { const i = process.argv.indexOf(f); return i >= 0 ? String(process.argv[i + 1]) : d; };

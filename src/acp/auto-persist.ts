@@ -60,10 +60,10 @@ export interface AutoPersistHandle {
 }
 
 /** Resolve the default auto-persist mode from the environment.
- *  `MONAD_ACP_PERSIST_MODE=off` opts out; anything else (or unset)
+ *  `ELANOUS_ACP_PERSIST_MODE=off` opts out; anything else (or unset)
  *  keeps `'auto'`. Exported so consumers can audit + re-use in tests. */
 export function defaultAcpAutoPersistMode(env: NodeJS.ProcessEnv = process.env): AcpAutoPersistMode {
-  const raw = env['MONAD_ACP_PERSIST_MODE'];
+  const raw = env['ELANOUS_ACP_PERSIST_MODE'];
   if (raw === 'off') return 'off';
   return 'auto';
 }

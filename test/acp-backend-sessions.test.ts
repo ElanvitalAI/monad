@@ -73,6 +73,6 @@ test('searchAcpBackendSessions: 내용 매치 + 스니펫 role', () => {
 test('isAcpBackendSessionId', () => {
   expect(isAcpBackendSessionId('acp-cli:codex:x')).toBe(true);
   expect(isAcpBackendSessionId('acp-cli_codex_x')).toBe(true);
-  expect(isAcpBackendSessionId('monad-session-1')).toBe(false);
+  expect(isAcpBackendSessionId('elanous-session-1')).toBe(false);
   expect(isAcpBackendSessionId('550e8400-uuid')).toBe(false);
 });

@@ -37,7 +37,7 @@ function walk(dir: string, out: string[]): void {
     //    저장소 «전체 사본»이 들어 있어, 안 거르면 이 게이트의 정의역이 내 저장소가 아니게 된다
     //    — 실측 2026-09-22: 보이는 시험파일 13,074 중 8,504(65%)가 남의 워크트리였고
     //    빨강 50줄이 «전부» 거기서 나왔다(본 트리 소속 0).
-    if (name === 'node_modules' || name === '.git' || name === '.monad-test' || name === '.claude') continue;
+    if (name === 'node_modules' || name === '.git' || name === '.elanous-test' || name === '.claude') continue;
     const path = join(dir, name);
     const stat = statSync(path);
     if (stat.isDirectory()) walk(path, out);

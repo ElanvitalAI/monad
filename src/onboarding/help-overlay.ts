@@ -71,7 +71,7 @@ function inlineFallback(topic: HelpTopic): string {
     case 'general':
       return 'Type a value and press Enter. Type "?" or "help" at any prompt for context-specific help.';
     case 'llm':
-      return 'Pick the LLM provider you want monad to use. Each provider needs an API key (or OAuth for Codex).';
+      return 'Pick the LLM provider you want elanous to use. Each provider needs an API key (or OAuth for Codex).';
     case 'skills':
       return 'Pick the agent whose skills you mainly use. You can add custom skill directories afterward.';
     case 'obsidian':

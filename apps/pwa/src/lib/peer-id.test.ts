@@ -17,7 +17,7 @@ class MemoryStorage {
   setItem(key: string, value: string): void { this.map.set(key, value); }
 }
 
-const STORAGE_KEY = 'monad.pwa.peerId';
+const STORAGE_KEY = 'elanous.pwa.peerId';
 const realWindow = (globalThis as { window?: unknown }).window;
 
 function installWindow(storage: Storage): void {

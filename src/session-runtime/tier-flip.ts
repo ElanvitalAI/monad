@@ -213,7 +213,7 @@ export function splitDeferredToolSpecs(
   //   Previously this seam only *detected* the missing summoner and
   //   reported it as `unhydratable` — the announce block told the model
   //   about tools it had no way to load, so it fell back to shelling out
-  //   (`monad self implement` via PtyShell) instead of calling
+  //   (`elanous self implement` via PtyShell) instead of calling
   //   SelfImplement. Injecting ToolSearch closes that loop.
   //
   //   The surface still has to ROUTE ToolSearch (see

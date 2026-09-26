@@ -146,7 +146,7 @@ describe('buildWindowPickerSpec (PR-S2)', () => {
     expect(b.description).toContain('1 pane');
   });
 
-  test('payload uses string id (matches monad SearchItem pattern)', () => {
+  test('payload uses string id (matches elanous SearchItem pattern)', () => {
     const w = fakeWindow(42, 'forty-two');
     const spec = buildWindowPickerSpec(fakeRegistry([w], w));
     expect(spec.items[0]!.id).toBe('42');
@@ -208,7 +208,7 @@ describe('buildTransferPickerSpec (PR-S2)', () => {
   const iphoneTarget: TransferTarget = {
     kind: 'iphone',
     name: 'My iPhone',
-    pushcutName: 'monad-file-received',
+    pushcutName: 'elanous-file-received',
   };
 
   test('empty targets → empty spec', () => {
@@ -228,7 +228,7 @@ describe('buildTransferPickerSpec (PR-S2)', () => {
     const spec = buildTransferPickerSpec([iphoneTarget]);
     expect(spec.items[0]!.description).toContain('iphone');
     expect(spec.items[0]!.description).toContain('pushcut');
-    expect(spec.items[0]!.description).toContain('monad-file-received');
+    expect(spec.items[0]!.description).toContain('elanous-file-received');
   });
 
   test('summary appended to title', () => {

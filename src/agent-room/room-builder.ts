@@ -171,7 +171,7 @@ export async function buildAgentRoom(
   }
 
   // Step 2 · launch member 0 into a new VW. PR-CL7: dispatch by
-  // resolved.laneKind (CL6) so an ACP-defaulting brand (codex / monad)
+  // resolved.laneKind (CL6) so an ACP-defaulting brand (codex / elanous)
   // boots the room with an acp-live pane instead of pty-tail.
   const member0 = spec.members[0]!;
   const resolved0 = resolved[0]!;

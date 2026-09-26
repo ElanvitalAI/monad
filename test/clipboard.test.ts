@@ -22,7 +22,7 @@ import {
   PASTE_FILENAME_PREFIX,
 } from '../src/clipboard/index';
 
-const tmpRoot = mkdtempSync(join(tmpdir(), 'monad-clip-'));
+const tmpRoot = mkdtempSync(join(tmpdir(), 'elanous-clip-'));
 
 afterAll(() => {
   try { rmSync(tmpRoot, { recursive: true, force: true }); } catch { /* ignore */ }

@@ -20,7 +20,7 @@
 // 2026-09-09 refresh (live 1차 대조 — developers.openai.com/api/내부 문서 `gpt-6-astra`
 // ⊕ openai.com/api/pricing/ ⊕ `codex exec --model gpt-6-astra` 실호출):
 //   + gpt-6-astra  (2026-09-03 출시 · 현 최상단)
-//   + gpt-5.6-terra (monad 가 «실제로» 기본으로 쓰는 모델 — llm.model 이 이 값이다)
+//   + gpt-5.6-terra (elanous 가 «실제로» 기본으로 쓰는 모델 — llm.model 이 이 값이다)
 // ⛔ recommended 를 gpt-5.5 → gpt-5.6-terra 로 옮겼다. 이 표의 recommended 는 「가장 센 것」이
 //   아니라 「기본으로 골라도 되는 것」이고, 그 자리에 두 세대 전 모델이 앉아 있었다.
 //   astra 는 recommended 가 «아니다» — terra 대비 input 4배·output 3.3배라 기본값이 될 수 없다.
@@ -60,7 +60,7 @@ export const CODEX_MODELS: CodexModel[] = [
     id: 'gpt-6-sol',
     label: 'GPT-6 Sol (recommended)',
     tier: 'balanced',
-    description: 'monad 운영 기본(대표 2026-09-23). 복합 코딩·agentic 워크플로. Reasoning «Highest» 인데 가격은 5.6 Terra 와 같은 입력·더 싼 출력. 1.05M ctx, effort none..max(기본 medium).',
+    description: 'elanous 운영 기본(대표 2026-09-23). 복합 코딩·agentic 워크플로. Reasoning «Highest» 인데 가격은 5.6 Terra 와 같은 입력·더 싼 출력. 1.05M ctx, effort none..max(기본 medium).',
     contextWindow: 1_050_000,
     pricingUsd: { inputPerM: 2.0, outputPerM: 10.0, cacheReadPerM: 0.2 },
     recommended: true,
@@ -77,7 +77,7 @@ export const CODEX_MODELS: CodexModel[] = [
     id: 'gpt-5.6-terra',
     label: 'GPT-5.6 Terra (balanced)',
     tier: 'balanced',
-    description: 'monad default coding driver — fastest reliable agentic coding in the 2026-07-11 tuning matrix. 1M context, effort minimal..high.',
+    description: 'elanous default coding driver — fastest reliable agentic coding in the 2026-07-11 tuning matrix. 1M context, effort minimal..high.',
     contextWindow: 1_050_000,
     pricingUsd: { inputPerM: 2.0, outputPerM: 12.0 },
   },
@@ -138,7 +138,7 @@ export function tierBadge(tier: CodexModelTier): string {
 }
 
 /** Render a picker-ready multi-line block for one model. Used by the
- *  onboarding wizard and `monad codex models` listing. */
+ *  onboarding wizard and `elanous codex models` listing. */
 export function renderModelEntry(m: CodexModel, index: number): string {
   const rec = m.recommended ? ' [recommended]' : '';
   const ctx = m.contextWindow ? `${Math.round(m.contextWindow / 1000)}K ctx` : 'ctx: n/a';

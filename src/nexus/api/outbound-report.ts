@@ -1,11 +1,11 @@
 // ── Unified outbound send — POST /v1/outbound (B outbound, 2026-07-05) ──
 //
-// The single fan-out point for monad OUTBOUND messages (cron digests,
+// The single fan-out point for elanous OUTBOUND messages (cron digests,
 // trading alerts, autonomous-loop output), symmetric to the inbound
 // trigger-bot (the single inbound point). External senders — the openclaw
 // morning report and the Conatus `screener/send.py` alerts — POST here
 // instead of hitting the Telegram API directly with their own bot tokens,
-// so ALL outbound routes through monad's delivery channels. Send-only;
+// so ALL outbound routes through elanous's delivery channels. Send-only;
 // auth via bearer (acp-token).
 //
 // Body: { text: string, markdown?: boolean, kind?: string }

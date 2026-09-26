@@ -9,7 +9,7 @@
 //    ⑵로 흘러 **진짜 self-implement 런을 두 번 띄웠다**(worktree 두 개 생성 · 사람이 수동 정지).
 import { getUserConfig } from '../user-config.js';
 
-export const OBSERVE_ONLY_FLAG_ENV = 'MONAD_SELF_IMPLEMENT_OBSERVE_ONLY';
+export const OBSERVE_ONLY_FLAG_ENV = 'ELANOUS_SELF_IMPLEMENT_OBSERVE_ONLY';
 
 export type ObserveOnlySource = 'flag' | 'config' | 'default';
 export interface ObserveOnlyDecision {

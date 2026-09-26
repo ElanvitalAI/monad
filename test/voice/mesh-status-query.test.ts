@@ -8,14 +8,14 @@ import {
 
 const NODES: MeshNodeStatus[] = [
   {
-    nodeId: 'monad-alice',
+    nodeId: 'elanous-alice',
     displayName: 'alice',
     activeTaskSummary: 'PR review',
     shellCounts: '2v 1h',
     lastSeenIso: '2026-05-02T10:00:00Z',
   },
   {
-    nodeId: 'monad-bob',
+    nodeId: 'elanous-bob',
     displayName: 'bob',
     activeTaskSummary: 'idle',
     lastSeenIso: '2026-05-02T10:00:00Z',
@@ -59,7 +59,7 @@ describe('createMeshStatusQuery — edge cases', () => {
     const r = await q.ask();
     expect(r.outcome).toBe('no-nodes');
     expect(r.nodeCount).toBe(0);
-    expect(spoken[0]).toContain('연결된 monad 가 없');
+    expect(spoken[0]).toContain('연결된 elanous 가 없');
   });
 
   test('fetch returns null → fetch-failed', async () => {

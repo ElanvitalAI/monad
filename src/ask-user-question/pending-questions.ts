@@ -1,7 +1,7 @@
 import { existsSync, mkdirSync, readdirSync, readFileSync, renameSync, rmSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 
-import { monadStateRoot } from '../autopilot/state-paths.js';
+import { elanousStateRoot } from '../autopilot/state-paths.js';
 import { ASK_USER_QUESTION_DELIVERY_VALUES } from './types.js';
 import type { AskUserQuestionRequest, AskUserQuestionResult, HitlDelivery, QuestionOption } from './types.js';
 
@@ -131,11 +131,11 @@ function parsePendingQuestionAnswer(contents: string, file: string): PendingQues
   return { id: answer.id, result: answer.result };
 }
 
-function pendingQuestionDir(root = monadStateRoot()): string {
+function pendingQuestionDir(root = elanousStateRoot()): string {
   return join(root, 'ask-user-question', 'pending');
 }
 
-function pendingQuestionAnswerDir(root = monadStateRoot()): string {
+function pendingQuestionAnswerDir(root = elanousStateRoot()): string {
   return join(root, 'ask-user-question', 'answers');
 }
 
@@ -186,18 +186,18 @@ export function createPendingQuestion(
 
 /** Best-effort lifecycle observation: callers deliberately ignore failures. */
 export function writePendingQuestion(question: PendingQuestion, deps: PendingQuestionStoreDeps = {}): void {
-  const root = (deps.root ?? monadStateRoot)();
+  const root = (deps.root ?? elanousStateRoot)();
   writeAtomicRecord(question.id, question, pendingQuestionDir(root), pendingQuestionPath(question.id, root), deps);
 }
 
 export function writePendingQuestionAnswer(answer: PendingQuestionAnswer, deps: PendingQuestionStoreDeps = {}): void {
-  const root = (deps.root ?? monadStateRoot)();
+  const root = (deps.root ?? elanousStateRoot)();
   writeAtomicRecord(answer.id, answer, pendingQuestionAnswerDir(root), pendingQuestionAnswerPath(answer.id, root), deps);
 }
 
 export function readPendingQuestionAnswer(id: string, deps: PendingQuestionStoreDeps = {}): PendingQuestionAnswerReadResult {
   try {
-    const root = (deps.root ?? monadStateRoot)();
+    const root = (deps.root ?? elanousStateRoot)();
     const target = pendingQuestionAnswerPath(id, root);
     if (!(deps.exists ?? existsSync)(target)) return { ok: true, answer: null };
     const answer = parsePendingQuestionAnswer((deps.readFile ?? readFileSync)(target, 'utf8'), target);
@@ -209,19 +209,19 @@ export function readPendingQuestionAnswer(id: string, deps: PendingQuestionStore
 }
 
 export function removePendingQuestionAnswer(id: string, deps: PendingQuestionStoreDeps = {}): void {
-  const root = (deps.root ?? monadStateRoot)();
+  const root = (deps.root ?? elanousStateRoot)();
   (deps.removeFile ?? rmSync)(pendingQuestionAnswerPath(id, root), { force: true });
 }
 
 /** Best-effort lifecycle observation: callers deliberately ignore failures. */
 export function removePendingQuestion(id: string, deps: PendingQuestionStoreDeps = {}): void {
-  const root = (deps.root ?? monadStateRoot)();
+  const root = (deps.root ?? elanousStateRoot)();
   (deps.removeFile ?? rmSync)(pendingQuestionPath(id, root), { force: true });
 }
 
 export function readPendingQuestions(deps: PendingQuestionStoreDeps = {}): PendingQuestionReadResult {
   try {
-    const root = (deps.root ?? monadStateRoot)();
+    const root = (deps.root ?? elanousStateRoot)();
     const dir = pendingQuestionDir(root);
     if (!(deps.exists ?? existsSync)(dir)) return { ok: true, questions: [] };
     const questions: PendingQuestion[] = [];

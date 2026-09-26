@@ -1,9 +1,9 @@
 /** ⛔⭐⭐⭐ E-트랙 — 코덱스의 «물음»을 사람에게 닿게 한다.
  *
  *  📏 2026-08-21 전수 실측 (`[F]` 15차):
- *    `setElicitationHandler` 의 프로덕션 호출자가 **0** 이라 monad 는 ***구조적으로 모든
+ *    `setElicitationHandler` 의 프로덕션 호출자가 **0** 이라 elanous 는 ***구조적으로 모든
  *    elicitation 을 거절***하고 있었다. 그리고 코드가 그 사실을 «이미 자기 입으로» 적어 두었다
- *    (`codex-app-server-agent.ts` — *"지금 monad 는 구조적으로 모든 elicitation 을 거절한다"*).
+ *    (`codex-app-server-agent.ts` — *"지금 elanous 는 구조적으로 모든 elicitation 을 거절한다"*).
  *  ⊕ 그런데 이 저장소엔 사람에게 묻는 기계가 «끝까지» 있다 —
  *    저장소(`ask-user-question/`) · PWA 시트 · 텔레그램 HITL · 배달 리졸버.
  *  ⇒ 📌 또 「기능이 없다」가 아니라 ***«있는데 그 경로가 안 쓴다»***였다.

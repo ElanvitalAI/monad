@@ -67,7 +67,7 @@ const LIFECYCLE_FILE = '.lifecycle.json';
 
 export interface LifecycleIoDeps {
   /** Test seam — override the dir that backs the JSON store. Defaults
-   *  to the global workflows dir (`~/.monad/workflows/`). */
+   *  to the global workflows dir (`~/.elanous/workflows/`). */
   resolveDir?: () => string;
   /** Test seam — overrides `readFileSync`. Defaults to fs. */
   readFile?: (path: string) => string;

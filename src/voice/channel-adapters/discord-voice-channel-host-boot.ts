@@ -43,7 +43,7 @@ export interface BootDiscordVoiceChannelOpts {
    *  to the bot's voiceTap + sendGatewayPayload. When absent, the
    *  host falls back to a stub explaining the missing wire. */
   coordinator?: DiscordVoiceGatewayCoordinator;
-  /** Hook fired when a session starts — wire to monad voice-chat
+  /** Hook fired when a session starts — wire to elanous voice-chat
    *  pipeline so harness consumes the audio. */
   onSessionStart?: (session: DiscordVoiceChannelSession, opts: DiscordVoiceJoinOpts) => void;
   onSessionEnd?: () => void;
@@ -93,7 +93,7 @@ function buildAdapter(
 ): DiscordVoiceChannelAdapter {
   if (!enabled) {
     return createStubDiscordVoiceChannelAdapter({
-      failWith: 'MONAD_DISCORD_VOICE_CHANNEL is not set',
+      failWith: 'ELANOUS_DISCORD_VOICE_CHANNEL is not set',
     });
   }
   if (!coordinator) {

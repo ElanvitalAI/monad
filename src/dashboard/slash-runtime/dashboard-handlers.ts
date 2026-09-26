@@ -1926,7 +1926,7 @@ export function buildDashboardSlashRegistry(): SlashCommandRegistry<DashboardSla
       ctx,
     );
   });
-  // /remaining — 명령(`monad usage`)이 내는 구조화 산출을 그대로 읽는다. 화면 계산 없음.
+  // /remaining — 명령(`elanous usage`)이 내는 구조화 산출을 그대로 읽는다. 화면 계산 없음.
   // 기존 /usage 는 세션 토큰 통계라 이름·동작을 그대로 둔다.
   registry.register('remaining', (args, ctx) => {
     runDeferredSkillToolSlash(
@@ -2498,7 +2498,7 @@ export function buildDashboardSlashRegistry(): SlashCommandRegistry<DashboardSla
   });
 
   // /mission — TUI 부활 C-a: autopilot 미션 레지스트리의 TUI 표면.
-  // `monad autopilot` CLI 와 동일한 단일 창구(dispatchAutopilotMissions)
+  // `elanous autopilot` CLI 와 동일한 단일 창구(dispatchAutopilotMissions)
   // 소비 — 엔진/레지스트리 무변. 스코프 = 읽기(list/trace) + 승인(arm).
   // materialize/cancel 같은 무거운 변경은 CLI/skill 로 안내(오조작 방지).
   registry.register('harness', async (args, ctx) => {
@@ -2679,11 +2679,11 @@ export function buildDashboardSlashRegistry(): SlashCommandRegistry<DashboardSla
           const { launchDevGoalFileDetached } = await import('../../self-implement/seams.js');
           await launchDevGoalFileDetached({ goalFile: result.goalFile });
           ctx.chatLines.push(ctx.accent('  🚀 런을 띄웠다(백그라운드) — 이 화면을 닫아도 계속 돈다'));
-          ctx.chatLines.push(ctx.muted('     관측: monad logs --category self-implement --since 10m'));
+          ctx.chatLines.push(ctx.muted('     관측: elanous logs --category self-implement --since 10m'));
         } catch (spawnError) {
           // ⛔ 조용히 「띄운 척」하지 않는다 — 못 띄웠으면 명령을 준다.
           ctx.chatLines.push(ctx.error(`  ✗ 런 기동 실패: ${spawnError instanceof Error ? spawnError.message : String(spawnError)}`));
-          ctx.chatLines.push(ctx.warning(`  ▶ 손으로: bun bin/monad.mjs dev --file ${result.goalFile}`));
+          ctx.chatLines.push(ctx.warning(`  ▶ 손으로: bun bin/elanous.mjs dev --file ${result.goalFile}`));
         }
       } else if (result.kind === 'stopped-before-authoring') {
         ctx.chatLines.push(ctx.error('  ⛔ 저작 «전» 예비 검사에서 막혔다 — 위 이름을 확인하라'));
@@ -2962,7 +2962,7 @@ export function buildDashboardSlashRegistry(): SlashCommandRegistry<DashboardSla
         ctx.chatLines.push(ctx.subtext(`            ${String(m.goal ?? '').slice(0, 72)}`));
       }
       if (result.note) ctx.chatLines.push(ctx.muted(`  ${result.note}`));
-      ctx.chatLines.push(ctx.muted('  /mission new <goal> \u2014 \uc0dd\uc131 \u00b7 trace <id> \u2014 \uacc4\ubcf4 \u00b7 briefing <id> \u2014 \uc2e4\uc9d1\ud589 \uc804 \uc885\ud569 \ube0c\ub9ac\ud551 \u00b7 arm <id> \u2014 \uc2b9\uc778 \u00b7 \uad6c\uccb4\ud654/\uc885\ub8cc\ub294 `monad autopilot` CLI'));
+      ctx.chatLines.push(ctx.muted('  /mission new <goal> \u2014 \uc0dd\uc131 \u00b7 trace <id> \u2014 \uacc4\ubcf4 \u00b7 briefing <id> \u2014 \uc2e4\uc9d1\ud589 \uc804 \uc885\ud569 \ube0c\ub9ac\ud551 \u00b7 arm <id> \u2014 \uc2b9\uc778 \u00b7 \uad6c\uccb4\ud654/\uc885\ub8cc\ub294 `elanous autopilot` CLI'));
       ctx.setChatScrollOffset(-1);
       return;
     }
@@ -3058,7 +3058,7 @@ export function buildDashboardSlashRegistry(): SlashCommandRegistry<DashboardSla
       ctx.chatLines.push(ctx.subtext(`  \u2463 \uc815\ucc29 \u2014 ${arcStr} \u00b7 ${b.settlement.phasesDone}/${b.settlement.phasesTotal} done \u00b7 ${b.settlement.missionStatus}`));
       if (b.pendingArming) ctx.chatLines.push(ctx.warning(`  \ud83d\udd12 \uc2e4\uc9d1\ud589 \uc2b9\uc778 \ub300\uc0c1: ${b.pendingArming.title.slice(0, 48)}`));
       if (!grounded) ctx.chatLines.push(ctx.muted('  \u00b7 grounded \uc2e4\uce21(PR merge \ud604\uc2e4 \ub300\uc870): /mission briefing <id> grounded \u00b7 \ube60\ub978 \ubbf8\uba38\uc9c0 \uc2a4\uce94: /mission landing <id>'));
-      ctx.chatLines.push(ctx.muted('  \u00b7 \ud154\ub808\uadf8\ub7a8 \uce74\ub4dc \ubc1c\uc1a1: monad autopilot briefing <id> --send'));
+      ctx.chatLines.push(ctx.muted('  \u00b7 \ud154\ub808\uadf8\ub7a8 \uce74\ub4dc \ubc1c\uc1a1: elanous autopilot briefing <id> --send'));
       ctx.setChatScrollOffset(-1);
       return;
     }
@@ -4014,7 +4014,7 @@ export function buildDashboardSlashRegistry(): SlashCommandRegistry<DashboardSla
   // ── B-3.c.1 ───────────────────────────────────────────────────────
 
   registry.register(['local', 'll'], async (args, ctx) => {
-    // Local LLM slash handler — mirrors `monad local <sub>` but stays
+    // Local LLM slash handler — mirrors `elanous local <sub>` but stays
     // inside the dashboard. Subcommands:
     //   /local               — status + hint
     //   /local status        — same as /local
@@ -4051,7 +4051,7 @@ export function buildDashboardSlashRegistry(): SlashCommandRegistry<DashboardSla
       // getProviderForConfig will throw on the first turn.
       if (!curUrl || !curModel) {
         ctx.chatLines.push(ctx.warning('  Cannot activate — `baseUrl` or `model` is unset.'));
-        ctx.chatLines.push(ctx.muted('  Run `monad local setup --url … --model …` first.'));
+        ctx.chatLines.push(ctx.muted('  Run `elanous local setup --url … --model …` first.'));
         ctx.setChatScrollOffset(-1);
         return;
       }
@@ -4065,7 +4065,7 @@ export function buildDashboardSlashRegistry(): SlashCommandRegistry<DashboardSla
 
     if (loSub === 'ping') {
       if (!curUrl) {
-        ctx.chatLines.push(ctx.warning('  No baseUrl configured. `monad local setup --url …` first.'));
+        ctx.chatLines.push(ctx.warning('  No baseUrl configured. `elanous local setup --url …` first.'));
         ctx.setChatScrollOffset(-1);
         return;
       }
@@ -4120,7 +4120,7 @@ export function buildDashboardSlashRegistry(): SlashCommandRegistry<DashboardSla
 
     if (loSub === 'test') {
       if (!curUrl || !curModel) {
-        ctx.chatLines.push(ctx.warning('  Need baseUrl + model. `monad local setup …` first.'));
+        ctx.chatLines.push(ctx.warning('  Need baseUrl + model. `elanous local setup …` first.'));
         ctx.setChatScrollOffset(-1);
         return;
       }
@@ -4362,7 +4362,7 @@ export function buildDashboardSlashRegistry(): SlashCommandRegistry<DashboardSla
           const tag = ctx.subtext('[daemon]');
           ctx.chatLines.push(`    ${ctx.text(d.id)}  ${ctx.muted(ts)}  ${ctx.muted(`${d.msgCount}t`.padStart(4))}  ${tag}`);
         }
-        ctx.chatLines.push(ctx.muted('  daemon resume: restart with `--resume <id>` or MONAD_RESUME_SESSION=<id>'));
+        ctx.chatLines.push(ctx.muted('  daemon resume: restart with `--resume <id>` or ELANOUS_RESUME_SESSION=<id>'));
       } else {
         ctx.chatLines.push(ctx.muted('  /session load <prefix> to resume'));
       }
@@ -4414,7 +4414,7 @@ export function buildDashboardSlashRegistry(): SlashCommandRegistry<DashboardSla
         // might know it. On match, swap the active ACP session via
         // the existing connection (no restart) and replay history
         // into chat.history — same shape as the boot-time
-        // `MONAD_RESUME_SESSION` path.
+        // `ELANOUS_RESUME_SESSION` path.
         if (remote) {
           const httpBase = deriveDaemonHttpBase(remote.url);
           if (httpBase) {
@@ -4667,7 +4667,7 @@ export function buildDashboardSlashRegistry(): SlashCommandRegistry<DashboardSla
         : ctx.muted('(not attached)')}`);
       ctx.chatLines.push(ctx.muted('  /telegram pair | send <chat> <text> | report <text> | pause | stop'));
       ctx.chatLines.push(ctx.muted('  /telegram attach [chatId] | detach | sessions   (handoff to mobile)'));
-      ctx.chatLines.push(ctx.muted('  (start the daemon with `monad telegram on` from a shell — the dashboard doesn\'t host it)'));
+      ctx.chatLines.push(ctx.muted('  (start the daemon with `elanous telegram on` from a shell — the dashboard doesn\'t host it)'));
       ctx.setChatScrollOffset(-1);
       return;
     }
@@ -4787,9 +4787,9 @@ export function buildDashboardSlashRegistry(): SlashCommandRegistry<DashboardSla
     }
 
     if (tgSub === 'pause') {
-      // Symmetric counterpart to the CLI's `monad telegram on`: flip
+      // Symmetric counterpart to the CLI's `elanous telegram on`: flip
       // `enabled` off in user-config AND signal the daemon so the
-      // next `monad telegram run` also bails, not just the live one.
+      // next `elanous telegram run` also bails, not just the live one.
       // Keeping the token on file so unpause is a single config edit
       // (or re-run of `/telegram pair`).
       const cfg = getUserConfig();
@@ -4824,7 +4824,7 @@ export function buildDashboardSlashRegistry(): SlashCommandRegistry<DashboardSla
     }
 
     if (tgSub === 'pair' || tgSub === 'setup') {
-      ctx.chatLines.push(ctx.warning('  Pairing is interactive — please run `monad telegram pair` in a separate terminal.'));
+      ctx.chatLines.push(ctx.warning('  Pairing is interactive — please run `elanous telegram pair` in a separate terminal.'));
       ctx.chatLines.push(ctx.muted('  (The dashboard\'s textInput can\'t host the multi-line wizard cleanly.)'));
       ctx.setChatScrollOffset(-1);
       return;
@@ -5014,7 +5014,7 @@ export function buildDashboardSlashRegistry(): SlashCommandRegistry<DashboardSla
     }
     if (logCommand.kind === 'freeze') {
       if (!ctx.logSlash.isLogFreezeEnabled()) {
-        emitReplyToChat(ctx, ctx.muted('  scroll-freeze DISABLED (MONAD_LOG_PAUSE_ON_SCROLL=0).'));
+        emitReplyToChat(ctx, ctx.muted('  scroll-freeze DISABLED (ELANOUS_LOG_PAUSE_ON_SCROLL=0).'));
       } else {
         const frozenIdx = ctx.logSlash.getLogFrozenTailIndex();
         if (frozenIdx === null) {
@@ -5611,7 +5611,7 @@ export function buildDashboardSlashRegistry(): SlashCommandRegistry<DashboardSla
   registry.register('setup', (args, ctx) => {
     const setupCommand = resolveDashboardChatMainSetupCommand(args);
     const launchSetupPopup = (step?: string): void => {
-      const cmd = step ? `monad setup ${step}` : 'monad setup';
+      const cmd = step ? `elanous setup ${step}` : 'elanous setup';
       ctx.chatLines.push(ctx.accent(`❯ /setup${step ? ` ${step}` : ''} — popup terminal`));
       ctx.chatLines.push(ctx.muted(`  launching ${cmd} in popup …`));
       ctx.chatLines.push(ctx.muted('  (Esc to close popup when done — config persists on save)'));
@@ -5626,7 +5626,7 @@ export function buildDashboardSlashRegistry(): SlashCommandRegistry<DashboardSla
       try {
         resetOnboardingMarker();
         ctx.chatLines.push(ctx.success('  ✓ onboarding marker reset.'));
-        ctx.chatLines.push(ctx.muted('  next `monad` boot will launch the setup wizard automatically.'));
+        ctx.chatLines.push(ctx.muted('  next `elanous` boot will launch the setup wizard automatically.'));
         ctx.chatLines.push(ctx.muted('  or run `/setup` to launch inline now.'));
       } catch (err: unknown) {
         const msg = err instanceof Error ? err.message : String(err);
@@ -7259,7 +7259,7 @@ export function buildDashboardSlashRegistry(): SlashCommandRegistry<DashboardSla
     const toBrand = args[1];
     if (!fromId || !toBrand) {
       ctx.chatLines.push(ctx.error('  /handoff <from_session_id> <to_brand> [--channels r,p,m] [--prompt "prefix"]'));
-      ctx.chatLines.push(ctx.muted('    brands: codex · claude · claude-code · gemini · monad'));
+      ctx.chatLines.push(ctx.muted('    brands: codex · claude · claude-code · gemini · elanous'));
       ctx.setChatScrollOffset(-1);
       ctx.draw();
       return;
@@ -7460,7 +7460,7 @@ export function buildDashboardSlashRegistry(): SlashCommandRegistry<DashboardSla
   });
 
   // /export — 이 대화 전사를 마크다운 파일로 (PLAN 1-D). exportSessionTranscript
-  // 순수함수 공유(monad session export CLI 와 동형). 라이브 chat.history 우선,
+  // 순수함수 공유(elanous session export CLI 와 동형). 라이브 chat.history 우선,
   // 없으면 세션 디스크. 인자 = 대상 경로(공백 포함 가능·홈 밖 거부).
   registry.register('export', async (args, ctx) => {
     const to = args.join(' ').trim();
@@ -7548,7 +7548,7 @@ export function buildDashboardSlashRegistry(): SlashCommandRegistry<DashboardSla
   // skill-tool budget slash (registered above), so we use only
   // ['cost', 'spend'].
   // ── B4 (TUI half) — /design shows the craft-rulebook verdict ─────────
-  // The same verdict `monad repo design-check` prints and the PWA
+  // The same verdict `elanous repo design-check` prints and the PWA
   // `/design-check` panel renders, resolved through the SAME
   // `resolveRepositoryDesignCheck` so the three surfaces cannot drift.
   //
@@ -7565,7 +7565,7 @@ export function buildDashboardSlashRegistry(): SlashCommandRegistry<DashboardSla
       plain: ctx.text,
     };
     // `--declared` narrows to what the document claims; the default also lists
-    // rulebooks monad ships but the document has not declared, which is the
+    // rulebooks elanous ships but the document has not declared, which is the
     // question the CLI cannot answer.
     const declaredOnly = args.some((a) => a === '--declared' || a === 'declared');
     let lines;
@@ -7631,7 +7631,7 @@ export function buildDashboardSlashRegistry(): SlashCommandRegistry<DashboardSla
   // Interactive OAuth cannot finish inside this screen — name the CLI to type.
   registry.register(['codex-setup', 'codex-init'], (_args, ctx) => {
     ctx.chatLines.push('  Interactive OAuth cannot finish inside this screen.');
-    ctx.chatLines.push('  Type `monad codex setup` in a terminal to continue.');
+    ctx.chatLines.push('  Type `elanous codex setup` in a terminal to continue.');
     ctx.setChatScrollOffset(-1);
   });
 

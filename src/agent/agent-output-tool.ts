@@ -14,7 +14,7 @@
 //     'timeout' if the wait elapses, else the terminal result.
 //
 // Reference parity: Claude Code's TaskOutput (block + timeout + final
-// extractTextContent). monad differs in that the registry is the
+// extractTextContent). elanous differs in that the registry is the
 // single source — ACP background-manager is a separate layer that
 // AgentOutput intentionally does NOT touch (ACP sessions exposed via
 // AcpSessionJoin instead).

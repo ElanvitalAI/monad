@@ -25,7 +25,7 @@ describe('loadAgentsLayered — precedence', () => {
     const builtinDir = join(tmp, 'builtin');
     const pluginDir = join(tmp, 'plugins', 'agent-team');
     const userDir = join(tmp, 'user');
-    const projectAgentsDir = join(tmp, '.monad', 'agents');
+    const projectAgentsDir = join(tmp, '.elanous', 'agents');
 
     writeAgent(builtinDir, 'explore', {}, 'from builtin');
     mkdirSync(join(pluginDir, 'agents'), { recursive: true });

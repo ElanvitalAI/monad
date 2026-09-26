@@ -1,8 +1,8 @@
-// use-ask-question.ts — Bridge between the daemon's `monad/ask/*`
+// use-ask-question.ts — Bridge between the daemon's `elanous/ask/*`
 // extMethod and the React tree. M4 of PLAN-ask-user-question-cross-
 // surface-2026-05-13.
 //
-// Registers an `acp.onRequest('monad/ask/request', …)` handler that
+// Registers an `acp.onRequest('elanous/ask/request', …)` handler that
 // stashes the inbound request in component state, then suspends on a
 // Promise. AskQuestionSheet renders from that state; its Submit /
 // Cancel callbacks resolve the suspended Promise so the daemon's
@@ -18,13 +18,13 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { AcpConnection } from '@/lib/daemon-client';
 import {
-  MONAD_ASK_CANCEL_METHOD,
-  MONAD_ASK_REQUEST_METHOD,
-  parseMonadAskCancelPayload,
-  parseMonadAskRequestPayload,
+  ELANOUS_ASK_CANCEL_METHOD,
+  ELANOUS_ASK_REQUEST_METHOD,
+  parseElanousAskCancelPayload,
+  parseElanousAskRequestPayload,
   type AskUserQuestionRequest,
   type AskUserQuestionResult,
-} from '@/lib/monad-ask-extensions';
+} from '@/lib/elanous-ask-extensions';
 
 export interface UseAskQuestionResult {
   /** Currently displayed request (or null when idle). AskQuestionSheet
@@ -86,8 +86,8 @@ export function useAskQuestion({ acp, onComposerPrefill }: UseAskQuestionOpts): 
   useEffect(() => {
     if (!acp) return undefined;
 
-    const offRequest = acp.onRequest(MONAD_ASK_REQUEST_METHOD, async (rawParams) => {
-      const payload = parseMonadAskRequestPayload(rawParams);
+    const offRequest = acp.onRequest(ELANOUS_ASK_REQUEST_METHOD, async (rawParams) => {
+      const payload = parseElanousAskRequestPayload(rawParams);
       if (!payload) {
         // Bad shape → respond with a cancelled-degrade so the daemon
         // doesn't wedge. Throwing here would surface as -32603 internal
@@ -112,13 +112,13 @@ export function useAskQuestion({ acp, onComposerPrefill }: UseAskQuestionOpts): 
       // the proper cancel hook is registered below via `onAny`.
     });
 
-    // Cancel notifications arrive as `{ jsonrpc, method: 'monad/ask/
+    // Cancel notifications arrive as `{ jsonrpc, method: 'elanous/ask/
     // cancel', params }` with no id. The `onAny` hook catches every
     // inbound frame; we filter by method.
     const offAny = acp.onAny((frame) => {
-      if (frame.method !== MONAD_ASK_CANCEL_METHOD) return;
+      if (frame.method !== ELANOUS_ASK_CANCEL_METHOD) return;
       if (frame.id !== undefined) return;   // requests handled elsewhere
-      const cancel = parseMonadAskCancelPayload(frame.params);
+      const cancel = parseElanousAskCancelPayload(frame.params);
       if (!cancel) return;
       const current = pendingRef.current;
       if (!current || current.askId !== cancel.id) return;

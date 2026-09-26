@@ -40,7 +40,7 @@ export interface DoctorFixDeps {
   shimDir?: () => string;
   /** 폴더 통째 삭제(재빌드 전 node-pty 지우기 · 시험 주입). */
   removeTree?: (path: string) => void;
-  /** monad venv 셋업(`monad python setup --yes` 와 같은 함수 · 시험 주입) — 반환 = exit code. */
+  /** elanous venv 셋업(`elanous python setup --yes` 와 같은 함수 · 시험 주입) — 반환 = exit code. */
   pythonSetup?: () => number;
   /** 셋업 뒤 다시 잰 python-env 상태(시험 주입). */
   recheckPythonEnv?: () => 'ok' | 'fixable' | 'manual';
@@ -69,14 +69,14 @@ export interface DoctorFixResult {
 type IO = Required<Omit<DoctorFixDeps, 'readiness' | 'keyNames' | 'realpath' | 'runCommand' | 'verifyNodePty' | 'pythonSetup' | 'recheckPythonEnv' | 'shimDir' | 'removeTree' | 'arch' | 'installStaticTool' | 'installManagedPython'>> & { readiness: ReadinessDeps; keyNames: readonly string[] | undefined };
 const cachePath = Symbol('cachePath');
 type InternalFixItem = DoctorFixItem & { [cachePath]?: string };
-const START = '# >>> monad installer PATH >>>';
-const END = '# <<< monad installer PATH <<<';
+const START = '# >>> elanous installer PATH >>>';
+const END = '# <<< elanous installer PATH <<<';
 
 function io(deps: DoctorFixDeps): IO {
   return {
     env: deps.env ?? process.env,
     home: deps.home ?? homedir(),
-    cacheDir: deps.cacheDir ?? ((deps.env ?? process.env).MONAD_KEY_CACHE_DIR?.trim() || join(deps.home ?? homedir(), '.cache')),
+    cacheDir: deps.cacheDir ?? ((deps.env ?? process.env).ELANOUS_KEY_CACHE_DIR?.trim() || join(deps.home ?? homedir(), '.cache')),
     readdir: deps.readdir ?? ((path) => readdirSync(path)),
     readiness: deps.readiness ?? {},
     exists: deps.exists ?? existsSync,
@@ -100,8 +100,8 @@ function io(deps: DoctorFixDeps): IO {
 }
 
 function startupFile(fs: IO): string {
-  if (fs.readiness.platform === 'win32') return fs.env.MONAD_POWERSHELL_PROFILE || win32.join(fs.env.USERPROFILE || fs.home, 'Documents', 'WindowsPowerShell', 'Microsoft.PowerShell_profile.ps1');
-  return fs.env.MONAD_SHELL_STARTUP || join(fs.home, fs.env.SHELL?.endsWith('/zsh') ? '.zshrc' : '.bashrc');
+  if (fs.readiness.platform === 'win32') return fs.env.ELANOUS_POWERSHELL_PROFILE || win32.join(fs.env.USERPROFILE || fs.home, 'Documents', 'WindowsPowerShell', 'Microsoft.PowerShell_profile.ps1');
+  return fs.env.ELANOUS_SHELL_STARTUP || join(fs.home, fs.env.SHELL?.endsWith('/zsh') ? '.zshrc' : '.bashrc');
 }
 
 function pathBlock(prefix: string, platform?: NodeJS.Platform): string {
@@ -114,8 +114,8 @@ function pathBlock(prefix: string, platform?: NodeJS.Platform): string {
   return `${START}\nexport PATH=${quoted}:"$PATH"\n${END}`;
 }
 
-const TMPDIR_START = '# >>> monad doctor TMPDIR >>>';
-const TMPDIR_END = '# <<< monad doctor TMPDIR <<<';
+const TMPDIR_START = '# >>> elanous doctor TMPDIR >>>';
+const TMPDIR_END = '# <<< elanous doctor TMPDIR <<<';
 /** 로드맵 8번 F4 — 리눅스에서 TMPDIR 를 bun 캐시와 같은 파일시스템(~/tmp-bun)으로(EXDEV · oven-sh/bun#38079). */
 const TMPDIR_BLOCK = `${TMPDIR_START}\nmkdir -p "$HOME/tmp-bun" && export TMPDIR="$HOME/tmp-bun"\n${TMPDIR_END}`;
 
@@ -250,16 +250,16 @@ function cacheItems(fs: IO): InternalFixItem[] {
 
 const SERVICE_VERSION_FOLDER_GLOBAL = new RegExp(SERVICE_VERSION_FOLDER.source, 'g');
 
-/** 서비스 파일이 판 폴더를 가리키면 `…/current/node_modules/monadagent/` 로 바꾼 본문. 바꿀 대상의 `current` 가 없으면 null. */
+/** 서비스 파일이 판 폴더를 가리키면 `…/current/node_modules/elanous/` 로 바꾼 본문. 바꿀 대상의 `current` 가 없으면 null. */
 export function stableServiceText(text: string, exists: (path: string) => boolean): string | null {
   let missing = false;
   const next = text.replace(SERVICE_VERSION_FOLDER_GLOBAL, (match, offset: number) => {
     // 이 경로 토큰의 앞부분(설치 뿌리) — `<string>`·`=`·공백·따옴표 뒤부터.
     const before = text.slice(0, offset);
     const prefix = before.slice(before.search(/[^<>\s"'=]*$/));
-    const stable = `${prefix}/current/node_modules/monadagent/`;
+    const stable = `${prefix}/current/node_modules/elanous/`;
     if (!exists(stable)) missing = true;
-    return '/current/node_modules/monadagent/';
+    return '/current/node_modules/elanous/';
   });
   return missing || next === text ? null : next;
 }
@@ -334,7 +334,7 @@ function migrateServiceSecrets(fs: IO, item: DoctorFixItem): DoctorFixResult['it
   if (!removed.length) return { ...item, result: 'skipped', reason: `no service entries removed; cache differs or cannot be verified for: ${names.join(', ')}` };
   let next = text;
   for (const entry of removed.sort((a, b) => b.start - a.start)) next = next.slice(0, entry.start) + next.slice(entry.end);
-  const firstBackup = `${item.path}.monad-doctor.bak`;
+  const firstBackup = `${item.path}.elanous-doctor.bak`;
   let backup = firstBackup;
   if (fs.exists(backup)) {
     backup = `${firstBackup}.${Date.now()}`;
@@ -357,8 +357,8 @@ function serviceItem(fs: IO): InternalFixItem | undefined {
   const readiness = checkReadiness(fs.readiness).items.find((entry) => entry.id === 'service-file');
   if (readiness?.status !== 'fixable' || !service) return undefined;
   const next = stableServiceText(service.text, fs.exists);
-  if (next === null) return { id: 'service-file', path: service.path, action: 'point the service at .../current/node_modules/monadagent', status: 'skipped', reason: 'the stable current path does not exist — run: monad nexus install' };
-  return { id: 'service-file', path: service.path, action: 'replace .../versions/<ver>/node_modules/monadagent/ with .../current/node_modules/monadagent/ (takes effect on the next service restart)', status: 'fixable' };
+  if (next === null) return { id: 'service-file', path: service.path, action: 'point the service at .../current/node_modules/elanous', status: 'skipped', reason: 'the stable current path does not exist — run: elanous nexus install' };
+  return { id: 'service-file', path: service.path, action: 'replace .../versions/<ver>/node_modules/elanous/ with .../current/node_modules/elanous/ (takes effect on the next service restart)', status: 'fixable' };
 }
 
 /** node-pty 재빌드 계획 — 판 폴더 ⊕ 고정 판 ⊕ (amzn2 면) 컴파일러 환경. 체크아웃에서 돌면(설치본 없음) 계획 없음. */
@@ -368,7 +368,7 @@ export function nodePtyRebuildPlan(deps: DoctorFixDeps): { versionDir: string; p
   if (item?.status !== 'fixable' || typeof readiness.installPrefix !== 'string') return undefined;
   try {
     const versionDir = (deps.realpath ?? realpathSync)(join(readiness.installPrefix, 'current'));
-    const packageDir = join(versionDir, 'node_modules', 'monadagent');
+    const packageDir = join(versionDir, 'node_modules', 'elanous');
     const pkg = JSON.parse((deps.readFile ?? ((path: string) => readFileSync(path, 'utf8')))(join(packageDir, 'package.json'))) as { dependencies?: Record<string, string>; optionalDependencies?: Record<string, string> };
     const version = pkg.optionalDependencies?.['node-pty'] ?? pkg.dependencies?.['node-pty'];
     if (!version) return undefined;
@@ -380,14 +380,14 @@ export function nodePtyRebuildPlan(deps: DoctorFixDeps): { versionDir: string; p
   }
 }
 
-/** python-env — fixable(monad venv 없음·선언 모듈 import 실패)일 때만. 되돌리기 = venv 폴더 삭제. */
+/** python-env — fixable(elanous venv 없음·선언 모듈 import 실패)일 때만. 되돌리기 = venv 폴더 삭제. */
 function pythonEnvItem(deps: DoctorFixDeps): InternalFixItem | undefined {
   const item = checkReadiness(deps.readiness ?? {}).items.find((entry) => entry.id === 'python-env');
   if (item?.status !== 'fixable') return undefined;
-  return { id: 'python-env', path: '~/.local/share/monad/python/venv', action: 'monad python setup --yes (venv --system-site-packages ⊕ requirements-python.txt) — undo: remove the venv folder', status: 'fixable' };
+  return { id: 'python-env', path: '~/.local/share/elanous/python/venv', action: 'elanous python setup --yes (venv --system-site-packages ⊕ requirements-python.txt) — undo: remove the venv folder', status: 'fixable' };
 }
 
-/** 패키지 관리자에 줄이 «없는» 리눅스 계열에서 빠진 rg·codex — 고정 판 정적 바이너리(sha256 검증)를 monad bin(PATH)에.
+/** 패키지 관리자에 줄이 «없는» 리눅스 계열에서 빠진 rg·codex — 고정 판 정적 바이너리(sha256 검증)를 elanous bin(PATH)에.
  *  📏 2026-09-25 amazonlinux:2·2023 컨테이너에서 실측(`doctor-static-tools.ts` 머리말). sudo 불필요. */
 export function staticToolsNeeded(readiness: ReadinessDeps): StaticToolName[] {
   if (readiness.platform !== 'linux') return [];
@@ -396,9 +396,9 @@ export function staticToolsNeeded(readiness: ReadinessDeps): StaticToolName[] {
   if (readiness.rgOnPath === false && !remedies?.rg) tools.push('rg');
   // node 를 깔 줄이 있으면 codex 는 npm 길(sudo)로 — 없을 때만 정적 바이너리(node 불필요).
   if (readiness.codexOnPath === false && readiness.nodeOnPath === false && !remedies?.node) tools.push('codex');
-  // codex 바이너리는 있는데 짝이 없다 — 한 벌로 다시 깐다(monad bin 이 PATH 앞이라 그쪽이 쓰인다).
+  // codex 바이너리는 있는데 짝이 없다 — 한 벌로 다시 깐다(elanous bin 이 PATH 앞이라 그쪽이 쓰인다).
   else if (readiness.codexOnPath === true && readiness.codexCodeModeHost === false) tools.push('codex');
-  // gh 가 없거나 낡았다(배포판 gh 가 GH_MIN_VERSION 미만) — 고정 판 정적 gh(monad bin 이 PATH 앞이라 그쪽이 쓰인다).
+  // gh 가 없거나 낡았다(배포판 gh 가 GH_MIN_VERSION 미만) — 고정 판 정적 gh(elanous bin 이 PATH 앞이라 그쪽이 쓰인다).
   if (readiness.ghOnPath === false || (readiness.ghVersion && !ghVersionAtLeast(readiness.ghVersion))) tools.push('gh');
   return tools;
 }
@@ -430,10 +430,10 @@ function managedPythonMinor(): string {
 function pythonManagedItem(deps: DoctorFixDeps, fs: IO): InternalFixItem | undefined {
   if (!managedPythonNeeded(deps.readiness ?? {})) return undefined;
   const minor = managedPythonMinor();
-  const path = '~/.local/share/monad/python/cpython';
+  const path = '~/.local/share/elanous/python/cpython';
   if (!linuxArch(deps.arch)) return { id: 'python-managed', path, action: `uv python install ${minor}`, status: 'skipped', reason: `unsupported architecture ${deps.arch ?? process.arch}` };
   void fs;
-  return { id: 'python-managed', path, action: `uv ${STATIC_TOOLS.uv.version} (static · sha256-verified) → python ${minor} (python-build-standalone) → monad python setup --yes — undo: remove ${path} and the monad venv`, status: 'fixable' };
+  return { id: 'python-managed', path, action: `uv ${STATIC_TOOLS.uv.version} (static · sha256-verified) → python ${minor} (python-build-standalone) → elanous python setup --yes — undo: remove ${path} and the elanous venv`, status: 'fixable' };
 }
 
 function nodePtyItem(deps: DoctorFixDeps): InternalFixItem | undefined {
@@ -485,7 +485,7 @@ export function applyDoctorFixes(deps: DoctorFixDeps = {}, yes = false): DoctorF
           items.push({ ...item, result: current?.status === 'failed' ? 'failed' : 'skipped', reason: current?.reason ?? 'PATH state changed' });
           continue;
         }
-        const old = backupAndAppend(fs, item.path, item.action, '.monad-doctor.bak');
+        const old = backupAndAppend(fs, item.path, item.action, '.elanous-doctor.bak');
         const after = fs.readFile(item.path);
         // A startup-file edit only becomes active in a new shell: recheck the
         // persisted block, not the unchanged PATH of this doctor process.
@@ -502,7 +502,7 @@ export function applyDoctorFixes(deps: DoctorFixDeps = {}, yes = false): DoctorF
           continue;
         }
         // 백업 이름을 PATH 와 다르게 — 한 번에 둘을 고치면 원본 백업이 덮이지 않게.
-        const old = backupAndAppend(fs, item.path, item.action, '.monad-doctor-tmpdir.bak');
+        const old = backupAndAppend(fs, item.path, item.action, '.elanous-doctor-tmpdir.bak');
         const verified = fs.readFile(item.path) === `${old}\n${item.action}\n` && tmpdirItem(fs)?.status === 'skipped';
         items.push({ ...item, result: verified ? 'fixed' : 'failed', reason: verified
           ? 'startup file repaired; open a new shell, then re-run the install so bun sees the new TMPDIR'
@@ -511,8 +511,8 @@ export function applyDoctorFixes(deps: DoctorFixDeps = {}, yes = false): DoctorF
         const code = (deps.pythonSetup ?? (() => runPythonSetup({ yes: true }, { out: { log: () => {}, error: () => {} } })))();
         const after = (deps.recheckPythonEnv ?? (() => checkPythonEnv(false).status))();
         items.push({ ...item, result: code === 0 && after === 'ok' ? 'fixed' : 'failed', reason: code === 0 && after === 'ok'
-          ? 'monad venv ready — required modules import'
-          : `monad python setup exit ${code} · python-env ${after} after setup` });
+          ? 'elanous venv ready — required modules import'
+          : `elanous python setup exit ${code} · python-env ${after} after setup` });
       } else if (item.id === 'node-pty-rebuild') {
         const plan = nodePtyRebuildPlan(deps);
         if (!plan) {
@@ -546,8 +546,8 @@ export function applyDoctorFixes(deps: DoctorFixDeps = {}, yes = false): DoctorF
         const code = (deps.pythonSetup ?? (() => runPythonSetup({ yes: true }, { out: { log: () => {}, error: () => {} } })))();
         const after = (deps.recheckPythonEnv ?? (() => checkPythonEnv(false).status))();
         items.push({ ...item, result: code === 0 && after === 'ok' ? 'fixed' : 'failed', reason: code === 0 && after === 'ok'
-          ? `${got.detail} · monad venv ready — required modules import`
-          : `${got.detail} · monad python setup exit ${code} · python-env ${after} after setup` });
+          ? `${got.detail} · elanous venv ready — required modules import`
+          : `${got.detail} · elanous python setup exit ${code} · python-env ${after} after setup` });
       } else if (item.id === 'service-secrets') {
         items.push(migrateServiceSecrets(fs, item));
       } else if (item.id === 'service-file') {
@@ -558,7 +558,7 @@ export function applyDoctorFixes(deps: DoctorFixDeps = {}, yes = false): DoctorF
           items.push({ ...item, result: 'skipped', reason: 'service file no longer points at a version folder, or current is missing' });
           continue;
         }
-        const firstBackup = `${item.path}.monad-doctor.bak`;
+        const firstBackup = `${item.path}.elanous-doctor.bak`;
         const backup = fs.exists(firstBackup) ? `${firstBackup}.${Date.now()}` : firstBackup;
         fs.writeFile(backup, text, 0o600);
         const temporary = fs.temporaryPath(item.path);
@@ -620,7 +620,7 @@ export function applySudoFixes(
   if (probe.status !== 0) return { sudoAvailable: false, runs: [], exitCode: 1 };
   const runs = sudoFixCommands(manual).map((command) => {
     // 치기 «전»에 셸에게 «명령인가»를 묻는다 — 문자열 모양으로 거르는 위 가드는 설명문 하나를 놓쳤다
-    // (🩸 09-25 GCP debian-12: `… && reinstall monad (the package must ship …)` → `Syntax error: "(" unexpected` · rc 1).
+    // (🩸 09-25 GCP debian-12: `… && reinstall elanous (the package must ship …)` → `Syntax error: "(" unexpected` · rc 1).
     const syntax = run('sh', ['-n', '-c', command]);
     if (syntax.status !== 0) return { command, result: 'skipped' as const, detail: 'not a shell command — read it and run the parts by hand' };
     const r = run('sh', ['-c', command]);
@@ -634,7 +634,7 @@ export function applySudoFixes(
 /**
  * D5 `--fix --yes --restart`(RFC doctor-fix · «확인 받고»): 서비스가 «다른 판»으로 돌 때(service-version manual)만
  * 넥서스를 재시작하고 새 `daemonSha` 가 이 코드의 커밋인지 다시 잰다.
- * ⛔ 설치본에서 도는 doctor 만 — 체크아웃이면 재시작해도 설치본 코드가 뜬다(`monad self-update --restart` 의 몫).
+ * ⛔ 설치본에서 도는 doctor 만 — 체크아웃이면 재시작해도 설치본 코드가 뜬다(`elanous self-update --restart` 의 몫).
  * ⛔ 재시작은 봇·PTY·진행 중 턴을 끊는다 — 그래서 `--yes` 와 «별개의» 플래그다.
  */
 export interface ServiceRestartResult {
@@ -656,14 +656,14 @@ export async function applyServiceRestart(deps: ServiceRestartDeps): Promise<Ser
   if (version.status === 'ok') return { result: 'skipped', reason: 'the service already runs this code' };
   const prefix = deps.readiness.installPrefix;
   if (typeof prefix !== 'string' || !prefix) {
-    return { result: 'skipped', reason: 'doctor runs from a checkout — a restart would load the installed copy, not this code; use `monad self-update --restart`' };
+    return { result: 'skipped', reason: 'doctor runs from a checkout — a restart would load the installed copy, not this code; use `elanous self-update --restart`' };
   }
   const expected = (deps.readiness.codeRevision ?? '').trim();
   const platform = deps.readiness.platform;
   const uid = deps.uid ?? process.getuid?.() ?? 0;
   const command = platform === 'darwin'
-    ? { cmd: 'launchctl', args: ['kickstart', '-k', `gui/${uid}/com.monad.nexus`] }
-    : platform === 'linux' ? { cmd: 'systemctl', args: ['--user', 'restart', 'monad-nexus'] } : undefined;
+    ? { cmd: 'launchctl', args: ['kickstart', '-k', `gui/${uid}/com.elanous.nexus`] }
+    : platform === 'linux' ? { cmd: 'systemctl', args: ['--user', 'restart', 'elanous-nexus'] } : undefined;
   if (!command) return { result: 'skipped', reason: `no service restart known for platform ${platform ?? 'unmeasured'}` };
   const run = deps.run ?? ((cmd, args) => {
     const r = spawnSync(cmd, [...args], { encoding: 'utf8', timeout: 60_000 });

@@ -21,7 +21,7 @@ const rgAvailable = (() => {
 let tmp: string;
 
 beforeAll(() => {
-  tmp = mkdtempSync(join(tmpdir(), 'monad-glob-test-'));
+  tmp = mkdtempSync(join(tmpdir(), 'elanous-glob-test-'));
   // Tree:
   //   <tmp>/a.ts
   //   <tmp>/b.ts

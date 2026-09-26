@@ -67,10 +67,10 @@ nodes:
 
   - id: save-pm
     bash: |
-      OBSIDIAN_DIR="${MONAD_OBSIDIAN_DIR:-$HOME/Documents/Obsidian}"
+      OBSIDIAN_DIR="${ELANOUS_OBSIDIAN_DIR:-$HOME/Documents/Obsidian}"
       DIR="$OBSIDIAN_DIR/Postmortems"
       mkdir -p "$DIR" 2>/dev/null || {
-        echo "ERROR: cannot create $DIR — set MONAD_OBSIDIAN_DIR"
+        echo "ERROR: cannot create $DIR — set ELANOUS_OBSIDIAN_DIR"
         exit 1
       }
       DATE=$(date +%Y-%m-%d)

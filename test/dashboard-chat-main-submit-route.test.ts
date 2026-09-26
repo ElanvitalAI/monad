@@ -144,7 +144,7 @@ describe('dashboard chat main submit route', () => {
     })).not.toThrow();
     expect(unknownEvents).toHaveLength(2);
     expect(unknownEvents[0]).toBe('close');
-    expect(unknownEvents[1]).toContain('monad session list');
+    expect(unknownEvents[1]).toContain('elanous session list');
   });
 
   test('maps keyboard submit into input intents', () => {

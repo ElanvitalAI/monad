@@ -1,13 +1,13 @@
 #!/usr/bin/env bun
 // ── Self-Evolution SE3 · 격리 무오염 라이브 검증 하니스 (2026-07-10) ────────
 //
-// SE3 완료조건: "격리 데몬이 별 포트에서 뜨고 정식(:31415·~/.monad) 무오염 검증(SHA 격리)."
+// SE3 완료조건: "격리 데몬이 별 포트에서 뜨고 정식(:31415·~/.elanous) 무오염 검증(SHA 격리)."
 // 코드(isolated-instance·nocturnal-runner launch args)는 완결·단위테스트됐으나 실제로 격리
 // 인스턴스를 만들고 정식 무오염을 증명한 라이브 배선이 없었다. 이 하니스가 그 증명이다.
 //
-// 절차(reference_test_isolation_sha_protocol 동형): 정식 ~/.monad SHA 캡처 → 격리 인스턴스
+// 절차(reference_test_isolation_sha_protocol 동형): 정식 ~/.elanous SHA 캡처 → 격리 인스턴스
 // 생성(worktree+disarmed config) → 구조 불변 검증 → (--boot) 격리 데몬 별 포트 기동+health
-// → 정식 ~/.monad SHA 무변 검증 → dispose(worktree+브랜치 정리). try/finally 로 항상 정리.
+// → 정식 ~/.elanous SHA 무변 검증 → dispose(worktree+브랜치 정리). try/finally 로 항상 정리.
 //
 // 사용: bun scripts/se-isolation-verify.ts [--boot] [--keep]
 
@@ -33,9 +33,9 @@ function check(name: string, ok: boolean, detail = ''): void {
   console.log(`  ${ok ? 'PASS' : 'FAIL'}  ${name}${detail ? ` — ${detail}` : ''}`);
 }
 
-/** 정식 ~/.monad 무오염 지표 — config.json SHA(격리 실패 시 clobber 될 핵심 파일). */
+/** 정식 ~/.elanous 무오염 지표 — config.json SHA(격리 실패 시 clobber 될 핵심 파일). */
 function prodConfigSha(): string {
-  const p = join(homedir(), '.monad/config.json');
+  const p = join(homedir(), '.elanous/config.json');
   return existsSync(p) ? createHash('sha256').update(readFileSync(p)).digest('hex') : 'ABSENT';
 }
 
@@ -53,7 +53,7 @@ async function reachable(port: number, tries = 40): Promise<boolean> {
 console.log(`\n=== SE3 격리 무오염 라이브 검증 (slug=${slug}${doBoot ? ' · --boot' : ''}) ===\n`);
 
 const shaBefore = prodConfigSha();
-console.log(`정식 ~/.monad/config.json SHA(before): ${shaBefore.slice(0, 16)}…\n`);
+console.log(`정식 ~/.elanous/config.json SHA(before): ${shaBefore.slice(0, 16)}…\n`);
 
 let plan: IsolatedPlan | null = null;
 let daemon: ReturnType<typeof spawn> | null = null;
@@ -67,8 +67,8 @@ try {
   try { assertIsolationSafe(plan); } catch { safeThrew = true; }
   check('assertIsolationSafe 통과', !safeThrew);
   check('격리 포트 != 정식(31415)', plan.port !== PRODUCTION_PORT, `port=${plan.port}`);
-  check('config-dir 이 worktree 하위(홈 ~/.monad 아님)',
-    plan.configDir.includes(plan.worktreePath) && !plan.configDir.includes(`${homedir()}/.monad/`),
+  check('config-dir 이 worktree 하위(홈 ~/.elanous 아님)',
+    plan.configDir.includes(plan.worktreePath) && !plan.configDir.includes(`${homedir()}/.elanous/`),
     plan.configDir.replace(homedir(), '~'));
 
   // 3. 격리 config 내용 = disarmed(정식과 완전 분리).
@@ -81,8 +81,8 @@ try {
   // 4. (--boot) 격리 데몬 별 포트 기동 + health.
   if (doBoot) {
     const args = buildIsolatedLaunchArgs(plan);
-    console.log(`\n  [boot] bun bin/monad.mjs ${args.join(' ')}  (cwd=worktree)\n`);
-    daemon = spawn('bun', ['bin/monad.mjs', ...args], {
+    console.log(`\n  [boot] bun bin/elanous.mjs ${args.join(' ')}  (cwd=worktree)\n`);
+    daemon = spawn('bun', ['bin/elanous.mjs', ...args], {
       cwd: plan.worktreePath, stdio: 'ignore', detached: true,
     });
     const up = await reachable(plan.port);
@@ -91,7 +91,7 @@ try {
 
   // 5. 정식 무오염 SHA 검증(핵심).
   const shaAfter = prodConfigSha();
-  check('정식 ~/.monad/config.json SHA 무변(무오염)', shaAfter === shaBefore,
+  check('정식 ~/.elanous/config.json SHA 무변(무오염)', shaAfter === shaBefore,
     `after=${shaAfter.slice(0, 16)}…`);
 } finally {
   // 항상 정리 — 데몬 kill + worktree/브랜치 prune.

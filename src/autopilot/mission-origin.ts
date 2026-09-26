@@ -8,7 +8,7 @@
 // 발송 시 config 에서 botId→botToken 해석). DB 스키마/계약 변경 없이 라우팅 메타만 보관.
 
 import { mkdirSync, writeFileSync, readFileSync, existsSync } from 'node:fs';
-import { monadStateRoot } from './state-paths.js';
+import { elanousStateRoot } from './state-paths.js';
 import { getUserConfig } from '../user-config.js';
 import { join } from 'node:path';
 
@@ -28,8 +28,8 @@ export interface MissionOrigin {
 
 function originDir(): string {
   // core 미션 fabric = autopilot/ (conatus/ 는 투자 customer 네임스페이스·대표 정정 2026-07-11).
-  // [ISO-3] MONAD_STATE_DIR 존중 — 격리 테스트 데몬은 운영 origin 을 못 본다.
-  return join(monadStateRoot(), 'autopilot', 'mission-origin');
+  // [ISO-3] ELANOUS_STATE_DIR 존중 — 격리 테스트 데몬은 운영 origin 을 못 본다.
+  return join(elanousStateRoot(), 'autopilot', 'mission-origin');
 }
 function originPath(missionId: string): string {
   return join(originDir(), `${missionId}.json`);

@@ -50,7 +50,7 @@ describe('snapshot helper', () => {
   });
 
   it('returns null for missing key', () => {
-    expect(loadSnapshot('monad.pwa.snapshot.chatInput.missing')).toBeNull();
+    expect(loadSnapshot('elanous.pwa.snapshot.chatInput.missing')).toBeNull();
   });
 
   it('clear removes the entry', () => {
@@ -86,8 +86,8 @@ describe('snapshot helper', () => {
   });
 
   it('snapshotKey falls back to singleton for empty id', () => {
-    expect(snapshotKey('chatInput', undefined)).toBe('monad.pwa.snapshot.chatInput.singleton');
-    expect(snapshotKey('chatInput', '')).toBe('monad.pwa.snapshot.chatInput.singleton');
-    expect(snapshotKey('chatInput', 'tab-9')).toBe('monad.pwa.snapshot.chatInput.tab-9');
+    expect(snapshotKey('chatInput', undefined)).toBe('elanous.pwa.snapshot.chatInput.singleton');
+    expect(snapshotKey('chatInput', '')).toBe('elanous.pwa.snapshot.chatInput.singleton');
+    expect(snapshotKey('chatInput', 'tab-9')).toBe('elanous.pwa.snapshot.chatInput.tab-9');
   });
 });

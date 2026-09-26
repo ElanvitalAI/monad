@@ -1,7 +1,7 @@
 // ── Autopilot Arming (2026-07-08 · P2/P3 안전 게이트) ─────────────────────
 //
 // self-improving 흐름(흡수→PR 초안→merge→재부팅)의 자율 경계 게이트. 매매 mandate
-// (finance-trade-mandate.json)와 동형: git 밖 전용 json(~/.monad/autopilot.json)을
+// (finance-trade-mandate.json)와 동형: git 밖 전용 json(~/.elanous/autopilot.json)을
 // 대표가 편집해야 자율이 열린다. 부재/손상 = fail-closed(전부 disarmed·안전).
 //
 // 3 게이트(RESEARCH §7 자율 경계):
@@ -12,12 +12,12 @@
 // 기본 전부 false. armed 여도 상위 안전 3종(빌드/테스트 게이트·롤백·불변 코어)이 유지.
 
 import { readFileSync, existsSync } from 'node:fs';
-import { monadStateRoot } from './state-paths.js';
+import { elanousStateRoot } from './state-paths.js';
 import { join } from 'node:path';
 
-/** [ISO-3] MONAD_STATE_DIR 존중(lazy) — test 루트에 부재 = fail-closed(DISARMED). */
+/** [ISO-3] ELANOUS_STATE_DIR 존중(lazy) — test 루트에 부재 = fail-closed(DISARMED). */
 export function autopilotArmingPath(): string {
-  return join(monadStateRoot(), 'autopilot.json');
+  return join(elanousStateRoot(), 'autopilot.json');
 }
 
 export interface AutopilotArming {
@@ -65,7 +65,7 @@ export const DISARMED: AutopilotArming = {
   reviewAutoMerge: { armed: false },
 };
 
-/** ~/.monad/autopilot.json 로드 — 부재/손상/타입불일치 = fail-closed(DISARMED).
+/** ~/.elanous/autopilot.json 로드 — 부재/손상/타입불일치 = fail-closed(DISARMED).
  *  path 주입으로 테스트 가능. armed 는 명시 true 만 인정(그 외 전부 false). */
 export function loadAutopilotArming(path: string = autopilotArmingPath()): AutopilotArming {
   try {

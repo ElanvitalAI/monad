@@ -4,7 +4,7 @@
 // The smart router runs BEFORE a turn, so its choice isn't a token/cost
 // event (the turn's own usage logging captures spend). What is otherwise
 // invisible is WHERE auto mode sent each turn and WHY. This append-only
-// JSONL at ~/.monad/router-decisions.jsonl records one line per auto
+// JSONL at ~/.elanous/router-decisions.jsonl records one line per auto
 // decision so `auto` routing is auditable after the fact ("it sent the
 // hard debugging turn to Opus, the summaries to Haiku").
 //
@@ -34,7 +34,7 @@ export interface RouterDecision {
 }
 
 export function getRouterDecisionPath(home: string = homedir()): string {
-  return join(home, '.monad', 'router-decisions.jsonl');
+  return join(home, '.elanous', 'router-decisions.jsonl');
 }
 
 const PREVIEW_CAP = 160;

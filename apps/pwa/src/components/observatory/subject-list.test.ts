@@ -202,7 +202,7 @@ describe('canonical PTY-list projection', () => {
 describe('observatory terminal creation', () => {
   test('adds the next canonical web-terminal ID while preserving existing tabs', () => {
     const originalWindow = globalThis.window;
-    const storage = new Map<string, string>([['monad.webterm.tabs', JSON.stringify(['preview-1'])]]);
+    const storage = new Map<string, string>([['elanous.webterm.tabs', JSON.stringify(['preview-1'])]]);
     Object.defineProperty(globalThis, 'window', {
       configurable: true,
       value: {
@@ -214,7 +214,7 @@ describe('observatory terminal creation', () => {
     });
 
     expect(openObservatoryTerminal()).toBe('preview-2');
-    expect(JSON.parse(storage.get('monad.webterm.tabs') ?? '[]')).toEqual(['preview-1', 'preview-2']);
+    expect(JSON.parse(storage.get('elanous.webterm.tabs') ?? '[]')).toEqual(['preview-1', 'preview-2']);
     Object.defineProperty(globalThis, 'window', { configurable: true, writable: true, value: originalWindow });
   });
 
@@ -551,7 +551,7 @@ describe('observatory PWA behavior', () => {
     const { default: ObservatoryPage } = await import('../../app/observatory/page');
     const originalFetch = globalThis.fetch;
     const originalWindow = globalThis.window;
-    const storage = new Map<string, string>([['monad.webterm.tabs', JSON.stringify(['preview-1'])]]);
+    const storage = new Map<string, string>([['elanous.webterm.tabs', JSON.stringify(['preview-1'])]]);
     Object.defineProperty(globalThis, 'window', {
       configurable: true,
       value: {
@@ -587,7 +587,7 @@ describe('observatory PWA behavior', () => {
     const onClick = openTerminal?.props?.onClick;
     expect(onClick).toBeFunction();
     (onClick as () => void)();
-    expect(JSON.parse(storage.get('monad.webterm.tabs') ?? '[]')).toEqual(['preview-1', 'preview-2']);
+    expect(JSON.parse(storage.get('elanous.webterm.tabs') ?? '[]')).toEqual(['preview-1', 'preview-2']);
 
     globalThis.fetch = asFetch(mockFetch(async (url) => url === '/v1/terminals'
       ? jsonResponse({ subjects: [] })

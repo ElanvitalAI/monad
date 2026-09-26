@@ -3,7 +3,7 @@
 // *Skill workflow* is a linear sequence of steps that the WorkflowRunner
 // (P4) executes: tool → agent → skill → askUser. Each step's output
 // can hand off to the next through a markdown file under
-// `.monad/workflows/<workflowId>-<runId>/step-<N>.md`.
+// `.elanous/workflows/<workflowId>-<runId>/step-<N>.md`.
 //
 // Naming collision notice: `src/scheduler/workflow-*.ts` already
 // owns the term "workflow" for general task graphs. This PX-4 surface
@@ -53,7 +53,7 @@ export interface SkillWorkflowStep {
 }
 
 export interface WorkflowStepHandoff {
-  /** Relative filename under .monad/workflows/<wf>-<runId>/
+  /** Relative filename under .elanous/workflows/<wf>-<runId>/
    *  — default is `step-<N>.md` (1-indexed). Plugin authors set this
    *  only when they want a domain-specific name. */
   outputPath?: string;

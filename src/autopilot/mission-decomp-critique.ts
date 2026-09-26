@@ -96,7 +96,7 @@ export interface DecompCritiqueDeps {
    *  테스트는 이 seam 주입으로 fs 미접촉. */
   existenceCheck?: (boundaries: readonly string[]) => ReuseExistence[];
   /** ★ 관측 컨텍스트(미션 id) — 있으면 실존 감지를 통합 관측 관문(recordMissionObservation)으로도
-   *  흘려 `monad ops`·self-memory 에 남긴다("왜 grounding 잃었나" 회상 가능). 없으면 로그만. */
+   *  흘려 `elanous ops`·self-memory 에 남긴다("왜 grounding 잃었나" 회상 가능). 없으면 로그만. */
   missionId?: string;
   /** 관측 sink seam(테스트 주입). */
   observationSinks?: ObservationSinks;
@@ -278,7 +278,7 @@ async function defaultJudge(prompt: string, critiqueModel?: string): Promise<str
   //   streamLLM 이 라우팅 실패). ★ 기본 terra(대표 2026-07-18) — critique 는 검증/판정(생성 아님)·실존맵
   //   결정론이 근거·HITL 최종·병렬 20개. 상위 게이팅(decomp-gate)도 terra 라 일관. config 로 sol 복귀 가능.
   const { streamLLM, resolveDefaultProvider } = await import('../llm.js');
-  const model = process.env.MONAD_DECOMP_CRITIQUE_MODEL || critiqueModel || process.env.MONAD_DECOMPOSE_MODEL || tierModel('balanced');
+  const model = process.env.ELANOUS_DECOMP_CRITIQUE_MODEL || critiqueModel || process.env.ELANOUS_DECOMPOSE_MODEL || tierModel('balanced');
   const provider = resolveDefaultProvider(model);
   return streamLLM([{ role: 'user', content: prompt }], () => {}, { model, reasoningEffort: 'medium', ...(provider ? { provider } : {}) });
 }
@@ -298,7 +298,7 @@ export async function critiquePhase(
   try {
     // ★ 비평 모델 결정(대표 2026-07-18·계층 재정립) — 기본 terra(개별 반복 판정). config/env 오버라이드.
     //   실제 모델을 trace 에 기록해 CLI 표시 정확성 확보(라벨 하드코딩 버그 수복).
-    const model = deps.critiqueModel || process.env.MONAD_DECOMP_CRITIQUE_MODEL || tierModel('balanced');
+    const model = deps.critiqueModel || process.env.ELANOUS_DECOMP_CRITIQUE_MODEL || tierModel('balanced');
     const judge = deps.judge ?? (process.env.NODE_ENV === 'test' ? undefined : ((p: string) => defaultJudge(p, model)));
     if (!judge) return okFallback('judge 미주입(test) — 보수적 ok');
     const ground = deps.ground ?? defaultGround;
@@ -306,7 +306,7 @@ export async function critiquePhase(
     // ★ 결정론 재사용-실존 검증(자기인지) — 지목 심볼이 이미 실존/완성인지 git grep 실측. "이미 구현된
     //   걸 재구현"(grounding 상실·미션 668871 실패모드)을 빌드 前에 자기감지. LLM 추론 앞에 실측을 둔다.
     // ★ grounding 발견 공간 재사용(대표 2026-07-18 근본) — 공간을 미리 하드코딩하지 않고, 이 미션이
-    //   조사에서 touch 한 파일(g.files)의 디렉토리를 실존맵 검색 공간에 더한다(스킬·.monad·유저 어디든).
+    //   조사에서 touch 한 파일(g.files)의 디렉토리를 실존맵 검색 공간에 더한다(스킬·.elanous·유저 어디든).
     const groundRoots = g.files?.length ? groundingDirs(g.files) : [];
     const existenceCheck = deps.existenceCheck ?? (process.env.NODE_ENV === 'test' ? undefined : ((b: readonly string[]) => exploreReuseExistence(b, groundRoots.length ? { extraRoots: groundRoots } : {})));
     const reuse = existenceCheck ? checkReuseExistence(phase, existenceCheck, deps.existenceCap) : null;
@@ -374,7 +374,7 @@ export async function critiquePhase(
       }, { prompt, response: raw });
     }
     // ★ 관측 파리티(제1원칙·관측 관문) — 지목 심볼이 이미 실존(중복 재구현 위험)이거나 critique 가
-    //   ungrounded critical 이면 통합 관문으로 흘려 `monad ops`·self-memory 에 남긴다("왜 grounding
+    //   ungrounded critical 이면 통합 관문으로 흘려 `elanous ops`·self-memory 에 남긴다("왜 grounding
     //   잃었나" 회상). 빌드-前 단계가 raw debug.log 만 남기던 관측 갭 해소. missionId 있을 때만.
     if (deps.missionId && (c.verdict === 'ungrounded' || (reuse && reuse.existsCount > 0))) {
       recordMissionObservation({

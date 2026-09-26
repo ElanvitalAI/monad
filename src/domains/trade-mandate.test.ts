@@ -117,7 +117,7 @@ describe('isSymbolTradeable — 마켓 클럭', () => {
 });
 
 describe('loadMandate — 안전 기본 + 파일 반영 (환경독립 fixture)', () => {
-  // ★ 실 ~/.monad/finance-trade-mandate.json 을 읽지 않는다 — 대표가 arming(armed=true)
+  // ★ 실 ~/.elanous/finance-trade-mandate.json 을 읽지 않는다 — 대표가 arming(armed=true)
   //   하면 그 파일이 armed 라 "disarmed 로 시작" 단언이 깨진다(환경의존). loadMandate 의
   //   계약(부재/손상=안전 기본 · 명시=반영)을 fixture 로 결정론 검증한다.
   const withFixture = (contents: string | null, fn: (path: string) => void): void => {

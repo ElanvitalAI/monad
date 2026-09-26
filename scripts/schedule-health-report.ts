@@ -89,7 +89,7 @@ function main(): void {
     });
     const msg = renderScheduleHealthReport(health, { mode, nowLabel, sinkCoverage });
     if (!msg) {
-      console.log(`[schedule-health] ${mode}: 문제 없음 — 무음 (대상 ${health.monadTotal})`);
+      console.log(`[schedule-health] ${mode}: 문제 없음 — 무음 (대상 ${health.elanousTotal})`);
       return;
     }
     if (dryRun) {

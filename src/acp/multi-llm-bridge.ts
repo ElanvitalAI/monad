@@ -1,10 +1,10 @@
 // CV-3 DM-1 — Daemon Multi-LLM dispatch bridge.
 //
 // Companion to `bridgeCoreTurnToAcp` (single-LLM path). When the
-// inbound `session/prompt` carries `_meta.monad.multiLlm.targets`,
+// inbound `session/prompt` carries `_meta.elanous.multiLlm.targets`,
 // this bridge fans out N `runCoreTurn` calls in parallel — each with
 // its own provider/model — and routes every chunk back via
-// `turnCtx.pushWithMeta` annotated with `{ monad: { modelId,
+// `turnCtx.pushWithMeta` annotated with `{ elanous: { modelId,
 // provider } }` so the client (Showroom) demultiplexes per panel.
 //
 // File-disjoint from `core-turn-bridge.ts` by design: the legacy
@@ -14,7 +14,7 @@
 //
 // Spec compatibility: ACP `_meta` is the standard extension point on
 // every type (request, notification, content blocks). Adding a
-// monad-namespaced blob preserves wire compatibility with vanilla
+// elanous-namespaced blob preserves wire compatibility with vanilla
 // ACP clients — they simply ignore the `_meta` they don't recognise.
 //
 // See also: 내부 문서 `PLAN-cv-3-daemon-multi-llm-2026-05-08` (RFC v2 ·
@@ -44,7 +44,7 @@ function agentTargetKey(backend: string, targetId: string): string {
  *  Lazy-creates a session via globalDualRoleManager, then forwards
  *  the prompt and routes update chunks back through the parent's
  *  annotate(chunk) (text) / annotateToolCall (tool_call lifecycle),
- *  both of which annotate with `_meta.monad = { modelId, provider }`
+ *  both of which annotate with `_meta.elanous = { modelId, provider }`
  *  so the client demultiplexes per panel.
  *
  *  DM stage 3 FU (HANDOFF §3.2 · 2026-05-09): tool_call /
@@ -149,10 +149,10 @@ export function routeAgentSessionUpdate(
 
 /** Wire shape for the prompt-side hint. Mirrored on the client (PWA
  *  Showroom) — the runtime helper there builds this blob and ships
- *  it as `prompt._meta.monad.multiLlm`. */
+ *  it as `prompt._meta.elanous.multiLlm`. */
 export interface MultiLlmTarget {
   /** Stable client-side panel id (e.g. `'p-2026-05-08-3a'`). The
-   *  daemon echoes this id verbatim on every `update._meta.monad.modelId`
+   *  daemon echoes this id verbatim on every `update._meta.elanous.modelId`
    *  so the client demultiplexes per panel without provider-name
    *  collisions (two panels on the same provider work). */
   id: string;
@@ -207,10 +207,10 @@ export interface MultiLlmHint {
 export function readMultiLlmHint(
   promptMeta: Readonly<Record<string, unknown>> | undefined,
 ): MultiLlmHint | null {
-  const monad = (promptMeta?.monad ?? null) as
+  const elanous = (promptMeta?.elanous ?? null) as
     | { multiLlm?: unknown }
     | null;
-  const raw = monad?.multiLlm as
+  const raw = elanous?.multiLlm as
     | { targets?: unknown; historyMode?: unknown }
     | undefined;
   if (!raw || typeof raw !== 'object') return null;
@@ -337,7 +337,7 @@ export interface MultiLlmCoreTurnDeps {
  *  Promise.allSettled — sibling targets keep streaming.
  *
  *  Annotation contract: every chunk this bridge emits via
- *  `pushWithMeta` carries `_meta.monad = { modelId: target.id,
+ *  `pushWithMeta` carries `_meta.elanous = { modelId: target.id,
  *  provider: target.provider }`. The client filters per `modelId` to
  *  drive its own panel UI. */
 export function bridgeMultiLlmCoreTurnsToAcp(
@@ -374,12 +374,12 @@ export function bridgeMultiLlmCoreTurnsToAcp(
             ? getOrCreatePersonaSession(target.personaId, { source: 'pwa', transport: 'acp' }).id
             : turnCtx.sessionId;
           const meta: Record<string, unknown> = {
-            monad: { modelId: target.id, provider: target.provider },
+            elanous: { modelId: target.id, provider: target.provider },
           };
           const annotate = (chunk: string) => turnCtx.pushWithMeta(chunk, meta);
           // DM stage 3 FU — forward agent CLI sub-process tool_call /
           // tool_call_update SessionUpdate verbatim, with the same
-          // `_meta.monad = { modelId, provider }` annotation so the
+          // `_meta.elanous = { modelId, provider }` annotation so the
           // Showroom client demultiplexes per panel and renders the
           // activity pill + expandable tool list.
           const annotateToolCall = (
@@ -400,7 +400,7 @@ export function bridgeMultiLlmCoreTurnsToAcp(
                 signal: ctrl.signal,
               });
               await turnCtx.pushWithMeta('', {
-                monad: {
+                elanous: {
                   modelId: target.id,
                   provider: target.provider,
                   stopReason: ctrl.signal.aborted ? 'cancelled' : 'end_turn',
@@ -409,7 +409,7 @@ export function bridgeMultiLlmCoreTurnsToAcp(
             } catch (err) {
               const errMsg = err instanceof Error ? err.message : String(err);
               await turnCtx.pushWithMeta('', {
-                monad: {
+                elanous: {
                   modelId: target.id,
                   provider: target.provider,
                   stopReason: 'error',
@@ -473,10 +473,10 @@ export function bridgeMultiLlmCoreTurnsToAcp(
           } catch (err) {
             // Surface a per-target stop so the client can tear down
             // the panel placeholder. D13 — modelId-scoped stopReason
-            // in `_meta.monad.stopReason`.
+            // in `_meta.elanous.stopReason`.
             const errMsg = err instanceof Error ? err.message : String(err);
             await turnCtx.pushWithMeta('', {
-              monad: {
+              elanous: {
                 modelId: target.id,
                 provider: target.provider,
                 stopReason: 'error',
@@ -494,7 +494,7 @@ export function bridgeMultiLlmCoreTurnsToAcp(
           // Per-target end-of-turn marker (D13). Empty chunk + meta
           // tells the client the panel finished cleanly.
           await turnCtx.pushWithMeta('', {
-            monad: {
+            elanous: {
               modelId: target.id,
               provider: target.provider,
               stopReason: ctrl.signal.aborted ? 'cancelled' : 'end_turn',

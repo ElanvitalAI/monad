@@ -1,4 +1,4 @@
-// P1 · 헤드리스 monad 드라이버 완료-감지 로직 테스트 (2026-07-19).
+// P1 · 헤드리스 elanous 드라이버 완료-감지 로직 테스트 (2026-07-19).
 // startPty 를 fake 로 주입 — 실 PTY/프로세스 무접촉.
 
 import { describe, it, expect, spyOn } from 'bun:test';
@@ -7,8 +7,8 @@ import Database from 'bun:sqlite';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { debug } from '../src/debug/log.js';
-import { driveHeadlessMonad, normalizeDeterministicCompletionState, runHeadlessGoalLoopPty } from '../src/self-implement/headless-monad-driver.js';
-import { monadTuiSpawnOptions } from '../src/self-implement/monad-tui-spawn.js';
+import { driveHeadlessElanous, normalizeDeterministicCompletionState, runHeadlessGoalLoopPty } from '../src/self-implement/headless-elanous-driver.js';
+import { elanousTuiSpawnOptions } from '../src/self-implement/elanous-tui-spawn.js';
 import { runPtyDrive } from '../src/cli/pty-drive-cli.js';
 import { setPtyAdapterForTesting } from '../src/pty-shell/registry.js';
 import { getChannelBus } from '../src/terminal-matrix/index.js';
@@ -35,8 +35,8 @@ describe('runHeadlessGoalLoopPty — G9 P3b executor 프레임 발행 wiring', (
     const ptyId = 'exec-wire-test-pty';
     const seen: SelfReportFrame[] = [];
     const sub = subscribeSurfaceFrames(getChannelBus(), `exec:${ptyId}`, (f) => { seen.push(f); });
-    const prev = process.env.MONAD_RUN_ID;
-    process.env.MONAD_RUN_ID = 'run-p3b-anchor'; // K4 — space.runId 가 이 값을 실어 프레임에 스탬프돼야
+    const prev = process.env.ELANOUS_RUN_ID;
+    process.env.ELANOUS_RUN_ID = 'run-p3b-anchor'; // K4 — space.runId 가 이 값을 실어 프레임에 스탬프돼야
     try {
       await runHeadlessGoalLoopPty({
         binRoot: '/r', cwd: '/w', featurePrompt: 'x', pollMs: 1, maxWaitSec: 2,
@@ -46,7 +46,7 @@ describe('runHeadlessGoalLoopPty — G9 P3b executor 프레임 발행 wiring', (
       });
     } finally {
       sub.unsubscribe();
-      if (prev === undefined) delete process.env.MONAD_RUN_ID; else process.env.MONAD_RUN_ID = prev;
+      if (prev === undefined) delete process.env.ELANOUS_RUN_ID; else process.env.ELANOUS_RUN_ID = prev;
     }
     expect(seen.length).toBeGreaterThan(0);            // 발행됐다(배선 삭제 시 0 → 실패)
     expect(seen[0]!.surfaceId).toBe(`exec:${ptyId}`);  // execSurfaceId 소비(P3a·Q1)
@@ -58,12 +58,12 @@ describe('runHeadlessGoalLoopPty — G9 P3b executor 프레임 발행 wiring', (
   });
 });
 
-describe('monadTuiSpawnOptions — bare TUI spawn recipe', () => {
+describe('elanousTuiSpawnOptions — bare TUI spawn recipe', () => {
   it('is the sole recipe shared by legacy and drive callers', async () => {
     const root = mkdtempSync(join(tmpdir(), 'shared-tui-recipe-'));
     const configDir = realpathSync(root);
     const stateDir = configDir;
-    const recipe = monadTuiSpawnOptions({
+    const recipe = elanousTuiSpawnOptions({
       repoRoot: '/r', cwd: root, configDir, stateDir, cols: 120, rows: 30,
       space: { inHarness: true, kind: 'self-implement', id: 'shared-recipe', runId: '' },
     });
@@ -77,21 +77,21 @@ describe('monadTuiSpawnOptions — bare TUI spawn recipe', () => {
     });
     try {
       await runPtyDrive({
-        monad: true, goal: 'x', repoRoot: '/r', cwd: root, isolatedRoot: root, cols: 120, rows: 30, bootMs: 0, sleep: async () => {},
+        elanous: true, goal: 'x', repoRoot: '/r', cwd: root, isolatedRoot: root, cols: 120, rows: 30, bootMs: 0, sleep: async () => {},
         stream: async () => '{"action":"done","reason":"ready"}', out: () => {}, maxSteps: 1, pollMs: 0,
       });
     } finally {
       setPtyAdapterForTesting(null);
     }
     let legacySpawned: { cmd?: string; args?: string[]; env?: Record<string, string>; workdir?: string; accessMode?: string; transitionPolicy?: string; cols?: number; rows?: number } | undefined;
-    await driveHeadlessMonad({
+    await driveHeadlessElanous({
       repoRoot: '/r', cwd: root, prompt: 'x', configDir, stateDir, cols: 120, rows: 30, bootSec: 0, maxWaitSec: 1,
       spawn: ((opts: typeof recipe) => { legacySpawned = opts; return fakeHandle('GOAL-COMPLETE', 'GOAL-COMPLETE'); }) as never,
       ptyAvailable: () => true,
     });
     expect(recipe).toMatchObject({
-      cmd: 'bun', args: ['/r/bin/monad.mjs', '--config-dir', configDir, '--test-state-dir', stateDir],
-      env: { MONAD_STATE_DIR: stateDir }, accessMode: 'auto', transitionPolicy: 'open', cols: 120, rows: 30,
+      cmd: 'bun', args: ['/r/bin/elanous.mjs', '--config-dir', configDir, '--test-state-dir', stateDir],
+      env: { ELANOUS_STATE_DIR: stateDir }, accessMode: 'auto', transitionPolicy: 'open', cols: 120, rows: 30,
     });
     // These are the complete bare-TUI recipe values both callers must preserve.
     // A caller changing even one recipe value fails here; caller-specific environment additions remain outside this recipe.
@@ -99,7 +99,7 @@ describe('monadTuiSpawnOptions — bare TUI spawn recipe', () => {
       cmd: recipe.cmd,
       args: recipe.args,
       workdir: recipe.workdir,
-      env: { MONAD_STATE_DIR: stateDir },
+      env: { ELANOUS_STATE_DIR: stateDir },
       accessMode: recipe.accessMode,
       transitionPolicy: recipe.transitionPolicy,
       cols: recipe.cols,
@@ -110,7 +110,7 @@ describe('monadTuiSpawnOptions — bare TUI spawn recipe', () => {
         cmd: spawned?.cmd,
         args: spawned?.args,
         workdir: spawned?.workdir,
-        env: { MONAD_STATE_DIR: spawned?.env?.MONAD_STATE_DIR },
+        env: { ELANOUS_STATE_DIR: spawned?.env?.ELANOUS_STATE_DIR },
         accessMode: spawned?.accessMode,
         transitionPolicy: spawned?.transitionPolicy,
         cols: spawned?.cols,
@@ -128,7 +128,7 @@ describe('headless.spawn handed-directory observation', () => {
       if (event === 'headless.spawn') observations.push(data ?? {});
     }) as never);
     try {
-      await driveHeadlessMonad({
+      await driveHeadlessElanous({
         repoRoot: '/repo', cwd: '/worktree', prompt: 'x', configDir, stateDir, runId, bootSec: 0, maxWaitSec: 1,
         ptyAvailable: () => true,
         spawn: ((options: { args?: string[] }) => {
@@ -181,8 +181,8 @@ describe('headless.spawn handed-directory observation', () => {
       expect(observation.isolated).toBeUndefined();
     }
     expect(spawnArgs).toEqual([
-      ['/repo/bin/monad.mjs'],
-      ['/repo/bin/monad.mjs', 'dev', '--implement', '--config-dir', '/isolated-config', 'x'],
+      ['/repo/bin/elanous.mjs'],
+      ['/repo/bin/elanous.mjs', 'dev', '--implement', '--config-dir', '/isolated-config', 'x'],
     ]);
   });
 
@@ -227,9 +227,9 @@ describe('headless.spawn handed-directory observation', () => {
   });
 });
 
-describe('driveHeadlessMonad — 완료 감지', () => {
+describe('driveHeadlessElanous — 완료 감지', () => {
   it('GOAL-COMPLETE 마커 감지 → reachedCompletion + 툴콜 카운트', async () => {
-    const r = await driveHeadlessMonad({
+    const r = await driveHeadlessElanous({
       repoRoot: '/r', cwd: '/w', prompt: 'x', bootSec: 0, maxWaitSec: 3,
       spawn: (() => fakeHandle('작업 중...\nGOAL-COMPLETE', '⏺ Read(a)\n⏺ Edit(b)\nGOAL-COMPLETE')) as never,
       ptyAvailable: () => true,
@@ -240,7 +240,7 @@ describe('driveHeadlessMonad — 완료 감지', () => {
   });
 
   it('⭐ 2000자를 넘는 자식 보고문은 앞부분 결손을 표시한다', async () => {
-    const r = await driveHeadlessMonad({
+    const r = await driveHeadlessElanous({
       repoRoot: '/r', cwd: '/w', prompt: 'x', bootSec: 0, maxWaitSec: 1,
       spawn: (() => fakeHandle('GOAL-COMPLETE', `CHILD-FIRST-${'x'.repeat(2500)}-CHILD-LAST\nGOAL-COMPLETE`)) as never,
       ptyAvailable: () => true,
@@ -256,7 +256,7 @@ describe('driveHeadlessMonad — 완료 감지', () => {
       if (event === 'headless.done') observations.push(data ?? {});
     }) as never);
     try {
-      await driveHeadlessMonad({
+      await driveHeadlessElanous({
         repoRoot: '/r', cwd: '/w', prompt: 'x', runId: 'run-legacy-terminal', bootSec: 0, maxWaitSec: 1,
         spawn: (() => fakeHandle('GOAL-COMPLETE', '⏺ Read(a)\nGOAL-COMPLETE')) as never,
         ptyAvailable: () => true,
@@ -277,7 +277,7 @@ describe('driveHeadlessMonad — 완료 감지', () => {
         if (event === 'headless.done') observations.push(data ?? {});
       }) as never);
       try {
-        await driveHeadlessMonad({
+        await driveHeadlessElanous({
           repoRoot: '/r', cwd: '/w', prompt: 'x', runId: 'run-legacy-reasons', bootSec: 0,
           maxWaitSec: opts.maxWaitSec ?? 1, ptyAvailable: opts.ptyAvailable ?? (() => true),
           spawn: (() => fakeHandle(screen, snap)) as never,
@@ -328,7 +328,7 @@ describe('driveHeadlessMonad — 완료 감지', () => {
         if (event === 'headless.done') observations.push(data ?? {});
       }) as never);
       try {
-        await expect(driveHeadlessMonad({
+        await expect(driveHeadlessElanous({
           repoRoot: '/r', cwd: '/w', prompt: 'x', runId: `run-legacy-${testCase.name}-error`,
           bootSec: 0, maxWaitSec: 1, spawn: testCase.spawn, ptyAvailable: () => true,
         })).rejects.toThrow(`legacy ${testCase.name} exploded`);
@@ -348,7 +348,7 @@ describe('driveHeadlessMonad — 완료 감지', () => {
       if (event === 'headless.done') observations.push(data ?? {});
     }) as never);
     try {
-      await expect(driveHeadlessMonad({
+      await expect(driveHeadlessElanous({
         repoRoot: '/r', cwd: '/w', prompt: 'x', runId: 'run-legacy-probe-error',
         ptyAvailable: () => { throw new Error('legacy probe exploded'); },
         spawn: (() => { throw new Error('spawn must not run'); }) as never,
@@ -371,7 +371,7 @@ describe('driveHeadlessMonad — 완료 감지', () => {
       if (event === 'headless.done') observations.push(data ?? {});
     }) as never);
     try {
-      await expect(driveHeadlessMonad({
+      await expect(driveHeadlessElanous({
         repoRoot: '/r', cwd: '/w', prompt: 'x', runId: 'run-legacy-init-error',
         spawn: (() => handle) as never, ptyAvailable: () => true,
       })).rejects.toThrow('legacy initialization exploded');
@@ -386,7 +386,7 @@ describe('driveHeadlessMonad — 완료 감지', () => {
   });
 
   it('PTY 미가용 → reachedCompletion false', async () => {
-    const r = await driveHeadlessMonad({
+    const r = await driveHeadlessElanous({
       repoRoot: '/r', cwd: '/w', prompt: 'x', bootSec: 0,
       spawn: (() => fakeHandle('', '')) as never,
       ptyAvailable: () => false,
@@ -396,7 +396,7 @@ describe('driveHeadlessMonad — 완료 감지', () => {
   });
 
   it('마커 없이 안정화 → 완료 미도달(transcript 는 캡처)', async () => {
-    const r = await driveHeadlessMonad({
+    const r = await driveHeadlessElanous({
       repoRoot: '/r', cwd: '/w', prompt: 'x', bootSec: 0, maxWaitSec: 3,
       spawn: (() => fakeHandle('안정된 화면(변화 없음)', '⏺ Grep(x)\n안정')) as never,
       ptyAvailable: () => true,
@@ -406,30 +406,30 @@ describe('driveHeadlessMonad — 완료 감지', () => {
   });
 
   // ★ K run-identity(MF4·2026-07-25) — REPLACE-env 지점의 runId 전파 계약 통합검증. headless-driver 는
-  //   `...process.env` 를 상속 안 하고 env 를 REPLACE 하므로, coordinator 가 심은 MONAD_RUN_ID 가 자식 goal-loop
+  //   `...process.env` 를 상속 안 하고 env 를 REPLACE 하므로, coordinator 가 심은 ELANOUS_RUN_ID 가 자식 goal-loop
   //   PTY 로 도달하려면 harnessSpaceEnv 명시 stamp 가 있어야 한다(누락 시 K3 pty_manifest join 깨짐). 실 spawn env 캡처.
-  it('runId 전파 계약 — process.env.MONAD_RUN_ID 가 자식 spawn env 로 전달(REPLACE env)', async () => {
-    const prev = process.env.MONAD_RUN_ID;
-    process.env.MONAD_RUN_ID = 'run-test-anchor-123';
+  it('runId 전파 계약 — process.env.ELANOUS_RUN_ID 가 자식 spawn env 로 전달(REPLACE env)', async () => {
+    const prev = process.env.ELANOUS_RUN_ID;
+    process.env.ELANOUS_RUN_ID = 'run-test-anchor-123';
     let capturedEnv: Record<string, string> | undefined;
     try {
-      await driveHeadlessMonad({
+      await driveHeadlessElanous({
         repoRoot: '/r', cwd: '/w', prompt: 'x', bootSec: 0, maxWaitSec: 1,
         spawn: ((o: { env?: Record<string, string> }) => { capturedEnv = o.env; return fakeHandle('GOAL-COMPLETE', 'GOAL-COMPLETE'); }) as never,
         ptyAvailable: () => true,
       });
     } finally {
-      if (prev === undefined) delete process.env.MONAD_RUN_ID; else process.env.MONAD_RUN_ID = prev;
+      if (prev === undefined) delete process.env.ELANOUS_RUN_ID; else process.env.ELANOUS_RUN_ID = prev;
     }
     // 자식 env(REPLACE)에 anchor 도달 — 없으면 propagation 계약 깨진 것.
-    expect(capturedEnv?.MONAD_RUN_ID).toBe('run-test-anchor-123');
+    expect(capturedEnv?.ELANOUS_RUN_ID).toBe('run-test-anchor-123');
   });
 
   // ⭐ 리뷰 should-fix — accessMode 는 **두 spawn 경로 모두**의 권한 계약이다. runHeadlessGoalLoopPty 만
   //   덮으면 이 경로가 조용히 'write'(사람 소유)로 남아 agent write 가 거부된다(P0-② 근본).
   it('★ accessMode=auto 로 스폰한다(agent write 허용 · 사람은 takeover 로 회수 — P0-② 수리)', async () => {
     let capturedMode: string | undefined;
-    await driveHeadlessMonad({
+    await driveHeadlessElanous({
       repoRoot: '/r', cwd: '/w', prompt: 'x', bootSec: 0, maxWaitSec: 1,
       spawn: ((o: { accessMode?: string }) => { capturedMode = o.accessMode; return fakeHandle('GOAL-COMPLETE', 'GOAL-COMPLETE'); }) as never,
       ptyAvailable: () => true,
@@ -438,19 +438,19 @@ describe('driveHeadlessMonad — 완료 감지', () => {
   });
 
   it('runId 도 항상 비어 있지 않다(상속 없을 때 canonical mint)', async () => {
-    const prev = process.env.MONAD_RUN_ID;
-    delete process.env.MONAD_RUN_ID;
+    const prev = process.env.ELANOUS_RUN_ID;
+    delete process.env.ELANOUS_RUN_ID;
     let capturedEnv: Record<string, string> | undefined;
     try {
-      await driveHeadlessMonad({
+      await driveHeadlessElanous({
         repoRoot: '/r', cwd: '/w', prompt: 'x', bootSec: 0, maxWaitSec: 1,
         spawn: ((o: { env?: Record<string, string> }) => { capturedEnv = o.env; return fakeHandle('GOAL-COMPLETE', 'GOAL-COMPLETE'); }) as never,
         ptyAvailable: () => true,
       });
     } finally {
-      if (prev !== undefined) process.env.MONAD_RUN_ID = prev;
+      if (prev !== undefined) process.env.ELANOUS_RUN_ID = prev;
     }
-    expect(capturedEnv?.MONAD_RUN_ID).toMatch(/^run-[A-Za-z0-9-]+$/);
+    expect(capturedEnv?.ELANOUS_RUN_ID).toMatch(/^run-[A-Za-z0-9-]+$/);
   });
 });
 
@@ -568,10 +568,10 @@ describe('runHeadlessGoalLoopPty — child lifecycle report wiring', () => {
   it('reads lifecycle records from the root reported through the actual spawn environment when handle id differs', async () => {
     const parentState = mkdtempSync(join(tmpdir(), 'lifecycle-parent-state-'));
     const childState = mkdtempSync(join(tmpdir(), 'lifecycle-child-state-'));
-    const priorState = process.env.MONAD_STATE_DIR;
-    const priorPtyId = process.env.MONAD_PTY_ID;
-    const priorReport = process.env.MONAD_LIFECYCLE_ROOT_REPORT;
-    const priorNonce = process.env.MONAD_LIFECYCLE_ROOT_REPORT_NONCE;
+    const priorState = process.env.ELANOUS_STATE_DIR;
+    const priorPtyId = process.env.ELANOUS_PTY_ID;
+    const priorReport = process.env.ELANOUS_LIFECYCLE_ROOT_REPORT;
+    const priorNonce = process.env.ELANOUS_LIFECYCLE_ROOT_REPORT_NONCE;
     const observations: Record<string, unknown>[] = [];
     const log = spyOn(debug, 'log').mockImplementation(((_category: string, event: string, data?: Record<string, unknown>) => {
       if (event === 'headless.lifecycle-screen-scoreboard') observations.push(data ?? {});
@@ -582,10 +582,10 @@ describe('runHeadlessGoalLoopPty — child lifecycle report wiring', () => {
         ptyAvailable: () => true,
         spawn: ((options: { id: string; env: Record<string, string> }) => {
           const childEnv = options.env;
-          process.env.MONAD_STATE_DIR = childState;
-          process.env.MONAD_PTY_ID = childEnv.MONAD_PTY_ID;
-          process.env.MONAD_LIFECYCLE_ROOT_REPORT = childEnv.MONAD_LIFECYCLE_ROOT_REPORT;
-          process.env.MONAD_LIFECYCLE_ROOT_REPORT_NONCE = childEnv.MONAD_LIFECYCLE_ROOT_REPORT_NONCE;
+          process.env.ELANOUS_STATE_DIR = childState;
+          process.env.ELANOUS_PTY_ID = childEnv.ELANOUS_PTY_ID;
+          process.env.ELANOUS_LIFECYCLE_ROOT_REPORT = childEnv.ELANOUS_LIFECYCLE_ROOT_REPORT;
+          process.env.ELANOUS_LIFECYCLE_ROOT_REPORT_NONCE = childEnv.ELANOUS_LIFECYCLE_ROOT_REPORT_NONCE;
           const bus = new ChannelBus();
           const detach = attachLifecycleBridge(bus, 'run-wired');
           const record: LifecycleRecord = {
@@ -595,7 +595,7 @@ describe('runHeadlessGoalLoopPty — child lifecycle report wiring', () => {
           publishLifecycleRecord(bus, record);
           detach();
           resetLifecycleBridgeForTesting();
-          process.env.MONAD_STATE_DIR = parentState;
+          process.env.ELANOUS_STATE_DIR = parentState;
           return fakeHandle('done', 'GOAL-COMPLETE', 'registry-id-differs') as never;
         }) as never,
       });
@@ -610,10 +610,10 @@ describe('runHeadlessGoalLoopPty — child lifecycle report wiring', () => {
     } finally {
       log.mockRestore();
       resetLifecycleBridgeForTesting();
-      if (priorState === undefined) delete process.env.MONAD_STATE_DIR; else process.env.MONAD_STATE_DIR = priorState;
-      if (priorPtyId === undefined) delete process.env.MONAD_PTY_ID; else process.env.MONAD_PTY_ID = priorPtyId;
-      if (priorReport === undefined) delete process.env.MONAD_LIFECYCLE_ROOT_REPORT; else process.env.MONAD_LIFECYCLE_ROOT_REPORT = priorReport;
-      if (priorNonce === undefined) delete process.env.MONAD_LIFECYCLE_ROOT_REPORT_NONCE; else process.env.MONAD_LIFECYCLE_ROOT_REPORT_NONCE = priorNonce;
+      if (priorState === undefined) delete process.env.ELANOUS_STATE_DIR; else process.env.ELANOUS_STATE_DIR = priorState;
+      if (priorPtyId === undefined) delete process.env.ELANOUS_PTY_ID; else process.env.ELANOUS_PTY_ID = priorPtyId;
+      if (priorReport === undefined) delete process.env.ELANOUS_LIFECYCLE_ROOT_REPORT; else process.env.ELANOUS_LIFECYCLE_ROOT_REPORT = priorReport;
+      if (priorNonce === undefined) delete process.env.ELANOUS_LIFECYCLE_ROOT_REPORT_NONCE; else process.env.ELANOUS_LIFECYCLE_ROOT_REPORT_NONCE = priorNonce;
       rmSync(parentState, { recursive: true, force: true });
       rmSync(childState, { recursive: true, force: true });
     }
@@ -629,7 +629,7 @@ describe('runHeadlessGoalLoopPty — child lifecycle report wiring', () => {
         binRoot: '/r', cwd: '/unrelated-worktree', featurePrompt: 'x', runId: 'run-unreported', pollMs: 1, maxWaitSec: 1,
         ptyAvailable: () => true,
         spawn: ((options: { env: Record<string, string> }) => {
-          expect(options.env.MONAD_LIFECYCLE_ROOT_REPORT_NONCE).toBeTruthy();
+          expect(options.env.ELANOUS_LIFECYCLE_ROOT_REPORT_NONCE).toBeTruthy();
           return fakeHandle('done', 'GOAL-COMPLETE', 'different-registry-id') as never;
         }) as never,
       });
@@ -656,7 +656,7 @@ describe('runHeadlessGoalLoopPty — lifecycle report cleanup', () => {
       ptyAvailable: () => true,
       readPublisherStateDir,
       spawn: ((options: CleanupSpawnOptions) => {
-        reportPath = options.env.MONAD_LIFECYCLE_ROOT_REPORT;
+        reportPath = options.env.ELANOUS_LIFECYCLE_ROOT_REPORT;
         mkdirSync(dirname(reportPath), { recursive: true });
         createReport(reportPath, options);
         return fakeHandle('done', 'GOAL-COMPLETE', 'cleanup-handle');
@@ -673,7 +673,7 @@ describe('runHeadlessGoalLoopPty — lifecycle report cleanup', () => {
         (path, options) => {
           writeFileSync(path, JSON.stringify({
             executionId: options.id,
-            nonce: options.env.MONAD_LIFECYCLE_ROOT_REPORT_NONCE,
+            nonce: options.env.ELANOUS_LIFECYCLE_ROOT_REPORT_NONCE,
             stateDir,
           }));
           writeFileSync(`${path}.interrupted.tmp`, 'partial');
@@ -709,7 +709,7 @@ describe('runHeadlessGoalLoopPty — lifecycle report cleanup', () => {
       binRoot: '/r', cwd: '/w', featurePrompt: 'x', runId: 'run-cleanup-failure', pollMs: 1, maxWaitSec: 1,
       ptyAvailable: () => true,
       spawn: ((options: { env: Record<string, string> }) => {
-        reportPath = options.env.MONAD_LIFECYCLE_ROOT_REPORT;
+        reportPath = options.env.ELANOUS_LIFECYCLE_ROOT_REPORT;
         mkdirSync(dirname(reportPath), { recursive: true });
         writeFileSync(reportPath, '{not-json');
         writeFileSync(`${reportPath}.interrupted.tmp`, 'partial');

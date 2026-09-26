@@ -26,7 +26,7 @@ export function reviewBlockerKey(blocker: string): string {
   return blocker.toLowerCase().replace(/[^a-z0-9가-힣]+/g, ' ').trim().slice(0, 80);
 }
 
-/** 리뷰 재작업 K회 상한(기본) — coevolve maxRounds(기본 2) 동형. MONAD_REVIEW_MAX_ROUNDS override. */
+/** 리뷰 재작업 K회 상한(기본) — coevolve maxRounds(기본 2) 동형. ELANOUS_REVIEW_MAX_ROUNDS override. */
 export const DEFAULT_REVIEW_MAX_ROUNDS = 2;
 
 /**

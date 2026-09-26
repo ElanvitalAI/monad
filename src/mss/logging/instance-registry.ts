@@ -1,12 +1,12 @@
 // ── 로그 인스턴스 레지스트리 (LF7-b · 2026-07-13) ────────────────────────────
 //
-// 멀티 모나드(prod 1 + 폴더별 test N) 운영에서 "어떤 인스턴스들이 어디에
+// 멀티 엘라누스(prod 1 + 폴더별 test N) 운영에서 "어떤 인스턴스들이 어디에
 // 있나"를 발견(discovery)하는 단일 창구. 데몬이 부팅 시 자기 정보를 등록하고,
-// `monad logs --instance/--all` 과 PWA 연합 뷰(LF7-d)가 읽는다.
+// `elanous logs --instance/--all` 과 PWA 연합 뷰(LF7-d)가 읽는다.
 //
 // 원칙 (docs/plans PLAN-unified-log-fabric §LF7):
 //   • 레지스트리는 **메타데이터 only** — 로그 레코드의 교차 쓰기 벡터가
-//     아니다. 위치는 항상 prod 홈(`~/.monad/logs/instances.json`) — test
+//     아니다. 위치는 항상 prod 홈(`~/.elanous/logs/instances.json`) — test
 //     데몬도 여기 등록해야 발견이 성립한다(state dir 격리 대상 아님).
 //   • 항목은 종료 시 지우지 않는다 — 죽은 인스턴스의 logs.db 도 조회
 //     가치가 있다(생존 여부는 pid liveness 로 읽기 시점 판정).
@@ -34,7 +34,7 @@ export interface LogInstanceEntry {
   repoPath?: string;
   /** 인스턴스 종류(등록시점 스탬프). 미기록 구항목은 read 시점에 name/stateDir 로 유추. */
   kind?: InstanceKind;
-  /** config-dir(getMonadConfigDir · tasks.db/nexus 스코프). 미기록 구항목은 stateDir 로 폴백
+  /** config-dir(getElanousConfigDir · tasks.db/nexus 스코프). 미기록 구항목은 stateDir 로 폴백
    *  (config-dir==state-dir 관례). 기록하면 연합이 tasks 경로를 정확히 도출(Class 3 해소). */
   configDir?: string;
   hostId?: string;
@@ -62,12 +62,12 @@ export interface LogInstanceView extends LogInstanceEntry {
   dbPath: string;
 }
 
-/** 유효 종류 판정 — 명시 kind 우선, 없으면 격리 test 관례(`.monad-test` 폴더 / `test:` 이름
+/** 유효 종류 판정 — 명시 kind 우선, 없으면 격리 test 관례(`.elanous-test` 폴더 / `test:` 이름
  *  prefix)로 유추. 이 관례를 안 타는 병렬 인스턴스(axon 등)는 'prod'. */
 export function resolveInstanceKind(entry: { kind?: InstanceKind; name?: string; stateDir?: string }): InstanceKind {
   if (entry.kind) return entry.kind;
   const base = entry.stateDir ? entry.stateDir.replace(/\/+$/, '').split('/').pop() : '';
-  if (base === '.monad-test' || (entry.name?.startsWith('test:') ?? false)) return 'test';
+  if (base === '.elanous-test' || (entry.name?.startsWith('test:') ?? false)) return 'test';
   return 'prod';
 }
 
@@ -77,7 +77,7 @@ export function isTestInstance(entry: { kind?: InstanceKind; name?: string; stat
 }
 
 export function logInstanceRegistryPath(): string {
-  return join(homedir(), '.monad', 'logs', 'instances.json');
+  return join(homedir(), '.elanous', 'logs', 'instances.json');
 }
 
 function validEntry(entry: unknown): entry is LogInstanceEntry {
@@ -136,16 +136,16 @@ export function registerLogInstance(
   } catch { /* fail-soft */ }
 }
 
-/** 모순 레코드 — **운영 루트(`~/.monad`)인데 이름이 `test:`** 인 항목(2026-07-27).
+/** 모순 레코드 — **운영 루트(`~/.elanous`)인데 이름이 `test:`** 인 항목(2026-07-27).
  *
  *  이름은 env 축, 경로는 리졸버 축으로 갈려 있던 시절(#5503 이전)의 잔재다. 살아 있으면
  *  `--instance` 이름 매칭이 이 항목을 잡아 **운영 스토어를 테스트인 척** 열어준다 —
- *  실측: `test:monad-agent` 4개 중 하나가 `~/.monad` 를 가리켜 조회가 매번 다른 우주로 샜다.
+ *  실측: `test:monad-agent` 4개 중 하나가 `~/.elanous` 를 가리켜 조회가 매번 다른 우주로 샜다.
  *  #5503 가드가 신규 생성은 막으므로 여기선 **읽을 때 걸러내고 디스크에서도 지운다**.
  *  `test:` 이름에 non-test kind를 명시한 행도 같은 방식으로 정리한다. 명시 kind의
  *  우선순위는 유지하되, 잘못 스탬프된 과거 항목이 연합에 운영으로 섞이지 않게 한다. */
 function isContradictoryEntry(e: LogInstanceEntry): boolean {
-  const prodRoot = join(homedir(), '.monad').replace(/\/+$/, '');
+  const prodRoot = join(homedir(), '.elanous').replace(/\/+$/, '');
   const root = e.stateDir.replace(/\/+$/, '');
   return (root === prodRoot && (e.kind === 'test' || e.name.startsWith('test:')))
     || (e.name.startsWith('test:') && e.kind != null && e.kind !== 'test');
@@ -195,7 +195,7 @@ export function readLogInstances(
 }
 
 /** 데이터 연합용(ops/recall/session/logs --all) — 격리 test 를 기본 제외한 뷰.
- *  `includeTest` 로 opt-in. 인벤토리 뷰(`monad fleet`)는 이걸 쓰지 않고 전량 표시(kind 라벨). */
+ *  `includeTest` 로 opt-in. 인벤토리 뷰(`elanous fleet`)는 이걸 쓰지 않고 전량 표시(kind 라벨). */
 export function readProdInstances(
   opts: { includeTest?: boolean; registryPath?: string } = {},
 ): LogInstanceView[] {

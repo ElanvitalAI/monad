@@ -5,7 +5,7 @@ import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { program } from '../index.js';
-import { getMonadConfigDirOverride, resetMonadConfigDir, setMonadConfigDir } from '../monad-config-dir.js';
+import { getElanousConfigDirOverride, resetElanousConfigDir, setElanousConfigDir } from '../elanous-config-dir.js';
 import { RemotesStore, type RemoteEntry } from './remotes.js';
 import {
   formatRemoteSessionLine,
@@ -16,7 +16,7 @@ import {
 } from './session-list-remote.js';
 
 const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
-const BIN = resolve(REPO_ROOT, 'bin/monad.mjs');
+const BIN = resolve(REPO_ROOT, 'bin/elanous.mjs');
 const SPAWN_TIMEOUT_MS = 60_000;
 
 const dirs: string[] = [];
@@ -407,8 +407,8 @@ describe('session list CLI wiring', () => {
   test('without -r the remote helper is not invoked (local list path)', async () => {
     const dir = mkdtempSync(join(tmpdir(), 'session-list-local-'));
     dirs.push(dir);
-    const prev = getMonadConfigDirOverride();
-    setMonadConfigDir(dir);
+    const prev = getElanousConfigDirOverride();
+    setElanousConfigDir(dir);
     const stdout: string[] = [];
     const originalOut = process.stdout.write;
     const originalLog = console.log;
@@ -418,12 +418,12 @@ describe('session list CLI wiring', () => {
     }) as typeof process.stdout.write;
     console.log = ((...args: unknown[]) => { stdout.push(`${args.map(String).join(' ')}\n`); }) as typeof console.log;
     try {
-      await program.parseAsync(['node', 'monad', 'session', 'list']);
+      await program.parseAsync(['node', 'elanous', 'session', 'list']);
     } finally {
       process.stdout.write = originalOut;
       console.log = originalLog;
-      if (prev === undefined) resetMonadConfigDir();
-      else setMonadConfigDir(prev);
+      if (prev === undefined) resetElanousConfigDir();
+      else setElanousConfigDir(prev);
     }
     const out = stdout.join('');
     expect(out).not.toContain('/v1/sessions/store');
@@ -437,8 +437,8 @@ describe('session list CLI wiring', () => {
     }));
     const dir = mkdtempSync(join(tmpdir(), 'session-list-exitcode-'));
     dirs.push(dir);
-    const prev = getMonadConfigDirOverride();
-    setMonadConfigDir(dir);
+    const prev = getElanousConfigDirOverride();
+    setElanousConfigDir(dir);
     const store = new RemotesStore();
     store.addRemote('box', entry(dir, 'box', `ws://127.0.0.1:${server.port}/v1/acp`, 'tok'), { setDefault: true });
     const stdout: string[] = [];
@@ -456,12 +456,12 @@ describe('session list CLI wiring', () => {
     }) as typeof process.exit;
     process.exitCode = 0;
     try {
-      await program.parseAsync(['node', 'monad', 'session', 'list', '-r']);
+      await program.parseAsync(['node', 'elanous', 'session', 'list', '-r']);
     } finally {
       process.stdout.write = originalOut;
       process.exit = originalExit;
-      if (prev === undefined) resetMonadConfigDir();
-      else setMonadConfigDir(prev);
+      if (prev === undefined) resetElanousConfigDir();
+      else setElanousConfigDir(prev);
     }
     expect(exitCalls).toBe(0);
     expect(process.exitCode).toBe(0);
@@ -476,8 +476,8 @@ describe('session list CLI wiring', () => {
     const { server } = startMock(() => Response.json({ error: 'unauthorized' }, { status: 401 }));
     const dir = mkdtempSync(join(tmpdir(), 'session-list-exitcode-401-'));
     dirs.push(dir);
-    const prev = getMonadConfigDirOverride();
-    setMonadConfigDir(dir);
+    const prev = getElanousConfigDirOverride();
+    setElanousConfigDir(dir);
     const store = new RemotesStore();
     store.addRemote('iso', entry(dir, 'iso', `ws://127.0.0.1:${server.port}/v1/acp`, 'bad-token'));
     const stdout: string[] = [];
@@ -501,13 +501,13 @@ describe('session list CLI wiring', () => {
     }) as typeof process.exit;
     process.exitCode = 0;
     try {
-      await program.parseAsync(['node', 'monad', 'session', 'list', '--remote', 'iso']);
+      await program.parseAsync(['node', 'elanous', 'session', 'list', '--remote', 'iso']);
     } finally {
       process.stdout.write = originalOut;
       process.stderr.write = originalErr;
       process.exit = originalExit;
-      if (prev === undefined) resetMonadConfigDir();
-      else setMonadConfigDir(prev);
+      if (prev === undefined) resetElanousConfigDir();
+      else setElanousConfigDir(prev);
     }
     expect(exitCalls).toBe(0);
     expect(process.exitCode).not.toBe(0);
@@ -521,7 +521,7 @@ describe('session list CLI wiring', () => {
   });
 });
 
-describe('bin/monad.mjs session list -r', () => {
+describe('bin/elanous.mjs session list -r', () => {
   async function startOutOfProcessSessionServer(
     home: string,
     sessionId: string,
@@ -570,14 +570,14 @@ describe('bin/monad.mjs session list -r', () => {
     let server: Awaited<ReturnType<typeof startOutOfProcessSessionServer>> | undefined;
     try {
       server = await startOutOfProcessSessionServer(home, 'via-bare-r');
-      const cfg = join(home, '.monad');
+      const cfg = join(home, '.elanous');
       writeBookmark(cfg, 'named', server.port, 'named-token');
       const proc = Bun.spawn({
         cmd: ['bun', BIN, '--test', '--config-dir', cfg, 'session', 'list', '-r'],
         cwd: REPO_ROOT,
         stdout: 'pipe',
         stderr: 'pipe',
-        env: { ...process.env, MONAD_DEBUG_LEVEL: 'off', HOME: home, MONAD_STATE_DIR: cfg, MONAD_CONFIG_DIR: cfg },
+        env: { ...process.env, ELANOUS_DEBUG_LEVEL: 'off', HOME: home, ELANOUS_STATE_DIR: cfg, ELANOUS_CONFIG_DIR: cfg },
       });
       const killer = setTimeout(() => proc.kill(), SPAWN_TIMEOUT_MS);
       const [stdout, stderr, exitCode] = await Promise.all([
@@ -621,14 +621,14 @@ describe('bin/monad.mjs session list -r', () => {
       while (!existsSync(portFile) && Date.now() < deadline) await Bun.sleep(50);
       expect(existsSync(portFile)).toBe(true);
       const port = readFileSync(portFile, 'utf8').trim();
-      const cfg = join(home, '.monad');
+      const cfg = join(home, '.elanous');
       writeBookmark(cfg, 'iso', port, 'bad-token', false);
       const proc = Bun.spawn({
         cmd: ['bun', BIN, '--test', '--config-dir', cfg, 'session', 'list', '--remote', 'iso'],
         cwd: REPO_ROOT,
         stdout: 'pipe',
         stderr: 'pipe',
-        env: { ...process.env, MONAD_DEBUG_LEVEL: 'off', HOME: home, MONAD_STATE_DIR: cfg, MONAD_CONFIG_DIR: cfg },
+        env: { ...process.env, ELANOUS_DEBUG_LEVEL: 'off', HOME: home, ELANOUS_STATE_DIR: cfg, ELANOUS_CONFIG_DIR: cfg },
       });
       const killer = setTimeout(() => proc.kill(), SPAWN_TIMEOUT_MS);
       const [stdout, stderr, exitCode] = await Promise.all([
@@ -651,11 +651,11 @@ describe('bin/monad.mjs session list -r', () => {
   test('LIVE CLI: -r with --all-instances is nonzero and names the flag', () => {
     const home = mkdtempSync(join(tmpdir(), 'session-list-flag-conflict-'));
     dirs.push(home);
-    const cfg = join(home, '.monad');
+    const cfg = join(home, '.elanous');
     writeBookmark(cfg, 'box', '9', 'tok');
     const res = spawnSync(process.execPath, [BIN, '--test', '--config-dir', cfg, 'session', 'list', '-r', '--all-instances'], {
       cwd: REPO_ROOT,
-      env: { ...process.env, MONAD_DEBUG_LEVEL: 'off', HOME: home, MONAD_STATE_DIR: cfg, MONAD_CONFIG_DIR: cfg },
+      env: { ...process.env, ELANOUS_DEBUG_LEVEL: 'off', HOME: home, ELANOUS_STATE_DIR: cfg, ELANOUS_CONFIG_DIR: cfg },
       encoding: 'utf8',
       timeout: 30_000,
     });
@@ -668,11 +668,11 @@ describe('bin/monad.mjs session list -r', () => {
   test('LIVE CLI: without -r the remote is not queried', () => {
     const home = mkdtempSync(join(tmpdir(), 'session-list-no-r-'));
     dirs.push(home);
-    const cfg = join(home, '.monad');
+    const cfg = join(home, '.elanous');
     writeBookmark(cfg, 'box', '1', 'tok');
     const res = spawnSync(process.execPath, [BIN, '--test', '--config-dir', cfg, 'session', 'list'], {
       cwd: REPO_ROOT,
-      env: { ...process.env, MONAD_DEBUG_LEVEL: 'off', HOME: home, MONAD_STATE_DIR: cfg, MONAD_CONFIG_DIR: cfg },
+      env: { ...process.env, ELANOUS_DEBUG_LEVEL: 'off', HOME: home, ELANOUS_STATE_DIR: cfg, ELANOUS_CONFIG_DIR: cfg },
       encoding: 'utf8',
       timeout: 30_000,
     });
@@ -698,7 +698,7 @@ describe('bin/monad.mjs session list -r', () => {
       while (!existsSync(portFile) && Date.now() < deadline) await Bun.sleep(50);
       expect(existsSync(portFile)).toBe(true);
       const port = readFileSync(portFile, 'utf8').trim();
-      const cfg = join(home, '.monad');
+      const cfg = join(home, '.elanous');
       writeBookmark(cfg, 'slow', port, 'tok');
       const started = Date.now();
       const proc = Bun.spawn({
@@ -706,7 +706,7 @@ describe('bin/monad.mjs session list -r', () => {
         cwd: REPO_ROOT,
         stdout: 'pipe',
         stderr: 'pipe',
-        env: { ...process.env, MONAD_DEBUG_LEVEL: 'off', HOME: home, MONAD_STATE_DIR: cfg, MONAD_CONFIG_DIR: cfg },
+        env: { ...process.env, ELANOUS_DEBUG_LEVEL: 'off', HOME: home, ELANOUS_STATE_DIR: cfg, ELANOUS_CONFIG_DIR: cfg },
       });
       const killer = setTimeout(() => proc.kill(), SPAWN_TIMEOUT_MS);
       const [stdout, stderr, exitCode] = await Promise.all([

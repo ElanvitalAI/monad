@@ -48,7 +48,7 @@ function userIndex(msgs: LLMMessage[]): number {
   return i;
 }
 
-const tmpRoot = mkdtempSync(join(tmpdir(), 'monad-sr-'));
+const tmpRoot = mkdtempSync(join(tmpdir(), 'elanous-sr-'));
 // W4-B project tree integration: buildSkillMessages now emits a Project
 // Layout system message when cwd has any visible files. Tests want a
 // deterministic 3-message preamble — point at a path that the walker

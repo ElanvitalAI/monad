@@ -22,7 +22,7 @@ afterEach(() => {
 });
 
 const mirrorPath = () => join(process.env.CODEX_HOME!, 'auth.json');
-const storePath = () => join(root, 'monad-auth.json');
+const storePath = () => join(root, 'elanous-auth.json');
 const idToken = (accountId: string) => {
   const segment = (value: unknown) => Buffer.from(JSON.stringify(value)).toString('base64url');
   return `${segment({ alg: 'none' })}.${segment({ chatgpt_account_id: accountId })}.signature`;

@@ -1,6 +1,6 @@
 // ── agent-mission pure parsers ──
 //
-// codex-in-monad PTY RFC 미션(driver.ts)의 순수 파싱 로직. 무거운 import 없이 테스트 가능.
+// codex-in-elanous PTY RFC 미션(driver.ts)의 순수 파싱 로직. 무거운 import 없이 테스트 가능.
 // ⚠️ testGate 버그 교훈: `bun test` 출력 "2 pass 0 fail" 은 "fail" 문자열을 포함하므로
 // 단순 `/fail/.test()` 는 거짓실패를 낸다. 반드시 **실패 개수**를 파싱해 0 인지 본다.
 

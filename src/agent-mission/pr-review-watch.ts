@@ -12,14 +12,14 @@
 //   - rate limit: 사이클당 최대 maxTriggers 건(기본 1·codex 미션 동시 1개 제약).
 //
 // 재사용: repo-watch.ts(폴링·sqlite 커서·주입 seam 패턴)·runReviewLoop(발동 대상·완성)·gh CLI.
-// 이 모듈은 순수 판정 + 주입 gh/db/trigger. 실행: `monad agent-mission review-watch`(CLI·index.ts · `codex` 는 하위호환 alias).
+// 이 모듈은 순수 판정 + 주입 gh/db/trigger. 실행: `elanous agent-mission review-watch`(CLI·index.ts · `codex` 는 하위호환 alias).
 // 거버넌스: 운영 데몬 미배선(테스트격리 폴러). standing cron 등록은 대표(운영) 몫.
 
 import { Database } from 'bun:sqlite';
 import { execFileSync } from 'node:child_process';
 import { mkdirSync } from 'node:fs';
 import { dirname, join } from 'node:path';
-import { monadStateRoot } from '../autopilot/state-paths.js';
+import { elanousStateRoot } from '../autopilot/state-paths.js';
 import { debug } from '../debug/log.js';
 import { AUTO_REVIEW_LABEL } from '../self-implement/context-capsule.js';
 import { resolveReworkBackendChoice, runReviewLoop, type ReviewLoopOpts, type ReviewLoopResult, type ReviewVerdict } from './review-loop.js';
@@ -31,9 +31,9 @@ export function mapReviewToInjected(r: ReviewResult): { verdict: ReviewVerdict; 
   return { verdict: 'ok', asks: [] };
 }
 
-/** [ISO] MONAD_STATE_DIR 존중(lazy) — 테스트격리 시 .monad-test 로 스코프. */
+/** [ISO] ELANOUS_STATE_DIR 존중(lazy) — 테스트격리 시 .elanous-test 로 스코프. */
 // ⚠️ 상태 경로 codex-mission 유지(agent-agnostic 리네임에도) — 기존 워치 DB 고아화 방지. 코드만 agent-mission.
-export function prReviewWatchDbPath(): string { return join(monadStateRoot(), 'codex-mission/pr_review_watch.db'); }
+export function prReviewWatchDbPath(): string { return join(elanousStateRoot(), 'codex-mission/pr_review_watch.db'); }
 
 /** opt-in 기본 라벨 — 대표가 이 라벨을 붙인 PR 만 무인 발동 대상. CLI --label 로 오버라이드.
  *  SSoT=self-implement 의 AUTO_REVIEW_LABEL(G8 자기판단이 부착·L3 폴러가 감시 — 같은 라벨). */

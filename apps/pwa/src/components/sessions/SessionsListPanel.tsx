@@ -55,7 +55,7 @@ function Transcript({ messages, onTimeTravel, busy }: {
         <div key={i} className={['group/msg text-sm', m.role === 'user' ? 'text-foreground/90' : 'text-muted-foreground'].join(' ')}>
           <span className={['mr-1.5 rounded px-1 py-0.5 text-[10px] ring-1',
             m.role === 'user' ? 'bg-primary/15 text-primary ring-primary/30' : 'bg-muted text-muted-foreground ring-border'].join(' ')}>
-            {m.role === 'user' ? '나' : 'monad'}
+            {m.role === 'user' ? '나' : 'elanous'}
           </span>
           {m.role === 'user' && onTimeTravel && (
             <button
@@ -101,7 +101,7 @@ function SessionRow({ api, s, onForked, onDeleted }: { api: SessionsStoreApi; s:
       const msgs = await loadTranscript();
       if (!msgs) return;
       const text = msgs.filter((m) => m.role === 'user' || m.role === 'assistant')
-        .map((m) => `[${m.role === 'user' ? '나' : 'monad'}] ${m.content}`).join('\n\n');
+        .map((m) => `[${m.role === 'user' ? '나' : 'elanous'}] ${m.content}`).join('\n\n');
       await navigator.clipboard.writeText(text);
       toast.success(`복사 완료 (${msgs.length} 메시지)`);
     } catch (e) { toast.error(`복사 실패: ${e instanceof Error ? e.message : String(e)}`); }

@@ -133,7 +133,7 @@ describe('onboarding wizard · Δ20 async API validate retry · Telegram', () =>
     expect(callCount).toBe(3);                              // each attempt hit fetch
     const out = io.outputs.join('\n');
     expect(out).not.toMatch(/Connected as @/);              // no success line
-    expect(out).toMatch(/continuing — re-run `monad setup telegram`/);
+    expect(out).toMatch(/continuing — re-run `elanous setup telegram`/);
     expect(out).toMatch(/max attempts reached/);
   });
 
@@ -238,7 +238,7 @@ describe('onboarding wizard · Δ20 async API validate retry · Discord', () => 
     expect(callCount).toBe(3);
     const out = io.outputs.join('\n');
     expect(out).not.toMatch(/Connected as/);
-    expect(out).toMatch(/continuing — re-run `monad setup discord`/);
+    expect(out).toMatch(/continuing — re-run `elanous setup discord`/);
   });
 
   test('shape error skips fetch', async () => {

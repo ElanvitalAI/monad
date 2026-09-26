@@ -217,7 +217,7 @@ async function verifyAsidePage(url: string, deps: DeployVerifyDeps): Promise<Dep
   let temporaryDirectory: string | undefined;
   const minBody = deps.minBodyLength ?? 10;
   try {
-    temporaryDirectory = await (deps.createAsideTemporaryDirectory ?? (() => mkdtemp(join(tmpdir(), 'monad-browser-verify-'))))();
+    temporaryDirectory = await (deps.createAsideTemporaryDirectory ?? (() => mkdtemp(join(tmpdir(), 'elanous-browser-verify-'))))();
     const scriptPath = join(temporaryDirectory, 'observe.mjs');
     await (deps.writeAsideScript ?? ((path, script) => writeFile(path, script, 'utf8')))(scriptPath, buildAsideScript(url));
     const script = await readFile(scriptPath, 'utf8');

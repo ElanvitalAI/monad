@@ -221,7 +221,7 @@ export function isSchemaOrgType(v: unknown): v is SchemaOrgType {
 }
 
 export type SourceReliability =
-  | 'first-party'    // monad direct observation
+  | 'first-party'    // elanous direct observation
   | 'verified'       // cross-checked
   | 'self-reported'
   | 'community'

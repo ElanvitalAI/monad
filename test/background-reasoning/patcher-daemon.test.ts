@@ -38,7 +38,7 @@ describe('createKgsPatcherWriter · adapter', () => {
       ts: '2026-05-12T12:55:00.000Z',
       sourceKind: 'user_intent',
       summary: 'user submitted a chat',
-      entities: [{ id: 'monad', label: 'monad' }, { id: 'patcher', label: 'patcher' }],
+      entities: [{ id: 'elanous', label: 'elanous' }, { id: 'patcher', label: 'patcher' }],
       relations: [],
     };
     await writer.writeCards([card]);
@@ -46,7 +46,7 @@ describe('createKgsPatcherWriter · adapter', () => {
     expect(written.schema_version).toBe(2);
     expect(written.title).toBe('user submitted a chat');
     expect(written.body).toContain('user submitted a chat');
-    expect(written.body).toContain('Entities: monad, patcher');
+    expect(written.body).toContain('Entities: elanous, patcher');
     expect(written.nature).toBe('preference');
     expect(written.kind).toBe('note');
     expect(written.reliability).toBe('self-reported');
@@ -54,7 +54,7 @@ describe('createKgsPatcherWriter · adapter', () => {
     expect(written.tags).toContain('patcher');
     expect(written.tags).toContain('source:user_intent');
     expect(written.bm25_text).toContain('user submitted a chat');
-    expect(written.bm25_text).toContain('monad');
+    expect(written.bm25_text).toContain('elanous');
   });
 
   test('writeEmbeddings upserts vector_embedding onto matching card', async () => {
@@ -208,7 +208,7 @@ describe('startPatcherDaemon · boot wire', () => {
       user_id: '',
       session_id: '',
       device_id: 'test',
-      monad_id: 'test',
+      elanous_id: 'test',
       surface: 'tui',
       intent: { layer: 'utterance', kind: 'tui.utterance.chat_submit' },
     });

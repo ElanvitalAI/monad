@@ -1,7 +1,7 @@
 // ── 루프 에이전트 자산 원장 (PLAN-loop-agent-resource-management·2026-07-15) ────
 //
 // 대표 지시: 루프 에이전트(목표까지 반복하는 stateful 에이전트)를 자산으로 관리. 1회성 일반
-// 에이전트는 비자산(관측만). 기존 capability 원장과 같은 저장소(surface_events domain=monad)
+// 에이전트는 비자산(관측만). 기존 capability 원장과 같은 저장소(surface_events domain=elanous)
 // 재사용 — 신설 DB 0. kind='loop-agent'·loopId 로 dedup(append-supersede·최신이 현 상태).
 //
 // 3형태(loopKind): autonomous(ContinuationDriver)·contract(계약루프 3종)·coordinator(팬인 조율).
@@ -11,9 +11,9 @@ import { Database } from 'bun:sqlite';
 import { debug } from '../debug/log.js';
 import { openSurfaceEventsDb, recordEvent } from './surface-events.js';
 
-export const LOOP_DOMAIN = 'monad';
+export const LOOP_DOMAIN = 'elanous';
 export const LOOP_KIND = 'loop-agent';
-/** `monad logs --category` category for loop registry registrations. */
+/** `elanous logs --category` category for loop registry registrations. */
 export const LOOP_REGISTRY_LOG_CATEGORY = 'loops.registry';
 
 export type LoopKind = 'autonomous' | 'contract' | 'coordinator';

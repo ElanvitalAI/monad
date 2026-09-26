@@ -1089,7 +1089,7 @@ export function createDashboardMouseWiring(deps: DashboardMouseWiringDeps): Dash
   // keeps the pre-adoption paint path intact for tests / users who
   // prefer the flatter look.
   const pillPopupShadow = () => {
-    if (process.env.MONAD_MODAL_SHADOW === 'off') return undefined;
+    if (process.env.ELANOUS_MODAL_SHADOW === 'off') return undefined;
     const theme = deps.getTheme?.();
     return theme ? { theme } : undefined;
   };

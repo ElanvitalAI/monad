@@ -53,7 +53,7 @@ catch (e) { console.error(`⛔ 장면 파일을 못 읽었다: ${(e as Error).me
 if (!Array.isArray(S.scenes) || S.scenes.length < 2) { console.error('⛔ scenes 가 둘 이상이어야 한다'); process.exit(3); }
 
 const HOST_OR_NULL = P.values.host ?? mediaSshHost();
-if (!HOST_OR_NULL) { console.error('⛔ media 호스트가 없다 — --host 를 주거나 ~/.monad/ssh-hosts.json 에 `roles: ["media"]` 호스트를 둔다(또는 MONAD_MEDIA_HOST).'); process.exit(2); }
+if (!HOST_OR_NULL) { console.error('⛔ media 호스트가 없다 — --host 를 주거나 ~/.elanous/ssh-hosts.json 에 `roles: ["media"]` 호스트를 둔다(또는 ELANOUS_MEDIA_HOST).'); process.exit(2); }
 const HOST: string = HOST_OR_NULL;
 const OUT = P.values.out ?? mkdtempSync(join(tmpdir(), 'fullline-'));
 mkdirSync(join(OUT, 'source'), { recursive: true });

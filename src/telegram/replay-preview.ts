@@ -41,7 +41,7 @@ export interface RenderTelegramReplayPreviewOpts {
    *  RESEARCH §2.1 hermes uses utf16_len + 4000 byte conservative cap. */
   perMessageHtmlMax?: number;
   /** Optional header line shown once before the first message
-   *  (e.g. "↩ resumed monad-session-3 — last 5 turns:"). When
+   *  (e.g. "↩ resumed elanous-session-3 — last 5 turns:"). When
    *  provided it's prepended to the first preview entry's html. */
   header?: string;
   /** Optional more-messages footer when the input has more messages

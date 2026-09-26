@@ -1,11 +1,11 @@
 // ── User-Intent logger — emit + MSS enrich + sink fan-out ──
 //
 // PLAN §4.6 — every surface adapter calls `userIntentLogger.emit(...)`.
-// Logger fills the universal header (event_id / ts / monad_id /
+// Logger fills the universal header (event_id / ts / elanous_id /
 // trace_id / etc.), redacts, then fans out to all registered sinks.
 //
 // Default sinks (U0):
-//   - JSONL (always-on, `~/.monad/user-intents/{date}.jsonl`)
+//   - JSONL (always-on, `~/.elanous/user-intents/{date}.jsonl`)
 //   - in-memory ring (test seam + future Patcher bridge)
 //
 // U1 will add OTel; U4 will add the Patcher bridge. Both register
@@ -13,7 +13,7 @@
 
 import { randomBytes } from 'node:crypto';
 import { hostname } from 'node:os';
-import { getOrCreateMonadId } from '../mss/identity.js';
+import { getOrCreateElanousId } from '../mss/identity.js';
 import {
   getParentSpanId,
   getSpanId,
@@ -113,8 +113,8 @@ export class UserIntentLogger {
       ? input.intent
       : { ...input.intent, value };
 
-    let monadId = '';
-    try { monadId = getOrCreateMonadId(); } catch { /* identity write may fail */ }
+    let elanousId = '';
+    try { elanousId = getOrCreateElanousId(); } catch { /* identity write may fail */ }
 
     const sessionId = input.session_id
       ?? this.opts.ambientSessionId?.()
@@ -127,7 +127,7 @@ export class UserIntentLogger {
       user_id: input.user_id ?? this.opts.userId,
       session_id: sessionId,
       device_id: input.device_id ?? this.opts.deviceId ?? hostname(),
-      monad_id: monadId,
+      elanous_id: elanousId,
       surface: input.surface,
       intent,
     };

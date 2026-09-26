@@ -2,9 +2,9 @@
  * Generic localStorage key migration helper.
  *
  * Originally extracted from `daemon-config.ts:48-58` (legacy
- * `monad.voice.wsUrl` → `monad.daemon.baseUrl` migration). NEXUS
+ * `elanous.voice.wsUrl` → `elanous.daemon.baseUrl` migration). NEXUS
  * cleanup arc N-1.5 PR a re-uses the same pattern for
- * `monad.daemon.baseUrl` → `monad.nexus.baseUrl` cutover.
+ * `elanous.daemon.baseUrl` → `elanous.nexus.baseUrl` cutover.
  *
  * Behaviour: read legacyKey, if present and currentKey absent,
  * optionally transform, write to currentKey, then drop the legacy key.

@@ -62,7 +62,7 @@ describe('serializeScenarioToYaml — round-trip', () => {
       description: 'Every step variant',
       tags: ['rt'],
       setup: {
-        theme: 'monad-dark',
+        theme: 'elanous-dark',
         mount: [
           {
             id: 'btn',
@@ -75,7 +75,7 @@ describe('serializeScenarioToYaml — round-trip', () => {
         { action: 'click', target: { kind: 'component', componentId: 'btn' }, button: 'left' },
         { action: 'key', event: { name: 'return' } as never },
         { action: 'expect', target: { kind: 'modal-mounted', id: 'btn' } },
-        { action: 'theme', name: 'monad-pastel-default' },
+        { action: 'theme', name: 'elanous-pastel-default' },
         { action: 'set-context-key', key: 'themeName' as never, value: 'x' },
         { action: 'dismiss', modalId: 'btn' },
         { action: 'wait', ms: 25 },
@@ -85,6 +85,6 @@ describe('serializeScenarioToYaml — round-trip', () => {
     const parsed = parseScenarioYaml(yaml);
     expect(parsed.errors).toEqual([]);
     expect(parsed.validSteps.length).toBe(s.steps.length);
-    expect(parsed.scenario?.setup?.theme).toBe('monad-dark');
+    expect(parsed.scenario?.setup?.theme).toBe('elanous-dark');
   });
 });

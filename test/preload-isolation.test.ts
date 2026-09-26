@@ -7,51 +7,51 @@ test('preload clears inherited LLM and escalation selection env in every startup
   const root = mkdtempSync(join(tmpdir(), 'preload-isolation-'));
   const fixture = join(root, 'inherited-llm-env.test.ts');
   const inheritedSelection = {
-    MONAD_LLM_PROVIDER: 'openai-codex',
-    MONAD_LLM_MODEL: 'gpt-5.6-terra',
-    MONAD_ESCALATE_PROVIDER: 'grok',
-    MONAD_ESCALATE_MODEL: 'grok-4.6',
+    ELANOUS_LLM_PROVIDER: 'openai-codex',
+    ELANOUS_LLM_MODEL: 'gpt-5.6-terra',
+    ELANOUS_ESCALATE_PROVIDER: 'grok',
+    ELANOUS_ESCALATE_MODEL: 'grok-4.6',
   };
   writeFileSync(fixture, `
     import { expect, test } from 'bun:test';
     test('preload clears inherited selection and permits test-local setup', () => {
-      expect(process.env.MONAD_LLM_PROVIDER).toBeUndefined();
-      expect(process.env.MONAD_LLM_MODEL).toBeUndefined();
-      expect(process.env.MONAD_ESCALATE_PROVIDER).toBeUndefined();
-      expect(process.env.MONAD_ESCALATE_MODEL).toBeUndefined();
+      expect(process.env.ELANOUS_LLM_PROVIDER).toBeUndefined();
+      expect(process.env.ELANOUS_LLM_MODEL).toBeUndefined();
+      expect(process.env.ELANOUS_ESCALATE_PROVIDER).toBeUndefined();
+      expect(process.env.ELANOUS_ESCALATE_MODEL).toBeUndefined();
 
-      process.env.MONAD_LLM_PROVIDER = 'grok';
-      process.env.MONAD_LLM_MODEL = 'grok-4.6';
-      process.env.MONAD_ESCALATE_PROVIDER = 'openai-codex';
-      process.env.MONAD_ESCALATE_MODEL = 'gpt-5.6-terra';
-      expect(process.env.MONAD_LLM_PROVIDER).toBe('grok');
-      expect(process.env.MONAD_LLM_MODEL).toBe('grok-4.6');
-      expect(process.env.MONAD_ESCALATE_PROVIDER).toBe('openai-codex');
-      expect(process.env.MONAD_ESCALATE_MODEL).toBe('gpt-5.6-terra');
+      process.env.ELANOUS_LLM_PROVIDER = 'grok';
+      process.env.ELANOUS_LLM_MODEL = 'grok-4.6';
+      process.env.ELANOUS_ESCALATE_PROVIDER = 'openai-codex';
+      process.env.ELANOUS_ESCALATE_MODEL = 'gpt-5.6-terra';
+      expect(process.env.ELANOUS_LLM_PROVIDER).toBe('grok');
+      expect(process.env.ELANOUS_LLM_MODEL).toBe('grok-4.6');
+      expect(process.env.ELANOUS_ESCALATE_PROVIDER).toBe('openai-codex');
+      expect(process.env.ELANOUS_ESCALATE_MODEL).toBe('gpt-5.6-terra');
 
-      delete process.env.MONAD_LLM_PROVIDER;
-      delete process.env.MONAD_LLM_MODEL;
-      delete process.env.MONAD_ESCALATE_PROVIDER;
-      delete process.env.MONAD_ESCALATE_MODEL;
-      expect(process.env.MONAD_LLM_PROVIDER).toBeUndefined();
-      expect(process.env.MONAD_LLM_MODEL).toBeUndefined();
-      expect(process.env.MONAD_ESCALATE_PROVIDER).toBeUndefined();
-      expect(process.env.MONAD_ESCALATE_MODEL).toBeUndefined();
+      delete process.env.ELANOUS_LLM_PROVIDER;
+      delete process.env.ELANOUS_LLM_MODEL;
+      delete process.env.ELANOUS_ESCALATE_PROVIDER;
+      delete process.env.ELANOUS_ESCALATE_MODEL;
+      expect(process.env.ELANOUS_LLM_PROVIDER).toBeUndefined();
+      expect(process.env.ELANOUS_LLM_MODEL).toBeUndefined();
+      expect(process.env.ELANOUS_ESCALATE_PROVIDER).toBeUndefined();
+      expect(process.env.ELANOUS_ESCALATE_MODEL).toBeUndefined();
     });
   `);
 
   const childEnv = { ...process.env };
-  delete childEnv.MONAD_RUN_ID;
-  delete childEnv.MONAD_HARNESS_SPACE;
-  delete childEnv.MONAD_HARNESS_SPACE_ID;
-  delete childEnv.MONAD_CONTROL_INBOX_DIR;
-  delete childEnv.MONAD_STATE_DIR;
-  delete childEnv.MONAD_STATE_DIR_SOURCE;
+  delete childEnv.ELANOUS_RUN_ID;
+  delete childEnv.ELANOUS_HARNESS_SPACE;
+  delete childEnv.ELANOUS_HARNESS_SPACE_ID;
+  delete childEnv.ELANOUS_CONTROL_INBOX_DIR;
+  delete childEnv.ELANOUS_STATE_DIR;
+  delete childEnv.ELANOUS_STATE_DIR_SOURCE;
 
   const startupStates = [
-    { name: 'inherited harness', env: { MONAD_RUN_ID: 'inherited-harness-run' } },
+    { name: 'inherited harness', env: { ELANOUS_RUN_ID: 'inherited-harness-run' } },
     { name: 'no harness or state directory', env: {} },
-    { name: 'configured state directory without harness', env: { MONAD_STATE_DIR: join(root, 'state-dir') } },
+    { name: 'configured state directory without harness', env: { ELANOUS_STATE_DIR: join(root, 'state-dir') } },
   ];
 
   try {

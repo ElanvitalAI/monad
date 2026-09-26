@@ -47,7 +47,7 @@ describe('daemon-runtime ACP-path debug-bridge wire (M5 · 2026-05-14)', () => {
     // The PWA path gates on `?debug-tap=on`. iOS controls visibility
     // client-side (Settings toggle + drawer) so we ship envelopes
     // unconditionally and let the client filter. If this changes to
-    // an opt-in `_meta.monad.debugTap` flag in a follow-up, update
+    // an opt-in `_meta.elanous.debugTap` flag in a follow-up, update
     // this test alongside the wire.
     expect(src).toMatch(/debugBridge\??\.activate\s*\(\s*\)/);
   });

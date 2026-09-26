@@ -3,7 +3,7 @@
 // 왜: 계정을 이름으로 가른 뒤(#7135)에도 신호 파일은 «하나»였다.
 //   ⇒ A 를 재고 쓴 「찼다」를 B 의 것으로 읽는다. 그 위에 회전(S4)을 얹으면
 //     「A 가 찼으니 B 로 간다 → B 도 찼다고 나온다 → 되돌아간다」가 된다.
-//   ⭐ 키는 «monad 의 계정 이름»이 아니라 «실제로 잰 홈»이다 — 측정하는 것은
+//   ⭐ 키는 «elanous 의 계정 이름»이 아니라 «실제로 잰 홈»이다 — 측정하는 것은
 //     `codex app-server` 이고 그것이 읽는 것은 CODEX_HOME 이기 때문이다.
 
 import { afterEach, beforeEach, describe, expect, test } from 'bun:test';
@@ -27,13 +27,13 @@ let priorState: string | undefined;
 let priorCodexHome: string | undefined;
 beforeEach(() => {
   root = mkdtempSync(join(tmpdir(), 'quota-signal-'));
-  priorState = process.env.MONAD_STATE_DIR;
+  priorState = process.env.ELANOUS_STATE_DIR;
   priorCodexHome = process.env.CODEX_HOME;
-  process.env.MONAD_STATE_DIR = join(root, 'unrelated-instance-state');
+  process.env.ELANOUS_STATE_DIR = join(root, 'unrelated-instance-state');
   process.env.CODEX_HOME = join(root, 'home-A');   // 「지금 환경의 홈」 = A
 });
 afterEach(() => {
-  if (priorState === undefined) delete process.env.MONAD_STATE_DIR; else process.env.MONAD_STATE_DIR = priorState;
+  if (priorState === undefined) delete process.env.ELANOUS_STATE_DIR; else process.env.ELANOUS_STATE_DIR = priorState;
   if (priorCodexHome === undefined) delete process.env.CODEX_HOME; else process.env.CODEX_HOME = priorCodexHome;
   try { rmSync(root, { recursive: true, force: true }); } catch { /* best-effort */ }
 });
@@ -46,8 +46,8 @@ const CAN_SYMLINK = (() => {
 })();
 
 describe('쿼터 신호는 계정(홈)별로 갈린다', () => {
-  test('MONAD_STATE_DIR을 따르되 명시 저장소가 우선한다', () => {
-    expect(quotaSignalDir()).toBe(join(process.env.MONAD_STATE_DIR!, 'budget'));
+  test('ELANOUS_STATE_DIR을 따르되 명시 저장소가 우선한다', () => {
+    expect(quotaSignalDir()).toBe(join(process.env.ELANOUS_STATE_DIR!, 'budget'));
     expect(quotaSignalDir(root)).toBe(join(root, 'budget'));
   });
 

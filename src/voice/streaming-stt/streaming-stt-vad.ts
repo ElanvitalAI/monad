@@ -147,20 +147,20 @@ export function createVadDetector(opts: VadOpts = {}): VadDetector {
 
 export type VadMode = 'server' | 'local' | 'manual';
 
-/** Priority: explicit `configOverride` > env (`MONAD_VOICE_VAD`) > fallback. */
+/** Priority: explicit `configOverride` > env (`ELANOUS_VOICE_VAD`) > fallback. */
 export function resolveVadModeFromEnv(
   fallback: VadMode = 'server',
   opts: { configOverride?: VadMode } = {},
 ): VadMode {
   if (opts.configOverride) return opts.configOverride;
-  const raw = process.env.MONAD_VOICE_VAD?.trim().toLowerCase();
+  const raw = process.env.ELANOUS_VOICE_VAD?.trim().toLowerCase();
   if (!raw) return fallback;
   if (raw === 'server' || raw === 'local' || raw === 'manual') return raw;
   return fallback;
 }
 
 /** Layer order (lowest → highest precedence): `base` (caller-provided
- *  hardcoded), env (`MONAD_VOICE_VAD_*`), `configOverride` (from
+ *  hardcoded), env (`ELANOUS_VOICE_VAD_*`), `configOverride` (from
  *  user-config). User config wins over env wins over base. */
 export function readVadOptsFromEnv(
   base: VadOpts = {},
@@ -169,11 +169,11 @@ export function readVadOptsFromEnv(
   } = {},
 ): VadOpts {
   const out: VadOpts = { ...base };
-  const t = readPositiveFloat('MONAD_VOICE_VAD_THRESHOLD');
+  const t = readPositiveFloat('ELANOUS_VOICE_VAD_THRESHOLD');
   if (t !== undefined) out.threshold = t;
-  const sm = readPositiveInt('MONAD_VOICE_VAD_SILENCE_MS');
+  const sm = readPositiveInt('ELANOUS_VOICE_VAD_SILENCE_MS');
   if (sm !== undefined) out.silenceMs = sm;
-  const mm = readPositiveInt('MONAD_VOICE_VAD_MIN_SPEECH_MS');
+  const mm = readPositiveInt('ELANOUS_VOICE_VAD_MIN_SPEECH_MS');
   if (mm !== undefined) out.minSpeechMs = mm;
   // Config override has the final say.
   const cfg = opts.configOverride;

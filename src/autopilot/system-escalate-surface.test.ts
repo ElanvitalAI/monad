@@ -44,14 +44,14 @@ describe('escalate 액션 — no-spawn 분기', () => {
   let prevNodeEnv: string | undefined;
 
   beforeAll(() => {
-    prevTasksDir = process.env.MONAD_TASKS_DIR;
+    prevTasksDir = process.env.ELANOUS_TASKS_DIR;
     prevNodeEnv = process.env.NODE_ENV;
-    dir = mkdtempSync(join(tmpdir(), 'monad-escalate-'));
-    process.env.MONAD_TASKS_DIR = dir;      // 액션 내부 new TaskStore() 와 테스트가 같은 격리 DB 공유
+    dir = mkdtempSync(join(tmpdir(), 'elanous-escalate-'));
+    process.env.ELANOUS_TASKS_DIR = dir;      // 액션 내부 new TaskStore() 와 테스트가 같은 격리 DB 공유
     process.env.NODE_ENV = 'test';
   });
   afterAll(() => {
-    if (prevTasksDir === undefined) delete process.env.MONAD_TASKS_DIR; else process.env.MONAD_TASKS_DIR = prevTasksDir;
+    if (prevTasksDir === undefined) delete process.env.ELANOUS_TASKS_DIR; else process.env.ELANOUS_TASKS_DIR = prevTasksDir;
     if (prevNodeEnv === undefined) delete process.env.NODE_ENV; else process.env.NODE_ENV = prevNodeEnv;
     try { rmSync(dir, { recursive: true, force: true }); } catch { /* */ }
   });

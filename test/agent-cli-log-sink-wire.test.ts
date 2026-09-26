@@ -1,6 +1,6 @@
-// Behavior tests for the `monad agent` logs.db sink initializer.
+// Behavior tests for the `elanous agent` logs.db sink initializer.
 //
-// `monad agent` is a standalone process that does not inherit the nexus StoreSink,
+// `elanous agent` is a standalone process that does not inherit the nexus StoreSink,
 // so it must register its own log sink or core-turn debug.log events (e.g.
 // capability.resolve) never reach logs.db. These tests exercise the initializer's
 // contract directly (via an injected register fn) rather than grepping source, so
@@ -58,13 +58,13 @@ describe('agent CLI log sink initializer', () => {
 });
 
 // Wiring regression guard — complements the behavior tests above. The behavior
-// tests prove the initializer's contract; this guard proves the `monad agent`
+// tests prove the initializer's contract; this guard proves the `elanous agent`
 // command action actually invokes it before dispatching the turn (the whole
 // point — an unwired initializer is dead code, per the first review). The full
 // end-to-end path (agent turn -> capability.resolve -> logs.db) is verified
 // manually and documented in the PR; an automated e2e would require spawning a
 // process + an LLM call, which does not belong in the unit suite.
-describe('monad agent action wires the log sink initializer', () => {
+describe('elanous agent action wires the log sink initializer', () => {
   const HERE = dirname(fileURLToPath(import.meta.url));
   const SOURCE = readFileSync(resolve(HERE, '..', 'src', 'index.ts'), 'utf8');
 

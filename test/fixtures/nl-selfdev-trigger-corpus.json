@@ -4,7 +4,7 @@
   "owner": "S (대표 신규 ROLE · NL 축 · 2026-08-01)",
   "plan": "내부 계획 문서(NL self-dev 트리거 · 2026-08-01) §3ⓐ · §4 N0",
   "tiers": {
-    "D1": "명시 위임 — 사용자가 「monad 가 직접/스스로 구현하게」를 말로 명시한다. ✅ 쏴야 한다",
+    "D1": "명시 위임 — 사용자가 「elanous 가 직접/스스로 구현하게」를 말로 명시한다. ✅ 쏴야 한다",
     "D2": "암묵 위임 — 구현 요구는 분명한데 위임 어휘가 없다. ✅ 쏘거나(또는 되묻거나) ⚠️ 오라클 잠정 — 아래 tier_oracle_status 참조",
     "D0": "⛔ 비위임 대조군 — 설명·조회·탐색 요구다. **쏘면 안 된다**. D1·D2 와 **같은 대상**을 말하되 위임이 아닌 형태로 짝지었다"
   },
@@ -27,7 +27,7 @@
       "id": "D1-01",
       "tier": "D1",
       "target": "goal-lint-blank-line",
-      "prompt": "골 파일 린터에 빈 줄 검사가 없는데 monad 가 직접 구현하게 해줘",
+      "prompt": "골 파일 린터에 빈 줄 검사가 없는데 elanous 가 직접 구현하게 해줘",
       "accept": ["SelfImplement", "self_implement"],
       "note": "⭐ 25차(2026-08-01 19:23)에 실제 TUI 에 쳐서 잰 **그 문장**이다. 기준선 표본 1 이 이것이고, 결과는 수화까지만 가고 미발사였다. ⛔ 문면을 바꾸지 마라 — 바꾸면 유일한 대조점이 사라진다."
     },
@@ -35,7 +35,7 @@
       "id": "D1-02",
       "tier": "D1",
       "target": "logs-since-option",
-      "prompt": "monad logs 에 --since 옵션이 없어. self implement 로 네가 아니라 monad 가 만들게 해줘",
+      "prompt": "elanous logs 에 --since 옵션이 없어. self implement 로 네가 아니라 elanous 가 만들게 해줘",
       "accept": ["SelfImplement", "self_implement"],
       "note": "도구 이름을 문장에 그대로 담은 최직설 형태."
     },
@@ -43,7 +43,7 @@
       "id": "D1-03",
       "tier": "D1",
       "target": "where-json-output",
-      "prompt": "where 명령에 JSON 출력 옵션 추가하는 거, monad 스스로 개발해서 PR 까지 올려줘",
+      "prompt": "where 명령에 JSON 출력 옵션 추가하는 거, elanous 스스로 개발해서 PR 까지 올려줘",
       "accept": ["SelfImplement", "self_implement"],
       "note": "위임 + 산출물(PR)까지 명시. 북극성 ①~④ 를 한 문장에 담은 형태."
     },
@@ -51,7 +51,7 @@
       "id": "D1-04",
       "tier": "D1",
       "target": "pty-list-started-at",
-      "prompt": "이건 네가 직접 고치지 말고 모나드 자체 개발로 돌려줘 — pty list 출력에 시작 시각 컬럼",
+      "prompt": "이건 네가 직접 고치지 말고 엘라누스 자체 개발로 돌려줘 — pty list 출력에 시작 시각 컬럼",
       "accept": ["SelfImplement", "self_implement"],
       "note": "⭐ **금지 + 형태**를 함께 준 문장(*'네가 하지 마라'* 만 주면 자식이 멈춘다는 실측의 대구 — [[FINDING-prohibition-without-a-path]])."
     },
@@ -67,7 +67,7 @@
       "id": "D2-02",
       "tier": "D2",
       "target": "logs-since-option",
-      "prompt": "monad logs 에 --since 옵션이 없네. 만들어줘",
+      "prompt": "elanous logs 에 --since 옵션이 없네. 만들어줘",
       "accept": ["SelfImplement", "self_implement"],
       "note": "D1-02 와 같은 대상, 위임 어휘만 제거. D0-02 와 짝."
     },
@@ -100,7 +100,7 @@
       "id": "D0-02",
       "tier": "D0",
       "target": "logs-since-option",
-      "prompt": "monad logs 에 --since 옵션이 있나?",
+      "prompt": "elanous logs 에 --since 옵션이 있나?",
       "accept": [],
       "reject": ["SelfImplement", "self_implement"],
       "note": "⛔ 대조군. D2-02 와 같은 대상인데 **탐색**이다."

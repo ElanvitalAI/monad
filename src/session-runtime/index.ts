@@ -237,7 +237,7 @@ const SESSION_TOOL_FAMILY_RULES: SessionToolFamilyRule[] = [
   },
   {
     id: 'ui-inspect',
-    description: 'Read-only Monad UI and pane/view inspection.',
+    description: 'Read-only Elanous UI and pane/view inspection.',
     names: ['view_getConfig', 'pane_getState'],
     match: (text) => hasAny(text, [
       'view state',
@@ -253,7 +253,7 @@ const SESSION_TOOL_FAMILY_RULES: SessionToolFamilyRule[] = [
   },
   {
     id: 'ui-mutate',
-    description: 'Mutating Monad UI and pane/view layout control.',
+    description: 'Mutating Elanous UI and pane/view layout control.',
     names: [
       'view_setActive',
       'view_applyRuntimeConfig',
@@ -285,7 +285,7 @@ const SESSION_TOOL_FAMILY_RULES: SessionToolFamilyRule[] = [
   },
   {
     id: 'ui-control',
-    description: 'Monad UI and pane/view layout control.',
+    description: 'Elanous UI and pane/view layout control.',
     names: [
       'view_getConfig',
       'view_setActive',
@@ -339,12 +339,12 @@ const SESSION_TOOL_FAMILY_RULES: SessionToolFamilyRule[] = [
     ]),
   },
   {
-    // ★ self-ops (P3 · 2026-07-13) — monad 자기 상황판단 3박자의 '툴' 축. 텔레그램/데몬챗이
+    // ★ self-ops (P3 · 2026-07-13) — elanous 자기 상황판단 3박자의 '툴' 축. 텔레그램/데몬챗이
     //   무조건 싣는 L2 코어(core-tools.ts CORE_TOOL_SPECS)를 TUI 채팅에도 — 미션 진단
     //   ("P2 왜 실패?")·자율 시스템 관측·기억 회상이 표면 무관하게 성립. 이름은 core-tools 와
     //   계약(문자열 안정) — session-runtime 이 domains 를 import 하지 않도록 하드코딩.
     id: 'self-ops',
-    description: 'Monad self-awareness and autonomous-system observability (missions, ops, memory, sessions, schedules).',
+    description: 'Elanous self-awareness and autonomous-system observability (missions, ops, memory, sessions, schedules).',
     names: [
       'ops_status',
       'autopilot_missions',
@@ -736,14 +736,14 @@ const SESSION_RUNTIME_TOOL_FAMILY_RULES: SessionRuntimeToolFamilyRule[] = [
     match: () => false,
   },
   {
-    id: 'monad_skills_list',
-    description: 'List installed Monad skills by their exact executable name.',
-    names: ['monad_skills_list'],
+    id: 'elanous_skills_list',
+    description: 'List installed Elanous skills by their exact executable name.',
+    names: ['elanous_skills_list'],
     match: () => false,
   },
   {
     id: 'skill_exec',
-    description: 'Execute one explicitly named allowlisted Monad skill.',
+    description: 'Execute one explicitly named allowlisted Elanous skill.',
     names: ['skill_exec'],
     match: () => false,
   },
@@ -802,7 +802,7 @@ const SESSION_SURFACE_PROFILES: Record<SessionSurfaceId, Omit<SessionSurfaceProf
     defaultHostFamilyIds: ['self-ops'],
     // Shell execution — essential-mode coding agent (codex/claude-code
     // parity): edit→test→commit→PR→reboot all need a shell.
-    defaultRuntimeFamilyIds: ['bash', 'run-shell', 'pty-shell', 'run-tests', 'monad_skills_list', 'skill_exec', 'code-grounding'],
+    defaultRuntimeFamilyIds: ['bash', 'run-shell', 'pty-shell', 'run-tests', 'elanous_skills_list', 'skill_exec', 'code-grounding'],
     defaultNativeFamilyIds: [
       'code-read',
       'code-grep',
@@ -825,7 +825,7 @@ const SESSION_SURFACE_PROFILES: Record<SessionSurfaceId, Omit<SessionSurfaceProf
     baselineContexts: ['git'],
     defaultHostFamilyIds: ['code-intel', 'self-ops'],
     // Shell execution — a goal-owning coding agent must run what it builds.
-    defaultRuntimeFamilyIds: ['bash', 'run-shell', 'pty-shell', 'run-tests', 'monad_skills_list', 'skill_exec', 'code-grounding'],
+    defaultRuntimeFamilyIds: ['bash', 'run-shell', 'pty-shell', 'run-tests', 'elanous_skills_list', 'skill_exec', 'code-grounding'],
     defaultNativeFamilyIds: [
       'code-read',
       'code-grep',
@@ -870,7 +870,7 @@ const SESSION_SURFACE_PROFILES: Record<SessionSurfaceId, Omit<SessionSurfaceProf
     id: 'control/agent',
     domain: 'control',
     executionStyle: 'agent',
-    description: 'Operator posture for monad runtime control.',
+    description: 'Operator posture for elanous runtime control.',
     baselineContexts: ['git', 'operator-state'],
     defaultHostFamilyIds: ['ui-inspect', 'self-ops'],
     defaultRuntimeFamilyIds: [],
@@ -880,7 +880,7 @@ const SESSION_SURFACE_PROFILES: Record<SessionSurfaceId, Omit<SessionSurfaceProf
     id: 'ops-ui/agent',
     domain: 'ops',
     executionStyle: 'agent',
-    description: 'Operational posture for local Monad UI and runtime oversight.',
+    description: 'Operational posture for local Elanous UI and runtime oversight.',
     baselineContexts: ['git', 'ops-state'],
     defaultHostFamilyIds: ['ui-inspect', 'self-ops'],
     defaultRuntimeFamilyIds: [],
@@ -1274,14 +1274,14 @@ function buildSurfaceOperationalGuidance(surface: SessionSurfaceProfile): string
         '## Surface Guidance',
         '',
         'You are in `control/agent`.',
-        'Bias toward operator actions on the Monad runtime itself: inspect state first, then use control tools and report the resulting state change clearly.',
+        'Bias toward operator actions on the Elanous runtime itself: inspect state first, then use control tools and report the resulting state change clearly.',
       ].join('\n');
     case 'ops-ui/agent':
       return [
         '## Surface Guidance',
         '',
         'You are in `ops-ui/agent`.',
-        'Bias toward local operational oversight: inspect Monad runtime, window, pane, prompt, and debug state first, then use operator tools to explain health, drift, and next actions.',
+        'Bias toward local operational oversight: inspect Elanous runtime, window, pane, prompt, and debug state first, then use operator tools to explain health, drift, and next actions.',
       ].join('\n');
     case 'ops-fleet/agent':
       return [
@@ -1718,7 +1718,7 @@ const ESSENTIAL_NATIVE_RULE_IDS = [
   'agent', 'agent-output', 'agent-reply', 'agent-stop', 'agent-list', 'self-implement', 'self-orchestrate', 'dev-harness',
 ] as const;
 const ESSENTIAL_HOST_FAMILY_IDS = ['self-ops'] as const;
-const ESSENTIAL_RUNTIME_FAMILY_IDS = ['bash', 'run-shell', 'pty-shell', 'run-tests', 'monad_skills_list', 'skill_exec', 'code-grounding'] as const;
+const ESSENTIAL_RUNTIME_FAMILY_IDS = ['bash', 'run-shell', 'pty-shell', 'run-tests', 'elanous_skills_list', 'skill_exec', 'code-grounding'] as const;
 const ESSENTIAL_OPTIONAL_TOOL_NAMES = [
   'GetDashboardState',
   'TerminalModalList', 'TerminalModalObserve', 'TerminalModalFocus', 'TerminalModalDetach', 'TerminalModalKill',
@@ -1835,7 +1835,7 @@ export function buildSessionRuntimeToolSpecs(opts: {
         ...optionalSpecs,
       ];
   // Forensic — final tool list returned to streamLLMWithTools. Lets
-  // us diff TUI vs JSON-test (`monad repro`) tool exposure when codex
+  // us diff TUI vs JSON-test (`elanous repro`) tool exposure when codex
   // behavior diverges. Counts AND names so we can spot per-source
   // contributions.
   //
@@ -1863,7 +1863,7 @@ export function buildSessionRuntimeToolSpecs(opts: {
     toolCount: finalSpecs.length,
   });
   // diag-gated (분석 레벨) 유지 — 매턴 detail 이라 always-on 이면 노이즈 독.
-  // 노출 tool 셋을 보려면 `/debug diag` 후 monad logs --category llm.tool-
+  // 노출 tool 셋을 보려면 `/debug diag` 후 elanous logs --category llm.tool-
   // exposure. always-on 은 이상탐지(surface tool 0개·core 누락) 전용 — 루틴
   // per-turn 노출은 diag. (2026-07-17 규율: over-log 되돌림·runtime.resolve 는 유지.)
   if (debug.enabled) {
@@ -1942,7 +1942,7 @@ function resolveDynamicSessionRuntimeToolSpecs(opts: {
     .filter((tool): tool is ToolRuntime<Record<string, unknown>, ToolRunResult> => !!tool)
     .map(tool => tool.spec);
   // 관측 보강(2026-07-17) — native.resolve 미러. runtime 축(Bash·RunShell 등)이
-  // 어느 surface/family 로 노출됐는지 monad logs --category llm.tool-exposure 로
+  // 어느 surface/family 로 노출됐는지 elanous logs --category llm.tool-exposure 로
   // 조회 가능하게. runtime 축 로깅이 없어 "Bash 노출됐나" 를 로그로 못 봤던 갭.
   if (debug.enabled) {
     debug.log('llm.tool-exposure', 'runtime.resolve', {

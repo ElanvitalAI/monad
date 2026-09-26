@@ -1,8 +1,8 @@
 // ACP-client 백엔드 세션 read-through (G3 · 2026-07-18)
 //
-// `monad session` 은 canonical 전사 스토어 S1(`~/.monad/sessions`)만 읽는다. 그러나
-// monad 가 백엔드(codex/claude)를 ACP 로 구동한 **코딩 위임 전사**는 S2
-// (`~/.monad/acp-sessions/*.json` · `acp/session-persistence.ts`)에만 남아 `monad session`
+// `elanous session` 은 canonical 전사 스토어 S1(`~/.elanous/sessions`)만 읽는다. 그러나
+// elanous 가 백엔드(codex/claude)를 ACP 로 구동한 **코딩 위임 전사**는 S2
+// (`~/.elanous/acp-sessions/*.json` · `acp/session-persistence.ts`)에만 남아 `elanous session`
 // 에 안 보였다(감사 G3). 이 모듈은 기존 persistence 공개 API(list/load)를 재사용해 S2
 // 세션을 SessionMeta 호환 형태로 노출한다. **read-only·쓰기경로 무접촉.**
 //
@@ -71,7 +71,7 @@ function toListItem(s: PersistedAcpSession): AcpBackendListItem {
  *  ⓐ 접두는 잎(`acp/namespaces.ts`)이 갖는다 — `dual-role-manager` 를 import 하면
  *    이 모듈이 스스로 못 박은 «read-only·가벼움»이 깨진다.
  *  ⓑ 언더스코어 변종은 ***파생시킨다.*** 그것은 파일명 살균(`sanitizeForFilename`)이
- *    `:` 를 `_` 로 바꾼 결과이고(저장 경로 `~/.monad/acp-sessions/acp-cli_claude_s-1.json`),
+ *    `:` 를 `_` 로 바꾼 결과이고(저장 경로 `~/.elanous/acp-sessions/acp-cli_claude_s-1.json`),
  *    ***살균 규칙이 바뀌면 이 판정도 같이 따라가야 한다.***
  *  🔑 베끼면 두 값이 «각자» 늙는다. 파생시키면 한 값만 늙는다. */
 export function isAcpBackendSessionId(id: string): boolean {

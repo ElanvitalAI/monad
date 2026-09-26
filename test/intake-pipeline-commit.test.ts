@@ -3,7 +3,7 @@
 // Sibling of `test/intake-pipeline-preview.test.ts`. The commit
 // endpoint writes to the *real* TaskStore (the bare `new TaskStore()`
 // constructor) and persists workflow YAMLs to disk, so we point both
-// at a temp `MONAD_NEXUS_DIR` + `HOME` to keep the test hermetic.
+// at a temp `ELANOUS_NEXUS_DIR` + `HOME` to keep the test hermetic.
 
 import { describe, test, expect, beforeEach, afterEach } from 'bun:test';
 import { mkdtempSync, rmSync, existsSync } from 'node:fs';
@@ -26,15 +26,15 @@ beforeEach(() => {
   tmpRoot = mkdtempSync(join(tmpdir(), 'fu-i7c-pipeline-'));
   tmpTasks = mkdtempSync(join(tmpdir(), 'fu-i7c-tasks-'));
   tmpWorkflows = mkdtempSync(join(tmpdir(), 'fu-i7c-wf-'));
-  prevEnvNexus = process.env.MONAD_NEXUS_DIR;
-  prevEnvTasksDir = process.env.MONAD_TASKS_DIR;
-  prevEnvWorkflowsDir = process.env.MONAD_WORKFLOWS_DIR;
-  process.env.MONAD_NEXUS_DIR = tmpRoot;
-  // TaskStore reads MONAD_TASKS_DIR / MONAD_TASKS_DB; saveWorkflow
-  // reads MONAD_WORKFLOWS_DIR. Point both at tmpdirs so the commit
+  prevEnvNexus = process.env.ELANOUS_NEXUS_DIR;
+  prevEnvTasksDir = process.env.ELANOUS_TASKS_DIR;
+  prevEnvWorkflowsDir = process.env.ELANOUS_WORKFLOWS_DIR;
+  process.env.ELANOUS_NEXUS_DIR = tmpRoot;
+  // TaskStore reads ELANOUS_TASKS_DIR / ELANOUS_TASKS_DB; saveWorkflow
+  // reads ELANOUS_WORKFLOWS_DIR. Point both at tmpdirs so the commit
   // never touches the dev's real TOX or workflow library.
-  process.env.MONAD_TASKS_DIR = tmpTasks;
-  process.env.MONAD_WORKFLOWS_DIR = tmpWorkflows;
+  process.env.ELANOUS_TASKS_DIR = tmpTasks;
+  process.env.ELANOUS_WORKFLOWS_DIR = tmpWorkflows;
 });
 
 afterEach(() => {
@@ -42,9 +42,9 @@ afterEach(() => {
     if (prev === undefined) delete process.env[key];
     else process.env[key] = prev;
   };
-  restore('MONAD_NEXUS_DIR', prevEnvNexus);
-  restore('MONAD_TASKS_DIR', prevEnvTasksDir);
-  restore('MONAD_WORKFLOWS_DIR', prevEnvWorkflowsDir);
+  restore('ELANOUS_NEXUS_DIR', prevEnvNexus);
+  restore('ELANOUS_TASKS_DIR', prevEnvTasksDir);
+  restore('ELANOUS_WORKFLOWS_DIR', prevEnvWorkflowsDir);
   try { rmSync(tmpRoot, { recursive: true, force: true }); } catch { /* ignore */ }
   try { rmSync(tmpTasks, { recursive: true, force: true }); } catch { /* ignore */ }
   try { rmSync(tmpWorkflows, { recursive: true, force: true }); } catch { /* ignore */ }
@@ -123,7 +123,7 @@ describe('FU-I7c /v1/intake/pipeline-commit', () => {
       expect(body.register.missionIds.length).toBe(1);
       expect(body.register.taskIds.length).toBe(1);
       expect(body.register.errors).toEqual([]);
-      // The TaskStore file should have been created under MONAD_TASKS_DIR.
+      // The TaskStore file should have been created under ELANOUS_TASKS_DIR.
       const dbPath = join(tmpTasks, 'tasks.db');
       expect(existsSync(dbPath)).toBe(true);
     } finally { srv.stop(); }

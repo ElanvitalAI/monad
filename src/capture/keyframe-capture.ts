@@ -8,8 +8,8 @@
 // sharp 래스터(비쌈)를 피하고 전이 때만 `PtyHandle.renderScreenPng()` 를 뽑아 저장 → `SelfReportFrame.pngRef`
 // 스탬프. 2차(G5 브레인 capture 액션·미묘한 순간 LLM 판단)는 백로그.
 //
-// 저장 격리: `harnessScreenDir()`(MONAD_STATE_DIR 스코프) 하위 `keyframes/`. 키 = runId(K join anchor)⨯
-// ptyId⨯seq⨯state → `monad self run <runId> --png` 추출과 정합. 전부 fail-soft(캡처 실패가 goal-loop 무해).
+// 저장 격리: `harnessScreenDir()`(ELANOUS_STATE_DIR 스코프) 하위 `keyframes/`. 키 = runId(K join anchor)⨯
+// ptyId⨯seq⨯state → `elanous self run <runId> --png` 추출과 정합. 전부 fail-soft(캡처 실패가 goal-loop 무해).
 
 import { join } from 'node:path';
 import { mkdirSync, writeFileSync, readdirSync, statSync } from 'node:fs';
@@ -73,7 +73,7 @@ function parseKeyframeName(file: string): { ptyId: string; seq: number; state: s
 }
 
 /**
- * 한 run(또는 space) 의 키프레임 목록(seq 순). `monad self run <runId> --png` 추출의 소스.
+ * 한 run(또는 space) 의 키프레임 목록(seq 순). `elanous self run <runId> --png` 추출의 소스.
  * runOrSpace 프리픽스(safeToken)로 필터. 없으면 빈 배열.
  */
 export function listKeyframes(runOrSpace: string, env: NodeJS.ProcessEnv = process.env): KeyframeEntry[] {

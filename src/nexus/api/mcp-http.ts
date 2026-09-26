@@ -25,7 +25,7 @@ import type { ToolRuntime } from '../../tool-runtime/types.js';
 const mcpHttpProgressSink = new AsyncLocalStorage<(env: FeedbackEnvelope) => void>();
 const patchedRuntimes = new WeakSet<ToolRuntime>();
 
-const MCP_WWW_AUTHENTICATE = 'Bearer realm="monad-mcp"';
+const MCP_WWW_AUTHENTICATE = 'Bearer realm="elanous-mcp"';
 
 /** Header name for explicit progress-stream opt-in. Case-insensitive on read. */
 export const MCP_PROGRESS_HEADER = 'MCP-Progress';

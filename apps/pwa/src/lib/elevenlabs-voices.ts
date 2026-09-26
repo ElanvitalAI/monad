@@ -84,7 +84,7 @@ export function filterVoices(
   });
 }
 
-const RECENT_KEY = 'monad.tts-voice.recent';
+const RECENT_KEY = 'elanous.tts-voice.recent';
 const RECENT_CAP = 5;
 
 /** Track recently-used voice ids. The picker surfaces these as a

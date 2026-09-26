@@ -1,7 +1,7 @@
-// W9d-FU Z15.b · `~/.monad/devices.json` reader → DeviceFleetSource.
+// W9d-FU Z15.b · `~/.elanous/devices.json` reader → DeviceFleetSource.
 // Cf. 내부 문서 §2.3 follow-up #4.
 //
-// The iOS Companion writes `~/.monad/devices.json` on iCloud device-family
+// The iOS Companion writes `~/.elanous/devices.json` on iCloud device-family
 // sync; the daemon reads it through this source. Schema (intentionally
 // permissive):
 //
@@ -25,11 +25,11 @@ import { join } from 'node:path';
 import type { DeviceFleetSource, RawDeviceRow } from './device-detector.js';
 
 export function defaultDevicesJsonPath(): string {
-  return join(homedir(), '.monad', 'devices.json');
+  return join(homedir(), '.elanous', 'devices.json');
 }
 
 export interface JsonDevicesSourceOpts {
-  /** Override path. Defaults to `~/.monad/devices.json`. */
+  /** Override path. Defaults to `~/.elanous/devices.json`. */
   path?: string;
   /** Test seam — override the disk read. */
   read?: (path: string) => string;
@@ -40,7 +40,7 @@ export interface JsonDevicesSourceOpts {
   onError?: (err: unknown) => void;
 }
 
-/** Build a `DeviceFleetSource` that reads `~/.monad/devices.json` (or
+/** Build a `DeviceFleetSource` that reads `~/.elanous/devices.json` (or
  *  the override) on every `.read()`. The source is intentionally
  *  stateless — the caller (`tickUpgradeWatcher`) holds the snapshot. */
 export function jsonDevicesFleetSource(opts: JsonDevicesSourceOpts = {}): DeviceFleetSource {

@@ -153,7 +153,7 @@ export interface TaskStoreOptions {
 // 어떤 라이브 루프가 `.close()` 없이 반복 생성하면 fd 누수 + 매 틱 DDL 재실행
 // = 메인스레드 CPU 스핀(Bun 단일스레드 → 이벤트루프 굶김 → 전 서피스 무응답).
 // 경계(생성자)에서 순-핸들 수(open−close)를 세고 임계 하이워터 초과 시 호출
-// 스택을 관측 — 계측 없던 그 루프 지점이 `monad logs --category task-store`
+// 스택을 관측 — 계측 없던 그 루프 지점이 `elanous logs --category task-store`
 // 조회로 특정된다(제1원칙: 조회에 안 뜨면 debug.log 를 심어라).
 let __tsFileOpenCount = 0;
 let __tsFileCloseCount = 0;

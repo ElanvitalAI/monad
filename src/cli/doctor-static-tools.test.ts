@@ -32,10 +32,10 @@ describe('managed python — when', () => {
     expect(managedPythonNeeded(linux('amzn2023', 'path python 3.9.25 is older than the minimum 3.11'))).toBe(true);
   });
   test('AL2 with no python → managed (no distro python line)', () => {
-    expect(managedPythonNeeded(linux('amzn2', 'no python3 found (MONAD_PYTHON · monad venv · pyenv · PATH)'))).toBe(true);
+    expect(managedPythonNeeded(linux('amzn2', 'no python3 found (ELANOUS_PYTHON · elanous venv · pyenv · PATH)'))).toBe(true);
   });
   test('debian with no python → the distro line (--sudo) first, not managed', () => {
-    expect(managedPythonNeeded(linux('debian', 'no python3 found (MONAD_PYTHON · monad venv · pyenv · PATH)'))).toBe(false);
+    expect(managedPythonNeeded(linux('debian', 'no python3 found (ELANOUS_PYTHON · elanous venv · pyenv · PATH)'))).toBe(false);
   });
   test('ensurepip-missing is a venv package problem, not managed', () => {
     expect(managedPythonNeeded(linux('debian', 'the base python cannot create a venv with pip (ensurepip missing)'))).toBe(false);
@@ -135,7 +135,7 @@ describe('an old gh is replaced by the pinned static gh', () => {
     const it = checkReadiness({ platform: 'linux', distro: 'debian', ghOnPath: true, ghAuthStatus: 0, ghVersion: '2.45.0' }).items.find((i) => i.id === 'gh-auth')!;
     expect(it.status).toBe('manual');
     expect(it.evidence).toContain('older than 2.80');
-    expect(it.remedy).toBe('monad doctor --fix --yes');
+    expect(it.remedy).toBe('elanous doctor --fix --yes');
   });
   test('static-tools plans gh for a missing or old gh on linux, and keeps the codex host check independent', () => {
     expect(staticToolsNeeded({ platform: 'linux', distro: 'debian', ghOnPath: true, ghVersion: '2.45.0' })).toEqual(['gh']);

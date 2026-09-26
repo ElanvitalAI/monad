@@ -3,7 +3,7 @@
 // the REPL path (`src/repl/index.ts`).
 //
 // Pre-T1.2, only `eval-prompt-cli.ts` honored `chat.toolDeny` —
-// `monad ask` (CLI agent) and `monad repl` (REPL) silently ignored
+// `elanous ask` (CLI agent) and `elanous repl` (REPL) silently ignored
 // it. This test guards that wiring lift directly: we read the source
 // and assert the policy is applied at the runTurn call site.
 //

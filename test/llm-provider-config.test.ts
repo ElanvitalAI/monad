@@ -60,7 +60,7 @@ beforeEach(() => {
     delete process.env[k];
   }
   // Redirect the OAuth store to a tmp dir so tests can't leak into
-  // (or read from) the user's real ~/.config/monad/auth.json.
+  // (or read from) the user's real ~/.config/elanous/auth.json.
   tmpXdg = mkdtempSync(join(tmpdir(), 'llm-cfg-'));
   savedEnv.HOME = process.env.HOME;
   savedEnv.XDG_CONFIG_HOME = process.env.XDG_CONFIG_HOME;
@@ -249,7 +249,7 @@ describe('openai-codex OAuth-aware provider', () => {
     // Phase 26/27: OAuth routes to /responses (ChatGPT backend),
     // apiKey routes to /chat/completions (api.openai.com). When both
     // are configured we use OAuth — the user explicitly ran
-    // `monad login openai-codex` so that's the intended credential.
+    // `elanous login openai-codex` so that's the intended credential.
     saveTokens('openai-codex', {
       accessToken: 'oauth-wins',
       refreshToken: 'oauth-R',
@@ -270,12 +270,12 @@ describe('getProviderForConfig — auto fallthrough', () => {
     expect(() => getProviderForConfig(cfg)).toThrow(/No LLM provider available/);
   });
 
-  test('no credentials at all → message leads with `monad setup`, keys come last', () => {
+  test('no credentials at all → message leads with `elanous setup`, keys come last', () => {
     const msg = noProviderAvailableMessage();
     expect(msg.startsWith('No LLM provider available.')).toBe(true);
-    expect(msg).toContain('`monad setup`');
-    expect(msg).toContain('`monad login openai-codex`');
-    expect(msg.indexOf('`monad setup`')).toBeLessThan(msg.indexOf('XAI_API_KEY'));
+    expect(msg).toContain('`elanous setup`');
+    expect(msg).toContain('`elanous login openai-codex`');
+    expect(msg.indexOf('`elanous setup`')).toBeLessThan(msg.indexOf('XAI_API_KEY'));
   });
 
   test('codex login present → message names the provider line, never asks for API keys', () => {
@@ -286,7 +286,7 @@ describe('getProviderForConfig — auto fallthrough', () => {
     }, { authMode: 'chatgpt', mirrorCodex: false });
     const msg = noProviderAvailableMessage();
     expect(msg.startsWith('No LLM provider available.')).toBe(true);
-    expect(msg).toContain('`monad config set llm.provider openai-codex`');
+    expect(msg).toContain('`elanous config set llm.provider openai-codex`');
     expect(msg).not.toContain('XAI_API_KEY');
   });
 

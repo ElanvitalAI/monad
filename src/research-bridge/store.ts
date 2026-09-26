@@ -3,7 +3,7 @@
 // Two layers of persistence:
 //   1. In-memory ring (most recent N) — what `/research list` reads
 //      and what the slash handler hands to the prefill formatter.
-//   2. On-disk archive at `~/.monad/research/<timestamp>-<topic>.md`
+//   2. On-disk archive at `~/.elanous/research/<timestamp>-<topic>.md`
 //      so a long research turn survives across sessions and the user
 //      can grep prior queries from the filesystem.
 //
@@ -13,13 +13,13 @@
 
 import * as fs from 'node:fs';
 import * as path from 'node:path';
-import { monadStateRoot } from '../autopilot/state-paths.js';
+import { elanousStateRoot } from '../autopilot/state-paths.js';
 import { debug } from '../debug/log.js';
 import type { ExternalResearchResult } from './types.js';
 
 const RING_LIMIT = 20;
 const MAX_OUTPUT_BYTES = 16 * 1024;
-const DEFAULT_DIR = path.join(monadStateRoot(), 'research');
+const DEFAULT_DIR = path.join(elanousStateRoot(), 'research');
 
 let overrideDir: string | null = null;
 const ring: ExternalResearchResult[] = [];

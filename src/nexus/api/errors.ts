@@ -4,7 +4,7 @@
 // `supervisor/error-snapshot.ts` when a tab's halt-pattern fires or it
 // exceeds the rolling restart cap. PWA `<TabDetail>` + TUI fail modal
 // both consume the JSON the writer dropped under
-// `~/.monad/nexus/errors/<tabId>/<ts>.json`.
+// `~/.elanous/nexus/errors/<tabId>/<ts>.json`.
 
 import { jsonResponse } from './http-server.js';
 import {

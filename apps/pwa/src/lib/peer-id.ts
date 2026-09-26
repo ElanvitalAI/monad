@@ -8,7 +8,7 @@
 // collisions among the user's typical fleet (~6 nodes per memory) by
 // a wide margin without bloating the wire frame.
 
-const STORAGE_KEY = 'monad.pwa.peerId';
+const STORAGE_KEY = 'elanous.pwa.peerId';
 
 function generate(): string {
   // Avoid Math.random — sessionStorage carries it across reloads so a

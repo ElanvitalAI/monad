@@ -3,7 +3,7 @@
  * preference for the chat client.
  *
  * Stores the user's selected `DaemonToolSurfaceKind` (or `null` for
- * "use daemon default") in `localStorage` under `monad.chat.surface`.
+ * "use daemon default") in `localStorage` under `elanous.chat.surface`.
  * Multiple tabs stay in sync via the native `storage` event so a
  * change in one tab propagates to subscribers in every other tab
  * without an extra IPC channel.
@@ -22,7 +22,7 @@
 import type { DaemonToolSurfaceKind } from './daemon-client';
 import { DAEMON_TOOL_SURFACE_KINDS } from './daemon-client';
 
-export const SURFACE_PREFERENCE_KEY = 'monad.chat.surface';
+export const SURFACE_PREFERENCE_KEY = 'elanous.chat.surface';
 
 /** Special value the picker uses to mean "send no `tools` field" —
  *  the daemon's configured surface (CLI `--tools` or `global.tools`)

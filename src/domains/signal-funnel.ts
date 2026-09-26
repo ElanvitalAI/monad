@@ -4,7 +4,7 @@
 // 조립한다. "유입→분류→critical 승격→2차 판정→확정→집행" 각 단계 수·통과율을 한 눈에 봐,
 // 게이트 튜닝(노이즈 vs 커버리지) 판단을 sqlite 직접조회 없이 상시 가시화한다(대표 지시).
 //
-// 순수(렌더만)·무네트워크. CLI(`monad signals`)가 pool 조회 후 이 빌더로 출력.
+// 순수(렌더만)·무네트워크. CLI(`elanous signals`)가 pool 조회 후 이 빌더로 출력.
 
 import type { MetricsSnapshot } from './signal-pool.js';
 import { computeMetrics, detectGaps, type ResolutionGap } from './signal-metrics.js';

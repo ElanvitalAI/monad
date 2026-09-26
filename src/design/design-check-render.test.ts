@@ -15,7 +15,7 @@ function verdict(over: Partial<Extract<DesignCheckOutcome, { ok: true }>> = {}):
   return {
     ok: true,
     documentPath: '/repo/DESIGN.md',
-    craftDirectory: '/monad/craft',
+    craftDirectory: '/elanous/craft',
     availableRulebooks: [],
     declaredRulebooks: [],
     unavailableRulebooks: [],

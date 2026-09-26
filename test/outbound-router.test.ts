@@ -35,7 +35,7 @@ describe('normalizeOutbound', () => {
         { type: 'pushcut' },                      // no url/name → dropped
         { type: 'smoke-signal', webhookUrl: 'x' }, // unknown type → dropped
         { type: 'discord', webhookUrl: ' https://discord.com/api/webhooks/1/t ' },
-        { type: 'pushcut', notification: 'monad-outbound' },
+        { type: 'pushcut', notification: 'elanous-outbound' },
       ],
       routes: { alert: ['telegram', 'pushcut'], junk: 'not-an-array' },
     });
@@ -139,7 +139,7 @@ describe('routeOutbound', () => {
     const discordPost = posts.find(p => p.url.includes('discord'));
     expect(JSON.parse(discordPost!.body)).toEqual({ content: 'hello' });
     const pushcutPost = posts.find(p => p.url.includes('pushcut'));
-    expect(JSON.parse(pushcutPost!.body)).toEqual({ title: 'monad alert', text: 'hello' });
+    expect(JSON.parse(pushcutPost!.body)).toEqual({ title: 'elanous alert', text: 'hello' });
     // fail-soft errors never leak webhook URLs
     for (const c of r.channels) expect(c.error ?? '').not.toContain('webhooks');
   });
@@ -183,12 +183,12 @@ describe('routeOutbound', () => {
   test('pushcut API-key path uses injected notify with the configured name', async () => {
     const seen: Array<{ name: string; title: string }> = [];
     const r = await routeOutbound(cfgWith({
-      channels: [{ type: 'pushcut', notification: 'monad-outbound' }],
+      channels: [{ type: 'pushcut', notification: 'elanous-outbound' }],
     }), { ...msg, kind: 'report' }, {
       pushcutNotify: async (name, payload) => { seen.push({ name, title: payload.title }); return { ok: true }; },
       deliveryDb: mem(),
     });
-    expect(seen).toEqual([{ name: 'monad-outbound', title: 'monad report' }]);
+    expect(seen).toEqual([{ name: 'elanous-outbound', title: 'elanous report' }]);
     expect(r.delivered).toBe(true);
   });
 });
@@ -211,7 +211,7 @@ describe('발송 팬아웃 구조 — 포맷터 (채널별)', () => {
     expect(dc.markdown).toBe(false);
     expect(dc.chunks!.length).toBeGreaterThan(1); // 2000자 분할
     const pc = formatForChannel('pushcut', { text: 'hi', markdown: false, kind: 'report' });
-    expect(pc.title).toBe('monad report');
+    expect(pc.title).toBe('elanous report');
   });
 });
 

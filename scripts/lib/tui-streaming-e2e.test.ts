@@ -61,9 +61,9 @@ describe('TUI OpenAI-compatible streaming E2E', () => {
         ...process.env,
         LOCAL_LLM_URL: `http://127.0.0.1:${server.port}/v1`,
         LOCAL_LLM_MODEL: 'test-model',
-        MONAD_LLM_PROVIDER: 'local',
-        MONAD_LLM_MODEL: 'test-model',
-        MONAD_LLM_BASE_URL: `http://127.0.0.1:${server.port}/v1`,
+        ELANOUS_LLM_PROVIDER: 'local',
+        ELANOUS_LLM_MODEL: 'test-model',
+        ELANOUS_LLM_BASE_URL: `http://127.0.0.1:${server.port}/v1`,
       },
     });
     const [stdout, stderr, exitCode] = await Promise.all([
@@ -158,19 +158,19 @@ describe('TUI OpenAI-compatible streaming E2E', () => {
       }));
       handle = startPty({
         cmd: 'bun',
-        args: ['bin/monad.mjs', '--config-dir', tempDir, '--test-state-dir', tempDir],
+        args: ['bin/elanous.mjs', '--config-dir', tempDir, '--test-state-dir', tempDir],
         cols: 160,
         rows: 40,
         workdir: repoRoot,
         env: {
           ...process.env,
-          MONAD_DRIVE_TUI: '1',
-          MONAD_STATE_DIR: tempDir,
+          ELANOUS_DRIVE_TUI: '1',
+          ELANOUS_STATE_DIR: tempDir,
           LOCAL_LLM_URL: baseUrl(),
           LOCAL_LLM_MODEL: 'test-model',
-          MONAD_LLM_PROVIDER: 'local',
-          MONAD_LLM_MODEL: 'test-model',
-          MONAD_LLM_BASE_URL: baseUrl(),
+          ELANOUS_LLM_PROVIDER: 'local',
+          ELANOUS_LLM_MODEL: 'test-model',
+          ELANOUS_LLM_BASE_URL: baseUrl(),
         },
       });
 
@@ -305,19 +305,19 @@ describe('TUI OpenAI-compatible streaming E2E', () => {
       }));
       handle = startPty({
         cmd: 'bun',
-        args: ['bin/monad.mjs', '--config-dir', tempDir, '--test-state-dir', tempDir],
+        args: ['bin/elanous.mjs', '--config-dir', tempDir, '--test-state-dir', tempDir],
         cols: 160,
         rows: 40,
         workdir: repoRoot,
         env: {
           ...process.env,
-          MONAD_DRIVE_TUI: '1',
-          MONAD_STATE_DIR: tempDir,
+          ELANOUS_DRIVE_TUI: '1',
+          ELANOUS_STATE_DIR: tempDir,
           LOCAL_LLM_URL: baseUrl(),
           LOCAL_LLM_MODEL: 'test-model',
-          MONAD_LLM_PROVIDER: 'local',
-          MONAD_LLM_MODEL: 'test-model',
-          MONAD_LLM_BASE_URL: baseUrl(),
+          ELANOUS_LLM_PROVIDER: 'local',
+          ELANOUS_LLM_MODEL: 'test-model',
+          ELANOUS_LLM_BASE_URL: baseUrl(),
         },
       });
 

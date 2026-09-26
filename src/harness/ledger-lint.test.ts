@@ -11,7 +11,7 @@ afterEach(() => {
 });
 
 function fixture(document: string): { root: string; file: string } {
-  const root = mkdtempSync(join(tmpdir(), 'monad-ledger-lint-'));
+  const root = mkdtempSync(join(tmpdir(), 'elanous-ledger-lint-'));
   roots.push(root);
   const area = join(root, 'area');
   mkdirSync(area);

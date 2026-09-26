@@ -30,14 +30,14 @@ function buildOtlpLog(event: UserIntentEvent, serviceName: string): unknown {
       resource: {
         attributes: [
           { key: 'service.name', value: { stringValue: serviceName } },
-          { key: 'monad.monad_id', value: { stringValue: event.monad_id } },
+          { key: 'elanous.elanous_id', value: { stringValue: event.elanous_id } },
           ...(event.session_id
-            ? [{ key: 'monad.session_id', value: { stringValue: event.session_id } }]
+            ? [{ key: 'elanous.session_id', value: { stringValue: event.session_id } }]
             : []),
         ],
       },
       scopeLogs: [{
-        scope: { name: 'monad.user-intent' },
+        scope: { name: 'elanous.user-intent' },
         logRecords: [{
           timeUnixNano: String(BigInt(new Date(event.ts).getTime()) * 1_000_000n),
           severityText: 'INFO',

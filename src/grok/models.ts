@@ -86,7 +86,7 @@ export const GROK_MODELS: GrokModel[] = [
   //
   //  📏 1차 관측(grok CLI) — ***구독 경로에는 «있다»***:
   //       `grok models` → `* grok-4.7 (default)` ⊕ `- grok-4.7-build-fast`
-  //     ⇒ Grok Build/Cursor 표면 전용이고, monad 는 agent-mission(구독 PTY)으로만 닿는다.
+  //     ⇒ Grok Build/Cursor 표면 전용이고, elanous 는 agent-mission(구독 PTY)으로만 닿는다.
   //
   //  📏 x.ai 공지 1차 문면: ***"twice the output speed at twice the price"***
   //     ⇒ 같은 모델을 «빠른 인프라»에 올린 것이고 토큰 단가가 2배다(<200k 기준 $4/$12).

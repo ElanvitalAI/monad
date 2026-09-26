@@ -1,9 +1,9 @@
 // ── PX-7 P1: declarative-source discovery ──
 //
 // Resolves the 3-path precedence for .md / .sh declarations the
-// monad-declarative plugin loads:
-//   1. <cwd>/.monad/<kind>/       — project-local (overrides user)
-//   2. ~/.monad/<kind>/            — user-global
+// elanous-declarative plugin loads:
+//   1. <cwd>/.elanous/<kind>/       — project-local (overrides user)
+//   2. ~/.elanous/<kind>/            — user-global
 //   3. <repo>/plugins/*/catalog/  — plugin-bundled (reserved)
 //
 // Listing honours the `<kind>/` direct-child-file convention for five
@@ -11,7 +11,7 @@
 // declaration) and the `<kind>/<id>/mission.md` directory convention
 // for `missions` (evaluator.sh + sandbox.md siblings).
 //
-// Auto-creates `~/.monad/<kind>/` on first touch so a fresh
+// Auto-creates `~/.elanous/<kind>/` on first touch so a fresh
 // environment does not need a setup script.
 
 import { existsSync, mkdirSync, readdirSync, statSync } from 'node:fs';
@@ -31,8 +31,8 @@ export const DECLARATIVE_KINDS: readonly DeclarativeKind[] = [
 ] as const;
 
 export interface DeclarativeSources {
-  user: string;              // ~/.monad — always set, auto-created
-  project?: string;          // <cwd>/.monad — only when it already exists
+  user: string;              // ~/.elanous — always set, auto-created
+  project?: string;          // <cwd>/.elanous — only when it already exists
 }
 
 export interface DiscoverOpts {
@@ -41,19 +41,19 @@ export interface DiscoverOpts {
   home?: string;
 }
 
-/** Resolve the user + project roots. Creates `~/.monad/<kind>/` for
+/** Resolve the user + project roots. Creates `~/.elanous/<kind>/` for
  *  all 6 kinds if missing so the watcher has something to listen to
- *  out of the box. project source is returned only when `<cwd>/.monad/`
+ *  out of the box. project source is returned only when `<cwd>/.elanous/`
  *  already exists — we never auto-create inside a user project. */
 export function resolveDeclarativeSources(opts: DiscoverOpts = {}): DeclarativeSources {
   const env = opts.env ?? process.env;
   const home = opts.home ?? homedir();
-  const userRoot = env.MONAD_HOME?.trim() || join(home, '.monad');
+  const userRoot = env.ELANOUS_HOME?.trim() || join(home, '.elanous');
   for (const kind of DECLARATIVE_KINDS) {
     const dir = join(userRoot, kind);
     if (!existsSync(dir)) mkdirSync(dir, { recursive: true });
   }
-  const projectRoot = join(opts.cwd ?? process.cwd(), '.monad');
+  const projectRoot = join(opts.cwd ?? process.cwd(), '.elanous');
   if (existsSync(projectRoot)) {
     return { user: userRoot, project: projectRoot };
   }

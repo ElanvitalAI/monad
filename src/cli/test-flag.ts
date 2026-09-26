@@ -1,19 +1,19 @@
 // ── 전역 `--test` 입구 (P2 · 2026-07-26) ───────────────────────────────────
 //
-// 발단(대표): *"굳이 MONAD_STATE_DIR 을 설정하지 않아도 `--test` 플래그 하나만 지정하면 되게끔
+// 발단(대표): *"굳이 ELANOUS_STATE_DIR 을 설정하지 않아도 `--test` 플래그 하나만 지정하면 되게끔
 // 하는 게 좋을 것 같습니다. 일일이 지정하는 게 더 비효율적으로 느껴지네요."*
 //
 // 실측된 실상: 격리 기계는 **이미 완성돼 있었다**(`applyIsolatedRoot` — 두 축 동시 세팅 ·
 // config 자동 물질화 · 루트 밖이면 기동 거부). 다만 트리거가 `--test-state-dir` 이라는
 // **internal-only 플래그**(데몬 자식 전용)뿐이라 **사람이 부를 입구가 없었다.** 그래서
-// `docs/`+`AGENTS.md` 에 `MONAD_STATE_DIR=` 47회 · `--config-dir` 127회가 화석으로 남았다.
+// `docs/`+`AGENTS.md` 에 `ELANOUS_STATE_DIR=` 47회 · `--config-dir` 127회가 화석으로 남았다.
 //
 // 이 모듈은 그 기계에 **공개 입구**를 낸다 — 새 기계를 만들지 않는다(재발명 0).
 // 설계 = 내부 문서 `DESIGN-instance-leader-and-default-test-2026-07-26` §10 P2.
 //
 // ⚠️ **소유권 규칙**: `--test` 를 **이미 선언한 명령은 그 명령이 계속 소유**한다(동작 무변경).
 // 나머지 전 명령은 전역 격리기가 가져간다. 이 경계가 필요한 이유 — 기존 5개 중 둘(`session
-// compact`/`session watch`)은 `--test` 가 **다른 루트**(`~/.monad/telegram-test`)를 뜻한다.
+// compact`/`session watch`)은 `--test` 가 **다른 루트**(`~/.elanous/telegram-test`)를 뜻한다.
 // 무성 의미변경은 관측 오독을 낳으므로 건드리지 않는다. 테이블 누락은 ratchet 테스트가 잡는다.
 
 import { existsSync } from 'node:fs';
@@ -34,15 +34,15 @@ function normalizeExplicitDir(raw: string, cwd: string): string {
 export const OWNED_TEST_FLAG_PATHS: readonly (readonly string[])[] = [
   ['logs'],                 // 접두 매칭 — `logs timeline` 등 하위 전부를 함께 덮는다
   ['nexus', 'run'],         // pwa-test 가 포트/레이아웃까지 통째로 소유
-  ['session', 'compact'],   // ⚠️ 다른 루트: ~/.monad/telegram-test
-  ['session', 'watch'],     // ⚠️ 다른 루트: ~/.monad/telegram-test
+  ['session', 'compact'],   // ⚠️ 다른 루트: ~/.elanous/telegram-test
+  ['session', 'watch'],     // ⚠️ 다른 루트: ~/.elanous/telegram-test
 ];
 
 export interface TestFlagResult {
   /** `--test` 토큰이 하나라도 있었나(전역·소유 합산). */
   found: boolean;
   /** ★ **전역으로 추출된** 토큰이 있었나 — 격리 적용 여부는 **이것**으로 판단한다.
-   *  `monad --test session watch --test` 처럼 전역·소유가 섞이면 앞의 것만 전역이다. */
+   *  `elanous --test session watch --test` 처럼 전역·소유가 섞이면 앞의 것만 전역이다. */
   globalFound: boolean;
   /** 전역 토큰이 지정한 루트(`--test=<dir>`). 소유 토큰의 값에 오염되지 않는다. */
   globalExplicitDir: string | undefined;
@@ -68,7 +68,7 @@ export interface TestFlagResult {
  *  **이미 argv 에서 제거**돼 있어 argv[2] 는 사실상 항상 명령이다. */
 export function commandPath(argv: readonly string[]): string[] {
   const rest = argv.slice(2);
-  // 선행 전역 옵션은 건너뛴다 — `monad --verbose session watch --test` 에서도 소유 명령을
+  // 선행 전역 옵션은 건너뛴다 — `elanous --verbose session watch --test` 에서도 소유 명령을
   // 잃지 않게. **값을 받는 전역 플래그는 그 값까지** 함께 건너뛴다(아래 집합) — 안 그러면
   // 값이 명령으로 오인돼 유효한 소유 명령이 비-소유로 떨어진다(동작 무변경 계약 위반).
   // 이 CLI 의 pre-Commander 전역 플래그는 이 시점에 보통 이미 제거돼 있으나, 방어적으로 둔다.
@@ -96,7 +96,7 @@ export function commandOwnsTestFlag(
   const path = commandPath(argv);
   const matches = table.some((owned) => owned.length <= path.length && owned.every((seg, i) => path[i] === seg));
   if (!matches) return false;
-  // ⚠️ `monad --test session watch` — 플래그가 명령 **앞**에 있으면 그건 전역 플래그다.
+  // ⚠️ `elanous --test session watch` — 플래그가 명령 **앞**에 있으면 그건 전역 플래그다.
   //    소유로 보고 남겨두면 루트의 `--test` 선언이 `session` 을 값으로 삼켜 격리도 명령도 깨진다.
   //    소유 판정은 **플래그가 명령 뒤에 올 때만** 성립한다.
   const rest = argv.slice(2);
@@ -110,7 +110,7 @@ export function extractTestFlag(
   argv: readonly string[],
   table: readonly (readonly string[])[] = OWNED_TEST_FLAG_PATHS,
 ): TestFlagResult {
-  // ⚠️ argv 전체를 하나의 owned 로 처리하면 `monad --test session watch --test` 에서 둘 다
+  // ⚠️ argv 전체를 하나의 owned 로 처리하면 `elanous --test session watch --test` 에서 둘 다
   //    제거돼 기존 명령의 `--test` 의미가 깨진다. **토큰 위치별로** 판정한다:
   //    명령 시작 이전 = 전역(추출) · 이후 = 소유 명령이면 보존.
   const path = commandPath(argv);
@@ -202,7 +202,7 @@ export function staleTestFlagPaths(
 /** 부팅 관측 — 테이블 누락을 시끄럽게. **런타임에서 수복하지 않는다**:
  *  추출은 parse 보다 앞서 일어나 이미 토큰(과 `=<dir>` 값)이 사라진 뒤라, 여기서 bare `--test`
  *  를 되붙이는 것은 원래 의미를 복구하지 못하는 **거짓 계약**이다(self review 지적).
- *  대신 **CI 가 차단**한다 — `MONAD_TEST_FLAG_AUDIT=1` 로 실 트리를 감사하는 테스트가 있다. */
+ *  대신 **CI 가 차단**한다 — `ELANOUS_TEST_FLAG_AUDIT=1` 로 실 트리를 감사하는 테스트가 있다. */
 export function observeTestFlagOwnership(root: CommandLike): string[][] {
   const missing = uncoveredTestFlagPaths(root);
   if (missing.length > 0) {
@@ -233,17 +233,17 @@ export function findTreeRoot(cwd: string): string | null {
   }
 }
 
-/** `--test` 가 가리킬 격리 루트. 명시 dir 우선, 아니면 `<트리>/.monad-test`. */
+/** `--test` 가 가리킬 격리 루트. 명시 dir 우선, 아니면 `<트리>/.elanous-test`. */
 export function resolveTestRoot(cwd: string, explicitDir?: string): string | null {
   if (explicitDir) return normalizeExplicitDir(explicitDir, cwd);
   const root = findTreeRoot(cwd);
-  return root ? join(root, '.monad-test') : null;
+  return root ? join(root, '.elanous-test') : null;
 }
 
 /** `process.argv` 에서 전역 `--test` 를 처리한다. Commander 로드 **전**에 호출해야 한다
  *  ⚠️ **정확히는** — ESM 정적 import 는 본문보다 먼저 평가되므로 "모든 import 보다 먼저"는
  *  아니다. 이 호출이 보장하는 것은 **Commander 가 parse 하기 전 · 서브커맨드 모듈이 lazy
- *  import 되기 전**이고, 리졸버(`getMonadConfigDir`/`monadStateRoot`)가 **호출 시점 읽기**라
+ *  import 되기 전**이고, 리졸버(`getElanousConfigDir`/`elanousStateRoot`)가 **호출 시점 읽기**라
  *  실제 소비는 전부 이 뒤에 일어난다. 만약 누군가 **정적 import 시점에** config 를 읽는 모듈을
  *  추가하면 이 보장이 깨진다 — 그때는 부트스트랩 구조(별도 진입 파일)로 올려야 한다.
  *
@@ -251,8 +251,8 @@ export function resolveTestRoot(cwd: string, explicitDir?: string): string | nul
  *  ⚠️ 레포 밖에서 `--test` 를 쓰면 **조용히 prod 로 흘리지 않고 거부**한다(fail-closed) —
  *  격리를 요청했는데 운영을 만지는 것이 이 트랙이 없애려는 실패 모드 그 자체다. */
 /** 이번 프로세스에서 전역 `--test` 가 적용한 루트(없으면 undefined).
- *  `monad where` 가 **1층(명시 플래그)** 과 2층(부모 스탬프)을 구분해 설명하기 위해 필요하다 —
- *  `applyIsolatedRoot` 가 `MONAD_STATE_DIR` 을 세팅하고 나면 그 뒤로는 둘이 구분되지 않는다. */
+ *  `elanous where` 가 **1층(명시 플래그)** 과 2층(부모 스탬프)을 구분해 설명하기 위해 필요하다 —
+ *  `applyIsolatedRoot` 가 `ELANOUS_STATE_DIR` 을 세팅하고 나면 그 뒤로는 둘이 구분되지 않는다. */
 let appliedGlobalTestRoot: string | undefined;
 export function getAppliedGlobalTestRoot(): string | undefined { return appliedGlobalTestRoot; }
 
@@ -263,7 +263,7 @@ export function applyTestFlagFromArgv(deps: {
 } = {}): string | undefined {
   const r = extractTestFlag(process.argv);
   appliedGlobalTestRoot = undefined;   // 동일 프로세스 재파싱 시 오래된 1층 결정을 보고하지 않게
-  // ⚠️ `ownedByCommand` 로 조기 반환하면 `monad --test session watch` 처럼 **명령 앞의 전역
+  // ⚠️ `ownedByCommand` 로 조기 반환하면 `elanous --test session watch` 처럼 **명령 앞의 전역
   //    플래그**가 적용되지 않아 요청한 격리 없이 운영으로 흐른다(self review 지적).
   //    판단 기준은 **전역으로 추출된 토큰이 있었나**(globalFound) 다.
   if (!r.globalFound) return undefined;

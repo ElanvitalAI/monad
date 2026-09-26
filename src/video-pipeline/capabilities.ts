@@ -14,7 +14,7 @@
 
 import { mediaSshHost } from '../ssh/ssh-hosts.js';
 
-/** ssh 로 MLX 미디어 모델을 부를 호스트 — `MONAD_MEDIA_HOST` 또는 ssh-hosts.json 의 `media` 역할.
+/** ssh 로 MLX 미디어 모델을 부를 호스트 — `ELANOUS_MEDIA_HOST` 또는 ssh-hosts.json 의 `media` 역할.
  *  (2026-09-25: 한 사람의 기계 이름이 박혀 있던 자리.) 없으면 센티널 — 탐침이 ssh 를 «안» 하고 「못 쟀다」로 답한다. */
 export const UNSET_MEDIA_HOST = 'no-media-host';
 export const MEDIA_HOST: string = mediaSshHost() ?? UNSET_MEDIA_HOST;
@@ -102,7 +102,7 @@ export interface Impl {
    *      📏 실측: `npx hyperframes --version` → `0.8.61` · `~/.claude/skills/hyperframes*` ***8개 모듈***.
    *   🔑 ⇒ ***선언의 note 와 탐침이 서로 다른 말을 하고 있었고, 산출은 탐침 편을 들었다.***
    *
-   * 📌 `skill` 의 value 는 `~/.claude/skills/<value>` 의 디렉토리 이름이다(monad 의 스킬 색인과 같은 뿌리).
+   * 📌 `skill` 의 value 는 `~/.claude/skills/<value>` 의 디렉토리 이름이다(elanous 의 스킬 색인과 같은 뿌리).
    * ⛔ 「스킬이 있다」가 「지금 렌더된다」는 아니다 — 그 사실은 note 에 적고, 여기서는 «닿을 수 있나»만 답한다.
    */
   readonly probe: { readonly kind: 'cmd' | 'path' | 'mcp' | 'ssh' | 'http' | 'skill'; readonly value: string };
@@ -144,7 +144,7 @@ export interface Impl {
    * 🩸 계기: 🅢 님이 «출시 블로커»를 실측해 보고했다(채널 #16815) —
    *   *"리눅스·WSL 에 PTY 가 «통째로» 없고, doctor 가 ***한 마디도 안 한다***"*.
    *   그 카탈로그 머리말이 이미 이렇게 적고 있었다:
-   *   > *"monad reported the absence in four unrelated disguises … None of those name the missing command."*
+   *   > *"elanous reported the absence in four unrelated disguises … None of those name the missing command."*
    *
    * 📏 그 말을 «내 축»에 대고 재 봤다(cloud-vm · Linux 6.17 · 실물):
    * ```
@@ -163,7 +163,7 @@ export interface Impl {
    * 🩸 계기: `drive: 'app-attached'` 는 ***「앱이 떠 있어야 한다」까지만*** 말하고,
    *   「지금 떠 있나」는 «아무도» 안 물었다. 산출은 13곳에서 *"get_host_status 로 물어라"* 라고
    *   ***사람에게 시켰다*** — 그런데 그 물음은 ***도구가 할 수 있다***(실측:
-   *   `monad mcp call higgsfield-bridge.get_host_status` → `{"aeft":true,"ppro":true,"blr":true,…}`).
+   *   `elanous mcp call higgsfield-bridge.get_host_status` → `{"aeft":true,"ppro":true,"blr":true,…}`).
    *
    * 📌 값은 그 응답의 `structured` 키다(`aeft` · `ppro` · `blr`).
    *   ⛔ 스크립트에 대응표를 «박지 않는다» — 선언이 이름을 준다.
@@ -201,7 +201,7 @@ export interface Capability {
 const cmd = (value: string) => ({ kind: 'cmd' as const, value });
 const app = (value: string) => ({ kind: 'path' as const, value });
 const mcp = (value: string) => ({ kind: 'mcp' as const, value });
-/** ⭐ `~/.claude/skills/<name>` — monad 의 스킬 색인과 «같은 뿌리»다. */
+/** ⭐ `~/.claude/skills/<name>` — elanous 의 스킬 색인과 «같은 뿌리»다. */
 const skill = (value: string) => ({ kind: 'skill' as const, value });
 
 export const CAPABILITIES: readonly Capability[] = [

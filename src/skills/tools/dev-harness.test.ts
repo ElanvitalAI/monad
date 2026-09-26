@@ -78,7 +78,7 @@ describe('buildRunDevHarnessTool — 스펙', () => {
     expect((spec.parameters.properties as Record<string, { enum?: string[] }>).auto_drive.enum).toEqual(['off', 'safe', 'on']);
     const targetDescription = (spec.parameters.properties as Record<string, { description?: string }>).target.description;
     expect(targetDescription).toContain('omit this');
-    expect(targetDescription).toContain('monad itself');
+    expect(targetDescription).toContain('elanous itself');
     expect(targetDescription).toContain('never invent or construct a path');
   });
 
@@ -157,7 +157,7 @@ describe('dispatchRunDevHarness — 스레딩', () => {
       expect(mentions).toEqual(['matched', 'not-matched', 'absent']);
       expect(calls.map((call) => call.harnessMention)).toEqual(['matched', 'not-matched', 'absent']);
       // ⛔⭐ 종전 단언은 `[true, true, true]` 였다 — 프론트도어가 그 값을 «단정»했기 때문이다.
-      //   그런데 세 번째 호출은 `ctx` 자체가 없다(=`monad harness run` CLI 와 같은 모양).
+      //   그런데 세 번째 호출은 `ctx` 자체가 없다(=`elanous harness run` CLI 와 같은 모양).
       //   그 단정 때문에 CLI 런도 원장에 자연어 유래로 찍혔다(2026-08-06 라이브 실측) ⇒ v25 ⑷ 분자가 부풀었다.
       //   ⭐ 이제 프론트도어는 «안 정한다» — 판정은 harnessMention 이 하고 막이 파생한다.
       expect(calls.map((call) => call.naturalLanguageDispatch)).toEqual([undefined, undefined, undefined]);
@@ -167,7 +167,7 @@ describe('dispatchRunDevHarness — 스레딩', () => {
   });
 
   // ⛔⭐ 자의 «충실도» — 프론트도어가 `naturalLanguageDispatch` 를 «단정»하면 안 된다(2026-08-06 실측).
-  //   이 함수는 둘이 지난다: 모델이 부른 도구(ctx.userText 있음) ⊕ `monad harness run` CLI(ctx 없음).
+  //   이 함수는 둘이 지난다: 모델이 부른 도구(ctx.userText 있음) ⊕ `elanous harness run` CLI(ctx 없음).
   //   종전엔 `true` 로 못 박혀 CLI 런도 자연어 유래로 원장에 찍혔고(라이브 확인), v25 ⑷ 의 분자가 부풀었다.
   //   ⇒ 판정은 harnessMention 이 한다. 이 테스트는 «단정이 돌아오면» 실패한다.
   test('사용자 문면이 없으면 자연어 유래를 단정하지 않는다', async () => {
@@ -285,21 +285,21 @@ describe('dispatchRunDevHarness — P3 외부 repo 타깃', () => {
     const d: DevHarnessDeps = { runHarness: async (o) => { calls.push(o); return okResult; }, seamsFactory: () => ({} as never) };
     const res = await dispatchRunDevHarness({ objective: 'x', target: '/nonexistent/bogus-repo-xyz' }, {} as DaemonToolDispatchCtx, d);
     expect(res.output).toContain('거부');
-    expect(res.output).toContain('target을 생략하세요(그러면 monad 자신을 대상으로 합니다)');
+    expect(res.output).toContain('target을 생략하세요(그러면 elanous 자신을 대상으로 합니다)');
     expect(calls.length).toBe(0); // 하니스 미구동.
   });
 
-  test('target 실 git repo → repoRoot+monadBinRoot 를 seam 으로', async () => {
-    const seamCalls: Array<{ repoRoot?: string; monadBinRoot?: string }> = [];
+  test('target 실 git repo → repoRoot+elanousBinRoot 를 seam 으로', async () => {
+    const seamCalls: Array<{ repoRoot?: string; elanousBinRoot?: string }> = [];
     const d: DevHarnessDeps = {
       runHarness: async () => okResult,
       seamsFactory: (o) => { seamCalls.push(o as never); return {} as never; },
     };
-    // 이 테스트가 도는 monad repo 자체를 '외부 target' 으로 사용(실 git repo).
+    // 이 테스트가 도는 elanous repo 자체를 '외부 target' 으로 사용(실 git repo).
     const res = await dispatchRunDevHarness({ objective: 'x', target: process.cwd() }, {} as DaemonToolDispatchCtx, d);
     expect(res.output).not.toContain('거부');
     expect(seamCalls[0]?.repoRoot).toBeTruthy();
-    expect(seamCalls[0]?.monadBinRoot).toBeTruthy();
+    expect(seamCalls[0]?.elanousBinRoot).toBeTruthy();
   });
 
   test('target 생략/self → 외부 검증 스킵(seamsOptions 없음)', async () => {
@@ -314,7 +314,7 @@ describe('dispatchRunDevHarness — #25 P4 target 종류 라우팅(비-git dir·
   // 홈 안에 실 디렉토리/파일을 만들어 라우팅 검증(resolveTargetKind 는 홈 밖=outside-home 거부).
   const inHome: string[] = [];
   const mkHome = (make: (dir: string) => void): string => {
-    const dir = mkdtempSync(join(homedir(), '.monad-devharness-test-'));
+    const dir = mkdtempSync(join(homedir(), '.elanous-devharness-test-'));
     inHome.push(dir);
     make(dir);
     return dir;
@@ -369,12 +369,12 @@ describe('dispatchRunDevHarness — #25 P4 target 종류 라우팅(비-git dir·
 
   test('홈 안 존재하지 않는 경로 → 거부', async () => {
     const res = await dispatchRunDevHarness(
-      { objective: 'x', target: join(homedir(), '.monad-nope-xyz-does-not-exist') },
+      { objective: 'x', target: join(homedir(), '.elanous-nope-xyz-does-not-exist') },
       {} as DaemonToolDispatchCtx,
       { runHarness: async () => okResult, seamsFactory: () => ({} as never) },
     );
     expect(res.output).toContain('거부');
-    expect(res.output).toContain('target을 생략하세요(그러면 monad 자신을 대상으로 합니다)');
+    expect(res.output).toContain('target을 생략하세요(그러면 elanous 자신을 대상으로 합니다)');
   });
 
   test('스테이징 직전 symlink 재지정은 dispatch를 통과해도 createWorktree에서 차단한다', async () => {
@@ -407,7 +407,7 @@ describe('dispatchRunDevHarness — #25 P4 target 종류 라우팅(비-git dir·
 //   📏 왜 필요했나: 이 입구는 `self_implement`(18건)보다 **많이 돈다**(harness.frontdoor 92 · harness.skill 43).
 //     관문이 없던 동안, 라우팅을 재려고 자연어를 넣으면 사람 트리에 진짜 런이 떴다.
 describe('dispatchRunDevHarness — observe-only 관문', () => {
-  const ENV = 'MONAD_SELF_IMPLEMENT_OBSERVE_ONLY';
+  const ENV = 'ELANOUS_SELF_IMPLEMENT_OBSERVE_ONLY';
   let prev: string | undefined;
   beforeEach(() => { prev = process.env[ENV]; });
   afterEach(() => { if (prev === undefined) delete process.env[ENV]; else process.env[ENV] = prev; });

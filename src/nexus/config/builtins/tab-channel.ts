@@ -3,7 +3,7 @@
 // Migrates the N-2 env-direct token sourcing to a SwitchRegistry
 // secret-ref. Backwards-compat path:
 //   - If `tabs.<id>.tokenRef` is set → use the referenced secret.
-//   - Else fall back to `MONAD_TELEGRAM_BOT_TOKEN` / `MONAD_DISCORD_BOT_TOKEN`
+//   - Else fall back to `ELANOUS_TELEGRAM_BOT_TOKEN` / `ELANOUS_DISCORD_BOT_TOKEN`
 //     env (legacy · auto-migration on boot writes a secret then sets the
 //     ref so the env can be removed in a future release).
 
@@ -25,8 +25,8 @@ export const CHANNEL_SWITCHES: SwitchSpec[] = [
     restartTabs: ['telegram:1'],
     pwaPreferred: true,
     redactInLogs: true,
-    envName: 'MONAD_TELEGRAM_BOT_TOKEN',
-    legacyEnvName: 'MONAD_TELEGRAM_BOT_TOKEN',
+    envName: 'ELANOUS_TELEGRAM_BOT_TOKEN',
+    legacyEnvName: 'ELANOUS_TELEGRAM_BOT_TOKEN',
   },
   {
     id: DISCORD_TOKEN_SWITCH_ID,
@@ -40,7 +40,7 @@ export const CHANNEL_SWITCHES: SwitchSpec[] = [
     restartTabs: ['discord:1'],
     pwaPreferred: true,
     redactInLogs: true,
-    envName: 'MONAD_DISCORD_BOT_TOKEN',
-    legacyEnvName: 'MONAD_DISCORD_BOT_TOKEN',
+    envName: 'ELANOUS_DISCORD_BOT_TOKEN',
+    legacyEnvName: 'ELANOUS_DISCORD_BOT_TOKEN',
   },
 ];

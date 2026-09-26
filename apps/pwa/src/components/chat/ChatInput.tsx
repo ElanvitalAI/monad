@@ -24,7 +24,7 @@ import {
   type AgentCliBackend,
   type CodexPlugin,
 } from '@/components/chat/BackendPickerChip';
-import { MonadProviderChip } from '@/components/chat/MonadProviderChip';
+import { ElanousProviderChip } from '@/components/chat/ElanousProviderChip';
 import { useMissionRouter } from '@/lib/use-mission-router';
 import {
   DEFAULT_CHAT_ROUTING,
@@ -33,7 +33,7 @@ import {
   type ChatRoutingState,
 } from '@/lib/chat-routing-storage';
 
-const SHARE_PREFILL_KEY = 'monad.pwa.sharePrefill';
+const SHARE_PREFILL_KEY = 'elanous.pwa.sharePrefill';
 const INPUT_PERSIST_DEBOUNCE_MS = 300;
 
 // PWA Phase 1·E+H (RESEARCH-ios-companion-tui-parity-2026-05-17 · Phase 1b)
@@ -41,7 +41,7 @@ const INPUT_PERSIST_DEBOUNCE_MS = 300;
 // cross-session promptHistory persist. iOS @AppStorage("ios.chat.
 // promptHistory.v1") 와 sibling — 본 키는 별 namespace (per-surface
 // browsing context).
-const PROMPT_HISTORY_KEY = 'monad.pwa.chat.promptHistory.v1';
+const PROMPT_HISTORY_KEY = 'elanous.pwa.chat.promptHistory.v1';
 const PROMPT_HISTORY_CAP = 50;
 
 function loadPromptHistory(): string[] {
@@ -103,7 +103,7 @@ function detectSlashQuery(value: string): string | null {
 }
 
 // PWA Phase 2·A+B (RESEARCH §1.1·A/B) — iOS PR #2807 + #2808 의 PWA 등가.
-// daemon-side `monad/fs/list` + `monad/skills/list` ACP method 통해 fetch.
+// daemon-side `elanous/fs/list` + `elanous/skills/list` ACP method 통해 fetch.
 
 export interface FsPickerEntry {
   name: string;
@@ -164,15 +164,15 @@ interface Props {
    *  legacy callsites). */
   voice?: ChatInputVoiceProps;
   /** PWA Phase 2·A — `@` file picker fetcher. parent (ChatLayout) 가
-   *  AcpConnection.send('monad/fs/list', ...) 으로 wire. nil 시 picker
+   *  AcpConnection.send('elanous/fs/list', ...) 으로 wire. nil 시 picker
    *  disabled (no overlay). */
   onListFiles?: (query: string) => Promise<{ cwd: string; entries: FsPickerEntry[] }>;
   /** PWA Phase 2·B — `$` skill picker fetcher. parent (ChatLayout) 가
-   *  AcpConnection.send('monad/skills/list', ...) 으로 wire. */
+   *  AcpConnection.send('elanous/skills/list', ...) 으로 wire. */
   onListSkills?: (query: string) => Promise<{ entries: SkillPickerEntry[] }>;
   /** PLAN-codex-app-server-hermes-parity §5 Phase H2·4 (2026-05-16) —
    *  daemon fetcher for the codex CLI plugin list. ChatLayout wires
-   *  this with `acpForAsk.send('monad/codex/plugins', {sessionId})`.
+   *  this with `acpForAsk.send('elanous/codex/plugins', {sessionId})`.
    *  Forward into BackendPickerChip so its menu shows the sub-items
    *  under the Codex entry. */
   getCodexPlugins?: () => Promise<CodexPlugin[]>;
@@ -196,15 +196,15 @@ function attachmentSrc(downloadUrl: string, baseUrl?: string, token?: string): s
   return `${base}${downloadUrl}${auth}`;
 }
 
-const BACKEND_PERSIST_KEY = 'monad.pwa.chat.backend';
-const STICKY_PERSIST_KEY = 'monad.pwa.chat.backendSticky';
-const DEFAULT_BACKEND: AgentCliBackend = 'monad-builtin';
+const BACKEND_PERSIST_KEY = 'elanous.pwa.chat.backend';
+const STICKY_PERSIST_KEY = 'elanous.pwa.chat.backendSticky';
+const DEFAULT_BACKEND: AgentCliBackend = 'elanous-builtin';
 
 function readBackendPersist(): AgentCliBackend {
   if (typeof window === 'undefined') return DEFAULT_BACKEND;
   try {
     const v = window.localStorage.getItem(BACKEND_PERSIST_KEY);
-    if (v === 'monad-builtin' || v === 'codex-app-server' || v === 'claude' || v === 'gemini') {
+    if (v === 'elanous-builtin' || v === 'codex-app-server' || v === 'claude' || v === 'gemini') {
       return v;
     }
   } catch { /* swallow */ }
@@ -352,7 +352,7 @@ export function ChatInput({
     return subscribeChatRouting(setRouting);
   }, []);
   // ACP backends OFF 시 chip 자체 숨김 → 사용자가 send 직전 backend
-  // 선택 surface 없음. PWA /chat 의 실 send path 는 monad-builtin 단일
+  // 선택 surface 없음. PWA /chat 의 실 send path 는 elanous-builtin 단일
   // (BackendPickerChip 의 visual port deferred wire) 이라 추가 forcing
   // 불필요. iOS 측은 chatBackend computed property 에서 동일 forcing.
   const missionRouter = useMissionRouter({
@@ -958,7 +958,7 @@ export function ChatInput({
           {/* P2-1 (2026-05-14) — backend chip + mission tag.
               Visual parity with iOS BackendPickerChip.swift.
               dogfood polish (EoD #8) — Settings 의 acpBackends OFF 시
-              chip 자체 숨김 + monad-builtin 고정 (effectiveBackend).
+              chip 자체 숨김 + elanous-builtin 고정 (effectiveBackend).
               autoRouting OFF 시 mission tag 만 클리어. */}
           {routing.acpBackends && (
             <BackendPickerChip
@@ -971,8 +971,8 @@ export function ChatInput({
               getCodexPlugins={getCodexPlugins}
             />
           )}
-          {/* monad backend 선택 시 LLM provider 스위처(claude/opus·grok 등). */}
-          {backend === 'monad-builtin' && <MonadProviderChip />}
+          {/* elanous backend 선택 시 LLM provider 스위처(claude/opus·grok 등). */}
+          {backend === 'elanous-builtin' && <ElanousProviderChip />}
         </div>
         <textarea
           value={value}
@@ -998,7 +998,7 @@ export function ChatInput({
             onClick={voice.onToggle}
             disabled={voice.disabled}
             title={voice.disabled ? 'daemon URL 미설정' : voice.phaseLabel}
-            data-monad-action="chat-voice-toggle-inline"
+            data-elanous-action="chat-voice-toggle-inline"
             className={cn(
               'inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-md border transition-colors',
               voice.active

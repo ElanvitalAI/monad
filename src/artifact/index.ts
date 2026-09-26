@@ -1,7 +1,7 @@
 // ── Artifact module · public API barrel ─────────────────────────
 //
 // VW-term-infra Bundle B-2 · P6-1. Unified artifact persistence
-// layer under `~/.monad/artifacts/<kind>/`. Migration of existing
+// layer under `~/.elanous/artifacts/<kind>/`. Migration of existing
 // scattered paths (timelines / layouts / blocks / captures) lands in
 // Bundle B-3 (P6-2).
 

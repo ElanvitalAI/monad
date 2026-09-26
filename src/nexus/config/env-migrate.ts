@@ -1,4 +1,4 @@
-// NEXUS · legacy MONAD_* env auto-migration (Phase N-3 PR μ · D-13=A)
+// NEXUS · legacy ELANOUS_* env auto-migration (Phase N-3 PR μ · D-13=A)
 //
 // At boot, scan SwitchRegistry for switches with `legacyEnvName`. For
 // each one whose env is set in process.env AND whose UserConfig value
@@ -112,7 +112,7 @@ export function migrateLegacyEnvToConfig(opts: EnvMigrateOpts): EnvMigrateResult
         reason: 'env-migrate',
         migratedCount: result.migrated.length,
         switches: result.migrated.map((m) => m.switchId),
-        deprecation: 'MONAD_* env vars are deprecated; values were copied to ~/.monad/config.json (and ~/.monad/secrets.json for tokens). They will be ignored in a future release.',
+        deprecation: 'ELANOUS_* env vars are deprecated; values were copied to ~/.elanous/config.json (and ~/.elanous/secrets.json for tokens). They will be ignored in a future release.',
       },
     });
     if (debug.enabled) {

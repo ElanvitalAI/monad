@@ -5,11 +5,11 @@ import { Command } from 'commander';
 import { registerSetupCommand } from './setup-cli.js';
 import type { UserConfig } from '../user-config.js';
 
-const MONAD_AUTH = JSON.stringify({ version: 1, providers: { 'openai-codex': { tokens: { accessToken: 'access', refreshToken: 'refresh' } } } });
+const ELANOUS_AUTH = JSON.stringify({ version: 1, providers: { 'openai-codex': { tokens: { accessToken: 'access', refreshToken: 'refresh' } } } });
 const CODEX_AUTH = JSON.stringify({ tokens: { access_token: 'access', refresh_token: 'refresh' } });
 const config = (provider?: string) => ({ llm: { provider } }) as UserConfig;
 
-type SetupState = { monad?: boolean; provider?: string; codex?: boolean; externalReady?: boolean; monadAuth?: string; codexAuth?: string; answer?: string; nonInteractive?: boolean; stdinTty?: boolean; runtimeProvider?: string };
+type SetupState = { elanous?: boolean; provider?: string; codex?: boolean; externalReady?: boolean; elanousAuth?: string; codexAuth?: string; answer?: string; nonInteractive?: boolean; stdinTty?: boolean; runtimeProvider?: string };
 
 async function runSetup(state: SetupState = {}) {
   const output: string[] = [];
@@ -20,7 +20,7 @@ async function runSetup(state: SetupState = {}) {
   let doctorCalls = 0;
   let currentProvider = state.provider;
   const files = new Map<string, string>();
-  if (state.monad) files.set('/home/fake/.monad/auth.json', state.monadAuth ?? MONAD_AUTH);
+  if (state.elanous) files.set('/home/fake/.elanous/auth.json', state.elanousAuth ?? ELANOUS_AUTH);
   if (state.codex) files.set('/home/fake/.codex/auth.json', state.codexAuth ?? CODEX_AUTH);
   const program = new Command();
   registerSetupCommand(program, {
@@ -47,7 +47,7 @@ async function runSetup(state: SetupState = {}) {
     setExitCode: (code) => exitCodes.push(code),
     resolveRuntimeProvider: () => state.runtimeProvider,
   });
-  await program.parseAsync(['node', 'monad', 'setup', ...(state.nonInteractive === false ? [] : ['--non-interactive'])]);
+  await program.parseAsync(['node', 'elanous', 'setup', ...(state.nonInteractive === false ? [] : ['--non-interactive'])]);
   return { text: output.join('\n'), output, errors, exitCodes, writes, prompts, doctorCalls };
 }
 
@@ -66,8 +66,8 @@ describe('setup CLI', () => {
     expect(result.writes).toEqual([]);
     expect(result.text).toContain('codex: missing (required)');
     expect(result.text).toContain('Breaks: Codex app-server integration');
-    expect(result.text).toContain('`monad login openai-codex`');
-    expect(result.text).toContain('`monad config set llm.provider openai-codex`');
+    expect(result.text).toContain('`elanous login openai-codex`');
+    expect(result.text).toContain('`elanous config set llm.provider openai-codex`');
     expect(result.text).toContain('`codex login`');
     expect(result.text).toContain('No LLM provider available');
     expect(result.text).toContain('codex app-server stdin drain timeout');
@@ -81,13 +81,13 @@ describe('setup CLI', () => {
   });
 
   test('reports all eight independent credential combinations with exactly their missing steps', async () => {
-    for (const [monad, provider, codex] of [
+    for (const [elanous, provider, codex] of [
       [false, false, false], [false, false, true], [false, true, false], [false, true, true],
       [true, false, false], [true, false, true], [true, true, false], [true, true, true],
     ] as const) {
-      const result = await runSetup({ monad, provider: provider ? 'openai-codex' : undefined, codex });
+      const result = await runSetup({ elanous, provider: provider ? 'openai-codex' : undefined, codex });
       const expectedMissing = [
-        !monad && 'monad OpenAI Codex login',
+        !elanous && 'elanous OpenAI Codex login',
         !provider && 'LLM provider configuration',
         !codex && 'Codex CLI login',
       ].filter(Boolean);
@@ -98,32 +98,32 @@ describe('setup CLI', () => {
 
   test('rejects empty, malformed, and wrong-provider auth files as incomplete', async () => {
     for (const state of [
-      { monad: true, codex: true, monadAuth: '', codexAuth: CODEX_AUTH },
-      { monad: true, codex: true, monadAuth: '{', codexAuth: CODEX_AUTH },
-      { monad: true, codex: true, monadAuth: JSON.stringify({ providers: { anthropic: { tokens: { accessToken: 'a', refreshToken: 'r' } } } }), codexAuth: CODEX_AUTH },
-      { monad: true, codex: true, monadAuth: MONAD_AUTH, codexAuth: '{}' },
-      { monad: true, codex: true, monadAuth: MONAD_AUTH, codexAuth: '{' },
-      { monad: true, codex: true, monadAuth: MONAD_AUTH, codexAuth: JSON.stringify({ tokens: { access_token: 'a' } }) },
+      { elanous: true, codex: true, elanousAuth: '', codexAuth: CODEX_AUTH },
+      { elanous: true, codex: true, elanousAuth: '{', codexAuth: CODEX_AUTH },
+      { elanous: true, codex: true, elanousAuth: JSON.stringify({ providers: { anthropic: { tokens: { accessToken: 'a', refreshToken: 'r' } } } }), codexAuth: CODEX_AUTH },
+      { elanous: true, codex: true, elanousAuth: ELANOUS_AUTH, codexAuth: '{}' },
+      { elanous: true, codex: true, elanousAuth: ELANOUS_AUTH, codexAuth: '{' },
+      { elanous: true, codex: true, elanousAuth: ELANOUS_AUTH, codexAuth: JSON.stringify({ tokens: { access_token: 'a' } }) },
     ]) {
       const result = await runSetup({ ...state, provider: 'openai-codex' });
-      expect(result.text).toMatch(/missing: (monad OpenAI Codex login|Codex CLI login)/);
+      expect(result.text).toMatch(/missing: (elanous OpenAI Codex login|Codex CLI login)/);
     }
   });
 
   test('writes provider exactly once only after consent and recomputes the final capabilities after the write', async () => {
-    const accepted = await runSetup({ monad: true, codex: true, answer: 'y', nonInteractive: false, stdinTty: true });
-    const declined = await runSetup({ monad: true, codex: true, answer: 'n', nonInteractive: false, stdinTty: true });
+    const accepted = await runSetup({ elanous: true, codex: true, answer: 'y', nonInteractive: false, stdinTty: true });
+    const declined = await runSetup({ elanous: true, codex: true, answer: 'n', nonInteractive: false, stdinTty: true });
     expect(accepted.prompts).toHaveLength(1);
     expect(accepted.writes).toHaveLength(1);
     expect(accepted.writes[0]!.llm.provider).toBe('openai-codex');
-    expect(section(accepted.text, 'Available now:', 'Unavailable until')).toContain('- OpenAI Codex-backed monad sessions');
+    expect(section(accepted.text, 'Available now:', 'Unavailable until')).toContain('- OpenAI Codex-backed elanous sessions');
     expect(declined.writes).toEqual([]);
     expect(declined.text).toContain('Not changed. To complete LLM provider configuration');
   });
 
   test('places each named capability in exactly one list and includes required external commands in app-server readiness', async () => {
-    const ready = await runSetup({ monad: true, provider: 'openai-codex', codex: true });
-    const missingCommands = await runSetup({ monad: true, provider: 'openai-codex', codex: true, externalReady: false });
+    const ready = await runSetup({ elanous: true, provider: 'openai-codex', codex: true });
+    const missingCommands = await runSetup({ elanous: true, provider: 'openai-codex', codex: true, externalReady: false });
     const readyAvailable = section(ready.text, 'Available now:', 'Unavailable until');
     const readyUnavailable = section(ready.text, 'Unavailable until');
     const missingAvailable = section(missingCommands.text, 'Available now:', 'Unavailable until');
@@ -142,21 +142,21 @@ describe('setup CLI', () => {
     expect(result.writes).toEqual([]);
     expect(result.output).toEqual([]);
     expect(result.exitCodes).toEqual([1]);
-    expect(result.errors).toEqual(['대화형 온보딩은 stdin TTY가 있는 자리에서만 실행할 수 있다. 무인 설정은 `monad setup --non-interactive`를 사용하라.']);
+    expect(result.errors).toEqual(['대화형 온보딩은 stdin TTY가 있는 자리에서만 실행할 수 있다. 무인 설정은 `elanous setup --non-interactive`를 사용하라.']);
     expect(result.errors.join('\\n')).not.toContain('at ');
   });
 
   // ⛔ 2026-09-23 — provider 단계는 «런타임 최종 결정»으로 잰다(Phase 3 의 거짓 손 ③).
   test('provider=auto 가 런타임에서 openai-codex 로 풀리면 «완료» — 설정하라고 하지 않고, 묻지도 않는다', async () => {
-    const r = await runSetup({ monad: true, codex: true, provider: 'auto', runtimeProvider: 'auto:openai-codex' });
+    const r = await runSetup({ elanous: true, codex: true, provider: 'auto', runtimeProvider: 'auto:openai-codex' });
     expect(r.text).toContain('completed: LLM provider configuration');
-    expect(r.text).not.toContain('`monad config set llm.provider openai-codex`');
+    expect(r.text).not.toContain('`elanous config set llm.provider openai-codex`');
     expect(r.text).not.toContain('Would ask');
-    expect(section(r.text, 'Available now:', 'Unavailable until setup is complete:')).toContain('OpenAI Codex-backed monad sessions');
+    expect(section(r.text, 'Available now:', 'Unavailable until setup is complete:')).toContain('OpenAI Codex-backed elanous sessions');
   });
 
   test('대조군 — provider=auto 가 다른 provider(grok)로 풀리면 여전히 «미완»이다', async () => {
-    const r = await runSetup({ monad: true, codex: true, provider: 'auto', runtimeProvider: 'auto:grok' });
+    const r = await runSetup({ elanous: true, codex: true, provider: 'auto', runtimeProvider: 'auto:grok' });
     expect(r.text).toContain('missing: LLM provider configuration');
   });
 });

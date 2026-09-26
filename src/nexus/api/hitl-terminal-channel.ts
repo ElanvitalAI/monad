@@ -15,7 +15,7 @@
 // Why β-1d ships last in the cascade: PLAN §4.1 listed terminal as
 // β-1 because of the lowest LOC estimate (~80), but in dogfood
 // terminal is the niche surface — useful for the dev who runs
-// `monad nexus --headless` in a foreground terminal but NOT for
+// `elanous nexus --headless` in a foreground terminal but NOT for
 // the typical PWA-Showroom user. β-1a/b/c covered the higher-
 // value surfaces first; β-1d closes the cascade.
 

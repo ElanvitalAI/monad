@@ -1,4 +1,4 @@
-# 격리 하드코딩 baseline (homedir()+.monad 라인 수 · 파일별) — Phase C ratchet 게이트.
+# 격리 하드코딩 baseline (homedir()+.elanous 라인 수 · 파일별) — Phase C ratchet 게이트.
 # 신규/증가만 CI 실패. 위반 수복(resolver 이동) 후 `--update` 로 ratchet down.
 # 정당한 resolver 정의(memory-db-path·session/index·state-paths·fleet·pty-manifest 등)는 영구 잔류.
 # total=82 · files=66
@@ -25,7 +25,7 @@
 1	src/domains/conatus-env.ts
 5	src/domains/fleet.ts
 2	src/domains/memory-db-path.ts
-1	src/domains/monad-data-dir.ts
+1	src/domains/elanous-data-dir.ts
 1	src/domains/schedule-registry.ts
 1	src/domains/session-query-tool.ts
 1	src/domains/signal-dedup.ts

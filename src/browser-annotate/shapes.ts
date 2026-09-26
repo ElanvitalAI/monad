@@ -80,7 +80,7 @@ export function renderShape(shape: AnnotationShape): ShapeResult {
     case 'line':
       return { ok: true, svg: `<line x1="${shape.from.x}" y1="${shape.from.y}" x2="${shape.to.x}" y2="${shape.to.y}" ${style}/>` };
     case 'arrow':
-      return { ok: true, svg: `<line x1="${shape.from.x}" y1="${shape.from.y}" x2="${shape.to.x}" y2="${shape.to.y}" ${style} marker-end="url(#monad-annot-arrow)"/>` };
+      return { ok: true, svg: `<line x1="${shape.from.x}" y1="${shape.from.y}" x2="${shape.to.x}" y2="${shape.to.y}" ${style} marker-end="url(#elanous-annot-arrow)"/>` };
     case 'label':
       return { ok: true, svg: `<text x="${shape.at.x}" y="${shape.at.y}" fill="${escapeAttr(shape.color ?? DEFAULT_ANNOTATION_COLOR)}"${shape.dashed ? ' data-dashed="true"' : ''}>${escapeText(shape.text)}</text>` };
     case 'box': {
@@ -114,7 +114,7 @@ function escapeAttr(value: string): string {
 export const SVG_NAMESPACE = 'http://www.w3.org/2000/svg';
 
 /** 화살촉 marker 의 id — `renderShape` 의 `marker-end` 가 이 이름을 참조한다. */
-export const ARROW_MARKER_ID = 'monad-annot-arrow';
+export const ARROW_MARKER_ID = 'elanous-annot-arrow';
 
 /**
  * 🩸⭐⭐ **조각들을 «루트 `<svg>`»로 감싼다** — 2026-09-01 · 42차 · ***라이브 반증에서 나왔다***.

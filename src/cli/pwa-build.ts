@@ -1,4 +1,4 @@
-// P.2 — `monad nexus pwa build` subcommand action.
+// P.2 — `elanous nexus pwa build` subcommand action.
 //
 // Wraps `bun run build` in the repo's `apps/pwa` package so users don't
 // need to remember the cd / build command pair. The Next.js static export
@@ -123,7 +123,7 @@ export async function runPwaBuild(opts: PwaBuildOpts = {}): Promise<PwaBuildResu
   const argvBin = opts.argvBin ?? process.argv[1] ?? '';
   const cwd = opts.cwd ?? resolvePwaCwd(argvBin);
   if (!cwd) {
-    out.error(`monad nexus build: could not locate apps/pwa (argv[1]=${argvBin || '(empty)'})`);
+    out.error(`elanous nexus build: could not locate apps/pwa (argv[1]=${argvBin || '(empty)'})`);
     out.error('Pass --cwd <path> or run from a checkout of the monad-agent repo.');
     return { exitCode: 1, cwd: '', durationMs: 0 };
   }
@@ -132,14 +132,14 @@ export async function runPwaBuild(opts: PwaBuildOpts = {}): Promise<PwaBuildResu
   // case before webpack does and emits a one-line fix.
   const deps = checkPwaBuildDeps(cwd);
   if (!deps.ok) {
-    out.error(`✗ monad nexus build: missing node_modules in ${cwd}`);
+    out.error(`✗ elanous nexus build: missing node_modules in ${cwd}`);
     out.error(`  not installed: ${deps.missing.slice(0, 3).join(', ')}${deps.missing.length > 3 ? ` (+${deps.missing.length - 3} more)` : ''}`);
     out.error(`  fix:  cd "${cwd}" && bun install`);
     out.error('       (the tree that owns `apps/pwa` here was likely never `bun install`-ed, or the lockfile was stripped).');
     return { exitCode: 1, cwd, durationMs: 0 };
   }
 
-  out.log(`monad nexus build: ${cwd}`);
+  out.log(`elanous nexus build: ${cwd}`);
   out.log('  bun run build  (Next.js static export · ~30s typical)');
   const t0 = Date.now();
   const spawnFn = opts.spawnFn ?? defaultSpawn;

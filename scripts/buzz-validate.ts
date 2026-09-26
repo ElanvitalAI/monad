@@ -2,7 +2,7 @@
 // ── 버즈 신호 검증 (Goodhart 방지) · 주1회 크론 · 2026-07-09 ──────────────────
 //
 // 커뮤니티 감정 방향이 실제 가격 방향과 맞나(hit-rate). 우연(50%) 초과여야 알파.
-// 예측 못 하면 노이즈 증폭 경고. 등록: monad schedule create --cron '0 7 * * 6'
+// 예측 못 하면 노이즈 증폭 경고. 등록: elanous schedule create --cron '0 7 * * 6'
 //   --command 'scripts/buzz-validate.ts'
 
 import { ensureCronNodePath } from '../src/domains/cron-path.js';
@@ -16,7 +16,7 @@ import { emergedSentiments, validateDirection, forwardCandidates, validateForwar
 import { ensureEmergenceTable } from '../src/domains/community-buzz/novelty.js';
 import { omniQuote } from '../src/domains/finance-tools.js';
 
-const LOG = join(homedir(), '.monad/conatus/buzz_validate.log');
+const LOG = join(homedir(), '.elanous/conatus/buzz_validate.log');
 function log(s: string): void {
   console.log(s);
   try { if (!existsSync(dirname(LOG))) mkdirSync(dirname(LOG), { recursive: true }); appendFileSync(LOG, `${new Date().toISOString()} ${s}\n`); } catch { /* */ }

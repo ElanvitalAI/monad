@@ -47,7 +47,7 @@ describe('retrievalInducedForgetting — 경쟁 억제', () => {
   test('다른 도메인의 경쟁 기억은 안 건드림(도메인 스코프)', () => {
     const db = openSurfaceEventsDb(':memory:');
     seed(db, { domain: 'finance', recall: 3, imp: 6 });                  // finance 승자
-    const other = seed(db, { domain: 'monad', recall: 0, imp: 3 });      // monad(승자 없음)
+    const other = seed(db, { domain: 'elanous', recall: 0, imp: 3 });      // elanous(승자 없음)
     const r = retrievalInducedForgetting(db);
     expect((db.query(`SELECT tier FROM events WHERE id=?`).get(other) as { tier: string }).tier).toBe('warm'); // 무접촉
     db.close();

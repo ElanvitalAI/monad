@@ -82,8 +82,8 @@ describe('repository scaffold CLI', () => {
     expect(code).toBe(0);
     expect(output).toContain('Design direction: (none declared) — pick one, or leave it and decide later:');
     // ⛔ 목록을 «여기서 다시 세지» 않는다 — 정본이 늘거나 줄면 이 시험이 아니라 정본이 답한다.
-    expect(output.some((line) => line.trim().startsWith('monad-pastel-default'))).toBe(true);
-    expect(output.at(-1)).toBe('  → monad repo design-direction /workspace/fresh --set <direction>');
+    expect(output.some((line) => line.trim().startsWith('elanous-pastel-default'))).toBe(true);
+    expect(output.at(-1)).toBe('  → elanous repo design-direction /workspace/fresh --set <direction>');
   });
 
   test('⭐ 방향이 «이미» 선언됐으면 목록 대신 «그 값 한 줄»만 낸다', async () => {
@@ -465,7 +465,7 @@ describe('repository design-screen-contrast CLI', () => {
     const command = repo?.commands.find((candidate) => candidate.name() === 'design-screen-contrast');
 
     expect(command?.usage()).toContain('<ansi-path>');
-    expect(command?.description()).toContain('monad pty snapshot <ref> --ansi');
+    expect(command?.description()).toContain('elanous pty snapshot <ref> --ansi');
     expect(command?.options.map((option) => option.flags)).toEqual(expect.arrayContaining([
       '--background <hex>', '--foreground <hex>', '--threshold <n>', '--json',
     ]));

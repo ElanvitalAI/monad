@@ -59,8 +59,8 @@ export const BUILTIN_SOURCES: DiscoverySource[] = [
   // source (POST <env-URL>) is retired. The same 7-provider crawl
   // surface is now covered internally by grok-crawl (mandatory) +
   // firecrawl-crawl (optional), so users no longer need to host
-  // their own scraper endpoint. Env vars MONAD_OMNI_CRAWL_URL /
-  // MONAD_OMNI_CRAWL_TOKEN are no longer consulted.
+  // their own scraper endpoint. Env vars ELANOUS_OMNI_CRAWL_URL /
+  // ELANOUS_OMNI_CRAWL_TOKEN are no longer consulted.
 ];
 
 export type { DiscoverySnapshot } from './cache.js';

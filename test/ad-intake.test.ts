@@ -238,7 +238,7 @@ test('실물 CLI — --image 는 «읽을 수 있는 파일»만 실사로 받�
   const real = join(dir, 'packshot.png');
   writeFileSync(real, 'x');
   const run = async (...args: string[]) => {
-    const proc = Bun.spawn(['bun', 'bin/monad.mjs', 'ad', '--plan', ...args], {
+    const proc = Bun.spawn(['bun', 'bin/elanous.mjs', 'ad', '--plan', ...args], {
       cwd: join(import.meta.dir, '..'), stdout: 'pipe', stderr: 'pipe',
     });
     return { code: await proc.exited, out: await new Response(proc.stdout).text() };
@@ -281,7 +281,7 @@ test('이미지와 «본문 입력»이 같이 오면 거부한다 — 판매 UR
 test('실물 CLI — 필수 실물 관측 둘을 «회귀로» 못 박는다', async () => {
   const cwd = join(import.meta.dir, '..');
   const spawn = async (args: string[]) => {
-    const proc = Bun.spawn(['bun', 'bin/monad.mjs', ...args], { cwd, stdout: 'pipe', stderr: 'pipe' });
+    const proc = Bun.spawn(['bun', 'bin/elanous.mjs', ...args], { cwd, stdout: 'pipe', stderr: 'pipe' });
     return { code: await proc.exited, out: await new Response(proc.stdout).text() };
   };
   const help = await spawn(['ad', '--help']);
@@ -313,7 +313,7 @@ test('실물 argv — `--image` 가 삼킨 URL 도 «혼합 입력»으로 가�
   writeFileSync(img, 'x');
   const cwd = join(import.meta.dir, '..');
   const spawn = async (args: string[]) => {
-    const proc = Bun.spawn(['bun', 'bin/monad.mjs', 'ad', '--plan', ...args], {
+    const proc = Bun.spawn(['bun', 'bin/elanous.mjs', 'ad', '--plan', ...args], {
       cwd, stdout: 'pipe', stderr: 'pipe',
     });
     const [code, out, err] = await Promise.all([
@@ -375,7 +375,7 @@ test('실물 argv — 점(.)이 든 «진짜» 이미지 경로를 URL 로 오�
   const img = join(dotted, 'pack.png');
   writeFileSync(img, 'x');
   try {
-    const proc = Bun.spawn(['bun', 'bin/monad.mjs', 'ad', '--plan', '--image', img], {
+    const proc = Bun.spawn(['bun', 'bin/elanous.mjs', 'ad', '--plan', '--image', img], {
       cwd: join(import.meta.dir, '..'), stdout: 'pipe', stderr: 'pipe',
     });
     const [code, out] = await Promise.all([proc.exited, new Response(proc.stdout).text()]);
@@ -405,7 +405,7 @@ test('실물 argv — `--image` 는 뒤따르는 텍스트·URL 을 «삼키지 
   writeFileSync(img, 'x');
   const cwd = join(import.meta.dir, '..');
   const spawn = async (args: string[]) => {
-    const proc = Bun.spawn(['bun', 'bin/monad.mjs', 'ad', '--plan', ...args], { cwd, stdout: 'pipe', stderr: 'pipe' });
+    const proc = Bun.spawn(['bun', 'bin/elanous.mjs', 'ad', '--plan', ...args], { cwd, stdout: 'pipe', stderr: 'pipe' });
     const [code, out, err] = await Promise.all([proc.exited, new Response(proc.stdout).text(), new Response(proc.stderr).text()]);
     return { code, text: `${out}\n${err}` };
   };
@@ -432,7 +432,7 @@ test('실물 argv — `--facts` 로 접지를 «건네주면» blocked 가 풀�
   writeFileSync(factsPath, JSON.stringify(SAMPLE_FACTS));
   const cwd = join(import.meta.dir, '..');
   const spawn = async (args: string[], stdin: string) => {
-    const proc = Bun.spawn(['bun', 'bin/monad.mjs', 'ad', ...args], {
+    const proc = Bun.spawn(['bun', 'bin/elanous.mjs', 'ad', ...args], {
       cwd, stdin: new TextEncoder().encode(stdin), stdout: 'pipe', stderr: 'pipe',
     });
     const [code, out, err] = await Promise.all([proc.exited, new Response(proc.stdout).text(), new Response(proc.stderr).text()]);
@@ -479,7 +479,7 @@ test('실물 argv — 망가진/다른 주소의 facts 는 «명확한 입력 �
   const cwd = join(import.meta.dir, '..');
   const write = (name: string, body: string) => { const p = join(dir, name); writeFileSync(p, body); return p; };
   const spawn = async (args: string[]) => {
-    const proc = Bun.spawn(['bun', 'bin/monad.mjs', 'ad', ...args], { cwd, stdin: new TextEncoder().encode(''), stdout: 'pipe', stderr: 'pipe' });
+    const proc = Bun.spawn(['bun', 'bin/elanous.mjs', 'ad', ...args], { cwd, stdin: new TextEncoder().encode(''), stdout: 'pipe', stderr: 'pipe' });
     const [code, out, err] = await Promise.all([proc.exited, new Response(proc.stdout).text(), new Response(proc.stderr).text()]);
     return { code, text: `${out}\n${err}` };
   };
@@ -527,7 +527,7 @@ test('실물 argv — `--plan` 도 facts 검증을 «건너뛰지 않는다»', 
   const cwd = join(import.meta.dir, '..');
   const write = (name: string, body: string) => { const p = join(dir, name); writeFileSync(p, body); return p; };
   const spawn = async (args: string[]) => {
-    const proc = Bun.spawn(['bun', 'bin/monad.mjs', 'ad', ...args], { cwd, stdin: new TextEncoder().encode(''), stdout: 'pipe', stderr: 'pipe' });
+    const proc = Bun.spawn(['bun', 'bin/elanous.mjs', 'ad', ...args], { cwd, stdin: new TextEncoder().encode(''), stdout: 'pipe', stderr: 'pipe' });
     const [code, out, err] = await Promise.all([proc.exited, new Response(proc.stdout).text(), new Response(proc.stderr).text()]);
     return { code, text: `${out}\n${err}` };
   };
@@ -574,7 +574,7 @@ test('실물 argv — `--plan` 산출이 실행 전제를 «보여 준다»', as
   writeFileSync(factsPath, JSON.stringify(SAMPLE_FACTS));
   const cwd = join(import.meta.dir, '..');
   const spawn = async (args: string[]) => {
-    const proc = Bun.spawn(['bun', 'bin/monad.mjs', 'ad', '--plan', ...args], { cwd, stdout: 'pipe', stderr: 'pipe' });
+    const proc = Bun.spawn(['bun', 'bin/elanous.mjs', 'ad', '--plan', ...args], { cwd, stdout: 'pipe', stderr: 'pipe' });
     const [code, out] = await Promise.all([proc.exited, new Response(proc.stdout).text()]);
     return { code, json: JSON.parse(out.trim()) };
   };

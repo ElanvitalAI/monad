@@ -1,6 +1,6 @@
 // ── RefsGC ToolRuntime (Coding Pipeline P5 hygiene · Trail H) ──
 //
-// `~/.cache/monad-refs/<host>/<owner>/<repo>` is monad's scratch area
+// `~/.cache/elanous-refs/<host>/<owner>/<repo>` is elanous's scratch area
 // for SyncRepo'd reference repositories. Without housekeeping it
 // grows monotonically — a year of weekly research can pile up to
 // 5–10 GB. RefsGC scans the cache, evicts stale or excess entries,
@@ -32,7 +32,7 @@ import { join } from 'node:path';
 import type { LLMToolSpec } from '../llm.js';
 import type { ToolRuntime, ToolRuntimeContext } from './types.js';
 
-const CACHE_ROOT_DEFAULT = join(homedir(), '.cache', 'monad-refs');
+const CACHE_ROOT_DEFAULT = join(homedir(), '.cache', 'elanous-refs');
 const TTL_DAYS_DEFAULT = 30;
 const MAX_GB_DEFAULT = 5;
 const LOCK_FILENAME = '.gc.lock';
@@ -80,7 +80,7 @@ export function buildRefsGCTool(): LLMToolSpec {
   return {
     name: 'RefsGC',
     description:
-      'Garbage-collect the SyncRepo cache at ~/.cache/monad-refs. Two passes: ' +
+      'Garbage-collect the SyncRepo cache at ~/.cache/elanous-refs. Two passes: ' +
       '(1) TTL — any repo whose FETCH_HEAD is older than `ttlDays` (default 30) is evicted. ' +
       '(2) Size cap — if the cache still exceeds `maxGB` (default 5), evict oldest repos until ' +
       'under the cap. Pass `dryRun: true` to preview without deleting. Returns scanned / ' +

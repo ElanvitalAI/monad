@@ -379,7 +379,7 @@ export function webTerminalScreenshotRuntime(): ToolRuntime<ScreenshotArgs, { ou
 // `dispatchWebTerminalScreenshot` 가 image-only LLM context inject path 의
 // 첫 cut (U20) 이었다면, `dispatchTerminalContext` 는 mode-aware unified
 // entrypoint — image · text · auto 셋 다 처리. server.ts:1311 의 ACP hook
-// 가 본 함수를 호출. iOS 측 `_meta.monad.terminalContext.mode` 가
+// 가 본 함수를 호출. iOS 측 `_meta.elanous.terminalContext.mode` 가
 // requested mode (default 'image' · U22·b 에서 'auto' 으로 swap 예정).
 //
 // 왜 unified entrypoint:

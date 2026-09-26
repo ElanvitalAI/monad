@@ -95,12 +95,12 @@ export interface DashboardAcpBootDeps {
    *  (which mints a new sessionId) to `attachExisting({sessionId})`
    *  (which calls ACP `session/load` so the daemon's existing
    *  history is reused). The daemon must advertise
-   *  `loadSession:true` (monad daemons do, post-M2.3) and have the
+   *  `loadSession:true` (elanous daemons do, post-M2.3) and have the
    *  id in its `hasSession` ledger; otherwise the load throws and
    *  the caller falls back to a fresh session.
    *
    *  Driven by the `--resume <id>` CLI flag or
-   *  `MONAD_RESUME_SESSION` env (resolved in `main()`). Has no
+   *  `ELANOUS_RESUME_SESSION` env (resolved in `main()`). Has no
    *  effect when neither `remote` nor `localDaemon` is set —
    *  in-process resume goes through the existing TUI session
    *  store (`/session load`), not this path. */

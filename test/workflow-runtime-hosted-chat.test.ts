@@ -228,16 +228,16 @@ describe('workflow-runtime daemon · chatConfig surface', () => {
 
   it('falls back to fresh disk discovery when workflow was not in the boot entry list', () => {
     // Drop a chat trigger YAML into a project dir after daemon construction.
-    // Simulates: user creates `.monad/workflows/late.yaml` while NEXUS is
+    // Simulates: user creates `.elanous/workflows/late.yaml` while NEXUS is
     // already running. Without the fallback, chatConfig would say
     // 'not_found' even though /v1/workflows lists it via fresh discoverWorkflows.
     const { mkdtempSync, mkdirSync, writeFileSync, rmSync } = require('node:fs');
     const { tmpdir } = require('node:os');
     const { join } = require('node:path');
     const tmp = mkdtempSync(join(tmpdir(), 'chat-cfg-fallback-'));
-    mkdirSync(join(tmp, '.monad', 'workflows'), { recursive: true });
+    mkdirSync(join(tmp, '.elanous', 'workflows'), { recursive: true });
     writeFileSync(
-      join(tmp, '.monad', 'workflows', 'late.yaml'),
+      join(tmp, '.elanous', 'workflows', 'late.yaml'),
       `name: late\ndescription: dropped after boot\nnodes:\n  - id: in\n    chatTrigger:\n      path: /late\n      hostedUi: { enabled: true, bearer: tok }\n  - id: reply\n    depends_on: [in]\n    prompt: x\n`,
       'utf-8',
     );

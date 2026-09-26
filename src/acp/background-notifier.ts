@@ -29,7 +29,7 @@ export interface BackgroundNotifierOpts {
    *  Receives a human-readable string. Wire to Telegram/Discord/log. */
   logFallback?: (msg: string) => void;
   /** Pushcut notification name (must appear in the allowlist on the
-   *  Pushcut app side). Default 'monad-background-agent'. */
+   *  Pushcut app side). Default 'elanous-background-agent'. */
   notificationName?: string;
   /** Max chars of outputPreview echoed into the push body. Default 120. */
   bodyCap?: number;
@@ -40,7 +40,7 @@ export interface BackgroundNotifier {
   dispose(): void;
 }
 
-const DEFAULT_NOTIFICATION_NAME = 'monad-background-agent';
+const DEFAULT_NOTIFICATION_NAME = 'elanous-background-agent';
 const DEFAULT_BODY_CAP = 120;
 
 function cappedBody(s: string, cap: number): string {

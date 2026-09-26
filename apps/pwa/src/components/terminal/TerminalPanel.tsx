@@ -59,10 +59,10 @@ import {
   type TerminalPanelView,
 } from './panel-view-state';
 
-const ACTIVE_KEY = 'monad.webterm.activeId';
-const MINIMIZED_KEY = 'monad.webterm.panelsMinimized';
-const CHAT_DOCK_KEY = 'monad.webterm.chatDockOpen';
-const REPL_OPEN_KEY = 'monad.webterm.replOpen';
+const ACTIVE_KEY = 'elanous.webterm.activeId';
+const MINIMIZED_KEY = 'elanous.webterm.panelsMinimized';
+const CHAT_DOCK_KEY = 'elanous.webterm.chatDockOpen';
+const REPL_OPEN_KEY = 'elanous.webterm.replOpen';
 // A bounded snapshot shows enough recent terminal context without making a list click expensive.
 const PTY_SCROLLBACK_LINES = 100;
 
@@ -697,7 +697,7 @@ export function TerminalPanel({ initialPtyId = null, onPtySelection }: TerminalP
           aria-pressed={panelState.buttons[1].selected}
           onClick={() => selectPanelView('observe')}
           className={`rounded px-2 py-1 text-xs ${panelState.buttons[1].selected ? 'bg-emerald-700 text-white' : 'bg-zinc-800 text-zinc-300 hover:bg-zinc-700'}`}
-          title="자기신고하는 monad 대시보드 TUI 를 라이브로 관측(읽기 전용)"
+          title="자기신고하는 elanous 대시보드 TUI 를 라이브로 관측(읽기 전용)"
         >
           🖥 TUI 관측 {panelState.buttons[1].selected ? 'ON' : 'OFF'}
         </button>

@@ -1,7 +1,7 @@
 // WT-N-1 — file attachment store for PWA uploads.
 //
 // Receives multipart uploads (camera capture, file picker) and writes
-// them to `/tmp/monad-attachments/<id>-<safe-filename>` so subsequent
+// them to `/tmp/elanous-attachments/<id>-<safe-filename>` so subsequent
 // chat / agent turns can reference them by id.
 //
 // Path lives under /tmp because (a) these are intentionally ephemeral
@@ -33,7 +33,7 @@ export interface AttachmentStoreEntry {
 }
 
 export function defaultAttachmentBaseDir(): string {
-  return joinPath('/tmp', 'monad-attachments');
+  return joinPath('/tmp', 'elanous-attachments');
 }
 
 /** Generate a stable, filesystem-safe id. Includes a short timestamp

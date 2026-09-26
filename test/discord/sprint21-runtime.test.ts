@@ -138,7 +138,7 @@ describe('registerSlashCommands', () => {
 describe('default spawnLanes / snapshot / postPoll callbacks', () => {
   test('default spawnLanes ensures webhooks per token (uses pool)', async () => {
     const { fetchImpl, captured } = makeFakeFetch([
-      { url: /\/channels\/ch-1\/webhooks/, body: { id: 'wh-1', token: 't1', name: 'monad-persona:lane-1', channel_id: 'ch-1' } },
+      { url: /\/channels\/ch-1\/webhooks/, body: { id: 'wh-1', token: 't1', name: 'elanous-persona:lane-1', channel_id: 'ch-1' } },
     ]);
     const runtime = await wireSprint21Runtime({
       bot: {} as any, token: 'tok', appId: 'app',

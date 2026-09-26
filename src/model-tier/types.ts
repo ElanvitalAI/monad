@@ -32,7 +32,7 @@ export const MODEL_TIERS: readonly ModelTier[] = [
 ] as const;
 
 /** Human-readable label per tier — surfaced by PWA slider + CLI
- *  `monad voice status`. Title-cased to match PLAN §3.2 spec. */
+ *  `elanous voice status`. Title-cased to match PLAN §3.2 spec. */
 export const MODEL_TIER_LABELS: Readonly<Record<ModelTier, string>> = {
   budget: 'Budget',
   balanced: 'Balanced',

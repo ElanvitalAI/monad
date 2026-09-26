@@ -6,7 +6,7 @@
 import { Database } from 'bun:sqlite';
 import { dirname, join } from 'node:path';
 import { existsSync, mkdirSync } from 'node:fs';
-import { monadStateRoot } from '../autopilot/state-paths.js';
+import { elanousStateRoot } from '../autopilot/state-paths.js';
 import { resolveInstanceName } from '../instance-identity.js';
 import { getHarnessRunId, getHarnessRunIdSource, normalizeRunIdSource, type RunIdSource } from '../harness/harness-space.js';
 import { getParentPtyId, getPtyChainOrigin } from '../agent/pty-identity.js';
@@ -17,10 +17,10 @@ import { debug } from '../debug/log.js';
 import { appendPtyEvent } from './pty-event-log.js';
 
 export function ptyManifestDbPath(): string {
-  return _dbPathForTesting ?? join(monadStateRoot(), 'pty', 'manifest.db');
+  return _dbPathForTesting ?? join(elanousStateRoot(), 'pty', 'manifest.db');
 }
 
-export type TerminalOriginCategory = 'direct-human' | 'monad' | 'external-tool' | 'unknown';
+export type TerminalOriginCategory = 'direct-human' | 'elanous' | 'external-tool' | 'unknown';
 
 export interface TerminalOriginDecision {
   readonly category: TerminalOriginCategory;
@@ -50,10 +50,10 @@ export function classifyTerminalOrigin(observation: {
       ? { category: 'unknown', reason: 'conflicting-human-agent-marker' }
       : { category: 'direct-human', reason: 'inherited-human-cli-marker' };
   }
-  if (root === 'monad-internal' || root === 'scheduler') {
+  if (root === 'elanous-internal' || root === 'scheduler') {
     return hasAgentEvidence
       ? { category: 'unknown', reason: 'conflicting-monad-agent-marker' }
-      : { category: 'monad', reason: root === 'scheduler' ? 'inherited-scheduler-marker' : 'inherited-monad-marker' };
+      : { category: 'elanous', reason: root === 'scheduler' ? 'inherited-scheduler-marker' : 'inherited-elanous-marker' };
   }
   return { category: 'unknown', reason: 'unrecognized-origin-marker' };
 }
@@ -251,12 +251,12 @@ export function upsertPtyManifest(row: {
     const d = db(); if (!d) return;
     const runId = getHarnessRunId(process.env);
     const runIdSource = getHarnessRunIdSource();
-    const defaultSpaceId = process.env.MONAD_HARNESS_SPACE_ID?.trim() ?? '';
-    const sessionId = process.env.MONAD_SESSION_ID?.trim() ?? '';
+    const defaultSpaceId = process.env.ELANOUS_HARNESS_SPACE_ID?.trim() ?? '';
+    const sessionId = process.env.ELANOUS_SESSION_ID?.trim() ?? '';
     const defaultParentPtyId = getParentPtyId() ?? '';
     const defaultParentPid = process.ppid;
     const chainOrigin = getPtyChainOrigin();
-    const registrarNestDepth = process.env.MONAD_NEST_DEPTH === undefined ? undefined : getNestDepth();
+    const registrarNestDepth = process.env.ELANOUS_NEST_DEPTH === undefined ? undefined : getNestDepth();
     const nestDepth = row.identity?.nestDepth ?? registrarNestDepth;
     const { originRoot, originAgent, originSession, controller } = originObservationFields();
     const terminalOrigin = classifyTerminalOrigin({ originRoot, originAgent, originSession, controller });
@@ -762,7 +762,7 @@ function storedTerminalOrigin(r: Record<string, unknown>): TerminalOriginDecisio
   const reason = r.terminal_origin_reason;
   const externalToolName = r.external_tool_name;
   if (
-    (category === 'direct-human' || category === 'monad' || category === 'external-tool' || category === 'unknown')
+    (category === 'direct-human' || category === 'elanous' || category === 'external-tool' || category === 'unknown')
     && typeof reason === 'string' && reason.trim() && reason !== category
   ) {
     if (category !== 'external-tool') return { category, reason };

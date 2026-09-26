@@ -8,7 +8,7 @@
 //
 // Scope (Phase 3a wiring):
 //   - SAVE path: snapshotWindow(registry, windowId, label) → writes
-//     LayoutSpec to ~/.monad/layouts/<slug>.layout.json. Fully wired.
+//     LayoutSpec to ~/.elanous/layouts/<slug>.layout.json. Fully wired.
 //   - LIST path: enumerate saved specs + built-in presets.
 //   - PLAN path: given a saved spec or preset, run planRestore against
 //     the window's current pane id set and return the plan as JSON.
@@ -42,7 +42,7 @@ import {
 export interface LayoutCommandsDeps {
   readonly registry: WindowRegistry;
   /** Optional layouts dir override for tests. Defaults to
-   *  `~/.monad/layouts/`. */
+   *  `~/.elanous/layouts/`. */
   readonly dir?: string;
   /** Bundle B-5 (P6-4) — pass-through to `saveLayoutSpec` so SAVE
    *  path goes through the unified ArtifactStore when dashboard has
@@ -124,7 +124,7 @@ export async function planLoadLayout(
     spec = await loadLayoutSpecFromPath(opts.path);
   } else if (opts.slug) {
     // B-6 slug→artifact resolution when store is wired; legacy
-    // `~/.monad/layouts/<slug>.layout.json` fallback otherwise.
+    // `~/.elanous/layouts/<slug>.layout.json` fallback otherwise.
     const artifactPath = deps.artifactStore
       ? resolveLayoutArtifactPath(opts.slug, deps.artifactStore)
       : null;

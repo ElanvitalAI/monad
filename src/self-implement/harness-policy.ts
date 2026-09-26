@@ -1,8 +1,8 @@
 import { debug } from '../debug/log.js';
 import { GOAL_RULES_POLICY } from './goal-author.js';
 
-export const HARNESS_POLICY_ENV = 'MONAD_HARNESS_POLICY';
-export const DOCUMENT_REFERENCES_ENV = 'MONAD_DOCUMENT_REFERENCES';
+export const HARNESS_POLICY_ENV = 'ELANOUS_HARNESS_POLICY';
+export const DOCUMENT_REFERENCES_ENV = 'ELANOUS_DOCUMENT_REFERENCES';
 
 /** Supplies the parent policy or the canonical goal rules to every child entrypoint. */
 export function harnessPolicyEnv(policy = process.env[HARNESS_POLICY_ENV]): Record<string, string> {

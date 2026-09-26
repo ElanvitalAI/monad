@@ -458,10 +458,10 @@ describe('runStagedHarness — 화면 버퍼 스테이지 경계', () => {
     const stateDir = mkdtempSync(join(tmpdir(), 'staged-screen-'));
     const priorSpace = process.env[HARNESS_SPACE_ENV];
     const priorId = process.env[HARNESS_SPACE_ID_ENV];
-    const priorStateDir = process.env.MONAD_STATE_DIR;
+    const priorStateDir = process.env.ELANOUS_STATE_DIR;
     process.env[HARNESS_SPACE_ENV] = 'self-implement';
     process.env[HARNESS_SPACE_ID_ENV] = 'clarify-plan-screen';
-    process.env.MONAD_STATE_DIR = stateDir;
+    process.env.ELANOUS_STATE_DIR = stateDir;
     const frames: string[] = [];
     try {
       await runStagedHarness({
@@ -482,7 +482,7 @@ describe('runStagedHarness — 화면 버퍼 스테이지 경계', () => {
     } finally {
       if (priorSpace === undefined) delete process.env[HARNESS_SPACE_ENV]; else process.env[HARNESS_SPACE_ENV] = priorSpace;
       if (priorId === undefined) delete process.env[HARNESS_SPACE_ID_ENV]; else process.env[HARNESS_SPACE_ID_ENV] = priorId;
-      if (priorStateDir === undefined) delete process.env.MONAD_STATE_DIR; else process.env.MONAD_STATE_DIR = priorStateDir;
+      if (priorStateDir === undefined) delete process.env.ELANOUS_STATE_DIR; else process.env.ELANOUS_STATE_DIR = priorStateDir;
       rmSync(stateDir, { recursive: true, force: true });
     }
   });

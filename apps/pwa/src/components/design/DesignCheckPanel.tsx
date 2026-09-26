@@ -2,15 +2,15 @@
 
 // B4 — craft rulebook panel. `/design-check` route.
 //
-// Renders the verdict `monad repo design-check` prints, for the repository the
+// Renders the verdict `elanous repo design-check` prints, for the repository the
 // daemon is watching: which craft rulebooks the DESIGN.md declares, which of
 // those cannot be found, and — the part only this surface can show — which
-// rulebooks monad ships that the document has NOT declared.
+// rulebooks elanous ships that the document has NOT declared.
 //
 // Backed by GET /v1/design-check (30s refetch). Pure read.
 //
 // ⛔ The panel deliberately renders a BLOCKED verdict as content, not as an
-//    error state. "monad's craft directory is unreadable" and "your DESIGN.md
+//    error state. "elanous's craft directory is unreadable" and "your DESIGN.md
 //    declares a rulebook that does not exist" are different problems with
 //    different fixes; showing a generic "failed to load" for either one is the
 //    exact collapse this whole axis exists to undo.
@@ -140,7 +140,7 @@ function Verdict({ data }: { data: Extract<NonNullable<ReturnType<typeof useDesi
 
       {rows.length === 0 ? (
         <p className="text-sm text-muted-foreground">
-          monad ships no craft rulebooks and this document declares none.
+          elanous ships no craft rulebooks and this document declares none.
         </p>
       ) : (
         <ul className="divide-y rounded-md border">

@@ -1,7 +1,7 @@
 // ── 세션 object-storage 백업 (S3 · 2026-07-10) ────────────────────────────
 //
-// 라이브 세션 관리 S3 잔여(대표 후속 연구 지시): on-disk 세션(~/.monad/sessions/
-// {id}.jsonl)을 S3(s3://<bucket>/monad/<monad_id>/sessions/)로 durable 백업.
+// 라이브 세션 관리 S3 잔여(대표 후속 연구 지시): on-disk 세션(~/.elanous/sessions/
+// {id}.jsonl)을 S3(s3://<bucket>/monad/<elanous_id>/sessions/)로 durable 백업.
 // 기존 s3.ts(S3_FEATURE_PREFIXES.sessions·uploadFile/downloadFile) 재사용.
 //
 // 삽입점 = onMessageAppended/onSessionCreated(세션 변경 이벤트). 매 메시지마다 업로드는
@@ -11,16 +11,16 @@
 import { join } from 'node:path';
 import { existsSync } from 'node:fs';
 import { sessionRoot, onMessageAppended, onSessionCreated } from './index.js';
-import { s3MonadKey, uploadFile, downloadFile, objectExists, isS3Available } from '../storage/s3.js';
+import { s3ElanousKey, uploadFile, downloadFile, objectExists, isS3Available } from '../storage/s3.js';
 
 /** {id}.jsonl 의 canonical S3 key(per-machine·sessions prefix). */
 export function sessionS3Key(id: string): string {
-  return s3MonadKey('sessions', `${id}.jsonl`);
+  return s3ElanousKey('sessions', `${id}.jsonl`);
 }
 
 /** index.json(세션 목록 메타)의 S3 key. */
 export function sessionIndexS3Key(): string {
-  return s3MonadKey('sessions', 'index.json');
+  return s3ElanousKey('sessions', 'index.json');
 }
 
 /** 세션 파일 1건 업로드(존재할 때). 실패/부재 시 false(fail-soft). */

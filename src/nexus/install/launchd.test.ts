@@ -22,7 +22,7 @@ describe('auxiliaryAiEnvNotice', () => {
     expect(rendered).toContain('ELEVENLABS_API_KEY (voice TTS)');
     expect(rendered).toContain('not added to the launchd plist, so the daemon cannot access them');
     expect(rendered).toContain('Review each integration’s supported setup');
-    expect(rendered).not.toContain('monad config');
+    expect(rendered).not.toContain('elanous config');
     expect(JSON.stringify(notice)).not.toContain(secret);
     expect(rendered).not.toContain(secret);
   });
@@ -35,19 +35,19 @@ describe('auxiliaryAiEnvNotice', () => {
 // 🆕 2026-09-24 — 서비스 파일이 판 폴더가 아니라 current 를 가리킨다.
 import { nexusRunCommand, stableInstalledScriptPath } from './launchd.js';
 describe('nexusRunCommand — stable installed path', () => {
-  const ver = '/home/u/.local/share/monad/versions/1.0.0-abc/node_modules/monadagent/bin/monad.mjs';
-  const cur = '/home/u/.local/share/monad/current/node_modules/monadagent/bin/monad.mjs';
+  const ver = '/home/u/.local/share/elanous/versions/1.0.0-abc/node_modules/elanous/bin/elanous.mjs';
+  const cur = '/home/u/.local/share/elanous/current/node_modules/elanous/bin/elanous.mjs';
   test('a version-dir script maps to current when current exists', () => {
     expect(stableInstalledScriptPath(ver, (p) => p === cur)).toBe(cur);
     expect(nexusRunCommand('/b/bun', ver, (p) => p === cur)).toEqual(['/b/bun', cur, 'nexus', 'run']);
   });
   test('stays on the version path when current is absent; checkout paths unchanged', () => {
     expect(stableInstalledScriptPath(ver, () => false)).toBe(ver);
-    expect(stableInstalledScriptPath('/src/pilot/bin/monad.mjs', () => true)).toBe('/src/pilot/bin/monad.mjs');
+    expect(stableInstalledScriptPath('/src/pilot/bin/elanous.mjs', () => true)).toBe('/src/pilot/bin/elanous.mjs');
   });
-  test('falls back to bare monad only without an interpreter or script', () => {
-    expect(nexusRunCommand('', ver)).toEqual(['monad', 'nexus', 'run']);
-    expect(nexusRunCommand('/b/bun', '')).toEqual(['monad', 'nexus', 'run']);
+  test('falls back to bare elanous only without an interpreter or script', () => {
+    expect(nexusRunCommand('', ver)).toEqual(['elanous', 'nexus', 'run']);
+    expect(nexusRunCommand('/b/bun', '')).toEqual(['elanous', 'nexus', 'run']);
   });
 });
 
@@ -57,9 +57,9 @@ describe('defaultServiceWorkingDirectory — installed copy uses home, a checkou
   test('installed (versions/<v> or current) → home · checkout → cwd · unknown argv → cwd', () => {
     const home = '/Users/u';
     const cwd = '/Users/u/work/checkout';
-    expect(defaultServiceWorkingDirectory('/Users/u/.local/share/monad/versions/0.1.1-abc/node_modules/monadagent/bin/monad.mjs', cwd, home)).toBe(home);
-    expect(defaultServiceWorkingDirectory('/Users/u/.local/share/monad/current/node_modules/monadagent/bin/monad.mjs', cwd, home)).toBe(home);
-    expect(defaultServiceWorkingDirectory('/Users/u/work/checkout/bin/monad.mjs', cwd, home)).toBe(cwd);
+    expect(defaultServiceWorkingDirectory('/Users/u/.local/share/elanous/versions/0.1.1-abc/node_modules/elanous/bin/elanous.mjs', cwd, home)).toBe(home);
+    expect(defaultServiceWorkingDirectory('/Users/u/.local/share/elanous/current/node_modules/elanous/bin/elanous.mjs', cwd, home)).toBe(home);
+    expect(defaultServiceWorkingDirectory('/Users/u/work/checkout/bin/elanous.mjs', cwd, home)).toBe(cwd);
     expect(defaultServiceWorkingDirectory(undefined, cwd, home)).toBe(cwd);
   });
 });

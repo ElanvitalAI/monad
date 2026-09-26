@@ -4,7 +4,7 @@
  * fork (:fork meta-command) producing a fresh id.
  */
 
-const STORAGE_KEY = 'monad.daemon.sessionId';
+const STORAGE_KEY = 'elanous.daemon.sessionId';
 
 export function generateSessionId(): string {
   // crypto.randomUUID exists in modern browsers + Node 20+.

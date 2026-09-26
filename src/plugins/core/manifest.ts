@@ -247,7 +247,7 @@ export interface PluginManifestLoadResult {
   inferred: boolean;
 }
 
-const MANIFEST_FILES = ['plugin.json', join('.monad-plugin', 'plugin.json')];
+const MANIFEST_FILES = ['plugin.json', join('.elanous-plugin', 'plugin.json')];
 
 export function loadPluginManifestFromDir(
   pluginDir: string,

@@ -1,8 +1,8 @@
 // ── 하니스 외부 target gate 감지 (#25 P1 · 2026-07-21) ──────────────────────────
 //
-// 외부 repo(~/source/*)는 monad `bun test` 가 안 맞는다 → target 의 manifest 로 테스트 명령을 감지한다.
+// 외부 repo(~/source/*)는 elanous `bun test` 가 안 맞는다 → target 의 manifest 로 테스트 명령을 감지한다.
 // 대표 결정(DESIGN-harness-target-generalization-2026-07-21): manifest 감지 → 없으면 skip-with-warn.
-// monad 자신은 이 경로를 안 탄다(o.repoRoot 미설정 → 종전 runIntegrityGate/bun test 유지·회귀 0).
+// elanous 자신은 이 경로를 안 탄다(o.repoRoot 미설정 → 종전 runIntegrityGate/bun test 유지·회귀 0).
 
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';

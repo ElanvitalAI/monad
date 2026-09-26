@@ -18,12 +18,12 @@
 //
 // ⚠️ 이 스크립트는 실제 API 를 호출한다(유료). READ-ONLY 태스크지만 도구 surface
 //    (Bash/Read/...)는 편집 가능 — 태스크 프롬프트가 편집을 요구하지 않을 뿐이다.
-//    ~/.monad/config.json 은 절대 건드리지 않는다(모듈-전역 캐시만 in-process mutate).
+//    ~/.elanous/config.json 은 절대 건드리지 않는다(모듈-전역 캐시만 in-process mutate).
 //
 // ─── 배선 결정 (research, file:line) ────────────────────────────────────────────
-//  · 엔트리: MonadBuiltinTurnRunner.prompt() (src/autopilot/monad-builtin-runner.ts:87)
+//  · 엔트리: ElanousBuiltinTurnRunner.prompt() (src/autopilot/elanous-builtin-runner.ts:87)
 //      → runCoreTurn (src/core-turn/run-core-turn.ts:72) → streamLLMWithTools
-//        (src/llm.ts:6391). se-monad-self-impl.ts 와 동일한 in-process tool-loop.
+//        (src/llm.ts:6391). se-elanous-self-impl.ts 와 동일한 in-process tool-loop.
 //  · 도구: getAutopilotToolRegistry (src/autopilot/tool-registry.ts:111) — Read/Bash/
 //      ToolSearch/WebSearch 등 16종 (Grep/Glob 전용 도구는 없음 → 탐색은 Read + Bash
 //      grep 로 수행. AUTOPILOT_TOOL_IDS src/autopilot/tool-registry.ts:188).
@@ -33,7 +33,7 @@
 //      로 게이트를 열고 registerSink(src/debug/log.ts:429)로 이벤트를 되읽는다.
 //  · provider/model/키 해석: resolveDefaultProvider (src/llm.ts:3763) → getProviderForConfig
 //      (src/llm.ts:9098). cross-family 이면 'cross-family-override'(src/llm.ts:9139) 방출
-//      + keyMismatch 플래그. codex 키 출처=OAuth(~/.config/monad/auth.json · ~/.codex/auth.json)
+//      + keyMismatch 플래그. codex 키 출처=OAuth(~/.config/elanous/auth.json · ~/.codex/auth.json)
 //      우선, 없으면 cfg.apiKey (makeCodexProvider src/llm.ts:8744). anthropic=cfg.apiKey.
 //  · 예산 상수: TOOL_LOOP_MAX_TURNS_CODEX=8 (src/llm.ts:3940) · _CLAUDE=24 (:3956) ·
 //      _DEFAULT=6 (:3946). answerPriority='quality' 기본이면 codex 8 / claude 24
@@ -43,7 +43,7 @@
 //      (src/models/prompts.ts:39).
 
 import { getAutopilotToolRegistry } from '../src/autopilot/tool-registry.js';
-import { MonadBuiltinTurnRunner } from '../src/autopilot/monad-builtin-runner.js';
+import { ElanousBuiltinTurnRunner } from '../src/autopilot/elanous-builtin-runner.js';
 import { registerAllDefaultToolRuntimes } from '../src/tool-runtime/index.js';
 import { setSessionCwd } from '../src/session/working-dir.js';
 import { getPolicy, setPolicy, setSystemFileGuardDisabled } from '../src/code-edit/index.js';
@@ -112,7 +112,7 @@ interface Row {
   error: string;
 }
 
-// ── 격리 컨텍스트 설정 (se-monad-self-impl.ts 와 동일 패턴·read-only 라 편집은 안 함) ──
+// ── 격리 컨텍스트 설정 (se-elanous-self-impl.ts 와 동일 패턴·read-only 라 편집은 안 함) ──
 try {
   setSessionCwd(execCwd, 'tool');
   setSystemFileGuardDisabled(true);       // worktree/소스 조회만 — 편집 미요청
@@ -184,7 +184,7 @@ async function runBackend(b: Backend): Promise<Row> {
 
   // modelOverride 를 명시 전달 → runCoreTurn → streamLLMWithTools 가 이 모델을 쓴다.
   // (config override 와 이중으로 보장 — modelOverride 가 최종 승자).
-  const runner = new MonadBuiltinTurnRunner({
+  const runner = new ElanousBuiltinTurnRunner({
     sessionId: `explore-bench-${b.key}`,
     tools,
     dispatchTool,

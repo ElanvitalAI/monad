@@ -30,7 +30,7 @@ const MAX_TICKS = 5;
 
 resetAutoModeForTest();
 const home = mkdtempSync(join(tmpdir(), 'cont-dogfood-'));
-const vault = discoverObsidianVault({ env: { MONAD_OBSIDIAN_VAULT: join(home, 'vault') }, cwd: home });
+const vault = discoverObsidianVault({ env: { ELANOUS_OBSIDIAN_VAULT: join(home, 'vault') }, cwd: home });
 const paths = resolveGoalPaths(vault, SLUG);
 const summaryPath = join(paths.goalRoot, 'executive-summary.md');
 

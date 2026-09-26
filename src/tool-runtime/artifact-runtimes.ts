@@ -6,7 +6,7 @@
 //
 // Both wrap the unified ArtifactStore so LLM can discover + inspect
 // timelines / layouts / captures / blocks / attachments saved under
-// `~/.monad/artifacts/<kind>/` or surfaced via legacy providers.
+// `~/.elanous/artifacts/<kind>/` or surfaced via legacy providers.
 //
 // Security (GetArtifact): path must match an entry returned by
 // `store.list()` · prevents directory traversal · listing cache is
@@ -38,7 +38,7 @@ export function buildListArtifactsTool(): LLMToolSpecWithMirror {
     {
       name: 'ListArtifacts',
       description:
-        'List all artifacts saved under ~/.monad/artifacts/ — timelines · '
+        'List all artifacts saved under ~/.elanous/artifacts/ — timelines · '
         + 'layouts · captures · blocks · attachments. Pass `kind` to filter. '
         + 'Returns path + meta (kind · origin · createdAt · sizeBytes · '
         + 'description · tags) · sorted by createdAt ascending. Read-only. '

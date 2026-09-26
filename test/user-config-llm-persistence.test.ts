@@ -11,14 +11,14 @@ let savedEscalateEffort: string | undefined;
 beforeEach(() => {
   root = mkdtempSync(join(tmpdir(), 'user-config-llm-persistence-'));
   configPath = join(root, 'config.json');
-  savedEscalateEffort = process.env.MONAD_ESCALATE_EFFORT;
-  delete process.env.MONAD_ESCALATE_EFFORT;
+  savedEscalateEffort = process.env.ELANOUS_ESCALATE_EFFORT;
+  delete process.env.ELANOUS_ESCALATE_EFFORT;
   resetUserConfig();
 });
 
 afterEach(() => {
-  if (savedEscalateEffort === undefined) delete process.env.MONAD_ESCALATE_EFFORT;
-  else process.env.MONAD_ESCALATE_EFFORT = savedEscalateEffort;
+  if (savedEscalateEffort === undefined) delete process.env.ELANOUS_ESCALATE_EFFORT;
+  else process.env.ELANOUS_ESCALATE_EFFORT = savedEscalateEffort;
   resetUserConfig();
   rmSync(root, { recursive: true, force: true });
 });

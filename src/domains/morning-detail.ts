@@ -4,7 +4,7 @@
 // 본문도 같이 쌓는다." 텔레그램엔 에센셜만, 풀 디테일(모든 테이블·근거·인과·버즈·회고)은
 // markdown 으로 조립 → md 그대로 + HTML 렌더 둘 다 S3 date-키로 적재하고 링크만 반환.
 
-import { s3MonadKey, s3PublicUrl, uploadText, isS3Available } from '../storage/s3.js';
+import { s3ElanousKey, s3PublicUrl, uploadText, isS3Available } from '../storage/s3.js';
 import { renderHtmlPage } from './md-to-html.js';
 import { renderSemisDetail } from './kg-semis.js';
 import { marketClock } from './finance.js';
@@ -71,7 +71,7 @@ export function assembleDetailMarkdown(src: MorningSources): string {
   // 밤샘 회고/기억 루프
   if (reflection.length) parts.push(`## 🧠 회고·기억 루프\n\n${bullets(reflection, 8)}`);
 
-  parts.push('\n---\n_출처: monad finance 종합 (밤사이 자율 루프 산출물 종합). 매매는 verify+HITL._');
+  parts.push('\n---\n_출처: elanous finance 종합 (밤사이 자율 루프 산출물 종합). 매매는 verify+HITL._');
 
   return parts.filter(Boolean).join('\n\n');
 }
@@ -84,8 +84,8 @@ export function uploadMorningReport(date: string, md: string, opts: { imageUrl?:
   try {
     const title = opts.title ?? `Conatus 상세 아침 브리핑 — ${date}`;
     const html = renderHtmlPage({ title, subtitle: marketClock(), bodyMd: md, imageUrl: opts.imageUrl });
-    const mdKey = s3MonadKey('morning', `${date}.md`);
-    const htmlKey = s3MonadKey('morning', `${date}.html`);
+    const mdKey = s3ElanousKey('morning', `${date}.md`);
+    const htmlKey = s3ElanousKey('morning', `${date}.html`);
     uploadText(md, mdKey, 'text/markdown; charset=utf-8');
     uploadText(html, htmlKey, 'text/html; charset=utf-8');
     return { mdUrl: s3PublicUrl(mdKey), htmlUrl: s3PublicUrl(htmlKey) };

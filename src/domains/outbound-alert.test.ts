@@ -17,7 +17,7 @@ import {
 
 const TOUCHED_ENV = [
   FLUSH_LAG_WARN_MIN_ENV,
-  'SEND_VIA_MONAD',
+  'SEND_VIA_ELANOUS',
   'TELEGRAM_BOT_TOKEN',
   'TELEGRAM_CHAT_ID',
   'CONATUS_ENV',
@@ -84,7 +84,7 @@ describe('flushDeferred 관측 — 경로 · 밀림 경고 등급', () => {
   const envSnap = snapshotEnv(TOUCHED_ENV);
 
   beforeEach(() => {
-    process.env.SEND_VIA_MONAD = '0';
+    process.env.SEND_VIA_ELANOUS = '0';
     delete process.env.TELEGRAM_BOT_TOKEN;
     delete process.env.TELEGRAM_CHAT_ID;
     process.env.CONATUS_ENV = join(tmpdir(), 'outbound-alert-no-creds.env');
@@ -158,7 +158,7 @@ describe('flushDeferred 관측 — 경로 · 밀림 경고 등급', () => {
 type LogFn = typeof debug.log;
 type Logged = { category: string; event: string; data: unknown };
 
-const ENV_KEYS = ['SEND_VIA_MONAD', 'TELEGRAM_BOT_TOKEN', 'TELEGRAM_CHAT_ID'] as const;
+const ENV_KEYS = ['SEND_VIA_ELANOUS', 'TELEGRAM_BOT_TOKEN', 'TELEGRAM_CHAT_ID'] as const;
 
 const savedEnv: Record<string, string | undefined> = {};
 const logged: Logged[] = [];
@@ -195,7 +195,7 @@ function classifications(): DaemonPathClass[] {
 
 beforeEach(() => {
   for (const key of ENV_KEYS) savedEnv[key] = process.env[key];
-  delete process.env.SEND_VIA_MONAD;
+  delete process.env.SEND_VIA_ELANOUS;
   process.env.TELEGRAM_BOT_TOKEN = 'test-bot-token:dummy';
   process.env.TELEGRAM_CHAT_ID = '12345';
   logged.length = 0;
@@ -386,8 +386,8 @@ describe('deliver()', () => {
     expect(deliver('t')).toBe(false);
   });
 
-  test('SEND_VIA_MONAD=0 이면 데몬 경로를 건너뛰고 폴백만 탄다', () => {
-    process.env.SEND_VIA_MONAD = '0';
+  test('SEND_VIA_ELANOUS=0 이면 데몬 경로를 건너뛰고 폴백만 탄다', () => {
+    process.env.SEND_VIA_ELANOUS = '0';
     const result = deliver('t', 'alert');
     expect(result).toBe('direct');
     expect(outboundUrls.length).toBe(0);

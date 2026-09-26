@@ -93,7 +93,7 @@ export interface StagedHarnessSeams {
 
 export type HarnessStage = 'research' | 'clarify' | 'plan' | 'execute' | 'review' | 'deploy';
 
-/** Q2(자기서술·2026-07-22) — `monad harness map` 이 소비하는 스테이지 파이프라인 SSOT. 실행 순서(order)·
+/** Q2(자기서술·2026-07-22) — `elanous harness map` 이 소비하는 스테이지 파이프라인 SSOT. 실행 순서(order)·
  *  필수/opt-in(optional)·역할(role)을 한 곳에 서술해, 하니스가 자기 구조를 스스로 설명한다(제1원칙 자기인지).
  *  ⚠️ 순서는 시퀀서(runStagedHarness) 실제 실행 순서와 일치해야 함 — clarify→research→plan→execute→review→deploy. */
 export interface HarnessStageMeta {

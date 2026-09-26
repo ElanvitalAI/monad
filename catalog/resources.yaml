@@ -4,7 +4,7 @@
 #    could not be measured are ABSENT rather than guessed: an absent
 #    `free_fallback` means "not measured", never "there is none".
 #
-# Why this file exists: monad reads 33 credentials from FOUR different
+# Why this file exists: elanous reads 33 credentials from FOUR different
 # places, two of them silently. Without a map, a new user cannot tell
 # what is required, what is optional, or what already has a free path.
 #
@@ -20,7 +20,7 @@
 #                  ⇒ also run:
 #                    rg -o "env\.[A-Z][A-Z0-9_]{2,}" src/ scripts/ --glob '!*.test.ts'
 #                    rg -o "'[A-Z][A-Z0-9_]{2,}(_KEY|_TOKEN|_SECRET)'" src/ scripts/ --glob '!*.test.ts'
-#   resolution     monad doctor            # which of the four sources answers
+#   resolution     elanous doctor            # which of the four sources answers
 #   coverage       every `env:` name below must appear in .env.example
 #
 # Schema (RFC §2ⓒ):
@@ -41,14 +41,14 @@ meta:
     - env
     - "~/.cache/<lowercased-name>"      # src/config.ts:106 — read SILENTLY
     - "~/.claude/skills/<skill>/.env"   # src/web-search/tavily.ts:30 — outside this repo
-    - "monad user config (~/.monad)"    # src/registry/discovery/config.ts:44
+    - "elanous user config (~/.elanous)"    # src/registry/discovery/config.ts:44
   note: >-
-    A fresh install has none of the four. `monad doctor` names which one
+    A fresh install has none of the four. `elanous doctor` names which one
     answered for each credential.
 
 resources:
   # ── LLM ────────────────────────────────────────────────────────────
-  # The primary path is a subscription, not an API key. `monad login
+  # The primary path is a subscription, not an API key. `elanous login
   # openai-codex` uses the ChatGPT device-code flow. Five providers are
   # additionally described in catalog/providers/*.yaml (apiKeyEnv).
   - id: anthropic
@@ -57,7 +57,7 @@ resources:
     auth: api-key
     env: [ANTHROPIC_API_KEY]
     required_for: [anthropic-llm]
-    free_fallback: "subscription via `monad login`; llm.fallbackChain"
+    free_fallback: "subscription via `elanous login`; llm.fallbackChain"
     reads: catalog/providers/anthropic.yaml
     free_fallback_mode: auto
     free_fallback_note: >-
@@ -71,13 +71,13 @@ resources:
     auth: oauth-browser
     env: [OPENAI_API_KEY]
     required_for: [openai-llm]
-    free_fallback: "`monad login openai-codex` (device code, no API key)"
+    free_fallback: "`elanous login openai-codex` (device code, no API key)"
     reads: catalog/providers/openai.yaml
     free_fallback_mode: none
     boundary_note: >-
       ⭐⭐ THIS IS THE FLOOR. The other LLM rows degrade into `llm.fallbackChain`;
       these two ARE that chain (code default `['codex-rotate']`, this instance `['grok']`
-      as of 2026-09-23). Nothing in-tree sits below them, so monad cannot do LLM work
+      as of 2026-09-23). Nothing in-tree sits below them, so elanous cannot do LLM work
       with zero LLM credentials. That is a PROPERTY OF THE PRODUCT, not a gap in the map.
       ⇒ The open-core question here is not `auto|manual|none` but the owner's: is a BYO
       subscription part of CORE (like bringing a database) or is it an add-on?
@@ -110,7 +110,7 @@ resources:
     boundary_note: >-
       ⭐⭐ THIS IS THE FLOOR. The other LLM rows degrade into `llm.fallbackChain`;
       these two ARE that chain (code default `['codex-rotate']`, this instance `['grok']`
-      as of 2026-09-23). Nothing in-tree sits below them, so monad cannot do LLM work
+      as of 2026-09-23). Nothing in-tree sits below them, so elanous cannot do LLM work
       with zero LLM credentials. That is a PROPERTY OF THE PRODUCT, not a gap in the map.
       ⇒ The open-core question here is not `auto|manual|none` but the owner's: is a BYO
       subscription part of CORE (like bringing a database) or is it an add-on?
@@ -354,10 +354,10 @@ resources:
     kind: messenger
     tier: free
     auth: api-key
-    env: [TELEGRAM_BOT_TOKEN, MONAD_TELEGRAM_BOT_TOKEN]   # ONE account, two names
+    env: [TELEGRAM_BOT_TOKEN, ELANOUS_TELEGRAM_BOT_TOKEN]   # ONE account, two names
     required_for: [outbound-alerts]
     reads: src/domains/outbound-alert.ts:312
-    # MONAD_TELEGRAM_BOT_TOKEN is the env→config bridge spelling
+    # ELANOUS_TELEGRAM_BOT_TOKEN is the env→config bridge spelling
     # (src/expression/config/env-bridge.ts:44 · src/nexus/config/builtins/tab-channel.ts:28).
     free_fallback_mode: none
     free_fallback: >-
@@ -366,7 +366,7 @@ resources:
     note: >-
       ⚠️ MEASURED 2026-09-22 — this row's framing was misleading. TELEGRAM_BOT_TOKEN is
       the FALLBACK path, not the primary. src/domains/outbound-alert.ts:272 `deliver()`
-      tries the monad daemon FIRST (`SEND_VIA_MONAD !== '0'`, i.e. on by default) via
+      tries the elanous daemon FIRST (`SEND_VIA_ELANOUS !== '0'`, i.e. on by default) via
       POST {NEXUS_URL}/v1/outbound using the ACP token file — no bot token involved —
       and only falls through to sendTelegramDirect() when that classification is not 'ok'.
       So an operator without this var still gets alerts IF the daemon is up and itself
@@ -495,14 +495,14 @@ resources:
     kind: messenger
     tier: free
     auth: api-key
-    env: [MONAD_DISCORD_HITL_BOT_TOKEN]
+    env: [ELANOUS_DISCORD_HITL_BOT_TOKEN]
     required_for: [hitl-discord-approval]
     reads: src/nexus/api/hitl-discord-channel.ts:63
     free_fallback_mode: none
     free_fallback: >-
       None. Reaching Discord needs a Discord credential. ⚠️ This is a SECOND,
       separate bot from the trigger bot — discord-trigger-bot.ts:20 says
-      "HITL bot = MONAD_DISCORD_HITL_BOT_TOKEN · interaction-only".
+      "HITL bot = ELANOUS_DISCORD_HITL_BOT_TOKEN · interaction-only".
       Do not fold it into the `discord-bot` row.
     boundary: core
     boundary_note: >-
@@ -515,7 +515,7 @@ resources:
     kind: messenger
     tier: free
     auth: api-key
-    env: [MONAD_TELEGRAM_HITL_BOT_TOKEN]
+    env: [ELANOUS_TELEGRAM_HITL_BOT_TOKEN]
     required_for: [hitl-telegram-approval]
     reads: src/nexus/api/hitl-telegram-channel.ts:65
     free_fallback_mode: none
@@ -538,7 +538,7 @@ resources:
     reads: scripts/c5-telegram-stream-dogfood.ts:37
     free_fallback_mode: manual
     free_fallback: >-
-      The script itself falls back to `.monad-test/config.json` telegram settings
+      The script itself falls back to `.elanous-test/config.json` telegram settings
       (`process.env.TG_TOKEN ?? fromCfg?.token`), so a developer can run it without
       exporting anything — but the config must be set up by hand, hence `manual`.
     note: >-
@@ -604,28 +604,28 @@ resources:
       music — generation does not substitute for a licence. Marked `none` deliberately,
       not left blank.
 
-  # ── monad's own shared secrets — generate your own ──────────────────
-  - id: monad-control-token
+  # ── elanous's own shared secrets — generate your own ──────────────────
+  - id: elanous-control-token
     kind: internal
     tier: free
     auth: none
-    env: [MONAD_TOKEN]
+    env: [ELANOUS_TOKEN]
     required_for: [control-client-authentication]
     reads: src/control-client/env-resolver.ts:37
 
-  - id: monad-hitl-secret
+  - id: elanous-hitl-secret
     kind: internal
     tier: free
     auth: none
-    env: [MONAD_HITL_SECRET]
+    env: [ELANOUS_HITL_SECRET]
     required_for: [hitl-callback-authentication]
     reads: src/dashboard/runtime/hitl.ts:122
 
-  - id: monad-openai-relay
+  - id: elanous-openai-relay
     kind: internal
     tier: free
     auth: none
-    env: [MONAD_OPENAI_RELAY_SHARED_SECRET]
+    env: [ELANOUS_OPENAI_RELAY_SHARED_SECRET]
     required_for: [openai-relay-authentication]
     reads: scripts/openai-relay-server.ts:40
 
@@ -633,12 +633,12 @@ resources:
     kind: messenger
     tier: free
     auth: api-key
-    env: [MONAD_DISCORD_BOT_TOKEN]
+    env: [ELANOUS_DISCORD_BOT_TOKEN]
     required_for: [discord-bot]
     reads: src/expression/config/env-bridge.ts:51
     free_fallback_mode: none
     free_fallback: >-
-      None. src/expression/config/env-bridge.ts only copies MONAD_DISCORD_BOT_TOKEN
+      None. src/expression/config/env-bridge.ts only copies ELANOUS_DISCORD_BOT_TOKEN
       into config when present; absent means the discord surface stays off. No
       credential-free substitute for reaching Discord.
     boundary: core
@@ -674,7 +674,7 @@ resources:
     required_for: [typesafe-jev]
     reads: src/decide/jev.ts:50
     # Also read from ~/.cache via src/index.ts:1700 — the SILENT source.
-    # `monad` names it when absent (src/index.ts:1695).
+    # `elanous` names it when absent (src/index.ts:1695).
     free_fallback_mode: none
     free_fallback: >-
       None. src/decide/jev.ts resolves the key and returns
@@ -682,20 +682,20 @@ resources:
       off rather than falling back.
 
   # ── Generic bridge (not a vendor) ──────────────────────────────────
-  - id: monad-llm-bridge
+  - id: elanous-llm-bridge
     kind: llm
     tier: byo
     auth: api-key
-    env: [MONAD_LLM_API_KEY]
+    env: [ELANOUS_LLM_API_KEY]
     required_for: [configured-llm-api]
     reads: src/expression/config/env-bridge.ts:30
     # ⛔ NOT an account. This is the env spelling of `llm.apiKey` for whatever
-    #    provider MONAD_LLM_PROVIDER selects. Listed so a credential sweep
+    #    provider ELANOUS_LLM_PROVIDER selects. Listed so a credential sweep
     #    accounts for it rather than reporting it as an unmapped secret.
     free_fallback_mode: none
     free_fallback: >-
-      None. env-bridge.ts copies MONAD_LLM_* into config only when set; absent means
-      the configured-LLM-API surface is not wired. monad's own provider chain is a
+      None. env-bridge.ts copies ELANOUS_LLM_* into config only when set; absent means
+      the configured-LLM-API surface is not wired. elanous's own provider chain is a
       DIFFERENT axis (llm.provider / fallbackChain) and is itself credentialed.
 
 # ── Deliberately absent ───────────────────────────────────────────────

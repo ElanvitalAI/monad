@@ -2,7 +2,7 @@
 //
 // One-line human-readable descriptions of the currently-active LLM
 // provider + model, designed for rendering in three surfaces:
-//   1. `monad provider` CLI — full status dump
+//   1. `elanous provider` CLI — full status dump
 //   2. Dashboard launch banner (index.ts main)
 //   3. Chat footer / HUD insert
 //
@@ -73,7 +73,7 @@ function authDetailForDecision(
     }
     return auth === 'apikey'
       ? 'API key (config)'
-      : 'not configured — run `monad login openai-codex` or `monad codex setup`';
+      : 'not configured — run `elanous login openai-codex` or `elanous codex setup`';
   }
   if (provider === 'grok') {
     if (auth === 'oauth') return '구독 OAuth (~/.grok/auth.json · `grok login`)';
@@ -122,7 +122,7 @@ function authDetailForDecision(
   if (provider === 'auto:anthropic') return auth === 'apikey' ? 'API key (env ANTHROPIC_API_KEY)' : 'not configured';
   if (provider === 'auto:gemini') return auth === 'apikey' ? 'API key (env GEMINI_API_KEY / GOOGLE_API_KEY)' : 'not configured';
   if (provider === 'auto:local') return auth === 'local' ? `OpenAI-compat endpoint — ${getLocalLLMUrl()}` : 'not configured — set LOCAL_LLM_URL';
-  return 'no provider configured — run `monad setup` or set an API-key env var';
+  return 'no provider configured — run `elanous setup` or set an API-key env var';
 }
 
 // ── Renderers ────────────────────────────────────────────────────────
@@ -133,7 +133,7 @@ export function oneLineProvider(info: ActiveProviderInfo = inspectActiveProvider
   return `provider: ${info.provider} / ${info.model} · ${info.authDetail}`;
 }
 
-/** Multi-line summary for `monad provider` and `/provider` slash
+/** Multi-line summary for `elanous provider` and `/provider` slash
  *  command. Includes the Codex model blurb when applicable. */
 export function renderProviderStatus(info: ActiveProviderInfo = inspectActiveProvider()): string {
   const lines: string[] = [];
@@ -143,7 +143,7 @@ export function renderProviderStatus(info: ActiveProviderInfo = inspectActivePro
   if (info.note) lines.push(`  note     : ${info.note}`);
   if (info.auth === 'none') {
     lines.push('');
-    lines.push('  Fix: run `monad setup` (wizard) or `monad codex setup` (1-point Codex)');
+    lines.push('  Fix: run `elanous setup` (wizard) or `elanous codex setup` (1-point Codex)');
   }
   return lines.join('\n');
 }

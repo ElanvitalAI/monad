@@ -21,7 +21,7 @@ let root: string;
 let storeRoot: string;
 
 beforeEach(() => {
-  root = mkdtempSync(joinPath(tmpdir(), 'monad-mirror-test-'));
+  root = mkdtempSync(joinPath(tmpdir(), 'elanous-mirror-test-'));
   storeRoot = root;
   // session/index.ts uses sessionRoot() which honors XDG_DATA_HOME.
   process.env.XDG_DATA_HOME = root;

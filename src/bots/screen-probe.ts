@@ -182,7 +182,7 @@ export function judgeShot(facts: ShotFacts): { readonly kind: 'ok' } | { readonl
  * ⚠️ 부르는 쪽이 반드시 `rmSync` 로 치운다.
  */
 export function makeShotDir(botNumber: number): string {
-  return mkdtempSync(join(tmpdir(), `monad-bot${botNumber}-shot-`));
+  return mkdtempSync(join(tmpdir(), `elanous-bot${botNumber}-shot-`));
 }
 
 /**

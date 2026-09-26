@@ -69,7 +69,7 @@ export function getAskUserQuestionDeps(): AskUserQuestionDeps | null {
 // ── AU4 — non-TUI resolver (skill / ACP / headless) ─────────────
 //
 // codex mode-gates request_user_input at the tool handler
-// (core/src/tools/handlers/request_user_input.rs:43-54). Monad's
+// (core/src/tools/handlers/request_user_input.rs:43-54). Elanous's
 // equivalent: if the caller isn't on the dashboard surface (no
 // coordinator / termSize), they can install a resolver hook that
 // takes the parsed request and returns an AskUserQuestionResult
@@ -89,7 +89,7 @@ import { getDefaultQuestionChannels, requestQuestion } from '../hitl/question.js
 
 /** Per-dispatch context threaded from the ToolRuntime caller. Resolvers
  *  that need to push the question to a specific surface — the ACP
- *  `monad/ask/*` bridge routes to the peer attached to `sessionId` —
+ *  `elanous/ask/*` bridge routes to the peer attached to `sessionId` —
  *  read this to pick the right outbound channel. Absent fields mean
  *  the caller didn't have that affinity (e.g. CLI / startup script). */
 export interface AskUserQuestionDispatchContext {

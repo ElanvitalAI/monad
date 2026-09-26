@@ -8,5 +8,5 @@ export const MCP_RESOURCE_ROUTE = '/v1/mcp/resources';
  *  위젯 CSP 가 전부 `'none'` 이 됐다 ⇒ 그림이 깨지고 「Connecting...」 에서 영영 멈췄다.
  *  ⛔ 이 이름들은 «잎»에 둔다 — 라우트 모듈에 두면 브라우저가 그것을 import 하면서
  *    데몬 그래프를 통째로 번들에 끌어온다(같은 날 그 함정을 한 번 밟았다). */
-export const MCP_APP_CONNECT_DOMAINS_HEADER = 'x-monad-mcp-app-connect-domains';
-export const MCP_APP_RESOURCE_DOMAINS_HEADER = 'x-monad-mcp-app-resource-domains';
+export const MCP_APP_CONNECT_DOMAINS_HEADER = 'x-elanous-mcp-app-connect-domains';
+export const MCP_APP_RESOURCE_DOMAINS_HEADER = 'x-elanous-mcp-app-resource-domains';

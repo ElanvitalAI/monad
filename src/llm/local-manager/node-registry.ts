@@ -2,7 +2,7 @@
 //
 // Per PLAN §5 D13 — reuses `src/ssh/ssh-hosts.ts` for Tailscale fleet
 // discovery so the set of nodes stays in sync with the user's SSH
-// picker. The monad host itself is prepended as the `'local'` pseudo-
+// picker. The elanous host itself is prepended as the `'local'` pseudo-
 // node so single-host users don't need to touch SSH config.
 //
 // Node runtime status (reachable + which runtimes installed) lives
@@ -12,7 +12,7 @@
 // Fleet fixups 2026-04-22 · self-alias filtering:
 //   On a Tailscale fleet it's common for the SSH host list to include
 //   the local machine's own magic-DNS name (e.g. `mbp` resolves to
-//   the local tun IP `100.64.0.2` for the user on monad). SSH-ing
+//   the local tun IP `100.64.0.2` for the user on elanous). SSH-ing
 //   to self loops back to port 22 which typically rejects with
 //   `Permission denied (publickey,password,keyboard-interactive)`
 //   because the user doesn't maintain a self-login keyring. The probe
@@ -22,7 +22,7 @@
 //   startup, compares against this machine's IPv4 interfaces, and
 //   populates a filter set. `listNodes()` then drops any SSH host
 //   that aliases this machine. The `'local'` pseudo-node still
-//   represents the monad host, so no functionality is lost.
+//   represents the elanous host, so no functionality is lost.
 
 import * as os from 'node:os';
 import { promises as dns } from 'node:dns';
@@ -63,7 +63,7 @@ function blankStatus(): NodeStatus {
  *  probe status (or blanks before the first probe).
  *
  *  Call order guaranteed:
- *    1. `'local'` pseudo-node first (monad host).
+ *    1. `'local'` pseudo-node first (elanous host).
  *    2. SSH fleet in `ssh-hosts.ts` order (mba · node-b · mbp · minio · node-c
  *       by default; user config override preserved).
  *
@@ -77,7 +77,7 @@ function blankStatus(): NodeStatus {
  */
 export function listNodes(): LlmNode[] {
   const out: LlmNode[] = [];
-  out.push(buildNode({ id: 'local', label: 'local', isLocal: true, description: 'monad host' }));
+  out.push(buildNode({ id: 'local', label: 'local', isLocal: true, description: 'elanous host' }));
   for (const h of listSshHosts()) {
     if (selfAliases?.has(h.name.toLowerCase())) continue;
     out.push(buildNode({

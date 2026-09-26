@@ -10,25 +10,25 @@ describe('resolveRoleFromEnv — Docker 롤(env 로 결정)', () => {
     expect(c.executorKind).toBe('self');
   });
 
-  it('MONAD_ROLE=controller → controller(executorKind 없음)', () => {
-    const c = resolveRoleFromEnv({ MONAD_ROLE: 'controller' });
+  it('ELANOUS_ROLE=controller → controller(executorKind 없음)', () => {
+    const c = resolveRoleFromEnv({ ELANOUS_ROLE: 'controller' });
     expect(c.role).toBe('controller');
     expect(c.executorKind).toBeUndefined();
   });
 
   it('executor + agent backend', () => {
-    const c = resolveRoleFromEnv({ MONAD_ROLE: 'executor', MONAD_EXECUTOR_KIND: 'agent', MONAD_AGENT_BACKEND: 'codex' });
+    const c = resolveRoleFromEnv({ ELANOUS_ROLE: 'executor', ELANOUS_EXECUTOR_KIND: 'agent', ELANOUS_AGENT_BACKEND: 'codex' });
     expect(c.role).toBe('executor');
     expect(c.executorKind).toBe('agent');
     expect(c.agentBackend).toBe('codex');
   });
 
   it('executor:skill', () => {
-    expect(resolveRoleFromEnv({ MONAD_EXECUTOR_KIND: 'skill' }).executorKind).toBe('skill');
+    expect(resolveRoleFromEnv({ ELANOUS_EXECUTOR_KIND: 'skill' }).executorKind).toBe('skill');
   });
 
   it('orchestrator', () => {
-    expect(resolveRoleFromEnv({ MONAD_ROLE: 'orchestrator' }).role).toBe('orchestrator');
+    expect(resolveRoleFromEnv({ ELANOUS_ROLE: 'orchestrator' }).role).toBe('orchestrator');
   });
 });
 

@@ -71,8 +71,8 @@ export async function dispatchSolveMission(
 
   // ★ #24 격리 — 데몬 서피스(ctx)면 subprocess 위임(RunDevHarness 동형). off/safe HITL 은 detached-hitl
   //   IPC 로 릴레이(A1 재사용). `_detachedKind='solve-mission'` 로 자식이 이 dispatch 를 인프로세스 실행.
-  //   재귀 가드: 위임된 subprocess(MONAD_HARNESS_DETACHED)·테스트 주입(deps)·ctx 없는 CLI 는 인프로세스.
-  if (ctx && !deps && !process.env.MONAD_HARNESS_DETACHED) {
+  //   재귀 가드: 위임된 subprocess(ELANOUS_HARNESS_DETACHED)·테스트 주입(deps)·ctx 없는 CLI 는 인프로세스.
+  if (ctx && !deps && !process.env.ELANOUS_HARNESS_DETACHED) {
     const { dispatchRunDevHarnessDetached } = await import('../../harness/dispatch-detached.js');
     const relayUx = surfaceUxFromDispatchCtx(ctx);
     debug.log('harness.frontdoor', 'solve-mission-delegate-detached', { missionId, autoDrive, surface: relayUx.surface, interactive: relayUx.interactive });
@@ -125,7 +125,7 @@ export async function dispatchSolveMission(
 
   // LLM 리뷰어(critique·rework 자동수정) — dev-harness 와 동일 엔진. fail-soft.
   const { streamLLM } = await import('../../llm.js');
-  const reviewModel = process.env.MONAD_PR_REVIEW_MODEL || tierModel('better');
+  const reviewModel = process.env.ELANOUS_PR_REVIEW_MODEL || tierModel('better');
   const llmReview = (prompt: string): Promise<string> =>
     streamLLM([{ role: 'user', content: prompt }], () => {}, { model: reviewModel, reasoningEffort: 'medium' });
 

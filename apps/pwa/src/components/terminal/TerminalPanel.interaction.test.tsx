@@ -41,7 +41,7 @@ mock.module('@/voice/use-voice-controller', () => ({
  *  source-root contract exists for. `sourceRoot` is what a detail request must
  *  carry; without it the daemon resolves the id against its own root and 404s. */
 const FOREIGN = {
-  id: 'tui:85858', alive: true, instance: 'prod', kind: 'tui', cmd: 'monad', startedAt: 1,
+  id: 'tui:85858', alive: true, instance: 'prod', kind: 'tui', cmd: 'elanous', startedAt: 1,
   sourceRoot: { name: 'prod', dbPath: '/roots/prod/pty/manifest.db' },
 } as unknown as DaemonTerminalSummary;
 const LOCAL = { ...FOREIGN, id: 'tui:100', instance: 'local', sourceRoot: undefined } as DaemonTerminalSummary;
@@ -238,7 +238,7 @@ describe('TerminalPanel · PTY-list to tab wiring', () => {
     harness.act(() => (tabs.props.onActiveChange as (id: string) => void)(LOCAL.id));
     await harness.settle();
     expect(selected).toEqual([newest]);
-    expect(storage.get('monad.webterm.activeId')).toBe(LOCAL.id);
+    expect(storage.get('elanous.webterm.activeId')).toBe(LOCAL.id);
 
     harness.act(() => (tabs.props.onActiveChange as (id: string) => void)(LOCAL.id));
     await harness.settle();

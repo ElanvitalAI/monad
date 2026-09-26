@@ -7,11 +7,11 @@
 
 import { describe, expect, test } from 'bun:test';
 
-import { asWidgetUri, mintWidgetUri, newMonadUri } from '../../../src/mss/uri/builder.ts';
-import { parseMonadUri } from '../../../src/mss/uri/parser.ts';
+import { asWidgetUri, mintWidgetUri, newElanousUri } from '../../../src/mss/uri/builder.ts';
+import { parseElanousUri } from '../../../src/mss/uri/parser.ts';
 
 describe('mintWidgetUri', () => {
-  test('returns a Tier 2 `widget/<ULID>` MonadUri', () => {
+  test('returns a Tier 2 `widget/<ULID>` ElanousUri', () => {
     const uri = mintWidgetUri();
     expect(uri).toMatch(/^widget\/[0-9A-HJKMNP-TV-Z]{26}$/);
   });
@@ -29,14 +29,14 @@ describe('mintWidgetUri', () => {
 });
 
 describe('asWidgetUri', () => {
-  test('accepts a fresh `widget/<ULID>` MonadUri', () => {
-    const uri = newMonadUri('widget');
+  test('accepts a fresh `widget/<ULID>` ElanousUri', () => {
+    const uri = newElanousUri('widget');
     expect(() => asWidgetUri(uri)).not.toThrow();
   });
 
-  test('accepts a nested MonadUri whose path includes a widget segment', () => {
-    const session = newMonadUri('session');
-    const withWidget = newMonadUri('widget', session);
+  test('accepts a nested ElanousUri whose path includes a widget segment', () => {
+    const session = newElanousUri('session');
+    const withWidget = newElanousUri('widget', session);
     expect(() => asWidgetUri(withWidget)).not.toThrow();
   });
 
@@ -44,14 +44,14 @@ describe('asWidgetUri', () => {
     expect(() => asWidgetUri('not-a-uri')).toThrow(/Invalid WidgetUri/);
   });
 
-  test('rejects MonadUri without any widget segment', () => {
-    const session = newMonadUri('session');
+  test('rejects ElanousUri without any widget segment', () => {
+    const session = newElanousUri('session');
     expect(() => asWidgetUri(session)).toThrow(/Invalid WidgetUri/);
   });
 
   test('parsed URI surfaces the widget segment', () => {
     const uri = mintWidgetUri();
-    const parsed = parseMonadUri(uri);
+    const parsed = parseElanousUri(uri);
     expect(parsed?.segments[0]?.kind).toBe('widget');
   });
 });

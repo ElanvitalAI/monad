@@ -1,4 +1,4 @@
-// P5 (2026-05-10) — `monad nexus pwa show` — current project's daemon
+// P5 (2026-05-10) — `elanous nexus pwa show` — current project's daemon
 // view.
 //
 // Sibling of `pwa global status` (host-wide). `pwa show` narrows to the
@@ -69,9 +69,9 @@ export async function runPwaShow(opts: PwaShowOpts = {}): Promise<PwaShowResult>
     out.log(`  cwd: ${cwd}`);
     out.log('');
     out.log('Bring one up:');
-    out.log('  monad nexus run --hmr');
+    out.log('  elanous nexus run --hmr');
     out.log('Other instances on this host:');
-    out.log('  monad nexus pwa global status');
+    out.log('  elanous nexus pwa global status');
     return { exitCode: 0 };
   }
 
@@ -123,7 +123,7 @@ export async function runPwaShow(opts: PwaShowOpts = {}): Promise<PwaShowResult>
   } else if (match.shareMounted) {
     out.log('  tailnet   (Tailscale unreachable — re-run when ts is up)');
   } else {
-    out.log('  tailnet   (off · `monad nexus pwa share enable` to expose)');
+    out.log('  tailnet   (off · `elanous nexus pwa share enable` to expose)');
   }
 
   return {
@@ -134,4 +134,4 @@ export async function runPwaShow(opts: PwaShowOpts = {}): Promise<PwaShowResult>
 }
 
 // Suppress unused-import lint when this file is re-exported.
-export const PWA_SHOW_INTERNAL_REGISTRY_HINT = join(homedir(), '.monad', 'pwa-registry.json');
+export const PWA_SHOW_INTERNAL_REGISTRY_HINT = join(homedir(), '.elanous', 'pwa-registry.json');

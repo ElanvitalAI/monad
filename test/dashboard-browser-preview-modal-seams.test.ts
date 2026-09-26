@@ -30,7 +30,7 @@ import {
 } from '../src/working-dir/index.js';
 import { DEFAULT_THEME_TOKENS } from '../src/theme/tokens.js';
 
-const ROOT = join(tmpdir(), `monad-browser-preview-modal-seams-${Date.now()}`);
+const ROOT = join(tmpdir(), `elanous-browser-preview-modal-seams-${Date.now()}`);
 const CHILD = join(ROOT, 'child');
 const FILE_A = join(ROOT, 'a.txt');
 const FILE_B = join(CHILD, 'b.md');

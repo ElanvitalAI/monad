@@ -96,7 +96,7 @@ export function buildBudgetStatusTool(): LLMToolSpec {
   return {
     name: 'BudgetStatus',
     description:
-      'Return current per-brand/per-window usage for the local monad budget tracker. Reads from in-process UsageStore; optional `refresh: true` runs every registered fetcher (~1-3s). For historical time-series use `BudgetHistory`; for pace-based prediction use `BudgetForecast`.',
+      'Return current per-brand/per-window usage for the local elanous budget tracker. Reads from in-process UsageStore; optional `refresh: true` runs every registered fetcher (~1-3s). For historical time-series use `BudgetHistory`; for pace-based prediction use `BudgetForecast`.',
     parameters: {
       type: 'object',
       properties: {
@@ -473,7 +473,7 @@ export function buildBudgetSetLimitTool(): LLMToolSpec {
   return {
     name: 'BudgetSetLimit',
     description:
-      'Write a user-config limit for (brand, window, model?). Pass quota in percent units (0-100) for parity with current RateWindow semantics. Persists to ~/.config/monad/budget/limits.json.',
+      'Write a user-config limit for (brand, window, model?). Pass quota in percent units (0-100) for parity with current RateWindow semantics. Persists to ~/.config/elanous/budget/limits.json.',
     parameters: {
       type: 'object',
       properties: {

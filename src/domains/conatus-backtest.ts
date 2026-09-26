@@ -1,7 +1,7 @@
 // ── Conatus 스크리너 가격기반 신호 백테스트 + 팩터 연구 (backtest.py·factor_research.py 흡수) ──
 //
 // Conatus python `screener/backtest.py`(forward-return 신호 백테스트) + `factor_research.py`
-// (저변동성/단기반전 5분위 롱숏)를 TS 로 흡수. monad 가 python 을 shell-out 하지 않도록 순수함수화.
+// (저변동성/단기반전 5분위 롱숏)를 TS 로 흡수. elanous 가 python 을 shell-out 하지 않도록 순수함수화.
 //
 // 하이브리드 원칙(engine=skill):
 //   · 데이터 I/O·reshape = conatus-panel.ts 재사용(conatusDataDir·tickerMap·BulkRow).
@@ -453,7 +453,7 @@ export function backtest(pan: FullPanel, horizons: number[] = [5, 10, 20]): Back
   };
 }
 
-/** backtest.py 텍스트 표를 문자열로 재현(monad 가 슬라이싱). 폭=문자수(python len 동형). */
+/** backtest.py 텍스트 표를 문자열로 재현(elanous 가 슬라이싱). 폭=문자수(python len 동형). */
 function renderBacktest(r: BacktestResult): string {
   const lines: string[] = [];
   let header = padEndC('신호', 22) + padStartC('N', 8);

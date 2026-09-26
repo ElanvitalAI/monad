@@ -94,7 +94,7 @@ const HELP_LINES = [
   ':budget — show session token budget',
   ':session — show active session id',
   ':history — preview last 3 messages',
-  ':reload — reload ~/.config/monad/config.json',
+  ':reload — reload ~/.config/elanous/config.json',
   ':fork — spawn a fresh session (new id, no shared history)',
   ':exit — request session close (web term: no-op signal)',
 ];
@@ -292,7 +292,7 @@ export function dispatchMetaCommand(
       return {
         consumed: true,
         cfgUpdate: refreshed,
-        output: dim('reloaded ~/.config/monad/config.json\r\n'),
+        output: dim('reloaded ~/.config/elanous/config.json\r\n'),
       };
     }
     case 'history': {

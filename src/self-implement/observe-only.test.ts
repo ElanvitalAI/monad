@@ -3,7 +3,7 @@ import { mkdtempSync, mkdirSync, realpathSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { buildDevCliSpec } from '../self-dev/dev-cli.js';
-import { monadTuiSpawnOptions } from './monad-tui-spawn.js';
+import { elanousTuiSpawnOptions } from './elanous-tui-spawn.js';
 import {
   OBSERVE_ONLY_FLAG_ENV,
   _setObserveOnlyConfigReaderForTesting,
@@ -22,21 +22,21 @@ describe('self-implement observe-only decision and child boot propagation', () =
     expect(resolveObserveOnlyDecision({})).toEqual({ enabled: true, source: 'config' });
   });
 
-  test('monad dev option reaches the isolated child spawn environment before boot', () => {
+  test('elanous dev option reaches the isolated child spawn environment before boot', () => {
     const spec = buildDevCliSpec({ text: 'ignored' }, { kind: 'self' }, {
-      monad: true, goal: 'observe', observeOnly: true,
+      elanous: true, goal: 'observe', observeOnly: true,
     });
-    expect(spec.monad).toMatchObject({ goal: 'observe', observeOnly: true });
+    expect(spec.elanous).toMatchObject({ goal: 'observe', observeOnly: true });
 
     const root = mkdtempSync(join(tmpdir(), 'observe-only-child-'));
     try {
       mkdirSync(join(root, 'config'));
       mkdirSync(join(root, 'state'));
-      const spawn = monadTuiSpawnOptions({
+      const spawn = elanousTuiSpawnOptions({
         repoRoot: '/repo', cwd: root,
         configDir: realpathSync(join(root, 'config')),
         stateDir: realpathSync(join(root, 'state')),
-        observeOnly: spec.monad?.observeOnly,
+        observeOnly: spec.elanous?.observeOnly,
         space: { inHarness: true, kind: 'self-implement', id: 'observe-only', runId: '' },
       });
       expect(spawn.env?.[OBSERVE_ONLY_FLAG_ENV]).toBe('1');

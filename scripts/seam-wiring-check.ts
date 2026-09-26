@@ -101,7 +101,7 @@ function copyRepository(root: string, temporaryRoot: string, name: string): stri
   const copy = join(temporaryRoot, name);
   cpSync(root, copy, {
     recursive: true,
-    filter: (source) => !['.git', 'node_modules', '.monad-test'].includes(basename(source)),
+    filter: (source) => !['.git', 'node_modules', '.elanous-test'].includes(basename(source)),
   });
   const dependencies = join(root, 'node_modules');
   if (existsSync(dependencies)) symlinkSync(dependencies, join(copy, 'node_modules'), 'dir');
@@ -146,7 +146,7 @@ export function checkSeamWiring(target: SeamWiringTarget, dependencies: SeamWiri
   const neverSubstituted = replaceDeclaredFieldTypeWithNever(source, original, target.field);
   if (!neverSubstituted.source) return indeterminate(target, neverSubstituted.reason!);
 
-  const temporaryRoot = mkdtempSync(join(tmpdir(), 'monad-seam-wiring-'));
+  const temporaryRoot = mkdtempSync(join(tmpdir(), 'elanous-seam-wiring-'));
   try {
     const deletionRepository = copyRepository(root, temporaryRoot, 'deletion-repository');
     const neverSubstitutionRepository = copyRepository(root, temporaryRoot, 'never-substitution-repository');

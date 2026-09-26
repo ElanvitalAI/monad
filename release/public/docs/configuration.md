@@ -4,27 +4,27 @@
 
 | What | Where |
 |---|---|
-| The program | `~/.local/share/monad` (see [install](install.md#layout)) |
-| Settings | `monad config path` prints the active file |
-| Sign-ins, logs, sessions, worktree state | `~/.monad` |
+| The program | `~/.local/share/elanous` (see [install](install.md#layout)) |
+| Settings | `elanous config path` prints the active file |
+| Sign-ins, logs, sessions, worktree state | `~/.elanous` |
 | API keys | the key cache: `~/.cache/<variable name in lower case>`, e.g. `~/.cache/xai_api_key` |
 
-Nothing in `~/.monad` or the key cache is touched by installing or upgrading.
+Nothing in `~/.elanous` or the key cache is touched by installing or upgrading.
 
 ## Changing settings
 
 ```bash
-monad config get                         # everything (secrets redacted)
-monad config get llm.provider            # one value, by dotted path
-monad config set llm.provider openai-codex
-monad config unset llm.model
+elanous config get                         # everything (secrets redacted)
+elanous config get llm.provider            # one value, by dotted path
+elanous config set llm.provider openai-codex
+elanous config unset llm.model
 ```
 
 Settings are re-read when the file changes, so most changes apply to a running service without a restart.
 
 ## API keys
 
-monad reads a key from the key cache first and from the environment second. The cache is what the background service uses, because a service started at login does not see your shell's environment.
+elanous reads a key from the key cache first and from the environment second. The cache is what the background service uses, because a service started at login does not see your shell's environment.
 
 To add a key without it appearing on screen:
 
@@ -32,7 +32,7 @@ To add a key without it appearing on screen:
 umask 177 && printf '%s' "$KEY" > ~/.cache/openrouter_api_key    # file mode 600
 ```
 
-or, from a checkout, `bash scripts/add-api-key.sh OPENROUTER_API_KEY`. `monad nexus install` (`--launchd` on macOS, `--systemd-user` on Linux) also moves provider keys it finds in your shell into the cache instead of writing them into the service file. To make monad use the environment and ignore the cache for one run, set `MONAD_KEEP_ENV_KEYS=1`.
+or, from a checkout, `bash scripts/add-api-key.sh OPENROUTER_API_KEY`. `elanous nexus install` (`--launchd` on macOS, `--systemd-user` on Linux) also moves provider keys it finds in your shell into the cache instead of writing them into the service file. To make elanous use the environment and ignore the cache for one run, set `ELANOUS_KEEP_ENV_KEYS=1`.
 
 ## Settings you are most likely to change
 
@@ -49,18 +49,18 @@ See [providers](providers.md) for what each provider needs.
 
 | Variable | Meaning |
 |---|---|
-| `MONAD_INSTALL_PREFIX` | Install location (installer) |
-| `MONAD_PWA_STATIC_DIR` | Folder the service serves the web app from |
-| `MONAD_KEEP_ENV_KEYS=1` | Use environment variables instead of the key cache |
+| `ELANOUS_INSTALL_PREFIX` | Install location (installer) |
+| `ELANOUS_PWA_STATIC_DIR` | Folder the service serves the web app from |
+| `ELANOUS_KEEP_ENV_KEYS=1` | Use environment variables instead of the key cache |
 | `--config-dir <dir>` (flag) | Use another config/state root — e.g. to keep a test setup apart |
 | `--test` (flag) | Run an isolated test instance rooted in the current git tree |
 
 ## `config.json` sections
 
-`~/.monad/config.json` holds user-level settings beyond env vars.
-(Older builds wrote `~/.config/monad/config.json`; that path still appears in
-the source but the live config directory is `~/.monad` — check yours with
-`monad where`.)
+`~/.elanous/config.json` holds user-level settings beyond env vars.
+(Older builds wrote `~/.config/elanous/config.json`; that path still appears in
+the source but the live config directory is `~/.elanous` — check yours with
+`elanous where`.)
 
 | Section     | Purpose                                                                  |
 |-------------|--------------------------------------------------------------------------|
@@ -77,5 +77,5 @@ the source but the live config directory is `~/.monad` — check yours with
 or `custom` for your own paths. Multiple dirs can be scanned
 simultaneously (first-dir-wins on name collisions).
 
-Re-run the wizard any time: `monad setup`.
+Re-run the wizard any time: `elanous setup`.
 

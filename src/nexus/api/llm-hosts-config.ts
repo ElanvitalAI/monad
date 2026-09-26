@@ -5,7 +5,7 @@
 // before serialisation so the response never echoes a secret.
 //
 // `PUT /v1/llm/hosts` — accept a JSON body with the same shape as
-// `MONAD_LLM_HOSTS` and store it as the in-memory override. Validates
+// `ELANOUS_LLM_HOSTS` and store it as the in-memory override. Validates
 // via `parseLlmHostsEnv` so the same parser rules apply (named hosts,
 // known kinds, non-empty endpoint, optional apiKey).
 //

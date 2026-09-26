@@ -105,7 +105,7 @@ export async function runOpsStatusRemote(opts: OpsStatusRemoteOpts): Promise<Ops
     return fail(
       out,
       'usage-error',
-      'monad ops status: --all-instances is a local federation scope and has no meaning with --remote; drop it (the remote daemon decides its own scope).',
+      'elanous ops status: --all-instances is a local federation scope and has no meaning with --remote; drop it (the remote daemon decides its own scope).',
     );
   }
 
@@ -116,7 +116,7 @@ export async function runOpsStatusRemote(opts: OpsStatusRemoteOpts): Promise<Ops
     return fail(out, 'usage-error', err instanceof Error ? err.message : String(err));
   }
   if (!flag.present) {
-    return fail(out, 'usage-error', 'monad ops status: -r / --remote is required for remote ops status');
+    return fail(out, 'usage-error', 'elanous ops status: -r / --remote is required for remote ops status');
   }
 
   const timeoutMs = resolveTimeoutMs(opts.timeoutMs);
@@ -133,7 +133,7 @@ export async function runOpsStatusRemote(opts: OpsStatusRemoteOpts): Promise<Ops
     return fail(
       out,
       'remote-error',
-      `monad ops status: remote bookmark ${label}: ${err instanceof Error ? err.message : String(err)}`,
+      `elanous ops status: remote bookmark ${label}: ${err instanceof Error ? err.message : String(err)}`,
     );
   }
 
@@ -142,7 +142,7 @@ export async function runOpsStatusRemote(opts: OpsStatusRemoteOpts): Promise<Ops
     return fail(
       out,
       'remote-error',
-      `monad ops status: remote bookmark ${label} (${entry.host}): token file is missing or empty (${defaults.tokenFile})`,
+      `elanous ops status: remote bookmark ${label} (${entry.host}): token file is missing or empty (${defaults.tokenFile})`,
     );
   }
 
@@ -153,7 +153,7 @@ export async function runOpsStatusRemote(opts: OpsStatusRemoteOpts): Promise<Ops
     return fail(
       out,
       'remote-error',
-      `monad ops status: remote bookmark ${label}: ${err instanceof Error ? err.message : String(err)}`,
+      `elanous ops status: remote bookmark ${label}: ${err instanceof Error ? err.message : String(err)}`,
     );
   }
 
@@ -176,7 +176,7 @@ export async function runOpsStatusRemote(opts: OpsStatusRemoteOpts): Promise<Ops
     return fail(
       out,
       classifyFetchFailure(failed.got),
-      `monad ops status: remote bookmark ${label}: lookup failed for GET ${failed.path} at ${failed.url}: ${failed.got.reason}`,
+      `elanous ops status: remote bookmark ${label}: lookup failed for GET ${failed.path} at ${failed.url}: ${failed.got.reason}`,
     );
   }
 
@@ -191,7 +191,7 @@ export async function runOpsStatusRemote(opts: OpsStatusRemoteOpts): Promise<Ops
     return fail(
       out,
       'server-error',
-      `monad ops status: remote bookmark ${label}: ${err instanceof Error ? err.message : String(err)}`,
+      `elanous ops status: remote bookmark ${label}: ${err instanceof Error ? err.message : String(err)}`,
     );
   }
 
@@ -393,8 +393,8 @@ function defaultBookmarkName(store: RemotesStore): string | undefined {
 
 function bookmarkError(named: string | undefined): string {
   return named
-    ? `--remote ${named}: unknown bookmark. Run \`monad nexus list\` to see available remotes.`
-    : 'no default remote bookmark. Run `monad nexus connect <host> --default` to set one.';
+    ? `--remote ${named}: unknown bookmark. Run \`elanous nexus list\` to see available remotes.`
+    : 'no default remote bookmark. Run `elanous nexus connect <host> --default` to set one.';
 }
 
 /** ⛔ env override 를 «두지 않는다» — 이 판의 수용 기준에 없는 외부 계약이 되고,

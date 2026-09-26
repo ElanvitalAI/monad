@@ -7,7 +7,7 @@
 // ("the user will be prompted"), but that leaves the LLM with no
 // behavioural guidance.
 //
-// Monad already has a live ApprovalPolicy (src/code-edit/safety.ts)
+// Elanous already has a live ApprovalPolicy (src/code-edit/safety.ts)
 // — we lean on codex's pattern and ship a prompt variant per mode
 // so the LLM actually adapts its planning:
 //

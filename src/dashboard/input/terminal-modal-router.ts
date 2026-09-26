@@ -41,7 +41,7 @@ export interface TerminalModalRouter {
 // recognize plain `exit` (their command is /exit or /quit), so a user
 // typing `exit\n` would otherwise be stuck — the popup stays open
 // because the child never exits, and the typed text just becomes chat
-// input. monad intercepts the exact sequence at the router so:
+// input. elanous intercepts the exact sequence at the router so:
 //   • plain shell: same end result (we close before shell evaluates)
 //   • claude / codex: popup closes as the user expected
 // Sequence is reset on any non-letter key (other than backspace, which

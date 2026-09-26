@@ -13,8 +13,8 @@
 //   GUI앱 의존이라 폴백) → 둘 다 실패 시 상위 N건 '판정불가' 태그로 발송(속보 유실 방지).
 //
 // 주기: cron */15 + 내부 세션 적응 — US/KR 라이브 15분·그 외 30분·주말 60분.
-// 워치리스트: ~/.monad/conatus/x_watchlist.json (텔레그램에서 자연어 관리 — 리소스맵 §9)
-// state: ~/.monad/conatus/x_breaking_state.json (seen ID dedup·lastRun)
+// 워치리스트: ~/.elanous/conatus/x_watchlist.json (텔레그램에서 자연어 관리 — 리소스맵 §9)
+// state: ~/.elanous/conatus/x_breaking_state.json (seen ID dedup·lastRun)
 
 import { tierModel } from '../src/llm/model-defaults.js';
 import { sendOutbound } from '../src/domains/outbound-alert.js';
@@ -38,8 +38,8 @@ ensureCronNodePath();
 //   즉시 발송 skip(알림은 signal pool 게이트/라우터 독점). 미지정 시 기존 동작(적재+초긴급 발송).
 const COLLECT_ONLY = process.argv.includes('--collect-only');
 
-const WATCHLIST = join(homedir(), '.monad/conatus/x_watchlist.json');
-const STATE = join(homedir(), '.monad/conatus/x_breaking_state.json');
+const WATCHLIST = join(homedir(), '.elanous/conatus/x_watchlist.json');
+const STATE = join(homedir(), '.elanous/conatus/x_breaking_state.json');
 const OMNI_ENV = join(homedir(), '.claude/skills/omni-crawl/.env');
 
 // ── env self-load (omni-crawl .env — APIFY_TOKEN·XAI_API_KEY) ──
@@ -201,7 +201,7 @@ async function judgeGrok(items: Item[]): Promise<Verdict[] | null> {
 /** 로컬 LM Studio — nexus config(llm.rotation의 provider:'local')에서 baseUrl 해석. */
 function localLlmBase(): string {
   try {
-    const cfg = JSON.parse(readFileSync(join(homedir(), '.monad/config.json'), 'utf-8'));
+    const cfg = JSON.parse(readFileSync(join(homedir(), '.elanous/config.json'), 'utf-8'));
     const local = (cfg?.llm?.rotation ?? []).find((r: any) => r?.provider === 'local');
     if (local?.baseUrl) return String(local.baseUrl).replace(/\/$/, '');
   } catch { /* fall through */ }

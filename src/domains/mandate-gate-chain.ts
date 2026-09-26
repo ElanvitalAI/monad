@@ -1,7 +1,7 @@
 // ── Mandate 게이트체인 — 적응형 투자 오토파일럿 A4 (2026-07-11) ────────────────
 //
 // 2차 확정 신호(권고 adjust)를 mandate 내 자율 조정으로 넘기기 전, **자율주문 게이트체인**
-// (모나드 자율설계 §12.2)을 통과시킨다. fail-closed·집행0(dry). A5 에서 멱등집행·브로커 배선.
+// (엘라누스 자율설계 §12.2)을 통과시킨다. fail-closed·집행0(dry). A5 에서 멱등집행·브로커 배선.
 //
 //   최신성 → 독립성 → 신뢰도 → 국면 → mandate(리스크/한도/arming/마켓클럭·evaluateMandate)
 //
@@ -67,7 +67,7 @@ export async function classifyActionLLM(s: Signal): Promise<ActionKind | null> {
     const { streamLLM, resolveDefaultProvider } = await import('../llm.js');
     // 활성 provider의 budget tier를 사용해 cross-family 라우팅 실패를 피한다.
     const { budgetModel } = await import('../llm/model-defaults.js');
-    const model = process.env.MONAD_ACTION_CLASSIFIER_MODEL || budgetModel();
+    const model = process.env.ELANOUS_ACTION_CLASSIFIER_MODEL || budgetModel();
     const provider = resolveDefaultProvider(model);
     const prompt = [
       'Classify the trade direction implied by this investment signal as EXACTLY one word:',

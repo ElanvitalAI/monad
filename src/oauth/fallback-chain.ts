@@ -13,7 +13,7 @@
 //   ③ ***「모른다」로는 전환하지 않는다*** — 신호가 확정일 때만 움직인다.
 //   ④ 후보 선택은 «결정론» — 같은 입력이면 같은 답.
 //
-// ⭐⭐ **grok 이 왜 안전한 다음 칸인가** — monad 의 grok 경로는 «둘 다» 구독으로 나간다:
+// ⭐⭐ **grok 이 왜 안전한 다음 칸인가** — elanous 의 grok 경로는 «둘 다» 구독으로 나간다:
 //   ACP 자식은 env 스크럽(`grokBackend.scrubEnv` ⊕ `GROK_DISABLE_API_KEY_AUTH=1`),
 //   LLM 프로바이더는 `resolveGrokCredential()`(구독 1순위). ⇒ 소진을 피하려다 «다른
 //   지갑을 여는» 일이 없다. (2026-08-13 실측 · RESEARCH-grok-oauth-… §7b)
@@ -28,11 +28,11 @@ export type FallbackStep = (typeof FALLBACK_STEPS)[number];
  *
  *  ⛔ 초판 주석은 *"지금 동작과 «같다» · 옵션을 안 켠 사용자는 무변경"* 이었다. 그 선택이
  *  «설정을 안 쥔 우주»에서 문제였다 — 운영 config 는 `['codex-rotate','grok']` 을 명시하는데,
- *  ***임시 격리 우주는 빈 config 디렉토리를 받아*** (`establishMonadTuiIsolation` 이
- *  `mkdtemp('monad-drive-')` 아래에 «빈» `config/` 를 만든다) 이 기본값으로 떨어진다.
+ *  ***임시 격리 우주는 빈 config 디렉토리를 받아*** (`establishElanousTuiIsolation` 이
+ *  `mkdtemp('elanous-drive-')` 아래에 «빈» `config/` 를 만든다) 이 기본값으로 떨어진다.
  *  ⇒ 그 우주에서 codex 가 `no-candidate` 를 내면 갈 곳이 없어 런이 «죽는다».
  *
- *  ⭐ `grok` 을 기본에 두어도 «지갑이 안 열린다» — 이 파일 머리말이 적은 대로 monad 의 grok
+ *  ⭐ `grok` 을 기본에 두어도 «지갑이 안 열린다» — 이 파일 머리말이 적은 대로 elanous 의 grok
  *  경로는 둘 다 구독으로 나가고, 자격이 없으면 `decideFallback` 이 `grok-unavailable` 로
  *  «머문다». 즉 기본에 두는 비용은 0 이고 얻는 것은 「죽지 않음」이다. */
 export const DEFAULT_FALLBACK_CHAIN: readonly FallbackStep[] = ['codex-rotate', 'grok'];

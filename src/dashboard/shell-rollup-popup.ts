@@ -85,7 +85,7 @@ export async function openDashboardShellRollupPopup(
     onCancel: () => {
       close(deps.getCurrentDispose());
     },
-    shadow: process.env.MONAD_MODAL_SHADOW === 'off'
+    shadow: process.env.ELANOUS_MODAL_SHADOW === 'off'
       ? undefined
       : (theme ? { theme } : undefined),
   });

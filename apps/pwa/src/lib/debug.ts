@@ -5,12 +5,12 @@
  * 2026-07-13): 매 debugLog 를 LogRecord 로 변환해 100ms 배치로
  * `POST /v1/debug-logs/batch`(platform=pwa) 에 전송 — iOS
  * DebugLogForwarder 아크(2026-05-15) 동형. 서버가 debug-tap JSONL +
- * logs.db 에 적재하므로 `monad logs --surface pwa` / PWA Logs 대시보드
+ * logs.db 에 적재하므로 `elanous logs --surface pwa` / PWA Logs 대시보드
  * (LF4) 에서 크로스서피스 조회된다.
  *
  * 노브 (localStorage — settings UI 는 후속):
- *   monad.pwa.debug.forward       'off' 로 포워딩 중단 (기본 on)
- *   monad.pwa.debug.forwardLevel  이 레벨 이상만 전송 — debug|info|warn|error
+ *   elanous.pwa.debug.forward       'off' 로 포워딩 중단 (기본 on)
+ *   elanous.pwa.debug.forwardLevel  이 레벨 이상만 전송 — debug|info|warn|error
  *                                  (기본 debug = 전부 · severity 는 category
  *                                  접미사에서 유도 — 서버 deriveLogLevel 동일 규칙)
  *
@@ -295,8 +295,8 @@ async function defaultPost(body: string): Promise<boolean> {
 
 function readForwardKnobs(): { forward: boolean; level: ForwardLevel } {
   try {
-    const forward = window.localStorage.getItem('monad.pwa.debug.forward') !== 'off';
-    const raw = window.localStorage.getItem('monad.pwa.debug.forwardLevel');
+    const forward = window.localStorage.getItem('elanous.pwa.debug.forward') !== 'off';
+    const raw = window.localStorage.getItem('elanous.pwa.debug.forwardLevel');
     const level: ForwardLevel = raw === 'info' || raw === 'warn' || raw === 'error' ? raw : 'debug';
     return { forward, level };
   } catch {

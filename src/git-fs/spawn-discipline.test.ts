@@ -263,10 +263,10 @@ describe('실제 저장소 — 이 게이트가 지키는 것', () => {
   });
 
   // ⛔⭐⭐⭐ 실물 진입점 회귀(리뷰 should-fix · 2026-08-03) — **in-process import 로는 원리상 못 답한다.**
-  //    `#6701` 이 테스트 3 pass·리뷰 PASS 로 머지되고 실물 `monad` 전 명령이 죽었던 자리가 이것이다.
+  //    `#6701` 이 테스트 3 pass·리뷰 PASS 로 머지되고 실물 `elanous` 전 명령이 죽었던 자리가 이것이다.
   //    ⚠️ 실물 spawn 은 ~7초라 bun 기본 5초면 **타임아웃이 곧 무출력**이 된다 ⇒ per-test 타임아웃 명시.
   test('실물 진입점에서 scripts 유예와 요약을 산출한다', () => {
-    const spawned = spawnSync('bun', ['bin/monad.mjs', 'self', 'git-discipline'], {
+    const spawned = spawnSync('bun', ['bin/elanous.mjs', 'self', 'git-discipline'], {
       encoding: 'utf8',
       timeout: 60_000,
     });
@@ -278,7 +278,7 @@ describe('실제 저장소 — 이 게이트가 지키는 것', () => {
   }, 90_000);
 
   test('실물 git 프론트도어는 --help를 git argv로 전달하고 상태 줄과 git 종료 코드를 보존한다', () => {
-    const spawned = spawnSync('bun', ['bin/monad.mjs', 'git', 'status', '--help'], {
+    const spawned = spawnSync('bun', ['bin/elanous.mjs', 'git', 'status', '--help'], {
       encoding: 'utf8',
       timeout: 60_000,
     });
@@ -291,7 +291,7 @@ describe('실제 저장소 — 이 게이트가 지키는 것', () => {
   }, 90_000);
 
   test('실물 git 프론트도어는 성공·실패·파이프에 상태 줄과 실제 종료 코드를 남긴다', () => {
-    const status = spawnSync('bun', ['bin/monad.mjs', 'git', 'status', '--porcelain'], {
+    const status = spawnSync('bun', ['bin/elanous.mjs', 'git', 'status', '--porcelain'], {
       encoding: 'utf8',
       timeout: 60_000,
     });
@@ -299,14 +299,14 @@ describe('실제 저장소 — 이 게이트가 지키는 것', () => {
     expect((status.stderr ?? '').trimEnd().split('\n').at(-1)).toBe('[git] status ok rc=0');
     expect(status.status).toBe(0);
 
-    const failed = spawnSync('bun', ['bin/monad.mjs', 'git', 'no-such-subcommand'], {
+    const failed = spawnSync('bun', ['bin/elanous.mjs', 'git', 'no-such-subcommand'], {
       encoding: 'utf8',
       timeout: 60_000,
     });
     expect(`${failed.stderr ?? ''}${failed.stdout ?? ''}`.trimEnd().split('\n').at(-1)).toMatch(/^\[git] no-such-subcommand FAILED rc=\d+$/);
     expect(failed.status).not.toBe(0);
 
-    const piped = spawnSync('sh', ['-c', 'bun bin/monad.mjs git no-such-subcommand 2>&1 | tail -1'], {
+    const piped = spawnSync('sh', ['-c', 'bun bin/elanous.mjs git no-such-subcommand 2>&1 | tail -1'], {
       encoding: 'utf8',
       timeout: 60_000,
     });

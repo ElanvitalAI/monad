@@ -10,7 +10,7 @@ import {
 } from '../src/git-fs/worktree';
 
 // Redirect HOME to a tmp dir so the cleanup hits a test sandbox
-// instead of the real ~/.monad/worktrees/.
+// instead of the real ~/.elanous/worktrees/.
 const savedHome = process.env.HOME;
 let tmpHome: string;
 let worktreeDir: string;
@@ -25,7 +25,7 @@ describe('cleanupStaleWorktreeSessions', () => {
   beforeEach(() => {
     tmpHome = mkdtempSync(join(tmpdir(), 'gt6-home-'));
     process.env.HOME = tmpHome;
-    worktreeDir = join(tmpHome, '.monad', 'worktrees');
+    worktreeDir = join(tmpHome, '.elanous', 'worktrees');
     // Exercise the "dir doesn't exist yet" path by default.
   });
 

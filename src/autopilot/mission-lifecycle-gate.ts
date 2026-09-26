@@ -26,7 +26,7 @@ export function missionLifecycleGate(store: TaskStore, id: string, to: MissionSt
   let from = 'proposed';
   try { from = store.getMission(id)?.autopilot?.apmStatus ?? 'proposed'; } catch { /* fail-soft */ }
   updateMissionStatus(store, id, to, now);
-  // ★ 제1원칙 3박자 — 관측(transition)·자기인지(from→to·reason)·셀프힐(로그가 힐 신호원). `monad logs
+  // ★ 제1원칙 3박자 — 관측(transition)·자기인지(from→to·reason)·셀프힐(로그가 힐 신호원). `elanous logs
   //   --category mission.lifecycle` 로 전 생애주기 회상. no-op 는 wiring smell(호출처 중복 전이) 자기인지.
   try {
     debug.log('mission.lifecycle', 'transition', { missionId: id, from, to, reason, terminal: TERMINAL.has(to) });

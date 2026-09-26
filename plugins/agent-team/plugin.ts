@@ -8,7 +8,7 @@
 // SendMessage / TeamCreate / TeamDelete LLM tools, and an agent-roster
 // pane. For PX-1 the plugin is declarative-only.
 
-import type { MonadPlugin, PluginContext } from '../../src/plugins/core/types.js';
+import type { ElanousPlugin, PluginContext } from '../../src/plugins/core/types.js';
 import { globalHookDispatcher } from '../../src/plugin-hooks/dispatcher.js';
 import { globalTaskNotificationQueue } from '../../src/agent/task-notification.js';
 import type { TurnHookInput, TurnHookOutput } from '../../src/plugin-hooks/events.js';
@@ -34,7 +34,7 @@ const bgTaskHook = {
 
 let disposer: (() => void) | null = null;
 
-const agentTeam: MonadPlugin<Record<string, never>> = {
+const agentTeam: ElanousPlugin<Record<string, never>> = {
   name: 'agent-team',
   version: '0.2.0',
   description:

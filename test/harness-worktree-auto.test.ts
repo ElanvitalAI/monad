@@ -136,12 +136,12 @@ describe('dev auto-worktree', () => {
     expect(withGoal.environment.commit).toMatch(/^[0-9a-f]{40}$/);
     expect(withGoal.worktree).toMatchObject({ branch: 'dev/run-with-goal', owner: 'dev:run-with-goal', command: 'dev' });
     expect(withGoal.worktree.createdAt).toMatch(/^\d{4}-\d{2}-\d{2}T/);
-    expect(config(withGoal.worktree.path, 'monad.harness.owner').stdout.trim()).toBe('dev:run-with-goal');
-    expect(config(withGoal.worktree.path, 'monad.harness.command').stdout.trim()).toBe('dev');
-    expect(config(withGoal.worktree.path, 'monad.harness.goalId').stdout.trim()).toBe('0123456789abcdef');
-    expect(config(withGoal.worktree.path, 'monad.harness.goalFile').stdout.trim()).toBe(goalFile);
-    expect(config(withGoal.worktree.path, 'monad.harness.goalTitle').stdout.trim()).toBe('Record the supplied goal title');
-    for (const key of ['monad.harness.goalId', 'monad.harness.goalFile', 'monad.harness.goalTitle']) {
+    expect(config(withGoal.worktree.path, 'elanous.harness.owner').stdout.trim()).toBe('dev:run-with-goal');
+    expect(config(withGoal.worktree.path, 'elanous.harness.command').stdout.trim()).toBe('dev');
+    expect(config(withGoal.worktree.path, 'elanous.harness.goalId').stdout.trim()).toBe('0123456789abcdef');
+    expect(config(withGoal.worktree.path, 'elanous.harness.goalFile').stdout.trim()).toBe(goalFile);
+    expect(config(withGoal.worktree.path, 'elanous.harness.goalTitle').stdout.trim()).toBe('Record the supplied goal title');
+    for (const key of ['elanous.harness.goalId', 'elanous.harness.goalFile', 'elanous.harness.goalTitle']) {
       expect(config(withoutGoal.worktree.path, key).status).not.toBe(0);
     }
     expect(withoutGoal.worktree).toMatchObject({ branch: 'dev/run-without-goal', owner: 'dev:run-without-goal', command: 'dev' });
@@ -178,7 +178,7 @@ describe('dev auto-worktree', () => {
     const realGit = spawnSync('which', ['git'], { encoding: 'utf8' }).stdout.trim();
     mkdirSync(bin);
     const wrapper = join(bin, 'git');
-    writeFileSync(wrapper, `#!/bin/sh\nif [ "$1" = config ] && [ "$4" = monad.harness.goalId ]; then exit 1; fi\nexec ${realGit} "$@"\n`);
+    writeFileSync(wrapper, `#!/bin/sh\nif [ "$1" = config ] && [ "$4" = elanous.harness.goalId ]; then exit 1; fi\nexec ${realGit} "$@"\n`);
     chmodSync(wrapper, 0o755);
     const moduleUrl = new URL('../src/harness/harness-worktree-auto.ts', import.meta.url).href;
     const child = spawnSync(process.execPath, ['-e', `import { prepareDevWorktree } from ${JSON.stringify(moduleUrl)}; prepareDevWorktree(${JSON.stringify(repo)}, 'metadata-failure', 'dev', { id: '0123456789abcdef', file: ${JSON.stringify(goalFile)} });`], {
@@ -229,7 +229,7 @@ describe('dev auto-worktree', () => {
     const prepared = prepareTrackedDevWorktree(repo, 'drive-run-42', 'drive');
 
     expect(prepared.worktree).toMatchObject({ branch: 'dev/drive-run-42', owner: 'dev:drive-run-42', command: 'drive' });
-    expect(spawnSync('git', ['config', '--worktree', '--get', 'monad.harness.command'], { cwd: prepared.worktree.path, encoding: 'utf8' }).stdout.trim()).toBe('drive');
+    expect(spawnSync('git', ['config', '--worktree', '--get', 'elanous.harness.command'], { cwd: prepared.worktree.path, encoding: 'utf8' }).stdout.trim()).toBe('drive');
     expect(renderPreparedDevWorktree(prepared).join('\n')).toContain('worktree.command: drive');
     expect(spawnSync('git', ['status', '--porcelain'], { cwd: prepared.worktree.path, encoding: 'utf8' }).stdout).toBe('');
   });

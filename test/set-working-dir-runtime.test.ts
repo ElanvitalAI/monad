@@ -16,7 +16,7 @@ describe('SetWorkingDir runtime', () => {
   let insideHome: string;
   let outsideHome: string;
   const savedHome = process.env.HOME;
-  const savedOverride = process.env.MONAD_SWD_ALLOW_OUTSIDE_HOME;
+  const savedOverride = process.env.ELANOUS_SWD_ALLOW_OUTSIDE_HOME;
 
   beforeEach(() => {
     // Build a fake HOME so the allowlist check is deterministic.
@@ -26,7 +26,7 @@ describe('SetWorkingDir runtime', () => {
     outsideHome = mkdtempSync(join(tmpdir(), 'swd-out-'));
     __resetSessionWorkingDir();
     initSessionWorkingDir(home);
-    delete process.env.MONAD_SWD_ALLOW_OUTSIDE_HOME;
+    delete process.env.ELANOUS_SWD_ALLOW_OUTSIDE_HOME;
   });
 
   afterEach(() => {
@@ -35,8 +35,8 @@ describe('SetWorkingDir runtime', () => {
     try { rmSync(home, { recursive: true, force: true }); } catch {}
     if (savedHome === undefined) delete process.env.HOME;
     else process.env.HOME = savedHome;
-    if (savedOverride === undefined) delete process.env.MONAD_SWD_ALLOW_OUTSIDE_HOME;
-    else process.env.MONAD_SWD_ALLOW_OUTSIDE_HOME = savedOverride;
+    if (savedOverride === undefined) delete process.env.ELANOUS_SWD_ALLOW_OUTSIDE_HOME;
+    else process.env.ELANOUS_SWD_ALLOW_OUTSIDE_HOME = savedOverride;
   });
 
   test('absolute path inside HOME → switches SWD', async () => {
@@ -67,8 +67,8 @@ describe('SetWorkingDir runtime', () => {
     ).rejects.toThrow(/outside HOME/);
   });
 
-  test('MONAD_SWD_ALLOW_OUTSIDE_HOME=1 permits outside-HOME targets', async () => {
-    process.env.MONAD_SWD_ALLOW_OUTSIDE_HOME = '1';
+  test('ELANOUS_SWD_ALLOW_OUTSIDE_HOME=1 permits outside-HOME targets', async () => {
+    process.env.ELANOUS_SWD_ALLOW_OUTSIDE_HOME = '1';
     const res = await setWorkingDirRuntime.run({ path: outsideHome }, { surface: 'dashboard' });
     expect(res.cwd).toBe(resolve(outsideHome));
   });

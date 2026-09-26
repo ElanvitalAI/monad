@@ -22,14 +22,14 @@ let tmpRoot: string;
 let prevEnv: string | undefined;
 
 beforeEach(() => {
-  tmpRoot = mkdtempSync(join(tmpdir(), 'monad-nexus-run-'));
-  prevEnv = process.env.MONAD_NEXUS_DIR;
-  process.env.MONAD_NEXUS_DIR = tmpRoot;
+  tmpRoot = mkdtempSync(join(tmpdir(), 'elanous-nexus-run-'));
+  prevEnv = process.env.ELANOUS_NEXUS_DIR;
+  process.env.ELANOUS_NEXUS_DIR = tmpRoot;
 });
 
 afterEach(() => {
-  if (prevEnv === undefined) delete process.env.MONAD_NEXUS_DIR;
-  else process.env.MONAD_NEXUS_DIR = prevEnv;
+  if (prevEnv === undefined) delete process.env.ELANOUS_NEXUS_DIR;
+  else process.env.ELANOUS_NEXUS_DIR = prevEnv;
   try { rmSync(tmpRoot, { recursive: true, force: true }); } catch { /* ignore */ }
 });
 
@@ -64,7 +64,7 @@ describe('runNexus (detachForTesting)', () => {
     // PR β auto-registers chat:1 on boot so the sidebar is non-empty on
     // first frame. webterm:1 was previously co-registered but is now
     // gated behind `global.tabs.registerWebterm` (PWA mirror prep cleanup
-    // · default-OFF) — the tab is opt-in via switch / MONAD_REGISTER_WEBTERM
+    // · default-OFF) — the tab is opt-in via switch / ELANOUS_REGISTER_WEBTERM
     // env so external-terminal-first desktop users don't see the placeholder.
     expect(handle!.registry.has('chat:1')).toBe(true);
     expect(handle!.registry.has('webterm:1')).toBe(false);

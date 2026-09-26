@@ -1,6 +1,6 @@
 // ── RefsGC tests (Coding Pipeline P5 hygiene · followup H) ──
 //
-// Builds a fake ~/.cache/monad-refs layout in a tmp dir and exercises:
+// Builds a fake ~/.cache/elanous-refs layout in a tmp dir and exercises:
 //   - empty / missing cache → no-op
 //   - TTL pass evicts old repos
 //   - size-cap pass evicts oldest under cap

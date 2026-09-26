@@ -8,7 +8,7 @@
 // Guardrails:
 //   • Path is resolved + statSync-checked in setSessionCwd itself.
 //   • An allowlist check keeps the LLM from jumping outside HOME.
-//     The env var MONAD_SWD_ALLOW_OUTSIDE_HOME=1 turns the check off
+//     The env var ELANOUS_SWD_ALLOW_OUTSIDE_HOME=1 turns the check off
 //     for power users (CI, multi-root devs) — documented in LESSONS.
 
 import { homedir } from 'node:os';
@@ -51,7 +51,7 @@ function buildSpec(): LLMToolSpec {
       'of every subsequent Read / Edit / Write / Shell / Grep / Glob call and of newly-spawned ' +
       'shells. Path is resolved absolute; relative paths resolve against the current SWD. ' +
       'Target must exist and be a directory. By default, targets outside the user\'s HOME are ' +
-      'rejected (set MONAD_SWD_ALLOW_OUTSIDE_HOME=1 to override).',
+      'rejected (set ELANOUS_SWD_ALLOW_OUTSIDE_HOME=1 to override).',
     parameters: {
       type: 'object',
       properties: {
@@ -81,9 +81,9 @@ export const setWorkingDirRuntime: ToolRuntime<Record<string, unknown>, SetWorki
     if (!raw) throw new Error('SetWorkingDir: `path` is required');
     const expanded = expandHome(raw);
     const abs = resolve(getSessionCwd(), expanded);
-    if (!isInsideHome(abs) && process.env.MONAD_SWD_ALLOW_OUTSIDE_HOME !== '1') {
+    if (!isInsideHome(abs) && process.env.ELANOUS_SWD_ALLOW_OUTSIDE_HOME !== '1') {
       throw new Error(
-        `SetWorkingDir: path ${abs} is outside HOME; set MONAD_SWD_ALLOW_OUTSIDE_HOME=1 to override.`,
+        `SetWorkingDir: path ${abs} is outside HOME; set ELANOUS_SWD_ALLOW_OUTSIDE_HOME=1 to override.`,
       );
     }
     const next = setSessionCwd(abs, 'tool');

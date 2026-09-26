@@ -19,7 +19,7 @@ import {
 } from '../src/cli/remotes-cli.js';
 
 function mkStore(): { store: RemotesStore; remotesFilePath: string; tokensDir: string; cleanup: () => void } {
-  const root = mkdtempSync(joinPath(tmpdir(), 'monad-remotes-'));
+  const root = mkdtempSync(joinPath(tmpdir(), 'elanous-remotes-'));
   const remotesFilePath = joinPath(root, 'remotes.json');
   const tokensDir = joinPath(root, 'remotes');
   const store = new RemotesStore({ remotesFilePath, tokensDir });
@@ -175,7 +175,7 @@ describe('T4.B · connectRemote action', () => {
 
   test('--token-file overrides auto_token', async () => {
     const { store, cleanup } = mkStore();
-    const tokenFile = joinPath(mkdtempSync(joinPath(tmpdir(), 'monad-tok-')), 'tok');
+    const tokenFile = joinPath(mkdtempSync(joinPath(tmpdir(), 'elanous-tok-')), 'tok');
     Bun.write(tokenFile, 'manualTok\n');
     await new Promise((r) => setTimeout(r, 5));
     const { out } = captureOut();

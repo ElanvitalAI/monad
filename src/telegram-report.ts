@@ -1,6 +1,6 @@
 // ── Telegram report channel — send-only outbound (multi-channel, 2026-07-05) ──
 //
-// monad's Q&A bot (homeChannel) and the report channel can be served by
+// elanous's Q&A bot (homeChannel) and the report channel can be served by
 // DIFFERENT bots (e.g. a report bot that already owns the user's report
 // chat). This module resolves the report target from config and sends to
 // it — reusing TelegramBot's chunking / markdown→HTML machinery via an

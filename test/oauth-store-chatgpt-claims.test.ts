@@ -36,7 +36,7 @@ let root: string;
 let cfgPath: string;
 beforeEach(() => {
   root = mkdtempSync(join(tmpdir(), 'oauth-claims-'));
-  cfgPath = join(root, 'monad', 'auth.json');
+  cfgPath = join(root, 'elanous', 'auth.json');
   process.env.XDG_CONFIG_HOME = root;
   process.env.CODEX_HOME = join(root, 'codex-home');
 });

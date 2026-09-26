@@ -77,7 +77,7 @@ export function VaultPanel({ onEdit }: { onEdit?: (path: string) => void }) {
   const relCwd = info?.root ? cwd.replace(info.root, '').replace(/^\//, '') : '';
 
   if (info && !info.available) {
-    return <div className="p-6 text-sm text-muted-foreground">Obsidian vault를 찾을 수 없습니다 (source: {info.source}). ~/.monad/config.json 의 obsidian.vault 를 확인하세요.</div>;
+    return <div className="p-6 text-sm text-muted-foreground">Obsidian vault를 찾을 수 없습니다 (source: {info.source}). ~/.elanous/config.json 의 obsidian.vault 를 확인하세요.</div>;
   }
 
   return (

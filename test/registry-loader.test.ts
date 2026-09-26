@@ -9,28 +9,28 @@ import { join } from 'node:path';
 import {
   getCatalog, reloadCatalog, __resetCatalogForTests,
 } from '../src/registry/loader';
-import { setMonadConfigDir, resetMonadConfigDir } from '../src/monad-config-dir.js';
+import { setElanousConfigDir, resetElanousConfigDir } from '../src/elanous-config-dir.js';
 
-const prevTestHome = process.env.MONAD_TEST_HOME;
-const prevBuiltin = process.env.MONAD_BUILTIN_CATALOG_DIR;
+const prevTestHome = process.env.ELANOUS_TEST_HOME;
+const prevBuiltin = process.env.ELANOUS_BUILTIN_CATALOG_DIR;
 
 let tmpHome: string;
 
 beforeEach(() => {
   tmpHome = mkdtempSync(join(tmpdir(), 'cat-loader-'));
-  process.env.MONAD_TEST_HOME = tmpHome;
-  setMonadConfigDir(join(tmpHome, '.monad'));
-  delete process.env.MONAD_BUILTIN_CATALOG_DIR;       // use repo's catalog/
+  process.env.ELANOUS_TEST_HOME = tmpHome;
+  setElanousConfigDir(join(tmpHome, '.elanous'));
+  delete process.env.ELANOUS_BUILTIN_CATALOG_DIR;       // use repo's catalog/
   __resetCatalogForTests();
 });
 
 afterEach(() => {
   rmSync(tmpHome, { recursive: true, force: true });
-  resetMonadConfigDir();
-  if (prevTestHome === undefined) delete process.env.MONAD_TEST_HOME;
-  else process.env.MONAD_TEST_HOME = prevTestHome;
-  if (prevBuiltin === undefined) delete process.env.MONAD_BUILTIN_CATALOG_DIR;
-  else process.env.MONAD_BUILTIN_CATALOG_DIR = prevBuiltin;
+  resetElanousConfigDir();
+  if (prevTestHome === undefined) delete process.env.ELANOUS_TEST_HOME;
+  else process.env.ELANOUS_TEST_HOME = prevTestHome;
+  if (prevBuiltin === undefined) delete process.env.ELANOUS_BUILTIN_CATALOG_DIR;
+  else process.env.ELANOUS_BUILTIN_CATALOG_DIR = prevBuiltin;
   __resetCatalogForTests();
 });
 
@@ -117,7 +117,7 @@ describe('reloadCatalog · cache invalidation', () => {
 describe('global tier overlay', () => {
   test('global provider yaml extends aliases (union per RFC §6.4)', () => {
     // Seed a global tier override for anthropic — adds an alias.
-    const globalProvDir = join(tmpHome, '.monad', 'catalog', 'providers');
+    const globalProvDir = join(tmpHome, '.elanous', 'catalog', 'providers');
     mkdirSync(globalProvDir, { recursive: true });
     writeFileSync(
       join(globalProvDir, 'anthropic.yaml'),
@@ -142,7 +142,7 @@ describe('global tier overlay', () => {
   });
 
   test('global model.yaml overrides builtin (replace semantics)', () => {
-    const globalModelDir = join(tmpHome, '.monad', 'catalog', 'models', 'anthropic');
+    const globalModelDir = join(tmpHome, '.elanous', 'catalog', 'models', 'anthropic');
     mkdirSync(globalModelDir, { recursive: true });
     writeFileSync(
       join(globalModelDir, 'claude-opus-4-7.yaml'),
@@ -163,7 +163,7 @@ describe('global tier overlay', () => {
   });
 
   test('global _patterns.yaml extends prefix list (per provider)', () => {
-    const globalLocalDir = join(tmpHome, '.monad', 'catalog', 'models', 'local');
+    const globalLocalDir = join(tmpHome, '.elanous', 'catalog', 'models', 'local');
     mkdirSync(globalLocalDir, { recursive: true });
     writeFileSync(
       join(globalLocalDir, '_patterns.yaml'),
@@ -191,7 +191,7 @@ describe('global tier overlay', () => {
 
 describe('malformed input', () => {
   test('malformed yaml is skipped (loader keeps going)', () => {
-    const globalProvDir = join(tmpHome, '.monad', 'catalog', 'providers');
+    const globalProvDir = join(tmpHome, '.elanous', 'catalog', 'providers');
     mkdirSync(globalProvDir, { recursive: true });
     writeFileSync(join(globalProvDir, 'broken.yaml'), '{ this is not yaml: [', 'utf-8');
     __resetCatalogForTests();
@@ -202,7 +202,7 @@ describe('malformed input', () => {
   });
 
   test('global yaml without id is dropped gracefully', () => {
-    const globalProvDir = join(tmpHome, '.monad', 'catalog', 'providers');
+    const globalProvDir = join(tmpHome, '.elanous', 'catalog', 'providers');
     mkdirSync(globalProvDir, { recursive: true });
     writeFileSync(join(globalProvDir, 'noid.yaml'), 'displayName: Anonymous\n', 'utf-8');
     __resetCatalogForTests();

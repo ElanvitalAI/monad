@@ -1,11 +1,11 @@
-// ── `monad drive` — LLM 제어 루프로 임의 명령 또는 격리 monad TUI를 자율 구동 ──
+// ── `elanous drive` — LLM 제어 루프로 임의 명령 또는 격리 elanous TUI를 자율 구동 ──
 
 import { randomBytes } from 'node:crypto';
 import { basename, join, resolve } from 'node:path';
 import { closeSync, openSync, readSync, statSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import type { StreamLLMFn } from '../autopilot/llm-control-brain.js';
-import { establishMonadTuiIsolation, monadTuiSpawnOptions, type MonadTuiIsolation } from '../self-implement/monad-tui-spawn.js';
+import { establishElanousTuiIsolation, elanousTuiSpawnOptions, type ElanousTuiIsolation } from '../self-implement/elanous-tui-spawn.js';
 import { resolveObserveOnlyDecision } from '../self-implement/observe-only.js';
 import { getUserConfig } from '../user-config.js';
 import { debug } from '../debug/log.js';
@@ -62,7 +62,7 @@ export function decideTuiWorkdir(isolated: boolean, cwd: string | undefined): Tu
     ...(rejected
       ? { message: '격리 우주에서는 작업 디렉토리를 명시해야 한다 — `--cwd <worktree-path>` 를 주십시오. '
           + '(안 주면 명령을 친 트리가 자식의 쓰기 허용 구역이 됩니다.) '
-          + '지금 어느 우주인지는 `monad where` 로 확인할 수 있습니다.' }
+          + '지금 어느 우주인지는 `elanous where` 로 확인할 수 있습니다.' }
       : {}),
   };
 }
@@ -91,7 +91,7 @@ export function stripScopeArgs(argv: readonly string[]): string[] {
  *
  * 기전: hold owner 는 부모 argv 를 그대로 물려받는다. 그런데 `--worktree` 는 부모가 «이미»
  * 워크트리를 만들면서 소비한 인자다. owner 가 그것을 다시 보면:
- *   ⑴ 런 신원(`MONAD_RUN_ID`)은 «상속»되므로 owner 가 계산하는 이름이 부모와 «똑같고»
+ *   ⑴ 런 신원(`ELANOUS_RUN_ID`)은 «상속»되므로 owner 가 계산하는 이름이 부모와 «똑같고»
  *   ⑵ `addHarnessWorktree` 가 「이미 있는 브랜치」로 실패하며(사람 경로는 fail-closed)
  *   ⑶ ***owner 가 PTY 를 등록하기 «전에» 죽는다.***
  * ⇒ 밖에서는 「30초 기다렸는데 PTY 가 없다」로만 보였다 — 원인이 한 겹 아래 있었다.
@@ -138,11 +138,11 @@ export function withScopeArgs(argv: readonly string[], scopeRoot: string): strin
 }
 
 export interface PtyDriveOpts {
-  /** 자식으로 실행할 셸 명령(bash -c). monad target에서는 사용하지 않는다. */
+  /** 자식으로 실행할 셸 명령(bash -c). elanous target에서는 사용하지 않는다. */
   readonly command?: string;
   /** LLM 제어 brain이 child TUI에 제출할 목표(hold에서는 지정 불가). */
   readonly goal?: string;
-  /** bare monad TUI를 brain 없이 띄워 외부 `monad pty` 제어면에 넘긴다. */
+  /** bare elanous TUI를 brain 없이 띄워 외부 `elanous pty` 제어면에 넘긴다. */
   readonly hold?: boolean;
   /** hold 결과를 사람이 읽는 줄 대신 한 줄 JSON으로 출력한다. */
   readonly json?: boolean;
@@ -160,7 +160,7 @@ export interface PtyDriveOpts {
    *  ⛔ 종전엔 `120x30` 이 여기 하드코딩돼 있어, 그보다 큰 렌더 블록을 **맥락과 함께 관측할 수
    *     없었다**(2026-08-02 실측: 툴 결과 블록이 `blockMaxLines=20` 만큼 차지하는 순간을
    *     ChatLog 가시 24행 안에서 못 쟀다). 대표 지적 — *"가상 PTY 면 높이를 더 높게 잡아도 되지 않나"*.
-   *  ⇒ 옵션으로 열고 기본은 **160x40**(대표 지시) — 레시피(`monadTuiSpawnOptions`)와 같은 축이다. */
+   *  ⇒ 옵션으로 열고 기본은 **160x40**(대표 지시) — 레시피(`elanousTuiSpawnOptions`)와 같은 축이다. */
   readonly cols?: number;
   readonly rows?: number;
   readonly maxSteps?: number;
@@ -169,11 +169,11 @@ export interface PtyDriveOpts {
   /** Enable the child SelfImplement observation-only override at boot. */
   readonly observeOnly?: boolean;
   readonly cwd?: string;
-  /** bare monad TUI를 격리 자식으로 선택한다. */
-  readonly monad?: boolean;
-  /** 테스트 및 embedding seam: monad binary가 있는 레포 루트. */
+  /** bare elanous TUI를 격리 자식으로 선택한다. */
+  readonly elanous?: boolean;
+  /** 테스트 및 embedding seam: elanous binary가 있는 레포 루트. */
   readonly repoRoot?: string;
-  /** monad child의 명시적 격리 루트(호출자 소유이며 자동 삭제하지 않는다). */
+  /** elanous child의 명시적 격리 루트(호출자 소유이며 자동 삭제하지 않는다). */
   readonly isolatedRoot?: string;
   /** TUI boot wait (기본 8초). */
   readonly bootMs?: number;
@@ -320,9 +320,9 @@ export function assertDriveAttachOptions(opts: Pick<DriveCliOpts, DriveSpawnOnly
 }
 
 /** Commander drive action: one verb, two PTY sources.
- * No `--attach` → spawn a shell (legacy `monad drive '<cmd>'`).
- * `--attach <ref>` → drive that existing PTY (same loop as `monad pty auto`).
- * The TUI target deliberately belongs to `monad dev --monad`; this action remains shell-only. */
+ * No `--attach` → spawn a shell (legacy `elanous drive '<cmd>'`).
+ * `--attach <ref>` → drive that existing PTY (same loop as `elanous pty auto`).
+ * The TUI target deliberately belongs to `elanous dev --elanous`; this action remains shell-only. */
 export async function runDriveCliCommand(command: string | undefined, opts: DriveCliOpts, deps: DriveCliDeps = {}): Promise<void> {
   const exit = deps.exit ?? ((code: number): never => process.exit(code));
   const writeError = deps.writeError ?? ((message: string) => process.stderr.write(message));
@@ -410,18 +410,18 @@ export function buildDriveSpawnOptions(
   opts: PtyDriveOpts,
   ctx: {
     cwd: string;
-    space: Parameters<typeof monadTuiSpawnOptions>[0]['space'];
+    space: Parameters<typeof elanousTuiSpawnOptions>[0]['space'];
     configDir?: string;
     stateDir?: string;
     envPtyId?: string;
   },
-): ReturnType<typeof monadTuiSpawnOptions> {
+): ReturnType<typeof elanousTuiSpawnOptions> {
   const cols = requirePositiveSize(opts.cols, '--cols');
   const rows = requirePositiveSize(opts.rows, '--rows');
-  if (opts.monad) {
+  if (opts.elanous) {
     const ptyId = opts.ptyId ?? ctx.envPtyId;
     const observeOnly = opts.observeOnly || resolveObserveOnlyDecision().enabled;
-    return monadTuiSpawnOptions({
+    return elanousTuiSpawnOptions({
       repoRoot: opts.repoRoot ?? resolve(import.meta.dir, '../..'),
       cwd: ctx.cwd,
       configDir: ctx.configDir!,
@@ -443,7 +443,7 @@ export function buildDriveSpawnOptions(
   }
   return {
     cmd: 'bash', args: ['-c', opts.command!], accessMode: 'auto' as const, transitionPolicy: 'open' as const,
-    // ⭐ 대표 기본 160×40 — monad TUI 레시피와 같은 축(위 cols/rows 주석).
+    // ⭐ 대표 기본 160×40 — elanous TUI 레시피와 같은 축(위 cols/rows 주석).
     cols: cols ?? 160, rows: rows ?? 40,
     ...(opts.cwd ? { workdir: opts.cwd } : {}),
   };
@@ -468,7 +468,7 @@ async function runPtyDriveInner(opts: PtyDriveOpts): Promise<{ exitCode: number 
     else out(`⛭ held ${ptyId}\n`);
   };
   // ⛔⭐⭐⭐ **판정은 옵션이 아니라 우주에 기반한다**(무인 리뷰 must-fix · 2026-08-02).
-  //    초판은 `opts.monad` 일 때만 해석해서, **비-monad 경로**도 격리 우주에서 `--cwd` 없이 돌았다.
+  //    초판은 `opts.elanous` 일 때만 해석해서, **비-elanous 경로**도 격리 우주에서 `--cwd` 없이 돌았다.
   //
   // ⭐⭐ 다만 **「격리」가 다 같지 않다**(인수 시 실측). 이 저장소는 비-리더 트리에서 **3층
   //    (트리 파생)** 이 기본 ON 이라, 단순 부등호로 재면 **모든 호출**이 거부된다(기존 검사 3건이
@@ -485,14 +485,14 @@ async function runPtyDriveInner(opts: PtyDriveOpts): Promise<{ exitCode: number 
   if (workdirDecision.rejected) throw new Error(workdirDecision.message);
   const cwd = opts.cwd ?? process.cwd();
   const holdSpaceId = opts.hold
-    ? (process.env.MONAD_HOLD_SPACE_ID ?? getHarnessSpace()?.id ?? normalizeSpaceId(basename(cwd)))
+    ? (process.env.ELANOUS_HOLD_SPACE_ID ?? getHarnessSpace()?.id ?? normalizeSpaceId(basename(cwd)))
     : undefined;
   // ⛔⭐ 거부는 **detached owner 를 띄우기 전에** 한다(리뷰 must-fix · 2026-07-30).
-  //    초판은 이 셋이 owner spawn **뒤**에 있어서, 실제 호출 형태의 `hold+비-monad` / `hold+goal` 이
+  //    초판은 이 셋이 owner spawn **뒤**에 있어서, 실제 호출 형태의 `hold+비-elanous` / `hold+goal` 이
   //    즉시 거부되지 않고 **자식을 띄운 다음 30초 timeout** 으로 실패했다.
   // ⛔ `goal` 은 **존재 자체**를 거부한다 — `trim()` 기준이면 `--goal ''`/공백이 통과해 조용히 무시된다
   //    (레포 불변식 "수락 후 무시 금지").
-  if (opts.hold && !opts.monad) throw new Error('hold requires monad target');
+  if (opts.hold && !opts.elanous) throw new Error('hold requires elanous target');
   if (opts.hold && opts.goal !== undefined) throw new Error('hold cannot be combined with goal');
   // ⛔ brain 전용 옵션은 hold 와 함께 오면 **거부**한다(리뷰 must-fix · 2026-07-30) —
   //    hold 분기는 brain 을 만들기 전에 반환하므로 이 셋은 **조용히 무시**됐다("수락 후 무시" 금지).
@@ -502,12 +502,12 @@ async function runPtyDriveInner(opts: PtyDriveOpts): Promise<{ exitCode: number 
     if (brainOnly.length) throw new Error(`hold cannot be combined with brain-only options: ${brainOnly.join(', ')}`);
   }
   if (!opts.hold && !opts.goal?.trim()) throw new Error('drive requires a non-empty goal');
-  if (!opts.monad && !opts.command) throw new Error('shell drive requires a command');
+  if (!opts.elanous && !opts.command) throw new Error('shell drive requires a command');
   // ⛔⭐ owner 생성 여부를 **주입 여부로 판별하지 않는다**(리뷰 must-fix · 2026-07-30) —
   //    종전엔 `!opts.out && !opts.writeScreen` 이 조건이라 **테스트가 주입만 하면 production 분기를
   //    우회**했고, 반대로 정상 API 호출자가 out 을 넘기면 owner 없이 `held` 로 성공했다.
   //    ⇒ 판별을 명시 필드(`spawnOwner`)로 옮긴다. 기본값은 `true`(CLI 경로)이고 테스트가 명시로 끈다.
-  if (opts.hold && opts.spawnOwner !== false && process.env.MONAD_HOLD_OWNER !== '1') {
+  if (opts.hold && opts.spawnOwner !== false && process.env.ELANOUS_HOLD_OWNER !== '1') {
     // ⚠️ 4바이트(8 hex)는 **registry 의 canonical 형식이 정한 것**이다 — 리뷰 should-fix
     //    ("UUID 등 충분한 식별자")를 그대로 따르면 깨진다:
     //      registry.ts:803  new RegExp(`^${kind}_[0-9a-f]{8}$`).test(id)   ← **정확히 8 hex**
@@ -534,17 +534,17 @@ async function runPtyDriveInner(opts: PtyDriveOpts): Promise<{ exitCode: number 
     const resolvedScopeRoot = scopeRoot;
     const ownerEnv = {
       ...process.env,
-      MONAD_HOLD_OWNER: '1',
-      MONAD_HOLD_PTY_ID: id,
-      MONAD_HOLD_SPACE_ID: holdSpaceId!,
-      MONAD_STATE_DIR: resolvedScopeRoot,
+      ELANOUS_HOLD_OWNER: '1',
+      ELANOUS_HOLD_PTY_ID: id,
+      ELANOUS_HOLD_SPACE_ID: holdSpaceId!,
+      ELANOUS_STATE_DIR: resolvedScopeRoot,
       // ⛔⭐ **뿌리를 «그대로» 물려줄 때만 출처도 물려준다**(`OBS-T121`).
       //   🚨 출처가 빠지면 owner 가 「파생」을 「사람이 말한 격리」로 읽는다 —
       //     그러면 바깥 계정의 상태(쿼터 신호)를 갱신 안 되는 우주에서 읽는다.
       //   ⛔ 뿌리를 «바꿨으면» 딱지를 안 붙인다 — 그 값의 출처를 «모르기» 때문이다.
       //     (모르면 종전 동작 = 「명시」로 남는다. 아는 척하지 않는다.)
-      ...(process.env.MONAD_STATE_DIR === resolvedScopeRoot && process.env.MONAD_STATE_DIR_SOURCE
-        ? { MONAD_STATE_DIR_SOURCE: process.env.MONAD_STATE_DIR_SOURCE }
+      ...(process.env.ELANOUS_STATE_DIR === resolvedScopeRoot && process.env.ELANOUS_STATE_DIR_SOURCE
+        ? { ELANOUS_STATE_DIR_SOURCE: process.env.ELANOUS_STATE_DIR_SOURCE }
         : {}),
     };
     // ⛔⭐⭐⭐ **owner argv 에서 스코프 결정자를 걷어내고 해석된 값 하나만 남긴다.**
@@ -567,7 +567,7 @@ async function runPtyDriveInner(opts: PtyDriveOpts): Promise<{ exitCode: number 
     //   종전 `stderr:'ignore'` 는 owner 가 «왜» 죽었는지를 통째로 버렸고, 밖에서는
     //   checker 의 「없다」만 보였다 ⇒ 원인이 한 겹 아래인데 그 겹이 안 보였다.
     //   ⚠️ detached 프로세스라 스트림을 붙들지 않는다 — «파일»로 받아 실패할 때만 꼬리를 읽는다.
-    const ownerLogPath = join(tmpdir(), `monad-hold-owner-${id}.log`);
+    const ownerLogPath = join(tmpdir(), `elanous-hold-owner-${id}.log`);
     // ⛔ 공유 tmpdir 이고 명령 산출이 담길 수 있다 ⇒ 권한을 «명시»한다(리뷰 should-fix).
     const ownerLog = openSync(ownerLogPath, 'w', 0o600);
     // ⛔⭐ `Bun.spawn` 이 던져도 fd 를 닫는다(리뷰 must-fix) — 종전엔 spawn 성공 경로에서만 닫았다.
@@ -597,7 +597,7 @@ async function runPtyDriveInner(opts: PtyDriveOpts): Promise<{ exitCode: number 
     //     띄운 프로세스)에서는 **owner 는 test 에 등록하고 checker 는 prod 를 조회**한다.
     //   ⭐ 실측(`[S]` · pilot · 2026-08-01 · 조율 채널 #5730):
     //     `checker = … pty list`(--test 없음) · `checkerExit=0` · `"pty list: no PTYs found"`
-    //     인데 같은 시각 `monad --test pty list` 에는 owner 가 **보였다**.
+    //     인데 같은 시각 `elanous --test pty list` 에는 owner 가 **보였다**.
     //
     // ⇒ ⭐ `effectiveInstanceRoot()` 는 **4층(명시 플래그 ▸ 부모 스탬프 ▸ 트리 파생 ▸ 기본)** 을
     //   거친 **실효 뿌리**다. 그것을 **명시 `--config-dir`** 로 넘기면 checker 는 1층에서 확정되고,
@@ -623,7 +623,7 @@ async function runPtyDriveInner(opts: PtyDriveOpts): Promise<{ exitCode: number 
       //    짧은 필드로 따로 남긴다(같은 형태를 `seams.ts` 의 `subcommand` 에서도 썼다).
       checkerSubcommand: checkerCmd.slice(-2).join(' '),
       cwd,
-      stateDir: process.env.MONAD_STATE_DIR ?? null,
+      stateDir: process.env.ELANOUS_STATE_DIR ?? null,
       // ⭐ **owner 와 checker 가 같은 뿌리를 보는지**가 이 실패의 핵심이라 둘을 나란히 찍는다.
       scopeRoot: scopeArgs[1],
       readyTimeoutMs,
@@ -683,7 +683,7 @@ async function runPtyDriveInner(opts: PtyDriveOpts): Promise<{ exitCode: number 
           awaitingId: id, waitedMs: Date.now() - waitStartedAt, settlementMs, checkerExit: lastExit, ownerExit: ownerExited,
         });
         try { owner.kill(); } catch { /* noop */ }
-        throw new Error(`held monad TUI registered then died during ${settlementMs}ms settlement — awaited ${id}; last exit=${ownerExited ?? 'unknown'}`);
+        throw new Error(`held elanous TUI registered then died during ${settlementMs}ms settlement — awaited ${id}; last exit=${ownerExited ?? 'unknown'}`);
       }
       // ⛔⭐⭐ 이번 폴에서 «등록이 확인되지 않았고» owner 가 이미 죽었으면 더 기다릴 이유가 없다.
       //   ⇒ 등록 판정을 «먼저» 하고(위 return), 그 뒤에 끊는다 — 경합에서 「떴다」를 잃지 않는다.
@@ -750,7 +750,7 @@ async function runPtyDriveInner(opts: PtyDriveOpts): Promise<{ exitCode: number 
     if (ownerExited !== null) {
       debug.log('pty.drive', 'hold-owner-died', { awaitingId: id, ownerExit: ownerExited, ownerLogPath });
       throw new Error(
-        `held monad TUI owner exited before registering a PTY (exit=${ownerExited}) — awaited ${id}; `
+        `held elanous TUI owner exited before registering a PTY (exit=${ownerExited}) — awaited ${id}; `
         + `owner said: ${ownerTail()} (전문: ${ownerLogPath})`,
       );
     }
@@ -760,13 +760,13 @@ async function runPtyDriveInner(opts: PtyDriveOpts): Promise<{ exitCode: number 
         ? 'checker printed nothing'
         : `checker listed [${listed().join(', ')}]`;
     throw new Error(
-      `held monad TUI owner did not become ready within ${readyTimeoutMs >= 1000 ? `${Math.round(readyTimeoutMs / 1000)} seconds` : `${readyTimeoutMs}ms`} — awaited ${id}; ${seen}`,
+      `held elanous TUI owner did not become ready within ${readyTimeoutMs >= 1000 ? `${Math.round(readyTimeoutMs / 1000)} seconds` : `${readyTimeoutMs}ms`} — awaited ${id}; ${seen}`,
     );
   }
   // ⚠️ 거부 셋은 위(owner spawn 전)로 옮겼다 — 여기 중복을 두지 않는다(옮기며 지우는 것을 놓쳤던 자리).
   const { startPty, unregisterPty } = await import('../pty-shell/registry.js');
-  const isolation: MonadTuiIsolation | undefined = opts.monad
-    ? establishMonadTuiIsolation({ root: opts.isolatedRoot, callerStateDir: process.env.MONAD_STATE_DIR })
+  const isolation: ElanousTuiIsolation | undefined = opts.elanous
+    ? establishElanousTuiIsolation({ root: opts.isolatedRoot, callerStateDir: process.env.ELANOUS_STATE_DIR })
     : undefined;
   const writeScreen = opts.writeScreen ?? writeHarnessScreen;
   const inheritedSpace = getHarnessSpace();
@@ -783,11 +783,11 @@ async function runPtyDriveInner(opts: PtyDriveOpts): Promise<{ exitCode: number 
       cwd,
       space,
       ...(isolation ? { configDir: isolation.configDir, stateDir: isolation.stateDir } : {}),
-      ...(process.env.MONAD_HOLD_PTY_ID ? { envPtyId: process.env.MONAD_HOLD_PTY_ID } : {}),
+      ...(process.env.ELANOUS_HOLD_PTY_ID ? { envPtyId: process.env.ELANOUS_HOLD_PTY_ID } : {}),
     });
     h = startPty({
       ...spawnOptions,
-      ...(opts.hold ? { detach: true, ...(opts.ptyId ?? process.env.MONAD_HOLD_PTY_ID ? { id: opts.ptyId ?? process.env.MONAD_HOLD_PTY_ID } : {}) } : {}),
+      ...(opts.hold ? { detach: true, ...(opts.ptyId ?? process.env.ELANOUS_HOLD_PTY_ID ? { id: opts.ptyId ?? process.env.ELANOUS_HOLD_PTY_ID } : {}) } : {}),
     });
     if (opts.hold) {
       // `detach` is a registry lifetime contract, not a spawn-recipe concern.
@@ -816,8 +816,8 @@ async function runPtyDriveInner(opts: PtyDriveOpts): Promise<{ exitCode: number 
         : '  · wait\n',
       ),
     });
-    let delivered = !opts.monad;
-    const settle = opts.monad ? async () => {
+    let delivered = !opts.elanous;
+    const settle = opts.elanous ? async () => {
       if (delivered) return;
       const wait = opts.sleep ?? sleep;
       await wait(opts.bootMs ?? 8_000);
@@ -828,8 +828,8 @@ async function runPtyDriveInner(opts: PtyDriveOpts): Promise<{ exitCode: number 
       delivered = true;
     } : undefined;
     const deps = controlDepsForHandle(h);
-    const autoAssist = opts.monad ? getUserConfig().tools.selfImplement.autoAssist : undefined;
-    const observe = opts.monad ? async () => {
+    const autoAssist = opts.elanous ? getUserConfig().tools.selfImplement.autoAssist : undefined;
+    const observe = opts.elanous ? async () => {
       const frame = await deps.observe();
       writeScreen(screenKey, frame, process.env);
       return frame;
@@ -839,14 +839,14 @@ async function runPtyDriveInner(opts: PtyDriveOpts): Promise<{ exitCode: number 
       observe,
       ...(settle ? { settle } : {}),
       subjectPtyId: h.id,
-      ...(opts.monad ? { canReceiveInput: true, autoAssist } : {}),
+      ...(opts.elanous ? { canReceiveInput: true, autoAssist } : {}),
     }, {
       maxSteps: opts.maxSteps ?? 30,
       pollMs: opts.pollMs ?? 800,
     });
     let screen = '';
     try { screen = await h.renderScreen(); } catch { /* noop */ }
-    if (opts.monad) writeScreen(screenKey, screen, process.env);
+    if (opts.elanous) writeScreen(screenKey, screen, process.env);
     out(`\n▸ ${result.termination.kind} (${result.steps} steps)\n`);
     if (screen.trim()) out(`▸ 최종 화면:\n${screen}\n`);
     const childExit = h.exitCode;

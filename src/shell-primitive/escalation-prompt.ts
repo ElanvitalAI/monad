@@ -2,7 +2,7 @@
 //
 // codex's `on_failure.md` policy teaches the LLM "when a sandboxed
 // shell call fails, escalate to the user with require_escalated +
-// justification". Monad's equivalent: detect the failure, set a
+// justification". Elanous's equivalent: detect the failure, set a
 // flag on the ShellResult, and include this prompt so the LLM
 // knows what to do with the flag.
 //

@@ -79,7 +79,7 @@ const runCmdImpl = (
     cwd,
     detached: process.platform !== 'win32',
     // ⛔ tsc 스텝이 V8 기본 힙(≈4GB)을 넘는다(📏 2026-09-23 RSS 5.0GB) — 명시 힙을 싣는다(bun 스텝엔 무해).
-    env: { ...tscEnv(), MONAD_NO_WATCHDOG: '1' },
+    env: { ...tscEnv(), ELANOUS_NO_WATCHDOG: '1' },
     stdio: ['ignore', 'pipe', 'pipe'],
   });
   const processGroupId = child.pid;
@@ -224,12 +224,12 @@ export interface GateResult {
 const STEP_CMDS: Record<GateStepName, { cmd: string; args: string[]; timeoutMs: number }> = {
   test: { cmd: 'bun', args: ['test'], timeoutMs: 300_000 },
   typecheck: { cmd: 'bunx', args: ['tsc', '--noEmit'], timeoutMs: 300_000 },
-  'nexus-build': { cmd: 'bun', args: ['bin/monad.mjs', 'nexus', 'build'], timeoutMs: 420_000 },
+  'nexus-build': { cmd: 'bun', args: ['bin/elanous.mjs', 'nexus', 'build'], timeoutMs: 420_000 },
   // ⭐실행 맥락 검증(2026-07-25) — CLI 를 실제로 기동(--help)해 index.ts 전체 로드가 크래시하지 않는지
   //   본다. test/tsc 는 로드타임 결함(커맨드 중복 등록·import 순환·부팅 throw)을 못 잡는다: 실사례로
   //   global 에 `cannot add command 'agent' as already have command 'agent|codex'` 크래시가 있었다.
   //   commander --help 는 정상 로드 시 exit 0, 로드 중 throw 면 non-zero → 정적 게이트의 실행-맥락 맹점 보강.
-  'cli-smoke': { cmd: 'bun', args: ['bin/monad.mjs', '--help'], timeoutMs: 60_000 },
+  'cli-smoke': { cmd: 'bun', args: ['bin/elanous.mjs', '--help'], timeoutMs: 60_000 },
 };
 
 const MAX_LOGGED_TEST_FILTERS = 6;
@@ -253,7 +253,7 @@ function formatExecutedCommand(cmd: string, args: readonly string[]): string {
 // fail. 설계 게이트(SE4.2)도 "bun test·build·nexus build·smoke"로 typecheck 미포함.
 // typecheck 는 opt-in(steps 명시 시). 무결 신호 = bun test(격리 cwd·정식 데몬 lock 무관).
 // ⭐cli-smoke 는 기본 포함(2026-07-25) — 수초로 저렴하고, test/tsc 가 못 잡는 로드타임 크래시(부팅 throw)를
-//   근본 차단한다. worktree 는 bin/monad.mjs 를 복사·node_modules 는 심링크 공유하므로 격리 cwd 에서 기동 가능.
+//   근본 차단한다. worktree 는 bin/elanous.mjs 를 복사·node_modules 는 심링크 공유하므로 격리 cwd 에서 기동 가능.
 export const DEFAULT_GATE_STEPS: GateStepName[] = ['test', 'cli-smoke'];
 
 /** 무결성 게이트 — 지정 스텝을 격리 cwd 에서 순차 실행. 하나라도 fail → passed=false.
@@ -272,11 +272,11 @@ export async function runIntegrityGate(
 
   for (const name of steps) {
     const def = STEP_CMDS[name];
-    // cli-smoke 는 monad-agent 의 bin/monad.mjs 를 전제로 한다. 남의 저장소에는 그 파일이
+    // cli-smoke 는 monad-agent 의 bin/elanous.mjs 를 전제로 한다. 남의 저장소에는 그 파일이
     // 없어 실행하면 항상 Module not found 로 게이트가 죽는다. 돌리기 전에 가리고, 가림을
     // 통과로 세지 않는다(ok 이되 skipped — 전체 passed 는 유지, 통과 집계에서는 제외).
-    if (name === 'cli-smoke' && !existsSync(join(cwd, 'bin', 'monad.mjs'))) {
-      const reason = 'bin/monad.mjs is absent — cli-smoke cannot run outside monad-agent';
+    if (name === 'cli-smoke' && !existsSync(join(cwd, 'bin', 'elanous.mjs'))) {
+      const reason = 'bin/elanous.mjs is absent — cli-smoke cannot run outside monad-agent';
       results.push({ name, status: 'skipped', ok: true, skipped: true, summary: `skipped: ${reason}` });
       logs.push(`[cli-smoke] SKIP ${reason}`);
       continue;

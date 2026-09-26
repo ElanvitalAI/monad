@@ -5,7 +5,7 @@ import type { registerToolRuntime, unregisterToolRuntime } from '../src/tool-run
 
 // ── 재장전이 성립하는가 (2026-09-10 · ④ 관문이 실물에서 잡은 결함) ──
 //
-// 📏 실측: 새 데몬에 `monad mcp reload` 를 쳤더니 서버 5개가 «전부»
+// 📏 실측: 새 데몬에 `elanous mcp reload` 를 쳤더니 서버 5개가 «전부»
 //    `ToolRuntime id collision: <server>.<tool>` 로 실패했다. 재장전은 서버에
 //    닿았고 툴 목록도 받았는데, 옛 등록이 레지스트리에 남아 새 등록을 막았다.
 //    `shutdown()` 은 «클라이언트»만 내리고 «등록»은 안 걷었다 — 이름과 어긋난 계약.

@@ -14,13 +14,13 @@ const writerNames = new Set([
   'writeFile', 'writeFileSync', 'appendFile', 'appendFileSync', 'mkdir', 'mkdirSync',
   'mkdtemp', 'mkdtempSync', 'rm', 'rmSync', 'rename', 'renameSync', 'copyFile',
   'copyFileSync', 'symlink', 'symlinkSync', 'saveTokens', 'setTestStateRoot',
-  'setMonadConfigDir', 'openDatabase', 'Database',
+  'setElanousConfigDir', 'openDatabase', 'Database',
 ]);
 // ⛔⭐ **경계를 «두 갈래»로 가른다** — 종전엔 선행 `\b` 가 전체 교대에 걸려 있어서,
-//   점으로 시작하는 경로 대안(`.monad`·`.codex`·`.config`)이 ***실제 코드에 나타나는 형태에서
+//   점으로 시작하는 경로 대안(`.elanous`·`.codex`·`.config`)이 ***실제 코드에 나타나는 형태에서
 //   하나도 안 물렸다***. `\b` 는 앞 글자가 단어 문자일 것을 요구하는데 그 자리엔 따옴표나
-//   슬래시가 온다. 📏 실측: `join(root, '.monad')` · `dir + '/.codex'` · `` `${home}/.monad/x` ``
-//   전부 MISS 였고, 물린 것은 `foo.monad` 처럼 «단어 뒤»에 오는 드문 형태뿐이었다.
+//   슬래시가 온다. 📏 실측: `join(root, '.elanous')` · `dir + '/.codex'` · `` `${home}/.elanous/x` ``
+//   전부 MISS 였고, 물린 것은 `foo.elanous` 처럼 «단어 뒤»에 오는 드문 형태뿐이었다.
 //   ⇒ 텍스트 경로 렌즈에 체계적 거짓 음성이 있었다.
 //   🩹 식별자 대안은 `\b` 를 유지하고, 경로 대안은 선행 `\b` 를 뗀다. 후행 `\b` 는 남겨서
 //      `.configuration` 같은 더 긴 낱말이 `.config` 로 오인되지 않게 한다.
@@ -29,15 +29,15 @@ const writerNames = new Set([
 //     `process.env.HOME` 이 감사와 트립와이어를 «둘 다» 우회했다***(실측 MISS).
 //     🩹 맨 `HOME` 을 넣는다. `CODEX_HOME` 안의 `HOME` 은 앞 글자가 `_`(단어 문자)라
 //        선행 `\b` 가 안 서므로 오작동하지 않는다.
-const statePattern = /(?:\b(?:homedir|HOME|MONAD_(?:STATE|CONFIG|NEXUS)_DIR|MONAD_SESSION_ROOT|CODEX_HOME|XDG_(?:CONFIG|DATA|STATE)_HOME)\b|(?:\.monad|\.codex|\.config)\b)/;
+const statePattern = /(?:\b(?:homedir|HOME|ELANOUS_(?:STATE|CONFIG|NEXUS)_DIR|ELANOUS_SESSION_ROOT|CODEX_HOME|XDG_(?:CONFIG|DATA|STATE)_HOME)\b|(?:\.elanous|\.codex|\.config)\b)/;
 
-export type StaticIsolationSignal = 'MONAD_STATE_DIR' | '--config-dir' | 'mkdtemp';
+export type StaticIsolationSignal = 'ELANOUS_STATE_DIR' | '--config-dir' | 'mkdtemp';
 export type StaticSafetyClassification = 'isolated' | 'manual-review';
 
 const inspectedManualReviews: Record<string, string> = {
-  'src/autopilot/build/config-isolation.test.ts': 'setMonadConfigDir redirects the tested config into an isolated worktree path; SHA assertions prove the real config is unchanged.',
+  'src/autopilot/build/config-isolation.test.ts': 'setElanousConfigDir redirects the tested config into an isolated worktree path; SHA assertions prove the real config is unchanged.',
   'test/artifact-store.test.ts': 'the apparent writes target an in-memory ArtifactFs fake, not the host filesystem.',
-  'test/pty-drive-workdir-decision.test.ts': 'setMonadConfigDir receives only /tmp paths and the afterEach reset restores the override.',
+  'test/pty-drive-workdir-decision.test.ts': 'setElanousConfigDir receives only /tmp paths and the afterEach reset restores the override.',
   'test/working-dir.test.ts': 'the fixed test root is derived from tmpdir() and removed by afterAll.',
 };
 
@@ -108,8 +108,8 @@ function isolationFor(text: string): string {
   // ⛔⭐ 이 목록은 `statePattern` 의 환경 변수 목록과 «같이» 움직여야 한다 — 한쪽에만 넣으면
   //   그 변수로 «격리한» 파일이 후보로는 잡히고 격리 증거는 못 받아 `high` 로 오분류된다
   //   (무인 리뷰 3라운드 should-fix · `XDG_STATE_HOME` 을 넣으면서 실제로 그 비대칭이 났다).
-  if (/\bHOME\b|MONAD_(?:STATE|CONFIG|NEXUS)_DIR|MONAD_SESSION_ROOT|CODEX_HOME|XDG_(?:CONFIG|DATA|STATE)_HOME/.test(text)) methods.push('environment redirect');
-  if (/setTestStateRoot|setMonadConfigDir/.test(text)) methods.push('test state override');
+  if (/\bHOME\b|ELANOUS_(?:STATE|CONFIG|NEXUS)_DIR|ELANOUS_SESSION_ROOT|CODEX_HOME|XDG_(?:CONFIG|DATA|STATE)_HOME/.test(text)) methods.push('environment redirect');
+  if (/setTestStateRoot|setElanousConfigDir/.test(text)) methods.push('test state override');
   if (/afterEach|finally\s*\{/.test(text) && /\brm(?:Sync)?\b/.test(text)) methods.push('cleanup');
   return methods.length ? methods.join(' + ') : 'no local isolation evidence';
 }
@@ -117,7 +117,7 @@ function isolationFor(text: string): string {
 /** Static triage deliberately recognizes only the three approval-safe signals named by the audit contract. */
 export function classifyStaticIsolation(text: string): { signals: StaticIsolationSignal[]; safety: StaticSafetyClassification } {
   const signals: StaticIsolationSignal[] = [];
-  if (/\bMONAD_STATE_DIR\b/.test(text)) signals.push('MONAD_STATE_DIR');
+  if (/\bELANOUS_STATE_DIR\b/.test(text)) signals.push('ELANOUS_STATE_DIR');
   if (/--config-dir\b/.test(text)) signals.push('--config-dir');
   if (/\bmkdtemp(?:Sync)?\b/.test(text)) signals.push('mkdtemp');
   return { signals, safety: signals.length ? 'isolated' : 'manual-review' };
@@ -235,7 +235,7 @@ export function renderAudit(report: ReturnType<typeof auditTestStateWrites>, pre
     `- Potential home/state writers: **${report.findings.length}**`,
     '- Risk: **high** means the file has a writer and home/state-root evidence but no local temporary-root, redirect, override, or cleanup evidence; **medium** means it has at least one such isolation signal and still requires context review.',
     '- Writer lines are AST-derived call expressions; state lines are text-derived path/environment evidence. The two lenses intentionally intersect to reduce false positives while retaining indirect store writers.',
-    '- Static safety classification is approval-gating: only `MONAD_STATE_DIR`, `--config-dir`, or `mkdtemp` counts as isolated; all other candidates require manual inspection.',
+    '- Static safety classification is approval-gating: only `ELANOUS_STATE_DIR`, `--config-dir`, or `mkdtemp` counts as isolated; all other candidates require manual inspection.',
     classificationSummary(candidateWindow),
     '',
     '| File | Writer call lines (AST) | Write target or store argument | Home/state evidence lines (text) | Risk | Current isolation evidence | Static safety |',

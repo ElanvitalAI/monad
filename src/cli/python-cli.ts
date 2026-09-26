@@ -1,10 +1,10 @@
-// `monad python where|check|setup` — RFC-doctor-fix-build-toolchain-and-python-by-distro A4·A5 (P3).
+// `elanous python where|check|setup` — RFC-doctor-fix-build-toolchain-and-python-by-distro A4·A5 (P3).
 // setup 은 doctor --fix 와 같은 계약: 기본 = 계획만 · --yes 로 적용 · 되돌리기 = venv 폴더 삭제.
 import { existsSync, readFileSync, rmSync } from 'node:fs';
 import { join, win32 } from 'node:path';
 import { spawnSync } from 'node:child_process';
 import {
-  REPO_ROOT, declaredPythonVersion, evaluatePythonEnv, monadVenvDir, parseRequirements, probePython, resolvePython, venvBasePython, venvNeedsRecreation,
+  REPO_ROOT, declaredPythonVersion, evaluatePythonEnv, elanousVenvDir, parseRequirements, probePython, resolvePython, venvBasePython, venvNeedsRecreation,
   type PythonEnvCheck,
 } from '../python/resolve-python.js';
 import { debug } from '../debug/log.js';
@@ -32,7 +32,7 @@ export function checkPythonEnv(extra = false): PythonEnvCheck {
   const declarationsFound = existsSync(files[0]!);
   const resolution = resolvePython();
   const probe = resolution ? probePython(resolution.path, modulesOf(files)) : null;
-  const venvExists = existsSync(process.platform === 'win32' ? win32.join(monadVenvDir(), 'Scripts', 'python.exe') : join(monadVenvDir(), 'bin', 'python'));
+  const venvExists = existsSync(process.platform === 'win32' ? win32.join(elanousVenvDir(), 'Scripts', 'python.exe') : join(elanousVenvDir(), 'bin', 'python'));
   // venv 가 없거나 pip 없는 venv 면 «기반» 파이썬이 venv⊕pip 를 만들 수 있나를 잰다(Ubuntu: python3-venv 없으면 못 만든다).
   let baseHasEnsurepip: boolean | undefined;
   if (!venvExists || probe?.hasPip === false) {
@@ -46,7 +46,7 @@ export function checkPythonEnv(extra = false): PythonEnvCheck {
 export function runPythonWhere(out: Out = console, json = false, pathOnly = false): number {
   const r = resolvePython();
   if (pathOnly) { if (r) out.log(r.path); return r ? 0 : 1; }
-  if (json) out.log(JSON.stringify({ resolution: r, declared: declaredPythonVersion(), venv: monadVenvDir() }));
+  if (json) out.log(JSON.stringify({ resolution: r, declared: declaredPythonVersion(), venv: elanousVenvDir() }));
   else out.log(r ? `${r.path}  (${r.source})` : 'none');
   return r ? 0 : 1;
 }
@@ -77,10 +77,10 @@ export function runPythonSetup(opts: { yes?: boolean; extra?: boolean } = {}, de
   const exists = deps.exists ?? existsSync;
   const probe = deps.probe ?? probePython;
   const base = deps.base === undefined ? venvBasePython() : deps.base;
-  const venv = deps.venv ?? monadVenvDir();
+  const venv = deps.venv ?? elanousVenvDir();
   const files = requirementFiles(opts.extra ?? false);
-  if (!base) { out.error('⛔ no base python found — install Python first (see `monad python check`)'); return 2; }
-  if (!exists(files[0]!)) { out.error(`⛔ ${files[0]} not found — this install is missing its python declarations; reinstall monad`); return 2; }
+  if (!base) { out.error('⛔ no base python found — install Python first (see `elanous python check`)'); return 2; }
+  if (!exists(files[0]!)) { out.error(`⛔ ${files[0]} not found — this install is missing its python declarations; reinstall elanous`); return 2; }
   const venvPy = platform === 'win32' ? win32.join(venv, 'Scripts', 'python.exe') : join(venv, 'bin', 'python');
   // 🩸 09-24 빈 Ubuntu 실측: python3-venv 없이 만든 venv 엔 pip 가 없고, 다음 실행은 «있다»고 보고 건너뛰어 영영 실패했다.
   const existingVenv = exists(venvPy) ? probe(venvPy, []) : null;

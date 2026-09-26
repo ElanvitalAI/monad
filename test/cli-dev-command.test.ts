@@ -1,4 +1,4 @@
-// U4 — `monad dev` 실험 엔트리 실행수준 통합(subprocess). Commander 등록·옵션 검증·종료코드 회귀.
+// U4 — `elanous dev` 실험 엔트리 실행수준 통합(subprocess). Commander 등록·옵션 검증·종료코드 회귀.
 //   self dispatch는 실제 worktree spawn을 피하고, shell-drive 성공 경로는 짧은 실제 자식으로 검증한다.
 
 import { afterAll, beforeAll, describe, expect, it } from 'bun:test';
@@ -8,15 +8,15 @@ import { tmpdir } from 'os';
 import { join, resolve } from 'path';
 import { snapshotWorktreeRoot, sweepNewEmptyWorktreeRoots } from './helpers/worktree-root-leak.js';
 
-// ⛔ 이 파일은 `monad dev` 를 «자식 프로세스»로 돌리므로, 그 자식이 만든 인스턴스 뿌리를
+// ⛔ 이 파일은 `elanous dev` 를 «자식 프로세스»로 돌리므로, 그 자식이 만든 인스턴스 뿌리를
 //   fixture 의 cleanup 이 «원리상» 못 잡는다(부모에게 그 경로가 없다).
-//   🩸 실측 2026-09-08: 이 파일을 한 번 돌리면 `monad-dev-behind-*` 가 «2개» 늘었다(36→38).
+//   🩸 실측 2026-09-08: 이 파일을 한 번 돌리면 `elanous-dev-behind-*` 가 «2개» 늘었다(36→38).
 let worktreeRootBefore: ReadonlySet<string> = new Set();
 beforeAll(() => { worktreeRootBefore = snapshotWorktreeRoot(); });
 afterAll(() => { sweepNewEmptyWorktreeRoots(worktreeRootBefore); });
 
 const ENTRY = resolve(import.meta.dir, '..', 'src', 'index.ts');
-const CLI = resolve(import.meta.dir, '..', 'bin', 'monad.mjs');
+const CLI = resolve(import.meta.dir, '..', 'bin', 'elanous.mjs');
 function run(args: string[]): { code: number; out: string } {
   const r = spawnSync('bun', [ENTRY, ...args], { encoding: 'utf-8', env: { ...process.env, NODE_ENV: 'development' } });
   return { code: r.status ?? 1, out: `${r.stdout ?? ''}${r.stderr ?? ''}` };
@@ -33,7 +33,7 @@ function git(cwd: string, args: string[]): void {
 }
 
 function createGitFixture(behind: number | 'no-origin'): { invoked: string; cleanup: () => void } {
-  const root = mkdtempSync(join(tmpdir(), 'monad-dev-behind-'));
+  const root = mkdtempSync(join(tmpdir(), 'elanous-dev-behind-'));
   const remote = join(root, 'remote.git');
   const seed = join(root, 'seed');
   const invoked = join(root, 'invoked');
@@ -73,9 +73,9 @@ function runDevFixture(cwd: string, runId: string): {
   const env = {
     ...process.env,
     NODE_ENV: undefined,
-    MONAD_STATE_DIR: undefined,
-    MONAD_CONFIG_DIR: undefined,
-    MONAD_RUN_ID: runId,
+    ELANOUS_STATE_DIR: undefined,
+    ELANOUS_CONFIG_DIR: undefined,
+    ELANOUS_RUN_ID: runId,
   };
   const result = spawnSync('bun', [CLI, '--test', 'dev', 'runtime git fixture', '--backend', 'codex', '--transport', 'acp', '--no-open-pr'], {
     cwd, env, encoding: 'utf8', timeout: 15_000,
@@ -118,13 +118,13 @@ function runDevFixture(cwd: string, runId: string): {
   };
 }
 
-describe('monad dev — 실험 엔트리 등록·검증(subprocess)', () => {
+describe('elanous dev — 실험 엔트리 등록·검증(subprocess)', () => {
   // `--help` matches `dev`, but drive runtime accepts only --goal, --max-steps,
   // --poll-ms, --model, and --cwd; every other dev option is explicitly rejected.
-  it('drive explicitly rejects dev-only --monad at runtime', () => {
-    const r = run(['drive', 'printf done', '--goal', 'finish', '--monad']);
+  it('drive explicitly rejects dev-only --elanous at runtime', () => {
+    const r = run(['drive', 'printf done', '--goal', 'finish', '--elanous']);
     expect(r.code).not.toBe(0);
-    expect(r.out).toContain('drive: 지원하지 않는 옵션: --monad');
+    expect(r.out).toContain('drive: 지원하지 않는 옵션: --elanous');
   });
   it('--help 는 실험 엔트리로 resolve', () => {
     const r = run(['dev', '--help']);
@@ -168,7 +168,7 @@ describe('monad dev — 실험 엔트리 등록·검증(subprocess)', () => {
   });
 
   it('dev --file derives traced paths through the repository reader, reports labels, preserves explicit context priority, and keeps text goals empty', () => {
-    const directory = mkdtempSync(join(tmpdir(), 'monad-dev-traced-context-'));
+    const directory = mkdtempSync(join(tmpdir(), 'elanous-dev-traced-context-'));
     const goalPath = join(directory, 'goal.md');
     const validGoal = (tracedPaths: string) => [
       '## PROBLEM\nproblem', '## WHAT TO BUILD\nbuild', '## RULES\nrules',
@@ -266,11 +266,11 @@ describe('monad dev — 실험 엔트리 등록·검증(subprocess)', () => {
     writeFileSync(invalidIsolationRoot, 'blocks directory creation\n');
     let testFailed = true;
     try {
-      const result = spawnSync('bun', [CLI, '--test', 'dev', 'exercise child dispatch', '--monad', '--goal', 'exercise child dispatch', '--isolated-root', invalidIsolationRoot, '--worktree', '--json'], {
+      const result = spawnSync('bun', [CLI, '--test', 'dev', 'exercise child dispatch', '--elanous', '--goal', 'exercise child dispatch', '--isolated-root', invalidIsolationRoot, '--worktree', '--json'], {
         cwd: fixture.invoked,
         encoding: 'utf8',
         timeout: 15_000,
-        env: { ...process.env, MONAD_RUN_ID: runId },
+        env: { ...process.env, ELANOUS_RUN_ID: runId },
       });
       expect(result.error).toBeUndefined();
       expect(result.signal).toBeNull();
@@ -287,7 +287,7 @@ describe('monad dev — 실험 엔트리 등록·검증(subprocess)', () => {
       //   디렉토리 «이름 규칙»은 계약이 아니므로 고정하지 않는다(리뷰 #10554 should-fix).
       expect(worktreePath.startsWith(`${resolve(realpathSync(fixture.invoked))}/`)).toBe(false);
       expect(output.autoWorktree.worktree.createdAt).toMatch(/^\d{4}-\d{2}-\d{2}T/);
-      expect(spawnSync('git', ['config', '--worktree', '--get', 'monad.harness.command'], { cwd: worktreePath, encoding: 'utf8' }).stdout.trim()).toBe('dev');
+      expect(spawnSync('git', ['config', '--worktree', '--get', 'elanous.harness.command'], { cwd: worktreePath, encoding: 'utf8' }).stdout.trim()).toBe('dev');
       testFailed = false;
     } finally {
       // ⛔ 성공/실패 «어느 경로에서도» 판정자에게 다시 물어 지운다(리뷰 must-fix).
@@ -299,7 +299,7 @@ describe('monad dev — 실험 엔트리 등록·검증(subprocess)', () => {
 /** ⛔⭐ 워크트리 «위치»를 손으로 계산하지 않는다 — 판정자(git)에게 묻는다.
  *
  *  실측(2026-08-20): 이 두 시험은 경로를 `<invoked>/../invoked.worktrees/dev-<runId>` 로 «계산»했는데
- *  제품이 워크트리를 사람 트리 옆에서 하니스 루트(`~/.monad/worktrees/…`) 아래로 옮기면서 빨개졌다.
+ *  제품이 워크트리를 사람 트리 옆에서 하니스 루트(`~/.elanous/worktrees/…`) 아래로 옮기면서 빨개졌다.
  *  ⇒ 늙은 것은 제품이 아니라 «시험의 좌표»였다.
  *
  *  ⭐ 그래서 좌표를 «약화»시키는 대신 축을 바꾼다 — 위치는 git 에게 묻고,
@@ -367,7 +367,7 @@ function cleanupHarnessWorktree(repoCwd: string, branch: string, testAlreadyFail
     //   시험은 초록이다. 그 약화가 다시 들어오면 여기가 먼저 빨개진다.
 
     it('git 저장소가 «아닌» 곳에서는 「없다」가 아니라 «던진다»', () => {
-      const notARepo = mkdtempSync(join(tmpdir(), 'monad-not-a-repo-'));
+      const notARepo = mkdtempSync(join(tmpdir(), 'elanous-not-a-repo-'));
       try {
         // 본 시험이 통과 중(testAlreadyFailed=false)이면 정리 실패는 «보여야» 한다.
         expect(() => cleanupHarnessWorktree(notARepo, 'dev/never-created', false)).toThrow(/worktree list 실패/);
@@ -377,7 +377,7 @@ function cleanupHarnessWorktree(repoCwd: string, branch: string, testAlreadyFail
     });
 
     it('본 시험이 «이미 실패 중»이면 정리 실패가 원래 진단을 덮지 않는다', () => {
-      const notARepo = mkdtempSync(join(tmpdir(), 'monad-not-a-repo-'));
+      const notARepo = mkdtempSync(join(tmpdir(), 'elanous-not-a-repo-'));
       try {
         expect(() => cleanupHarnessWorktree(notARepo, 'dev/never-created', true)).not.toThrow();
       } finally {
@@ -406,7 +406,7 @@ function cleanupHarnessWorktree(repoCwd: string, branch: string, testAlreadyFail
         //   ⇒ 그러니 이 값을 다시 올리기 전에 «워크트리 수»를 먼저 재라 —
         //     창을 올리는 것은 증상 완화이고, 수가 늘면 또 넘는다.
         timeout: 60_000,
-        env: { ...process.env, MONAD_RUN_ID: runId },
+        env: { ...process.env, ELANOUS_RUN_ID: runId },
       });
       expect(result.error).toBeUndefined();
       expect(result.signal).toBeNull();
@@ -414,9 +414,9 @@ function cleanupHarnessWorktree(repoCwd: string, branch: string, testAlreadyFail
       expect(`${result.stdout}${result.stderr}`).toContain('child-dispatch-failed');
       const worktreePath = locateHarnessWorktree(fixture.invoked, `dev/${runId}`);
       expect(worktreePath.startsWith(`${resolve(realpathSync(fixture.invoked))}/`)).toBe(false);
-      expect(spawnSync('git', ['config', '--worktree', '--get', 'monad.harness.owner'], { cwd: worktreePath, encoding: 'utf8' }).stdout.trim()).toBe(`dev:${runId}`);
-      expect(spawnSync('git', ['config', '--worktree', '--get', 'monad.harness.command'], { cwd: worktreePath, encoding: 'utf8' }).stdout.trim()).toBe('drive');
-      expect(spawnSync('git', ['config', '--worktree', '--get', 'monad.harness.createdAt'], { cwd: worktreePath, encoding: 'utf8' }).stdout.trim()).toMatch(/^\d{4}-\d{2}-\d{2}T/);
+      expect(spawnSync('git', ['config', '--worktree', '--get', 'elanous.harness.owner'], { cwd: worktreePath, encoding: 'utf8' }).stdout.trim()).toBe(`dev:${runId}`);
+      expect(spawnSync('git', ['config', '--worktree', '--get', 'elanous.harness.command'], { cwd: worktreePath, encoding: 'utf8' }).stdout.trim()).toBe('drive');
+      expect(spawnSync('git', ['config', '--worktree', '--get', 'elanous.harness.createdAt'], { cwd: worktreePath, encoding: 'utf8' }).stdout.trim()).toMatch(/^\d{4}-\d{2}-\d{2}T/);
       testFailed = false;
     } finally {
       // ⛔ 성공/실패 «어느 경로에서도» 판정자에게 다시 물어 지운다(리뷰 must-fix).
@@ -471,9 +471,9 @@ function cleanupHarnessWorktree(repoCwd: string, branch: string, testAlreadyFail
     const noGoal = run(['drive', 'printf done']);
     expect(noGoal.code).not.toBe(0);
     expect(noGoal.out).toContain('drive: --goal 필요');
-    const monad = run(['drive', 'printf done', '--goal', 'finish', '--monad']);
-    expect(monad.code).not.toBe(0);
-    expect(monad.out).toContain('drive: 지원하지 않는 옵션: --monad');
+    const elanous = run(['drive', 'printf done', '--goal', 'finish', '--elanous']);
+    expect(elanous.code).not.toBe(0);
+    expect(elanous.out).toContain('drive: 지원하지 않는 옵션: --elanous');
     const help = run(['--help']);
     expect(help.code).toBe(0);
     expect(help.out).toMatch(/^  dev\b/m);
@@ -481,7 +481,7 @@ function cleanupHarnessWorktree(repoCwd: string, branch: string, testAlreadyFail
   }, 15_000);
 
   it('옵션값 drive를 alias 호출로 오인하지 않는다', () => {
-    const r = run(['dev', '--monad', '--goal', 'drive', '--max-steps', '0']);
+    const r = run(['dev', '--elanous', '--goal', 'drive', '--max-steps', '0']);
     expect(r.out).not.toContain('drive:');
     expect(r.out).toContain('--max-steps 는 양의 정수여야');
   });
@@ -549,7 +549,7 @@ describe('U4b — agent-mission mission 이 runDevPipeline 로 재라우팅(검�
 });
 
 // ⭐⭐⭐ S1 — **사람이 쏘는 정문에 골 린트 여섯 축이 걸렸는가**(2026-08-03).
-//   에이전트가 부르는 `MonadAutopilotLaunch` 에는 fail-closed 로 걸려 있었고 `monad dev --file` 에는
+//   에이전트가 부르는 `ElanousAutopilotLaunch` 에는 fail-closed 로 걸려 있었고 `elanous dev --file` 에는
 //   `REQUIRED EVIDENCE` 한 축만 있었다. 이 스위트가 재는 것은 **로직이 아니라 경로**다 —
 //   셸에서 치는 그 명령이 프로세스로 떠서 린트를 돌고 거부하는가.
 //   ⛔ **in-process 단위 테스트로는 못 가른다**(그 층은 CLI 배선을 안 지난다) — `#6701` 이 그것으로 통과했다.
@@ -557,11 +557,11 @@ describe('U4b — agent-mission mission 이 runDevPipeline 로 재라우팅(검�
 //   ⚠️ **운반체로 `--backend codex --transport acp` 를 쓰는 이유**: 이 경로는 capability 미검증이라
 //      worktree 도 자식도 만들지 않고 즉시 완료한다 ⇒ **진짜 개발 런을 띄우지 않고** 관문 통과 여부만 가른다.
 //      (`--backend self` 로 쓰면 우회 케이스가 실제 구현 런을 시작해 테스트가 부작용을 만든다.)
-describe('monad dev --file — 골 린트 여섯 축 preflight(subprocess)', () => {
+describe('elanous dev --file — 골 린트 여섯 축 preflight(subprocess)', () => {
   const LINT_ERROR_GOAL = '## ACCEPTANCE CRITERIA\nx\n\n## REQUIRED EVIDENCE\n- [t] tag\n';
 
   function withGoal<T>(body: (goalPath: string) => T): T {
-    const directory = mkdtempSync(join(tmpdir(), 'monad-dev-lint-'));
+    const directory = mkdtempSync(join(tmpdir(), 'elanous-dev-lint-'));
     try {
       const goalPath = join(directory, 'lint-error-goal.txt');
       writeFileSync(goalPath, LINT_ERROR_GOAL);
@@ -597,17 +597,17 @@ describe('은퇴 입구가 «사람 눈에» 닿는다 (subprocess · RFC-one-do
   // ⛔ 리뷰 #10572 must-fix: 「접두사를 만들 수 있다」만 무는 시험은 «배선 누락»을 못 잡는다.
   //   ⇒ 진짜 CLI 를 띄워 --help 를 읽는다. 2026-08-17 사고가 정확히 「선언은 있는데 표면이 조용」이었다.
 
-  it('monad harness dogfood --help 가 은퇴 사실과 «갈 곳»을 둘 다 말한다', () => {
+  it('elanous harness dogfood --help 가 은퇴 사실과 «갈 곳»을 둘 다 말한다', () => {
     const help = runIsolatedCli(['harness', 'dogfood', '--help']);
     expect(help.code, help.out).toBe(0);
     expect(help.out).toContain('DEPRECATED');
     expect(help.out).toContain('cli-harness-dogfood');       // 어느 입구인지 «이름»으로
-    expect(help.out).toContain('monad dev --ask');           // ⛔ 갈 곳이 «있어야» 한다
+    expect(help.out).toContain('elanous dev --ask');           // ⛔ 갈 곳이 «있어야» 한다
     // ⭐ 원래 설명을 «잃지 않는다» — 앞에 붙일 뿐이다.
     expect(help.out).toContain('RunDevHarness로 HITL 유지');
   }, 60_000);
 
-  it('live 입구(monad dev --help)에는 은퇴 표시가 «안 붙는다»', () => {
+  it('live 입구(elanous dev --help)에는 은퇴 표시가 «안 붙는다»', () => {
     const help = runIsolatedCli(['dev', '--help']);
     expect(help.code, help.out).toBe(0);
     expect(help.out).not.toContain('DEPRECATED(cli-');

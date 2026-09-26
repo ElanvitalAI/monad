@@ -203,7 +203,7 @@ describe('splitDeferredToolSpecs', () => {
 // ── ⭐ 소환기 불변식 (F2 · RFC-observability-driven-tool-selection · 2026-07-26) ──
 // "배틀쉽을 defer 하면 소환기도 쥐여준다." 종전엔 소환기 부재를 `unhydratable` 로
 // 감지만 해서, 안내 블록이 **부를 수 없는 툴 이름**을 광고했고 모델은 셸아웃으로
-// 폴백했다(격리 acpx 실전검증에서 SelfImplement→`monad self implement` 셸아웃).
+// 폴백했다(격리 acpx 실전검증에서 SelfImplement→`elanous self implement` 셸아웃).
 describe('splitDeferredToolSpecs · 소환기 불변식', () => {
   const deferredCatalog = [
     makeCatalogEntry({ id: 'Battleship', alwaysLoad: false, shouldDefer: true }),

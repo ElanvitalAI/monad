@@ -94,7 +94,7 @@ export function isArtifactFile(name: string): boolean {
 }
 
 export interface ReadOpts {
-  /** `~/.monad` 같은 상태 뿌리. ⛔ 부르는 쪽이 정한다(격리 우주를 이 자가 «가정하지 않는다»). */
+  /** `~/.elanous` 같은 상태 뿌리. ⛔ 부르는 쪽이 정한다(격리 우주를 이 자가 «가정하지 않는다»). */
   readonly stateRoot: string;
   readonly persona?: string | undefined;
   readonly limit?: number | undefined;

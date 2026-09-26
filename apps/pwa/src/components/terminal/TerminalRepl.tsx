@@ -24,7 +24,7 @@ import {
   type AgentPendingTurn,
 } from '@/components/agent/AgentResponseSheet';
 
-const HISTORY_KEY = 'monad.webterm.replHistory';
+const HISTORY_KEY = 'elanous.webterm.replHistory';
 const HISTORY_LIMIT = 32;
 
 // Track 2 — sticky REPL is now scoped to terminal-context commands.

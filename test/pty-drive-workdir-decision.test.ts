@@ -1,12 +1,12 @@
 import { afterEach, describe, expect, test } from 'bun:test';
 import { decideTuiWorkdir, runPtyDrive } from '../src/cli/pty-drive-cli.js';
-import { setMonadConfigDir, resetMonadConfigDir } from '../src/monad-config-dir.js';
+import { setElanousConfigDir, resetElanousConfigDir } from '../src/elanous-config-dir.js';
 import { resetEffectiveInstanceRoot } from '../src/instance/resolve.js';
 import { setPtyAdapterForTesting } from '../src/pty-shell/registry.js';
 import { debug } from '../src/debug/log.js';
 
 afterEach(() => {
-  resetMonadConfigDir();
+  resetElanousConfigDir();
   resetEffectiveInstanceRoot();
   setPtyAdapterForTesting(null);
 });
@@ -16,7 +16,7 @@ describe('isolated TUI workdir decision', () => {
     const isolatedRoot = '/tmp/pty-drive-workdir-isolated';
     const records: Array<{ category: string; event: string; data?: Record<string, unknown> }> = [];
     let spawnCalls = 0;
-    setMonadConfigDir(isolatedRoot);
+    setElanousConfigDir(isolatedRoot);
     resetEffectiveInstanceRoot();
     setPtyAdapterForTesting(() => {
       spawnCalls += 1;
@@ -29,7 +29,7 @@ describe('isolated TUI workdir decision', () => {
     const wasEnabled = debug.enabled;
     debug.enable();
     try {
-      await expect(runPtyDrive({ monad: true, goal: 'x', out: () => {} }))
+      await expect(runPtyDrive({ elanous: true, goal: 'x', out: () => {} }))
         .rejects.toThrow('--cwd <worktree-path>');
     } finally {
       off();
@@ -40,11 +40,11 @@ describe('isolated TUI workdir decision', () => {
       .toMatchObject({ isolated: true, workdirProvided: false, rejected: true });
   });
 
-  // ⛔⭐⭐⭐ 무인 리뷰 must-fix — 판정이 `opts.monad` 에 걸려 있으면 **비-monad 경로**가 샌다.
+  // ⛔⭐⭐⭐ 무인 리뷰 must-fix — 판정이 `opts.elanous` 에 걸려 있으면 **비-elanous 경로**가 샌다.
   //    초판이 정확히 그랬고, 이 검사가 없어서 못 잡았다. 실제 `runPtyDrive` 를 태운다.
-  test('[refuse-non-monad] 비-monad 경로도 명시 격리 ⊕ cwd 없음이면 거부한다', async () => {
+  test('[refuse-non-elanous] 비-elanous 경로도 명시 격리 ⊕ cwd 없음이면 거부한다', async () => {
     let spawnCalls = 0;
-    setMonadConfigDir('/tmp/pty-drive-workdir-isolated-nonmonad');
+    setElanousConfigDir('/tmp/pty-drive-workdir-isolated-nonelanous');
     resetEffectiveInstanceRoot();
     setPtyAdapterForTesting(() => { spawnCalls += 1; throw new Error('must not spawn'); });
     await expect(runPtyDrive({ command: 'echo hi', out: () => {} } as never))
@@ -55,7 +55,7 @@ describe('isolated TUI workdir decision', () => {
   // ⛔⭐⭐⭐ 무인 리뷰 should-fix — **가장 중요한 무회귀**(비격리·주변격리는 종전대로)를
   //    순수 함수가 아니라 **실제 `runPtyDrive` 경로**에서 고정한다. 이게 없으면 규칙이 넓어져도 침묵한다.
   test('[allow-prod-runtime] 주변 격리(트리 파생)는 cwd 없이도 거부되지 않는다', async () => {
-    resetMonadConfigDir();          // 명시 플래그 없음 ⇒ 트리 파생/기본
+    resetElanousConfigDir();          // 명시 플래그 없음 ⇒ 트리 파생/기본
     resetEffectiveInstanceRoot();
     setPtyAdapterForTesting(() => { throw new Error('must not reach spawn in this assertion'); });
     // ⭐ 뒤 단계(goal 검증)에서 막히는 것이 **거부를 안 당했다는 증거**다. LLM 을 태우지 않고
@@ -104,6 +104,6 @@ describe('거부 문면', () => {
     const d = decideTuiWorkdir(true, undefined);
     expect(d.rejected).toBe(true);
     expect(d.message).toContain('--cwd <worktree-path>');
-    expect(d.message).toContain('monad where');
+    expect(d.message).toContain('elanous where');
   });
 });

@@ -7,8 +7,8 @@
 //
 // Usage:
 //   const selectVisibleWidgets = createSelector(
-//     (s: MonadState) => s.widgets,
-//     (s: MonadState) => s.ui.focusStack,
+//     (s: ElanousState) => s.widgets,
+//     (s: ElanousState) => s.ui.focusStack,
 //     (widgets, focusStack) => focusStack.map((id) => widgets[id]).filter(Boolean),
 //   );
 //   selectVisibleWidgets(store.getState())

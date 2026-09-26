@@ -3,11 +3,11 @@
 // loop-runner — self-hosting bootstrap loop (Layer 2 stand-in)
 // ============================================================
 //
-// A hand-written OUTER loop that drives monad's own `agent` turn (INNER
+// A hand-written OUTER loop that drives elanous's own `agent` turn (INNER
 // loop) against a goal, verifying "done" with the existing Termination
 // DSL, until the goal is objectively complete OR a furnace-guard fires.
 //
-// This is the bootstrap: the loop's FIRST real job is to build monad's
+// This is the bootstrap: the loop's FIRST real job is to build elanous's
 // native Layer 2 (see 내부 문서 `CONCEPT-self-hosting-loop-2026-07-01` and
 // 내부 문서 `RESEARCH-loop-engineering-vs-pfc-dual-loop-2026-07-01` §5).
 //

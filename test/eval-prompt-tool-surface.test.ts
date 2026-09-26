@@ -29,20 +29,20 @@ const LEGACY_CLI_TOOLS = [
   'WebSearch',
 ];
 
-const originalCodexToolset = process.env.MONAD_CODEX_TOOLSET;
-const originalTuiTools = process.env.MONAD_EVAL_INCLUDE_TUI_TOOLS;
+const originalCodexToolset = process.env.ELANOUS_CODEX_TOOLSET;
+const originalTuiTools = process.env.ELANOUS_EVAL_INCLUDE_TUI_TOOLS;
 
 afterEach(() => {
-  if (originalCodexToolset === undefined) delete process.env.MONAD_CODEX_TOOLSET;
-  else process.env.MONAD_CODEX_TOOLSET = originalCodexToolset;
-  if (originalTuiTools === undefined) delete process.env.MONAD_EVAL_INCLUDE_TUI_TOOLS;
-  else process.env.MONAD_EVAL_INCLUDE_TUI_TOOLS = originalTuiTools;
+  if (originalCodexToolset === undefined) delete process.env.ELANOUS_CODEX_TOOLSET;
+  else process.env.ELANOUS_CODEX_TOOLSET = originalCodexToolset;
+  if (originalTuiTools === undefined) delete process.env.ELANOUS_EVAL_INCLUDE_TUI_TOOLS;
+  else process.env.ELANOUS_EVAL_INCLUDE_TUI_TOOLS = originalTuiTools;
 });
 
-describe('monad repro tool surface selection', () => {
+describe('elanous repro tool surface selection', () => {
   test('cli default preserves the legacy non-codex tool-name array', () => {
-    delete process.env.MONAD_CODEX_TOOLSET;
-    delete process.env.MONAD_EVAL_INCLUDE_TUI_TOOLS;
+    delete process.env.ELANOUS_CODEX_TOOLSET;
+    delete process.env.ELANOUS_EVAL_INCLUDE_TUI_TOOLS;
     expect(buildEvalPromptToolSurface('cli', 'claude', cfg).specs.map((tool) => tool.name))
       .toEqual(LEGACY_CLI_TOOLS);
   });

@@ -2,14 +2,14 @@
 //
 // VAPID (Voluntary Application Server Identification, RFC 8292) is
 // the auth scheme that tells the browser's push service "this push
-// came from monad's server, not a random third party". We need a
+// came from elanous's server, not a random third party". We need a
 // stable P-256 keypair:
 //   - Public key → handed to the PWA at subscribe time so the
-//                  browser binds the subscription to monad
+//                  browser binds the subscription to elanous
 //   - Private key → never leaves the daemon · used to sign each push
 //
 // First boot generates a fresh keypair and stores both halves in
-// `~/.monad/secrets.json` (NEXUS PR μ canonical secret store · 0o600
+// `~/.elanous/secrets.json` (NEXUS PR μ canonical secret store · 0o600
 // already enforced). Subsequent boots load the existing keys so
 // already-subscribed PWAs keep working across daemon restarts.
 //
@@ -33,7 +33,7 @@ export interface VapidKeyPair {
    *  can reach back to us if our pushes misbehave. We don't have a
    *  contact email convention yet, so default to a placeholder
    *  pointing at the canonical github repo. Override via
-   *  `MONAD_PUSH_VAPID_SUBJECT` env or by writing the secret. */
+   *  `ELANOUS_PUSH_VAPID_SUBJECT` env or by writing the secret. */
   subject: string;
 }
 
@@ -60,7 +60,7 @@ export async function loadVapidKeyPair(): Promise<VapidKeyPair> {
     cached = {
       publicKey,
       privateKey,
-      subject: storedSubject || process.env['MONAD_PUSH_VAPID_SUBJECT'] || DEFAULT_SUBJECT,
+      subject: storedSubject || process.env['ELANOUS_PUSH_VAPID_SUBJECT'] || DEFAULT_SUBJECT,
     };
     if (debug.enabled) {
       debug.log('webpush.vapid', 'loaded', { hasSubject: !!storedSubject });
@@ -73,7 +73,7 @@ export async function loadVapidKeyPair(): Promise<VapidKeyPair> {
   const fresh = generateVAPIDKeys();
   await setSecretAsync(VAPID_PUBLIC_SECRET_ID, fresh.publicKey);
   await setSecretAsync(VAPID_PRIVATE_SECRET_ID, fresh.privateKey);
-  const subject = process.env['MONAD_PUSH_VAPID_SUBJECT'] || DEFAULT_SUBJECT;
+  const subject = process.env['ELANOUS_PUSH_VAPID_SUBJECT'] || DEFAULT_SUBJECT;
   cached = { publicKey: fresh.publicKey, privateKey: fresh.privateKey, subject };
   if (debug.enabled) {
     debug.log('webpush.vapid', 'generated', { subject });

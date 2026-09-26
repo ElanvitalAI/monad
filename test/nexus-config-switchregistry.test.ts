@@ -35,7 +35,7 @@ import { isSecretRef, makeSecretRef, USER_CONFIG_VERSION } from '../src/nexus/co
 import { userConfigPath, secretsPath } from '../src/nexus/config/paths.js';
 import { createDaemonTabSpec } from '../src/nexus/kinds/daemon.js';
 import { createChannelBotTabSpec } from '../src/nexus/kinds/channel-bot.js';
-import { setMonadConfigDir, resetMonadConfigDir } from '../src/monad-config-dir.js';
+import { setElanousConfigDir, resetElanousConfigDir } from '../src/elanous-config-dir.js';
 import { DEFAULT_REGISTRY_THEME, THEME_REGISTRY } from '../src/themes/index.js';
 
 let tmpRoot: string;
@@ -44,29 +44,29 @@ let prevDc: string | undefined;
 let prevTools: string | undefined;
 let prevDebug: string | undefined;
 beforeEach(() => {
-  tmpRoot = mkdtempSync(join(tmpdir(), 'monad-nexus-n3-cfg-'));
-  prevTg = process.env.MONAD_TELEGRAM_BOT_TOKEN;
-  prevDc = process.env.MONAD_DISCORD_BOT_TOKEN;
-  prevTools = process.env.MONAD_TOOLS;
-  prevDebug = process.env.MONAD_DEBUG;
-  setMonadConfigDir(tmpRoot);
-  delete process.env.MONAD_TELEGRAM_BOT_TOKEN;
-  delete process.env.MONAD_DISCORD_BOT_TOKEN;
-  delete process.env.MONAD_TOOLS;
-  delete process.env.MONAD_DEBUG;
+  tmpRoot = mkdtempSync(join(tmpdir(), 'elanous-nexus-n3-cfg-'));
+  prevTg = process.env.ELANOUS_TELEGRAM_BOT_TOKEN;
+  prevDc = process.env.ELANOUS_DISCORD_BOT_TOKEN;
+  prevTools = process.env.ELANOUS_TOOLS;
+  prevDebug = process.env.ELANOUS_DEBUG;
+  setElanousConfigDir(tmpRoot);
+  delete process.env.ELANOUS_TELEGRAM_BOT_TOKEN;
+  delete process.env.ELANOUS_DISCORD_BOT_TOKEN;
+  delete process.env.ELANOUS_TOOLS;
+  delete process.env.ELANOUS_DEBUG;
   clearSwitchRegistry();
   reloadAllBuiltins();
 });
 afterEach(() => {
-  resetMonadConfigDir();
-  if (prevTg === undefined) delete process.env.MONAD_TELEGRAM_BOT_TOKEN;
-  else process.env.MONAD_TELEGRAM_BOT_TOKEN = prevTg;
-  if (prevDc === undefined) delete process.env.MONAD_DISCORD_BOT_TOKEN;
-  else process.env.MONAD_DISCORD_BOT_TOKEN = prevDc;
-  if (prevTools === undefined) delete process.env.MONAD_TOOLS;
-  else process.env.MONAD_TOOLS = prevTools;
-  if (prevDebug === undefined) delete process.env.MONAD_DEBUG;
-  else process.env.MONAD_DEBUG = prevDebug;
+  resetElanousConfigDir();
+  if (prevTg === undefined) delete process.env.ELANOUS_TELEGRAM_BOT_TOKEN;
+  else process.env.ELANOUS_TELEGRAM_BOT_TOKEN = prevTg;
+  if (prevDc === undefined) delete process.env.ELANOUS_DISCORD_BOT_TOKEN;
+  else process.env.ELANOUS_DISCORD_BOT_TOKEN = prevDc;
+  if (prevTools === undefined) delete process.env.ELANOUS_TOOLS;
+  else process.env.ELANOUS_TOOLS = prevTools;
+  if (prevDebug === undefined) delete process.env.ELANOUS_DEBUG;
+  else process.env.ELANOUS_DEBUG = prevDebug;
   try { rmSync(tmpRoot, { recursive: true, force: true }); } catch { /* ignore */ }
   clearSwitchRegistry();
 });
@@ -220,7 +220,7 @@ describe('deriveChildEnv', () => {
       config: readUserConfig(),
       secrets: readSecrets(),
     });
-    expect(env.MONAD_TOOLS).toBe('all');
+    expect(env.ELANOUS_TOOLS).toBe('all');
   });
 
   test('tab-scope secret-ref expanded from secrets store', () => {
@@ -232,22 +232,22 @@ describe('deriveChildEnv', () => {
       config: readUserConfig(),
       secrets: readSecrets(),
     });
-    expect(env.MONAD_TELEGRAM_BOT_TOKEN).toBe('SECRET-XYZ');
+    expect(env.ELANOUS_TELEGRAM_BOT_TOKEN).toBe('SECRET-XYZ');
   });
 
   test('legacy env fallback honored when switch unset', () => {
-    process.env.MONAD_TOOLS = 'readonly';
+    process.env.ELANOUS_TOOLS = 'readonly';
     const { registry } = setupTabs();
     const env = deriveChildEnv({
       tab: registry.get('daemon:1')!,
       config: readUserConfig(),
       secrets: readSecrets(),
     });
-    expect(env.MONAD_TOOLS).toBe('readonly');
+    expect(env.ELANOUS_TOOLS).toBe('readonly');
   });
 
   test('legacy env fallback disabled → switch unset → no env entry', () => {
-    process.env.MONAD_TOOLS = 'readonly';
+    process.env.ELANOUS_TOOLS = 'readonly';
     const { registry } = setupTabs();
     const env = deriveChildEnv({
       tab: registry.get('daemon:1')!,
@@ -255,11 +255,11 @@ describe('deriveChildEnv', () => {
       secrets: readSecrets(),
       legacyEnvFallback: false,
     });
-    expect(env.MONAD_TOOLS).toBeUndefined();
+    expect(env.ELANOUS_TOOLS).toBeUndefined();
   });
 
   test('switch value beats legacy env', () => {
-    process.env.MONAD_TOOLS = 'none';
+    process.env.ELANOUS_TOOLS = 'none';
     patchUserConfig((c) => writeSwitchValue(c, 'global.tools', 'webterm'));
     const { registry } = setupTabs();
     const env = deriveChildEnv({
@@ -267,20 +267,20 @@ describe('deriveChildEnv', () => {
       config: readUserConfig(),
       secrets: readSecrets(),
     });
-    expect(env.MONAD_TOOLS).toBe('webterm');
+    expect(env.ELANOUS_TOOLS).toBe('webterm');
   });
 
   test('appliesTo narrows tab-scope switches', () => {
     setSecret('tg-token', 'SECRET');
     patchUserConfig((c) => writeSwitchValue(c, 'tabs.telegram:1.tokenRef', makeSecretRef('tg-token')));
     const { registry } = setupTabs();
-    // daemon should NOT receive MONAD_TELEGRAM_BOT_TOKEN
+    // daemon should NOT receive ELANOUS_TELEGRAM_BOT_TOKEN
     const env = deriveChildEnv({
       tab: registry.get('daemon:1')!,
       config: readUserConfig(),
       secrets: readSecrets(),
     });
-    expect(env.MONAD_TELEGRAM_BOT_TOKEN).toBeUndefined();
+    expect(env.ELANOUS_TELEGRAM_BOT_TOKEN).toBeUndefined();
   });
 });
 
@@ -295,9 +295,9 @@ describe('migrateLegacyEnvToConfig', () => {
     const result = migrateLegacyEnvToConfig({
       state,
       tabs: registry.list(),
-      envSource: { MONAD_TOOLS: 'all' } as NodeJS.ProcessEnv,
+      envSource: { ELANOUS_TOOLS: 'all' } as NodeJS.ProcessEnv,
     });
-    expect(result.migrated).toContainEqual({ switchId: 'global.tools', legacyEnvName: 'MONAD_TOOLS' });
+    expect(result.migrated).toContainEqual({ switchId: 'global.tools', legacyEnvName: 'ELANOUS_TOOLS' });
     expect(readSwitchValue(readUserConfig(), 'global.tools')).toBe('all');
   });
 
@@ -308,7 +308,7 @@ describe('migrateLegacyEnvToConfig', () => {
     const result = migrateLegacyEnvToConfig({
       state,
       tabs: registry.list(),
-      envSource: { MONAD_TELEGRAM_BOT_TOKEN: 'TG-FROM-ENV' } as NodeJS.ProcessEnv,
+      envSource: { ELANOUS_TELEGRAM_BOT_TOKEN: 'TG-FROM-ENV' } as NodeJS.ProcessEnv,
     });
     const m = result.migrated.find((x) => x.switchId === 'tabs.telegram:1.tokenRef');
     expect(m).toBeDefined();
@@ -326,7 +326,7 @@ describe('migrateLegacyEnvToConfig', () => {
     const result = migrateLegacyEnvToConfig({
       state,
       tabs: registry.list(),
-      envSource: { MONAD_TOOLS: 'all' } as NodeJS.ProcessEnv,
+      envSource: { ELANOUS_TOOLS: 'all' } as NodeJS.ProcessEnv,
     });
     expect(result.migrated.find((x) => x.switchId === 'global.tools')).toBeUndefined();
     expect(result.skipped.find((s) => s.switchId === 'global.tools')?.reason).toBe('already-set');
@@ -339,11 +339,11 @@ describe('migrateLegacyEnvToConfig', () => {
     migrateLegacyEnvToConfig({
       state,
       tabs: registry.list(),
-      envSource: { MONAD_TOOLS: 'all' } as NodeJS.ProcessEnv,
+      envSource: { ELANOUS_TOOLS: 'all' } as NodeJS.ProcessEnv,
     });
     const ev = state.events.find((e) => e.kind === 'config.changed');
     expect(ev).toBeDefined();
-    expect((ev?.detail as { deprecation?: string })?.deprecation).toContain('MONAD_*');
+    expect((ev?.detail as { deprecation?: string })?.deprecation).toContain('ELANOUS_*');
   });
 });
 
@@ -428,7 +428,7 @@ describe('applySwitchChange', () => {
 });
 
 describe('paths', () => {
-  test('userConfigPath / secretsPath honor setMonadConfigDir override', () => {
+  test('userConfigPath / secretsPath honor setElanousConfigDir override', () => {
     expect(userConfigPath()).toBe(join(tmpRoot, 'config.json'));
     expect(secretsPath()).toBe(join(tmpRoot, 'secrets.json'));
   });

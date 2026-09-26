@@ -55,7 +55,7 @@ describe('mss category-infer — 8-track prefix mapping', () => {
   });
 
   test('mss — src/mss/**', () => {
-    expect(inferCategoryFromPath('src/mss/identity.ts', 'getOrCreateMonadId')).toBe('mss.get-or-create-monad-id');
+    expect(inferCategoryFromPath('src/mss/identity.ts', 'getOrCreateElanousId')).toBe('mss.get-or-create-elanous-id');
   });
 
   test('plugin — plugins/**', () => {
@@ -72,7 +72,7 @@ describe('mss category-infer — 8-track prefix mapping', () => {
   });
 
   test('absolute path with backslashes normalised', () => {
-    expect(inferCategoryFromPath('C:\\projects\\monad\\src\\input-core\\mode.ts', 'setMode'))
+    expect(inferCategoryFromPath('C:\\projects\\elanous\\src\\input-core\\mode.ts', 'setMode'))
       .toBe('idx.set-mode');
   });
 });

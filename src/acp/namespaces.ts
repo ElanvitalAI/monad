@@ -19,9 +19,9 @@
  *  bun test test/acp-backend-sessions.test.ts
  *  ``` */
 
-/** monad 가 «클라이언트»로서 외부 백엔드(codex/claude…)를 몰 때 붙는 접두.
+/** elanous 가 «클라이언트»로서 외부 백엔드(codex/claude…)를 몰 때 붙는 접두.
  *  전체 형태는 `acp-cli:<brand>:<raw>`. */
 export const CLIENT_NAMESPACE = 'acp-cli:';
 
-/** monad 가 «서버»로서 상대에게 노출하는 세션의 접두. 전체 형태는 `acp-srv:<raw>`. */
+/** elanous 가 «서버»로서 상대에게 노출하는 세션의 접두. 전체 형태는 `acp-srv:<raw>`. */
 export const SERVER_NAMESPACE = 'acp-srv:';

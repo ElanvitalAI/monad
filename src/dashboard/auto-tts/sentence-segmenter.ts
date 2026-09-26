@@ -37,7 +37,7 @@ export interface SentenceSegmenterOpts {
   /** Hard cap on the buffered, not-yet-emitted text. When exceeded,
    *  the buffer is emitted as a single forced sentence so a runaway
    *  response without sentence punctuation (e.g. one giant URL line)
-   *  can't pile up forever. Default 2000 chars · `MONAD_AUTO_TTS_MAX_LENGTH`. */
+   *  can't pile up forever. Default 2000 chars · `ELANOUS_AUTO_TTS_MAX_LENGTH`. */
   maxSentenceChars?: number;
 }
 

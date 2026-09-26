@@ -98,12 +98,12 @@ describe('applyShadowToTarget', () => {
     writeFileSync(join(s.path, 'a.txt'), 'edited-a\n');
     writeFileSync(join(s.path, 'new.txt'), 'brand-new\n');
     rmSync(join(s.path, 'keep.txt'));
-    writeFileSync(join(s.path, '.monad-child-liveness.hb'), 'shadow-heartbeat\n');
-    mkdirSync(join(s.path, '.monad'));
-    writeFileSync(join(s.path, '.monad', 'state.json'), 'shadow-state\n');
-    writeFileSync(join(target, '.monad-child-liveness.hb'), 'target-heartbeat\n');
-    mkdirSync(join(target, '.monad'));
-    writeFileSync(join(target, '.monad', 'state.json'), 'target-state\n');
+    writeFileSync(join(s.path, '.elanous-child-liveness.hb'), 'shadow-heartbeat\n');
+    mkdirSync(join(s.path, '.elanous'));
+    writeFileSync(join(s.path, '.elanous', 'state.json'), 'shadow-state\n');
+    writeFileSync(join(target, '.elanous-child-liveness.hb'), 'target-heartbeat\n');
+    mkdirSync(join(target, '.elanous'));
+    writeFileSync(join(target, '.elanous', 'state.json'), 'target-state\n');
 
     const r = applyShadowToTarget({ shadowPath: s.path, target, stamp: 'runtime-artifacts' });
 
@@ -111,8 +111,8 @@ describe('applyShadowToTarget', () => {
     expect(readFileSync(join(target, 'a.txt'), 'utf8')).toBe('edited-a\n');
     expect(readFileSync(join(target, 'new.txt'), 'utf8')).toBe('brand-new\n');
     expect(existsSync(join(target, 'keep.txt'))).toBe(false);
-    expect(readFileSync(join(target, '.monad-child-liveness.hb'), 'utf8')).toBe('target-heartbeat\n');
-    expect(readFileSync(join(target, '.monad', 'state.json'), 'utf8')).toBe('target-state\n');
+    expect(readFileSync(join(target, '.elanous-child-liveness.hb'), 'utf8')).toBe('target-heartbeat\n');
+    expect(readFileSync(join(target, '.elanous', 'state.json'), 'utf8')).toBe('target-state\n');
   });
 
   test('그림자/대상 없음 → throw(적용 전 가드)', () => {

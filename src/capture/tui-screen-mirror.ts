@@ -16,7 +16,7 @@
 // ⚠️ HIGHEST-STAKES seam in this arc — it wraps the interactive TUI's
 // output path. Bulletproof fail-soft: the mirror feed is try/catch'd and
 // the ORIGINAL write is always delegated with its exact args/return, so
-// a mirror bug can never corrupt or drop real output. `MONAD_TUI_SELF_REPORT=0`
+// a mirror bug can never corrupt or drop real output. `ELANOUS_TUI_SELF_REPORT=0`
 // disables the whole thing. cf. REPORT §5 (S2), registry.ts:349 (renderScreen).
 
 import { Terminal as XtermHeadless } from '@xterm/headless';

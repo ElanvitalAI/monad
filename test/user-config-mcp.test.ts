@@ -1,6 +1,6 @@
 // ── user-config: mcp.servers sparse parse ──
 //
-// Validates that the `mcp` sub-tree in `~/.monad/config.json`
+// Validates that the `mcp` sub-tree in `~/.elanous/config.json`
 // parses correctly using the same sparse pattern as `notifications.apns`.
 // Goal: invalid entries are silently dropped (graceful boot) and the
 // whole `mcp` field disappears when no valid server survives.
@@ -170,11 +170,11 @@ describe('user-config mcp.servers', () => {
           id: 'remote',
           transport: 'http',
           url: 'https://mcp.example.com',
-          bearerTokenEnv: ' MONAD_MCP_BEARER ',
+          bearerTokenEnv: ' ELANOUS_MCP_BEARER ',
         }],
       },
     });
-    expect(expectHttp(buildUserConfig(cfgPath).mcp?.servers[0]).bearerTokenEnv).toBe('MONAD_MCP_BEARER');
+    expect(expectHttp(buildUserConfig(cfgPath).mcp?.servers[0]).bearerTokenEnv).toBe('ELANOUS_MCP_BEARER');
 
     write({
       mcp: {

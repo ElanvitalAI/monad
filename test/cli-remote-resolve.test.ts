@@ -1,4 +1,4 @@
-// T4.C — monad no-arg default remote resolve.
+// T4.C — elanous no-arg default remote resolve.
 
 import { describe, expect, test } from 'bun:test';
 import { mkdtempSync, rmSync } from 'node:fs';
@@ -8,12 +8,12 @@ import { join as joinPath } from 'node:path';
 import {
   resolveRemoteAttach,
   stripRemoteFlags,
-  bookmarkToMonadRemote,
+  bookmarkToElanousRemote,
 } from '../src/cli/remote-resolve.js';
 import { RemotesStore, type RemoteEntry } from '../src/cli/remotes.js';
 
 function mkStore() {
-  const root = mkdtempSync(joinPath(tmpdir(), 'monad-resolve-'));
+  const root = mkdtempSync(joinPath(tmpdir(), 'elanous-resolve-'));
   const store = new RemotesStore({
     remotesFilePath: joinPath(root, 'remotes.json'),
     tokensDir: joinPath(root, 'remotes'),
@@ -39,9 +39,9 @@ describe('T4.C · stripRemoteFlags', () => {
   });
 });
 
-describe('T4.C · bookmarkToMonadRemote', () => {
+describe('T4.C · bookmarkToElanousRemote', () => {
   test('returns ws-url verbatim', () => {
-    expect(bookmarkToMonadRemote(entry('mbp'))).toBe('ws://mbp:31415/v1/acp');
+    expect(bookmarkToElanousRemote(entry('mbp'))).toBe('ws://mbp:31415/v1/acp');
   });
 });
 
@@ -94,7 +94,7 @@ describe('T4.C · resolveRemoteAttach precedence', () => {
     cleanup();
   });
 
-  test('MONAD_REMOTE env present → kind=env (legacy compat path)', () => {
+  test('ELANOUS_REMOTE env present → kind=env (legacy compat path)', () => {
     const { store, cleanup } = mkStore();
     const tok = store.saveToken('a', 'tokA');
     store.addRemote('a', { ...entry('a'), token_file: tok });

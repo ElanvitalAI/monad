@@ -1,7 +1,7 @@
-// codex 계정을 monad «정본 스토어»에 들이고 조회한다.
+// codex 계정을 elanous «정본 스토어»에 들이고 조회한다.
 //
-// ⛔⭐ 왜 필요한가: 공식 CLI 로 로그인하면 토큰은 «그 홈»에만 있다. monad 는 정본을
-//   `~/.monad/auth.json` 에서 읽으므로, 들여오지 않으면 그 계정으로 «실행»할 수 없다
+// ⛔⭐ 왜 필요한가: 공식 CLI 로 로그인하면 토큰은 «그 홈»에만 있다. elanous 는 정본을
+//   `~/.elanous/auth.json` 에서 읽으므로, 들여오지 않으면 그 계정으로 «실행»할 수 없다
 //   (조회는 되는데 실행은 안 되던 그 자리 · MANUAL-llm-provider-operations §3a).
 // ⛔ 토큰 «값»은 어디에도 출력하지 않는다 — accountId 앞 8자만(R-LLM2).
 
@@ -66,7 +66,7 @@ export type ImportResult =
 export async function importCodexAccountFromHome(
   name: string,
   home: string,
-  /** ⛔ 테스트 격리 심 — 안 주면 정본 스토어. 실제 ~/.monad 를 테스트가 만지지 않게 한다. */
+  /** ⛔ 테스트 격리 심 — 안 주면 정본 스토어. 실제 ~/.elanous 를 테스트가 만지지 않게 한다. */
   storePath?: string,
 ): Promise<ImportResult> {
   if (!isValidAccountName(name)) {
@@ -467,7 +467,7 @@ export function inspectCodexRotation(
   // ⛔ 여기도 «같은 심»을 쓴다 — 한 자리만 고치면 표면과 런타임이 «다른 계정»을 말한다
   //   (2026-08-11 72차: 실제로 그랬다 — 런타임은 고쳤는데 status 가 계속 default 를 말했다).
   const current = resolveCodexAccount(env, { storedHome: (key) => loadTokens(key, path)?.codexHome });
-  const explicit = Boolean(env.MONAD_CODEX_ACCOUNT?.trim());
+  const explicit = Boolean(env.ELANOUS_CODEX_ACCOUNT?.trim());
   const rotationConfig = readCodexAccountRotationConfig(configReader);
   const enabled = rotationConfig.enabled;
   const currentHomeInfo = effectiveCodexHome(current, loadTokens(current.storeKey, path), env);
@@ -513,7 +513,7 @@ export function resolveCodexAccountForRun(
   //   관측은 `explicit` 이라 말한다(2026-08-11 72차 실측).
   const storePathForHome = deps.storePath ?? authStorePath();
   const current = resolveCodexAccount(env, { storedHome: (key) => loadTokens(key, storePathForHome)?.codexHome });
-  const explicit = Boolean(env.MONAD_CODEX_ACCOUNT?.trim());
+  const explicit = Boolean(env.ELANOUS_CODEX_ACCOUNT?.trim());
   // ⛔⭐ 사람이 «명시»했으면 고정보다 «먼저» 이긴다(결정 ③) — 고정을 읽지도 쓰지도 않는다.
   //   고정이 앞서면, 앞선 호출이 만든 회전 결과가 「명시한 계정」을 덮는다.
   if (explicit) { observeRotation({ reason: 'explicit' }, current.name); return current; }
@@ -534,7 +534,7 @@ export function resolveCodexAccountForRun(
   const path = storePathForHome;
   // ⛔ 핀 키에 «스토어 경계»를 넣는다 — 같은 런에서 다른 스토어를 조회하면 다른 답이어야 한다
   //   (리뷰 should-fix: 테스트용 storePath 로 만든 핀이 운영 조회에 재사용될 수 있었다).
-  const runId = env.MONAD_RUN_ID?.trim();
+  const runId = env.ELANOUS_RUN_ID?.trim();
   const runKey = runId ? `${runId}\u0000${path}` : undefined;
   if (runKey) {
     const pinned = pinnedByRun.get(runKey);

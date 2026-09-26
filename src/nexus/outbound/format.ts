@@ -48,7 +48,7 @@ export function chunkForDiscord(text: string, limit = 2000): string[] {
 /** 채널 타입 → 포맷된 메시지. 채널별 포맷 정책의 단일 출처.
  *  - telegram: 원문 + markdown 플래그(sendTelegramReport가 3900자 분할 처리).
  *  - discord:  plain(markdown 폴백) + 2000자 분할.
- *  - pushcut:  제목("monad <kind>") + 본문(아이폰 네이티브 푸시). */
+ *  - pushcut:  제목("elanous <kind>") + 본문(아이폰 네이티브 푸시). */
 export function formatForChannel(type: OutboundChannelType, msg: OutboundMsg): FormattedMessage {
   switch (type) {
     case 'telegram':
@@ -56,7 +56,7 @@ export function formatForChannel(type: OutboundChannelType, msg: OutboundMsg): F
     case 'discord':
       return { text: msg.text, chunks: chunkForDiscord(msg.text), markdown: false };
     case 'pushcut':
-      return { text: msg.text, title: `monad ${msg.kind}` };
+      return { text: msg.text, title: `elanous ${msg.kind}` };
     default:
       return { text: msg.text };
   }

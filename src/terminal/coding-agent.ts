@@ -3,7 +3,7 @@
 // Thin wrapper over TerminalSessionRegistry that knows how to spawn
 // a "live agent host" session (claude-code / codex) with:
 //
-//   • MONAD_SESSION_ID env so the child can self-identify in any
+//   • ELANOUS_SESSION_ID env so the child can self-identify in any
 //     scripts/hooks it runs
 //   • TERM=xterm-ghostty for rich color/terminfo
 //   • CLICOLOR_FORCE so agents that detect piping still emit color
@@ -94,7 +94,7 @@ export function spawnCodingAgent(
   // (see shell-env-bootstrap.ts), so it's the right baseline.
   const env: Record<string, string> = buildPtyEnv({
     ...(opts.env ?? {}),
-    MONAD_AGENT_BRAND: opts.brand,
+    ELANOUS_AGENT_BRAND: opts.brand,
     // Session id is filled in below once we know it.
     TERM: 'xterm-ghostty',
     // COLORTERM=truecolor — needed for prompt themes (p10k, starship)
@@ -121,9 +121,9 @@ export function spawnCodingAgent(
     { termCols: deps.termCols, termRows: deps.termRows },
   );
 
-  // Backfill MONAD_SESSION_ID now that we have the id. The PTY
+  // Backfill ELANOUS_SESSION_ID now that we have the id. The PTY
   // inherits the env at spawn time; we can't mutate it after the
-  // fact, so the child sees MONAD_AGENT_BRAND without the id.
+  // fact, so the child sees ELANOUS_AGENT_BRAND without the id.
   // That's acceptable for P9 — any script that needs the id can
   // fetch it from the socket API (follow-up).
 

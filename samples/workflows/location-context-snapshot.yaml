@@ -18,7 +18,7 @@ model: haiku
 nodes:
   - id: resolve-place
     bash: |
-      PLACE="${MONAD_LOCATION_PLACE:-}"
+      PLACE="${ELANOUS_LOCATION_PLACE:-}"
       if [ -z "$PLACE" ] && [ -n "$ARGUMENTS" ]; then
         PLACE="$ARGUMENTS"
       fi
@@ -30,15 +30,15 @@ nodes:
 
   - id: gather-priors
     bash: |
-      OBSIDIAN_DIR="${MONAD_OBSIDIAN_DIR:-$HOME/Documents/Obsidian}"
+      OBSIDIAN_DIR="${ELANOUS_OBSIDIAN_DIR:-$HOME/Documents/Obsidian}"
       RAW='$resolve-place.output'
       PLACE="${RAW#place=}"
       if [ "$PLACE" = "unknown" ] || [ -z "$PLACE" ]; then
-        echo "(no place context — set MONAD_LOCATION_PLACE or pass as argument)"
+        echo "(no place context — set ELANOUS_LOCATION_PLACE or pass as argument)"
         exit 0
       fi
       if [ ! -d "$OBSIDIAN_DIR" ]; then
-        echo "(Obsidian dir missing — set MONAD_OBSIDIAN_DIR)"
+        echo "(Obsidian dir missing — set ELANOUS_OBSIDIAN_DIR)"
         exit 0
       fi
       echo "## Prior notes for: $PLACE"
@@ -63,10 +63,10 @@ nodes:
 
   - id: save-snapshot
     bash: |
-      OBSIDIAN_DIR="${MONAD_OBSIDIAN_DIR:-$HOME/Documents/Obsidian}"
+      OBSIDIAN_DIR="${ELANOUS_OBSIDIAN_DIR:-$HOME/Documents/Obsidian}"
       DIR="$OBSIDIAN_DIR/Locations"
       mkdir -p "$DIR" 2>/dev/null || {
-        echo "ERROR: cannot create $DIR — set MONAD_OBSIDIAN_DIR"
+        echo "ERROR: cannot create $DIR — set ELANOUS_OBSIDIAN_DIR"
         exit 1
       }
       DATE=$(date +%Y-%m-%d)

@@ -18,10 +18,10 @@ import {
   type FeedbackEnvelope,
   type MissionUpdatePayload,
 } from '../feedback/envelope.js';
-import { formatMonadFeedbackEnvelope } from './monad-extensions.js';
+import { formatElanousFeedbackEnvelope } from './elanous-extensions.js';
 
 /** prompt handler 가 받은 `broadcast` 함수 (sessionUpdate notification 보내는
- *  공통 wrap). agent_thought_chunk + monad/feedback/emit text-in-text wire
+ *  공통 wrap). agent_thought_chunk + elanous/feedback/emit text-in-text wire
  *  로 envelope payload 를 fan-out. */
 export type AcpBroadcastFn = (
   sessionId: string,
@@ -68,7 +68,7 @@ export function createMissionTurnEmitter(
 
   async function broadcastEnvelope(env: FeedbackEnvelope): Promise<void> {
     try {
-      const text = formatMonadFeedbackEnvelope({ method: 'emit', payload: env });
+      const text = formatElanousFeedbackEnvelope({ method: 'emit', payload: env });
       await deps.broadcast(deps.sessionId, {
         sessionUpdate: 'agent_thought_chunk',
         content: { type: 'text', text },

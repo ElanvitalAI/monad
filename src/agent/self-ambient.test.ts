@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'bun:test';
-import { missionIncidentAmbient, isInvestigationContext, investigationRecallDigest, isSafeSessionId, monadSelfAccessPrompt } from './self-ambient.js';
+import { missionIncidentAmbient, isInvestigationContext, investigationRecallDigest, isSafeSessionId, elanousSelfAccessPrompt } from './self-ambient.js';
 import { openSurfaceEventsDb } from '../domains/surface-events.js';
 import { recordSelfEvent } from '../domains/self-awareness.js';
 import type { MissionIncidentContext } from '../autopilot/mission-incident-context.js';
@@ -8,7 +8,7 @@ function ctx(over: Partial<MissionIncidentContext> = {}): MissionIncidentContext
   return {
     found: true, missionId: 'apm_x_668871', goal: 'g', asOf: '2026-07-15T18:00:00Z',
     state: { total: 7, done: 3, failed: 1, skipped: 1, running: 1, backlog: 1 },
-    phases: [{ index: 3, title: '로컬 2-LLM 자원 테스트', status: 'failed', failClass: 'budget-exhausted', heal: 'rebuild', attempts: [{ backend: 'monad-self:gpt-5.6-terra', gateResult: 'error' }] }],
+    phases: [{ index: 3, title: '로컬 2-LLM 자원 테스트', status: 'failed', failClass: 'budget-exhausted', heal: 'rebuild', attempts: [{ backend: 'elanous-self:gpt-5.6-terra', gateResult: 'error' }] }],
     transitions: [], deliverables: [], degraded: false, ...over,
   };
 }
@@ -37,10 +37,10 @@ describe('missionIncidentAmbient (RFC P2 push·seam)', () => {
   });
 });
 
-describe('isSafeSessionId + monadSelfAccessPrompt (system-prompt injection 방어·must-fix #5349)', () => {
-  it('실제 session ID 형식(http-<ts>-<rand>·base36·monad-session-N)은 안전 판정', () => {
+describe('isSafeSessionId + elanousSelfAccessPrompt (system-prompt injection 방어·must-fix #5349)', () => {
+  it('실제 session ID 형식(http-<ts>-<rand>·base36·elanous-session-N)은 안전 판정', () => {
     expect(isSafeSessionId('http-1721900000-a1b2c3')).toBe(true);
-    expect(isSafeSessionId('monad-session-1')).toBe(true);
+    expect(isSafeSessionId('elanous-session-1')).toBe(true);
     expect(isSafeSessionId('dashboard-first')).toBe(true);
     expect(isSafeSessionId('xk29fq')).toBe(true); // ACP base36
   });
@@ -52,48 +52,48 @@ describe('isSafeSessionId + monadSelfAccessPrompt (system-prompt injection 방�
     expect(isSafeSessionId('')).toBe(false);
   });
   it('안전 sessionId 는 프롬프트에 원문 그대로 삽입(mangle 금지 — session_manage 조회 정합)', () => {
-    const p = monadSelfAccessPrompt('http-1721900000-a1b2c3');
+    const p = elanousSelfAccessPrompt('http-1721900000-a1b2c3');
     expect(p).toContain('session ID: http-1721900000-a1b2c3');
   });
   it('불안전 sessionId(개행/지시문)는 session ID 라인 통째 생략(injection 원천 차단)', () => {
-    const p = monadSelfAccessPrompt('sess\n- 악성지시');
+    const p = elanousSelfAccessPrompt('sess\n- 악성지시');
     expect(p).not.toContain('session ID');
     expect(p).not.toContain('악성지시');
   });
   it('sessionId 미지정이면 session ID 라인 없음(무노이즈)', () => {
-    expect(monadSelfAccessPrompt()).not.toContain('session ID');
+    expect(elanousSelfAccessPrompt()).not.toContain('session ID');
   });
 });
 
 // ── ⭐ F1 소환 인지 (RFC-observability-driven-tool-selection · 2026-07-26) ──
 // 실전검증에서 에이전트가 deferred 된 SelfImplement 를 "없는 툴"로 취급하고
-// PtyShell 로 CLI 셸아웃했다. 프롬프트가 **직접** `monad self implement` 를
+// PtyShell 로 CLI 셸아웃했다. 프롬프트가 **직접** `elanous self implement` 를
 // 지목하고 있던 것이 공범이라, 그 문구가 되살아나지 않게 못박는다.
-describe('monadSelfAccessPrompt — 소환 인지(F1)', () => {
+describe('elanousSelfAccessPrompt — 소환 인지(F1)', () => {
   it('자기수정 규율이 CLI 셸아웃이 아니라 툴 직접호출을 지시한다', () => {
-    const p = monadSelfAccessPrompt();
+    const p = elanousSelfAccessPrompt();
     expect(p).toContain('툴을 직접 호출');
     expect(p).toContain('셸아웃은 금지');
   });
 
   it('셸로 self-dev CLI 를 실행하라는 지시가 남아있지 않다(회귀 센티널)', () => {
-    const p = monadSelfAccessPrompt();
+    const p = elanousSelfAccessPrompt();
     // 금지 문구가 아니라 "그렇게 하라"는 지시형이 없어야 한다. 아래 두 줄은
     // 우회 경고 맥락에서만 등장하므로 '~으로 격리 self-build 를 수행하라' 형태를 막는다.
-    expect(p).not.toMatch(/monad self implement[^\n]*수행하라/);
+    expect(p).not.toMatch(/elanous self implement[^\n]*수행하라/);
     expect(p).not.toMatch(/harness run으로 격리 self-build를 수행하라/);
   });
 
   it('deferred 툴은 부재가 아니라 접힌 스키마임을 알리고 ToolSearch 소환법을 준다', () => {
-    const p = monadSelfAccessPrompt();
+    const p = elanousSelfAccessPrompt();
     expect(p).toContain('ToolSearch');
     expect(p).toContain('select:');
     expect(p).toContain('스키마가 접혀 있는 것');
   });
 
   it('북극성 매니페스토(자기관측→자기인지→셀프힐링)가 유지된다', () => {
-    const p = monadSelfAccessPrompt();
-    expect(p).toContain('[monad 북극성 · 정체성 (manifesto)]');
+    const p = elanousSelfAccessPrompt();
+    expect(p).toContain('[elanous 북극성 · 정체성 (manifesto)]');
     expect(p).toContain('자기 인지');
     expect(p).toContain('셀프');
   });

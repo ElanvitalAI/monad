@@ -33,7 +33,7 @@ const split = (axis: 'h' | 'v', a: LayoutNode, b: LayoutNode, ratio = 0.5): Layo
   ({ kind: 'split', axis, a, b, ratio });
 
 let dir = '';
-beforeEach(() => { dir = mkdtempSync(join(tmpdir(), 'monad-layout-cmd-')); });
+beforeEach(() => { dir = mkdtempSync(join(tmpdir(), 'elanous-layout-cmd-')); });
 afterEach(() => { rmSync(dir, { recursive: true, force: true }); });
 
 describe('saveWindowLayout', () => {

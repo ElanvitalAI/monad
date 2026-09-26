@@ -15,7 +15,7 @@ import { getUserConfig, type LLMProviderName, type ReasoningLevel } from '../use
 
 /** Provider used for tier defaults. Model-env mismatches are named in
  *  user-config at selection time; this layer stays on the provider ladder
- *  so a foreign `MONAD_LLM_MODEL` cannot retarget active-provider defaults.
+ *  so a foreign `ELANOUS_LLM_MODEL` cannot retarget active-provider defaults.
  *  ⛔ `openai` 와 `openai-codex` 는 사다리가 다르다 — gpt-5.6-sol 은
  *     openai-codex 눈금이고 openai 기본값을 덮어쓰지 않는다.
  *  ⛔ Do not import this file from user-config — that is the cycle. */

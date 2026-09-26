@@ -1,7 +1,7 @@
 // AXON P4 — HITL Discord channel deps.
 //
 // Mirror of src/hitl/telegram-channel.ts (canonical pattern). The
-// Telegram channel uses callback_query data with the `monad-hitl:`
+// Telegram channel uses callback_query data with the `elanous-hitl:`
 // prefix; Discord uses button component customIds with the same
 // shape. Both channels post a message that embeds Yes / No buttons,
 // then wait for the user to tap one before resolving the pending
@@ -14,7 +14,7 @@
 // `src/discord.ts` (which already exists for outbound messages).
 //
 // Wire format:
-//   customId = monad-hitl-disc:<requestId>:<yes|no>
+//   customId = elanous-hitl-disc:<requestId>:<yes|no>
 //
 // Discord caps customId at 100 bytes, well above the 64-byte
 // Telegram limit. Our hitl-<timestamp> request ids sit under 20
@@ -26,9 +26,9 @@ import type {
   HitlAnswer,
 } from './confirm.js';
 
-const CUSTOM_ID_PREFIX = 'monad-hitl-disc';
+const CUSTOM_ID_PREFIX = 'elanous-hitl-disc';
 
-/** Narrow view of the Discord client/bot monad already uses elsewhere.
+/** Narrow view of the Discord client/bot elanous already uses elsewhere.
  *  We only need the bits to post a message with buttons and subscribe
  *  to button taps — the rest (presence, voice, etc.) is not our
  *  concern. Real impls wrap discord.js; tests inject a fake. */
@@ -65,7 +65,7 @@ export interface DiscordButtonQuery {
 export interface CreateDiscordHitlChannelOpts {
   bot: DiscordBot;
   /** Where to post prompts. Must be a channel the bot has post-rights
-   *  in. Monad config typically pins this at startup. */
+   *  in. Elanous config typically pins this at startup. */
   channelId: string;
   /** Edit posted messages with outcome text after resolution.
    *  Default true — keeps the history human-readable. */

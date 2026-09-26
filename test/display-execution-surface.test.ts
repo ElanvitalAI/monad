@@ -232,7 +232,7 @@ describe('execution surface factory', () => {
   // Regression: ghostty `macos-option-as-alt = left` (or any setting
   // that enables alt-as-esc-prefix) produces Alt+letter as either
   // kitty CSI-u (`\x1b[97;3u` for Alt+a) or legacy ESC-prefix
-  // (`\x1b a`). monad's tui.parseKey now decodes both into a Key with
+  // (`\x1b a`). elanous's tui.parseKey now decodes both into a Key with
   // alt=true; the encoder must turn that back into the canonical
   // ESC+<letter> sequence so non-kitty PTY children (claude / codex /
   // plain shell readline) see Alt as expected. Previously the alt bit

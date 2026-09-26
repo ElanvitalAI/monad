@@ -3,7 +3,7 @@
  *
  * Mirrors the I10 pipeline-metrics module but for the OpportunisticLauncher
  * tick loop. Each launch decision (success or rejection) appends one
- * JSONL row to `~/.monad/dispatch/runs.jsonl`. The accompanying
+ * JSONL row to `~/.elanous/dispatch/runs.jsonl`. The accompanying
  * `GET /v1/dispatch/runs` surface aggregates the file so the 7-day
  * dogfood gate (RESEARCH §11.3) has measurable inputs:
  *
@@ -12,8 +12,8 @@
  *   - top reject reasons (resource budget · idle · priority)
  *   - tasks dispatched per night
  *
- * Path resolution: env `MONAD_DISPATCH_DIR` (test override) →
- * `<homedir>/.monad/dispatch`.
+ * Path resolution: env `ELANOUS_DISPATCH_DIR` (test override) →
+ * `<homedir>/.elanous/dispatch`.
  *
  * Cross-ref:
  *   src/intake-plane/pipeline-metrics.ts (I10 sibling)
@@ -26,18 +26,18 @@ import {
   mkdirSync,
   readFileSync,
 } from 'node:fs';
-import { monadStateRoot } from '../autopilot/state-paths.js';
+import { elanousStateRoot } from '../autopilot/state-paths.js';
 import { join } from 'node:path';
 
 // ──────────────────── Path resolution ───────────────────────────────
 
-const DISPATCH_DIR_ENV = 'MONAD_DISPATCH_DIR';
+const DISPATCH_DIR_ENV = 'ELANOUS_DISPATCH_DIR';
 const RUNS_FILE = 'runs.jsonl';
 
 export function dispatchDir(): string {
   const env = process.env[DISPATCH_DIR_ENV];
   if (env && env.length > 0) return env;
-  return join(monadStateRoot(), 'dispatch');
+  return join(elanousStateRoot(), 'dispatch');
 }
 
 export function dispatchRunsPath(): string {

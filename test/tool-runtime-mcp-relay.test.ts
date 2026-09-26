@@ -1,6 +1,6 @@
 // ── listToolRuntimes('mcp') 의 proxy fallback 검증 (Phase 3) ──
 //
-// RFC #2474 §5.5 의 MCP server relay (Claude Code → monad MCP server
+// RFC #2474 §5.5 의 MCP server relay (Claude Code → elanous MCP server
 // → external MCP server) 가 작동하려면 `listToolRuntimes('mcp')` 가
 // proxy runtime 들을 응답에 포함해야 한다. proxy 는 native_tool_catalog
 // 에 entry 가 없으므로 catalog 필터만으로는 빠짐. Phase 3 에서 추가한

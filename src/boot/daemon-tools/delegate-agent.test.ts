@@ -2,7 +2,7 @@
 // 프롬프트 문자열 계약이라 회귀가 조용히 일어나기 쉬워 배선 가드로 고정.
 import { afterEach, beforeEach, describe, expect, mock, test } from 'bun:test';
 import { globalDualRoleManager } from '../../acp/dual-role-manager.js';
-import { monadSelfAccessPrompt } from '../../agent/self-ambient.js';
+import { elanousSelfAccessPrompt } from '../../agent/self-ambient.js';
 import { debug } from '../../debug/log.js';
 import { buildDelegateAgentTool, DELEGATE_BACKENDS, dispatchDelegateAgent } from './delegate-agent.js';
 import type { DaemonToolDispatchCtx } from './types.js';
@@ -44,7 +44,7 @@ describe('delegate_code_agent — 명시 지목시에만 위임(대표 결정 20
   });
 
   test('자기접근 규율 — 지목 없으면 크기 무관 직접 코딩', () => {
-    const p = monadSelfAccessPrompt();
+    const p = elanousSelfAccessPrompt();
     expect(p).toContain('직접 코딩하라');
     expect(p).toContain('명시 지목했을 때만');
   });
@@ -58,7 +58,7 @@ describe('delegate_code_agent — 명시 지목시에만 위임(대표 결정 20
   //   눌렀고, 그것이 「자연어 개발 요청이 하니스로 안 간다」의 프롬프트 층 원인이었다.
   //   이 가드가 없으면 같은 문장이 조용히 되돌아온다(리뷰 should-fix).
   test('자기접근 규율 — 소스 수정의 «기본»이 하니스이고, 직접 편집은 «작은 것»으로 남는다', () => {
-    const p = monadSelfAccessPrompt();
+    const p = elanousSelfAccessPrompt();
     // ① 기본값이 하니스라고 «말한다»
     expect(p).toContain('기본은 하니스다');
     expect(p).toContain('SelfImplement/RunDevHarness');

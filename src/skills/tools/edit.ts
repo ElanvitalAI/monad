@@ -19,7 +19,7 @@
 //     improve their editing accuracy and adds surface area.
 //   - Skips the "must have Read'd this file first" enforcement —
 //     that's an agent-state concern, not a tool correctness concern,
-//     and monad doesn't track per-file read state today.
+//     and elanous doesn't track per-file read state today.
 //   - No git integration or LSP notification. Bash + the user's own
 //     editor loop cover those cases.
 //

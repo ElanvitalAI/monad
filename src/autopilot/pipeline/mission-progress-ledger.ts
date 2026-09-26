@@ -40,7 +40,7 @@ export function evaluateMissionProgress(missionId: string, opts: { totalPhases?:
 }
 
 /** ★ 조율자 단일 로그(C4 수복) — 산재 카테고리 대신 `mission.coordinator.<event>` 통합. fail-soft.
- *  조회 = `monad logs --category mission.coordinator`. */
+ *  조회 = `elanous logs --category mission.coordinator`. */
 export function observeCoordinator(event: string, missionId: string, data: Record<string, unknown> = {}): void {
   try { debug.log('mission.coordinator', event, { missionId, ...data }); } catch { /* fail-soft */ }
 }

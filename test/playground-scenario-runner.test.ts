@@ -21,10 +21,10 @@ describe('runScenario · setup', () => {
   test('applies theme', async () => {
     const { harness, state } = createFakeHarness();
     await runScenario(
-      mkScenario([], { theme: 'monad-pastel-default' }),
+      mkScenario([], { theme: 'elanous-pastel-default' }),
       harness,
     );
-    expect(state.theme).toBe('monad-pastel-default');
+    expect(state.theme).toBe('elanous-pastel-default');
   });
 
   test('applies initial mounts in order', async () => {

@@ -271,7 +271,7 @@ describe('joinPtyLineage', () => {
 
   test('counts null lifecycle payloads as unreadable without throwing', () => {
     const result = joinPtyLineage([], [{ ...event(1, 10, null), payload: 'null' }], 'anything');
-    expect(result).toMatchObject({ scope: 'process-lineage', note: '이 런에 누가 참가했는지는 monad self participants가 답합니다.', groups: [], unreadablePayloads: 1 });
+    expect(result).toMatchObject({ scope: 'process-lineage', note: '이 런에 누가 참가했는지는 elanous self participants가 답합니다.', groups: [], unreadablePayloads: 1 });
   });
 });
 
@@ -607,7 +607,7 @@ describe('runPtyReap', () => {
           return { dbPath, status: 'ok', missingColumns: [], removed: 0, preserved: 0, decisions: [] };
         },
       });
-      await program.parseAsync(['node', 'monad', 'pty', 'reap', '--instance', 'first-root', 'second-root']);
+      await program.parseAsync(['node', 'elanous', 'pty', 'reap', '--instance', 'first-root', 'second-root']);
       expect(calls).toEqual(['/roots/first/manifest.db', '/roots/second/manifest.db']);
       expect(stdout.join('')).toContain('viewedRoots=2 viewedRootNameRange=first-root…second-root');
       expect(process.exitCode).toBe(0);
@@ -623,17 +623,17 @@ describe('runPtyLineage', () => {
   test('states its scope and participants boundary even when no lineage matches', () => {
     const result = runPtyLineage('nothing', lineageDeps([], []));
     expect(result).toMatchObject({ exitCode: 0 });
-    expect(result.message).toBe('scope: process-lineage\nnote: 이 런에 누가 참가했는지는 monad self participants가 답합니다.');
+    expect(result.message).toBe('scope: process-lineage\nnote: 이 런에 누가 참가했는지는 elanous self participants가 답합니다.');
   });
 
   test('adds shared scope and note without changing lineage group rows in human and JSON output', () => {
     const deps = lineageDeps([row({ id: 'parent', runId: 'run-metadata' }), row({ id: 'child', parentPtyId: 'parent', runId: 'run-metadata' })], []);
     const human = runPtyLineage('run-metadata', deps).message;
     const json = JSON.parse(runPtyLineage('run-metadata', deps, true).message);
-    expect(human).toBe('scope: process-lineage\nnote: 이 런에 누가 참가했는지는 monad self participants가 답합니다.\njoinedBy=parent\n  parent\tpty\ttest\talive\t10\n  child\tpty\ttest\talive\t10');
+    expect(human).toBe('scope: process-lineage\nnote: 이 런에 누가 참가했는지는 elanous self participants가 답합니다.\njoinedBy=parent\n  parent\tpty\ttest\talive\t10\n  child\tpty\ttest\talive\t10');
     expect(json).toMatchObject({
       scope: 'process-lineage',
-      note: '이 런에 누가 참가했는지는 monad self participants가 답합니다.',
+      note: '이 런에 누가 참가했는지는 elanous self participants가 답합니다.',
       groups: [{ joinedBy: 'parent', rows: [{ ptyId: 'parent' }, { ptyId: 'child' }] }],
     });
   });
@@ -704,10 +704,10 @@ describe('runPtyLineage', () => {
     const human = runPtyLineage('run-legacy', deps).message;
     const jsonMessage = runPtyLineage('run-legacy', deps, true).message;
     const json = JSON.parse(jsonMessage);
-    expect(human).toBe('scope: process-lineage\nnote: 이 런에 누가 참가했는지는 monad self participants가 답합니다.\njoinedBy=run\n  legacy\tpty\ttest\talive\t10');
+    expect(human).toBe('scope: process-lineage\nnote: 이 런에 누가 참가했는지는 elanous self participants가 답합니다.\njoinedBy=run\n  legacy\tpty\ttest\talive\t10');
     expect(jsonMessage).toBe(`{
   "scope": "process-lineage",
-  "note": "이 런에 누가 참가했는지는 monad self participants가 답합니다.",
+  "note": "이 런에 누가 참가했는지는 elanous self participants가 답합니다.",
   "groups": [
     {
       "joinedBy": "run",
@@ -805,16 +805,16 @@ describe('runPtyLineage', () => {
     const root = mkdtempSync(join(tmpdir(), 'pty-lineage-control-'));
     const dbPath = join(root, 'pty', 'manifest.db');
     const envBefore = {
-      MONAD_STATE_DIR: process.env.MONAD_STATE_DIR,
-      MONAD_NEST_DEPTH: process.env.MONAD_NEST_DEPTH,
-      MONAD_HARNESS_SPACE_ID: process.env.MONAD_HARNESS_SPACE_ID,
-      MONAD_PARENT_PTY_ID: process.env.MONAD_PARENT_PTY_ID,
+      ELANOUS_STATE_DIR: process.env.ELANOUS_STATE_DIR,
+      ELANOUS_NEST_DEPTH: process.env.ELANOUS_NEST_DEPTH,
+      ELANOUS_HARNESS_SPACE_ID: process.env.ELANOUS_HARNESS_SPACE_ID,
+      ELANOUS_PARENT_PTY_ID: process.env.ELANOUS_PARENT_PTY_ID,
     };
     try {
-      process.env.MONAD_STATE_DIR = root;
-      process.env.MONAD_NEST_DEPTH = '1';
-      process.env.MONAD_HARNESS_SPACE_ID = 'temporary-space';
-      delete process.env.MONAD_PARENT_PTY_ID;
+      process.env.ELANOUS_STATE_DIR = root;
+      process.env.ELANOUS_NEST_DEPTH = '1';
+      process.env.ELANOUS_HARNESS_SPACE_ID = 'temporary-space';
+      delete process.env.ELANOUS_PARENT_PTY_ID;
       setPtyManifestDbPathForTesting(dbPath);
       upsertPtyManifest({ id: 'isolated-pty', kind: 'pty', cmd: 'bun', workdir: root, startedAt: 1, now: 1 });
       enqueueControlMemo('temporary-space', 'inspect me');
@@ -839,14 +839,14 @@ describe('PTY-less agent references', () => {
     readAddressBook: () => ({ refs: [], deadRefs: [] }),
     log: () => {},
   };
-  const agentMessage = 'pty: agent:subagent-1 is a participant without a PTY and cannot be controlled by this command; inspect it via the observatory list or monad logs';
+  const agentMessage = 'pty: agent:subagent-1 is a participant without a PTY and cannot be controlled by this command; inspect it via the observatory list or elanous logs';
 
   test('distinguishes a PTY-less agent from a missing snapshot or text target', async () => {
     await expect(runPtySnapshot('agent:subagent-1', deps)).resolves.toEqual({ exitCode: 1, message: agentMessage });
     await expect(runPtyText('agent:subagent-1', 'hello', false, deps)).resolves.toEqual({ exitCode: 1, message: agentMessage });
   });
 
-  const scopedMissingMessage = (ref: string, count: number) => `pty: ${ref} was not found in the current instance address book (${count} live PTY ref${count === 1 ? '' : 's'}); inspect all registered instances with monad pty list --all --include-test`;
+  const scopedMissingMessage = (ref: string, count: number) => `pty: ${ref} was not found in the current instance address book (${count} live PTY ref${count === 1 ? '' : 's'}); inspect all registered instances with elanous pty list --all --include-test`;
 
   test('reports the local lookup scope and federated next action for a foreign-instance snapshot or text target', async () => {
     const localDeps: PtyTakeoverCommandDeps = {
@@ -965,8 +965,8 @@ describe('runPtyList federated tree identities', () => {
       ...base,
       listFederatedRefs: () => ({
         refs: [
-          { instance: 'test:monad-agent', id: 'pty-a', kind: 'shell', alive: true, ownerProcessAlive: true, sourceRoot: '/Users/a/source/tree-a/.monad/pty/manifest.db' },
-          { instance: 'test:monad-agent', id: 'pty-b', kind: 'shell', alive: true, ownerProcessAlive: true, sourceRoot: '/Users/b/source/tree-b/.monad/pty/manifest.db' },
+          { instance: 'test:monad-agent', id: 'pty-a', kind: 'shell', alive: true, ownerProcessAlive: true, sourceRoot: '/Users/a/source/tree-a/.elanous/pty/manifest.db' },
+          { instance: 'test:monad-agent', id: 'pty-b', kind: 'shell', alive: true, ownerProcessAlive: true, sourceRoot: '/Users/b/source/tree-b/.elanous/pty/manifest.db' },
           { instance: 'test:monad-agent', id: 'pty-missing', kind: 'shell', alive: true, ownerProcessAlive: true },
         ],
         unreadable: [],
@@ -1112,7 +1112,7 @@ describe('runPtyList empty-result scope', () => {
         listManifestRowsAt: () => [],
         isProcessAlive: () => true,
       });
-      await program.parseAsync(['node', 'monad', 'pty', 'list', '--json']);
+      await program.parseAsync(['node', 'elanous', 'pty', 'list', '--json']);
       expect(stdout).toEqual(['[]\n']);
       expect(JSON.parse(stdout[0]!)).toEqual([]);
       expect(stderr).toEqual(['pty list: no PTYs found (scope: current instance only)\n']);
@@ -1419,7 +1419,7 @@ describe('runPtyList remote bookmark', () => {
         return Response.json({
           terminals: [
             { id: 'origin_omitted' },                                                              // 유래 칸이 «없다»
-            { id: 'origin_given', terminalOriginCategory: 'monad', terminalOriginReason: 'spawned-by-run' },
+            { id: 'origin_given', terminalOriginCategory: 'elanous', terminalOriginReason: 'spawned-by-run' },
           ],
         });
       },
@@ -1443,7 +1443,7 @@ describe('runPtyList remote bookmark', () => {
       expect(byId.origin_omitted?.terminalOriginCategory).toBe('unknown');
       // ⊕ 칸이 «오면» 그대로 쓴다 — 가드가 «전부»를 덮으면 그것도 결함이다.
       expect(byId.origin_given?.terminalOriginReason).toBe('spawned-by-run');
-      expect(byId.origin_given?.terminalOriginCategory).toBe('monad');
+      expect(byId.origin_given?.terminalOriginCategory).toBe('elanous');
 
       // ⊕ 사람 산출(텍스트)에서도 그 문면이 «안 나온다».
       const textOut = (await runPtyList({ ...base, remotesStore: () => store }, { remote: true })).message;
@@ -1813,7 +1813,7 @@ describe('runPtyList remote bookmark', () => {
           return { ok: true, terminals: [{ id: 'pty_default_remote', kind: 'shell', alive: true }] };
         },
       });
-      await program.parseAsync(['node', 'monad', 'pty', 'list', '-r']);
+      await program.parseAsync(['node', 'elanous', 'pty', 'list', '-r']);
       expect(seen).toEqual([{ url: 'http://127.0.0.1:31416/v1/terminals', token: 'secret-token' }]);
       expect(stdout.join('')).toContain('pty_default_remote');
       expect(stdout.join('')).not.toContain('pty_local_only');
@@ -1838,7 +1838,7 @@ describe('runPtyList remote bookmark', () => {
           return { ok: true, terminals: [{ id: 'pty_should_not_list', kind: 'shell', alive: true }] };
         },
       });
-      await expect(program.parseAsync(['node', 'monad', 'pty', 'list', '-r', 'other'])).rejects.toThrow(/too many arguments/i);
+      await expect(program.parseAsync(['node', 'elanous', 'pty', 'list', '-r', 'other'])).rejects.toThrow(/too many arguments/i);
       expect(seen).toEqual([]);
     } finally {
       rmSync(dir, { recursive: true, force: true });
@@ -1861,7 +1861,7 @@ describe('runPtyList remote bookmark', () => {
           return { ok: true, terminals: [{ id: 'pty_named_remote', kind: 'shell', alive: true }] };
         },
       });
-      await program.parseAsync(['node', 'monad', 'pty', 'list', '--remote', 'other']);
+      await program.parseAsync(['node', 'elanous', 'pty', 'list', '--remote', 'other']);
       expect(seen).toEqual([{ url: 'http://127.0.0.1:31999/v1/terminals', token: 'other-token' }]);
       expect(stdout.join('')).toContain('pty_named_remote');
       expect(process.exitCode).toBe(0);

@@ -1,4 +1,4 @@
-# Contributing to monad
+# Contributing to elanous
 
 Thank you for helping.
 
@@ -14,7 +14,7 @@ Thank you for helping.
 
 ```bash
 bun install
-bun bin/monad.mjs doctor      # what is configured, what is missing
+bun bin/elanous.mjs doctor      # what is configured, what is missing
 bun test <path>               # tests for the files you changed
 bun run scripts/ci-typecheck-changed.ts
 ```

@@ -20,7 +20,7 @@ function stripAnsi(value: string): string {
 function runConfigGet(args: string[]): { stdout: string; stderr: string; code: number } {
   const result = spawnSync('bun', [ENTRY, '--config-dir', configDir, 'config', 'get', ...args], {
     cwd: runDir,
-    env: { ...process.env, NODE_ENV: 'development', MONAD_STATE_DIR: stateDir, MONAD_SUPPRESS_XDG_WARNING: '1' },
+    env: { ...process.env, NODE_ENV: 'development', ELANOUS_STATE_DIR: stateDir, ELANOUS_SUPPRESS_XDG_WARNING: '1' },
     encoding: 'utf-8',
     timeout: 15_000,
   });
@@ -55,11 +55,11 @@ afterEach(() => {
   rmSync(stateDir, { recursive: true, force: true });
 });
 
-describe('monad config get secret redaction', () => {
+describe('elanous config get secret redaction', () => {
   test('help exposes the opt-in reveal flag', () => {
     const result = spawnSync('bun', [ENTRY, 'config', 'get', '--help'], {
       cwd: runDir,
-      env: { ...process.env, NODE_ENV: 'development', MONAD_STATE_DIR: stateDir, MONAD_SUPPRESS_XDG_WARNING: '1' },
+      env: { ...process.env, NODE_ENV: 'development', ELANOUS_STATE_DIR: stateDir, ELANOUS_SUPPRESS_XDG_WARNING: '1' },
       encoding: 'utf-8',
       timeout: 15_000,
     });

@@ -30,7 +30,7 @@ describe('isolatedPort', () => {
 
 describe('planIsolatedInstance', () => {
   test('브랜치·경로·config-dir 규칙', () => {
-    // ⛔⭐ 뿌리를 «주입»한다 — 종전 판은 전역 config 을 읽고 `~/.monad/worktrees` 를 기대해서
+    // ⛔⭐ 뿌리를 «주입»한다 — 종전 판은 전역 config 을 읽고 `~/.elanous/worktrees` 를 기대해서
     //    ***사용자가 `worktreeRoot` 를 커스텀하면 실패하는 «비격리» 테스트***였다(리뷰 4R must-fix ②).
     //    이 테스트가 재는 것은 「뿌리가 무엇인가」가 아니라 「브랜치·경로·config-dir 규칙」이다.
     const root = mkdtempSync(join(tmpdir(), 'se-plan-root-'));
@@ -41,7 +41,7 @@ describe('planIsolatedInstance', () => {
       expect(plan.worktreePath).toContain('/monad-agent.worktrees/');
       expect(plan.worktreePath).toContain('se-conv-memory');
       expect(plan.configDir).toContain(plan.worktreePath);
-      expect(plan.configDir).toContain('.monad-se');
+      expect(plan.configDir).toContain('.elanous-se');
     } finally {
       rmSync(root, { recursive: true, force: true });
     }
@@ -57,7 +57,7 @@ describe('assertIsolationSafe', () => {
     expect(() => assertIsolationSafe(plan)).toThrow(/정식 포트/);
   });
   test('config-dir 홈 오염 → throw', () => {
-    const plan = { ...planIsolatedInstance(REPO, 'x'), configDir: `${process.env.HOME}/.monad/x`, worktreePath: `${process.env.HOME}/.monad` };
+    const plan = { ...planIsolatedInstance(REPO, 'x'), configDir: `${process.env.HOME}/.elanous/x`, worktreePath: `${process.env.HOME}/.elanous` };
     expect(() => assertIsolationSafe(plan)).toThrow();
   });
   test('se/ 접두 아님 → throw', () => {
@@ -138,7 +138,7 @@ describe('createIsolatedInstance — 주입 worktree', () => {
   test('worktree 생성 호출 + 테스트 config 기록', () => {
     const tmp = mkdtempSync(join(tmpdir(), 'se-iso-'));
     const repoRoot = join(tmp, 'monad-agent');
-    // ⛔⭐ 뿌리를 «주입»한다 — 안 주면 전역 config(기본 `~/.monad/worktrees`)을 읽어
+    // ⛔⭐ 뿌리를 «주입»한다 — 안 주면 전역 config(기본 `~/.elanous/worktrees`)을 읽어
     //    실제 홈 디렉터리 아래에 worktree·config.json 을 만들고 `rmSync(tmp)` 로는 안 지워진다.
     //    종전 판이 정확히 그랬다(리뷰 must-fix ①).
     const injectedRoot = join(tmp, 'wt-root');
@@ -152,7 +152,7 @@ describe('createIsolatedInstance — 주입 worktree', () => {
     //    ***그 검사는 항상 건너뛰었다 — 죽은 검사였다***(리뷰 4R must-fix ①).
     // 🩹 그래서 「전후 «하위 경로» 스냅샷이 같은가」로 바꾼다 — 기존 홈 아래에 «새» 잔존물이
     //    생기는 회귀를 실제로 잡는다.
-    const homeWorktreeRoot = join(homedir(), '.monad', 'worktrees');
+    const homeWorktreeRoot = join(homedir(), '.elanous', 'worktrees');
     // ⛔⭐ «직계 항목»만 세면 기존 repository-scope 폴더 «안»에 새 산출물이 생기는 회귀를 놓친다
     //    (리뷰 8R must-fix ① — 그 폴더 이름은 안 늘고 그 «아래»가 는다). ⇒ 재귀로 센다.
     const snapshotHome = (): string[] => {

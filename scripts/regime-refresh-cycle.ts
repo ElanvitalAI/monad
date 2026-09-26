@@ -19,7 +19,7 @@ import { ensureCronNodePath } from '../src/domains/cron-path.js';
 
 ensureCronNodePath();
 
-const LOG = join(homedir(), '.monad/conatus/regime_refresh_cycle.log');
+const LOG = join(homedir(), '.elanous/conatus/regime_refresh_cycle.log');
 
 function log(msg: string): void {
   const line = `[${new Date().toISOString()}] ${msg}`;

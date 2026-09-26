@@ -37,7 +37,7 @@ describe('PFC-S5 P1 — model catalog', () => {
     expect(res.notices.length).toBeGreaterThan(0);
   });
 
-  test('MONAD_MODELS_JSON env override', () => {
+  test('ELANOUS_MODELS_JSON env override', () => {
     const home = scratchHome();
     const custom = join(home, 'my-models.json');
     writeFileSync(custom, JSON.stringify({
@@ -48,7 +48,7 @@ describe('PFC-S5 P1 — model catalog', () => {
         inputPerMtok: 0, outputPerMtok: 0, local: true, tags: ['test'], bestFor: [],
       }],
     }));
-    const res = loadCatalog({ env: { MONAD_MODELS_JSON: custom }, home });
+    const res = loadCatalog({ env: { ELANOUS_MODELS_JSON: custom }, home });
     expect(res.source).toBe('env');
     expect(res.catalog.models.length).toBe(1);
     expect(res.catalog.models[0]?.id).toBe('custom-model');
@@ -116,6 +116,6 @@ describe('PFC-S5 P1 — model catalog', () => {
   });
 
   test('getCatalogPath honors home arg', () => {
-    expect(getCatalogPath('/fake/home')).toBe('/fake/home/.monad/models.json');
+    expect(getCatalogPath('/fake/home')).toBe('/fake/home/.elanous/models.json');
   });
 });

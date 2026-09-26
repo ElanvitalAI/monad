@@ -24,9 +24,9 @@ import { mkdirSync } from 'node:fs';
 
 let tmp: string;
 const harnessEnv = {
-  space: process.env.MONAD_HARNESS_SPACE,
-  spaceId: process.env.MONAD_HARNESS_SPACE_ID,
-  runId: process.env.MONAD_RUN_ID,
+  space: process.env.ELANOUS_HARNESS_SPACE,
+  spaceId: process.env.ELANOUS_HARNESS_SPACE_ID,
+  runId: process.env.ELANOUS_RUN_ID,
 };
 
 function assertProjectAnchorCandidatesFitBudget(root: string): void {
@@ -54,22 +54,22 @@ function assertProjectAnchorCandidatesFitBudget(root: string): void {
 }
 
 beforeEach(() => {
-  delete process.env.MONAD_HARNESS_SPACE;
-  delete process.env.MONAD_HARNESS_SPACE_ID;
-  delete process.env.MONAD_RUN_ID;
-  tmp = mkdtempSync(join(tmpdir(), 'monad-univ-anchor-'));
+  delete process.env.ELANOUS_HARNESS_SPACE;
+  delete process.env.ELANOUS_HARNESS_SPACE_ID;
+  delete process.env.ELANOUS_RUN_ID;
+  tmp = mkdtempSync(join(tmpdir(), 'elanous-univ-anchor-'));
   resetUniversalPreambleCache();
 });
 
 afterEach(() => {
   rmSync(tmp, { recursive: true, force: true });
   resetUniversalPreambleCache();
-  if (harnessEnv.space === undefined) delete process.env.MONAD_HARNESS_SPACE;
-  else process.env.MONAD_HARNESS_SPACE = harnessEnv.space;
-  if (harnessEnv.spaceId === undefined) delete process.env.MONAD_HARNESS_SPACE_ID;
-  else process.env.MONAD_HARNESS_SPACE_ID = harnessEnv.spaceId;
-  if (harnessEnv.runId === undefined) delete process.env.MONAD_RUN_ID;
-  else process.env.MONAD_RUN_ID = harnessEnv.runId;
+  if (harnessEnv.space === undefined) delete process.env.ELANOUS_HARNESS_SPACE;
+  else process.env.ELANOUS_HARNESS_SPACE = harnessEnv.space;
+  if (harnessEnv.spaceId === undefined) delete process.env.ELANOUS_HARNESS_SPACE_ID;
+  else process.env.ELANOUS_HARNESS_SPACE_ID = harnessEnv.spaceId;
+  if (harnessEnv.runId === undefined) delete process.env.ELANOUS_RUN_ID;
+  else process.env.ELANOUS_RUN_ID = harnessEnv.runId;
 });
 
 describe('buildUniversalPreamble + loadProjectAnchor', () => {
@@ -266,7 +266,7 @@ describe('buildUniversalPreamble + loadProjectAnchor', () => {
   });
 
   test('per-cwd cache retains A while loading B', () => {
-    const tmp2 = mkdtempSync(join(tmpdir(), 'monad-univ-anchor2-'));
+    const tmp2 = mkdtempSync(join(tmpdir(), 'elanous-univ-anchor2-'));
     const reads: string[] = [];
     try {
       writeFileSync(join(tmp, 'AGENTS.md'), '# A1\n');
@@ -504,15 +504,15 @@ describe('buildUniversalPreamble — project tree integration (W4-B)', () => {
 
 // BACKLOG L2 — 로컬 모델 자식은 «lean» 예산(앵커 8K · 트리 2K). 기본은 그대로(32K · 8K).
 import { projectAnchorMaxChars, projectTreeMaxChars, PROJECT_ANCHOR_LEAN_MAX_CHARS, PROJECT_TREE_LEAN_MAX_CHARS } from '../src/prompt-library/universal-preamble.js';
-test('prompt budget: default unchanged, lean via MONAD_PROMPT_BUDGET=lean (BACKLOG L2)', () => {
-  const saved = process.env.MONAD_PROMPT_BUDGET;
+test('prompt budget: default unchanged, lean via ELANOUS_PROMPT_BUDGET=lean (BACKLOG L2)', () => {
+  const saved = process.env.ELANOUS_PROMPT_BUDGET;
   try {
-    delete process.env.MONAD_PROMPT_BUDGET;
+    delete process.env.ELANOUS_PROMPT_BUDGET;
     expect([projectAnchorMaxChars(), projectTreeMaxChars()]).toEqual([PROJECT_ANCHOR_MAX_CHARS, PROJECT_TREE_MAX_CHARS]);
-    process.env.MONAD_PROMPT_BUDGET = 'lean';
+    process.env.ELANOUS_PROMPT_BUDGET = 'lean';
     expect([projectAnchorMaxChars(), projectTreeMaxChars()]).toEqual([PROJECT_ANCHOR_LEAN_MAX_CHARS, PROJECT_TREE_LEAN_MAX_CHARS]);
     expect(PROJECT_ANCHOR_LEAN_MAX_CHARS).toBeLessThan(PROJECT_ANCHOR_MAX_CHARS);
   } finally {
-    if (saved === undefined) delete process.env.MONAD_PROMPT_BUDGET; else process.env.MONAD_PROMPT_BUDGET = saved;
+    if (saved === undefined) delete process.env.ELANOUS_PROMPT_BUDGET; else process.env.ELANOUS_PROMPT_BUDGET = saved;
   }
 });

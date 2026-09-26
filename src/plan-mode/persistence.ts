@@ -1,6 +1,6 @@
 // Plan-mode artifact persistence — Phase WF3.
 //
-// Plan artifacts live under `~/.monad/plans/<sessionId>.md`. Each
+// Plan artifacts live under `~/.elanous/plans/<sessionId>.md`. Each
 // artifact has YAML frontmatter (sessionId, title, created, updated,
 // phase) + a freeform markdown body. We write the initial skeleton
 // at EnterPlanMode and re-save on every Edit-against-the-plan-file
@@ -14,7 +14,7 @@ import type { PlanArtifact, PlanPhase } from './types.js';
 
 export function planDir(): string {
   const home = process.env.HOME || homedir();
-  return join(home, '.monad', 'plans');
+  return join(home, '.elanous', 'plans');
 }
 
 export function planFilePathFor(sessionId: string): string {

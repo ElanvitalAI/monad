@@ -4,17 +4,17 @@ import { tmpdir } from 'node:os';
 import { basename, dirname, join } from 'node:path';
 import { LIFECYCLE_ROOT_REPORT_ENV, LIFECYCLE_ROOT_REPORT_NONCE_ENV, lifecycleRootReportPath, publishLifecycleRootReport, readLifecycleRootReport, removeLifecycleRootReport } from './lifecycle-root-report.js';
 
-const originalStateDir = process.env.MONAD_STATE_DIR;
-const originalPtyId = process.env.MONAD_PTY_ID;
+const originalStateDir = process.env.ELANOUS_STATE_DIR;
+const originalPtyId = process.env.ELANOUS_PTY_ID;
 const originalReportPath = process.env[LIFECYCLE_ROOT_REPORT_ENV];
 const originalReportNonce = process.env[LIFECYCLE_ROOT_REPORT_NONCE_ENV];
 const temporaryRoots: string[] = [];
 
 afterEach(() => {
-  if (originalStateDir === undefined) delete process.env.MONAD_STATE_DIR;
-  else process.env.MONAD_STATE_DIR = originalStateDir;
-  if (originalPtyId === undefined) delete process.env.MONAD_PTY_ID;
-  else process.env.MONAD_PTY_ID = originalPtyId;
+  if (originalStateDir === undefined) delete process.env.ELANOUS_STATE_DIR;
+  else process.env.ELANOUS_STATE_DIR = originalStateDir;
+  if (originalPtyId === undefined) delete process.env.ELANOUS_PTY_ID;
+  else process.env.ELANOUS_PTY_ID = originalPtyId;
   if (originalReportPath === undefined) delete process.env[LIFECYCLE_ROOT_REPORT_ENV];
   else process.env[LIFECYCLE_ROOT_REPORT_ENV] = originalReportPath;
   if (originalReportNonce === undefined) delete process.env[LIFECYCLE_ROOT_REPORT_NONCE_ENV];
@@ -23,13 +23,13 @@ afterEach(() => {
 });
 
 describe('lifecycle root report', () => {
-  test('child reports its resolved MONAD_STATE_DIR and parent accepts only the current execution nonce', () => {
+  test('child reports its resolved ELANOUS_STATE_DIR and parent accepts only the current execution nonce', () => {
     const root = mkdtempSync(join(tmpdir(), 'lifecycle-root-report-'));
     temporaryRoots.push(root);
     const stateDir = join(root, 'child-state');
     const reportPath = join(root, 'handoff.json');
-    process.env.MONAD_STATE_DIR = stateDir;
-    process.env.MONAD_PTY_ID = 'self_reported';
+    process.env.ELANOUS_STATE_DIR = stateDir;
+    process.env.ELANOUS_PTY_ID = 'self_reported';
     process.env[LIFECYCLE_ROOT_REPORT_ENV] = reportPath;
     process.env[LIFECYCLE_ROOT_REPORT_NONCE_ENV] = 'run-nonce';
 
@@ -46,13 +46,13 @@ describe('lifecycle root report', () => {
     const root = mkdtempSync(join(tmpdir(), 'lifecycle-root-report-once-'));
     temporaryRoots.push(root);
     const reportPath = join(root, 'handoff.json');
-    process.env.MONAD_PTY_ID = 'self_reported';
-    process.env.MONAD_STATE_DIR = join(root, 'first-state');
+    process.env.ELANOUS_PTY_ID = 'self_reported';
+    process.env.ELANOUS_STATE_DIR = join(root, 'first-state');
     process.env[LIFECYCLE_ROOT_REPORT_ENV] = reportPath;
     process.env[LIFECYCLE_ROOT_REPORT_NONCE_ENV] = 'run-nonce';
     publishLifecycleRootReport();
 
-    process.env.MONAD_STATE_DIR = join(root, 'second-state');
+    process.env.ELANOUS_STATE_DIR = join(root, 'second-state');
     process.env[LIFECYCLE_ROOT_REPORT_ENV] = reportPath;
     process.env[LIFECYCLE_ROOT_REPORT_NONCE_ENV] = 'run-nonce';
     publishLifecycleRootReport();
@@ -67,8 +67,8 @@ describe('lifecycle root report', () => {
     mkdirSync(reportDirectory, { recursive: true });
     const temporaryPath = `${reportPath}.interrupted.tmp`;
     try {
-      process.env.MONAD_PTY_ID = 'self_cleanup';
-      process.env.MONAD_STATE_DIR = join(tmpdir(), 'child-state');
+      process.env.ELANOUS_PTY_ID = 'self_cleanup';
+      process.env.ELANOUS_STATE_DIR = join(tmpdir(), 'child-state');
       process.env[LIFECYCLE_ROOT_REPORT_ENV] = reportPath;
       process.env[LIFECYCLE_ROOT_REPORT_NONCE_ENV] = 'run-nonce';
 

@@ -5,8 +5,8 @@ import type { Command } from 'commander';
 import { formatDoctorReport, runDoctor, type DoctorOptions, type DoctorReport } from './doctor-cli.js';
 import { getUserConfig, saveUserConfig, type UserConfig } from '../user-config.js';
 
-const MONAD_LOGIN_COMMAND = 'monad login openai-codex';
-const PROVIDER_COMMAND = 'monad config set llm.provider openai-codex';
+const ELANOUS_LOGIN_COMMAND = 'elanous login openai-codex';
+const PROVIDER_COMMAND = 'elanous config set llm.provider openai-codex';
 const CODEX_LOGIN_COMMAND = 'codex login';
 
 type SetupStep = {
@@ -34,7 +34,7 @@ export interface SetupCliDeps extends DoctorOptions {
 /** ⛔ 2026-09-23 — provider 단계는 «문자열 비교»가 아니라 ***런타임의 최종 결정***으로 잰다.
  *  빈 config(=`auto`)도 codex OAuth 가 있으면 런타임은 `auto:openai-codex` 로 이미 고른다(실측).
  *  종전엔 `provider === 'openai-codex'` 만 «완료»로 봐서, setup 이 ***필요 없는 손***
- *  (`monad config set llm.provider openai-codex`)을 요구하고 「Codex 세션 불가」라고 거짓 표시했다
+ *  (`elanous config set llm.provider openai-codex`)을 요구하고 「Codex 세션 불가」라고 거짓 표시했다
  *  — Phase 3 「사람 손」 셈의 ③ 이 바로 이것이었다. */
 function defaultResolveRuntimeProvider(config: UserConfig): string | undefined {
   try {
@@ -55,7 +55,7 @@ function readJson(path: string, exists: (path: string) => boolean, readFile: (pa
   try { return JSON.parse(readFile(path)); } catch { return undefined; }
 }
 
-function hasMonadCodexAuth(value: unknown): boolean {
+function hasElanousCodexAuth(value: unknown): boolean {
   if (typeof value !== 'object' || value === null) return false;
   const provider = (value as { providers?: Record<string, unknown> }).providers?.['openai-codex'];
   if (typeof provider !== 'object' || provider === null) return false;
@@ -78,10 +78,10 @@ function setupSteps(deps: SetupCliDeps): SetupStep[] {
   const config = (deps.getUserConfig ?? getUserConfig)();
   return [
     {
-      name: 'monad OpenAI Codex login',
-      complete: hasMonadCodexAuth(readJson(join(home, '.monad', 'auth.json'), exists, readFile)),
-      command: MONAD_LOGIN_COMMAND,
-      symptom: 'No LLM provider available can be caused by a missing monad OpenAI Codex login or provider configuration; check both named steps.',
+      name: 'elanous OpenAI Codex login',
+      complete: hasElanousCodexAuth(readJson(join(home, '.elanous', 'auth.json'), exists, readFile)),
+      command: ELANOUS_LOGIN_COMMAND,
+      symptom: 'No LLM provider available can be caused by a missing elanous OpenAI Codex login or provider configuration; check both named steps.',
     },
     {
       name: 'LLM provider configuration',
@@ -105,12 +105,12 @@ function missingRequiredCommands(doctor: DoctorReport): boolean {
 }
 
 export function formatSetupReport(doctor: DoctorReport, steps: SetupStep[], nonInteractive: boolean): string {
-  const monadLogin = steps[0]!.complete;
+  const elanousLogin = steps[0]!.complete;
   const provider = steps[1]!.complete;
   const codexLogin = steps[2]!.complete;
   const externalReady = doctor.ok && !missingRequiredCommands(doctor);
   const capabilities = [
-    { name: 'OpenAI Codex-backed monad sessions', ready: monadLogin && provider },
+    { name: 'OpenAI Codex-backed elanous sessions', ready: elanousLogin && provider },
     { name: 'Codex app-server integration', ready: codexLogin && externalReady },
     { name: 'External command-dependent integrations', ready: externalReady },
   ];
@@ -152,7 +152,7 @@ export function registerSetupCommand(program: Command, deps: SetupCliDeps = {}):
         return;
       }
       if (!isStdinTty()) {
-        (out.error ?? out.log)('대화형 온보딩은 stdin TTY가 있는 자리에서만 실행할 수 있다. 무인 설정은 `monad setup --non-interactive`를 사용하라.');
+        (out.error ?? out.log)('대화형 온보딩은 stdin TTY가 있는 자리에서만 실행할 수 있다. 무인 설정은 `elanous setup --non-interactive`를 사용하라.');
         setExitCode(1);
         return;
       }

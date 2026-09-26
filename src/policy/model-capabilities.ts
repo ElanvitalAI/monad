@@ -1,9 +1,9 @@
 // H6 P3 Bundle 1 · Model capability table.
 //
 // Static defaults for every (brand, model) the router understands +
-// user override via `~/.config/monad/policy/capabilities.json`. The
+// user override via `~/.config/elanous/policy/capabilities.json`. The
 // defaults are a 2026-04 snapshot — when a new model ships the user
-// can patch `capabilities.json` without waiting for a monad release.
+// can patch `capabilities.json` without waiting for a elanous release.
 //
 // H6 P2 (local-llm manager) will promote local-llm models from
 // `available: false` → `true`; this file needs no edits for that
@@ -20,9 +20,9 @@ import {
   writeFileSync,
 } from 'node:fs';
 import { join } from 'node:path';
-import { monadStateRoot } from '../autopilot/state-paths.js';
+import { elanousStateRoot } from '../autopilot/state-paths.js';
 import { debug } from '../debug/log.js';
-import { migrateLegacyXdgSubdir } from '../storage/legacy-monad-dir-migrate.js';
+import { migrateLegacyXdgSubdir } from '../storage/legacy-elanous-dir-migrate.js';
 import type {
   CandidateAvailability,
   ModelCapability,
@@ -31,11 +31,11 @@ import type {
 } from './types.js';
 import type { UsageProvider } from '../budget/types.js';
 
-// Phase 1 (PLAN-config-unification-monad-root-2026-05-10):
-//   moved from ~/.config/monad/policy → ~/.monad/policy.
+// Phase 1 (PLAN-config-unification-elanous-root-2026-05-10):
+//   moved from ~/.config/elanous/policy → ~/.elanous/policy.
 function defaultStorageDir(): string {
   migrateLegacyXdgSubdir('policy');
-  return join(monadStateRoot(), 'policy');
+  return join(elanousStateRoot(), 'policy');
 }
 const CAPABILITIES_FILENAME = 'capabilities.json';
 

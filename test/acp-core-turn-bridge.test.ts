@@ -46,7 +46,7 @@ const {
 let sessionRoot: string;
 beforeEach(() => {
   sessionRoot = mkdtempSync(join(tmpdir(), 'acp-tui-persistence-'));
-  process.env.MONAD_SESSION_ROOT = sessionRoot;
+  process.env.ELANOUS_SESSION_ROOT = sessionRoot;
   runCoreTurnCalls.length = 0;
   runCoreTurnImpl = async () => ({ stopReason: 'end_turn', finalText: '' });
   spyOn(userConfigModule, 'getUserConfig').mockReturnValue({
@@ -67,7 +67,7 @@ afterEach(() => {
   runCoreTurnCalls.length = 0;
   mock.restore();
   rmSync(sessionRoot, { recursive: true, force: true });
-  delete process.env.MONAD_SESSION_ROOT;
+  delete process.env.ELANOUS_SESSION_ROOT;
 });
 
 function makeTurnCtx(over: Partial<AcpTurnContext> = {}): {
@@ -437,14 +437,14 @@ describe('bridgeCoreTurnToAcp — abort polling', () => {
 describe('TUI ACP durable persistence', () => {
   test('adopts the ACP id once, persists repeated completed turns, is searchable, and leaves external ACP untouched', async () => {
     const tuiMeta = writeOriginSessionMeta('tui-parent-session');
-    persistCompletedTuiAcpTurn('monad-session-tui', tuiMeta, 'find this TUI prompt', 'first answer');
-    persistCompletedTuiAcpTurn('monad-session-tui', tuiMeta, 'find this TUI prompt', 'first answer');
-    persistCompletedTuiAcpTurn('monad-session-tui', tuiMeta, 'second TUI prompt', 'second answer');
-    persistCompletedTuiAcpTurn('monad-session-external', undefined, 'external prompt', 'external answer');
+    persistCompletedTuiAcpTurn('elanous-session-tui', tuiMeta, 'find this TUI prompt', 'first answer');
+    persistCompletedTuiAcpTurn('elanous-session-tui', tuiMeta, 'find this TUI prompt', 'first answer');
+    persistCompletedTuiAcpTurn('elanous-session-tui', tuiMeta, 'second TUI prompt', 'second answer');
+    persistCompletedTuiAcpTurn('elanous-session-external', undefined, 'external prompt', 'external answer');
 
-    const stored = loadSession('monad-session-tui');
+    const stored = loadSession('elanous-session-tui');
     expect(stored?.meta).toMatchObject({
-      id: 'monad-session-tui',
+      id: 'elanous-session-tui',
       source: 'tui',
       transport: 'acp',
     });
@@ -466,12 +466,12 @@ describe('TUI ACP durable persistence', () => {
     ) as { hits: Array<{ sessionId: string; source: string; snippets: Array<{ role: string; text: string }> }> };
     expect(search.hits).toEqual([
       expect.objectContaining({
-        sessionId: 'monad-session-tui',
+        sessionId: 'elanous-session-tui',
         source: 'tui',
         snippets: [expect.objectContaining({ role: 'user', text: expect.stringContaining('second TUI prompt') })],
       }),
     ]);
-    expect(loadSession('monad-session-external')).toBeNull();
+    expect(loadSession('elanous-session-external')).toBeNull();
   });
 
   test('reads a legacy transport-less index record without assigning a transport', () => {

@@ -1,7 +1,7 @@
 #!/usr/bin/env bun
 // ── Ops 셀프교정 health 크론 (Ops Observability P3 · 2026-07-10) ─────────────
 //
-// monad 가 스스로 자기 자율 시스템(미션·태스크·계약 루프·오케스트레이터)의 상태를
+// elanous 가 스스로 자기 자율 시스템(미션·태스크·계약 루프·오케스트레이터)의 상태를
 // 점검하고, 이상(blocked 태스크·errored 루프·오케스트레이터/스케줄 미발화)을 감지하면:
 //   ① autonomy-log 에 기록(self_recall 로 자기 회상 가능·"내가 이상을 인지했다")
 //   ② 텔레그램 알림(대표에게 보고)
@@ -25,13 +25,13 @@ import { recordAutonomousActionSafe } from '../src/domains/autonomy-log.js';
 import { sendOutbound } from '../src/domains/outbound-alert.js';
 import { getUserConfig } from '../src/user-config.js';
 
-const LOG = join(homedir(), '.monad/conatus/ops_health.log');
-const STATE = join(homedir(), '.monad/ops_health_state.json');
+const LOG = join(homedir(), '.elanous/conatus/ops_health.log');
+const STATE = join(homedir(), '.elanous/ops_health_state.json');
 
 function logLine(s: string): void {
   const line = `${new Date().toISOString()} ${s}`;
   console.log(s);
-  try { mkdirSync(join(homedir(), '.monad/conatus'), { recursive: true }); appendFileSync(LOG, `${line}\n`); } catch { /* fail-soft */ }
+  try { mkdirSync(join(homedir(), '.elanous/conatus'), { recursive: true }); appendFileSync(LOG, `${line}\n`); } catch { /* fail-soft */ }
 }
 
 /** 이상 집합의 안정 시그니처(kind:entity 정렬) — 동일하면 중복 알림 무음. */
@@ -95,7 +95,7 @@ recordAutonomousActionSafe({
 if (changed) {
   const lines = report.anomalies.slice(0, 8).map((a) => `• [${a.kind}] ${a.entity}\n   ${a.detail}`);
   const more = report.anomalies.length > 8 ? `\n(외 ${report.anomalies.length - 8}건)` : '';
-  const msg = `⚠️ 운영 상태 경보 — 자율 시스템 이상 ${report.anomalies.length}건\n\n${lines.join('\n')}${more}\n\n관측+알림만 자동(개입=대표 결정). 상세: monad ops health`;
+  const msg = `⚠️ 운영 상태 경보 — 자율 시스템 이상 ${report.anomalies.length}건\n\n${lines.join('\n')}${more}\n\n관측+알림만 자동(개입=대표 결정). 상세: elanous ops health`;
   const ok = sendOutbound(msg, 'ops-health');
   logLine(`[ops-health] 대표 알림 ${ok ? '발송' : '실패'}.`);
   saveSignature(sig);

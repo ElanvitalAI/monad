@@ -2,15 +2,15 @@
 //
 // 문제(RESEARCH-autopilot §10): "회상 없는 자율은 표류한다." 현재 자율행동 로깅은
 // trade 만 파편적(surface_events kind='trade-rationale'), 나머지 5 루프(dig·backtest·
-// retro·replay·delegate)는 파일로그/전용 DB 에만 남고 monad 가 회상 못한다. why(결정
+// retro·replay·delegate)는 파일로그/전용 DB 에만 남고 elanous 가 회상 못한다. why(결정
 // 근거)도 강제되지 않는다(comprehension-debt).
 //
 // 해결: 모든 자율루프가 공통으로 부르는 얇은 헬퍼 recordAutonomousAction. self-awareness
-// 와 같은 저장소(surface_events domain='monad')에 kind='autonomy' 로 적재 → self_recall/
+// 와 같은 저장소(surface_events domain='elanous')에 kind='autonomy' 로 적재 → self_recall/
 // recallSelfEvents 가 자동으로 회상(P0.3 통합 회상은 무료로 따라온다). rationale(why)
 // 필수 인자로 강제.
 //
-// 거버넌스: 순수 기록(READ-ONLY 회상). 매매/발송 로직과 무관·격리(domain='monad').
+// 거버넌스: 순수 기록(READ-ONLY 회상). 매매/발송 로직과 무관·격리(domain='elanous').
 // 새 저장소·새 실행엔진 금지(PLAN §E) — recordEvent 재사용.
 
 import { Database } from 'bun:sqlite';
@@ -18,9 +18,9 @@ import { recordEvent, recallEvents, openSurfaceEventsDb, surfaceEventsDbPath, ty
 import { existsSync } from 'node:fs';
 import { within } from '../time/db-window.js';
 
-/** 자율행동 기억의 도메인 축 — self-awareness 와 공유('monad'). 이렇게 해야 self_recall
+/** 자율행동 기억의 도메인 축 — self-awareness 와 공유('elanous'). 이렇게 해야 self_recall
  *  이 구현이력(kind='impl')과 자율행동(kind='autonomy')을 한 회상으로 묶는다(P0.3). */
-export const AUTONOMY_DOMAIN = 'monad';
+export const AUTONOMY_DOMAIN = 'elanous';
 /** 자율행동 공통 kind — 루프는 tags/surface 로 구분. self-awareness impl 과 별 축. */
 export const AUTONOMY_KIND = 'autonomy';
 /** 도메인무관 카테고리(GEN) — schedule/surface taxonomy 와 나란한 자율행동 축. */
@@ -55,7 +55,7 @@ export interface AutonomousActionInput {
   now?: () => string;
 }
 
-/** 자율행동 1건을 surface_events(domain='monad'·kind='autonomy')에 기록. id 반환.
+/** 자율행동 1건을 surface_events(domain='elanous'·kind='autonomy')에 기록. id 반환.
  *  recordEvent 얇은 래퍼 — surface='loop:<loop>'·direction='outbound'. rationale 는 text/
  *  summary 에 함께 실어 회상 시 why 가 보이게 한다. self_recall 이 자동으로 집는다. */
 export function recordAutonomousAction(db: Database, input: AutonomousActionInput): string {
@@ -97,7 +97,7 @@ export function recordAutonomousActionSafe(input: AutonomousActionInput): string
   }
 }
 
-/** 자율행동 회상 — surface_events domain='monad'·kind='autonomy'(READ-ONLY).
+/** 자율행동 회상 — surface_events domain='elanous'·kind='autonomy'(READ-ONLY).
  *  "어제 무슨 자율행동을 왜 했나" 질의. self_recall 이 impl+autonomy 를 합쳐 회상하지만,
  *  자율행동만 좁혀 보고 싶을 때(대시보드·회고 루프) 이 헬퍼. bump 기본 false(관찰). */
 export function recallAutonomy(
@@ -118,7 +118,7 @@ export function recallAutonomy(
 }
 
 /** 최근 자율행동 다이제스트(빈 문자열=행동 없음) — ambient/대시보드용 bounded 요약.
- *  recentSelfChangesDigest(구현이력)의 자매: 이건 "내가(자율루프) 뭘 왜 했나". domain=monad·
+ *  recentSelfChangesDigest(구현이력)의 자매: 이건 "내가(자율루프) 뭘 왜 했나". domain=elanous·
  *  kind=autonomy 만. fail-soft. */
 export function recentAutonomyDigest(db: Database, opts: { sinceHours?: number; limit?: number } = {}): string {
   const sinceHours = opts.sinceHours ?? 24;

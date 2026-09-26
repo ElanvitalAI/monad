@@ -192,7 +192,7 @@ async function bunProcessRunner(command: string[]): Promise<ExecutorResult> {
 }
 
 export async function executeContractRedDev(request: ExecutorRequest, runner: ProcessRunner = bunProcessRunner): Promise<ExecutorResult> {
-  return runner([process.execPath, 'bin/monad.mjs', '--test', 'dev', '--open-pr', '--no-auto-merge', '--no-auto-review', request.task]);
+  return runner([process.execPath, 'bin/elanous.mjs', '--test', 'dev', '--open-pr', '--no-auto-merge', '--no-auto-review', request.task]);
 }
 
 export async function runContractRedDispatchCli(path: string | undefined = process.argv[2], dependencies: CliDependencies = {}): Promise<ContractRedDispatchReport> {

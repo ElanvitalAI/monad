@@ -305,7 +305,7 @@ export function fmtRowCompact(r: EnrichedRow, m?: MomRow, showMom = false): stri
   return `${em} ${nm}(${r.code}·${ex})  ${price}원  ${signed1(r.chgPct)}%${extra}`;
 }
 
-/** screen.py report_md — 텔레그램 마크다운 리포트. monad 는 4000자 슬라이스. */
+/** screen.py report_md — 텔레그램 마크다운 리포트. elanous 는 4000자 슬라이스. */
 export function reportMd(out: ScreenResult): string {
   const a = out.asof;
   const kp = out.market['KOSPI'] ?? 0;
@@ -378,7 +378,7 @@ export function investorFocus(): string {
 // ── record_daily WRITE (⚠️ 격리 DB 전용 · SAFETY) ───────────────────────────
 //
 // db.py record_daily 흡수 — screen 테이블에 멤버십+태그 영속. prices 테이블에 최신일 패널.
-// ⚠️ 절대 라이브 ~/.monad/conatus/screener.db 에 쓰지 말 것 — dbPath 를 격리 사본으로 지정.
+// ⚠️ 절대 라이브 ~/.elanous/conatus/screener.db 에 쓰지 말 것 — dbPath 를 격리 사본으로 지정.
 
 /** screener.db 스키마(db.py init 동형·prices/screen/investor). 멱등 CREATE. */
 export function initScreenDb(dbPath: string): Database {

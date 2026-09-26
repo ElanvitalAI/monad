@@ -243,9 +243,9 @@ describe('isImplementationGoal — 구현·변경·분석형 판정(순수 조�
 
 describe('repository-specific identifier detection', () => {
   test('marks general asks as an unknown search scope but recognizes repository names, paths, and identifiers', () => {
-    const groundedIdentifiers = ['monad', 'src/self-implement/goal-author.ts', 'groundMissionInCodebase'];
+    const groundedIdentifiers = ['elanous', 'src/self-implement/goal-author.ts', 'groundMissionInCodebase'];
     expect(hasRepositorySpecificIdentifier('Improve long-running scope-boundary candidates.', groundedIdentifiers)).toBe(false);
-    expect(hasRepositorySpecificIdentifier('Improve monad self author boundaries.', groundedIdentifiers)).toBe(true);
+    expect(hasRepositorySpecificIdentifier('Improve elanous self author boundaries.', groundedIdentifiers)).toBe(true);
     expect(hasRepositorySpecificIdentifier('Update src/self-implement/goal-author.ts.', groundedIdentifiers)).toBe(true);
     expect(hasRepositorySpecificIdentifier('Wire groundMissionInCodebase.', groundedIdentifiers)).toBe(true);
   });
@@ -960,7 +960,7 @@ describe('groundMissionInCapsules — F2 검색-코퍼스(상류 capsule → gro
 });
 
 const SKILL_FIXTURE: SkillIndexEntry = fakeSkill({
-  name: 'monad-logs', skillDir: '/tmp/.claude/skills/monad-logs', description: '로그 조회',
+  name: 'elanous-logs', skillDir: '/tmp/.claude/skills/elanous-logs', description: '로그 조회',
 });
 
 describe('isRepositoryImplementationCandidate — 스킬 문서 판별은 대소문자를 가리지 않는다', () => {

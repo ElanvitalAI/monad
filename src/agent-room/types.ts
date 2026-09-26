@@ -90,7 +90,7 @@ export function isLaneKind(raw: unknown): raw is LaneKind {
 }
 
 export interface AgentRoomMember {
-  /** `codex` | `claude` | `gemini` | `monad` | `lll:<model>` | `auto` | alias. */
+  /** `codex` | `claude` | `gemini` | `elanous` | `lll:<model>` | `auto` | alias. */
   readonly brandRef: string;
   readonly roleHint?: AgentRoomRoleHint;
   readonly mode?: AgentLaunchMode;

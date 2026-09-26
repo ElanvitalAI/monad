@@ -241,21 +241,21 @@ export function dashboardSchedules(p: DashboardPaths = {}) {
         byCategory[r.category] = (byCategory[r.category] ?? 0) + 1;
         bySource[r.source] = (bySource[r.source] ?? 0) + 1;
         // 실행 주체 분해(Mission Fabric 통합 U4 이관 가시성):
-        // crontab(시스템 cron)·monad(schedule-runner·은퇴)·trigger(fabric Schedule
+        // crontab(시스템 cron)·elanous(schedule-runner·은퇴)·trigger(fabric Schedule
         // Trigger)·daemon(내부 스케줄). adopted 만으로는 trigger 이관이 안 보임.
         byRunVia[r.run_via] = (byRunVia[r.run_via] ?? 0) + 1;
-        if (r.run_via === 'monad') adopted++;
+        if (r.run_via === 'elanous') adopted++;
       }
       const health = scheduleHealth(rows);
       const staleIds = new Set(health.stale.map(s => s.id));
       return {
         total: rows.length,
-        adopted,                       // monad 데몬(schedule-runner·은퇴)이 발화하는 잡 수
+        adopted,                       // elanous 데몬(schedule-runner·은퇴)이 발화하는 잡 수
         byRunVia,                      // 실행 주체 분해(trigger 이관 가시성·U4)
         byCategory, bySource,
         // 실행 헬스(P2) — 밀린/실패 잡 요약(대표 관측성 지시).
         health: {
-          monadTotal: health.monadTotal,
+          elanousTotal: health.elanousTotal,
           staleCount: health.stale.length,
           erroredCount: health.errored.length,
           stale: health.stale.slice(0, 20),
@@ -413,7 +413,7 @@ function runsTableStatus(db: Database, table: 'dig_goal_runs' | 'replay_runs', d
   return { today, byStatus, last, recent };
 }
 
-/** trade 루프 — 자율사이클 파일 로그(~/.monad/conatus/trade_cycle.log) 파싱.
+/** trade 루프 — 자율사이클 파일 로그(~/.elanous/conatus/trade_cycle.log) 파싱.
  *  db 가 아니라 타임스탬프 라인이므로 최근 N 줄을 recent 로. */
 function tradeLoopStatus(): LoopStatus | null {
   return soft(() => {
@@ -440,7 +440,7 @@ function tradeLoopStatus(): LoopStatus | null {
   }) ?? null;
 }
 
-/** retro 루프 — 회고 리포트 산출물(~/.monad/conatus/reflections/REFLECTION-*.md). */
+/** retro 루프 — 회고 리포트 산출물(~/.elanous/conatus/reflections/REFLECTION-*.md). */
 function retroLoopStatus(): LoopStatus | null {
   return soft(() => {
     const dir = conatusPath('reflections');
@@ -530,7 +530,7 @@ export function dashboardOps() {
       loops: snap.loops,
       orchestration: snap.orchestration,
       schedules: snap.schedules
-        ? { monadTotal: snap.schedules.monadTotal, staleCount: snap.schedules.stale.length, erroredCount: snap.schedules.errored.length }
+        ? { elanousTotal: snap.schedules.elanousTotal, staleCount: snap.schedules.stale.length, erroredCount: snap.schedules.errored.length }
         : null,
       health,
       timeline,

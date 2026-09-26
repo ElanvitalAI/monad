@@ -18,7 +18,7 @@
 
 import { Database } from 'bun:sqlite';
 import { mkdirSync } from 'node:fs';
-import { monadStateRoot } from '../../autopilot/state-paths.js';
+import { elanousStateRoot } from '../../autopilot/state-paths.js';
 import { dirname, join } from 'node:path';
 
 import { LOG_LEVEL_ORDER, type LogLevel, type LogRecord } from './record.js';
@@ -27,24 +27,24 @@ import { setInstanceName, resolveInstanceName } from '../../instance-identity.js
 import * as nestDepth from '../../agent/nest-depth.js';
 import { debug } from '../../debug/log.js';
 
-/** 스토어 경로 — `MONAD_STATE_DIR` 존중(격리 테스트/`nexus run --test` 의
- *  기존 knob 그대로), 기본 `~/.monad/logs/logs.db`. lazy 함수 — env 를
+/** 스토어 경로 — `ELANOUS_STATE_DIR` 존중(격리 테스트/`nexus run --test` 의
+ *  기존 knob 그대로), 기본 `~/.elanous/logs/logs.db`. lazy 함수 — env 를
  *  임포트 시점이 아니라 호출 시점에 읽는다(telegram-test 등이 부팅 전 세팅). */
 export function logsDbPath(): string {
-  return join(monadStateRoot(), 'logs', 'logs.db');
+  return join(elanousStateRoot(), 'logs', 'logs.db');
 }
 
 // ── 인스턴스 identity (LF7-a · 2026-07-13) ───────────────────────────
 //
-// 멀티 모나드(prod 1 + 폴더별 test N) 운영에서 "이 로그를 누가 남겼나"를
+// 멀티 엘라누스(prod 1 + 폴더별 test N) 운영에서 "이 로그를 누가 남겼나"를
 // 레코드에 박제한다. 스토어가 state dir 로 물리 격리돼 있어도, 연합 조회
-// (monad logs --all · PWA 인스턴스 셀렉터)와 로그 공유 시 출처가 필요.
+// (elanous logs --all · PWA 인스턴스 셀렉터)와 로그 공유 시 출처가 필요.
 //
 // 이름 유도(우선순위):
 //   1. setLogInstanceName() — 데몬 부팅이 config(logs.instanceName) 값을
 //      주입(user-config 순환 의존 회피 — 본 모듈은 config 를 읽지 않는다).
-//   2. MONAD_STATE_DIR 미설정 → 'prod'
-//   3. state dir 이름이 '.monad-test' → `test:<부모 폴더명>` (repo 이름)
+//   2. ELANOUS_STATE_DIR 미설정 → 'prod'
+//   3. state dir 이름이 '.elanous-test' → `test:<부모 폴더명>` (repo 이름)
 //   4. 그 외 → `test:<state dir 이름>` (예: telegram-test)
 
 // 인스턴스명 유도는 세션 저장소와 공유한다(같은 격리 경계 = 같은 이름·연합 정합).
@@ -250,7 +250,7 @@ export class LogStore {
           rec.data && typeof rec.data === 'object' && !Array.isArray(rec.data)
             && typeof (rec.data as Record<string, unknown>).hostId === 'string'
             ? (rec.data as Record<string, string>).hostId
-            : process.env.MONAD_HOST_ID ?? '',
+            : process.env.ELANOUS_HOST_ID ?? '',
           surface,
           rec.category,
           rec.event,

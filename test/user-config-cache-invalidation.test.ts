@@ -1,4 +1,4 @@
-// Phase 4 (PLAN-config-unification-monad-root-2026-05-10):
+// Phase 4 (PLAN-config-unification-elanous-root-2026-05-10):
 //   getUserConfig()'s in-process cache invalidates when the on-disk file
 //   has been rewritten by another module / process — NEXUS daemon's
 //   patchUserConfig (Path B writer) is the canonical example.

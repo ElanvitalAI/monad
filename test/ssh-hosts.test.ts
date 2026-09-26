@@ -23,11 +23,11 @@ beforeEach(() => {
 
 afterEach(() => {
   _resetSshHostsForTesting();
-  delete process.env.MONAD_MEDIA_HOST;
+  delete process.env.ELANOUS_MEDIA_HOST;
 });
 
 function withConfig(json: string): string {
-  const dir = mkdtempSync(joinPath(tmpdir(), 'monad-ssh-hosts-'));
+  const dir = mkdtempSync(joinPath(tmpdir(), 'elanous-ssh-hosts-'));
   const path = joinPath(dir, 'ssh-hosts.json');
   writeFileSync(path, json, 'utf-8');
   setSshHostsPathForTesting(path);
@@ -42,7 +42,7 @@ describe('DEFAULT_HOSTS', () => {
 
   test('with no file and no test fleet the list is empty', () => {
     setSshHostsForTesting(null);
-    const dir = mkdtempSync(joinPath(tmpdir(), 'monad-ssh-none-'));
+    const dir = mkdtempSync(joinPath(tmpdir(), 'elanous-ssh-none-'));
     setSshHostsPathForTesting(joinPath(dir, 'ssh-hosts.json'));
     expect(listSshHosts()).toEqual([]);
   });
@@ -61,17 +61,17 @@ describe('roles', () => {
     expect(mediaSshHost()).toBe('b.example');
   });
 
-  test('MONAD_MEDIA_HOST wins; no media host is null', () => {
+  test('ELANOUS_MEDIA_HOST wins; no media host is null', () => {
     withConfig(JSON.stringify({ hosts: [{ name: 'c', host: 'c' }] }));
     expect(mediaSshHost()).toBeNull();
-    process.env.MONAD_MEDIA_HOST = 'studio';
+    process.env.ELANOUS_MEDIA_HOST = 'studio';
     expect(mediaSshHost()).toBe('studio');
   });
 });
 
 describe('listSshHosts', () => {
   test('returns the fallback fleet when config file is absent', () => {
-    const dir = mkdtempSync(joinPath(tmpdir(), 'monad-ssh-empty-'));
+    const dir = mkdtempSync(joinPath(tmpdir(), 'elanous-ssh-empty-'));
     setSshHostsPathForTesting(joinPath(dir, 'ssh-hosts.json'));
     expect(listSshHosts()).toEqual([...TEST_FLEET]);
   });

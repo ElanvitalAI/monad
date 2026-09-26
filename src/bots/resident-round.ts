@@ -1,5 +1,5 @@
 /**
- * Resident-round is the execution axis: a round runs inside the monad process.
+ * Resident-round is the execution axis: a round runs inside the elanous process.
  * It is distinct from `PersonaResidence`, which records the machine (`vm` or
  * `local`) where a persona resides. This pure decision unit neither resolves
  * that machine nor determines whether it is live.
@@ -8,8 +8,8 @@
  * daemon wiring deliberately belongs to a later goal.
  */
 
-/** Dedicated provenance for an unattended round decided inside monad. */
-export type ResidentRoundSource = 'monad-resident';
+/** Dedicated provenance for an unattended round decided inside elanous. */
+export type ResidentRoundSource = 'elanous-resident';
 
 export interface ResidentRoundInput {
   readonly botName: string;
@@ -43,7 +43,7 @@ export function decideResidentRound(input: ResidentRoundInput): ResidentRoundDec
       botName: input.botName,
       scheduledAt: input.scheduledAt,
       universeRoot: input.universeRoot,
-      source: 'monad-resident',
+      source: 'elanous-resident',
       humanInitiated: false,
     },
   };

@@ -14,7 +14,7 @@ type FetchFn = typeof globalThis.fetch;
 const realFetch = globalThis.fetch;
 afterEach(() => {
   globalThis.fetch = realFetch;
-  delete process.env.MONAD_AUDIO_STT_PROVIDER;
+  delete process.env.ELANOUS_AUDIO_STT_PROVIDER;
 });
 
 function multipartBody(parts: Array<{
@@ -53,11 +53,11 @@ describe('resolveAudioSttProviderId', () => {
     expect(resolveAudioSttProviderId({ providerId: 'whisper-cpp' })).toBe('whisper-cpp');
   });
   test('env override > opts', () => {
-    process.env.MONAD_AUDIO_STT_PROVIDER = 'elevenlabs-scribe';
+    process.env.ELANOUS_AUDIO_STT_PROVIDER = 'elevenlabs-scribe';
     expect(resolveAudioSttProviderId({ providerId: 'whisper-cpp' })).toBe('elevenlabs-scribe');
   });
   test('invalid env → fallback to opts/default', () => {
-    process.env.MONAD_AUDIO_STT_PROVIDER = 'made-up';
+    process.env.ELANOUS_AUDIO_STT_PROVIDER = 'made-up';
     expect(resolveAudioSttProviderId({})).toBe('openai-whisper');
   });
 });
@@ -117,7 +117,7 @@ describe('handleAudioStt · multipart validation', () => {
     expect(json.error).toBe('file-empty');
   });
   test('unsupported provider → 501 not-implemented', async () => {
-    process.env.MONAD_AUDIO_STT_PROVIDER = 'whisper-cpp';
+    process.env.ELANOUS_AUDIO_STT_PROVIDER = 'whisper-cpp';
     const { body, contentType } = multipartBody([{
       name: 'file',
       value: { bytes: new Uint8Array([1,2,3]), filename: 'x.m4a', type: 'audio/m4a' },

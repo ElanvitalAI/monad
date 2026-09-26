@@ -194,7 +194,7 @@ describe('chat picker family modal · arg mouse wiring', () => {
 
 // ── @ picker ────────────────────────────────────────────────────
 const atItems: AtCandidate[] = [
-  { label: '.monad/',      absPath: '/x/.monad',      isDir: true },
+  { label: '.elanous/',      absPath: '/x/.elanous',      isDir: true },
   { label: 'src/',         absPath: '/x/src',         isDir: true },
   { label: 'README.md',    absPath: '/x/README.md',   isDir: false },
 ];

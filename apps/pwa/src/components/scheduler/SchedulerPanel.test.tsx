@@ -31,7 +31,7 @@ const JOB: ScheduleJob = {
   domain: 'finance',
   source: 'registry',
   enabled: true,
-  runVia: 'monad',
+  runVia: 'elanous',
   lastRun: null,
   command: 'scripts/digest.ts',
   note: null,

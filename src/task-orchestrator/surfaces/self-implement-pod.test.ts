@@ -1,13 +1,19 @@
 import { describe, expect, test } from 'bun:test';
+import { mkdtempSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { CONTROL_INBOX_DIR_ENV } from '../../harness/control-inbox.js';
+import { podFragmentFinished, readPodFragment } from '../../harness/self-send-target.js';
 import { podJobManifest, podJobName, podSelfImplementSpawn, type Kubectl } from './self-implement-pod.js';
 
-const CREDS = () => ({ monadAuth: '{"m":1}', codexAuth: '{"c":1}', ghToken: 'gho_x' });
+const CREDS = () => ({ elanousAuth: '{"m":1}', codexAuth: '{"c":1}', ghToken: 'gho_x' });
 
 function fakeKubectl(conditions: string[], logs: string) {
   const calls: Array<{ args: string; input?: string }> = [];
   let polls = 0;
   const k: Kubectl = (args, input) => {
     calls.push({ args: args.join(' '), ...(input ? { input } : {}) });
+    if (args.includes('current-context')) return { status: 0, stdout: 'test-context\n', stderr: '' };
     if (args.includes('get') && args.includes('job')) return { status: 0, stdout: conditions[Math.min(polls++, conditions.length - 1)] ?? '', stderr: '' };
     if (args.includes('logs')) return { status: 0, stdout: logs, stderr: '' };
     return { status: 0, stdout: '', stderr: '' };
@@ -26,21 +32,47 @@ describe('podSelfImplementSpawn', () => {
   test('applies secret then job, polls to Complete, parses the last JSON line, deletes the secret, drops the pod-internal worktreePath', async () => {
     const json = JSON.stringify({ stage: 'pr-opened', ok: true, worktreePath: '/home/ubuntu/x', prUrl: 'https://github.com/o/r/pull/9', prNumber: 9 });
     const { k, calls } = fakeKubectl(['', '', 'Complete'], `noise\n${json}\n`);
-    const spawn = podSelfImplementSpawn({ kubectl: k, sleep: async () => {}, credentials: CREDS, env: { MONAD_RUN_ID: 'run-7' } });
+    const spawn = podSelfImplementSpawn({ kubectl: k, sleep: async () => {}, credentials: CREDS, env: { ELANOUS_RUN_ID: 'run-7' } });
     const { address, done } = spawn({ feature: 'do x', spaceId: 'orch-1', openPr: true });
     expect(address).toBe('self-impl:orch-1');
     const r = await done;
     expect(r.exitCode).toBe(0);
     expect(r.disposition?.prUrl).toBe('https://github.com/o/r/pull/9');
     expect(r.disposition?.worktreePath).toBeUndefined();
-    const applied = calls.filter((c) => c.args === 'apply -f -').map((c) => JSON.parse(c.input!));
+    const applied = calls.filter((c) => c.args.endsWith('apply -f -')).map((c) => JSON.parse(c.input!));
     expect(applied.map((m) => m.kind)).toEqual(['Secret', 'Job']);
     expect(applied[0].stringData.feature).toBe('do x');
     const env = applied[1].spec.template.spec.containers[0].env;
-    expect(env).toContainEqual({ name: 'MONAD_RUN_ID', value: 'run-7' });
-    expect(env).toContainEqual({ name: 'MONAD_SUBSTRATE', value: 'pod' });
+    expect(env).toContainEqual({ name: 'ELANOUS_RUN_ID', value: 'run-7' });
+    expect(env).toContainEqual({ name: 'ELANOUS_SUBSTRATE', value: 'pod' });
     expect(applied[1].spec.template.spec.containers[0].args[0]).toContain("'--open-pr'");
     expect(calls.some((c) => c.args.includes('delete secret'))).toBe(true);
+  });
+
+  test('manifest hands off the fixed inbox and host records the active fragment until Job completion', async () => {
+    const root = mkdtempSync(join(tmpdir(), 'pod-record-'));
+    const env = { ELANOUS_STATE_DIR: root };
+    let finish!: () => void;
+    const wait = new Promise<void>((resolve) => { finish = resolve; });
+    let polls = 0;
+    const calls: Array<{ args: readonly string[]; input?: string }> = [];
+    const kubectl: Kubectl = (args, input) => {
+      calls.push({ args, input });
+      if (args.includes('current-context')) return { status: 0, stdout: 'test-context\n', stderr: '' };
+      if (args.includes('get') && args.includes('job')) return { status: 0, stdout: ++polls > 1 ? 'Complete' : '', stderr: '' };
+      return { status: 0, stdout: '', stderr: '' };
+    };
+    try {
+      const { done } = podSelfImplementSpawn({ kubectl, credentials: CREDS, env, sleep: () => wait })({ feature: 'goal', spaceId: 'pod-fragment' });
+      const record = readPodFragment('pod-fragment', env);
+      const job = calls.filter((call) => call.args.includes('apply')).map((call) => JSON.parse(call.input!)).find((manifest) => manifest.kind === 'Job');
+      expect(job.spec.template.spec.containers[0].env).toContainEqual({ name: CONTROL_INBOX_DIR_ENV, value: '/tmp/elanous-control.inbox' });
+      expect(record).toEqual({ spaceId: 'pod-fragment', context: 'test-context', namespace: 'elanous-test', job: podJobName('pod-fragment'), inboxDir: '/tmp/elanous-control.inbox' });
+      finish();
+      await done;
+      expect(readPodFragment('pod-fragment', env)).toBeNull();
+      expect(podFragmentFinished('pod-fragment', env)).toBe(true);
+    } finally { finish(); rmSync(root, { recursive: true, force: true }); }
   });
 
   test('a failed Job is a non-zero exit with a named error', async () => {
@@ -62,15 +94,15 @@ describe('podSelfImplementSpawn', () => {
   test('passEnv puts only present host keys into the secret and pod env (benchmark billing paths)', async () => {
     const { k, calls } = fakeKubectl(['Complete'], '');
     await podSelfImplementSpawn({ kubectl: k, sleep: async () => {}, credentials: CREDS, passEnv: ['OPENROUTER_API_KEY', 'ANTHROPIC_API_KEY'], env: { OPENROUTER_API_KEY: 'sk-or-1' }, readKeyCache: () => undefined })({ feature: 'x', spaceId: 's' }).done;
-    const [secret, job] = calls.filter((c) => c.args === 'apply -f -').map((c) => JSON.parse(c.input!));
+    const [secret, job] = calls.filter((c) => c.args.endsWith('apply -f -')).map((c) => JSON.parse(c.input!));
     expect(Object.keys(secret.stringData)).toContain('env-OPENROUTER_API_KEY');
     expect(Object.keys(secret.stringData)).not.toContain('env-ANTHROPIC_API_KEY');
-    // ⭐ 과금 키만 본다 — run-origin 칸(MONAD_POD_NAME 등)은 별도 시험이 문다.
+    // ⭐ 과금 키만 본다 — run-origin 칸(ELANOUS_POD_NAME 등)은 별도 시험이 문다.
     expect(job.spec.template.spec.containers[0].env.map((e: { name: string }) => e.name).filter((n: string) => n.endsWith('_API_KEY'))).toEqual(['OPENROUTER_API_KEY']);
   });
 
   test('every Job carries the isolation gate init container', () => {
-    const m = podJobManifest({ name: 'n', namespace: 'monad-test', image: 'i', repoUrl: 'r', args: [], passEnv: [], deadlineSeconds: 60 }) as { spec: { template: { spec: { initContainers: Array<{ name: string }> } } } };
+    const m = podJobManifest({ name: 'n', namespace: 'elanous-test', image: 'i', repoUrl: 'r', args: [], passEnv: [], deadlineSeconds: 60 }) as { spec: { template: { spec: { initContainers: Array<{ name: string }> } } } };
     expect(m.spec.template.spec.initContainers[0]!.name).toBe('isolation-gate');
   });
 });
@@ -84,7 +116,7 @@ describe('pod usage rollup', () => {
       JSON.stringify({ event: 'llm-usage', data: { site: 'agent-turn', provider: 'openai', model: 'gpt-6-sol', inputTokens: 100, outputTokens: 5, cost: { kind: 'known', usd: 0.5 } } }),
       JSON.stringify({ event: 'llm-usage', data: { site: 'agent-turn', provider: 'openai', model: 'gpt-6-sol', inputTokens: 50, outputTokens: 1, cost: { kind: 'unknown' } } }),
       JSON.stringify({ event: 'other', data: {} }),
-      'monad logs: result may be truncated (limitReached=true)',
+      'elanous logs: result may be truncated (limitReached=true)',
     ];
     const r = rollup(rows);
     expect(r.truncated).toBe(true);
@@ -92,7 +124,7 @@ describe('pod usage rollup', () => {
   });
   test('the host re-emits each row as llm-usage with a pod-rollup site; partial cost when some calls were unpriced', () => {
     const out: Array<{ c: string; e: string; d: Record<string, unknown> }> = [];
-    const line = `MONAD_USAGE_ROLLUP ${JSON.stringify({ measured: true, runId: 'run-9', rows: [{ site: 'agent-turn', provider: 'openai', model: 'gpt-6-sol', calls: 2, inputTokens: 150, outputTokens: 6, cacheReadInputTokens: 0, usdKnown: 0.5, unknownCostCalls: 1 }] })}`;
+    const line = `ELANOUS_USAGE_ROLLUP ${JSON.stringify({ measured: true, runId: 'run-9', rows: [{ site: 'agent-turn', provider: 'openai', model: 'gpt-6-sol', calls: 2, inputTokens: 150, outputTokens: 6, cacheReadInputTokens: 0, usdKnown: 0.5, unknownCostCalls: 1 }] })}`;
     expect(reemitPodUsage(`x\n${line}\n{"ok":true}\n`, 'si-1', (c, e, d) => out.push({ c, e, d }))).toBe(1);
     expect(out[0]).toMatchObject({ c: 'llm.usage', e: 'llm-usage', d: { site: 'pod-rollup:agent-turn', inputTokens: 150, substrate: 'pod', job: 'si-1', podRunId: 'run-9', cost: { kind: 'partial', usd: 0.5 } } });
   });
@@ -129,17 +161,17 @@ describe('bench arms', () => {
   });
   test('each arm pod gets its provider/model/arm id and only its own billing key', async () => {
     const calls: Array<{ args: string; input?: string }> = [];
-    const k = ((args: readonly string[], input?: string) => { calls.push({ args: args.join(' '), ...(input ? { input } : {}) }); return { status: 0, stdout: args.includes('get') ? 'Complete' : '', stderr: '' }; });
+    const k = ((args: readonly string[], input?: string) => { calls.push({ args: args.join(' '), ...(input ? { input } : {}) }); return { status: 0, stdout: args.includes('current-context') ? 'test-context' : args.includes('get') ? 'Complete' : '', stderr: '' }; });
     const arms = parseBenchArms('codex=openai-codex;or-kimi=openrouter:openrouter/moonshotai/kimi-k3@OPENROUTER_API_KEY');
     const spawn = benchPodSpawn(arms, { kubectl: k, sleep: async () => {}, credentials: CREDS, env: {}, readKeyCache: (n) => (n === 'OPENROUTER_API_KEY' ? 'sk-or-cached' : undefined) });
     const [, gKimi] = benchGoals('g', arms);
     await spawn({ feature: gKimi!, spaceId: 's-kimi' }).done;
-    const [secret, job] = calls.filter((c) => c.args === 'apply -f -').map((c) => JSON.parse(c.input!));
+    const [secret, job] = calls.filter((c) => c.args.endsWith('apply -f -')).map((c) => JSON.parse(c.input!));
     expect(secret.stringData['env-OPENROUTER_API_KEY']).toBe('sk-or-cached');
     const env = job.spec.template.spec.containers[0].env as Array<{ name: string; value?: string }>;
-    expect(env).toContainEqual({ name: 'MONAD_LLM_PROVIDER', value: 'openrouter' });
-    expect(env).toContainEqual({ name: 'MONAD_LLM_MODEL', value: 'openrouter/moonshotai/kimi-k3' });
-    expect(env).toContainEqual({ name: 'MONAD_ARM_ID', value: 'pod/or-kimi' });
+    expect(env).toContainEqual({ name: 'ELANOUS_LLM_PROVIDER', value: 'openrouter' });
+    expect(env).toContainEqual({ name: 'ELANOUS_LLM_MODEL', value: 'openrouter/moonshotai/kimi-k3' });
+    expect(env).toContainEqual({ name: 'ELANOUS_ARM_ID', value: 'pod/or-kimi' });
   });
   test('an arm without a model never falls to the legacy provider constant', () => {
     const [claude] = parseBenchArms('claude=anthropic;codex=openai-codex');
@@ -161,14 +193,14 @@ describe('bench arms', () => {
     expect(benchArmEnv(arms[1]!).LOCAL_LLM_URL).toBeUndefined();
     const labelsFor = async (goal: string): Promise<Record<string, string>> => {
       const calls: Array<{ args: string; input?: string }> = [];
-      const k = ((args: readonly string[], input?: string) => { calls.push({ args: args.join(' '), ...(input ? { input } : {}) }); return { status: 0, stdout: args.includes('get') ? 'Complete' : '', stderr: '' }; });
+      const k = ((args: readonly string[], input?: string) => { calls.push({ args: args.join(' '), ...(input ? { input } : {}) }); return { status: 0, stdout: args.includes('current-context') ? 'test-context' : args.includes('get') ? 'Complete' : '', stderr: '' }; });
       await benchPodSpawn(arms, { kubectl: k, sleep: async () => {}, credentials: CREDS, env: {} })({ feature: goal, spaceId: 's' }).done;
-      const job = calls.filter((c) => c.args === 'apply -f -').map((c) => JSON.parse(c.input!)).find((m) => m.kind === 'Job');
+      const job = calls.filter((c) => c.args.endsWith('apply -f -')).map((c) => JSON.parse(c.input!)).find((m) => m.kind === 'Job');
       return job.spec.template.metadata.labels;
     };
     const [gLocal, gCodex] = benchGoals('g', arms);
-    expect((await labelsFor(gLocal!))['monad.egress/local-llm']).toBe('true');
-    expect((await labelsFor(gCodex!))['monad.egress/local-llm']).toBeUndefined();
+    expect((await labelsFor(gLocal!))['elanous.egress/local-llm']).toBe('true');
+    expect((await labelsFor(gCodex!))['elanous.egress/local-llm']).toBeUndefined();
   });
   test('a goal without a known arm label fails with a named error (no silent default arm)', async () => {
     const r = await benchPodSpawn(parseBenchArms('a=grok;b=openai-codex'), { credentials: CREDS })({ feature: 'no label', spaceId: 's' }).done;
@@ -229,22 +261,22 @@ describe('included cost for subscription/local (BACKLOG C6)', () => {
 // 🅣 RFC run-origin(#20457 §A3) — Pod 가 자기 출처를 env 로 갖는다(칸 이름 합의).
 describe('pod run-origin env (RFC run-origin §A3)', () => {
   test('downward API pod/node/namespace, supervisor hostId and image commit are in the child env', () => {
-    const job = podJobManifest({ name: 'si-x', namespace: 'monad-test', image: 'monad-harness:local', repoUrl: 'r', args: [], passEnv: [], deadlineSeconds: 60, hostId: 'host-abc', imageCommit: 'deadbeef' }) as { spec: { template: { spec: { containers: Array<{ env: Array<Record<string, unknown>> }> } } } };
+    const job = podJobManifest({ name: 'si-x', namespace: 'elanous-test', image: 'elanous-harness:local', repoUrl: 'r', args: [], passEnv: [], deadlineSeconds: 60, hostId: 'host-abc', imageCommit: 'deadbeef' }) as { spec: { template: { spec: { containers: Array<{ env: Array<Record<string, unknown>> }> } } } };
     const env = job.spec.template.spec.containers[0]!.env;
-    expect(env).toContainEqual({ name: 'MONAD_POD_NAME', valueFrom: { fieldRef: { fieldPath: 'metadata.name' } } });
-    expect(env).toContainEqual({ name: 'MONAD_NODE_NAME', valueFrom: { fieldRef: { fieldPath: 'spec.nodeName' } } });
-    expect(env).toContainEqual({ name: 'MONAD_POD_NAMESPACE', valueFrom: { fieldRef: { fieldPath: 'metadata.namespace' } } });
-    expect(env).toContainEqual({ name: 'MONAD_HOST_ID', value: 'host-abc' });
-    expect(env).toContainEqual({ name: 'MONAD_IMAGE_COMMIT', value: 'deadbeef' });
+    expect(env).toContainEqual({ name: 'ELANOUS_POD_NAME', valueFrom: { fieldRef: { fieldPath: 'metadata.name' } } });
+    expect(env).toContainEqual({ name: 'ELANOUS_NODE_NAME', valueFrom: { fieldRef: { fieldPath: 'spec.nodeName' } } });
+    expect(env).toContainEqual({ name: 'ELANOUS_POD_NAMESPACE', valueFrom: { fieldRef: { fieldPath: 'metadata.namespace' } } });
+    expect(env).toContainEqual({ name: 'ELANOUS_HOST_ID', value: 'host-abc' });
+    expect(env).toContainEqual({ name: 'ELANOUS_IMAGE_COMMIT', value: 'deadbeef' });
   });
   test('rollup origin fields are re-emitted on the host', () => {
     const out: Array<Record<string, unknown>> = [];
-    const line = `MONAD_USAGE_ROLLUP ${JSON.stringify({ runId: 'r1', podName: 'si-x-abc', nodeName: 'k3d-node-0', hostId: 'host-abc', rows: [{ site: 'agent-turn', model: 'gpt-6-sol', calls: 1, inputTokens: 1, outputTokens: 1, usdKnown: 0.1, unknownCostCalls: 0 }] })}`;
+    const line = `ELANOUS_USAGE_ROLLUP ${JSON.stringify({ runId: 'r1', podName: 'si-x-abc', nodeName: 'k3d-node-0', hostId: 'host-abc', rows: [{ site: 'agent-turn', model: 'gpt-6-sol', calls: 1, inputTokens: 1, outputTokens: 1, usdKnown: 0.1, unknownCostCalls: 0 }] })}`;
     reemitPodUsage(line, 'si-x', (_c, _e, d) => out.push(d));
     expect(out[0]).toMatchObject({ podName: 'si-x-abc', nodeName: 'k3d-node-0', podHostId: 'host-abc' });
   });
 
-  test('memory limit defaults to 12Gi (6Gi OOMKilled a real child) and follows MONAD_POD_MEMORY', () => {
+  test('memory limit defaults to 12Gi (6Gi OOMKilled a real child) and follows ELANOUS_POD_MEMORY', () => {
     const base = { name: 'j', namespace: 'n', image: 'i', repoUrl: 'r', args: [], passEnv: [], deadlineSeconds: 60 };
     expect(JSON.stringify(podJobManifest(base))).toContain('"memory":"12Gi"');
     expect(JSON.stringify(podJobManifest({ ...base, memoryLimit: '24Gi' }))).toContain('"memory":"24Gi"');

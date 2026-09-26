@@ -3,7 +3,7 @@
 // A template is a JSON file that declares the initial tab set NEXUS
 // should boot with. There are two sources:
 //   1. Builtin defaults    — bundled with this module · always available
-//   2. User-saved          — `~/.monad/nexus/templates/<name>.json` ·
+//   2. User-saved          — `~/.elanous/nexus/templates/<name>.json` ·
 //                            written by POST /v1/nexus/templates from a
 //                            running NEXUS snapshot
 //

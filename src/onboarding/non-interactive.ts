@@ -1,6 +1,6 @@
 // Non-interactive wizard — drives `runOnboarding` from a fully-
 // resolved answer file (no prompts). Used by:
-//   - `monad setup --config <file> --non-interactive`
+//   - `elanous setup --config <file> --non-interactive`
 //   - CI / Docker bootstrap (env var only path)
 //   - dotfile re-deploy on a fresh machine
 //
@@ -152,7 +152,7 @@ function resolveChoice<T>(
     const authMode = strOr(merged.llm?.apiKey, '') ? 'apikey' : 'skip';
     if (authMode === 'skip' && !hasPrintedCodexSkipGuidance()) {
       // Choose ⓐ: use the suppressed WizardIO output to preserve quiet CI; ⓑ would add a report line outside this goal.
-      print('  → skipped. Run `monad codex setup` or `monad login openai-codex` later.\n');
+      print('  → skipped. Run `elanous codex setup` or `elanous login openai-codex` later.\n');
       markCodexSkipGuidancePrinted();
     }
     return choiceForValue(choices, authMode, opts);

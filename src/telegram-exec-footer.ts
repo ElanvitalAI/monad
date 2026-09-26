@@ -1,5 +1,5 @@
 // Compact execution footer for a telegram reply — surfaces which engine
-// handled the turn (self = monad's native tool loop, vs an ACP delegate) and
+// handled the turn (self = elanous's native tool loop, vs an ACP delegate) and
 // the model. So "어떤 모델로 · self인지 acp-codex/acp-claude인지" is visible per
 // reply. Standalone (no deps) so both the brain (telegram-agent) and the slash
 // path (telegram-commands) can import it without an import cycle.
@@ -17,7 +17,7 @@ export function executionFooter(opts: { delegatedBackend?: string; model?: strin
   // `<engine> · <model>(<effort>)` — both are meaningful indices (무슨 모델로 ·
   // 얼마나 깊게 추론). effort rides in parens to stay compact. Backends that
   // don't report a model (claude-code-acp) show head-only rather than guess.
-  const head = opts.delegatedBackend ? `🤖 ${acpLabel(opts.delegatedBackend)}` : '🧠 monad';
+  const head = opts.delegatedBackend ? `🤖 ${acpLabel(opts.delegatedBackend)}` : '🧠 elanous';
   const model = opts.model || (opts.delegatedBackend ? '' : '(default)');
   if (!model) return `— ${head}`;
   const modelTok = opts.effort ? `${model}(${opts.effort})` : model;
@@ -32,7 +32,7 @@ export function executionFooter(opts: { delegatedBackend?: string; model?: strin
  *  thinking-line parenthetical. Shares `acpLabel` so both stay in sync. */
 export function executionBadge(opts: { delegatedBackend?: string; model?: string; effort?: string }): string {
   if (opts.delegatedBackend) return `🤖 ${acpLabel(opts.delegatedBackend)}`;
-  if (!opts.model) return '🧠 monad';
+  if (!opts.model) return '🧠 elanous';
   return `🧠 ${opts.effort ? `${opts.model}(${opts.effort})` : opts.model}`;
 }
 

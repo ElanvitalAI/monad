@@ -1,7 +1,7 @@
 #!/usr/bin/env bun
 // clean-acp-sessions.ts
 //
-// Prunes stale entries from `~/.config/monad/acp-sessions.json`.
+// Prunes stale entries from `~/.config/elanous/acp-sessions.json`.
 // Companion to L2/L3 in src/acp/turn-runner.ts — even after the
 // runtime stops *writing* records for ephemeral backends, existing
 // files carry a long tail of dead entries from prior boots that
@@ -26,7 +26,7 @@
 //   --older-than-days N   Also drop records older than N days.
 //   --all                 Shorthand for --missing-cwd --older-than-days 30.
 //   --path <file>         Override the target file path. Default =
-//                         $XDG_CONFIG_HOME/monad/acp-sessions.json.
+//                         $XDG_CONFIG_HOME/elanous/acp-sessions.json.
 //
 // Manual run:
 //
@@ -60,7 +60,7 @@ interface ParsedArgs {
 
 function defaultStorePath(): string {
   const base = process.env.XDG_CONFIG_HOME ?? joinPath(homedir(), '.config');
-  return joinPath(base, 'monad', 'acp-sessions.json');
+  return joinPath(base, 'elanous', 'acp-sessions.json');
 }
 
 function parseArgs(argv: readonly string[]): ParsedArgs {
@@ -110,14 +110,14 @@ function parseArgs(argv: readonly string[]): ParsedArgs {
 function printHelp(): void {
   process.stdout.write(`Usage: bun run scripts/clean-acp-sessions.ts [flags]
 
-Prunes stale entries from ~/.config/monad/acp-sessions.json.
+Prunes stale entries from ~/.config/elanous/acp-sessions.json.
 
 Flags:
   --dry-run             Show what would be dropped, don't write.
   --missing-cwd         Drop dashboard:<path> entries whose path is gone.
   --older-than-days N   Drop records older than N days.
   --all                 Shorthand for --missing-cwd --older-than-days 30.
-  --path <file>         Override target file (default: ~/.config/monad/acp-sessions.json).
+  --path <file>         Override target file (default: ~/.config/elanous/acp-sessions.json).
   -h, --help            Show this help.
 `);
 }

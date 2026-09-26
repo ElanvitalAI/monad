@@ -44,7 +44,7 @@ describe('collect-market-daily.sh', () => {
     const process = await run(home, python);
     expect(await process.exited).toBe(0);
     expect(await new Response(process.stderr as ReadableStream).text()).toBe('');
-    const logDir = join(home, '.monad/logs/collect');
+    const logDir = join(home, '.elanous/logs/collect');
     const logs = await Array.fromAsync(new Bun.Glob('daily-*.log').scan({ cwd: logDir }));
     expect(logs).toHaveLength(1);
     const log = await Bun.file(join(logDir, logs[0]!)).text();

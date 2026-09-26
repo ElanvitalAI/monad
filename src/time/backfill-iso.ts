@@ -17,7 +17,7 @@
 //
 // ## 실행 이력 (1회성)
 //
-//   2026-07-27 · `~/.monad/conatus/community_buzz.db` · `slang_dict.last_seen` 36건 → ISO.
+//   2026-07-27 · `~/.elanous/conatus/community_buzz.db` · `slang_dict.last_seen` 36건 → ISO.
 //   적용 후 `ISO 36 / 비-ISO 0` 균일 확인. 백업 `community_buzz.db.bak-iso-backfill-20260727`.
 //   ⊕ 같은 조사에서 **다른 컬럼은 전부 컬럼별 균일**이었다(혼합 0건) — 손댈 대상이 없었다.
 //

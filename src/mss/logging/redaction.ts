@@ -14,7 +14,7 @@
 //   • Never throws. Circular references short-circuit to a sentinel.
 //   • Original `rec.data` is not mutated — the pass returns a shallow
 //     copy with a redacted `data` tree.
-//   • Top-level `LogRecord` fields (`trace_id`, `monad_id`, `category`,
+//   • Top-level `LogRecord` fields (`trace_id`, `elanous_id`, `category`,
 //     etc.) are IDs, not secrets — not touched.
 //   • Key matching is case-insensitive against a blocklist shared in
 //     spirit with `redactSecrets()` (same names, wider coverage).

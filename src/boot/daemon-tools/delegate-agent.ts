@@ -1,9 +1,9 @@
 // daemon tool · delegate_code_agent (2026-07-08)
 //
-// monad(monad-builtin)가 큰 코드 작업을 외부 코딩 에이전트(claude code / codex /
+// elanous(elanous-builtin)가 큰 코드 작업을 외부 코딩 에이전트(claude code / codex /
 // gemini / grok)에 위임하는 도구. self-improving 흐름에서 "더 강한 코더에 맡기기".
 // ACP dual-role manager 로 sub-process 세션을 열고 task 를 보내 완료까지 대기한 뒤
-// 누적 텍스트를 반환한다(블로킹). monad 직접(Edit/Write/Bash)로 충분한 작은 작업엔
+// 누적 텍스트를 반환한다(블로킹). elanous 직접(Edit/Write/Bash)로 충분한 작은 작업엔
 // 쓰지 말 것 — 큰 구현·리팩토링·외부 기능 이식 등에만.
 
 import { homedir } from 'node:os';
@@ -34,7 +34,7 @@ import { spillFileName } from '../../channel/file-sink.js';
 import { persistMissionRouteDecision, routeDecisionFromExecutionBackend } from '../../autopilot/mission-route-decision.js';
 
 /** Read the delegated session's final codex goal (best-effort) and shape
- *  it for the tool result: raw status + mapped monad mission status +
+ *  it for the tool result: raw status + mapped elanous mission status +
  *  budget usage. Returns null when the backend has no goal support. */
 async function readDelegateGoal(
   mgr: DualRoleManager,
@@ -210,7 +210,7 @@ export async function dispatchDelegateAgent(
   // turn-runner, but delegate_code_agent used to accumulate PROSE ONLY
   // (`extractUpdateText` returns '' for tool updates), so a natural-
   // language "Claude로 구현해줘" hid the actual diffs/output. Relay them
-  // too so monad's agent (and the user) sees what the sub-agent did.
+  // too so elanous's agent (and the user) sees what the sub-agent did.
   const relayVerbosity = 'normal' as const; // single policy — no user knob
   const fileSink = ctx.surfaceFileSink;
   try {
@@ -242,9 +242,9 @@ export async function dispatchDelegateAgent(
       },
     });
     // Read the final goal so the caller sees codex's progress verdict
-    // (mapped to a monad mission status + budget usage).
+    // (mapped to a elanous mission status + budget usage).
     const goal = await readDelegateGoal(mgr, rec.id);
-    // Autopilot P0.2 — 자율행동(코드 위임) 회상 로깅. "monad 가 큰 코드 작업을 X 에 위임".
+    // Autopilot P0.2 — 자율행동(코드 위임) 회상 로깅. "elanous 가 큰 코드 작업을 X 에 위임".
     recordAutonomousActionSafe({
       loop: 'delegate',
       action: `${backend} 위임: ${task.slice(0, 100)}`,

@@ -32,7 +32,7 @@ export function getBrowserCdpAvailability(): BrowserCdpAvailability {
     return {
       available: false,
       reason: 'no-chrome-binary',
-      note: 'Chrome unavailable. Set MONAD_CHROME_BIN or install Google Chrome / Chromium.',
+      note: 'Chrome unavailable. Set ELANOUS_CHROME_BIN or install Google Chrome / Chromium.',
     };
   }
   return {

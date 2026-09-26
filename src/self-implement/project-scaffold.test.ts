@@ -13,7 +13,7 @@ const createDirectory = () => {
   return directory;
 };
 const paths = (root: string) => [
-  join(root, '.monad', 'project.json'),
+  join(root, '.elanous', 'project.json'),
   join(root, 'AGENTS.md'),
   join(root, 'DESIGN.md'),
   join(root, 'docs', 'PLAN.md'),
@@ -130,10 +130,10 @@ describe('scaffoldProject', () => {
     expect(result.ignoreFile).toEqual({ added: 23, preserved: 0 });
     expect(calls).toContainEqual(['init']);
     expect(result.created).toEqual(expect.arrayContaining(paths(result.target)));
-    expect(result.created).toEqual(expect.arrayContaining([join(result.target, '.monad'), join(result.target, 'docs', 'goals')]));
+    expect(result.created).toEqual(expect.arrayContaining([join(result.target, '.elanous'), join(result.target, 'docs', 'goals')]));
     expect(result.created).not.toContain(join(result.target, 'docs', 'pdca'));
     expect(result.created.length).toBeGreaterThan(0);
-    expect(readFileSync(join(result.target, '.monad', 'project.json'), 'utf8')).toBe('{\n  "kind": "project"\n}\n');
+    expect(readFileSync(join(result.target, '.elanous', 'project.json'), 'utf8')).toBe('{\n  "kind": "project"\n}\n');
     expect(readFileSync(join(result.target, 'AGENTS.md'), 'utf8')).toBe(agentsSeed);
   });
 
@@ -161,7 +161,7 @@ describe('scaffoldProject', () => {
     expect(result.created).toEqual(expect.arrayContaining(paths(result.target)));
     const design = readFileSync(join(result.target, 'DESIGN.md'), 'utf8');
     const section = design.match(/## Craft rulebooks\n\n([^\n]+)\n\n-/);
-    expect(section?.[1]).toBe('These rulebooks travel with monad and are not stored in this project; run `monad repo design-check` to locate the `Craft rulebooks directory`.');
+    expect(section?.[1]).toBe('These rulebooks travel with elanous and are not stored in this project; run `elanous repo design-check` to locate the `Craft rulebooks directory`.');
     expect(section?.[1]).not.toContain('<!--');
   });
 
@@ -223,10 +223,10 @@ describe('scaffoldProject', () => {
     if (result.status === 'not-applicable') throw new Error('expected already-git scaffold');
     expect(result.ignoreFile).toEqual({ added: 23, preserved: 1 });
     expect(result.created).toEqual(expect.arrayContaining(paths(result.target)));
-    expect(result.created).toEqual(expect.arrayContaining([join(result.target, '.monad'), join(result.target, 'docs', 'goals')]));
+    expect(result.created).toEqual(expect.arrayContaining([join(result.target, '.elanous'), join(result.target, 'docs', 'goals')]));
     expect(result.created).not.toContain(join(result.target, 'docs', 'pdca'));
     const ignored = readFileSync(join(directory, '.gitignore'), 'utf8').split('\n');
-    expect(ignored).toEqual(expect.arrayContaining(['human-rule/', '.monad/', '.monad-test/']));
+    expect(ignored).toEqual(expect.arrayContaining(['human-rule/', '.elanous/', '.elanous-test/']));
   });
 
   test('stops without filesystem writes for a non-applicable target', () => {
@@ -234,7 +234,7 @@ describe('scaffoldProject', () => {
     const result = scaffoldProject(missing, { home: tmpdir() });
 
     expect(result).toMatchObject({ status: 'not-applicable', reason: 'missing', created: [], existing: [] });
-    expect(existsSync(join(missing, '.monad'))).toBe(false);
+    expect(existsSync(join(missing, '.elanous'))).toBe(false);
   });
 
   test('preserves an existing scaffold file and reports it by path', () => {
@@ -296,7 +296,7 @@ describe('scaffoldProject', () => {
     }
 
     expect(replaced).toBe(true);
-    expect(existsSync(join(directory, '.monad', 'project.json'))).toBe(false);
+    expect(existsSync(join(directory, '.elanous', 'project.json'))).toBe(false);
     expect(existsSync(join(outside, 'project.json'))).toBe(true);
   });
 
@@ -324,7 +324,7 @@ describe('scaffoldProject', () => {
     expect(result.created).not.toContain(join(raced, 'pdca'));
   });
 
-  test.each(['.monad', 'docs'])('rejects an external symbolic-link %s without writing outside the project', (name) => {
+  test.each(['.elanous', 'docs'])('rejects an external symbolic-link %s without writing outside the project', (name) => {
     const directory = createDirectory();
     const outside = createDirectory();
     const link = join(directory, name);
@@ -335,7 +335,7 @@ describe('scaffoldProject', () => {
     expect(existsSync(join(outside, 'PLAN.md'))).toBe(false);
   });
 
-  test.each(['.monad', 'docs'])('rejects a dangling symbolic-link %s', (name) => {
+  test.each(['.elanous', 'docs'])('rejects a dangling symbolic-link %s', (name) => {
     const directory = createDirectory();
     const link = join(directory, name);
     symlinkSync(join(directory, 'missing-target'), link);
@@ -343,7 +343,7 @@ describe('scaffoldProject', () => {
     expect(() => scaffoldProject(directory, { home: tmpdir(), runGit: successfulGit })).toThrow('unsafe scaffold directory');
   });
 
-  test.each(['.monad', 'docs'])('does not write outside when %s is replaced by an external symbolic link before entry', (name) => {
+  test.each(['.elanous', 'docs'])('does not write outside when %s is replaced by an external symbolic link before entry', (name) => {
     const directory = createDirectory();
     const outside = createDirectory();
     let replaced = false;
@@ -373,7 +373,7 @@ describe('scaffoldProject', () => {
     scaffoldProject(directory, { home: tmpdir(), runGit: successfulGit });
 
     const sources = resolveDeclarativeSources({ cwd: directory, home: createDirectory(), env: {} });
-    expect(sources.project).toBe(join(directory, '.monad'));
+    expect(sources.project).toBe(join(directory, '.elanous'));
     for (const kind of DECLARATIVE_KINDS) expect(listDeclarativeFiles(sources.project!, kind)).toEqual([]);
   });
 });

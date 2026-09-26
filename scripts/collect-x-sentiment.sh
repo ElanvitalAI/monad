@@ -1,5 +1,5 @@
 #!/bin/zsh
-# [pilot · P2b 2026-07-05] X(트윗) 센티먼트 수집 (monad-owned).
+# [pilot · P2b 2026-07-05] X(트윗) 센티먼트 수집 (elanous-owned).
 # openclaw run_asset_morning.sh + run_region_morning.sh 대체 (두 수집을 순차
 # 실행하여 크론 라인 하나로 통합).
 #
@@ -16,11 +16,11 @@
 #    앵커는 backbone(collect-market-backbone.sh).
 # Apify 토큰이 없으면 fail-fast (구 래퍼와 동일 계약).
 export PATH="/opt/homebrew/bin:/usr/local/bin:$HOME/.bun/bin:/usr/bin:/bin:/usr/sbin:/sbin:$PATH"
-# 파이썬 = 한 곳에서(scripts/lib/resolve-python.sh · MONAD_PYTHON > monad venv > pyenv .python-version > PATH) — 옛 하드코딩 ~/.pyenv/versions/3.12.12 대체
+# 파이썬 = 한 곳에서(scripts/lib/resolve-python.sh · ELANOUS_PYTHON > elanous venv > pyenv .python-version > PATH) — 옛 하드코딩 ~/.pyenv/versions/3.12.12 대체
 PY="${PY:-$(sh "$(dirname "$0")/lib/resolve-python.sh")}"
 SK="$HOME/.claude/skills/apify-x-asset-sentiment"
 set -a; [ -f "$SK/.env" ] && source "$SK/.env"; set +a
-LOGDIR="$HOME/.monad/logs/collect"; mkdir -p "$LOGDIR"
+LOGDIR="$HOME/.elanous/logs/collect"; mkdir -p "$LOGDIR"
 D=$(TZ=Asia/Seoul date +%Y%m%d); LOG="$LOGDIR/sentiment-$D.log"
 XBASE="$HOME/obsidian/ElanvitalAI/40. Project/EMBA_Field_Project/Crawling/X"
 RBASE="$HOME/obsidian/ElanvitalAI/40. Project/EMBA_Field_Project/Crawling/X-regions"

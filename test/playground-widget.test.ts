@@ -338,7 +338,7 @@ describe('F-B5b · mode toggle', () => {
       },
       editScenarioId: DIALOG_CONFIRM_FLOW.id,
       scenarioPalette: mkPalette(['dialog:confirm-flow', 'picker:row-click']),
-      themeOptions: mkThemes(['catppuccin-mocha', 'monad-pastel-default']),
+      themeOptions: mkThemes(['catppuccin-mocha', 'elanous-pastel-default']),
       presetOptions: mkPresets(['newsroom', 'coding-focus']),
       showcaseOptions: mkShowcases(['canvas-sketch', 'runtime-signals']),
     });
@@ -414,7 +414,7 @@ describe('F-B5b · mode toggle', () => {
   test('ctrl+t / ctrl+y / ctrl+p / ctrl+m / ctrl+a update visual console state', () => {
     const s = mkState({
       mode: 'edit',
-      themeOptions: mkThemes(['catppuccin-mocha', 'monad-pastel-default']),
+      themeOptions: mkThemes(['catppuccin-mocha', 'elanous-pastel-default']),
       presetOptions: mkPresets(['newsroom', 'coding-focus']),
       showcaseOptions: mkShowcases(['canvas-sketch', 'runtime-signals']),
       chromeAffectiveState: 'neutral',
@@ -457,7 +457,7 @@ describe('F-B5b · mode toggle', () => {
       mode: 'edit',
       lastWidth: 100,
       lastHeight: 30,
-      themeOptions: mkThemes(['catppuccin-mocha', 'monad-pastel-default']),
+      themeOptions: mkThemes(['catppuccin-mocha', 'elanous-pastel-default']),
       presetOptions: mkPresets(['newsroom', 'coding-focus']),
       showcaseOptions: mkShowcases(['canvas-sketch', 'runtime-signals']),
       showcaseCursor: 1,

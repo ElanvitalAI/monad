@@ -18,14 +18,14 @@ import { Database } from 'bun:sqlite';
 import { mkdirSync } from 'node:fs';
 import { randomUUID } from 'node:crypto';
 import { dirname, join } from 'node:path';
-import { monadStateRoot } from '../autopilot/state-paths.js';
+import { elanousStateRoot } from '../autopilot/state-paths.js';
 import { within } from '../time/db-window.js';
 
-/** ops_events.db 정본 경로 — state-dir 존중(lazy · Phase B). prod=`~/.monad/ops_events.db`
+/** ops_events.db 정본 경로 — state-dir 존중(lazy · Phase B). prod=`~/.elanous/ops_events.db`
  *  (무변경) · 격리 test=자기 루트. 종전 homedir 하드코딩은 test ops 이벤트가 prod 관측을
  *  오염시키던 근본(연합 대상도 아니라 prod ops_events.db 에 섞여 관측 왜곡). */
 export function opsEventsDbPath(): string {
-  return join(monadStateRoot(), 'ops_events.db');
+  return join(elanousStateRoot(), 'ops_events.db');
 }
 
 /** 관측 대상 엔티티 축 — 4계층(미션·태스크·루프·오케스트레이터) + 세션 패브릭. */

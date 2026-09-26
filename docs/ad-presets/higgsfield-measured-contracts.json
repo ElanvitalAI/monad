@@ -1,5 +1,5 @@
 {
-  "_source": "docs/RFC-higgsfield-marketing-pipeline-upgrade-three-modes-2026-09-10.md §모델 계약 · Movies/monad-ad/2026-09-11-umbrella/v3-outcomes.json",
+  "_source": "docs/RFC-higgsfield-marketing-pipeline-upgrade-three-modes-2026-09-10.md §모델 계약 · Movies/elanous-ad/2026-09-11-umbrella/v3-outcomes.json",
   "_rule": "⛔ 이 파일의 값은 «실측»이다. 새 모델을 더할 때 추정으로 채우지 말고, 거부 문면이나 과금 관측으로 확인한 뒤 적어라.",
   "durationRules": {
     "seedance_2_0":   { "minimumSeconds": 4, "_evidence": "2·3초 거부: 'greater than or equal to 4'" },

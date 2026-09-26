@@ -1,7 +1,7 @@
 import { parseBotlabCron, sortJobs } from '../../src/bots/routines.js';
 import { readCrontab } from '../../src/bots/screen-probe.js';
 import type { CronScan } from '../../src/bots/routines.js';
-import type { MonadPlugin, SlashCommand } from '../../src/plugins/core/types.js';
+import type { ElanousPlugin, SlashCommand } from '../../src/plugins/core/types.js';
 
 export const BOTLAB_SCHEDULE_COMMAND = 'botlab-schedules';
 
@@ -25,7 +25,7 @@ const slashCommands: SlashCommand[] = [{
   },
 }];
 
-const botlab: MonadPlugin = {
+const botlab: ElanousPlugin = {
   name: 'botlab',
   version: '0.1.0',
   description: 'Read-only schedule surface for existing botlab automation.',

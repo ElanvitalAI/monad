@@ -4,7 +4,7 @@
 //
 // The CLI ships with the same E2E-encryption stack as the Obsidian
 // desktop app and uses the user's existing Obsidian Sync subscription.
-// monad daemon shells out for one-shot pushes (after a notes-save) and
+// elanous daemon shells out for one-shot pushes (after a notes-save) and
 // status polls (Notes header pill). Continuous background sync
 // (`ob sync --continuous`) is a follow-up that needs a process
 // supervisor — this cut keeps things simple with on-demand spawns.

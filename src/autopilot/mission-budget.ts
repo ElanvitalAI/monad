@@ -1,15 +1,15 @@
 // ── 미션 실행 예산 정책 — config-first 오버라이드 (2026-07-14) ────────────────
 //
 // 두 예산이 있었는데 통로가 반쪽이었다:
-//   • walker(조사) 예산: env(MONAD_WALKER_BUDGET) 만 — 구 패턴
+//   • walker(조사) 예산: env(ELANOUS_WALKER_BUDGET) 만 — 구 패턴
 //   • SE(코딩) 예산: SE_BUDGET_LADDER 하드코딩 상수 — 오버라이드 전무(코드 편집만)
 // 대표 지시(2026-07-14): SE 코딩 예산에 오버라이드 장치를 만들고, 정책을 통일한다.
 //
 // 결정 순서(feedback_config_over_env 선례 — 새 노브는 user-config 우선·env fallback):
 //   1) user-config: autopilot.budget.se / autopilot.budget.walker (숫자 배열 또는 "a,b,c")
-//   2) env fallback: MONAD_SE_BUDGET / MONAD_WALKER_BUDGET (쉼표 구분)
+//   2) env fallback: ELANOUS_SE_BUDGET / ELANOUS_WALKER_BUDGET (쉼표 구분)
 //   3) 하드코딩 기본값
-// config 우선이라 `monad config` 로 코드 변경 0·인스턴스별(테스트 config 만 상향) 조정 가능.
+// config 우선이라 `elanous config` 로 코드 변경 0·인스턴스별(테스트 config 만 상향) 조정 가능.
 
 import { getUserConfig } from '../user-config.js';
 
@@ -18,7 +18,7 @@ import { getUserConfig } from '../user-config.js';
  *  `autopilot.budget.se` 를 단일 rung([12])로** 두어 단일 시도 후 실패 시 hasMoreRungs=false→split(조율자
  *  재구조화). 종전 다단 [150,400,1000] escalation 은 과대결합 페이즈를 grind 하는 근원(terra→opus→opus 전부
  *  gate-fail=scoping 문제·분할로 즉시 해소). 이 상수는 config/env 미설정 시 fallback(에스컬레이션 메커니즘
- *  자체는 보존·명시 다단 ladder 넘기면 동작). goal-loop iteration 캡(=12·유일 제약)은 se-monad-self-impl. */
+ *  자체는 보존·명시 다단 ladder 넘기면 동작). goal-loop iteration 캡(=12·유일 제약)은 se-elanous-self-impl. */
 export const SE_BUDGET_LADDER_DEFAULT: readonly number[] = [150, 400, 1000];
 /** walker(조사) 페이즈 예산 계단 — maxTokens(토큰 상한). */
 export const WALKER_BUDGET_DEFAULT: readonly number[] = [128000, 256000, 512000];
@@ -53,20 +53,20 @@ function budgetFromConfig(key: 'se' | 'walker'): number[] | null {
   }
 }
 
-/** SE(코딩) 예산 계단 — config → env(MONAD_SE_BUDGET) → 기본값. */
+/** SE(코딩) 예산 계단 — config → env(ELANOUS_SE_BUDGET) → 기본값. */
 export function resolveSeBudgetLadder(): number[] {
   return (
     budgetFromConfig('se') ??
-    parseBudgetList(process.env.MONAD_SE_BUDGET) ??
+    parseBudgetList(process.env.ELANOUS_SE_BUDGET) ??
     [...SE_BUDGET_LADDER_DEFAULT]
   );
 }
 
-/** walker(조사) 예산 계단 — config → env(MONAD_WALKER_BUDGET) → 기본값. */
+/** walker(조사) 예산 계단 — config → env(ELANOUS_WALKER_BUDGET) → 기본값. */
 export function resolveWalkerBudget(): number[] {
   return (
     budgetFromConfig('walker') ??
-    parseBudgetList(process.env.MONAD_WALKER_BUDGET) ??
+    parseBudgetList(process.env.ELANOUS_WALKER_BUDGET) ??
     [...WALKER_BUDGET_DEFAULT]
   );
 }

@@ -55,13 +55,13 @@ function seedStore(stateDir: string, entries: string[]): void {
 }
 
 function runRecall(home: string, stateDir: string, args: string[]): string {
-  const result = Bun.spawnSync(['bun', 'bin/monad.mjs', 'self', 'recall', query, ...args], {
+  const result = Bun.spawnSync(['bun', 'bin/elanous.mjs', 'self', 'recall', query, ...args], {
     cwd: repoRoot,
     env: {
       ...process.env,
       HOME: home,
-      MONAD_STATE_DIR: stateDir,
-      MONAD_CONFIG_DIR: stateDir,
+      ELANOUS_STATE_DIR: stateDir,
+      ELANOUS_CONFIG_DIR: stateDir,
       XDG_CONFIG_HOME: join(home, '.config'),
       XDG_CACHE_HOME: join(home, '.cache'),
       OPENAI_API_KEY: '',
@@ -78,17 +78,17 @@ function occurrences(output: string, text: string): number {
   return output.split(text).length - 1;
 }
 
-describe('monad self recall observer-output CLI wiring', () => {
+describe('elanous self recall observer-output CLI wiring', () => {
   test('spawns only isolated stores: default excludes observers, --include-observer-output includes them, and fleet keeps the requested limit', () => {
     const root = mkdtempSync(join(tmpdir(), 'self-recall-cli-observer-'));
     roots.push(root);
     const home = join(root, 'home');
-    const primary = join(home, '.monad');
+    const primary = join(home, '.elanous');
     const federated = join(root, 'federated');
     mkdirSync(primary, { recursive: true });
     mkdirSync(federated, { recursive: true });
-    // The scoped CLI reads `<MONAD_STATE_DIR>/surface_events.db`, while fleet treats
-    // HOME/.monad as prod and reads its managed `memory/` store.
+    // The scoped CLI reads `<ELANOUS_STATE_DIR>/surface_events.db`, while fleet treats
+    // HOME/.elanous as prod and reads its managed `memory/` store.
     seedStore(primary, [observer, ...localIntentional]);
     seedStore(join(primary, 'memory'), [observer, ...localIntentional]);
     seedStore(federated, [fleetIntentional]);
@@ -104,8 +104,8 @@ describe('monad self recall observer-output CLI wiring', () => {
         db.close();
       }
     }
-    mkdirSync(join(home, '.monad', 'logs'), { recursive: true });
-    writeFileSync(join(home, '.monad', 'logs', 'instances.json'), JSON.stringify({
+    mkdirSync(join(home, '.elanous', 'logs'), { recursive: true });
+    writeFileSync(join(home, '.elanous', 'logs', 'instances.json'), JSON.stringify({
       instances: [
         { name: 'prod', stateDir: primary, kind: 'prod', pid: process.pid, startedAt: new Date().toISOString() },
         { name: 'federated', stateDir: federated, kind: 'prod', pid: process.pid, startedAt: new Date().toISOString() },

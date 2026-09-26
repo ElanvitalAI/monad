@@ -1,6 +1,6 @@
-// ── monad self agent turn — the shared messenger-surface brain (M4a) ──
+// ── elanous self agent turn — the shared messenger-surface brain (M4a) ──
 //
-// PLAN-multi-surface-pty-shell M4a: the tool-enabled monad self turn
+// PLAN-multi-surface-pty-shell M4a: the tool-enabled elanous self turn
 // that telegram proved (T1/A0 tools + finance pack + delegate_code_agent
 // + the M1 terminal layer) generalized to a SURFACE-flavored factory.
 // Telegram and Discord consume the same assembly; per-surface deltas
@@ -27,7 +27,7 @@ import { isToolSearchCall, routeToolSearch } from '../skills/tools/tool-search-r
 import { financeEnabled, financeAgentSystemPrompt, marketClock } from '../domains/finance.js';
 import { buildFinanceTools } from '../domains/finance-tools.js';
 import { surfaceEventsDbPath, openSurfaceEventsDb, recentSentDigest, recordInboundTurn } from '../domains/surface-events.js';
-import { monadSelfAccessPrompt, monadSelfAmbientParts } from './self-ambient.js';
+import { elanousSelfAccessPrompt, elanousSelfAmbientParts } from './self-ambient.js';
 import { localRefGroundingAmbient } from './ref-grounding.js';
 import { resolveRouteDecision } from '../llm/route-decision.js';
 import type { RouteDecision } from '../llm/route-decision.js';
@@ -41,7 +41,7 @@ import { setActiveDelegation, delegationChatKey } from '../acp/active-delegation
 // compat 위해 재노출(telegram-agent.ts 가 이 모듈 경유 재노출).
 export { delegateBackendToSlashKey };
 
-// monadSelfAccessPrompt/자기인지 ambient 3종 — self-ambient.ts 로 추출(P3 · 2026-07-13).
+// elanousSelfAccessPrompt/자기인지 ambient 3종 — self-ambient.ts 로 추출(P3 · 2026-07-13).
 // TUI 채팅 preamble(dashboard/turn-preamble)과 단일 출처 공유(표면 패리티).
 
 /** Block 5 — 최근 발송 ambient 주입(반문 예방). 매 턴 fresh · fail-soft ·
@@ -54,14 +54,14 @@ function recentSentContext(): string {
   } catch { return ''; }
 }
 
-/** Build the tool-enabled monad self runTurn for a messenger surface:
+/** Build the tool-enabled elanous self runTurn for a messenger surface:
  *  the full agent tool surface (Read/Grep/Glob/ListDir/Edit/Write +
  *  Bash + PtyShell + search), plus — when the finance domain pack is
  *  enabled (A0) — the analyst orientation + resource map + first-class
  *  finance tools. Drop-in for the hosting bot's `runTurnImpl`. */
-export function makeMonadAgentRunTurn(cfg: UserConfig, surface: SessionSource): typeof runTurn {
+export function makeElanousAgentRunTurn(cfg: UserConfig, surface: SessionSource): typeof runTurn {
   if (surface !== 'telegram' && surface !== 'discord') {
-    throw new Error(`Unsupported monad agent session source: ${surface}`);
+    throw new Error(`Unsupported elanous agent session source: ${surface}`);
   }
   const finance = financeEnabled(cfg);
   // ★ turn 조립기 통일 Phase 4b(2026-07-22·대표 결정) — telegram/discord 는 원격 입력 서피스라 fs-tool
@@ -187,16 +187,16 @@ export function makeMonadAgentRunTurn(cfg: UserConfig, surface: SessionSource): 
     };
     // Both the market clock AND the resource map are recomputed FRESH per
     // turn: the clock so the agent knows the current time/sessions, and the
-    // resource map so edits to ~/.monad/finance-resources.md take effect
+    // resource map so edits to ~/.elanous/finance-resources.md take effect
     // WITHOUT a daemon restart (hot-reload). Finance-gated.
     const parts = [
       finance ? marketClock() : '',
       finance ? financeAgentSystemPrompt() : '',
       finance ? recentSentContext() : '', // Block 5 — 최근 발송 ambient 인지(반문 예방)
-      monadSelfAccessPrompt(), // 자기접근 규율 — 소스/수정/ACP위임/세션/웹검증 도구 실제 사용(코어 상시)
+      elanousSelfAccessPrompt(), // 자기접근 규율 — 소스/수정/ACP위임/세션/웹검증 도구 실제 사용(코어 상시)
       // P4/P0.3/Ops P3 — 자기인지 ambient 3종(최근 구현·자율행동·이상). TUI preamble 과
       // 단일 출처(self-ambient.ts) 공유 — 표면 패리티(P3 · 2026-07-13).
-      ...monadSelfAmbientParts(opts.userText),
+      ...elanousSelfAmbientParts(opts.userText),
       localRefGroundingAmbient(opts.userText), // 로컬 ~/source/ref canonical 그라운딩(웹 우회 방지)
       opts.systemPrompt ?? '',
     ].filter(Boolean);

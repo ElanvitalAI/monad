@@ -4,9 +4,9 @@
 // single-plain 52(자문자답/dead-code 주석·spec-drift·거짓완료) → 앵커 적용 시 single-aug 93,
 // loop-aug **99**. 약한 모델일수록 이득이 크고, 강한 모델엔 무해(이미 지키는 규율).
 //
-// 이 상수를 self-implement 의 자식 monad 프롬프트(seams.featurePrompt)와 벤치의
+// 이 상수를 self-implement 의 자식 elanous 프롬프트(seams.featurePrompt)와 벤치의
 // `PER_PROVIDER_AUG.local`(scripts/tui-sim-bench.ts) 이 **공유**한다 — 측정에서 통한 앵커가
-// 그대로 운영(monad 자율 self-build)에 적용되도록. 앵커 문구 변경은 여기 한 곳에서.
+// 그대로 운영(elanous 자율 self-build)에 적용되도록. 앵커 문구 변경은 여기 한 곳에서.
 
 export const CLEAN_BUILD_ANCHOR = [
   '⚠️ 클린 빌드 규율:',

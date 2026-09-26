@@ -1,13 +1,13 @@
 # CLI reference
 
-Generated from `monad <command> --help` for the 29 commands this manual uses. Every command also answers `--help`; `monad --help` lists all of them, including maintainer tools not covered here.
+Generated from `elanous <command> --help` for the 31 commands this manual uses. Every command also answers `--help`; `elanous --help` lists all of them, including maintainer tools not covered here.
 
-## `monad acp`
+## `elanous acp`
 
 Agent Client Protocol — spawn ACP agents (claude-code, codex, gemini)
 
 ```text
-monad acp [options] [command]
+elanous acp [options] [command]
 ```
 
 | Subcommand | Description |
@@ -17,12 +17,12 @@ monad acp [options] [command]
 | `test [options]` | One-shot ACP smoke test: spawn a backend, send one prompt, print the streamed response |
 | `list` | List the ACP backends this build knows about |
 
-## `monad agent`
+## `elanous agent`
 
 Single-turn agent — same as `chat` but with the tool loop on by default (Read/Grep/Glob/ListDir/Edit/Write + Bash). Use this when the LLM needs to inspect files / run commands / debug itself.
 
 ```text
-monad agent [options] [command] [text...]
+elanous agent [options] [command] [text...]
 ```
 
 | Option | Description |
@@ -34,14 +34,14 @@ monad agent [options] [command] [text...]
 
 | Subcommand | Description |
 |---|---|
-| `dispatch [options] <subagent_type> <prompt...>` | Spawn one sub-agent from the terminal and print its final message. Observe with `monad logs --category agent.spawn` / `--category agent.done` — the printed cid pairs the two. |
+| `dispatch [options] <subagent_type> <prompt...>` | Spawn one sub-agent from the terminal and print its final message. Observe with `elanous logs --category agent.spawn` / `--category agent.done` — the printed cid pairs the two. |
 
-## `monad ask`
+## `elanous ask`
 
-Alias for `monad chat --new`: send one query and print the reply
+Alias for `elanous chat --new`: send one query and print the reply
 
 ```text
-monad ask [options] <text...>
+elanous ask [options] <text...>
 ```
 
 | Option | Description |
@@ -50,22 +50,22 @@ monad ask [options] <text...>
 | `--session <id>` | Continue an explicit session (id or unique prefix). Overrides --reuse and active session. |
 | `--json` | Emit a single JSON line {sessionId, provider, model, reply, logPath, budget} instead of streaming text + ui.info trailer. Stable shape for LLM self-spawn. |
 
-## `monad attach`
+## `elanous attach`
 
-ACP client for the running monad daemon. Three modes: handshake-only (default), one-shot (--message), interactive REPL (--interactive). Local (unix socket) or remote (--host / --url) over Tailscale.
+ACP client for the running elanous daemon. Three modes: handshake-only (default), one-shot (--message), interactive REPL (--interactive). Local (unix socket) or remote (--host / --url) over Tailscale.
 
 ```text
-monad attach [options]
+elanous attach [options]
 ```
 
 | Option | Description |
 |---|---|
-| `--socket <path>` | Override the unix socket path (default: ~/.monad/monad.sock) |
+| `--socket <path>` | Override the unix socket path (default: ~/.elanous/elanous.sock) |
 | `--host <hostport>` | Remote daemon host:port (e.g. mbp.tailnet:31415). Coerced to ws://&lt;hostport&gt;/v1/acp. |
 | `--url <wsurl>` | Remote daemon WS URL (e.g. ws://host:31415/v1/acp). Overrides --host. |
 | `-r, --remote [name]` | Bookmark name (`-r` alone = default). Fills host/token-file; explicit --url/--host/--token/--token-file win. |
-| `--token <token>` | Bearer token for remote auth. Overrides --token-file and MONAD_TOKEN. |
-| `--token-file <path>` | Read bearer token from this file (e.g. ~/.monad/acp-token scp'd from the daemon). |
+| `--token <token>` | Bearer token for remote auth. Overrides --token-file and ELANOUS_TOKEN. |
+| `--token-file <path>` | Read bearer token from this file (e.g. ~/.elanous/acp-token scp'd from the daemon). |
 | `--no-auth` | Skip token handshake (Tailscale-only mode; daemon must run with --no-http-auth). |
 | `--label <name>` | Best-effort client label sent in the auth handshake (debug log only). |
 | `--session <id>` | M2.3 — attach to an EXISTING session id (loaded via ACP session/load) instead of minting a new one. Daemon must know the id (use /list on a prior session to discover). |
@@ -76,12 +76,12 @@ monad attach [options]
 | `-i, --interactive` | Start an interactive REPL — type messages, get streamed responses (slash commands: /quit /new /list /help) |
 | `--cwd <path>` | Working directory reported in newSession() (default: "&lt;current directory&gt;") |
 
-## `monad chat`
+## `elanous chat`
 
 Send one message in the active session (or a new one) and print the reply
 
 ```text
-monad chat [options] <text...>
+elanous chat [options] <text...>
 ```
 
 | Option | Description |
@@ -89,16 +89,16 @@ monad chat [options] <text...>
 | `--new` | Force a new session instead of using the active one |
 | `--session <id>` | Continue an explicit session (id or unique prefix). Overrides --new and active session. |
 | `--json` | Emit a single JSON line {sessionId, provider, model, reply, logPath, budget} instead of streaming text + ui.info trailer. Stable shape for LLM self-spawn. |
-| `--tools` | Enable the tool-loop path (Read/Grep/Glob/ListDir/Edit/Write + Bash). Default off — chat is text-only by default for backward compatibility. `monad agent` is a thin wrapper that flips this on. |
+| `--tools` | Enable the tool-loop path (Read/Grep/Glob/ListDir/Edit/Write + Bash). Default off — chat is text-only by default for backward compatibility. `elanous agent` is a thin wrapper that flips this on. |
 | `--goal-loop` | Arm the across-turn goal loop (runGoalLoop): wrap the tool-loop so the model keeps iterating until the goal is complete (GOAL-COMPLETE evidence gate) or maxIterations. Requires --tools. Same engine as ACP/dashboard. Config `llm.goalLoop.enabled` also arms it. |
 | `--implement` | Bypass the harness goal-loop guard for the legacy implementation child entrypoint |
 
-## `monad config`
+## `elanous config`
 
-Inspect and edit ~/.config/monad/config.json
+Inspect and edit ~/.config/elanous/config.json
 
 ```text
-monad config [options] [command]
+elanous config [options] [command]
 ```
 
 | Subcommand | Description |
@@ -107,32 +107,32 @@ monad config [options] [command]
 | `get [options] [path]` | Print all config or one dotted path, e.g. llm.provider (secrets redacted by default) |
 | `set [options] <path> <value>` | Set a dotted config path. Value is parsed as JSON when possible. |
 | `unset [options] <path>` | Remove a dotted config path (the inverse of set · array indexes supported). No-op if already absent. |
-| `sync-test [options]` | Materialize the production config, converted to be test-safe, into the isolated root (+ copies side files · default &lt;repo&gt;/.monad-test) |
+| `sync-test [options]` | Materialize the production config, converted to be test-safe, into the isolated root (+ copies side files · default &lt;repo&gt;/.elanous-test) |
 | `promote [options] <path...>` | Propagate field(s) from the test config to production (per-field raw patch · multiple paths · dry-run by default · --yes to apply) |
 | `mission` | Inspect or edit llm.missionRouting (mission → provider table) |
 
-## `monad discord-test`
+## `elanous discord-test`
 
 Standalone TEST discord session (SAME app/token, scoped to discord.testChannel.channelId) with ISOLATED state, WITHOUT touching the production daemon. Restart THIS process to test code changes; the live daemon stays up.
 
 ```text
-monad discord-test [options]
+elanous discord-test [options]
 ```
 
 | Option | Description |
 |---|---|
 | `--token <token>` | override the token (default: discord.testChannel.botToken → discord.botToken) |
 | `--channel <id>` | override the test channel snowflake (default: discord.testChannel.channelId) |
-| `--state-dir <dir>` | isolated state dir (default ~/.monad/discord-test) |
+| `--state-dir <dir>` | isolated state dir (default ~/.elanous/discord-test) |
 | `--allow <ids>` | comma-separated allowed discord user ids (default: testChannel.allowedUsers or main allowlist) |
 | `--reset` | wipe the isolated state dir before starting (fresh test) |
 
-## `monad doctor`
+## `elanous doctor`
 
 Reports whether credentials resolve and where each resolution comes from
 
 ```text
-monad doctor [options]
+elanous doctor [options]
 ```
 
 | Option | Description |
@@ -143,12 +143,12 @@ monad doctor [options]
 | `--sudo` | also run the planned sudo install lines — only where `sudo -n true` works (requires --fix --yes) |
 | `--restart` | restart the nexus service when it runs a different version than this installed copy, then verify it (requires --fix --yes · interrupts bots, terminals and running turns) |
 
-## `monad harness`
+## `elanous harness`
 
 Harness worktree lifecycle — create (worktree add), list (worktrees), clean (clean), inspect processes (processes)
 
 ```text
-monad harness [options] [command]
+elanous harness [options] [command]
 ```
 
 | Subcommand | Description |
@@ -171,12 +171,12 @@ monad harness [options] [command]
 | `map [options]` | Harness self-description — prints the stage pipeline (order · role), execution spaces and terminal states (no side effects). |
 | `orchestrate [options] <goals...>` | Parallel self-dev — run several goals at once, each as an isolated-worktree self-implement subprocess, with a concurrency cap. |
 
-## `monad local`
+## `elanous local`
 
 Local OpenAI-compatible LLM — ping, list, test, setup
 
 ```text
-monad local [options] [command]
+elanous local [options] [command]
 ```
 
 | Subcommand | Description |
@@ -185,18 +185,18 @@ monad local [options] [command]
 | `models [options]` | List models served by the endpoint (GET /v1/models) |
 | `pick [options]` | Fleet-policy auto-pick — choose a local model by MLX-first · Q4 · speed · node RAM budget (reused by observation and missions) |
 | `bench [options] [models...]` | Local model benchmark — 100-point rubric (coding 50 · reasoning 30 · RAG 10 · format 10) · graded by really running Python · temperature 0, sequential. Concurrency cap 2 (one load per machine). |
-| `scores|map [options]` | Combined map — benchmark scores (speed tok/s × 100-point use score × RAM × node × tier) in one table. Reads ~/.monad/llm-bench.jsonl and joins inventory RAM. The basis for fleet routing. |
+| `scores|map [options]` | Combined map — benchmark scores (speed tok/s × 100-point use score × RAM × node × tier) in one table. Reads ~/.elanous/llm-bench.jsonl and joins inventory RAM. The basis for fleet routing. |
 | `inventory|inv [options]` | Auto-discover LLM resources on every node (local + SSH fleet) — quad-probe (lmstudio/ollama/mlx/docker). Exposes the manager inventory on the CLI. |
 | `test [options]` | Run the compatibility matrix against the endpoint |
-| `chat [options] <prompt...>` | One-shot chat through the full monad provider stack (integration smoke) |
-| `setup [options]` | Save endpoint + model to ~/.config/monad/config.json (provider=local) |
+| `chat [options] <prompt...>` | One-shot chat through the full elanous provider stack (integration smoke) |
+| `setup [options]` | Save endpoint + model to ~/.config/elanous/config.json (provider=local) |
 
-## `monad login`
+## `elanous login`
 
 Authenticate to an LLM provider via OAuth
 
 ```text
-monad login [options] [command]
+elanous login [options] [command]
 ```
 
 | Subcommand | Description |
@@ -205,12 +205,12 @@ monad login [options] [command]
 | `status` | List providers that have OAuth tokens on file |
 | `logout <provider>` | Forget OAuth tokens for a provider |
 
-## `monad logs`
+## `elanous logs`
 
 Query or live-tail logs from every surface (like adb logcat) — level/surface/category/grep filters
 
 ```text
-monad logs [options] [command]
+elanous logs [options] [command]
 ```
 
 | Option | Description |
@@ -235,7 +235,7 @@ monad logs [options] [command]
 | `--limit <n>` | Maximum rows (default 100 · local reads are not capped at 1000 — that cap moved to the HTTP boundary) |
 | `--json` | JSON output |
 | `--json-data` | Emit JSON data as parsed values in --json output |
-| `--test` | Read the logs of the isolated test instance (.monad-test/) of the repo in the current directory |
+| `--test` | Read the logs of the isolated test instance (.elanous-test/) of the repo in the current directory |
 | `--instance <name>` | Target a registered instance (prod\|test:&lt;repo&gt;\|…) |
 | `--all` | Federated query across all instances — read-only merge · ⟨instance⟩ tag |
 | `--include-test` | Include isolated test instances in the --all federation (excluded by default) |
@@ -253,29 +253,29 @@ monad logs [options] [command]
 | `unclosed [options]` | Work that started but never finished, oldest first — hang candidates. ⛔ Sets no threshold (the reader picks the cut with --older-than) |
 | `abandoned-draft-prs [options]` | Count and name abandoned draft PRs that have no salvage verdict yet (read-only · no closing/labels/comments) |
 
-## `monad mcp`
+## `elanous mcp`
 
 MCP (Model Context Protocol) server / client integration
 
 ```text
-monad mcp [options] [command]
+elanous mcp [options] [command]
 ```
 
 | Subcommand | Description |
 |---|---|
-| `serve` | Run a stdio MCP server exposing the configured mcp.servers as proxy tools (used by `claude mcp add monad -- monad mcp serve`) |
+| `serve` | Run a stdio MCP server exposing the configured mcp.servers as proxy tools (used by `claude mcp add elanous -- elanous mcp serve`) |
 | `login [options] <serverId>` | Acquire and persist OAuth credentials for one configured HTTP MCP server. |
-| `reload [options]` | Re-read user-config and rebuild the running daemon's MCP clients — no daemon restart. Use after editing mcp.servers[] or `monad mcp login`. |
+| `reload [options]` | Re-read user-config and rebuild the running daemon's MCP clients — no daemon restart. Use after editing mcp.servers[] or `elanous mcp login`. |
 | `diagnose [options] [serverId]` | Probe one (or every enabled) MCP server: spawn + initialize + tools/list, verbose. When `xcrun mcpbridge` hangs daemon-side, this reproduces under your shell env so you can diff. |
 | `call [options] <tool>` | Call one MCP tool on this machine's daemon (or a bookmarked remote) via POST /v1/mcp |
 | `list [options]` | List MCP tools from this machine's daemon (or a bookmarked remote) via POST /v1/mcp tools/list |
 
-## `monad memory`
+## `elanous memory`
 
 Persistent memories injected into every chat turn (user / feedback / project / reference)
 
 ```text
-monad memory [options] [command]
+elanous memory [options] [command]
 ```
 
 | Subcommand | Description |
@@ -292,21 +292,21 @@ monad memory [options] [command]
 | `index` | Print MEMORY.md index verbatim |
 | `where` | Show the memory storage path |
 
-## `monad nexus`
+## `elanous nexus`
 
 NEXUS — unified TUI shell + supervisor + meta-api (Phase N-1, opt-in)
 
 ```text
-monad nexus [options] [command]
+elanous nexus [options] [command]
 ```
 
 | Subcommand | Description |
 |---|---|
 | `run [options]` | Boot the NEXUS daemon. Default = headless + PWA-ready. Lifecycle auto-detected from TTY (fork+detach when interactive, inline blocking under launchd / systemd / Docker / nohup). Stop with `nexus pwa stop`. |
-| `status` | Print NEXUS lock + runtime sidecar state. Same as `monad nexus --status`. |
-| `stop` | Send SIGINT to the local NEXUS lock holder. Same as `monad nexus --stop`. |
+| `status` | Print NEXUS lock + runtime sidecar state. Same as `elanous nexus --status`. |
+| `stop` | Send SIGINT to the local NEXUS lock holder. Same as `elanous nexus --stop`. |
 | `ios-bind [options]` | Inject NEXUS host/port + bearer token to the booted iOS simulator (L2 helper). |
-| `config` | Read/write the UserConfig at ~/.monad/config.json. |
+| `config` | Read/write the UserConfig at ~/.elanous/config.json. |
 | `build [options]` | Build the PWA static export at apps/pwa/out (one-time · ~30s). Required before `nexus run` (static mode). |
 | `dist` | Stage B remote-install — publish ad-hoc IPA so iPad Safari can install it over Tailscale. |
 | `pwa` | PWA operational helpers — stop / show / global / share / restart / dev. (start/test/build are deprecated → use `nexus run` / `nexus run --test` / `nexus build`.) |
@@ -314,19 +314,19 @@ monad nexus [options] [command]
 | `restart-needed [options]` | Say whether the running daemon needs a restart, a PWA build, or nothing, from the path diff between its commit and --to (default HEAD). Read-only. |
 | `channel-bot` | NEXUS-native channel bot setup helpers. |
 | `setup-firecrawl [options]` | Configure Firecrawl-backed model discovery (CLI detection + API key entry). |
-| `connect [options] <host>` | Bookmark a remote NEXUS host so `monad` (no-arg) auto-attaches. Pulls metadata from /v1/nexus/connect-info. |
+| `connect [options] <host>` | Bookmark a remote NEXUS host so `elanous` (no-arg) auto-attaches. Pulls metadata from /v1/nexus/connect-info. |
 | `list|ls [options]` | List bookmarked remotes. Shows default + addedAt + (optional) health ping. |
-| `switch <name>` | Set &lt;name&gt; as the default remote (used by `monad` no-arg). |
+| `switch <name>` | Set &lt;name&gt; as the default remote (used by `elanous` no-arg). |
 | `remove|rm <name>` | Remove a bookmark + delete its token file. Does not stop the remote NEXUS. |
 | `install [options]` | Install nexus as an OS-supervised service (launchd / systemd) |
 | `uninstall [options]` | Remove the launchd LaunchAgent / systemd-user unit installed by `nexus install` |
 
-## `monad ops`
+## `elanous ops`
 
 Operations observation (READ-ONLY) — current state, anomalies and transitions of missions · tasks · contract loops · orchestrators. --json for scripts.
 
 ```text
-monad ops [options] [command]
+elanous ops [options] [command]
 ```
 
 | Subcommand | Description |
@@ -338,24 +338,24 @@ monad ops [options] [command]
 | `mission-log [options] <id>` | Tail a mission's run log (run.log) — the evidence behind the diagnosis (survives reboot) |
 | `build [options] [buildId]` | Observe/control isolated builds — list when no id, snapshot with a buildId. --follow streams like tail -f, --stop stops a running build |
 
-## `monad provider`
+## `elanous provider`
 
 Show the currently active LLM provider + model + auth status
 
 ```text
-monad provider|providers [options] [command]
+elanous provider|providers [options] [command]
 ```
 
 | Subcommand | Description |
 |---|---|
 | `codex` | Codex — view and use usage, limits and reset credits |
 
-## `monad pty`
+## `elanous pty`
 
 PTY control — <ref> is an id, nickname, or unique prefix (see 'pty list')
 
 ```text
-monad pty [options] [command]
+elanous pty [options] [command]
 ```
 
 | Subcommand | Description |
@@ -375,12 +375,12 @@ monad pty [options] [command]
 | `key [options] <ref> <key>` | Inject a named special key (enter/esc/tab/up/… · see 'pty list' for &lt;ref&gt;) |
 | `resize [options] <ref> <cols> <rows>` | Resize the PTY (gated by the same access matrix as input) |
 
-## `monad registry`
+## `elanous registry`
 
 Observe the model catalog (catalog/ is the source of truth) — audit routing-map drift
 
 ```text
-monad registry [options] [command]
+elanous registry [options] [command]
 ```
 
 | Subcommand | Description |
@@ -388,12 +388,28 @@ monad registry [options] [command]
 | `drift [options]` | Audit whether routing pins (alias · tier-map · mission-router) match the catalog's active ids — proposes changes for a human (never applies them) |
 | `discover [options]` | Run the chosen discovery sources and merge into the existing snapshot — dry-run by default · --write to record · no S3 push |
 
-## `monad repl`
+## `elanous release`
+
+One public release — prepare (local) → publish (--yes) → verify
+
+```text
+elanous release [options] [command]
+```
+
+| Subcommand | Description |
+|---|---|
+| `prepare [options]` | Clean source → public copy → commit on top of the public repository's history → PWA → bundle and checksums → local end-to-end (no network writes) |
+| `yank [options]` | Pull a release — demote it to pre-release and point Latest at the previous stable version (assets are kept · --undo reverts). Without --yes it only shows the plan |
+| `publish [options]` | ⛔ Cannot be undone — pushes to the public repository and creates the GitHub release. Without --yes it only shows the plan |
+| `verify [options]` | End to end from the public URL — in a clean temporary home: install → --version → self-update → uninstall |
+| `notes [options]` | Draft a changelog from the landings between two refs (edit it before publishing) |
+
+## `elanous repl`
 
 Sticky multi-turn REPL — same session across turns, no per-turn process boot. Drives chat / agent / scenario from one shell. Uses --new for a fresh session, --session <id> to resume, --scenario <yaml> for a scripted run, JSONL on stdin for piped automation.
 
 ```text
-monad repl [options]
+elanous repl [options]
 ```
 
 | Option | Description |
@@ -408,24 +424,50 @@ monad repl [options]
 | `--no-tools` | Disable the tool loop and run a text-only chat REPL (parity with telegram/discord callers) |
 | `--stdin-jsonl` | Force JSONL-on-stdin mode even when stdin is a TTY (useful for testing automation paths) |
 
-## `monad self entrances`
+## `elanous self entrances`
 
 Print the list of Commander CLI entrances currently assembled
 
 ```text
-monad self entrances [options]
+elanous self entrances [options]
 ```
 
 | Option | Description |
 |---|---|
 | `--json` | Output as structured JSON |
 
-## `monad self parked`
+## `elanous self orchestrate`
+
+Parallel self-dev — run several goals at once, each as an isolated-worktree self-implement subprocess, with a concurrency cap. Separate goals with `;;` (or one goal per argument). --concurrency sets how many jobs run at once (default 2).
+
+```text
+elanous self orchestrate [options] [goals...]
+```
+
+| Option | Description |
+|---|---|
+| `--concurrency <n>` | Jobs to run at once (default 2) |
+| `--auto-merge` | Each job: merge automatically when the review is clean (passes --auto-merge to each self-implement, through the review node) |
+| `--auto-review` | Label each job's PR for opt-in auto-review (passes --auto-review to each self-implement · each job judges its own eligibility · fail-safe). Labelled PRs are finished unattended by the review poller. |
+| `--open-pr` | Each job: open a draft PR when the gate and review pass (passes --open-pr to each self-implement · promotion goes through the review node) |
+| `--base <branch>` | Base branch for each job's PR |
+| `--decompose` | Split one goal with an LLM into a dependency sub-DAG (parallel by topology, hot files serialized), then run it |
+| `--pod-skill-env` | pod: pass the keys (.env) of required skills (config pod-skills.txt) to this run as a Secret — explicit opt-in (paid credits) · never baked into the image |
+| `--pod-pool <spec>` | pod pool — context[@ssh-host][:cap], comma-separated, first wins (e.g. pool-a@host-a:12,pool-b@host-b:3) · otherwise ELANOUS_POD_POOL · otherwise the current context alone |
+| `--reduce` | At the end, gather the pieces that opened PRs into one integration branch (one gate run) and one PR — pairs with `--open-pr` · cannot be combined with `--auto-merge` (elanous self reduce) |
+| `--substrate <kind>` | Where to run: local (default · isolated worktree) \| pod (Kubernetes Job · docker/harness image) |
+| `--pod-account <name>` | pod: codex account (~/.elanous/auth.json openai-codex:&lt;name&gt; · a copy without the refresh token) · if omitted, a broker hands each Job the account with the most remaining quota |
+| `--no-pod-rebuild` | pod: do not rebuild the image even if its version (elanous.commit) differs from HEAD — the measurement then measures the image's version |
+| `--pod-pass-env <keys>` | pod: keys to pass from the host environment into the Pod (comma-separated) — e.g. OPENROUTER_API_KEY,ANTHROPIC_API_KEY (benchmark billing path) |
+| `--bench-arms <spec>` | pod benchmark: clone one goal per arm, differing only in a single label line, and run them at once — "id=provider[:model][@KEY+KEY];…" (e.g. codex=openai-codex;or-kimi=openrouter:openrouter/moonshotai/kimi-k3@OPENROUTER_API_KEY) · refuses --auto-merge |
+| `--help-all` | Show every orchestrate option |
+
+## `elanous self parked`
 
 Backlog of goals blocked (failed/cancelled) in the unattended self-dev loop, for batch decisions. Mark handled with --resolve <runId> --reason <reason>. --json for structured output.
 
 ```text
-monad self parked [options]
+elanous self parked [options]
 ```
 
 | Option | Description |
@@ -435,28 +477,45 @@ monad self parked [options]
 | `--resolve <runId>` | Mark a parked run as handled by a person |
 | `--reason <reason>` | Short reason for marking it handled |
 
-## `monad self recall`
+## `elanous self recall`
 
-Recall monad's self-cognition memory — "what did I implement recently" (surface_events domain=monad)
+Recall elanous's self-cognition memory — "what did I implement recently" (surface_events domain=elanous)
 
 ```text
-monad self recall [options] <query...>
+elanous self recall [options] <query...>
 ```
 
 | Option | Description |
 |---|---|
 | `-n, --limit <n>` | Number of results (default: "8") |
 | `--since-hours <n>` | Lookup period in hours (default: "720") |
-| `--all-instances` | Federated recall across every registered monad instance (fleet · read-only union) |
+| `--all-instances` | Federated recall across every registered elanous instance (fleet · read-only union) |
 | `--include-test` | Include isolated test instances in the federation (excluded by default) |
 | `--include-observer-output` | Include output generated by observers in the recall (excluded by default) |
 
-## `monad self repair-signals`
+## `elanous self reduce`
+
+Fleet reduce — merge the open piece PRs one by one onto the base with merge --no-ff → on conflict, stop and name the piece and files → change-scope gate → one integration PR (piece PRs are not closed)
+
+```text
+elanous self reduce [options]
+```
+
+| Option | Description |
+|---|---|
+| `--prs <numbers>` | Open PR numbers to combine (comma-separated · merged in the order given) |
+| `--base <branch>` | Base branch (default: "main") |
+| `--branch <name>` | Integration branch name (default reduce/&lt;time&gt;) |
+| `--title <text>` | Integration PR title |
+| `--dry-run` | Merge and gate only — no push, PR or comments |
+| `--skip-gate` | Skip the gate (not recommended) |
+
+## `elanous self repair-signals`
 
 Cluster parked failures into patterns (system repair candidates vs single-goal issues). Observation → system repair.
 
 ```text
-monad self repair-signals [options]
+elanous self repair-signals [options]
 ```
 
 | Option | Description |
@@ -465,12 +524,12 @@ monad self repair-signals [options]
 | `--json-envelope` | Structured output {signals, scanned, windowExcluded}; --json alone keeps the raw-array contract |
 | `--since <t>` | Only a recent window (30s/15m/2h/7d or ISO/epoch) |
 
-## `monad self run-ledger`
+## `elanous self run-ledger`
 
 Print the JSONL observation ledger of a self-implement run
 
 ```text
-monad self run-ledger [options] <runId>
+elanous self run-ledger [options] <runId>
 ```
 
 | Option | Description |
@@ -479,12 +538,12 @@ monad self run-ledger [options] <runId>
 | `--all` | Federated ledger lookup across all instances, like logs |
 | `--include-test` | Include isolated test instances in the --all federation |
 
-## `monad self-update`
+## `elanous self-update`
 
-Update an installed copy from a release, a checkout from a clean checkout; restart the nexus when approved
+Update an installed copy from a release, a checkout from a clean checkout; restart the nexus when approved · same as `elanous update` · with `--auto on`, runs every day
 
 ```text
-monad self-update [options]
+elanous self-update|update [options]
 ```
 
 | Option | Description |
@@ -495,13 +554,14 @@ monad self-update [options]
 | `--json` | Print the result as JSON |
 | `--keep <n>` | Recent versions to keep after install (installed copy: current and previous; checkout: current and the daemon's version are protected · 0 = no cleanup) (default: "3") |
 | `--alert` | Also send failures (exit≠0) as an alert — for unattended cron runs |
+| `--auto <on|off|status>` | Automatic updates — a macOS launchd agent or Linux systemd timer runs `self-update --restart --alert` every day at 04:17 (not turned on if a cron entry already runs it) |
 
-## `monad session`
+## `elanous session`
 
 Manage conversation sessions
 
 ```text
-monad session [options] [command]
+elanous session [options] [command]
 ```
 
 | Subcommand | Description |
@@ -514,7 +574,7 @@ monad session [options] [command]
 | `watch [options] [prefix]` | Live-tail a session — render new messages as they arrive (default: the most recently active session) |
 | `delete <prefix>` | Delete a session (by id or prefix) |
 | `purge [options]` | Bulk-delete sessions by filter (DRY-RUN by default · --apply to delete · destructive, cannot be undone) |
-| `export [options] [prefix]` | Export a session transcript to a markdown file (default: active · ~/temp/monad-transcript-&lt;stamp&gt;.md) |
+| `export [options] [prefix]` | Export a session transcript to a markdown file (default: active · ~/temp/elanous-transcript-&lt;stamp&gt;.md) |
 | `fork [options] <prefix>` | Fork a session (copies history · records forkedFromId lineage) |
 | `search [options] <query>` | Search conversation CONTENT across sessions (source / instance / telegram filters) |
 | `subscribe [options] <prefix>` | Subscribe a surface to a session (concurrent multi-surface viewing) |
@@ -527,24 +587,24 @@ monad session [options] [command]
 | `link <prefix>` | Emit a shareable @session:&lt;id&gt; deep link for cross-surface reference |
 | `open <token>` | Open an @session:&lt;id&gt; deep link — resolves + shows who is watching (grounded) |
 
-## `monad setup`
+## `elanous setup`
 
 Check OpenAI Codex setup and guide each missing credential step
 
 ```text
-monad setup [options]
+elanous setup [options]
 ```
 
 | Option | Description |
 |---|---|
 | `--non-interactive` | Report setup state without prompts or writes |
 
-## `monad telegram`
+## `elanous telegram`
 
 Telegram bot — the standard Q&A poller that runs outside the nexus
 
 ```text
-monad telegram [options] [command]
+elanous telegram [options] [command]
 ```
 
 | Subcommand | Description |
@@ -552,12 +612,12 @@ monad telegram [options] [command]
 | `run` | Run the same Q&A path as the nexus in a separate process (only after taking a polling lock per token · if the nexus is polling, waits 30 seconds and then gives up that token). To turn the nexus poller off, set telegram.poller=standalone. |
 | `service [options]` | Show the service definition for `telegram run` (launchd plist · systemd unit). With --install, writes and starts it (only when telegram.poller=standalone). |
 
-## `monad tier`
+## `elanous tier`
 
 Look up the LLM tier → model mapping — per-provider budget/balanced/better/best/loaded ladder (llm-tier-map). Accepts aliases like "grok low".
 
 ```text
-monad tier [options] [command]
+elanous tier [options] [command]
 ```
 
 | Subcommand | Description |
@@ -566,12 +626,30 @@ monad tier [options] [command]
 | `list|ls [options] [provider]` | Full matrix (provider × 5 tiers) or one provider. A one-glance table to avoid tier confusion. |
 | `providers` | Providers that have a tier ladder. |
 
-## `monad usage`
+## `elanous update`
+
+Update an installed copy from a release, a checkout from a clean checkout; restart the nexus when approved · same as `elanous update` · with `--auto on`, runs every day
+
+```text
+elanous self-update|update [options]
+```
+
+| Option | Description |
+|---|---|
+| `--from <checkout>` | Checkout to install (default: releases for an installed copy, the current checkout for a checkout) |
+| `--version <version>` | Install this release version on an installed copy (default: latest) |
+| `--restart` | Approve restarting the nexus |
+| `--json` | Print the result as JSON |
+| `--keep <n>` | Recent versions to keep after install (installed copy: current and previous; checkout: current and the daemon's version are protected · 0 = no cleanup) (default: "3") |
+| `--alert` | Also send failures (exit≠0) as an alert — for unattended cron runs |
+| `--auto <on|off|status>` | Automatic updates — a macOS launchd agent or Linux systemd timer runs `self-update --restart --alert` every day at 04:17 (not turned on if a cron entry already runs it) |
+
+## `elanous usage`
 
 One row per account: how much you can still use right now (credit axis ≠ subscription axis)
 
 ```text
-monad usage [options] [command]
+elanous usage [options] [command]
 ```
 
 | Option | Description |
@@ -583,12 +661,12 @@ monad usage [options] [command]
 | `runs [options]` | Aggregate stored llm-usage logs by run, model and billing path |
 | `reset [options]` | ⛔ Cannot be undone — spends one Codex reset credit to restart that account's weekly window now |
 
-## `monad wf`
+## `elanous wf`
 
 Run YAML DAG workflows (workflow-runtime · prompt|bash|skill|cft|approval|if|switch|iteration|classify|extract|set|filter|template|http|showroom|scheduleTrigger|webhookTrigger|discordTrigger|telegramTrigger|manualTrigger|chatTrigger nodes). Aliases: `workflows` (plural) · `workflow` (singular).
 
 ```text
-monad wf|workflows [options] [command]
+elanous wf|workflows [options] [command]
 ```
 
 | Subcommand | Description |
@@ -601,12 +679,12 @@ monad wf|workflows [options] [command]
 | `suggest-next [options] <workflow>` | Suggest the next node(s) to add to a workflow (LLM-driven · Phase 4 N5-1) |
 | `synth [options] <intent...>` | Synthesize a workflow YAML from a natural-language intent (LLM-driven · scheduler-retirement R3) |
 
-## `monad where`
+## `elanous where`
 
 Show which instance (prod/test) this process belongs to, and why (READ-ONLY)
 
 ```text
-monad where [options]
+elanous where [options]
 ```
 
 | Option | Description |

@@ -74,7 +74,7 @@ export function resolveAutoReview(mode: AutoReviewMode, flag: boolean): boolean 
 
 // ── G8 자기판단 — 이 작업을 무인 리뷰루프(auto-review)에 태워도 되나 (2026-07-23) ────
 //
-// ROADMAP-monad-is-all §2b(무인레벨 심화 삼각). capsule(riskBoundaries·evidence·scope)+리뷰 신호로
+// ROADMAP-elanous-is-all §2b(무인레벨 심화 삼각). capsule(riskBoundaries·evidence·scope)+리뷰 신호로
 // "무인 완결(rework→심판→머지) 안전한 작업인가"를 시스템이 스스로 판정한다. capsule 의 첫 실소비처.
 // 원칙: **fail-safe** — 판단 불확실/위험 신호 있으면 부적합(사람 첫 리뷰). 명백 저위험만 통과.
 // 이 판정은 opt-in 플래그(--auto-review)의 **거부권**으로 작동(G8 1차: 자동 부착 아님·blast radius=사람 옵트인).

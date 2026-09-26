@@ -13,7 +13,7 @@ function deps(overrides: Parameters<typeof runHarnessPlanRfc>[2] = {}) {
     deps: {
       now: () => NOW,
       rootDir: '/repo',
-      env: { MONAD_HARNESS_SPACE_ID: '' },
+      env: { ELANOUS_HARNESS_SPACE_ID: '' },
       exists: () => false,
       write: (path: string, markdown: string) => { writes.push([path, markdown]); },
       print: (line: string) => { lines.push(line); },
@@ -65,7 +65,7 @@ describe('runHarnessPlanRfc', () => {
     let checkedCollision = false;
     let authored = false;
     const fixture = deps({
-      env: { MONAD_HARNESS_SPACE_ID: ' child-space ' },
+      env: { ELANOUS_HARNESS_SPACE_ID: ' child-space ' },
       exists: () => { checkedCollision = true; return false; },
       author: async () => {
         authored = true;
@@ -83,7 +83,7 @@ describe('runHarnessPlanRfc', () => {
   test('refuses a harness child dry-run before authoring', async () => {
     let authored = false;
     const fixture = deps({
-      env: { MONAD_HARNESS_SPACE_ID: 'child-space' },
+      env: { ELANOUS_HARNESS_SPACE_ID: 'child-space' },
       author: async () => {
         authored = true;
         return { markdown: MARKDOWN, title: 'RFC — Harness plan', arcs: [], openQuestions: [] };
@@ -97,7 +97,7 @@ describe('runHarnessPlanRfc', () => {
   });
 
   test('treats an empty harness-space marker as a normal human shell', async () => {
-    const fixture = deps({ env: { MONAD_HARNESS_SPACE_ID: '   ' } });
+    const fixture = deps({ env: { ELANOUS_HARNESS_SPACE_ID: '   ' } });
 
     const result = await runHarnessPlanRfc('Empty marker RFC', {}, fixture.deps);
 

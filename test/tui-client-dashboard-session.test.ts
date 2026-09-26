@@ -20,7 +20,7 @@ import {
   type DashboardSessionToolResult,
   type DashboardSessionUsage,
 } from '../src/tui-client/dashboard-session.js';
-import { formatMonadUiEnvelope } from '../src/acp/monad-extensions.js';
+import { formatElanousUiEnvelope } from '../src/acp/elanous-extensions.js';
 
 describe('DashboardSession — scaffold surface', () => {
   test('exports the class with create/send/close shape', () => {
@@ -93,13 +93,13 @@ describe('DashboardSession — send interceptor (P2-bridge-ext)', () => {
     expect(seen).toEqual([]);
   });
 
-  test('routes monad/ui/usage envelope to onUsage (sans correlation id)', () => {
+  test('routes elanous/ui/usage envelope to onUsage (sans correlation id)', () => {
     const seen: DashboardSessionUsage[] = [];
     const intercept = _buildSendInterceptorForTest({
       userText: 'x',
       onUsage: (u) => seen.push(u),
     });
-    const envText = formatMonadUiEnvelope({
+    const envText = formatElanousUiEnvelope({
       method: 'usage',
       payload: {
         id: 'turn:1',

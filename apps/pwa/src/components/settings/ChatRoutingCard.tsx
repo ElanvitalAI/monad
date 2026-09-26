@@ -6,7 +6,7 @@
 //   • Automatic routing  — mission router predict + chip mission tag.
 //                           default OFF (사용자 명시).
 //   • ACP CLI backends   — Codex / Claude Code / Gemini chip options.
-//                           OFF = monad-builtin 고정 ("베이직 모드").
+//                           OFF = elanous-builtin 고정 ("베이직 모드").
 //                           default ON.
 //
 // Source of truth: localStorage via `chat-routing-storage`. Subscribes
@@ -85,7 +85,7 @@ export function ChatRoutingCard() {
           <span className="flex flex-col gap-0.5">
             <span className="text-sm font-medium">ACP CLI backends</span>
             <span className="text-xs text-muted-foreground">
-              OFF 시 Codex / Claude Code / Gemini CLI 가 chip picker 에서 사라지고 monad-builtin 고정. NEXUS rotation (opus / codex / local 등) 만으로 단순화된 “베이직 모드”.
+              OFF 시 Codex / Claude Code / Gemini CLI 가 chip picker 에서 사라지고 elanous-builtin 고정. NEXUS rotation (opus / codex / local 등) 만으로 단순화된 “베이직 모드”.
             </span>
           </span>
         </label>

@@ -2,7 +2,7 @@
 // `mapSchedulerJob` deps removed together with the `context.jobs.list`
 // LLM tool retirement. The legacy `getScheduledJobs` shape is no longer
 // surfaced to context-runtime callers; LLMs read scheduled work from
-// the workflows surface (`scheduleTrigger` nodes · `~/.monad/workflows-runs/`).
+// the workflows surface (`scheduleTrigger` nodes · `~/.elanous/workflows-runs/`).
 
 export interface DashboardContextRuntimeBootDeps<Session> {
   setContextRuntimeDeps: (deps: {

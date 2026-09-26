@@ -9,7 +9,7 @@
 // pass a different category predicate when they need it.
 
 import { readFileSync, existsSync } from 'node:fs';
-import { monadStateRoot } from '../autopilot/state-paths.js';
+import { elanousStateRoot } from '../autopilot/state-paths.js';
 import { join } from 'node:path';
 import { formatClock } from '../time/format.js';
 
@@ -47,13 +47,13 @@ function dateKey(d: Date): string {
   return `${y}-${m}-${dd}`;
 }
 
-// FU2 Tier 3 (PLAN-config-unification-monad-root-2026-05-10):
-//   reads from ~/.monad/audit/ (canonical · 2026-05-10). Migration
+// FU2 Tier 3 (PLAN-config-unification-elanous-root-2026-05-10):
+//   reads from ~/.elanous/audit/ (canonical · 2026-05-10). Migration
 //   itself is fired by the writers (control-audit-log · guardian ·
 //   shell-primitive) so this read-only consumer just needs the new
 //   path.
 function defaultRoot(): string {
-  return join(monadStateRoot(), 'audit');
+  return join(elanousStateRoot(), 'audit');
 }
 
 /** Parse a single NDJSON line; returns null on malformed input or

@@ -26,7 +26,7 @@ export interface DescribeOpts {
  *  before resolving to a localized string. */
 export type NotificationLevel = 'info' | 'warning' | 'error';
 
-/** Map a free-form notification kind (monad's `NotificationKind`
+/** Map a free-form notification kind (elanous's `NotificationKind`
  *  union: status / osc / exit / block / error / hitl / agent-done /
  *  escalation) to a 3-bucket severity. The mapping is intentionally
  *  conservative — `escalation` and `error` shout, `hitl` warns,
@@ -67,7 +67,7 @@ export function notificationLevelLabel(
 }
 
 /** Notification event shape — kept structural (not coupled to
- *  monad's `NotificationEvent` from `src/notifications/store.ts`)
+ *  elanous's `NotificationEvent` from `src/notifications/store.ts`)
  *  so the helper stays usable from any surface that holds a similar
  *  record (e.g. control-plane audit logs). */
 export interface DescribableNotificationEvent {

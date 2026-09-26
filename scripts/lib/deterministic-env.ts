@@ -62,7 +62,7 @@ export interface DeterministicChildEnvironmentDeps {
 }
 
 export function prepareDeterministicChildEnvironment(
-  prefix = 'monad-deterministic-test-',
+  prefix = 'elanous-deterministic-test-',
   deps: DeterministicChildEnvironmentDeps = {},
 ): DeterministicChildEnvironment {
   const sourceEnv = deps.env ?? process.env;
@@ -81,8 +81,8 @@ export function prepareDeterministicChildEnvironment(
     ) as NodeJS.ProcessEnv;
     env.HOME = root;
     env.XDG_CONFIG_HOME = join(root, '.config');
-    env.MONAD_STATE_DIR = join(root, 'state');
-    env.MONAD_CONFIG_DIR = join(root, 'config');
+    env.ELANOUS_STATE_DIR = join(root, 'state');
+    env.ELANOUS_CONFIG_DIR = join(root, 'config');
     return { env, root, cleanup };
   } catch (error) {
     cleanup();

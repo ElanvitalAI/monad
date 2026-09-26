@@ -3,7 +3,7 @@
 // signal pool 의 미분류 신호를 전량(무비용·결정론 규칙 우선) S0~S4 로 분류한다. critical(S3+)만
 // 2차 게이트(A2·저비용 codex luna)로 에스컬레이트. 전량이라 무비용이 원칙(로컬 gemma seam 선택).
 //
-// ★ 모나드 자율설계 교정 반영:
+// ★ 엘라누스 자율설계 교정 반영:
 //   · SNS/커뮤니티 단일 출처는 상한 S1 — 곧바로 매매신호로 취급 금지(독립 출처 확인 전).
 //   · 심각도 ≠ 긴급도(별 축) · 다중 출처/공시/보유종목 영향 → 상향 · 만료(TTL) 신호 강등.
 //
@@ -46,7 +46,7 @@ export function classifySeverityRules(
   if (s.ttlMs != null && now - Date.parse(s.collectedAt) > s.ttlMs) {
     return { severity: 'S0', reason: 'TTL 만료 — 배치 강등' };
   }
-  // ★ 커뮤니티/SNS 는 키워드보다 우선해 상한(모나드 교정: 단일출처 잡담을 규제/급락 등
+  // ★ 커뮤니티/SNS 는 키워드보다 우선해 상한(엘라누스 교정: 단일출처 잡담을 규제/급락 등
   //   단어만으로 매매신호 취급 금지). 급증(dedup≥surge)=집중 버즈 → S3(2차 판정 회부·P4).
   //   다중 독립 출처면 S2(저비용 확인)·단일이면 S1.
   if (s.source === 'community' || s.source === 'sns') {
@@ -128,7 +128,7 @@ export async function runGate1(
     bySeverity[result.severity] += 1;
     classified += 1;
     // ★ 게이팅 사유 관측(대표 지시) — 승격(S2+)만 per-signal 로깅. S0/S1 은 고볼륨(배치 강등)이라
-    //   사이클 요약 카운트로 갈음(logs.db 홍수 방지). `monad logs --category signal.gate1` 조회.
+    //   사이클 요약 카운트로 갈음(logs.db 홍수 방지). `elanous logs --category signal.gate1` 조회.
     if (result.severity === 'S2' || result.severity === 'S3' || result.severity === 'S4') {
       debug.log('signal.gate1', result.severity, {
         asset: s.asset ?? null,

@@ -1,26 +1,26 @@
 // M1-4 (PLAN-friction-free-model-selection-ux-2026-05-12 · Phase 1) —
-// `monad voice status` CLI surface.
+// `elanous voice status` CLI surface.
 //
 // Prints the current voice tier configuration so a user (or a friend
-// debugging "is monad even using the model I asked for?") can verify
+// debugging "is elanous even using the model I asked for?") can verify
 // the friction-free selection in one shell command:
 //
-//   $ monad voice status
+//   $ elanous voice status
 //   ✓ Smart defaults active
 //     STT: Balanced (~$0.30/mo · 100 min/mo at $0.003/min)
 //          gpt-4o-mini-transcribe via openai-realtime-stt
 //          source = default
 //     Usage: 5.2 min/day · 14-day rolling avg · 12 STT calls
 //     Month so far: $1.20 of no cap
-//   [run `monad preset list` to explore alternatives]
+//   [run `elanous preset list` to explore alternatives]
 //
 // Reads:
-//   - ~/.monad/config.json → user-config.modelTier (override)
-//   - ~/.monad/voice-cost-events.jsonl → recent usage for cost preview
+//   - ~/.elanous/config.json → user-config.modelTier (override)
+//   - ~/.elanous/voice-cost-events.jsonl → recent usage for cost preview
 //
 // Side effects: stdout only. Returns process exit code 0.
 //
-// Wired into `monad voice` subcommand in src/index.ts.
+// Wired into `elanous voice` subcommand in src/index.ts.
 
 import { existsSync, readFileSync } from 'node:fs';
 

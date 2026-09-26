@@ -78,7 +78,7 @@ describe('createRepositoryReferencedFileReader — 이미지 참조(P4b)', () =>
   };
 
   test('PNG 는 image 로 읽히고 base64 가 실린다 (not-text 아님)', () => {
-    const root = mkdtempSync(join(tmpdir(), 'monad-goal-reader-img-'));
+    const root = mkdtempSync(join(tmpdir(), 'elanous-goal-reader-img-'));
     try {
       writeFileSync(join(root, 'shot.png'), pngBytes());
       const result = createRepositoryReferencedFileReader(root)('shot.png');
@@ -95,7 +95,7 @@ describe('createRepositoryReferencedFileReader — 이미지 참조(P4b)', () =>
   });
 
   test('⛔ 확장자를 안 믿는다 — .png 인데 텍스트면 ok, 확장자 없어도 진짜 PNG 면 image', () => {
-    const root = mkdtempSync(join(tmpdir(), 'monad-goal-reader-sniff-'));
+    const root = mkdtempSync(join(tmpdir(), 'elanous-goal-reader-sniff-'));
     try {
       writeFileSync(join(root, 'liar.png'), 'not really an image\n');
       expect(createRepositoryReferencedFileReader(root)('liar.png').kind).toBe('ok');
@@ -107,7 +107,7 @@ describe('createRepositoryReferencedFileReader — 이미지 참조(P4b)', () =>
   });
 
   test('⛔ 10MB 를 넘는 이미지는 안 싣는다 — base64 로 부풀어 wire 로 나간다', () => {
-    const root = mkdtempSync(join(tmpdir(), 'monad-goal-reader-big-'));
+    const root = mkdtempSync(join(tmpdir(), 'elanous-goal-reader-big-'));
     try {
       // PNG 헤더 ⊕ 상한 초과 몸통. sniff 는 통과하고 «크기»에서만 걸려야 한다.
       const big = Buffer.concat([pngBytes(), Buffer.alloc(10 * 1024 * 1024 + 1, 0x41)]);
@@ -127,7 +127,7 @@ describe('createRepositoryReferencedFileReader — 이미지 참조(P4b)', () =>
 
   // ⭐ 선언한 넷을 «전부» 문다 — PNG 만 시험하면 나머지 셋은 「적어 놓기만 한 지원」이다(#7486 should-fix).
   test('JPEG·GIF·WebP 도 각각 제 mime 으로 분류된다', () => {
-    const root = mkdtempSync(join(tmpdir(), 'monad-goal-reader-mimes-'));
+    const root = mkdtempSync(join(tmpdir(), 'elanous-goal-reader-mimes-'));
     try {
       const cases: Array<[string, Buffer, string]> = [
         ['a.jpg', Buffer.concat([Buffer.from([0xff, 0xd8, 0xff, 0xe0]), Buffer.alloc(16, 0)]), 'image/jpeg'],
@@ -151,7 +151,7 @@ describe('createRepositoryReferencedFileReader — 이미지 참조(P4b)', () =>
   });
 
   test('⛔ 모르는 바이너리는 종전대로 not-text 다 (이미지라고 우기지 않는다)', () => {
-    const root = mkdtempSync(join(tmpdir(), 'monad-goal-reader-bin-'));
+    const root = mkdtempSync(join(tmpdir(), 'elanous-goal-reader-bin-'));
     try {
       writeFileSync(join(root, 'blob.bin'), Buffer.from([0x00, 0x01, 0x02, 0x00, 0xff]));
       expect(createRepositoryReferencedFileReader(root)('blob.bin').kind).toBe('not-text');

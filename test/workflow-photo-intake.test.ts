@@ -104,7 +104,7 @@ describe('photo-intake — router cascade', () => {
     const prevCwd = process.cwd();
     process.chdir(tmpDir);
     try {
-      mkdirSync(join(tmpDir, '.monad', 'workflows'), { recursive: true });
+      mkdirSync(join(tmpDir, '.elanous', 'workflows'), { recursive: true });
       let llmCalls = 0;
       const fakeLLM: RouterLLMCaller = async () => { llmCalls += 1; return ''; };
       const r = await routeWorkflow(

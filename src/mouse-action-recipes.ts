@@ -452,11 +452,11 @@ export interface ModelPickerRecipeOpts {
 export function createModelPickerRecipe(opts: ModelPickerRecipeOpts): ViewSurfaceHandle {
   // 2026-05-05 (UX gap fix): label was previously "${provider} · ${model}"
   // OR `e.label` when set — which collapsed to bare provider name for
-  // entries added via `monad provider:rotate add anthropic` (no model
+  // entries added via `elanous provider:rotate add anthropic` (no model
   // pinned). The user reported "switch model 에 provider 명만 나온다".
   //
   // New format: model name leads, user label appended when meaningful
-  // (label is set AND differs from the provider name — `monad
+  // (label is set AND differs from the provider name — `elanous
   // provider:rotate add anthropic` defaults label to provider name,
   // so we hide redundant repetition). Provider tag goes into the
   // description column. When the entry has no explicit model we

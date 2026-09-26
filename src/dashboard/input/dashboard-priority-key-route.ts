@@ -112,7 +112,7 @@ export async function routeDashboardPriorityKey<Action>(
   // Step 0: global force-quit. Wins over EVERYTHING — bell modal,
   // popup terminal, drag interceptors. Bound to Ctrl+Shift+Q and
   // Ctrl+\ (both rare terminal-app bindings) to preserve the
-  // "monad escape hatch" concept the user explicitly wanted to keep:
+  // "elanous escape hatch" concept the user explicitly wanted to keep:
   //   "ctrl+q 전체 강제 종료 컨셉은 남았으면 좋겠습니다.
   //    터미널모드에서는 잘 사용하지 않을 복잡 패턴으로 리 어사인 해도 됩니다."
   // Plain Ctrl+Q remains usable OUTSIDE popup terminals (step 6
@@ -183,7 +183,7 @@ export async function routeDashboardPriorityKey<Action>(
   //   - DragSession A-8 ESC guard also skips, but a drag can't really
   //     be active inside a popup terminal context, so the conflict is
   //     hypothetical.
-  // Per user feedback: "터미널 모드에서는 최대한 모나드의 키 파이어링을
+  // Per user feedback: "터미널 모드에서는 최대한 엘라누스의 키 파이어링을
   // 줄이는 것 검토 필요. 터미널 안의 ctrl+a, ctrl+b 등 특수 처리키가
   // 많이 보이므로."
   if (await deps.routeExclusiveTerminalModalKey(key)) {

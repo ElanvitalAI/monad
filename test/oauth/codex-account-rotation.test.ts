@@ -392,12 +392,12 @@ describe('배선 — 스토어 셸이 그 판정을 «실제로» 거친다', ()
 
   test('✅ 현재 홈의 리셋 크레딧보다 쓸 후보를 먼저 고르고 다른 홈 상태는 무시한다', async () => {
     const root = mkdtempSync(join(tmpdir(), 'rotate-credit-home-'));
-    const priorState = process.env.MONAD_STATE_DIR;
-    const priorStateSource = process.env.MONAD_STATE_DIR_SOURCE;
+    const priorState = process.env.ELANOUS_STATE_DIR;
+    const priorStateSource = process.env.ELANOUS_STATE_DIR_SOURCE;
     const priorHome = process.env.CODEX_HOME;
     try {
-      process.env.MONAD_STATE_DIR = root;
-      delete process.env.MONAD_STATE_DIR_SOURCE;
+      process.env.ELANOUS_STATE_DIR = root;
+      delete process.env.ELANOUS_STATE_DIR_SOURCE;
       const homeA = join(root, 'home-A');
       const homeB = join(root, 'home-B');
       mkdirSync(homeA, { recursive: true }); mkdirSync(homeB, { recursive: true });
@@ -442,8 +442,8 @@ describe('배선 — 스토어 셸이 그 판정을 «실제로» 거친다', ()
       expect(unavailable.to).toBe('team');
       expect(store2.resolveCodexAccountForRun(process.env, { storePath: store }).name).toBe('team');
     } finally {
-      if (priorState === undefined) delete process.env.MONAD_STATE_DIR; else process.env.MONAD_STATE_DIR = priorState;
-      if (priorStateSource === undefined) delete process.env.MONAD_STATE_DIR_SOURCE; else process.env.MONAD_STATE_DIR_SOURCE = priorStateSource;
+      if (priorState === undefined) delete process.env.ELANOUS_STATE_DIR; else process.env.ELANOUS_STATE_DIR = priorState;
+      if (priorStateSource === undefined) delete process.env.ELANOUS_STATE_DIR_SOURCE; else process.env.ELANOUS_STATE_DIR_SOURCE = priorStateSource;
       if (priorHome === undefined) delete process.env.CODEX_HOME; else process.env.CODEX_HOME = priorHome;
       const store2 = await import('../../src/oauth/codex-account-store');
       store2._setRotationConfigReaderForTesting(null);
@@ -454,12 +454,12 @@ describe('배선 — 스토어 셸이 그 판정을 «실제로» 거친다', ()
 
   test('⛔ 오래된 available 관측은 unknown으로 정규화되어 회전을 막지 않는다', async () => {
     const root = mkdtempSync(join(tmpdir(), 'rotate-credit-stale-'));
-    const priorState = process.env.MONAD_STATE_DIR;
-    const priorStateSource = process.env.MONAD_STATE_DIR_SOURCE;
+    const priorState = process.env.ELANOUS_STATE_DIR;
+    const priorStateSource = process.env.ELANOUS_STATE_DIR_SOURCE;
     const priorHome = process.env.CODEX_HOME;
     try {
-      process.env.MONAD_STATE_DIR = root;
-      delete process.env.MONAD_STATE_DIR_SOURCE;
+      process.env.ELANOUS_STATE_DIR = root;
+      delete process.env.ELANOUS_STATE_DIR_SOURCE;
       const homeA = join(root, 'home-A');
       const homeB = join(root, 'home-B');
       mkdirSync(homeA, { recursive: true }); mkdirSync(homeB, { recursive: true });
@@ -485,8 +485,8 @@ describe('배선 — 스토어 셸이 그 판정을 «실제로» 거친다', ()
       expect(decision.to).toBe('team');
       expect(store2.resolveCodexAccountForRun(process.env, { storePath: store }).name).toBe('team');
     } finally {
-      if (priorState === undefined) delete process.env.MONAD_STATE_DIR; else process.env.MONAD_STATE_DIR = priorState;
-      if (priorStateSource === undefined) delete process.env.MONAD_STATE_DIR_SOURCE; else process.env.MONAD_STATE_DIR_SOURCE = priorStateSource;
+      if (priorState === undefined) delete process.env.ELANOUS_STATE_DIR; else process.env.ELANOUS_STATE_DIR = priorState;
+      if (priorStateSource === undefined) delete process.env.ELANOUS_STATE_DIR_SOURCE; else process.env.ELANOUS_STATE_DIR_SOURCE = priorStateSource;
       if (priorHome === undefined) delete process.env.CODEX_HOME; else process.env.CODEX_HOME = priorHome;
       const store2 = await import('../../src/oauth/codex-account-store');
       store2._setRotationConfigReaderForTesting(null);
@@ -498,18 +498,18 @@ describe('배선 — 스토어 셸이 그 판정을 «실제로» 거친다', ()
   test('✅ reset-credits observe 명령은 named account의 정본 홈 auth.json을 조회하고 같은 홈에 기록한다', async () => {
     const root = mkdtempSync(join(tmpdir(), 'rotate-credit-cli-'));
     const prior = {
-      state: process.env.MONAD_STATE_DIR, home: process.env.CODEX_HOME, xdg: process.env.XDG_CONFIG_HOME,
-      account: process.env.MONAD_CODEX_ACCOUNT, accountHome: process.env.MONAD_CODEX_ACCOUNT_HOME,
+      state: process.env.ELANOUS_STATE_DIR, home: process.env.CODEX_HOME, xdg: process.env.XDG_CONFIG_HOME,
+      account: process.env.ELANOUS_CODEX_ACCOUNT, accountHome: process.env.ELANOUS_CODEX_ACCOUNT_HOME,
     };
     const originalFetch = globalThis.fetch;
     const originalLog = console.log;
     const output: string[] = [];
     try {
-      process.env.MONAD_STATE_DIR = root;
+      process.env.ELANOUS_STATE_DIR = root;
       process.env.XDG_CONFIG_HOME = root;
       process.env.CODEX_HOME = join(root, 'default-home');
-      process.env.MONAD_CODEX_ACCOUNT = 'team';
-      delete process.env.MONAD_CODEX_ACCOUNT_HOME;
+      process.env.ELANOUS_CODEX_ACCOUNT = 'team';
+      delete process.env.ELANOUS_CODEX_ACCOUNT_HOME;
       const teamHome = join(root, 'team-home');
       mkdirSync(process.env.CODEX_HOME, { recursive: true });
       mkdirSync(teamHome, { recursive: true });
@@ -527,7 +527,7 @@ describe('배선 — 스토어 셸이 그 판정을 «실제로» 거친다', ()
       console.log = (...args: unknown[]) => { output.push(args.join(' ')); };
 
       const { program } = await import('../../src/index');
-      await program.parseAsync(['node', 'monad', 'provider', 'codex', 'reset-credits', 'observe'], { from: 'node' });
+      await program.parseAsync(['node', 'elanous', 'provider', 'codex', 'reset-credits', 'observe'], { from: 'node' });
 
       const { readAvailabilityState } = await import('../../src/budget/codex-reset-credit-state');
       const { inspectCodexRotation } = await import('../../src/oauth/codex-account-store');
@@ -539,23 +539,23 @@ describe('배선 — 스토어 셸이 그 판정을 «실제로» 거친다', ()
     } finally {
       globalThis.fetch = originalFetch;
       console.log = originalLog;
-      if (prior.state === undefined) delete process.env.MONAD_STATE_DIR; else process.env.MONAD_STATE_DIR = prior.state;
+      if (prior.state === undefined) delete process.env.ELANOUS_STATE_DIR; else process.env.ELANOUS_STATE_DIR = prior.state;
       if (prior.home === undefined) delete process.env.CODEX_HOME; else process.env.CODEX_HOME = prior.home;
       if (prior.xdg === undefined) delete process.env.XDG_CONFIG_HOME; else process.env.XDG_CONFIG_HOME = prior.xdg;
-      if (prior.account === undefined) delete process.env.MONAD_CODEX_ACCOUNT; else process.env.MONAD_CODEX_ACCOUNT = prior.account;
-      if (prior.accountHome === undefined) delete process.env.MONAD_CODEX_ACCOUNT_HOME; else process.env.MONAD_CODEX_ACCOUNT_HOME = prior.accountHome;
+      if (prior.account === undefined) delete process.env.ELANOUS_CODEX_ACCOUNT; else process.env.ELANOUS_CODEX_ACCOUNT = prior.account;
+      if (prior.accountHome === undefined) delete process.env.ELANOUS_CODEX_ACCOUNT_HOME; else process.env.ELANOUS_CODEX_ACCOUNT_HOME = prior.accountHome;
       try { rmSync(root, { recursive: true, force: true }); } catch { /* best-effort */ }
     }
   });
 
   test('⛔ A 가 찼고 team 이 안 찼으면 «team 으로» 넘어간다 (실물 스토어·신호)', async () => {
     const root = mkdtempSync(join(tmpdir(), 'rotate-wire-'));
-    const priorState = process.env.MONAD_STATE_DIR;
-    const priorStateSource = process.env.MONAD_STATE_DIR_SOURCE;
+    const priorState = process.env.ELANOUS_STATE_DIR;
+    const priorStateSource = process.env.ELANOUS_STATE_DIR_SOURCE;
     const priorHome = process.env.CODEX_HOME;
     try {
-      process.env.MONAD_STATE_DIR = root;
-      delete process.env.MONAD_STATE_DIR_SOURCE;
+      process.env.ELANOUS_STATE_DIR = root;
+      delete process.env.ELANOUS_STATE_DIR_SOURCE;
       const homeA = join(root, 'home-A');
       const homeB = join(root, 'home-B');
       mkdirSync(homeA, { recursive: true }); mkdirSync(homeB, { recursive: true });
@@ -579,11 +579,11 @@ describe('배선 — 스토어 셸이 그 판정을 «실제로» 거친다', ()
 
       // ⛔ 그리고 사람이 «명시»하면 안 넘어간다 — 같은 상태에서
       const explicit = resolveCodexAccountForRun(
-        { MONAD_CODEX_ACCOUNT: 'default' } as NodeJS.ProcessEnv, { storePath: store });
+        { ELANOUS_CODEX_ACCOUNT: 'default' } as NodeJS.ProcessEnv, { storePath: store });
       expect(explicit.name).toBe('default');
     } finally {
-      if (priorState === undefined) delete process.env.MONAD_STATE_DIR; else process.env.MONAD_STATE_DIR = priorState;
-      if (priorStateSource === undefined) delete process.env.MONAD_STATE_DIR_SOURCE; else process.env.MONAD_STATE_DIR_SOURCE = priorStateSource;
+      if (priorState === undefined) delete process.env.ELANOUS_STATE_DIR; else process.env.ELANOUS_STATE_DIR = priorState;
+      if (priorStateSource === undefined) delete process.env.ELANOUS_STATE_DIR_SOURCE; else process.env.ELANOUS_STATE_DIR_SOURCE = priorStateSource;
       if (priorHome === undefined) delete process.env.CODEX_HOME; else process.env.CODEX_HOME = priorHome;
       try { rmSync(root, { recursive: true, force: true }); } catch { /* best-effort */ }
     }
@@ -604,11 +604,11 @@ describe('진입점 — loadFreshCodexAuthState 가 «넘어간 계정»으로 �
 
   test('⛔ A 가 찼으면 team 의 토큰으로 갱신하고, 미러는 «team 의 홈»으로만 간다', async () => {
     const root = mkdtempSync(join(tmpdir(), 'rotate-entry-'));
-    const prior = { state: process.env.MONAD_STATE_DIR, home: process.env.CODEX_HOME, xdg: process.env.XDG_CONFIG_HOME, run: process.env.MONAD_RUN_ID };
+    const prior = { state: process.env.ELANOUS_STATE_DIR, home: process.env.CODEX_HOME, xdg: process.env.XDG_CONFIG_HOME, run: process.env.ELANOUS_RUN_ID };
     try {
-      process.env.MONAD_STATE_DIR = root;
+      process.env.ELANOUS_STATE_DIR = root;
       process.env.XDG_CONFIG_HOME = root;          // 정본 스토어를 격리로
-      process.env.MONAD_RUN_ID = 'run-rotate-test';
+      process.env.ELANOUS_RUN_ID = 'run-rotate-test';
       const homeA = join(root, 'home-A'); const homeB = join(root, 'home-B');
       mkdirSync(homeA, { recursive: true }); mkdirSync(homeB, { recursive: true });
       process.env.CODEX_HOME = homeA;
@@ -661,10 +661,10 @@ describe('진입점 — loadFreshCodexAuthState 가 «넘어간 계정»으로 �
 
   test('⛔ 한 런은 «한 계정» — 도중에 신호가 바뀌어도 안 갈아탄다', async () => {
     const root = mkdtempSync(join(tmpdir(), 'rotate-pin-'));
-    const prior = { state: process.env.MONAD_STATE_DIR, home: process.env.CODEX_HOME, xdg: process.env.XDG_CONFIG_HOME, run: process.env.MONAD_RUN_ID };
+    const prior = { state: process.env.ELANOUS_STATE_DIR, home: process.env.CODEX_HOME, xdg: process.env.XDG_CONFIG_HOME, run: process.env.ELANOUS_RUN_ID };
     try {
-      process.env.MONAD_STATE_DIR = root;
-      process.env.MONAD_RUN_ID = 'run-pin-test';
+      process.env.ELANOUS_STATE_DIR = root;
+      process.env.ELANOUS_RUN_ID = 'run-pin-test';
       const homeA = join(root, 'home-A'); const homeB = join(root, 'home-B');
       mkdirSync(homeA, { recursive: true }); mkdirSync(homeB, { recursive: true });
       process.env.CODEX_HOME = homeA;
@@ -696,7 +696,7 @@ describe('진입점 — loadFreshCodexAuthState 가 «넘어간 계정»으로 �
 
 function _restore(p: { state?: string; home?: string; xdg?: string; run?: string }): void {
   const set = (k: string, v?: string) => { if (v === undefined) delete process.env[k]; else process.env[k] = v; };
-  set('MONAD_STATE_DIR', p.state); set('CODEX_HOME', p.home); set('XDG_CONFIG_HOME', p.xdg); set('MONAD_RUN_ID', p.run);
+  set('ELANOUS_STATE_DIR', p.state); set('CODEX_HOME', p.home); set('XDG_CONFIG_HOME', p.xdg); set('ELANOUS_RUN_ID', p.run);
 }
 
 // ⛔ 리뷰 should-fix — 종전엔 «주입한» rotationEnabled 만 물어서, 「config 가 실제로 그 값을
@@ -738,11 +738,11 @@ describe('계정별 임계 설정 배선 — store 판정에 전달된다', () =
 
   test('⭐ 현재 계정 override는 회전시키고, 누락 계정은 전역 임계로 폴백한다', async () => {
     const root = mkdtempSync(join(tmpdir(), 'rotation-threshold-by-account-'));
-    const prior = { state: process.env.MONAD_STATE_DIR, home: process.env.CODEX_HOME, run: process.env.MONAD_RUN_ID };
+    const prior = { state: process.env.ELANOUS_STATE_DIR, home: process.env.CODEX_HOME, run: process.env.ELANOUS_RUN_ID };
     const storeModule = await import('../../src/oauth/codex-account-store');
     try {
-      process.env.MONAD_STATE_DIR = root;
-      process.env.MONAD_RUN_ID = 'run-threshold-by-account';
+      process.env.ELANOUS_STATE_DIR = root;
+      process.env.ELANOUS_RUN_ID = 'run-threshold-by-account';
       const homeA = join(root, 'home-A'); const homeB = join(root, 'home-B');
       mkdirSync(homeA, { recursive: true }); mkdirSync(homeB, { recursive: true });
       process.env.CODEX_HOME = homeA;
@@ -786,10 +786,10 @@ describe('표면 — 회전까지 반영해서 말한다', () => {
 
   test('⛔ 넘어갔으면 표면도 team ⊕ source=rotated 를 말한다', async () => {
     const root = mkdtempSync(join(tmpdir(), 'rotate-view-'));
-    const prior = { state: process.env.MONAD_STATE_DIR, home: process.env.CODEX_HOME, run: process.env.MONAD_RUN_ID };
+    const prior = { state: process.env.ELANOUS_STATE_DIR, home: process.env.CODEX_HOME, run: process.env.ELANOUS_RUN_ID };
     try {
-      process.env.MONAD_STATE_DIR = root;
-      process.env.MONAD_RUN_ID = 'run-view-test';
+      process.env.ELANOUS_STATE_DIR = root;
+      process.env.ELANOUS_RUN_ID = 'run-view-test';
       const homeA = join(root, 'home-A'); const homeB = join(root, 'home-B');
       mkdirSync(homeA, { recursive: true }); mkdirSync(homeB, { recursive: true });
       process.env.CODEX_HOME = homeA;
@@ -829,7 +829,7 @@ describe('config false — 표면 경유로도 «무력화되지 않는다»', (
 
   test('⛔ codexAccountRotation:false 면 «표면을 먼저 불러도» 넘어가지 않는다', async () => {
     const root = mkdtempSync(join(tmpdir(), 'rotate-off-'));
-    const prior = { state: process.env.MONAD_STATE_DIR, home: process.env.CODEX_HOME, run: process.env.MONAD_RUN_ID };
+    const prior = { state: process.env.ELANOUS_STATE_DIR, home: process.env.CODEX_HOME, run: process.env.ELANOUS_RUN_ID };
     const store2 = await import('../../src/oauth/codex-account-store');
     const originalLog = debug.log;
     const payloads: Array<Record<string, unknown>> = [];
@@ -837,8 +837,8 @@ describe('config false — 표면 경유로도 «무력화되지 않는다»', (
       if (category === 'oauth.codex-account' && event === 'rotation') payloads.push(data);
     }) as typeof debug.log;
     try {
-      process.env.MONAD_STATE_DIR = root;
-      process.env.MONAD_RUN_ID = 'run-off-test';
+      process.env.ELANOUS_STATE_DIR = root;
+      process.env.ELANOUS_RUN_ID = 'run-off-test';
       const homeA = join(root, 'home-A'); const homeB = join(root, 'home-B');
       mkdirSync(homeA, { recursive: true }); mkdirSync(homeB, { recursive: true });
       process.env.CODEX_HOME = homeA;
@@ -888,12 +888,12 @@ describe('진입점도 config false 를 지킨다 — 호출자가 설정을 다
 
   test('⛔ config false 면 loadFreshCodexAuthState 도 «기본 계정»의 토큰을 쓴다', async () => {
     const root = mkdtempSync(join(tmpdir(), 'rotate-entry-off-'));
-    const prior = { state: process.env.MONAD_STATE_DIR, home: process.env.CODEX_HOME, xdg: process.env.XDG_CONFIG_HOME, run: process.env.MONAD_RUN_ID };
+    const prior = { state: process.env.ELANOUS_STATE_DIR, home: process.env.CODEX_HOME, xdg: process.env.XDG_CONFIG_HOME, run: process.env.ELANOUS_RUN_ID };
     const store2 = await import('../../src/oauth/codex-account-store');
     try {
-      process.env.MONAD_STATE_DIR = root;
+      process.env.ELANOUS_STATE_DIR = root;
       process.env.XDG_CONFIG_HOME = root;
-      process.env.MONAD_RUN_ID = 'run-entry-off';
+      process.env.ELANOUS_RUN_ID = 'run-entry-off';
       const homeA = join(root, 'home-A'); const homeB = join(root, 'home-B');
       mkdirSync(homeA, { recursive: true }); mkdirSync(homeB, { recursive: true });
       process.env.CODEX_HOME = homeA;
@@ -975,11 +975,11 @@ describe('기본 configReader 배선 — 심 없이 해석기가 실제로 돈�
 
   test('⛔ 심 없이도 회전 판정이 «던지지 않고» 실제 설정(미설정=ON)대로 넘어간다', async () => {
     const root = mkdtempSync(join(tmpdir(), 'rot-default-reader-'));
-    const prior = { state: process.env.MONAD_STATE_DIR, home: process.env.CODEX_HOME, run: process.env.MONAD_RUN_ID };
+    const prior = { state: process.env.ELANOUS_STATE_DIR, home: process.env.CODEX_HOME, run: process.env.ELANOUS_RUN_ID };
     const store2 = await import('../../src/oauth/codex-account-store');
     try {
-      process.env.MONAD_STATE_DIR = root;
-      process.env.MONAD_RUN_ID = 'run-default-reader';
+      process.env.ELANOUS_STATE_DIR = root;
+      process.env.ELANOUS_RUN_ID = 'run-default-reader';
       const homeA = join(root, 'home-A'); const homeB = join(root, 'home-B');
       mkdirSync(homeA, { recursive: true }); mkdirSync(homeB, { recursive: true });
       process.env.CODEX_HOME = homeA;
@@ -1061,11 +1061,11 @@ describe('배선 — ACP 자식이 «실제로» 회전된 홈을 받는다', ()
     opts: { rotate?: boolean } = {},
   ): Promise<Record<string, string> | undefined> {
     const root = mkdtempSync(join(tmpdir(), 'rotate-acp-'));
-    const prior = { state: process.env.MONAD_STATE_DIR, home: process.env.CODEX_HOME, xdg: process.env.XDG_CONFIG_HOME, run: process.env.MONAD_RUN_ID };
+    const prior = { state: process.env.ELANOUS_STATE_DIR, home: process.env.CODEX_HOME, xdg: process.env.XDG_CONFIG_HOME, run: process.env.ELANOUS_RUN_ID };
     try {
-      process.env.MONAD_STATE_DIR = root;
+      process.env.ELANOUS_STATE_DIR = root;
       process.env.XDG_CONFIG_HOME = root;
-      delete process.env.MONAD_RUN_ID;
+      delete process.env.ELANOUS_RUN_ID;
       const homeA = join(root, 'home-A'); const homeB = join(root, 'home-B');
       mkdirSync(homeA, { recursive: true }); mkdirSync(homeB, { recursive: true });
       process.env.CODEX_HOME = homeA;
@@ -1112,9 +1112,9 @@ describe('배선 — ACP 자식이 «실제로» 회전된 홈을 받는다', ()
 
   // ⛔ 리뷰 must-fix ② — 해석 입력이 process.env 뿐이면 이 명시를 «못 보고» 결정 ③ 이 뚫린다.
   test('⛔ 호출자가 env 로 계정을 «명시»하면 회전이 그 자식에 안 실린다 — 의도가 이긴다', async () => {
-    const env = await captureSpawnEnv({ MONAD_CODEX_ACCOUNT: 'default' });
+    const env = await captureSpawnEnv({ ELANOUS_CODEX_ACCOUNT: 'default' });
     expect(env?.CODEX_HOME).toMatch(/home-A$/);
-    expect(env?.MONAD_CODEX_ACCOUNT).toBe('default');
+    expect(env?.ELANOUS_CODEX_ACCOUNT).toBe('default');
   });
 
   test('✅ 회전이 «안 서면» 자식은 유지 계정의 홈을 받는다', async () => {
@@ -1135,10 +1135,10 @@ describe('조회 전용 회전 판정 — 관측·고정을 «안» 한다', () 
 
   test('⭐ 실행 경로와 «같은 답»을 내고, 관측은 «하나도» 안 남긴다', async () => {
     const root = mkdtempSync(join(tmpdir(), 'rotate-inspect-'));
-    const prior = { state: process.env.MONAD_STATE_DIR, home: process.env.CODEX_HOME, xdg: process.env.XDG_CONFIG_HOME, run: process.env.MONAD_RUN_ID };
+    const prior = { state: process.env.ELANOUS_STATE_DIR, home: process.env.CODEX_HOME, xdg: process.env.XDG_CONFIG_HOME, run: process.env.ELANOUS_RUN_ID };
     try {
-      process.env.MONAD_STATE_DIR = root;
-      delete process.env.MONAD_RUN_ID;
+      process.env.ELANOUS_STATE_DIR = root;
+      delete process.env.ELANOUS_RUN_ID;
       const homeA = join(root, 'home-A'); const homeB = join(root, 'home-B');
       mkdirSync(homeA, { recursive: true }); mkdirSync(homeB, { recursive: true });
       process.env.CODEX_HOME = homeA;
@@ -1192,7 +1192,7 @@ describe('조회 전용 회전 판정 — 관측·고정을 «안» 한다', () 
 
         // ③ inspect 는 «핀도» 안 만든다 — 런 신원을 주고 inspect 한 뒤,
         //    실행 경로가 여전히 «재판정»하는지(=핀이 없어 관측을 낸다) 로 확인한다.
-        process.env.MONAD_RUN_ID = 'run-inspect-should-not-pin';
+        process.env.ELANOUS_RUN_ID = 'run-inspect-should-not-pin';
         store2._resetCodexRotationPinForTesting();
         rotationLogs = 0;
         store2.inspectCodexRotation(process.env, { storePath: store });
@@ -1231,10 +1231,10 @@ describe('Codex 계정 이벤트 outbound', () => {
 
   test('회전·리셋 소비에만 사용량 스냅샷을 보내고 실패해도 업무 결과를 보존한다', async () => {
     const root = mkdtempSync(join(tmpdir(), 'codex-account-outbound-'));
-    const prior = { state: process.env.MONAD_STATE_DIR, home: process.env.CODEX_HOME };
+    const prior = { state: process.env.ELANOUS_STATE_DIR, home: process.env.CODEX_HOME };
     const sent: string[] = [];
     try {
-      process.env.MONAD_STATE_DIR = root;
+      process.env.ELANOUS_STATE_DIR = root;
       const homeA = join(root, 'home-A'); const homeB = join(root, 'home-B');
       mkdirSync(homeA, { recursive: true }); mkdirSync(homeB, { recursive: true });
       process.env.CODEX_HOME = homeA;
@@ -1326,7 +1326,7 @@ describe('Codex 계정 이벤트 outbound', () => {
       store2._setCodexAccountUsageSnapshotReaderForTesting(null);
       store2._setRotationConfigReaderForTesting(null);
       store2._resetCodexRotationPinForTesting();
-      if (prior.state === undefined) delete process.env.MONAD_STATE_DIR; else process.env.MONAD_STATE_DIR = prior.state;
+      if (prior.state === undefined) delete process.env.ELANOUS_STATE_DIR; else process.env.ELANOUS_STATE_DIR = prior.state;
       if (prior.home === undefined) delete process.env.CODEX_HOME; else process.env.CODEX_HOME = prior.home;
       try { rmSync(root, { recursive: true, force: true }); } catch { /* best-effort */ }
     }
@@ -1337,10 +1337,10 @@ describe('Codex 계정 이벤트 outbound', () => {
   // 이 테스트가 무는 것은 정확히 그 분리다 — 회전은 살고 발송만 죽는다.
   test('llm.codexAccountAlerts:false 는 «발송만» 끄고 회전은 그대로 돈다 (⊕ 억제를 관측에 남긴다)', async () => {
     const root = mkdtempSync(join(tmpdir(), 'codex-alerts-off-'));
-    const prior = { state: process.env.MONAD_STATE_DIR, home: process.env.CODEX_HOME };
+    const prior = { state: process.env.ELANOUS_STATE_DIR, home: process.env.CODEX_HOME };
     const sent: string[] = [];
     try {
-      process.env.MONAD_STATE_DIR = root;
+      process.env.ELANOUS_STATE_DIR = root;
       const homeA = join(root, 'home-A'); const homeB = join(root, 'home-B');
       mkdirSync(homeA, { recursive: true }); mkdirSync(homeB, { recursive: true });
       process.env.CODEX_HOME = homeA;
@@ -1398,7 +1398,7 @@ describe('Codex 계정 이벤트 outbound', () => {
       store2._setCodexAccountOutboundSenderForTesting(null);
       store2._setRotationConfigReaderForTesting(null);
       store2._resetCodexRotationPinForTesting();
-      if (prior.state === undefined) delete process.env.MONAD_STATE_DIR; else process.env.MONAD_STATE_DIR = prior.state;
+      if (prior.state === undefined) delete process.env.ELANOUS_STATE_DIR; else process.env.ELANOUS_STATE_DIR = prior.state;
       if (prior.home === undefined) delete process.env.CODEX_HOME; else process.env.CODEX_HOME = prior.home;
       try { rmSync(root, { recursive: true, force: true }); } catch { /* best-effort */ }
     }

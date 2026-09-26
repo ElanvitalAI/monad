@@ -5,7 +5,7 @@
 //
 // One `onCallbackQuery` subscription is shared across every chat and
 // both prompt kinds, dispatched by callback_data prefix:
-//   - `monad-hitl:<reqId>:yes|no`      → yes/no ConfirmChannel
+//   - `elanous-hitl:<reqId>:yes|no`      → yes/no ConfirmChannel
 //   - `mq:<sid>:<qIdx>:<opt|done|other>` → multi-option QuestionChannel
 // Dispatching by id (globally unique) means unknown ids from a sibling
 // handler are ignored quietly rather than double-answered.
@@ -25,7 +25,7 @@ import type {
 } from '../ask-user-question/types.js';
 import { debug } from '../debug/log.js';
 
-const CALLBACK_PREFIX = 'monad-hitl';
+const CALLBACK_PREFIX = 'elanous-hitl';
 const QUESTION_PREFIX = 'mq';
 
 interface Pending {
@@ -88,11 +88,11 @@ export function createTelegramSurfaceHitl(bot: TelegramBot): TelegramSurfaceHitl
     const token = parts[1];
     const decision = parts[2];
     const entry = token ? pending.get(token) : undefined;
-    // Log EVERY monad-hitl tap so an unmatched one (a future callback_data
+    // Log EVERY elanous-hitl tap so an unmatched one (a future callback_data
     // truncation / mismatch / expiry) is VISIBLE instead of silently
     // dropped — the exact blind spot that hid the 64-byte truncation bug.
     if (!entry || (decision !== 'yes' && decision !== 'no')) {
-      // Log (diagnostic) but DON'T ack — a `monad-hitl:`-prefixed tap we
+      // Log (diagnostic) but DON'T ack — a `elanous-hitl:`-prefixed tap we
       // don't own may belong to the sibling global-HITL handler
       // (telegram-channel.ts, same prefix); acking here would stomp it.
       debug.log('hitl.telegram.confirm.tap-unmatched', token ?? '?', {

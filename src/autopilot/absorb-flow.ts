@@ -43,7 +43,7 @@ export function buildAbsorbTask(candidate: AbsorbCandidate): string {
   return [
     `[Autopilot 흡수 제안 · PR 초안]`,
     `참조 repo ${candidate.repo} 의 커밋 ${candidate.commitSha.slice(0, 7)} ("${candidate.title}")`,
-    `를 monad 에 흡수할 가치가 있는지 검토하고, 있다면 monad 코드베이스에 맞게 적용하는`,
+    `를 elanous 에 흡수할 가치가 있는지 검토하고, 있다면 elanous 코드베이스에 맞게 적용하는`,
     `작은 PR 초안(브랜치 + 변경)을 만들어라. 근거: ${candidate.rationale}`,
     ``,
     `제약(중요):`,

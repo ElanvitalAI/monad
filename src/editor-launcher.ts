@@ -1,6 +1,6 @@
 // $EDITOR shell-out launcher — T4-D1.
 //
-// Suspends the Monad TUI, spawns the user's editor inheriting
+// Suspends the Elanous TUI, spawns the user's editor inheriting
 // stdin/stdout/stderr, waits for the editor to exit, then re-enters
 // the TUI. Mirrors yazi's `AppProxy::stop() → shell.wait() →
 // resume()` pattern (yazi-scheduler/src/process/process.rs:22).
@@ -84,7 +84,7 @@ export async function launchEditor(
     return {
       ok: false,
       reason: 'no-editor',
-      message: '$EDITOR / $VISUAL are unset. Set one or use the mini-vi fallback (MONAD_USE_MINI_VI=1).',
+      message: '$EDITOR / $VISUAL are unset. Set one or use the mini-vi fallback (ELANOUS_USE_MINI_VI=1).',
     };
   }
 

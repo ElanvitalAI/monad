@@ -27,7 +27,7 @@
 set -u
 MINS="${1:-120}"
 NOW=$(date +%s)
-ROOTS=("$HOME/.monad/worktrees")
+ROOTS=("$HOME/.elanous/worktrees")
 
 echo "📍 자리:  워크트리 뿌리 ${ROOTS[*]}"
 echo "📍 시점:  $(date -u '+%Y-%m-%dT%H:%M:%SZ')  ·  임계: 바뀐 파일이 최근 ${MINS}분 안"

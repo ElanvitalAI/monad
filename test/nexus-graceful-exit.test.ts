@@ -23,14 +23,14 @@ let tmpRoot: string;
 let prevEnv: string | undefined;
 
 beforeEach(() => {
-  tmpRoot = mkdtempSync(joinPath(tmpdir(), 'monad-nexus-chi-'));
-  prevEnv = process.env.MONAD_NEXUS_DIR;
-  process.env.MONAD_NEXUS_DIR = tmpRoot;
+  tmpRoot = mkdtempSync(joinPath(tmpdir(), 'elanous-nexus-chi-'));
+  prevEnv = process.env.ELANOUS_NEXUS_DIR;
+  process.env.ELANOUS_NEXUS_DIR = tmpRoot;
 });
 
 afterEach(() => {
-  if (prevEnv === undefined) delete process.env.MONAD_NEXUS_DIR;
-  else process.env.MONAD_NEXUS_DIR = prevEnv;
+  if (prevEnv === undefined) delete process.env.ELANOUS_NEXUS_DIR;
+  else process.env.ELANOUS_NEXUS_DIR = prevEnv;
   try { rmSync(tmpRoot, { recursive: true, force: true }); } catch { /* ignore */ }
 });
 
@@ -405,7 +405,7 @@ describe('round-trip · gracefulExit → restoreFromPending', () => {
       exit: () => undefined,
     });
 
-    // Boot 2: fresh state + registry (same MONAD_NEXUS_DIR via env).
+    // Boot 2: fresh state + registry (same ELANOUS_NEXUS_DIR via env).
     const stateB = createNexusState({ nexusVersion: '0.17.0', phase: 'N-5 PR χ test' });
     const registryB = new TabRegistry(stateB);
     registryB.register({ id: 'd', kind: 'daemon', label: 'd' });

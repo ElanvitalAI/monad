@@ -3,8 +3,8 @@
 // After `runDiscovery` writes the snapshot to the local cache file,
 // this helper optionally mirrors it to S3 under two keys:
 //
-//   monad/<monad_id>/discovery-cache/latest.json       — overwrites
-//   monad/<monad_id>/discovery-history/<iso-ts>.json    — append-only
+//   elanous/<elanous_id>/discovery-cache/latest.json       — overwrites
+//   elanous/<elanous_id>/discovery-history/<iso-ts>.json    — append-only
 //
 // `latest.json` lets external scripts (CI · Vercel build · other
 // monad-agent hosts on the same account) pull the freshest model
@@ -12,7 +12,7 @@
 // machine audit trail of when each model first/last appeared.
 //
 // Push is gated on `isS3Available()` — same pattern as
-// `day-bucket-store.ts`. When the user opts out (MONAD_S3_DISABLED=1
+// `day-bucket-store.ts`. When the user opts out (ELANOUS_S3_DISABLED=1
 // or no `aws` CLI / creds) the push is silently skipped so daemon
 // boot doesn't pay the cost.
 //
@@ -27,7 +27,7 @@ import { join } from 'node:path';
 
 import {
   isS3Available,
-  s3MonadKey,
+  s3ElanousKey,
   uploadFile,
 } from '../../storage/s3.js';
 import type { DiscoverySnapshot } from './runner.js';
@@ -92,19 +92,19 @@ export function pushDiscoverySnapshotToS3(
   }
 
   const now = opts.now ?? (() => new Date());
-  const tmpDir = mkdtempSync(join(tmpdir(), 'monad-discovery-s3-'));
+  const tmpDir = mkdtempSync(join(tmpdir(), 'elanous-discovery-s3-'));
   const tmpPath = join(tmpDir, 'snapshot.json');
   const json = `${JSON.stringify(snapshot, null, 2)}\n`;
   writeFileSync(tmpPath, json, { encoding: 'utf8' });
 
   const keys: string[] = [];
   try {
-    const historyKey = s3MonadKey('discoveryHistory', historyKeyFilename(now()));
+    const historyKey = s3ElanousKey('discoveryHistory', historyKeyFilename(now()));
     transport.upload(tmpPath, historyKey);
     keys.push(historyKey);
 
     if (!opts.historyOnly) {
-      const latestKey = s3MonadKey('discoveryCache', 'latest.json');
+      const latestKey = s3ElanousKey('discoveryCache', 'latest.json');
       transport.upload(tmpPath, latestKey);
       keys.push(latestKey);
     }

@@ -75,8 +75,8 @@ src/self-implement/goal-ask-cli.test.ts
 src/self-implement/goal-ask-store.test.ts
 src/self-implement/goal-author.test.ts
 src/self-implement/goal-run-store.test.ts
-src/self-implement/headless-monad-driver-surface-progress.test.ts
-src/self-implement/headless-monad-driver.test.ts
+src/self-implement/headless-elanous-driver-surface-progress.test.ts
+src/self-implement/headless-elanous-driver.test.ts
 src/self-implement/observe-only.test.ts
 src/self-implement/orchestrator.test.ts
 src/self-implement/progress-runid.test.ts
@@ -92,10 +92,10 @@ src/signal/lifecycle-bridge.test.ts
 src/signal/lifecycle-root-report.test.ts
 src/skills/index.test.ts
 src/skills/tools/dev-harness.test.ts
-src/tool-runtime/monad-skills-list-runtime.test.ts
+src/tool-runtime/elanous-skills-list-runtime.test.ts
 test/acp-codex-app-server-agent.test.ts
 test/acp-core-turn-bridge.test.ts
-test/acp-monad-fs-extensions.test.ts
+test/acp-elanous-fs-extensions.test.ts
 test/acp-server-log-sink.test.ts
 test/acp-session-bounding.test.ts
 test/acp-session-carryin.test.ts
@@ -174,8 +174,8 @@ test/mission-decompose-stream.test.ts
 test/mission-pending-redecompose.test.ts
 test/mission-working-memory-archive.test.ts
 test/missions-endpoint.test.ts
-test/monad-config-dir.test.ts
-test/monad-state-dir-isolation.test.ts
+test/elanous-config-dir.test.ts
+test/elanous-state-dir-isolation.test.ts
 test/nexus-api-intent-prediction.test.ts
 test/nexus-api-platforms.test.ts
 test/nexus-api-terminals.test.ts
@@ -292,8 +292,8 @@ test/skill-runner-provider.test.ts
 test/skill-tool-read.test.ts
 test/skills-tools-read-relative.test.ts
 test/slash-focus-budget.test.ts
-test/storage-legacy-monad-config-migrate.test.ts
-test/storage-legacy-monad-dir-migrate.test.ts
+test/storage-legacy-elanous-config-migrate.test.ts
+test/storage-legacy-elanous-dir-migrate.test.ts
 test/task-orchestrator/paths-config-dir.test.ts
 test/telegram-attach-commands.test.ts
 test/telegram-coding-model-terra.test.ts

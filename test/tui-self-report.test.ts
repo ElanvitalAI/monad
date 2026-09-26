@@ -141,7 +141,7 @@ describe('startTuiSelfReport · wiring (injected deps)', () => {
     stop();
   });
 
-  test('a frame → writeScreen(harness-screens 파일 sink)도 발행 — monad self screen reader 커버', () => {
+  test('a frame → writeScreen(harness-screens 파일 sink)도 발행 — elanous self screen reader 커버', () => {
     const { calls, stop } = harness();
     const coloured = '\x1b[32mscreen line\x1b[0m';
     calls.registered!([coloured], { rows: 10, cols: 40 });
@@ -170,8 +170,8 @@ describe('startTuiSelfReport · wiring (injected deps)', () => {
   });
 
   test('K4 wiring — startTuiSelfReport 가 getHarnessRunId(env) 를 읽어 발행 프레임에 스탬프', () => {
-    const prev = process.env.MONAD_RUN_ID;
-    process.env.MONAD_RUN_ID = 'run-wiring-42';
+    const prev = process.env.ELANOUS_RUN_ID;
+    process.env.ELANOUS_RUN_ID = 'run-wiring-42';
     const published: SelfReportFrame[] = [];
     let registered: null | ((l: readonly string[], d: { rows: number; cols: number }) => void) = null;
     let stop: () => void = () => {};
@@ -186,7 +186,7 @@ describe('startTuiSelfReport · wiring (injected deps)', () => {
       registered!(['screen'], { rows: 10, cols: 40 });
     } finally {
       stop();
-      if (prev === undefined) delete process.env.MONAD_RUN_ID; else process.env.MONAD_RUN_ID = prev;
+      if (prev === undefined) delete process.env.ELANOUS_RUN_ID; else process.env.ELANOUS_RUN_ID = prev;
     }
     expect(published).toHaveLength(1);
     expect(published[0]!.runId).toBe('run-wiring-42');   // 실 발행경로(emitText)에 env runId 도달

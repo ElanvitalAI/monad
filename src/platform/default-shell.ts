@@ -11,7 +11,7 @@ export interface PosixShellDeps {
 
 export type PosixShellResult = { found: true; path: string } | { found: false; reason: string };
 
-const MISSING_SHELL = 'Git Bash not found: set MONAD_GIT_BASH_PATH or install Git for Windows.';
+const MISSING_SHELL = 'Git Bash not found: set ELANOUS_GIT_BASH_PATH or install Git for Windows.';
 const POSIX_SH = '/bin/sh';
 
 export function resolvePosixShell(deps: PosixShellDeps = {}): PosixShellResult {
@@ -24,7 +24,7 @@ export function resolvePosixShell(deps: PosixShellDeps = {}): PosixShellResult {
     !!path && win32.basename(path).toLowerCase() === 'bash.exe'
     && !/(?:^|[\\/])system32(?:[\\/]|$)/i.test(win32.normalize(path))
     && exists(path);
-  if (usable(env.MONAD_GIT_BASH_PATH)) return { found: true, path: env.MONAD_GIT_BASH_PATH };
+  if (usable(env.ELANOUS_GIT_BASH_PATH)) return { found: true, path: env.ELANOUS_GIT_BASH_PATH };
 
   const gitExecPath = deps.gitExecPath ?? (() => {
     const result = spawnSync('git', ['--exec-path'], { encoding: 'utf8', timeout: 5000, windowsHide: true });

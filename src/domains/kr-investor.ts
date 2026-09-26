@@ -3,7 +3,7 @@
 // screener.db investor 테이블이 2026-06-11 부터 죽어 있던 근본원인: Conatus
 // data.py 가 수집을 frgn-institution(마크다운)→investor_focus(ASCII 표)로
 // 리팩토링했는데 db.py parse_investor 는 구형 마크다운만 파싱 → 조용히 0건.
-// 해결: monad 소유 인제스트 — kr-flow `frgn-institution`(장중 가집계·장마감 후
+// 해결: elanous 소유 인제스트 — kr-flow `frgn-institution`(장중 가집계·장마감 후
 // 확정치) 마크다운을 직접 파싱해 investor 스키마 그대로 적재.
 // 소비자: dig-engine 종목 트리거(수급+가격 동반) · finance_backtest.
 

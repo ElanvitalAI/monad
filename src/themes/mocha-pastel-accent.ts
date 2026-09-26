@@ -1,6 +1,6 @@
 // Mocha Pastel Accent — dark background, pastel accents.
 //
-// Mocha's surfaces paired with the monad-pastel accent family so
+// Mocha's surfaces paired with the elanous-pastel accent family so
 // dark-mode users can still enjoy a softened palette. Uses lighter
 // lavender/mint/peach highlights against the mocha base.
 

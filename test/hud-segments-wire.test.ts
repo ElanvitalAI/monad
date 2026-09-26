@@ -92,7 +92,7 @@ describe('setVariantBadgeSegment', () => {
       providerInfo: { provider: 'grok', model: 'grok-4.6', auth: 'apikey', authDetail: '' },
       systemPrompt: {
         taskVariant: 'default',
-        overridePath: '/path/to/monad.md',
+        overridePath: '/path/to/elanous.md',
       } as {
         taskVariant: 'default';
         overridePath: string;
@@ -101,7 +101,7 @@ describe('setVariantBadgeSegment', () => {
     });
     const seg = hud.segments[VARIANT_SEGMENT_KEY];
     expect(seg!.value).toContain('override');
-    expect(seg!.value).toContain('monad.md');
+    expect(seg!.value).toContain('elanous.md');
   });
 });
 

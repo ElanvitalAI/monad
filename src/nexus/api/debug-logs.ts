@@ -5,11 +5,11 @@
 // → server-side daily JSONL append.
 //
 // 2026-05-16 discoverability update — 사용자가 즉시 찾을 수 있도록:
-//   1. platform 별 split: `~/.monad/debug-tap/<platform>-<YYYY-MM-DD>.jsonl`
+//   1. platform 별 split: `~/.elanous/debug-tap/<platform>-<YYYY-MM-DD>.jsonl`
 //      (iOS · PWA · daemon · etc. — source.platform 기준 자동 라우팅)
 //   2. local timezone 기준 파일명 (UTC 였던 이전 — KST 새벽 헷갈림 해소)
 //   3. `latest-<platform>.jsonl` symlink — 매 write 마다 ensure ·
-//      `tail -f ~/.monad/debug-tap/latest-ios.jsonl` 으로 라이브 추적
+//      `tail -f ~/.elanous/debug-tap/latest-ios.jsonl` 으로 라이브 추적
 //
 // 기존 파일 (`<date>.jsonl` 형식) 은 그대로 보존 — 새 record 만 신규 path.
 //
@@ -25,7 +25,7 @@
 //       MANUAL: 내부 문서 `MANUAL-debug-principles-2026-04-30`
 
 import { appendFileSync, existsSync, lstatSync, mkdirSync, symlinkSync, unlinkSync } from 'fs';
-import { monadStateRoot } from '../../autopilot/state-paths.js';
+import { elanousStateRoot } from '../../autopilot/state-paths.js';
 import { join } from 'path';
 
 import type { LogRecord } from '../../mss/logging/record.js';
@@ -77,9 +77,9 @@ function platformOf(record: LogRecord): string {
   return sanitized.length > 0 ? sanitized : 'unknown';
 }
 
-/** `~/.monad/debug-tap/<platform>-<YYYY-MM-DD>.jsonl`. dir 보장. */
+/** `~/.elanous/debug-tap/<platform>-<YYYY-MM-DD>.jsonl`. dir 보장. */
 function pathFor(platform: string): string {
-  const dir = join(monadStateRoot(), 'debug-tap');
+  const dir = join(elanousStateRoot(), 'debug-tap');
   if (!existsSync(dir)) {
     mkdirSync(dir, { recursive: true });
   }
@@ -90,13 +90,13 @@ function pathFor(platform: string): string {
  *  (unlink + symlink) · 실패는 swallow (symlink 는 nice-to-have · write
  *  은 이미 성공). 같은 day 첫 write 시 생성 · date 회전 시 자동 다시 link. */
 function ensureLatestSymlink(targetPath: string, platform: string): void {
-  const dir = join(monadStateRoot(), 'debug-tap');
+  const dir = join(elanousStateRoot(), 'debug-tap');
   const latest = join(dir, `latest-${platform}.jsonl`);
   try {
     if (existsSync(latest) || isBrokenSymlink(latest)) {
       unlinkSync(latest);
     }
-    // Relative symlink — `~/.monad/debug-tap/` 가 옮겨도 broken 안 됨.
+    // Relative symlink — `~/.elanous/debug-tap/` 가 옮겨도 broken 안 됨.
     const targetBase = targetPath.startsWith(dir + '/') ? targetPath.slice(dir.length + 1) : targetPath;
     symlinkSync(targetBase, latest);
   } catch {

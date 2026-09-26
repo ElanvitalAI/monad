@@ -13,7 +13,7 @@ import {
 let baseDir: string;
 
 beforeEach(() => {
-  baseDir = mkdtempSync(joinPath(tmpdir(), 'monad-attach-test-'));
+  baseDir = mkdtempSync(joinPath(tmpdir(), 'elanous-attach-test-'));
 });
 
 afterEach(() => {

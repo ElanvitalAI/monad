@@ -143,7 +143,7 @@ export interface DiscordBotOpts {
   wsImpl?: typeof WebSocket;
   /** Voice channel adapter — receives raw VOICE_STATE_UPDATE /
    *  VOICE_SERVER_UPDATE / READY dispatches. The voice subsystem
-   *  registers a tap during boot when MONAD_DISCORD_VOICE_CHANNEL=1. */
+   *  registers a tap during boot when ELANOUS_DISCORD_VOICE_CHANNEL=1. */
   voiceTap?: DiscordVoiceDispatchTap;
   /** Override gateway intents — tests use this to verify GUILD_VOICE_STATES
    *  is included when a voice tap is configured. */
@@ -277,7 +277,7 @@ export class DiscordBot {
   }
 
   /** `/users/@me` — verifies the token + returns the bot's identity.
-   *  Use from the pair wizard and `monad discord status`. */
+   *  Use from the pair wizard and `elanous discord status`. */
   async getMe(): Promise<{ id: string; username: string; discriminator?: string }> {
     return this.restCall('GET', '/users/@me');
   }
@@ -407,7 +407,7 @@ export class DiscordBot {
     const { tmpdir } = await import('node:os');
     const { join } = await import('node:path');
     const { randomUUID } = await import('node:crypto');
-    const dir = destDir ?? join(tmpdir(), 'monad-discord-downloads');
+    const dir = destDir ?? join(tmpdir(), 'elanous-discord-downloads');
     mkdirSync(dir, { recursive: true });
     const res = await this.fetchImpl(attachment.url);
     if (!res.ok) {

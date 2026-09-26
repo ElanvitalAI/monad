@@ -33,7 +33,7 @@ describe('ChatMessageView — blocks renderer (Phase B-2)', () => {
     // Legacy path uses MarkdownBody — should produce a <p> tag.
     expect(html).toMatch(/<p[^>]*>hello world<\/p>/);
     // No image markers since there are no blocks.
-    expect(html).not.toMatch(/data-monad-block-kind="image"/);
+    expect(html).not.toMatch(/data-elanous-block-kind="image"/);
   });
 
   it('renders blocks branch when `blocks` is non-empty (image inline)', () => {
@@ -59,8 +59,8 @@ describe('ChatMessageView — blocks renderer (Phase B-2)', () => {
     // marker (so a future regression replacing the renderer with a
     // text-only fallback fails this).
     expect(html).toMatch(/<img[^>]+src="data:image\/png;base64,iVBORw0KGgo="/);
-    expect(html).toMatch(/data-monad-block-kind="image"/);
-    expect(html).toMatch(/data-monad-media-type="image\/png"/);
+    expect(html).toMatch(/data-elanous-block-kind="image"/);
+    expect(html).toMatch(/data-elanous-media-type="image\/png"/);
     expect(html).toMatch(/alt="screenshot"/);
   });
 
@@ -71,7 +71,7 @@ describe('ChatMessageView — blocks renderer (Phase B-2)', () => {
       />,
     );
     expect(html).toMatch(/<p[^>]*>fallback<\/p>/);
-    expect(html).not.toMatch(/data-monad-block-kind/);
+    expect(html).not.toMatch(/data-elanous-block-kind/);
   });
 
   it('synthesizes a default alt when image block omits alt', () => {
@@ -113,9 +113,9 @@ describe('ChatMessageView — blocks renderer (Phase B-2)', () => {
         })}
       />,
     );
-    expect(html).toMatch(/data-monad-block-kind="tool_use"/);
-    expect(html).toMatch(/data-monad-tool-name="WebTerminalScreenshot"/);
-    expect(html).toMatch(/data-monad-tool-status="running"/);
+    expect(html).toMatch(/data-elanous-block-kind="tool_use"/);
+    expect(html).toMatch(/data-elanous-tool-name="WebTerminalScreenshot"/);
+    expect(html).toMatch(/data-elanous-tool-status="running"/);
     // Running glyph.
     expect(html).toMatch(/⋯/);
   });
@@ -137,7 +137,7 @@ describe('ChatMessageView — blocks renderer (Phase B-2)', () => {
         })}
       />,
     );
-    expect(html).toMatch(/data-monad-tool-status="done"/);
+    expect(html).toMatch(/data-elanous-tool-status="done"/);
     expect(html).toMatch(/✓/);
     expect(html).toMatch(/95 lines/);
   });
@@ -188,7 +188,7 @@ describe('ChatMessageView — blocks renderer (Phase B-2)', () => {
         })}
       />,
     );
-    expect(html).toMatch(/data-monad-tool-status="error"/);
+    expect(html).toMatch(/data-elanous-tool-status="error"/);
     expect(html).toMatch(/✗/);
     expect(html).toMatch(/text-destructive/);
   });
@@ -274,9 +274,9 @@ describe('ChatMessageView — blocks renderer (Phase B-2)', () => {
         })}
       />,
     );
-    expect(html).toMatch(/data-monad-block-kind="agent_thinking"/);
-    expect(html).toMatch(/data-monad-block-id="s-1:thinking:1"/);
-    expect(html).toMatch(/data-monad-done="false"/);
+    expect(html).toMatch(/data-elanous-block-kind="agent_thinking"/);
+    expect(html).toMatch(/data-elanous-block-id="s-1:thinking:1"/);
+    expect(html).toMatch(/data-elanous-done="false"/);
     expect(html).toMatch(/Thinking/);
     expect(html).toMatch(/1s/);
     expect(html).toMatch(/250 tokens/);
@@ -300,7 +300,7 @@ describe('ChatMessageView — blocks renderer (Phase B-2)', () => {
         })}
       />,
     );
-    expect(html).toMatch(/data-monad-done="true"/);
+    expect(html).toMatch(/data-elanous-done="true"/);
     expect(html).toMatch(/✓/);
     expect(html).toMatch(/Reasoning/);
     expect(html).toMatch(/8s/);
@@ -324,9 +324,9 @@ describe('ChatMessageView — blocks renderer (Phase B-2)', () => {
         })}
       />,
     );
-    expect(html).toMatch(/data-monad-block-kind="agent_status"/);
+    expect(html).toMatch(/data-elanous-block-kind="agent_status"/);
     expect(html).toMatch(/data-monad-agent-id="claude-code"/);
-    expect(html).toMatch(/data-monad-status="running"/);
+    expect(html).toMatch(/data-elanous-status="running"/);
     expect(html).toMatch(/claude-code/);
     expect(html).toMatch(/tool-call/);
     expect(html).toMatch(/animate-pulse/);
@@ -348,7 +348,7 @@ describe('ChatMessageView — blocks renderer (Phase B-2)', () => {
         })}
       />,
     );
-    expect(done).toMatch(/data-monad-status="done"/);
+    expect(done).toMatch(/data-elanous-status="done"/);
     expect(done).toMatch(/✓/);
     const err = renderToStaticMarkup(
       <ChatMessageView
@@ -365,7 +365,7 @@ describe('ChatMessageView — blocks renderer (Phase B-2)', () => {
         })}
       />,
     );
-    expect(err).toMatch(/data-monad-status="error"/);
+    expect(err).toMatch(/data-elanous-status="error"/);
     expect(err).toMatch(/✗/);
     expect(err).toMatch(/text-destructive/);
   });
@@ -391,14 +391,14 @@ describe('ChatMessageView — blocks renderer (Phase B-2)', () => {
         })}
       />,
     );
-    expect(html).toMatch(/data-monad-block-kind="agent_plan"/);
-    expect(html).toMatch(/data-monad-plan-ref="plan-A"/);
+    expect(html).toMatch(/data-elanous-block-kind="agent_plan"/);
+    expect(html).toMatch(/data-elanous-plan-ref="plan-A"/);
     expect(html).toMatch(/Read files/);
     expect(html).toMatch(/Patch wire/);
     expect(html).toMatch(/Run tests/);
-    expect(html).toMatch(/data-monad-step-status="done"/);
-    expect(html).toMatch(/data-monad-step-status="in-progress"/);
-    expect(html).toMatch(/data-monad-step-status="pending"/);
+    expect(html).toMatch(/data-elanous-step-status="done"/);
+    expect(html).toMatch(/data-elanous-step-status="in-progress"/);
+    expect(html).toMatch(/data-elanous-step-status="pending"/);
     // 2/3 progress marker
     expect(html).toMatch(/2\/3/);
   });
@@ -419,7 +419,7 @@ describe('ChatMessageView — blocks renderer (Phase B-2)', () => {
         })}
       />,
     );
-    expect(html).toMatch(/data-monad-step-status="skipped"/);
+    expect(html).toMatch(/data-elanous-step-status="skipped"/);
     expect(html).toMatch(/line-through/);
   });
 
@@ -456,8 +456,8 @@ describe('ChatMessageView — blocks renderer (Phase B-2)', () => {
         })}
       />,
     );
-    expect(html).toMatch(/data-monad-block-kind="tool_diff"/);
-    expect(html).toMatch(/data-monad-file-path="src\/foo\.ts"/);
+    expect(html).toMatch(/data-elanous-block-kind="tool_diff"/);
+    expect(html).toMatch(/data-elanous-file-path="src\/foo\.ts"/);
     expect(html).toMatch(/src\/foo\.ts/);
     // +2 adds, -1 del rendered in summary tail
     expect(html).toMatch(/\+2/);
@@ -465,7 +465,7 @@ describe('ChatMessageView — blocks renderer (Phase B-2)', () => {
     expect(html).toMatch(/1 hunk/);
     // Collapsed by default — hunk body lines should NOT be in the
     // static markup.
-    expect(html).not.toMatch(/data-monad-line-kind="add"/);
+    expect(html).not.toMatch(/data-elanous-line-kind="add"/);
     expect(html).toMatch(/▸/);
   });
 
@@ -491,9 +491,9 @@ describe('ChatMessageView — blocks renderer (Phase B-2)', () => {
         })}
       />,
     );
-    expect(html).toMatch(/data-monad-block-kind="tool_search_hits"/);
-    expect(html).toMatch(/data-monad-search-query="needle"/);
-    expect(html).toMatch(/data-monad-accum-count="12"/);
+    expect(html).toMatch(/data-elanous-block-kind="tool_search_hits"/);
+    expect(html).toMatch(/data-elanous-search-query="needle"/);
+    expect(html).toMatch(/data-elanous-accum-count="12"/);
     expect(html).toMatch(/needle/);
     expect(html).toMatch(/12 hits/);
     // Only the first 5 hit rows render in collapsed view
@@ -593,9 +593,9 @@ describe('ChatMessageView — blocks renderer (Phase B-2)', () => {
         })}
       />,
     );
-    expect(html).toMatch(/data-monad-block-kind="tool_progress"/);
-    expect(html).toMatch(/data-monad-stream="stdout"/);
-    expect(html).toMatch(/data-monad-done="false"/);
+    expect(html).toMatch(/data-elanous-block-kind="tool_progress"/);
+    expect(html).toMatch(/data-elanous-stream="stdout"/);
+    expect(html).toMatch(/data-elanous-done="false"/);
     expect(html).toMatch(/b\.ts/);
     expect(html).toMatch(/3 lines/);
     expect(html).toMatch(/animate-pulse/);
@@ -619,7 +619,7 @@ describe('ChatMessageView — blocks renderer (Phase B-2)', () => {
         })}
       />,
     );
-    expect(html).toMatch(/data-monad-done="true"/);
+    expect(html).toMatch(/data-elanous-done="true"/);
     expect(html).toMatch(/exit 0/);
     expect(html).toMatch(/text-emerald/);
   });
@@ -664,7 +664,7 @@ describe('ChatMessageView — blocks renderer (Phase B-2)', () => {
         })}
       />,
     );
-    expect(html).toMatch(/data-monad-stream="http"/);
+    expect(html).toMatch(/data-elanous-stream="http"/);
     expect(html).toMatch(/1\.0KB/);
     expect(html).toMatch(/text-amber/);
   });

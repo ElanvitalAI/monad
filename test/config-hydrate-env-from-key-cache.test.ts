@@ -5,11 +5,11 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { _resetKeyCacheForTests, getOpenAiRelaySharedSecret, hydrateEnvFromKeyCache } from '../src/config.js';
 
-const saved = { dir: process.env.MONAD_KEY_CACHE_DIR, keep: process.env.MONAD_KEEP_ENV_KEYS, relay: process.env.MONAD_OPENAI_RELAY_SHARED_SECRET };
+const saved = { dir: process.env.ELANOUS_KEY_CACHE_DIR, keep: process.env.ELANOUS_KEEP_ENV_KEYS, relay: process.env.ELANOUS_OPENAI_RELAY_SHARED_SECRET };
 const dirs: string[] = [];
 
 afterEach(() => {
-  for (const [k, v] of [['MONAD_KEY_CACHE_DIR', saved.dir], ['MONAD_KEEP_ENV_KEYS', saved.keep], ['MONAD_OPENAI_RELAY_SHARED_SECRET', saved.relay]] as const) {
+  for (const [k, v] of [['ELANOUS_KEY_CACHE_DIR', saved.dir], ['ELANOUS_KEEP_ENV_KEYS', saved.keep], ['ELANOUS_OPENAI_RELAY_SHARED_SECRET', saved.relay]] as const) {
     if (v === undefined) delete process.env[k]; else process.env[k] = v;
   }
   _resetKeyCacheForTests();
@@ -20,8 +20,8 @@ function cacheDir(files: Record<string, string>): string {
   const dir = mkdtempSync(join(tmpdir(), 'key-cache-'));
   dirs.push(dir);
   for (const [name, value] of Object.entries(files)) writeFileSync(join(dir, name), value);
-  process.env.MONAD_KEY_CACHE_DIR = dir;
-  delete process.env.MONAD_KEEP_ENV_KEYS;
+  process.env.ELANOUS_KEY_CACHE_DIR = dir;
+  delete process.env.ELANOUS_KEEP_ENV_KEYS;
   _resetKeyCacheForTests();
   return dir;
 }
@@ -42,17 +42,17 @@ describe('hydrateEnvFromKeyCache', () => {
     expect(env.ANTHROPIC_API_KEY).toBe('live');
   });
 
-  test('MONAD_KEEP_ENV_KEYS=1 keeps the env as is', () => {
+  test('ELANOUS_KEEP_ENV_KEYS=1 keeps the env as is', () => {
     cacheDir({ xai_api_key: 'fresh' });
-    process.env.MONAD_KEEP_ENV_KEYS = '1';
+    process.env.ELANOUS_KEEP_ENV_KEYS = '1';
     const env: NodeJS.ProcessEnv = { XAI_API_KEY: 'pinned' };
     expect(hydrateEnvFromKeyCache(['XAI_API_KEY'], env)).toEqual([]);
     expect(env.XAI_API_KEY).toBe('pinned');
   });
 
   test('the relay shared secret is read from the cache when the plist no longer carries it', () => {
-    cacheDir({ monad_openai_relay_shared_secret: 's3cret\n' });
-    delete process.env.MONAD_OPENAI_RELAY_SHARED_SECRET;
+    cacheDir({ elanous_openai_relay_shared_secret: 's3cret\n' });
+    delete process.env.ELANOUS_OPENAI_RELAY_SHARED_SECRET;
     expect(getOpenAiRelaySharedSecret()).toBe('s3cret');
   });
 });

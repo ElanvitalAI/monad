@@ -23,19 +23,19 @@ import {
   type UserConfig,
 } from '../src/nexus/config/types.js';
 import { readUserConfig } from '../src/nexus/config/user-config.js';
-import { setMonadConfigDir, resetMonadConfigDir } from '../src/monad-config-dir.js';
+import { setElanousConfigDir, resetElanousConfigDir } from '../src/elanous-config-dir.js';
 
 let tmpRoot: string;
 
 beforeEach(() => {
-  tmpRoot = mkdtempSync(joinPath(tmpdir(), 'monad-nexus-welcome-'));
-  // userConfigPath() resolves under setMonadConfigDir; override so
-  // the test never touches the developer's real ~/.monad/config.json.
-  setMonadConfigDir(tmpRoot);
+  tmpRoot = mkdtempSync(joinPath(tmpdir(), 'elanous-nexus-welcome-'));
+  // userConfigPath() resolves under setElanousConfigDir; override so
+  // the test never touches the developer's real ~/.elanous/config.json.
+  setElanousConfigDir(tmpRoot);
 });
 
 afterEach(() => {
-  resetMonadConfigDir();
+  resetElanousConfigDir();
   try { rmSync(tmpRoot, { recursive: true, force: true }); } catch { /* swallow */ }
 });
 
@@ -92,13 +92,13 @@ describe('dismissWelcome · disk persistence', () => {
 });
 
 describe('buildWelcomeCardLines · copy', () => {
-  test('mentions NEXUS, Settings, the `monad` dashboard entry, Esc', () => {
+  test('mentions NEXUS, Settings, the `elanous` dashboard entry, Esc', () => {
     const lines = buildWelcomeCardLines();
     const joined = lines.join('\n');
-    expect(joined).toContain('Welcome to monad NEXUS');
+    expect(joined).toContain('Welcome to elanous NEXUS');
     expect(joined).toContain('Settings 탭');
-    // Points to the interactive dashboard entry (no longer `monad legacy`).
-    expect(joined).toContain('`monad`');
+    // Points to the interactive dashboard entry (no longer `elanous legacy`).
+    expect(joined).toContain('`elanous`');
     expect(joined).toContain('Esc');
   });
 
@@ -125,11 +125,11 @@ describe('chat tab view integration · welcome card visibility', () => {
   test('flag unset → welcome card visible above the no-backend guidance', () => {
     // tmpRoot is fresh; flag is unset.
     const out = renderInert();
-    expect(out).toContain('Welcome to monad NEXUS');
+    expect(out).toContain('Welcome to elanous NEXUS');
     // Also still shows the per-PR-g.1 guidance (3 provider entries).
     expect(out).toContain('No chat backend configured');
     // Welcome appears before guidance.
-    const welcomeIdx = out.indexOf('Welcome to monad NEXUS');
+    const welcomeIdx = out.indexOf('Welcome to elanous NEXUS');
     const guideIdx = out.indexOf('No chat backend configured');
     expect(welcomeIdx).toBeLessThan(guideIdx);
   });
@@ -138,6 +138,6 @@ describe('chat tab view integration · welcome card visibility', () => {
     dismissWelcome();
     const out = renderInert();
     expect(out).toContain('No chat backend configured');
-    expect(out).not.toContain('Welcome to monad NEXUS');
+    expect(out).not.toContain('Welcome to elanous NEXUS');
   });
 });

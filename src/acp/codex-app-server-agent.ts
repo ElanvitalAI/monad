@@ -47,7 +47,7 @@ import type {
   AcpQuestionResponse,
   AcpUpdateCallback,
 } from './client.js';
-import type { MonadCapabilities } from './capabilities.js';
+import type { ElanousCapabilities } from './capabilities.js';
 import { isCodexAuthError, resolvePreferredCodexBinary } from './codex-auth.js';
 import { CodexAppServerError } from './codex-app-server-proto.js';
 import type {
@@ -75,11 +75,11 @@ import {
 } from './codex-app-server-thread-index.js';
 import { mintSessionUri } from '../mss/uri/session-mint.js';
 import {
-  parseMonadUiEnvelope,
-  MONAD_TERM_DISABLED,
-  type MonadUiMethod,
-} from './monad-extensions.js';
-import { MONAD_ASK_DISABLED } from './ask-extensions.js';
+  parseElanousUiEnvelope,
+  ELANOUS_TERM_DISABLED,
+  type ElanousUiMethod,
+} from './elanous-extensions.js';
+import { ELANOUS_ASK_DISABLED } from './ask-extensions.js';
 import type {
   CodexCollaborationMode,
   CodexModeKind,
@@ -104,7 +104,7 @@ import { rotatedCodexChildEnv } from '../oauth/codex-account-store.js';
 // ─── Module-scope helpers · 3.B.2c ─────────────────────────────────
 
 function defaultImageTempDir(): string {
-  return pathJoin(tmpdir(), `monad-cas-images-${process.pid}`);
+  return pathJoin(tmpdir(), `elanous-cas-images-${process.pid}`);
 }
 
 /** M6 · resolve the idle hibernate threshold. Opts wins; env fills in
@@ -113,7 +113,7 @@ function resolveIdleTimeoutMs(optExplicit: number | undefined): number {
   if (typeof optExplicit === 'number' && Number.isFinite(optExplicit)) {
     return Math.max(0, optExplicit);
   }
-  const raw = process.env.MONAD_CODEX_APP_SERVER_IDLE_MS;
+  const raw = process.env.ELANOUS_CODEX_APP_SERVER_IDLE_MS;
   if (raw !== undefined) {
     const n = Number(raw);
     if (Number.isFinite(n)) return Math.max(0, n);
@@ -126,7 +126,7 @@ const defaultMcpToolCallHandler: CodexMcpToolCallHandler = async (params) => {
     content: [
       {
         type: 'text',
-        text: `monad MCP bridge not wired · tool "${params.tool}" unavailable in this session`,
+        text: `elanous MCP bridge not wired · tool "${params.tool}" unavailable in this session`,
       },
     ],
     isError: true,
@@ -232,18 +232,18 @@ function mimeToExt(mime: string | undefined): string {
  *  elicitation are wired via server-request handlers below.
  *
  *  M3 (2026-04-28) flips all four `ui.*` flags on. The agent intercepts
- *  `agent_thought_chunk` updates whose text matches `monad/ui/*`
- *  envelope shape (see `monad-extensions.ts`) and forwards them to a
+ *  `agent_thought_chunk` updates whose text matches `elanous/ui/*`
+ *  envelope shape (see `elanous-extensions.ts`) and forwards them to a
  *  registered host handler instead of letting the envelope text leak
  *  to the client as plain reasoning. */
-export const CODEX_APP_SERVER_CAPS: MonadCapabilities = {
+export const CODEX_APP_SERVER_CAPS: ElanousCapabilities = {
   protocolVersion: 1,
   prompt: {
     text: true,
     resourceLink: true,
     image: true,
     audio: false,
-    // E2 / TS2741 (2026-05-17) — MonadPromptCapabilities added a
+    // E2 / TS2741 (2026-05-17) — ElanousPromptCapabilities added a
     // `video` axis (P-3 §6.9 expansion). codex agent doesn't ship
     // video uploads yet — explicit `false` keeps the capability
     // gate closed instead of relying on TS to infer the missing
@@ -265,10 +265,10 @@ export const CODEX_APP_SERVER_CAPS: MonadCapabilities = {
   // `prompt()` collaborationMode injection below.
   planMode: true,
   ui: { showModal: true, showToast: true, updateStatusPill: true, usage: true },
-  // WT-S-1 / ask arc — codex app-server 는 monad/term·monad/ask 확장을 미지원.
-  // 명시적 DISABLED 로 capability 게이트를 닫는다(MonadCapabilities 필수 필드).
-  term: { ...MONAD_TERM_DISABLED },
-  ask: { ...MONAD_ASK_DISABLED },
+  // WT-S-1 / ask arc — codex app-server 는 elanous/term·elanous/ask 확장을 미지원.
+  // 명시적 DISABLED 로 capability 게이트를 닫는다(ElanousCapabilities 필수 필드).
+  term: { ...ELANOUS_TERM_DISABLED },
+  ask: { ...ELANOUS_ASK_DISABLED },
 };
 
 // ─── Server-request approval routing ──────────────────────────────
@@ -290,7 +290,7 @@ const APPROVAL_METHODS = [
 export type CodexGoalStatus =
   | 'active' | 'paused' | 'blocked' | 'usageLimited' | 'budgetLimited' | 'complete';
 
-/** codex `ThreadGoal` (subset monad consumes). */
+/** codex `ThreadGoal` (subset elanous consumes). */
 export interface CodexThreadGoal {
   threadId: string;
   objective: string;
@@ -300,12 +300,12 @@ export interface CodexThreadGoal {
   timeUsedSeconds?: number;
 }
 
-/** monad mission statuses a goal status maps onto (mission-registry). */
+/** elanous mission statuses a goal status maps onto (mission-registry). */
 export type MissionStatusFromGoal = 'running' | 'done' | 'failed' | 'disarmed';
 
 export interface CodexGoalUpdate {
   sessionId: SessionId;
-  /** Mapped monad mission status. */
+  /** Mapped elanous mission status. */
   missionStatus: MissionStatusFromGoal;
   /** Raw goal (null on `thread/goal/cleared`). */
   goal: CodexThreadGoal | null;
@@ -313,7 +313,7 @@ export interface CodexGoalUpdate {
 
 export type CodexGoalUpdateListener = (update: CodexGoalUpdate) => void;
 
-/** Map a codex goal status to the monad mission-registry status. Pure +
+/** Map a codex goal status to the elanous mission-registry status. Pure +
  *  exported so a mission layer + tests share one mapping. `active`/`paused`
  *  ⇒ running (still working); `complete` ⇒ done; `blocked`/`usageLimited`/
  *  `budgetLimited` ⇒ failed (needs attention — codex stopped making
@@ -350,7 +350,7 @@ interface CodexUserInputQuestion {
   options?: Array<{ label: string; description?: string }>;
 }
 
-/** Map a codex `item/tool/requestUserInput` params to monad's generic
+/** Map a codex `item/tool/requestUserInput` params to elanous's generic
  *  `AcpQuestionRequest` so it flows through the same questionApprover the
  *  surface HITL QuestionChannel backs. Pure + exported for testing. */
 export function mapUserInputToQuestionRequest(
@@ -377,7 +377,7 @@ export function mapUserInputToQuestionRequest(
   };
 }
 
-/** Map monad's `AcpQuestionResponse` back to codex's
+/** Map elanous's `AcpQuestionResponse` back to codex's
  *  `ToolRequestUserInputResponse` (`{answers: {[id]: {answers: []}}}`).
  *  "Other" selections are substituted with the free-form `otherText`.
  *  Pure + exported for testing. */
@@ -413,7 +413,7 @@ export function mapQuestionResponseToUserInput(
  *   - legacy `execCommandApproval` / `applyPatchApproval` → core `ReviewDecision`
  *     (`approved | denied`).
  *
- *  monad historically returned `{decision:'approve'|'deny'}`, valid in NONE of
+ *  elanous historically returned `{decision:'approve'|'deny'}`, valid in NONE of
  *  these — codex ≥0.125 rejected it on deserialize, silently breaking every
  *  Codex-backend approval. This helper is the fix. */
 /** The decision string values `buildCodexApprovalResponse` can emit per
@@ -469,7 +469,7 @@ export function buildCodexApprovalResponse(
 
 // ─── MCP bridge + elicitation · 3.B.2c ────────────────────────────
 
-/** Result shape returned to Codex when it invokes a monad-hosted MCP
+/** Result shape returned to Codex when it invokes a elanous-hosted MCP
  *  tool via server-request. Mirrors MCP `CallToolResult` but kept
  *  loose so we can evolve without a type churn cascade. */
 export interface CodexMcpToolCallResult {
@@ -481,7 +481,7 @@ export interface CodexMcpToolCallResult {
   readonly errorMessage?: string;
 }
 
-/** Callback Codex invokes when it wants a monad-side MCP tool run
+/** Callback Codex invokes when it wants a elanous-side MCP tool run
  *  during a turn. Params shape mirrors v2 `McpServerToolCallParams` —
  *  we surface it loosely typed so the handler can cast as needed
  *  without this file owning the full type churn.
@@ -519,20 +519,20 @@ export type CodexElicitationHandler = (
   },
 ) => Promise<CodexElicitationResult>;
 
-/** M3 (2026-04-28) — host handler for `monad/ui/*` envelopes intercepted
+/** M3 (2026-04-28) — host handler for `elanous/ui/*` envelopes intercepted
  *  from `agent_thought_chunk` text. Mirrors the codex-native path's
  *  `pushModal` / `pushToast` / `updateStatusPill` / `recordUsage` shape
  *  the dashboard already wires for native — both transports converge on
  *  the same UI extension surface.
  *
  *  When set, every `agent_thought_chunk` whose text parses as a valid
- *  monad/ui envelope is forwarded here AND the original update is
+ *  elanous/ui envelope is forwarded here AND the original update is
  *  suppressed (envelope text doesn't leak to the client as plain
  *  reasoning). When unset, envelope-shaped text passes through verbatim
  *  — extension-unaware peers still see it as text. */
-export type CodexMonadUiHandler = (params: {
+export type CodexElanousUiHandler = (params: {
   readonly sessionId: string;
-  readonly method: MonadUiMethod;
+  readonly method: ElanousUiMethod;
   readonly payload: Record<string, unknown>;
 }) => void;
 
@@ -557,7 +557,7 @@ const DEFAULT_FS_MAX_BYTES = 10 * 1024 * 1024;
 
 function resolveFsMaxBytes(opt: number | undefined): number {
   if (typeof opt === 'number' && Number.isFinite(opt) && opt > 0) return opt;
-  const raw = process.env.MONAD_CODEX_FS_MAX_BYTES;
+  const raw = process.env.ELANOUS_CODEX_FS_MAX_BYTES;
   if (raw !== undefined) {
     const n = Number(raw);
     if (Number.isFinite(n) && n > 0) return n;
@@ -717,11 +717,11 @@ export interface CodexAppServerAgentOpts {
   readonly log?: (msg: string) => void;
   /** Called after a successful initialize with this backend's advertised capabilities.
    *  Observers must not affect app-server operation. */
-  readonly onCapabilities?: (capabilities: MonadCapabilities) => void;
+  readonly onCapabilities?: (capabilities: ElanousCapabilities) => void;
   readonly permissionApprover?: AcpPermissionApprover;
   readonly questionApprover?: AcpQuestionApprover;
   /** 3.B.2c · MCP bridge · route `mcpServer/tool/call` server-requests
-   *  to monad's MCP registry. When omitted, the default handler returns
+   *  to elanous's MCP registry. When omitted, the default handler returns
    *  `{isError: true}` with an "MCP bridge not wired" message so Codex
    *  can degrade gracefully instead of hanging. */
   readonly mcpToolCallHandler?: CodexMcpToolCallHandler;
@@ -730,13 +730,13 @@ export interface CodexAppServerAgentOpts {
    *  returns `{action:'decline'}` so Codex proceeds without blocking
    *  when no UI is wired. */
   readonly elicitationHandler?: CodexElicitationHandler;
-  /** M3 (2026-04-28) · `monad/ui/*` extension parity with codex-native.
+  /** M3 (2026-04-28) · `elanous/ui/*` extension parity with codex-native.
    *  When set, agent_thought_chunk updates whose text matches the
-   *  `monad/ui/*` envelope are forwarded here + suppressed. When omitted,
+   *  `elanous/ui/*` envelope are forwarded here + suppressed. When omitted,
    *  envelope-shaped text passes through verbatim. */
-  readonly monadUiHandler?: CodexMonadUiHandler;
+  readonly elanousUiHandler?: CodexElanousUiHandler;
   /** 3.B.2c · Per-turn temp dir for image inputs · defaults to
-   *  `os.tmpdir()/monad-cas-images-<pid>`. Tests can override to a
+   *  `os.tmpdir()/elanous-cas-images-<pid>`. Tests can override to a
    *  scratch dir that gets cleaned up after the run. */
   readonly imageTempDir?: string;
   /** M6 (2026-04-28) · idle hibernate threshold in ms. After this many
@@ -744,7 +744,7 @@ export interface CodexAppServerAgentOpts {
    *  daemon and nulls its client; the next `prompt()` / `loadSession()`
    *  triggers a lazy respawn + per-session `thread/resume`.
    *
-   *  Default: env `MONAD_CODEX_APP_SERVER_IDLE_MS` if set + parses,
+   *  Default: env `ELANOUS_CODEX_APP_SERVER_IDLE_MS` if set + parses,
    *  otherwise 300_000 (5 min). Pass 0 (or a negative) to disable
    *  hibernation entirely. */
   readonly idleTimeoutMs?: number;
@@ -753,13 +753,13 @@ export interface CodexAppServerAgentOpts {
   readonly idleCheckMs?: number;
   /** hermes-parity turn watchdog. Quiet-timeout aborts a turn that goes
    *  silent for this many ms (hung tool / stalled model); resets on every
-   *  event. Default env `MONAD_CODEX_TURN_QUIET_MS` or 90_000. 0 disables. */
+   *  event. Default env `ELANOUS_CODEX_TURN_QUIET_MS` or 90_000. 0 disables. */
   readonly turnQuietMs?: number;
   /** hermes-parity hard wall-clock deadline per turn (ms). Default env
-   *  `MONAD_CODEX_TURN_MAX_MS` or 600_000. 0 disables. */
+   *  `ELANOUS_CODEX_TURN_MAX_MS` or 600_000. 0 disables. */
   readonly turnHardMs?: number;
   /** M2 · maximum bytes returned by `fs/readFile`. Default = env
-   *  `MONAD_CODEX_FS_MAX_BYTES` or 10 MB. Files exceeding this surface
+   *  `ELANOUS_CODEX_FS_MAX_BYTES` or 10 MB. Files exceeding this surface
    *  an `{isError: true, errorMessage}` payload to the daemon. */
   readonly fileOpsMaxBytes?: number;
   /** Test seam · inject a preconstructed client instead of spawning. */
@@ -779,7 +779,7 @@ export class CodexAppServerAgent {
   private readonly codexArgs?: readonly string[];
   private readonly env?: Record<string, string>;
   private readonly log: (msg: string) => void;
-  private readonly onCapabilities: ((capabilities: MonadCapabilities) => void) | undefined;
+  private readonly onCapabilities: ((capabilities: ElanousCapabilities) => void) | undefined;
 
   private client: CodexAppServerClient | null;
   private child: SpawnedCodexAppServer['child'] | null = null;
@@ -789,7 +789,7 @@ export class CodexAppServerAgent {
   private permissionApprover: AcpPermissionApprover | null;
   private questionApprover: AcpQuestionApprover | null;
 
-  /** sessionId (monad-side synth) → Codex threadId. */
+  /** sessionId (elanous-side synth) → Codex threadId. */
   private readonly sessionToThread = new Map<SessionId, string>();
   /** Reverse lookup for routing server notifications. */
   private readonly threadToSession = new Map<string, SessionId>();
@@ -858,10 +858,10 @@ export class CodexAppServerAgent {
   /** 3.B.2c · injected bridges · overridden by opts. */
   private mcpToolCallHandler: CodexMcpToolCallHandler;
   private elicitationHandler: CodexElicitationHandler;
-  /** M3 · monad/ui envelope handler · overridden by opts or
-   *  setMonadUiHandler(). Null = pass-through (envelope text not
+  /** M3 · elanous/ui envelope handler · overridden by opts or
+   *  setElanousUiHandler(). Null = pass-through (envelope text not
    *  intercepted). */
-  private monadUiHandler: CodexMonadUiHandler | null;
+  private elanousUiHandler: CodexElanousUiHandler | null;
   /** 3.B.2c · per-session attached transports (advisory metadata
    *  surfaced for observers like HUD / debug overlays). Keyed by
    *  sessionId; entries are pushed via `attachTransport()` and
@@ -890,7 +890,7 @@ export class CodexAppServerAgent {
     this.questionApprover = opts.questionApprover ?? null;
     this.mcpToolCallHandler = opts.mcpToolCallHandler ?? defaultMcpToolCallHandler;
     this.elicitationHandler = opts.elicitationHandler ?? defaultElicitationHandler;
-    this.monadUiHandler = opts.monadUiHandler ?? null;
+    this.elanousUiHandler = opts.elanousUiHandler ?? null;
     this.imageTempDir = opts.imageTempDir ?? defaultImageTempDir();
     this._clientForTesting = opts._clientForTesting;
     this._spawnFactory = opts._spawnFactory;
@@ -902,8 +902,8 @@ export class CodexAppServerAgent {
     this.idleCheckMs = opts.idleCheckMs ?? 30_000;
     // M2 · file op size cap (env override path).
     this.fileOpsMaxBytes = resolveFsMaxBytes(opts.fileOpsMaxBytes);
-    this.turnQuietMs = resolveTurnTimeoutMs(opts.turnQuietMs, 'MONAD_CODEX_TURN_QUIET_MS', 90_000);
-    this.turnHardMs = resolveTurnTimeoutMs(opts.turnHardMs, 'MONAD_CODEX_TURN_MAX_MS', 600_000);
+    this.turnQuietMs = resolveTurnTimeoutMs(opts.turnQuietMs, 'ELANOUS_CODEX_TURN_QUIET_MS', 90_000);
+    this.turnHardMs = resolveTurnTimeoutMs(opts.turnHardMs, 'ELANOUS_CODEX_TURN_MAX_MS', 600_000);
 
     this.approvalAdapter = createCodexApprovalAdapter({
       permissionApprover: this.permissionApprover ?? undefined,
@@ -936,7 +936,7 @@ export class CodexAppServerAgent {
     this.approvalAdapter.setQuestionApprover(this.questionApprover);
   }
 
-  getCapabilities(): MonadCapabilities | null {
+  getCapabilities(): ElanousCapabilities | null {
     return this.initialized ? CODEX_APP_SERVER_CAPS : null;
   }
 
@@ -964,12 +964,12 @@ export class CodexAppServerAgent {
       // after a hibernate that nulled `this.client`; the spawn factory
       // produces a fresh child + client every call.
       const spawnFn = this._spawnFactory ?? spawnCodexAppServer;
-      // ⛔⭐⭐⭐ 회전한 계정을 이 자식에게 «따라가게» 한다 — codex 바이너리는 monad 정본 토큰을
+      // ⛔⭐⭐⭐ 회전한 계정을 이 자식에게 «따라가게» 한다 — codex 바이너리는 elanous 정본 토큰을
       //   안 보고 `$CODEX_HOME/auth.json` 을 읽으므로, 이 한 줄이 없으면 회전이 API 경로에만 닿고
       //   ACP 자식은 «리밋 걸린 계정»으로 계속 쏜다(그 계정에 크레딧이 남아 있으면 유료로 나간다).
       //   ⭐ 회전이 없으면 빈 객체라 종전과 동일하다. ⭐ 호출자가 준 env 가 «이긴다»(의도가 우선).
       // ⛔⭐⭐ 해석 입력은 «이 자식이 실제로 받을 env»다(리뷰 must-fix). `process.env` 만 보면
-      //   호출자가 `this.env.MONAD_CODEX_ACCOUNT` 로 «명시»한 계정을 회전 판정이 «못 보고»,
+      //   호출자가 `this.env.ELANOUS_CODEX_ACCOUNT` 로 «명시»한 계정을 회전 판정이 «못 보고»,
       //   결정 ③(명시가 이긴다)이 뚫려 ***명시와 모순되는 홈이 실린다.***
       const childEnv = { ...process.env, ...(this.env ?? {}) };
       const codexBinary = this.codexBinary ?? resolvePreferredCodexBinary();
@@ -1001,7 +1001,7 @@ export class CodexAppServerAgent {
       { clientInfo: { name: string; version: string }; capabilities: Record<string, unknown> },
       InitializeResponse
     >('initialize', {
-      clientInfo: { name: 'monad', version: '0.x' },
+      clientInfo: { name: 'elanous', version: '0.x' },
       capabilities: { experimentalApi: true },
     });
     this.initialized = true;
@@ -1018,7 +1018,7 @@ export class CodexAppServerAgent {
 
   /** Emits an immutable copy so observers cannot mutate the backend's static declaration. */
   private advertiseCapabilities(): void {
-    const snapshot: MonadCapabilities = {
+    const snapshot: ElanousCapabilities = {
       ...CODEX_APP_SERVER_CAPS,
       prompt: { ...CODEX_APP_SERVER_CAPS.prompt },
       fileOps: { ...CODEX_APP_SERVER_CAPS.fileOps },
@@ -1319,7 +1319,7 @@ export class CodexAppServerAgent {
       this.sessionModels.set(sessionId, resp.model);
     }
     // 3.B.2b · persist to disk index so loadSession can round-trip
-    // after a monad restart. cwd defaults to the agent's construction
+    // after a elanous restart. cwd defaults to the agent's construction
     // cwd; thread/resume can override later.
     this.threadIndex.put(sessionId as string, {
       threadId,
@@ -1585,7 +1585,7 @@ export class CodexAppServerAgent {
   }
 
   /** Register a listener for codex goal-status changes. The callback
-   *  receives the mapped monad mission status + the raw goal so a mission
+   *  receives the mapped elanous mission status + the raw goal so a mission
    *  layer can update its registry / surface budget. `goal` is null on
    *  `thread/goal/cleared`. Returns an unsubscribe fn. */
   onGoalUpdate(fn: CodexGoalUpdateListener): () => void {
@@ -1674,11 +1674,11 @@ export class CodexAppServerAgent {
     this.elicitationHandler = handler ?? defaultElicitationHandler;
   }
 
-  /** M3 (2026-04-28) · Swap the monad/ui envelope handler at runtime.
+  /** M3 (2026-04-28) · Swap the elanous/ui envelope handler at runtime.
    *  Pass `undefined` to disable interception (envelope-shaped text
    *  passes through to the client unchanged). */
-  setMonadUiHandler(handler?: CodexMonadUiHandler): void {
-    this.monadUiHandler = handler ?? null;
+  setElanousUiHandler(handler?: CodexElanousUiHandler): void {
+    this.elanousUiHandler = handler ?? null;
   }
 
   // ─── M4' · per-session MCP policy public API ─────────────────────
@@ -1807,7 +1807,7 @@ export class CodexAppServerAgent {
       return this.routeUserInput(params);
     });
 
-    // 3.B.2c · MCP bridge. Codex invokes monad-hosted MCP tools via
+    // 3.B.2c · MCP bridge. Codex invokes elanous-hosted MCP tools via
     // `mcpServer/tool/call`; we route to the injected handler so
     // different agent-manager configurations (default stub vs real
     // registry) can share the agent class.
@@ -1933,7 +1933,7 @@ export class CodexAppServerAgent {
       }
     });
 
-    // 3.B.2c · Elicitation. Codex → monad-ui prompt round-trip.
+    // 3.B.2c · Elicitation. Codex → elanous-ui prompt round-trip.
     client.setServerRequestHandler(MCP_BRIDGE_METHODS.elicitation, async (params) => {
       try {
         const p = (params ?? {}) as {
@@ -1949,7 +1949,7 @@ export class CodexAppServerAgent {
           schema: p.requestedSchema,
         });
         // ⛔⭐ **기본 핸들러는 «전부 거절»한다**(`defaultElicitationHandler`) 그리고
-        //    🧪 `setElicitationHandler` 의 프로덕션 호출자가 «0» 이다 ⇒ 지금 monad 는
+        //    🧪 `setElicitationHandler` 의 프로덕션 호출자가 «0» 이다 ⇒ 지금 elanous 는
         //    ***구조적으로 모든 elicitation 을 거절한다.*** 그런데 그것이 «결정»이 아니라
         //    «기본값»이었고 «관측이 없어서», 「아무도 안 묻는다」와 「물었는데 거절했다」를
         //    구분할 수가 없었다. ⇒ 그 둘을 가르는 값을 남긴다.
@@ -1957,7 +1957,7 @@ export class CodexAppServerAgent {
         // ⛔⭐⭐ **여기서 가르는 축은 「params 인가」가 아니라 「«식별자»인가 «내용»인가」다.**
         //    ✅ 싣는다  — `server`·`threadId`. 둘 다 «라우팅 식별자»다.
         //       ***이것들이 없으면 관측이 무의미하다*** — 「어느 서버가 물었나」를 못 답한다.
-        //       `server` 는 우리 config 의 서버 id 이고 `threadId` 는 monad 내부 대화 id 다.
+        //       `server` 는 우리 config 의 서버 id 이고 `threadId` 는 elanous 내부 대화 id 다.
         //    ⛔ 안 싣는다 — `message` 본문 · 스키마의 값/기본값/설명. ***사용자 내용***이고
         //       url 모드 elicitation 은 사양상 «인증·결제»를 나른다
         //       ("Servers MUST use URL mode for interactions involving such sensitive information").
@@ -2020,7 +2020,7 @@ export class CodexAppServerAgent {
     // Goal lifecycle (follow-up B) — codex tracks the thread's persisted
     // goal (progress · token/time budget · status). Route updates to the
     // agent's onGoalUpdate hook so a mission layer can reflect codex's
-    // native goal status back onto the monad mission.
+    // native goal status back onto the elanous mission.
     client.onNotification('thread/goal/updated', (params) => {
       this.handleGoalNotification(params, false);
     });
@@ -2067,26 +2067,26 @@ export class CodexAppServerAgent {
       return;
     }
     for (const u of updates) {
-      // M3 — `monad/ui/*` envelope interception. agent_thought_chunk
+      // M3 — `elanous/ui/*` envelope interception. agent_thought_chunk
       // updates whose text parses as a valid envelope are forwarded to
       // the registered host handler and SUPPRESSED from the downstream
       // onUpdate. Extension-unaware peers + handler-absent runs see
       // envelope text pass through verbatim (parity with native, where
       // the dashboard owns parsing).
-      if (this.monadUiHandler && this.isThoughtChunk(u)) {
+      if (this.elanousUiHandler && this.isThoughtChunk(u)) {
         const text = this.extractChunkText(u);
         if (text) {
-          const parsed = parseMonadUiEnvelope(text);
+          const parsed = parseElanousUiEnvelope(text);
           if (parsed) {
             try {
-              this.monadUiHandler({
+              this.elanousUiHandler({
                 sessionId: sessionId as string,
                 method: parsed.method,
                 payload: parsed.payload,
               });
             } catch (err) {
               this.log(
-                `monadUiHandler throw: ${err instanceof Error ? err.message : String(err)}`,
+                `elanousUiHandler throw: ${err instanceof Error ? err.message : String(err)}`,
               );
             }
             // skip downstream onUpdate — the envelope text shouldn't
@@ -2219,7 +2219,7 @@ export class CodexAppServerAgent {
    *  (which the surface HITL QuestionChannel backs) and maps the answer
    *  back to codex's `{answers: {[id]: {answers: []}}}` shape. When no
    *  approver is wired, auto-picks each question's first option (or empty)
-   *  so codex isn't blocked — matching monad's unattended-default posture. */
+   *  so codex isn't blocked — matching elanous's unattended-default posture. */
   private async routeUserInput(params: unknown): Promise<unknown> {
     const p = (params ?? {}) as { threadId?: unknown; questions?: unknown };
     const threadId = typeof p.threadId === 'string' ? p.threadId : undefined;
@@ -2244,7 +2244,7 @@ export class CodexAppServerAgent {
   }
 
   private mintSessionId(): SessionId {
-    // MSS M1.1 Phase B1 · returns a Tier 2 MonadUri (`session/<ULID>`)
+    // MSS M1.1 Phase B1 · returns a Tier 2 ElanousUri (`session/<ULID>`)
     // branded as `SessionUri`, cross-cast back to the SDK's `SessionId`
     // string-alias at the wire boundary. The legacy
     // `${SESSION_PREFIX}${seq}` shape is retired — the backend

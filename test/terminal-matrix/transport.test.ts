@@ -55,8 +55,8 @@ describe('resolveTransport — tailscale', () => {
     expect(r.args[0]).toBe('ssh');
     expect(r.args[1]).toBe('node-a');
     expect(r.args[2]).toBe('--');
-    expect(r.env.MONAD_REMOTE_TRANSPORT).toBe('tailscale');
-    expect(r.env.MONAD_REMOTE_HOST).toBe('node-a');
+    expect(r.env.ELANOUS_REMOTE_TRANSPORT).toBe('tailscale');
+    expect(r.env.ELANOUS_REMOTE_HOST).toBe('node-a');
   });
 
   test('user@host formatting', () => {
@@ -98,7 +98,7 @@ describe('resolveTransport — ssh', () => {
     expect(r.args).toContain('2222');
     expect(r.args).toContain('root@node-b');
     expect(r.args).toContain('-t');
-    expect(r.env.MONAD_REMOTE_TRANSPORT).toBe('ssh');
+    expect(r.env.ELANOUS_REMOTE_TRANSPORT).toBe('ssh');
   });
 
   test('ssh without port omits -p', () => {

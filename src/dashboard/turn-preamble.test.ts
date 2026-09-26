@@ -1,5 +1,5 @@
-// TUI 턴 preamble — monad 자기접근 규율 주입 계약 (P3 · 2026-07-13).
-// 텔레그램(makeMonadAgentRunTurn)과 단일 출처(agent/self-ambient.ts)의 규율이 TUI 채팅
+// TUI 턴 preamble — elanous 자기접근 규율 주입 계약 (P3 · 2026-07-13).
+// 텔레그램(makeElanousAgentRunTurn)과 단일 출처(agent/self-ambient.ts)의 규율이 TUI 채팅
 // systemPrompt 에도 실리는지 — 3박자(툴·기억·규율) 중 '규율' 축의 표면 패리티.
 import { test, expect, describe } from 'bun:test';
 import { mkdtempSync } from 'node:fs';
@@ -22,7 +22,7 @@ describe('buildDashboardTurnPreamble — 제어 표면', () => {
   test('builds the exact controller system-message paragraph', () => {
     expect(buildControllerSystemMessage('pty:pty_abcd1234', 'pty,inbox')).toEqual({
       role: 'system',
-      content: '[제어 표면] 이 모나드 세션은 밖의 제어자 pty:pty_abcd1234 가 몰고 있다. 열린 관: pty,inbox. 감독 메모로 들어온 지시는 이 제어자의 지시다. PTY 로 들어오는 입력도 사람이 아니라 이 제어자가 넣은 것일 수 있다.',
+      content: '[제어 표면] 이 엘라누스 세션은 밖의 제어자 pty:pty_abcd1234 가 몰고 있다. 열린 관: pty,inbox. 감독 메모로 들어온 지시는 이 제어자의 지시다. PTY 로 들어오는 입력도 사람이 아니라 이 제어자가 넣은 것일 수 있다.',
     });
   });
 
@@ -50,10 +50,10 @@ describe('buildDashboardTurnPreamble — 제어 표면', () => {
   });
 
   test('falls back to the controller environment when no control environment is injected', () => {
-    const controller = process.env.MONAD_CONTROLLER;
-    const channels = process.env.MONAD_CONTROL_CHANNELS;
-    process.env.MONAD_CONTROLLER = 'harness:run-43b0457ad01bebc1';
-    process.env.MONAD_CONTROL_CHANNELS = 'pty,inbox';
+    const controller = process.env.ELANOUS_CONTROLLER;
+    const channels = process.env.ELANOUS_CONTROL_CHANNELS;
+    process.env.ELANOUS_CONTROLLER = 'harness:run-43b0457ad01bebc1';
+    process.env.ELANOUS_CONTROL_CHANNELS = 'pty,inbox';
     try {
       const messages = build();
       const controllerMessage = messages.find((message) => String(message.content).includes('[제어 표면]'));
@@ -61,25 +61,25 @@ describe('buildDashboardTurnPreamble — 제어 표면', () => {
       expect(controllerMessage?.content).toContain('harness:run-43b0457ad01bebc1');
       expect(controllerMessage?.content).toContain('pty,inbox');
     } finally {
-      if (controller === undefined) delete process.env.MONAD_CONTROLLER;
-      else process.env.MONAD_CONTROLLER = controller;
-      if (channels === undefined) delete process.env.MONAD_CONTROL_CHANNELS;
-      else process.env.MONAD_CONTROL_CHANNELS = channels;
+      if (controller === undefined) delete process.env.ELANOUS_CONTROLLER;
+      else process.env.ELANOUS_CONTROLLER = controller;
+      if (channels === undefined) delete process.env.ELANOUS_CONTROL_CHANNELS;
+      else process.env.ELANOUS_CONTROL_CHANNELS = channels;
     }
   });
 
   test('without a controller, the preamble preserves its output', () => {
-    const controller = process.env.MONAD_CONTROLLER;
-    const channels = process.env.MONAD_CONTROL_CHANNELS;
-    delete process.env.MONAD_CONTROLLER;
-    delete process.env.MONAD_CONTROL_CHANNELS;
+    const controller = process.env.ELANOUS_CONTROLLER;
+    const channels = process.env.ELANOUS_CONTROL_CHANNELS;
+    delete process.env.ELANOUS_CONTROLLER;
+    delete process.env.ELANOUS_CONTROL_CHANNELS;
     try {
       expect(build()).toEqual(build({}));
     } finally {
-      if (controller === undefined) delete process.env.MONAD_CONTROLLER;
-      else process.env.MONAD_CONTROLLER = controller;
-      if (channels === undefined) delete process.env.MONAD_CONTROL_CHANNELS;
-      else process.env.MONAD_CONTROL_CHANNELS = channels;
+      if (controller === undefined) delete process.env.ELANOUS_CONTROLLER;
+      else process.env.ELANOUS_CONTROLLER = controller;
+      if (channels === undefined) delete process.env.ELANOUS_CONTROL_CHANNELS;
+      else process.env.ELANOUS_CONTROL_CHANNELS = channels;
     }
   });
 });
@@ -109,14 +109,14 @@ describe('buildDashboardTurnPreamble — 자기접근 규율', () => {
     globalTaskNotificationQueue.clear();
   });
 
-  test('preamble 에 [monad 자기접근 규율] system 메시지가 포함된다', () => {
+  test('preamble 에 [elanous 자기접근 규율] system 메시지가 포함된다', () => {
     const cwd = mkdtempSync(join(tmpdir(), 'preamble-'));
     const msgs = buildDashboardTurnPreamble({ userText: 'P2 왜 실패했어?', cwd, userConfig: fakeConfig });
     const hasDiscipline = msgs.some((m) => m.role === 'system'
-      && typeof m.content === 'string' && m.content.includes('[monad 자기접근 규율]'));
+      && typeof m.content === 'string' && m.content.includes('[elanous 자기접근 규율]'));
     expect(hasDiscipline).toBe(true);
     // 규율이 ops_status 사용을 지시하는지(진단 디시플린) — 문구 계약.
-    const discipline = msgs.find((m) => typeof m.content === 'string' && m.content.includes('[monad 자기접근 규율]'));
+    const discipline = msgs.find((m) => typeof m.content === 'string' && m.content.includes('[elanous 자기접근 규율]'));
     expect(String(discipline!.content)).toContain('ops_status');
   });
 
@@ -133,7 +133,7 @@ describe('buildDashboardTurnPreamble — 자기접근 규율', () => {
     for (const text of [firstText, secondText]) {
       expect(text).toContain('logs_query');
       expect(text).toContain('debug.log');
-      expect(text).toContain('monad self implement');
+      expect(text).toContain('elanous self implement');
       expect(text).toContain('harness run');
       expect(text).toContain('auto-review');
     }

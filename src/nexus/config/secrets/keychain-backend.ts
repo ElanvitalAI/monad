@@ -1,9 +1,9 @@
 // NEXUS · macOS Keychain backend (Phase N-3.5 PR υ)
 //
 // Uses the `security` CLI (preinstalled on macOS) to store secrets
-// under account `monad` and service name = secret id. List support is
+// under account `elanous` and service name = secret id. List support is
 // best-effort: `security` doesn't expose a clean filter, so we maintain
-// a sidecar JSON index of known ids (`~/.monad/secrets-keychain-index.json`,
+// a sidecar JSON index of known ids (`~/.elanous/secrets-keychain-index.json`,
 // 0o600). Lookups go straight to keychain (sidecar is metadata-only).
 //
 // **Linux/Windows**: isAvailable() returns ok=false with a clear reason.
@@ -13,9 +13,9 @@ import { dirname } from 'node:path';
 import { join as joinPath } from 'node:path';
 import type { SecretBackend, SecretBackendAvailability } from './types.js';
 import { runCli, type RunCli } from './cli-helper.js';
-import { monadConfigDir } from '../paths.js';
+import { elanousConfigDir } from '../paths.js';
 
-const ACCOUNT = 'monad';
+const ACCOUNT = 'elanous';
 
 export interface KeychainBackendOpts {
   /** Test seam — defaults to the real spawn-based runCli. */
@@ -28,7 +28,7 @@ export interface KeychainBackendOpts {
 
 export function createKeychainBackend(opts: KeychainBackendOpts = {}): SecretBackend {
   const cli = opts.runCliImpl ?? runCli;
-  const indexPath = opts.indexPath ?? joinPath(monadConfigDir(), 'secrets-keychain-index.json');
+  const indexPath = opts.indexPath ?? joinPath(elanousConfigDir(), 'secrets-keychain-index.json');
   const platform = opts.platformOverride ?? process.platform;
 
   function readIndex(): string[] {
@@ -89,6 +89,6 @@ export function createKeychainBackend(opts: KeychainBackendOpts = {}): SecretBac
 
 /** Test seam — drop the index file. */
 export function deleteKeychainIndex(opts: { indexPath?: string } = {}): void {
-  const path = opts.indexPath ?? joinPath(monadConfigDir(), 'secrets-keychain-index.json');
+  const path = opts.indexPath ?? joinPath(elanousConfigDir(), 'secrets-keychain-index.json');
   try { if (existsSync(path)) unlinkSync(path); } catch { /* ignore */ }
 }

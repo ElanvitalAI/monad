@@ -5,7 +5,7 @@
 //
 //   MCP 서버 목록·인가 도구·OAuth 자격증명은 데몬 «기동 시 한 번» 읽힌다
 //   (`src/nexus/index.ts` 의 `registerMcpClients({ servers })`). 그래서 config 에
-//   서버를 «더해도», `monad mcp login` 으로 자격증명을 «새로 받아도», 이미 뜬
+//   서버를 «더해도», `elanous mcp login` 으로 자격증명을 «새로 받아도», 이미 뜬
 //   데몬은 그것을 영영 모른다 — 실측 2026-09-10: krea 를 config 에 더한 시각이
 //   데몬 기동보다 22초 늦었고, 그 데몬의 krea 도구 수는 0 이었다.
 //

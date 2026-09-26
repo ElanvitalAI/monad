@@ -1,5 +1,5 @@
 // S1 (2026-07-12) — discord channel↔session binding primitives
-// (텔레그램 binding 동형). MONAD_SESSION_ROOT tmp 격리 필수 (실데이터
+// (텔레그램 binding 동형). ELANOUS_SESSION_ROOT tmp 격리 필수 (실데이터
 // 오염 금지 규율).
 
 import { afterEach, beforeEach, describe, expect, test } from 'bun:test';
@@ -21,11 +21,11 @@ import type { UserConfig } from '../src/user-config.js';
 let root: string;
 beforeEach(() => {
   root = mkdtempSync(join(tmpdir(), 'dc-binding-'));
-  process.env.MONAD_SESSION_ROOT = join(root, 'sessions');
+  process.env.ELANOUS_SESSION_ROOT = join(root, 'sessions');
 });
 afterEach(() => {
   rmSync(root, { recursive: true, force: true });
-  delete process.env.MONAD_SESSION_ROOT;
+  delete process.env.ELANOUS_SESSION_ROOT;
 });
 
 describe('discord binding primitives', () => {
@@ -162,14 +162,14 @@ describe('cross-surface attach (S4)', () => {
   test('PWA-origin daemon session can be bound to a discord channel and a telegram chat', async () => {
     const { adoptSession, appendMessage, attachTelegramBinding, findSessionByTelegramChat } = await import('../src/session/index.js');
     // R3 미러가 만드는 모양 그대로: 데몬 민팅 id + origin pwa.
-    const meta = adoptSession('monad-session-77', { origin: 'pwa', title: 'PWA 대화' });
+    const meta = adoptSession('elanous-session-77', { origin: 'pwa', title: 'PWA 대화' });
     appendMessage(meta.id, { role: 'user', content: 'PWA에서 시작한 질문', ts: new Date().toISOString() });
     // discord 채널로 attach
     attachDiscordBinding(meta.id, 'CH-X');
-    expect(findSessionByDiscordChannel('CH-X')?.id).toBe('monad-session-77');
+    expect(findSessionByDiscordChannel('CH-X')?.id).toBe('elanous-session-77');
     // 같은 세션을 telegram chat에도 attach (동시 바인딩 = 핸드오프 케이스)
     attachTelegramBinding(meta.id, 123456);
-    expect(findSessionByTelegramChat(123456)?.id).toBe('monad-session-77');
+    expect(findSessionByTelegramChat(123456)?.id).toBe('elanous-session-77');
   });
 
   test('discord-origin session resolves for telegram attach by prefix (shared index)', async () => {

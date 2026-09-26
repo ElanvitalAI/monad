@@ -208,7 +208,7 @@ const GEMINI: TierMap = {
 //
 // ── 아래는 종전 근거 (5.6 계열) ───────────────────────────────────────────────
 // GPT-5.6 계열은 effort-ceiling 축의 3 변형(luna→terra→sol·크기/추론 상한 순·2026-07-09
-// 출시). monad-self 튜닝 매트릭스(2026-07-11) 실측: terra=코딩 최적(3 effort 전부 성공·최속·
+// 출시). elanous-self 튜닝 매트릭스(2026-07-11) 실측: terra=코딩 최적(3 effort 전부 성공·최속·
 // 안정)·sol=장기추론(느림·코딩엔 과잉조사)·luna=빠름/저렴.
 // ⊕ 2026-09-23 정정: 이 저장소가 가진 5.6 «가격»이 공식과 달랐다(terra 2.5/15 → 실제 2/12 ·
 //   sol 5/30 → 실제 4/20). 카탈로그는 고쳤다. 사다리 배치는 그 정정으로 안 바뀐다.
@@ -264,7 +264,7 @@ const CODEX: TierMap = {
 //
 // ⭐ 그래서 이 표의 계약을 바꾼다 — ***「어느 모델이 옳은가」가 아니라 「지금 로딩된 것」***이다.
 //   ⛔ 이름을 박으면 늙는다. 그러나 사다리는 값을 가져야 하므로, 값을 두되
-//     ***`monad local models --check` 로 라이브 대조***하게 한다(scripts/check-local-tier-models.ts).
+//     ***`elanous local models --check` 로 라이브 대조***하게 한다(scripts/check-local-tier-models.ts).
 //   📏 2026-08-18 기준 실물: qwen3.8-27b-mlx (256k · MLX · Apple Silicon 최적)
 // ✅⭐ 2026-09-23 (대표 ⒜ 결정) — ***값에 `local:` 접두를 붙였다.***
 //   🩸 종전엔 `qwen3.8-27b-mlx` 였고, 계열 추론이 «이름»으로 하므로 `startsWith('qwen')` 에 걸려
@@ -404,7 +404,7 @@ const GROK: TierMap = {
 //     better   qwen3.8-max-0902   2/6        1M
 //     best     kimi-k3            3/15       1.05M
 //   ⇒ 가격순이면서 세 벤더를 «다» 덮는다. ⛔ 가격·창은 늙는다 — 카탈로그(`openrouter/*` 폴드)가 canonical.
-//   `shipping` = «생성된다»(배선 계약). 도구 호출·도구 루프·monad 실제 프롬프트 3/3 실측(리서치 문서 §9).
+//   `shipping` = «생성된다»(배선 계약). 도구 호출·도구 루프·elanous 실제 프롬프트 3/3 실측(리서치 문서 §9).
 //   ⚠️ `loaded` 의 reasoningLevel 은 wire 로 «안» 간다 — 측정상 OpenRouter `reasoning.effort` 를 보내면
 //      kimi·glm 이 «덜» 생각한다(필드 없음이 최대). 그래서 옮기지 않았다 — 리서치 문서 §9.
 const OPENROUTER: TierMap = {

@@ -11,7 +11,7 @@
 // 5.2 adds slash/keys, 5.3 adds the parallel runner, 5.4 the llmTools.
 
 import type {
-  MonadPlugin, PluginContext, PluginLayoutCtx,
+  ElanousPlugin, PluginContext, PluginLayoutCtx,
   SlashCommand, Keybinding, LLMToolDef,
 } from '../../src/plugins/core/types.js';
 import type { WidgetInstance } from '../../src/widgets/types.js';
@@ -1088,7 +1088,7 @@ const llmTools: LLMToolDef[] = [
 
 // ── Plugin default export ──
 
-const plugin: MonadPlugin<ConsensusTraderState> = {
+const plugin: ElanousPlugin<ConsensusTraderState> = {
   name: 'consensus-trader',
   version: '0.3.0',
   description: 'Multi-persona consensus — pick N experts, pose a question, aggregate stances',

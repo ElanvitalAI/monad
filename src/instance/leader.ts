@@ -4,15 +4,15 @@
 // 곳이 없다**. 전에는 다른 트리가 글로벌이었고 pilot 으로 옮길 때 손으로 여러 축을 맞춰야 했다.
 //
 // 지금 "누가 운영이냐"를 사실상 결정하는 마커가 **셋**이고 서로를 모른다:
-//   1. `bun link` (`~/.bun/bin/monad`) — 사람이 `monad` 칠 때 어느 트리 코드가 도나
-//   2. launchd `com.monad.nexus` plist  — 부팅 시 어느 트리 코드가 데몬이 되나
+//   1. `bun link` (`~/.bun/bin/elanous`) — 사람이 `elanous` 칠 때 어느 트리 코드가 도나
+//   2. launchd `com.elanous.nexus` plist  — 부팅 시 어느 트리 코드가 데몬이 되나
 //   3. 31415 LISTEN 실프로세스           — 지금 실제로 누가 잡고 있나
 //
-// ⭐ **권위는 파일 하나(`~/.monad/leader.json`), 위 셋은 관측 축**이다. 이유:
+// ⭐ **권위는 파일 하나(`~/.elanous/leader.json`), 위 셋은 관측 축**이다. 이유:
 //   - 리졸버가 모듈 초기화 시점(어떤 스토어보다 먼저) 읽어야 한다 → DB 는 부트스트랩 순서 위험
 //   - **데몬이 죽었을 때도 답이 있어야 한다** — 리더를 제일 알고 싶은 순간이 그때다
 //   - `cat` 으로 보이고 손으로 고칠 수 있어야 한다 · 쓰기는 승격 때 한 번뿐
-//   - 운영은 트리의 속성이 아니라 **머신의 속성**(`~/.monad` 하나·31415 하나·launchd 하나).
+//   - 운영은 트리의 속성이 아니라 **머신의 속성**(`~/.elanous` 하나·31415 하나·launchd 하나).
 //     권위가 그 싱글턴과 같은 곳에 있으면 **두 리더가 구조적으로 불가능**하다. 레포 안에 두면
 //     git 이 5개 체크아웃에 복제하거나(추적 시) 각자 따로 놀아(무시 시) 중재자가 없다.
 //
@@ -46,7 +46,7 @@ export interface LeaderRecord {
 
 /** 권위 파일 경로 — 항상 prod 홈. 격리 state-dir 스코프가 **아니다**(머신 싱글턴이므로). */
 export function leaderFilePath(): string {
-  return join(homedir(), '.monad', 'leader.json');
+  return join(homedir(), '.elanous', 'leader.json');
 }
 
 /** 경로 정규화 — 심볼릭 링크·후행 슬래시 차이로 트리가 달라 보이는 것을 막는다. */
@@ -76,9 +76,9 @@ export function writeLeader(rec: LeaderRecord): void {
 
 // ── 거부 기록 (P4 완화 ② · DESIGN §6) ────────────────────────────────────────
 //
-// ⚠️ launchd `com.monad.nexus` 는 KeepAlive 로 재기동한다. plist 와 `leader.json` 이 어긋난 채
+// ⚠️ launchd `com.elanous.nexus` 는 KeepAlive 로 재기동한다. plist 와 `leader.json` 이 어긋난 채
 // 거부하면 **운영 데몬이 크래시 루프로 내려앉는데, 사람은 이유를 모른다.** 거부할 때마다 사유를
-// 파일로 남겨 `monad leader status` 가 즉시 답할 수 있게 한다("왜 안 뜨나"에 대한 유일한 단서).
+// 파일로 남겨 `elanous leader status` 가 즉시 답할 수 있게 한다("왜 안 뜨나"에 대한 유일한 단서).
 
 /** 거부 기록의 형태 — 누가·어디서·왜 거부됐나. 진단에 필요한 최소치. */
 export interface LeaderRefusalRecord {
@@ -87,15 +87,15 @@ export interface LeaderRefusalRecord {
   selfTree: string;
   /** 그 시점의 권위 트리. */
   leaderTree: string;
-  /** 해석된 인스턴스 뿌리(운영 싱글턴이었으므로 보통 ~/.monad). */
+  /** 해석된 인스턴스 뿌리(운영 싱글턴이었으므로 보통 ~/.elanous). */
   root: string;
   depth: number;
   why: string;
 }
 
-/** 거부 기록 경로 — 권위와 같은 머신 싱글턴 자리(`~/.monad`). */
+/** 거부 기록 경로 — 권위와 같은 머신 싱글턴 자리(`~/.elanous`). */
 export function leaderRefusalFilePath(): string {
-  return join(homedir(), '.monad', 'leader-refusal.json');
+  return join(homedir(), '.elanous', 'leader-refusal.json');
 }
 
 /** 최근 거부 읽기. 없거나 깨졌으면 null(진단용이라 절대 던지지 않는다).
@@ -149,7 +149,7 @@ export interface LeaderAxes {
   running: string | null;
   /** 이 프로세스의 코드가 있는 트리. */
   self: string;
-  /** 이 프로세스의 코드가 «설치본»(`…/node_modules/monadagent/…` · 위로 git 트리 없음)인가.
+  /** 이 프로세스의 코드가 «설치본»(`…/node_modules/elanous/…` · 위로 git 트리 없음)인가.
    *  설치본은 운영 코드다 — cwd 가 어느 워크트리든 리더와 같게 본다(아래 `isLeaderTree`). */
   selfInstalled?: boolean;
   /** 트리가 아니라 «설치본»으로 풀린 축(축 이름 → 설치본 뿌리). 이 축들은 `unresolved` 도 `drift` 도 아니다 — 운영 코드다. */
@@ -163,7 +163,7 @@ export interface LeaderAxes {
   unresolved: string[];
 }
 
-/** `bin/monad.mjs` 같은 실행 경로 → 레포 루트. `<tree>/bin/monad.mjs` 관례를 벗기고
+/** `bin/elanous.mjs` 같은 실행 경로 → 레포 루트. `<tree>/bin/elanous.mjs` 관례를 벗기고
  *  위로 걸어 `.git` 을 찾는다(worktree 의 `.git` 파일도 잡힘). */
 export function treeFromScriptPath(scriptPath: string): string | null {
   let dir = dirname(normalizeTree(scriptPath));
@@ -176,7 +176,7 @@ export function treeFromScriptPath(scriptPath: string): string | null {
   return null;
 }
 
-/** 설치본 사본의 뿌리(`…/node_modules/monadagent`) — 경로가 설치본이고 위로 git 트리가 없을 때만. 아니면 null.
+/** 설치본 사본의 뿌리(`…/node_modules/elanous`) — 경로가 설치본이고 위로 git 트리가 없을 때만. 아니면 null.
  *  T6(2026-09-24): 전역 링크·launchd·데몬이 설치본으로 옮긴 뒤 이 축들이 «해석 불가»로 경고했다 — 트리가 없는 게
  *  아니라 «설치본»이라는 값이다. */
 export function installedCopyRoot(scriptPath: string): string | null {
@@ -189,35 +189,35 @@ export function installedCopyRoot(scriptPath: string): string | null {
 }
 
 
-/** `~/.bun/bin/monad` 심볼릭 링크가 가리키는 실제 스크립트 경로. */
-export function resolveBunLinkScript(binPath = join(homedir(), '.bun', 'bin', 'monad')): string | null {
+/** `~/.bun/bin/elanous` 심볼릭 링크가 가리키는 실제 스크립트 경로. */
+export function resolveBunLinkScript(binPath = join(homedir(), '.bun', 'bin', 'elanous')): string | null {
   try {
     if (!existsSync(binPath)) return null;
     return realpathSync(binPath);
   } catch { return null; }
 }
 
-/** `~/.bun/bin/monad` 심볼릭 링크 → 트리. */
-export function resolveBunLinkTree(binPath = join(homedir(), '.bun', 'bin', 'monad')): string | null {
+/** `~/.bun/bin/elanous` 심볼릭 링크 → 트리. */
+export function resolveBunLinkTree(binPath = join(homedir(), '.bun', 'bin', 'elanous')): string | null {
   const script = resolveBunLinkScript(binPath);
   return script ? treeFromScriptPath(script) : null;
 }
 
-/** launchd plist 의 ProgramArguments 에 있는 bin/monad.mjs 경로. */
+/** launchd plist 의 ProgramArguments 에 있는 bin/elanous.mjs 경로. */
 export function resolveLaunchdScript(
-  plistPath = join(homedir(), 'Library', 'LaunchAgents', 'com.monad.nexus.plist'),
+  plistPath = join(homedir(), 'Library', 'LaunchAgents', 'com.elanous.nexus.plist'),
 ): string | null {
   try {
     if (!existsSync(plistPath)) return null;
     const xml = readFileSync(plistPath, 'utf-8');
-    const m = /<string>([^<]*\/bin\/monad\.mjs)<\/string>/.exec(xml);
+    const m = /<string>([^<]*\/bin\/elanous\.mjs)<\/string>/.exec(xml);
     return m?.[1] ?? null;
   } catch { return null; }
 }
 
-/** launchd plist 의 ProgramArguments 에서 bin/monad.mjs 경로를 찾아 트리로 변환. */
+/** launchd plist 의 ProgramArguments 에서 bin/elanous.mjs 경로를 찾아 트리로 변환. */
 export function resolveLaunchdTree(
-  plistPath = join(homedir(), 'Library', 'LaunchAgents', 'com.monad.nexus.plist'),
+  plistPath = join(homedir(), 'Library', 'LaunchAgents', 'com.elanous.nexus.plist'),
 ): string | null {
   const script = resolveLaunchdScript(plistPath);
   return script ? treeFromScriptPath(script) : null;
@@ -230,7 +230,7 @@ export function resolveRunningTree(port = 31415): string | null {
   return script ? treeFromScriptPath(script) : null;
 }
 
-/** 31415 를 잡고 있는 실프로세스의 bin/monad.mjs 경로(lsof · status 전용). */
+/** 31415 를 잡고 있는 실프로세스의 bin/elanous.mjs 경로(lsof · status 전용). */
 export function resolveRunningScript(port = 31415): string | null {
   try {
     const { execFileSync } = require('node:child_process') as typeof import('node:child_process');
@@ -238,15 +238,15 @@ export function resolveRunningScript(port = 31415): string | null {
       .split('\n').map((l) => l.trim()).filter(Boolean);
     if (pids.length === 0) return null;
     const cmd = execFileSync('ps', ['-o', 'command=', '-p', pids[0]!], { encoding: 'utf-8', timeout: 3000 });
-    const m = /(\S*\/bin\/monad\.mjs)/.exec(cmd);
+    const m = /(\S*\/bin\/elanous\.mjs)/.exec(cmd);
     return m?.[1] ?? null;
   } catch { return null; }
 }
 
-/** 실행 스크립트가 «설치본» 안에 있나 — `…/node_modules/monadagent/…` 이고 위로 git 트리가 없다.
- *  🩸 2026-09-24 실측: 설치본 `monad where` 를 비-리더 워크트리 안에서 부르면 `resolveSelfTree` 가
+/** 실행 스크립트가 «설치본» 안에 있나 — `…/node_modules/elanous/…` 이고 위로 git 트리가 없다.
+ *  🩸 2026-09-24 실측: 설치본 `elanous where` 를 비-리더 워크트리 안에서 부르면 `resolveSelfTree` 가
  *     (스크립트 위에 `.git` 이 없어) cwd 의 트리로 떨어져 «테스트 우주»로 풀렸다. pilot 링크는 같은 자리에서 운영.
- *     ⇒ 전역 `monad` 를 설치본으로 바꾸면 워크트리에서 일하는 세션의 `monad logs` 가 조용히 테스트를 읽는다. */
+ *     ⇒ 전역 `elanous` 를 설치본으로 바꾸면 워크트리에서 일하는 세션의 `elanous logs` 가 조용히 테스트를 읽는다. */
 export function isInstalledCopyScript(argv1 = process.argv[1] ?? ''): boolean {
   if (!argv1) return false;
   try {
@@ -325,7 +325,7 @@ export function isLeaderTree(axes: LeaderAxes = observeLeaderAxes()): boolean | 
  *  추론 우선순위 = launchd(부팅 시 실제로 운영을 접수하는 축) → bun link. 둘 다 없으면 포기(null).
  *
  *  ⚠️ **이미 파일이 있으면 절대 덮어쓰지 않는다** — 사람의 claim 이 항상 이긴다.
- *  ⚠️ **리더 트리 본인만 물질화한다** — `leader.json` 은 prod 홈(`~/.monad`)에 산다. 비-리더 트리
+ *  ⚠️ **리더 트리 본인만 물질화한다** — `leader.json` 은 prod 홈(`~/.elanous`)에 산다. 비-리더 트리
  *     (axon 등 테스트 체크아웃)가 부팅마다 운영 스토어에 쓰는 것은 "운영 무접촉" 규율 위반이다.
  *     추론 결과가 자기 자신일 때만 쓰고, 아니면 **관측만** 남긴다(표시는 추론값으로 가능). */
 export function bootstrapLeader(
@@ -333,7 +333,7 @@ export function bootstrapLeader(
   deps: { axes?: LeaderAxes; write?: (r: LeaderRecord) => void; read?: () => LeaderRecord | null } = {},
 ): LeaderRecord | null {
   // ⚠️ read 도 주입 가능해야 한다 — 안 그러면 유닛 테스트가 사용자 머신의 실제
-  //    `~/.monad/leader.json` 을 읽어 결과가 환경에 오염된다(테스트 격리 규율).
+  //    `~/.elanous/leader.json` 을 읽어 결과가 환경에 오염된다(테스트 격리 규율).
   const existing = (deps.read ?? readLeader)();
   if (existing) return existing;
   const axes = deps.axes ?? observeLeaderAxes();
@@ -343,7 +343,7 @@ export function bootstrapLeader(
     return null;
   }
   if (normalizeTree(inferred) !== axes.self) {
-    // 비-리더 트리 — 운영 스토어(~/.monad)에 쓰지 않는다. 관측만.
+    // 비-리더 트리 — 운영 스토어(~/.elanous)에 쓰지 않는다. 관측만.
     debug.log('instance.leader', 'bootstrap-deferred', {
       inferred: normalizeTree(inferred), self: axes.self,
       why: '비-리더 트리에서는 운영 스토어에 권위 파일을 쓰지 않는다(운영 무접촉) — 리더 트리 부팅 시 물질화',
@@ -369,7 +369,7 @@ export function observeLeaderAtBoot(opts: { emit?: 'both' | 'log' | 'stderr'; ax
   const emit = opts.emit ?? 'both';
   // 부팅마다 "이 프로세스가 리더 트리인가"를 남긴다 — P3 트리 파생의 입력이자, 지금은
   // 'axon 에서 돈 명령이 운영을 만졌나'를 사후 조회할 수 있게 하는 관측 축이다.
-  // (`monad logs --category instance.leader`)
+  // (`elanous logs --category instance.leader`)
   if (emit !== 'stderr') {
     try {
       debug.log('instance.leader', 'tree-role', {
@@ -383,7 +383,7 @@ export function observeLeaderAtBoot(opts: { emit?: 'both' | 'log' | 'stderr'; ax
       try {
         debug.log('instance.leader', 'axis-drift', {
           authority: axes.authority, bunLink: axes.bunLink, launchd: axes.launchd, drift: axes.drift,
-          why: '운영 리더 권위(leader.json)와 실제 마커가 어긋남 — `monad leader claim` 으로 세 축을 함께 옮기세요',
+          why: '운영 리더 권위(leader.json)와 실제 마커가 어긋남 — `elanous leader claim` 으로 세 축을 함께 옮기세요',
         });
       } catch { /* 관측 실패가 부팅을 막지 않는다 */ }
     }
@@ -392,7 +392,7 @@ export function observeLeaderAtBoot(opts: { emit?: 'both' | 'log' | 'stderr'; ax
         process.stderr.write(
           `[leader] ⚠️ 운영 리더 드리프트(${axes.drift.join(', ')}) — 권위=${axes.authority}\n`
           + `  bun link: ${axes.bunLink ?? '(없음)'}\n  launchd : ${axes.launchd ?? '(없음)'}\n`
-          + `  → 'monad leader status' 로 확인, 'monad leader claim' 으로 세 축을 함께 이동\n`,
+          + `  → 'elanous leader status' 로 확인, 'elanous leader claim' 으로 세 축을 함께 이동\n`,
         );
       } catch { /* */ }
     }

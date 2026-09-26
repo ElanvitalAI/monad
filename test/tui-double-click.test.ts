@@ -3,11 +3,11 @@
 // The parser should:
 //   - emit `click` on the 1st primary press
 //   - emit `double-click` on the 2nd primary press when it arrives
-//     within MONAD_DOUBLE_CLICK_MS (default 300) at the exact same
+//     within ELANOUS_DOUBLE_CLICK_MS (default 300) at the exact same
 //     (row, col)
 //   - fall back to `click` when the 2nd press lands too late / at
 //     a different cell
-//   - respect MONAD_DOUBLE_CLICK_MS env override
+//   - respect ELANOUS_DOUBLE_CLICK_MS env override
 //   - drop back to a single `click` after a completed pair (no
 //     triple-click cascade)
 
@@ -60,8 +60,8 @@ describe('MD1 — SGR double-click synthesis', () => {
 
   test('2nd press at same cell after threshold → click (not double)', async () => {
     // The real detector uses Date.now(); stash + restore.
-    const origEnv = process.env.MONAD_DOUBLE_CLICK_MS;
-    process.env.MONAD_DOUBLE_CLICK_MS = '50';
+    const origEnv = process.env.ELANOUS_DOUBLE_CLICK_MS;
+    process.env.ELANOUS_DOUBLE_CLICK_MS = '50';
     try {
       __resetDoubleClickState();
       mouseEvent(press(5, 10));
@@ -70,8 +70,8 @@ describe('MD1 — SGR double-click synthesis', () => {
       const ev = mouseEvent(press(5, 10));
       expect(ev?.type).toBe('click');
     } finally {
-      if (origEnv === undefined) delete process.env.MONAD_DOUBLE_CLICK_MS;
-      else process.env.MONAD_DOUBLE_CLICK_MS = origEnv;
+      if (origEnv === undefined) delete process.env.ELANOUS_DOUBLE_CLICK_MS;
+      else process.env.ELANOUS_DOUBLE_CLICK_MS = origEnv;
     }
   });
 
@@ -110,8 +110,8 @@ describe('MD1 — SGR double-click synthesis', () => {
   });
 
   test('env override invalid string falls back to 300', () => {
-    const origEnv = process.env.MONAD_DOUBLE_CLICK_MS;
-    process.env.MONAD_DOUBLE_CLICK_MS = 'not-a-number';
+    const origEnv = process.env.ELANOUS_DOUBLE_CLICK_MS;
+    process.env.ELANOUS_DOUBLE_CLICK_MS = 'not-a-number';
     try {
       __resetDoubleClickState();
       mouseEvent(press(5, 10));
@@ -119,8 +119,8 @@ describe('MD1 — SGR double-click synthesis', () => {
       const ev = mouseEvent(press(5, 10));
       expect(ev?.type).toBe('double-click');
     } finally {
-      if (origEnv === undefined) delete process.env.MONAD_DOUBLE_CLICK_MS;
-      else process.env.MONAD_DOUBLE_CLICK_MS = origEnv;
+      if (origEnv === undefined) delete process.env.ELANOUS_DOUBLE_CLICK_MS;
+      else process.env.ELANOUS_DOUBLE_CLICK_MS = origEnv;
     }
   });
 

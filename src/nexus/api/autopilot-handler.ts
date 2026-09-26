@@ -28,12 +28,12 @@ import {
   type TerminalAgencyConfig,
 } from '../../autopilot/agent-loop.js';
 import { AcpTurnRunner, type LlmTurnRunner } from '../../autopilot/runner.js';
-import { MonadBuiltinTurnRunner } from '../../autopilot/monad-builtin-runner.js';
+import { ElanousBuiltinTurnRunner } from '../../autopilot/elanous-builtin-runner.js';
 import { getAutopilotToolRegistry } from '../../autopilot/tool-registry.js';
 import { composeAutopilotSystemPrompt } from '../../autopilot/system-prompt.js';
 import { parseHeuristicPlan } from '../../autopilot/planner.js';
 
-const MONAD_BUILTIN_BACKEND = 'monad-builtin';
+const ELANOUS_BUILTIN_BACKEND = 'elanous-builtin';
 
 // PLAN-autopilot-terminal-driving-2026-05-20 v2 Phase B (2026-05-20) —
 // active runs registry. handleAutopilotRun registers each run on start +
@@ -44,7 +44,7 @@ const MONAD_BUILTIN_BACKEND = 'monad-builtin';
 // `finally`. POST /v1/autopilot/<runId>/inject after the run ends → 404.
 // Module-level singleton — shared across all handleAutopilotRun
 // invocations within one daemon process. Multi-tenant safety: runId is
-// generated server-side from the session id (random suffix on monad-
+// generated server-side from the session id (random suffix on elanous-
 // builtin · ACP-issued for backend agents) so cross-run collisions are
 // statistically impossible without an explicit attacker forge.
 
@@ -293,9 +293,9 @@ export async function handleAutopilotRun(
         }
       };
 
-      // MB-3 — backend === "monad-builtin" 시 in-process LLM rotation
+      // MB-3 — backend === "elanous-builtin" 시 in-process LLM rotation
       // (`runCoreTurn`) path. ACP CLI sub-process 안 spawn. tool surface
-      // 는 monad 의 native registry (MB-2 helper).
+      // 는 elanous 의 native registry (MB-2 helper).
       let agent: AcpAgent | null = null;
       let callerOwnsAgentLifecycle = false;
       const ownedManager = !acquisitionOpts.createAgent && !acquisitionOpts.agentManager
@@ -305,8 +305,8 @@ export async function handleAutopilotRun(
       let runner: LlmTurnRunner;
       let sid: string;
       try {
-        if (backend === MONAD_BUILTIN_BACKEND) {
-          sid = `monad-builtin-${Date.now().toString(36)}`;
+        if (backend === ELANOUS_BUILTIN_BACKEND) {
+          sid = `elanous-builtin-${Date.now().toString(36)}`;
           const { tools, dispatchTool } = getAutopilotToolRegistry({
             surface: 'tui',
             sessionId: sid,
@@ -317,7 +317,7 @@ export async function handleAutopilotRun(
           const systemPrompt = composeAutopilotSystemPrompt(mission, {
             terminalAgency: !!terminalAgency,
           });
-          runner = new MonadBuiltinTurnRunner({
+          runner = new ElanousBuiltinTurnRunner({
             sessionId: sid,
             tools,
             dispatchTool,
@@ -460,7 +460,7 @@ export async function handleAutopilotInject(
   if (kind !== 'append') return jsonError('kind-not-supported');
   // Try to weave the instruction into the LIVE turn (codex turn/steer).
   // Only backends whose agent supports steer succeed; others (generic
-  // ACP / monad-builtin) return false and we fall back to the queue.
+  // ACP / elanous-builtin) return false and we fall back to the queue.
   let steered = false;
   if (entry.steer) {
     try { steered = await entry.steer(instruction); }

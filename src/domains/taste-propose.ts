@@ -71,7 +71,7 @@ export interface ProposeDeps {
 /** 누적 taste(recurring_topic·intent_tag)에서 창발 테마 점수화(순수 데이터 → 테마). */
 export function scoreThemes(deps: ProposeDeps = {}): TasteTheme[] {
   const kdb = deps.knowledgeDb ?? openKnowledgeDb(knowledgeDbPath());
-  const docs = loadKindVectors(kdb, 'taste', 'monad')
+  const docs = loadKindVectors(kdb, 'taste', 'elanous')
     .filter((d) => d.sector_tags === 'recurring_topic' || d.sector_tags === 'intent_tag');
   if (docs.length < 2) return [];
   // 공간 정합 — 최다 embed_model.
@@ -143,7 +143,7 @@ export function proposeMissions(deps: ProposeDeps = {}): TasteProposal[] {
 export function imprintProposal(p: TasteProposal, deps: { db?: Database; now?: Date } = {}): string {
   const database = deps.db ?? openSurfaceEventsDb(surfaceEventsDbPath());
   return recordEvent(database, {
-    surface: 'cli', direction: 'outbound', kind: 'taste', category: 'taste.propose', domain: 'monad',
+    surface: 'cli', direction: 'outbound', kind: 'taste', category: 'taste.propose', domain: 'elanous',
     text: p.rationale,
     summary: `[제안] ${p.label} (강도 ${p.score.toFixed(2)})`,
     importance: 6,
@@ -160,7 +160,7 @@ export function recordProposalDecision(
   const database = deps.db ?? openSurfaceEventsDb(surfaceEventsDbPath());
   debug.log('taste.propose', `decision.${decision}`, { theme });
   return recordEvent(database, {
-    surface: 'cli', direction: 'inbound', kind: 'taste', category: 'taste.propose', domain: 'monad',
+    surface: 'cli', direction: 'inbound', kind: 'taste', category: 'taste.propose', domain: 'elanous',
     text: `제안 결정: ${theme} → ${decision}`,
     summary: `[결정] ${theme}: ${decision}`,
     importance: decision === 'approve' ? 7 : 4,

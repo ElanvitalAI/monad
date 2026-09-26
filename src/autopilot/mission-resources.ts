@@ -8,7 +8,7 @@
 //   - 태스크: tox_tasks.goal_slug = missionId (TaskStore)
 //   - 크론:   schedule_registry.autopilot_id = missionId (schedules.db)
 //   - PR:     태스크 노트 [SE-PR] → 부가정보(관리 아님·출처만)
-// 삭제/수정은 각 자원의 기존 CRUD 로 라우팅(monad schedule <id> · autopilot/task).
+// 삭제/수정은 각 자원의 기존 CRUD 로 라우팅(elanous schedule <id> · autopilot/task).
 
 import { TaskStore } from '../task-orchestrator/store.js';
 import { openSchedulesDb, listSchedules } from '../domains/schedule-registry.js';
@@ -37,7 +37,7 @@ export interface MissionResourceLedger {
   missionId: string;
   /** 살아있는 자원 — 태스크(tox_tasks). CRUD: autopilot/task. */
   tasks: MissionTaskResource[];
-  /** 살아있는 자원 — 크론(schedule_registry). CRUD: monad schedule <id>. */
+  /** 살아있는 자원 — 크론(schedule_registry). CRUD: elanous schedule <id>. */
   crons: MissionCronResource[];
   /** ★ 살아있는 자원 — 루프 에이전트(loop-agent-registry). 미션의 반복 실행 주체(계약/자율/코디네이터). */
   loopAgents: LoopAgentRecord[];

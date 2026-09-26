@@ -1,6 +1,6 @@
 // H6 P1 Bundle 1 · Central UsageStore.
 //
-// One observable store per monad process · holds current snapshots +
+// One observable store per elanous process · holds current snapshots +
 // errors + lastFetchAt for every registered provider. LLM tools read
 // from here; `/budget` slash reads from here; future widgets subscribe
 // to change events.
@@ -31,9 +31,9 @@ import {
   writeFileSync,
 } from 'node:fs';
 import { join } from 'node:path';
-import { monadStateRoot } from '../autopilot/state-paths.js';
+import { elanousStateRoot } from '../autopilot/state-paths.js';
 import { debug } from '../debug/log.js';
-import { migrateLegacyXdgSubdir } from '../storage/legacy-monad-dir-migrate.js';
+import { migrateLegacyXdgSubdir } from '../storage/legacy-elanous-dir-migrate.js';
 import { ConsecutiveFailureGate } from './failure-gate.js';
 import { BudgetHistoryStore, getBudgetHistoryStore } from './history-store.js';
 import type {
@@ -51,7 +51,7 @@ export interface ProviderFetcher {
 }
 
 export interface UsageStoreOpts {
-  /** Storage root — default `~/.config/monad/budget/`. Tests override
+  /** Storage root — default `~/.config/elanous/budget/`. Tests override
    *  with a tmp dir. */
   readonly storageDir?: string;
   /** Override history store (tests inject a tmp-backed instance). */
@@ -73,12 +73,12 @@ interface PersistedState {
   readonly lastFetchAt: Record<string, number>;
 }
 
-// Phase 1 (PLAN-config-unification-monad-root-2026-05-10):
-//   moved from ~/.config/monad/budget → ~/.monad/budget ·
+// Phase 1 (PLAN-config-unification-elanous-root-2026-05-10):
+//   moved from ~/.config/elanous/budget → ~/.elanous/budget ·
 //   first construction migrates legacy XDG dir (incl. SQLite WAL set).
 function defaultStorageDir(): string {
   migrateLegacyXdgSubdir('budget');
-  return join(monadStateRoot(), 'budget');
+  return join(elanousStateRoot(), 'budget');
 }
 const STATE_FILENAME = 'state.json';
 

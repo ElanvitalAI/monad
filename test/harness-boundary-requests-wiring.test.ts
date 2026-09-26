@@ -3,7 +3,7 @@ import { appendFileSync, existsSync, readFileSync, rmSync } from 'node:fs';
 import { createHash } from 'node:crypto';
 import { tmpdir } from 'node:os';
 import { dirname, join, relative, resolve } from 'node:path';
-import { runHeadlessGoalLoopPty } from '../src/self-implement/headless-monad-driver.js';
+import { runHeadlessGoalLoopPty } from '../src/self-implement/headless-elanous-driver.js';
 import { defaultSeams } from '../src/self-implement/seams.js';
 import {
   HARNESS_BOUNDARY_REQUESTS_ENV,
@@ -39,7 +39,7 @@ function expectMailboxRecordsRequest(env: NodeJS.ProcessEnv | undefined): void {
 describe('harness boundary request mailbox wiring', () => {
   test('execution id별 부모 소유 임시 mailbox 디렉터리와 자식 env 경로를 만든다', () => {
     const executionId = `self_abc123_${Date.now()}`;
-    const parent = resolve(tmpdir(), 'monad-harness-boundary-requests');
+    const parent = resolve(tmpdir(), 'elanous-harness-boundary-requests');
     const env = harnessBoundaryRequestsEnv(executionId);
     const path = env[HARNESS_BOUNDARY_REQUESTS_ENV]!;
     expect(path).toBe(resolve(parent, `${createHash('sha256').update(executionId).digest('hex')}.jsonl`));
@@ -61,7 +61,7 @@ describe('harness boundary request mailbox wiring', () => {
   });
 
   test('경로 구분자와 traversal이 든 execution id도 mailbox 루트 내부의 안전한 파일명이 된다', () => {
-    const parent = resolve(tmpdir(), 'monad-harness-boundary-requests');
+    const parent = resolve(tmpdir(), 'elanous-harness-boundary-requests');
     for (const executionId of ['../outside', '/absolute/path', '\\windows\\path', 'nested/../id']) {
       const path = harnessBoundaryRequestsEnv(executionId)[HARNESS_BOUNDARY_REQUESTS_ENV]!;
       expect(path).toBe(resolve(parent, `${createHash('sha256').update(executionId).digest('hex')}.jsonl`));

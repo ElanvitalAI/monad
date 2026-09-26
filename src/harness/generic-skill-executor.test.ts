@@ -106,13 +106,13 @@ describe('generic no-change publication evidence', () => {
 
   test('per-skill task directs a new in-worktree file into its absolute output root and verifies it', async () => {
     const cwd = tempRepo();
-    const expectedOutputRoot = join(cwd, '.monad-skill-artifacts', 'step-1');
+    const expectedOutputRoot = join(cwd, '.elanous-skill-artifacts', 'step-1');
     let receivedTask = '';
     let createdFiles = 0;
     try {
       const result = await buildGenericSkillExecute(deps(async (_skill, task, _prior, worktree) => {
         receivedTask = task;
-        const artifact = join(worktree, '.monad-skill-artifacts', 'step-1', 'report.md');
+        const artifact = join(worktree, '.elanous-skill-artifacts', 'step-1', 'report.md');
         writeFileSync(artifact, 'new artifact');
         createdFiles += 1;
         return `created: ${artifact}`;
@@ -138,10 +138,10 @@ describe('generic no-change publication evidence', () => {
 
   test('clears only the prior artifact files in the current step output root before regenerating', async () => {
     const cwd = tempRepo();
-    const outputRoot = join(cwd, '.monad-skill-artifacts', 'step-1');
+    const outputRoot = join(cwd, '.elanous-skill-artifacts', 'step-1');
     const stale = join(outputRoot, 'stale.md');
     const created = join(outputRoot, 'current.md');
-    const outsideOutputRoot = join(cwd, '.monad-skill-artifacts', 'outside.md');
+    const outsideOutputRoot = join(cwd, '.elanous-skill-artifacts', 'outside.md');
     try {
       mkdirSync(outputRoot, { recursive: true });
       writeFileSync(stale, 'previous round artifact\n');
@@ -168,7 +168,7 @@ describe('generic no-change publication evidence', () => {
     const externalOutputRoot = join(outside, 'step-1');
     const externalArtifact = join(externalOutputRoot, 'stale.md');
     const preserved = join(outside, 'preserved.md');
-    const artifactRoot = join(cwd, '.monad-skill-artifacts');
+    const artifactRoot = join(cwd, '.elanous-skill-artifacts');
     try {
       mkdirSync(externalOutputRoot, { recursive: true });
       writeFileSync(externalArtifact, 'external stale artifact\n');
@@ -192,7 +192,7 @@ describe('generic no-change publication evidence', () => {
 
   test('a created file remains verified and promoted when output first cites a different existing file', async () => {
     const cwd = tempRepo();
-    const created = join(cwd, '.monad-skill-artifacts', 'step-1', 'created.md');
+    const created = join(cwd, '.elanous-skill-artifacts', 'step-1', 'created.md');
     const read = join(cwd, 'seed.md');
     const observations: string[] = [];
     const logSpy = spyOn(debug, 'log').mockImplementation(() => undefined);

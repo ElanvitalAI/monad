@@ -354,7 +354,7 @@ export interface Widget<S = unknown, Config = Record<string, unknown>> {
   /** Optional mouse handler (click / double-click / scroll / drag /
    *  release / motion). MD2 — `double-click` is synthesized by the
    *  SGR parser when a 2nd same-cell primary press arrives within
-   *  `MONAD_DOUBLE_CLICK_MS`.
+   *  `ELANOUS_DOUBLE_CLICK_MS`.
    *
    *  Bundle 1 P2 (2026-04-20) added `drag` / `release` for sketch-
    *  style widgets that need the full press → drag → release
@@ -451,7 +451,7 @@ export interface Widget<S = unknown, Config = Record<string, unknown>> {
    *  — on enter (pointer first crosses this widget), leave (pointer
    *  moves to a different widget / off-screen), over (subsequent
    *  position updates while still on this widget), and stable (the
-   *  pointer has sat on the same `hit` for `MONAD_HOVER_DELAY_MS`).
+   *  pointer has sat on the same `hit` for `ELANOUS_HOVER_DELAY_MS`).
    *
    *  The `hit` discriminator lets widgets react to row-level hover
    *  transitions ("pointer left row 3, entered row 5") without

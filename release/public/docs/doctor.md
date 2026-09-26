@@ -1,15 +1,15 @@
 # Doctor
 
-`monad doctor` tells you what this machine still needs. It never changes anything unless you ask it to.
+`elanous doctor` tells you what this machine still needs. It never changes anything unless you ask it to.
 
 ```bash
-monad doctor
+elanous doctor
 ```
 
 ## What it reports
 
-1. **Credentials** — for each key monad can use (for example `OPENAI_API_KEY`, `XAI_API_KEY`, `TELEGRAM_BOT_TOKEN`): whether it resolves, where it came from, which capability needs it, and the free alternative if there is one (often a subscription login such as `monad login openai-codex`).
-2. **Tools** — the external commands monad calls (`rg`, `git`, `python3`, `ssh`, …) and whether each is on `PATH`. See [External commands](external-commands.md).
+1. **Credentials** — for each key elanous can use (for example `OPENAI_API_KEY`, `XAI_API_KEY`, `TELEGRAM_BOT_TOKEN`): whether it resolves, where it came from, which capability needs it, and the free alternative if there is one (often a subscription login such as `elanous login openai-codex`).
+2. **Tools** — the external commands elanous calls (`rg`, `git`, `python3`, `ssh`, …) and whether each is on `PATH`. See [External commands](external-commands.md).
 3. **Readiness** — one line per check, each ending in `ok`, `manual`, or a problem, with the fix at the end of the line. Checks include:
 
 | Check | What it looks at |
@@ -30,9 +30,9 @@ The last line counts what is left to do.
 ## Fixing things
 
 ```bash
-monad doctor --fix              # show the repairs it would make (read-only)
-monad doctor --fix --yes        # apply them
-monad doctor --fix --yes --sudo # also run the planned sudo install lines (only where sudo works without a password)
+elanous doctor --fix              # show the repairs it would make (read-only)
+elanous doctor --fix --yes        # apply them
+elanous doctor --fix --yes --sudo # also run the planned sudo install lines (only where sudo works without a password)
 ```
 
 | Option | What it does |

@@ -205,7 +205,7 @@ describe('Showroom storage · P5 agent panel · save/load round-trip', () => {
     // Legacy localStorage entry — manually craft the JSON shape.
     const backend = makeMemoryBackend();
     backend.setItem(
-      'monad.showroom.layouts',
+      'elanous.showroom.layouts',
       JSON.stringify({
         legacy: {
           name: 'legacy',

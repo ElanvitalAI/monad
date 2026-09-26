@@ -18,9 +18,9 @@ function job(over: Partial<ScheduleRow> = {}): ScheduleRow {
     last_seen: null,
     last_run: null,
     note: null,
-    managed_by: 'monad',
+    managed_by: 'elanous',
     raw: null,
-    run_via: 'monad',
+    run_via: 'elanous',
     ...over,
   };
 }

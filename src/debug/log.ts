@@ -67,7 +67,7 @@ import { dirname, isAbsolute, join, relative, resolve, sep } from 'path';
 import { perf } from '../perf-counters.js';
 import { getSessionCwd, getSessionProjectRoot } from '../session/working-dir.js';
 import { getFlags } from '../mss/feature-flags.js';
-import { getOrCreateMonadId } from '../mss/identity.js';
+import { getOrCreateElanousId } from '../mss/identity.js';
 import { getParentSpanId, getSpanId, getTraceId } from '../mss/trace-context.js';
 import {
   FileSink,
@@ -103,7 +103,7 @@ export interface DebugEvent {
   trace_id?: string;
   span_id?: string;
   parent_span_id?: string;
-  monad_id?: string;
+  elanous_id?: string;
   // ── Session attribution (ambient — set by chat command at turn
   // start so every downstream event correlates to the session id the
   // user/LLM is conversing with). Lets `grep '"session_id":"abc"'`
@@ -172,30 +172,30 @@ export type DebugLevel = 'off' | 'trail' | 'diag' | 'normal' | 'verbose' | 'deta
 
 /** The repository root is resolved from this module rather than the CLI entry
  *  so debug placement stays independent of CLI wiring. */
-const MONAD_SOURCE_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..');
+const ELANOUS_SOURCE_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..');
 
 /** Same relative-path containment test as harness-write-boundary. It stays local
  *  because that module imports this one for harness observations. */
 function isWithinSourceRoot(target: string): boolean {
-  const rel = relative(MONAD_SOURCE_ROOT, resolve(target));
+  const rel = relative(ELANOUS_SOURCE_ROOT, resolve(target));
   return rel === '' || (!(rel === '..' || rel.startsWith(`..${sep}`)) && !isAbsolute(rel));
 }
 
-/** Log directory stays next to Monad source during development. External session
- *  projects instead use their existing `.monad` directory, keeping internal logs
+/** Log directory stays next to Elanous source during development. External session
+ *  projects instead use their existing `.elanous` directory, keeping internal logs
  *  out of the project root. Failed directory creation retains the home fallback.
  *  Both candidates are eagerly created so no manual mkdir step is required. */
 function resolveLogDir(): string {
   const sessionCwd = getSessionCwd();
   const local = isWithinSourceRoot(sessionCwd)
     ? join(sessionCwd, 'log')
-    : join(getSessionProjectRoot().path, '.monad', 'debug');
+    : join(getSessionProjectRoot().path, '.elanous', 'debug');
   try {
     mkdirSync(local, { recursive: true });
     return local;
   } catch { /* selected location unwritable — fall through */ }
 
-  const fallback = join(homedir(), '.local', 'share', 'monad', 'debug');
+  const fallback = join(homedir(), '.local', 'share', 'elanous', 'debug');
   try {
     mkdirSync(fallback, { recursive: true });
   } catch { /* both failed — log() later absorbs the write error */ }
@@ -203,11 +203,11 @@ function resolveLogDir(): string {
 }
 const LOG_DIR = resolveLogDir();
 
-/** Debug log directory; source sessions use `<sessionCwd>/log`, others `.monad/debug`. */
+/** Debug log directory; source sessions use `<sessionCwd>/log`, others `.elanous/debug`. */
 export function debugLogDir(): string { return LOG_DIR; }
 
 /** ISO-ish timestamp without separators: `20260415034521`. Used as
- *  the per-run log-file suffix so every `monad` invocation gets a
+ *  the per-run log-file suffix so every `elanous` invocation gets a
  *  dedicated file. Matches the user-requested yyyymmddhhmmss shape. */
 function ymdhms(): string {
   const d = new Date();
@@ -561,7 +561,7 @@ class DebugLog {
 
   /** The core tracer. No-op when every gate is off.
    *  `opts.level` (OH10) explicitly stamps severity — critical-junction
-   *  emitters pass it so `monad logs --level …` doesn't rely on suffix
+   *  emitters pass it so `elanous logs --level …` doesn't rely on suffix
    *  guessing. Omitting it keeps the legacy derive-from-suffix path. */
   log(
     category: string,
@@ -572,7 +572,7 @@ class DebugLog {
     if (!this.isAnySinkEnabled()) return;
     // OH9 — render-log mute (orthogonal to the level gates). Single
     // short-circuit here covers all sinks (file/chatFile/ring/mirror/
-    // extra) so `monad logs`, log/debug-*.log and log/chat-*.log are
+    // extra) so `elanous logs`, log/debug-*.log and log/chat-*.log are
     // cleaned in lock-step. Non-render categories are unaffected — diag
     // stays fully alive.
     if (this._renderSuppressed && isRenderCategory(category)) return;
@@ -589,7 +589,7 @@ class DebugLog {
       ...(payload !== undefined ? { data: payload } : {}),
       ...(opts?.level ? { level: opts.level } : {}),
     };
-    // MSS M2.1 enrichment — append trace/monad context when live.
+    // MSS M2.1 enrichment — append trace/elanous context when live.
     enrichDebugRecord(rec);
     // MSS M2.3 sink-level redaction — runs once per event before any
     // sink sees it, so file/ring/mirror/extra observe the same
@@ -640,7 +640,7 @@ class DebugLog {
 
 // ── Ambient session_id ───────────────────────────────────────────────
 // Process-wide tag for the conversation currently being driven. CLI
-// commands (`monad chat` / `monad ask`) set this at turn start; the
+// commands (`elanous chat` / `elanous ask`) set this at turn start; the
 // dashboard sets it on session switch. enrichDebugRecord picks it up
 // so every event in the same turn carries `session_id`, letting one
 // log file hold many sessions while still being grep-separable
@@ -689,7 +689,7 @@ function isPlainObject(value: unknown): value is Record<string, unknown> {
 }
 
 /** Append MSS context fields (trace_id / span_id / parent_span_id /
- *  monad_id) onto an existing DebugEvent. No-op when `MSS_ENABLED=false`
+ *  elanous_id) onto an existing DebugEvent. No-op when `MSS_ENABLED=false`
  *  so the legacy JSONL shape is byte-identical to pre-MSS output. */
 function enrichDebugRecord(rec: DebugEvent): void {
   try {
@@ -699,7 +699,7 @@ function enrichDebugRecord(rec: DebugEvent): void {
     if (sessionId) rec.session_id = sessionId;
     // logs.db joins plain-object payloads through data.runId. Preserve payload
     // identity for primitives and non-plain objects by attributing their record.
-    const runId = process.env.MONAD_RUN_ID;
+    const runId = process.env.ELANOUS_RUN_ID;
     if (runId) {
       if (rec.data === undefined) {
         rec.runId = runId;
@@ -711,9 +711,9 @@ function enrichDebugRecord(rec: DebugEvent): void {
     }
     // 실행 칸·벤치 팔 귀속(RFC fleet 슈퍼바이저 §A1 · 2026-09-25) — Pod·벤치 팔만 env 를 세운다.
     //   env 가 없으면 아무것도 안 붙인다(평소 로그 모양 바이트 동일) · 호출자가 준 값이 이긴다 · plain object 만.
-    const substrate = process.env.MONAD_SUBSTRATE;
-    const armId = process.env.MONAD_ARM_ID;
-    const hostId = process.env.MONAD_HOST_ID;
+    const substrate = process.env.ELANOUS_SUBSTRATE;
+    const armId = process.env.ELANOUS_ARM_ID;
+    const hostId = process.env.ELANOUS_HOST_ID;
     if ((substrate || armId || hostId) && isPlainObject(rec.data)) {
       const data: Record<string, unknown> = rec.data;
       rec.data = {
@@ -732,8 +732,8 @@ function enrichDebugRecord(rec: DebugEvent): void {
     const psid = getParentSpanId();
     if (psid) rec.parent_span_id = psid;
     try {
-      rec.monad_id = getOrCreateMonadId();
-    } catch { /* identity write failed — leave monad_id unset */ }
+      rec.elanous_id = getOrCreateElanousId();
+    } catch { /* identity write failed — leave elanous_id unset */ }
     // SAM S0 seed — multi-platform disambiguation. Caller-supplied
     // source values win; we only fill `platform` when it's absent.
     const platform = process.platform;

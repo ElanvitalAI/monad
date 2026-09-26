@@ -7,13 +7,13 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { debug } from '../debug/log.js';
 
-// ⚠️ manifest/ipc DB 는 MONAD_STATE_DIR 스코프 — 실 데이터 오염 방지로 tmp 로 격리(import 前 설정).
-// 갈림 ①: 모듈 최상위 설정을 유지한다. monadStateRoot() 는 호출 시점에 env 를 읽지만
+// ⚠️ manifest/ipc DB 는 ELANOUS_STATE_DIR 스코프 — 실 데이터 오염 방지로 tmp 로 격리(import 前 설정).
+// 갈림 ①: 모듈 최상위 설정을 유지한다. elanousStateRoot() 는 호출 시점에 env 를 읽지만
 //   이 파일이 불러오는 manifest/ipc 소비자는 첫 db 오픈·import 설정 시점에 루트가 정해져
 //   있어야 하고, 같은 폴더 선례(pty-manifest.test.ts · pty-event-log.test.ts)도 import 前 설정이다.
-const previousStateDir = process.env.MONAD_STATE_DIR;
+const previousStateDir = process.env.ELANOUS_STATE_DIR;
 const stateDir = mkdtempSync(join(tmpdir(), 'pty-ipc-test-'));
-process.env.MONAD_STATE_DIR = stateDir;
+process.env.ELANOUS_STATE_DIR = stateDir;
 
 const { migratePtyControlSchema, requestRemotePtyControl, requestRemotePtyControlCapabilities, processPtyControlRequests, resetPtyControlIpcForTesting } = await import('./pty-control-ipc.js');
 const { externalWriteProvenance } = await import('./pty-write-provenance.js');
@@ -54,7 +54,7 @@ function register(id: string): void {
 //    그 결과 바깥 테스트들이 run anchor 를 **주변 env 에서 상속**했다 — 하니스 안에서 돌리면
 //    통과하고 셸에서 돌리면 실패하는, 우주를 암묵 가정한 테스트다. 복제하면 그 복제본은
 //    다시 닿지 않는 곳이 생긴다(P-a′ 선례).
-const RUN_ENV = 'MONAD_RUN_ID';
+const RUN_ENV = 'ELANOUS_RUN_ID';
 function withRunId<T>(runId: string | undefined, fn: () => T): T {
   const prior = process.env[RUN_ENV];
   if (runId === undefined) delete process.env[RUN_ENV]; else process.env[RUN_ENV] = runId;
@@ -84,8 +84,8 @@ afterAll(() => {
     resetPtyEventLogForTesting();
     rmSync(stateDir, { recursive: true, force: true });
   } finally {
-    if (previousStateDir === undefined) delete process.env.MONAD_STATE_DIR;
-    else process.env.MONAD_STATE_DIR = previousStateDir;
+    if (previousStateDir === undefined) delete process.env.ELANOUS_STATE_DIR;
+    else process.env.ELANOUS_STATE_DIR = previousStateDir;
   }
 });
 function registryHandle(accessMode: 'auto' | 'write', write: (chars: string) => void) {
@@ -307,8 +307,8 @@ describe('pty-control-ipc round-trip', () => {
     expect(legacy.query("SELECT name FROM pragma_table_info('pty_takeover_previous_modes') WHERE name='taken_over_at'").get()).not.toBeNull();
     legacy.close();
 
-    const prior = process.env.MONAD_PTY_TAKEOVER_TTL_MS;
-    process.env.MONAD_PTY_TAKEOVER_TTL_MS = '1';
+    const prior = process.env.ELANOUS_PTY_TAKEOVER_TTL_MS;
+    process.env.ELANOUS_PTY_TAKEOVER_TTL_MS = '1';
     try {
       for (const takeoverTtlMs of [0, -1, Number.NaN]) {
         const id = freshId(); register(id);
@@ -334,7 +334,7 @@ describe('pty-control-ipc round-trip', () => {
       await processPtyControlRequests((i) => i === envId ? (envHandle as never) : undefined, () => true, { now: () => 2 });
       expect(envHandle.accessMode).toBe('read');
     } finally {
-      if (prior === undefined) delete process.env.MONAD_PTY_TAKEOVER_TTL_MS; else process.env.MONAD_PTY_TAKEOVER_TTL_MS = prior;
+      if (prior === undefined) delete process.env.ELANOUS_PTY_TAKEOVER_TTL_MS; else process.env.ELANOUS_PTY_TAKEOVER_TTL_MS = prior;
     }
   });
 
@@ -610,7 +610,7 @@ describe('pty-control-ipc round-trip', () => {
   test('TUI target retains arbiter denial and does not inject for an agent actor', async () => {
     const id = freshId();
     // ⚠️ Declare the run universe instead of inheriting it. Without this the
-    // request carries whatever `MONAD_RUN_ID` the surrounding process happens
+    // request carries whatever `ELANOUS_RUN_ID` the surrounding process happens
     // to have: inside the harness it matches and the arbiter is what denies
     // (what this test is about), in a plain shell it is empty and the request
     // is rejected earlier as `agent-run-unidentified` — so the test passed in

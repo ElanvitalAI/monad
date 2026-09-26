@@ -27,7 +27,7 @@ const period = (process.argv.includes('--period')
 
 function digestFloor(): number {
   try {
-    const wl = JSON.parse(readFileSync(join(homedir(), '.monad/conatus/x_watchlist.json'), 'utf-8'));
+    const wl = JSON.parse(readFileSync(join(homedir(), '.elanous/conatus/x_watchlist.json'), 'utf-8'));
     if (typeof wl.digestFloor === 'number') return wl.digestFloor;
   } catch { /* default */ }
   return 6;

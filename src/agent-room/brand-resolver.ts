@@ -82,8 +82,8 @@ const ALIAS_MAP: Record<string, string> = {
   'claude-code': 'claude',
   gem: 'gemini',
   'gemini-cli': 'gemini',
-  mac: 'monad',
-  'monad-child': 'monad',
+  mac: 'elanous',
+  'elanous-child': 'elanous',
 };
 
 /** Role hint → synthetic task string fed to `PolicyDecide`. Tuned so
@@ -239,7 +239,7 @@ function resolveAuto(
  *  again. Backend transport details (pty-direct vs app-server) are
  *  downstream policy concerns, not the room/showroom brand namespace. */
 function pickNextLiteralBrand(excluded: readonly string[]): string {
-  const pool = ['codex', 'claude', 'gemini', 'monad'];
+  const pool = ['codex', 'claude', 'gemini', 'elanous'];
   for (const b of pool) {
     if (!excluded.includes(b)) return b;
   }

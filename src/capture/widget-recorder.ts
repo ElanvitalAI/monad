@@ -11,7 +11,7 @@
 // asciicast v2.1 format:
 //   Line 1 — header JSON:
 //     { "version": 2.1, "width", "height", "timestamp"?, "title"?,
-//       "monad": { "kind": "widget-timeline" } }
+//       "elanous": { "kind": "widget-timeline" } }
 //   Each subsequent line — one frame as JSON array:
 //     [ time_sec, "w", widgetId, stateSnapshot ]
 //
@@ -65,7 +65,7 @@ export interface WidgetTimelineHeader {
   readonly height: number;
   readonly timestamp?: number;   // epoch seconds
   readonly title?: string;
-  readonly monad: { readonly kind: 'widget-timeline' };
+  readonly elanous: { readonly kind: 'widget-timeline' };
 }
 
 export interface ParsedWidgetTimeline {
@@ -206,7 +206,7 @@ export function createWidgetRecorder(opts: WidgetRecorderOpts): WidgetRecorderHa
         height: opts.dims.rows,
         ...(startedAtSec ? { timestamp: startedAtSec } : {}),
         ...(opts.title !== undefined ? { title: opts.title } : {}),
-        monad: { kind: 'widget-timeline' },
+        elanous: { kind: 'widget-timeline' },
       };
       const lines: string[] = [JSON.stringify(header)];
       for (const f of frames) {

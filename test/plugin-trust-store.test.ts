@@ -7,7 +7,7 @@ import { PluginTrustStore } from '../src/plugins/core/trust-store.js';
 
 describe('PluginTrustStore', () => {
   test('persists trust records', () => {
-    const root = mkdtempSync(join(tmpdir(), 'monad-plugin-trust-'));
+    const root = mkdtempSync(join(tmpdir(), 'elanous-plugin-trust-'));
     try {
       const path = join(root, 'trust.json');
       const store = new PluginTrustStore(path);

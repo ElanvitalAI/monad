@@ -86,7 +86,7 @@ describe('plugin manifest parser', () => {
   });
 
   test('inferred empty contributes stay empty when plugin.json is absent', () => {
-    const root = mkdtempSync(join(tmpdir(), 'monad-manifest-empty-'));
+    const root = mkdtempSync(join(tmpdir(), 'elanous-manifest-empty-'));
     try {
       const pluginDir = join(root, 'legacy');
       mkdirSync(pluginDir, { recursive: true });
@@ -100,7 +100,7 @@ describe('plugin manifest parser', () => {
   });
 
   test('infers a legacy manifest when plugin.json is absent', () => {
-    const root = mkdtempSync(join(tmpdir(), 'monad-manifest-'));
+    const root = mkdtempSync(join(tmpdir(), 'elanous-manifest-'));
     try {
       const pluginDir = join(root, 'legacy');
       mkdirSync(pluginDir, { recursive: true });
@@ -121,12 +121,12 @@ describe('plugin manifest parser', () => {
     }
   });
 
-  test('loads .monad-plugin/plugin.json as an alternative location', () => {
-    const root = mkdtempSync(join(tmpdir(), 'monad-manifest-'));
+  test('loads .elanous-plugin/plugin.json as an alternative location', () => {
+    const root = mkdtempSync(join(tmpdir(), 'elanous-manifest-'));
     try {
       const pluginDir = join(root, 'demo');
-      mkdirSync(join(pluginDir, '.monad-plugin'), { recursive: true });
-      writeFileSync(join(pluginDir, '.monad-plugin', 'plugin.json'), JSON.stringify({
+      mkdirSync(join(pluginDir, '.elanous-plugin'), { recursive: true });
+      writeFileSync(join(pluginDir, '.elanous-plugin', 'plugin.json'), JSON.stringify({
         id: 'demo',
         name: 'Demo',
         version: '1.0.0',
@@ -136,7 +136,7 @@ describe('plugin manifest parser', () => {
       const loaded = loadPluginManifestFromDir(pluginDir, { id: 'fallback' });
 
       expect(loaded.inferred).toBe(false);
-      expect(loaded.path).toEndWith('.monad-plugin/plugin.json');
+      expect(loaded.path).toEndWith('.elanous-plugin/plugin.json');
       expect(loaded.manifest.id).toBe('demo');
       expect(loaded.manifest.main).toBe('./entry.ts');
     } finally {

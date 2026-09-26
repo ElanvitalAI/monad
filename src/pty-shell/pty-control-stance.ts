@@ -1,7 +1,7 @@
 // ── 소유권 상실 판정 seam (P2b P-a′ · [[RFC-pty-control-loan-pause-resume-notify-2026-07-27]] §4e·§4f) ──
 //
 // 종전에는 세 자리가 **각자** `canWrite('agent')` 를 불러 소유권을 판정했다(RFC §1a):
-//   A `agent-mission/driver.ts`  B `autopilot/pty-control-loop.ts`  C `self-implement/headless-monad-driver.ts`
+//   A `agent-mission/driver.ts`  B `autopilot/pty-control-loop.ts`  C `self-implement/headless-elanous-driver.ts`
 // 루프(B) 한 곳을 고쳐도 A·C 는 옛 판정에 남으므로, 뒤에 올 verdict 수렴(P-b)·`defer` 집행(P-c)이
 // 전부 여기 얹히도록 판정을 한 곳으로 모은다.
 //

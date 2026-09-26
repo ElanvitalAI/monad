@@ -2,12 +2,12 @@
 //
 // `/v1/tasks` · `/v1/tasks/:id` previously lived only in
 // `src/boot/daemon-public-server.ts`. After T5.F made the daemon-
-// public-server tab default-OFF (`monad nexus` is the SSoT), the PWA —
+// public-server tab default-OFF (`elanous nexus` is the SSoT), the PWA —
 // which now points at NEXUS baseUrl — hit a 404 on the task board
 // endpoints because they were never lifted.
 //
-// dry-run data is persisted to `~/.monad/tasks/tasks.db` (env:
-// `MONAD_TASKS_DB`) and the store is a process singleton, so this
+// dry-run data is persisted to `~/.elanous/tasks/tasks.db` (env:
+// `ELANOUS_TASKS_DB`) and the store is a process singleton, so this
 // lift is zero-migration: NEXUS dispatches into the same `TaskStore`
 // the daemon-public-server uses.
 //

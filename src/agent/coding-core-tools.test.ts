@@ -72,7 +72,7 @@ describe('coding-core-tools — Phase 2 골든룰(native 이름배열 diff=0)', 
   });
 
   test('trusted working directory propagates to Bash without adding a model-controlled cwd argument', async () => {
-    const childCwd = await mkdtemp(join(tmpdir(), 'monad-cli-child-'));
+    const childCwd = await mkdtemp(join(tmpdir(), 'elanous-cli-child-'));
     try {
       const catalog = buildCliAgentTools(undefined, undefined, childCwd);
       const result = await catalog.dispatch('Bash', { command: 'pwd' }) as { output: string };
@@ -85,7 +85,7 @@ describe('coding-core-tools — Phase 2 골든룰(native 이름배열 diff=0)', 
   });
 
   test('trusted working directory binds every relative native file tool path', async () => {
-    const childCwd = await mkdtemp(join(tmpdir(), 'monad-cli-child-'));
+    const childCwd = await mkdtemp(join(tmpdir(), 'elanous-cli-child-'));
     try {
       await writeFile(join(childCwd, 'probe.txt'), 'child catalog\n');
       await mkdir(join(childCwd, 'explicit-dir'));
@@ -113,7 +113,7 @@ describe('coding-core-tools — Phase 2 골든룰(native 이름배열 diff=0)', 
 
   test('omitted working directory remains dispatch-time dynamic for Bash and relative file tools', async () => {
     const originalCwd = process.cwd();
-    const laterCwd = await mkdtemp(join(tmpdir(), 'monad-cli-later-cwd-'));
+    const laterCwd = await mkdtemp(join(tmpdir(), 'elanous-cli-later-cwd-'));
     try {
       await writeFile(join(laterCwd, 'probe.txt'), 'late-bound cwd\n');
       const catalog = buildCliAgentTools();
@@ -153,7 +153,7 @@ describe('coding-core-tools — Phase 2 골든룰(native 이름배열 diff=0)', 
   });
 
   test('CLI agent dispatch action passes its child cwd catalog factory to dispatchAgent', async () => {
-    const requestedCwd = await mkdtemp(join(tmpdir(), 'monad-dispatch-child-'));
+    const requestedCwd = await mkdtemp(join(tmpdir(), 'elanous-dispatch-child-'));
     const printed = spyOn(console, 'log').mockImplementation(() => {});
     let factoryCwd: string | undefined;
     try {
@@ -165,7 +165,7 @@ describe('coding-core-tools — Phase 2 골든룰(native 이름배열 diff=0)', 
         expect(result.output.trim()).toBe(await realpath(requestedCwd));
         return { output: 'done', agent: 'cwd-probe', durationMs: 1, maxTurns: 1, taskId: 'task-cwd', cid: 'cid-cwd' };
       });
-      await program.parseAsync(['node', 'monad', 'agent', 'dispatch', 'cwd-probe', 'pwd', '--quiet']);
+      await program.parseAsync(['node', 'elanous', 'agent', 'dispatch', 'cwd-probe', 'pwd', '--quiet']);
       expect(factoryCwd).toBe(requestedCwd);
     } finally {
       setCliAgentDispatchForTesting(undefined);
@@ -177,7 +177,7 @@ describe('coding-core-tools — Phase 2 골든룰(native 이름배열 diff=0)', 
   test('dispatchAgent treats a symlinked catalog cwd as the assigned directory', async () => {
     debug.enable();
     debug.clear();
-    const linkRoot = await mkdtemp(join(tmpdir(), 'monad-assigned-cwd-link-'));
+    const linkRoot = await mkdtemp(join(tmpdir(), 'elanous-assigned-cwd-link-'));
     const linkedCwd = join(linkRoot, 'cwd-link');
     try {
       await symlink(process.cwd(), linkedCwd);
@@ -230,7 +230,7 @@ describe('tool profile invariants on the real CLI tool list', () => {
   test('full keeps every tool; coding ∪ removed = full; nothing falls between', async () => {
     const { buildUserConfig } = await import('../user-config.js');
     const { applyToolProfile, parseToolProfile } = await import('./tool-profile.js');
-    const cfg = buildUserConfig('/nonexistent-monad-probe/config.json');
+    const cfg = buildUserConfig('/nonexistent-elanous-probe/config.json');
     (cfg as { finance?: { enabled?: boolean } }).finance = { ...((cfg as { finance?: object }).finance ?? {}), enabled: true };
     const all = buildCliAgentTools(cfg, undefined, process.cwd()).specs.map((s) => s.name);
     expect(all).toContain('finance_quote');
@@ -245,7 +245,7 @@ describe('tool profile invariants on the real CLI tool list', () => {
 // 대표 09-25 — 기본 모드에서 뺀 금융 도구도 자식이 상황을 보고 ToolSearch 로 불러 쓸 수 있다(전체 목록에서 찾는다).
 test('a finance tool omitted by the coding profile is still reachable through ToolSearch', async () => {
   const { buildUserConfig } = await import('../user-config.js');
-  const cfg = buildUserConfig('/nonexistent-monad-probe/config.json');
+  const cfg = buildUserConfig('/nonexistent-elanous-probe/config.json');
   (cfg as { finance?: { enabled?: boolean } }).finance = { ...((cfg as { finance?: object }).finance ?? {}), enabled: true };
   const catalog = buildCliAgentTools(cfg, undefined, process.cwd());
   const r = JSON.stringify(await catalog.dispatch('ToolSearch', { query: 'select:finance_quote' }));

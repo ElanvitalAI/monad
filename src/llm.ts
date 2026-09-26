@@ -108,11 +108,11 @@ export type ContentBlock =
  *    transcribe upstream + send text. Always returns false.
  *  - **xAI Grok**: Chat Completions does NOT accept audio. The
  *    `Voice Agent` API is a separate WebSocket endpoint
- *    (`wss://api.x.ai/v1/realtime`) — out of monad's Chat Completions
+ *    (`wss://api.x.ai/v1/realtime`) — out of elanous's Chat Completions
  *    routing scope. Always returns false for Chat path.
  *    https://docs.x.ai/developers/model-capabilities/audio/voice
  *  - **Gemini**: native `inlineData` audio (wav/mp3/aiff/aac/ogg/flac)
- *    via `generateContent`. monad routes Gemini through the native
+ *    via `generateContent`. elanous routes Gemini through the native
  *    `generateContentStream` SDK call (see callGeminiStream below ·
  *    line 2339) — toGeminiContents (line 2080+) builds inline parts
  *    with mimeType + base64 for image/video/**audio** (W8-A 후속 #3 ·
@@ -154,7 +154,7 @@ export function providerSupportsAudio(model: string): boolean {
  *  - **Anthropic Claude**: no video input via Messages API as of 2026-05.
  *    Always returns false.
  *  - **OpenAI Chat Completions**: no video input. Realtime Video API is
- *    a separate WebSocket endpoint — out of monad's Chat Completions
+ *    a separate WebSocket endpoint — out of elanous's Chat Completions
  *    routing scope. Always returns false for Chat path.
  *  - **xAI Grok**: no video input via Chat Completions. Always false.
  *  - **Local (ollama / Qwen 2.5 VL etc.)**: format-specific · provider-
@@ -166,7 +166,7 @@ export function providerSupportsVideo(model: string): boolean {
   if (!model) return false;
   const m = model.toLowerCase();
   // Gemini 1.5+ all support inlineData video on user role per
-  // generateContent spec. monad currently routes Gemini through the
+  // generateContent spec. elanous currently routes Gemini through the
   // OpenAI-compat endpoint OR a native mapper; both branches honor
   // inlineData when the message carries a 'video' block.
   if (m.startsWith('gemini-')) return true;
@@ -384,7 +384,7 @@ export interface LLMOpts {
   /** Chat session id forwarded to the AskUserQuestion bridge when the
    *  tool-loop self-dispatches a doom-loop intervention prompt. Lets
    *  PWA / iOS peers receive the prompt natively via the ACP
-   *  `monad/ask/*` envelope instead of the raw `[ASK USER]` text
+   *  `elanous/ask/*` envelope instead of the raw `[ASK USER]` text
    *  fallback. Absent for CLI / startup-script callers without a chat
    *  session context. */
   sessionId?: string;
@@ -596,7 +596,7 @@ function toOpenAIMessages(
       if (block.type === 'video') {
         // PR8 (2026-05-14) — OpenAI Chat Completions API does NOT
         // accept video. The Realtime Video API is a separate WebSocket
-        // endpoint (not in monad's Chat Completions routing). Drop to
+        // endpoint (not in elanous's Chat Completions routing). Drop to
         // text placeholder so the request doesn't 400. Caller should
         // pre-filter via providerSupportsVideo() AND send key-frame
         // images as siblings (iOS PR5/PR6 default path).
@@ -1414,7 +1414,7 @@ async function* sseLineStream(body: ReadableStream<Uint8Array>): AsyncGenerator<
 // input_text type). Codex specifically REJECTS max_output_tokens and
 // temperature — hermes documents this caveat; we mirror it.
 
-/** Convert monad LLMMessage[] → Codex Responses API input shape.
+/** Convert elanous LLMMessage[] → Codex Responses API input shape.
  *  System messages concat into `instructions`. Everything else flows
  *  into `input[]` as {role, content:[{type:'input_text', text}]}.
  *  Multimodal blocks get their text extracted (images currently
@@ -1708,7 +1708,7 @@ export function getIncrementalItems(
  *  token prefix, not by key equality; the key only steers routing.
  *
  *  We hash (model + first 500 chars of the instructions block). The
- *  500-char window is deliberate — in monad's long-running research
+ *  500-char window is deliberate — in elanous's long-running research
  *  loops, `instructions` changes every turn (budget, pending
  *  questions) but the OPENING stays stable (persona, Andon preamble,
  *  goal kind). Hashing only the prefix keeps the cache key sticky
@@ -1898,7 +1898,7 @@ function mapReasoningLevelToAnthropicEffort(
  *  re-checked against the API when they ship"* 라고 «예고해 두고» 아무도 안 고쳤다.
  *  ⇒ 2026-08-12 실측: `claude-opus-5` 요청이 legacy 형상으로 나가 API 가 거부했다 —
  *     `Anthropic API 400: "thinking.type.enabled" is not supported`.
- *     그래서 monad 가 Anthropic 4.7 «이상 전부»를 못 쓰고 있었다.
+ *     그래서 elanous 가 Anthropic 4.7 «이상 전부»를 못 쓰고 있었다.
  *
  *  📏 근거 = live `GET /v1/models` capabilities (2026-08-12 · HTTP 200):
  *     adaptive 필요(enabled=false): opus-5 · sonnet-5 · fable-5 · opus-4-8 · opus-4-7
@@ -2034,7 +2034,7 @@ export async function* streamCodexResponsesEvents(
   // default. `/debug verbose on` restores the full body for deep
   // reproduction.
   // 'openai-codex llm response' — openai-codex provider(구독 Responses API)로의 순수 **LLM 호출**.
-  // codex CLI 프로세스 spawn 이 아니다(self-dev backend=monad-chat·이건 그 안의 LLM provider 호출).
+  // codex CLI 프로세스 spawn 이 아니다(self-dev backend=elanous-chat·이건 그 안의 LLM provider 호출).
   if (debug.isAnySinkEnabled()) {
     debug.log('llm.request', `POST ${url} (openai-codex llm response)`, {
       model: body.model,
@@ -2210,7 +2210,7 @@ export async function* streamCodexResponsesEvents(
           const cached = u.input_tokens_details?.cached_tokens
             ?? u.prompt_tokens_details?.cached_tokens;
           const cacheReadInputTokens = typeof cached === 'number' ? cached : undefined;
-          // ⛔ Responses `input_tokens` 는 캐시 적중분을 «포함»한다 — monad 규약(새 입력만)으로 뺀다(BACKLOG C4).
+          // ⛔ Responses `input_tokens` 는 캐시 적중분을 «포함»한다 — elanous 규약(새 입력만)으로 뺀다(BACKLOG C4).
           const inputTokens = typeof u.input_tokens === 'number' ? Math.max(0, u.input_tokens - (cacheReadInputTokens ?? 0)) : undefined;
           const outputTokens = typeof u.output_tokens === 'number' ? u.output_tokens : undefined;
           const reasoning = u.output_tokens_details?.reasoning_tokens;
@@ -2528,7 +2528,7 @@ export function messagesToGeminiInput(
   // we walk the message history and build an id→name map from
   // every tool_use seen so the converter can look up the correct
   // name when emitting the matching tool_result. Without this map,
-  // monad's pre-2026-05-04 wire used name='tool' hardcoded which
+  // elanous's pre-2026-05-04 wire used name='tool' hardcoded which
   // backend rejected on multi-turn (400 INVALID_ARGUMENT after the
   // 5th content where the second functionResponse didn't match the
   // active loop's first functionCall).
@@ -2601,7 +2601,7 @@ export function messagesToGeminiInput(
           // inlineData on user role. Supports wav/mp3/aiff/aac/ogg/flac
           // per ai.google.dev/gemini-api/docs/audio. Up to ~20MB inline ·
           // larger needs Files API upload (deferred · resource_link
-          // future replacement). monad runtime 이 이미 generateContent
+          // future replacement). elanous runtime 이 이미 generateContent
           // stream 사용 — audio block dispatch 만 추가하면 native 가능.
           if (role === 'user') {
             parts.push({ inlineData: { mimeType: b.mediaType, data: b.base64 } });
@@ -2720,8 +2720,8 @@ const GEMINI_SYNTHETIC_THOUGHT_SIGNATURE = 'skip_thought_signature_validator';
 
 
 /**
- * Gemini `usageMetadata` → monad 사용량 규약(BACKLOG C8 · 2026-09-25 🅣).
- * ⛔ `promptTokenCount` 는 캐시 적중분(`cachedContentTokenCount`)을 «포함»한다 — monad 규약(새 입력만 · C4)으로 뺀다.
+ * Gemini `usageMetadata` → elanous 사용량 규약(BACKLOG C8 · 2026-09-25 🅣).
+ * ⛔ `promptTokenCount` 는 캐시 적중분(`cachedContentTokenCount`)을 «포함»한다 — elanous 규약(새 입력만 · C4)으로 뺀다.
  * ⛔ `candidatesTokenCount` 는 생각(thinking) 토큰을 «안» 담는다 — Gemini 는 `thoughtsTokenCount` 를 출력 단가로 따로 매긴다.
  *    종전엔 그 칸을 안 읽어 추론 토큰이 과금·관측에서 통째로 빠졌다. ⇒ 출력에 더하고 `reasoningOutputTokens` 로도 남긴다
  *    (OpenAI 규약과 같다: 추론은 출력의 «부분집합»).
@@ -2745,7 +2745,7 @@ export function geminiUsageFromMetadata(t: { promptTokens: number; outputTokens:
 }
 
 /** Stream against the native Gemini API via @google/genai SDK.
- *  Replaces the OpenAI-compat tunnel that monad previously used
+ *  Replaces the OpenAI-compat tunnel that elanous previously used
  *  (`streamOpenAIEvents(GEMINI_API_URL, ...)`), which couldn't carry
  *  Gemini's native fields:
  *  - `systemInstruction` (separate cacheable system block)
@@ -2923,7 +2923,7 @@ export async function* streamGeminiEvents(
         }
         // Wave 2 (2026-05-04) — malformed/unexpected tool call. ref/
         // gemini-cli treats these as retryable mid-stream errors
-        // (geminiChat.ts MID_STREAM_RETRY_OPTIONS, 4 attempts). monad
+        // (geminiChat.ts MID_STREAM_RETRY_OPTIONS, 4 attempts). elanous
         // previously let them pass silently → tool-loop saw an empty
         // turn and bailed. Throw a tagged error so the streamGemini
         // wrapper (below) can retry once.
@@ -3320,7 +3320,7 @@ export const AnthropicProvider: LLMProvider = {
     //   4. anchor  — tail block of messages[0] (stable across the
     //                whole session; activates at ≥4 messages)
     // Callers can opt out with `promptCache:false`; TTL defaults via
-    // MONAD_PROMPT_CACHE_TTL env (falls back to '5m'), and can be
+    // ELANOUS_PROMPT_CACHE_TTL env (falls back to '5m'), and can be
     // overridden per-call via `promptCacheTTL:'1h'`.
     // See 내부 문서 `PLAN-prompt-cache-phase3`.
     const { getDefaultCacheTTL } = await import('./config.js');
@@ -3579,7 +3579,7 @@ function buildLocalProvider(opts: {
       // 2026-05-05 — generalised preset registry replaces the earlier
       // hardcoded `isQwenLocal` regex. Per-family sampling/output/
       // behaviour now lives in `presets.yaml` (built-in) overlaid by
-      // `~/.monad/local-llm-presets.yaml` (user override). The registry
+      // `~/.elanous/local-llm-presets.yaml` (user override). The registry
       // matches `modelId` against pattern rules; the first hit wins.
       // See `src/llm/local-manager/preset-registry.ts` + the YAML for
       // the qwen3 / qwen3-instruct / deepseek-r1 / gemma3 / gpt-oss /
@@ -3778,7 +3778,7 @@ function makeGeminiProvider(cfg: UCLLMConfig): LLMProvider {
           ? Math.max(baseMaxOutput, 16384)
           : baseMaxOutput;
       // Wave 2 (2026-05-04) — sampling. ref/gemini-cli's chat-base-3
-      // alias ships {temperature: 1, topP: 0.95, topK: 64}; monad's
+      // alias ships {temperature: 1, topP: 0.95, topK: 64}; elanous's
       // legacy 0.3 default starves tool-call sampling and produces
       // single-turn termination on multi-turn scenarios (measured:
       // 0 tool calls / 2,201 chars vs codex 8 calls / 19K chars on
@@ -3806,7 +3806,7 @@ function makeGeminiProvider(cfg: UCLLMConfig): LLMProvider {
       });
       // Wave 2 (2026-05-04) — bounded retry on MALFORMED_FUNCTION_CALL
       // / UNEXPECTED_TOOL_CALL. ref/gemini-cli does mid-stream retry
-      // (4 attempts). monad previously let these slip through → empty
+      // (4 attempts). elanous previously let these slip through → empty
       // turn → tool-loop bailed. We retry only when nothing has been
       // yielded yet (avoid duplicate output to the user).
       const MAX_GEMINI_RETRIES = 1;
@@ -4254,9 +4254,9 @@ export function noProviderAvailableMessage(): string {
     codexOauth = authKindForProvider('openai-codex', defaultModelForProvider('openai-codex')) === 'oauth';
   } catch { /* 못 쟀다 — 일반 안내로 */ }
   if (codexOauth) {
-    return `${head} An OpenAI Codex login was found but could not be used — run \`monad config set llm.provider openai-codex\` (or \`monad setup\`) and check \`monad usage\`.`;
+    return `${head} An OpenAI Codex login was found but could not be used — run \`elanous config set llm.provider openai-codex\` (or \`elanous setup\`) and check \`elanous usage\`.`;
   }
-  return `${head} Run \`monad setup\` — with a subscription, \`monad login openai-codex\` then \`monad config set llm.provider openai-codex\`; with API keys, set ${keys}.`;
+  return `${head} Run \`elanous setup\` — with a subscription, \`elanous login openai-codex\` then \`elanous config set llm.provider openai-codex\`; with API keys, set ${keys}.`;
 }
 
 /**
@@ -4877,7 +4877,7 @@ export function summarizeWalkerToolArgs(name: string, args: Record<string, unkno
 export const TOOL_LOOP_MAX_TURNS_DEFAULT = 6;
 
 /** Anthropic-family default — claude-code-fork ships interactive chat
- *  with no cap (Opus self-terminates by emitting text-only). monad
+ *  with no cap (Opus self-terminates by emitting text-only). elanous
  *  keeps a hard cap as runaway insurance, but raises it well above
  *  TOOL_LOOP_MAX_TURNS_DEFAULT because Anthropic models reliably
  *  finish multi-step debugging without re-read pathology that the
@@ -7794,7 +7794,7 @@ export function getInspectBudgetThreshold(messages: readonly LLMMessage[], model
 // ⛔⭐⭐ **루프가 스스로에게 하는 말은 «사람 말풍선»이 되면 안 된다.**
 //
 //  📏 2026-08-21 실측: 빈-턴 교정문을 `role:'user'` 로 밀었더니
-//    `.monad-test/sessions/*.jsonl` 세션 스토어에 «그대로 저장»됐고,
+//    `.elanous-test/sessions/*.jsonl` 세션 스토어에 «그대로 저장»됐고,
 //    PWA 가 거기서 수화하므로 사람에게 ***파란 말풍선 = 오류처럼*** 보였다.
 //    대표: *"사용자에게 오류로 보이고 UX 경험을 해친다 — 최소 노출이 안 되게"*
 //  ✅ `system` 은 이미 걸러진다 — `apps/pwa/src/lib/dock-history-hydrate.ts`
@@ -8516,9 +8516,9 @@ export async function streamLLMWithTools(
     debug.log('llm.router', 'tool-loop.turn.end', turnInfo, { level: 'info' });
     // ★ walker turn 관측(2026-07-21·제1원칙 로그축) — 미션 walker turn 진행을 mission.walker 로 1급 각인.
     //   종전엔 turn 신호가 llm.router 에만 있어(미션 좌표 無) "walker 가 지금 몇 턴째·무슨 tool 을 부르며 도는가"를
-    //   monad logs --category mission.walker 로 조회 불가 → 라이브 705308 에서 정상 turn 진행조차 ps CPU 로만
+    //   elanous logs --category mission.walker 로 조회 불가 → 라이브 705308 에서 정상 turn 진행조차 ps CPU 로만
     //   겨우 판별(hang 오판 직전). missionContext 있을 때만(일반 chat/LLM 무영향). 요약만(verbose 방지).
-    //   ★조회: monad logs --category mission.walker (event=turn). liveness(point5) last-activity 재료.
+    //   ★조회: elanous logs --category mission.walker (event=turn). liveness(point5) last-activity 재료.
     if (opts.missionContext) debug.log('mission.walker', 'turn', { ...opts.missionContext, turn, maxTurns, toolCalls: turnInfo.pendingCalls, respChars: turnInfo.textChars, elapsedMs: turnInfo.durationMs });
     handlers.onTurnEnd?.(turnInfo);
 
@@ -8526,7 +8526,7 @@ export async function streamLLMWithTools(
     //   turn 관측(방출↑)의 대칭 수신. 조율자가 중앙 State signal 채널에 쓴 mid-phase 신호를 walker 가 매 turn
     //   폴링·graceful 수신(abort/pause→지금까지 결과 반환·다음 turn 미진입). 종전엔 cancel=SIGTERM kill·pause=
     //   phase 경계뿐이라 mid-phase 양방향 채널 0(audit #59 (b)). missionContext.pollSignal 미주입 시 완전 무동작
-    //   (무회귀·일반 chat/LLM 무영향). ★조회: monad logs --category mission.walker (event=signal-received).
+    //   (무회귀·일반 chat/LLM 무영향). ★조회: elanous logs --category mission.walker (event=signal-received).
     if (opts.missionContext?.pollSignal) {
       const sig = opts.missionContext.pollSignal();
       if (sig && (sig.kind === 'abort' || sig.kind === 'pause')) {
@@ -9736,7 +9736,7 @@ export async function streamLLMWithTools(
         // ★ walker tool 관측(2026-07-21·제1원칙 로그축) — tool 실행 시작을 mission.walker 로 각인.
         //   장시간 셸(bun test 등)은 이 start 로그가 "지금 무슨 명령을 실행 중"의 유일한 조회원(라이브 705308
         //   근본: walker tool 무관측 → hang 오판 직전). missionContext 있을 때만·argsSummary 는 compact.
-        //   ★조회: monad logs --category mission.walker (event=tool·phase=start).
+        //   ★조회: elanous logs --category mission.walker (event=tool·phase=start).
         if (opts.missionContext) debug.log('mission.walker', 'tool', { ...opts.missionContext, turn, name: call.name, phase: 'start', callId: call.id, argsSummary: summarizeWalkerToolArgs(call.name, call.args) });
         const slowTimer = setInterval(() => {
           slowTicks += 1;
@@ -10687,7 +10687,7 @@ function makeOpenAICompatProvider(
     available: () => !!apiKey || grokSub !== null,
     async *streamChat(messages, opts = {}) {
       if (!apiKey && !grokSub) {
-        throw new Error(`${name} unavailable: configure apiKey via \`monad setup\``);
+        throw new Error(`${name} unavailable: configure apiKey via \`elanous setup\``);
       }
       const tools = toOpenAITools(opts.tools);
       // Image-pipeline P3.5 — gate the synthetic follow-up workaround
@@ -10753,7 +10753,7 @@ function makeOpenRouterProvider(cfg: UCLLMConfig): LLMProvider {
     OPENROUTER_API_URL,
     { ...cfg, apiKey: cfg.apiKey || getOpenRouterApiKey() },
     // ⭐ BACKLOG C7 — `usage:{include:true}` 면 마지막 청크 `usage.cost` 에 «실제 청구액»이 온다(추정 아님).
-    { model: openRouterWireModel, headers: { 'X-Title': 'monad' }, omitDefaultTemperature: true, omitMaxTokens: true, extraBody: { usage: { include: true } } },
+    { model: openRouterWireModel, headers: { 'X-Title': 'elanous' }, omitDefaultTemperature: true, omitMaxTokens: true, extraBody: { usage: { include: true } } },
   );
   // ⛔ 2026-09-23 — OpenRouter 의 `max_tokens` 는 «추론 토큰까지» 센다. 호환 경로 기본값 2048 이면 추론 모델이
   //   본문·도구 호출에 닿기 전에 잘렸다(실측 glm-5.3: 2048 → finish=length). 오전 판은 바닥 16384 를 뒀고,
@@ -10767,12 +10767,12 @@ export function openRouterWireModel(model: string): string {
   return model.startsWith('openrouter/') ? model.slice('openrouter/'.length) : model;
 }
 
-/** Codex-specific provider. Prefers OAuth tokens from ~/.config/monad/auth.json
+/** Codex-specific provider. Prefers OAuth tokens from ~/.config/elanous/auth.json
  *  (refreshing them when within the 120s buffer) and falls back to the
  *  plain apiKey flow only when no tokens are on file. OAuth mode targets
  *  the ChatGPT backend at chatgpt.com/backend-api/codex; apiKey mode
  *  keeps the api.openai.com endpoint so a user with a developer API key
- *  can still bypass `monad login`. */
+ *  can still bypass `elanous login`. */
 function makeCodexProvider(cfg: UCLLMConfig): LLMProvider {
   const model = cfg.model || CODEX_DEFAULT_MODEL;
   // Initial token check is synchronous — we look for *presence* only and
@@ -10798,7 +10798,7 @@ function makeCodexProvider(cfg: UCLLMConfig): LLMProvider {
     available: () => hasOAuth || !!apiKey,
     async *streamChat(messages, opts = {}) {
       // Resolve auth at call-time: re-load (in case user just ran
-      // `monad login`) and refresh if the access token is within the
+      // `elanous login`) and refresh if the access token is within the
       // buffer window. Rotating refresh tokens get persisted back —
       // saveTokens() mirrors to ~/.codex/auth.json too, keeping the
       // official Codex CLI happy.
@@ -10818,7 +10818,7 @@ function makeCodexProvider(cfg: UCLLMConfig): LLMProvider {
       }
       // Resolve codex auth via the shared resolver: reconciles with the
       // ~/.codex/auth.json source of truth (the official `codex` CLI rotates
-      // the shared refresh token + OpenAI revokes the prior one, so monad's
+      // the shared refresh token + OpenAI revokes the prior one, so elanous's
       // own copy can be stale), refreshes when expiring, and survives the
       // concurrent-refresh race (401 → re-read → retry). See
       // loadFreshCodexAuthState.
@@ -10936,7 +10936,7 @@ function makeCodexProvider(cfg: UCLLMConfig): LLMProvider {
       }
 
       if (!apiKey) {
-        throw new Error('openai-codex unavailable: run `monad login openai-codex` or set `llm.apiKey`');
+        throw new Error('openai-codex unavailable: run `elanous login openai-codex` or set `llm.apiKey`');
       }
       // API-key mode: standard OpenAI /v1/chat/completions.
       const url = cfgBase
@@ -10972,7 +10972,7 @@ function makeAnthropicProvider(cfg: UCLLMConfig): LLMProvider {
     defaultModel: model,
     available: () => !!apiKey,
     async *streamChat(messages, opts = {}) {
-      if (!apiKey) throw new Error('Anthropic unavailable: configure apiKey via `monad setup`');
+      if (!apiKey) throw new Error('Anthropic unavailable: configure apiKey via `elanous setup`');
       // Mirror AnthropicProvider — prompt caching ON, all 4 slots.
       const { getDefaultCacheTTL } = await import('./config.js');
       const cache = opts.promptCache !== false;
@@ -11173,7 +11173,7 @@ export function getProviderForConfig(
   if (direct) {
     throw new Error(
       `${provider} 직결 provider 는 아직 배선되지 않았다 — OpenRouter 로 쓰라: `
-      + `\`monad config set llm.provider openrouter\` · \`monad config set llm.model ${direct}\` `
+      + `\`elanous config set llm.provider openrouter\` · \`elanous config set llm.model ${direct}\` `
       + `(키: \`bash scripts/add-api-key.sh OPENROUTER_API_KEY\`) · 또는 \`--role-llm <role>=openrouter[/<tier>]\``,
     );
   }
@@ -11247,7 +11247,7 @@ export function getProviderForConfig(
       // singleton (auto-mode) and config-routed paths share one
       // source of truth (HANDOFF §11.1 root-fix).
       if (!userConfig.llm.baseUrl && !getLocalLLMUrl()) {
-        throw new Error('Local LLM unavailable: set `llm.baseUrl` via `monad setup` or LOCAL_LLM_URL env');
+        throw new Error('Local LLM unavailable: set `llm.baseUrl` via `elanous setup` or LOCAL_LLM_URL env');
       }
       return makeLocalProvider(llm);
     }

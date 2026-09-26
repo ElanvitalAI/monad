@@ -6,9 +6,9 @@
 ## ⛔ 왜 `graphs/` 가 «아니라» 여기인가
 
 ```
-monad 의 graphs/ 는 ***모듈 적재 시점에 통째로*** 실려 GRAPH_SPECS 가 된다
+elanous 의 graphs/ 는 ***모듈 적재 시점에 통째로*** 실려 GRAPH_SPECS 가 된다
    (src/self-implement/graph-templates.ts:162·165 — defaultGraphsDir() 를 무조건 읽는다)
-⇒ 여기 넣으면 그것이 «monad 자신의 그래프»가 되어
+⇒ 여기 넣으면 그것이 «elanous 자신의 그래프»가 되어
    위상 검사·GRAPH_SPECS·오버레이 target 후보에 끼어들고,
    `plan-loop` 처럼 ***걸음 0인 그래프가 하나 더*** 늘어난다.
 ```

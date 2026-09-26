@@ -56,15 +56,15 @@ export function shouldShowWelcomeNow(): boolean {
  *  the view layer. */
 export function buildWelcomeCardLines(): string[] {
   return [
-    '  ✦ Welcome to monad NEXUS',
+    '  ✦ Welcome to elanous NEXUS',
     '  ──────────────────────────────────────────────────',
     '',
     '  이 화면은 NEXUS 데몬(PWA·meta-api)입니다.',
-    '  인터랙티브 대시보드는 별도 터미널에서 `monad`.',
+    '  인터랙티브 대시보드는 별도 터미널에서 `elanous`.',
     '',
     '  Chat 백엔드 미설정 — 다음 중 하나로 셋업:',
     '    • Tab → Settings 탭 → Quick Setup 카드 (3 provider 안내)',
-    '    • 별도 터미널: `monad login codex` (가장 추천 · OAuth)',
+    '    • 별도 터미널: `elanous login codex` (가장 추천 · OAuth)',
     '    • env 설정: OPENAI_API_KEY · ANTHROPIC_API_KEY · GEMINI_API_KEY',
     '',
     '  [Esc] 본 안내 닫기 (다음 boot 부터 안 보임)',

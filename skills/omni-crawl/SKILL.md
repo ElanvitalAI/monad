@@ -174,7 +174,7 @@ npx tsx scripts/main.ts "https://news.samsung.com" --engine fc-crawl --print
 ## 모니터링 (Firecrawl Monitors — 뉴스룸/IR 변경감지)
 
 페이지 변경감지 모니터를 만들면 Firecrawl이 스케줄대로 체크하고,
-**monad 크론 폴러**(`monad-agent/scripts/firecrawl-monitor-alert.ts` · */30분)가
+**elanous 크론 폴러**(`monad-agent/scripts/firecrawl-monitor-alert.ts` · */30분)가
 changed/new 페이지를 텔레그램(/v1/outbound)으로 알림. 첫 체크는 baseline(무발송).
 
 ```bash
@@ -234,6 +234,6 @@ omni-digest --content "<크롤결과>" --format rich-cards --print
 
 ## CLI 계약 (파이프라인 호환 — 절대 유지)
 
-`asset-attractiveness`(Conatus 매력도)·monad `research-bridge`가 다음 계약으로 호출:
+`asset-attractiveness`(Conatus 매력도)·elanous `research-bridge`가 다음 계약으로 호출:
 positional query + `--engine <e>` + `--print` → exit 0 + `---BEGIN_OMNI_CRAWL_MARKDOWN---` 마커.
 신규 플래그(--mode/--json/--health 등)는 전부 추가형 — 기존 호출 무변경 동작.

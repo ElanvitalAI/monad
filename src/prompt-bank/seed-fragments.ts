@@ -11,10 +11,10 @@
 import type { PromptBankStore, CreatePromptFragmentInput, PromptFragment } from './types.js';
 
 const AMBIGUOUS_FRAGMENT: CreatePromptFragmentInput = {
-  id: 'monad-au7-ambiguous-intent',
+  id: 'elanous-au7-ambiguous-intent',
   name: 'AU7: ambiguous intent',
   scope: 'global',
-  owner: 'monad',
+  owner: 'elanous',
   kind: 'instruction',
   targetSlot: 'system',
   priority: 70,
@@ -40,10 +40,10 @@ One clarifying question saves a rollback.`,
 };
 
 const DESTRUCTIVE_FRAGMENT: CreatePromptFragmentInput = {
-  id: 'monad-au7-destructive-intent',
+  id: 'elanous-au7-destructive-intent',
   name: 'AU7: destructive intent',
   scope: 'global',
-  owner: 'monad',
+  owner: 'elanous',
   kind: 'instruction',
   targetSlot: 'system',
   priority: 60,  // slightly stronger than ambiguous
@@ -69,10 +69,10 @@ wipe, force-push, reset --hard, etc.). Before emitting commands:
 };
 
 const MULTI_FILE_FRAGMENT: CreatePromptFragmentInput = {
-  id: 'monad-au7-multi-file-intent',
+  id: 'elanous-au7-multi-file-intent',
   name: 'AU7: multi-file scope',
   scope: 'global',
-  owner: 'monad',
+  owner: 'elanous',
   kind: 'instruction',
   targetSlot: 'system',
   priority: 80,

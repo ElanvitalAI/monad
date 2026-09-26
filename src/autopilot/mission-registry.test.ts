@@ -17,11 +17,11 @@ describe('slugify', () => {
     expect(slugify('averyverylongwordthatexceedslimit', 10)).toBe('averyveryl');
   });
   test('불용어(조사·주어) 제거로 핵심 명사만', () => {
-    expect(slugify('monad 가 대화 기억을 무한히 쌓지')).toBe('대화-기억을-무한히-쌓지'); // monad·가 제거
+    expect(slugify('elanous 가 대화 기억을 무한히 쌓지')).toBe('대화-기억을-무한히-쌓지'); // elanous·가 제거
   });
   test('extractSlugSource — 따옴표 핵심어 우선', () => {
-    expect(extractSlugSource('monad 가 "기억 생애주기" 시스템 설계')).toBe('기억 생애주기');
-    expect(slugify(extractSlugSource('monad 가 "기억 생애주기" 시스템'))).toBe('기억-생애주기');
+    expect(extractSlugSource('elanous 가 "기억 생애주기" 시스템 설계')).toBe('기억 생애주기');
+    expect(slugify(extractSlugSource('elanous 가 "기억 생애주기" 시스템'))).toBe('기억-생애주기');
     expect(extractSlugSource('따옴표 없는 골')).toBe('따옴표 없는 골'); // 없으면 원문
   });
   test('mintMissionId slugOverride(LLM slug) 사용 · hash 는 골 기반 불변', () => {

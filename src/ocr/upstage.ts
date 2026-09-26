@@ -48,7 +48,7 @@ const UPSTAGE_ASYNC_URL = 'https://api.upstage.ai/v1/document-digitization/async
  *    'document-parse' enhanced — $0.03/page · richer layout for
  *      complex PDFs. Caller opts in via `opts.parseMode='enhanced'`.
  *
- *  Default = `document-parse` (standard) since the primary monad-
+ *  Default = `document-parse` (standard) since the primary elanous-
  *  agent use case is the camera → markdown intake; the cheaper `ocr`
  *  model is one assignment away for callers that don't need
  *  markdown. */

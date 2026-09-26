@@ -43,21 +43,21 @@ describe('foldDiscoveredModels', () => {
 });
 
 describe('로더 통합 — 실제 builtin 카탈로그 위에서', () => {
-  const saved = process.env.MONAD_CATALOG_DISCOVERY_SNAPSHOT;
+  const saved = process.env.ELANOUS_CATALOG_DISCOVERY_SNAPSHOT;
   afterEach(() => {
-    if (saved === undefined) delete process.env.MONAD_CATALOG_DISCOVERY_SNAPSHOT; else process.env.MONAD_CATALOG_DISCOVERY_SNAPSHOT = saved;
+    if (saved === undefined) delete process.env.ELANOUS_CATALOG_DISCOVERY_SNAPSHOT; else process.env.ELANOUS_CATALOG_DISCOVERY_SNAPSHOT = saved;
     reloadCatalog();
   });
 
   it('⛔ 시험 런타임은 경로를 «명시»하지 않으면 접지 않는다(기계마다 다른 카탈로그 방지)', () => {
-    delete process.env.MONAD_CATALOG_DISCOVERY_SNAPSHOT;
+    delete process.env.ELANOUS_CATALOG_DISCOVERY_SNAPSHOT;
     const cat = reloadCatalog();
     expect([...cat.models.values()].filter((m) => m.provider === 'openrouter')).toEqual([]);
     expect(cat.providers.get('openrouter')?.catalogFromDiscovery).toBe(true);
   });
 
   it('openrouter provider 의 capabilities.effortControl 은 false 다 — OpenRouter 경로는 추론 effort 를 wire 로 싣지 않는다(§9 실측)', () => {
-    delete process.env.MONAD_CATALOG_DISCOVERY_SNAPSHOT;
+    delete process.env.ELANOUS_CATALOG_DISCOVERY_SNAPSHOT;
     const cat = reloadCatalog();
     expect(cat.providers.get('openrouter')?.capabilities.effortControl).toBe(false);
   });
@@ -66,7 +66,7 @@ describe('로더 통합 — 실제 builtin 카탈로그 위에서', () => {
     const dir = mkdtempSync(join(tmpdir(), 'or-fold-'));
     const path = join(dir, 'snap.json');
     writeFileSync(path, JSON.stringify(snap([orModel('anthropic/claude-x'), orModel('moonshotai/kimi-k2.6')])));
-    process.env.MONAD_CATALOG_DISCOVERY_SNAPSHOT = path;
+    process.env.ELANOUS_CATALOG_DISCOVERY_SNAPSHOT = path;
     reloadCatalog();
     expect(getCatalog().models.get('openrouter/moonshotai/kimi-k2.6')?.provider).toBe('openrouter');
     expect(inferProviderFromModel('openrouter/anthropic/claude-x')).toBe('openrouter');
@@ -80,15 +80,15 @@ describe('defaultModelFor — 발견 파생 provider 는 «최신 출시»를 �
     const dir = mkdtempSync(join(tmpdir(), 'or-default-'));
     const path = join(dir, 'snap.json');
     writeFileSync(path, JSON.stringify(snap([orModel('vendor/newest', { releaseDate: '2099-01-01' })])));
-    const saved = process.env.MONAD_CATALOG_DISCOVERY_SNAPSHOT;
-    process.env.MONAD_CATALOG_DISCOVERY_SNAPSHOT = path;
+    const saved = process.env.ELANOUS_CATALOG_DISCOVERY_SNAPSHOT;
+    process.env.ELANOUS_CATALOG_DISCOVERY_SNAPSHOT = path;
     try {
       const cat = reloadCatalog();
       expect(cat.models.get('openrouter/vendor/newest')).toBeDefined();
       expect(defaultModelFor('openrouter', cat)).toBeNull();
       expect(defaultModelFor('anthropic', cat)).not.toBeNull();
     } finally {
-      if (saved === undefined) delete process.env.MONAD_CATALOG_DISCOVERY_SNAPSHOT; else process.env.MONAD_CATALOG_DISCOVERY_SNAPSHOT = saved;
+      if (saved === undefined) delete process.env.ELANOUS_CATALOG_DISCOVERY_SNAPSHOT; else process.env.ELANOUS_CATALOG_DISCOVERY_SNAPSHOT = saved;
       reloadCatalog();
     }
   });

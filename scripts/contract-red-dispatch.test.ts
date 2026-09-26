@@ -83,7 +83,7 @@ describe('contract red dispatch', () => {
     const commands: string[][] = [];
     const result = await executeContractRedDev({ file: 'red.test.ts', task: 'task', pullRequestMarker: '<!-- contract-red-dispatch:file=red.test.ts -->', openPullRequest: true, autoMerge: false }, async (command) => { commands.push(command); return { exitCode: 0, stdout: 'completed', stderr: '' }; });
     expect(commands).toHaveLength(1);
-    expect(commands[0].slice(1)).toEqual(['bin/monad.mjs', '--test', 'dev', '--open-pr', '--no-auto-merge', '--no-auto-review', 'task']);
+    expect(commands[0].slice(1)).toEqual(['bin/elanous.mjs', '--test', 'dev', '--open-pr', '--no-auto-merge', '--no-auto-review', 'task']);
     expect(commands[0]).not.toContain('--auto-merge');
     expect(result).toEqual({ exitCode: 0, stdout: 'completed', stderr: '' });
   });

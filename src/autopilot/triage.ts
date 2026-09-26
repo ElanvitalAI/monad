@@ -248,7 +248,7 @@ export async function triageGoal(
 
 // ★ 판단 모델 = luna(경량·고속·대표 지시 2026-07-16) — tier/실행모델 분류처럼 "동적 상황을 섬세히 보는"
 //   판단은 빠른 LLM 에(휴리스틱은 fail-soft floor). [[feedback_mission_fabric_llm_logic_balance_2026_07_16]].
-const TRIAGE_JUDGE_MODEL = () => process.env.MONAD_TRIAGE_MODEL || budgetModel();
+const TRIAGE_JUDGE_MODEL = () => process.env.ELANOUS_TRIAGE_MODEL || budgetModel();
 /** 기본 triage 분류기(luna). NODE_ENV=test 는 호출측이 주입 안 함(seam) — 실 LLM 호출 방지. */
 export async function defaultTriageClassify(prompt: string): Promise<string> {
   const { streamLLM } = await import('../llm.js');

@@ -42,8 +42,8 @@ describe('keyframePath (키 포맷)', () => {
 });
 
 describe('write → list round-trip (격리 state-dir)', () => {
-  const dir = mkdtempSync(join(tmpdir(), 'monad-kf-test-'));
-  const env = { MONAD_STATE_DIR: dir } as NodeJS.ProcessEnv;
+  const dir = mkdtempSync(join(tmpdir(), 'elanous-kf-test-'));
+  const env = { ELANOUS_STATE_DIR: dir } as NodeJS.ProcessEnv;
   afterAll(() => { try { rmSync(dir, { recursive: true, force: true }); } catch { /* best-effort */ } });
 
   test('쓰고(fail-soft true) seq 순으로 조회', () => {

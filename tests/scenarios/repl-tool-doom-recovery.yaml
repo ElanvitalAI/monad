@@ -19,7 +19,7 @@ description: |
     의 `forceSynthesisOutcome` 이 "succeeded" 인지)
 
   Run:
-    monad repl --new --json \
+    elanous repl --new --json \
       --scenario tests/scenarios/repl-tool-doom-recovery.yaml \
       --exit-after-scenario
 

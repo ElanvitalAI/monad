@@ -31,8 +31,8 @@ let sockPath: string;
 let bindingsPath: string;
 
 beforeEach(() => {
-  tmp = mkdtempSync(joinPath(tmpdir(), 'monad-dc-bridge-test-'));
-  sockPath = joinPath(tmp, 'monad.sock');
+  tmp = mkdtempSync(joinPath(tmpdir(), 'elanous-dc-bridge-test-'));
+  sockPath = joinPath(tmp, 'elanous.sock');
   bindingsPath = joinPath(tmp, 'channel-bindings.json');
 });
 
@@ -141,7 +141,7 @@ describe('DiscordAcpBridge', () => {
     });
     await expect(
       bridge.runTurn({ channelId: 'x', userText: 'hi' }),
-    ).rejects.toThrow(/no monad daemon/);
+    ).rejects.toThrow(/no elanous daemon/);
     await bridge.close();
   });
 

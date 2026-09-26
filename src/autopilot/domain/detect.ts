@@ -5,7 +5,7 @@
 //
 // 우선순위: coding > investment > business > general.
 //   - 명시적 코딩 동사(구현/리팩토링/버그)는 강신호 → 다른 도메인 명사와 동점이면 coding.
-//     (예: "매매 로직 구현" = monad 코드베이스 작업 → coding executor).
+//     (예: "매매 로직 구현" = elanous 코드베이스 작업 → coding executor).
 //   - 투자 액션(매수/매도/종목/포트폴리오)은 investment(집행 executor=trade-cycle).
 //   - business = 지식노동 substrate(보고서/전략/마케팅/회계 …) — 가장 넓은 catch-all·최하위.
 //

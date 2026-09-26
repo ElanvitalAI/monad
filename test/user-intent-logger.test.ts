@@ -2,7 +2,7 @@
 //
 // Covers the U0 contract surface:
 //   1. logger.emit() returns a canonical UserIntentEvent with the
-//      universal header filled (event_id / ts / monad_id / surface).
+//      universal header filled (event_id / ts / elanous_id / surface).
 //   2. utterance value defaults to sha256 content hash (PLAN §5).
 //   3. utterance with logFullContent=true keeps the raw string.
 //   4. key-blocklist sweep redacts api-key / authorization values
@@ -39,7 +39,7 @@ afterEach(() => {
 });
 
 describe('UserIntentLogger.emit — universal header', () => {
-  test('fills event_id / ts / surface / monad_id (best-effort)', () => {
+  test('fills event_id / ts / surface / elanous_id (best-effort)', () => {
     const logger = new UserIntentLogger();
     const ev = logger.emit({
       surface: 'pwa',
@@ -51,9 +51,9 @@ describe('UserIntentLogger.emit — universal header', () => {
     expect(ev!.ts).toMatch(/^\d{4}-\d{2}-\d{2}T/);
     expect(ev!.surface).toBe('pwa');
     expect(ev!.intent.kind).toBe('pwa.gesture.swipe_right');
-    // monad_id is best-effort — may be empty when identity write fails
+    // elanous_id is best-effort — may be empty when identity write fails
     // in CI sandboxes but the field always exists.
-    expect(typeof ev!.monad_id).toBe('string');
+    expect(typeof ev!.elanous_id).toBe('string');
   });
 
   test('honors caller overrides for session/user/device', () => {

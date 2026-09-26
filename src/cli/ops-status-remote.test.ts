@@ -21,7 +21,7 @@ import { createMission } from '../task-orchestrator/mission.js';
 import { createTask } from '../task-orchestrator/types.js';
 
 const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
-const BIN = resolve(REPO_ROOT, 'bin/monad.mjs');
+const BIN = resolve(REPO_ROOT, 'bin/elanous.mjs');
 const SPAWN_TIMEOUT_MS = 60_000;
 
 const dirs: string[] = [];
@@ -53,8 +53,8 @@ function writeBookmark(cfg: string, name: string, port: string, token: string, s
 
 function seedRealOpsStore(tasksDir: string): { missionTotal: number; taskTotal: number } {
   mkdirSync(tasksDir, { recursive: true });
-  const prev = process.env.MONAD_TASKS_DIR;
-  process.env.MONAD_TASKS_DIR = tasksDir;
+  const prev = process.env.ELANOUS_TASKS_DIR;
+  process.env.ELANOUS_TASKS_DIR = tasksDir;
   const store = new TaskStore();
   try {
     store.saveMission(createMission({ title: 'Remote ops alpha', source: { kind: 'manual' } }));
@@ -68,8 +68,8 @@ function seedRealOpsStore(tasksDir: string): { missionTotal: number; taskTotal: 
     return { missionTotal: 2, taskTotal: 5 };
   } finally {
     store.close();
-    if (prev === undefined) delete process.env.MONAD_TASKS_DIR;
-    else process.env.MONAD_TASKS_DIR = prev;
+    if (prev === undefined) delete process.env.ELANOUS_TASKS_DIR;
+    else process.env.ELANOUS_TASKS_DIR = prev;
   }
 }
 
@@ -114,10 +114,10 @@ async function startOutOfProcessHttpApi(opts: {
   const startPort = 41000 + Math.floor(Math.random() * 8000);
   writeFileSync(serverTs, `
     import { appendFileSync, writeFileSync } from 'node:fs';
-    process.env.MONAD_TASKS_DIR = ${JSON.stringify(opts.tasksDir)};
-    process.env.MONAD_STATE_DIR = ${JSON.stringify(opts.stateDir)};
-    process.env.MONAD_CONFIG_DIR = ${JSON.stringify(opts.stateDir)};
-    process.env.MONAD_DEBUG_LEVEL = 'off';
+    process.env.ELANOUS_TASKS_DIR = ${JSON.stringify(opts.tasksDir)};
+    process.env.ELANOUS_STATE_DIR = ${JSON.stringify(opts.stateDir)};
+    process.env.ELANOUS_CONFIG_DIR = ${JSON.stringify(opts.stateDir)};
+    process.env.ELANOUS_DEBUG_LEVEL = 'off';
     const { startNexusHttpServer } = await import(${JSON.stringify(join(REPO_ROOT, 'src/nexus/api/http-server.ts'))});
     const { createNexusState } = await import(${JSON.stringify(join(REPO_ROOT, 'src/nexus/state/state.ts'))});
     const { TabRegistry } = await import(${JSON.stringify(join(REPO_ROOT, 'src/nexus/state/tab-registry.ts'))});
@@ -159,10 +159,10 @@ async function startOutOfProcessHttpApi(opts: {
     stdio: ['ignore', 'pipe', 'pipe'],
     env: {
       ...process.env,
-      MONAD_TASKS_DIR: opts.tasksDir,
-      MONAD_STATE_DIR: opts.stateDir,
-      MONAD_CONFIG_DIR: opts.stateDir,
-      MONAD_DEBUG_LEVEL: 'off',
+      ELANOUS_TASKS_DIR: opts.tasksDir,
+      ELANOUS_STATE_DIR: opts.stateDir,
+      ELANOUS_CONFIG_DIR: opts.stateDir,
+      ELANOUS_DEBUG_LEVEL: 'off',
     },
   });
   children.push(child);
@@ -186,10 +186,10 @@ function spawnOpsStatus(cfg: string, home: string, extraArgs: string[]): ReturnT
     cwd: REPO_ROOT,
     env: {
       ...process.env,
-      MONAD_DEBUG_LEVEL: 'off',
+      ELANOUS_DEBUG_LEVEL: 'off',
       HOME: home,
-      MONAD_STATE_DIR: cfg,
-      MONAD_CONFIG_DIR: cfg,
+      ELANOUS_STATE_DIR: cfg,
+      ELANOUS_CONFIG_DIR: cfg,
     },
     encoding: 'utf8',
     timeout: SPAWN_TIMEOUT_MS,
@@ -210,7 +210,7 @@ describe('runOpsStatusRemote classification/message', () => {
   test('missing default bookmark returns remote-error and names the missing bookmark', async () => {
     const home = mkdtempSync(join(tmpdir(), 'ops-status-class-'));
     dirs.push(home);
-    const cfg = join(home, '.monad');
+    const cfg = join(home, '.elanous');
     mkdirSync(cfg, { recursive: true });
     writeFileSync(join(cfg, 'remotes.json'), JSON.stringify({ version: 1, remotes: {} }));
     const errors: string[] = [];
@@ -222,18 +222,18 @@ describe('runOpsStatusRemote classification/message', () => {
     expect(result.exitCode).toBe(1);
     expect(result.classification).toBe('remote-error');
     expect(result.message).toContain('no default remote bookmark');
-    expect(result.message).toContain('monad nexus connect');
+    expect(result.message).toContain('elanous nexus connect');
     expect(errors.join('\n')).toContain('no default remote bookmark');
   });
 });
 
-describe('bin/monad.mjs ops status -r', () => {
+describe('bin/elanous.mjs ops status -r', () => {
   test('진입점 spawn: out-of-process HTTP API GET /v1/missions and /v1/tasks counts match ops status -r stdout, with route provenance and unavailable loops/health', async () => {
     const home = mkdtempSync(join(tmpdir(), 'ops-status-live-r-'));
     dirs.push(home);
     const tasksDir = join(home, 'tasks');
     const stateDir = join(home, 'nexus-state');
-    const cfg = join(home, '.monad');
+    const cfg = join(home, '.elanous');
     mkdirSync(stateDir, { recursive: true });
     seedRealOpsStore(tasksDir);
     const token = 'remote-token';
@@ -268,7 +268,7 @@ describe('bin/monad.mjs ops status -r', () => {
     dirs.push(home);
     const tasksDir = join(home, 'tasks');
     const stateDir = join(home, 'nexus-state');
-    const cfg = join(home, '.monad');
+    const cfg = join(home, '.elanous');
     mkdirSync(stateDir, { recursive: true });
     seedRealOpsStore(tasksDir);
     const token = 'remote-token';
@@ -296,7 +296,7 @@ describe('bin/monad.mjs ops status -r', () => {
   test('진입점 spawn: missing default bookmark exits 1 and names the missing bookmark', () => {
     const home = mkdtempSync(join(tmpdir(), 'ops-status-no-bookmark-'));
     dirs.push(home);
-    const cfg = join(home, '.monad');
+    const cfg = join(home, '.elanous');
     mkdirSync(cfg, { recursive: true });
     writeFileSync(join(cfg, 'remotes.json'), JSON.stringify({ version: 1, remotes: {} }));
     const res = spawnOpsStatus(cfg, home, ['-r']);
@@ -304,13 +304,13 @@ describe('bin/monad.mjs ops status -r', () => {
     expect(res.status).toBe(1);
     expect(out).toMatch(/bookmark|북마크/);
     expect(out).toContain('no default remote bookmark');
-    expect(out).toContain('monad nexus connect');
+    expect(out).toContain('elanous nexus connect');
   });
 
   test('진입점 spawn: unknown named bookmark exits 1 and names the bookmark', () => {
     const home = mkdtempSync(join(tmpdir(), 'ops-status-ghost-'));
     dirs.push(home);
-    const cfg = join(home, '.monad');
+    const cfg = join(home, '.elanous');
     mkdirSync(cfg, { recursive: true });
     writeFileSync(join(cfg, 'remotes.json'), JSON.stringify({ version: 1, remotes: {} }));
     const res = spawnOpsStatus(cfg, home, ['--remote', 'ghost']);
@@ -325,7 +325,7 @@ describe('bin/monad.mjs ops status -r', () => {
     dirs.push(home);
     const tasksDir = join(home, 'tasks');
     const stateDir = join(home, 'nexus-state');
-    const cfg = join(home, '.monad');
+    const cfg = join(home, '.elanous');
     mkdirSync(stateDir, { recursive: true });
     seedRealOpsStore(tasksDir);
     const token = 'remote-token';
@@ -350,7 +350,7 @@ describe('bin/monad.mjs ops status -r', () => {
     dirs.push(home);
     const tasksDir = join(home, 'tasks');
     const stateDir = join(home, 'nexus-state');
-    const cfg = join(home, '.monad');
+    const cfg = join(home, '.elanous');
     mkdirSync(stateDir, { recursive: true });
     seedRealOpsStore(tasksDir);
     const token = 'tok';
@@ -399,7 +399,7 @@ describe('bin/monad.mjs ops status -r', () => {
     dirs.push(home);
     const tasksDir = join(home, 'tasks');
     const stateDir = join(home, 'nexus-state');
-    const cfg = join(home, '.monad');
+    const cfg = join(home, '.elanous');
     mkdirSync(stateDir, { recursive: true });
     seedRealOpsStore(tasksDir);
     const token = 'remote-token';

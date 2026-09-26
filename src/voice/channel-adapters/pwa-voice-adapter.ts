@@ -4,7 +4,7 @@
 // monad-agent's PWA (apps/pwa — to be added in a future sprint)
 // wants to ship voice as another channel — phone in the pocket
 // captures mic, streams PCM up to a WebSocket endpoint, the adapter
-// feeds it through monad's existing harness (Phase 1-5: streaming
+// feeds it through elanous's existing harness (Phase 1-5: streaming
 // STT → chat → response → auto-TTS), and pipes the TTS PCM back
 // down to the browser for AudioBufferSourceNode playback.
 //
@@ -514,8 +514,8 @@ async function createWiredSession(opts: WiredSessionOpts): Promise<PwaVoiceSessi
 /**
  * Default ON since Phase U closure (2026-05-05) — PWA is now the unified
  * frontend, so the voice WS endpoint is part of the standard daemon
- * surface area. Set `MONAD_PWA_VOICE=0` (or `false`/`off`/`no`) to opt
- * OUT, e.g. when running monad serve on a node without OPENAI_API_KEY
+ * surface area. Set `ELANOUS_PWA_VOICE=0` (or `false`/`off`/`no`) to opt
+ * OUT, e.g. when running elanous serve on a node without OPENAI_API_KEY
  * just to avoid the streaming STT init log line.
  *
  * Pre-Phase-U: this returned false unless the env was explicitly set —
@@ -523,7 +523,7 @@ async function createWiredSession(opts: WiredSessionOpts): Promise<PwaVoiceSessi
  * experimental. That justification is gone now.
  */
 export function isPwaVoiceEnabled(): boolean {
-  const raw = process.env.MONAD_PWA_VOICE?.trim().toLowerCase();
+  const raw = process.env.ELANOUS_PWA_VOICE?.trim().toLowerCase();
   if (raw === '0' || raw === 'false' || raw === 'off' || raw === 'no') return false;
   return true;
 }

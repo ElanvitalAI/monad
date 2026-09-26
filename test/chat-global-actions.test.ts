@@ -52,7 +52,7 @@ describe('matchTextInputGlobalAction', () => {
 
   // Regression: 한글 'ㅋ' has no shifted form on the 2-bul layout, so
   // both Z and Shift+Z produce 'ㅋ'. Accept Ctrl+'ㅋ' as Ctrl+Shift+Z
-  // regardless of the shift bit. monad doesn't bind Ctrl+Z anywhere
+  // regardless of the shift bit. elanous doesn't bind Ctrl+Z anywhere
   // in chat input, so the conflation is moot.
   test('matches Ctrl+Shift+Z with 한글 ㅋ (regression)', () => {
     expect(matchTextInputGlobalAction(key('ㅋ', { ctrl: true, shift: true }))).toEqual({ kind: 'toggle-log-zoom' });

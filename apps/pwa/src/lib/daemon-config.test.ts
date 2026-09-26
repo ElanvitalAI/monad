@@ -54,53 +54,53 @@ describe('daemon-config — NEXUS PR a (v6) baseUrl cutover', () => {
   });
 
   test('loads nexus baseUrl when present', () => {
-    localStorage.setItem('monad.nexus.baseUrl', 'https://nexus.example:31415');
-    localStorage.setItem('monad.daemon.token', 't0');
+    localStorage.setItem('elanous.nexus.baseUrl', 'https://nexus.example:31415');
+    localStorage.setItem('elanous.daemon.token', 't0');
     const cfg = loadDaemonConfig();
     expect(cfg.baseUrl).toBe('https://nexus.example:31415');
     expect(cfg.token).toBe('t0');
   });
 
-  test('migrates legacy monad.daemon.baseUrl → monad.nexus.baseUrl on first load', () => {
-    localStorage.setItem('monad.daemon.baseUrl', 'https://daemon.example:31415');
+  test('migrates legacy elanous.daemon.baseUrl → elanous.nexus.baseUrl on first load', () => {
+    localStorage.setItem('elanous.daemon.baseUrl', 'https://daemon.example:31415');
     const cfg = loadDaemonConfig();
     expect(cfg.baseUrl).toBe('https://daemon.example:31415');
-    expect(localStorage.getItem('monad.nexus.baseUrl')).toBe('https://daemon.example:31415');
-    expect(localStorage.getItem('monad.daemon.baseUrl')).toBeNull();
+    expect(localStorage.getItem('elanous.nexus.baseUrl')).toBe('https://daemon.example:31415');
+    expect(localStorage.getItem('elanous.daemon.baseUrl')).toBeNull();
   });
 
   test('nexus key wins over legacy daemon key (no overwrite)', () => {
-    localStorage.setItem('monad.nexus.baseUrl', 'https://current.example');
-    localStorage.setItem('monad.daemon.baseUrl', 'https://stale.example');
+    localStorage.setItem('elanous.nexus.baseUrl', 'https://current.example');
+    localStorage.setItem('elanous.daemon.baseUrl', 'https://stale.example');
     const cfg = loadDaemonConfig();
     expect(cfg.baseUrl).toBe('https://current.example');
     // The stale legacy key is left alone so any *other* downstream that
     // hasn't migrated yet still sees the previous value (we only touch
     // the legacy key when it's the migration source).
-    expect(localStorage.getItem('monad.daemon.baseUrl')).toBe('https://stale.example');
+    expect(localStorage.getItem('elanous.daemon.baseUrl')).toBe('https://stale.example');
   });
 
-  test('migrates legacy monad.voice.wsUrl → monad.nexus.baseUrl via URL transform', () => {
-    localStorage.setItem('monad.voice.wsUrl', 'wss://mbp.tailnet.ts.net:31415/v1/voice/ws');
+  test('migrates legacy elanous.voice.wsUrl → elanous.nexus.baseUrl via URL transform', () => {
+    localStorage.setItem('elanous.voice.wsUrl', 'wss://mbp.tailnet.ts.net:31415/v1/voice/ws');
     const cfg = loadDaemonConfig();
     expect(cfg.baseUrl).toBe('https://mbp.tailnet.ts.net:31415');
-    expect(localStorage.getItem('monad.voice.wsUrl')).toBeNull();
+    expect(localStorage.getItem('elanous.voice.wsUrl')).toBeNull();
   });
 
   test('legacy daemon baseUrl precedes legacy voice wsUrl when both present', () => {
-    localStorage.setItem('monad.daemon.baseUrl', 'https://daemon.example:31415');
-    localStorage.setItem('monad.voice.wsUrl', 'wss://voice.example:31415/v1/voice/ws');
+    localStorage.setItem('elanous.daemon.baseUrl', 'https://daemon.example:31415');
+    localStorage.setItem('elanous.voice.wsUrl', 'wss://voice.example:31415/v1/voice/ws');
     const cfg = loadDaemonConfig();
     expect(cfg.baseUrl).toBe('https://daemon.example:31415');
     // Voice key is left in place since the daemon migration ran first
     // and consumed the slot — second migrate sees currentKey populated
     // and skips, so legacy voice key is untouched.
-    expect(localStorage.getItem('monad.voice.wsUrl')).toBe('wss://voice.example:31415/v1/voice/ws');
-    expect(localStorage.getItem('monad.daemon.baseUrl')).toBeNull();
+    expect(localStorage.getItem('elanous.voice.wsUrl')).toBe('wss://voice.example:31415/v1/voice/ws');
+    expect(localStorage.getItem('elanous.daemon.baseUrl')).toBeNull();
   });
 
   test('migrates legacy voice token → daemon token slot', () => {
-    localStorage.setItem('monad.voice.token', 'voice-tok');
+    localStorage.setItem('elanous.voice.token', 'voice-tok');
     const cfg = loadDaemonConfig();
     expect(cfg.token).toBe('voice-tok');
   });
@@ -112,8 +112,8 @@ describe('daemon-config — NEXUS PR a (v6) baseUrl cutover', () => {
 
   test('saveDaemonConfig writes to nexus key', () => {
     saveDaemonConfig({ baseUrl: 'https://new.example', token: 't1' });
-    expect(localStorage.getItem('monad.nexus.baseUrl')).toBe('https://new.example');
-    expect(localStorage.getItem('monad.daemon.token')).toBe('t1');
+    expect(localStorage.getItem('elanous.nexus.baseUrl')).toBe('https://new.example');
+    expect(localStorage.getItem('elanous.daemon.token')).toBe('t1');
   });
 
   test('SSR (no window) yields empty config', () => {

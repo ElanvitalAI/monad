@@ -1,12 +1,12 @@
 // ACP H2 #4 — PromptCapabilities + version negotiation.
 //
-// Today monad's ACP client logs but discards `response.agentCapabilities`
+// Today elanous's ACP client logs but discards `response.agentCapabilities`
 // from the initialize handshake; the server hard-codes its capability
 // reply. This module is the single source of truth for:
 //
 //   1. Parsing a peer's AgentCapabilities into a normalized
-//      MonadCapabilities shape (missing fields → conservative false).
-//   2. Declaring monad's own capabilities (as client + as server) so
+//      ElanousCapabilities shape (missing fields → conservative false).
+//   2. Declaring elanous's own capabilities (as client + as server) so
 //      client.ts and server.ts stop repeating themselves.
 //   3. Per-brand defaults — expected capability profile for each
 //      pinned backend (claude-code · codex · gemini). Used as
@@ -42,20 +42,20 @@ import {
   type LlmBrand,
 } from '../llm-vision-capability.js';
 import {
-  MONAD_UI_DISABLED,
-  MONAD_TERM_DISABLED,
-  parseMonadUiCapabilities,
-  parseMonadTermCapabilities,
-  type MonadUiClientCapabilities,
-  type MonadTermClientCapabilities,
-} from './monad-extensions.js';
+  ELANOUS_UI_DISABLED,
+  ELANOUS_TERM_DISABLED,
+  parseElanousUiCapabilities,
+  parseElanousTermCapabilities,
+  type ElanousUiClientCapabilities,
+  type ElanousTermClientCapabilities,
+} from './elanous-extensions.js';
 import {
-  MONAD_ASK_DISABLED,
-  parseMonadAskCapabilities,
-  type MonadAskClientCapabilities,
+  ELANOUS_ASK_DISABLED,
+  parseElanousAskCapabilities,
+  type ElanousAskClientCapabilities,
 } from './ask-extensions.js';
 
-export interface MonadPromptCapabilities {
+export interface ElanousPromptCapabilities {
   /** Always true per ACP baseline. */
   text: true;
   /** Always true per ACP baseline (ContentBlock::ResourceLink). */
@@ -70,61 +70,61 @@ export interface MonadPromptCapabilities {
   video: boolean;
 }
 
-export interface MonadFileOpsCapabilities {
+export interface ElanousFileOpsCapabilities {
   readTextFile: boolean;
   writeTextFile: boolean;
 }
 
 /** Session operations the peer advertised during initialize. `resume` is
  * distinct from `loadSession`: ACP resume does not return prior messages. */
-export interface MonadSessionCapabilities {
+export interface ElanousSessionCapabilities {
   fork: boolean;
   list: boolean;
   resume: boolean;
 }
 
 /** MCP transports the peer advertised during initialize. */
-export interface MonadMcpCapabilities {
+export interface ElanousMcpCapabilities {
   http: boolean;
   sse: boolean;
 }
 
-export interface MonadCapabilities {
+export interface ElanousCapabilities {
   /** Peer's declared (or our own) protocol version. */
   protocolVersion: ProtocolVersion;
-  prompt: MonadPromptCapabilities;
+  prompt: ElanousPromptCapabilities;
   /** Does the peer support `session/load` RPC? (H2 #5 gate.) */
   loadSession: boolean;
   /** Session operation advertisements, normalized to false when absent. */
-  session: MonadSessionCapabilities;
+  session: ElanousSessionCapabilities;
   /** MCP transport advertisements, normalized to false when absent. */
-  mcp: MonadMcpCapabilities;
+  mcp: ElanousMcpCapabilities;
   /** File-ops — only meaningful on the client side (our client
    *  advertises fs callbacks the agent can call). When applied to a
    *  peer agent, these stay at wire defaults. */
-  fileOps: MonadFileOpsCapabilities;
-  /** Plan-mode — monad-side aggregate flag. Not yet expressible in
+  fileOps: ElanousFileOpsCapabilities;
+  /** Plan-mode — elanous-side aggregate flag. Not yet expressible in
    *  the wire format (no backend declares it); reserved for Warp-
    *  parity arcs. */
   planMode: boolean;
-  /** UI-Core arc Phase U2 — `monad/ui/*` extension methods. Peers that
-   *  don't advertise these stay at conservative off; monad-as-server
+  /** UI-Core arc Phase U2 — `elanous/ui/*` extension methods. Peers that
+   *  don't advertise these stay at conservative off; elanous-as-server
    *  gates `showModal` / `showToast` / `updateStatusPill` on them. */
-  ui: MonadUiClientCapabilities;
-  /** WT-S-1 — `monad/term/*` extension methods. Sibling to `ui`.
+  ui: ElanousUiClientCapabilities;
+  /** WT-S-1 — `elanous/term/*` extension methods. Sibling to `ui`.
    *  Web/PWA peers advertise full caps; TUI / vanilla ACP peers stay
    *  off so envelope text never leaks into their `agent_thought_chunk`
    *  rendering. */
-  term: MonadTermClientCapabilities;
-  /** AskUserQuestion cross-surface arc (2026-05-13) — `monad/ask/*`
-   *  extMethod. Peers advertise `_meta.monad.ask.askUserQuestion=true`
+  term: ElanousTermClientCapabilities;
+  /** AskUserQuestion cross-surface arc (2026-05-13) — `elanous/ask/*`
+   *  extMethod. Peers advertise `_meta.elanous.ask.askUserQuestion=true`
    *  when they can render a native structured-choice sheet. Server gates
    *  AskUserQuestion fan-out on this cap (dispatchAskUserQuestion 의
    *  resolver path 가 cap-able peer 가진 sessionId 에만 push). */
-  ask: MonadAskClientCapabilities;
+  ask: ElanousAskClientCapabilities;
 }
 
-export interface MonadCapabilityDeclaration {
+export interface ElanousCapabilityDeclaration {
   protocolVersion: ProtocolVersion;
   asAgent: AgentCapabilities;
   asClient: ClientCapabilities;
@@ -142,8 +142,8 @@ export interface NegotiatedCapabilities {
   };
   loadSession: boolean;
   planMode: boolean;
-  ui: MonadUiClientCapabilities;
-  term: MonadTermClientCapabilities;
+  ui: ElanousUiClientCapabilities;
+  term: ElanousTermClientCapabilities;
 }
 
 /** Thrown by the ACP client (or anyone calling `checkProtocolVersion`)
@@ -154,7 +154,7 @@ export class AcpProtocolVersionError extends Error {
   readonly peer: ProtocolVersion;
   constructor(local: ProtocolVersion, peer: ProtocolVersion) {
     super(
-      `ACP protocol version mismatch: monad speaks ${local} but peer advertised ${peer}. ` +
+      `ACP protocol version mismatch: elanous speaks ${local} but peer advertised ${peer}. ` +
         `Update @agentclientprotocol/sdk or the backend package to re-align.`,
     );
     this.name = 'AcpProtocolVersionError';
@@ -214,7 +214,7 @@ export class AcpListSessionsUnsupportedError extends Error {
 
 /** Conservative baseline — what every ACP peer supports per protocol
  *  spec, before any extras. All optional fields default off. */
-const CONSERVATIVE_BASELINE: Omit<MonadCapabilities, 'protocolVersion'> = {
+const CONSERVATIVE_BASELINE: Omit<ElanousCapabilities, 'protocolVersion'> = {
   prompt: {
     text: true,
     resourceLink: true,
@@ -231,9 +231,9 @@ const CONSERVATIVE_BASELINE: Omit<MonadCapabilities, 'protocolVersion'> = {
     writeTextFile: false,
   },
   planMode: false,
-  ui: { ...MONAD_UI_DISABLED },
-  term: { ...MONAD_TERM_DISABLED },
-  ask: { ...MONAD_ASK_DISABLED },
+  ui: { ...ELANOUS_UI_DISABLED },
+  term: { ...ELANOUS_TERM_DISABLED },
+  ask: { ...ELANOUS_ASK_DISABLED },
 };
 
 /** Per-brand expected capability profile. Derived from the currently
@@ -241,7 +241,7 @@ const CONSERVATIVE_BASELINE: Omit<MonadCapabilities, 'protocolVersion'> = {
  *  pre-init fallback + as "what we expect" for future regression
  *  alerts. The real runtime value comes from `parsePeerCapabilities`
  *  applied to the live initialize response. */
-const BRAND_DEFAULTS: Record<string, Partial<Omit<MonadCapabilities, 'protocolVersion'>>> = {
+const BRAND_DEFAULTS: Record<string, Partial<Omit<ElanousCapabilities, 'protocolVersion'>>> = {
   // claude-code-acp 0.16.2: text + resource_link, no image/audio,
   // no session/load.
   claude: {},
@@ -251,7 +251,7 @@ const BRAND_DEFAULTS: Record<string, Partial<Omit<MonadCapabilities, 'protocolVe
   // inline images in prompts, but no session/load or embedded context.
   // PR9 (2026-05-14) — Gemini 1.5+ family supports native video via
   // inlineData (mp4/quicktime/webm 등 · ai.google.dev/gemini-api/docs/
-  // vision#video). monad routes to messagesToGeminiInput.
+  // vision#video). elanous routes to messagesToGeminiInput.
   gemini: {
     prompt: {
       text: true,
@@ -267,7 +267,7 @@ const BRAND_DEFAULTS: Record<string, Partial<Omit<MonadCapabilities, 'protocolVe
 /** Per-brand baseline profile. Unknown brand → pure conservative.
  *  Exported so consumers can use it as a fallback before initialize
  *  completes (e.g. pre-spawn UX hints). */
-export function defaultAgentCapabilities(brand: string): MonadCapabilities {
+export function defaultAgentCapabilities(brand: string): ElanousCapabilities {
   const overrides = BRAND_DEFAULTS[brand] ?? {};
   return {
     protocolVersion: SDK_PROTOCOL_VERSION,
@@ -283,13 +283,13 @@ export function defaultAgentCapabilities(brand: string): MonadCapabilities {
   };
 }
 
-/** Parse a live peer response into normalized MonadCapabilities. Safe
+/** Parse a live peer response into normalized ElanousCapabilities. Safe
  *  against undefined / empty peer blob (legacy peer → all optional
  *  flags false, text + resourceLink on). */
 export function parsePeerCapabilities(
   peer: AgentCapabilities | undefined | null,
   protocolVersion: ProtocolVersion,
-): MonadCapabilities {
+): ElanousCapabilities {
   const prompt = peer?.promptCapabilities;
   // PR9 (2026-05-14) — SDK 0.14.1 의 PromptCapabilities 타입에 video
   // 미정의. 자체 advertise + forward-compat peer 의 video advertise 를
@@ -322,20 +322,20 @@ export function parsePeerCapabilities(
       writeTextFile: false,
     },
     planMode: false,
-    ui: { ...MONAD_UI_DISABLED },
-    term: { ...MONAD_TERM_DISABLED },
-    ask: { ...MONAD_ASK_DISABLED },
+    ui: { ...ELANOUS_UI_DISABLED },
+    term: { ...ELANOUS_TERM_DISABLED },
+    ask: { ...ELANOUS_ASK_DISABLED },
   };
 }
 
 /** UI-Core arc Phase U2 — parse a client's full ClientCapabilities
- *  (including the `_meta` extension blob) into MonadCapabilities
+ *  (including the `_meta` extension blob) into ElanousCapabilities
  *  shape. Used by the ACP server to decide whether it may push
- *  `monad/ui/*` envelopes. */
+ *  `elanous/ui/*` envelopes. */
 export function parseClientCapabilities(
   client: ClientCapabilities | undefined | null,
   protocolVersion: ProtocolVersion,
-): MonadCapabilities {
+): ElanousCapabilities {
   const fs = client?.fs;
   const meta = (client as unknown as { _meta?: unknown } | null | undefined)?._meta;
   return {
@@ -349,18 +349,18 @@ export function parseClientCapabilities(
       writeTextFile: fs?.writeTextFile === true,
     },
     planMode: false,
-    ui: parseMonadUiCapabilities(meta),
-    term: parseMonadTermCapabilities(meta),
-    ask: parseMonadAskCapabilities(meta),
+    ui: parseElanousUiCapabilities(meta),
+    term: parseElanousTermCapabilities(meta),
+    ask: parseElanousAskCapabilities(meta),
   };
 }
 
-/** Build the ClientCapabilities object monad-as-client advertises
- *  during initialize. Today monad doesn't implement fs callbacks, so
+/** Build the ClientCapabilities object elanous-as-client advertises
+ *  during initialize. Today elanous doesn't implement fs callbacks, so
  *  the defaults are strict-off · callers can override. */
 export function buildClientDeclaration(
   opts: {
-    fs?: Partial<MonadFileOpsCapabilities>;
+    fs?: Partial<ElanousFileOpsCapabilities>;
     terminal?: boolean;
   } = {},
 ): ClientCapabilities {
@@ -373,7 +373,7 @@ export function buildClientDeclaration(
   };
 }
 
-/** Build the AgentCapabilities object monad-as-server advertises.
+/** Build the AgentCapabilities object elanous-as-server advertises.
  *  `buildDeclaration()` below and `runAcpServer()`'s `initialize()` handler
  *  in server.ts call this builder; the latter returns its declaration to
  *  external ACP clients.
@@ -404,7 +404,7 @@ export function buildAgentDeclaration(
     ? isVisionCapableModel(opts.brand, opts.model, 'userMessage')
     : undefined;
   // PR9 (2026-05-14) — SDK 0.14.1 PromptCapabilities 타입에 video 미정의.
-  // monad-as-server 가 video block 을 받아서 capable provider (Gemini
+  // elanous-as-server 가 video block 을 받아서 capable provider (Gemini
   // 1.5+) 한테 native passthrough · 그 외 graceful placeholder 라우팅
   // 하므로 video=true advertise. SDK 타입 통과를 위해 spread + cast.
   const declareVideo = opts.video ?? true;
@@ -420,10 +420,10 @@ export function buildAgentDeclaration(
   };
 }
 
-/** Full monad declaration used at both ends of the pairing. */
+/** Full elanous declaration used at both ends of the pairing. */
 export function buildDeclaration(
   clientOpts?: Parameters<typeof buildClientDeclaration>[0],
-): MonadCapabilityDeclaration {
+): ElanousCapabilityDeclaration {
   return {
     protocolVersion: SDK_PROTOCOL_VERSION,
     asAgent: buildAgentDeclaration(),
@@ -435,8 +435,8 @@ export function buildDeclaration(
  *  ProtocolVersion resolves to the minimum (lower version is the
  *  safe common denominator). */
 export function negotiate(
-  local: MonadCapabilities,
-  peer: MonadCapabilities,
+  local: ElanousCapabilities,
+  peer: ElanousCapabilities,
 ): NegotiatedCapabilities {
   return {
     protocolVersion: Math.min(local.protocolVersion, peer.protocolVersion),
@@ -483,4 +483,4 @@ export function checkProtocolVersion(
 
 /** Convenience — matches PROTOCOL_VERSION re-export pattern the SDK
  *  uses. Kept so consumers import from one module. */
-export const MONAD_PROTOCOL_VERSION: ProtocolVersion = SDK_PROTOCOL_VERSION;
+export const ELANOUS_PROTOCOL_VERSION: ProtocolVersion = SDK_PROTOCOL_VERSION;

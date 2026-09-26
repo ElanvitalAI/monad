@@ -3,7 +3,7 @@
 // **문제**: provider 를 바꾸는 경로(self-dev escalate·cross-family override)가 provider 만 바꾸고
 // **키는 base config 것을 그대로** 들고 갔다. `user-config.ts` escalate 블록이 정확히 그 형태였다:
 //
-//     provider: normalizeProvider(env.MONAD_ESCALATE_PROVIDER || llm.provider),   // ✅ 전환
+//     provider: normalizeProvider(env.ELANOUS_ESCALATE_PROVIDER || llm.provider),   // ✅ 전환
 //     apiKey:   str(llm.apiKey),                                                  // ❌ 미전환
 //
 // 결과: escalate(tier=opus·anthropic)가 openai-codex 용 키를 들고 anthropic 에 붙어 **100% 401 즉사**
@@ -192,7 +192,7 @@ export function resolveProviderCredential(input: ResolveCredentialInput): Resolv
 
   // 목표 provider 의 엔드포인트 — 키와 **같은 규율**로 rotation 에서만 가져온다(10R).
   //   전환이면 옛 baseUrl 은 틀린 주소이므로, rotation 에 명시가 없으면 undefined(provider 기본).
-  // ⛔⭐ local 은 «런 단위 env»(`LOCAL_LLM_URL`)가 config rotation 을 이긴다 — `MONAD_LLM_PROVIDER` 가 config 를 이기는 것과 같은 규칙(BACKLOG B13).
+  // ⛔⭐ local 은 «런 단위 env»(`LOCAL_LLM_URL`)가 config rotation 을 이긴다 — `ELANOUS_LLM_PROVIDER` 가 config 를 이기는 것과 같은 규칙(BACKLOG B13).
   //   🩸 2026-09-25: 부모에 `LOCAL_LLM_URL=<node-b 경유>` 를 줬는데 rotation 의 `local → localhost:1234` 가 이겨 자식이 «호스트»
   //     LM Studio 로 갔다. Pod(config 없음)에선 안 드러났다.
   const envEndpoint = provider === 'local' ? env.LOCAL_LLM_URL?.trim() : undefined;

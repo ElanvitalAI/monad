@@ -17,7 +17,7 @@
 //     [--stay <seconds>] [--tone]      # --tone plays the sine on join
 //
 // Defaults: guild/channel resolved via REST (first voice channel found).
-// Token: `discord.botToken` from ~/.monad/config.json — SAME app as
+// Token: `discord.botToken` from ~/.elanous/config.json — SAME app as
 // production; a second gateway session is safe (concurrent sessions OK,
 // one voice connection per guild per user).
 //
@@ -41,7 +41,7 @@ const info = (msg: string): void => { console.log(`[smoke] ${msg}`); };
 
 async function main(): Promise<void> {
   // The stack's own gate — smoke always wants the production adapter.
-  process.env.MONAD_DISCORD_VOICE_CHANNEL = '1';
+  process.env.ELANOUS_DISCORD_VOICE_CHANNEL = '1';
   debug.setLevel('diag'); // voice.discord.* hot-path events → debug log file
 
   const cfg = getUserConfig();
@@ -90,7 +90,7 @@ async function main(): Promise<void> {
 
   stage('voice.boot — bootDiscordVoiceChannel (production adapter path)');
   const vboot = bootDiscordVoiceChannel({ coordinator });
-  if (!vboot.enabled) throw new Error('voice channel gate reads disabled despite MONAD_DISCORD_VOICE_CHANNEL=1');
+  if (!vboot.enabled) throw new Error('voice channel gate reads disabled despite ELANOUS_DISCORD_VOICE_CHANNEL=1');
 
   stage('voice.join — op-4 handshake → voice WS → UDP → Ready (30s window)');
   const session = await vboot.adapter.joinChannel({ guildId: guildId!, channelId: channelId! });

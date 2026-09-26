@@ -5,10 +5,10 @@
 // 가드**를 통과할 때만 실제 재시작한다. reboot-adjacent 라 기본은 dry-run(계획만)이며, 실제 실행은
 // 사람 승인(HITL) 경로다(자율 실행 아님·config 오염 사건 교훈).
 //
-//   운영(launchd): launchctl kickstart -k gui/<uid>/com.monad.nexus  (loaded 서비스 kill+restart)
-//   테스트:        nexus run --test  (same-tree auto-restart · state=<repo>/.monad-test/nexus/)
+//   운영(launchd): launchctl kickstart -k gui/<uid>/com.elanous.nexus  (loaded 서비스 kill+restart)
+//   테스트:        nexus run --test  (same-tree auto-restart · state=<repo>/.elanous-test/nexus/)
 //
-// 교차오염 금지(MANUAL-pwa-start-vs-test §8): config dir 은 항상 공유(~/.monad/)라, 위험은 "잘못된
+// 교차오염 금지(MANUAL-pwa-start-vs-test §8): config dir 은 항상 공유(~/.elanous/)라, 위험은 "잘못된
 // 환경의 명령 실행"이다. 두 명령은 구조가 완전히 달라 arg 혼입은 없고, 요청 env != 감지 env 면 실행
 // 거부(forceEnvMismatch 없이는). resolveLaunchdEnvironment(canonical) 로 serviceTarget 재사용.
 
@@ -19,7 +19,7 @@ export type DaemonEnvironment = 'production' | 'test';
 
 export interface RestartPlan {
   env: DaemonEnvironment;
-  /** spawn argv(첫 요소=실행 파일). production=launchctl…, test=<bun> <monad> nexus run --test. */
+  /** spawn argv(첫 요소=실행 파일). production=launchctl…, test=<bun> <elanous> nexus run --test. */
   command: string[];
   /** 사람용 설명. */
   description: string;
@@ -36,16 +36,16 @@ export function buildRestartPlan(env: DaemonEnvironment, opts: { launchd?: Launc
       env,
       command: ['launchctl', 'kickstart', '-k', lenv.serviceTarget],
       description: `운영 데몬(launchd ${lenv.label}) kill+restart — 새 코드 활성화`,
-      note: '운영 서비스 재시작(reboot-adjacent). config dir 공유(~/.monad/)라 교차오염 없음. HITL 실행.',
+      note: '운영 서비스 재시작(reboot-adjacent). config dir 공유(~/.elanous/)라 교차오염 없음. HITL 실행.',
     };
   }
   // 테스트 — nexus run --test 는 same-tree auto-restart(포트 fallback 31415→31420+·state 격리).
   const script = process.argv[1];
-  const base = process.execPath && script ? [process.execPath, script] : ['monad'];
+  const base = process.execPath && script ? [process.execPath, script] : ['elanous'];
   return {
     env,
     command: [...base, 'nexus', 'run', '--test'],
-    description: '테스트 데몬(nexus run --test) 재시작 — state=<repo>/.monad-test/nexus/(격리)',
+    description: '테스트 데몬(nexus run --test) 재시작 — state=<repo>/.elanous-test/nexus/(격리)',
     note: '테스트 격리 재시작. config dir 는 공유되므로 운영 config 를 건드리지 않도록 --test 만(오염 사건 교훈).',
   };
 }

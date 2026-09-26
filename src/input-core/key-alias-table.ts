@@ -9,7 +9,7 @@
 //
 // Layering:
 //   1. Built-in defaults — Korean 2-set jamo → latin (this file).
-//   2. User overrides — `~/.config/monad/key-aliases.json` (loaded at
+//   2. User overrides — `~/.config/elanous/key-aliases.json` (loaded at
 //      bootstrap; missing-file = empty overrides, never an error).
 //   User entries override built-ins on conflict.
 //

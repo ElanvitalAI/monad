@@ -8,7 +8,7 @@
 //
 // 폴백이 fail-soft 라 로그 한 줄만 남기고 spawnSync 로 계속 갔고, 그 결과
 // ①headless.progress 라이브 관측 ②registry 등록(PWA 노출) ③부모 비블로킹
-// ④자식의 MONAD_PTY_ID(=lifecycle 발행) 가 **전부 조용히 사라졌다.**
+// ④자식의 ELANOUS_PTY_ID(=lifecycle 발행) 가 **전부 조용히 사라졌다.**
 //
 // 이 테스트는 "driver 가 넘기는 id 와 kind 가 실제 검증기를 통과하는가" 를 고정한다.
 // ⚠️ 검증 로직을 복제하지 않고 **registry 의 실제 판정 경로**를 쓴다 — 복제하면 검증기가
@@ -16,7 +16,7 @@
 
 import { describe, expect, test } from 'bun:test';
 import { mintPtyId, startPty, type StartOpts } from '../pty-shell/registry.js';
-import { runHeadlessGoalLoopPty } from './headless-monad-driver.js';
+import { runHeadlessGoalLoopPty } from './headless-elanous-driver.js';
 
 /** driver 가 실제로 넘긴 StartOpts 를 잡아채는 스텁 — PTY 는 뜨지 않는다. */
 function captureSpawnOpts(): { seen: StartOpts[]; spawn: (o: StartOpts) => never } {

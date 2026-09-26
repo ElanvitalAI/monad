@@ -18,7 +18,7 @@
 //    (none)                                                   → 'none'
 //
 // Why this order:
-//   - Codex OAuth is the only first-class OAuth path inside monad-
+//   - Codex OAuth is the only first-class OAuth path inside elanous-
 //     agent (loadTokens canonical store). It's the lowest-friction
 //     auth so it wins when present.
 //   - OPENAI_API_KEY is the most common API-key env in the wild

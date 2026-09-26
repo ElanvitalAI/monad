@@ -57,11 +57,11 @@ describe('listCombinedParkedGoals goal identity', () => {
     const id = runId('9');
     writeInterruptedLedger(ledgerDir, id, 'goal-cli-identity', 'CLI failure reason');
 
-    const result = spawnSync('bun', ['bin/monad.mjs', 'self', 'parked', '--json'], {
+    const result = spawnSync('bun', ['bin/elanous.mjs', 'self', 'parked', '--json'], {
       cwd: process.cwd(),
       encoding: 'utf8',
       timeout: 60_000,
-      env: { ...process.env, MONAD_DEBUG_LEVEL: 'off', MONAD_STATE_DIR: stateDir },
+      env: { ...process.env, ELANOUS_DEBUG_LEVEL: 'off', ELANOUS_STATE_DIR: stateDir },
     });
 
     expect(result.error).toBeUndefined();
@@ -86,11 +86,11 @@ describe('listCombinedParkedGoals goal identity', () => {
       results: [{ taskId: 'task-1', feature: 'original self-dev goal', status: 'failed', error: { code: 'FAILED', message: reason } }],
     }), 'utf8');
 
-    const result = spawnSync('bun', ['bin/monad.mjs', 'self', 'parked', '--json'], {
+    const result = spawnSync('bun', ['bin/elanous.mjs', 'self', 'parked', '--json'], {
       cwd: process.cwd(),
       encoding: 'utf8',
       timeout: 60_000,
-      env: { ...process.env, MONAD_DEBUG_LEVEL: 'off', MONAD_STATE_DIR: stateDir },
+      env: { ...process.env, ELANOUS_DEBUG_LEVEL: 'off', ELANOUS_STATE_DIR: stateDir },
     });
 
     expect(result.error).toBeUndefined();

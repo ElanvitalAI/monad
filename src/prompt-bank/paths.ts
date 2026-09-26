@@ -5,7 +5,7 @@ export function promptBankDataDir(): string {
   const base = process.env.XDG_DATA_HOME && process.env.XDG_DATA_HOME.trim()
     ? process.env.XDG_DATA_HOME
     : join(homedir(), '.local', 'share');
-  return join(base, 'monad');
+  return join(base, 'elanous');
 }
 
 export function promptBankDbPath(): string {

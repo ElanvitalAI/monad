@@ -36,7 +36,7 @@ describe('voice-quick-task — YAML shape', () => {
     const desc = loadWorkflow().description!;
     expect(desc).toContain('voice quick task');
     expect(desc).toContain('voice memo');
-    expect(desc).toContain('monad capture');
+    expect(desc).toContain('elanous capture');
     expect(desc).toContain('음성 받아 적어');
     expect(desc).toContain('remember this voice');
   });
@@ -77,7 +77,7 @@ describe('voice-quick-task — trigger isolation', () => {
     ];
     const morning = ['morning briefing', "what's today", '오늘 뭐 해야 해', 'daily kickoff', "today's plan"];
     const share = ['share-intake', 'process this', 'intake', '이거 처리해줘', '공유 처리'];
-    const mine = ['voice quick task', 'voice memo', 'monad capture', '음성 받아 적어', 'remember this voice'];
+    const mine = ['voice quick task', 'voice memo', 'elanous capture', '음성 받아 적어', 'remember this voice'];
     for (const a of mine) {
       for (const b of [...builtin, ...morning, ...share]) {
         expect(a.includes(b)).toBe(false);
@@ -176,7 +176,7 @@ describe('voice-quick-task — router cascade', () => {
     const prevCwd = process.cwd();
     process.chdir(tmpDir);
     try {
-      mkdirSync(join(tmpDir, '.monad', 'workflows'), { recursive: true });
+      mkdirSync(join(tmpDir, '.elanous', 'workflows'), { recursive: true });
       let llmCalls = 0;
       const fakeLLM: RouterLLMCaller = async () => {
         llmCalls += 1;
@@ -200,7 +200,7 @@ describe('voice-quick-task — router cascade', () => {
     const prevCwd = process.cwd();
     process.chdir(tmpDir);
     try {
-      mkdirSync(join(tmpDir, '.monad', 'workflows'), { recursive: true });
+      mkdirSync(join(tmpDir, '.elanous', 'workflows'), { recursive: true });
       const fakeLLM: RouterLLMCaller = async () => '/invoke-workflow nothing';
       const r = await routeWorkflow(
         { userMessage: '음성 받아 적어 줘' },

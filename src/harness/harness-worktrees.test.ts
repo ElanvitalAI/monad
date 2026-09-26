@@ -192,7 +192,7 @@ function gitWithOwners(owners: Record<string, string>, extraWorktrees = '') {
     if (args.includes('config')) {
       const key = args.at(-1);
       if (key === 'extensions.worktreeConfig') return { status: 0, stdout: 'true\n', stderr: '' };
-      if (key === 'monad.harness.owner' && path && owners[path]) return { status: 0, stdout: `${owners[path]}\n`, stderr: '' };
+      if (key === 'elanous.harness.owner' && path && owners[path]) return { status: 0, stdout: `${owners[path]}\n`, stderr: '' };
       return { status: 1, stdout: '', stderr: '' };
     }
     if (args.includes('rev-list')) return { status: 0, stdout: '0\n', stderr: '' };
@@ -359,7 +359,7 @@ describe('execHarnessWorktrees — owner run liveness from queryRunningRuns', ()
       if (args.includes('config')) {
         const key = args.at(-1);
         if (key === 'extensions.worktreeConfig') return { status: 0, stdout: 'true\n', stderr: '' };
-        if (key === 'monad.harness.owner' && path && owners[path]) {
+        if (key === 'elanous.harness.owner' && path && owners[path]) {
           return { status: 0, stdout: `${owners[path]}\n`, stderr: '' };
         }
         return { status: 1, stdout: '', stderr: '' };
@@ -466,7 +466,7 @@ describe('execHarnessWorktrees — owner run liveness from queryRunningRuns', ()
       if (args.includes('config')) {
         const key = args.at(-1);
         if (key === 'extensions.worktreeConfig') return { status: 0, stdout: 'true\n', stderr: '' };
-        if (key === 'monad.harness.owner' && path && owners[path]) {
+        if (key === 'elanous.harness.owner' && path && owners[path]) {
           return { status: 0, stdout: `${owners[path]}\n`, stderr: '' };
         }
         return { status: 1, stdout: '', stderr: '' };

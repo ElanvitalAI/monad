@@ -4,7 +4,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { AcpAgent } from '../src/acp/client.js';
 import { ACP_BACKENDS } from '../src/acp/backend-registry.js';
-import { resetMonadConfigDir, setMonadConfigDir } from '../src/monad-config-dir.js';
+import { resetElanousConfigDir, setElanousConfigDir } from '../src/elanous-config-dir.js';
 import { resetUserConfig } from '../src/user-config.js';
 
 const STUB_ID = 'test-bin-path-config-stub';
@@ -26,13 +26,13 @@ afterAll(() => { delete ACP_BACKENDS[STUB_ID]; });
 
 beforeEach(() => {
   configDir = mkdtempSync(join(tmpdir(), 'acp-bin-path-'));
-  setMonadConfigDir(configDir);
+  setElanousConfigDir(configDir);
   resetUserConfig();
 });
 
 afterEach(() => {
   resetUserConfig();
-  resetMonadConfigDir();
+  resetElanousConfigDir();
   rmSync(configDir, { recursive: true, force: true });
 });
 

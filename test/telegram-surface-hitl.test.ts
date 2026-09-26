@@ -107,7 +107,7 @@ describe('createTelegramSurfaceHitl', () => {
     expect(fake.sent[0]!.chatId).toBe(42);
     expect(fake.sent[0]!.threadId).toBe(7);
     const yesData = fake.dataFor(0, 'yes');
-    expect(yesData).toStartWith('monad-hitl:');
+    expect(yesData).toStartWith('elanous-hitl:');
     expect(yesData).toEndWith(':yes');
     expect(yesData).not.toContain('req-A');
     expect(yesData.length).toBeLessThanOrEqual(64);
@@ -176,7 +176,7 @@ describe('createTelegramSurfaceHitl', () => {
     const fake = makeFakeBot();
     const hitl = createTelegramSurfaceHitl(fake.bot as never);
     hitl.confirmChannelForChat(1); // no pending request
-    await fake.fireCallback('monad-hitl:nope:yes');
+    await fake.fireCallback('elanous-hitl:nope:yes');
     // Did not answer the callback — leaves it for a sibling handler.
     expect(fake.acks).toHaveLength(0);
   });

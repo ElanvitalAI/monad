@@ -8,7 +8,7 @@ import {
   createRealKeyArrivalAdapters,
   DEFAULT_KEY_ARRIVAL_LOG_LIMIT,
   DEFAULT_KEY_ARRIVAL_LOG_SINCE,
-  DEFAULT_MONAD_COMMAND,
+  DEFAULT_ELANOUS_COMMAND,
   DISPLAY_KEY_ARRIVAL_EVENTS,
   DISPLAY_KEY_CATEGORY,
   KEY_ARRIVAL_ADAPTER_NAMES,
@@ -19,8 +19,8 @@ import {
   type KeyArrivalAdapters,
   type MeasureKeyArrivalCliDeps,
   type MeasureKeyArrivalRequest,
-  type MonadCommandResult,
-  type MonadCommandRunner,
+  type ElanousCommandResult,
+  type ElanousCommandRunner,
 } from './measure-key-arrival.js';
 
 type OptionalKeys<T> = {
@@ -783,9 +783,9 @@ function displayKeyRow(id: number, event: string, key: string): Record<string, u
   return { id, category: DISPLAY_KEY_CATEGORY, event, data: { key } };
 }
 
-function fakeMonad(
-  handler: (argv: readonly string[], calls: string[][]) => MonadCommandResult,
-): { run: MonadCommandRunner; calls: string[][] } {
+function fakeElanous(
+  handler: (argv: readonly string[], calls: string[][]) => ElanousCommandResult,
+): { run: ElanousCommandRunner; calls: string[][] } {
   const calls: string[][] = [];
   return {
     calls,
@@ -796,17 +796,17 @@ function fakeMonad(
   };
 }
 
-function okLogs(rows: unknown[]): MonadCommandResult {
+function okLogs(rows: unknown[]): ElanousCommandResult {
   return { exitCode: 0, stdout: rows.map((row) => JSON.stringify(row)).join('\n'), stderr: '' };
 }
 
-function okPty(): MonadCommandResult {
+function okPty(): ElanousCommandResult {
   return { exitCode: 0, stdout: 'ok', stderr: '' };
 }
 
-describe('measure-key-arrival — real monad adapter', () => {
-  test('defaults to bun bin/monad.mjs and only the observed pty/logs commands', async () => {
-    const { run, calls } = fakeMonad((argv) => {
+describe('measure-key-arrival — real elanous adapter', () => {
+  test('defaults to bun bin/elanous.mjs and only the observed pty/logs commands', async () => {
+    const { run, calls } = fakeElanous((argv) => {
       if (argv.includes('logs')) return okLogs([displayKeyRow(4, 'no-match', 'other')]);
       return okPty();
     });
@@ -817,8 +817,8 @@ describe('measure-key-arrival — real monad adapter', () => {
       adapters: deps.adapters,
       queryDisplayKey: deps.queryDisplayKey,
     });
-    expect([...DEFAULT_MONAD_COMMAND]).toEqual(['bun', 'bin/monad.mjs']);
-    expect(calls.every((argv) => argv[0] === 'bun' && argv[1] === 'bin/monad.mjs')).toBe(true);
+    expect([...DEFAULT_ELANOUS_COMMAND]).toEqual(['bun', 'bin/elanous.mjs']);
+    expect(calls.every((argv) => argv[0] === 'bun' && argv[1] === 'bin/elanous.mjs')).toBe(true);
     expect(calls.map((argv) => argv.slice(2, 4))).toEqual([
       ['logs', '--exact-category'],
       ['pty', 'snapshot'],
@@ -828,14 +828,14 @@ describe('measure-key-arrival — real monad adapter', () => {
       ['logs', '--exact-category'],
     ]);
     expect(calls[0]).toEqual([
-      'bun', 'bin/monad.mjs', 'logs',
+      'bun', 'bin/elanous.mjs', 'logs',
       '--exact-category', DISPLAY_KEY_CATEGORY,
       '--since', DEFAULT_KEY_ARRIVAL_LOG_SINCE,
       '--limit', String(DEFAULT_KEY_ARRIVAL_LOG_LIMIT),
       '--json', '--json-data', '--all', '--include-test',
     ]);
-    expect(calls[2]).toEqual(['bun', 'bin/monad.mjs', 'pty', 'key', 'screen-a', 'ctrl+u']);
-    expect(calls[4]).toEqual(['bun', 'bin/monad.mjs', 'pty', 'key', 'screen-a', 'ctrl+n']);
+    expect(calls[2]).toEqual(['bun', 'bin/elanous.mjs', 'pty', 'key', 'screen-a', 'ctrl+u']);
+    expect(calls[4]).toEqual(['bun', 'bin/elanous.mjs', 'pty', 'key', 'screen-a', 'ctrl+n']);
     expect(calls.some((argv) => argv.includes('text'))).toBe(false);
     expect(calls.flat().includes('--before')).toBe(false);
     expect(calls.flat().includes('--after')).toBe(false);
@@ -844,18 +844,18 @@ describe('measure-key-arrival — real monad adapter', () => {
   });
 
   test('command runner is injectable and does not invent pagination options', async () => {
-    const logs = fakeMonad((argv) => {
+    const logs = fakeElanous((argv) => {
       if (argv.includes('logs')) return okLogs([]);
       return okPty();
     });
-    const deps = createRealKeyArrivalAdapters({ command: ['custom-monad'], run: logs.run });
+    const deps = createRealKeyArrivalAdapters({ command: ['custom-elanous'], run: logs.run });
     await measureKeyArrival({
       keys: ['/'],
       screenRef: 'pane-1',
       adapters: deps.adapters,
       queryDisplayKey: deps.queryDisplayKey,
     });
-    expect(logs.calls.every((argv) => argv[0] === 'custom-monad')).toBe(true);
+    expect(logs.calls.every((argv) => argv[0] === 'custom-elanous')).toBe(true);
     expect(logs.calls.some((argv) => argv.slice(1, 3).join(' ') === 'pty text' && argv.includes('/'))).toBe(true);
     expect(logs.calls.some((argv) => argv.includes('--before') || argv.includes('--after') || argv.includes('afterId'))).toBe(false);
     const source = readFileSync(SOURCE_PATH, 'utf8');
@@ -865,7 +865,7 @@ describe('measure-key-arrival — real monad adapter', () => {
 
   test('rows at or below the captured id are not this key even when event and data.key match', async () => {
     let logs = 0;
-    const { run } = fakeMonad((argv) => {
+    const { run } = fakeElanous((argv) => {
       if (argv.includes('logs')) {
         logs += 1;
         return okLogs([
@@ -889,7 +889,7 @@ describe('measure-key-arrival — real monad adapter', () => {
 
   test('only rows with id greater than the captured baseline count as this key', async () => {
     let logs = 0;
-    const { run } = fakeMonad((argv) => {
+    const { run } = fakeElanous((argv) => {
       if (!argv.includes('logs')) return okPty();
       logs += 1;
       if (logs <= 2) {
@@ -911,7 +911,7 @@ describe('measure-key-arrival — real monad adapter', () => {
   });
 
   test('C-n is sent as pty key ctrl+n and never as pty text', async () => {
-    const { run, calls } = fakeMonad((argv) => {
+    const { run, calls } = fakeElanous((argv) => {
       if (argv.includes('logs')) return okLogs([displayKeyRow(4, 'no-match', 'other')]);
       return okPty();
     });
@@ -919,14 +919,14 @@ describe('measure-key-arrival — real monad adapter', () => {
     await deps.adapters.confirmScreen('screen-a');
     await deps.adapters.sendKey('C-n');
     const sendCalls = calls.filter((argv) => argv.includes('pty') && !argv.includes('snapshot'));
-    expect(sendCalls).toEqual([['bun', 'bin/monad.mjs', 'pty', 'key', 'screen-a', 'ctrl+n']]);
+    expect(sendCalls).toEqual([['bun', 'bin/elanous.mjs', 'pty', 'key', 'screen-a', 'ctrl+n']]);
     expect(calls.some((argv) => argv.includes('text'))).toBe(false);
     expect(calls.some((argv) => argv.includes('ctrl+n'))).toBe(true);
     expect(calls.some((argv) => argv.includes('key'))).toBe(true);
   });
 
   test('ordinary text still uses pty text', async () => {
-    const { run, calls } = fakeMonad(() => okPty());
+    const { run, calls } = fakeElanous(() => okPty());
     const deps = createRealKeyArrivalAdapters({ run });
     await deps.adapters.confirmScreen('pane-1');
     await deps.adapters.sendKey('/');
@@ -935,7 +935,7 @@ describe('measure-key-arrival — real monad adapter', () => {
   });
 
   test('a pty key rejection is could-not-send, not not-arrived, with nonzero exit', async () => {
-    const { run, calls } = fakeMonad((argv) => {
+    const { run, calls } = fakeElanous((argv) => {
       if (argv.includes('logs')) return okLogs([displayKeyRow(4, 'no-match', 'other')]);
       if (argv.includes('pty') && argv.includes('key') && argv.includes('A-n')) {
         return {
@@ -962,13 +962,13 @@ describe('measure-key-arrival — real monad adapter', () => {
   });
 
   test('resetScreen clears the input buffer with pty key and does not only snapshot', async () => {
-    const { run, calls } = fakeMonad((argv) => {
+    const { run, calls } = fakeElanous((argv) => {
       if (argv.includes('logs')) return okLogs([]);
       return okPty();
     });
     const deps = createRealKeyArrivalAdapters({ run });
     await deps.adapters.resetScreen('screen-a');
-    expect(calls[0]).toEqual(['bun', 'bin/monad.mjs', 'pty', 'key', 'screen-a', 'ctrl+u']);
+    expect(calls[0]).toEqual(['bun', 'bin/elanous.mjs', 'pty', 'key', 'screen-a', 'ctrl+u']);
     expect(calls[1]?.slice(2, 4)).toEqual(['logs', '--exact-category']);
     expect(calls.some((argv) => argv.includes('snapshot'))).toBe(false);
     expect(calls.some((argv) => argv.includes('pty') && argv.includes('key') && argv.includes('ctrl+u'))).toBe(true);
@@ -976,7 +976,7 @@ describe('measure-key-arrival — real monad adapter', () => {
 
   test('reset ctrl+u display-key log is not counted as C-u arrival', async () => {
     let logs = 0;
-    const { run, calls } = fakeMonad((argv) => {
+    const { run, calls } = fakeElanous((argv) => {
       if (!argv.includes('logs')) return okPty();
       logs += 1;
       if (logs === 1) return okLogs([displayKeyRow(10, 'no-match', 'other')]);
@@ -1001,7 +1001,7 @@ describe('measure-key-arrival — real monad adapter', () => {
 
   test('C-u arrival counts only the post-reset send, not the reset event', async () => {
     let logs = 0;
-    const { run } = fakeMonad((argv) => {
+    const { run } = fakeElanous((argv) => {
       if (!argv.includes('logs')) return okPty();
       logs += 1;
       if (logs === 1) return okLogs([displayKeyRow(10, 'no-match', 'other')]);
@@ -1030,7 +1030,7 @@ describe('measure-key-arrival — real monad adapter', () => {
 
   test('failed cursor recapture after reset is could-not-reset, not arrived', async () => {
     let logs = 0;
-    const { run } = fakeMonad((argv) => {
+    const { run } = fakeElanous((argv) => {
       if (argv.includes('logs')) {
         logs += 1;
         if (logs === 1) return okLogs([displayKeyRow(10, 'no-match', 'other')]);
@@ -1090,7 +1090,7 @@ describe('measure-key-arrival — real monad adapter', () => {
   test('limitReached meta is truncated; missing meta is not-arrived; failed query is query-failed', async () => {
     const cases: Array<{
       name: string;
-      query: MonadCommandResult;
+      query: ElanousCommandResult;
       status: 'truncated' | 'not-arrived' | 'query-failed';
     }> = [
       {
@@ -1111,7 +1111,7 @@ describe('measure-key-arrival — real monad adapter', () => {
     ];
     for (const item of cases) {
       let logs = 0;
-      const { run } = fakeMonad((argv) => {
+      const { run } = fakeElanous((argv) => {
         if (!argv.includes('logs')) return okPty();
         logs += 1;
         if (logs <= 2) return okLogs([displayKeyRow(9, 'no-match', 'other')]);
@@ -1192,7 +1192,7 @@ describe('measure-key-arrival — direct execution', () => {
   test('a missing screen ref is named, exits nonzero, and is not counted as not-arrived', () => {
     const dir = mkdtempSync(join(tmpdir(), 'key-arrival-missing-screen-'));
     temporaryRoots.push(dir);
-    const fake = join(dir, 'monad-cmd');
+    const fake = join(dir, 'elanous-cmd');
     const screenRef = 'missing-screen-ref-for-key-arrival';
     writeFileSync(fake, `#!/bin/sh
 if [ "$1" = pty ] && [ "$2" = snapshot ]; then

@@ -26,13 +26,13 @@
  * `DNSName` 으로 «재서» 쓴다. 브라우저는 그 명령을 못 돌리므로 순서대로 고른다:
  * ```
  * ① ?host=<이름>                    사람이 준 값 — 유효하면 이 기기에 «기억»한다
- * ② 이 기기에 기억된 값              localStorage `monad.botlab.wallHost`
- * ③ 빌드 설정                        NEXT_PUBLIC_MONAD_BOTLAB_HOST (정적 export 라 «빌드 때» 박힌다)
+ * ② 이 기기에 기억된 값              localStorage `elanous.botlab.wallHost`
+ * ③ 빌드 설정                        NEXT_PUBLIC_ELANOUS_BOTLAB_HOST (정적 export 라 «빌드 때» 박힌다)
  * ④ 없음                             벽을 안 띄우고 「?host= 를 달라」고 말한다
  * ```
  */
-export const DEFAULT_WALL_HOST: string = (process.env.NEXT_PUBLIC_MONAD_BOTLAB_HOST ?? '').trim();
-export const WALL_HOST_STORAGE_KEY = 'monad.botlab.wallHost';
+export const DEFAULT_WALL_HOST: string = (process.env.NEXT_PUBLIC_ELANOUS_BOTLAB_HOST ?? '').trim();
+export const WALL_HOST_STORAGE_KEY = 'elanous.botlab.wallHost';
 
 export interface WallHost {
   host: string;

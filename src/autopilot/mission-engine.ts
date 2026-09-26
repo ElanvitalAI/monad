@@ -13,7 +13,7 @@ import { tierModel } from '../llm/model-defaults.js';
 import { openAutopilotMissionsDb, getMission, setMissionSpec, listMissions, type MissionRow } from './mission-registry.js';
 import { missionLifecycleGate } from './mission-lifecycle-gate.js';
 import { debug } from '../debug/log.js';
-import { monadStateRoot } from './state-paths.js';
+import { elanousStateRoot } from './state-paths.js';
 import { dispatchScheduleManage } from '../domains/schedule-manage-tool.js';
 import { loadMaterializeMandate, evaluateMaterializeMandate, type MaterializeMandate } from './materialize-mandate.js';
 import { TaskStore } from '../task-orchestrator/store.js';
@@ -33,7 +33,7 @@ import { spawn } from 'node:child_process';
 import { existsSync, mkdirSync, writeFileSync, openSync, appendFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { homedir } from 'node:os';
-import { getMonadConfigDir } from '../monad-config-dir.js';
+import { getElanousConfigDir } from '../elanous-config-dir.js';
 
 /** task 미션 1회 집행 — scripts/run-mission.ts <id> 를 detached 로 spawn(디스패처 불요).
  *  데몬 이벤트루프 무차단·결과는 run-mission 이 sendOutbound 로 발송. fail-soft(스크립트 없으면 no-op).
@@ -42,7 +42,7 @@ import { getMonadConfigDir } from '../monad-config-dir.js';
  *  durable 경로. spawn(리다이렉트)과 run-mission(evidenceRefs)이 같은 경로를 쓰도록 단일 출처. */
 export function missionRunLogPath(missionId: string): string {
   const safe = (missionId || 'unknown').replace(/[^\w.-]/g, '_').slice(0, 80);
-  return join(monadStateRoot(), 'conatus/missions', safe, 'run.log');
+  return join(elanousStateRoot(), 'conatus/missions', safe, 'run.log');
 }
 
 export function defaultSpawnRunMission(missionId: string): boolean {
@@ -54,7 +54,7 @@ export function defaultSpawnRunMission(missionId: string): boolean {
   const script = candidates.find((p) => existsSync(p));
   if (!script) return false;
   // stdio 를 미션별 로그파일로(PLAN O3) — 이전엔 공유 /tmp/run-mission.log(휘발·미션 섞임·비쿼리).
-  // 이제 ~/.monad/conatus/missions/<id>/run.log 로 미션별 영속(진단 evidenceRefs 가 가리킴).
+  // 이제 ~/.elanous/conatus/missions/<id>/run.log 로 미션별 영속(진단 evidenceRefs 가 가리킴).
   let stdio: 'ignore' | ['ignore', number, number] = 'ignore';
   try {
     const logPath = missionRunLogPath(missionId);
@@ -62,14 +62,14 @@ export function defaultSpawnRunMission(missionId: string): boolean {
     const fd = openSync(logPath, 'a');
     stdio = ['ignore', fd, fd];
   } catch { /* fail-soft */ }
-  // ★ 인스턴스 스코프 전파(ISO·2026-07-19 조율자 인프라 후속) — config-dir 는 setMonadConfigDir
+  // ★ 인스턴스 스코프 전파(ISO·2026-07-19 조율자 인프라 후속) — config-dir 는 setElanousConfigDir
   // in-process override 라 env 로 상속 안 됨(config-dir-unify: env 미러 제거). 형제 경로
   // se-mission-prepare(mission-prepare-spawn.ts:56)처럼 argv 로 재전달해야 자식 run-mission 이
-  // 데몬과 같은 config(게이트·예산)/tasks.db(격리 테스트면 .monad-test)를 읽는다. 미전파 시 자식이
-  // 항상 ~/.monad/config.json 을 읽어 "데몬 시작 후 config 변경이 미반영"(재시작 필요) — tiny 예산이
+  // 데몬과 같은 config(게이트·예산)/tasks.db(격리 테스트면 .elanous-test)를 읽는다. 미전파 시 자식이
+  // 항상 ~/.elanous/config.json 을 읽어 "데몬 시작 후 config 변경이 미반영"(재시작 필요) — tiny 예산이
   // 안 먹힌 근본. 자식이 첫 줄에서 --config-dir 을 strip(applyConfigDirFlagFromArgv) → argv[2]=missionId 유지.
   try {
-    const child = spawn(process.execPath, [script, '--config-dir', getMonadConfigDir(), missionId], { detached: true, stdio });
+    const child = spawn(process.execPath, [script, '--config-dir', getElanousConfigDir(), missionId], { detached: true, stdio });
     // ★ detached child 실패(ENOENT 등)는 비동기 error 이벤트 — 부모가 unref 후 곧 exit 하므로 완벽 관측은
     //   불가(fire-and-forget 설계·데몬 무차단). best-effort 로 error 를 관측(자기인지·재개 실패 흔적).
     child.on('error', (e) => { try { debug.log('mission.exec.split-resume', 'respawn-child-error', { missionId, error: e instanceof Error ? e.message.slice(0, 120) : String(e) }, { level: 'error' }); } catch { /* fail-soft */ } });
@@ -280,7 +280,7 @@ export function autoDecomposeMission(missionId: string, deps: { store?: TaskStor
 
 // ── 크기적응 멀티페이즈 분해 (ref 리서치 2026-07-11) ──────────────────────────
 // claude/codex/gemini/grok 공통 원리: 목표의 객관적 복잡도로 분해 여부를 게이팅한다
-// (작으면 직접 실행·오버헤드 회피, 크면 멀티페이즈 분해). monad 는 재료가 이미 있다
+// (작으면 직접 실행·오버헤드 회피, 크면 멀티페이즈 분해). elanous 는 재료가 이미 있다
 // (heuristicTriage tier + TaskGenerator.decompose). 여기서 배선한다:
 //   · 작은(light) 미션 → autoDecomposeMission(단일 subagent 태스크·빠름).
 //   · 큰(heavy) 미션 → decomposeMissionToPhases(TaskGenerator 로 N 페이즈·dependsOn).
@@ -343,7 +343,7 @@ function logDecomposeCrash(missionId: string, e: unknown, ctx: DecomposeCrashCon
   if (process.env.NODE_ENV === 'test') return; // 테스트 격리 — 실 FS 미기록.
   try {
     const rec = buildDecomposeCrashRecord(missionId, e, ctx, new Date().toISOString());
-    const path = join(monadStateRoot(), 'conatus/decompose_crash.log');
+    const path = join(elanousStateRoot(), 'conatus/decompose_crash.log');
     mkdirSync(dirname(path), { recursive: true });
     appendFileSync(path, `${JSON.stringify(rec)}\n`);
   } catch { /* fail-soft */ }
@@ -503,7 +503,7 @@ export async function decomposeMissionToPhases(
         maxTasks: deps.maxTasks ?? 8,
       });
       // ★ 관측 파리티(대표 2026-07-17) — code/validationErrors 를 logs.db 에도 구조화 남긴다. 종전엔
-      //   error 요약(200자)만 가서 `monad logs --category mission.engine.decompose` 로 "왜 스키마 위반?"을
+      //   error 요약(200자)만 가서 `elanous logs --category mission.engine.decompose` 로 "왜 스키마 위반?"을
       //   못 봤다(decompose_crash.log 파일에만·관측 툴 미도달). 이제 검증 에러가 관측 툴로 즉시 조회되고,
       //   전문(rawTextHead·LLM 원문)은 crashLog 포인터로 안내. duck-typing(DecomposeError.code/validationErrors).
       const de = e as Partial<{ code: string; validationErrors: unknown; rawText: string }>;
@@ -522,7 +522,7 @@ export async function decomposeMissionToPhases(
     const tasks = deps.presetTasks?.length ? deps.presetTasks : result!.proposal.tasks;
     if (deps.presetTasks?.length) { try { debug.log('mission.engine.decompose', 'preset-rfc', { missionId, tasks: tasks.length }); } catch { /* fail-soft */ } }
     // ★ P2(통합 sizing 2026-07-22) — 분해 산출을 SSOT gradePhaseCompletability 로 사전 채점(관측 우선·제1원칙).
-    //   "처음부터 완주 가능 크기"로 잘랐는지 자기인지 → `monad logs --category mission.engine.sizing`. 텍스트만
+    //   "처음부터 완주 가능 크기"로 잘랐는지 자기인지 → `elanous logs --category mission.engine.sizing`. 텍스트만
     //   (files/est 미지)이라 base 는 corroboration(concerns≥3+acceptance≥6/제목결합)일 때만 too_large →
     //   2026-07-19 오탐 회귀 없음. 관측만(behavior 무변경) — 분해↔실행 크기 통합의 사전예측 렌즈.
     try {
@@ -615,7 +615,7 @@ export async function decomposeMissionToPhases(
       // ★ 세부 스테이지 관측(대표 2026-07-21·블랙박스 해소) — sol-done→memory-record 사이 arc.classify/
       //   preflight 는 각 sol 콜(20~60s) 완료 시에만 개별 로그를 내, 그 사이가 무신호로 보인다(관측 사각).
       //   stage enter/done 을 mission.build.arc 로 남겨 "지금 어느 세부 단계인지"를 조회 가능하게(개별 결과는
-      //   여전히 mission.arc.classify·mission.arc.preflight 가 낸다). `monad logs --category mission.build.arc`.
+      //   여전히 mission.arc.classify·mission.arc.preflight 가 낸다). `elanous logs --category mission.build.arc`.
       try { debug.log('mission.build.arc', 'classify-enter', { missionId: m.id, phases: phasesForArc.length, arcHint: arcHintForClassify ?? null }); } catch { /* fail-soft */ }
       const cls = await classifyArcs({ goal: m.goal, phases: phasesForArc, ...(arcHintForClassify ? { arcHint: arcHintForClassify } : {}) });
       try { debug.log('mission.build.arc', 'classify-done', { missionId: m.id, arcModel: cls.arcModel, arcs: cls.arcs.length }); } catch { /* fail-soft */ }
@@ -647,7 +647,7 @@ export async function decomposeMissionToPhases(
           arcsToSave = cls.arcs.map((a, i) => (verdicts[i] ? { ...a, preflightVerdict: verdicts[i] } : a));
           const flagged = verdicts.filter((v) => v.verdict !== 'founded');
           // ★ 제1원칙(대표 2026-07-21) — flagged 집계를 logs.db 로 승격. 종전 console.log 은 run.log(prepare
-          //   트레일)에만 남아 `monad logs` 조회 불가(= 관측 안 한 것). 개별 verdict+reason 은 mission.arc.preflight
+          //   트레일)에만 남아 `elanous logs` 조회 불가(= 관측 안 한 것). 개별 verdict+reason 은 mission.arc.preflight
           //   가, 집계(몇/몇·verdict→action)는 여기서 남긴다. prepare-log tail 용 console.log 는 병행 유지.
           try { debug.log('mission.build.arc', 'preflight-done', { missionId: m.id, flagged: flagged.length, of: verdicts.length, verdicts: flagged.map((v) => `${v.verdict}→${v.action}`) }); } catch { /* fail-soft */ }
           if (flagged.length) console.log(`[arc-preflight] ⚠️ 허상/과대 의심 아크 ${flagged.length}/${verdicts.length}건 — HITL 검토 권장(${flagged.map((v) => `${v.verdict}→${v.action}`).join(', ')})`);
@@ -719,23 +719,23 @@ export async function decomposeMissionToPhases(
 // ★ 미션 분해 = 코딩이 아니라 리즈닝(계획·의존성 분석·리스크 평가·페이즈 설계·대표 지시
 //   2026-07-11). 튜닝 발견(terra=코딩·sol=심층추론)에 따라 분해는 sol + 높은 effort 를 쓴다.
 //   기본 sol/high(리즈닝 sweet spot·max 는 비용·latency 급증). env 로 sweet-spot 실험 가능:
-//   MONAD_DECOMPOSE_MODEL·MONAD_DECOMPOSE_EFFORT(minimal|low|medium|high|xhigh|max).
-export const DECOMPOSE_MODEL = process.env.MONAD_DECOMPOSE_MODEL || tierModel('best');
+//   ELANOUS_DECOMPOSE_MODEL·ELANOUS_DECOMPOSE_EFFORT(minimal|low|medium|high|xhigh|max).
+export const DECOMPOSE_MODEL = process.env.ELANOUS_DECOMPOSE_MODEL || tierModel('best');
 export type DecomposeEffort = 'minimal' | 'low' | 'medium' | 'high' | 'xhigh' | 'max';
-const DECOMPOSE_EFFORT = (process.env.MONAD_DECOMPOSE_EFFORT || 'high') as DecomposeEffort;
+const DECOMPOSE_EFFORT = (process.env.ELANOUS_DECOMPOSE_EFFORT || 'high') as DecomposeEffort;
 /** heavy tier 기본 decompose effort(대표 2026-07-21·#4846 병목 힘빼기) — 종전 'high'.
  *  초기 sol reasoning high→medium 이 라이브 빌드 병목의 60-80%(3.7분 실측·단일 chokepoint). effort 는
  *  분해 페이즈 수가 아니라 reasoning 깊이만 낮춘다 — 분할 신호·단일책임 가드레일(objective)·캡 8 은 불변
- *  이라 페이즈 응집도/개수는 구조적으로 유지(무회귀). 롤백/실측 seam: MONAD_DECOMPOSE_HEAVY_EFFORT=high
+ *  이라 페이즈 응집도/개수는 구조적으로 유지(무회귀). 롤백/실측 seam: ELANOUS_DECOMPOSE_HEAVY_EFFORT=high
  *  로 세팅하면 코드 변경 없이 종전 동작 재현(라이브 before/after A/B). call-time read(env override 와 동일). */
 export const DECOMPOSE_HEAVY_EFFORT_DEFAULT: DecomposeEffort = 'medium';
 /** ★ tier 기반 decompose effort(대표 2026-07-19 도입·2026-07-21 병목 힘빼기) — heavy=medium·light=medium.
- *  env(MONAD_DECOMPOSE_EFFORT) 있으면 전 tier 최우선(실험 override). heavy 만 별도로 되돌릴 땐
- *  MONAD_DECOMPOSE_HEAVY_EFFORT seam(=high 로 종전 재현). 호출측(se-mission-prepare)이 m.tier 로 호출해
+ *  env(ELANOUS_DECOMPOSE_EFFORT) 있으면 전 tier 최우선(실험 override). heavy 만 별도로 되돌릴 땐
+ *  ELANOUS_DECOMPOSE_HEAVY_EFFORT seam(=high 로 종전 재현). 호출측(se-mission-prepare)이 m.tier 로 호출해
  *  deps.decomposeEffort 로 전달. effort 선택을 관측(제1원칙·before/after 실측)에 남긴다. */
 export function resolveDecomposeEffort(tier?: string | null): DecomposeEffort {
-  const env = process.env.MONAD_DECOMPOSE_EFFORT;
-  const heavyEffort = (process.env.MONAD_DECOMPOSE_HEAVY_EFFORT || DECOMPOSE_HEAVY_EFFORT_DEFAULT) as DecomposeEffort;
+  const env = process.env.ELANOUS_DECOMPOSE_EFFORT;
+  const heavyEffort = (process.env.ELANOUS_DECOMPOSE_HEAVY_EFFORT || DECOMPOSE_HEAVY_EFFORT_DEFAULT) as DecomposeEffort;
   const effort: DecomposeEffort = env
     ? (env as DecomposeEffort)
     : tier === 'heavy' ? heavyEffort : 'medium';
@@ -744,7 +744,7 @@ export function resolveDecomposeEffort(tier?: string | null): DecomposeEffort {
   return effort;
 }
 /** Opus 폴백 분해 모델(HITL 승인 시·유료) — Codex 분해가 transient 재시도 후에도 실패할 때. */
-export const DECOMPOSE_OPUS_MODEL = process.env.MONAD_DECOMPOSE_OPUS_MODEL || 'claude-opus-4-8';
+export const DECOMPOSE_OPUS_MODEL = process.env.ELANOUS_DECOMPOSE_OPUS_MODEL || 'claude-opus-4-8';
 
 /** 일시적(재시도 가치 있는) LLM 오류 — 5xx(520 Cloudflare 등)·429·네트워크. 스키마위반/빈응답은 제외
  *  (재시도해도 같음). Codex API 520 같은 게이트웨이 오류에 2분 재시도를 붙이는 판정. 순수. */
@@ -755,8 +755,8 @@ export function isTransientLlmError(e: unknown): boolean {
 }
 
 /** transient 재시도 파라미터 — 대표 설계(2026-07-15): 임시 Codex 실패는 2분 후 1회 재시도. */
-const DECOMPOSE_RETRY_DELAY_MS = Number(process.env.MONAD_DECOMPOSE_RETRY_MS || 120_000); // 2분
-const DECOMPOSE_RETRIES = Number(process.env.MONAD_DECOMPOSE_RETRIES ?? 1);
+const DECOMPOSE_RETRY_DELAY_MS = Number(process.env.ELANOUS_DECOMPOSE_RETRY_MS || 120_000); // 2분
+const DECOMPOSE_RETRIES = Number(process.env.ELANOUS_DECOMPOSE_RETRIES ?? 1);
 
 /**
  * transient(재시도 가치 있는) 오류에만 지연 후 재시도하는 래퍼. 비-transient(스키마위반·빈응답 등)는 즉시
@@ -791,12 +791,12 @@ export async function defaultDecomposeCallable(modelOverride?: string, missionId
   const { streamLLM, resolveDefaultProvider } = await import('../llm.js');
   const provider = resolveDefaultProvider(model);
   // ★ 분해 스트리밍 관측(대표 2026-07-17) — sol 출력 증분을 미션별 임시 파일에 실시간 append 해
-  //   "분해 중 뭘 쓰는지"를 진행 중에도 `monad autopilot decompose-stream` 로 조회 가능하게(블랙박스 해소).
+  //   "분해 중 뭘 쓰는지"를 진행 중에도 `elanous autopilot decompose-stream` 로 조회 가능하게(블랙박스 해소).
   const { appendDecomposeStream } = missionId ? await import('./mission-decompose-stream.js') : { appendDecomposeStream: undefined };
   return async ({ prompt, signal }) => withTransientRetry(async () => {
     // ★ 관측 하트비트(대표 2026-07-21·"왜 분해가 오래 걸리나") — sol high reasoning 은 delta 없이 수분 걸려
     //   shape→decompose 사이가 관측 사각(logs.db 무신호·stuck vs slow 구분 불가)이었다. sol-start/20s heartbeat/
-    //   sol-done 을 logs.db 로 → `monad logs --category mission.build.decompose`. unref 로 종료 무방해.
+    //   sol-done 을 logs.db 로 → `elanous logs --category mission.build.decompose`. unref 로 종료 무방해.
     const startedAt = Date.now();
     let streamChars = 0;
     try { debug.log('mission.build.decompose', 'sol-start', { missionId, model, effort: effortOverride ?? DECOMPOSE_EFFORT }); } catch { /* fail-soft */ }

@@ -67,7 +67,7 @@ describe('registerMcpClients handshake timeout configuration', () => {
     expect(handle.perServer.slow).toMatchObject({ status: 'failed' });
     expect(handle.perServer.healthy).toEqual({ status: 'ready', toolCount: 0 });
     expect(warnings).toContainEqual(expect.stringContaining('slow was excluded after its 1ms handshake timeout'));
-    expect(warnings).toContainEqual(expect.stringContaining('raise mcp.handshakeTimeoutMs or mcp.servers[].handshakeTimeoutMs, then run monad mcp reload'));
+    expect(warnings).toContainEqual(expect.stringContaining('raise mcp.handshakeTimeoutMs or mcp.servers[].handshakeTimeoutMs, then run elanous mcp reload'));
     await handle.shutdown();
   });
 });

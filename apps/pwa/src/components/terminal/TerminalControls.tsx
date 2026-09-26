@@ -223,7 +223,7 @@ export function TerminalControls({ terminalId, onClear, onRecordingChange, onAtt
           onClick={voice.onToggle}
           disabled={voice.disabled}
           title={voice.disabled ? '마이크 사용 불가 (insecure context 등)' : `${voice.phaseLabel} · xterm 으로 typing`}
-          data-monad-action="webterm-voice-toggle-controls"
+          data-elanous-action="webterm-voice-toggle-controls"
           aria-pressed={voice.active}
           className={cn(
             'inline-flex items-center gap-1 rounded border px-2 py-0.5',

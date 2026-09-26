@@ -988,7 +988,7 @@ describe('dashboard ad run setup factory', () => {
       throw new Error('expected dashboard run setups');
     }
 
-    expect(firstDryRun.workDir).toMatch(/^\/tmp\/dashboard-ad-factory\/Movies\/monad-ad\/2026-09-12-dashboard-ad-\d{6}-\d+$/);
+    expect(firstDryRun.workDir).toMatch(/^\/tmp\/dashboard-ad-factory\/Movies\/elanous-ad\/2026-09-12-dashboard-ad-\d{6}-\d+$/);
     expect(firstSpendRun.workDir).toBe(firstDryRun.workDir);
     expect(secondDryRun.workDir).not.toBe(firstDryRun.workDir);
   });

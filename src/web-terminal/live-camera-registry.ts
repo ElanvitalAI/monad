@@ -10,7 +10,7 @@
 // Why in-memory only (not sqlite): live-camera frames are ephemeral
 // (the user starts/stops the stream by hand · daemon restart drops
 // the pointer · no resume contract). The actual JPEG files persist
-// on disk under `/tmp/monad-attachments/` until the OS cleans them
+// on disk under `/tmp/elanous-attachments/` until the OS cleans them
 // up — agents can still call `WebTerminalScreenshot` for fresh
 // captures if the live pointer was dropped.
 

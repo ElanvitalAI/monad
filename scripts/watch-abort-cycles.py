@@ -46,7 +46,7 @@ def classify_ledger_body(ledger_body, read_artifact):
     return json.dumps({'n':len(real),'reason':reason[:110]}, ensure_ascii=False)
 
 def scan():
-    dirs=[os.path.expanduser('~/.monad/run-ledger')]+glob.glob(os.path.expanduser('~/source/*/*/.monad-test/run-ledger'))
+    dirs=[os.path.expanduser('~/.elanous/run-ledger')]+glob.glob(os.path.expanduser('~/source/*/*/.elanous-test/run-ledger'))
     out={}
     for directory in dirs:
         for ledger_path in glob.glob(directory+'/*.jsonl'):

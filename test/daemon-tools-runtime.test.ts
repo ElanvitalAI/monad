@@ -1,7 +1,7 @@
 // MVP M1.5 A.2 — daemon runtime tool surface integration tests.
 //
 // Verify createDaemonRuntime wires the right tool surface based on
-// `tools` opt + `MONAD_TOOLS` env. Goes through the public surface
+// `tools` opt + `ELANOUS_TOOLS` env. Goes through the public surface
 // (createDaemonRuntime, toolSurface) rather than internals so the
 // behavior is stable across A.3 implementation changes.
 
@@ -206,17 +206,17 @@ describe('createDaemonRuntime — tools opt', () => {
   let toolCwd: string;
 
   beforeEach(() => {
-    toolCwd = mkdtempSync(join(tmpdir(), 'monad-tools-runtime-'));
+    toolCwd = mkdtempSync(join(tmpdir(), 'elanous-tools-runtime-'));
   });
 
   afterEach(() => {
-    delete process.env.MONAD_TOOL_CWD;
+    delete process.env.ELANOUS_TOOL_CWD;
     cleanupConfigDir?.();
     cleanupConfigDir = undefined;
     rmSync(toolCwd, { recursive: true, force: true });
   });
 
-  /** Helper — point `~/.monad/config.json` (via setMonadConfigDir) at a
+  /** Helper — point `~/.elanous/config.json` (via setElanousConfigDir) at a
    *  scratch tmp dir for tests that exercise the persisted
    *  `global.tools` resolution. The user-config reader is lazy-required
    *  inside createDaemonRuntime so we can swap the root per-test
@@ -226,16 +226,16 @@ describe('createDaemonRuntime — tools opt', () => {
     const { tmpdir } = require('node:os') as typeof import('node:os');
     const { join } = require('node:path') as typeof import('node:path');
     const {
-      setMonadConfigDir,
-      resetMonadConfigDir,
-    } = require('../src/monad-config-dir') as typeof import('../src/monad-config-dir');
-    const dir = mkdtempSync(join(tmpdir(), 'monad-tools-cfg-'));
-    setMonadConfigDir(dir);
+      setElanousConfigDir,
+      resetElanousConfigDir,
+    } = require('../src/elanous-config-dir') as typeof import('../src/elanous-config-dir');
+    const dir = mkdtempSync(join(tmpdir(), 'elanous-tools-cfg-'));
+    setElanousConfigDir(dir);
     writeFileSync(
       join(dir, 'config.json'),
       JSON.stringify({ version: 1, global: globalCfg, tabs: {} }, null, 2),
     );
-    cleanupConfigDir = () => resetMonadConfigDir();
+    cleanupConfigDir = () => resetElanousConfigDir();
   }
 
   test("default = 'webterm' (2026-05-13 align fallback with commander description)", () => {
@@ -274,7 +274,7 @@ describe('createDaemonRuntime — tools opt', () => {
     expect(runtime.toolCwd).toBe(toolCwd);
   });
 
-  // ── user-config resolution (replaces removed MONAD_TOOLS env path) ──
+  // ── user-config resolution (replaces removed ELANOUS_TOOLS env path) ──
 
   test("user-config 'global.tools=chat' activates the lighter surface", () => {
     withUserConfig({ tools: 'chat' });
@@ -323,14 +323,14 @@ describe('createDaemonRuntime — tools opt', () => {
     expect(runtime.toolCwd).toBe(toolCwd);
   });
 
-  test('MONAD_TOOL_CWD env applied when tools=readonly (orthogonal — cwd env is separate)', () => {
-    process.env.MONAD_TOOL_CWD = '/tmp';
+  test('ELANOUS_TOOL_CWD env applied when tools=readonly (orthogonal — cwd env is separate)', () => {
+    process.env.ELANOUS_TOOL_CWD = '/tmp';
     const { toolCwd: resolvedToolCwd } = createDaemonRuntime(runtimeOpts({ tools: 'readonly' }));
     expect(resolvedToolCwd).toBe('/tmp');
   });
 
   test('explicit toolCwd opt wins over env', () => {
-    process.env.MONAD_TOOL_CWD = '/should/not/be/used';
+    process.env.ELANOUS_TOOL_CWD = '/should/not/be/used';
     const { toolCwd } = createDaemonRuntime(runtimeOpts({ tools: 'readonly', toolCwd: '/explicit' }));
     expect(toolCwd).toBe('/explicit');
   });

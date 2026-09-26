@@ -1,7 +1,7 @@
 // IDX-6 Phase 6 — theme-icons formalization.
 //
 // `resolveIcon(theme, name)` in theme-tokens.ts already picks a glyph
-// given a theme + IconTokens key, with MONAD_ASCII_ICONS=1 fallback.
+// given a theme + IconTokens key, with ELANOUS_ASCII_ICONS=1 fallback.
 // In practice almost no callsite used it — most code scattered raw
 // emoji / glyphs inline. This module adds a thin coordination layer:
 //
@@ -22,7 +22,7 @@
 //     and early-init code don't crash.
 //
 // Importing from this module signals "this icon should be theme-
-// aware + respect MONAD_ASCII_ICONS". Codebase migrations should
+// aware + respect ELANOUS_ASCII_ICONS". Codebase migrations should
 // replace hardcoded emoji with `paintedIcon` / `paintedIconCurrent`
 // when the glyph carries semantic meaning (errors, warnings, state
 // badges). Decorative glyphs (cursor '▸', separator '│') stay inline.

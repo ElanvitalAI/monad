@@ -1,5 +1,5 @@
 export const DISPLAY_KEY_CATEGORY = 'display.key';
-export const DEFAULT_MONAD_COMMAND = ['bun', 'bin/monad.mjs'] as const;
+export const DEFAULT_ELANOUS_COMMAND = ['bun', 'bin/elanous.mjs'] as const;
 export const DEFAULT_KEY_ARRIVAL_LOG_SINCE = '5m';
 export const DEFAULT_KEY_ARRIVAL_LOG_LIMIT = 50;
 export const DISPLAY_KEY_ARRIVAL_EVENTS = ['no-match', 'when-false', 'chord-armed', 'selected'] as const;
@@ -519,17 +519,17 @@ function oneSentence(error: unknown): string {
   return line?.trim() || '측정 실패';
 }
 
-export interface MonadCommandResult {
+export interface ElanousCommandResult {
   stdout: string;
   stderr: string;
   exitCode: number;
 }
 
-export type MonadCommandRunner = (argv: readonly string[]) => Promise<MonadCommandResult> | MonadCommandResult;
+export type ElanousCommandRunner = (argv: readonly string[]) => Promise<ElanousCommandResult> | ElanousCommandResult;
 
 export interface RealKeyArrivalAdapterOptions {
   command?: readonly string[];
-  run?: MonadCommandRunner;
+  run?: ElanousCommandRunner;
   logSince?: string;
   logLimit?: number;
   waitMs?: number;
@@ -540,8 +540,8 @@ export interface RealKeyArrivalAdapterOptions {
 export function createRealKeyArrivalAdapters(
   options: RealKeyArrivalAdapterOptions = {},
 ): MeasureKeyArrivalCliDeps {
-  const command = options.command ?? DEFAULT_MONAD_COMMAND;
-  const run = options.run ?? defaultMonadRunner;
+  const command = options.command ?? DEFAULT_ELANOUS_COMMAND;
+  const run = options.run ?? defaultElanousRunner;
   const logSince = options.logSince ?? DEFAULT_KEY_ARRIVAL_LOG_SINCE;
   const logLimit = options.logLimit ?? DEFAULT_KEY_ARRIVAL_LOG_LIMIT;
   const waitMs = options.waitMs ?? 0;
@@ -662,7 +662,7 @@ function logQueryArgs(since: string, limit: number): string[] {
   ];
 }
 
-function defaultMonadRunner(argv: readonly string[]): MonadCommandResult {
+function defaultElanousRunner(argv: readonly string[]): ElanousCommandResult {
   const child = Bun.spawnSync({ cmd: [...argv], stdout: 'pipe', stderr: 'pipe' });
   return {
     stdout: child.stdout.toString(),

@@ -34,6 +34,6 @@ export function hasEnv(key: string): boolean {
 export function initEnv(): void {
   // Load omni-market's own .env
   loadEnvFile(resolve(SKILL_DIR, '.env'));
-  // (죽은 경로 제거·monad C 2026-07-22) 종전 `../eodhd/.env` 상속은 `~/.claude/skills/eodhd/` 가
+  // (죽은 경로 제거·elanous C 2026-07-22) 종전 `../eodhd/.env` 상속은 `~/.claude/skills/eodhd/` 가
   // 존재하지 않아 항상 no-op 였음(existsSync false). 제거.
 }

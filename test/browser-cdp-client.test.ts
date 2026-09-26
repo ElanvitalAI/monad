@@ -10,10 +10,10 @@ import {
 } from '../src/browser-cdp/client.js';
 
 describe('discoverChromeBinary', () => {
-  test('honors MONAD_CHROME_BIN env override', () => {
+  test('honors ELANOUS_CHROME_BIN env override', () => {
     const fs = new Set(['/custom/chrome']);
     const got = discoverChromeBinary({
-      env: { MONAD_CHROME_BIN: '/custom/chrome' },
+      env: { ELANOUS_CHROME_BIN: '/custom/chrome' },
       platform: 'linux',
       existsSync: (p) => fs.has(p),
     });

@@ -13,7 +13,7 @@ import { setSessionCwd, __resetSessionWorkingDir } from '../src/session/working-
 let tmp: string;
 
 beforeEach(() => {
-  tmp = mkdtempSync(join(tmpdir(), 'monad-read-rel-'));
+  tmp = mkdtempSync(join(tmpdir(), 'elanous-read-rel-'));
   setSessionCwd(tmp, 'tool');
 });
 
@@ -59,7 +59,7 @@ describe('dispatchRead — path resolution (fix G)', () => {
     // expanded path differs from the raw input. Resolving against
     // the actual HOME lets the existsSync check fail loudly if the
     // expander broke.
-    const r = dispatchRead({ file_path: '~/this-file-should-never-exist-monad-test.x' });
+    const r = dispatchRead({ file_path: '~/this-file-should-never-exist-elanous-test.x' });
     await expect(r).rejects.toThrow(/Read: file does not exist/);
   });
 

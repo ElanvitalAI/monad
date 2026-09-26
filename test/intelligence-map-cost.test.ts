@@ -80,12 +80,12 @@ describe('PFC-S5 P2 — cost-meter', () => {
     expect(snap.totalUsd).toBe(6);
   });
 
-  test('MONAD_COST_EVENTS env override', async () => {
+  test('ELANOUS_COST_EVENTS env override', async () => {
     const home = scratchHome();
     const custom = join(home, 'foo.jsonl');
     await logUsage(
       { modelId: 'x', inputTokens: 1, outputTokens: 1, usd: 0.1 },
-      { env: { MONAD_COST_EVENTS: custom }, home, skipAutoAttribution: true },
+      { env: { ELANOUS_COST_EVENTS: custom }, home, skipAutoAttribution: true },
     );
     expect(existsSync(custom)).toBe(true);
   });
@@ -132,7 +132,7 @@ describe('PFC-S5 P2 — cost-meter', () => {
     const home = scratchHome();
     const vaultHome = mkdtempSync(join(tmpdir(), 'cost-vault-'));
     const vault = discoverObsidianVault({
-      env: { MONAD_OBSIDIAN_VAULT: join(vaultHome, 'vault') },
+      env: { ELANOUS_OBSIDIAN_VAULT: join(vaultHome, 'vault') },
       cwd: vaultHome,
     });
     await dispatchResearchPlan(

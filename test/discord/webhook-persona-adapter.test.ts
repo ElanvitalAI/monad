@@ -255,6 +255,6 @@ describe('WebhookPersonaAdapter.cachedRecord', () => {
     await adapter.sendAsPersona('ch-1', SAGE, 'hi');
     const r = adapter.cachedRecord('ch-1', 'sage');
     expect(r?.id).toBe('wh-1');
-    expect(r?.name).toBe('monad-persona:sage');
+    expect(r?.name).toBe('elanous-persona:sage');
   });
 });

@@ -3,8 +3,8 @@ import { EXECUTOR_BACKENDS, execSurfaceId, buildExecutorPtyRef, type ExecutorBac
 
 describe('executor-contract — G9 P3a 통일 계약 SSOT', () => {
   // 실 drift 방지는 컴파일 가드(_AgentBackendsAreExecutorBackends·모듈). 이 테스트는 배열 SSOT 회귀 스냅샷.
-  test('EXECUTOR_BACKENDS = monad-chat + agent CLI 5종(회귀 스냅샷)', () => {
-    expect([...EXECUTOR_BACKENDS]).toEqual(['monad-chat', 'codex', 'claude', 'gemini', 'grok', 'aside']);
+  test('EXECUTOR_BACKENDS = elanous-chat + agent CLI 5종(회귀 스냅샷)', () => {
+    expect([...EXECUTOR_BACKENDS]).toEqual(['elanous-chat', 'codex', 'claude', 'gemini', 'grok', 'aside']);
   });
 
   test('execSurfaceId = exec:${ptyId} 규약(Q1·룩업 없는 결정적 상관)', () => {
@@ -25,8 +25,8 @@ describe('executor-contract — G9 P3a 통일 계약 SSOT', () => {
   });
 
   test('buildExecutorPtyRef — surfaceId 불변식 보장 + 선택 필드 부재 시 생략', () => {
-    const full = buildExecutorPtyRef({ ptyId: 'goal_ff00', backend: 'monad-chat', runId: 'run-1', spaceId: 'sp-1', sessionId: 's-1', instance: 'inst-a' });
-    expect(full).toEqual({ ptyId: 'goal_ff00', surfaceId: 'exec:goal_ff00', backend: 'monad-chat', runId: 'run-1', spaceId: 'sp-1', sessionId: 's-1', instance: 'inst-a' });
+    const full = buildExecutorPtyRef({ ptyId: 'goal_ff00', backend: 'elanous-chat', runId: 'run-1', spaceId: 'sp-1', sessionId: 's-1', instance: 'inst-a' });
+    expect(full).toEqual({ ptyId: 'goal_ff00', surfaceId: 'exec:goal_ff00', backend: 'elanous-chat', runId: 'run-1', spaceId: 'sp-1', sessionId: 's-1', instance: 'inst-a' });
 
     const minimal = buildExecutorPtyRef({ ptyId: 'codex_11', backend: 'codex', runId: 'run-2' });
     expect(minimal).toEqual({ ptyId: 'codex_11', surfaceId: 'exec:codex_11', backend: 'codex', runId: 'run-2' });

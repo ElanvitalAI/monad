@@ -9,7 +9,7 @@ scripts/qwen-pipeline-bench.ts 3
 scripts/run-mission.ts 6
 scripts/se-backend-bench.ts 1
 scripts/se-mission-expand.ts 1
-scripts/se-monad-self-tune.ts 7
+scripts/se-elanous-self-tune.ts 7
 scripts/webclone/loop/fire-fc1.sh 1
 scripts/webclone/loop/fire-real14-ab.sh 2
 scripts/webclone/loop/fire-real17-ab.sh 2

@@ -65,7 +65,7 @@ export function buildInterjectionMessage(
  *   ⇒ 🔑 ***반복 인터럽트는 이 삼중항이 «쌓이는» 것***이다. 그래서 다음 발화 때 모델이
  *     「어디까지 했고 몇 번 멈췄는지」를 «스스로» 종합한다 — 종합기를 따로 만들지 않는다(`A4`).
  *
- * 📏 monad 실측(2026-08-19): ***부분 출력은 이미 보존된다***(`session/chat.ts` 가 중단 여부와
+ * 📏 elanous 실측(2026-08-19): ***부분 출력은 이미 보존된다***(`session/chat.ts` 가 중단 여부와
  *   무관하게 assistant 메시지를 저장). ⇒ 빠져 있던 것은 이 «표식» 하나뿐이었다.
  */
 export const TURN_INTERRUPTED_MARKER = '[사용자가 이 턴을 중단했습니다]';

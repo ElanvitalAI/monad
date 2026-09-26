@@ -87,7 +87,7 @@ describe('§6.4 · multi-llm bridge getMessages persona injection', () => {
       userText: 'hello',
       promptBlocks: [],
       promptMeta: {
-        monad: {
+        elanous: {
           multiLlm: {
             targets: [
               { id: 'p1', provider: 'claude', personaId: 'skeptic' },
@@ -144,7 +144,7 @@ describe('§6.4 · multi-llm bridge getMessages persona injection', () => {
       userText: 'hi',
       promptBlocks: [],
       promptMeta: {
-        monad: {
+        elanous: {
           multiLlm: {
             targets: [
               { id: 'p1', provider: 'claude', personaId: 'never-defined' },
@@ -198,7 +198,7 @@ describe('§6.4 · multi-llm bridge getMessages persona injection', () => {
       userText: 'hi',
       promptBlocks: [],
       promptMeta: {
-        monad: {
+        elanous: {
           multiLlm: {
             targets: [{ id: 'p1', provider: 'claude' }],
           },
@@ -225,14 +225,14 @@ describe('§6.4b · 봇마다 상주 세션 — 브리지가 «실제로» 그 �
   let prevRoot: string | undefined;
 
   beforeEach(() => {
-    prevRoot = process.env.MONAD_SESSION_ROOT;
+    prevRoot = process.env.ELANOUS_SESSION_ROOT;
     sessionRootDir = mkdtempSync(join(tmpdir(), 'persona-resident-bridge-'));
-    process.env.MONAD_SESSION_ROOT = sessionRootDir;
+    process.env.ELANOUS_SESSION_ROOT = sessionRootDir;
   });
 
   afterEach(() => {
-    if (prevRoot === undefined) delete process.env.MONAD_SESSION_ROOT;
-    else process.env.MONAD_SESSION_ROOT = prevRoot;
+    if (prevRoot === undefined) delete process.env.ELANOUS_SESSION_ROOT;
+    else process.env.ELANOUS_SESSION_ROOT = prevRoot;
     rmSync(sessionRootDir, { recursive: true, force: true });
   });
 
@@ -259,7 +259,7 @@ describe('§6.4b · 봇마다 상주 세션 — 브리지가 «실제로» 그 �
       sessionId: 'turn-session-not-a-persona',
       userText: 'hello',
       promptBlocks: [],
-      promptMeta: { monad: { multiLlm: { targets } } },
+      promptMeta: { elanous: { multiLlm: { targets } } },
       pushChunk: async () => {},
       pushWithMeta: async () => {},
       isAborted: () => false,

@@ -5,7 +5,7 @@
 //   - right-pane collapse / width
 //   - canvas-only toggle (both chrome panes hidden, just the editor)
 //   - drag-resize seeded width values
-//   - localStorage persistence (key = `monad.workflows.layout`)
+//   - localStorage persistence (key = `elanous.workflows.layout`)
 //
 // All values are clamped so a stale localStorage entry from an earlier
 // session can never produce a negative or runaway width — pane widths
@@ -23,7 +23,7 @@ export interface PanelLayoutState {
   rightWidthPx: number;
 }
 
-export const STORAGE_KEY = 'monad.workflows.layout';
+export const STORAGE_KEY = 'elanous.workflows.layout';
 
 export const DEFAULT_LAYOUT: PanelLayoutState = {
   leftCollapsed: false,

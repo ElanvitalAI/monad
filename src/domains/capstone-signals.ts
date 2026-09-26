@@ -1,6 +1,6 @@
 // ── 캡스톤 A/B/C/D/E 신호 프레임워크 (auto_trade.py TS 포팅, 2026-07-05) ──
 //
-// Conatus 캡스톤 §1 프레임워크의 삼성전자 트레이딩 신호를 monad 소유로 이관.
+// Conatus 캡스톤 §1 프레임워크의 삼성전자 트레이딩 신호를 elanous 소유로 이관.
 // 원본: asset-attractiveness-results/screener/auto_trade.py (pykrx/yfinance).
 // 데이터 소스는 omni-market(EODHD 1순위 + Yahoo 지수)으로 교체:
 //   A(원화약세)  USDKRW.FOREX  · B/C(삼성 DD·신고가) 005930.KO

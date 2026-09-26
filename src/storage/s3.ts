@@ -1,10 +1,10 @@
-// monad S3 storage helper — single SoT for S3 paths + transfer.
+// elanous S3 storage helper — single SoT for S3 paths + transfer.
 //
 // Design (2026-05-09):
 //
 // Folder layout under `s3://<bucket>/<root>/`:
 //
-//   monad/<monad_id>/                      — per-machine partition
+//   elanous/<elanous_id>/                      — per-machine partition
 //   ├── notes-metrics/
 //   │   └── day-buckets.json               — Phase A (R6 day-bucket persistence)
 //   ├── ocr-prefs/
@@ -12,21 +12,21 @@
 //   ├── sessions/                          — future (cross-device session sync)
 //   └── reflection-history/                — future (durable Hansei archive)
 //
-// Why monad_id partition first (not feature first):
-//   - Each device (Mac · iPad · iPhone) has its own monad_id (`~/.monad/
+// Why elanous_id partition first (not feature first):
+//   - Each device (Mac · iPad · iPhone) has its own elanous_id (`~/.elanous/
 //     identity.json`). Cross-device merge is intentionally future work —
 //     conflict resolution requires a vector-clock or a dedicated sync
 //     authority (separate track). Per-machine partition keeps each device's
 //     data clean + recoverable independently.
-//   - `aws s3 sync s3://bucket/monad/<monad_id>/` cleanly backs up one
+//   - `aws s3 sync s3://bucket/monad/<elanous_id>/` cleanly backs up one
 //     machine; `aws s3 rm --recursive` cleanly purges one machine's state.
 //
 // Env overrides:
 //   AWS_S3_BUCKET           — bucket name. Default 'elanvital-public'
 //                             (matches the yt-vault skill's bucket so we
 //                             reuse one credential setup).
-//   AWS_S3_MONAD_PREFIX     — top-level prefix. Default 'monad'.
-//   MONAD_S3_DISABLED=1     — opt-out (force local-only mode for dev /
+//   AWS_S3_ELANOUS_PREFIX     — top-level prefix. Default 'elanous'.
+//   ELANOUS_S3_DISABLED=1     — opt-out (force local-only mode for dev /
 //                             airplane / fresh-install).
 //
 // Transport: shells out to `aws s3 cp` (same pattern as yt-vault) — no
@@ -36,7 +36,7 @@
 
 import { execSync, execFileSync } from 'node:child_process';
 import { existsSync } from 'node:fs';
-import { getOrCreateMonadId } from '../mss/identity.js';
+import { getOrCreateElanousId } from '../mss/identity.js';
 import { debug } from '../debug/log.js';
 
 let _awsBin: string | undefined;
@@ -99,17 +99,17 @@ export interface S3Config {
 export function s3Config(): S3Config {
   return {
     bucket: process.env.AWS_S3_BUCKET?.trim() || DEFAULT_BUCKET,
-    prefix: process.env.AWS_S3_MONAD_PREFIX?.trim() || DEFAULT_PREFIX,
-    disabled: process.env.MONAD_S3_DISABLED === '1',
+    prefix: process.env.AWS_S3_ELANOUS_PREFIX?.trim() || DEFAULT_PREFIX,
+    disabled: process.env.ELANOUS_S3_DISABLED === '1',
   };
 }
 
 /** Build the canonical S3 key for a per-machine artifact. */
-export function s3MonadKey(feature: S3FeatureKey, ...subpath: string[]): string {
+export function s3ElanousKey(feature: S3FeatureKey, ...subpath: string[]): string {
   const cfg = s3Config();
-  const monadId = getOrCreateMonadId();
+  const elanousId = getOrCreateElanousId();
   const featurePrefix = S3_FEATURE_PREFIXES[feature];
-  const parts = [cfg.prefix, monadId, featurePrefix, ...subpath].filter(Boolean);
+  const parts = [cfg.prefix, elanousId, featurePrefix, ...subpath].filter(Boolean);
   return parts.join('/');
 }
 

@@ -4,7 +4,7 @@
 // `NoteFromImageModal` reads these to seed initial toggle state so the
 // user does not re-flip "LLM 비전" / "손글씨" every capture.
 //
-// Storage shape (localStorage key `monad.ocr.prefs`):
+// Storage shape (localStorage key `elanous.ocr.prefs`):
 //   { defaultUseLlmVision: boolean, defaultPreferHandwriting: boolean }
 //
 // Why localStorage (not S3 sync via daemon):
@@ -20,7 +20,7 @@
 //   apps/pwa/src/components/settings/OcrPrefsCard.tsx (UI)
 //   src/storage/s3.ts S3_FEATURE_PREFIXES.ocrPrefs (future sync slot)
 
-const STORAGE_KEY = 'monad.ocr.prefs';
+const STORAGE_KEY = 'elanous.ocr.prefs';
 
 export interface OcrPrefs {
   defaultUseLlmVision: boolean;

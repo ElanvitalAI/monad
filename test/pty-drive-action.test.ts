@@ -17,7 +17,7 @@ describe('shell drive reroute', () => {
   test('legacy alias preserves the required command and goal contracts', () => {
     expect(() => buildDriveAliasDevSpec(undefined, opts)).toThrow('drive: command 필요');
     expect(() => buildDriveAliasDevSpec('printf done', { maxSteps: '2', pollMs: '0' })).toThrow('drive: --goal 필요');
-    expect(() => buildDriveAliasDevSpec('printf done', { ...opts, monad: true })).toThrow('drive: --monad 는 지원하지 않음');
+    expect(() => buildDriveAliasDevSpec('printf done', { ...opts, elanous: true })).toThrow('drive: --elanous 는 지원하지 않음');
   });
 
   test('runDevPipeline dispatches to runPtyDrive and preserves the numeric result exit code', async () => {

@@ -9,10 +9,10 @@
 //     source tag) — rewritten atomically on every append. No FTS,
 //     no compaction; small enough at thousands-of-sessions scale
 //     that a full rewrite is cheaper than a real DB.
-//   - Data root: ~/.local/share/monad/sessions/ (XDG_DATA_HOME aware).
+//   - Data root: ~/.local/share/elanous/sessions/ (XDG_DATA_HOME aware).
 //     Config lives at ~/.config; sessions grow, so they belong in
-//     data, not config. A ~/.local/state/monad/active file tracks
-//     "most recent session" so `monad session resume` can default.
+//     data, not config. A ~/.local/state/elanous/active file tracks
+//     "most recent session" so `elanous session resume` can default.
 //
 // Session IDs are uuid v4 via crypto.randomUUID(). Title defaults to
 // the first 60 chars of the first user message.
@@ -64,16 +64,16 @@ export function resolveCreateSessionOrigin(
 export function sessionRoot(): string {
   // Test seam — the store roots at homedir (XDG 거부), so a test that
   // drives the production dispatcher (default `root`) can't isolate via
-  // XDG and would otherwise read/write the REAL ~/.monad/sessions.
-  // MONAD_SESSION_ROOT lets such a test point the whole store at a temp
+  // XDG and would otherwise read/write the REAL ~/.elanous/sessions.
+  // ELANOUS_SESSION_ROOT lets such a test point the whole store at a temp
   // dir. Prod never sets it, so behavior is unchanged.
-  const override = process.env.MONAD_SESSION_ROOT?.trim();
+  const override = process.env.ELANOUS_SESSION_ROOT?.trim();
   if (override) return override;
-  // MONAD_STATE_DIR — the unified isolated-state knob (sessions +
+  // ELANOUS_STATE_DIR — the unified isolated-state knob (sessions +
   // acp-sessions + surface_events + codex-threads under one dir). Lets a
-  // process like `monad telegram-test` keep ALL mutable state separate
+  // process like `elanous telegram-test` keep ALL mutable state separate
   // from the production daemon while still reusing the prod config.
-  const stateDir = process.env.MONAD_STATE_DIR?.trim();
+  const stateDir = process.env.ELANOUS_STATE_DIR?.trim();
   if (stateDir) return join(stateDir, 'sessions');
   // ⚠️ 안전망 (2026-07-24) — 격리를 잊은 `bun test` 가 운영 스토어를 만지는 걸 차단.
   // 위 XDG 거부(2026-07-09)가 테스트 2개의 격리를 **조용히 무력화**해 ~1500개 픽스처
@@ -83,10 +83,10 @@ export function sessionRoot(): string {
   // 그대로 통과하되 운영 스토어만 안 건드린다. 명시 `root` 인자를 넘기는 테스트는 애초에
   // 이 함수를 안 탄다. 설계=내부 문서 `PLAN-self-cognition-observability-surgery-2026-07-24` §2
   if (process.env.NODE_ENV === 'test') return testSessionRootFallback();
-  // 2026-07-09 — 세션 저장소를 ~/.monad/ config 디렉토리로 일원화(대표 지시 · XDG 거부 ·
-  // ~/.monad/ 루트 일원화 방침). legacy(~/.local/share/monad/sessions)는 1회 이관.
+  // 2026-07-09 — 세션 저장소를 ~/.elanous/ config 디렉토리로 일원화(대표 지시 · XDG 거부 ·
+  // ~/.elanous/ 루트 일원화 방침). legacy(~/.local/share/elanous/sessions)는 1회 이관.
   // (object storage 백업은 후속 연구.)
-  return join(homedir(), '.monad', 'sessions');
+  return join(homedir(), '.elanous', 'sessions');
 }
 
 /** 격리를 안 건 테스트 런의 세션 폴백 루트 — 프로세스(pid) 스코프라 같은 런 안에서는
@@ -95,13 +95,13 @@ export function sessionRoot(): string {
 let testFallbackRoot: string | undefined;
 function testSessionRootFallback(): string {
   if (testFallbackRoot) return testFallbackRoot;
-  testFallbackRoot = join(tmpdir(), `monad-test-sessions-${process.pid}`);
+  testFallbackRoot = join(tmpdir(), `elanous-test-sessions-${process.pid}`);
   try {
     const { debug } = require('../debug/log.js') as typeof import('../debug/log.js');
     debug.log('session.store', 'test-root-redirect', {
       pid: process.pid,
       root: testFallbackRoot,
-      why: 'NODE_ENV=test without MONAD_SESSION_ROOT/MONAD_STATE_DIR',
+      why: 'NODE_ENV=test without ELANOUS_SESSION_ROOT/ELANOUS_STATE_DIR',
     });
   } catch { /* 관측 실패가 격리를 막지 않는다 */ }
   return testFallbackRoot;
@@ -112,20 +112,20 @@ function legacySessionRoot(): string {
   const base = process.env.XDG_DATA_HOME && process.env.XDG_DATA_HOME.trim()
     ? process.env.XDG_DATA_HOME
     : join(homedir(), '.local', 'share');
-  return join(base, 'monad', 'sessions');
+  return join(base, 'elanous', 'sessions');
 }
 
 let migrationChecked = false;
-/** ~/.local/share/monad/sessions → ~/.monad/sessions 1회 이관. 신규가 비었고
+/** ~/.local/share/elanous/sessions → ~/.elanous/sessions 1회 이관. 신규가 비었고
  *  legacy 가 있을 때만(index.json + *.jsonl 복사). fail-soft. */
 function migrateLegacySessions(): void {
   if (migrationChecked) return;
   migrationChecked = true;
-  // Explicit isolation (MONAD_STATE_DIR / MONAD_SESSION_ROOT) means the caller
-  // wants a CLEAN store — e.g. `monad telegram-test`. Copying legacy sessions
+  // Explicit isolation (ELANOUS_STATE_DIR / ELANOUS_SESSION_ROOT) means the caller
+  // wants a CLEAN store — e.g. `elanous telegram-test`. Copying legacy sessions
   // in would defeat the isolation (it dumped ~90 prod sessions into the test
   // store, drowning the bot's real turns). Never migrate into an isolated root.
-  if (process.env.MONAD_STATE_DIR?.trim() || process.env.MONAD_SESSION_ROOT?.trim()) return;
+  if (process.env.ELANOUS_STATE_DIR?.trim() || process.env.ELANOUS_SESSION_ROOT?.trim()) return;
   try {
     const dest = sessionRoot();
     const src = legacySessionRoot();
@@ -145,7 +145,7 @@ function stateRoot(): string {
   const base = process.env.XDG_STATE_HOME && process.env.XDG_STATE_HOME.trim()
     ? process.env.XDG_STATE_HOME
     : join(homedir(), '.local', 'state');
-  return join(base, 'monad');
+  return join(base, 'elanous');
 }
 
 function indexPath(root: string = sessionRoot()): string { return join(root, 'index.json'); }
@@ -193,13 +193,13 @@ export interface SessionMeta {
    *  stays in the local session index schema. */
   forkedFromId?: string;
   /** 표면 origin(cli/pwa/tg/dc/harness) — source(cli/telegram) 밖의 세밀 라벨. PWA 챗
-   *  write-through(monad-session-N) 세션을 목록에서 "PWA"로 구분하기 위해.
+   *  write-through(elanous-session-N) 세션을 목록에서 "PWA"로 구분하기 위해.
    *  `harness` = 하니스 자식이 만든 세션(기존 칸에 신분 값을 채움). */
   origin?: string;
-  /** 이 세션을 **생성한 monad 인스턴스** 이름(prod · test:<repo> …·LF7 로그 `instance`
+  /** 이 세션을 **생성한 elanous 인스턴스** 이름(prod · test:<repo> …·LF7 로그 `instance`
    *  컬럼과 동일 유도). 멀티 인스턴스(글로벌 데몬 + 폴더별 --test)가 세션을 공유/연합
-   *  조회할 때 출처 구분·필터용. 인스턴스 정체성 = MONAD_STATE_DIR(config-dir/worktree
-   *  아님). ~/.monad 공유 스토어 세션은 전부 'prod'. append 는 이 값을 보존(생성자 귀속).
+   *  조회할 때 출처 구분·필터용. 인스턴스 정체성 = ELANOUS_STATE_DIR(config-dir/worktree
+   *  아님). ~/.elanous 공유 스토어 세션은 전부 'prod'. append 는 이 값을 보존(생성자 귀속).
    *  구 세션엔 부재(tolerant read) — 미상 = 필터 비매치. */
   originInstance?: string;
   /** For telegram-sourced sessions; undefined for cli. */
@@ -541,7 +541,7 @@ export function createSession(opts: CreateSessionOpts = {}, root: string = sessi
   return meta;
 }
 
-/** 명시 id 로 on-disk 세션 채택(멱등) — 데몬이 민팅한 id(monad-session-N 등)를
+/** 명시 id 로 on-disk 세션 채택(멱등) — 데몬이 민팅한 id(elanous-session-N 등)를
  *  on-disk 저장소에 first-class 로 등록. 이미 있으면 기존 meta 반환(무변경).
  *  PWA 챗 write-through(R3) + TUI 어댑트가 이 경로로 세션 저장소를 일원화한다. */
 export function adoptSession(id: string, opts: CreateSessionOpts = {}, root: string = sessionRoot()): SessionMeta {
@@ -949,7 +949,7 @@ export function findSessionByTelegramChat(
  *  `forkedFromId` lineage. Tool rows are dropped (historyFromSession
  *  규약 — 내부 브레드크럼은 재생 의미 없음). Returns null when the
  *  source is unknown. Surface commands (tg `/fork` · dc `!fork` ·
- *  CLI `monad session fork`) all route through this one helper.
+ *  CLI `elanous session fork`) all route through this one helper.
  *
  *  S3 time-travel: `opts.beforeUser = N` truncates the copy to just
  *  BEFORE the Nth (1-based) user message — codex ForkSnapshot의

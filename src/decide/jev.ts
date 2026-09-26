@@ -52,9 +52,9 @@ export interface JevAccess {
 const nonEmpty = (v: unknown): string | undefined => (typeof v === 'string' && v.trim() ? v.trim() : undefined);
 
 /**
- * 순서: 설정 `decide.endpoint` > 환경 `MONAD_JEV_ENDPOINT` > Typesafe.
+ * 순서: 설정 `decide.endpoint` > 환경 `ELANOUS_JEV_ENDPOINT` > Typesafe.
  * 기본(Typesafe)이면 키가 반드시 있어야 한다(환경 `TYPESAFE_API_KEY` > 캐시 파일).
- * 다른 서버면 키는 설정 `decide.keyFile` 파일 > 환경 `MONAD_JEV_KEY` 이고 없어도 된다.
+ * 다른 서버면 키는 설정 `decide.keyFile` 파일 > 환경 `ELANOUS_JEV_KEY` 이고 없어도 된다.
  */
 export function resolveJevAccess(input: {
   config?: { endpoint?: unknown; keyFile?: unknown; model?: unknown };
@@ -63,7 +63,7 @@ export function resolveJevAccess(input: {
   typesafeCachePath: string;
 }): { ok: true; access: JevAccess } | { ok: false; message: string } {
   const configEndpoint = nonEmpty(input.config?.endpoint);
-  const envEndpoint = nonEmpty(input.env.MONAD_JEV_ENDPOINT);
+  const envEndpoint = nonEmpty(input.env.ELANOUS_JEV_ENDPOINT);
   const endpoint = configEndpoint ?? envEndpoint ?? JEV_ENDPOINT;
   const endpointSource = configEndpoint ? 'config' : envEndpoint ? 'env' : 'default';
   const model = nonEmpty(input.config?.model);
@@ -75,7 +75,7 @@ export function resolveJevAccess(input: {
     return { ok: true, access: { endpoint, endpointSource, key, ...(model ? { model } : {}) } };
   }
   const keyFile = nonEmpty(input.config?.keyFile);
-  const key = (keyFile ? nonEmpty(input.readFile(keyFile)) : undefined) ?? nonEmpty(input.env.MONAD_JEV_KEY);
+  const key = (keyFile ? nonEmpty(input.readFile(keyFile)) : undefined) ?? nonEmpty(input.env.ELANOUS_JEV_KEY);
   return { ok: true, access: { endpoint, endpointSource, ...(key ? { key } : {}), ...(model ? { model } : {}) } };
 }
 

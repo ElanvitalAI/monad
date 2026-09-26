@@ -13,7 +13,7 @@ import { mkdirSync, readFileSync, realpathSync, writeFileSync } from 'node:fs';
 import { createHash } from 'node:crypto';
 import { homedir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
-import { monadStateRoot } from '../autopilot/state-paths.js';
+import { elanousStateRoot } from '../autopilot/state-paths.js';
 import type { CodexResetCredit } from './codex-reset-credits.js';
 import type { ResetCreditExpiryAxis } from './types.js';
 
@@ -46,7 +46,7 @@ export function describeResetCreditExpiry(
   return { status: 'available', expiresAt, hasUnknownExpiry };
 }
 
-/** ⭐ `MONAD_STATE_DIR` 을 존중한다 — `--test` 격리에서 운영 상태를 만지지 않기 위해서다.
+/** ⭐ `ELANOUS_STATE_DIR` 을 존중한다 — `--test` 격리에서 운영 상태를 만지지 않기 위해서다.
  *  ⛔ export 하지 않는다 — 소비처가 없는 공개 표면은 만들지 않는다(1R must-fix).
  *
  *  ⭐⭐ **뿌리 계산은 `codexCredentialRoot()` «한 자»를 쓴다**(2026-08-19 · `OBS-T110` 후속).
@@ -109,7 +109,7 @@ export function readFreshAvailabilityState(nowMs: number = Date.now(), homePath?
 // ─── 쿼터 신호(디스크 경유) ──────────────────────────────────────────
 //
 // ⛔⭐⭐⭐ **왜 디스크인가**(2026-08-05 무인 리뷰가 냄새를 맡은 자리): `UsageStore` 는 «프로세스 안»
-//   메모리이고 `initBudgetStore` 는 **TUI 대시보드에서만** 불린다. 그래서 headless `monad dev` 런은
+//   메모리이고 `initBudgetStore` 는 **TUI 대시보드에서만** 불린다. 그래서 headless `elanous dev` 런은
 //   그 store 가 «영영 비어» 있고, 쿼터 얼굴이 «한 번도 안 뜬다** — 만들었는데 아무도 안 부르는 형태다.
 //   ✅ 그래서 fetch 가 성공할 때 신호를 «파일로» 남기고, 판정층은 그 파일만 읽는다.
 //   ⛔ 판정 경로에서 네트워크를 치지 않는다(실측: 그 호출이 2분 15초 매달린 적이 있다).
@@ -133,9 +133,9 @@ interface QuotaSignalState {
  * ***A 를 재고 쓴 「찼다」를 B 의 것으로 읽는다.*** 회전(S4)을 그 위에 얹으면
  * 「A 가 찼으니 B 로 간다 → B 도 찼다고 나온다 → 되돌아간다」가 된다.
  *
- * ⭐ **키는 「monad 의 계정 이름」이 아니라 「실제로 잰 홈」이다.** 측정은 `codex app-server` 를
+ * ⭐ **키는 「elanous 의 계정 이름」이 아니라 「실제로 잰 홈」이다.** 측정은 `codex app-server` 를
  *   띄워서 하고 그 프로세스가 읽는 것은 `CODEX_HOME` 이다. 이름으로 키를 잡으면
- *   `CODEX_HOME=<B> monad provider codex usage` 가 «B 를 재고 default 로 적는다» —
+ *   `CODEX_HOME=<B> elanous provider codex usage` 가 «B 를 재고 default 로 적는다» —
  *   판정층이 피판정층과 다른 자를 쓰는 그 형태다.
  *
  * ⛔⭐⭐ **「기본 계정은 종전 파일 이름」이라는 특례를 «두지 않는다»**(리뷰 must-fix).
@@ -157,7 +157,7 @@ function normalizeHome(p: string): string {
  *
  * 🚨 왜 바꿨나(2026-08-19 · 🅢 실측 ⊕ 🅣 확인):
  *   `authStorePath()` 는 ***절대 우주로 안 갈린다***(XDG 만 본다). 그런데 이 함수는
- *   `monadStateRoot()` 를 써서 ***갈렸다*** ⇒ ***자격은 공유인데 그 자격의 «상태»만 갈렸다.***
+ *   `elanousStateRoot()` 를 써서 ***갈렸다*** ⇒ ***자격은 공유인데 그 자격의 «상태»만 갈렸다.***
  *   ⇒ 격리 우주(자식 워크트리)가 ***19시간 낡은*** 자기 신호를 읽고 `usedPercent=unknown` 이 되어,
  *     회전이 ***이미 100% 인 계정을 골라*** 429 로 죽었다(골 «둘»이 그 경로로 죽었다).
  * ⭐ 그리고 이것은 «설계 판단»이 아니라 ***구현이 자기 머리말을 안 따른 것***이다 —
@@ -166,25 +166,25 @@ function normalizeHome(p: string): string {
  */
 export function codexCredentialRoot(): string {
   // ⛔⭐⭐⭐ **「명시 격리」와 「파생 격리」를 «가른다» — 이것이 이 수리의 핵심이다.**
-  //   ⓐ `MONAD_STATE_DIR` 이 «명시»로 서 있으면 ⇒ 부른 쪽이 «의도적으로» 격리한 것이다. 존중한다.
-  //      (격리 테스트가 그 길을 쓴다 — 안 존중하면 테스트가 사람의 진짜 `~/.monad/budget` 에 쓴다)
+  //   ⓐ `ELANOUS_STATE_DIR` 이 «명시»로 서 있으면 ⇒ 부른 쪽이 «의도적으로» 격리한 것이다. 존중한다.
+  //      (격리 테스트가 그 길을 쓴다 — 안 존중하면 테스트가 사람의 진짜 `~/.elanous/budget` 에 쓴다)
   //   ⓑ 그런데 자식 워크트리의 우주는 ***env 가 아니라 «트리에서 파생»***된다(3층 test 파생).
   //      ⛔ 그것까지 신호를 가르면 ***아무도 의도하지 않은 격리***가 생기고, 그 안의 신호는
   //      갱신하는 사람이 없어 «19시간» 낡는다 ⇒ 회전이 100% 인 계정을 고른다 ⇒ 429.
   //   ⇒ 🔑 그래서 ***「누가 격리를 «말했나»」***로 가른다. 말한 적 없으면 자격과 «같은 뿌리»다.
   // ⛔⭐⭐⭐ **「명시」인지 «물어본다»** — env 에 값이 있다고 명시가 아니다(2026-08-19 · `OBS-T114`).
-  //   하니스가 자식을 띄울 때 ***파생된 우주 뿌리를 `MONAD_STATE_DIR` 로 «채워 넣는다»***
+  //   하니스가 자식을 띄울 때 ***파생된 우주 뿌리를 `ELANOUS_STATE_DIR` 로 «채워 넣는다»***
   //   (`agent/identity-env.ts` `buildPtyEnv`). 그 값을 「사람이 격리를 말했다」로 읽으면
   //   ***자식이 갱신되지 않는 자기 우주를 보고 전 계정 `unknown`*** 이 된다 ⇒ 회전이 100% 계정을 고른다.
   //   ⇒ 🔑 그래서 ***출처를 «값으로» 받아*** 파생이면 무시한다. 출처를 안 주는 옛 자식은
   //     종전대로 존중된다(호환) — 새 자식부터 갈린다.
-  const explicitIsolation = process.env.MONAD_STATE_DIR_SOURCE?.trim() === 'derived'
+  const explicitIsolation = process.env.ELANOUS_STATE_DIR_SOURCE?.trim() === 'derived'
     ? undefined
-    : process.env.MONAD_STATE_DIR?.trim();
+    : process.env.ELANOUS_STATE_DIR?.trim();
   if (explicitIsolation) return explicitIsolation;
   const xdg = process.env.XDG_CONFIG_HOME?.trim();
   // ⛔ `authStorePath()` 와 «같은 규칙»을 쓴다 — 두 자로 나뉘면 한쪽만 고쳐 다시 갈린다.
-  return xdg ? join(xdg, 'monad') : join(homedir(), '.monad');
+  return xdg ? join(xdg, 'elanous') : join(homedir(), '.elanous');
 }
 
 export function quotaSignalDir(root?: string): string {

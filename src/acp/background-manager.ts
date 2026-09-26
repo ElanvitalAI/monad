@@ -4,7 +4,7 @@
 // lifecycle state machine so LLM callers can kick off a long turn
 // via `AcpSessionStartBackground`, poll status via
 // `AcpSessionStatus`, cancel via `AcpSessionCancel`, and retrieve
-// final output via `AcpSessionJoin` — all without holding monad's
+// final output via `AcpSessionJoin` — all without holding elanous's
 // main loop hostage.
 //
 // State machine:
@@ -156,7 +156,7 @@ export interface BackgroundManager {
    *  backendSessionId)` — the same identity pair `AcpAgent`'s
    *  approver callbacks already carry (`req.backendId` +
    *  `req.sessionId`), so the adapter doesn't need to know about
-   *  monad's `acp-cli:<brand>:<raw>` namespacing scheme.
+   *  elanous's `acp-cli:<brand>:<raw>` namespacing scheme.
    *
    *  No-op when no BG record matches, when the record is terminal,
    *  or when the record is already in the target state — idempotency

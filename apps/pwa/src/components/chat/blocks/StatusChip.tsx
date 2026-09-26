@@ -30,10 +30,10 @@ export function StatusChip({ block }: { block: Block }) {
   const tone = STATUS_TONE[block.status];
   return (
     <div
-      data-monad-block-kind="agent_status"
-      data-monad-block-id={block.blockId}
+      data-elanous-block-kind="agent_status"
+      data-elanous-block-id={block.blockId}
       data-monad-agent-id={block.agentId}
-      data-monad-status={block.status}
+      data-elanous-status={block.status}
       className={cn(
         'inline-flex items-center gap-1.5 rounded border bg-muted/20 px-2 py-0.5 text-[11px] font-mono',
         tone,

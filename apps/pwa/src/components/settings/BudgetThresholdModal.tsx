@@ -111,8 +111,8 @@ export function BudgetThresholdModal(props: BudgetThresholdModalProps): React.Re
           data-testid="budget-threshold-summary"
         >
           {isExceeded
-            ? `You've passed the cap. monad recommends falling back to ${fallbackLabel} tier for the rest of this month.`
-            : `You're past the ${notifyAtPct}% threshold. monad can switch to ${fallbackLabel} tier to slow the burn.`}
+            ? `You've passed the cap. elanous recommends falling back to ${fallbackLabel} tier for the rest of this month.`
+            : `You're past the ${notifyAtPct}% threshold. elanous can switch to ${fallbackLabel} tier to slow the burn.`}
         </p>
 
         <fieldset

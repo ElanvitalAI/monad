@@ -35,7 +35,7 @@ function makeStatus(llmPassed: boolean): SetupCheckResult {
     id: 'llm',
     label: 'LLM provider',
     passed: llmPassed,
-    hint: 'run `monad setup llm`',
+    hint: 'run `elanous setup llm`',
   };
   return { required: [llm], recommended: [], ok: llmPassed };
 }

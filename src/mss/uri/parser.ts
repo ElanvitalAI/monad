@@ -1,12 +1,12 @@
-// ── Monad URI parser — Tier 1/2/3 → structured form ──
+// ── Elanous URI parser — Tier 1/2/3 → structured form ──
 //
 // Grammar (PLAN §7.1):
-//   monad-uri = "monad://" host "/" monad-id "/" entity-path ["#" fragment] ["?" query]
+//   elanous-uri = "elanous://" host "/" elanous-id "/" entity-path ["#" fragment] ["?" query]
 //   entity-path = entity-kind "/" entity-id ["/" entity-path ...]
 //
 // Tier 1 (short):       <kind>_<suffix>        e.g. `ses_01HYZA`
 // Tier 2 (local):       <kind>/<id>[/...]      e.g. `session/01HYZ.../msg/01HZA...`
-// Tier 3 (distributed): monad://host/monad-id/<entity-path>[?q][#f]
+// Tier 3 (distributed): elanous://host/elanous-id/<entity-path>[?q][#f]
 //
 // The parser returns `null` on malformed input rather than throwing so
 // callers at system boundaries can handle errors explicitly.
@@ -20,12 +20,12 @@ export interface ParsedUriSegment {
   id: string;
 }
 
-export interface ParsedMonadUri {
+export interface ParsedElanousUri {
   tier: UriTier;
   /** Tier 3 only — host portion (`local`, hostname, tailscale name). */
   host?: string;
-  /** Tier 3 only — the owning monad's ULID. */
-  monadId?: string;
+  /** Tier 3 only — the owning elanous's ULID. */
+  elanousId?: string;
   /** For Tier 1 this is always a single segment (the suffix form carries no parent).
    *  For Tier 2/3 every `kind/id` pair becomes one segment. */
   segments: ParsedUriSegment[];
@@ -72,7 +72,7 @@ function splitEntityPath(path: string): ParsedUriSegment[] | null {
 }
 
 /** Parse any Tier 1/2/3 form. Returns null for malformed input. */
-export function parseMonadUri(uri: string): ParsedMonadUri | null {
+export function parseElanousUri(uri: string): ParsedElanousUri | null {
   if (typeof uri !== 'string' || uri.length === 0) return null;
 
   // --- Tier 1 shortcut -------------------------------------------------
@@ -88,9 +88,9 @@ export function parseMonadUri(uri: string): ParsedMonadUri | null {
   }
 
   // --- Tier 3 ----------------------------------------------------------
-  if (uri.startsWith('monad://')) {
+  if (uri.startsWith('elanous://')) {
     // Strip scheme
-    const rest0 = uri.slice('monad://'.length);
+    const rest0 = uri.slice('elanous://'.length);
     // Split off fragment + query
     let main = rest0;
     let fragment: string | undefined;
@@ -116,16 +116,16 @@ export function parseMonadUri(uri: string): ParsedMonadUri | null {
     }
 
     const segs = main.split('/');
-    // Expect at least [host, monadId, kind, id]
+    // Expect at least [host, elanousId, kind, id]
     if (segs.length < 4) return null;
     const host = segs[0]!;
-    const monadId = segs[1]!;
+    const elanousId = segs[1]!;
     if (!host || !KIND_RE.test(host) && host !== 'local' && !/^[a-zA-Z0-9][a-zA-Z0-9.-]*$/.test(host)) return null;
-    if (!isUlid(monadId)) return null;
+    if (!isUlid(elanousId)) return null;
     const entityPath = segs.slice(2).join('/');
     const segments = splitEntityPath(entityPath);
     if (!segments) return null;
-    const out: ParsedMonadUri = { tier: 3, host, monadId, segments };
+    const out: ParsedElanousUri = { tier: 3, host, elanousId, segments };
     if (fragment !== undefined) out.fragment = fragment;
     if (query !== undefined) out.query = query;
     return out;

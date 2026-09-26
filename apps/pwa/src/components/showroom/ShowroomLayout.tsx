@@ -175,7 +175,7 @@ export function ShowroomLayout() {
   // DM stage 3 — daemon multi-LLM mode (single ACP at layout level ·
   // single session/prompt with multiLlm hint · namespaced sub-stream
   // per modelId). Default ON · localStorage-persisted opt-out only
-  // (storage key `'monad.showroom.dmMode' = 'false'` opts out).
+  // (storage key `'elanous.showroom.dmMode' = 'false'` opts out).
   const [dmMode, setDmModeState] = useState<boolean>(() => readDmModeFromStorage());
   // R6 FU.5 (2026-05-09) — per-user backend toggle for the role
   // classifier. Default 'keyword' (opt-in safe); 'local-llm' wires
@@ -209,9 +209,9 @@ export function ShowroomLayout() {
     if (typeof window !== 'undefined') {
       try {
         if (next.length > 0) {
-          window.localStorage.setItem('monad.showroom.roleJudgeModel', next);
+          window.localStorage.setItem('elanous.showroom.roleJudgeModel', next);
         } else {
-          window.localStorage.removeItem('monad.showroom.roleJudgeModel');
+          window.localStorage.removeItem('elanous.showroom.roleJudgeModel');
         }
       } catch { /* swallow */ }
     }
@@ -1827,7 +1827,7 @@ export function ShowroomLayout() {
           </button>
           {/* micro.3 — model select dropdown. visible only when toggle
               is ON. '(daemon default)' = empty string · honour daemon's
-              MONAD_SHOWROOM_ROLE_JUDGE_MODEL env / hardcoded default. */}
+              ELANOUS_SHOWROOM_ROLE_JUDGE_MODEL env / hardcoded default. */}
           {roleJudgeBackend === 'local-llm' && (
             <select
               value={roleJudgeModel}
@@ -1992,7 +1992,7 @@ export function ShowroomLayout() {
       />
       {/* §3.3 (C1 · 2026-05-11) — cost gate modal. Fires when the
           estimated broadcast cost crosses the warn threshold (default
-          50_000 tokens · NEXT_PUBLIC_MONAD_SHOWROOM_BROADCAST_COST_WARN_TOKENS
+          50_000 tokens · NEXT_PUBLIC_ELANOUS_SHOWROOM_BROADCAST_COST_WARN_TOKENS
           override). pendingCostGate holds the resume closure so confirm
           replays the exact dispatch · cancel discards. */}
       {pendingCostGate && (

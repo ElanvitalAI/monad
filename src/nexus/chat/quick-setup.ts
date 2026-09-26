@@ -67,7 +67,7 @@ export function buildQuickSetupSnapshot(opts: QuickSetupRenderOpts = {}): QuickS
       provider: 'codex',
       label: 'OpenAI · Codex',
       paths: [
-        { tag: 'OAuth',           hint: '`monad login codex` (가장 추천 · 30초)',     detected: codexOAuth },
+        { tag: 'OAuth',           hint: '`elanous login codex` (가장 추천 · 30초)',     detected: codexOAuth },
         { tag: 'OPENAI_API_KEY',  hint: '`export OPENAI_API_KEY=sk-...` env 설정',  detected: openaiKey },
       ],
     },
@@ -115,7 +115,7 @@ export function renderQuickSetupLines(snap: QuickSetupSnapshot): string[] {
   }
   lines.push('');
   lines.push('  Grok · 중국 4종 (kimi/qwen/glm/deepseek) 등은 NEXUS chat');
-  lines.push('  우선순위 외 — daemon 탭 또는 `monad`(대시보드)에서 사용.');
+  lines.push('  우선순위 외 — daemon 탭 또는 `elanous`(대시보드)에서 사용.');
   lines.push('');
   lines.push('  [r] env 변경 후 detection 재실행 → 새 chat 탭 / nexus 재시작');
   lines.push('     으로 wire 반영.');

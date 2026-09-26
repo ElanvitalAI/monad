@@ -12,8 +12,8 @@ import { join } from 'node:path';
 
 import { filterDashboardArgs, program } from '../src/index.js';
 import { RemotesStore } from '../src/cli/remotes.js';
-import { setMonadConfigDir, getMonadConfigDirOverride, resetMonadConfigDir } from '../src/monad-config-dir.js';
-import { ROOT_FLAGS_TAKING_VALUE, bookmarkAttachDefaults, bookmarkToMonadRemote, readRemoteFlag, stripRemoteFlags } from '../src/cli/remote-resolve.js';
+import { setElanousConfigDir, getElanousConfigDirOverride, resetElanousConfigDir } from '../src/elanous-config-dir.js';
+import { ROOT_FLAGS_TAKING_VALUE, bookmarkAttachDefaults, bookmarkToElanousRemote, readRemoteFlag, stripRemoteFlags } from '../src/cli/remote-resolve.js';
 import { registerPtyTakeoverCommands, type PtyTakeoverCommandDeps } from '../src/cli/pty-takeover-cli.js';
 
 let dir: string;
@@ -31,14 +31,14 @@ function entry(port: number, tokenFile: string) {
 }
 
 beforeEach(() => {
-  dir = mkdtempSync(join(tmpdir(), 'monad-remotes-'));
-  prevConfigDir = getMonadConfigDirOverride();
-  setMonadConfigDir(dir);
+  dir = mkdtempSync(join(tmpdir(), 'elanous-remotes-'));
+  prevConfigDir = getElanousConfigDirOverride();
+  setElanousConfigDir(dir);
 });
 afterEach(() => {
-  // ⛔ 「없었음」과 「어떤 값이었음」을 다른 처리로 — setMonadConfigDir(undefined) 는 던진다.
-  if (prevConfigDir === undefined) resetMonadConfigDir();
-  else setMonadConfigDir(prevConfigDir);
+  // ⛔ 「없었음」과 「어떤 값이었음」을 다른 처리로 — setElanousConfigDir(undefined) 는 던진다.
+  if (prevConfigDir === undefined) resetElanousConfigDir();
+  else setElanousConfigDir(prevConfigDir);
   rmSync(dir, { recursive: true, force: true });
 });
 
@@ -82,7 +82,7 @@ describe('-r bookmark resolution', () => {
     expect(readRemoteFlag(['-r', 'a-name-that-could-be-a-bookmark'])).toEqual({ present: true, value: '' });
   });
 
-  // 🩸 실측으로 잡은 함정: `monad -r attach` 가 "unknown bookmark: attach" 를 냈다 —
+  // 🩸 실측으로 잡은 함정: `elanous -r attach` 가 "unknown bookmark: attach" 를 냈다 —
   //    사람이 가장 자연스럽게 치는 문면인데 막혔다. 이제는 흐른다.
   test('bare `-r` followed by a SUBCOMMAND does not eat it', () => {
     expect(stripRemoteFlags(['-r', 'attach'])).toEqual(['attach']);
@@ -149,12 +149,12 @@ describe('-r bookmark resolution', () => {
       host: 'probe', acp_url: undefined as unknown as string,
       token_file: '/tmp/x', addedAt: '2026-09-01T00:00:00Z',
     };
-    expect(() => bookmarkToMonadRemote(broken)).toThrow(/acp_url/);
-    expect(() => bookmarkToMonadRemote(broken)).toThrow(/probe/);
+    expect(() => bookmarkToElanousRemote(broken)).toThrow(/acp_url/);
+    expect(() => bookmarkToElanousRemote(broken)).toThrow(/probe/);
     // ⊕ 빈 문자열도 같은 취급 — 「있다」와 「쓸 수 있다」는 다른 값이다.
-    expect(() => bookmarkToMonadRemote({ ...broken, acp_url: '' })).toThrow(/acp_url/);
+    expect(() => bookmarkToElanousRemote({ ...broken, acp_url: '' })).toThrow(/acp_url/);
     // ✅ 대조 — 멀쩡한 것은 그대로 통과한다(가드가 «전부»를 막으면 그것도 결함이다).
-    expect(bookmarkToMonadRemote({ ...broken, acp_url: 'ws://h/v1/acp' })).toBe('ws://h/v1/acp');
+    expect(bookmarkToElanousRemote({ ...broken, acp_url: 'ws://h/v1/acp' })).toBe('ws://h/v1/acp');
   });
 
   // 🩸 이 자리에는 원래 `leading-run limitation` 이라는 시험이 있었다 —
@@ -163,7 +163,7 @@ describe('-r bookmark resolution', () => {
   //    📏 세어 보니 루트에서 값을 받는 플래그는 `--config-dir` «하나»였다 — 열거 가능했다.
   //    ⇒ 한계를 «고쳤고», 시험도 「안 되는 것」에서 ***「되는 것」***으로 바꿨다.
   // 🚨 리뷰 must-fix: `--` 는 «플래그»가 아니라 ***옵션의 끝***이다.
-  //    옛 판은 `--` 도 `-` 로 시작하니 플래그로 세었고, `monad -- -r` 의 «위치 인자» `-r` 을
+  //    옛 판은 `--` 도 `-` 로 시작하니 플래그로 세었고, `elanous -- -r` 의 «위치 인자» `-r` 을
   //    원격 플래그로 탈취했다.
   //
   // ⚠️⭐ **이 축은 «실물 CLI 시험으로 못 잰다» — 그리고 그것을 여기 적는다.**
@@ -234,7 +234,7 @@ describe('-r bookmark resolution', () => {
 
   test('an old-habit `-r <sessionId>` is told where to go — not silently routed', () => {
     // ⛔ 이 갈래가 없으면 그 사람은 「엉뚱한 원격에 붙은 뒤 unknown command」를 본다.
-    // 📏 모양은 «실물»에서 왔다 — ~/.monad/sessions/ 의 파일명은 전부 완전한 UUID 다.
+    // 📏 모양은 «실물»에서 왔다 — ~/.elanous/sessions/ 의 파일명은 전부 완전한 UUID 다.
     expect(() => readRemoteFlag(['-r', '0000e49c-f9e8-4117-9d5f-795e57b541e9']))
       .toThrow(/--resume/);
     // ⊕ 대문자 UUID 도 같은 안내(파일명이 소문자여도 사람은 붙여넣는다).
@@ -243,7 +243,7 @@ describe('-r bookmark resolution', () => {
 
     // ⛔⭐ 그리고 ***너무 넓지 않다*** — 리뷰 지적으로 좁힌 축이다.
     //    옛 판(`session-[A-Za-z0-9]`)은 아래 이름들을 전부 삼켰다.
-    for (const notASession of ['mbp', 'session-home', 'monad-session-abc', 'prod-1', 'a1b2c3d4-1111-']) {
+    for (const notASession of ['mbp', 'session-home', 'elanous-session-abc', 'prod-1', 'a1b2c3d4-1111-']) {
       expect(readRemoteFlag(['-r', notASession])).toEqual({ present: true, value: '' });
     }
   });
@@ -280,14 +280,14 @@ describe('-r bookmark resolution', () => {
     expect(filterDashboardArgs(['nexus', '--resume', 'x'])).toEqual(['nexus', '--resume', 'x']);
   });
 
-  test('the bookmark store follows the CONFIG DIR — never the real ~/.monad', () => {
+  test('the bookmark store follows the CONFIG DIR — never the real ~/.elanous', () => {
     // ⛔ 이 회귀가 실제로 났다: --config-dir <격리> 로 nexus connect 를 쳤는데
-    //    토큰·북마크가 «운영» ~/.monad 에 쓰였고 default 가 테스트 데몬을 가리켰다.
+    //    토큰·북마크가 «운영» ~/.elanous 에 쓰였고 default 가 테스트 데몬을 가리켰다.
     const tok = join(dir, 'tok');
     writeFileSync(tok, 'test-token');
     const store = new RemotesStore();
     store.addRemote('iso', entry(31416, tok), { setDefault: true });
-    // ⭐ 자격 경로가 이 회귀의 «핵심»이다 — 운영 ~/.monad/remotes/ 에 토큰이 쓰였던 것.
+    // ⭐ 자격 경로가 이 회귀의 «핵심»이다 — 운영 ~/.elanous/remotes/ 에 토큰이 쓰였던 것.
     store.saveToken('iso', 'secret-token-value');
 
     expect(existsSync(join(dir, 'remotes.json'))).toBe(true);
@@ -295,9 +295,9 @@ describe('-r bookmark resolution', () => {
     expect(raw).toContain('iso');
 
     // ⭐ 그리고 «설정 디렉터리 밖»에는 안 생긴다.
-    // ⛔ 실제 홈(~/.monad)을 읽어 비교하지 «않는다» — 그건 개인 설정에 따라 갈리는
+    // ⛔ 실제 홈(~/.elanous)을 읽어 비교하지 «않는다» — 그건 개인 설정에 따라 갈리는
     //    환경 의존 시험이 된다(리뷰 지적). 대신 ***경로 자체가 config-dir 를 따르는지***를 문다:
-    //    그것이 이 회귀의 «원인»이었다(전: homedir() 하드코딩 · 후: getMonadConfigDir()).
+    //    그것이 이 회귀의 «원인»이었다(전: homedir() 하드코딩 · 후: getElanousConfigDir()).
     //    ⇒ 「config-dir 안에 생겼다」로 문다. 그게 회귀의 원인이었던 그 축이다.
     expect(existsSync(join(dir, 'remotes.json'))).toBe(true);
     expect(existsSync(join(dir, 'remotes', 'iso.token'))).toBe(true);
@@ -333,7 +333,7 @@ describe('pty list -r / --remote grammar', () => {
         seen.push({ url, token });
         return { ok: true, terminals: [{ id: 'pty_from_default', kind: 'shell', alive: true }] };
       }));
-      await cli.parseAsync(['node', 'monad', 'pty', 'list', '-r']);
+      await cli.parseAsync(['node', 'elanous', 'pty', 'list', '-r']);
       expect(seen).toEqual([{ url: 'http://127.0.0.1:31416/v1/terminals', token: 'default-token' }]);
       expect(stdout.join('')).toContain('pty_from_default');
       expect(stdout.join('')).not.toContain('pty_local_only');
@@ -356,7 +356,7 @@ describe('pty list -r / --remote grammar', () => {
       seen.push({ url, token });
       return { ok: true, terminals: [{ id: 'pty_should_not_list', kind: 'shell', alive: true }] };
     }));
-    await expect(cli.parseAsync(['node', 'monad', 'pty', 'list', '-r', 'other'])).rejects.toThrow(/too many arguments/i);
+    await expect(cli.parseAsync(['node', 'elanous', 'pty', 'list', '-r', 'other'])).rejects.toThrow(/too many arguments/i);
     expect(seen).toEqual([]);
   });
 
@@ -376,7 +376,7 @@ describe('pty list -r / --remote grammar', () => {
         seen.push({ url, token });
         return { ok: true, terminals: [{ id: 'pty_from_named', kind: 'shell', alive: true }] };
       }));
-      await cli.parseAsync(['node', 'monad', 'pty', 'list', '--remote', 'other']);
+      await cli.parseAsync(['node', 'elanous', 'pty', 'list', '--remote', 'other']);
       expect(seen).toEqual([{ url: 'http://127.0.0.1:31999/v1/terminals', token: 'named-token' }]);
       expect(stdout.join('')).toContain('pty_from_named');
     } finally {
@@ -396,7 +396,7 @@ describe('pty list -r / --remote grammar', () => {
     try {
       const cli = new Command();
       registerPtyTakeoverCommands(cli, listDeps(store, async () => { throw new Error('must not fetch'); }));
-      await cli.parseAsync(['node', 'monad', 'pty', 'list', '-r']);
+      await cli.parseAsync(['node', 'elanous', 'pty', 'list', '-r']);
       expect(process.exitCode).toBe(1);
       expect(stderr.join('')).toMatch(/no default remote bookmark/);
       expect(stdout.join('')).not.toContain('pty_local_only');
@@ -422,7 +422,7 @@ describe('pty list -r / --remote grammar', () => {
     try {
       const cli = new Command();
       registerPtyTakeoverCommands(cli, listDeps(store, async () => { throw new Error('must not fetch'); }));
-      await cli.parseAsync(['node', 'monad', 'pty', 'list', '--remote', 'nope']);
+      await cli.parseAsync(['node', 'elanous', 'pty', 'list', '--remote', 'nope']);
       expect(process.exitCode).toBe(1);
       expect(stderr.join('')).toMatch(/unknown bookmark/);
       expect(stderr.join('')).toContain('nope');
@@ -469,7 +469,7 @@ describe('pty list -r / --remote grammar', () => {
         remotesStore: () => store,
         listRefs: () => [{ id: 'pty_local_only', kind: 'shell', source: 'local', alive: true }],
       });
-      await cli.parseAsync(['node', 'monad', 'pty', 'list', '-r']);
+      await cli.parseAsync(['node', 'elanous', 'pty', 'list', '-r']);
       expect(seen).toEqual([{ path: '/v1/terminals', auth: 'Bearer http-token' }]);
       expect(seen.some((hit) => hit.path === '/v1/acp/v1/terminals')).toBe(false);
       expect(stdout.join('')).toContain('pty_from_http_acp');
@@ -517,7 +517,7 @@ describe('pty list -r / --remote grammar', () => {
         remotesStore: () => store,
         listRefs: () => [{ id: 'pty_local_only', kind: 'shell', source: 'local', alive: true }],
       });
-      await cli.parseAsync(['node', 'monad', 'pty', 'list', '-r']);
+      await cli.parseAsync(['node', 'elanous', 'pty', 'list', '-r']);
       expect(seen).toEqual([{ path: '/v1/terminals', auth: 'Bearer http-token' }]);
       expect(stdout.join('')).toContain('pty_from_http');
       expect(stdout.join('')).not.toContain('pty_local_only');
@@ -538,7 +538,7 @@ describe('pty remote control -r / --remote grammar', () => {
     const stdout: string[] = []; const stderr: string[] = []; const originalOut = process.stdout.write; const originalErr = process.stderr.write;
     process.stdout.write = ((chunk: string) => { stdout.push(chunk); return true; }) as typeof process.stdout.write;
     process.stderr.write = ((chunk: string) => { stderr.push(chunk); return true; }) as typeof process.stderr.write;
-    try { const cli = new Command(); registerPtyTakeoverCommands(cli, deps); await cli.parseAsync(['node', 'monad', 'pty', ...args]); return { stdout: stdout.join(''), stderr: stderr.join(''), exitCode: process.exitCode }; }
+    try { const cli = new Command(); registerPtyTakeoverCommands(cli, deps); await cli.parseAsync(['node', 'elanous', 'pty', ...args]); return { stdout: stdout.join(''), stderr: stderr.join(''), exitCode: process.exitCode }; }
     finally { process.stdout.write = originalOut; process.stderr.write = originalErr; process.exitCode = 0; }
   }
   test('pty text `-r` posts exact default-bookmark control URL and Enter body', async () => {

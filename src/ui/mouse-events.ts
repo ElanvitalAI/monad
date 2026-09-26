@@ -29,7 +29,7 @@
 export type MouseEventType =
   | 'click'
   /** MD2 — synthesized by tui.ts SGR parser when a 2nd same-cell primary
-   *  press arrives within MONAD_DOUBLE_CLICK_MS (default 300ms).
+   *  press arrives within ELANOUS_DOUBLE_CLICK_MS (default 300ms).
    *  Widgets in browseMode use it to distinguish select-cursor (click)
    *  from activate (double-click), matching AppCUI-rs's
    *  `MouseEvent::DoubleClick` variant. */
@@ -47,7 +47,7 @@ export type MouseEventType =
   // and auto-triggers tooltips. Port of AppCUI-rs
   // `MouseEvent::Enter` / `MouseEvent::Leave` / `MouseEvent::Over`
   // plus a synthesized "stable" variant that fires once the
-  // pointer has sat on a target for MONAD_HOVER_DELAY_MS
+  // pointer has sat on a target for ELANOUS_HOVER_DELAY_MS
   // (default 500ms) — the trigger for hint-text tooltips.
   | 'hover-enter'
   | 'hover-leave'

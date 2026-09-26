@@ -168,7 +168,7 @@ async function runReplGoalLoop({
         resolveWriteCwd: toolCwdResolver.resolveWriteCwd,
         signal,
         sessionId: input.terminalId,
-        entry: 'monad-apparatus',
+        entry: 'elanous-apparatus',
       })
     : async () => {
         throw new Error(':agent — daemon has no tool surface (start with `--tools webterm` for full vision-augmented agent)');

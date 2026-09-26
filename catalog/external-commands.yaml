@@ -6,16 +6,16 @@
 #    `unmeasured` means "nobody has checked", never "nothing breaks".
 #
 # Why this file exists: on a fresh WSL2 Ubuntu, NINE of these were absent
-# (rg, gh, ffmpeg, zsh, java, jq, codex, node, npm) and monad reported the
+# (rg, gh, ffmpeg, zsh, java, jq, codex, node, npm) and elanous reported the
 # absence in four unrelated disguises — an installer crash, 31 test errors,
 # "No LLM provider available", and a postmortem classified `quota-exhausted`
 # on an account with 75% quota left. None of those name the missing command.
 #
 # ⛔ This file is a MAP, not a gate. It does not decide what is required;
-#    it records what was measured so `monad doctor` can name the gap.
+#    it records what was measured so `elanous doctor` can name the gap.
 #
 # ⛔ `probe` — HOW a command is detected. Absent means `path` (is the name on
-#    PATH). One entry is NOT a PATH command and says so: monad finds Chrome by
+#    PATH). One entry is NOT a PATH command and says so: elanous finds Chrome by
 #    scanning known install locations (`discoverChromeBinary`), so a PATH check
 #    reports `missing` on a macOS that HAS Chrome — measured 2026-09-20, and
 #    that false negative is exactly why this field exists.
@@ -44,13 +44,13 @@ commands:
     tier: required
     spawn_sites: 36
     used_for: worktrees, commits, diffs, every harness phase
-    breaks: monad does not boot
+    breaks: elanous does not boot
 
   - name: bun
     tier: required
     spawn_sites: 28
     used_for: the runtime itself, child agents, gates
-    breaks: monad does not boot
+    breaks: elanous does not boot
     note: "engines.bun >= 1.3.5 — below that Bun-native PTY silently delivers zero bytes"
 
   - name: gh
@@ -180,7 +180,7 @@ commands:
     resolved_via: require('node-pty') from src/pty-shell/registry.ts
     used_for: Node-runtime PTY spawn (Bun uses Bun.spawn terminal instead)
     breaks: >-
-      `monad pty list` answers "no PTYs found" (rc=0) without naming the
+      `elanous pty list` answers "no PTYs found" (rc=0) without naming the
       missing module — measured 2026-09-22 on host-e-wsl (WSL2 6.18), where
       node-pty was absent because there is no linux prebuild and the build
       toolchain (make, g++) was missing
@@ -190,7 +190,7 @@ commands:
       shipped as -rw-rw-rw-; the A/B was exact, chmod +x removed the error
     fix: >-
       On Linux: sudo apt-get install -y build-essential (make, g++), then run
-      `monad doctor --fix --yes` (rebuilds node-pty in the installed version —
+      `elanous doctor --fix --yes` (rebuilds node-pty in the installed version —
       measured 2026-09-25 on a bare ubuntu:24.04 container: missing → loads;
       re-running the installer on the same version does not rebuild it)
     fix_broken: chmod +x grants execute permission on spawn-helper

@@ -35,7 +35,7 @@ export interface CodexResetCreditsOpts {
   readonly env?: NodeJS.ProcessEnv;
   /** Test seam. Production requests use global fetch. */
   readonly fetchImpl?: FetchLike;
-  /** Test seam — monad 인증 저장소 경로(Codex 파일을 못 읽을 때 같은 계정 토큰을 여기서 읽는다). */
+  /** Test seam — elanous 인증 저장소 경로(Codex 파일을 못 읽을 때 같은 계정 토큰을 여기서 읽는다). */
   readonly authStorePath?: string;
 }
 
@@ -136,20 +136,20 @@ async function loadCredentials(
 ): Promise<{ ok: true; value: AuthCredentials } | Extract<CodexResetCreditsResult, { ok: false }>> {
   const fromFile = await loadCredentialsFromCodexFile(authFilePath ?? defaultCodexAuthPath(env));
   if (fromFile.ok) return fromFile;
-  // 🩸 2026-09-24 빈 VM(🅢 #20263 ④): `monad login openai-codex` 가 id_token 없이 끝나면 Codex CLI 파일 미러를
+  // 🩸 2026-09-24 빈 VM(🅢 #20263 ④): `elanous login openai-codex` 가 id_token 없이 끝나면 Codex CLI 파일 미러를
   //   «안 만든다»(`not-created-missing-cli-fields`) — 로그인은 됐는데 이 칸이 `unavailable (auth)` 였다.
-  //   ⇒ 파일을 못 읽으면 «같은 계정»(env 로 해석한 저장 키)의 monad 토큰으로 읽는다. 다른 계정으로 새지 않는다.
+  //   ⇒ 파일을 못 읽으면 «같은 계정»(env 로 해석한 저장 키)의 elanous 토큰으로 읽는다. 다른 계정으로 새지 않는다.
   if (authFilePath === undefined) {
-    const fromStore = loadCredentialsFromMonadStore(env, storePath);
+    const fromStore = loadCredentialsFromElanousStore(env, storePath);
     if (fromStore) {
-      log('auth-from-monad-store', { fileKind: fromFile.kind });
+      log('auth-from-elanous-store', { fileKind: fromFile.kind });
       return fromStore;
     }
   }
   return fromFile;
 }
 
-function loadCredentialsFromMonadStore(env: NodeJS.ProcessEnv, storePath: string = authStorePath()): { ok: true; value: AuthCredentials } | null {
+function loadCredentialsFromElanousStore(env: NodeJS.ProcessEnv, storePath: string = authStorePath()): { ok: true; value: AuthCredentials } | null {
   try {
     const account = resolveCodexAccount(env, { storedHome: (key) => loadTokens(key, storePath)?.codexHome });
     const accessToken = loadTokens(account.storeKey, storePath)?.tokens?.accessToken;

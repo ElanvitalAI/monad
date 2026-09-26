@@ -86,7 +86,7 @@ describe('classifyMission', () => {
 describe('composeAutopilotSystemPrompt', () => {
   test('contains core principles paragraph', () => {
     const p = composeAutopilotSystemPrompt('hi');
-    expect(p).toContain('monad-builtin autopilot');
+    expect(p).toContain('elanous-builtin autopilot');
     expect(p).toContain('One tool call per turn');
   });
 

@@ -26,14 +26,14 @@ import {
   type ContextKeyService,
   type ContextKeys,
 } from '../../input-core/context-keys.js';
-import type { MonadState } from '../types.js';
+import type { ElanousState } from '../types.js';
 import type { Store } from '../types.js';
 
 type CKRecord = Record<string, unknown>;
 
-/** Read the `ui.context` sub-object from a MonadState store. Returns an
+/** Read the `ui.context` sub-object from a ElanousState store. Returns an
  *  empty object when the slot is absent. */
-function readStoreContext(store: Store<MonadState>): CKRecord {
+function readStoreContext(store: Store<ElanousState>): CKRecord {
   const ui = store.getState().ui as CKRecord;
   const ctx = ui.context;
   if (ctx && typeof ctx === 'object') return ctx as CKRecord;
@@ -43,7 +43,7 @@ function readStoreContext(store: Store<MonadState>): CKRecord {
 /** Write a key/value patch into `ui.context` via setState, preserving
  *  other ui fields and other context keys. Always produces a new
  *  `ui.context` reference so store subscribers re-select correctly. */
-function writeStoreContext(store: Store<MonadState>, patch: CKRecord): void {
+function writeStoreContext(store: Store<ElanousState>, patch: CKRecord): void {
   store.setState((s) => {
     const prevUi = s.ui as CKRecord;
     const prevCtx = (prevUi.context as CKRecord | undefined) ?? {};
@@ -56,7 +56,7 @@ function writeStoreContext(store: Store<MonadState>, patch: CKRecord): void {
   });
 }
 
-/** Attach bidirectional sync between a MonadState store's `ui.context`
+/** Attach bidirectional sync between a ElanousState store's `ui.context`
  *  slice and a legacy `ContextKeyService`.
  *
  *  Semantics:
@@ -75,7 +75,7 @@ function writeStoreContext(store: Store<MonadState>, patch: CKRecord): void {
  *  store and ContextKeys each own their read path; consumers pick
  *  whichever surface suits them. */
 export function bridgeContextKeysToStore(
-  store: Store<MonadState>,
+  store: Store<ElanousState>,
   contextKeys: ContextKeyService,
 ): () => void {
   // Whitelist of keys the bridge is willing to mirror · derived from

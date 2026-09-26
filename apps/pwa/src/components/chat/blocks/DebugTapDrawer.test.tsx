@@ -2,7 +2,7 @@
 // DebugTapDrawer render contract.
 //
 // PWA bun test env has no RTL, so the assertions are over the
-// `renderToStaticMarkup` output: data-monad-debug-tap-* attributes,
+// `renderToStaticMarkup` output: data-elanous-debug-tap-* attributes,
 // the categorized row layout, empty-state placeholders, and the
 // open/closed `translate-y-{0|full}` discriminator.
 
@@ -26,20 +26,20 @@ describe('DebugTapDrawer — render contract', () => {
     const html = renderToStaticMarkup(
       <DebugTapDrawer open={true} onClose={() => {}} lines={[]} />,
     );
-    expect(html).toMatch(/data-monad-debug-tap-drawer="open"/);
+    expect(html).toMatch(/data-elanous-debug-tap-drawer="open"/);
     expect(html).toMatch(/translate-y-0/);
     expect(html).not.toMatch(/translate-y-full/);
     expect(html).toMatch(/no debug lines yet/);
     // Count attribute reflects 0/0.
-    expect(html).toMatch(/data-monad-debug-tap-count="0"/);
-    expect(html).toMatch(/data-monad-debug-tap-total="0"/);
+    expect(html).toMatch(/data-elanous-debug-tap-count="0"/);
+    expect(html).toMatch(/data-elanous-debug-tap-total="0"/);
   });
 
   it('renders the closed marker + translate-y-full when open=false', () => {
     const html = renderToStaticMarkup(
       <DebugTapDrawer open={false} onClose={() => {}} lines={[]} />,
     );
-    expect(html).toMatch(/data-monad-debug-tap-drawer="closed"/);
+    expect(html).toMatch(/data-elanous-debug-tap-drawer="closed"/);
     expect(html).toMatch(/translate-y-full/);
     expect(html).toMatch(/aria-hidden="true"/);
   });
@@ -55,15 +55,15 @@ describe('DebugTapDrawer — render contract', () => {
         ]}
       />,
     );
-    expect(html).toMatch(/data-monad-category="chat\.turn"/);
-    expect(html).toMatch(/data-monad-event="begin"/);
-    expect(html).toMatch(/data-monad-category="tool\.spawn"/);
-    expect(html).toMatch(/data-monad-event="rg-start"/);
+    expect(html).toMatch(/data-elanous-category="chat\.turn"/);
+    expect(html).toMatch(/data-elanous-event="begin"/);
+    expect(html).toMatch(/data-elanous-category="tool\.spawn"/);
+    expect(html).toMatch(/data-elanous-event="rg-start"/);
     // Time formatted from loggedAt (HH:MM:SS.mmm slice).
     expect(html).toMatch(/\[03:45:21\.000\]/);
     // Total + filtered count = 2/2.
-    expect(html).toMatch(/data-monad-debug-tap-count="2"/);
-    expect(html).toMatch(/data-monad-debug-tap-total="2"/);
+    expect(html).toMatch(/data-elanous-debug-tap-count="2"/);
+    expect(html).toMatch(/data-elanous-debug-tap-total="2"/);
   });
 
   it('exposes the line data block via <details> when payload present', () => {
@@ -103,13 +103,13 @@ describe('DebugTapDrawer — render contract', () => {
     );
     // Filter count reflects the 200 rendered (window slice keeps the
     // tail), total stays at the caller-provided 250.
-    expect(html).toMatch(/data-monad-debug-tap-count="200"/);
-    expect(html).toMatch(/data-monad-debug-tap-total="250"/);
+    expect(html).toMatch(/data-elanous-debug-tap-count="200"/);
+    expect(html).toMatch(/data-elanous-debug-tap-total="250"/);
     // The oldest 50 entries (e-0 .. e-49) are dropped — only the tail
     // (e-50 .. e-249) renders.
-    expect(html).not.toMatch(/data-monad-event="e-0"/);
-    expect(html).toMatch(/data-monad-event="e-50"/);
-    expect(html).toMatch(/data-monad-event="e-249"/);
+    expect(html).not.toMatch(/data-elanous-event="e-0"/);
+    expect(html).toMatch(/data-elanous-event="e-50"/);
+    expect(html).toMatch(/data-elanous-event="e-249"/);
   });
 
   it('renders close button with the expected aria-label', () => {
@@ -117,6 +117,6 @@ describe('DebugTapDrawer — render contract', () => {
       <DebugTapDrawer open={true} onClose={() => {}} lines={[]} />,
     );
     expect(html).toMatch(/aria-label="Close debug drawer"/);
-    expect(html).toMatch(/data-monad-debug-tap-close=""/);
+    expect(html).toMatch(/data-elanous-debug-tap-close=""/);
   });
 });

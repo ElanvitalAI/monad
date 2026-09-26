@@ -1,6 +1,6 @@
 // ── G10 안전봉투 2 — 무인 머지 회귀감지 → revert PR (2026-07-23) ──────────────
 //
-// ROADMAP-monad-is-all §2b(무인레벨 삼각·G10). auto-review 자율머지(review-loop)가 main 을
+// ROADMAP-elanous-is-all §2b(무인레벨 삼각·G10). auto-review 자율머지(review-loop)가 main 을
 // 바꾼 뒤, 그 머지 커밋의 변경 파일을 **최신 main 격리 worktree** 에서 tsc 재검(경량·changed-file)한다.
 // 회귀(타입 깨짐)면 revert PR 을 자동 생성하고 대표에게 알린다(사람 원클릭 머지 — 자동 revert push 아님).
 //

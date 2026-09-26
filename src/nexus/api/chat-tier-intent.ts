@@ -1,7 +1,7 @@
 // M3-3 (PLAN-friction-free-model-selection-ux-2026-05-12 · Phase 3) —
 // `POST /v1/chat/tier-intent` endpoint.
 //
-// Detects whether a user chat message is asking monad to change voice
+// Detects whether a user chat message is asking elanous to change voice
 // / LLM tier settings ("이번 회의는 의료 용어 많아"), plans the switch,
 // and (when `apply: true` is set) installs a session-scoped override
 // that the tier-resolver consults before user-config.

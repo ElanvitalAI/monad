@@ -56,7 +56,7 @@ export async function spawnLocalLlmInVW(
   }
 
   // D20 · Reachability precheck for remote nodes. Local node skips
-  // this (the user's own monad host is by definition "reachable";
+  // this (the user's own elanous host is by definition "reachable";
   // the manager probe only tells us whether LM Studio / Ollama is
   // running, which lms chat / ollama run surface fine if missing).
   if (spec.nodeId !== 'local') {

@@ -1,6 +1,6 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { getMonadConfigDir } from '../monad-config-dir.js';
+import { getElanousConfigDir } from '../elanous-config-dir.js';
 import { resolveNexusPwa, type NexusPwaResolution } from '../cli/nexus-show.js';
 import { readNexusRuntime } from '../nexus/runtime.js';
 import { acquireTurn, currentTurnHolder, releaseTurn, turnQueue } from './session-input-arbiter.js';
@@ -98,24 +98,24 @@ function daemonOrigin(
     const origin = runtimeOrigin();
     if (origin) return origin;
     const detail = error instanceof Error ? error.message : String(error);
-    throw new Error(`Nexus daemon could not be found (${detail}); start it with \`monad nexus run\`.`);
+    throw new Error(`Nexus daemon could not be found (${detail}); start it with \`elanous nexus run\`.`);
   }
   if (!('loopback' in resolution)) {
     const origin = runtimeOrigin();
     if (origin) return origin;
-    throw new Error(`Nexus daemon could not be found (${resolution.reason}); start it with \`monad nexus run\`.`);
+    throw new Error(`Nexus daemon could not be found (${resolution.reason}); start it with \`elanous nexus run\`.`);
   }
   try {
     return new URL(resolution.loopback).origin;
   } catch {
     const origin = runtimeOrigin();
     if (origin) return origin;
-    throw new Error('Nexus daemon could not be found (invalid PWA URL); start it with `monad nexus run`.');
+    throw new Error('Nexus daemon could not be found (invalid PWA URL); start it with `elanous nexus run`.');
   }
 }
 
 function daemonToken(): string | null {
-  const path = join(getMonadConfigDir(), 'acp-token');
+  const path = join(getElanousConfigDir(), 'acp-token');
   try { return existsSync(path) ? readFileSync(path, 'utf8').trim() : null; } catch { return null; }
 }
 

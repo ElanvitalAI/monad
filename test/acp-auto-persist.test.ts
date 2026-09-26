@@ -7,7 +7,7 @@
 //   - BG intermediate state (running → waiting) → no persist
 //   - mode 'off' → no subscription
 //   - dispose() unsubscribes cleanly
-//   - env var MONAD_ACP_PERSIST_MODE = 'off' → mode resolves to 'off'
+//   - env var ELANOUS_ACP_PERSIST_MODE = 'off' → mode resolves to 'off'
 
 import { describe, expect, test, beforeEach, afterEach, mock } from 'bun:test';
 import {
@@ -86,11 +86,11 @@ describe('defaultAcpAutoPersistMode', () => {
   test('defaults to auto when env unset', () => {
     expect(defaultAcpAutoPersistMode({})).toBe('auto');
   });
-  test("returns 'off' when MONAD_ACP_PERSIST_MODE=off", () => {
-    expect(defaultAcpAutoPersistMode({ MONAD_ACP_PERSIST_MODE: 'off' })).toBe('off');
+  test("returns 'off' when ELANOUS_ACP_PERSIST_MODE=off", () => {
+    expect(defaultAcpAutoPersistMode({ ELANOUS_ACP_PERSIST_MODE: 'off' })).toBe('off');
   });
   test('unknown values coerce to auto', () => {
-    expect(defaultAcpAutoPersistMode({ MONAD_ACP_PERSIST_MODE: 'whatever' })).toBe('auto');
+    expect(defaultAcpAutoPersistMode({ ELANOUS_ACP_PERSIST_MODE: 'whatever' })).toBe('auto');
   });
 });
 

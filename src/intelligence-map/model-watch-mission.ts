@@ -24,7 +24,7 @@ import { getUserConfig } from '../user-config.js';
 import { runModelWatchIntake, type WatchIntakeResult, type WatchPage } from './model-watch-intake.js';
 
 export function getModelWatchProposalPath(home: string = homedir()): string {
-  return join(home, '.monad', 'model-watch-proposals.jsonl');
+  return join(home, '.elanous', 'model-watch-proposals.jsonl');
 }
 
 export interface ModelWatchDeps {

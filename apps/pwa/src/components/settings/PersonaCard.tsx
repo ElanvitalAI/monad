@@ -150,7 +150,7 @@ export function PersonaCard() {
 
       {load.status === 'ok' && load.personas.length === 0 ? (
         <p className="text-xs text-muted-foreground">
-          ~/.monad/personas/ 에 yaml file 이 없음. yaml seed:{' '}
+          ~/.elanous/personas/ 에 yaml file 이 없음. yaml seed:{' '}
           <span className="font-mono">personas/*.yaml</span> 복사 후 refresh.
         </p>
       ) : null}

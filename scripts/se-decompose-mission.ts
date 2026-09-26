@@ -16,7 +16,7 @@ const mission = args.filter((a, i) => !a.startsWith('--') && !(maxIdx >= 0 && i 
   || 'Persistence migration, NL acceptance 평가 + self-heal';
 
 const objective = [
-  `monad 에 다음 미션을 구현한다: "${mission}"`,
+  `elanous 에 다음 미션을 구현한다: "${mission}"`,
   '',
   '이 미션을 실행 가능한 멀티페이즈 태스크로 분해하라. 각 태스크는:',
   '- 검증 가능한 acceptance(자연어 criteria + 가능하면 결정론적 check)를 가진다.',

@@ -81,7 +81,7 @@ export function TopBarWorkspaceStrip() {
       <div
         role="tablist"
         aria-label="workspace tabs"
-        data-monad-component="topbar-workspace-strip"
+        data-elanous-component="topbar-workspace-strip"
         className="hidden sm:flex min-w-0 flex-1 items-center gap-1 overflow-x-auto px-1"
       >
         {ordered.map((tab) => {
@@ -127,7 +127,7 @@ export function TopBarWorkspaceStrip() {
       <div
         role="tablist"
         aria-label="workspace tabs (compact)"
-        data-monad-component="topbar-workspace-strip-mobile"
+        data-elanous-component="topbar-workspace-strip-mobile"
         className="flex sm:hidden min-w-0 flex-1 items-center gap-1 px-1"
       >
         {activeTab && (

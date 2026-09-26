@@ -105,7 +105,7 @@ function renderShell(snapshot: ShellActivitySnapshot, room = 'term room'): strin
 }
 
 function activitySurface(html: string): string | null {
-  const match = html.match(/<(?:a|span)[^>]*data-monad-component="topbar-activity"[^>]*>[\s\S]*?<\/(?:a|span)>/);
+  const match = html.match(/<(?:a|span)[^>]*data-elanous-component="topbar-activity"[^>]*>[\s\S]*?<\/(?:a|span)>/);
   return match?.[0] ?? null;
 }
 
@@ -377,7 +377,7 @@ describe('preservation — fabric breadcrumb and observatory API stay themselves
     expect(html).toContain('href="/autopilot"');
     expect(html).toContain('href="/tasks"');
     expect(html).toContain('href="/scheduler"');
-    expect(html).not.toContain('data-monad-component="topbar-activity"');
+    expect(html).not.toContain('data-elanous-component="topbar-activity"');
     expect(html).not.toContain('useShellActivity');
   });
 

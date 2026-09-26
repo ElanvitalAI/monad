@@ -37,18 +37,18 @@ import {
 } from '../src/nexus/config/user-config.js';
 import { clearSwitchRegistry } from '../src/nexus/config/switch-registry.js';
 import { reloadAllBuiltins } from '../src/nexus/config/builtins/index.js';
-import { setMonadConfigDir, resetMonadConfigDir } from '../src/monad-config-dir.js';
+import { setElanousConfigDir, resetElanousConfigDir } from '../src/elanous-config-dir.js';
 
 let tmpRoot: string;
 beforeEach(() => {
-  tmpRoot = mkdtempSync(join(tmpdir(), 'monad-nexus-n35-secret-'));
-  setMonadConfigDir(tmpRoot);
+  tmpRoot = mkdtempSync(join(tmpdir(), 'elanous-nexus-n35-secret-'));
+  setElanousConfigDir(tmpRoot);
   resetBackendRegistry();
   clearSwitchRegistry();
   reloadAllBuiltins();
 });
 afterEach(() => {
-  resetMonadConfigDir();
+  resetElanousConfigDir();
   try { rmSync(tmpRoot, { recursive: true, force: true }); } catch { /* ignore */ }
   resetBackendRegistry();
   clearSwitchRegistry();

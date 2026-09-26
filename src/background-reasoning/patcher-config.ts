@@ -1,8 +1,8 @@
-// W9c U5 · Patcher daemon user-config — `~/.monad/background-reasoning/patcher.yaml`.
+// W9c U5 · Patcher daemon user-config — `~/.elanous/background-reasoning/patcher.yaml`.
 // Cf. PLAN-user-intent-logging-2026-05-12.md §7.3 U5 + `feedback_user_config_over_env`.
 //
 // The Patcher pipeline is opt-in. The user enables it by setting
-// `enabled: true` in `~/.monad/background-reasoning/patcher.yaml`, and
+// `enabled: true` in `~/.elanous/background-reasoning/patcher.yaml`, and
 // the daemon boot reads this file via `loadPatcherConfig()`. Tests
 // pass a `source` so the config is fully injectable without filesystem
 // access.
@@ -33,12 +33,12 @@ export const DEFAULT_PATCHER_CONFIG: PatcherConfig = {
 
 export interface PatcherConfigSource {
   /** Return the YAML text or null when the file is absent. Production
-   *  reads `~/.monad/background-reasoning/patcher.yaml`. */
+   *  reads `~/.elanous/background-reasoning/patcher.yaml`. */
   read(): string | null;
 }
 
 export function defaultPatcherConfigPath(): string {
-  return join(homedir(), '.monad', 'background-reasoning', 'patcher.yaml');
+  return join(homedir(), '.elanous', 'background-reasoning', 'patcher.yaml');
 }
 
 export function fileSystemPatcherConfigSource(path?: string): PatcherConfigSource {

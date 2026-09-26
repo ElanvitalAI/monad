@@ -131,7 +131,7 @@ export function extractAgentMessageChunkText(notification: unknown): string | nu
   return text.length > 0 ? text : null;
 }
 
-/** Tier 1 Phase 3 — sibling extractor for the monad-extension
+/** Tier 1 Phase 3 — sibling extractor for the elanous-extension
  *  `user_message_chunk` notification. Peers receive this when ANOTHER
  *  surface (PWA / TUI / different chat) sent a user prompt to the
  *  same sessionId. Returns null for non-matching shapes so the

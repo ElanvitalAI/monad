@@ -1,7 +1,7 @@
 // NEXUS · binding store (Phase N-3.5 PR τ)
 //
 // File-backed per-channel store. Each channel = one JSON file at
-// `~/.monad/nexus/bindings/<channel>.json` (0o600). Channel files are
+// `~/.elanous/nexus/bindings/<channel>.json` (0o600). Channel files are
 // created lazily on first write; missing files = empty channel.
 //
 // Concurrency: file writes are not protected by a lock — single-writer

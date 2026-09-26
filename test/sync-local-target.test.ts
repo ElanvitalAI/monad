@@ -10,7 +10,7 @@ import { getFileTree } from '../src/hasher.js';
 let root: string;
 
 beforeEach(() => {
-  root = mkdtempSync(join(tmpdir(), 'monad-sync-local-'));
+  root = mkdtempSync(join(tmpdir(), 'elanous-sync-local-'));
 });
 
 afterEach(() => {

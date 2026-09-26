@@ -2,7 +2,7 @@
 //
 // ⛔ **OAuth 를 여기서 «구현하지 않는다».** `grok` 바이너리가 전 플로우를
 // 이미 소유한다 — OAuth 2.1 Authorization Code + PKCE · 루프백 콜백 서버 ·
-// device-code 폴백 · id_token JWKS 검증 · refresh. monad 는 codex-auth.ts
+// device-code 폴백 · id_token JWKS 검증 · refresh. elanous 는 codex-auth.ts
 // 와 같은 자리에 선다: **감지 → 위임 → 1회 재시도**.
 //
 // 참조 (위임 «대상» 구현 · `ref/grok-build` rev 5d08d7e4123092567ccd584cd9f99afa2972065c):
@@ -15,7 +15,7 @@
 // *"Use your SuperGrok or X Premium subscription inside OpenCode"* 로
 // 서드파티 하니스의 구독 OAuth 를 안내한다(브라우저 / headless 둘 다).
 //
-// ⛔ monad 표면은 «의도적으로 얇다**: keyring 을 안 만지고 · OAuth 토큰을
+// ⛔ elanous 표면은 «의도적으로 얇다**: keyring 을 안 만지고 · OAuth 토큰을
 // 안 파싱하고 · refresh 를 안 구현한다. 바이너리가 단일 진실 원천이다.
 //
 // ⚠️ codex 와 «다른» 점 하나 — **grok 에는 `login status` 서브커맨드가 없다**

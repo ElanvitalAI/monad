@@ -3,7 +3,7 @@ import { spawnSync } from 'node:child_process';
 import { join } from 'node:path';
 
 const repo = join(import.meta.dir, '..');
-const cli = join(repo, 'bin/monad.mjs');
+const cli = join(repo, 'bin/elanous.mjs');
 
 function version(cwd: string): string {
   const result = spawnSync('bun', [cli, '--version'], {

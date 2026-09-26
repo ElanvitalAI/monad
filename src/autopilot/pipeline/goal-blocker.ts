@@ -3,7 +3,7 @@
 // ★ RFC P4(셀프힐 자동집행). DeerFlow GoalBlocker 이식 — 페이즈 실패의 "왜"를 유형화해 힐 경로를
 //   가른다: needs_user_input→HITL(사람만) · missing_evidence→재조사(자동) · run_failed→재시도(자동).
 //   Progress Ledger(P2) 가 "stall(재계획 필요)"을 판정하면, 이 유형화가 "무슨 힐로"를 정한다.
-//   monad 넘버원룰: 스스로 판단·힐링(자동) → 안 되면 HITL. 안전(RFC §5): 자동집행은 코딩/빌드·
+//   elanous 넘버원룰: 스스로 판단·힐링(자동) → 안 되면 HITL. 안전(RFC §5): 자동집행은 코딩/빌드·
 //   무해·멱등·grounded 만(decideAutonomousAct 가드가 실집행 게이트). 매매 fail-CLOSED 불변.
 // 순수·결정론(실패 요약/failClass → 유형). I/O 없음.
 

@@ -240,7 +240,7 @@ describe('악수 — ui/initialize', () => {
  *  📏 16차 `[F]` 실측이 이 절을 낳았다: 위젯이 빈 화면으로 남았는데 ***왜인지 아무도 못 말했다.***
  *  결과가 64KB 를 넘으면 우리는 본문을 버리고 `content: []` 를 보내는데(`too_large`),
  *  그 사실이 위젯의 `_meta` «안»에만 있었다 — 우리 고유 키라 위젯은 이해할 리 없고,
- *  `monad logs` 에도 한 줄도 없었다. 그래서 CDP 로 30분을 뒤지고도 답이 안 나왔다.
+ *  `elanous logs` 에도 한 줄도 없었다. 그래서 CDP 로 30분을 뒤지고도 답이 안 나왔다.
  *
  *  ⛔ 아래는 «두 겹»이다. 값만 물면 배선이 조용히 끊겨도 초록이기 때문이다(15차 §4 ⑦). */
 describe('the push carries why it was omitted — a silent truncation is what made the widget unexplainable', () => {

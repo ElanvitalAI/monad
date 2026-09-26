@@ -13,7 +13,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { AcpAgent, readClientInfo } from '../src/acp/client.js';
 import { ACP_BACKENDS } from '../src/acp/backend-registry.js';
-import type { MonadCapabilities } from '../src/acp/capabilities.js';
+import type { ElanousCapabilities } from '../src/acp/capabilities.js';
 
 const STUB_ID = 'test-initialize-stub';
 const stubPath = join(import.meta.dir, 'fixtures', 'acp-initialize-stub.ts');
@@ -37,18 +37,18 @@ afterAll(() => { delete ACP_BACKENDS[STUB_ID]; });
 const PACKAGE_VERSION = (JSON.parse(readFileSync(join(import.meta.dir, '..', 'package.json'), 'utf8')) as { version: string }).version;
 
 describe('AcpAgent — 협상 관측 배선 (실물 initialize 경로)', () => {
-  test('Monad 소유 메타데이터만 사용하고 누락·오류에도 fallback한다', () => {
-    expect(readClientInfo(() => ({ name: 'monadagent', version: '9.8.7' }))).toEqual({
-      name: 'monadagent', version: '9.8.7',
+  test('Elanous 소유 메타데이터만 사용하고 누락·오류에도 fallback한다', () => {
+    expect(readClientInfo(() => ({ name: 'elanous', version: '9.8.7' }))).toEqual({
+      name: 'elanous', version: '9.8.7',
     });
-    expect(readClientInfo(() => ({}))).toEqual({ name: 'monadagent', version: '0.0.0' });
+    expect(readClientInfo(() => ({}))).toEqual({ name: 'elanous', version: '0.0.0' });
     expect(readClientInfo(() => { throw new Error('metadata unavailable'); })).toEqual({
-      name: 'monadagent', version: '0.0.0',
+      name: 'elanous', version: '0.0.0',
     });
   });
 
   test('협상 «전»에는 안 부르고, 성공 «후»에 정규화된 값으로 «한 번» 부른다', async () => {
-    const observed: MonadCapabilities[] = [];
+    const observed: ElanousCapabilities[] = [];
     const logs: string[] = [];
     const agent = new AcpAgent({
       backendId: STUB_ID,
@@ -74,8 +74,8 @@ describe('AcpAgent — 협상 관측 배선 (실물 initialize 경로)', () => {
     try {
       await agent.start();
 
-      expect(logs).toContain(`initializing — clientInfo name=monadagent version=${PACKAGE_VERSION}`);
-      expect(logs).toContain(`stderr: received initialize clientInfo={"name":"monadagent","version":"${PACKAGE_VERSION}"}`);
+      expect(logs).toContain(`initializing — clientInfo name=elanous version=${PACKAGE_VERSION}`);
+      expect(logs).toContain(`stderr: received initialize clientInfo={"name":"elanous","version":"${PACKAGE_VERSION}"}`);
       expect(observed).toHaveLength(1);
       const snapshot = observed[0]!;
       expect(snapshot.protocolVersion).toBe(1);

@@ -51,7 +51,7 @@ const CONTEXT_ROWS: readonly ContextRow[] = [
 
 type Mapping = Partial<Record<ContextRow['key'], string>>;
 
-const STORAGE_KEY = 'monad.tts-voice-map';
+const STORAGE_KEY = 'elanous.tts-voice-map';
 
 function loadLocalMapping(): Mapping {
   if (typeof window === 'undefined' || typeof localStorage === 'undefined') return {};
@@ -233,7 +233,7 @@ export function TtsVoiceIdPickerCard(): React.ReactNode {
           data-testid="tts-voice-library-unconfigured"
         >
           ElevenLabs API key not set — set <code className="font-mono">ELEVENLABS_API_KEY</code> in
-          your env or store via <code className="font-mono">monad config set-secret elevenlabs.apiKey &lt;key&gt;</code>
+          your env or store via <code className="font-mono">elanous config set-secret elevenlabs.apiKey &lt;key&gt;</code>
           {' '}to browse the 10k+ voice library.
         </div>
       )}

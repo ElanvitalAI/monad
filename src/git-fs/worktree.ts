@@ -7,7 +7,7 @@
 //
 // Claude-code's EnterWorktreeTool (src/tools/EnterWorktreeTool) is
 // the pattern; we trim the hook-based fallback (sandboxed envs)
-// because monad's primary surface runs native git.
+// because elanous's primary surface runs native git.
 
 import { spawnSync, execFileSync } from 'node:child_process';
 import { existsSync, mkdirSync, readFileSync, readdirSync, realpathSync, writeFileSync, rmSync, symlinkSync, lstatSync } from 'node:fs';
@@ -153,7 +153,7 @@ export function worktreeDirName(branch: string): string {
   return branch.replace(/[^a-zA-Z0-9._-]/g, '-').replace(/^-+|-+$/g, '');
 }
 
-/** Root directory where monad stores a repository's per-branch worktrees.
+/** Root directory where elanous stores a repository's per-branch worktrees.
  *  This is pure path derivation; creation remains the responsibility of createWorktree.
  *
  *  ⛔⭐⭐⭐ `worktreeRoot` 는 **필수**다 — 폴백을 «일부러» 없앴다(리뷰 3R must-fix ②).
@@ -198,8 +198,8 @@ export function worktreeRepoScope(repoRoot: string): string {
 }
 
 
-/** `monad dev`가 `--base` 생략을 호출자 HEAD와 구별해 전달하는 내부 ref 표식. */
-export const DEFAULT_BRANCH_WORKTREE_BASE = 'monad:default-branch';
+/** `elanous dev`가 `--base` 생략을 호출자 HEAD와 구별해 전달하는 내부 ref 표식. */
+export const DEFAULT_BRANCH_WORKTREE_BASE = 'elanous:default-branch';
 
 /** Worktree dependency-link outcome, separated by action so callers can observe fail-soft setup. */
 export interface WorktreeDependencyLinkResult {
@@ -213,7 +213,7 @@ export interface WorktreeDependencyLinkDeps {
   symlink?: (target: string, path: string, type: 'dir') => void;
 }
 
-/** Untracked dependency locations every monad worktree shares from its source checkout. */
+/** Untracked dependency locations every elanous worktree shares from its source checkout. */
 export const DEFAULT_WORKTREE_DEPENDENCY_PATHS = [
   'node_modules',
   'apps/pwa/node_modules',
@@ -462,29 +462,29 @@ export function isUnbornHeadError(err: string): boolean {
  *     (`harness-worktree-add.ts:2` · `harness-worktrees.ts:5` · `harness-clean.ts`). 여기서 그쪽을
  *     부르면 사이클이 생긴다. ⇒ **키와 판정 문면을 공유**하되 읽기는 여기서 한다.
  *     ⚠️ 그러므로 저쪽 grammar 가 바뀌면 **여기도 같이 바뀌어야 한다** — 이 주석이 그 계약이다. */
-const WORKTREE_PROVENANCE_CONFIG_KEYS = ['monad.harness.owner', 'monad.harness.command', 'monad.harness.createdAt'] as const;
+const WORKTREE_PROVENANCE_CONFIG_KEYS = ['elanous.harness.owner', 'elanous.harness.command', 'elanous.harness.createdAt'] as const;
 
 /** The short values written by `prepareDevWorktree`; long values remain readable for existing worktrees. */
 export type HarnessWorktreeCommand = 'dev' | 'drive';
-const MONAD_HARNESS_WORKTREE_COMMANDS = [
+const ELANOUS_HARNESS_WORKTREE_COMMANDS = [
   'dev',
   'drive',
   'harness worktree add',
-  'monad dev',
-  'monad enter_worktree',
-  'monad agent-mission',
+  'elanous dev',
+  'elanous enter_worktree',
+  'elanous agent-mission',
 ] as const;
 
 /** Canonical command ownership rule for harness worktree provenance. */
-export function isMonadHarnessWorktreeCommand(command: string): boolean {
-  return (MONAD_HARNESS_WORKTREE_COMMANDS as readonly string[]).includes(command);
+export function isElanousHarnessWorktreeCommand(command: string): boolean {
+  return (ELANOUS_HARNESS_WORKTREE_COMMANDS as readonly string[]).includes(command);
 }
 
 /** `assessHarnessOwnership`(harness-clean.ts) 의 판정을 그대로 옮긴 것. 세 칸이 «모두» 이 저장소가
  *  쓰는 문면일 때만 「이 저장소의 것」이다 — 한 칸이라도 낯설면 남의 표시로 본다(fail-closed). */
-function isMonadWorktreeProvenance(owner: string, command: string, createdAt: string): boolean {
+function isElanousWorktreeProvenance(owner: string, command: string, createdAt: string): boolean {
   const ownerOk = owner === 'harness:unattributed' || /^(?:dev|agent):[^\s:]+$(?![\s\S])/.test(owner);
-  const commandOk = isMonadHarnessWorktreeCommand(command);
+  const commandOk = isElanousHarnessWorktreeCommand(command);
   if (!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/.test(createdAt)) return false;
   const timestamp = Date.parse(createdAt);
   const createdAtOk = Number.isFinite(timestamp) && new Date(timestamp).toISOString() === createdAt;
@@ -593,7 +593,7 @@ export function gateWorktreeReuse(
     values.push(value);
   }
   const [owner, command, createdAt] = values as [string, string, string];
-  if (!isMonadWorktreeProvenance(owner, command, createdAt)) return { reuse: false, reason: 'owner-foreign' };
+  if (!isElanousWorktreeProvenance(owner, command, createdAt)) return { reuse: false, reason: 'owner-foreign' };
 
   // 더티 — 하니스와 «같은 자»를 쓴다(`harness-worktrees.ts` 의 `git status --porcelain`).
   //   ⛔ 실패를 clean 으로 접지 않는다: 못 쟀으면 못 쟀다고 말하고 거부한다.
@@ -825,8 +825,8 @@ export function validateBranchName(name: string): void {
 
 // ── Session persistence ────────────────────────────────────────────
 //
-// A monad session that entered a worktree stores the "previous SWD"
-// + the worktree path under ~/.monad/worktrees/<sessionId>.json so
+// A elanous session that entered a worktree stores the "previous SWD"
+// + the worktree path under ~/.elanous/worktrees/<sessionId>.json so
 // ExitWorktree can restore the original cwd even across restarts.
 
 export interface WorktreeSession {
@@ -845,7 +845,7 @@ function userHome(): string {
 }
 
 function worktreeSessionsDir(): string {
-  return join(userHome(), '.monad', 'worktrees');
+  return join(userHome(), '.elanous', 'worktrees');
 }
 
 function sessionFilePath(sessionId: string): string {
@@ -907,7 +907,7 @@ export interface StaleCleanupResult {
 }
 
 /** Snapshot every persisted worktree-session entry under
- *  `~/.monad/worktrees/`. Returns `[]` when the dir is missing or
+ *  `~/.elanous/worktrees/`. Returns `[]` when the dir is missing or
  *  unreadable. Each session reflects what was on disk at call time
  *  — the caller typically cross-references against
  *  `listWorktrees(repoRoot)` to detect orphans. */
@@ -927,7 +927,7 @@ export function listWorktreeSessions(): WorktreeSession[] {
   return out;
 }
 
-/** Scan `~/.monad/worktrees/` and remove every `<pid>.json` whose
+/** Scan `~/.elanous/worktrees/` and remove every `<pid>.json` whose
  *  pid is dead. Keeps files that:
  *    • don't match the `<pid>.json` pattern (forward-compat for any
  *      other session-id scheme a future phase adds)

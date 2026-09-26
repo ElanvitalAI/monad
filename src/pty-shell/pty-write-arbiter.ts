@@ -4,7 +4,7 @@
 // 예약돼 있었고 **write 경로가 이를 집행하지 않았다**(registry.ts "arbiter 실장은 후속"). 이 모듈이
 // 그 집행부다 — 대표 제약: "arbiter 는 최근 터미널 read/write 정책(PtyAccessMode)의 집행부지 별도
 // 기계가 아니다"(PLAN §9). herdr 의 "쓰기 전 점유자 확인 + 배타적 writable owner"(RESEARCH §1-3·§5 #9)를
-// monad 의 access-matrix 로 실현.
+// elanous 의 access-matrix 로 실현.
 //
 // 순수(레지스트리 비의존·테스트 가능). 라이브 배선은 registry.ts write()/requestPtyTakeover.
 

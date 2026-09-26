@@ -2,9 +2,9 @@
 //
 // Glue layer — subscribes a local NotificationStore and re-broadcasts
 // each new event to a bound AcpServerHandle via its `notify` API.
-// Lets two monads running over ACP share their bell mailboxes: the
-// ACP-server-side monad pushes its local notifications to the client
-// monad; the client can decode `[notify:...]` text via the matching
+// Lets two elanouss running over ACP share their bell mailboxes: the
+// ACP-server-side elanous pushes its local notifications to the client
+// elanous; the client can decode `[notify:...]` text via the matching
 // parseRelayNotify helper and fold the event into its own store.
 //
 // Session n shipped NotificationStore + 4 adapters; this module is

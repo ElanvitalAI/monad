@@ -1,4 +1,4 @@
-// ── 미션 tool-set 재현성 가드 (RFC-monad-tiered-tool-exposure P5) ──────
+// ── 미션 tool-set 재현성 가드 (RFC-elanous-tiered-tool-exposure P5) ──────
 //
 // 미션 실행기(getAutopilotToolRegistry)의 tool 집합은 armed 자율 미션(실자금·
 // 자율빌드)이 호출할 수 있는 능력의 경계다. RFC P5 가 "tool-set before==after

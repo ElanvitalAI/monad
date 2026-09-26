@@ -1,7 +1,7 @@
 // TOX ↔ /goal bridge — FU-7.
 //
 // Thin adapter that reads/writes the link between a Goal and a TOX
-// Task. monad has both surfaces today (TOX for decomposed work, /goal
+// Task. elanous has both surfaces today (TOX for decomposed work, /goal
 // for cross-turn drive); they're complementary but were not connected.
 //
 // The bridge is intentionally type-agnostic: it accepts a TaskStore-like

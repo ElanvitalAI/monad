@@ -182,7 +182,7 @@ export async function defaultArcEditResolve(phase: StuckPhaseInfo, context: ArcE
   const out = await streamLLM(
     [{ role: 'user', content: arcEditPrompt(phase, context) }],
     () => {},
-    { model: process.env.MONAD_ARC_EDIT_MODEL || tierModel('budget'), reasoningEffort: 'low' },
+    { model: process.env.ELANOUS_ARC_EDIT_MODEL || tierModel('budget'), reasoningEffort: 'low' },
   );
   return parseArcEditJson(out);
 }

@@ -346,7 +346,7 @@ async function handlePhaseReviewTap(
     recordMissionDecision(missionId, { kind: 'boundary', note: `arm 승인 요청 — "${task.title}" 실집행`, appliesTo: task.title, rationale: '대표 arming 승인(실집행 경계)', actor: `telegram:${q.chatId ?? '?'}` });
     try { await bot.answerCallbackQuery(q.id, { text: '🔒 arming 승인 접수' }); } catch { /* */ }
     if (q.chatId !== undefined && q.messageId !== undefined) {
-      try { await bot.editMessageText(q.chatId, q.messageId, `🔒 실집행 승인 접수: ${task.title}\n결정 기록됨(관측·기억). ⚠️ 실 arming 은 안전 플로우로: \`monad autopilot arm ${missionId}\` 또는 mandate arming(별도 HITL·매매 안전관문).\n${missionId}`); } catch { /* */ }
+      try { await bot.editMessageText(q.chatId, q.messageId, `🔒 실집행 승인 접수: ${task.title}\n결정 기록됨(관측·기억). ⚠️ 실 arming 은 안전 플로우로: \`elanous autopilot arm ${missionId}\` 또는 mandate arming(별도 HITL·매매 안전관문).\n${missionId}`); } catch { /* */ }
       try { await bot.clearMessageReplyMarkup(q.chatId, q.messageId); } catch { /* */ }
     }
     return;
@@ -1013,15 +1013,15 @@ async function handleLifecycleTap(bot: TelegramBot, q: TgCallbackQuery, parsed: 
 }
 
 /**
- * 승인 후 다음 단계 안내 텍스트 — 미션 domain 별(대표 2026-07-16). 코어(monad) 미션엔 '매매
+ * 승인 후 다음 단계 안내 텍스트 — 미션 domain 별(대표 2026-07-16). 코어(elanous) 미션엔 '매매
  * 안전관문' 같은 투자 전용 문구를 붙이지 않는다(종전엔 모든 미션에 mandate arming 문구가 나와
  * 코어 미션에 '이상한 이야기'였다). 순수·테스트가능.
  */
 export function approvalNextStepText(missionId: string, domain: string | null): string {
   if (domain === 'investment' || domain === 'finance') {
-    return `⚠️ 실 arming(자율 매매)은 mandate 안전관문(별도 HITL): \`monad autopilot arm ${missionId}\``;
+    return `⚠️ 실 arming(자율 매매)은 mandate 안전관문(별도 HITL): \`elanous autopilot arm ${missionId}\``;
   }
-  return `▶️ 빌드 착수: \`monad autopilot approve ${missionId}\` (아크 순차 실행) · arming/파괴는 별도 HITL`;
+  return `▶️ 빌드 착수: \`elanous autopilot approve ${missionId}\` (아크 순차 실행) · arming/파괴는 별도 HITL`;
 }
 
 /** 미션 domain 을 읽어 approvalNextStepText 반환. fail-soft(도메인 못 읽으면 코어 안내). */
@@ -1059,7 +1059,7 @@ async function handleBriefingTap(bot: TelegramBot, q: TgCallbackQuery, parsed: {
     recordMissionDecision(missionId, { kind: 'defer', note: '브리핑 검토 후 실집행 보류', rationale: '대표 보류(추가 조정 대기)', actor });
     try { await bot.answerCallbackQuery(q.id, { text: '❌ 보류' }); } catch { /* */ }
     if (q.chatId !== undefined && q.messageId !== undefined) {
-      try { await bot.editMessageText(q.chatId, q.messageId, `❌ 실집행 보류 — 결정 기록됨. 미션은 유지(재조정 대기).\n필요 시 [✏️ 재조치]로 자유롭게 지시하거나 \`monad autopilot briefing ${missionId}\` 로 다시 점검하세요.\n${missionId}`); } catch { /* */ }
+      try { await bot.editMessageText(q.chatId, q.messageId, `❌ 실집행 보류 — 결정 기록됨. 미션은 유지(재조정 대기).\n필요 시 [✏️ 재조치]로 자유롭게 지시하거나 \`elanous autopilot briefing ${missionId}\` 로 다시 점검하세요.\n${missionId}`); } catch { /* */ }
       try { await bot.clearMessageReplyMarkup(q.chatId, q.messageId); } catch { /* */ }
     }
     return;

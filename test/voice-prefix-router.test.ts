@@ -3,7 +3,7 @@
 //
 // Tested invariants:
 //   1. Korean postposition prefixes (~에게/~한테) strip correctly for
-//      every brand (codex/claude/gemini/monad).
+//      every brand (codex/claude/gemini/elanous).
 //   2. Korean comma form ("코덱스, ...") strips.
 //   3. English `to <brand>` and `<brand>,` forms strip.
 //   4. Bare brand mention without postposition is NOT stripped (talking
@@ -30,8 +30,8 @@ describe('PR-S1V.4 · routeVoiceTranscript — Korean postposition', () => {
     ['제미니에게 plan', 'gemini', 'plan'],
     ['제미니한테 plan', 'gemini', 'plan'],
     ['제미나이에게 hi', 'gemini', 'hi'],
-    ['모나드에게 status', 'monad', 'status'],
-    ['모나드한테 ping', 'monad', 'ping'],
+    ['엘라누스에게 status', 'elanous', 'status'],
+    ['엘라누스한테 ping', 'elanous', 'ping'],
   ])('%s → brand=%s text="%s"', (input, expectedBrand, expectedText) => {
     const result = routeVoiceTranscript(input);
     expect(result.matched).toBe(true);
@@ -142,7 +142,7 @@ describe('PR-S1V.4 · routeVoiceTranscript — no prefix / fallback', () => {
 
 describe('PR-S1V.4 · brand registry', () => {
   test('VOICE_BRANDS contains 4 supported brands', () => {
-    expect(VOICE_BRANDS).toEqual(['codex', 'claude', 'gemini', 'monad']);
+    expect(VOICE_BRANDS).toEqual(['codex', 'claude', 'gemini', 'elanous']);
   });
 
   test('getSupportedBrands returns the same list', () => {

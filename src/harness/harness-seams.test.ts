@@ -52,9 +52,9 @@ describe('buildHarnessSeams — 실 인프라 배선(fake)', () => {
   });
 
   test('plan 관측은 runId를 싣고 기존 sizing 필드를 보존하며 data runId를 우선한다', async () => {
-    const previousRunId = process.env.MONAD_RUN_ID;
+    const previousRunId = process.env.ELANOUS_RUN_ID;
     const log = spyOn(debug, 'log').mockImplementation(() => {});
-    process.env.MONAD_RUN_ID = 'run-seams-observation';
+    process.env.ELANOUS_RUN_ID = 'run-seams-observation';
     try {
       const seams = buildHarnessSeams({ seams: fakeSeams() });
       await seams.plan({ objective: '작업\n- s1\n- s2' });
@@ -73,7 +73,7 @@ describe('buildHarnessSeams — 실 인프라 배선(fake)', () => {
       );
     } finally {
       log.mockRestore();
-      if (previousRunId === undefined) delete process.env.MONAD_RUN_ID; else process.env.MONAD_RUN_ID = previousRunId;
+      if (previousRunId === undefined) delete process.env.ELANOUS_RUN_ID; else process.env.ELANOUS_RUN_ID = previousRunId;
     }
   });
 
@@ -87,13 +87,13 @@ describe('buildHarnessSeams — 실 인프라 배선(fake)', () => {
 
   // ── run identity(K) 전파 — #5476 의 컴파일 가드가 실제로는 이 경로를 놓쳤던 갭의 회귀 가드 ──
   test('★ execute 가 자식 implement 에 non-empty runId 를 전파(라운드 간 동일 — self run 조인 앵커)', async () => {
-    // ⚠️ must-fix(#5484 3R): `MONAD_RUN_ID` 를 **반드시 비운다** — 상속이 있으면 라운드별 mint 구현도
+    // ⚠️ must-fix(#5484 3R): `ELANOUS_RUN_ID` 를 **반드시 비운다** — 상속이 있으면 라운드별 mint 구현도
     //    같은 값을 뱉어 가드가 무력해진다(하니스 안에서 테스트를 돌릴 때 실제로 그렇게 된다).
     //    비워야 "seams 1회 확정"과 "라운드마다 mint"가 갈린다 = 이 테스트가 고정하려는 바로 그 축.
-    const prevRun = process.env.MONAD_RUN_ID;
-    const prevSpace = process.env.MONAD_HARNESS_SPACE;
-    delete process.env.MONAD_RUN_ID;
-    delete process.env.MONAD_HARNESS_SPACE;
+    const prevRun = process.env.ELANOUS_RUN_ID;
+    const prevSpace = process.env.ELANOUS_HARNESS_SPACE;
+    delete process.env.ELANOUS_RUN_ID;
+    delete process.env.ELANOUS_HARNESS_SPACE;
     try {
       const seen: string[] = [];
       const s = buildHarnessSeams({ seams: fakeSeams({ async implement({ runId }) { seen.push(runId); return { ok: true, summary: 'x' }; } }) });
@@ -102,20 +102,20 @@ describe('buildHarnessSeams — 실 인프라 배선(fake)', () => {
       await s.execute({ objective: 'bar', steps: [], round: 2 });   // 리워크 라운드
       expect(seen).toHaveLength(2);
       expect(seen[0]).toBeTruthy();
-      expect(seen[1]).toBe(seen[0]!);   // 라운드마다 mint 하면 `monad self run <runId>` 가 호출 전체를 못 묶는다
+      expect(seen[1]).toBe(seen[0]!);   // 라운드마다 mint 하면 `elanous self run <runId>` 가 호출 전체를 못 묶는다
     } finally {
-      if (prevRun === undefined) delete process.env.MONAD_RUN_ID; else process.env.MONAD_RUN_ID = prevRun;
-      if (prevSpace === undefined) delete process.env.MONAD_HARNESS_SPACE; else process.env.MONAD_HARNESS_SPACE = prevSpace;
+      if (prevRun === undefined) delete process.env.ELANOUS_RUN_ID; else process.env.ELANOUS_RUN_ID = prevRun;
+      if (prevSpace === undefined) delete process.env.ELANOUS_HARNESS_SPACE; else process.env.ELANOUS_HARNESS_SPACE = prevSpace;
     }
   });
 
   // self review should-fix(#5484) — mint 경로만 덮으면 "부모 runId 를 버리고 새로 mint" 회귀를 놓친다.
   //   fan-out 은 부모 1개 : 자식 N 이 같은 runId 를 공유하는 게 계약이므로 상속 경로를 따로 고정한다.
   test('★ 하니스 공간(부모 fan-out)의 runId 를 상속 — 새로 mint 하지 않는다', async () => {
-    const prevSpace = process.env.MONAD_HARNESS_SPACE;
-    const prevRun = process.env.MONAD_RUN_ID;
-    process.env.MONAD_HARNESS_SPACE = 'dev-harness';
-    process.env.MONAD_RUN_ID = 'run-parent-abc';
+    const prevSpace = process.env.ELANOUS_HARNESS_SPACE;
+    const prevRun = process.env.ELANOUS_RUN_ID;
+    process.env.ELANOUS_HARNESS_SPACE = 'dev-harness';
+    process.env.ELANOUS_RUN_ID = 'run-parent-abc';
     try {
       let seen = '';
       const s = buildHarnessSeams({ seams: fakeSeams({ async implement({ runId }) { seen = runId; return { ok: true, summary: 'x' }; } }) });
@@ -123,8 +123,8 @@ describe('buildHarnessSeams — 실 인프라 배선(fake)', () => {
       await s.execute({ objective: 'bar', steps: [], round: 1 });
       expect(seen).toBe('run-parent-abc');
     } finally {
-      if (prevSpace === undefined) delete process.env.MONAD_HARNESS_SPACE; else process.env.MONAD_HARNESS_SPACE = prevSpace;
-      if (prevRun === undefined) delete process.env.MONAD_RUN_ID; else process.env.MONAD_RUN_ID = prevRun;
+      if (prevSpace === undefined) delete process.env.ELANOUS_HARNESS_SPACE; else process.env.ELANOUS_HARNESS_SPACE = prevSpace;
+      if (prevRun === undefined) delete process.env.ELANOUS_RUN_ID; else process.env.ELANOUS_RUN_ID = prevRun;
     }
   });
 

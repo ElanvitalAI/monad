@@ -112,7 +112,7 @@ export async function defaultReplayResolve(input: ReplayDecisionInput, context: 
   const out = await streamLLM(
     [{ role: 'user', content: replayRewindPrompt(input, context) }],
     () => {},
-    { model: process.env.MONAD_REPLAY_MODEL || tierModel('budget'), reasoningEffort: 'low' },
+    { model: process.env.ELANOUS_REPLAY_MODEL || tierModel('budget'), reasoningEffort: 'low' },
   );
   return parseReplayJson(out);
 }

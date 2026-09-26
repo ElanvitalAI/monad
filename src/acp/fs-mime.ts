@@ -1,5 +1,5 @@
 // PLAN-ipad-server-side-file-browser §4.2 (F1·5) — extension-only mime
-// detection table for monad/fs/read + monad/fs/stat. iOS client uses
+// detection table for elanous/fs/read + elanous/fs/stat. iOS client uses
 // the returned mime to decide between markdown render (text/markdown),
 // code mono (text/plain), image render (image/*), or binary placeholder.
 // The table is intentionally extension-only — `file --mime-type` shell
@@ -158,7 +158,7 @@ export function detectMime(p: string): string {
   return 'application/octet-stream';
 }
 
-/** True when `monad/fs/read` should return `content` (utf8) instead of
+/** True when `elanous/fs/read` should return `content` (utf8) instead of
  *  `bytes` (base64). Matches text/* + application/json + text-shaped
  *  XML envelopes. image/svg+xml stays binary so the iOS Image renderer
  *  decodes the bytes directly without a re-encode round-trip. */

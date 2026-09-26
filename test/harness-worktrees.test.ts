@@ -244,9 +244,9 @@ describe('harness worktrees — pure four-axis assessment', () => {
           return { status: 0, stdout: 'true\n', stderr: '' };
         }
         const values: Record<string, string> = {
-          'monad.harness.owner': 'dev:run-1',
-          'monad.harness.command': 'dev',
-          'monad.harness.createdAt': '2026-08-04T12:00:00.000Z',
+          'elanous.harness.owner': 'dev:run-1',
+          'elanous.harness.command': 'dev',
+          'elanous.harness.createdAt': '2026-08-04T12:00:00.000Z',
         };
         if (args[1] === '/repo') return { status: 128, stdout: '', stderr: 'fatal: config unreadable' };
         return args[1] === '/wt' && key && values[key] ? { status: 0, stdout: `${values[key]}\n`, stderr: '' } : { status: 1, stdout: '', stderr: '' };
@@ -612,7 +612,7 @@ describe('harness worktrees — provenance 부재 판정 (진짜 git)', () => {
       expect(spawnSync('git', ['-C', linked, 'config', '--get', 'extensions.worktreeConfig'],
         { encoding: 'utf8' }).stdout.trim()).toBe('');
       // ⊕ 그리고 git 이 실제로 «거절»하는지도 — 거절하지 않으면 이 분기가 안 돈다.
-      expect(spawnSync('git', ['-C', linked, 'config', '--worktree', '--get', 'monad.harness.owner'],
+      expect(spawnSync('git', ['-C', linked, 'config', '--worktree', '--get', 'elanous.harness.owner'],
         { encoding: 'utf8' }).status).toBe(128);
 
       const provenance = readWorktreeProvenance(linked, realRunner);

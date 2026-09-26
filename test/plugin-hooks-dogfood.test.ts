@@ -10,7 +10,7 @@ import { globalTaskNotificationQueue } from '../src/agent/task-notification';
 
 // We don't want to boot the full plugin-host for this test — just
 // import and register the hook handler by reaching into the plugin
-// module's exports. Since plugin.ts exports the MonadPlugin default
+// module's exports. Since plugin.ts exports the ElanousPlugin default
 // + constructs the hook inline, we lift the hook inline here for
 // isolation.
 

@@ -35,7 +35,7 @@ describe('dashboard → session-runtime 진행 엔벨로프 배선 (wire pin)', 
   const sessionRuntime = read('src/session-runtime/index.ts');
   const orchestrator = read('src/self-implement/orchestrator.ts');
   const selfImplementSeams = read('src/self-implement/seams.ts');
-  const headlessDriver = read('src/self-implement/headless-monad-driver.ts');
+  const headlessDriver = read('src/self-implement/headless-elanous-driver.ts');
 
   test('진입점이 dashboard 전용 디스패처를 import 한다', () => {
     expect(dashboard).toContain("from './session-runtime-dispatch.js'");

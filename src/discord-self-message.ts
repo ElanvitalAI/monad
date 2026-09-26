@@ -18,7 +18,7 @@
 //   · self turn — everything else runs makeDiscordAgentRunTurn (M4a):
 //     terminal 4종 + fileSinkForChannel screenshots + footer.
 //
-// Consumed by BOTH the isolated `monad discord-test` runner and the
+// Consumed by BOTH the isolated `elanous discord-test` runner and the
 // production nexus trigger bot (runTurnImpl injection) so the two stay
 // congruent by construction. The DiscordBot's own gates (DM-only +
 // guildTextChannels + allowlist) run BEFORE this handler; `channelScope`

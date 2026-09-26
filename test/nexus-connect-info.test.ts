@@ -34,7 +34,7 @@ describe('T4.A · isLoopbackHost', () => {
 
 describe('T4.A · buildConnectInfo · loopback auto_token', () => {
   test('loopback + token file present → auto_token populated', () => {
-    const tmp = mkdtempSync(joinPath(tmpdir(), 'monad-connect-info-'));
+    const tmp = mkdtempSync(joinPath(tmpdir(), 'elanous-connect-info-'));
     const tokenPath = joinPath(tmp, 'acp-token');
     writeFileSync(tokenPath, 'mySecretBearer\n', { mode: 0o600 });
     const ctx: ConnectInfoCtx = {
@@ -66,7 +66,7 @@ describe('T4.A · buildConnectInfo · loopback auto_token', () => {
   });
 
   test('loopback + empty token file → auto_token null (not empty string)', () => {
-    const tmp = mkdtempSync(joinPath(tmpdir(), 'monad-connect-info-'));
+    const tmp = mkdtempSync(joinPath(tmpdir(), 'elanous-connect-info-'));
     const tokenPath = joinPath(tmp, 'acp-token');
     writeFileSync(tokenPath, '   \n', { mode: 0o600 });
     const ctx: ConnectInfoCtx = {
@@ -81,7 +81,7 @@ describe('T4.A · buildConnectInfo · loopback auto_token', () => {
   });
 
   test('non-loopback host → auto_token always null even when file exists', () => {
-    const tmp = mkdtempSync(joinPath(tmpdir(), 'monad-connect-info-'));
+    const tmp = mkdtempSync(joinPath(tmpdir(), 'elanous-connect-info-'));
     const tokenPath = joinPath(tmp, 'acp-token');
     writeFileSync(tokenPath, 'shouldNotLeak\n', { mode: 0o600 });
     const ctx: ConnectInfoCtx = {
@@ -151,7 +151,7 @@ describe('T4.D · buildMintTokenResponse + handleConnectTokenMint', () => {
   });
 
   test('reads acp-token from disk when override absent', () => {
-    const tmp = mkdtempSync(joinPath(tmpdir(), 'monad-mint-'));
+    const tmp = mkdtempSync(joinPath(tmpdir(), 'elanous-mint-'));
     const path = joinPath(tmp, 'acp-token');
     writeFileSync(path, 'fileBearer\n', { mode: 0o600 });
     const body = buildMintTokenResponse({

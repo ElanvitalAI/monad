@@ -1,4 +1,4 @@
-// Standalone Telegram TEST messenger — `monad telegram-test`.
+// Standalone Telegram TEST messenger — `elanous telegram-test`.
 //
 // Runs ONE telegram bot (a SEPARATE test token) as its own process,
 // reusing the EXACT same Q&A + HITL + /cc-delegate path the production
@@ -11,7 +11,7 @@
 //   - Different bot token ⇒ no getUpdates 409 against production pollers.
 //     (⚠️ 단 `nexus run --test` 데몬과는 **같은** 테스트 토큰 — 토큰별 폴링 잠금
 //     (`telegram-poll-lock.ts`)이 먼저 잡은 한쪽만 폴링하게 한다.)
-//   - MONAD_STATE_DIR isolates ALL mutable state (sessions, acp-sessions,
+//   - ELANOUS_STATE_DIR isolates ALL mutable state (sessions, acp-sessions,
 //     surface_events, codex-threads, autopilot) so test turns never pollute prod.
 //   - ISO-5 (2026-07-13): config 도 **완전 분기** — 물질화 사본
 //     (`<stateDir>/config.json` · sync-test 변환)을 config-dir 로 걸어
@@ -24,7 +24,7 @@ import { homedir } from 'node:os';
 import { join } from 'node:path';
 import { rmSync, mkdirSync, existsSync } from 'node:fs';
 import { getUserConfig, reloadUserConfig, userConfigPath, type UserConfig } from './user-config.js';
-import { setMonadConfigDir } from './monad-config-dir.js';
+import { setElanousConfigDir } from './elanous-config-dir.js';
 import { syncTestConfig, isTestConfigStale } from './cli/config-test-sync.js';
 import { makeTelegramAgentRunTurn } from './telegram-agent.js';
 import { createNexusTelegramTriggerBot } from './nexus/api/telegram-trigger-bot.js';
@@ -32,7 +32,7 @@ import { createNexusTelegramTriggerBot } from './nexus/api/telegram-trigger-bot.
 /** Canonical isolated-state dir for the Telegram test bot. Shared so
  *  `session watch --test` (and any other tooling) points at the SAME store
  *  the test bot writes to, without duplicating the path literal. */
-export const DEFAULT_TELEGRAM_TEST_STATE_DIR = join(homedir(), '.monad', 'telegram-test');
+export const DEFAULT_TELEGRAM_TEST_STATE_DIR = join(homedir(), '.elanous', 'telegram-test');
 
 export interface TelegramTestRunnerOpts {
   /** Optional override; when omitted the token comes from
@@ -69,7 +69,7 @@ export async function runTelegramTestMessenger(opts: TelegramTestRunnerOpts = {}
   const stateDir = opts.stateDir?.trim() || DEFAULT_TELEGRAM_TEST_STATE_DIR;
   if (opts.reset) { try { rmSync(stateDir, { recursive: true, force: true }); } catch { /* noop */ } }
   mkdirSync(stateDir, { recursive: true });
-  process.env.MONAD_STATE_DIR = stateDir;
+  process.env.ELANOUS_STATE_DIR = stateDir;
 
   // ISO-5 — config 완전 분기 (nexus --test 동형): 사본 없으면 물질화, 있으면
   // drift 경고만. 이후 config-dir 전환 + reload 로 전역 getUserConfig 소비자
@@ -78,18 +78,18 @@ export async function runTelegramTestMessenger(opts: TelegramTestRunnerOpts = {}
     const r = syncTestConfig(stateDir);
     console.log(`[telegram-test] 운영 config 물질화 → ${r.testConfigPath} (telegram=${r.telegramMode})`);
   } else if (isTestConfigStale(stateDir)) {
-    console.error(`[telegram-test] ⚠️ 운영 config 가 사본보다 최신 — 'monad config sync-test --state-dir ${stateDir}' 로 갱신 권장`);
+    console.error(`[telegram-test] ⚠️ 운영 config 가 사본보다 최신 — 'elanous config sync-test --state-dir ${stateDir}' 로 갱신 권장`);
   }
-  setMonadConfigDir(stateDir);
+  setElanousConfigDir(stateDir);
   reloadUserConfig();
   if (!userConfigPath().startsWith(stateDir)) {
     throw new Error(`telegram-test: config 격리 불변식 위반 (${userConfigPath()} ∉ ${stateDir}) — 기동 거부`);
   }
 
   // ⚠️ 관측 통합(제1원칙) — 독립 러너 프로세스는 nexus StoreSink 를 상속 안 함. 격리 logs.db
-  // 싱크를 등록해야 debug.log(category,event,data) 가 (.monad-test) logs.db 에 닿아
-  // `monad logs --test` 로 조회된다. 미등록 시 telegram.url-route 등 계측이 파일 트레일에만
-  // 남아 관측 불가(= 관측 안 한 것). discord-test-runner 선례 동형. MONAD_STATE_DIR 격리 완료 후.
+  // 싱크를 등록해야 debug.log(category,event,data) 가 (.elanous-test) logs.db 에 닿아
+  // `elanous logs --test` 로 조회된다. 미등록 시 telegram.url-route 등 계측이 파일 트레일에만
+  // 남아 관측 불가(= 관측 안 한 것). discord-test-runner 선례 동형. ELANOUS_STATE_DIR 격리 완료 후.
   try {
     const { registerStandaloneLogSink } = await import('./domains/standalone-log-sink.js');
     await registerStandaloneLogSink('telegram-test');
@@ -106,7 +106,7 @@ export async function runTelegramTestMessenger(opts: TelegramTestRunnerOpts = {}
   if (!token) {
     throw new Error(
       'telegram-test: no token. Set `telegram.testChannel.botToken` in the '
-      + 'production config (monad config set …) then `monad config sync-test '
+      + 'production config (elanous config set …) then `elanous config sync-test '
       + `--state-dir ${stateDir}\`, or pass --token.`,
     );
   }

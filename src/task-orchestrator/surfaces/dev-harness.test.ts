@@ -25,7 +25,7 @@ async function assertDefaultSpawnBin(cwd: string, expectedBin: string, expectedB
   const shimDir = mkdtempSync(join(tmpdir(), 'dev-harness-bun-shim-'));
   const capturePath = join(shimDir, 'spawn.txt');
   const bunShim = join(shimDir, 'bun');
-  writeFileSync(bunShim, '#!/bin/sh\nprintf "%s\\n%s\\n" "$PWD" "$1" > "$MONAD_TEST_SPAWN_CAPTURE"\n');
+  writeFileSync(bunShim, '#!/bin/sh\nprintf "%s\\n%s\\n" "$PWD" "$1" > "$ELANOUS_TEST_SPAWN_CAPTURE"\n');
   chmodSync(bunShim, 0o755);
   const launches: Array<{ bin: unknown; binSource: unknown }> = [];
   const logSpy = spyOn(debug, 'log').mockImplementation(((category: string, event: string, data?: Record<string, unknown>) => {
@@ -33,10 +33,10 @@ async function assertDefaultSpawnBin(cwd: string, expectedBin: string, expectedB
   }) as typeof debug.log);
   const originalCwd = process.cwd();
   const originalPath = process.env.PATH;
-  const originalCapture = process.env.MONAD_TEST_SPAWN_CAPTURE;
+  const originalCapture = process.env.ELANOUS_TEST_SPAWN_CAPTURE;
   try {
     process.env.PATH = `${shimDir}:${originalPath ?? ''}`;
-    process.env.MONAD_TEST_SPAWN_CAPTURE = capturePath;
+    process.env.ELANOUS_TEST_SPAWN_CAPTURE = capturePath;
     process.chdir(cwd);
     const { done } = defaultDevHarnessSpawn()({ objective: 'verify bin root', spaceId: 'test-space' });
     await done;
@@ -46,8 +46,8 @@ async function assertDefaultSpawnBin(cwd: string, expectedBin: string, expectedB
     process.chdir(originalCwd);
     if (originalPath === undefined) delete process.env.PATH;
     else process.env.PATH = originalPath;
-    if (originalCapture === undefined) delete process.env.MONAD_TEST_SPAWN_CAPTURE;
-    else process.env.MONAD_TEST_SPAWN_CAPTURE = originalCapture;
+    if (originalCapture === undefined) delete process.env.ELANOUS_TEST_SPAWN_CAPTURE;
+    else process.env.ELANOUS_TEST_SPAWN_CAPTURE = originalCapture;
     logSpy.mockRestore();
     rmSync(shimDir, { recursive: true, force: true });
   }
@@ -98,10 +98,10 @@ describe('dev-harness surface adapter (병렬 실행 라인)', () => {
     expect(seen.spaceId).toBeTruthy();
   });
 
-  test('production spawn falls back to this monad bin outside a git repository', async () => {
+  test('production spawn falls back to this elanous bin outside a git repository', async () => {
     const cwd = mkdtempSync(join(tmpdir(), 'dev-harness-bin-fallback-'));
     try {
-      const expectedBin = resolve(import.meta.dir, '../../../bin/monad.mjs');
+      const expectedBin = resolve(import.meta.dir, '../../../bin/elanous.mjs');
       expect(existsSync(expectedBin)).toBe(true);
       await assertDefaultSpawnBin(cwd, expectedBin, 'source-tree-fallback');
     } finally {
@@ -115,17 +115,17 @@ describe('dev-harness surface adapter (병렬 실행 라인)', () => {
       execFileSync('git', ['init', '-q'], { cwd });
       writeFileSync(join(cwd, 'README.md'), '# external product\n');
       mkdirSync(join(cwd, 'bin'));
-      mkdirSync(join(cwd, 'bin', 'monad.mjs'));
-      const expectedBin = resolve(import.meta.dir, '../../../bin/monad.mjs');
+      mkdirSync(join(cwd, 'bin', 'elanous.mjs'));
+      const expectedBin = resolve(import.meta.dir, '../../../bin/elanous.mjs');
       await assertDefaultSpawnBin(cwd, expectedBin, 'source-tree-fallback');
     } finally {
       rmSync(cwd, { recursive: true, force: true });
     }
   });
 
-  test('production spawn keeps this monad repository bin', async () => {
-    const monadRoot = resolve(import.meta.dir, '../../..');
-    await assertDefaultSpawnBin(monadRoot, join(monadRoot, 'bin', 'monad.mjs'), 'cwd-repository');
+  test('production spawn keeps this elanous repository bin', async () => {
+    const elanousRoot = resolve(import.meta.dir, '../../..');
+    await assertDefaultSpawnBin(elanousRoot, join(elanousRoot, 'bin', 'elanous.mjs'), 'cwd-repository');
   });
 
   test('잘못된 kind → throw', async () => {

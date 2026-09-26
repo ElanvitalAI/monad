@@ -71,7 +71,7 @@ export function loadAgentsLayered(opts: LoadLayeredOptions = {}): {
   const projectRoot = opts.projectRoot ?? process.cwd();
   const extraUserDirs = [
     ...(opts.extraUserDirs ?? []),
-    join(homedir(), '.monad', 'agents'),
+    join(homedir(), '.elanous', 'agents'),
   ];
 
   // Simulate layer walk independently so we can build the overrides
@@ -98,7 +98,7 @@ export function loadAgentsLayered(opts: LoadLayeredOptions = {}): {
     mergeLayer(layered, pluginLayer.defs, overrides, warnings);
   }
 
-  // Layer 3: user (~/.claude/agents/ + ~/.monad/agents/)
+  // Layer 3: user (~/.claude/agents/ + ~/.elanous/agents/)
   if (!opts.skipUser) {
     const userDir = opts.userDir ?? LOCAL_AGENTS_DIR;
     const layer = collectLayer(userDir, 'user');
@@ -113,7 +113,7 @@ export function loadAgentsLayered(opts: LoadLayeredOptions = {}): {
 
   // Layer 4: project
   if (!opts.skipProject) {
-    const projectAgentsDir = join(projectRoot, '.monad', 'agents');
+    const projectAgentsDir = join(projectRoot, '.elanous', 'agents');
     const layer = collectLayer(projectAgentsDir, 'project');
     mergeLayer(layered, layer.defs, overrides, warnings);
     errors.push(...layer.errors);

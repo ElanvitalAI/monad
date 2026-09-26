@@ -3,11 +3,11 @@
  *
  * 왜: test↔prod 격리 누출이 반복되는 근본은 "인스턴스 경로 정체성이 1급 객체가 아니고,
  * 모든 스토어가 반드시 그걸 거치도록 강제되지 않는다"이다(PLAN §0). resolver(계약)를
- * 아무리 잘 만들어도 강제가 없으면 다음 스토어 작성자가 또 `join(homedir(), '.monad', …)`
+ * 아무리 잘 만들어도 강제가 없으면 다음 스토어 작성자가 또 `join(homedir(), '.elanous', …)`
  * 를 하드코딩한다 → 5번째 누출. 이 게이트가 그 "강제(③)" 조각이다.
  *
  * 정책(ci-typecheck-changed 와 동형 "부채 관용·신규 차단"): main 은 이미 다수의
- * homedir+.monad 하드코딩을 가진다(정당한 resolver 정의 + 미수복 위반 D/E/F 대상).
+ * homedir+.elanous 하드코딩을 가진다(정당한 resolver 정의 + 미수복 위반 D/E/F 대상).
  * 통짜 금지는 즉시 레드 → 무시되는 가짜 게이트. 그래서 **현 baseline(파일별 count)을
  * 스냅샷**하고 그 초과(신규 드리프트)만 실패시킨다. D/E/F 가 위반을 resolver 로 옮기며
  * `--update` 로 baseline 을 ratchet down 한다. 정당한 resolver 정의는 baseline 에 영구
@@ -34,14 +34,14 @@ type HardcodeScanEntry = {
   candidates: HardcodeCandidate[];
 };
 
-/** 드리프트 신호: 같은 줄에 `homedir()` 와 `.monad` 가 함께 = resolver 우회 후보.
- *  (env 재이중화 MONAD_HOME 등은 Phase F 스코프 — 여기선 homedir+.monad 만.) */
-/** `.monad` 가 «경로 조각»으로 쓰였나 — 앞이 따옴표나 `/` 일 때만(`com.monad.nexus.plist` 같은 이름 속 `.monad` 는 아니다 · 2026-09-24 오탐). */
-const MONAD_PATH_SEGMENT = /['"`/]\.monad(?:-test)?(?=['"`/]|$)/;
+/** 드리프트 신호: 같은 줄에 `homedir()` 와 `.elanous` 가 함께 = resolver 우회 후보.
+ *  (env 재이중화 ELANOUS_HOME 등은 Phase F 스코프 — 여기선 homedir+.elanous 만.) */
+/** `.elanous` 가 «경로 조각»으로 쓰였나 — 앞이 따옴표나 `/` 일 때만(`com.elanous.nexus.plist` 같은 이름 속 `.elanous` 는 아니다 · 2026-09-24 오탐). */
+const ELANOUS_PATH_SEGMENT = /['"`/]\.elanous(?:-test)?(?=['"`/]|$)/;
 
 export function isHardcodeLine(line: string): boolean {
   if (isCommentOnlyLine(line)) return false;
-  return line.includes('homedir()') && MONAD_PATH_SEGMENT.test(line);
+  return line.includes('homedir()') && ELANOUS_PATH_SEGMENT.test(line);
 }
 
 /** 이 줄이 «온전히 주석»인가.
@@ -50,12 +50,12 @@ export function isHardcodeLine(line: string): boolean {
  *  착지를 막았다. 잡힌 줄은 이랬다:
  *  ```
  *  src/nexus/api/media-store.ts:35
- *    *  ⛔⭐ 경로를 «손으로» 짓지 않는다 — `join(homedir(), '.monad', …)` 는 …
+ *    *  ⛔⭐ 경로를 «손으로» 짓지 않는다 — `join(homedir(), '.elanous', …)` 는 …
  *  ```
  *  ⇒ 이 저장소는 함정을 «주석에 인용»하는 문화라, 규율을 적을수록 게이트에 걸린다.
  *  ⛔ 그래서 「문면을 바꿔 피한다」는 처방이 «아니다** — 그러면 규율이 흐려진다.
  *
- *  ⚠️ **줄 «전체»가 주석일 때만** 건너뛴다. `const p = join(homedir(), '.monad'); // 메모` 처럼
+ *  ⚠️ **줄 «전체»가 주석일 때만** 건너뛴다. `const p = join(homedir(), '.elanous'); // 메모` 처럼
  *  ***코드 뒤에 주석이 붙은 줄은 계속 «문다»*** — 그 줄은 실제로 도는 코드다.
  *  ⛔ 이 게이트는 과탐 쪽으로 틀리는 것이 «안전»하므로, 애매하면 주석으로 «안» 본다.
  */
@@ -89,8 +89,8 @@ function scan(root = ROOT): Map<string, HardcodeScanEntry> {
   return entries;
 }
 
-/** `homedir()` 값을 받은 이름들(파일 단위). 🩸 2026-09-24(🅢 T3): 탐지가 «같은 줄에 `homedir()` ⊕ `.monad`» 뿐이라
- *  `const home = deps.home ?? homedir(); join(home, '.monad', …)` 처럼 «두 줄로 나눈» 하드코딩을 못 봤다
+/** `homedir()` 값을 받은 이름들(파일 단위). 🩸 2026-09-24(🅢 T3): 탐지가 «같은 줄에 `homedir()` ⊕ `.elanous`» 뿐이라
+ *  `const home = deps.home ?? homedir(); join(home, '.elanous', …)` 처럼 «두 줄로 나눈» 하드코딩을 못 봤다
  *  (표본: `src/config.ts` `resolveDataDir` · `src/domains/schedule-registry.ts` `cronRepoRoot`).
  *  받는 모양: `const|let|var <이름> = …homedir()` · 매개변수 기본값 `<이름>: T = homedir()` / `<이름> = homedir()`. */
 export function homedirAliases(source: string): Set<string> {
@@ -110,7 +110,7 @@ export function scanHardcodeCandidates(source: string): HardcodeCandidate[] {
   const aliases = [...homedirAliases(source)];
   const aliasPattern = aliases.length ? new RegExp(`\\b(?:${aliases.map((name) => name.replace(/[$]/g, '\\$')).join('|')})\\b`) : null;
   return source.split('\n').flatMap((line, index) => (
-    isHardcodeLine(line) || (aliasPattern !== null && !isCommentOnlyLine(line) && MONAD_PATH_SEGMENT.test(line) && aliasPattern.test(line))
+    isHardcodeLine(line) || (aliasPattern !== null && !isCommentOnlyLine(line) && ELANOUS_PATH_SEGMENT.test(line) && aliasPattern.test(line))
       ? [{ lineNumber: index + 1, line }]
       : []
   ));
@@ -151,7 +151,7 @@ function loadBaseline(root = ROOT): Map<string, number> {
 function writeBaseline(entries: Map<string, HardcodeScanEntry>): void {
   const lines = [...entries.entries()].sort((a, b) => a[0].localeCompare(b[0])).map(([f, entry]) => `${entry.count}\t${f}`);
   const header = [
-    '# 격리 하드코딩 baseline (homedir()+.monad 라인 수 · 파일별) — Phase C ratchet 게이트.',
+    '# 격리 하드코딩 baseline (homedir()+.elanous 라인 수 · 파일별) — Phase C ratchet 게이트.',
     '# 신규/증가만 CI 실패. 위반 수복(resolver 이동) 후 `--update` 로 ratchet down.',
     '# 정당한 resolver 정의(memory-db-path·session/index·state-paths·fleet·pty-manifest 등)는 영구 잔류.',
     `# total=${[...entries.values()].reduce((a, entry) => a + entry.count, 0)} · files=${entries.size}`,
@@ -220,9 +220,9 @@ export function runIsolationHardcodeGate(io: IsolationGateIo = {}): number {
   }
 
   if (violations.length > 0) {
-    error('[isolation-gate] FAIL — 신규 homedir+.monad 하드코딩 감지.');
-    error('  격리 누출 근본(PLAN §0): 스토어 경로는 resolver(monadStateRoot/memoryDbPath/');
-    error('  getMonadConfigDir/instanceRoot)를 거쳐야 test↔prod 격리가 성립합니다.');
+    error('[isolation-gate] FAIL — 신규 homedir+.elanous 하드코딩 감지.');
+    error('  격리 누출 근본(PLAN §0): 스토어 경로는 resolver(elanousStateRoot/memoryDbPath/');
+    error('  getElanousConfigDir/instanceRoot)를 거쳐야 test↔prod 격리가 성립합니다.');
     error(violations.join('\n'));
     if (ratcheted.length) { error('  (참고 · 수복 반영 필요):'); error(ratcheted.join('\n')); }
     return 1;

@@ -1,6 +1,6 @@
 // ── Plugin system core types ──
 // Phase 2: full plugin contract. Plugins are plain TS modules whose
-// default export implements MonadPlugin. The plugin-host loads them
+// default export implements ElanousPlugin. The plugin-host loads them
 // from built-in plugins/* and ~/.claude/plugins/*.
 
 import type {
@@ -305,19 +305,19 @@ export interface PluginContext {
     get(id: string): import('../../widgets/types.js').WidgetInstance | null;
   };
   /** PX-2 P4: plugin-scoped persistent + session state. persist/load
-   *  are FS-backed at ~/.monad/state/<pluginId>/<key>.json (user) or
-   *  <cwd>/.monad/state/<pluginId>/<key>.json (project — opt-in via
+   *  are FS-backed at ~/.elanous/state/<pluginId>/<key>.json (user) or
+   *  <cwd>/.elanous/state/<pluginId>/<key>.json (project — opt-in via
    *  scope:'project'). Session state is in-memory, subscribable, and
    *  namespaced to this plugin. Optional field — older plugins and
    *  hosts that didn't wire a persistence backend will see undefined. */
   persistentState?: import('../../plugin-state/api.js').PluginStateApi;
 }
 
-// ── MonadPlugin ──
+// ── ElanousPlugin ──
 // The default export shape every plugin.ts provides. `name` must be
 // unique per host; user-level plugins may override built-ins with the
 // same name (host logs a warning).
-export interface MonadPlugin<S = unknown> {
+export interface ElanousPlugin<S = unknown> {
   name: string;
   version: string;
   description: string;

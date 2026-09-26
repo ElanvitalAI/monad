@@ -1,4 +1,4 @@
-// SelfImplement 네이티브 툴 런타임 (2026-07-19 · P2) — monad 가 TUI 대화의 자연어
+// SelfImplement 네이티브 툴 런타임 (2026-07-19 · P2) — elanous 가 TUI 대화의 자연어
 // ("이 기능 구현하고 PR 올려줘")를 인식해 자율 호출하는 ToolRuntime. runSelfImplement
 // 시퀀서(fork→worktree→구현→gate→PR)를 실 seam(defaultSeams)로 구동한다.
 //
@@ -47,7 +47,7 @@ export function _getSelfImplementApproverForTesting(): SelfImplementApprover | n
   return approverRef;
 }
 
-// ── 자식 monad 격리/대기 deps (부팅 때 주입 · 격리 테스트에서 config/state 분기) ──
+// ── 자식 elanous 격리/대기 deps (부팅 때 주입 · 격리 테스트에서 config/state 분기) ──
 interface SelfImplementRuntimeDeps {
   configDir?: string;
   stateDir?: string;
@@ -55,7 +55,7 @@ interface SelfImplementRuntimeDeps {
 }
 let runtimeDeps: SelfImplementRuntimeDeps = {};
 
-/** 자식 헤드리스 monad 의 config/state 격리 + 구현 대기 상한을 주입. */
+/** 자식 헤드리스 elanous 의 config/state 격리 + 구현 대기 상한을 주입. */
 export function setSelfImplementRuntimeDeps(d: SelfImplementRuntimeDeps | null): void {
   runtimeDeps = d ?? {};
 }
@@ -241,10 +241,10 @@ export function buildSelfImplementSpec(): LLMToolSpec {
     description:
       'Use this tool when the user mentions the harness: forms such as "하니스로 개발", "하니스:", "하니스로 구현해줘", "하니스 구현", English "harness", or "self dev" mean the same even with Korean particles or punctuation. ' +
       'Autonomously implement a requested feature or fix end-to-end and open a DRAFT pull request for ' +
-      'review. Forks the current session, creates an isolated git worktree, drives a headless monad ' +
+      'review. Forks the current session, creates an isolated git worktree, drives a headless elanous ' +
       'coding agent to write the code + tests, runs the integrity gate (bun test/build), and — only ' +
       'after explicit HITL approval (대표) — pushes the branch and opens a draft PR. Use when the user ' +
-      'asks monad to build/implement/fix something itself and open a PR (e.g. "이 기능 구현하고 PR 올려줘", ' +
+      'asks elanous to build/implement/fix something itself and open a PR (e.g. "이 기능 구현하고 PR 올려줘", ' +
       '"add X and open a PR", "구현해서 draft PR 올려줘"). Coding + gate are autonomous; PR-open is a ' +
       'fail-closed human gate. Long-running (minutes). Not for edits you should do inline in this session.',
     parameters: {
@@ -591,7 +591,7 @@ export const selfImplementRuntime: ToolRuntime<SelfImplementRuntimeRequest, Self
     //   스위치는 daemon-tools 경로에만 있었고 **TUI 는 이 런타임을 탄다** — 만든 것이 닿지 않았다.
     //   ⛔ fail-closed: config 를 못 읽으면 던진다(조용히 실행 금지). 판정은 observe-only.ts 한 자리.
     const observeOnly = resolveObserveOnlyDecision(observeOnlyRequest === true
-      ? { ...process.env, MONAD_SELF_IMPLEMENT_OBSERVE_ONLY: '1' }
+      ? { ...process.env, ELANOUS_SELF_IMPLEMENT_OBSERVE_ONLY: '1' }
       : process.env);
     debug.log('self-implement', 'runtime.observe-only-decision', { surface: ctx.surface, observeOnly: observeOnly.enabled, observeOnlySource: observeOnly.source });
     if (observeOnly.enabled) {

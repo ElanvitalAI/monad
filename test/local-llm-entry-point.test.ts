@@ -12,7 +12,7 @@
 //      then persisted to the session JSONL.
 //   4. A bearer token from user-config.llm.apiKey is forwarded.
 //
-// Those four facts are what "compatibility" means for monad — if
+// Those four facts are what "compatibility" means for elanous — if
 // they hold against our mock, swapping in any OpenAI-compatible
 // endpoint (LM Studio, vLLM, llama.cpp server) is plug-and-play.
 
@@ -80,19 +80,19 @@ function baseConfig(overrides: Partial<UserConfig['llm']> = {}): UserConfig {
 beforeEach(() => {
   // Give each test its own sessions/state root so the on-disk JSONL
   // from runTurn() doesn't leak across tests or into the user's real
-  // store. MONAD_STATE_DIR is what `sessionRoot()` honors — XDG alone is
-  // NOT enough. 2026-07-09 rooted the store at ~/.monad and made XDG an
+  // store. ELANOUS_STATE_DIR is what `sessionRoot()` honors — XDG alone is
+  // NOT enough. 2026-07-09 rooted the store at ~/.elanous and made XDG an
   // explicit no-op (src/session/index.ts:56-58), which silently turned
   // this isolation off and leaked ~86 runs' worth of fixture sessions
   // (entry-point-test / err-test / stream-test / …) into the real store.
   // Keep XDG for anything else that still reads it.
-  tmpRoot = mkdtempSync(join(tmpdir(), 'monad-local-entry-'));
-  savedEnv.MONAD_STATE_DIR = process.env.MONAD_STATE_DIR;
+  tmpRoot = mkdtempSync(join(tmpdir(), 'elanous-local-entry-'));
+  savedEnv.ELANOUS_STATE_DIR = process.env.ELANOUS_STATE_DIR;
   savedEnv.XDG_DATA_HOME = process.env.XDG_DATA_HOME;
   savedEnv.XDG_STATE_HOME = process.env.XDG_STATE_HOME;
   savedEnv.LOCAL_LLM_URL = process.env.LOCAL_LLM_URL;
   savedEnv.LOCAL_LLM_MODEL = process.env.LOCAL_LLM_MODEL;
-  process.env.MONAD_STATE_DIR = join(tmpRoot, 'state');
+  process.env.ELANOUS_STATE_DIR = join(tmpRoot, 'state');
   process.env.XDG_DATA_HOME = join(tmpRoot, 'data');
   process.env.XDG_STATE_HOME = join(tmpRoot, 'state');
   // Explicitly clear env — we want tests to prove user-config drives

@@ -12,7 +12,7 @@ import { join } from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { buildGrepTool, dispatchGrep } from '../src/skills/tools/grep';
 import { resetSearchLoopGuardForTest } from '../src/skills/tools/search-loop-guard';
-import { resetMonadConfigDir, setMonadConfigDir } from '../src/monad-config-dir';
+import { resetElanousConfigDir, setElanousConfigDir } from '../src/elanous-config-dir';
 import { resetUserConfig } from '../src/user-config';
 
 function tmp(): string { return mkdtempSync(join(tmpdir(), 'grep-tool-')); }
@@ -34,7 +34,7 @@ beforeAll(() => {
 
 beforeEach(() => {
   configDir = tmp();
-  setMonadConfigDir(configDir);
+  setElanousConfigDir(configDir);
   resetUserConfig();
   resetSearchLoopGuardForTest();
 });
@@ -42,7 +42,7 @@ beforeEach(() => {
 afterEach(() => {
   resetSearchLoopGuardForTest();
   resetUserConfig();
-  resetMonadConfigDir();
+  resetElanousConfigDir();
   rmSync(configDir, { recursive: true, force: true });
 });
 

@@ -97,7 +97,7 @@ export function migrateJobToTrigger(deps: MigrateJobDeps, jobId: string): Migrat
 
 // ── U4b — 이관잡(run_via='trigger') catch-up 자기회복 ────────────────────────
 // workflow Schedule Trigger(node-cron)는 놓친 발화를 복구하지 않는다. schedule-runner
-// 가 monad 잡에 제공하던 catch-up 자기회복(랩탑 슬립/데몬 다운으로 놓친 일간 잡 복구)을
+// 가 elanous 잡에 제공하던 catch-up 자기회복(랩탑 슬립/데몬 다운으로 놓친 일간 잡 복구)을
 // 이관잡에도 보존한다. 정시 발화는 Schedule Trigger 데몬이, 놓친 발화 복구만 이 sweep 이.
 // 복구는 schedule-runner 와 동일하게 command 직접 spawn(BashNode 도 결국 /bin/bash -c
 // command)·markResult(via='catchup'). 매매류는 defaultCatchupEligible 이 제외.

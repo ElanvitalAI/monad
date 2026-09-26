@@ -9,7 +9,7 @@ import type { PfcReverseFeedbackNotification } from '../src/conductor/pfc-revers
 function notification(): PfcReverseFeedbackNotification {
   return {
     shellId: 's1',
-    summary: '🧠 monad · sh-s1 (exit 1)',
+    summary: '🧠 elanous · sh-s1 (exit 1)',
     canApply: true,
     capability: { canRead: true, canInterrupt: true, canWrite: true, canInspect: true },
     research: {

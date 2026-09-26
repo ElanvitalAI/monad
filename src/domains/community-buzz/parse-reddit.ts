@@ -15,9 +15,9 @@ const BROWSER_UA = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/
 
 export interface RedditCreds { clientId: string; clientSecret: string }
 
-/** 자격 로드 — user-config(~/.monad/config.json reddit) → env. 없으면 null(RSS 폴백). */
+/** 자격 로드 — user-config(~/.elanous/config.json reddit) → env. 없으면 null(RSS 폴백). */
 export function loadRedditCreds(): RedditCreds | null {
-  const cfgPath = join(homedir(), '.monad/config.json');
+  const cfgPath = join(homedir(), '.elanous/config.json');
   if (existsSync(cfgPath)) {
     try {
       const c = JSON.parse(readFileSync(cfgPath, 'utf-8')) as { reddit?: { clientId?: string; clientSecret?: string } };
@@ -81,7 +81,7 @@ export function parseRedditListing(json: unknown, nowMs: number = Date.now()): F
 async function redditToken(creds: RedditCreds): Promise<string> {
   const basic = Buffer.from(`${creds.clientId}:${creds.clientSecret}`).toString('base64');
   const r = await fetch('https://www.reddit.com/api/v1/access_token', {
-    method: 'POST', headers: { Authorization: `Basic ${basic}`, 'Content-Type': 'application/x-www-form-urlencoded', 'User-Agent': 'monad-buzz/0.1' },
+    method: 'POST', headers: { Authorization: `Basic ${basic}`, 'Content-Type': 'application/x-www-form-urlencoded', 'User-Agent': 'elanous-buzz/0.1' },
     body: 'grant_type=client_credentials',
   });
   if (!r.ok) throw new Error(`reddit token ${r.status}`);
@@ -102,7 +102,7 @@ export async function fetchRedditHot(sub: string, opts: FetchRedditOpts = {}): P
     if (creds) {
       const token = await redditToken(creds);
       const r = await fetch(`https://oauth.reddit.com/r/${sub}/hot?limit=${limit}`, {
-        headers: { Authorization: `Bearer ${token}`, 'User-Agent': 'monad-buzz/0.1' }, signal: ctrl.signal,
+        headers: { Authorization: `Bearer ${token}`, 'User-Agent': 'elanous-buzz/0.1' }, signal: ctrl.signal,
       });
       if (!r.ok) throw new Error(`reddit oauth ${r.status}`);
       return parseRedditListing(await r.json());

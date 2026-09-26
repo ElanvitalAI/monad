@@ -163,7 +163,7 @@ export function buildReviewSeam(deps: {
   return async ({ objective, changes }) => {
     const cwd = deps.cwd();
     if (!cwd) {
-      // 관측(제1원칙) — worktree 미생성은 배선 오류 신호. 조회=monad logs --category harness.review.
+      // 관측(제1원칙) — worktree 미생성은 배선 오류 신호. 조회=elanous logs --category harness.review.
       debug.log('harness.review', 'no-worktree', { objective: objective.slice(0, 80) });
       return { verdict: 'fail', findings: ['worktree 미생성(plan 먼저)'], mustFix: ['plan'] };
     }

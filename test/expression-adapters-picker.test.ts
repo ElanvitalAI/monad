@@ -122,7 +122,7 @@ describe('expression/adapters/picker · downstream a11y integration', () => {
   });
 
   test('ANSI-laden labels strip cleanly before SR utterance', () => {
-    // A monad picker host typically pre-paints labels with chalk.
+    // A elanous picker host typically pre-paints labels with chalk.
     // describeForScreenReader doesn't know about ANSI; the adapter
     // hands it pure text.
     const spec = searchItemsToPickerSpec(

@@ -116,7 +116,7 @@ export interface ToolRuntime<Req = Record<string, unknown>, Out extends ToolRunR
    *  `nativeToolCatalog` (e.g. MCP proxy runtimes registered at NEXUS
    *  boot from the *active universe's* config `mcp.servers` — resolved
    *  through `effectiveInstanceRoot()`, ⛔ not a hardcoded
-   *  `~/.monad/config.json`). `listToolRuntimes`
+   *  `~/.elanous/config.json`). `listToolRuntimes`
    *  checks the catalog first; when there is no catalog entry it
    *  falls back to this field. Set by `createMcpProxyRuntime` to
    *  `['mcp']` so the local MCP server's `tools/list` relay surfaces

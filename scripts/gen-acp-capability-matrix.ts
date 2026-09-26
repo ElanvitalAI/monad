@@ -1,14 +1,14 @@
 #!/usr/bin/env bun
 // M8 (2026-04-28) — ACP capability matrix auto-generator.
 //
-// Reads the static `*_CAPS` snapshots exported by each monad-owned ACP
+// Reads the static `*_CAPS` snapshots exported by each elanous-owned ACP
 // backend and emits a markdown table into `내부 문서 `ACP-INTEGRATION``
 // between marker comments. The generated section gets replaced on
 // every run; everything outside the markers is preserved verbatim.
 //
 // Sprint 5B (2026-04-28) removed the codex-native column alongside
 // the source files + dep packages. codex-app-server is the lone
-// monad-owned backend.
+// elanous-owned backend.
 //
 // CI mode (`--check`): exits 1 if the on-disk doc differs from the
 // freshly generated content. Without `--check`, the script writes the
@@ -25,7 +25,7 @@
 
 import { readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
-import type { MonadCapabilities } from '../src/acp/capabilities.js';
+import type { ElanousCapabilities } from '../src/acp/capabilities.js';
 import { CODEX_APP_SERVER_CAPS } from '../src/acp/codex-app-server-agent.js';
 
 // ─── Pure helpers (testable) ─────────────────────────────────────────
@@ -33,13 +33,13 @@ import { CODEX_APP_SERVER_CAPS } from '../src/acp/codex-app-server-agent.js';
 export const CAP_MATRIX_MARKER_START = '<!-- generated:cap-matrix-start -->';
 export const CAP_MATRIX_MARKER_END = '<!-- generated:cap-matrix-end -->';
 
-/** Format a per-backend MonadCapabilities snapshot map into a markdown
+/** Format a per-backend ElanousCapabilities snapshot map into a markdown
  *  table. The leading column lists capability flags; one column per
  *  backend. Boolean values render as ✅ / ❌; numeric (e.g. protocol
  *  version) as the number. Stable column order so re-runs produce
  *  identical output. */
 export function formatCapabilityMatrix(
-  snapshots: ReadonlyArray<readonly [backendId: string, caps: MonadCapabilities]>,
+  snapshots: ReadonlyArray<readonly [backendId: string, caps: ElanousCapabilities]>,
 ): string {
   const backends = snapshots.map(([id]) => id);
   const yn = (v: boolean): string => (v ? '✅' : '❌');
@@ -132,7 +132,7 @@ interface RunOpts {
 }
 
 export function runMain(opts: RunOpts): number {
-  const snapshots: Array<readonly [string, MonadCapabilities]> = [
+  const snapshots: Array<readonly [string, ElanousCapabilities]> = [
     ['codex-app-server', CODEX_APP_SERVER_CAPS],
   ];
   const generated = formatCapabilityMatrix(snapshots);

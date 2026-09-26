@@ -7,7 +7,7 @@ import { join } from 'path';
 import { PluginHost, matchesKey, type HostHooks } from '../src/plugins/core/host.js';
 import { WidgetHost } from '../src/widgets/host.js';
 import { createDisplayEventBus } from '../src/display/index.js';
-import type { MonadPlugin } from '../src/plugins/core/types.js';
+import type { ElanousPlugin } from '../src/plugins/core/types.js';
 import type { WidgetDef } from '../src/widgets/types.js';
 import type { DisplayHandle } from '../src/display/types.js';
 import { getPromptBankStore, resetPromptBankStoreForTests } from '../src/prompt-bank/store.js';
@@ -54,7 +54,7 @@ describe('PluginHost', () => {
   const originalXdgDataHome = process.env.XDG_DATA_HOME;
 
   beforeEach(() => {
-    root = mkdtempSync(join(tmpdir(), 'monad-host-'));
+    root = mkdtempSync(join(tmpdir(), 'elanous-host-'));
     process.env.XDG_DATA_HOME = join(root, 'data');
     resetPromptBankStoreForTests();
     builtinDir = join(root, 'plugins');

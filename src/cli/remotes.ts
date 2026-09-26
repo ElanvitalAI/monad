@@ -1,23 +1,23 @@
 // CLI · <config-dir>/remotes.json bookmark store (Track 4.B · 2026-05-07)
 //
-// Paths follow `getMonadConfigDir()` (honors `--config-dir` / isolation).
-// Default daily-driver root is still `~/.monad`; tests and `--config-dir`
+// Paths follow `getElanousConfigDir()` (honors `--config-dir` / isolation).
+// Default daily-driver root is still `~/.elanous`; tests and `--config-dir`
 // must not leak into the operational store.
 //
-// `monad nexus connect <host>` 가 처음 셋업 후 본 store 에 entry 추가:
+// `elanous nexus connect <host>` 가 처음 셋업 후 본 store 에 entry 추가:
 //   - host (user-friendly key)
 //   - acp_url / voice_url (T4.A connect-info 결과)
 //   - token_file (<config-dir>/remotes/<name>.token · mode 0o600)
 //   - addedAt timestamp · default flag
 //
-// 일상 사용 (`monad` 무인자 · T4.C) 가 default bookmark resolve.
-// 외울 명령 = `monad` 1개 + 처음 1회 `monad nexus connect <host>`.
+// 일상 사용 (`elanous` 무인자 · T4.C) 가 default bookmark resolve.
+// 외울 명령 = `elanous` 1개 + 처음 1회 `elanous nexus connect <host>`.
 //
 // File mode 0o600 · backup-on-write (atomic · v1 schema lock).
 
 import { existsSync, mkdirSync, readFileSync, renameSync, writeFileSync, chmodSync, unlinkSync } from 'node:fs';
 import { join as joinPath, dirname } from 'node:path';
-import { getMonadConfigDir } from '../monad-config-dir.js';
+import { getElanousConfigDir } from '../elanous-config-dir.js';
 
 export const REMOTES_FILE_VERSION = 1;
 
@@ -38,17 +38,17 @@ export interface RemoteEntry {
 
 export interface RemotesFile {
   version: 1;
-  /** Default bookmark name — used when `monad` is run without args. */
+  /** Default bookmark name — used when `elanous` is run without args. */
   default?: string;
   remotes: Record<string, RemoteEntry>;
 }
 
 function defaultRemotesPath(): string {
-  return joinPath(getMonadConfigDir(), 'remotes.json');
+  return joinPath(getElanousConfigDir(), 'remotes.json');
 }
 
 function defaultTokensDir(): string {
-  return joinPath(getMonadConfigDir(), 'remotes');
+  return joinPath(getElanousConfigDir(), 'remotes');
 }
 
 export interface RemotesStoreOpts {

@@ -1,7 +1,7 @@
 // MVP M1.5 A.2 — daemon tool surface types.
 //
 // Common shapes for the read-only tool catalog the daemon exposes
-// when `MONAD_TOOLS=readonly` (or `--tools readonly`) is set. The
+// when `ELANOUS_TOOLS=readonly` (or `--tools readonly`) is set. The
 // surface is a small, security-reviewed subset — Read · Grep ·
 // WebSearch — gated behind `path-guard.ts` for fs access.
 
@@ -16,7 +16,7 @@ import type { SurfaceKind } from '../../agent/surface-ux/types.js';
  *                 backend).
  *  - `readonly` → Read · Grep · WebSearch · Plan · MarkStepDone
  *                 (fs read, sandboxed; no shell, no writes).
- *  - `chat`     → readonly + Edit + Bash. **Default for `monad nexus
+ *  - `chat`     → readonly + Edit + Bash. **Default for `elanous nexus
  *                 run`** (2026-05-13 · chat-only friction-free). The
  *                 baseline surface for PWA / iOS / TUI chat clients —
  *                 LLM can read files, edit files, and execute shell
@@ -42,7 +42,7 @@ export interface DaemonToolSurface {
 
 export interface DaemonToolDispatchCtx {
   /** Working directory for fs-bound tools (Read · Grep). Fixed at
-   *  daemon boot from `--tool-cwd` / `MONAD_TOOL_CWD` / process.cwd(). */
+   *  daemon boot from `--tool-cwd` / `ELANOUS_TOOL_CWD` / process.cwd(). */
   cwd: string;
   /** Lazy production-write destination. Read-only tools keep `cwd`; write
    * tools request this only immediately before dispatch. */

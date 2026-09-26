@@ -1,7 +1,7 @@
 // 제1원칙 관측 가드 — 에이전트 "소스 수집"(참조 열람·기억 회상)이 logs.db 에 닿는지.
 //
-// 사건(2026-07-19): tui-sim 드라이브에서 monad 이 로컬 `~/source/ref` 를 0건 읽고
-// 전부 WebSearch 로 우회했는데, `monad logs` 로는 그걸 전혀 관측할 수 없었다
+// 사건(2026-07-19): tui-sim 드라이브에서 elanous 이 로컬 `~/source/ref` 를 0건 읽고
+// 전부 WebSearch 로 우회했는데, `elanous logs` 로는 그걸 전혀 관측할 수 없었다
 // (기억조회·참조열람 툴콜이 logs.db 에 안 남고 세션 트랜스크립트에만 존재).
 // 이는 제1원칙(자기 관측성) 위반 — 자기 인지의 소스 수집이 관측 관문을 안 탐.
 //
@@ -9,7 +9,7 @@
 // 존재함을 구조적으로 고정한다. 향후 "debug 로그 정리" PR 이 이를 제거하면
 // 이 테스트가 실패하며 이유를 가리킨다. federation-guard-l1 패턴 이식.
 //
-// 관측 조회: `monad logs --category agent.source` → read/grep/web/recall 이
+// 관측 조회: `elanous logs --category agent.source` → read/grep/web/recall 이
 // 한 스토어에서 보인다. read/grep 은 external 플래그로 로컬 vs 외부 트리
 // (예: ~/source/ref) 를 구분 → "canonical 로컬 소스 대신 웹 우회했나" 판별.
 

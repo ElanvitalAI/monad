@@ -1,6 +1,6 @@
 // ── self-dev 관측 실행-태깅 (2026-07-26) ──────────────────────────────────────
 //
-// ⭐ 왜 필요했나 (실측 사건): 같은 시간대에 `monad dev` 3개를 띄웠더니 로그가 한 카테고리에 섞여
+// ⭐ 왜 필요했나 (실측 사건): 같은 시간대에 `elanous dev` 3개를 띄웠더니 로그가 한 카테고리에 섞여
 //   ① 한 실행의 실패 원인을 **특정하지 못했고**
 //   ② **다른 실행의 게이트 로그를 자기 것으로 오독**해 "게이트가 거짓 통과했다"는 잘못된 결론에 도달했다.
 //   관측이 있어도 조회가 실행을 못 가르면 자기인지가 안 된다(제1원칙).
@@ -77,7 +77,7 @@ describe('실행 — 발화된 로그가 실제로 같은 runId 를 싣는다', 
   const ledgerStateDir = mkdtempSync(join(tmpdir(), 'selfdev-observation-ledger-'));
   const seams = () => ({
     // ⛔⭐⭐⭐ 기본을 «무동작»으로 — 안 채우면 실제 계정 스토어를 읽고 codex 자식을 띄우고
-    //   ~/.monad/budget 에 쓴다(= 테스트가 «운영 쿼터를 소모»한다 · 리뷰 must-fix).
+    //   ~/.elanous/budget 에 쓴다(= 테스트가 «운영 쿼터를 소모»한다 · 리뷰 must-fix).
     refreshCodexQuotaSignals: async () => ({ accounts: [] }),
     createWorktree: async ({ branch }: { branch: string }) => ({ path: '/tmp/wt', branch }),
     implement: async () => ({ ok: true, summary: 'done' }),
@@ -130,8 +130,8 @@ describe('실행 — 발화된 로그가 실제로 같은 runId 를 싣는다', 
       if (comp === 'run-identity' && event === 'own') ids.push(data ?? {});
     }) as never);
 
-    const prev = process.env.MONAD_RUN_ID;
-    delete process.env.MONAD_RUN_ID;   // 상속 없음 → canonical mint 경로
+    const prev = process.env.ELANOUS_RUN_ID;
+    delete process.env.ELANOUS_RUN_ID;   // 상속 없음 → canonical mint 경로
     try {
       const first = await runSelfImplement({ feature: 'x', seams: seams() } as never);   // runId 미지정
       const second = await runSelfImplement({ feature: 'y', seams: seams() } as never);
@@ -139,7 +139,7 @@ describe('실행 — 발화된 로그가 실제로 같은 runId 를 싣는다', 
       expect(ids).toHaveLength(2);
       // 래퍼가 runId 만 explicit 로 재전달하면 여기가 'explicit' 이 된다 = 관측이 거짓말.
       expect(ids.map((identity) => identity.source)).toEqual(['minted', 'minted']);
-    } finally { if (prev === undefined) delete process.env.MONAD_RUN_ID; else process.env.MONAD_RUN_ID = prev; }
+    } finally { if (prev === undefined) delete process.env.ELANOUS_RUN_ID; else process.env.ELANOUS_RUN_ID = prev; }
   });
 
   test('★ 명시 runId 는 explicit 로 정직하게 기록된다(무회귀)', async () => {
@@ -169,10 +169,10 @@ describe('실행 — 발화된 로그가 실제로 같은 runId 를 싣는다', 
   }, 30_000);
 
   test('★ hang + throwing sink에서도 step-timeout과 raw 종결 기록을 실제 호출하고 timed-out을 반환한다', async () => {
-    const priorProvider = process.env.MONAD_LLM_PROVIDER;
-    const priorEscalationProvider = process.env.MONAD_ESCALATE_PROVIDER;
-    delete process.env.MONAD_LLM_PROVIDER;
-    delete process.env.MONAD_ESCALATE_PROVIDER;
+    const priorProvider = process.env.ELANOUS_LLM_PROVIDER;
+    const priorEscalationProvider = process.env.ELANOUS_ESCALATE_PROVIDER;
+    delete process.env.ELANOUS_LLM_PROVIDER;
+    delete process.env.ELANOUS_ESCALATE_PROVIDER;
     try {
       spy = spyOn(debug, 'log').mockImplementation((() => {
         throw new Error('sink down');
@@ -187,10 +187,10 @@ describe('실행 — 발화된 로그가 실제로 같은 runId 를 싣는다', 
       expect(calls.some(([component, event]) => component === 'self-implement' && event === 'step-timeout')).toBe(true);
       expect(calls.some(([component, event]) => component === 'self-implement' && event === 'goal-execution-record')).toBe(true);
     } finally {
-      if (priorProvider === undefined) delete process.env.MONAD_LLM_PROVIDER;
-      else process.env.MONAD_LLM_PROVIDER = priorProvider;
-      if (priorEscalationProvider === undefined) delete process.env.MONAD_ESCALATE_PROVIDER;
-      else process.env.MONAD_ESCALATE_PROVIDER = priorEscalationProvider;
+      if (priorProvider === undefined) delete process.env.ELANOUS_LLM_PROVIDER;
+      else process.env.ELANOUS_LLM_PROVIDER = priorProvider;
+      if (priorEscalationProvider === undefined) delete process.env.ELANOUS_ESCALATE_PROVIDER;
+      else process.env.ELANOUS_ESCALATE_PROVIDER = priorEscalationProvider;
     }
   }, 30_000);
 
@@ -249,7 +249,7 @@ describe('ratchet — dev-pipeline 관측도 실행을 가른다', () => {
     expect(/runId/.test(emits[0]!.payload)).toBe(expected);
   });
 
-  test('★ `monad dev` 진입점이 runId 를 확정하고 세 발화 전부에 싣는다', () => {
+  test('★ `elanous dev` 진입점이 runId 를 확정하고 세 발화 전부에 싣는다', () => {
     const rawSource = readFileSync(INDEX, 'utf-8');
     const start = rawSource.indexOf('.action(async (textParts: string[], opts: Record<string, any>, command: Command) => {', rawSource.indexOf("const selfDevCmd = program"));
     const end = rawSource.indexOf('\n  });\n\n// ──', start);
@@ -363,7 +363,7 @@ describe('renderDevCompletionLine — 머지 도착지는 실제 머지 때만 �
 // ⛔⭐⭐ 실패 관측의 «갈래»를 고정한다 — dev 는 DevPipelineError 를 `rejected` 로, 그 밖을 `error` 로
 //    갈라 왔다. 자동 워크트리 착지가 자식 예외를 «먼저» 삼키는 래퍼를 넣으면서 그 구분이
 //    사라질 뻔했다(무인 리뷰 must-fix). ⇒ 두 자리 «모두»가 그 분기를 갖는지 고정한다.
-// ⚠️ 한계(숨기지 않음): 실물 `monad dev` 를 띄워 관측을 캡처하는 것이 더 강하지만 수십 분이 들어
+// ⚠️ 한계(숨기지 않음): 실물 `elanous dev` 를 띄워 관측을 캡처하는 것이 더 강하지만 수십 분이 들어
 //    이 착지에 비례하지 않는다. 그 층은 별도 착지에서 연다.
 describe('ratchet — dev 실패 관측은 rejected 와 error 를 «가른다»', () => {
   test('★ 래퍼 경로와 바깥 catch «둘 다» DevPipelineError 로 분기한다', () => {

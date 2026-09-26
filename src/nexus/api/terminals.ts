@@ -26,7 +26,7 @@ import { listAllPreviewTerminals } from '../../web-terminal/preview-tap-registry
 import { debug } from '../../debug/log.js';
 export { terminalTreeLabel, terminalTreeNames } from '../../pty-shell/terminal-tree.js';
 import { terminalTreeLabel, terminalTreeNames } from '../../pty-shell/terminal-tree.js';
-// ★ 크로스-프로세스 관측(2026-07-23) — in-process registry ∪ 공유 매니페스트(다른 monad 프로세스의 헤드리스 PTY).
+// ★ 크로스-프로세스 관측(2026-07-23) — in-process registry ∪ 공유 매니페스트(다른 elanous 프로세스의 헤드리스 PTY).
 import { isProcessAlive, listPtyManifest, listPtyManifestRows, listPtyManifestRowsAt, getPtyManifest, ptyManifestDbPath, reapDeadPtyManifest, reapDeadPtyManifestAt, purgeClosedPtyManifest, reapOrphanedOwnedPtyManifest, reapStalePtyManifest, type PtyManifestExternalReapResult, type PtyManifestRow } from '../../pty-shell/pty-manifest.js';
 import { ptyManifestTargets } from '../../domains/fleet.js';
 import { readPtyEventsAfter } from '../../pty-shell/pty-event-log.js';
@@ -83,7 +83,7 @@ export interface TerminalSummary {
   originRoot?: string;
   originAgent?: string;
   /** Canonical manifest/CLI terminal provenance; always explicit for process rows. */
-  terminalOriginCategory?: 'direct-human' | 'monad' | 'external-tool' | 'unknown';
+  terminalOriginCategory?: 'direct-human' | 'elanous' | 'external-tool' | 'unknown';
   terminalOriginReason?: string;
   externalToolName?: string;
   /** Omitted when absent; an empty string remains an explicit controller value. */
@@ -253,7 +253,7 @@ function ownerRunUsage(
 function terminalOriginFields(row: Pick<PtyManifestRow, 'terminalOriginCategory' | 'terminalOriginReason' | 'externalToolName'>): Pick<TerminalSummary, 'terminalOriginCategory' | 'terminalOriginReason' | 'externalToolName'> {
   const category = row.terminalOriginCategory;
   const reason = row.terminalOriginReason;
-  if ((category === 'direct-human' || category === 'monad' || category === 'external-tool' || category === 'unknown') && reason) {
+  if ((category === 'direct-human' || category === 'elanous' || category === 'external-tool' || category === 'unknown') && reason) {
     return {
       terminalOriginCategory: category,
       terminalOriginReason: reason,

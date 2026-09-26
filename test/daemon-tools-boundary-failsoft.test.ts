@@ -25,7 +25,7 @@ import { join as joinPath } from 'node:path';
 
 import type { DaemonToolDispatchCtx } from '../src/boot/daemon-tools/types.js';
 
-const CHILD_ENV = 'MONAD_DAEMON_TOOLS_BOUNDARY_FAILSOFT_CHILD';
+const CHILD_ENV = 'ELANOUS_DAEMON_TOOLS_BOUNDARY_FAILSOFT_CHILD';
 
 function makeCtx(cwd: string, overrides: Partial<DaemonToolDispatchCtx> = {}): DaemonToolDispatchCtx {
   return { cwd, signal: new AbortController().signal, ...overrides };
@@ -58,7 +58,7 @@ if (process.env[CHILD_ENV] === '1') {
 
   describe('데몬 직접 쓰기 — «관측 조회»가 던져도 완료된 쓰기가 안 바뀐다', () => {
     test('dispatchEdit — 가드가 던져도 편집 결과가 그대로다', async () => {
-      const cwd = mkdtempSync(joinPath(tmpdir(), 'monad-boundary-edit-'));
+      const cwd = mkdtempSync(joinPath(tmpdir(), 'elanous-boundary-edit-'));
       writeFileSync(joinPath(cwd, 'soft.txt'), 'before\n');
 
       const result = await dispatchEdit(
@@ -73,7 +73,7 @@ if (process.env[CHILD_ENV] === '1') {
     // ⭐ 이 하나가 `write.ts` 의 커버리지 0 을 닫는다 — 두 파일이 관측 로직을 «중복»해 두고 있어
     //   `edit.ts` 만 물면 `write.ts` 쪽 회귀는 영영 안 잡힌다.
     test('dispatchWrite — 가드가 던져도 쓰기 결과가 그대로다', async () => {
-      const cwd = mkdtempSync(joinPath(tmpdir(), 'monad-boundary-write-'));
+      const cwd = mkdtempSync(joinPath(tmpdir(), 'elanous-boundary-write-'));
 
       await dispatchWrite(
         { file_path: 'written.txt', content: 'written body\n' },

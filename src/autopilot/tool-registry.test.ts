@@ -1,6 +1,6 @@
 // src/autopilot/tool-registry.test.ts
 //
-// ROADMAP-monad-builtin-autopilot-cascade §MB-2 — getAutopilotToolRegistry
+// ROADMAP-elanous-builtin-autopilot-cascade §MB-2 — getAutopilotToolRegistry
 // unit tests. Verifies the curated tool surface + dispatcher routing.
 
 import { describe, test, expect, beforeAll } from 'bun:test';

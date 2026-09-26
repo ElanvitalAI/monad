@@ -100,10 +100,10 @@ export function resolveHarnessTarget(target: string, deps: ResolveHarnessTargetO
 /** Converts a resolved, authorized target to the existing seam-option contract. */
 export function harnessTargetOptions(
   resolution: HarnessTargetResolution,
-  monadBinRoot: string,
+  elanousBinRoot: string,
 ): DefaultSeamsOptions | undefined {
   if ((resolution.status === 'git-repo' || resolution.kind === 'git-repo') && resolution.repoRoot) {
-    return { repoRoot: resolution.repoRoot, monadBinRoot };
+    return { repoRoot: resolution.repoRoot, elanousBinRoot };
   }
   const targetKind = resolution.status === 'non-git-dir' || resolution.status === 'file'
     ? resolution.status
@@ -111,7 +111,7 @@ export function harnessTargetOptions(
       ? resolution.kind
       : undefined;
   if (targetKind && resolution.canonicalTarget) {
-    return { targetKind, targetPath: resolution.canonicalTarget, monadBinRoot };
+    return { targetKind, targetPath: resolution.canonicalTarget, elanousBinRoot };
   }
   return undefined;
 }

@@ -4,7 +4,7 @@
 // (ascending), enforces per-handler timeouts, isolates errors (one
 // bad hook never breaks the chain), and merges outputs according to
 // an event-specific reducer. Every invocation writes one NDJSON line
-// to ~/.monad/hooks-log/YYYY-MM-DD.ndjson for postmortem auditing.
+// to ~/.elanous/hooks-log/YYYY-MM-DD.ndjson for postmortem auditing.
 //
 // Abort semantics (DD-PX3-4): when a hook returns `{abort:...}`, the
 // chain stops immediately and the ChainOutcome carries the abort
@@ -18,7 +18,7 @@
 // keep the original input across the chain; only OUTPUT accumulates.
 
 import { appendFileSync, existsSync, mkdirSync } from 'node:fs';
-import { monadStateRoot } from '../autopilot/state-paths.js';
+import { elanousStateRoot } from '../autopilot/state-paths.js';
 import { join } from 'node:path';
 import {
   ALL_HOOK_EVENTS,
@@ -42,7 +42,7 @@ import {
 // ── Audit log ───────────────────────────────────────────────────────
 
 function defaultAuditRoot(): string {
-  return join(monadStateRoot(), 'hooks-log');
+  return join(elanousStateRoot(), 'hooks-log');
 }
 
 function todayStamp(now: number): string {

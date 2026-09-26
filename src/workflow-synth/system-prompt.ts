@@ -54,7 +54,7 @@ Each node declares exactly ONE of:
    - "HTTP webhook" / "REST endpoint" → \`webhookTrigger\`
    - "디스코드" / "discord channel" / "#<channel>" → \`discordTrigger\`
    - "텔레그램" / "telegram" / "/<command>" → \`telegramTrigger\`
-   - Otherwise no trigger node — workflow runs on \`monad wf run <name>\`
+   - Otherwise no trigger node — workflow runs on \`elanous wf run <name>\`
 2. Body sequence: parse intent into discrete actions, map each to one
    node variant. Wire them with \`depends_on\`. Single linear flow is
    fine — branches only when intent explicitly says "if".

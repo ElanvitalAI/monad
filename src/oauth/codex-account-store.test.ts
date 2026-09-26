@@ -21,7 +21,7 @@ import {
 
 const madeDirs: string[] = [];
 const original = {
-  state: process.env.MONAD_STATE_DIR,
+  state: process.env.ELANOUS_STATE_DIR,
   home: process.env.CODEX_HOME,
 };
 
@@ -30,8 +30,8 @@ beforeEach(() => {
 });
 
 afterEach(() => {
-  if (original.state === undefined) delete process.env.MONAD_STATE_DIR;
-  else process.env.MONAD_STATE_DIR = original.state;
+  if (original.state === undefined) delete process.env.ELANOUS_STATE_DIR;
+  else process.env.ELANOUS_STATE_DIR = original.state;
   if (original.home === undefined) delete process.env.CODEX_HOME;
   else process.env.CODEX_HOME = original.home;
   _setRotationConfigReaderForTesting(null);
@@ -43,7 +43,7 @@ afterEach(() => {
 function isolatedRoot(label: string): string {
   const root = mkdtempSync(join(tmpdir(), label));
   madeDirs.push(root);
-  process.env.MONAD_STATE_DIR = root;
+  process.env.ELANOUS_STATE_DIR = root;
   return root;
 }
 
@@ -195,7 +195,7 @@ describe('회전 핀 — 소진되면 «풀린다»', () => {
 
   test('⛔ 핀이 박힌 뒤 그 계정이 «소진되면» 다른 계정으로 간다 (인시던트 재현)', () => {
     const { store, defaultHome, thirdHome } = setupTwoAccounts('codex-pin-exhaust-');
-    process.env.MONAD_RUN_ID = 'run-pin-incident';
+    process.env.ELANOUS_RUN_ID = 'run-pin-incident';
     try {
       // ⑴ 건강한 상태 — default 로 핀이 박힌다
       writeQuotaSignal(undefined, 25, defaultHome); writeAvailabilityState(1, defaultHome);
@@ -207,30 +207,30 @@ describe('회전 핀 — 소진되면 «풀린다»', () => {
       writeQuotaSignal(undefined, 100, defaultHome);
       const after = resolveCodexAccountForRun(process.env, { storePath: store });
       expect(after.name, '소진된 계정에 «갇혔다» — 이것이 2026-09-23 인시던트다').toBe('third');
-    } finally { delete process.env.MONAD_RUN_ID; }
+    } finally { delete process.env.ELANOUS_RUN_ID; }
   });
 
   test('⛔ 소진되지 «않았으면» 핀은 그대로다 — 한 런에서 계정이 오락가락하면 토큰이 섞인다', () => {
     const { store, defaultHome, thirdHome } = setupTwoAccounts('codex-pin-hold-');
-    process.env.MONAD_RUN_ID = 'run-pin-hold';
+    process.env.ELANOUS_RUN_ID = 'run-pin-hold';
     try {
       writeQuotaSignal(undefined, 25, defaultHome); writeAvailabilityState(1, defaultHome);
       writeQuotaSignal(undefined, 0, thirdHome); writeAvailabilityState(1, thirdHome);
       expect(resolveCodexAccountForRun(process.env, { storePath: store }).name).toBe('default');
       writeQuotaSignal(undefined, 40, defaultHome);   // 올랐지만 임계(95) 아래
       expect(resolveCodexAccountForRun(process.env, { storePath: store }).name).toBe('default');
-    } finally { delete process.env.MONAD_RUN_ID; }
+    } finally { delete process.env.ELANOUS_RUN_ID; }
   });
 
   test('⛔ 「모른다」를 «소진»으로 읽지 않는다 — 신호 없는 기계에서 핀이 무의미해진다', () => {
     const { store, defaultHome, thirdHome } = setupTwoAccounts('codex-pin-unknown-');
-    process.env.MONAD_RUN_ID = 'run-pin-unknown';
+    process.env.ELANOUS_RUN_ID = 'run-pin-unknown';
     try {
       writeQuotaSignal(undefined, 25, defaultHome); writeAvailabilityState(1, defaultHome);
       writeQuotaSignal(undefined, 0, thirdHome); writeAvailabilityState(1, thirdHome);
       expect(resolveCodexAccountForRun(process.env, { storePath: store }).name).toBe('default');
       // 신호를 «지우지» 않고 그대로 둔 채 다시 묻는다 — 모름이 아니라 동일 값이므로 유지돼야 한다
       expect(resolveCodexAccountForRun(process.env, { storePath: store }).name).toBe('default');
-    } finally { delete process.env.MONAD_RUN_ID; }
+    } finally { delete process.env.ELANOUS_RUN_ID; }
   });
 });

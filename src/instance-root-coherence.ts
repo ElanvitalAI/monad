@@ -1,10 +1,10 @@
 // ── Instance root coherence — config-dir ↔ state-dir 정합 가드 (Phase D2-핵심) ──
 //
-// 근본(PLAN §1): "한 monad = 한 뿌리". 그러나 역사적으로 인스턴스 경로 정체성이
-// 두 축으로 쪼개져 있다 — config-dir(getMonadConfigDir · tasks.db/nexus)와
-// state-dir(MONAD_STATE_DIR · logs/sessions/memory/autopilot). 실제로는 항상 같은
+// 근본(PLAN §1): "한 elanous = 한 뿌리". 그러나 역사적으로 인스턴스 경로 정체성이
+// 두 축으로 쪼개져 있다 — config-dir(getElanousConfigDir · tasks.db/nexus)와
+// state-dir(ELANOUS_STATE_DIR · logs/sessions/memory/autopilot). 실제로는 항상 같은
 // 폴더로 수렴해야 하는데, 스크립트/부분 격리가 **한 축만** 설정하면 조용히 갈라진다:
-//   - MONAD_STATE_DIR 만 → tasks.db 는 prod, 나머지는 test (2026-07-19 미션 누출 사건)
+//   - ELANOUS_STATE_DIR 만 → tasks.db 는 prod, 나머지는 test (2026-07-19 미션 누출 사건)
 //   - --config-dir 만 → tasks.db 는 test, logs/기억/autopilot 은 prod
 // 이 어긋남은 지금까지 **침묵**했다(각자 자기 축만 봄). 이 가드가 부팅 시점에
 // 두 축을 대조해 divergence 를 **시끄럽게** 만든다(warn-first — 부팅은 안 막는다).
@@ -13,17 +13,17 @@
 // assert 하나로 얻고, 두 resolver 물리 병합은 부팅-크리티컬 리스크 대비 실이득이 없다
 // (nexus/paths.ts 역사가 3축이 원칙적 경계가 아닌 accretion 임을 보여준다).
 
-import { getMonadConfigDir } from './monad-config-dir.js';
-import { monadStateRoot } from './autopilot/state-paths.js';
+import { getElanousConfigDir } from './elanous-config-dir.js';
+import { elanousStateRoot } from './autopilot/state-paths.js';
 import { getNestDepth } from './agent/nest-depth.js';
 import { debug } from './debug/log.js';
 import { resolveCurrentInstance } from './instance/current.js';
 import { effectiveInstanceRoot, prodInstanceRoot } from './instance/resolve.js';
 
 export interface InstanceRootCoherence {
-  /** getMonadConfigDir() — tasks.db·nexus 스코프. */
+  /** getElanousConfigDir() — tasks.db·nexus 스코프. */
   configDir: string;
-  /** monadStateRoot() — logs·sessions·memory·autopilot 스코프. */
+  /** elanousStateRoot() — logs·sessions·memory·autopilot 스코프. */
   stateDir: string;
   /** 두 축이 같은 뿌리를 가리키나(= 정합). */
   coherent: boolean;
@@ -31,11 +31,11 @@ export interface InstanceRootCoherence {
 
 // ── shadow-root env (Phase F) — 인스턴스 뿌리를 우회/재정의하는 dormant legacy env ──
 //
-// 이들은 전부 SET 되는 곳이 없는 legacy READ 폴백이나, 설정되면 --config-dir/MONAD_STATE_DIR
-// 을 우회해 스토어를 뿌리 밖으로 빼돌린다(특히 MONAD_TASKS_DIR/DB 는 config-dir 보다 우선).
-// incident 전례(MONAD_NEXUS_DIR 제거→49 test 사고)상 제거 대신 **surfacing**: 설정 감지 시
-// 부팅에서 시끄럽게(관측+stderr). "제거 못 하면 오용을 관측화" = monad 방식.
-const SHADOW_ROOT_ENVS = ['MONAD_HOME', 'MONAD_DIR', 'MONAD_NEXUS_DIR', 'MONAD_TASKS_DIR', 'MONAD_TASKS_DB'] as const;
+// 이들은 전부 SET 되는 곳이 없는 legacy READ 폴백이나, 설정되면 --config-dir/ELANOUS_STATE_DIR
+// 을 우회해 스토어를 뿌리 밖으로 빼돌린다(특히 ELANOUS_TASKS_DIR/DB 는 config-dir 보다 우선).
+// incident 전례(ELANOUS_NEXUS_DIR 제거→49 test 사고)상 제거 대신 **surfacing**: 설정 감지 시
+// 부팅에서 시끄럽게(관측+stderr). "제거 못 하면 오용을 관측화" = elanous 방식.
+const SHADOW_ROOT_ENVS = ['ELANOUS_HOME', 'ELANOUS_DIR', 'ELANOUS_NEXUS_DIR', 'ELANOUS_TASKS_DIR', 'ELANOUS_TASKS_DB'] as const;
 
 /** 현재 설정된 shadow-root env 목록(값 포함). 비어있으면 정상. */
 export function detectShadowRootEnvs(): Array<{ name: string; value: string }> {
@@ -51,21 +51,21 @@ export function detectShadowRootEnvs(): Array<{ name: string; value: string }> {
 //
 // divergence 가드(위 assertInstanceRootCoherence)와 **다른 축**이다. divergence 는
 // "config-dir ≠ state-dir"(부분 격리로 두 축이 갈라짐)을 잡는다. 이건 그 반대 —
-// **격리를 아예 안 건 것**을 잡는다: 사람이 prod 셸(MONAD_STATE_DIR 미설정)에서
-// nested 인터랙티브로 monad 를 --test 없이 수동 spawn하면, 자식이 prod 를 상속받아
-// prod 스토어(~/.monad)를 조용히 오염시킨다.
+// **격리를 아예 안 건 것**을 잡는다: 사람이 prod 셸(ELANOUS_STATE_DIR 미설정)에서
+// nested 인터랙티브로 elanous 를 --test 없이 수동 spawn하면, 자식이 prod 를 상속받아
+// prod 스토어(~/.elanous)를 조용히 오염시킨다.
 //
 // footgun = nested AND interactive AND prod (세 신호가 모두 참일 때만):
-//   1. nested      = getNestDepth() > 0 (부모가 monad → MONAD_NEST_DEPTH 상속)
+//   1. nested      = getNestDepth() > 0 (부모가 elanous → ELANOUS_NEST_DEPTH 상속)
 //   2. interactive = process.stdin.isTTY === true (PTY 수동 실행 신호)
 //   3. prod        = 현재 4층 우주 리졸버가 prod root 를 가리킴
 //
-// 3층 트리 파생 자식은 MONAD_STATE_DIR 없이도 test 우주에 설 수 있으므로, env 부재를 prod의
+// 3층 트리 파생 자식은 ELANOUS_STATE_DIR 없이도 test 우주에 설 수 있으므로, env 부재를 prod의
 // 대리 신호로 쓰지 않는다. 순수 수동 prod spawn만 걸린다.
 // warn-first — 부팅을 절대 막지 않는다(divergence 가드와 동일 스타일).
 
 export interface ProdSpawnFootgun {
-  /** 부모가 monad 인가(MONAD_NEST_DEPTH > 0). */
+  /** 부모가 elanous 인가(ELANOUS_NEST_DEPTH > 0). */
   nested: boolean;
   /** 인터랙티브 TTY 인가(수동 실행 신호). */
   interactive: boolean;
@@ -93,7 +93,7 @@ export function checkProdSpawnFootgun(opts: { interactive?: boolean } = {}): Pro
 
 /** 부팅 경고 — footgun 이면 시끄럽게(관측 관문 + stderr). warn-only(부팅 불침몰·throw 금지).
  *  ⚠️ 순서 갭(대표 P3·2026-07-26): main() 초반(arg 파싱 前)에 호출되면 StoreSink(logs.db) 등록 前이라
- *  debug.log 가 파일 트레일만 닿고 logs.db 미도달 → `monad logs --category instance.identity` 조회 불가.
+ *  debug.log 가 파일 트레일만 닿고 logs.db 미도달 → `elanous logs --category instance.identity` 조회 불가.
  *  `emit` 으로 stderr(초반 surfacing)와 debug.log(sink 등록 後 재발행→logs.db)를 분리한다.
  *  'both'(기본·무회귀) · 'stderr'(경고만) · 'log'(관측만). checkProdSpawnFootgun 이 순수라 재판정 무해. */
 export function warnProdSpawnFootgun(opts: { interactive?: boolean; emit?: 'both' | 'stderr' | 'log' } = {}): ProdSpawnFootgun {
@@ -123,9 +123,9 @@ export function warnProdSpawnFootgun(opts: { interactive?: boolean; emit?: 'both
       const instance = `현재 우주: ${reason.kind} root=${reason.root} (layer=${reason.layer}; ${reason.why}).`;
       const guidance = depth > 1
         ? ` 자식 맥락에서는 --test 처방을 내지 않습니다. ${instance}`
-        : ` 격리하려면 --test 를 붙이세요(전역 플래그·cwd 트리의 .monad-test 로 두 축 자동 격리). ${instance}`;
+        : ` 격리하려면 --test 를 붙이세요(전역 플래그·cwd 트리의 .elanous-test 로 두 축 자동 격리). ${instance}`;
       try {
-        process.stderr.write(`[instance] ⚠️ prod 인스턴스를 nested 인터랙티브로 띄웠습니다 — prod 스토어(~/.monad)를 오염시킬 수 있습니다.${guidance}\n`);
+        process.stderr.write(`[instance] ⚠️ prod 인스턴스를 nested 인터랙티브로 띄웠습니다 — prod 스토어(~/.elanous)를 오염시킬 수 있습니다.${guidance}\n`);
       } catch { /* */ }
     }
   }
@@ -146,8 +146,8 @@ export interface InstanceAxisReaders {
  * 주입 없이 두면 남은 선택지는 *"안전 가드의 테스트를 지우는 것"* 뿐이라, 읽는 지점만 주입 가능하게 한다.
  * 프로덕션 경로는 인자 없이 부르므로 **무회귀**다. */
 export function checkInstanceRootCoherence(readers: InstanceAxisReaders = {}): InstanceRootCoherence {
-  const configDir = (readers.configDir ?? getMonadConfigDir)();
-  const stateDir = (readers.stateDir ?? monadStateRoot)();
+  const configDir = (readers.configDir ?? getElanousConfigDir)();
+  const stateDir = (readers.stateDir ?? elanousStateRoot)();
   return { configDir, stateDir, coherent: configDir === stateDir };
 }
 
@@ -167,7 +167,7 @@ export function assertInstanceRootCoherence(opts: { throwOnDivergence?: boolean;
     const msg = `[instance] ⚠️ config-dir ≠ state-dir — 인스턴스 뿌리가 갈라짐(부분 격리 위험)\n`
       + `  config-dir(tasks.db·nexus): ${c.configDir}\n`
       + `  state-dir(logs·sessions·memory·autopilot): ${c.stateDir}\n`
-      + `  → --config-dir 와 MONAD_STATE_DIR 을 같은 뿌리로 맞추세요(--test 는 둘 다 부착).\n`;
+      + `  → --config-dir 와 ELANOUS_STATE_DIR 을 같은 뿌리로 맞추세요(--test 는 둘 다 부착).\n`;
     try { process.stderr.write(msg); } catch { /* */ }
     if (opts.throwOnDivergence) {
       throw new Error(`instance root divergence: config-dir=${c.configDir} state-dir=${c.stateDir}`);
@@ -179,7 +179,7 @@ export function assertInstanceRootCoherence(opts: { throwOnDivergence?: boolean;
     try {
       debug.log('instance.identity', 'shadow-root-env', {
         envs: shadows,
-        why: 'legacy env 가 --config-dir/MONAD_STATE_DIR 을 우회해 스토어를 인스턴스 뿌리 밖으로 빼돌릴 수 있음(dormant·설정 금지)',
+        why: 'legacy env 가 --config-dir/ELANOUS_STATE_DIR 을 우회해 스토어를 인스턴스 뿌리 밖으로 빼돌릴 수 있음(dormant·설정 금지)',
       });
     } catch { /* */ }
     const list = shadows.map((s) => `${s.name}=${s.value}`).join(', ');

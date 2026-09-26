@@ -14,7 +14,7 @@
 
 import { existsSync } from 'node:fs';
 import { join } from 'node:path';
-import { getMonadConfigDir } from '../../monad-config-dir.js';
+import { getElanousConfigDir } from '../../elanous-config-dir.js';
 import { jsonResponse } from './http-server.js';
 import { readUserConfig, readSwitchValue } from '../config/user-config.js';
 import { listSecretIds } from '../config/secrets/index.js';
@@ -34,7 +34,7 @@ export interface PlatformEntry {
   label: string;
   status: PlatformStatus;
   /** Short detail line — e.g. 'token via secret-ref' /
-   *  '~/.monad/acp-token present' / 'switch off'. */
+   *  '~/.elanous/acp-token present' / 'switch off'. */
   detail: string;
   /** Where to go in Settings / docs to wire it up when not-configured. */
   hint?: string;
@@ -130,21 +130,21 @@ export function buildPlatformList(opts: {
   }
 
   // ACP (loopback bearer token) ───────────────────────────────────
-  // 로컬 데몬 토큰 존재 여부 표시용(default) — getMonadConfigDir() 치환 prod 동치.
-  const acpPath = opts.acpTokenPath ?? join(getMonadConfigDir(), 'acp-token');
+  // 로컬 데몬 토큰 존재 여부 표시용(default) — getElanousConfigDir() 치환 prod 동치.
+  const acpPath = opts.acpTokenPath ?? join(getElanousConfigDir(), 'acp-token');
   const acpEntry: PlatformEntry = existsSync(acpPath)
     ? {
         id: 'acp',
         label: 'ACP',
         status: 'connected',
-        detail: '~/.monad/acp-token present',
+        detail: '~/.elanous/acp-token present',
       }
     : {
         id: 'acp',
         label: 'ACP',
         status: 'not-configured',
         detail: 'token file missing',
-        hint: 'Run an ACP-aware client once to mint ~/.monad/acp-token.',
+        hint: 'Run an ACP-aware client once to mint ~/.elanous/acp-token.',
       };
 
   // Tailscale Serve ──────────────────────────────────────────────
@@ -161,7 +161,7 @@ export function buildPlatformList(opts: {
         label: 'Tailscale Serve',
         status: 'not-configured',
         detail: 'switch off',
-        hint: 'Run `monad pwa share enable` to expose the PWA over your tailnet.',
+        hint: 'Run `elanous pwa share enable` to expose the PWA over your tailnet.',
       };
 
   return [discordEntry, telegramEntry, pushcutEntry, acpEntry, tailscaleEntry];

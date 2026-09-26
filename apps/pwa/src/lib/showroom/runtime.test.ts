@@ -424,10 +424,10 @@ describe('Showroom runtime · buildMultiLlmHint (DM-2)', () => {
 });
 
 describe('Showroom runtime · wrapMultiLlmMeta (DM-2)', () => {
-  test('wraps hint in _meta.monad.multiLlm envelope', () => {
+  test('wraps hint in _meta.elanous.multiLlm envelope', () => {
     const hint = { targets: [{ id: 'p1', provider: 'claude' }] };
     const meta = wrapMultiLlmMeta(hint);
-    expect(meta).toEqual({ monad: { multiLlm: hint } });
+    expect(meta).toEqual({ elanous: { multiLlm: hint } });
   });
 });
 
@@ -437,14 +437,14 @@ describe('Showroom runtime · parseMultiLlmUpdateMeta (DM-2)', () => {
       .toBeNull();
   });
 
-  test('returns null for _meta without monad namespace', () => {
+  test('returns null for _meta without elanous namespace', () => {
     expect(parseMultiLlmUpdateMeta({ _meta: { source: 'pwa' } }))
       .toBeNull();
   });
 
   test('parses modelId + provider', () => {
     const meta = parseMultiLlmUpdateMeta({
-      _meta: { monad: { modelId: 'p1', provider: 'claude' } },
+      _meta: { elanous: { modelId: 'p1', provider: 'claude' } },
     });
     expect(meta).toEqual({ modelId: 'p1', provider: 'claude' });
   });
@@ -452,7 +452,7 @@ describe('Showroom runtime · parseMultiLlmUpdateMeta (DM-2)', () => {
   test('parses stopReason end_turn', () => {
     const meta = parseMultiLlmUpdateMeta({
       _meta: {
-        monad: { modelId: 'p1', stopReason: 'end_turn' },
+        elanous: { modelId: 'p1', stopReason: 'end_turn' },
       },
     });
     expect(meta?.stopReason).toBe('end_turn');
@@ -461,7 +461,7 @@ describe('Showroom runtime · parseMultiLlmUpdateMeta (DM-2)', () => {
   test('parses error stopReason with message', () => {
     const meta = parseMultiLlmUpdateMeta({
       _meta: {
-        monad: { modelId: 'p2', stopReason: 'error', error: 'boom' },
+        elanous: { modelId: 'p2', stopReason: 'error', error: 'boom' },
       },
     });
     expect(meta?.stopReason).toBe('error');
@@ -470,7 +470,7 @@ describe('Showroom runtime · parseMultiLlmUpdateMeta (DM-2)', () => {
 
   test('drops invalid stopReason silently', () => {
     const meta = parseMultiLlmUpdateMeta({
-      _meta: { monad: { modelId: 'p1', stopReason: 'banana' } },
+      _meta: { elanous: { modelId: 'p1', stopReason: 'banana' } },
     });
     expect(meta?.modelId).toBe('p1');
     expect(meta?.stopReason).toBeUndefined();
@@ -478,7 +478,7 @@ describe('Showroom runtime · parseMultiLlmUpdateMeta (DM-2)', () => {
 
   test('returns null when modelId is missing', () => {
     expect(
-      parseMultiLlmUpdateMeta({ _meta: { monad: { provider: 'claude' } } }),
+      parseMultiLlmUpdateMeta({ _meta: { elanous: { provider: 'claude' } } }),
     ).toBeNull();
   });
 });
@@ -936,7 +936,7 @@ describe('Showroom runtime · DM stage 3 default-ON toggle persistence', () => {
     && Boolean((globalThis as { window?: { localStorage?: unknown } }).window?.localStorage);
 
   test('LocalStorage key is canonical · documented for backwards compat', () => {
-    expect(DM_MODE_LOCALSTORAGE_KEY).toBe('monad.showroom.dmMode');
+    expect(DM_MODE_LOCALSTORAGE_KEY).toBe('elanous.showroom.dmMode');
   });
 
   test('default = true (no entry · DM stage 3 default-ON · ON in SSR)', () => {
@@ -1925,7 +1925,7 @@ import { afterEach, beforeEach } from 'bun:test';
 import { readHistoryModeFromStorage, writeHistoryModeToStorage } from './runtime';
 
 describe('Showroom runtime · historyMode storage (BACKLOG §3.7 · default flip 2026-05-11)', () => {
-  const STORAGE_KEY = 'monad.showroom.historyMode';
+  const STORAGE_KEY = 'elanous.showroom.historyMode';
   let stubHandle: { restore: () => void };
 
   beforeEach(() => {

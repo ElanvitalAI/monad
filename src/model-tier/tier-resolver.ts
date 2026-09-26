@@ -34,7 +34,7 @@ import {
   type VisionTierSpec,
 } from './vision-tier-map.js';
 
-/** Why the resolver picked this tier — used by `monad voice status` to
+/** Why the resolver picked this tier — used by `elanous voice status` to
  *  explain "you're on balanced because no override is set". */
 export type SttTierSource =
   | 'session-override'

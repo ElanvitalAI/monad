@@ -1,4 +1,4 @@
-// P.4 — `monad nexus pwa share enable|disable|status` CLI unit coverage.
+// P.4 — `elanous nexus pwa share enable|disable|status` CLI unit coverage.
 
 import { describe, expect, test } from 'bun:test';
 
@@ -118,7 +118,7 @@ describe('P.4 · pwaShareEnable', () => {
     const result = await pwaShareEnable({ ...deps, nexusAliveFn: async () => false });
     expect(result.exitCode).toBe(0);
     expect(state.saveCalls).toEqual(['enabled']);
-    expect(state.logs.some((l) => l.includes('nexus is not currently running') && l.includes('monad nexus run'))).toBe(true);
+    expect(state.logs.some((l) => l.includes('nexus is not currently running') && l.includes('elanous nexus run'))).toBe(true);
   });
 
   test('Tailscale not installed → exit 1, switch unchanged', async () => {

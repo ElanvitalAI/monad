@@ -115,8 +115,8 @@ describe('harness browser-type — 실물 CLI (spawn)', () => {
   afterAll(() => { rmSync(personaDir, { recursive: true, force: true }); });
 
   const run = (args: string[]) => {
-    const r = spawnSync('bun', ['bin/monad.mjs', 'harness', 'browser-type', ...args],
-      { cwd: repoRoot, encoding: 'utf8', env: { ...process.env, MONAD_PERSONAS_DIR: personaDir } });
+    const r = spawnSync('bun', ['bin/elanous.mjs', 'harness', 'browser-type', ...args],
+      { cwd: repoRoot, encoding: 'utf8', env: { ...process.env, ELANOUS_PERSONAS_DIR: personaDir } });
     return { code: r.status, out: `${r.stdout ?? ''}${r.stderr ?? ''}` };
   };
 
@@ -155,9 +155,9 @@ describe('harness browser-type — --max-chars 를 «수»로 못 읽으면 거�
   });
   afterAll(() => { rmSync(personaDir, { recursive: true, force: true }); });
   const run = (maxChars: string) => spawnSync('bun',
-    ['bin/monad.mjs', 'harness', 'browser-type', '--armed', '--persona', 'typeprobe',
+    ['bin/elanous.mjs', 'harness', 'browser-type', '--armed', '--persona', 'typeprobe',
       '--max-chars', maxChars, '--target-json', TARGET, 'https://news.ycombinator.com/', '#q', 'ai news'],
-    { cwd: repoRoot, encoding: 'utf8', env: { ...process.env, MONAD_PERSONAS_DIR: personaDir } });
+    { cwd: repoRoot, encoding: 'utf8', env: { ...process.env, ELANOUS_PERSONAS_DIR: personaDir } });
 
   test('⛔ 숫자가 아니면 «조용히» 기본 상한으로 안 간다', () => {
     const r = run('많이');

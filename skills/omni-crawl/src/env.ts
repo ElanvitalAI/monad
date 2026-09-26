@@ -36,7 +36,7 @@ export function env(key: string, fallback = ''): string { return process.env[key
 //
 // ⛔ 셸 파일과 **같은 규약**을 쓴다 — 둘이 갈리면 어느 쪽이 이겼는지 아무도 모른다:
 //   ⓐ 캐시가 없거나 **비어 있으면 건드리지 않는다**(살아 있는 키를 지우지 않기 위해)
-//   ⓑ `MONAD_KEEP_ENV_KEYS=1` 이면 env 를 그대로 둔다(임시로 다른 키를 쓰는 탈출구)
+//   ⓑ `ELANOUS_KEEP_ENV_KEYS=1` 이면 env 를 그대로 둔다(임시로 다른 키를 쓰는 탈출구)
 const KEY_CACHE_DIR = resolve(homedir(), '.cache');
 
 /** 캐시 파일이 있는 키. 파일명 규약 = 환경변수명 소문자(`XAI_API_KEY` → `xai_api_key`). */
@@ -58,7 +58,7 @@ function readKeyCache(name: string): string | null {
 /** 캐시 파일 → `process.env` 로 **덮어쓴다**. 바뀐 키 이름만 돌려준다(호출부가 관측에 쓴다).
  *  ⭐ 한 키만 새로 읽고 싶으면 `only` 를 준다(2안의 재시도 경로가 이것을 쓴다). */
 export function refreshKeysFromCache(only?: string): string[] {
-  if (process.env.MONAD_KEEP_ENV_KEYS) return [];
+  if (process.env.ELANOUS_KEEP_ENV_KEYS) return [];
   const targets = only ? [only] : [...CACHED_KEYS];
   const changed: string[] = [];
   for (const name of targets) {

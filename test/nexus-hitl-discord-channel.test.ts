@@ -6,8 +6,8 @@
 // shared `/v1/hitl/callback/:id` resolver.
 //
 // What this file proves:
-//   1. Env reader parses MONAD_DISCORD_HITL_BOT_TOKEN +
-//      MONAD_DISCORD_HITL_CHANNEL_ID; missing → null.
+//   1. Env reader parses ELANOUS_DISCORD_HITL_BOT_TOKEN +
+//      ELANOUS_DISCORD_HITL_CHANNEL_ID; missing → null.
 //   2. Factory skips when token / channelId missing.
 //   3. Factory with prebuilt bot returns a handle whose channel
 //      is named 'discord'.
@@ -47,10 +47,10 @@ let prevHome: string | undefined;
 let activeHandle: RunNexusHandle | undefined;
 
 beforeEach(() => {
-  tmpRoot = mkdtempSync(join(tmpdir(), 'monad-nexus-hitl-dc-'));
-  prevNexusDir = process.env.MONAD_NEXUS_DIR;
+  tmpRoot = mkdtempSync(join(tmpdir(), 'elanous-nexus-hitl-dc-'));
+  prevNexusDir = process.env.ELANOUS_NEXUS_DIR;
   prevHome = process.env.HOME;
-  process.env.MONAD_NEXUS_DIR = tmpRoot;
+  process.env.ELANOUS_NEXUS_DIR = tmpRoot;
   process.env.HOME = tmpRoot;
   setIntakeStoreForTest(createIntakeStore({ archiveDir: null, replayOnInit: false }));
   registerDefaultConfirmChannels([]);
@@ -61,8 +61,8 @@ afterEach(async () => {
     try { activeHandle.release(); } catch { /* swallow */ }
     activeHandle = undefined;
   }
-  if (prevNexusDir === undefined) delete process.env.MONAD_NEXUS_DIR;
-  else process.env.MONAD_NEXUS_DIR = prevNexusDir;
+  if (prevNexusDir === undefined) delete process.env.ELANOUS_NEXUS_DIR;
+  else process.env.ELANOUS_NEXUS_DIR = prevNexusDir;
   if (prevHome === undefined) delete process.env.HOME;
   else process.env.HOME = prevHome;
   setIntakeStoreForTest(null);
@@ -131,18 +131,18 @@ describe('readNexusDiscordHitlOptsFromEnv', () => {
   test('parses both env vars when set', () => {
     expect(
       readNexusDiscordHitlOptsFromEnv({
-        MONAD_DISCORD_HITL_BOT_TOKEN: 'abc',
-        MONAD_DISCORD_HITL_CHANNEL_ID: '987654321',
+        ELANOUS_DISCORD_HITL_BOT_TOKEN: 'abc',
+        ELANOUS_DISCORD_HITL_CHANNEL_ID: '987654321',
       }),
     ).toEqual({ token: 'abc', channelId: '987654321' });
   });
 
   test('returns null when token missing', () => {
-    expect(readNexusDiscordHitlOptsFromEnv({ MONAD_DISCORD_HITL_CHANNEL_ID: '1' })).toBeNull();
+    expect(readNexusDiscordHitlOptsFromEnv({ ELANOUS_DISCORD_HITL_CHANNEL_ID: '1' })).toBeNull();
   });
 
   test('returns null when channelId missing', () => {
-    expect(readNexusDiscordHitlOptsFromEnv({ MONAD_DISCORD_HITL_BOT_TOKEN: 'abc' })).toBeNull();
+    expect(readNexusDiscordHitlOptsFromEnv({ ELANOUS_DISCORD_HITL_BOT_TOKEN: 'abc' })).toBeNull();
   });
 
   test('returns null when both missing', () => {

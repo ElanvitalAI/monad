@@ -6,7 +6,7 @@
 // 구현은 전부 no-op(내부=신뢰1.0·구독=전부허용). 나중에 외부/마켓플레이스/구독이
 // 붙을 때 구조 변경 없이 구현만 채운다(회귀 0). 노드형: 각 소스 = 플러그 노드.
 //
-// [[VISION-conatus-platform-monad-2026-07-05]] P9(지식 마켓플레이스·판매)의 신호/매매 버전.
+// [[VISION-conatus-platform-elanous-2026-07-05]] P9(지식 마켓플레이스·판매)의 신호/매매 버전.
 
 /** 소스 출처 — C0 는 internal 만 실사용. 나머지는 미래(외부·채널·구독) 확장 슬롯. */
 export type SourceOrigin = 'internal' | 'external' | 'channel' | 'subscription';

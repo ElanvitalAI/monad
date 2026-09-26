@@ -6,7 +6,7 @@
  * 명시적으로 호출할 수 있는 안전 기본기.
  *
  * Responsibilities:
- *   - `backupTasksDb()` — 현 `~/.monad/tasks/tasks.db` 를 `~/.monad/backups/
+ *   - `backupTasksDb()` — 현 `~/.elanous/tasks/tasks.db` 를 `~/.elanous/backups/
  *     tasks-YYYY-MM-DD[-N].db` 로 복사 (collision 시 -N suffix).
  *   - `rejuvenateTasksDb()` — backup 후 원본 삭제 (다음 boot 가 fresh
  *     schema 로 init). D6 (A) 의 1-call execution.
@@ -19,24 +19,24 @@
 import { copyFileSync, existsSync, mkdirSync, unlinkSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 
-import { getMonadConfigDir } from '../monad-config-dir.js';
+import { getElanousConfigDir } from '../elanous-config-dir.js';
 import { tasksDbPath } from './paths.js';
 
 /**
  * Default backups root — `<config-dir>/backups/`.
  *
  * Priority:
- *   1. env `MONAD_BACKUPS_DIR` (legacy fallback only · retired as a
+ *   1. env `ELANOUS_BACKUPS_DIR` (legacy fallback only · retired as a
  *      documented surface 2026-05-12 FU8 PR #4 · still honoured so
  *      pre-FU8 callers / CI pipelines that pin an explicit backups
  *      dir keep working without churn).
- *   2. `<getMonadConfigDir()>/backups` — routes through `--config-dir`.
- *      Default `~/.monad/backups` when no override.
+ *   2. `<getElanousConfigDir()>/backups` — routes through `--config-dir`.
+ *      Default `~/.elanous/backups` when no override.
  */
 export function backupsRoot(): string {
-  const env = process.env.MONAD_BACKUPS_DIR;
+  const env = process.env.ELANOUS_BACKUPS_DIR;
   if (env && env.length > 0) return env;
-  return join(getMonadConfigDir(), 'backups');
+  return join(getElanousConfigDir(), 'backups');
 }
 
 /** Format a date as `YYYY-MM-DD` (UTC date is fine for filename purpose). */

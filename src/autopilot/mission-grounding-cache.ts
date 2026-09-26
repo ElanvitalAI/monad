@@ -14,7 +14,7 @@ import { createHash } from 'node:crypto';
 import { existsSync, readFileSync, writeFileSync, mkdirSync, rmSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { runGitCommand } from '../git-fs/runner.js';
-import { monadStateRoot } from './state-paths.js';
+import { elanousStateRoot } from './state-paths.js';
 import { missionGeneration } from './lineage/mission-generation.js';
 
 export interface CachedResearch { researched: boolean; enrichments: string[]; corrections: string[]; needReason: string; error?: string }
@@ -93,7 +93,7 @@ export function filesScopeSha(files: readonly string[], repoRoot?: string): stri
 
 export function groundingCachePath(missionId: string): string {
   const safe = missionId.replace(/[^a-zA-Z0-9_-]/g, '_');
-  return join(monadStateRoot(), 'conatus/missions', safe, 'grounding-cache.json');
+  return join(elanousStateRoot(), 'conatus/missions', safe, 'grounding-cache.json');
 }
 
 function loadRaw(missionId: string): GroundingCacheEntry | null {

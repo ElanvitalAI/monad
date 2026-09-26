@@ -28,7 +28,7 @@ function flagIsValid(cmd: string, flag: string): boolean {
   const help = spawnSync(cmd, ['--help'], { encoding: 'utf-8', timeout: 30_000 });
   if (`${help.stdout ?? ''}${help.stderr ?? ''}`.includes(flag)) return true; // (1) 문서화된 플래그
   // (2) 검증형 CLI: bogus 플래그가 에러여야 하고(=플래그를 실제로 검증), real 플래그는 수용.
-  const bogusRejected = statusOf(cmd, ['--__monad_bogus_flag__', '--version']) !== 0;
+  const bogusRejected = statusOf(cmd, ['--__elanous_bogus_flag__', '--version']) !== 0;
   const realAccepted = statusOf(cmd, [flag, '--version']) === 0;
   return bogusRejected && realAccepted;
 }

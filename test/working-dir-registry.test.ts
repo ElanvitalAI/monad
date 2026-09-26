@@ -20,7 +20,7 @@ import {
   BrowserPaneRegistry,
 } from '../src/browser-pane/registry.js';
 
-const ROOT = join(tmpdir(), `monad-wd-registry-test-${Date.now()}`);
+const ROOT = join(tmpdir(), `elanous-wd-registry-test-${Date.now()}`);
 const SUB_A = join(ROOT, 'sub-a');
 const SUB_B = join(ROOT, 'sub-b');
 

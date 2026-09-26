@@ -68,7 +68,7 @@ describe('classifyFrameState (기본 규칙셋)', () => {
     for (const line of activeTurns) {
       const verdict = classifyFrameState([line, ...chrome].join('\n'));
       expect(verdict.state).toBe('working');
-      expect(verdict.matchedLabel).toBe('monad-tui-turn-in-progress');
+      expect(verdict.matchedLabel).toBe('elanous-tui-turn-in-progress');
     }
   });
 
@@ -206,7 +206,7 @@ describe('classifyFrameState (self-implement goal-loop 규칙)', () => {
       'select-cancel-prompt',
       'yes-no-inline',
       'spinner-or-interrupt',
-      'monad-tui-turn-in-progress',
+      'elanous-tui-turn-in-progress',
       'bare-prompt',
     ]);
     for (const [index, rule] of DEFAULT_STATE_RULES.entries()) {
@@ -250,16 +250,16 @@ describe('classifyFrameState (agent-mission Claude 규칙)', () => {
 });
 
 describe('detectAgentFromCmd (herdr 프로세스-명 매칭·review must-fix ④)', () => {
-  test('codex / claude / gemini / grok / monad', () => {
+  test('codex / claude / gemini / grok / elanous', () => {
     expect(detectAgentFromCmd('codex --yolo')).toBe('codex');
     expect(detectAgentFromCmd('bun x claude --resume abc')).toBe('claude');
     expect(detectAgentFromCmd('gemini chat')).toBe('gemini');
     expect(detectAgentFromCmd('grok-cli')).toBe('grok');
-    expect(detectAgentFromCmd('bun bin/monad.mjs chat --tools')).toBe('monad');
+    expect(detectAgentFromCmd('bun bin/elanous.mjs chat --tools')).toBe('elanous');
   });
-  test('kind fallback — tui/self = monad', () => {
-    expect(detectAgentFromCmd('some-shell', 'tui')).toBe('monad');
-    expect(detectAgentFromCmd('x', 'self')).toBe('monad');
+  test('kind fallback — tui/self = elanous', () => {
+    expect(detectAgentFromCmd('some-shell', 'tui')).toBe('elanous');
+    expect(detectAgentFromCmd('x', 'self')).toBe('elanous');
   });
   test('미상 → undefined', () => {
     expect(detectAgentFromCmd('vim README.md', 'pty')).toBeUndefined();

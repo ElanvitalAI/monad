@@ -53,7 +53,7 @@ function provenanceOf(data: Record<string, unknown>): string {
   return '🤖 autonomous';
 }
 
-/** 미션 귀속 외부 self-events 를 읽는 기본 리더 — self-awareness(surface_events domain=monad). fail-soft. */
+/** 미션 귀속 외부 self-events 를 읽는 기본 리더 — self-awareness(surface_events domain=elanous). fail-soft. */
 function defaultExternalReader(missionId: string): Array<{ ts: string; tool: string; kind: string; summary: string; refs: Record<string, unknown> }> {
   try {
     // 지연 로드(순환 회피) — self-awareness 는 domains, 여기는 autopilot.

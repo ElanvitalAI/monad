@@ -14,7 +14,7 @@ type CliProbeResult = Pick<ReturnType<typeof spawnSync>, 'status' | 'stderr' | '
 function cliDependenciesAvailable(result: CliProbeResult): boolean {
   const status = result.status === null ? 'null' : String(result.status);
   const error = result.error ? ` error=${result.error.message}` : '';
-  const failure = () => new Error(`monad self send --help probe failed (status=${status}${error}): ${String(result.stderr).trim()}`);
+  const failure = () => new Error(`elanous self send --help probe failed (status=${status}${error}): ${String(result.stderr).trim()}`);
 
   // A spawn error, timeout, or missing exit status is not evidence that dependencies
   // are absent, even if stderr happens to contain a module-resolution failure.
@@ -31,9 +31,9 @@ function cliDependenciesAvailable(result: CliProbeResult): boolean {
 // ⭐ 전제 검사는 **실제로 부를 그 명령**으로 한다(2026-07-30 실측 정정).
 //    ⛔ 종전엔 `bun --eval "await import('zod/v4')"` 로 쟀는데 **전제를 대표하지 못했다** —
 //    zod 는 전역 설치 캐시에서 해석되므로 의존성이 없는 워크트리에서도 `rc=0` 이 나오고,
-//    정작 `bin/monad.mjs` 는 `rc=1` 로 죽는다(같은 트리에서 둘을 나란히 재서 확인).
+//    정작 `bin/elanous.mjs` 는 `rc=1` 로 죽는다(같은 트리에서 둘을 나란히 재서 확인).
 //    ⇒ 검사와 대상이 다르면 그 검사는 **자가 틀린 것**이다. 같은 엔트리를 가볍게(`--help`) 부른다.
-const liveCliDependenciesAvailable = cliDependenciesAvailable(spawnSync(process.execPath, ['bin/monad.mjs', 'self', 'send', '--help'], {
+const liveCliDependenciesAvailable = cliDependenciesAvailable(spawnSync(process.execPath, ['bin/elanous.mjs', 'self', 'send', '--help'], {
   cwd: repoRoot,
   env: process.env,
   timeout: 20_000,
@@ -51,7 +51,7 @@ const clkTck = (() => {
 function env(): NodeJS.ProcessEnv {
   const dir = mkdtempSync(join(tmpdir(), 'control-inbox-'));
   dirs.push(dir);
-  return { MONAD_STATE_DIR: dir } as NodeJS.ProcessEnv;
+  return { ELANOUS_STATE_DIR: dir } as NodeJS.ProcessEnv;
 }
 
 function killPid(pid: number | undefined, signal: NodeJS.Signals = 'SIGKILL'): void {
@@ -302,7 +302,7 @@ describe('control inbox', () => {
     const basename = 'self-impl-goalid-d960c670e39b709b-scripts-shell-rc-through-pipe-test-ts-go-c496a575';
 
     expect(controlInboxPath(basename, isolated)).toBe(join(
-      isolated.MONAD_STATE_DIR!,
+      isolated.ELANOUS_STATE_DIR!,
       'harness-screens',
       'self-impl-goalid-d960c670e39b709b-scripts-shell-rc-through-pipe.inbox',
     ));
@@ -339,7 +339,7 @@ describe('control inbox', () => {
 
     enqueueSoftStop('tui/run-1', { env: isolated, log });
     const path = controlInboxPath('tui/run-1', isolated);
-    expect(path).toStartWith(isolated.MONAD_STATE_DIR!);
+    expect(path).toStartWith(isolated.ELANOUS_STATE_DIR!);
     expect(readFileSync(`${path}.ready/stop`, 'utf8')).toBe('stop\n');
 
     expect(drainControlInbox('tui/run-1', { env: isolated, log })).toEqual(stopDrain);
@@ -425,23 +425,23 @@ describe('control inbox', () => {
       status: 1,
       stderr: 'error: unknown command self send',
       error: undefined,
-    })).toThrow('monad self send --help probe failed (status=1): error: unknown command self send');
+    })).toThrow('elanous self send --help probe failed (status=1): error: unknown command self send');
     expect(() => cliDependenciesAvailable({
       status: null,
       stderr: "error: Cannot find module 'zod/v4' from '/tmp/node_modules/@agentclientprotocol/sdk/guards.gen.js'",
       error: undefined,
-    })).toThrow('monad self send --help probe failed (status=null): error: Cannot find module');
+    })).toThrow('elanous self send --help probe failed (status=null): error: Cannot find module');
     expect(() => cliDependenciesAvailable({
       status: 1,
       stderr: "error: Cannot find module 'zod/v4' from '/tmp/node_modules/@agentclientprotocol/sdk/guards.gen.js'",
       error: new Error('spawn failed'),
-    })).toThrow('monad self send --help probe failed (status=1 error=spawn failed): error: Cannot find module');
+    })).toThrow('elanous self send --help probe failed (status=1 error=spawn failed): error: Cannot find module');
   });
 
-  test.skipIf(!liveCliDependenciesAvailable)('[CLI dependencies not installed — skipping live CLI tests] monad self send --stop writes the exact target inbox', () => {
+  test.skipIf(!liveCliDependenciesAvailable)('[CLI dependencies not installed — skipping live CLI tests] elanous self send --stop writes the exact target inbox', () => {
     const isolated = env();
     writeHarnessScreen('running-tui', 'working', isolated);
-    const result = spawnSync(process.execPath, ['bin/monad.mjs', 'self', 'send', 'running-tui', '--stop', '--read-wait', '0'], {
+    const result = spawnSync(process.execPath, ['bin/elanous.mjs', 'self', 'send', 'running-tui', '--stop', '--read-wait', '0'], {
       cwd: repoRoot,
       env: { ...process.env, ...isolated },
       encoding: 'utf8',
@@ -456,10 +456,10 @@ describe('control inbox', () => {
     expect(output).toContain('아직 안 읽힘');
   });
 
-  test.skipIf(!liveCliDependenciesAvailable)('[CLI dependencies not installed — skipping live CLI tests] monad self send --stop waits for the child to claim the latch', async () => {
+  test.skipIf(!liveCliDependenciesAvailable)('[CLI dependencies not installed — skipping live CLI tests] elanous self send --stop waits for the child to claim the latch', async () => {
     const isolated = env();
     writeHarnessScreen('running-tui', 'working', isolated);
-    const child = Bun.spawn([process.execPath, 'bin/monad.mjs', 'self', 'send', 'running-tui', '--stop', '--read-wait', '15'], {
+    const child = Bun.spawn([process.execPath, 'bin/elanous.mjs', 'self', 'send', 'running-tui', '--stop', '--read-wait', '15'], {
       cwd: repoRoot, env: { ...process.env, ...isolated }, stdout: 'pipe', stderr: 'pipe',
     });
     const latch = `${controlInboxPath('running-tui', isolated)}.ready/stop`;
@@ -473,10 +473,10 @@ describe('control inbox', () => {
     expect(output).toContain('자식이 읽음');
   }, 30_000);
 
-  test.skipIf(!liveCliDependenciesAvailable)('[CLI dependencies not installed — skipping live CLI tests] monad self send rejects an unknown explicit target without writing any inbox', () => {
+  test.skipIf(!liveCliDependenciesAvailable)('[CLI dependencies not installed — skipping live CLI tests] elanous self send rejects an unknown explicit target without writing any inbox', () => {
     const isolated = env();
     writeHarnessScreen('running-tui', 'working', isolated);
-    const result = spawnSync(process.execPath, ['bin/monad.mjs', 'self', 'send', 'missing-tui', '--stop'], {
+    const result = spawnSync(process.execPath, ['bin/elanous.mjs', 'self', 'send', 'missing-tui', '--stop'], {
       cwd: repoRoot,
       env: { ...process.env, ...isolated },
       encoding: 'utf8',
@@ -490,12 +490,12 @@ describe('control inbox', () => {
     expect(() => readdirSync(`${controlInboxPath('running-tui', isolated)}.ready`)).toThrow();
   });
 
-  test.skipIf(!liveCliDependenciesAvailable)('[CLI dependencies not installed — skipping live CLI tests] monad self send warns when an alive heartbeat is older than five minutes but records the memo', () => {
+  test.skipIf(!liveCliDependenciesAvailable)('[CLI dependencies not installed — skipping live CLI tests] elanous self send warns when an alive heartbeat is older than five minutes but records the memo', () => {
     const isolated = env();
     const target = 'stale-heartbeat-tui';
     writeHarnessScreen(target, 'working', isolated);
     writeFileSync(harnessScreenPath(target, isolated).replace(/\.screen$/, '.hb'), JSON.stringify({ alive: true, at: Date.now() - 5 * 60 * 1000 - 1 }));
-    const result = spawnSync(process.execPath, ['bin/monad.mjs', 'self', 'send', target, '--memo', 'warn but record', '--read-wait', '0'], {
+    const result = spawnSync(process.execPath, ['bin/elanous.mjs', 'self', 'send', target, '--memo', 'warn but record', '--read-wait', '0'], {
       cwd: repoRoot,
       env: { ...process.env, ...isolated },
       encoding: 'utf8',
@@ -507,12 +507,12 @@ describe('control inbox', () => {
     expect(readdirSync(`${controlInboxPath(target, isolated)}.ready`).filter((name) => name.startsWith('record-'))).toHaveLength(1);
   });
 
-  test.skipIf(!liveCliDependenciesAvailable)('[CLI dependencies not installed — skipping live CLI tests] monad self send --memo records exactly one pending sentence and reports its location and count', () => {
+  test.skipIf(!liveCliDependenciesAvailable)('[CLI dependencies not installed — skipping live CLI tests] elanous self send --memo records exactly one pending sentence and reports its location and count', () => {
     const isolated = env();
     writeHarnessScreen('running-tui', 'working', isolated);
     const sentence = 'run the focused test before typecheck';
     const path = controlInboxPath('running-tui', isolated);
-    const result = spawnSync(process.execPath, ['bin/monad.mjs', 'self', 'send', 'running-tui', '--memo', sentence, '--read-wait', '0'], {
+    const result = spawnSync(process.execPath, ['bin/elanous.mjs', 'self', 'send', 'running-tui', '--memo', sentence, '--read-wait', '0'], {
       cwd: repoRoot,
       env: { ...process.env, ...isolated },
       encoding: 'utf8',
@@ -534,11 +534,11 @@ describe('control inbox', () => {
     expect(result.stdout).toContain('아직 안 읽힘');
   });
 
-  test.skipIf(!liveCliDependenciesAvailable)('[CLI dependencies not installed — skipping live CLI tests] monad self send maps an urgent memo marker into a structured urgent payload', () => {
+  test.skipIf(!liveCliDependenciesAvailable)('[CLI dependencies not installed — skipping live CLI tests] elanous self send maps an urgent memo marker into a structured urgent payload', () => {
     const isolated = env();
     writeHarnessScreen('running-tui', 'working', isolated);
     const path = controlInboxPath('running-tui', isolated);
-    const result = spawnSync(process.execPath, ['bin/monad.mjs', 'self', 'send', 'running-tui', '--memo', '[urgent] stop the current experiment', '--read-wait', '0'], {
+    const result = spawnSync(process.execPath, ['bin/elanous.mjs', 'self', 'send', 'running-tui', '--memo', '[urgent] stop the current experiment', '--read-wait', '0'], {
       cwd: repoRoot,
       env: { ...process.env, ...isolated },
       encoding: 'utf8',
@@ -556,10 +556,10 @@ describe('control inbox', () => {
     });
   });
 
-  test.skipIf(!liveCliDependenciesAvailable)('[CLI dependencies not installed — skipping live CLI tests] monad self send rejects stop and memo together without publishing a record', () => {
+  test.skipIf(!liveCliDependenciesAvailable)('[CLI dependencies not installed — skipping live CLI tests] elanous self send rejects stop and memo together without publishing a record', () => {
     const isolated = env();
     const path = controlInboxPath('running-tui', isolated);
-    const result = spawnSync(process.execPath, ['bin/monad.mjs', 'self', 'send', 'running-tui', '--stop', '--memo', 'do not send'], {
+    const result = spawnSync(process.execPath, ['bin/elanous.mjs', 'self', 'send', 'running-tui', '--stop', '--memo', 'do not send'], {
       cwd: repoRoot,
       env: { ...process.env, ...isolated },
       encoding: 'utf8',
@@ -570,11 +570,11 @@ describe('control inbox', () => {
     expect(() => readdirSync(`${path}.ready`)).toThrow();
   });
 
-  test.skipIf(!liveCliDependenciesAvailable)('[CLI dependencies not installed — skipping live CLI tests] monad self send reports rejected memo validation without publishing a record', () => {
+  test.skipIf(!liveCliDependenciesAvailable)('[CLI dependencies not installed — skipping live CLI tests] elanous self send reports rejected memo validation without publishing a record', () => {
     const isolated = env();
     writeHarnessScreen('running-tui', 'working', isolated);
     const path = controlInboxPath('running-tui', isolated);
-    const result = spawnSync(process.execPath, ['bin/monad.mjs', 'self', 'send', 'running-tui', '--memo', 'two\nlines'], {
+    const result = spawnSync(process.execPath, ['bin/elanous.mjs', 'self', 'send', 'running-tui', '--memo', 'two\nlines'], {
       cwd: repoRoot,
       env: { ...process.env, ...isolated },
       encoding: 'utf8',
@@ -692,7 +692,7 @@ describe('control inbox', () => {
   test('preserves a legacy stop file and rejects invalid memo lines without publishing them', () => {
     const isolated = env();
     const path = controlInboxPath('legacy', isolated);
-    mkdirSync(join(isolated.MONAD_STATE_DIR!, 'harness-screens'), { recursive: true });
+    mkdirSync(join(isolated.ELANOUS_STATE_DIR!, 'harness-screens'), { recursive: true });
     writeFileSync(path, 'stop\n', 'utf8');
 
     expect(drainControlInbox('legacy', { env: isolated })).toEqual(stopDrain);
@@ -776,12 +776,12 @@ describe('control inbox', () => {
   test('parallel producers and drains consume every memo exactly once without claim theft or resurrection', async () => {
     const isolated = env();
     const waitForBarrier = async (barrier: string, count: number): Promise<void> => {
-      for (let attempt = 0; readdirSync(isolated.MONAD_STATE_DIR!).filter((name) => name.startsWith(`${barrier.split('/').pop()}.ready-`)).length < count; attempt += 1) {
+      for (let attempt = 0; readdirSync(isolated.ELANOUS_STATE_DIR!).filter((name) => name.startsWith(`${barrier.split('/').pop()}.ready-`)).length < count; attempt += 1) {
         if (attempt === 200) throw new Error('parallel control-inbox workers did not reach the barrier');
         await Bun.sleep(10);
       }
     };
-    const barrier = join(isolated.MONAD_STATE_DIR!, 'control-inbox-parallel');
+    const barrier = join(isolated.ELANOUS_STATE_DIR!, 'control-inbox-parallel');
     const workerEnv = { ...isolated, CONTROL_INBOX_BARRIER: barrier, CONTROL_INBOX_BARRIER_TIMEOUT_MS: '15000' } as NodeJS.ProcessEnv;
     const producerScripts = Array.from({ length: 24 }, (_, index) => `${workerPrelude}
       await wait();
@@ -845,7 +845,7 @@ describe('control inbox', () => {
 
   test('a waiting worker exits by itself when the barrier never arrives', async () => {
     const isolated = env();
-    const barrier = join(isolated.MONAD_STATE_DIR!, 'control-inbox-timeout');
+    const barrier = join(isolated.ELANOUS_STATE_DIR!, 'control-inbox-timeout');
     const startedAt = Date.now();
     const child = spawnObservedWorker(waitingWorkerScript, {
       ...isolated,
@@ -865,7 +865,7 @@ describe('control inbox', () => {
 
   test('a waiting worker exits when it receives SIGTERM', async () => {
     const isolated = env();
-    const barrier = join(isolated.MONAD_STATE_DIR!, 'control-inbox-signal');
+    const barrier = join(isolated.ELANOUS_STATE_DIR!, 'control-inbox-signal');
     const child = spawnObservedWorker(waitingWorkerScript, {
       ...isolated,
       CONTROL_INBOX_BARRIER: barrier,
@@ -882,15 +882,15 @@ describe('control inbox', () => {
 
   test('a waiting worker is gone from ps after its parent disappears', async () => {
     const isolated = env();
-    const barrier = join(isolated.MONAD_STATE_DIR!, 'control-inbox-orphan');
-    const pidFile = join(isolated.MONAD_STATE_DIR!, 'worker.pid');
+    const barrier = join(isolated.ELANOUS_STATE_DIR!, 'control-inbox-orphan');
+    const pidFile = join(isolated.ELANOUS_STATE_DIR!, 'worker.pid');
     const parentScript = `
       const { spawn } = require('node:child_process');
       const fs = require('node:fs');
       const child = spawn(${JSON.stringify(process.execPath)}, ['-e', ${JSON.stringify(waitingWorkerScript)}], {
         cwd: ${JSON.stringify(import.meta.dir)},
         env: Object.assign({}, process.env, {
-          MONAD_STATE_DIR: ${JSON.stringify(isolated.MONAD_STATE_DIR)},
+          ELANOUS_STATE_DIR: ${JSON.stringify(isolated.ELANOUS_STATE_DIR)},
           CONTROL_INBOX_BARRIER: ${JSON.stringify(barrier)},
           CONTROL_INBOX_BARRIER_TIMEOUT_MS: '30000',
         }),
@@ -917,7 +917,7 @@ describe('control inbox', () => {
 
   test('a waiting worker spends almost no CPU', async () => {
     const isolated = env();
-    const barrier = join(isolated.MONAD_STATE_DIR!, 'control-inbox-cpu');
+    const barrier = join(isolated.ELANOUS_STATE_DIR!, 'control-inbox-cpu');
     const child = spawnObservedWorker(waitingWorkerScript, {
       ...isolated,
       CONTROL_INBOX_BARRIER: barrier,
@@ -938,7 +938,7 @@ describe('control inbox', () => {
 
   test('a worker without a barrier deadline stays alive past the hardened timeout', async () => {
     const isolated = env();
-    const barrier = join(isolated.MONAD_STATE_DIR!, 'control-inbox-no-timeout');
+    const barrier = join(isolated.ELANOUS_STATE_DIR!, 'control-inbox-no-timeout');
     const child = spawnObservedWorker(waitingScriptWith(`
       if (parentGone()) process.exit(0);
       await setTimeout(20);
@@ -957,7 +957,7 @@ describe('control inbox', () => {
 
   test('a SIGTERM-capable CPU-burning wait exceeds the low-CPU budget', async () => {
     const isolated = env();
-    const barrier = join(isolated.MONAD_STATE_DIR!, 'control-inbox-cpu-burn');
+    const barrier = join(isolated.ELANOUS_STATE_DIR!, 'control-inbox-cpu-burn');
     const child = spawnObservedWorker(waitingScriptWith(`
       if (Date.now() - startedAt >= timeoutMs) process.exit(0);
       if (parentGone()) process.exit(0);
@@ -1092,10 +1092,10 @@ describe('control inbox', () => {
     expect(shown.lines.every((line) => !line.includes('가장 최근'))).toBe(true);
   });
 
-  test.skipIf(!liveCliDependenciesAvailable)('[CLI dependencies not installed — skipping live CLI tests] monad self send --stop without a space selects the sole screen', () => {
+  test.skipIf(!liveCliDependenciesAvailable)('[CLI dependencies not installed — skipping live CLI tests] elanous self send --stop without a space selects the sole screen', () => {
     const isolated = env();
     writeHarnessScreen('active-tui', 'working', isolated);
-    const result = spawnSync(process.execPath, ['bin/monad.mjs', 'self', 'send', '--stop', '--read-wait', '0'], {
+    const result = spawnSync(process.execPath, ['bin/elanous.mjs', 'self', 'send', '--stop', '--read-wait', '0'], {
       cwd: repoRoot,
       env: { ...process.env, ...isolated },
       encoding: 'utf8',
@@ -1105,13 +1105,13 @@ describe('control inbox', () => {
     expect(readFileSync(`${controlInboxPath('active-tui', isolated)}.ready/stop`, 'utf8')).toBe('stop\n');
   });
 
-  test.skipIf(!liveCliDependenciesAvailable)('[CLI dependencies not installed — skipping live CLI tests] monad self send --stop hides stale ambiguous screens by default and does not write any inbox', () => {
+  test.skipIf(!liveCliDependenciesAvailable)('[CLI dependencies not installed — skipping live CLI tests] elanous self send --stop hides stale ambiguous screens by default and does not write any inbox', () => {
     const isolated = env();
     const threeDaysAgo = new Date(Date.now() - 3 * 24 * 60 * 60 * 1000);
     writeHarnessScreen('three-days-old-zombie', 'old frame', isolated);
-    utimesSync(join(isolated.MONAD_STATE_DIR!, 'harness-screens', 'three-days-old-zombie.screen'), threeDaysAgo, threeDaysAgo);
+    utimesSync(join(isolated.ELANOUS_STATE_DIR!, 'harness-screens', 'three-days-old-zombie.screen'), threeDaysAgo, threeDaysAgo);
     writeHarnessScreen('active-tui', 'new frame', isolated);
-    const result = spawnSync(process.execPath, ['bin/monad.mjs', 'self', 'send', '--stop', '--read-wait', '0'], {
+    const result = spawnSync(process.execPath, ['bin/elanous.mjs', 'self', 'send', '--stop', '--read-wait', '0'], {
       cwd: repoRoot,
       env: { ...process.env, ...isolated },
       encoding: 'utf8',
@@ -1126,13 +1126,13 @@ describe('control inbox', () => {
     expect(() => readFileSync(controlInboxPath('active-tui', isolated), 'utf8')).toThrow();
   });
 
-  test.skipIf(!liveCliDependenciesAvailable)('[CLI dependencies not installed — skipping live CLI tests] monad self send --include-stale shows stale ambiguous screens and still writes no inbox', () => {
+  test.skipIf(!liveCliDependenciesAvailable)('[CLI dependencies not installed — skipping live CLI tests] elanous self send --include-stale shows stale ambiguous screens and still writes no inbox', () => {
     const isolated = env();
     const threeDaysAgo = new Date(Date.now() - 3 * 24 * 60 * 60 * 1000);
     writeHarnessScreen('three-days-old-zombie', 'old frame', isolated);
-    utimesSync(join(isolated.MONAD_STATE_DIR!, 'harness-screens', 'three-days-old-zombie.screen'), threeDaysAgo, threeDaysAgo);
+    utimesSync(join(isolated.ELANOUS_STATE_DIR!, 'harness-screens', 'three-days-old-zombie.screen'), threeDaysAgo, threeDaysAgo);
     writeHarnessScreen('active-tui', 'new frame', isolated);
-    const result = spawnSync(process.execPath, ['bin/monad.mjs', 'self', 'send', '--stop', '--include-stale', '--read-wait', '0'], {
+    const result = spawnSync(process.execPath, ['bin/elanous.mjs', 'self', 'send', '--stop', '--include-stale', '--read-wait', '0'], {
       cwd: repoRoot,
       env: { ...process.env, ...isolated },
       encoding: 'utf8',
@@ -1194,7 +1194,7 @@ describe('control inbox', () => {
     const observed: Array<{ event: string; data: Record<string, unknown> }> = [];
     const log = (_category: string, event: string, data: Record<string, unknown>) => observed.push({ event, data });
     const path = controlInboxPath('legacy-restore', isolated);
-    mkdirSync(join(isolated.MONAD_STATE_DIR!, 'harness-screens'), { recursive: true });
+    mkdirSync(join(isolated.ELANOUS_STATE_DIR!, 'harness-screens'), { recursive: true });
     const body = 'not-stop-or-memo';
     writeFileSync(path, body, 'utf8');
 
@@ -1334,7 +1334,7 @@ describe('enqueueControlMemo return value', () => {
   test('returns the published record path, which disappears once a drain claims it', () => {
     const root = mkdtempSync(join(tmpdir(), 'control-inbox-return-'));
     try {
-      const env = { MONAD_STATE_DIR: root } as NodeJS.ProcessEnv;
+      const env = { ELANOUS_STATE_DIR: root } as NodeJS.ProcessEnv;
       const recordPath = enqueueControlMemo('returns-path', 'find me', { env });
       expect(recordPath.startsWith(join(controlInboxPath('returns-path', env) + '.ready', 'record-'))).toBe(true);
       expect(existsSync(recordPath)).toBe(true);

@@ -108,7 +108,7 @@ describe('takeSharedPayload', () => {
   });
 
   test('returns null when manifest missing in Share Cache', async () => {
-    const cacheName = 'monad-pwa-share-target-v2';
+    const cacheName = 'elanous-pwa-share-target-v2';
     const cache = await stubCaches.caches.open(cacheName);
     // populate something else but not the manifest
     await cache.put(
@@ -120,7 +120,7 @@ describe('takeSharedPayload', () => {
   });
 
   test('reads manifest + files + drains them on success', async () => {
-    const cacheName = 'monad-pwa-share-target-v2';
+    const cacheName = 'elanous-pwa-share-target-v2';
     const cache = await stubCaches.caches.open(cacheName);
     const id = 'id-A';
     const manifest = {
@@ -175,7 +175,7 @@ describe('takeSharedPayload', () => {
   });
 
   test('skips file entries whose blob is missing from cache', async () => {
-    const cacheName = 'monad-pwa-share-target-v2';
+    const cacheName = 'elanous-pwa-share-target-v2';
     const cache = await stubCaches.caches.open(cacheName);
     const id = 'id-missing';
     const manifest = {
@@ -216,7 +216,7 @@ describe('takeSharedPayload', () => {
   });
 
   test('combinedText omits empty parts', async () => {
-    const cacheName = 'monad-pwa-share-target-v2';
+    const cacheName = 'elanous-pwa-share-target-v2';
     const cache = await stubCaches.caches.open(cacheName);
     const id = 'id-empty';
     await cache.put(
@@ -237,8 +237,8 @@ describe('takeSharedPayload', () => {
 
   test('selects most-recent matching cache name when multiple exist', async () => {
     // Sort-reverse picks `v3` over `v2` when both exist.
-    const c1 = await stubCaches.caches.open('monad-pwa-share-target-v2');
-    const c2 = await stubCaches.caches.open('monad-pwa-share-target-v3');
+    const c1 = await stubCaches.caches.open('elanous-pwa-share-target-v2');
+    const c2 = await stubCaches.caches.open('elanous-pwa-share-target-v3');
     await c1.put(
       `/__share/old/manifest.json`,
       makeJsonResponse({ id: 'old', ts: 0, title: 'OLD', text: '', url: '', files: [] }),

@@ -579,9 +579,9 @@ export function resolveEscalateTarget(
   const d = TIER_DEFAULTS[tier];
   const p = tier.toUpperCase();
   return {
-    model: env[`MONAD_SELFDEV_${p}_MODEL`]?.trim() || d.model,
-    provider: env[`MONAD_SELFDEV_${p}_PROVIDER`]?.trim() || d.provider,
-    effort: env[`MONAD_SELFDEV_${p}_EFFORT`]?.trim() || d.effort,
+    model: env[`ELANOUS_SELFDEV_${p}_MODEL`]?.trim() || d.model,
+    provider: env[`ELANOUS_SELFDEV_${p}_PROVIDER`]?.trim() || d.provider,
+    effort: env[`ELANOUS_SELFDEV_${p}_EFFORT`]?.trim() || d.effort,
   };
 }
 
@@ -627,7 +627,7 @@ function sameProviderStep(child: ExplicitChildForEscalation): EscalateTarget | n
   return null;
 }
 
-/** 명시 자식의 승급 타깃 — 같은 provider 안에서만(위 규칙). `MONAD_SELFDEV_SOL_*` 는 운영자의 명시
+/** 명시 자식의 승급 타깃 — 같은 provider 안에서만(위 규칙). `ELANOUS_SELFDEV_SOL_*` 는 운영자의 명시
  *  덮어쓰기라 그대로 우선한다. ⛔ `effort` 가 빈 문자열이면 «안 보낸다»는 뜻이다(OpenRouter 는 노력을
  *  보내면 덜 생각했다 — 2026-09-23 실측). */
 export function resolveExplicitChildEscalateTarget(
@@ -636,18 +636,18 @@ export function resolveExplicitChildEscalateTarget(
   child?: ExplicitChildForEscalation,
 ): EscalateTarget | null {
   if (tier === 'none') return null;
-  const overrideModel = env.MONAD_SELFDEV_SOL_MODEL?.trim();
+  const overrideModel = env.ELANOUS_SELFDEV_SOL_MODEL?.trim();
   if (overrideModel) {
     return {
       model: overrideModel,
-      provider: env.MONAD_SELFDEV_SOL_PROVIDER?.trim() || child?.provider || 'openai-codex',
-      effort: env.MONAD_SELFDEV_SOL_EFFORT?.trim() || '',
+      provider: env.ELANOUS_SELFDEV_SOL_PROVIDER?.trim() || child?.provider || 'openai-codex',
+      effort: env.ELANOUS_SELFDEV_SOL_EFFORT?.trim() || '',
     };
   }
   if (child === undefined) return null;
   const step = sameProviderStep(child);
   if (step === null) return null;
-  const effortOverride = env.MONAD_SELFDEV_SOL_EFFORT?.trim();
+  const effortOverride = env.ELANOUS_SELFDEV_SOL_EFFORT?.trim();
   return effortOverride ? { ...step, effort: effortOverride } : step;
 }
 

@@ -12,7 +12,7 @@ function repo(withHardcode: boolean): string {
   mkdirSync(join(dir, 'scripts'), { recursive: true });
   writeFileSync(join(dir, 'scripts', 'isolation-hardcode-baseline.txt'), '');
   writeFileSync(join(dir, 'src', 'a.ts'), withHardcode
-    ? "import { homedir } from 'node:os';\nimport { join } from 'node:path';\nexport const p = join(homedir(), '.monad', 'auth.json');\n"
+    ? "import { homedir } from 'node:os';\nimport { join } from 'node:path';\nexport const p = join(homedir(), '.elanous', 'auth.json');\n"
     : "export const p = 1;\n");
   spawnSync('git', ['init', '-q'], { cwd: dir });
   return dir;

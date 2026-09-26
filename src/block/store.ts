@@ -5,7 +5,7 @@
 // 파싱해 세션별 ring buffer 에 저장, toolbelt 클릭이나 chat
 // `@session:<id>` 에서 최신 블록을 LLM 프롬프트 context 로
 // 주입할 수 있게 한다. Warp 의 block-as-context (CMD-UP) 패턴의
-// monad 대응.
+// elanous 대응.
 //
 // 블록 경계는 파서 (BL2 claude-code JSONL, BL3 codex heuristic)
 // 가 정의한다. 이 모듈은 경계 인식을 하지 않고 순수 저장소.
@@ -14,7 +14,7 @@
 // - push(sessionId, block) 은 commit 된 블록만 받는다. in-flight
 //   블록은 파서의 내부 상태. 이 스토어는 "완성된 것만" 본다.
 // - ring buffer cap 은 세션별 기본 10. 환경변수
-//   `MONAD_BLOCK_STORE_CAP` 으로 전역 override.
+//   `ELANOUS_BLOCK_STORE_CAP` 으로 전역 override.
 // - subscribe(cb) 는 block commit 마다 발화 — NT2 에서
 //   notification-store 연결에 사용.
 
@@ -50,7 +50,7 @@ export type BlockStoreSubscriber = (block: Block) => void;
 const DEFAULT_CAP = 10;
 
 function envCap(): number | undefined {
-  const raw = process.env['MONAD_BLOCK_STORE_CAP'];
+  const raw = process.env['ELANOUS_BLOCK_STORE_CAP'];
   if (!raw) return undefined;
   const n = Number.parseInt(raw, 10);
   return Number.isFinite(n) && n > 0 ? n : undefined;

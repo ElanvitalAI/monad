@@ -239,11 +239,11 @@ test('⭐ 사람이 읽는 화면이 은퇴를 «조용히 섞지» 않는다', 
 });
 
 test('⭐ 은퇴 표시가 «선언에서» 온다 — 붙이는 쪽이 문면을 지어내지 않는다', () => {
-  const prefix = retiredEntranceDescriptionPrefix(CLI_HARNESS_RUN_ENTRANCE, 'monad dev --implement <objective>');
+  const prefix = retiredEntranceDescriptionPrefix(CLI_HARNESS_RUN_ENTRANCE, 'elanous dev --implement <objective>');
   expect(prefix).toContain('DEPRECATED');
   expect(prefix).toContain('cli-harness-run');
   // ⛔ 「금지만 주고 길을 안 주면 멈춘다」 — 갈 곳이 문면에 «있어야» 한다.
-  expect(prefix).toContain('monad dev --implement <objective>');
+  expect(prefix).toContain('elanous dev --implement <objective>');
 });
 
 test('⛔ live 입구에는 «아무것도 안 붙는다» — 호출자가 분기하지 않게', () => {
@@ -252,7 +252,7 @@ test('⛔ live 입구에는 «아무것도 안 붙는다» — 호출자가 분�
 });
 
 test('⭐ 은퇴 입구는 원래 설명을 «잃지 않는다» — 앞에 붙일 뿐이다', () => {
-  const described = describeEntranceCommand(CLI_HARNESS_RUN_ENTRANCE, 'monad dev', '원래 설명');
+  const described = describeEntranceCommand(CLI_HARNESS_RUN_ENTRANCE, 'elanous dev', '원래 설명');
   expect(described).toContain('원래 설명');
   expect(described.indexOf('DEPRECATED')).toBeLessThan(described.indexOf('원래 설명'));
 });
@@ -411,8 +411,8 @@ test('harness ask and say entrances actually pass their own registry id at the l
       setExitCode: () => {},
     });
 
-    await program.parseAsync(['node', 'monad', 'harness', 'ask', '/tmp/goal.md']);
-    await program.parseAsync(['node', 'monad', 'harness', 'say', 'author this goal']);
+    await program.parseAsync(['node', 'elanous', 'harness', 'ask', '/tmp/goal.md']);
+    await program.parseAsync(['node', 'elanous', 'harness', 'say', 'author this goal']);
 
     expect(launchedEntrances).toHaveLength(2);
     expect(launchedEntrances[0]).toBe(CLI_HARNESS_ASK_ENTRANCE.id);

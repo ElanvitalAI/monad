@@ -8,7 +8,7 @@ description: |
             "야근전 정리".
   Does: Today's commits + open PR queue → LLM-synthesized standup
         template. Saves under Obsidian Standup/<DATE>.md and (when env
-        MONAD_STANDUP_CHANNEL is set) emits a broadcast intent line
+        ELANOUS_STANDUP_CHANNEL is set) emits a broadcast intent line
         for the cv-3 β-1 channel infra to consume.
   NOT for: Weekly retro (use a separate weekly-retro workflow) or
            sprint-end review.
@@ -61,10 +61,10 @@ nodes:
 
   - id: save-standup
     bash: |
-      OBSIDIAN_DIR="${MONAD_OBSIDIAN_DIR:-$HOME/Documents/Obsidian}"
+      OBSIDIAN_DIR="${ELANOUS_OBSIDIAN_DIR:-$HOME/Documents/Obsidian}"
       DIR="$OBSIDIAN_DIR/Standup"
       mkdir -p "$DIR" 2>/dev/null || {
-        echo "ERROR: cannot create $DIR — set MONAD_OBSIDIAN_DIR to a writable path"
+        echo "ERROR: cannot create $DIR — set ELANOUS_OBSIDIAN_DIR to a writable path"
         exit 1
       }
       DATE=$(date +%Y-%m-%d)
@@ -80,9 +80,9 @@ nodes:
 
   - id: broadcast
     bash: |
-      CHANNEL="${MONAD_STANDUP_CHANNEL:-}"
+      CHANNEL="${ELANOUS_STANDUP_CHANNEL:-}"
       if [ -z "$CHANNEL" ]; then
-        echo 'broadcast=skipped reason=MONAD_STANDUP_CHANNEL_not_set'
+        echo 'broadcast=skipped reason=ELANOUS_STANDUP_CHANNEL_not_set'
         exit 0
       fi
       case "$CHANNEL" in

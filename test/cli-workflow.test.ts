@@ -1,4 +1,4 @@
-// Archon-port T3 (2026-05-08) — `monad wf` CLI tests.
+// Archon-port T3 (2026-05-08) — `elanous wf` CLI tests.
 //
 // Exercises list / show / validate via the exported sub-command
 // implementations. `run` is integration-tested against a synthetic
@@ -29,7 +29,7 @@ let consoleLogSpy: ReturnType<typeof mock>;
 
 beforeEach(() => {
   tmpRoot = mkdtempSync(join(tmpdir(), 'wf-cli-'));
-  mkdirSync(join(tmpRoot, '.monad', 'workflows'), { recursive: true });
+  mkdirSync(join(tmpRoot, '.elanous', 'workflows'), { recursive: true });
   lastCwd = process.cwd();
   process.chdir(tmpRoot);
   logs = [];
@@ -60,7 +60,7 @@ describe('workflowList', () => {
 
   it('shows project-scoped workflows when present', () => {
     writeFileSync(
-      join(tmpRoot, '.monad', 'workflows', 't-cli-demo.yaml'),
+      join(tmpRoot, '.elanous', 'workflows', 't-cli-demo.yaml'),
       VALID_YAML,
       'utf-8',
     );
@@ -74,7 +74,7 @@ describe('workflowList', () => {
 describe('workflowShow', () => {
   it('prints YAML for an existing workflow', () => {
     writeFileSync(
-      join(tmpRoot, '.monad', 'workflows', 't-cli-demo.yaml'),
+      join(tmpRoot, '.elanous', 'workflows', 't-cli-demo.yaml'),
       VALID_YAML,
       'utf-8',
     );
@@ -175,9 +175,9 @@ describe('build-workflow.yaml shape', () => {
 
 // Sanity: confirm built-ins folder discoverable from a temp cwd.
 describe('built-ins are discoverable from arbitrary cwd', () => {
-  it('list shows builtin even without a .monad/workflows dir', () => {
-    rmSync(join(tmpRoot, '.monad'), { recursive: true, force: true });
-    expect(existsSync(join(tmpRoot, '.monad'))).toBe(false);
+  it('list shows builtin even without a .elanous/workflows dir', () => {
+    rmSync(join(tmpRoot, '.elanous'), { recursive: true, force: true });
+    expect(existsSync(join(tmpRoot, '.elanous'))).toBe(false);
     workflowList();
     const all = logs.join('\n');
     expect(all).toContain('[builtin]');

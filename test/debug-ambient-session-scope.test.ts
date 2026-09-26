@@ -78,7 +78,7 @@ describe('ambient session execution scope', () => {
 
 // ⭐⭐⭐ 스코프가 갈아탈 때 **관계를 남긴다**(원장 `MEAS-S14` 근본 수리).
 //
-// 실측 2026-08-02: 채팅 턴(`604f5635-…`) 안에서 하위 런타임이 자기 세션(`monad-session-hmkr5g`)으로
+// 실측 2026-08-02: 채팅 턴(`604f5635-…`) 안에서 하위 런타임이 자기 세션(`elanous-session-hmkr5g`)으로
 // 다시 감쌌고, 그 뒤 `capability.resolve/tool-selected` 가 **전부 자식 세션**으로 찍혀
 // `--session <채팅>` 조회에서 사라졌다. NL 코퍼스가 위임 턴을 전부 `no-fire` 로 읽은 원인이다.
 describe('withAmbientSessionScope — 부모↔자식 간선', () => {

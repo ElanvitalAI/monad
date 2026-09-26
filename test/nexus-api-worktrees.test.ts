@@ -85,7 +85,7 @@ describe('buildWorktreesView — empty cases', () => {
     expect(v.orphanedSessions).toEqual([]);
   });
 
-  it('returns worktrees but no sessions when no monad sessions wired', () => {
+  it('returns worktrees but no sessions when no elanous sessions wired', () => {
     const v = buildWorktreesView([MAIN_WT, SECONDARY_WT], [], REPO, alivePidsOnly([]));
     expect(v.repoRoot).toBe(REPO);
     expect(v.worktrees.length).toBe(2);

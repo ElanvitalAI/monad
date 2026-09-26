@@ -131,8 +131,8 @@ export function SurfacePicker() {
   return (
     <button
       type="button"
-      data-monad-surface-picker=""
-      data-monad-surface-current={current.value ?? 'default'}
+      data-elanous-surface-picker=""
+      data-elanous-surface-current={current.value ?? 'default'}
       aria-label={`Daemon tool surface: ${current.label} (click to switch to ${next.label})`}
       title={`${current.label} — ${current.description}\nClick to switch to ${next.label}.`}
       onClick={() => setSelected(nextSurfacePreference(selected))}

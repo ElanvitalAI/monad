@@ -361,10 +361,10 @@ describe('runAcpServer — session-level pub/sub fan-out (BACKLOG #2.5)', () => 
     });
 
     // Channel 0 declares the showToast UI extension; channel 1 does not.
-    // The `_meta.monad.ui` blob is parsed by `parseMonadUiCapabilities`
-    // (src/acp/monad-extensions.ts) — boolean flags per method.
+    // The `_meta.elanous.ui` blob is parsed by `parseElanousUiCapabilities`
+    // (src/acp/elanous-extensions.ts) — boolean flags per method.
     const capsWithToast = {
-      _meta: { monad: { ui: { showToast: true } } },
+      _meta: { elanous: { ui: { showToast: true } } },
     } as unknown as Partial<ClientCapabilities>;
     const sid = await harness.initializeAndNewSession(0, capsWithToast);
     await harness.initializeAndLoadSession(1, sid /* default caps — no UI */);

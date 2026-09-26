@@ -63,7 +63,7 @@ describe('dispatchMergePullRequest observation', () => {
       { args: { number: 42, url: 'https://github.com/x/y/pull/42', strategy: 'squash' }, error: 'pass exactly one', reason: 'identifier-both' },
       { args: { strategy: 'squash' }, error: 'one of `number` or `url` is required', reason: 'identifier-missing' },
       { args: { number: 42, strategy: 'squash', admin: true, auto: true }, error: 'admin` and `auto` are mutually exclusive', reason: 'admin-auto-conflict' },
-      { args: { number: 42, strategy: 'squash', admin: true }, opts: { adminEnvAllowed: false }, error: 'MONAD_GH_ALLOW_ADMIN=1 is not set', reason: 'admin-env-disallowed' },
+      { args: { number: 42, strategy: 'squash', admin: true }, opts: { adminEnvAllowed: false }, error: 'ELANOUS_GH_ALLOW_ADMIN=1 is not set', reason: 'admin-env-disallowed' },
       { args: { number: 42, strategy: 'squash' }, opts: { runner: () => ({ stdout: '', stderr: 'no merge', status: 1 }) }, error: 'gh pr merge failed', reason: 'gh-failed' },
     ];
 

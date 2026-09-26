@@ -3,7 +3,7 @@
 // Pure logic only — extractMethodsFromGenerated, extractMethodsFromHandWritten,
 // computeMethodDiff. We don't drive the real `codex app-server generate-ts`
 // here; that's the script's main() responsibility and lives behind
-// MONAD_CODEX_TIER1_SMOKE-style env gating in a follow-up PR.
+// ELANOUS_CODEX_TIER1_SMOKE-style env gating in a follow-up PR.
 
 import { describe, test, expect } from 'bun:test';
 import {
@@ -137,46 +137,46 @@ describe('M9 · extractMethodsFromHandWritten', () => {
 
 describe('M9 · computeMethodDiff', () => {
   test('all-shared → diff arrays empty', () => {
-    const monad = new Set(['thread/start', 'turn/start']);
+    const elanous = new Set(['thread/start', 'turn/start']);
     const codex = new Set(['thread/start', 'turn/start']);
-    const diff = computeMethodDiff(monad, codex);
-    expect(diff.monadOnly).toEqual([]);
+    const diff = computeMethodDiff(elanous, codex);
+    expect(diff.elanousOnly).toEqual([]);
     expect(diff.codexOnly).toEqual([]);
     expect(diff.shared).toBe(2);
   });
 
-  test('monad references method missing from codex → monadOnly populated', () => {
-    const monad = new Set(['thread/start', 'thread/legacyStart']);
+  test('elanous references method missing from codex → elanousOnly populated', () => {
+    const elanous = new Set(['thread/start', 'thread/legacyStart']);
     const codex = new Set(['thread/start']);
-    const diff = computeMethodDiff(monad, codex);
-    expect(diff.monadOnly).toEqual(['thread/legacyStart']);
+    const diff = computeMethodDiff(elanous, codex);
+    expect(diff.elanousOnly).toEqual(['thread/legacyStart']);
     expect(diff.codexOnly).toEqual([]);
     expect(diff.shared).toBe(1);
   });
 
   test('codex adds new method → codexOnly populated', () => {
-    const monad = new Set(['thread/start']);
+    const elanous = new Set(['thread/start']);
     const codex = new Set(['thread/start', 'thread/newRpc']);
-    const diff = computeMethodDiff(monad, codex);
-    expect(diff.monadOnly).toEqual([]);
+    const diff = computeMethodDiff(elanous, codex);
+    expect(diff.elanousOnly).toEqual([]);
     expect(diff.codexOnly).toEqual(['thread/newRpc']);
     expect(diff.shared).toBe(1);
   });
 
   test('both directions populate independently', () => {
-    const monad = new Set(['a/x', 'b/y']);
+    const elanous = new Set(['a/x', 'b/y']);
     const codex = new Set(['b/y', 'c/z']);
-    const diff = computeMethodDiff(monad, codex);
-    expect(diff.monadOnly).toEqual(['a/x']);
+    const diff = computeMethodDiff(elanous, codex);
+    expect(diff.elanousOnly).toEqual(['a/x']);
     expect(diff.codexOnly).toEqual(['c/z']);
     expect(diff.shared).toBe(1);
   });
 
   test('result arrays are sorted', () => {
-    const monad = new Set(['z/late', 'a/early', 'm/mid']);
+    const elanous = new Set(['z/late', 'a/early', 'm/mid']);
     const codex = new Set<string>();
-    const diff = computeMethodDiff(monad, codex);
-    expect(diff.monadOnly).toEqual(['a/early', 'm/mid', 'z/late']);
+    const diff = computeMethodDiff(elanous, codex);
+    expect(diff.elanousOnly).toEqual(['a/early', 'm/mid', 'z/late']);
   });
 });
 

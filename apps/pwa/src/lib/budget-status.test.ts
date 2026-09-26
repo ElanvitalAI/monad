@@ -30,8 +30,8 @@ beforeEach(() => {
 
 describe('M3-1 · budget dismissal helpers', () => {
   test('dismissal key is keyed by month + status', () => {
-    expect(budgetDismissalKey('2026-05', 'warning')).toBe('monad.budget.dismissed.2026-05.warning');
-    expect(budgetDismissalKey('2026-05', 'cap-exceeded')).toBe('monad.budget.dismissed.2026-05.cap-exceeded');
+    expect(budgetDismissalKey('2026-05', 'warning')).toBe('elanous.budget.dismissed.2026-05.warning');
+    expect(budgetDismissalKey('2026-05', 'cap-exceeded')).toBe('elanous.budget.dismissed.2026-05.cap-exceeded');
   });
 
   test('dismissBudget persists to localStorage · isBudgetDismissed reads it', () => {

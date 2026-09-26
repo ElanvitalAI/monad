@@ -1,5 +1,5 @@
 // M3-3 (PLAN-friction-free-model-selection-ux-2026-05-12 · Phase 3) —
-// `monad voice nl-switch <text>` CLI.
+// `elanous voice nl-switch <text>` CLI.
 //
 // Dogfood entry for the chat NL switch detector before the full chat
 // surface integration lands. Detect-only by default — pass `--apply
@@ -70,7 +70,7 @@ export async function runVoiceNlSwitchCommand(
     return {
       detection: detectionEmpty,
       plan: { isNoop: true, apply: {}, detection: detectionEmpty, confirmMessage: '' },
-      output: ['Usage: monad voice nl-switch <text...> --model <id> [--apply --session <id>]'],
+      output: ['Usage: elanous voice nl-switch <text...> --model <id> [--apply --session <id>]'],
       exitCode: 2,
       applied: false,
     };
@@ -97,7 +97,7 @@ export async function runVoiceNlSwitchCommand(
       plan: { isNoop: true, apply: {}, detection: detectionEmpty, confirmMessage: '' },
       output: [
         '⚠ NL switch requires --model <id> (LM Studio / OpenAI-compatible host)',
-        '  Hint: monad voice nl-switch --model gemma-4-e4b "이번 회의는 의료 용어 많아"',
+        '  Hint: elanous voice nl-switch --model gemma-4-e4b "이번 회의는 의료 용어 많아"',
       ],
       exitCode: 2,
       applied: false,
@@ -132,7 +132,7 @@ export async function runVoiceNlSwitchCommand(
     applied = true;
     output.push('');
     output.push(`✓ Override installed for session ${opts.sessionId}.`);
-    output.push('  (Auto-reverts in 8h or after `monad voice nl-switch --clear`.)');
+    output.push('  (Auto-reverts in 8h or after `elanous voice nl-switch --clear`.)');
   } else if (opts.apply && plan.isNoop) {
     output.push('');
     output.push('(plan is no-op · override not installed)');

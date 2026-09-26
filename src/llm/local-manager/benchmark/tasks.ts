@@ -321,7 +321,7 @@ const REASONING_TASKS: BenchTask[] = [
 // ─── RAG / 근거 인용(10점) — 긍정·부정 2문항(항상-거부 패턴매칭 방지) ─────────────────
 
 const RAG_SOURCE = [
-  'MONAD OPS POLICY (발췌):',
+  'ELANOUS OPS POLICY (발췌):',
   '- 스테이징 배포는 담당자 재량으로 즉시 진행할 수 있다.',
   '- 프로덕션 라우팅(production routing) 변경은 병합 전에 반드시 리뷰 게이트(review gate) 승인을 거쳐야 한다.',
   '- 문서 오탈자 수정은 리뷰 없이 병합 가능하다.',

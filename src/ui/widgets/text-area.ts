@@ -1,6 +1,6 @@
 // LC8 — TextArea: multi-line text view.
 //
-// MVP focuses on the most common monad use case: a read-only
+// MVP focuses on the most common elanous use case: a read-only
 // multiline viewer for diffs, logs, and stdout/stderr — with
 // vertical + horizontal scrolling and optional soft-wrap. Editable
 // mode is included as a thin extension (insertion, backspace,

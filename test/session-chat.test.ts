@@ -55,10 +55,10 @@ beforeEach(() => {
   root = mkdtempSync(join(tmpdir(), 'session-chat-'));
   process.env.XDG_DATA_HOME = root;
   process.env.XDG_STATE_HOME = join(root, '_state');
-  // 메모리 스토어(surface_events·knowledge)는 XDG 가 아니라 MONAD_STATE_DIR 로 스코프됨
+  // 메모리 스토어(surface_events·knowledge)는 XDG 가 아니라 ELANOUS_STATE_DIR 로 스코프됨
   //   (memory-db-path.ts). 격리 안 하면 runTurn 의 self-log 크로스 회상이 운영
-  //   ~/.monad/memory/surface_events.db 를 읽어 systemPrompt 에 실제 self-log 가 새어 든다.
-  process.env.MONAD_STATE_DIR = join(root, '_monad');
+  //   ~/.elanous/memory/surface_events.db 를 읽어 systemPrompt 에 실제 self-log 가 새어 든다.
+  process.env.ELANOUS_STATE_DIR = join(root, '_elanous');
   intentEvents = [];
   _resetUserIntentLogger().setSinks([{
     name: 'capture',
@@ -70,7 +70,7 @@ afterEach(() => {
   rmSync(root, { recursive: true, force: true });
   delete process.env.XDG_DATA_HOME;
   delete process.env.XDG_STATE_HOME;
-  delete process.env.MONAD_STATE_DIR;
+  delete process.env.ELANOUS_STATE_DIR;
 });
 
 describe('runTurn', () => {
@@ -177,10 +177,10 @@ describe('runTurn', () => {
       userConfig: cfg,
       sessionId: session.id,
       userText: 'x',
-      systemPrompt: 'You are a helpful monad.',
+      systemPrompt: 'You are a helpful elanous.',
       provider: prov,
     });
-    expect(capturedSystem).toBe('You are a helpful monad.');
+    expect(capturedSystem).toBe('You are a helpful elanous.');
   });
 
   test('session missing → throws', async () => {

@@ -126,7 +126,7 @@ describe('evaluateLaunchPreflight — 발사 전 전제 검사', () => {
   });
 
   test('[sibling-pr-warns] 같은 계보의 열린 PR 은 모든 번호·브랜치와 즉시 실행 명령을 한 경고에 담아 막지 않는다', () => {
-    const command = 'bun bin/monad.mjs gh pr view 9001';
+    const command = 'bun bin/elanous.mjs gh pr view 9001';
     const result = evaluateLaunchPreflight({
       paths: ['src/index.ts'],
       plannedBranch: 'self-impl/x-1111aaaa',
@@ -169,7 +169,7 @@ describe('evaluateLaunchPreflight — 발사 전 전제 검사', () => {
       liveRunWindowMs: WINDOW,
     });
     expect(result.warnings.filter((warning) => warning.kind === 'sibling-pr')).toHaveLength(0);
-    expect(renderLaunchPreflight(result)).not.toContain('bun bin/monad.mjs gh');
+    expect(renderLaunchPreflight(result)).not.toContain('bun bin/elanous.mjs gh');
     expect(result.blockers).toEqual([]);
   });
 
@@ -353,7 +353,7 @@ describe('evaluateLaunchPreflight — 발사 전 전제 검사', () => {
         runId: 'run-isolated',
         plannedPaths: ['src/a.ts'],
         lastActivityAgeMs: 1_000,
-        ledgerDirectory: '/other-checkout/.monad-test/self-implement/runs',
+        ledgerDirectory: '/other-checkout/.elanous-test/self-implement/runs',
       }],
       liveRunWindowMs: WINDOW,
     });
@@ -361,7 +361,7 @@ describe('evaluateLaunchPreflight — 발사 전 전제 검사', () => {
     expect(result.blockers).toEqual([]);
     expect(result.warnings.map((warning) => warning.name)).toEqual(['run-isolated']);
     expect(text).toContain('run-isolated — 도는 런이 같은 파일을 만진다');
-    expect(text).toContain('원장 위치 /other-checkout/.monad-test/self-implement/runs');
+    expect(text).toContain('원장 위치 /other-checkout/.elanous-test/self-implement/runs');
   });
 
   test('[live-run-ledger-location-missing] 원장 위치가 없으면 부재만 말하고 경로를 지어내지 않는다', () => {
@@ -372,7 +372,7 @@ describe('evaluateLaunchPreflight — 발사 전 전제 검사', () => {
       liveRunWindowMs: WINDOW,
     }));
     expect(text).toContain('원장 위치 (없음)');
-    expect(text).not.toContain('/other-checkout/.monad-test/self-implement/runs');
+    expect(text).not.toContain('/other-checkout/.elanous-test/self-implement/runs');
   });
 
   test('[live-run-ledger-location-per-line] 둘의 경고 런은 각자 원장 위치가 자기 줄에 붙는다', () => {
@@ -380,16 +380,16 @@ describe('evaluateLaunchPreflight — 발사 전 전제 검사', () => {
       paths: ['src/a.ts', 'src/b.ts'],
       openPrs: [],
       unfinishedRuns: [
-        { runId: 'run-a', plannedPaths: ['src/a.ts'], lastActivityAgeMs: 1_000, ledgerDirectory: '/tree-a/.monad/run-ledger' },
-        { runId: 'run-b', plannedPaths: ['src/b.ts'], lastActivityAgeMs: 1_000, ledgerDirectory: '/tree-b/.monad-test/run-ledger' },
+        { runId: 'run-a', plannedPaths: ['src/a.ts'], lastActivityAgeMs: 1_000, ledgerDirectory: '/tree-a/.elanous/run-ledger' },
+        { runId: 'run-b', plannedPaths: ['src/b.ts'], lastActivityAgeMs: 1_000, ledgerDirectory: '/tree-b/.elanous-test/run-ledger' },
       ],
       liveRunWindowMs: WINDOW,
     }));
     const warningLines = text.split('\n').filter((line) => line.startsWith('[preflight] ⚠️'));
     expect(warningLines).toEqual([
       expect.stringContaining('gate preexisting 실패 기록: 못 읽음 — gate preexisting 실패 기록 조회기가 배선되지 않았다'),
-      expect.stringContaining('run-a — 도는 런이 같은 파일을 만진다: src/a.ts — 마지막 활동 1초 전 · 원장 위치 /tree-a/.monad/run-ledger'),
-      expect.stringContaining('run-b — 도는 런이 같은 파일을 만진다: src/b.ts — 마지막 활동 1초 전 · 원장 위치 /tree-b/.monad-test/run-ledger'),
+      expect.stringContaining('run-a — 도는 런이 같은 파일을 만진다: src/a.ts — 마지막 활동 1초 전 · 원장 위치 /tree-a/.elanous/run-ledger'),
+      expect.stringContaining('run-b — 도는 런이 같은 파일을 만진다: src/b.ts — 마지막 활동 1초 전 · 원장 위치 /tree-b/.elanous-test/run-ledger'),
     ]);
   });
 
@@ -462,8 +462,8 @@ describe('evaluateLaunchPreflight — 발사 전 전제 검사', () => {
       liveRunWindowMs: WINDOW,
     }));
     const hint = text.split('\n').find((line) => line.includes('--force-preflight'));
-    expect(hint).toBe('[preflight] 그래도 가려면 --force-preflight (그 우회는 관측에 남는다) — monad dev');
-    expect(hint).toContain('monad dev');
+    expect(hint).toBe('[preflight] 그래도 가려면 --force-preflight (그 우회는 관측에 남는다) — elanous dev');
+    expect(hint).toContain('elanous dev');
     expect(hint).toContain('--force-preflight');
   });
 
@@ -1158,7 +1158,7 @@ describe('완료 런 경로 겹침 — 완료 사실은 값으로만 낸다', ()
       const executed = spawnSync('sh', ['-c', command!], {
         cwd: resolve(import.meta.dir, '..', '..'),
         encoding: 'utf8',
-        env: { ...process.env, MONAD_STATE_DIR: root },
+        env: { ...process.env, ELANOUS_STATE_DIR: root },
       });
       expect(executed.status).toBe(0);
       expect(executed.stderr).toBe('');
@@ -1547,9 +1547,9 @@ describe('buildAskPreflightDeps — 중단 런 원장 변환의 판독 불가 �
     const runId = 'run-00000000-0000-4000-8000-000000000031';
     mkdirSync(ledgerDirectory, { recursive: true });
     mkdirSync(join(stateRoot, 'logs'), { recursive: true });
-    mkdirSync(join(root, '.monad', 'logs'), { recursive: true });
+    mkdirSync(join(root, '.elanous', 'logs'), { recursive: true });
     writeFileSync(join(stateRoot, 'logs', 'logs.db'), 'fixture', 'utf8');
-    writeFileSync(join(root, '.monad', 'logs', 'instances.json'), JSON.stringify({ instances: [{ name: 'test:fixture', stateDir: stateRoot, kind: 'test', pid: process.pid, startedAt: terminalTimestamp }] }), 'utf8');
+    writeFileSync(join(root, '.elanous', 'logs', 'instances.json'), JSON.stringify({ instances: [{ name: 'test:fixture', stateDir: stateRoot, kind: 'test', pid: process.pid, startedAt: terminalTimestamp }] }), 'utf8');
     writeFileSync(goalFile, `## TRACED PATHS\n- [code] ${targetPath} — target\n- [code] ${otherPath} — other\n`, 'utf8');
     writeFileSync(join(ledgerDirectory, `${runId}.jsonl`), [
       { timestamp: terminalTimestamp, runId, event: 'start', data: { goalFile } },
@@ -1571,7 +1571,7 @@ describe('buildAskPreflightDeps — 중단 런 원장 변환의 판독 불가 �
         cwd: resolve(import.meta.dir, '..', '..'),
         encoding: 'utf8',
         // 부모 셸의 config 위치가 자식 관측에 경고를 더하지 않도록 설정 축도 fixture 아래로 격리한다.
-        env: { ...process.env, HOME: root, XDG_CONFIG_HOME: join(root, 'xdg-config'), MONAD_STATE_DIR: stateRoot },
+        env: { ...process.env, HOME: root, XDG_CONFIG_HOME: join(root, 'xdg-config'), ELANOUS_STATE_DIR: stateRoot },
       });
       // 종료 상태와 구조화된 결과가 기본 lookup의 기능 계약이다. 환경 경고의 문면은 계약이 아니다.
       expect(executed.status).toBe(0);
@@ -1723,8 +1723,8 @@ describe('evaluateLaunchPreflight — 「잴 것이 없었다」와 「부분 �
       paths: [], openPrs: [], unfinishedRuns: [], liveRunWindowMs: WINDOW,
     });
     const detail = result.blockers.find((blocker) => blocker.kind === 'no-target-paths')?.detail;
-    expect(detail).toBe('골에서 대상 경로를 하나도 못 뽑았다 — ask 첫 줄에 「대상 경로: <파일> · <파일>」을 넣어라 — 이 상태의 「위반 0」은 「검사했다」가 아니다 — monad self author --inspect-target-paths "<문면>"');
-    expect(detail).toContain('monad self author --inspect-target-paths "<문면>"');
+    expect(detail).toBe('골에서 대상 경로를 하나도 못 뽑았다 — ask 첫 줄에 「대상 경로: <파일> · <파일>」을 넣어라 — 이 상태의 「위반 0」은 「검사했다」가 아니다 — elanous self author --inspect-target-paths "<문면>"');
+    expect(detail).toContain('elanous self author --inspect-target-paths "<문면>"');
     expect(detail).toContain('「위반 0」은 「검사했다」가 아니다');
     expect(detail).toContain('ask 첫 줄에 「대상 경로: <파일> · <파일>」');
     expect(result.blockers.find((blocker) => blocker.kind === 'no-target-paths')).toMatchObject({
@@ -1737,7 +1737,7 @@ describe('evaluateLaunchPreflight — 「잴 것이 없었다」와 「부분 �
       paths: ['src/a.ts'], openPrs: [], unfinishedRuns: [], liveRunWindowMs: WINDOW,
     });
     expect(result.blockers.map((blocker) => blocker.kind)).not.toContain('no-target-paths');
-    expect(renderLaunchPreflight(result)).not.toContain('monad self author --inspect-target-paths "<문면>"');
+    expect(renderLaunchPreflight(result)).not.toContain('elanous self author --inspect-target-paths "<문면>"');
   });
 
   test('[truncated-warns-not-blocks] 조회가 상한에 닿으면 미조회 사실과 상태를 보존해 경고한다', () => {
@@ -2256,7 +2256,7 @@ describe('decideAskPreflight — CLI 배선', () => {
       const executed = spawnSync('bun', ['-e', script], {
         cwd: resolve(import.meta.dir, '..', '..'),
         encoding: 'utf8',
-        env: { ...process.env, HOME: root, XDG_CONFIG_HOME: join(root, 'xdg-config'), MONAD_STATE_DIR: join(root, 'state') },
+        env: { ...process.env, HOME: root, XDG_CONFIG_HOME: join(root, 'xdg-config'), ELANOUS_STATE_DIR: join(root, 'state') },
       });
       expect(executed.status).toBe(0);
       const result = JSON.parse(executed.stdout) as { shouldLaunch: boolean; appendix: string | undefined };
@@ -2486,13 +2486,13 @@ describe('toPreflightUnfinishedRun — 원장 엔트리 «형태»를 숨기지 
       plannedPaths: ['src/index.ts', 'src/index.test.ts'],
       lastActivityAgeMs: 20846744,
       lifecycle: 'human-stopped',
-      ledgerDirectory: '/Users/x/.monad-test/run-ledger',
+      ledgerDirectory: '/Users/x/.elanous-test/run-ledger',
     });
     expect(mapped).not.toBeNull();
     expect(mapped!.plannedPaths).toEqual(['src/index.ts', 'src/index.test.ts']);
     expect(mapped!.lastActivityAgeMs).toBe(20846744);
     expect(mapped!.lifecycle).toBe('human-stopped');
-    expect(mapped!.ledgerDirectory).toBe('/Users/x/.monad-test/run-ledger');
+    expect(mapped!.ledgerDirectory).toBe('/Users/x/.elanous-test/run-ledger');
   });
 
   test('[real-shape-reason] 경로를 못 읽은 엔트리는 사유 문자열로 남는다', () => {
@@ -3074,7 +3074,7 @@ describe('열린 PR 은 통과시키되 «경고»로 남긴다', () => {
 // ⛔⭐⭐⭐ 셋째 축 — 「이 골이 원한 것이 이미 있을 수 있다」를 기계가 말한다(2026-08-11).
 //   📏 왜 생겼나: 같은 날 두 트랙이 「원한 능력이 지금 main 에 있나」를 각각 다른 방식으로 틀렸다
 //     (한쪽은 «잘못된 자»로 쟀고, 한쪽은 «아예 안 쟀다») ⇒ 이미 머지된 능력을 다시 만들려 했다.
-//   ⛔ 이 시험들이 없으면 그 축은 「형태만 있고 실행 경로엔 없는」 것이 된다(모나드 리뷰 must-fix ④).
+//   ⛔ 이 시험들이 없으면 그 축은 「형태만 있고 실행 경로엔 없는」 것이 된다(엘라누스 리뷰 must-fix ④).
 describe('최근 머지 검사 — 막지 않고 «경고»로만', () => {
   const base = { openPrs: [], unfinishedRuns: [], liveRunWindowMs: WINDOW } as const;
 
@@ -3143,10 +3143,10 @@ describe('최근 머지 임계 해석 — resolveRecentChangeWindowDays', () => 
 
 // ⛔⭐⭐⭐ 실물 진입점 시험 — 「테스트가 코드를 무는가」가 아니라 ***「그 코드가 실행 경로에 있는가」***.
 //   📏 2026-08-11: 이 축의 첫 판본이 `launch-preflight.ts` 만 고치고 `src/index.ts` 를 «안 고쳐서»
-//     모나드 리뷰가 must-fix 5 를 냈다(*"새 축은 런타임에서 항상 unknown 으로 남을 가능성이 크다"*).
+//     엘라누스 리뷰가 must-fix 5 를 냈다(*"새 축은 런타임에서 항상 unknown 으로 남을 가능성이 크다"*).
 //   ⇒ in-process import 로는 원리상 못 잡는다. 그래서 «실물 CLI 를 spawn» 한다.
 describe('셋째 축이 «실행 경로»에 있다 — 실물 진입점', () => {
-  const CLI = resolve(import.meta.dir, '..', '..', 'bin', 'monad.mjs');
+  const CLI = resolve(import.meta.dir, '..', '..', 'bin', 'elanous.mjs');
   let cached: string | undefined;
   function devHelp(): string {
     if (cached !== undefined) return cached;

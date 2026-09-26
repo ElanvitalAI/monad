@@ -54,7 +54,7 @@ describe('dispatchAskUserQuestion — AU4 resolver fallback', () => {
 
   test('AskBridgeUnavailable is classified as a structured no-capable-peer absence', async () => {
     const resolver: AskUserQuestionResolver = async () => {
-      const error = new Error('no monad/ask cap-able peer attached to session monad-session-6tidkn');
+      const error = new Error('no elanous/ask cap-able peer attached to session elanous-session-6tidkn');
       error.name = 'AskBridgeUnavailable';
       throw error;
     };
@@ -62,7 +62,7 @@ describe('dispatchAskUserQuestion — AU4 resolver fallback', () => {
     setAskUserQuestionResolver(resolver);
     const r = await dispatchAskUserQuestion({ ...VALID_REQUEST, delivery: 'telegram' });
     expect(r.absenceReason).toBe('no-capable-peer');
-    expect(r.output).toContain('no monad/ask cap-able peer attached');
+    expect(r.output).toContain('no elanous/ask cap-able peer attached');
     expect(r.result).toBeUndefined();
   });
 
@@ -77,7 +77,7 @@ describe('dispatchAskUserQuestion — AU4 resolver fallback', () => {
       cancel() {},
     }]);
     const resolver: AskUserQuestionResolver = async () => {
-      const error = new Error('no monad/ask cap-able peer attached');
+      const error = new Error('no elanous/ask cap-able peer attached');
       error.name = 'AskBridgeUnavailable';
       throw error;
     };

@@ -64,7 +64,7 @@ function outAsPlatform(plat: string, args: string[]): string {
   try {
     const r = spawnSync('bun', [shim, ...args],
       { cwd: REPO, encoding: 'utf8', timeout: 90_000,
-        env: { ...process.env, MONAD_VIDEO_SKIP_REMOTE_PROBE: '1' } });
+        env: { ...process.env, ELANOUS_VIDEO_SKIP_REMOTE_PROBE: '1' } });
     if (r.status === null) throw new Error(`죽었다(signal=${r.signal})`);
     return `${r.stdout}${r.stderr}`;
   } finally { rmSync(shim, { force: true }); }
@@ -374,7 +374,7 @@ describe('link-repo-skills.sh — 스킬이 로더에 닿나', () => {
   function sh(args: string[], dest: string): number {
     const r = spawnSync('bash', [SH, ...args], {
       cwd: REPO, encoding: 'utf8', timeout: 90_000,
-      env: { ...process.env, MONAD_SKILLS_DIR: dest },
+      env: { ...process.env, ELANOUS_SKILLS_DIR: dest },
     });
     if (r.status === null) throw new Error(`죽었다(signal=${r.signal})`);
     return r.status;
@@ -651,7 +651,7 @@ describe('설정 실패는 «그 설정을 쓰는» 명령만 막는다', () => 
     const dir = mkdtempSync(join(tmpdir(), 'vp-env-'));
     const f = join(dir, 'video-tools.json');
     writeFileSync(f, '{');
-    return { ...process.env as Record<string, string>, MONAD_VIDEO_TOOLS: f };
+    return { ...process.env as Record<string, string>, ELANOUS_VIDEO_TOOLS: f };
   }
   function runEnv(args: string[]): number {
     const r = spawnSync('bun', [CLI, ...args], { cwd: REPO, encoding: 'utf8', timeout: 90_000, env: brokenEnv() });
@@ -670,7 +670,7 @@ describe('설정 실패는 «그 설정을 쓰는» 명령만 막는다', () => 
     const dir = mkdtempSync(join(tmpdir(), 'vp-env2-'));
     const f = join(dir, 'video-tools.json');
     writeFileSync(f, '{"machines":{"m":{"detect":false,"have":["not-an-impl"]}}}');
-    const env = { ...process.env as Record<string, string>, MONAD_VIDEO_TOOLS: f };
+    const env = { ...process.env as Record<string, string>, ELANOUS_VIDEO_TOOLS: f };
     for (const [c, want] of [['drift', 0], ['spine', 0], ['probe', 2], ['config', 2]] as const) {
       const r = spawnSync('bun', [CLI, c], { cwd: REPO, encoding: 'utf8', timeout: 90_000, env });
       expect(r.status).toBe(want);

@@ -1,15 +1,15 @@
 // H4 Phase 3.B.2b · Codex app-server thread index · disk-backed
 // synthId → codex threadId mapping, used by `CodexAppServerAgent.
-// loadSession` to call `thread/resume` after a monad restart.
+// loadSession` to call `thread/resume` after a elanous restart.
 //
 // Pattern is a near-copy of `codex-native-thread-index.ts` minus the
 // SDK-specific ThreadOptionsSnapshot — the v2 server owns thread-side
 // config (approval policy, sandbox, model, ...) so we don't persist
 // those on the client side. cwd is still persisted because `thread/
 // resume` accepts a cwd override and we want to default to the
-// directory monad opened the session in.
+// directory elanous opened the session in.
 //
-// Storage path: `$XDG_CONFIG_HOME/monad/codex-app-server-threads.json`
+// Storage path: `$XDG_CONFIG_HOME/elanous/codex-app-server-threads.json`
 // (same base dir as session-store + codex-native-threads). Atomic
 // tmp+rename write. Corrupt file → empty map + debug log.
 
@@ -23,10 +23,10 @@ import {
 import { homedir } from 'node:os';
 import { join as joinPath, dirname } from 'node:path';
 import { debug } from '../debug/log.js';
-import { migrateLegacyXdgFile } from '../storage/legacy-monad-dir-migrate.js';
+import { migrateLegacyXdgFile } from '../storage/legacy-elanous-dir-migrate.js';
 
 export interface CasThreadIndexEntry {
-  /** monad-synth id (e.g. `codex-app-server-codex-app-server-1`). */
+  /** elanous-synth id (e.g. `codex-app-server-codex-app-server-1`). */
   synthId: string;
   /** Codex thread id returned by `thread/start`. Passed to
    *  `thread/resume` as `threadId`. */
@@ -87,8 +87,8 @@ export interface CasThreadIndex {
 }
 
 /** LRU cap for the on-disk thread index. Without a bound, every session
- *  mint — and every session RECYCLE (monad's resolveSessionId drops the
- *  monad-side mapping + mints a fresh thread on a stale epoch / turn-cap /
+ *  mint — and every session RECYCLE (elanous's resolveSessionId drops the
+ *  elanous-side mapping + mints a fresh thread on a stale epoch / turn-cap /
  *  resume-timeout, but never removes the OLD codex entry) — leaves a
  *  permanent orphan, so the file grows forever. We evict the least-
  *  recently-used entries past this cap; an evicted session that is later
@@ -97,17 +97,17 @@ export interface CasThreadIndex {
  *  actually live at once. */
 export const CAS_THREAD_INDEX_MAX = 200;
 
-// FU2 (PLAN-config-unification-monad-root-2026-05-10 closing follow-up):
-//   moved from ~/.config/monad/codex-app-server-threads.json → ~/.monad/...
+// FU2 (PLAN-config-unification-elanous-root-2026-05-10 closing follow-up):
+//   moved from ~/.config/elanous/codex-app-server-threads.json → ~/.elanous/...
 function defaultBasePath(): string {
-  // MONAD_STATE_DIR — unified isolated-state knob (see sessionRoot). Wins
+  // ELANOUS_STATE_DIR — unified isolated-state knob (see sessionRoot). Wins
   // over XDG so an isolated process's codex threads don't mix with prod.
-  const stateDir = process.env.MONAD_STATE_DIR?.trim();
+  const stateDir = process.env.ELANOUS_STATE_DIR?.trim();
   if (stateDir) return stateDir;
   const xdg = process.env.XDG_CONFIG_HOME?.trim();
-  if (xdg) return joinPath(xdg, 'monad');
+  if (xdg) return joinPath(xdg, 'elanous');
   migrateLegacyXdgFile('codex-app-server-threads.json', 0o600);
-  return joinPath(homedir(), '.monad');
+  return joinPath(homedir(), '.elanous');
 }
 
 function defaultFilePath(): string {

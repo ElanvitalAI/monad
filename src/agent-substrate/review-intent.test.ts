@@ -249,21 +249,21 @@ describe('buildReviewIntent', () => {
   test('⭐ 원장 명령이 조립기 → PR 본문 → intentFromPr 왕복에서 살아남는다', () => {
     const runId = 'run-6a09390d-7b3d-4f08-9fcb-0289247194ee';
     const assembled = buildReviewIntent({ goal: '골 원문', runId });
-    expect(assembled).toContain(`원장: monad self run-ledger ${runId}`);
+    expect(assembled).toContain(`원장: elanous self run-ledger ${runId}`);
     // PR 본문은 그 intent 를 «품는다»(orchestrator 의 prBody 가 하는 것과 같은 형태).
     const body = ['## 요청', '골 원문', '', '## 리뷰 intent', assembled].join('\n');
     const rendered = intentFromPr({ title: '대상 경로: src/x.ts', body });
-    expect(rendered).toContain(`monad self run-ledger ${runId}`);
+    expect(rendered).toContain(`elanous self run-ledger ${runId}`);
   });
 
   test('⭐ 런 사실에 원장을 여는 «명령 그대로»가 runId 뒤에 실린다', () => {
     const out = buildReviewIntent({ goal: 'G', runId: 'run-6a09390d-7b3d-4f08-9fcb-0289247194ee' });
     expect(out).toContain('runId: run-6a09390d-7b3d-4f08-9fcb-0289247194ee');
-    expect(out).toContain('원장: monad self run-ledger run-6a09390d-7b3d-4f08-9fcb-0289247194ee');
+    expect(out).toContain('원장: elanous self run-ledger run-6a09390d-7b3d-4f08-9fcb-0289247194ee');
     // ⭐ 순서 — 좌표 «뒤»에 길이 온다(읽는 쪽이 머리만 남겨도 좌표가 먼저다).
-    expect(out.indexOf('runId: run-6a09390d')).toBeLessThan(out.indexOf('원장: monad self run-ledger'));
+    expect(out.indexOf('runId: run-6a09390d')).toBeLessThan(out.indexOf('원장: elanous self run-ledger'));
     // ⛔ runId 가 없으면 «길도 없다» — 없는 런의 명령을 만들지 않는다.
-    expect(buildReviewIntent({ goal: 'G', commits: ['c1'] })).not.toContain('monad self run-ledger');
+    expect(buildReviewIntent({ goal: 'G', commits: ['c1'] })).not.toContain('elanous self run-ledger');
   });
 
   test('⭐ 런 사실이 조립 산출의 «맨 앞»이다 — 읽는 쪽이 머리만 남겨도 좌표가 닿는다', () => {

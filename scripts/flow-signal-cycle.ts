@@ -17,8 +17,8 @@ import { ensureCronNodePath } from '../src/domains/cron-path.js';
 
 ensureCronNodePath();
 
-const LOG = join(homedir(), '.monad/conatus/flow_signal_cycle.log');
-const SCREENER = join(homedir(), '.monad/conatus/screener.db');
+const LOG = join(homedir(), '.elanous/conatus/flow_signal_cycle.log');
+const SCREENER = join(homedir(), '.elanous/conatus/screener.db');
 // 발행사명 → 티커. 포커스(삼성) + 반도체 매크로 관련(하이닉스·미매핑은 무시).
 const NAME_TICKER: Record<string, string> = {
   '삼성전자': '005930.KO', 'SK하이닉스': '000660.KO',

@@ -1,6 +1,6 @@
 // ── PX-7 P6: dogfood smoke ──
 //
-// Builds a catalog from the samples/.monad/ fixture + exercises the
+// Builds a catalog from the samples/.elanous/ fixture + exercises the
 // parser converters end-to-end so the dogfood files stay valid.
 
 import { describe, test, expect } from 'bun:test';
@@ -13,7 +13,7 @@ import {
   toRouteContribution,
 } from '../src/plugin-declarative/parser';
 
-const SAMPLE_SRC = join(__dirname, '..', 'samples', '.monad');
+const SAMPLE_SRC = join(__dirname, '..', 'samples', '.elanous');
 
 function copyDir(src: string, dst: string): void {
   mkdirSync(dst, { recursive: true });
@@ -26,7 +26,7 @@ function copyDir(src: string, dst: string): void {
   }
 }
 
-describe('PX-7 P6 — samples/.monad dogfood', () => {
+describe('PX-7 P6 — samples/.elanous dogfood', () => {
   test('sample-reviewer agent loads + converts cleanly', () => {
     const dir = mkdtempSync(join(tmpdir(), 'pd-smoke-'));
     const user = join(dir, 'user');

@@ -119,7 +119,7 @@ const VERDICT_IMPORTANCE = { coherent: 4, partial: 6, incoherent: 8 } as const;
 export function imprintMissionReflection(r: MissionReflection, db?: Database): string {
   const database = db ?? openSurfaceEventsDb(surfaceEventsDbPath());
   // 제1원칙 관측(logs.db) — surface_events 각인과 별개로 회고 결정을 logs.db 에 남겨
-  // `monad logs --category mission.retro` 로 조회 가능하게(엄브렐라 RFC "logs.db+각인 3박자").
+  // `elanous logs --category mission.retro` 로 조회 가능하게(엄브렐라 RFC "logs.db+각인 3박자").
   debug.log('mission.retro', `imprint.${r.verdict}`, {
     missionId: r.missionId,
     verdict: r.verdict,
@@ -133,7 +133,7 @@ export function imprintMissionReflection(r: MissionReflection, db?: Database): s
     direction: 'outbound',
     kind: 'mission-retro',
     category: 'mission.retro',
-    domain: 'monad',
+    domain: 'elanous',
     text: renderMissionReflection(r),
     summary: `미션 회고 ${r.missionId}: ${r.verdict}(아크 ${r.arcs.done}/${r.arcs.total} done·${r.arcs.verified} verified${r.arcs.descoped ? `·${r.arcs.descoped} descoped` : ''})`,
     importance: VERDICT_IMPORTANCE[r.verdict],
@@ -209,7 +209,7 @@ export function imprintMissionFeedback(r: MissionFeedbackReflection, db?: Databa
     direction: 'outbound',
     kind: 'mission-feedback',
     category: 'mission.feedback',
-    domain: 'monad',
+    domain: 'elanous',
     text: renderMissionFeedback(r),
     summary: `미션 피드백 ${r.missionId}: 불편 ${r.frictionPoints.length}·의지 ${r.willSignals.length}·가이드 ${r.externalGuidance.length}`,
     importance,

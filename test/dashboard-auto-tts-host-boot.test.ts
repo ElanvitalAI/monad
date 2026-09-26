@@ -18,30 +18,30 @@ afterEach(() => {
 });
 
 describe('bootDashboardAutoTts — env reading', () => {
-  it('starts disabled when MONAD_AUTO_TTS unset', () => {
-    delete process.env.MONAD_AUTO_TTS;
+  it('starts disabled when ELANOUS_AUTO_TTS unset', () => {
+    delete process.env.ELANOUS_AUTO_TTS;
     const { controller } = bootDashboardAutoTts();
     expect(controller.isEnabled()).toBe(false);
   });
 
-  it('honors MONAD_AUTO_TTS=1 / true / on / yes', () => {
+  it('honors ELANOUS_AUTO_TTS=1 / true / on / yes', () => {
     for (const v of ['1', 'true', 'on', 'yes', 'TRUE', 'On']) {
-      process.env.MONAD_AUTO_TTS = v;
+      process.env.ELANOUS_AUTO_TTS = v;
       const { controller } = bootDashboardAutoTts();
       expect(controller.isEnabled()).toBe(true);
     }
   });
 
-  it('treats MONAD_AUTO_TTS=0 / false / off as disabled', () => {
+  it('treats ELANOUS_AUTO_TTS=0 / false / off as disabled', () => {
     for (const v of ['0', 'false', 'off', 'no', '']) {
-      process.env.MONAD_AUTO_TTS = v;
+      process.env.ELANOUS_AUTO_TTS = v;
       const { controller } = bootDashboardAutoTts();
       expect(controller.isEnabled()).toBe(false);
     }
   });
 
   it('explicit opts.initiallyEnabled overrides env', () => {
-    process.env.MONAD_AUTO_TTS = '1';
+    process.env.ELANOUS_AUTO_TTS = '1';
     const { controller } = bootDashboardAutoTts({ initiallyEnabled: false });
     expect(controller.isEnabled()).toBe(false);
   });

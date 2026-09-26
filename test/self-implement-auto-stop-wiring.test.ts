@@ -20,7 +20,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, it, spyOn } from 'bun:test';
 import type { ControlObservation, RunSupervisor } from '../src/autopilot/pty-control-loop.js';
-import { runHeadlessGoalLoopPty } from '../src/self-implement/headless-monad-driver.js';
+import { runHeadlessGoalLoopPty } from '../src/self-implement/headless-elanous-driver.js';
 import { STALL_RUNGS_MS } from '../src/capture/frame-observation.js';
 import { debug } from '../src/debug/log.js';
 import { runSelfImplement, type SelfImplementSeams } from '../src/self-implement/orchestrator.js';
@@ -171,24 +171,24 @@ describe('S4 P3 자동 종료 — seams→config→driver 전달 경로', () => 
     const tree = mkdtempSync(j(tmpdir(), 'as-tree-'));
     const stub = mkdtempSync(j(tmpdir(), 'as-bin-'));
     try {
-      mkdirSync(j(home, '.monad'));
+      mkdirSync(j(home, '.elanous'));
       // ★ 노브를 **기본이 아닌 값**으로 켠다 — 기본값이 흘러도 통과하는 테스트가 되지 않게.
-      writeFileSync(j(home, '.monad', 'config.json'), JSON.stringify({
+      writeFileSync(j(home, '.elanous', 'config.json'), JSON.stringify({
         onboarding: { completed: true }, llm: { provider: 'openai-codex' },
         tools: { selfImplement: { autoStop: { enabled: true, minRung: 1 } } },
       }));
-      writeFileSync(j(home, '.monad', 'leader.json'), JSON.stringify({ tree: '/other', promotedAt: 'x' }));
+      writeFileSync(j(home, '.elanous', 'leader.json'), JSON.stringify({ tree: '/other', promotedAt: 'x' }));
       writeFileSync(j(home, '.zshenv'), `export PATH="${dirname(process.execPath)}:$PATH"\n`);
       spawnSync('git', ['init', '-q'], { cwd: tree });
       mkdirSync(j(stub, 'bin'));
-      writeFileSync(j(stub, 'bin', 'monad.mjs'), 'process.exit(0);\n');
+      writeFileSync(j(stub, 'bin', 'elanous.mjs'), 'process.exit(0);\n');
       const out = j(stub, 'observed.json');
 
       const script = `
         const {defaultSeams}=require('${process.cwd()}/src/self-implement/seams.ts');
         let seen=null;
         const seams=defaultSeams({
-          monadBinRoot:'${stub}', implementMaxWaitSec:3, ptyAvailable:()=>true,
+          elanousBinRoot:'${stub}', implementMaxWaitSec:3, ptyAvailable:()=>true,
           runHeadlessGoalLoopPty:async (opts)=>{
             seen={wired:opts.autoStop!==undefined,enabled:opts.autoStop?.enabled,minRung:opts.autoStop?.minRung,brainWired:opts.brain!==undefined};
             return {ok:false};
@@ -200,7 +200,7 @@ describe('S4 P3 자동 종료 — seams→config→driver 전달 경로', () => 
       `;
       spawnSync('bun', ['-e', script], {
         encoding: 'utf8', timeout: 150_000, cwd: tree,
-        env: { ...process.env, HOME: home, MONAD_STATE_DIR: '', MONAD_CONFIG_DIR: '', MONAD_NEXUS_DIR: '', MONAD_NEST_DEPTH: '0' },
+        env: { ...process.env, HOME: home, ELANOUS_STATE_DIR: '', ELANOUS_CONFIG_DIR: '', ELANOUS_NEXUS_DIR: '', ELANOUS_NEST_DEPTH: '0' },
       });
 
       expect(existsSync(out)).toBe(true);
@@ -342,7 +342,7 @@ describe('post-merge worktree cleanup wiring', () => {
   });
 
   it('defaultSeams force-deletes a real squash-merged branch', () => {
-    const repoRoot = mkdtempSync(join(tmpdir(), 'monad-squash-cleanup-'));
+    const repoRoot = mkdtempSync(join(tmpdir(), 'elanous-squash-cleanup-'));
     const branch = 'dev/squash-cleanup';
     const git = (...args: string[]) => execFileSync('git', args, { cwd: repoRoot, encoding: 'utf8' });
     try {

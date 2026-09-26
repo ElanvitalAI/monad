@@ -54,7 +54,7 @@ describe('createLocalLlmPtyAdapter · supports()', () => {
     expect(a.supports({ brand: 'codex' })).toBe(false);
     expect(a.supports({ brand: 'claude' })).toBe(false);
     expect(a.supports({ brand: 'gemini' })).toBe(false);
-    expect(a.supports({ brand: 'monad' })).toBe(false);
+    expect(a.supports({ brand: 'elanous' })).toBe(false);
     expect(a.supports({ brand: 'local-llm', mode: 'acp' })).toBe(false);
     expect(a.supports({ brand: 'local-llm', mode: 'native-sdk' })).toBe(false);
   });

@@ -1,25 +1,25 @@
-// CLI · `monad` no-arg default remote resolve (Track 4.C · 2026-05-07)
+// CLI · `elanous` no-arg default remote resolve (Track 4.C · 2026-05-07)
 //
-// `monad` 무인자 entry resolution:
+// `elanous` 무인자 entry resolution:
 //   1. `--local` flag                → force local NEXUS spawn (skip 모든 remote)
 //   2. `--remote <name>`              → 그 bookmark 사용 (없으면 error)
 //      `-r` (값 없음)                 → default bookmark (없으면 connect 안내)
-//   3. MONAD_REMOTE env 가 set 된 경우  → 기존 MONAD_REMOTE 경로 (legacy compat)
+//   3. ELANOUS_REMOTE env 가 set 된 경우  → 기존 ELANOUS_REMOTE 경로 (legacy compat)
 //   4. remotes.json 의 default bookmark → 그 bookmark 사용
 //   5. else                           → local
 //
 // ⛔⭐ `-r` 은 `--remote` 의 «완전한» 별칭이 아니다 — ***값을 먹지 않는다.***
-//     `monad -r` = default 북마크. 이름을 대려면 긴 형태 `--remote <name>`.
+//     `elanous -r` = default 북마크. 이름을 대려면 긴 형태 `--remote <name>`.
 //     근거는 아래 readRemoteFlag 머리말(4R 리뷰 지적: 문법이 «데이터»에 달리면 안 된다).
-// 외울 명령 = `monad -r` + 처음 1회 `monad nexus connect <host> --default`.
+// 외울 명령 = `elanous -r` + 처음 1회 `elanous nexus connect <host> --default`.
 
 import { existsSync, readFileSync } from 'node:fs';
 import { RemotesStore, type RemoteEntry } from './remotes.js';
 
-export const DEFAULT_REMOTE_CONNECT_HINT = 'monad nexus connect <host> --default';
+export const DEFAULT_REMOTE_CONNECT_HINT = 'elanous nexus connect <host> --default';
 
 /** 「세션을 이어 하려던 것」으로 보이는 모양.
- *  📏 **실물로 좁혔다**(리뷰 지적 · 2026-09-01): `~/.monad/sessions/` 의 파일명은
+ *  📏 **실물로 좁혔다**(리뷰 지적 · 2026-09-01): `~/.elanous/sessions/` 의 파일명은
  *  전부 ***완전한 UUID***다(`0000e49c-f9e8-4117-9d5f-795e57b541e9.jsonl`).
  *  ⛔ 옛 판은 `session-[A-Za-z0-9]` 까지 물어서 `session-home` 같은 «평범한 이름»을
  *     resume 안내로 막았다 — 잡으려던 것보다 넓었다.
@@ -28,7 +28,7 @@ const LOOKS_LIKE_SESSION_ID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-
 
 export type RemoteResolution =
   | { kind: 'local'; reason: 'flag' | 'no-bookmark' | 'no-default' }
-  | { kind: 'env'; reason: 'monad-remote-set' }
+  | { kind: 'env'; reason: 'elanous-remote-set' }
   | { kind: 'remote'; name: string; entry: RemoteEntry; token: string | undefined; reason: 'flag' | 'default-bookmark' };
 
 export interface ResolveRemoteAttachOpts {
@@ -54,7 +54,7 @@ export function resolveRemoteAttach(opts: ResolveRemoteAttachOpts): RemoteResolu
     const entry = store.getRemote(remoteFlag.value);
     if (!entry) {
       throw new Error(
-        `--remote ${remoteFlag.value}: unknown bookmark. Run \`monad nexus list\` to see available remotes.`,
+        `--remote ${remoteFlag.value}: unknown bookmark. Run \`elanous nexus list\` to see available remotes.`,
       );
     }
     return {
@@ -65,9 +65,9 @@ export function resolveRemoteAttach(opts: ResolveRemoteAttachOpts): RemoteResolu
       reason: 'flag',
     };
   }
-  const envRemote = (opts.envRemote ?? process.env.MONAD_REMOTE ?? '').trim();
+  const envRemote = (opts.envRemote ?? process.env.ELANOUS_REMOTE ?? '').trim();
   if (envRemote.length > 0) {
-    return { kind: 'env', reason: 'monad-remote-set' };
+    return { kind: 'env', reason: 'elanous-remote-set' };
   }
   const defaultEntry = store.getDefaultRemote();
   if (!defaultEntry) {
@@ -146,8 +146,8 @@ function hasFlag(args: readonly string[], name: string): boolean {
  *  📏 그 별칭을 «떼기로» 한 근거(2026-09-01 실측):
  *  ```
  *  commander option 선언        없음 — argv 를 직접 훑는 두 줄뿐
- *  `monad --help` 노출          없음
- *  docs/scripts/test/.rules     `monad -r <x>` 사용 0건
+ *  `elanous --help` 노출          없음
+ *  docs/scripts/test/.rules     `elanous -r <x>` 사용 0건
  *                               (grep 에 걸린 것은 전부 `rg -r`·`cp -r`·`read -r`)
  *  `--resume` (긴 형태)         58개 파일 — ***이쪽이 진짜 표면이고 그대로 둔다***
  *  ```
@@ -159,11 +159,11 @@ function hasFlag(args: readonly string[], name: string): boolean {
  *     사람이 배울 수도, 시험이 고정할 수도 없는 계약이다. 그래서 뺐다.
  *
  *  ```
- *  monad -r                 원격 default 북마크
- *  monad -r attach          default 북마크 + `attach` 는 «서브커맨드»로 흐른다
- *  monad --remote <name>    원격 named 북마크 (값 필수 — main 의 기존 계약)
- *  monad --resume <x>       resume (그대로)
- *  monad -r <UUID>          ⚠️ ***전환 안내로 거부*** — 아래 「전환 정책」 참조
+ *  elanous -r                 원격 default 북마크
+ *  elanous -r attach          default 북마크 + `attach` 는 «서브커맨드»로 흐른다
+ *  elanous --remote <name>    원격 named 북마크 (값 필수 — main 의 기존 계약)
+ *  elanous --resume <x>       resume (그대로)
+ *  elanous -r <UUID>          ⚠️ ***전환 안내로 거부*** — 아래 「전환 정책」 참조
  *  ```
  *
  *  ## 전환 정책 (한시적 · 리뷰 지적으로 «명시»한다)
@@ -192,7 +192,7 @@ function hasFlag(args: readonly string[], name: string): boolean {
 /** ⭐⭐ **루트에서 «값을 받는» 플래그 — 선행 구간을 끊지 않는 것들.**
  *
  *  🩸 이 상수는 «한계를 합리화하다가» 생겼다. 처음엔 *"각 플래그의 arity 는 commander 만
- *  아니 `monad --config-dir /x -r` 은 원리상 못 잡는다"* 라고 쓰고 그것을 시험으로 «고정»했다.
+ *  아니 `elanous --config-dir /x -r` 은 원리상 못 잡는다"* 라고 쓰고 그것을 시험으로 «고정»했다.
  *  ⛔ 리뷰가 그것을 ***Goodhart*** 라 불렀고 «맞다» — 수용기준 미달을 검증으로 포장한 것이다.
  *
  *  📏 그래서 세어 봤다: 루트 `program` 이 선언하는 옵션은 ***넷***이고 값을 받는 것은
@@ -209,7 +209,7 @@ export const ROOT_FLAGS_TAKING_VALUE = new Set(['--remote', '--config-dir']);
  *
  *  🩸 그리고 ***`--` 는 플래그가 아니라 «옵션의 끝»이다***(리뷰 지적 · 실물 재현).
  *  `--` 도 `-` 로 시작하니 옛 판은 그것을 플래그로 세었고, 그래서
- *  `monad -- -r` 의 위치 인자 `-r` 을 «원격 플래그로 탈취»했다
+ *  `elanous -- -r` 의 위치 인자 `-r` 을 «원격 플래그로 탈취»했다
  *  (실측: "attaching to remote: probe" 를 찍었다). `--` 뒤는 전부 위치 인자다. */
 function isLeadingFlag(args: readonly string[], index: number): boolean {
   for (let i = 0; i < index; i += 1) {
@@ -232,7 +232,7 @@ export function readRemoteFlag(args: readonly string[]): { present: boolean; val
     const next = args[i + 1];
 
     if (tok === '-r') {
-      // ⛔ `-r` 은 ***절대 값을 먹지 않는다.*** 그래서 `monad -r attach` 의
+      // ⛔ `-r` 은 ***절대 값을 먹지 않는다.*** 그래서 `elanous -r attach` 의
       //    `attach` 는 서브커맨드로 그대로 흐른다.
       // 🩹 다만 옛 손버릇 하나는 «말해 준다» — `-r` 은 예전에 루트에서
       //    `--resume` 의 숨은 별칭이었다. 세션 id 모양이 오면 조용히
@@ -241,7 +241,7 @@ export function readRemoteFlag(args: readonly string[]): { present: boolean; val
         throw new Error(
           `-r ${next}: \`-r\` 은 이제 «원격 북마크»이고 값을 받지 않습니다.\n`
           + '  세션을 이어 하려면 `--resume <id>` 를 쓰십시오.\n'
-          + `  원격 이름을 대려면 \`--remote <name>\`, 목록은 \`monad nexus list\`.`,
+          + `  원격 이름을 대려면 \`--remote <name>\`, 목록은 \`elanous nexus list\`.`,
         );
       }
       return { present: true, value: '' };
@@ -249,7 +249,7 @@ export function readRemoteFlag(args: readonly string[]): { present: boolean; val
 
     // 긴 형태는 값을 «요구»한다 (main 의 기존 계약 그대로).
     if (next === undefined || next.startsWith('-')) {
-      throw new Error('--remote requires a bookmark name (e.g. `monad --remote mbp`).');
+      throw new Error('--remote requires a bookmark name (e.g. `elanous --remote mbp`).');
     }
     return { present: true, value: next };
   }
@@ -268,7 +268,7 @@ function readToken(entry: RemoteEntry): string | undefined {
 
 /** Convert a bookmark entry's `acp_url` (ws://...) to the env var that
  *  resolveRemoteTarget understands. */
-export function bookmarkToMonadRemote(entry: RemoteEntry): string {
+export function bookmarkToElanousRemote(entry: RemoteEntry): string {
   // Already ws-formed; resolveRemoteTarget passes through.
   // ⛔⭐ **조용히 떨어지지 않는다.** remotes.json 은 사람이 고칠 수 있는 파일이라
   //    `acp_url` 이 빠질 수 있다. 그러면 «타입은 string 인데 런타임은 undefined»가 된다.
@@ -276,10 +276,10 @@ export function bookmarkToMonadRemote(entry: RemoteEntry): string {
   //       실제로는 로컬 unix 소켓으로 붙었다. ***도구가 거짓말을 한다.***
   //
   //  ## 회귀 호환성 근거 (리뷰가 «별도 PR 로 분리하거나 근거를 대라» 해서 적는다)
-  //  📏 이 함수의 «제품» 호출자는 ***둘***이다(전수: `git grep bookmarkToMonadRemote`):
+  //  📏 이 함수의 «제품» 호출자는 ***둘***이다(전수: `git grep bookmarkToElanousRemote`):
   //  ```
   //  bookmarkAttachDefaults → host   → 호출부가 `bookmarkHost ? …` 로 읽는다  ⇒ falsy = 조용히 «누락»
-  //  src/index.ts:11397              → process.env.MONAD_REMOTE = <undefined>
+  //  src/index.ts:11397              → process.env.ELANOUS_REMOTE = <undefined>
   //                                    (Bun 은 그 키를 «지운다» — Node 의 "undefined" 문자열화와 다르다.
   //                                     실측: `process.env.X = undefined` → typeof undefined)
   //                                                                        ⇒ 역시 조용히 «누락»
@@ -293,7 +293,7 @@ export function bookmarkToMonadRemote(entry: RemoteEntry): string {
   if (typeof url !== 'string' || url.length === 0) {
     throw new Error(
       `remote bookmark ${entry.host}: acp_url 이 비어 있습니다 (remotes.json 손상).\n`
-      + `  \`monad nexus connect ${entry.host}\` 로 다시 등록하십시오.`,
+      + `  \`elanous nexus connect ${entry.host}\` 로 다시 등록하십시오.`,
     );
   }
   return url;
@@ -304,7 +304,7 @@ export function bookmarkToMonadRemote(entry: RemoteEntry): string {
  *  the caller win because they are applied first. */
 export function bookmarkAttachDefaults(entry: RemoteEntry): { host: string; tokenFile: string } {
   return {
-    host: bookmarkToMonadRemote(entry),
+    host: bookmarkToElanousRemote(entry),
     tokenFile: entry.token_file,
   };
 }

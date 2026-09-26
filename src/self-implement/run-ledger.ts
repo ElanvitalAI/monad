@@ -3,7 +3,7 @@ import { dirname, join, resolve } from 'node:path';
 import { tracedPathReferences, verbatimOriginalAsk } from './goal-author.js';
 import { parseAskTargetPathHintsResult } from '../self-dev/launch-preflight.js';
 import { isRunStatus } from './run-status-mapping.js';
-import { monadStateRoot } from '../autopilot/state-paths.js';
+import { elanousStateRoot } from '../autopilot/state-paths.js';
 import { normalizeRunId } from '../harness/harness-space.js';
 import { resolveLogTargets, type LogTarget } from '../cli/logs-cli.js';
 import { LogStore, logsDbPath, type LogStoreRow } from '../mss/logging/log-store.js';
@@ -90,7 +90,7 @@ export interface RunOriginData extends Record<string, unknown> {
   arch: string;
   substrate: string;
   instance: string;
-  monadVersion: string;
+  elanousVersion: string;
   podName?: string;
   nodeName?: string;
   podNamespace?: string;
@@ -194,9 +194,9 @@ export function measureRunLedgerGaps(roots: readonly RunLedgerGapRoot[]): RunLed
   };
 }
 
-/** `<MONAD_STATE_DIR or ~/.monad>/run-ledger`, separate from self-dev resume checkpoints. */
+/** `<ELANOUS_STATE_DIR or ~/.elanous>/run-ledger`, separate from self-dev resume checkpoints. */
 export function runLedgerDir(stateDir?: string): string {
-  return join(stateDir ?? monadStateRoot(), 'run-ledger');
+  return join(stateDir ?? elanousStateRoot(), 'run-ledger');
 }
 
 export function runLedgerPath(runId: string, dir = runLedgerDir()): string {
@@ -239,7 +239,7 @@ export function describeMissingRunLedger(runId: string, stateDir?: string): Miss
   };
 }
 
-/** Reuse the `monad logs --all/--include-test` target policy for physical run-ledger directories. */
+/** Reuse the `elanous logs --all/--include-test` target policy for physical run-ledger directories. */
 export function runLedgerDirectoriesForLogTargets(targets: readonly LogTarget[]): string[] {
   return [...new Set(targets.map((target) => resolve(dirname(dirname(target.dbPath)), 'run-ledger')))];
 }
@@ -1647,7 +1647,7 @@ export interface FederatedUnfinishedRunLedgerQueryOptions {
   runIds?: readonly string[];
 }
 
-const FEDERATED_UNFINISHED_RUN_LEDGER_NOTE = 'Read-only union of run-ledger directories selected by the same --all/--include-test target policy as monad logs. Each row carries its physical ledger directory because instance names can identify multiple state roots.';
+const FEDERATED_UNFINISHED_RUN_LEDGER_NOTE = 'Read-only union of run-ledger directories selected by the same --all/--include-test target policy as elanous logs. Each row carries its physical ledger directory because instance names can identify multiple state roots.';
 
 export function queryFederatedUnfinishedRunLedgers(options: FederatedUnfinishedRunLedgerQueryOptions = {}): FederatedUnfinishedRunLedgerQuery {
   const goalsDirectory = resolve(options.goalsDir ?? resolveGoalDocumentsDir(process.cwd()).directory);
@@ -1784,7 +1784,7 @@ export interface MergedRunLedgerQueryOptions {
   list?: (path: string) => string[];
 }
 
-const MERGED_RUN_LEDGER_NOTE = 'Includes only merged events recorded by monad self-implement pipeline run ledgers; excludes review-loop and merges performed outside monad. Excludes every merged event from a ledger containing two or more merged events because one pipeline run merges at most once.';
+const MERGED_RUN_LEDGER_NOTE = 'Includes only merged events recorded by elanous self-implement pipeline run ledgers; excludes review-loop and merges performed outside elanous. Excludes every merged event from a ledger containing two or more merged events because one pipeline run merges at most once.';
 
 /** Read merged self-implement pipeline events from all existing run ledgers without changing either store. */
 interface MergedRunLedgerScan {
@@ -1889,7 +1889,7 @@ export interface MergeAttributionQueryOptions extends MergedRunLedgerQueryOption
 }
 
 export interface MergeAttributionQuery {
-  monadMergedEntries: readonly MergedRunLedgerEvent[];
+  elanousMergedEntries: readonly MergedRunLedgerEvent[];
   handedToHumanEntries: readonly HandedToHumanMergeAttributionEntry[];
   ledgerDirectory: string;
   handedToHumanWithoutMergeAttemptCount: number;
@@ -1909,22 +1909,22 @@ export interface MergeAttributionQuery {
   note: string;
 }
 
-const MERGE_ATTRIBUTION_UNATTRIBUTABLE_REASON = 'Merges that did not pass through monad cannot be counted from run ledgers alone.';
-const MERGE_ATTRIBUTION_INVALID_CROSS_STORE_TOTAL_REASON = 'The cross-store merged total must be a finite non-negative integer that is not less than the monad merged count.';
+const MERGE_ATTRIBUTION_UNATTRIBUTABLE_REASON = 'Merges that did not pass through elanous cannot be counted from run ledgers alone.';
+const MERGE_ATTRIBUTION_INVALID_CROSS_STORE_TOTAL_REASON = 'The cross-store merged total must be a finite non-negative integer that is not less than the elanous merged count.';
 const MERGE_ATTRIBUTION_NOTE = 'Reads only self-implement run ledgers; it does not read the log-store observations for review-loop auto-merged events or MergePullRequest tool calls.';
 
 function isMergeCount(value: number): boolean {
   return Number.isFinite(value) && Number.isInteger(value) && value >= 0;
 }
 
-function unattributableMerges(crossStoreMergedTotal: number | undefined, monadMergedCount: number): MergeAttributionQuery['unattributable'] {
+function unattributableMerges(crossStoreMergedTotal: number | undefined, elanousMergedCount: number): MergeAttributionQuery['unattributable'] {
   if (crossStoreMergedTotal === undefined) {
     return { status: 'not-countable', reason: MERGE_ATTRIBUTION_UNATTRIBUTABLE_REASON };
   }
-  if (!isMergeCount(crossStoreMergedTotal) || !isMergeCount(monadMergedCount) || crossStoreMergedTotal < monadMergedCount) {
+  if (!isMergeCount(crossStoreMergedTotal) || !isMergeCount(elanousMergedCount) || crossStoreMergedTotal < elanousMergedCount) {
     return { status: 'not-countable', reason: MERGE_ATTRIBUTION_INVALID_CROSS_STORE_TOTAL_REASON };
   }
-  return { status: 'counted', count: crossStoreMergedTotal - monadMergedCount };
+  return { status: 'counted', count: crossStoreMergedTotal - elanousMergedCount };
 }
 
 /** 사람 표기용 — `unattributable` 의 «두 팔»을 한 문자열로 접는다.
@@ -1944,19 +1944,19 @@ export function queryMergeAttribution(options: MergeAttributionQueryOptions = {}
   const merged = queryMergedRunLedgers(options);
   const dir = merged.ledgerDirectory;
   const list = options.list ?? readdirSync;
-  const monadMergedEntries = merged.entries.filter((entry) => entry.merged);
+  const elanousMergedEntries = merged.entries.filter((entry) => entry.merged);
   let fileNames: string[];
   try {
     fileNames = list(dir);
   } catch (error) {
     if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
       return {
-        monadMergedEntries,
+        elanousMergedEntries,
         handedToHumanEntries: [],
         ledgerDirectory: merged.ledgerDirectory,
         handedToHumanWithoutMergeAttemptCount: 0,
         handedToHumanAfterMergeAttemptCount: 0,
-        unattributable: unattributableMerges(options.crossStoreMergedTotal, monadMergedEntries.length),
+        unattributable: unattributableMerges(options.crossStoreMergedTotal, elanousMergedEntries.length),
         excludedMergedEntryCount: merged.excludedMergedEntryCount,
         excludedLedgerCount: merged.excludedLedgerCount,
         unreadableLedgerCount: merged.unreadableLedgerCount,
@@ -1968,7 +1968,7 @@ export function queryMergeAttribution(options: MergeAttributionQueryOptions = {}
     throw error;
   }
 
-  const monadMergedRunIds = new Set(monadMergedEntries.map((entry) => entry.runId));
+  const elanousMergedRunIds = new Set(elanousMergedEntries.map((entry) => entry.runId));
   const failedMergeAttemptRunIds = new Set(merged.entries.filter((entry) => !entry.merged).map((entry) => entry.runId));
   const handedToHumanEntries: HandedToHumanMergeAttributionEntry[] = [];
   for (const entry of merged.entries) {
@@ -1991,7 +1991,7 @@ export function queryMergeAttribution(options: MergeAttributionQueryOptions = {}
   for (const fileName of fileNames) {
     const runId = runIdFromCanonicalLedgerFile(fileName);
     if (!runId) continue;
-    if (monadMergedRunIds.has(runId) || failedMergeAttemptRunIds.has(runId)) continue;
+    if (elanousMergedRunIds.has(runId) || failedMergeAttemptRunIds.has(runId)) continue;
     try {
       const ledger = loadRunLedger(runId, dir, options.read);
       if ((ledger ?? []).filter((entry) => entry.event === 'merged').length >= 2) continue;
@@ -2020,12 +2020,12 @@ export function queryMergeAttribution(options: MergeAttributionQueryOptions = {}
   const handedToHumanAfterMergeAttemptCount = handedToHumanEntries.filter((entry) => entry.branch === 'after-merge-attempt').length;
 
   return {
-    monadMergedEntries,
+    elanousMergedEntries,
     handedToHumanEntries,
     ledgerDirectory: merged.ledgerDirectory,
     handedToHumanWithoutMergeAttemptCount,
     handedToHumanAfterMergeAttemptCount,
-    unattributable: unattributableMerges(options.crossStoreMergedTotal, monadMergedEntries.length),
+    unattributable: unattributableMerges(options.crossStoreMergedTotal, elanousMergedEntries.length),
     excludedMergedEntryCount: merged.excludedMergedEntryCount,
     excludedLedgerCount: merged.excludedLedgerCount,
     unreadableLedgerCount: merged.unreadableLedgerCount,

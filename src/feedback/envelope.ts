@@ -43,7 +43,7 @@ export type FeedbackKind =
   //                       LLM 의 agent_message_chunk text 가 chat-targeted bubble
   //                       으로 stream. iOS ChatView 가 thought/announce/done 3 role
   //                       으로 render. agent.status (HUD) 와 별개 path.
-  //                       (HITL ask_user_question 은 ACP bridge `monad/ask/*` +
+  //                       (HITL ask_user_question 은 ACP bridge `elanous/ask/*` +
   //                       iOS ACPClient.pendingAskQuestion sheet 으로 이미 wire —
   //                       agent.ask envelope kind 신설 불필요.)
   | 'media.image' //       MCP / generation 결과 그림. src + mediaType, 선택적 alt.
@@ -197,7 +197,7 @@ export interface HudSegmentPayload {
 // ── Mission payload (W8-A Phase 4 · 2026-05-14) ──────────────────────
 //
 // iOS Live Activity / Dynamic Island Mission render. iOS-side mirror =
-// `apps/ios/MonadiOS/MonadiOS/Shared/Feedback/FeedbackEnvelope.swift` 의
+// `apps/ios/ElanousiOS/ElanousiOS/Shared/Feedback/FeedbackEnvelope.swift` 의
 // `MissionUpdatePayload` (struct · 같은 field name). MissionContentState
 // 의 5-field (Q1=B) 가 본 payload 안에 직접 들어감 — Live Activity 가 본
 // payload 받으면 ActivityKit `Activity.update(ActivityContent(state:))` 로 swap.
@@ -210,7 +210,7 @@ export interface HudSegmentPayload {
 // ── Autopilot bidirectional payloads (Phase A · 2026-05-20) ──────────
 //
 // PLAN-autopilot-terminal-driving-2026-05-20 v2 §3.1 — 기존 43 PR cascade
-// (monad-builtin autopilot · terminal agency) 가 LLM → terminal 단방향
+// (elanous-builtin autopilot · terminal agency) 가 LLM → terminal 단방향
 // + tool_call agency 까지 wire. 본 phase 가 추가하는 "chat 양방향" 의 2 wire:
 //   - agent.chat-stream  LLM 자발 chat push (thought/announce/done)
 //   - agent.ask          HITL question (사용자 응답 required)

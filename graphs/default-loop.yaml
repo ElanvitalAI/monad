@@ -6,7 +6,7 @@
 #   ⑶ 셀프힐링 재-루프와 «저작 시 분해»까지 대응한다」
 #
 # ⛔ 출처는 «실측»이다(추측 없음):
-#   저작 페이즈  ← monad logs --category goal-author --event phase-end   (표본 200 · 7페이즈)
+#   저작 페이즈  ← elanous logs --category goal-author --event phase-end   (표본 200 · 7페이즈)
 #   분해·재발사  ← self-dev.supervisor/decision  action ∈ {relaunch, stop}
 #   구현~머지    ← pipeline-traversal-shadow 걸음 182 · 아나토미 §8a-0 엣지 표
 # ═══════════════════════════════════════════════════════════════════════════════

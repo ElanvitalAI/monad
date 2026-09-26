@@ -5,10 +5,10 @@ const noTokens = () => null;
 const noFiles = () => false;
 
 describe('구독 판정 — ⛔ 「없다」를 확인 없이 말하지 않는다', () => {
-  test('monad auth store 에 있으면 구독이다', () => {
+  test('elanous auth store 에 있으면 구독이다', () => {
     const r = inspectSubscription('anthropic', { loadTokens: (p) => (p === 'anthropic' ? {} : null), fileExists: noFiles });
     expect(r.hasSubscription).toBe(true);
-    expect(r.source).toBe('monad-auth-store');
+    expect(r.source).toBe('elanous-auth-store');
   });
 
   test('provider 홈 파일에 있으면 구독이다 ⊕ 본 경로를 말한다', () => {

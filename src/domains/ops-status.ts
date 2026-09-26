@@ -150,7 +150,7 @@ export function opsSnapshot(opts: OpsStatusOpts = {}): OpsSnapshot {
   //  그 실패는 [] 로 접지 않고 schedules=null 로 보존한다.
   //  기본 경로(미주입·단일 prod)는 파일 실존이라 종전대로 open(무회귀).
   //  조회 실패는 빈 목록과 구별한다 — 실패면 schedRows=null(헬스 null) + lookup-failed 로그.
-  //  진짜 빈 레지스트리는 [] 를 헬스에 넘겨 monadTotal=0 이 된다.
+  //  진짜 빈 레지스트리는 [] 를 헬스에 넘겨 elanousTotal=0 이 된다.
   let schedRows: ScheduleRow[] | null = [];
   let schedulesLookupFailed = false;
   try {
@@ -466,12 +466,12 @@ export function opsMissionDetail(id: string, opts: OpsStatusOpts = {}): OpsMissi
   const diagnosed = phases.filter((p) => p.diagnosis).length;
   const note = mission
     ? `미션 상세 + 페이즈 ${phases.length}건${diagnosed ? `(진단 ${diagnosed})` : ''} + 파생물 ${derived.length}건(크론/태스크/자율행동) + 전이 ${transitions.length}건${planDraft ? ' + 플랜 초안' : ''}. 처분: ${mission.disposition}.${diagnosed ? ' 실패 페이즈의 diagnosis 에 근본원인+권장 힐(저장 진단).' : ''}`
-    : `미션 ${id} 없음(id 확인: monad ops status 또는 autopilot list).`;
+    : `미션 ${id} 없음(id 확인: elanous ops status 또는 autopilot list).`;
   return { mission, derived, rollup, transitions, phases, runLogPath, planDraft, note };
 }
 
 /** ambient 자각용 1-2줄 요약(빈 문자열=이상 없음) — telegram systemPrompt 에 주입해
- *  monad 가 대화 중 자기 자율 시스템의 이상을 자각한다(recentAutonomyContext 의 자매).
+ *  elanous 가 대화 중 자기 자율 시스템의 이상을 자각한다(recentAutonomyContext 의 자매).
  *  fail-soft. 정상이면 노이즈 없이 빈 문자열. */
 export function opsHealthContext(opts: OpsStatusOpts = {}): string {
   try {

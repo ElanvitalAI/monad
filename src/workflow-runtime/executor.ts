@@ -3,7 +3,7 @@
 // Sequential topological execution. Each ready node runs to completion
 // before the next is dispatched. Parallelism is intentionally deferred
 // (Archon's executor.ts is 800+ LOC partly because of parallel
-// dispatch + fan-out — monad's MVP runs strictly sequential).
+// dispatch + fan-out — elanous's MVP runs strictly sequential).
 //
 // Yields events as it goes — caller (CLI / SSE / tests) decides
 // rendering. Stops on the first node that fails AND has no
@@ -12,7 +12,7 @@
 
 import { mkdirSync, writeFileSync } from 'fs';
 import { join } from 'path';
-import { monadStateRoot } from '../autopilot/state-paths.js';
+import { elanousStateRoot } from '../autopilot/state-paths.js';
 import {
   isApprovalNode,
   isBashNode,
@@ -541,13 +541,13 @@ function generateRunId(): string {
 }
 
 function defaultRunDir(runId: string): string {
-  // `MONAD_WORKFLOWS_RUNS_DIR` overrides the root for tests + isolated
+  // `ELANOUS_WORKFLOWS_RUNS_DIR` overrides the root for tests + isolated
   // dogfood NEXUS sessions that don't want to commingle with the user's
-  // primary `~/.monad/workflows-runs/` (HANDOFF §4.4 follow-up). Mirrors
+  // primary `~/.elanous/workflows-runs/` (HANDOFF §4.4 follow-up). Mirrors
   // `workflowsRunsRoot()` in `src/nexus/api/workflows.ts`.
-  const envRoot = process.env.MONAD_WORKFLOWS_RUNS_DIR?.trim();
+  const envRoot = process.env.ELANOUS_WORKFLOWS_RUNS_DIR?.trim();
   if (envRoot) return join(envRoot, runId);
-  return join(monadStateRoot(), 'workflows-runs', runId);
+  return join(elanousStateRoot(), 'workflows-runs', runId);
 }
 
 /** Resolve the run directory for persistence purposes.
@@ -555,7 +555,7 @@ function defaultRunDir(runId: string): string {
  *  - explicit `opts.artifactsDir` only → null (legacy/test path; skip
  *    persistence to avoid touching the user's home dir from a test
  *    fixture)
- *  - neither → default `~/.monad/workflows-runs/<runId>/`
+ *  - neither → default `~/.elanous/workflows-runs/<runId>/`
  *  Tests opt back IN by passing `runDir: someTmp`. */
 function resolveRunDir(opts: RunWorkflowOpts, runId: string): string | null {
   if (opts.runDir) return opts.runDir;

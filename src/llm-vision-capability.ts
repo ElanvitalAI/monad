@@ -141,7 +141,7 @@ export function isVisionCapableModel(
     case 'anthropic':
       // All Claude 3.5+ models ship vision. The literal 'claude'
       // prefix covers the dashed (claude-3-5-sonnet-...) and short
-      // (sonnet, opus, haiku, sonnet-4-5) aliases monad uses
+      // (sonnet, opus, haiku, sonnet-4-5) aliases elanous uses
       // throughout the user config.
       if (m === 'opus' || m === 'sonnet' || m === 'haiku') return true;
       if (m.startsWith('claude')) return true;
@@ -183,13 +183,13 @@ export function isVisionCapableModel(
 
     case 'grok':
       // xAI Grok (api.x.ai). Two paths:
-      //   - Chat Completions (`/v1/chat/completions`) — current monad
+      //   - Chat Completions (`/v1/chat/completions`) — current elanous
       //     route via toOpenAIMessages. Vision in user messages OK,
       //     but tool messages text-only (same constraint as OpenAI
       //     Chat).
       //   - Responses (`/v1/responses`) — supports multimodal
       //     function_call_output (mirrors OpenAI Responses semantics).
-      //     monad's GrokProvider not yet migrated; until then
+      //     elanous's GrokProvider not yet migrated; until then
       //     toolResult stays false.
       if (axis === 'userMessage') {
         if (m.includes('vision')) return true;
@@ -261,7 +261,7 @@ export function isVisionCapableModel(
       // catalog. Match across registry prefixes: bare ('gemma-4-31b'),
       // 'google/' (LM Studio), 'mlx-community/' (Apple-silicon MLX
       // optimized · LM Studio default for Mac users), 'huggingface/',
-      // and the literal 'gemma' alias monad emits when no registry is
+      // and the literal 'gemma' alias elanous emits when no registry is
       // configured.
       if (m.startsWith('gemma-4')) return true;
       if (m.includes('/gemma-4')) return true;

@@ -71,10 +71,10 @@ export function clearActiveDelegation(key: string): void {
  *  Self-intent is checked FIRST so "codex가 만든 걸 self로 고쳐" → self. */
 export function classifyDelegationOverride(text: string): 'self' | 'claude' | 'codex' | 'gemini' | null {
   const t = text.toLowerCase();
-  // Self / brain intent: self·브레인·brain, monad-as-actor (모나드가/모나드로/
-  // 모나드 직접·monad가/로), or a bare "직접 <action>". Not a mere "monad-agent"
-  // path mention — monad must be the SUBJECT (가/로/직접).
-  if (/\bself\b|브레인|\bbrain\b|모나드\s*(가|로|직접)|monad\s*(가|로|직접)|직접\s*(해|추가|수정|만들|고쳐|짜|작성|구현|바꿔|처리)/.test(t)) return 'self';
+  // Self / brain intent: self·브레인·brain, elanous-as-actor (엘라누스가/엘라누스로/
+  // 엘라누스 직접·elanous가/로), or a bare "직접 <action>". Not a mere "monad-agent"
+  // path mention — elanous must be the SUBJECT (가/로/직접).
+  if (/\bself\b|브레인|\bbrain\b|엘라누스\s*(가|로|직접)|elanous\s*(가|로|직접)|직접\s*(해|추가|수정|만들|고쳐|짜|작성|구현|바꿔|처리)/.test(t)) return 'self';
   if (/\bclaude\b|클로드/.test(t)) return 'claude';
   if (/\bcodex\b|\bcdx\b|코덱스/.test(t)) return 'codex';
   if (/\bgemini\b|\bgem\b|제미나이/.test(t)) return 'gemini';

@@ -125,7 +125,7 @@ export function lineageAskFile(askFile: string, cwd: string = process.cwd(), top
 
 /**
  * ⛔ 2026-09-23 (Phase 4 실측) — 남의 프로젝트를 몰 때 위 관측은 «그 프로젝트»를 잰다. 그런데 뒤처질 수 있는 것은
- *   ***monad 도구 자신의 체크아웃***이다(개발 트리로 쓸 때). 오늘 벤더 A/B 세 판이 이미 착지한 수리 둘 «전» 트리로
+ *   ***elanous 도구 자신의 체크아웃***이다(개발 트리로 쓸 때). 오늘 벤더 A/B 세 판이 이미 착지한 수리 둘 «전» 트리로
  *   떴고 아무 경고도 없었다. ⇒ 도구 소스가 git 체크아웃이고 작업 디렉토리 저장소와 «다를» 때만 같은 방식으로 잰다.
  *   npm 설치(체크아웃 아님)·같은 저장소면 null(출력 없음).
  */
@@ -156,7 +156,7 @@ export interface AskLaunchFlowDeps {
   cwd(): string;
   /** 인보커 작업 트리에서 읽는 비차단 관측. 생략하면 이 흐름의 기본 Git 비교를 쓴다. */
   measureInvokerBehindDefaultBranch?(): InvokerBehindDefaultBranch;
-  /** monad 도구 자신의 체크아웃 관측(시험 seam). null = 해당 없음(체크아웃 아님·같은 저장소). */
+  /** elanous 도구 자신의 체크아웃 관측(시험 seam). null = 해당 없음(체크아웃 아님·같은 저장소). */
   measureToolTreeBehindDefaultBranch?(): { readonly toolRoot: string; readonly observation: InvokerBehindDefaultBranch } | null;
   now(): number;
   /** ⛔ 「대화형인가」는 표면이 안다 — 흐름이 `process` 를 직접 보지 않는다. */
@@ -379,7 +379,7 @@ export async function recommendLaunchDecomposition(
       //   ⇒ 이 줄은 「흐름이 못 기다렸다」를 말하고, 「분해가 못 쟀다」를 말하지 않는다.
       //     그 둘을 같은 값으로 두면 「골이 작아서 1개」와 「커서 늦었다」가 구별되지 않는다(🅣 실측).
       deps.print(`[ask] ⑷ 발사 전 분해 권고 — ⏳ 흐름이 못 기다렸다 (${Math.round(timeoutMs / 1000)}초 초과 · 분해는 계속된다)`);
-      deps.print('[ask]    ▶ 늦게 온 답은 관측에 남는다: monad logs --event prelaunch-decomposition --limit 5');
+      deps.print('[ask]    ▶ 늦게 온 답은 관측에 남는다: elanous logs --event prelaunch-decomposition --limit 5');
       logDecompositionObservation(deps, 'ask-launch-decomposition', {
         goalFile,
         outcome: 'timed-out',
@@ -701,7 +701,7 @@ async function intakeClarifications(
   if (mode === 'deferred-noninteractive') {
     // ⛔⭐ 종전엔 「N건 있다」만 말하고 «무엇을 묻는지»도 «어떻게 답하는지»도 안 줬다.
     //   ⇒ 비대화형 표면(무인 런 · TUI 슬래시)에서 그 물음은 사실상 «사라졌다».
-    //   ⛔ 여기에 새 인터뷰 UI 를 만들지 «않는다» — 답변 창구는 `monad self clarify answer` 로 «이미» 있다.
+    //   ⛔ 여기에 새 인터뷰 UI 를 만들지 «않는다» — 답변 창구는 `elanous self clarify answer` 로 «이미» 있다.
     //     이 자리는 그것을 «가리키기»만 한다(2026-08-11 72차: 오늘만 `F12` 를 여섯 번 셌다).
     deps.print(`[ask] ⑴b ⚠️ 미답 되묻기 ${pending.length}건 — 저작은 그대로 간다 · 구현 전에 LLM 릴레이가 먼저 답하고, 못 하면 미답으로 진행한다 (사람을 기다리지 않는다)`);
     for (const item of pending) {
@@ -710,8 +710,8 @@ async function intakeClarifications(
     }
     if (pending.length > 0) {
       const goalArg = deps.relativeToCwd(effectiveGoalFile);
-      deps.print(`[ask]    ▶ 답하려면: monad self clarify answer ${goalArg} <questionId> <옵션번호>   (자유 답은 --other "<문장>")`);
-      deps.print(`[ask]    ▶ 답한 뒤 재저작: monad self author --supersedes ${goalArg}`);
+      deps.print(`[ask]    ▶ 답하려면: elanous self clarify answer ${goalArg} <questionId> <옵션번호>   (자유 답은 --other "<문장>")`);
+      deps.print(`[ask]    ▶ 답한 뒤 재저작: elanous self author --supersedes ${goalArg}`);
     }
     return effectiveGoalFile;
   }
@@ -813,7 +813,7 @@ export async function runAskLaunchFlow(
     readonly decision: ReturnType<typeof decideAskPreflight>;
   }> => {
     // ⛔ 수를 박지 않는다 — 「100~110초」가 박혀 있었고 2026-08-23 prod 실측은 «206초»(2배)였다.
-    //    재는 명령: monad logs --category goal-author --event phase-end --json --json-data
+    //    재는 명령: elanous logs --category goal-author --event phase-end --json --json-data
     deps.print('[ask] ⑴ 저작 — self author (수 분 걸린다 · 페이즈별 실측은 goal-author/phase-end)');
     // ⛔⭐ ask 가 골 종류를 «선언했으면» 저작기에 넘긴다.
     //   📏 2026-09-08 실측: 안 넘겨서 `- GoalType: research` 를 쓴 ask 가 `implement` 로 저작됐고
@@ -845,7 +845,7 @@ export async function runAskLaunchFlow(
       ? null
       : countMissingAuthoredConstraintMarkers(input.askText, authored.authored.document);
     if (markerCounts !== null && markerCounts.missingMarkers > 0) {
-      deps.print(`[ask] ⑴ ⚠️ ask 제약 마커 ${markerCounts.missingMarkers}/${markerCounts.totalMarkers}개가 골 문서에 안 넘어갔다 — 확인: monad self author --lint ${deps.relativeToCwd(authored.path)} · 형식을 고쳐 다시 저작: monad self author --supersedes ${deps.relativeToCwd(authored.path)}`);
+      deps.print(`[ask] ⑴ ⚠️ ask 제약 마커 ${markerCounts.missingMarkers}/${markerCounts.totalMarkers}개가 골 문서에 안 넘어갔다 — 확인: elanous self author --lint ${deps.relativeToCwd(authored.path)} · 형식을 고쳐 다시 저작: elanous self author --supersedes ${deps.relativeToCwd(authored.path)}`);
     }
     // ⛔ goalId 는 «저작된 문서»에서 읽는다 — AskAuthoredGoal 에 그 필드가 «없다»(계약을 지어내지 않는다).
     const authoredGoalId = authored.authored?.document === undefined
@@ -906,8 +906,8 @@ export async function runAskLaunchFlow(
     // 최신이면 «말하지 않는다» — 남의 프로젝트 런마다 한 줄씩 늘지 않게. 뒤처졌거나 못 쟀을 때만 말한다.
     if (toolTree && !(toolTree.observation.state === 'measured' && toolTree.observation.commits === 0)) {
       deps.print(toolTree.observation.state === 'measured'
-        ? `[preflight] ⚠️ monad 도구 트리(${toolTree.toolRoot}) 가 원격 기본 브랜치보다 ${toolTree.observation.commits}커밋 뒤처졌다 — 이미 착지한 수리가 이 런에 «없다» (${toolTree.observation.baseRef})`
-        : `[preflight] monad 도구 트리(${toolTree.toolRoot}) 원격 기본 브랜치 대비 — ⚠️ 못 쟀다 (${toolTree.observation.reason})`);
+        ? `[preflight] ⚠️ elanous 도구 트리(${toolTree.toolRoot}) 가 원격 기본 브랜치보다 ${toolTree.observation.commits}커밋 뒤처졌다 — 이미 착지한 수리가 이 런에 «없다» (${toolTree.observation.baseRef})`
+        : `[preflight] elanous 도구 트리(${toolTree.toolRoot}) 원격 기본 브랜치 대비 — ⚠️ 못 쟀다 (${toolTree.observation.reason})`);
     }
     const askHintPaths = parseAskTargetPathHintsResult(input.askText).paths;
     const addedPaths = preflight.paths.filter((path) => !askHintPaths.includes(path));

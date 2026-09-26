@@ -163,7 +163,7 @@ export function VoiceModelTierCard(): React.ReactNode {
       <header className="mb-2">
         <h3 className="text-sm font-semibold">🎚️ Voice transcription quality</h3>
         <p className="text-xs text-muted-foreground">
-          Pick how accurate vs. cheap the speech-to-text should be — monad picks
+          Pick how accurate vs. cheap the speech-to-text should be — elanous picks
           the model. Switching takes effect on the next voice call.
         </p>
       </header>

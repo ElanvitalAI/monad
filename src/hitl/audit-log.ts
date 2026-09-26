@@ -6,7 +6,7 @@
 // Consumer: Round 3 PWA Settings Pushcut card · Round 5 IntentRanker
 // learning corpus · β-8 metrics · Live Activity history view.
 //
-// Log path: $MONAD_DIR/hitl-log.jsonl (default: ~/.monad/hitl-log.jsonl).
+// Log path: $ELANOUS_DIR/hitl-log.jsonl (default: ~/.elanous/hitl-log.jsonl).
 // Rotation: when the active file size exceeds maxBytes (default 100 MB)
 // it is renamed to `<path>.1` and a fresh file is opened. One backup is
 // kept; older rotations overwrite the previous `.1`.
@@ -48,8 +48,8 @@ export interface HitlAuditWriter {
 }
 
 export interface FileAuditWriterOpts {
-  /** Override path. Default `$MONAD_DIR/hitl-log.jsonl` or
-   *  `~/.monad/hitl-log.jsonl`. */
+  /** Override path. Default `$ELANOUS_DIR/hitl-log.jsonl` or
+   *  `~/.elanous/hitl-log.jsonl`. */
   path?: string;
   /** Rotate when the active file exceeds this many bytes. Default
    *  100 MB. Set to 0 to disable rotation. */
@@ -59,8 +59,8 @@ export interface FileAuditWriterOpts {
 const DEFAULT_MAX_BYTES = 100 * 1024 * 1024; // 100 MB
 
 export function defaultAuditLogPath(): string {
-  const monadDir = process.env['MONAD_DIR'] ?? join(homedir(), '.monad');
-  return join(monadDir, 'hitl-log.jsonl');
+  const elanousDir = process.env['ELANOUS_DIR'] ?? join(homedir(), '.elanous');
+  return join(elanousDir, 'hitl-log.jsonl');
 }
 
 export function createFileAuditWriter(opts: FileAuditWriterOpts = {}): HitlAuditWriter {

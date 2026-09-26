@@ -9,8 +9,8 @@ function runParticipantRegistration(stateDir: string, runId?: string, createRun 
   const script = `
     import { startPty, setPtyAdapterForTesting, unregisterPty } from './src/pty-shell/registry.ts';
     import { saveSelfDevRun, loadSelfDevRun, selfDevRunsDir } from './src/self-dev/run-store.ts';
-    const runId = process.env.MONAD_RUN_ID;
-    const parentDir = process.env.MONAD_PARENT_SELF_DEV_RUNS_DIR;
+    const runId = process.env.ELANOUS_RUN_ID;
+    const parentDir = process.env.ELANOUS_PARENT_SELF_DEV_RUNS_DIR;
     if (runId && ${createRun}) saveSelfDevRun({ runId, createdAt: 1, updatedAt: 1, results: [] });
     if (runId && parentDir && ${createParentRun}) saveSelfDevRun({ runId, createdAt: 1, updatedAt: 1, results: [] }, parentDir);
     setPtyAdapterForTesting(() => ({ pid: 1, write() {}, kill() {}, resize() {}, onData: () => ({ dispose() {} }), onExit: () => ({ dispose() {} }) }));
@@ -18,11 +18,11 @@ function runParticipantRegistration(stateDir: string, runId?: string, createRun 
     console.log(JSON.stringify({ id: handle.id, run: runId ? loadSelfDevRun(runId) : null, parentRun: runId && parentDir ? loadSelfDevRun(runId, parentDir) : null, localDir: selfDevRunsDir() }));
     unregisterPty(handle.id);
   `;
-  const env: NodeJS.ProcessEnv = { ...process.env, NODE_ENV: 'production', MONAD_STATE_DIR: stateDir };
-  if (runId) env.MONAD_RUN_ID = runId;
-  else delete env.MONAD_RUN_ID;
-  if (parentStateDir) env.MONAD_PARENT_SELF_DEV_RUNS_DIR = join(parentStateDir, 'self-dev-runs');
-  else delete env.MONAD_PARENT_SELF_DEV_RUNS_DIR;
+  const env: NodeJS.ProcessEnv = { ...process.env, NODE_ENV: 'production', ELANOUS_STATE_DIR: stateDir };
+  if (runId) env.ELANOUS_RUN_ID = runId;
+  else delete env.ELANOUS_RUN_ID;
+  if (parentStateDir) env.ELANOUS_PARENT_SELF_DEV_RUNS_DIR = join(parentStateDir, 'self-dev-runs');
+  else delete env.ELANOUS_PARENT_SELF_DEV_RUNS_DIR;
   const result = Bun.spawnSync([process.execPath, '-e', script], {
     cwd: repo,
     env,

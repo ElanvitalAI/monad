@@ -20,7 +20,7 @@ afterEach(() => {
 });
 
 function withHosts(hosts: readonly SshHost[]): void {
-  const dir = mkdtempSync(joinPath(tmpdir(), 'monad-ssh-picker-'));
+  const dir = mkdtempSync(joinPath(tmpdir(), 'elanous-ssh-picker-'));
   const path = joinPath(dir, 'ssh-hosts.json');
   writeFileSync(path, JSON.stringify({ hosts }), 'utf-8');
   setSshHostsPathForTesting(path);

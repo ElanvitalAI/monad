@@ -1,5 +1,5 @@
 // PR-S1V.12 (Phase 6 wire · 2026-04-30) — Discord voice channel ↔
-// monad harness round-trip.
+// elanous harness round-trip.
 //
 // onSessionStart hook (from `bootDiscordVoiceChannel`) calls
 // `wireDiscordSessionToHarness({...})` which:
@@ -16,7 +16,7 @@
 // bot boot path, which routes to `runAcpTurn` against the in-process
 // ACP server). Tests and dogfood inject simpler mock harnesses.
 //
-// Reference: ROADMAP §7.3 (Phase 6D · monad harness integration).
+// Reference: ROADMAP §7.3 (Phase 6D · elanous harness integration).
 
 import { Buffer } from 'node:buffer';
 import { debug } from '../../debug/log.js';
@@ -130,7 +130,7 @@ export interface WireDiscordSessionDeps {
    *  (session.stopPlayback) and the utterance flows to STT. Echo
    *  guard: finals that fuzzy-match the bot's own recent speech are
    *  discarded. Best with user-side echo cancellation / earphones.
-   *  Wire from env `MONAD_VOICE_BARGE_IN`. Default false (half-duplex). */
+   *  Wire from env `ELANOUS_VOICE_BARGE_IN`. Default false (half-duplex). */
   bargeIn?: boolean;
   /** Sustained-speech threshold for barge-in (ms). Default 350. */
   bargeInSustainMs?: number;

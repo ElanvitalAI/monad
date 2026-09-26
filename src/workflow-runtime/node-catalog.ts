@@ -1,7 +1,7 @@
 // M4-5 (2026-05-12 · Phase 4 N5-5) — workflow node catalog.
 //
 // Single source of truth for the 20 workflow-runtime node kinds.
-// CLI (`monad wf node search/spec/list`) + PWA NodeCreator + external
+// CLI (`elanous wf node search/spec/list`) + PWA NodeCreator + external
 // LLM (R3 NL synth · M4-1 node suggestion) all read this catalog.
 //
 // F6 default (ROADMAP §2 · 2026-05-12) — catalog data lives in this
@@ -398,7 +398,7 @@ export function renderNodeSpec(spec: NodeSpec): string {
   return lines.join('\n');
 }
 
-/** Render a compact catalog listing (`monad wf node list` output). */
+/** Render a compact catalog listing (`elanous wf node list` output). */
 export function renderCatalogList(opts: { category?: NodeCategory } = {}): string {
   const lines: string[] = [];
   const byCategory = new Map<NodeCategory, NodeSpec[]>();

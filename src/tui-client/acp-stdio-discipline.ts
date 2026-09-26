@@ -1,6 +1,6 @@
 // Hermes-ACP lessons §5 — ACP stdio discipline static lint.
 //
-// Motivation: when `monad --acp-server` is running over stdio (the
+// Motivation: when `elanous --acp-server` is running over stdio (the
 // default), stdout is reserved for JSON-RPC frames. A single stray
 // `console.log(...)` on the server-side path corrupts the stream and
 // the parent client (claude-code, zed, …) drops the connection.
@@ -83,10 +83,10 @@ export const ACP_STDIO_DISCIPLINE_MODULES: readonly string[] = [
   'src/acp/server.ts',
   'src/acp/core-turn-bridge.ts',
   'src/acp/capabilities.ts',
-  'src/acp/monad-extensions.ts',
+  'src/acp/elanous-extensions.ts',
   'src/acp/dual-role-manager.ts',
   'src/acp/session-persistence.ts',
-  // Boot path invoked from `monad --acp-server`.
+  // Boot path invoked from `elanous --acp-server`.
   'src/boot/acp-server.ts',
   // Core-turn adapter — reached via bridgeCoreTurnToAcp.
   'src/core-turn/run-core-turn.ts',
@@ -96,7 +96,7 @@ export const ACP_STDIO_DISCIPLINE_MODULES: readonly string[] = [
   'src/tui-client/acp-transport-local.ts',
   'src/tui-client/in-process-transport.ts',
   'src/tui-client/dashboard-session.ts',
-  'src/tui-client/monad-ui-handler.ts',
+  'src/tui-client/elanous-ui-handler.ts',
   'src/tui-client/headless-core-guard.ts',
   'src/tui-client/index.ts',
 ];

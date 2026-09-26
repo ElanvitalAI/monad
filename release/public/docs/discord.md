@@ -6,7 +6,7 @@ Discord now has two different voice-capable surfaces:
 - live voice channel round-trip
 
 The live voice-channel path is configured from `voice.discord.voiceChannel`
-in `~/.config/monad/config.json`:
+in `~/.config/elanous/config.json`:
 
 ```json
 {
@@ -31,13 +31,13 @@ Recommended behavior:
 Discord runs inside the NEXUS daemon — it starts automatically when Discord is configured:
 
 ```bash
-monad nexus run
+elanous nexus run
 ```
 
 For a standalone test session (same app and token, scoped to `discord.testChannel.channelId`, isolated state, the live daemon untouched):
 
 ```bash
-monad discord-test
+elanous discord-test
 ```
 
 In Discord:
@@ -53,4 +53,4 @@ Notes:
 - Recent attachment-bearing messages in that same command channel become the sticky context source for subsequent voice turns.
 - Discord keeps text output load-bearing: `👂 Listening…`, `🎙️ User: ...`, `🤖 ...`
 - Voice turns are tagged before entering the ACP runner so the shared chat history keeps `guild / voice channel / speaker / filter` context.
-- `MONAD_DISCORD_VOICE_CHANNEL`, `MONAD_DISCORD_VOICE_LISTEN_FILTER`, and `MONAD_DISCORD_VOICE_LEAVE_ON_EMPTY` still work as backward-compatible fallbacks, but user-config is preferred.
+- `ELANOUS_DISCORD_VOICE_CHANNEL`, `ELANOUS_DISCORD_VOICE_LISTEN_FILTER`, and `ELANOUS_DISCORD_VOICE_LEAVE_ON_EMPTY` still work as backward-compatible fallbacks, but user-config is preferred.

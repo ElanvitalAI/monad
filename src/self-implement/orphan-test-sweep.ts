@@ -150,7 +150,7 @@ export function formatSweepNotRun(dark: number): string {
  *  ⇒ 🩹 그래서 ***「무엇을 도는가」와 「무엇을 «안» 보는가」를 «문면»에 적는다.***
  *     📌 이 저장소의 규율 그대로다 — ***자가 「자기가 무엇을 못 보는지」를 스스로 말한다.***
  *  ⚠️ ⛔ 「안 본다」가 「아무도 안 본다」는 «아니다» — gate-named·reachable 은
- *     `monad self gate`(변경 파일 범위)와 사람 게이트(전 스위트)의 몫이다. 그 둘을 이름으로 댄다. */
+ *     `elanous self gate`(변경 파일 범위)와 사람 게이트(전 스위트)의 몫이다. 그 둘을 이름으로 댄다. */
 export function formatPartitionSummary(result: OrphanPartitionResult): string {
   if ('indexUnavailable' in result) return `orphan tests: lookup failed (${result.indexUnavailable})`;
   return `orphan tests: dark=${result.dark.length}(이 자가 «돈다») `

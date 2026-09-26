@@ -18,7 +18,7 @@ import { groundGoalInCodebase, GROUNDING_HEADER } from '../src/self-implement/gr
 type CorpusItem = { id: string; kind: string; ask: string; answers: readonly string[]; pr: number | null; searchTerms: readonly string[]; note?: string };
 
 const CORPUS = [
-  { id: 'B1', kind: 'B', ask: 'monad logs 조회가 0건일 때 그 0이 무엇을 뜻하는지 함께 알려주도록 고쳐줘', answers: ['src/cli/logs-cli.ts'], pr: 5806, searchTerms: ['monad', 'logs', '조회'] },
+  { id: 'B1', kind: 'B', ask: 'elanous logs 조회가 0건일 때 그 0이 무엇을 뜻하는지 함께 알려주도록 고쳐줘', answers: ['src/cli/logs-cli.ts'], pr: 5806, searchTerms: ['elanous', 'logs', '조회'] },
   { id: 'B2', kind: 'B', ask: '격리된 테스트 인스턴스가 살아있는 체크아웃을 조용히 편집하지 못하게 막아줘', answers: ['src/boot/tool-cwd.ts', 'src/boot/daemon-runtime.ts', 'src/nexus/index.ts'], pr: 5814, searchTerms: ['격리', '테스트', '체크아웃', '편집'] },
   { id: 'B3', kind: 'B', ask: '동시에 도는 턴들이 서로의 세션 식별자를 덮어쓰지 않게 해줘', answers: ['src/core-turn/run-core-turn.ts', 'src/debug/log.ts'], pr: 5809, searchTerms: ['동시에', '턴', '세션', '식별자'] },
   { id: 'B4', kind: 'B', ask: '인자 없이 부르면 격리 판정이 항상 운영으로 나오는 문제를 고쳐줘', answers: ['src/instance/current.ts', 'src/boot/tool-cwd.ts', 'src/cli/where-cli.ts', 'src/dashboard/index.ts', 'src/nexus/index.ts'], pr: 5820, searchTerms: ['인자', '격리', '판정', '운영'] },
@@ -78,7 +78,7 @@ export const CORPUS_CALL_TIMEOUT_MS = 120_000;
 export const CORPUS_MAX_WORKERS = 2;
 /** Normal calls take 57–94s and time out at 120s; allow 10s for parent teardown before an orphan self-exits. */
 export const CORPUS_WORKER_LIFETIME_GRACE_MS = 10_000;
-export const CORPUS_RUNNER_LOCK = join(tmpdir(), 'monad-measure-goal-grounding-corpus.lock');
+export const CORPUS_RUNNER_LOCK = join(tmpdir(), 'elanous-measure-goal-grounding-corpus.lock');
 
 type CorpusLog = NonNullable<CorpusMeasurementDeps['log']>;
 const liveWorkers = new Set<ChildProcess>();
@@ -404,7 +404,7 @@ async function workerMain(): Promise<void> {
 }
 
 /** ⛔ `debug.log` 만으로는 **logs.db 에 닿지 않는다** — standalone 스크립트는 싱크가 없다.
- *  ⇒ `monad logs --category goal-grounding.corpus` 가 **0건**이었다(2026-07-30 실측 · 실측 중인
+ *  ⇒ `elanous logs --category goal-grounding.corpus` 가 **0건**이었다(2026-07-30 실측 · 실측 중인
  *    러너에서 `worker-spawned`·`orphan-detected` 가 하나도 조회되지 않았다).
  *  ⚠️ 이것은 **골 결함**이었다: 수용 기준이 *"`debug.log(...)` 로 남긴다"* 였고 자식은 그것을
  *    문자 그대로 충족했다. 그러나 **관측 가능성**(조회에 뜨는 것)은 요구하지 않았다.

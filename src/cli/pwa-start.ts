@@ -29,7 +29,7 @@ export type PwaStartMode = 'static' | 'hmr';
  *  Resolution order (highest precedence first):
  *    1. CLI flag (`--http-port` / `--dev-port`)
  *    2. UserConfig: `global.nexus.pwa.{port,devPort}` (set via
- *       `monad config set global.nexus.pwa.port 31420`)
+ *       `elanous config set global.nexus.pwa.port 31420`)
  *    3. Hard-coded defaults (`port=31415` · `devPort=3210`).
  *  CLI flag wins → ad-hoc override per run · config 영구 변경. */
 function defaultReadConfigPort(switchId: string): number | undefined {
@@ -52,7 +52,7 @@ export interface PwaStartOpts {
    *  Default is `'static'` because the static bundle is the "calm"
    *  default — no transient HMR delta interfering with dogfood. Switch
    *  to `'hmr'` (`--hmr`) when you're actively iterating on PWA UI.
-   *  `monad nexus pwa stop` cascades any BG that the start mode
+   *  `elanous nexus pwa stop` cascades any BG that the start mode
    *  brought up, so callers don't have to remember which mode is
    *  active. */
   mode?: PwaStartMode;
@@ -78,7 +78,7 @@ export interface PwaStartOpts {
    *  fixture without touching disk. */
   readConfigPortFn?: (switchId: string) => number | undefined;
   /** P4 (2026-05-10) — replace the registry register call. Default
-   *  writes to `~/.monad/pwa-registry.json`. Test seam to keep
+   *  writes to `~/.elanous/pwa-registry.json`. Test seam to keep
    *  registry off disk. */
   registerInstanceFn?: (entry: PwaRegistryEntry) => void;
   /** P2 (2026-05-10) — force-enable Tailnet share for THIS run only.
@@ -191,7 +191,7 @@ export interface PwaStartResult {
 /** Default bind interface for the PWA service path.
  *
  *  Loopback (`127.0.0.1`) is the right default for the bare
- *  `monad nexus run` (CLI-only, no remote consumers). `pwa start`
+ *  `elanous nexus run` (CLI-only, no remote consumers). `pwa start`
  *  is different: PWA consumers are usually on other devices —
  *  iPad / iPhone / second laptop — reaching us over Tailscale.
  *  Tailscale Serve forwards 100.x → loopback, so the loopback
@@ -302,15 +302,15 @@ function logShareLine(out: NonNullable<PwaStartOpts['out']>, share: ShareTailRes
     return;
   }
   if (share.outcome === 'failed') {
-    out.log(`  share        ERR  serve exit ${share.serveExitCode ?? '?'} — fix Tailscale, re-run \`monad nexus pwa share enable\``);
+    out.log(`  share        ERR  serve exit ${share.serveExitCode ?? '?'} — fix Tailscale, re-run \`elanous nexus pwa share enable\``);
     return;
   }
   switch (share.reason) {
     case 'switch-disabled':
-      out.log('  share        OFF  local-only — `monad nexus pwa share enable` to expose');
+      out.log('  share        OFF  local-only — `elanous nexus pwa share enable` to expose');
       break;
     case 'switch-ask':
-      out.log('  share        ?    not yet decided — re-run `monad nexus` (interactive) or `pwa share enable`');
+      out.log('  share        ?    not yet decided — re-run `elanous nexus` (interactive) or `pwa share enable`');
       break;
     case 'tailscale-missing':
       out.log('  share        OFF  Tailscale not installed — https://tailscale.com/download');
@@ -490,7 +490,7 @@ async function preflightCleanStaleServe(
  *
  *  Deadline budget: 30s. The lower 8s we shipped first (PR #2521) was
  *  fine for a vanilla daemon but tripped false negatives when one or
- *  more MCP servers in `~/.monad/config.json` hit the 8s handshake
+ *  more MCP servers in `~/.elanous/config.json` hit the 8s handshake
  *  guard (PR #2527) — each per-server timeout pushed
  *  `startNexusHttpServer` further back. A real listen failure still
  *  shows up before 30s; healthy daemons return on the first probe
@@ -515,9 +515,9 @@ async function verifyNexusListening(
     out.error(`  ✗ nexus did not respond on http://127.0.0.1:${httpPort}/v1/health within 30s.`);
     out.error('     Likely causes:');
     out.error(`       1. stale Tailscale serve binding ${httpPort}: \`sudo tailscale serve reset\` then re-run`);
-    out.error('       2. MCP-client boot deadlock past the 30s ceiling: check `~/.monad/config.json` mcp.servers');
+    out.error('       2. MCP-client boot deadlock past the 30s ceiling: check `~/.elanous/config.json` mcp.servers');
     out.error('       3. daemon log for a non-MCP init that hangs:');
-    out.error('             tail -f ~/.monad/nexus/logs/$(ls -t ~/.monad/nexus/logs | head -1)');
+    out.error('             tail -f ~/.elanous/nexus/logs/$(ls -t ~/.elanous/nexus/logs | head -1)');
   }
   return ok;
 }
@@ -575,8 +575,8 @@ export async function runPwaStart(opts: PwaStartOpts = {}): Promise<PwaStartResu
     out.error(`  hint: nexus failed to claim port :${httpPort}.`);
     out.error('         · take over: rerun with `--force`');
     out.error(`         · alt port: rerun with \`--http-port <n>\` (e.g. ${httpPort + 1})`);
-    out.error('         · or stop the existing daemon: `monad nexus pwa stop`');
-    out.error('         · permanent: `monad config set global.nexus.pwa.port <n>`');
+    out.error('         · or stop the existing daemon: `elanous nexus pwa stop`');
+    out.error('         · permanent: `elanous config set global.nexus.pwa.port <n>`');
     return { exitCode: bg.exitCode };
   }
   if (mode !== 'hmr') {
@@ -622,7 +622,7 @@ export async function runPwaStart(opts: PwaStartOpts = {}): Promise<PwaStartResu
   const nexusBase = `http://127.0.0.1:${httpPort}`;
 
   out.log('');
-  out.log('monad nexus pwa start --hmr: bringing up HMR iteration loop...');
+  out.log('elanous nexus pwa start --hmr: bringing up HMR iteration loop...');
 
   const nexusReady = await probeUntilReady(`${nexusBase}/v1/health`, {
     fetchFn, sleepFn, now,
@@ -699,7 +699,7 @@ export async function runPwaStart(opts: PwaStartOpts = {}): Promise<PwaStartResu
   out.log(`  dev origin   http://localhost:${devPort}/app/   (also live · cross-origin)`);
   const share = await bringShareUp(opts, httpPort);
   logShareLine(out, share);
-  out.log('  stop both    monad nexus pwa stop');
+  out.log('  stop both    elanous nexus pwa stop');
 
   // P4 — register HMR instance with both ports (nexus + Next dev) so
   // `pwa global clean` can reap both. See static-mode register above.

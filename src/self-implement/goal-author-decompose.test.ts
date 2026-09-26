@@ -89,7 +89,7 @@ describe('goal-author production decompose config parity', () => {
     });
     await dispatchSelfImplement(
       { feature: 'author goal', ...(daemonAdversarialReview === undefined ? {} : { adversarialReview: daemonAdversarialReview }) },
-      { cwd: process.cwd(), signal: new AbortController().signal, entry: 'monad-apparatus', userText: 'author goal' },
+      { cwd: process.cwd(), signal: new AbortController().signal, entry: 'elanous-apparatus', userText: 'author goal' },
       async () => ({ runId: 'daemon', ok: true, stage: 'pr-opened', node: 'open-pr', outcome: 'completed' }),
       async () => ({ path: 'docs/goals/GOAL-daemon.md' }),
     );

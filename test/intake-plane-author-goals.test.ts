@@ -10,7 +10,7 @@ const name = (tag: string) => ['sample', 'gap', tag, 'k4'].join('-');
 
 function item(tag: string, verdict: IntakeCheckVerdict = '없음'): IntakeCheckItem {
   return {
-    fact: `monad 에 \`${name(tag)}\` 가 있다`,
+    fact: `elanous 에 \`${name(tag)}\` 가 있다`,
     quotes: ['external quote'],
     verdict,
     line: '',
@@ -85,16 +85,16 @@ test('an author failure is recorded for that gap and the rest continue', async (
 });
 
 test('the default duplicate lookup reads the same goal directory the author writes to', async () => {
-  // A repository without docs/goals keeps goals under the gitignored .monad/goals (resolveGoalDocumentsDir).
+  // A repository without docs/goals keeps goals under the gitignored .elanous/goals (resolveGoalDocumentsDir).
   const root = mkdtempSync(join(tmpdir(), 'intake-author-dir-'));
   try {
-    mkdirSync(join(root, '.monad', 'goals'), { recursive: true });
-    writeFileSync(join(root, '.monad', 'goals', 'ASK-existing.md'), `plans ${name('a')} already\n`);
+    mkdirSync(join(root, '.elanous', 'goals'), { recursive: true });
+    writeFileSync(join(root, '.elanous', 'goals', 'ASK-existing.md'), `plans ${name('a')} already\n`);
     const d = deps({ root });
     delete (d as { listGoalDocs?: unknown }).listGoalDocs;
     const outcomes = await authorIntakeGoals([item('a')], d, { source: 'note.md' });
     expect(outcomes[0]?.status).toBe('already-planned');
-    expect(outcomes[0]?.goalPath).toBe(join('.monad', 'goals', 'ASK-existing.md'));
+    expect(outcomes[0]?.goalPath).toBe(join('.elanous', 'goals', 'ASK-existing.md'));
     expect(d.asks).toEqual([]);
   } finally {
     rmSync(root, { recursive: true, force: true });

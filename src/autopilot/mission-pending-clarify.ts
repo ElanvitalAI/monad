@@ -6,7 +6,7 @@
 
 import { join, dirname } from 'node:path';
 import { existsSync, mkdirSync, writeFileSync, readFileSync, rmSync } from 'node:fs';
-import { monadStateRoot } from './state-paths.js';
+import { elanousStateRoot } from './state-paths.js';
 import type { IntakeClarification } from './mission-intake-clarify.js';
 
 /** 답변 수집 중인 clarify 세트 — 첫 spawn 이 저장, 콜백이 answer 채움, 완료 시 재-spawn 후 삭제. */
@@ -31,7 +31,7 @@ export interface PendingClarify {
 /** 미션별 pending clarify 슬롯 경로(pending-revise 옆·같은 safe-slug 규칙). */
 export function pendingClarifyPath(missionId: string): string {
   const safe = (missionId || 'unknown').replace(/[^\w.-]/g, '_').slice(0, 80);
-  return join(monadStateRoot(), 'conatus/missions', safe, 'pending-clarify.json');
+  return join(elanousStateRoot(), 'conatus/missions', safe, 'pending-clarify.json');
 }
 
 /** clarify 세트 저장(단일 슬롯·최신 우선). fail-soft. */

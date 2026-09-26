@@ -101,9 +101,9 @@ function handleDetailedClipboardResult(
     return;
   }
 
-  const hint = result.note === 'MONAD_CLIPBOARD_MODE=off'
-    ? 'clipboard disabled (MONAD_CLIPBOARD_MODE=off)'
-    : 'clipboard write failed — install xclip/wl-copy, or set MONAD_CLIPBOARD_MODE=osc52';
+  const hint = result.note === 'ELANOUS_CLIPBOARD_MODE=off'
+    ? 'clipboard disabled (ELANOUS_CLIPBOARD_MODE=off)'
+    : 'clipboard write failed — install xclip/wl-copy, or set ELANOUS_CLIPBOARD_MODE=osc52';
   deps.pushDebugLine(C.warning(`(${hint})`));
 }
 

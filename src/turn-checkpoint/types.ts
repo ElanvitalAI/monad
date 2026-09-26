@@ -3,7 +3,7 @@
 // A checkpoint is a serialised "where were we" snapshot, written at
 // decision boundaries inside `streamLLMWithTools` (Edit / Bash /
 // agent-spawn) and on `/pause` requests. The shape is intentionally
-// flat + JSON-safe — checkpoints persist to `~/.monad/checkpoints/<turn>.jsonl`
+// flat + JSON-safe — checkpoints persist to `~/.elanous/checkpoints/<turn>.jsonl`
 // and must round-trip through `JSON.parse`.
 //
 // Design constraint: this module deliberately does NOT import the

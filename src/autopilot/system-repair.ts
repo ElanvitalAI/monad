@@ -10,12 +10,12 @@
 // (대표만 명시 등재). merge 는 이 예외와 무관하게 여전히 HITL(worktree·PR 까지만 허용).
 
 import { existsSync, readFileSync, writeFileSync, mkdirSync } from 'node:fs';
-import { monadStateRoot } from './state-paths.js';
+import { elanousStateRoot } from './state-paths.js';
 import { join, dirname } from 'node:path';
 
-/** [ISO-3] MONAD_STATE_DIR 존중(lazy). */
+/** [ISO-3] ELANOUS_STATE_DIR 존중(lazy). */
 export function systemRepairPath(): string {
-  return join(monadStateRoot(), 'autopilot/system-repair.json');
+  return join(elanousStateRoot(), 'autopilot/system-repair.json');
 }
 
 interface SystemRepairAuth {

@@ -66,7 +66,7 @@ describe('openUrlOnSafari', () => {
 });
 
 describe('triggerCamera', () => {
-  test('runs monad-camera by default', async () => {
+  test('runs elanous-camera by default', async () => {
     const c = fakeClient();
     const presets = createIPhonePresets({ client: c });
     await presets.triggerCamera();
@@ -87,12 +87,12 @@ describe('triggerCamera', () => {
 });
 
 describe('triggerLocationPreset', () => {
-  test('default shortcut name is monad-location-<name>', async () => {
+  test('default shortcut name is elanous-location-<name>', async () => {
     const c = fakeClient();
     const presets = createIPhonePresets({ client: c });
     await presets.triggerLocationPreset('home');
     const call = c.calls[0]!;
-    expect((call.args[1] as { shortcut: string }).shortcut).toBe('monad-location-home');
+    expect((call.args[1] as { shortcut: string }).shortcut).toBe('elanous-location-home');
     expect((call.args[1] as { input: string }).input).toBe('home');
   });
 
@@ -112,7 +112,7 @@ describe('notifyAgentResult', () => {
       title: 'Done',
       summary: 'Result ready',
       url: 'https://example.com/results/1',
-      extraActions: [{ name: 'Retry', shortcut: 'monad-retry' }],
+      extraActions: [{ name: 'Retry', shortcut: 'elanous-retry' }],
     });
     const [name, body] = c.calls[0]!.args as [string, Record<string, unknown>];
     expect(name).toBe(DEFAULT_AGENT_RESULT_NOTIFICATION);

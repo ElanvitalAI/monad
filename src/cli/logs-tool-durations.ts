@@ -157,9 +157,9 @@ export function renderToolDurations(report: DurationReport): string {
 
 export function runLogsToolDurations(opts: LogsToolDurationsOpts, deps: LogsToolDurationsDeps = DEFAULT_DEPS): number {
   const limit = opts.limit === undefined ? STORE_SAFETY_MAX : Number(opts.limit);
-  if (!Number.isInteger(limit) || limit < 1) { deps.writeError('monad logs durations: --limit 은 양의 정수'); return 1; }
+  if (!Number.isInteger(limit) || limit < 1) { deps.writeError('elanous logs durations: --limit 은 양의 정수'); return 1; }
   const resolved = deps.resolveTargets({ test: opts.test, instance: opts.instance, all: opts.all, includeTest: opts.includeTest });
-  if (resolved.error) { deps.writeError(`monad logs durations: ${resolved.error}`); return 1; }
+  if (resolved.error) { deps.writeError(`elanous logs durations: ${resolved.error}`); return 1; }
   const allRows: CollectedDurationRow[] = [];
   let rowsRead = 0;
   let truncated = false;

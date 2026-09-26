@@ -4,7 +4,7 @@
 the whole tree, and anything not listed here lives under a subdirectory.
 
 ```
-bin/monad.mjs       — distribution entry. imports src/index.ts (bun only; node cannot run it)
+bin/elanous.mjs       — distribution entry. imports src/index.ts (bun only; node cannot run it)
 src/
   index.ts          — CLI command registration (commander)
   dashboard/        — 3-pane TUI + slash dispatch

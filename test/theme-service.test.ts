@@ -10,7 +10,7 @@ import {
 import {
   CATPPUCCIN_LATTE,
   CATPPUCCIN_MOCHA,
-  MONAD_PASTEL_DEFAULT,
+  ELANOUS_PASTEL_DEFAULT,
   ROSE_PINE_DAWN,
 } from '../src/themes/index.js';
 import { createContextKeyService } from '../src/input-core/context-keys.js';
@@ -70,9 +70,9 @@ describe('IDX-6 Phase 3 ThemeService — basics', () => {
     expect(isKnownThemeName('does-not-exist')).toBe(false);
   });
 
-  test('defaultThemeConfigPath points at ~/.monad/theme.json', () => {
+  test('defaultThemeConfigPath points at ~/.elanous/theme.json', () => {
     const path = defaultThemeConfigPath();
-    expect(path).toContain('.monad');
+    expect(path).toContain('.elanous');
     expect(path.endsWith('theme.json')).toBe(true);
   });
 });
@@ -128,9 +128,9 @@ describe('IDX-6 Phase 3 ThemeService — switch lifecycle', () => {
     expect(a).toEqual([CATPPUCCIN_MOCHA.name]);
     expect(b).toEqual([CATPPUCCIN_MOCHA.name]);
 
-    await svc.switch(MONAD_PASTEL_DEFAULT.name);
-    expect(a).toEqual([CATPPUCCIN_MOCHA.name, MONAD_PASTEL_DEFAULT.name]);
-    expect(b).toEqual([CATPPUCCIN_MOCHA.name, MONAD_PASTEL_DEFAULT.name]);
+    await svc.switch(ELANOUS_PASTEL_DEFAULT.name);
+    expect(a).toEqual([CATPPUCCIN_MOCHA.name, ELANOUS_PASTEL_DEFAULT.name]);
+    expect(b).toEqual([CATPPUCCIN_MOCHA.name, ELANOUS_PASTEL_DEFAULT.name]);
   });
 
   test('unsubscribe stops further notifications', async () => {
@@ -318,9 +318,9 @@ describe('IDX-6 Phase 3 ThemeService — context-keys bridge', () => {
     const ctx = createContextKeyService();
     const svc = await createThemeService({
       contextKeys: ctx,
-      initial: MONAD_PASTEL_DEFAULT,
+      initial: ELANOUS_PASTEL_DEFAULT,
     });
-    expect(ctx.keys.themeName).toBe(MONAD_PASTEL_DEFAULT.name);
+    expect(ctx.keys.themeName).toBe(ELANOUS_PASTEL_DEFAULT.name);
     await svc.reset();
     expect(ctx.keys.themeName).toBe(CATPPUCCIN_MOCHA.name);
     expect(ctx.keys.themeIsPastel).toBe(false);

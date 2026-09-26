@@ -44,7 +44,7 @@ test('/design renders the verdict into chatLines, not the debug pane', async () 
   //    stay green if the handler were switched to pushDebugLine, and the
   //    operator would silently stop seeing the answer they asked for.
   expect(debugLines).toEqual([]);
-  // Runs inside the monad checkout, so a verdict resolves and the heading
+  // Runs inside the elanous checkout, so a verdict resolves and the heading
   // names the document it read.
   expect(chatLines[0]).toContain('Craft rulebooks');
 });

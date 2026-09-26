@@ -1,7 +1,7 @@
 /**
  * Parallel self-dev orchestrator (S1 vertical slice).
  *
- * Fans out N independent `monad self implement` jobs across the existing
+ * Fans out N independent `elanous self implement` jobs across the existing
  * TOX dispatcher (concurrency-capped, parallel, observable) — the engine
  * is reused wholesale; the only new surface is the self-implement adapter
  * (surfaces/self-implement.ts), which spawns each job as its own
@@ -188,7 +188,7 @@ export interface SelfDevGoal {
   kind?: JobKind;
   /** Decomposition intent; deliberately distinct from executable `kind`. */
   goalType?: SelfDevGoalType;
-  /** Feature/goal text → `monad self implement <feature>` for dev jobs. */
+  /** Feature/goal text → `elanous self implement <feature>` for dev jobs. */
   feature: string;
   base?: string;
   autoMerge?: boolean;
@@ -289,7 +289,7 @@ export interface SelfDevJobResult {
   screenTail?: string;
   /** 화면 버퍼에서 판정한 goal-loop 종결 상태(complete=성공 마커·incomplete·null=불명). */
   screenOutcome?: 'complete' | 'incomplete' | null;
-  /** 화면 버퍼 공간 id — `monad self screen --space <id>` 로 전체 전사 재생 가능. */
+  /** 화면 버퍼 공간 id — `elanous self screen --space <id>` 로 전체 전사 재생 가능. */
   screenSpace?: string;
   /** ⚠️ exit-code 실패인데 화면은 GOAL-COMPLETE = 스폰-신호 단절(false-failure). 조정 플래그. */
   reconcileMismatch?: boolean;
@@ -1357,7 +1357,7 @@ export function orchestrateSelfDev(opts: OrchestrateSelfDevOptions): Promise<Sel
 
     // 제1원칙 관측 — self-dev 오케스트레이터는 자율 fan-out 이라 잡별 lifecycle
     // 결정(시작·종결·disposition·캐스케이드·teardown)을 전부 logs.db 에 남긴다
-    // (`monad logs --category self-dev.orchestrate`). 관측 없는 자율은 자기인지 불가.
+    // (`elanous logs --category self-dev.orchestrate`). 관측 없는 자율은 자기인지 불가.
     const shortFeature = (id: string): string => (taskByGoal.get(id)?.feature ?? '').slice(0, 60);
 
     // ⭐ 관측(2026-07-21 대표 co-design) — 잡의 자식 goal-loop 화면 버퍼를 읽어 전사 tail +

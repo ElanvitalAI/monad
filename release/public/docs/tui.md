@@ -1,6 +1,6 @@
 # The TUI
 
-monad's TUI is a 3-pane layout (skills / preview / chat) — a real file manager, not a chat with a sidebar. Plugins can remap what lives in each pane.
+elanous's TUI is a 3-pane layout (skills / preview / chat) — a real file manager, not a chat with a sidebar. Plugins can remap what lives in each pane.
 
 ## Attachments
 
@@ -72,7 +72,7 @@ the pasted text is plain.
 
 ## Terminal compatibility
 
-MonadAgent uses SGR mouse reporting (`CSI ?1000h` + `?1006h`). Most
+ElanousAgent uses SGR mouse reporting (`CSI ?1000h` + `?1006h`). Most
 modern terminals forward mouse events to the app when this is enabled.
 
 | Terminal | Mouse / right-click | Notes |

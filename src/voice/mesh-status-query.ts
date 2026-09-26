@@ -1,7 +1,7 @@
-// ── V5 (Phase 3 Bundle 4) — Voice 로 mesh-of-monads 조회 ──
+// ── V5 (Phase 3 Bundle 4) — Voice 로 mesh-of-elanouss 조회 ──
 //
-// HANDOFF Phase 3 / ROADMAP §6 V5: "Voice 로 mesh-of-monads 조회". 사용자가
-// "동료 monad 가 뭐 하고 있어?" 같은 음성 명령으로 mesh 의 다른 monad
+// HANDOFF Phase 3 / ROADMAP §6 V5: "Voice 로 mesh-of-elanouss 조회". 사용자가
+// "동료 elanous 가 뭐 하고 있어?" 같은 음성 명령으로 mesh 의 다른 elanous
 // instance 들의 상태를 한 번에 조회 + voice 보고.
 //
 // V2 voice-orchestrator (Bundle 2) 와 비슷한 4-step pattern 이지만
@@ -11,7 +11,7 @@
 export interface MeshNodeStatus {
   readonly nodeId: string;
   readonly displayName?: string;
-  /** 해당 monad 가 현재 진행 중인 작업 — 없으면 'idle'. */
+  /** 해당 elanous 가 현재 진행 중인 작업 — 없으면 'idle'. */
   readonly activeTaskSummary?: string;
   /** 진행 중인 shell 개수 / 종류 요약 (예: "3v 1h"). */
   readonly shellCounts?: string;
@@ -79,7 +79,7 @@ function withTimeout<T>(p: Promise<T>, ms: number): Promise<T | null> {
 }
 
 function defaultCompose(statuses: readonly MeshNodeStatus[]): string {
-  if (statuses.length === 0) return 'mesh 에 연결된 monad 가 없어요.';
+  if (statuses.length === 0) return 'mesh 에 연결된 elanous 가 없어요.';
   if (statuses.length === 1) {
     const s = statuses[0]!;
     const name = s.displayName ?? s.nodeId;
@@ -92,7 +92,7 @@ function defaultCompose(statuses: readonly MeshNodeStatus[]): string {
     const task = s.activeTaskSummary ?? 'idle';
     return `${name}: ${task}`;
   });
-  return `mesh 에 ${statuses.length}개 monad: ${lines.join(', ')}.`;
+  return `mesh 에 ${statuses.length}개 elanous: ${lines.join(', ')}.`;
 }
 
 function countStale(
@@ -129,7 +129,7 @@ export function createMeshStatusQuery(deps: MeshStatusQueryDeps): MeshStatusQuer
         return { outcome: 'fetch-failed', utterance };
       }
       if (statuses.length === 0) {
-        const utterance = 'mesh 에 연결된 monad 가 없어요.';
+        const utterance = 'mesh 에 연결된 elanous 가 없어요.';
         try { await deps.speak(utterance); } catch { /* graceful */ }
         log('mesh.query.no-nodes', '');
         return { outcome: 'no-nodes', utterance, nodeCount: 0 };

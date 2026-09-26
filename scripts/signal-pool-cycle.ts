@@ -5,7 +5,7 @@
 // 브릿지 적재(멱등) → 1차 게이트(무비용 규칙)로 전량 severity 분류 → 롤업 로그.
 // 매매/집행/발송 없음(적재+분류만·안전). 2차·라우팅·알림은 후속 A2·A3.
 //
-// 등록: monad schedule create (schedule 도구·기억 정합).
+// 등록: elanous schedule create (schedule 도구·기억 정합).
 
 import { Database } from 'bun:sqlite';
 import { homedir } from 'node:os';
@@ -20,7 +20,7 @@ import {
 import { loadMandate } from '../src/domains/trade-mandate.js';
 import { registerStandaloneLogSink } from '../src/domains/standalone-log-sink.js';
 
-const CONATUS = join(homedir(), '.monad/conatus');
+const CONATUS = join(homedir(), '.elanous/conatus');
 const LOG = join(CONATUS, 'signal_pool_cycle.log');
 const RECENT = 400;   // 사이클당 최근 N건(멱등 ingest 라 중복 안전)
 

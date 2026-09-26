@@ -167,8 +167,8 @@ describe('runStagedHarnessOnSurface — 통합', () => {
 
   test('프론트도어 자연어 런의 종결은 기존 원장에 natural-language-dispatch 출처로 남는다', async () => {
     const stateDir = mkdtempSync(join(tmpdir(), 'harness-membrane-ledger-'));
-    const priorStateDir = process.env.MONAD_STATE_DIR;
-    process.env.MONAD_STATE_DIR = stateDir;
+    const priorStateDir = process.env.ELANOUS_STATE_DIR;
+    process.env.ELANOUS_STATE_DIR = stateDir;
     try {
       const runId = 'harness-frontdoor-ledger-1';
       await runStagedHarnessOnSurface({
@@ -188,8 +188,8 @@ describe('runStagedHarnessOnSurface — 통합', () => {
         }),
       ]);
     } finally {
-      if (priorStateDir === undefined) delete process.env.MONAD_STATE_DIR;
-      else process.env.MONAD_STATE_DIR = priorStateDir;
+      if (priorStateDir === undefined) delete process.env.ELANOUS_STATE_DIR;
+      else process.env.ELANOUS_STATE_DIR = priorStateDir;
       rmSync(stateDir, { recursive: true, force: true });
     }
   });
@@ -215,7 +215,7 @@ describe('runStagedHarnessOnSurface — 통합', () => {
 
   // ⛔⭐ 자의 «충실도» — 이 프론트도어를 «둘»이 지난다(2026-08-06 라이브 실측).
   //   ⑴ 모델이 부른 도구: 사용자 턴 문면이 있어 harnessMention 이 matched/not-matched
-  //   ⑵ `monad harness run` CLI: 사용자 턴이 «없다» ⇒ harnessMention='absent'
+  //   ⑵ `elanous harness run` CLI: 사용자 턴이 «없다» ⇒ harnessMention='absent'
   //   종전엔 프론트도어가 naturalLanguageDispatch:true 를 «단정»해 ⑵ 도 자연어 유래로 셌고,
   //   CLI 로 띄운 런의 원장에 goalSource=natural-language-dispatch 가 실제로 찍혔다.
   //   ⇒ v25 ⑷ 의 분자가 부풀어 그 수를 못 믿게 된다.

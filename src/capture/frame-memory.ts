@@ -1,7 +1,7 @@
 // ── Capture substrate · frame → episodic self-memory (PLAN P5 · §5) ──
 //
 // Turn captured screen frames into episodic memory the daemon can later
-// recall (`monad self recall`). PLAN §5/§9: summarize the frame into a
+// recall (`elanous self recall`). PLAN §5/§9: summarize the frame into a
 // short line + store POINTERS in refs (surfaceId · instance · frameAt ·
 // pngRef) — never the full-frame blob (surface_events has no BLOB column).
 //
@@ -160,18 +160,18 @@ export function pollFrameMemory(consumer: FrameMemoryConsumer, deps: Pick<FrameM
 /** Start the daemon-side frame→memory poller. Reads the shared pty-manifest
  *  for framed surfaces (cross-process) and records salient screen changes
  *  into surface_events (dedup/rate-limited). Returns a stop thunk. No-op
- *  (returns a no-op stop) when disabled via `MONAD_TUI_FRAME_MEMORY=0`.
+ *  (returns a no-op stop) when disabled via `ELANOUS_TUI_FRAME_MEMORY=0`.
  *
  *  Isolation is STRUCTURAL, not by instance filtering: the pty-manifest and
  *  the surface_events db the caller binds `record` to are BOTH scoped to the
- *  same `MONAD_STATE_DIR`, so every framed row this poller sees already
+ *  same `ELANOUS_STATE_DIR`, so every framed row this poller sees already
  *  belongs to this scope's memory. `refs.instance` preserves per-surface
  *  provenance (prod vs test:… vs a worktree sharing the dir). A hard
  *  current-instance filter is deliberately avoided — it would drop forwarded
  *  self-implement children spawned by a differently-named process sharing
  *  the same state dir (the very surfaces P3 exists to observe). */
 export function startFrameMemoryPoller(deps: FrameMemoryPollerDeps): () => void {
-  if (process.env.MONAD_TUI_FRAME_MEMORY === '0') {
+  if (process.env.ELANOUS_TUI_FRAME_MEMORY === '0') {
     if (debug.enabled) debug.log('capture.frame-memory', 'disabled', { reason: 'killswitch' });
     return () => {};
   }

@@ -36,8 +36,8 @@ requires: [upstage]
 
 Python 실행 규칙:
 
-- 기본 실행은 `$(monad python where --path) scripts/upstage_ocr.py ...` 형태를 우선 사용 (monad venv — cv2 포함 · 2026-09-24)
-- `monad` 가 없으면 `~/.local/share/monad/python/venv/bin/python` 을 직접 사용
+- 기본 실행은 `$(elanous python where --path) scripts/upstage_ocr.py ...` 형태를 우선 사용 (elanous venv — cv2 포함 · 2026-09-24)
+- `elanous` 가 없으면 `~/.local/share/elanous/python/venv/bin/python` 을 직접 사용
 - ⛔ bare `python3` · pyenv 전역(`~/.pyenv/versions/3.12.12`)은 지양 — 거기엔 cv2 가 없어 명함 보정이 조용히 원본으로 빠졌다(2026-09-24 실측)
 
 OCR 스크립트:

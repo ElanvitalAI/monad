@@ -7,7 +7,7 @@ description: |
             "daily kickoff", "today's plan".
   Does: Aggregates git log (yesterday + today) + gh pr list (mine +
         reviewing) and synthesizes a 3-priority kickoff via LLM. Writes
-        an Obsidian Daily Note under $MONAD_OBSIDIAN_DIR/Daily Notes/.
+        an Obsidian Daily Note under $ELANOUS_OBSIDIAN_DIR/Daily Notes/.
   NOT for: Weekly review (use a separate weekly-review workflow) or
            multi-day retrospective.
 
@@ -67,13 +67,13 @@ nodes:
 
   - id: save-daily-note
     bash: |
-      OBSIDIAN_DIR="${MONAD_OBSIDIAN_DIR:-$HOME/Documents/Obsidian}"
+      OBSIDIAN_DIR="${ELANOUS_OBSIDIAN_DIR:-$HOME/Documents/Obsidian}"
       DATE=$(date +%Y-%m-%d)
       TIME=$(date +%H:%M)
       DIR="$OBSIDIAN_DIR/Daily Notes"
       FILE="$DIR/$DATE.md"
       mkdir -p "$DIR" 2>/dev/null || {
-        echo "ERROR: cannot create $DIR — set MONAD_OBSIDIAN_DIR to a writable path"
+        echo "ERROR: cannot create $DIR — set ELANOUS_OBSIDIAN_DIR to a writable path"
         exit 1
       }
       cat > "$FILE" <<'MORNING_NOTE_END_2026_05_08_X9Z2'

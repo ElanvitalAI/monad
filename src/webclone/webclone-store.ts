@@ -23,7 +23,7 @@ import type { AssetVisibility } from './webclone-db.js';
 export interface StoreConfig {
   readonly bucket: string;
   readonly region: string;
-  /** S3 키 접두. 기본 `monad/webclone` — 이 버킷의 기존 `monad/` 관례를 따른다. */
+  /** S3 키 접두. 기본 `monad/webclone` — 이 버킷의 기존 `elanous/` 관례를 따른다. */
   readonly prefix: string;
 }
 

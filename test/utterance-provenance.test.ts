@@ -1,7 +1,7 @@
 // 발화 ingress + provenance 태그 (2026-07-19) — 외부/자기 발화 일관 태깅.
 
 import { describe, test, expect, afterEach } from 'bun:test';
-import { provenanceRefs, provenanceTags, monadSelfProvenance, _resetSelfProvenanceForTest } from '../src/domains/provenance';
+import { provenanceRefs, provenanceTags, elanousSelfProvenance, _resetSelfProvenanceForTest } from '../src/domains/provenance';
 import { injectUtterance } from '../src/domains/self-awareness';
 import { openSurfaceEventsDb, recordInboundTurn, queryEvents } from '../src/domains/surface-events';
 
@@ -14,11 +14,11 @@ describe('provenance 태그', () => {
     expect(provenanceTags(p)).toBe('origin:claude-code branch:main');
   });
 
-  test('monadSelfProvenance origin=monad-self + cwd, 캐시', () => {
-    const a = monadSelfProvenance();
-    expect(a.origin).toBe('monad-self');
+  test('elanousSelfProvenance origin=elanous-self + cwd, 캐시', () => {
+    const a = elanousSelfProvenance();
+    expect(a.origin).toBe('elanous-self');
     expect(a.cwd).toBe(process.cwd());
-    expect(monadSelfProvenance()).toBe(a); // 동일 참조(캐시)
+    expect(elanousSelfProvenance()).toBe(a); // 동일 참조(캐시)
   });
 });
 
@@ -54,12 +54,12 @@ describe('injectUtterance — 외부 발화 편입', () => {
 });
 
 describe('recordInboundTurn — 자기 발화도 같은 스키마', () => {
-  test('origin:monad-self + git/cwd 태그 기본 부착', () => {
+  test('origin:elanous-self + git/cwd 태그 기본 부착', () => {
     const db = openSurfaceEventsDb(':memory:');
     recordInboundTurn({ surface: 'telegram', userText: '안녕', responseText: '네', db });
     const row = queryEvents(db, {})[0]!;
-    expect(row.tags).toContain('origin:monad-self');
-    expect(JSON.parse(row.refs!).origin).toBe('monad-self');
+    expect(row.tags).toContain('origin:elanous-self');
+    expect(JSON.parse(row.refs!).origin).toBe('elanous-self');
     db.close();
   });
 

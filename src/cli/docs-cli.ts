@@ -1,6 +1,6 @@
-// ── monad docs — 문서 지식 CLI (DocOps P2 · 2026-07-13) ──────────────────────
+// ── elanous docs — 문서 지식 CLI (DocOps P2 · 2026-07-13) ──────────────────────
 //
-//   monad docs search "<질의>" [--limit 8] [--domain monad] [--kind docs] [--json]
+//   elanous docs search "<질의>" [--limit 8] [--domain elanous] [--kind docs] [--json]
 //
 // knowledge.db(벡터+FTS5) 하이브리드 검색(RRF) — 의미(임베딩)와 키워드(BM25)
 // 양쪽에서 잡는다. 임베딩 다운 시 키워드 단독으로 강등(fail-soft).
@@ -69,16 +69,16 @@ export async function runDocsRevision(
   overrides: Partial<DocsRevisionDeps> = {},
 ): Promise<number> {
   const deps: DocsRevisionDeps = { ...defaultDocsRevisionDeps, ...overrides };
-  if (!path?.trim()) { deps.printError('monad docs revision: 문서 경로가 필요합니다'); return 1; }
+  if (!path?.trim()) { deps.printError('elanous docs revision: 문서 경로가 필요합니다'); return 1; }
   try {
     const text = deps.readDocument(repoRoot, path);
-    if (text === null) { deps.printError(`monad docs revision: 문서를 찾을 수 없음 (${path})`); return 1; }
+    if (text === null) { deps.printError(`elanous docs revision: 문서를 찾을 수 없음 (${path})`); return 1; }
     const assessment = deps.assess(text, deps.readHistory(repoRoot, path));
     if (opts.json) deps.print(JSON.stringify({ path, ...assessment }, null, 2));
     else deps.print(`docs revision — ${path}: ${formatDeclaredRevisionAssessment(assessment)}`);
     return 0;
   } catch (error) {
-    deps.printError(`monad docs revision: ${error instanceof Error ? error.message : String(error)}`);
+    deps.printError(`elanous docs revision: ${error instanceof Error ? error.message : String(error)}`);
     return 1;
   }
 }
@@ -87,9 +87,9 @@ export async function runDocsSearch(
   query: string,
   opts: { limit?: string; domain?: string; kind?: string; json?: boolean },
 ): Promise<number> {
-  if (!query?.trim()) { console.error('monad docs search: 질의가 필요합니다'); return 1; }
+  if (!query?.trim()) { console.error('elanous docs search: 질의가 필요합니다'); return 1; }
   if (!existsSync(knowledgeDbPath())) {
-    console.error(`monad docs search: knowledge.db 없음 (${knowledgeDbPath()}) — knowledge-ingest 가 한 번은 돌아야 합니다.`);
+    console.error(`elanous docs search: knowledge.db 없음 (${knowledgeDbPath()}) — knowledge-ingest 가 한 번은 돌아야 합니다.`);
     return 1;
   }
   const db = openKnowledgeDb();
@@ -97,7 +97,7 @@ export async function runDocsSearch(
     const k = Math.min(Math.max(Number(opts.limit ?? 8) || 8, 1), 20);
     const matches = await hybridQueryKnowledge(db, query.trim(), {
       k,
-      domain: opts.domain ?? 'monad',
+      domain: opts.domain ?? 'elanous',
       ...(opts.kind ? { kind: opts.kind as never } : {}),
     });
     if (opts.json) { console.log(JSON.stringify(matches, null, 2)); return 0; }
@@ -199,7 +199,7 @@ export async function runDocsStale(
 ): Promise<number> {
   const axis = (opts.axis ?? DEFAULT_DOCS_STALE_AXIS) as DocsStaleAxis;
   if (!DOCS_STALE_AXES.includes(axis)) {
-    (overrides.printError ?? defaultDocsStaleDeps.printError)(`monad docs stale: --axis 는 ${DOCS_STALE_AXES.join('|')} 중 하나여야 합니다 (받은 값: ${opts.axis})`);
+    (overrides.printError ?? defaultDocsStaleDeps.printError)(`elanous docs stale: --axis 는 ${DOCS_STALE_AXES.join('|')} 중 하나여야 합니다 (받은 값: ${opts.axis})`);
     return 2;
   }
   const deps: DocsStaleDeps = { ...defaultDocsStaleDeps, ...overrides };
@@ -217,9 +217,9 @@ export async function runDocsStale(
       const assessed = deps.assessOne(repoRoot, path);
       if (assessed.outcome !== 'assessed') {
         if (assessed.outcome === 'out-of-scope') {
-          deps.printError(`monad docs stale: 파일이 실재하지만 판정 사정거리 밖 (${path})`);
+          deps.printError(`elanous docs stale: 파일이 실재하지만 판정 사정거리 밖 (${path})`);
         } else {
-          deps.printError(`monad docs stale: 문서를 찾을 수 없음 (${path})`);
+          deps.printError(`elanous docs stale: 문서를 찾을 수 없음 (${path})`);
         }
         return 1;
       }
@@ -270,7 +270,7 @@ export async function runDocsStale(
     }
     return 0;
   } catch (error) {
-    deps.printError(`monad docs stale: ${error instanceof Error ? error.message : String(error)}`);
+    deps.printError(`elanous docs stale: ${error instanceof Error ? error.message : String(error)}`);
     return 1;
   }
 }

@@ -170,7 +170,7 @@ describe('VW-B4 pane title persistence lookup on spawn', () => {
 
 describe('user-config vw section', () => {
   test('round-trips windowNames + paneNames through save/load', () => {
-    const dir = mkdtempSync(join(tmpdir(), 'monad-vw-cfg-'));
+    const dir = mkdtempSync(join(tmpdir(), 'elanous-vw-cfg-'));
     const path = join(dir, 'config.json');
     let cfg = buildUserConfig(path);
     cfg = setVwWindowName(cfg, 'runner', 'dev-server');
@@ -179,7 +179,6 @@ describe('user-config vw section', () => {
       ...cfg,
       vw: {
         ...cfg.vw,
-        acpResident: false,
         entries: {
           acp: { resident: false, foregroundOnStartup: false },
           sim: { resident: cfg.vw.simResident, foregroundOnStartup: false },
@@ -196,11 +195,11 @@ describe('user-config vw section', () => {
     const reloaded = buildUserConfig(path);
     expect(reloaded.vw.windowNames.runner).toBe('dev-server');
     expect(reloaded.vw.paneNames[vwPaneKey('runner', 'markdown')]).toBe('notes');
-    expect(reloaded.vw.acpResident).toBe(false);
+    expect(reloaded.vw.entries.acp.resident).toBe(false);
   });
 
   test('setVwWindowName with empty string removes the entry', () => {
-    const dir = mkdtempSync(join(tmpdir(), 'monad-vw-cfg-'));
+    const dir = mkdtempSync(join(tmpdir(), 'elanous-vw-cfg-'));
     const path = join(dir, 'config.json');
     let cfg = buildUserConfig(path);
     cfg = setVwWindowName(cfg, 'runner', 'dev-server');
@@ -211,7 +210,7 @@ describe('user-config vw section', () => {
   });
 
   test('vw section omitted from JSON when both maps are empty', () => {
-    const dir = mkdtempSync(join(tmpdir(), 'monad-vw-cfg-'));
+    const dir = mkdtempSync(join(tmpdir(), 'elanous-vw-cfg-'));
     const path = join(dir, 'config.json');
     const cfg = buildUserConfig(path);
     saveUserConfig(cfg, path);
@@ -220,17 +219,17 @@ describe('user-config vw section', () => {
   });
 
   test('vw resident flag defaults to true when omitted or malformed', () => {
-    const dir = mkdtempSync(join(tmpdir(), 'monad-vw-cfg-'));
+    const dir = mkdtempSync(join(tmpdir(), 'elanous-vw-cfg-'));
     const path = join(dir, 'config.json');
     writeFileSync(path, JSON.stringify({
       vw: { acp: { resident: 'nope' }, windowNames: {}, paneNames: {} },
     }));
     const cfg = buildUserConfig(path);
-    expect(cfg.vw.acpResident).toBe(true);
+    expect(cfg.vw.entries.acp.resident).toBe(true);
   });
 
   test('malformed values in on-disk vw section are discarded', () => {
-    const dir = mkdtempSync(join(tmpdir(), 'monad-vw-cfg-'));
+    const dir = mkdtempSync(join(tmpdir(), 'elanous-vw-cfg-'));
     const path = join(dir, 'config.json');
     writeFileSync(path, JSON.stringify({
       vw: { windowNames: { good: 'ok', bad: 123 }, paneNames: 'not-an-object' },

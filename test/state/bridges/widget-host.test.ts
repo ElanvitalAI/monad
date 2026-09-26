@@ -1,11 +1,11 @@
 // ── Presentation P1.6 · bridgeWidgetHostToStore ──
 //
-// Bidirectional sync between a MonadState store's `widgets` slice and
+// Bidirectional sync between a ElanousState store's `widgets` slice and
 // a WidgetHost instance. Tests per HANDOFF §3 · 16 cases.
 
 import { describe, test, expect } from 'bun:test';
 import { createStore } from '../../../src/state/store.js';
-import { defaultMonadState, type MonadState } from '../../../src/state/types.js';
+import { defaultElanousState, type ElanousState } from '../../../src/state/types.js';
 import { bridgeWidgetHostToStore } from '../../../src/state/bridges/widget-host.js';
 import { WidgetHost, type WidgetHostHooks } from '../../../src/widgets/host.js';
 import type { WidgetDef } from '../../../src/widgets/types.js';
@@ -42,7 +42,7 @@ function mkHost(register: WidgetDef[] = [boxDef]): WidgetHost {
 }
 
 function mkStore() {
-  return createStore<MonadState>(defaultMonadState());
+  return createStore<ElanousState>(defaultElanousState());
 }
 
 function widgetsOf(store: ReturnType<typeof mkStore>) {

@@ -112,7 +112,7 @@ export function getPersona(id: string): Persona | undefined {
  *  PERSONAS binding + BY_ID index. Called from the plugin's
  *  `/ct-reload-personas` command (and the `R` keybinding) so users
  *  can drop new personas into `~/.claude/consensus-trader/personas.json`
- *  without restarting monad. Returns a summary of what changed. */
+ *  without restarting elanous. Returns a summary of what changed. */
 export function reloadPersonas(): {
   total: number;
   userCount: number;

@@ -1,7 +1,7 @@
 /**
  * ☸️ Pod 필수 스킬 세트 — 이미지에 «스킬 코드»를, 런마다 Secret 으로 «스킬 키(.env)»를 (대표 2026-09-25).
  *
- * 목록 = `MONAD_POD_SKILLS`(쉼표) 또는 설정 디렉토리의 `pod-skills.txt`(한 줄에 하나 · `#` 주석).
+ * 목록 = `ELANOUS_POD_SKILLS`(쉼표) 또는 설정 디렉토리의 `pod-skills.txt`(한 줄에 하나 · `#` 주석).
  *   ⛔ 코드에 스킬 이름을 박지 않는다 — 누구의 개인 스킬인지는 «설정»이다(공개 준비 원칙).
  * 원본 = 이 기계의 `~/.claude/skills/<이름>` (LOCAL_SKILLS_DIR).
  *
@@ -18,21 +18,21 @@ import { copyFileSync, existsSync, lstatSync, mkdirSync, readdirSync, readFileSy
 import { homedir } from 'node:os';
 import { join, relative } from 'node:path';
 import { LOCAL_SKILLS_DIR } from '../../config.js';
-import { getMonadConfigDir } from '../../monad-config-dir.js';
+import { getElanousConfigDir } from '../../elanous-config-dir.js';
 
 const SKILL_NAME = /^[A-Za-z0-9][A-Za-z0-9._-]*$/u;
 
 /** 이미지로 가면 안 되는 것 — 비밀 ⊕ 재생성물. 이름(경로 조각) 기준. */
 const EXCLUDED_NAME = /^(\.env(\..*)?|.*\.(pem|key|p12|pfx)|auth[^/]*\.json|credentials[^/]*\.json|token[^/]*\.json|node_modules|\.venv|venv|__pycache__|\.cache|\.git|\.DS_Store|.*\.log)$/iu;
 
-export function podSkillsListPath(configDir: string = getMonadConfigDir()): string {
+export function podSkillsListPath(configDir: string = getElanousConfigDir()): string {
   return join(configDir, 'pod-skills.txt');
 }
 
-/** 목록 해석: `MONAD_POD_SKILLS` → 설정 파일 → 빈 목록. 이름 규칙 밖은 버리지 않고 오류로 낸다. */
+/** 목록 해석: `ELANOUS_POD_SKILLS` → 설정 파일 → 빈 목록. 이름 규칙 밖은 버리지 않고 오류로 낸다. */
 export function resolvePodSkills(env: NodeJS.ProcessEnv = process.env, listPath: string = podSkillsListPath()): { skills: string[]; source: 'env' | 'file' | 'none'; invalid: string[] } {
-  const raw = env.MONAD_POD_SKILLS?.trim()
-    ? { text: env.MONAD_POD_SKILLS.replace(/,/gu, '\n'), source: 'env' as const }
+  const raw = env.ELANOUS_POD_SKILLS?.trim()
+    ? { text: env.ELANOUS_POD_SKILLS.replace(/,/gu, '\n'), source: 'env' as const }
     : existsSync(listPath) ? { text: readFileSync(listPath, 'utf8'), source: 'file' as const } : null;
   if (!raw) return { skills: [], source: 'none', invalid: [] };
   const names = raw.text.split('\n').map((l) => l.replace(/#.*$/u, '').trim()).filter(Boolean);
@@ -57,7 +57,7 @@ export function podSkillFiles(dir: string): string[] {
   return out.sort();
 }
 
-/** 세트 전체의 내용 해시 — 이미지 라벨 `monad.pod-skills` 와 대조한다(스킬이 바뀌면 이미지가 «낡음»). */
+/** 세트 전체의 내용 해시 — 이미지 라벨 `elanous.pod-skills` 와 대조한다(스킬이 바뀌면 이미지가 «낡음»). */
 export function podSkillsDigest(skills: readonly string[], root: string = LOCAL_SKILLS_DIR): { digest: string; missing: string[] } {
   const h = createHash('sha256');
   const missing: string[] = [];

@@ -1,6 +1,6 @@
 // Regression guard for the Codex approval decision-value drift.
 //
-// monad used to answer every codex approval server-request with
+// elanous used to answer every codex approval server-request with
 // `{decision:'approve'|'deny'}`. Current codex (app-server-protocol,
 // checkout 2026-07-08) uses camelCase `accept|acceptForSession|decline|
 // cancel` for command/fileChange, `ReviewDecision` (approved|denied) for

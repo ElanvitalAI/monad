@@ -3,7 +3,7 @@
  *
  * Runs a task inside an ACP (AgentClientProtocol) session — either an
  * external agent we drive (claude-code / codex / gemini-cli) or our
- * own server session an IDE has spawned ('monad-self'). The adapter
+ * own server session an IDE has spawned ('elanous-self'). The adapter
  * is a thin wrapper around an injected `AcxSessionCallable` that
  * owns the actual DualRoleManager interaction + streaming buffer; the
  * adapter itself handles the dispatcher-level concerns: AbortSignal,
@@ -33,7 +33,7 @@ export interface AcxSessionCallable {
     signal?: AbortSignal;
   }): Promise<{
     /** `acx:<namespace>:<id>` — e.g. `acx:acp-cli:claude:sess-42` or
-     *  `acx:acp-srv:monad-session-7`. Prefix distinguishes the surface
+     *  `acx:acp-srv:elanous-session-7`. Prefix distinguishes the surface
      *  so sidebar / metrics can key off it without re-parsing. */
     address: string;
     done: Promise<{

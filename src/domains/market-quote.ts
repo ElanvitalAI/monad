@@ -62,7 +62,7 @@ export function classify(symbol: string): MarketClass {
 
 /** omni-market CLI quote(toss/EODHD/Yahoo). Fail-soft null.
  *  ★ C-②a(2026-07-22) — 2건 수정:
- *   1) 런처 `npx tsx` → `bun`: 콜드스타트 0.55s→0.10s(실측 5배)·계약(stdout JSON) 불변. monad 는
+ *   1) 런처 `npx tsx` → `bun`: 콜드스타트 0.55s→0.10s(실측 5배)·계약(stdout JSON) 불변. elanous 는
  *      이미 bun 구동·PATH 에 bun 존재. npx 캐시 소실 시 tsx 다운로드→네트워크 행(45s 타임아웃) 취약성 제거.
  *   2) provider 라벨 버그: 종전 `[provider]` 브래킷 regex 는 `--json` stdout 에 없어 **항상 'eodhd' 오라벨**
  *      (실측 AAPL.US·005930.KS 는 toss 서빙인데 eodhd 로 표기). 실제 출처는 JSON `session` 필드

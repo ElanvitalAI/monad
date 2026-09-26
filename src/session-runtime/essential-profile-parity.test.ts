@@ -15,8 +15,8 @@ function withModelSurfaceConfig<T>(config: object, callback: () => T): T {
   const savedXdg = process.env.XDG_CONFIG_HOME;
   const xdg = mkdtempSync(join(tmpdir(), 'session-runtime-model-surface-'));
   try {
-    mkdirSync(join(xdg, 'monad'), { recursive: true });
-    writeFileSync(join(xdg, 'monad', 'config.json'), JSON.stringify(config));
+    mkdirSync(join(xdg, 'elanous'), { recursive: true });
+    writeFileSync(join(xdg, 'elanous', 'config.json'), JSON.stringify(config));
     process.env.XDG_CONFIG_HOME = xdg;
     resetUserConfig();
     return callback();

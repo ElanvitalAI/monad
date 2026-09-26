@@ -12,7 +12,7 @@ const madeDirs: string[] = [];
 afterAll(() => { for (const d of madeDirs) { try { rmSync(d, { recursive: true, force: true }); } catch { /* best effort */ } } });
 
 function loadWith(toolsRaw: unknown): ReturnType<typeof buildUserConfig> {
-  const dir = mkdtempSync(join(tmpdir(), 'monad-pr-delivery-'));
+  const dir = mkdtempSync(join(tmpdir(), 'elanous-pr-delivery-'));
   madeDirs.push(dir);
   mkdirSync(dir, { recursive: true });
   const path = join(dir, 'config.json');

@@ -389,10 +389,10 @@ describe('handleAgentCliPromptStream', () => {
     expect(blocks[1]!.type).toBe('text');
   });
 
-  // fork-continue — historyMode='seed-session' 이면 fork된 monad 세션의 히스토리를
+  // fork-continue — historyMode='seed-session' 이면 fork된 elanous 세션의 히스토리를
   // backend 메시지에 seed prefix 로 주입(fresh backend 가 부모 맥락 이어받음).
   test('historyMode=seed-session → 백엔드 메시지에 fork 히스토리 주입', async () => {
-    // 실 monad 세션 fork(히스토리 복사) — loadSession(default root) 로 읽히도록.
+    // 실 elanous 세션 fork(히스토리 복사) — loadSession(default root) 로 읽히도록.
     const forked = forkSessionFromHistory({
       messages: [
         { role: 'user', content: '삼성전자 목표가 알려줘' },

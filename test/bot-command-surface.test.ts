@@ -199,7 +199,7 @@ describe('레지스트리가 «던질» 때 — 「없다」와 「못 읽었다
 
 describe('🔭⭐⭐ 디스패치 «경계»에 관측이 남는다 — ⛔ 45분을 「이유를 못 봐서」 썼다', () => {
   // 🚨 계기(2026-09-01 · 42차): `/chart` 가 폰에서 무응답인데
-  //    `monad logs … | (chart|slash)` 가 ***0건***이었다. 가설과 반증으로만 좁혀야 했다.
+  //    `elanous logs … | (chart|slash)` 가 ***0건***이었다. 가설과 반증으로만 좁혀야 했다.
   // 🔑 ***조회에 안 뜨면 관측 db 문제가 아니라 계측 누락이다.***
   const events = (): { category: string; event: string; data?: unknown }[] => captured;
   let captured: { category: string; event: string; data?: unknown }[] = [];
@@ -315,7 +315,7 @@ describe('🌏⭐⭐ 아는 자산 «별칭» — ⛔ 능력은 있었는데 «�
   test('🔑 한국 상장사는 여전히 «표»가 답한다 — 별칭이 그것을 가리지 않는다', () => {
     // ⛔⭐ **표를 «주입»한다** — `defaultKoreanResolver` 는 29MB DART XML(`~/.cache/dart/`)에 매인다.
     //    🩸 첫 판은 그것을 그대로 썼고, ***그 캐시가 «없는» 환경(하니스 게이트)에서 깨졌다***
-    //       — `monad self gate` 가 그것을 `introduced` 로 잡아 줬다.
+    //       — `elanous self gate` 가 그것을 `introduced` 로 잡아 줬다.
     //    🔑 ***시험은 「그 기계에 무엇이 있나」에 매이면 안 된다.***
     const fakeTable = (name: string) => (name === '삼성전자' ? '005930' : null);
     expect(matchChartIntent('삼성전자 차트', fakeTable)).toBe('/chart 005930.KO');

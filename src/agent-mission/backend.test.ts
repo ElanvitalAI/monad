@@ -6,7 +6,7 @@ describe('AgentBackend — agent-agnostic PTY 추상화', () => {
   it('codexBackend = codex --yolo·구독 스크럽·trust=1', () => {
     expect(codexBackend.name).toBe('codex');
     expect(codexBackend.cmd).toBe('codex');
-    expect(codexBackend.args).toEqual(['--yolo']);
+    expect(codexBackend.args).toEqual(['--yolo', '-c', 'check_for_update_on_startup=false']);   // 09-26: 자식이 업데이트 창에서 스스로 brew upgrade 를 돌렸다
     expect(codexBackend.scrubEnv).toContain('OPENAI_API_KEY');
   });
 
@@ -83,12 +83,12 @@ describe('AgentBackend — agent-agnostic PTY 추상화', () => {
 });
 
 describe('resolveBackendSpawn — 선택→PTY spawn 파라미터 실행경로(U3 선택 실증)', () => {
-  // driver 의 실 spawn(startPty)이 이 seam 결과의 cmd/args/env 를 그대로 넘긴다(TERM·MONAD_RUN_ID 만 덧댐).
+  // driver 의 실 spawn(startPty)이 이 seam 결과의 cmd/args/env 를 그대로 넘긴다(TERM·ELANOUS_RUN_ID 만 덧댐).
   const base = { PATH: '/usr/bin', HOME: '/home/x', FOO: 'keep' };
 
   it('선택된 backend 의 cmd/args 가 spawn 파라미터로 전달', () => {
     const cases: Array<[AgentBackend, string, string[]]> = [
-      [codexBackend, 'codex', ['--yolo']],
+      [codexBackend, 'codex', ['--yolo', '-c', 'check_for_update_on_startup=false']],
       [claudeBackend, 'claude', ['--dangerously-skip-permissions']],
       [geminiBackend, 'agy', ['--dangerously-skip-permissions']],
       [grokBackend, 'grok', ['--always-approve']],
@@ -163,10 +163,10 @@ describe('resolveBackendSpawn — 선택→PTY spawn 파라미터 실행경로(U
 
   it('중첩 표지 — CLAUDECODE 와 공용 차단 목록 키를 PTY 자식 env 에서 제거하고 개수를 보고', () => {
     const spawn = resolveBackendSpawn(codexBackend, {
-      ...base, CLAUDECODE: 'nested', MONAD_GUARDIAN: 'parent-only',
+      ...base, CLAUDECODE: 'nested', ELANOUS_GUARDIAN: 'parent-only',
     });
     expect(spawn.env.CLAUDECODE).toBeUndefined();
-    expect(spawn.env.MONAD_GUARDIAN).toBeUndefined();
+    expect(spawn.env.ELANOUS_GUARDIAN).toBeUndefined();
     expect(spawn.nestedEnvRemovedCount).toBe(2);
   });
 
@@ -187,7 +187,7 @@ describe('resolveBackendSpawn — 선택→PTY spawn 파라미터 실행경로(U
     // resolveBackend(레지스트리)와 resolveBackendSpawn(spawn 구성)을 합성해 검증 →
     // AGENT_BACKENDS 의 name→cmd/args 매핑이 어긋나면(오배선) 여기서 실패.
     const expected: Record<string, [string, string[]]> = {
-      codex: ['codex', ['--yolo']],
+      codex: ['codex', ['--yolo', '-c', 'check_for_update_on_startup=false']],
       claude: ['claude', ['--dangerously-skip-permissions']],
       // ⭐ 이름 gemini → 실행체 agy (2026-08-18 대표 결정 · 죽은 CLI 로 되돌아가면 여기서 잡힌다)
       gemini: ['agy', ['--dangerously-skip-permissions']],
@@ -199,5 +199,20 @@ describe('resolveBackendSpawn — 선택→PTY spawn 파라미터 실행경로(U
       expect(s.cmd).toBe(cmd);
       expect(s.args).toEqual(args);
     }
+  });
+});
+
+import { buildAgentMissionPtySpawnOptions } from './driver.js';
+describe('agent-mission → PTY: 스크럽 키를 이름으로 넘긴다(캡처본 부활 방지 · 09-26)', () => {
+  it('codex 는 scrubEnv 키를 unsetEnv 로 싣는다', () => {
+    const s = resolveBackendSpawn(codexBackend, { PATH: '/bin', OPENAI_API_KEY: 'x' });
+    expect(s.env.OPENAI_API_KEY).toBeUndefined();
+    expect(s.unsetEnv).toContain('OPENAI_API_KEY');
+    const o = buildAgentMissionPtySpawnOptions({ backend: codexBackend, spawn: s, workdir: '/w', nickname: 'n' });
+    expect(o.unsetEnv).toContain('OPENAI_API_KEY');
+  });
+  it('강제 env 로 다시 넣은 키는 unset 에서 뺀다(grok)', () => {
+    const s = resolveBackendSpawn(grokBackend, { PATH: '/bin' });
+    for (const k of s.unsetEnv) expect(Object.hasOwn(s.env, k)).toBe(false);
   });
 });

@@ -5,7 +5,7 @@
 // 게이트(SE4) → PR 초안. merge/재부팅 없음(HITL·P3). build arming off 면 집행 0(skeleton).
 //
 // ★ config 격리 하드가드(대표 강조): 격리 데몬 launch args 는 반드시 --config-dir(격리)+
-// --test-state-dir 를 포함하고, 그 경로가 정식 ~/.monad 이면 throw. 메인 config 무오염 보증.
+// --test-state-dir 를 포함하고, 그 경로가 정식 ~/.elanous 이면 throw. 메인 config 무오염 보증.
 
 import { isolatedPort, assertIsolationSafe, type IsolatedPlan } from './isolated-instance.js';
 import type { GateResult } from './integrity-gate.js';
@@ -19,8 +19,8 @@ import { isSystemRepairAuthorized } from '../system-repair.js';
 export function buildIsolatedLaunchArgs(plan: IsolatedPlan): string[] {
   assertIsolationSafe(plan);
   const home = process.env.HOME ?? '';
-  if (home && plan.configDir.startsWith(`${home}/.monad`) && !plan.configDir.includes('.worktrees')) {
-    throw new Error(`config 격리 위반: 격리 데몬이 정식 ~/.monad 를 config-dir 로 사용 시도(${plan.configDir})`);
+  if (home && plan.configDir.startsWith(`${home}/.elanous`) && !plan.configDir.includes('.worktrees')) {
+    throw new Error(`config 격리 위반: 격리 데몬이 정식 ~/.elanous 를 config-dir 로 사용 시도(${plan.configDir})`);
   }
   return [
     '--config-dir', plan.configDir,

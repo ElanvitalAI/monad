@@ -31,12 +31,12 @@ const FIVE = [
 
 const TRANSFER = [
   {
-    text: 'monad 는 다른 에이전트가 같은 파일을 쓰는 것을 감지하는가',
+    text: 'elanous 는 다른 에이전트가 같은 파일을 쓰는 것을 감지하는가',
     quote: '같은 폴더에서 두 에이전트가 충돌했다',
     lens: 'L3 하니스 운영',
   },
   {
-    text: 'monad 는 손으로 잰 충돌 횟수를 1급 CLI 로 재는가',
+    text: 'elanous 는 손으로 잰 충돌 횟수를 1급 CLI 로 재는가',
     quote: '사람이 손으로 잰 충돌 횟수를 CLI 로 다시 잴 수 있다',
     lens: 'L4 관측·측정',
   },
@@ -148,7 +148,7 @@ describe('intake check document pipeline', () => {
     const surface = ruler.surfaces[0]?.name;
     expect(cap && surface).toBeTruthy();
     const item: IntakeCheckItem = {
-      fact: 'monad 는 두 입구를 같이 쓰는가',
+      fact: 'elanous 는 두 입구를 같이 쓰는가',
       quotes: ['quote'],
       verdict: '없음',
       line: 'line',
@@ -209,7 +209,7 @@ describe('intake check document pipeline', () => {
     const d = deps();
     const ruler = deriveRuler(d);
     const item: IntakeCheckItem = {
-      fact: 'monad 는 없는 경로를 근거로 받지 않는다',
+      fact: 'elanous 는 없는 경로를 근거로 받지 않는다',
       quotes: ['q'],
       verdict: '없음',
       line: 'line',

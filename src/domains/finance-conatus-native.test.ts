@@ -22,7 +22,7 @@ const prevXdg = process.env.XDG_CONFIG_HOME;
 
 /** 격리 config.json 을 쓰고 getUserConfig 캐시를 무효화(다음 read 가 새 파일 반영). */
 async function writeConfig(obj: unknown): Promise<void> {
-  writeFileSync(join(cfgDir, 'monad', 'config.json'), JSON.stringify(obj));
+  writeFileSync(join(cfgDir, 'elanous', 'config.json'), JSON.stringify(obj));
   const { resetUserConfig } = await import('../user-config.js');
   resetUserConfig();
 }
@@ -45,7 +45,7 @@ function row(code: string, ex: string, date: string, close: number, vol: number)
 beforeAll(() => {
   // config 디렉토리
   cfgDir = mkdtempSync(join(tmpdir(), 'conatus-native-cfg-'));
-  mkdirSync(join(cfgDir, 'monad'), { recursive: true });
+  mkdirSync(join(cfgDir, 'elanous'), { recursive: true });
   process.env.XDG_CONFIG_HOME = cfgDir;
 
   // 데이터 fixture — 오늘 기준 롤링 40일(주말 포함·recentTradingDates 가 평일만 채택).

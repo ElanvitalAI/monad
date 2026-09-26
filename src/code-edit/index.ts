@@ -44,7 +44,7 @@ export {
   type CodeEditApprover, type CodeEditApprovalRequest,
 } from './safety.js';
 export {
-  findMonadRepoRoot,
+  findElanousRepoRoot,
   getDefaultSystemFileDirs,
   setSystemFileGuardDisabled,
   isSystemFileGuardDisabled,

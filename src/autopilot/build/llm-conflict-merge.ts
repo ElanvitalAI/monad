@@ -292,7 +292,7 @@ export function defaultGitMergeSeam(): MergeGitSeam {
 /** 실 LLM 충돌 해결 어댑터(streamLLM·sol). 코드펜스/설명 제거해 완결 파일만. */
 export async function defaultLlmResolve(filePath: string, conflicted: string, mergeTarget: string): Promise<string> {
   const { streamLLM } = await import('../../llm.js');
-  const out = await streamLLM([{ role: 'user', content: conflictResolvePrompt(filePath, conflicted, mergeTarget) }], () => {}, { model: process.env.MONAD_CONFLICT_MODEL || tierModel('better'), reasoningEffort: 'medium' });
+  const out = await streamLLM([{ role: 'user', content: conflictResolvePrompt(filePath, conflicted, mergeTarget) }], () => {}, { model: process.env.ELANOUS_CONFLICT_MODEL || tierModel('better'), reasoningEffort: 'medium' });
   return `${out.replace(/^```[\w.-]*\n?/, '').replace(/\n?```\s*$/, '').trimEnd()}\n`;
 }
 

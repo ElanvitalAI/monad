@@ -1,38 +1,38 @@
-// `monad nexus run --test` — single-command project-local test mode.
+// `elanous nexus run --test` — single-command project-local test mode.
 //
 // One command does all of that with project-local impact only:
 //
-//     monad nexus run --test            # static · HTTP · 1 port (NEXUS)
-//     monad nexus run --test --hmr      # HMR · HTTP · 2 ports (NEXUS + Next dev)
-//     monad nexus run --test --https    # static · HTTPS via Tailscale Serve
-//     monad nexus run --test --hmr --https
-//     monad nexus run --test --status
-//     monad nexus run --test --stop
+//     elanous nexus run --test            # static · HTTP · 1 port (NEXUS)
+//     elanous nexus run --test --hmr      # HMR · HTTP · 2 ports (NEXUS + Next dev)
+//     elanous nexus run --test --https    # static · HTTPS via Tailscale Serve
+//     elanous nexus run --test --hmr --https
+//     elanous nexus run --test --status
+//     elanous nexus run --test --stop
 //
 // **2026-05-13 · config-dir-unify**: `--test` redirects ONLY the
 // nexus state subtree (lock · runtime.json · logs · tabs) to
-// `<repoRoot>/.monad-test/nexus/`. The config dir (config.json ·
+// `<repoRoot>/.elanous-test/nexus/`. The config dir (config.json ·
 // secrets.json · workflows · tasks) stays at the global root so the
 // user's daily-driver provider / personas / scheduler all keep
 // working in test mode. To use a different config dir as well, pass
 // `--config-dir <path>` (works for both daily and `--test` modes).
 //
 // Project-local guarantees:
-//   - State dir = `<repoRoot>/.monad-test/nexus/` (gitignored). User's
-//     production daemon at `~/.monad/nexus/` is never touched.
+//   - State dir = `<repoRoot>/.elanous-test/nexus/` (gitignored). User's
+//     production daemon at `~/.elanous/nexus/` is never touched.
 //   - Tailscale Serve mounts only the test port we explicitly opened
-//     and remembered in `<repoRoot>/.monad-test/tailscale-test-port.json`.
+//     and remembered in `<repoRoot>/.elanous-test/tailscale-test-port.json`.
 //     We never touch the user's other Serve config (e.g. their
 //     personal :443 forwards).
 //
 // Auto port collision recovery:
 //   - NEXUS port: prefer 31415 → 31420 (skip 31416-31419 to keep the
 //     classic +5 NEXUS spacing) → 31421+. Skip if production daemon
-//     (`~/.monad/nexus/.lock`) holds it OR an unrelated process binds
+//     (`~/.elanous/nexus/.lock`) holds it OR an unrelated process binds
 //     it (lsof check).
 //   - Next dev port (HMR mode only): prefer 3210 → 3211 → 3212+.
 //     Skip if any process binds the port.
-//   - Stale `<repo>/.monad-test/.lock` is an idempotent reuse — the
+//   - Stale `<repo>/.elanous-test/.lock` is an idempotent reuse — the
 //     command refuses with a clear hint unless `--force` is passed.
 
 import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
@@ -87,12 +87,12 @@ export interface PwaTestOpts {
   /** Explicit working directory for tools in the detached test daemon. */
   toolCwd?: string;
   /** Build `apps/pwa/out` before starting (only relevant in static
-   *  mode). Equivalent to `monad nexus pwa restart --rebuild`. */
+   *  mode). Equivalent to `elanous nexus pwa restart --rebuild`. */
   rebuild?: boolean;
   /** Opt-in: run an fs.watch loop inside the test daemon so source
    *  edits during a test session auto-rebuild. Default off — test mode
    *  is disposable (one-shot PR verification), so the noise of a long-
-   *  running watcher is opt-in. Mirrors `monad nexus run --watch`. */
+   *  running watcher is opt-in. Mirrors `elanous nexus run --watch`. */
   watch?: boolean;
   /** Opt-in: static-mode staleness check before start. When true and
    *  `apps/pwa/out` is older than source, run a one-shot build. Default
@@ -105,7 +105,7 @@ export interface PwaTestOpts {
   autoInstall?: boolean;
   /** Opt-in: same-tree auto-restart on port collision. Default off for
    *  test mode (collisions auto-fallback to the next port instead).
-   *  Surfaced for parity with `monad nexus run`. */
+   *  Surfaced for parity with `elanous nexus run`. */
   autoRestart?: boolean;
   /** FU8 PR #5 (2026-05-12) — fresh-on-start prune of
    *  `<stateDir>/workflows/` (and `<stateDir>/tasks/` + `<stateDir>/
@@ -124,7 +124,7 @@ export interface PwaTestOpts {
   /** Override the repo root resolution from `argvBin`. */
   repoRoot?: string;
   /** Replace the production-daemon lock probe. Defaults to reading
-   *  `~/.monad/nexus/.lock` via the public helpers. */
+   *  `~/.elanous/nexus/.lock` via the public helpers. */
   productionLockProbeFn?: () => NexusLockMeta | null;
   /** Replace the production-daemon liveness check. */
   productionLockAliveFn?: (meta: NexusLockMeta) => boolean;
@@ -181,14 +181,14 @@ interface RepoLayout {
 }
 
 /** Resolve `<repoRoot>` from `argvBin` (process.argv[1]). The bin
- *  symlink lives at `<repo>/bin/monad.mjs`, so the parent of `bin/` is
- *  the repo. Bun-linked global `monad` follows the symlink target so
+ *  symlink lives at `<repo>/bin/elanous.mjs`, so the parent of `bin/` is
+ *  the repo. Bun-linked global `elanous` follows the symlink target so
  *  this still resolves to the linked checkout. */
 function resolveRepoRoot(argvBin: string | undefined): string | undefined {
   if (!argvBin) return undefined;
   const candidate = resolvePath(dirname(argvBin), '..');
-  // Sanity-check by looking for `apps/pwa` + `bin/monad.mjs` siblings.
-  if (!existsSync(joinPath(candidate, 'bin', 'monad.mjs'))) return undefined;
+  // Sanity-check by looking for `apps/pwa` + `bin/elanous.mjs` siblings.
+  if (!existsSync(joinPath(candidate, 'bin', 'elanous.mjs'))) return undefined;
   if (!existsSync(joinPath(candidate, 'apps', 'pwa'))) return undefined;
   return candidate;
 }
@@ -197,7 +197,7 @@ function resolveLayout(opts: PwaTestOpts): RepoLayout | null {
   const argvBin = opts.argvBin ?? process.argv[1] ?? '';
   const repoRoot = opts.repoRoot ?? resolveRepoRoot(argvBin);
   if (!repoRoot) return null;
-  const stateDir = joinPath(repoRoot, '.monad-test');
+  const stateDir = joinPath(repoRoot, '.elanous-test');
   return {
     repoRoot,
     stateDir,
@@ -253,14 +253,14 @@ function pickNexusPort(
     return { port: preferred, reason: 'explicit --port' };
   }
 
-  // Default: 31415. Production daemon (`~/.monad/nexus/.lock`) takes
+  // Default: 31415. Production daemon (`~/.elanous/nexus/.lock`) takes
   // precedence — we never want to clobber the user's primary daemon.
   const candidates = [DEFAULT_NEXUS_PORT, ...NEXUS_FALLBACK_PORTS];
 
-  // Production probe must read `~/.monad/nexus/.lock`, not our test
+  // Production probe must read `~/.elanous/nexus/.lock`, not our test
   // lock. Temporarily clear any in-process test state override so
   // `readNexusLock` falls through to the default config-dir path.
-  // (Same-process re-entry only — fresh `monad` invocations start
+  // (Same-process re-entry only — fresh `elanous` invocations start
   // with testStateRoot=undefined automatically.)
   const savedTestStateRoot = getTestStateRoot();
   setTestStateRoot(null);
@@ -401,9 +401,9 @@ async function runStart(
   if (opts.fresh === true) {
     const { pruned } = pruneStaleArtifacts(layout, out);
     if (pruned.length > 0) {
-      out.log(`monad nexus run --test --fresh: pruned ${pruned.map((p) => `${p}/`).join(' · ')}`);
+      out.log(`elanous nexus run --test --fresh: pruned ${pruned.map((p) => `${p}/`).join(' · ')}`);
     } else {
-      out.log('monad nexus run --test --fresh: nothing to prune (.monad-test/ was already clean).');
+      out.log('elanous nexus run --test --fresh: nothing to prune (.elanous-test/ was already clean).');
     }
   }
 
@@ -412,7 +412,7 @@ async function runStart(
   const isHmr = opts.hmr === true;
   if (!isHmr && (opts.rebuild || !existsSync(layout.pwaOutDir))) {
     if (!opts.rebuild && !existsSync(layout.pwaOutDir)) {
-      out.log('monad nexus run --test: apps/pwa/out missing — running `pwa build` first.');
+      out.log('elanous nexus run --test: apps/pwa/out missing — running `pwa build` first.');
     }
     const rebuildFn = opts.rebuildFn ?? defaultRebuild;
     const r = await rebuildFn(layout.pwaCwd);
@@ -456,24 +456,24 @@ async function runStart(
   // Project-local nexus state subtree. The detached daemon will see
   // this override via `--test-state-dir <path>` argv re-appended in
   // `bg-launch.ts` (2026-05-13 · config-dir-unify replaces the
-  // previous `process.env.MONAD_NEXUS_DIR` inheritance).
+  // previous `process.env.ELANOUS_NEXUS_DIR` inheritance).
   setTestStateRoot(layout.stateDir);
 
   // ISO-2 (2026-07-13 · 대표 결정) — config 도 완전 분기. `--test` 하나로
-  // state + config 전부 <repo>/.monad-test/ 아래로 간다. 운영 config 는
+  // state + config 전부 <repo>/.elanous-test/ 아래로 간다. 운영 config 는
   // 물질화 사본(sync-test)으로만 전달되고, 테스트 프로세스는 운영
   // config.json 을 아예 열지 않는다(overlay 은퇴). bg-launch 가 부모의
   // config-dir 를 `--config-dir` argv 로 자식에 물려주므로 여기서 부모를
   // 분기하면 데몬 자식도 자동 상속된다.
   try {
-    const { setMonadConfigDir } = await import('../monad-config-dir.js');
-    setMonadConfigDir(layout.stateDir);
+    const { setElanousConfigDir } = await import('../elanous-config-dir.js');
+    setElanousConfigDir(layout.stateDir);
     const { syncTestConfig, isTestConfigStale } = await import('./config-test-sync.js');
     if (!existsSync(joinPath(layout.stateDir, 'config.json'))) {
       const r = syncTestConfig(layout.stateDir);
       out.log(`config 격리: 운영 config 물질화 → ${r.testConfigPath} (telegram=${r.telegramMode})`);
     } else if (isTestConfigStale(layout.stateDir)) {
-      out.log(`config 격리: ⚠️ 운영 config 가 테스트 사본보다 최신 — 'monad config sync-test' 로 갱신 권장`);
+      out.log(`config 격리: ⚠️ 운영 config 가 테스트 사본보다 최신 — 'elanous config sync-test' 로 갱신 권장`);
     }
   } catch (e) {
     out.error(`✗ config 격리 실패: ${e instanceof Error ? e.message : String(e)} — 운영 오염 위험이라 기동 중단`);
@@ -498,7 +498,7 @@ async function runStart(
     ...(opts.force ? { force: true } : {}),
     ...(opts.toolCwd !== undefined ? { toolCwd: opts.toolCwd } : {}),
     ...(devPort !== undefined ? { devPort } : {}),
-    // Parity with `monad nexus run` — staleness build / same-tree
+    // Parity with `elanous nexus run` — staleness build / same-tree
     // restart / fs.watch are all opt-in for test mode (vs. opt-out for
     // the canonical entry). The user surface adds `--watch` /
     // `--auto-build` / `--auto-restart` if they want the same calm
@@ -520,7 +520,7 @@ async function runStart(
 
   if (wantsHttps) {
     out.log('');
-    out.log('monad nexus run --test --https: mounting Tailscale Serve (TLS-terminated-tcp)…');
+    out.log('elanous nexus run --test --https: mounting Tailscale Serve (TLS-terminated-tcp)…');
     const mountFn =
       opts.tailscaleMountFn
       ?? ((port: number, mountOpts: Omit<TailscaleServeOpts, 'upstreamPort'>) =>
@@ -571,7 +571,7 @@ async function runStart(
   );
 
   out.log('');
-  out.log('────────────── monad nexus run --test ──────────────');
+  out.log('────────────── elanous nexus run --test ──────────────');
   out.log(`  mode      ${isHmr ? 'hmr' : 'static'}`);
   out.log(`  nexus     :${nexusPort}${nexusPick.reason ? `  (${nexusPick.reason})` : ''}`);
   if (devPort !== undefined) out.log(`  next-dev  :${devPort}`);
@@ -585,8 +585,8 @@ async function runStart(
     for (const u of urlForLanHttp(nexusPort)) out.log(`    ${u}`);
   }
   out.log('');
-  out.log('  stop      monad nexus run --test --stop');
-  out.log('  status    monad nexus run --test --status');
+  out.log('  stop      elanous nexus run --test --stop');
+  out.log('  status    elanous nexus run --test --status');
   out.log('────────────────────────────────────────────────');
 
   return {
@@ -603,11 +603,11 @@ async function runStop(
   out: NonNullable<PwaTestOpts['out']>,
 ): Promise<PwaTestResult> {
   // Mirror runStart — flip the in-process nexus state root so the
-  // stop signal targets `<.monad-test>/nexus/.lock` (not the user's
-  // `~/.monad/nexus/.lock`). config dir untouched.
+  // stop signal targets `<.elanous-test>/nexus/.lock` (not the user's
+  // `~/.elanous/nexus/.lock`). config dir untouched.
   setTestStateRoot(layout.stateDir);
   const pwaStopFn = opts.pwaStopFn ?? runPwaStop;
-  out.log('monad nexus run --test --stop: cascade');
+  out.log('elanous nexus run --test --stop: cascade');
 
   // Tailscale Serve unmount FIRST — the user's iPad URL stops working
   // immediately, then we tear down daemon + dev. This order matches
@@ -654,7 +654,7 @@ function runStatus(
 ): PwaTestResult {
   const stateFile = joinPath(layout.stateDir, 'test-state.json');
   if (!existsSync(stateFile)) {
-    out.log('monad nexus run --test: no active test instance.');
+    out.log('elanous nexus run --test: no active test instance.');
     return { exitCode: 0 };
   }
   try {
@@ -666,7 +666,7 @@ function runStatus(
       url?: string | null;
       startedAt?: string;
     };
-    out.log('monad nexus run --test --status:');
+    out.log('elanous nexus run --test --status:');
     out.log(`  mode      ${parsed.mode ?? '(unknown)'}`);
     out.log(`  nexus     :${parsed.nexusPort ?? '?'}`);
     if (parsed.devPort !== undefined) out.log(`  next-dev  :${parsed.devPort}`);
@@ -680,7 +680,7 @@ function runStatus(
     }
     return { exitCode: 0 };
   } catch (err) {
-    out.error(`monad nexus run --test --status: state file unreadable — ${(err as Error).message}`);
+    out.error(`elanous nexus run --test --status: state file unreadable — ${(err as Error).message}`);
     return { exitCode: 1 };
   }
 }
@@ -690,9 +690,9 @@ export async function runPwaTest(opts: PwaTestOpts = {}): Promise<PwaTestResult>
   const layout = resolveLayout(opts);
   if (!layout) {
     out.error(
-      `monad nexus run --test: could not resolve repo root from argv[1]=${opts.argvBin ?? process.argv[1] ?? '(empty)'}`,
+      `elanous nexus run --test: could not resolve repo root from argv[1]=${opts.argvBin ?? process.argv[1] ?? '(empty)'}`,
     );
-    out.error('  Run from a checkout of monad-agent (the bin symlink lives at <repo>/bin/monad.mjs).');
+    out.error('  Run from a checkout of monad-agent (the bin symlink lives at <repo>/bin/elanous.mjs).');
     return { exitCode: 1 };
   }
 

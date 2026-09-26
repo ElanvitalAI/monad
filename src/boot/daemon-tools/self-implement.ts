@@ -1,8 +1,8 @@
 // SelfImplement — 데몬/ACP 툴 서피스 어댑터 (2026-07-20 · P0 막 배선).
 //
-// `monad --acp-server`(createDaemonRuntime → toolSurface('webterm'))가 노출하는 툴에 self-build 를
-// 얹어, ACP 클라이언트(acpx·codex·다른 에이전트)도 monad self-implement 를 트리거할 수 있게 한다.
-// CLI(`monad self implement`)·내부 SelfImplement 툴과 **같은 코어**(runSelfImplement)를 태운다.
+// `elanous --acp-server`(createDaemonRuntime → toolSurface('webterm'))가 노출하는 툴에 self-build 를
+// 얹어, ACP 클라이언트(acpx·codex·다른 에이전트)도 elanous self-implement 를 트리거할 수 있게 한다.
+// CLI(`elanous self implement`)·내부 SelfImplement 툴과 **같은 코어**(runSelfImplement)를 태운다.
 //
 // ★ P0(DESIGN-cross-surface-autonomy-membrane §10) — ctx 를 **막(SurfaceUx)** 으로 소비:
 //   - approvePr ← ①operator 사전승인(user-config `tools.selfImplement.autoOpenPr`·**기본 ON**·

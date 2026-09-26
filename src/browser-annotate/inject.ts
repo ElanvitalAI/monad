@@ -17,13 +17,13 @@ import { renderAnnotationSvg, SVG_NAMESPACE, type AnnotationShape } from './shap
 export function drawExpression(id: string, svg: string): string {
   return `(() => {
     const id = ${JSON.stringify(id)};
-    const old = document.querySelector('[data-monad-annot="' + CSS.escape(id) + '"]');
+    const old = document.querySelector('[data-elanous-annot="' + CSS.escape(id) + '"]');
     if (old) old.remove();
     const template = document.createElement('template');
     template.innerHTML = ${JSON.stringify(svg)};
     const node = template.content.firstElementChild;
     if (!node) return { attached: false, verdict: 'no-root' };
-    node.setAttribute('data-monad-annot', id);
+    node.setAttribute('data-elanous-annot', id);
     document.body.append(node);
     const ns = node.namespaceURI;
     const rect = node.getBoundingClientRect();
@@ -36,11 +36,11 @@ export function drawExpression(id: string, svg: string): string {
 }
 
 export function eraseExpression(id: string): string {
-  return `(() => { const node = document.querySelector('[data-monad-annot="' + CSS.escape(${JSON.stringify(id)}) + '"]'); if (!node) return false; node.remove(); return true; })()`;
+  return `(() => { const node = document.querySelector('[data-elanous-annot="' + CSS.escape(${JSON.stringify(id)}) + '"]'); if (!node) return false; node.remove(); return true; })()`;
 }
 
 export function existsExpression(id: string): string {
-  return `document.querySelector('[data-monad-annot="' + CSS.escape(${JSON.stringify(id)}) + '"]') !== null`;
+  return `document.querySelector('[data-elanous-annot="' + CSS.escape(${JSON.stringify(id)}) + '"]') !== null`;
 }
 
 /** 주입 판정 — ⛔ 「붙었다」가 아니라 「보이나」다. */

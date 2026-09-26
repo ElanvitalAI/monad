@@ -128,7 +128,7 @@ describe('skill_exec runtime', () => {
   test('admits a declared-safe skill from an injected index with an empty config allowlist', async () => {
     emptyConfigAllowlist();
     setSkillExecIndexProvider(() => [
-      entry({ name: 'monad-logs', sideEffects: 'none', cost: 'light' }),
+      entry({ name: 'elanous-logs', sideEffects: 'none', cost: 'light' }),
     ]);
     let received: { skill: string; task: string } | undefined;
     setResearchInvoker(async (skill, task) => {
@@ -138,12 +138,12 @@ describe('skill_exec runtime', () => {
     const { rows, restore } = captureSkillExecLogs();
 
     try {
-      const result = await dispatchSkillExec({ skill: 'monad-logs', task: 'show recent errors' });
-      expect(received).toEqual({ skill: 'monad-logs', task: 'show recent errors' });
-      expect(result).toMatchObject({ skill: 'monad-logs', ok: true, output: 'declared-safe output' });
+      const result = await dispatchSkillExec({ skill: 'elanous-logs', task: 'show recent errors' });
+      expect(received).toEqual({ skill: 'elanous-logs', task: 'show recent errors' });
+      expect(result).toMatchObject({ skill: 'elanous-logs', ok: true, output: 'declared-safe output' });
       const decision = rows.find((r) => r.event === 'decision');
       expect(decision?.data).toMatchObject({
-        skill: 'monad-logs',
+        skill: 'elanous-logs',
         admitted: true,
         reason: 'declared-safe',
       });
@@ -298,20 +298,20 @@ describe('skill_exec runtime', () => {
     });
 
     setSkillExecIndexProvider(() => []);
-    const withoutIndex = await dispatchSkillExec({ skill: 'monad-logs', task: 'show recent errors' });
+    const withoutIndex = await dispatchSkillExec({ skill: 'elanous-logs', task: 'show recent errors' });
     expect(invoked).toBe(false);
     expect(withoutIndex.ok).toBe(false);
-    expect(withoutIndex.output).toContain('자동 실행 대상 아님: monad-logs');
+    expect(withoutIndex.output).toContain('자동 실행 대상 아님: elanous-logs');
 
     setSkillExecIndexProvider(() => [
-      entry({ name: 'monad-logs', sideEffects: 'none', cost: 'light' }),
+      entry({ name: 'elanous-logs', sideEffects: 'none', cost: 'light' }),
     ]);
     setResearchInvoker(async (skill, task) => {
       invoked = true;
-      expect({ skill, task }).toEqual({ skill: 'monad-logs', task: 'show recent errors' });
+      expect({ skill, task }).toEqual({ skill: 'elanous-logs', task: 'show recent errors' });
       return { ok: true, output: 'index applied' };
     });
-    const withIndex = await dispatchSkillExec({ skill: 'monad-logs', task: 'show recent errors' });
-    expect(withIndex).toMatchObject({ skill: 'monad-logs', ok: true, output: 'index applied' });
+    const withIndex = await dispatchSkillExec({ skill: 'elanous-logs', task: 'show recent errors' });
+    expect(withIndex).toMatchObject({ skill: 'elanous-logs', ok: true, output: 'index applied' });
   });
 });

@@ -3,7 +3,7 @@
 // Enforces: files on the server-side ACP path must not invoke
 // console.log / console.info / console.warn / console.debug /
 // process.stdout.write. These all land on stdout, which is
-// reserved for JSON-RPC frames when monad runs as `--acp-server`
+// reserved for JSON-RPC frames when elanous runs as `--acp-server`
 // over stdio. A single stray call corrupts the stream and the
 // parent client (claude-code, zed, messenger gateway) drops.
 //
@@ -77,7 +77,7 @@ describe('ACP stdio discipline — server-side modules are stdout-clean', () => 
       if (hits.length > 0) {
         const summary = hits.map((h) => `  L${h.line}: ${h.match}`).join('\n');
         throw new Error(
-          `${rel} has ${hits.length} stdout-bound call(s) — these corrupt ACP JSON-RPC when monad runs with --acp-server over stdio. Route to stderr (console.error / process.stderr.write) or the internal debug.log:\n${summary}`,
+          `${rel} has ${hits.length} stdout-bound call(s) — these corrupt ACP JSON-RPC when elanous runs with --acp-server over stdio. Route to stderr (console.error / process.stderr.write) or the internal debug.log:\n${summary}`,
         );
       }
       expect(hits).toEqual([]);

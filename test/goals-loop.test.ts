@@ -20,24 +20,24 @@ import { debug } from '../src/debug/log.js';
 import { ChannelBus } from '../src/terminal-matrix/channel-bus.js';
 import { snapshotRunLifecycle, validateLifecycleRecord } from '../src/signal/lifecycle-record.js';
 
-const originalRunId = process.env.MONAD_RUN_ID;
-const originalPtyId = process.env.MONAD_PTY_ID;
-const originalNestDepth = process.env.MONAD_NEST_DEPTH;
+const originalRunId = process.env.ELANOUS_RUN_ID;
+const originalPtyId = process.env.ELANOUS_PTY_ID;
+const originalNestDepth = process.env.ELANOUS_NEST_DEPTH;
 
 function setLifecycleIdentity(runId = 'run-goals-test', ptyId = 'pty-goals-test', depth = '2'): void {
-  process.env.MONAD_RUN_ID = runId;
-  process.env.MONAD_PTY_ID = ptyId;
-  process.env.MONAD_NEST_DEPTH = depth;
+  process.env.ELANOUS_RUN_ID = runId;
+  process.env.ELANOUS_PTY_ID = ptyId;
+  process.env.ELANOUS_NEST_DEPTH = depth;
 }
 
 afterEach(() => {
   _resetForTesting();
-  if (originalRunId === undefined) delete process.env.MONAD_RUN_ID;
-  else process.env.MONAD_RUN_ID = originalRunId;
-  if (originalPtyId === undefined) delete process.env.MONAD_PTY_ID;
-  else process.env.MONAD_PTY_ID = originalPtyId;
-  if (originalNestDepth === undefined) delete process.env.MONAD_NEST_DEPTH;
-  else process.env.MONAD_NEST_DEPTH = originalNestDepth;
+  if (originalRunId === undefined) delete process.env.ELANOUS_RUN_ID;
+  else process.env.ELANOUS_RUN_ID = originalRunId;
+  if (originalPtyId === undefined) delete process.env.ELANOUS_PTY_ID;
+  else process.env.ELANOUS_PTY_ID = originalPtyId;
+  if (originalNestDepth === undefined) delete process.env.ELANOUS_NEST_DEPTH;
+  else process.env.ELANOUS_NEST_DEPTH = originalNestDepth;
 });
 
 function fakeJudge(result: JudgeResult | null): (typeof shouldContinueAfterAssistantTurn) extends (...a: infer A) => infer R ? Parameters<typeof shouldContinueAfterAssistantTurn>[1] extends infer O ? (O extends { judgeFn?: infer F } ? F : never) : never : never {
@@ -190,10 +190,10 @@ describe('GoalLoop — shouldContinueAfterAssistantTurn', () => {
     ['ptyId only', 'run-goals-test', undefined, ['ptyId']],
     ['both identities', undefined, undefined, ['runId', 'ptyId']],
   ])('skips lifecycle publication and observes missing %s identity', async (_caseName, runId, ptyId, missing) => {
-    if (runId === undefined) delete process.env.MONAD_RUN_ID;
-    else process.env.MONAD_RUN_ID = runId;
-    if (ptyId === undefined) delete process.env.MONAD_PTY_ID;
-    else process.env.MONAD_PTY_ID = ptyId;
+    if (runId === undefined) delete process.env.ELANOUS_RUN_ID;
+    else process.env.ELANOUS_RUN_ID = runId;
+    if (ptyId === undefined) delete process.env.ELANOUS_PTY_ID;
+    else process.env.ELANOUS_PTY_ID = ptyId;
     const log = spyOn(debug, 'log').mockImplementation(() => {});
     const bus = new ChannelBus();
     try {

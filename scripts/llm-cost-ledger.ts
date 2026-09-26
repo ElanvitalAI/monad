@@ -16,7 +16,7 @@ const PAGE_LIMIT = '100000';
 const MAX_PAGES = 10_000;
 
 const LOGS_ARGS = [
-  'bin/monad.mjs',
+  'bin/elanous.mjs',
   'logs',
   '--category', 'llm.usage',
   '--all',

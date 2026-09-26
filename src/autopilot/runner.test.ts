@@ -1,6 +1,6 @@
 // src/autopilot/runner.test.ts
 //
-// ROADMAP-monad-builtin-autopilot-cascade §MB-1 — AcpTurnRunner adapter
+// ROADMAP-elanous-builtin-autopilot-cascade §MB-1 — AcpTurnRunner adapter
 // unit tests. Verifies the wrapper forwards prompt / cancel to the
 // underlying AcpAgent with the correct sessionId binding.
 

@@ -11,7 +11,7 @@ describe('terminal tree identity', () => {
   });
 
   test('uses the harness tree fallback and leaves unrecognised paths unlabelled', () => {
-    expect(terminalTreeLabel('/Users/me/.monad/worktrees/tree-b/monad-agent.worktrees/child')).toBe('tree-b/child');
-    expect(terminalTreeLabel('/var/lib/monad/pty/manifest.db')).toBe('');
+    expect(terminalTreeLabel('/Users/me/.elanous/worktrees/tree-b/monad-agent.worktrees/child')).toBe('tree-b/child');
+    expect(terminalTreeLabel('/var/lib/elanous/pty/manifest.db')).toBe('');
   });
 });

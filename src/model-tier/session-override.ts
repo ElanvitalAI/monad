@@ -26,7 +26,7 @@ export interface SessionTierOverride {
   tts?: ModelTier;
   /** Optional monthly cap propagated from preset.monthlyUsdCap. */
   monthlyUsdCap?: number;
-  /** Why the override exists — surfaced by `monad voice status` so
+  /** Why the override exists — surfaced by `elanous voice status` so
    *  the user remembers what kicked it off. */
   rationale: string;
   /** Absolute expiry timestamp (Date.now() based). undefined = no TTL. */

@@ -1276,7 +1276,7 @@ export async function executeSkill(
     // H5 P3 · cross-agent handoff (snapshot + channel filter → new session).
     buildAgentHandoffTool(),
     // H6 P1 · multi-agent budget tracker (4 tools · T1 · read-only
-    // except BudgetSetLimit which writes ~/.config/monad/budget/limits.json).
+    // except BudgetSetLimit which writes ~/.config/elanous/budget/limits.json).
     buildBudgetStatusTool(),
     buildBudgetHistoryTool(),
     buildBudgetForecastTool(),

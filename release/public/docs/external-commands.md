@@ -1,6 +1,6 @@
 # External commands
 
-Beyond Bun and git, monad spawns these. None are needed to boot; each gates
+Beyond Bun and git, elanous spawns these. None are needed to boot; each gates
 one capability. Counted from `src/` and `scripts/` on 2026-09-20:
 
 | command | used for |

@@ -9,7 +9,7 @@
 // 결정은 순수 로직(결정론·신호→command). I/O 없음.
 
 /** 조율자 명령 종류 — proceed(현행)·reclassify(재분류 시도)·route-conservative(보수 라우팅)·
- *  replan(재계획)·escalate(HITL). LangGraph Command.goto/update 의 monad 어휘. */
+ *  replan(재계획)·escalate(HITL). LangGraph Command.goto/update 의 elanous 어휘. */
 export type CommandAction = 'proceed' | 'reclassify' | 'route-conservative' | 'replan' | 'escalate';
 
 /** 조율자 명령 — action + 선택적 goto(대상)/update(채널 갱신)/reason. */

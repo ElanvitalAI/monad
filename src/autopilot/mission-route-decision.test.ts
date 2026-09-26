@@ -12,7 +12,7 @@ describe('mission route-decision evidence', () => {
   });
 
   test('adapter backend becomes concrete execution evidence', () => {
-    expect(routeDecisionFromExecutionBackend('monad-self:claude-opus-4-8')).toMatchObject({ provider: 'anthropic', model: 'claude-opus-4-8', source: 'execution-backend' });
+    expect(routeDecisionFromExecutionBackend('elanous-self:claude-opus-4-8')).toMatchObject({ provider: 'anthropic', model: 'claude-opus-4-8', source: 'execution-backend' });
   });
 
   test('replaces phase evidence and briefing reader gets the latest phase', () => {

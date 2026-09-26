@@ -9,7 +9,7 @@
 // operator see active work without opening the roster widget or
 // `/ps` slash. Mirrors claude-code-fork's `getPillLabel`
 // (`tasks/pillLabel.ts:10-82`) typed-summary pattern, adapted to
-// monad's chatLines string surface.
+// elanous's chatLines string surface.
 //
 // Pure function — no side effects. Returns null when nothing is
 // running so the caller skips the chat block entirely.

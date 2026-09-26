@@ -24,7 +24,7 @@ describe('codex 계정 해석', () => {
   });
 
   test('이름 계정은 «스코프된 키»와 «자기 홈»을 쓴다', () => {
-    const r = resolveCodexAccount({ MONAD_CODEX_ACCOUNT: 'team', MONAD_CODEX_ACCOUNT_HOME: '/tmp/team' });
+    const r = resolveCodexAccount({ ELANOUS_CODEX_ACCOUNT: 'team', ELANOUS_CODEX_ACCOUNT_HOME: '/tmp/team' });
     expect(r).toEqual({ name: 'team', storeKey: 'openai-codex:team', home: '/tmp/team', source: 'env' });
     // ⭐ 미러가 «그 계정의 홈»으로 간다 — 이것이 A 가 B 를 덮던 사고의 수리다
     expect(codexAccountAuthPath(r)).toBe('/tmp/team/auth.json');
@@ -32,18 +32,18 @@ describe('codex 계정 해석', () => {
 
   test('⛔ 홈을 모르거나 이름이 이상하면 «기본으로 떨어진다» — 조용히 다른 계정을 쓰지 않는다', () => {
     // 이름은 골랐는데 config 에 홈이 없다
-    expect(resolveCodexAccount({ MONAD_CODEX_ACCOUNT: 'ghost' }).storeKey).toBe('openai-codex');
-    expect(resolveCodexAccount({ MONAD_CODEX_ACCOUNT: 'ghost' }).source).toBe('default');
+    expect(resolveCodexAccount({ ELANOUS_CODEX_ACCOUNT: 'ghost' }).storeKey).toBe('openai-codex');
+    expect(resolveCodexAccount({ ELANOUS_CODEX_ACCOUNT: 'ghost' }).source).toBe('default');
     // 이름 자체가 부적격(구분자·공백)
-    expect(resolveCodexAccount({ MONAD_CODEX_ACCOUNT: 'a b', MONAD_CODEX_ACCOUNT_HOME: '/x' }).storeKey).toBe('openai-codex');
-    expect(resolveCodexAccount({ MONAD_CODEX_ACCOUNT: 'a:b', MONAD_CODEX_ACCOUNT_HOME: '/x' }).storeKey).toBe('openai-codex');
+    expect(resolveCodexAccount({ ELANOUS_CODEX_ACCOUNT: 'a b', ELANOUS_CODEX_ACCOUNT_HOME: '/x' }).storeKey).toBe('openai-codex');
+    expect(resolveCodexAccount({ ELANOUS_CODEX_ACCOUNT: 'a:b', ELANOUS_CODEX_ACCOUNT_HOME: '/x' }).storeKey).toBe('openai-codex');
   });
 
   test('per-run env 쌍이 이름 계정을 세운다 (⛔ 지속 설정은 이 판의 스코프가 아니다)', () => {
-    const r = resolveCodexAccount({ MONAD_CODEX_ACCOUNT: 'team', MONAD_CODEX_ACCOUNT_HOME: '/tmp/t2' });
+    const r = resolveCodexAccount({ ELANOUS_CODEX_ACCOUNT: 'team', ELANOUS_CODEX_ACCOUNT_HOME: '/tmp/t2' });
     expect(r).toEqual({ name: 'team', storeKey: 'openai-codex:team', home: '/tmp/t2', source: 'env' });
     // ⛔ 이름만 있고 홈이 없으면 기본으로 떨어진다
-    expect(resolveCodexAccount({ MONAD_CODEX_ACCOUNT: 'team' }).storeKey).toBe('openai-codex');
+    expect(resolveCodexAccount({ ELANOUS_CODEX_ACCOUNT: 'team' }).storeKey).toBe('openai-codex');
   });
 
   test('미러 판정은 기본·이름 «둘 다» 문다 (⛔ 하나만 물면 그 계정 CLI 가 조용히 낡는다)', () => {

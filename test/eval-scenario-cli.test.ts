@@ -2,7 +2,7 @@
 //
 // Covers schema validation, defaults merge, and assertion aggregation
 // at the unit-test level (no real LLM calls). Live integration with
-// monad repro --scenario is verified manually via tests/scenarios/
+// elanous repro --scenario is verified manually via tests/scenarios/
 // codex-baseline.yaml.
 
 import { afterEach, describe, expect, test } from 'bun:test';

@@ -7,12 +7,12 @@
 
 // leaf 규율을 지키려 tier 해석기도 «lazy» 로 끌어온다(top-level import 금지).
 const DMODEL = async (): Promise<string> => {
-  const override = process.env.MONAD_DECOMPOSE_MODEL;
+  const override = process.env.ELANOUS_DECOMPOSE_MODEL;
   if (override) return override;
   const { tierModel } = await import('../../llm/model-defaults.js');
   return tierModel('better');
 };
-const DEFFORT = () => (process.env.MONAD_DECOMPOSE_EFFORT || 'high') as
+const DEFFORT = () => (process.env.ELANOUS_DECOMPOSE_EFFORT || 'high') as
   'minimal' | 'low' | 'medium' | 'high' | 'xhigh' | 'max';
 
 /** LLM 을 JSON 응답으로 호출(streamLLM lazy import·hot path 회피). opts 로 모델/effort override —

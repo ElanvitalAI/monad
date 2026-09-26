@@ -31,7 +31,7 @@ export interface DesignCheckRenderOptions {
     unavailable: string | null;
     available: ReadonlyArray<{ id: string; mood: string }>;
   };
-  /** When false, rulebooks that monad ships but the document does not declare
+  /** When false, rulebooks that elanous ships but the document does not declare
    *  are omitted. The default shows them: "what could I turn on?" is the
    *  question a terminal user is usually asking, and the CLI's own
    *  `repo design-check` cannot answer it. */
@@ -43,7 +43,7 @@ export interface DesignCheckRenderOptions {
  *  silently generic line. Mirrors the PWA's `describeBlocked`. */
 function blockedLines(outcome: Extract<DesignCheckOutcome, { ok: false }>): DesignCheckLine[] {
   const detail = outcome.blockedOn === 'craft-directory'
-    ? `monad's craft rulebook directory could not be read: ${outcome.path}`
+    ? `elanous's craft rulebook directory could not be read: ${outcome.path}`
     : `no readable DESIGN.md at: ${outcome.path}`;
   return [
     { text: 'Design check blocked', tone: 'bad' },

@@ -30,7 +30,7 @@
 
 import { debug } from '../../debug/log.js';
 import type { WidgetHost } from '../../widgets/host.js';
-import type { MonadState, Store } from '../types.js';
+import type { ElanousState, Store } from '../types.js';
 
 /** Attach one-way sync from `widgetHost.focusedId` →
  *  `store.ui.focusedWidgetId`.
@@ -41,7 +41,7 @@ import type { MonadState, Store } from '../types.js';
  *
  *  Returns a disposer — idempotent. */
 export function bridgeWidgetHostFocusToStore(
-  store: Store<MonadState>,
+  store: Store<ElanousState>,
   widgetHost: WidgetHost,
 ): () => void {
   // ── Initial sync ────────────────────────────────────────────────
@@ -87,7 +87,7 @@ export function bridgeWidgetHostFocusToStore(
 }
 
 function writeStoreFocus(
-  store: Store<MonadState>,
+  store: Store<ElanousState>,
   next: string | null,
 ): void {
   store.setState((s) => ({

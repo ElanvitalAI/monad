@@ -6,7 +6,7 @@ import { applyTestFlagFromArgv, getAppliedGlobalTestRoot } from '../../cli/test-
 import { setGitCommandRunnerForTesting } from '../../git-fs/runner.js';
 import { resolveCurrentInstance } from '../../instance/current.js';
 import { prodInstanceRoot, setTreeDerivedTestForTesting } from '../../instance/resolve.js';
-import { resetMonadConfigDir, setMonadConfigDir } from '../../monad-config-dir.js';
+import { resetElanousConfigDir, setElanousConfigDir } from '../../elanous-config-dir.js';
 import { nexusRootDir, setTestStateRoot } from '../paths.js';
 import { createNexusState } from '../state/state.js';
 import { TabRegistry } from '../state/tab-registry.js';
@@ -42,19 +42,19 @@ afterEach(() => {
   setGitCommandRunnerForTesting(undefined);
   setHealthIdentityResolversForTesting(undefined);
   setTestStateRoot(null);
-  resetMonadConfigDir();
+  resetElanousConfigDir();
   setTreeDerivedTestForTesting(undefined);
 });
 
 function withStateDir<T>(stateDir: string | undefined, fn: () => T): T {
-  const previous = process.env.MONAD_STATE_DIR;
-  if (stateDir === undefined) delete process.env.MONAD_STATE_DIR;
-  else process.env.MONAD_STATE_DIR = stateDir;
+  const previous = process.env.ELANOUS_STATE_DIR;
+  if (stateDir === undefined) delete process.env.ELANOUS_STATE_DIR;
+  else process.env.ELANOUS_STATE_DIR = stateDir;
   try {
     return fn();
   } finally {
-    if (previous === undefined) delete process.env.MONAD_STATE_DIR;
-    else process.env.MONAD_STATE_DIR = previous;
+    if (previous === undefined) delete process.env.ELANOUS_STATE_DIR;
+    else process.env.ELANOUS_STATE_DIR = previous;
   }
 }
 
@@ -188,7 +188,7 @@ describe('/v1/health identity', () => {
       currentInstance: () => ({ kind: 'prod' }),
     });
     setTestStateRoot(null);
-    setMonadConfigDir(prodInstanceRoot());
+    setElanousConfigDir(prodInstanceRoot());
     const prodBody = await healthBody(handleHealth(state, registry, { bindHost: '0.0.0.0' }));
     const prodUniverseRoot = nexusRootDir();
 
@@ -218,7 +218,7 @@ describe('/v1/health identity', () => {
       const testResponse = withoutAppliedGlobalTestRoot(() => {
         setTreeDerivedTestForTesting(false);
         setTestStateRoot(testRoot);
-        setMonadConfigDir(testRoot);
+        setElanousConfigDir(testRoot);
         return withStateDir(testRoot, () => {
           expect(resolveCurrentInstance().kind).toBe('test');
           testUniverseRoot = nexusRootDir();
@@ -231,7 +231,7 @@ describe('/v1/health identity', () => {
       const prodResponse = withoutAppliedGlobalTestRoot(() => {
         setTreeDerivedTestForTesting(false);
         setTestStateRoot(null);
-        setMonadConfigDir(prodRoot);
+        setElanousConfigDir(prodRoot);
         return withStateDir(prodRoot, () => {
           expect(resolveCurrentInstance().kind).toBe('prod');
           prodUniverseRoot = nexusRootDir();

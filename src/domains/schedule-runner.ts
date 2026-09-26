@@ -1,11 +1,11 @@
 // ── 스케줄 러너 (2026-07-07 · S2 / 2026-07-09 · P1 관측성+자기회복) ─────
 //
 // 대표 지시: "실제 크론잡이 스케줄러로 돌아갈 수 있도록." 시스템 crontab 대신
-// monad 데몬이 잡을 발화. 새 외부 엔진 신설 아님 — workflow-runtime가 이미 쓰는
+// elanous 데몬이 잡을 발화. 새 외부 엔진 신설 아님 — workflow-runtime가 이미 쓰는
 // node-cron을 데몬 내에서 재사용(레거시 스케줄러 은퇴 교훈 준수).
 //
 // 안전 설계:
-//   · opt-in: run_via='monad' 잡만 발화. 나머지는 crontab이 계속 실행.
+//   · opt-in: run_via='elanous' 잡만 발화. 나머지는 crontab이 계속 실행.
 //   · 더블파이어 방지: 라이브 crontab에 같은 command가 있으면 SKIP(경고).
 //   · 오버랩 가드: 이전 실행이 안 끝났으면 다음 tick 스킵.
 //   · reconcile 루프: 레지스트리 변화(adopt/release)를 주기 반영(재시작 불요).
@@ -140,7 +140,7 @@ export function startScheduleRunner(opts: RunnerOpts = {}): ScheduleRunnerHandle
   const reconcile = (): void => {
     const inCrontab = crontabCommands(crontabText());
     const desired = listSchedules(db).filter(j =>
-      j.run_via === 'monad' && j.enabled && j.cron && cron.validate(j.cron) &&
+      j.run_via === 'elanous' && j.enabled && j.cron && cron.validate(j.cron) &&
       j.command && !inCrontab.has(j.command)); // crontab에도 있으면 더블파이어 → 스킵
     const wanted = new Set(desired.map(j => j.id));
     // 사라진/해제된 잡 중지

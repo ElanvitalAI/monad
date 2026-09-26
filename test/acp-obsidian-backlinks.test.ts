@@ -61,7 +61,7 @@ describe('findBacklinks · live rg over tmpdir vault', () => {
   let vault: string;
 
   beforeEach(() => {
-    vault = mkdtempSync(join(tmpdir(), 'monad-backlinks-test-'));
+    vault = mkdtempSync(join(tmpdir(), 'elanous-backlinks-test-'));
   });
 
   afterEach(() => {

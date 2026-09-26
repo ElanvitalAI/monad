@@ -2,9 +2,9 @@
 //
 // File-disjoint partner of `createDaemonRunTurn` (single-LLM legacy
 // path · `daemon-runtime.ts:445`). Sniffs the inbound prompt for the
-// `_meta.monad.multiLlm` hint:
+// `_meta.elanous.multiLlm` hint:
 //   - hint present → dispatch via `bridgeMultiLlmCoreTurnsToAcp`
-//     (parallel `runCoreTurn` per target · update._meta.monad.modelId
+//     (parallel `runCoreTurn` per target · update._meta.elanous.modelId
 //     annotation per chunk · D13 stopReason in trailing chunk).
 //   - hint absent → fall through to the legacy single-LLM bridge so
 //     vanilla ACP clients (every existing chat / webterm peer) keep
@@ -13,7 +13,7 @@
 // MVP scope (D4 + DM-1 minimum):
 //   - history is *client-managed* on the multi-LLM path. Each panel
 //     of Showroom sends its own per-target history seed inline as part
-//     of `_meta.monad.multiLlm.targets[i].messages` (optional · falls
+//     of `_meta.elanous.multiLlm.targets[i].messages` (optional · falls
 //     back to fresh seed when absent). Daemon stays stateless on the
 //     multi-LLM channel — DM-3 (mixed history) revisits with a
 //     daemon-side store for cross-target context.
@@ -88,8 +88,8 @@ export function createDaemonMultiLlmRunTurn(
         cwd: toolCwdResolver.cwd!,
         resolveWriteCwd: toolCwdResolver.resolveWriteCwd,
         signal: ctrl.signal,
-        // Monad's own LLM assembles tool arguments from natural language.
-        entry: 'monad-apparatus',
+        // Elanous's own LLM assembles tool arguments from natural language.
+        entry: 'elanous-apparatus',
       };
       if (ctx?.sessionId) dispatchCtx.sessionId = ctx.sessionId;
       // PLAN-ios-rich-dev-feedback-hydrate M1-S (ACP-path · 2026-05-13) —
@@ -126,7 +126,7 @@ export function createDaemonMultiLlmRunTurn(
 
 /** Per-target message seed builder.
  *
- *  D4 isolated default — when the prompt's `_meta.monad.multiLlm`
+ *  D4 isolated default — when the prompt's `_meta.elanous.multiLlm`
  *  carries an inline `messages` array per target, that wins (client-
  *  managed history). Otherwise we seed a single-turn conversation
  *  with the target's user prompt under a shared system prompt.

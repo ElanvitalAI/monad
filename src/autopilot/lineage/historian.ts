@@ -81,7 +81,7 @@ export async function archiveMissionLineageOnCancel(missionId: string, reason: s
   }
   // ③④⑤·run-lock·state.json 고아 파일 move(H3) — 스냅샷 성공 여부와 무관하게 청소.
   const { moved } = await coldArchiveMissionFiles(missionId);
-  // ★ 제1원칙 관측(자기인지) — "언제·무엇을·왜 냉동보관했나". monad logs --category mission.lineage 로 회상.
+  // ★ 제1원칙 관측(자기인지) — "언제·무엇을·왜 냉동보관했나". elanous logs --category mission.lineage 로 회상.
   try { debug.log('mission.lineage', 'cold-archive', { missionId, reason, revisions: archived, movedFiles: moved }); } catch { /* fail-soft */ }
   return { archived, moved };
 }

@@ -1,7 +1,7 @@
 // PR-S1V.11 (Phase 6A architecture · 2026-04-29)
 // PR-S1V.12 (Phase 6 wire    · 2026-04-30)
 //
-// Discord voice channel adapter — wires monad's voice-chat-mode
+// Discord voice channel adapter — wires elanous's voice-chat-mode
 // controller (Phase 4) to a Discord voice channel via `@discordjs/voice`.
 //
 // Dependencies (added 2026-04-30):
@@ -12,7 +12,7 @@
 //
 // Architecture:
 //   - `DiscordVoiceChannelAdapter` — joinChannel / sendAudio /
-//     onAudioReceived / state subs — wired to monad's voice-chat-mode
+//     onAudioReceived / state subs — wired to elanous's voice-chat-mode
 //     controller (Phase 4) so the same harness path handles Discord
 //     audio just like local mic.
 //   - `createDiscordVoiceChannelAdapter()` — production constructor
@@ -21,7 +21,7 @@
 //     hint if the user removed the deps.
 //   - `createStubDiscordVoiceChannelAdapter()` — in-memory stub used
 //     by tests and by the dashboard while the user hasn't enabled
-//     voice yet (`MONAD_DISCORD_VOICE_CHANNEL` unset).
+//     voice yet (`ELANOUS_DISCORD_VOICE_CHANNEL` unset).
 //
 // PCM contracts (Phase 1 + 3):
 //   - inbound  : 16 kHz · mono · 16-bit signed (push to streaming-stt)
@@ -666,14 +666,14 @@ function createProductionSession(
 export function isDiscordVoiceChannelEnabled(): boolean {
   const cfgEnabled = getUserConfig().voice.discord.voiceChannel?.enabled;
   if (typeof cfgEnabled === 'boolean') return cfgEnabled;
-  const raw = process.env.MONAD_DISCORD_VOICE_CHANNEL?.trim().toLowerCase();
+  const raw = process.env.ELANOUS_DISCORD_VOICE_CHANNEL?.trim().toLowerCase();
   return raw === '1' || raw === 'true' || raw === 'on' || raw === 'yes';
 }
 
 export function resolveDiscordVoiceChannelListenFilter(): VoiceDiscordChannelListenFilter {
   const fromConfig = getUserConfig().voice.discord.voiceChannel?.listenFilter;
   if (fromConfig === 'caller' || fromConfig === 'all') return fromConfig;
-  const raw = process.env.MONAD_DISCORD_VOICE_LISTEN_FILTER?.trim().toLowerCase();
+  const raw = process.env.ELANOUS_DISCORD_VOICE_LISTEN_FILTER?.trim().toLowerCase();
   if (raw === 'all') return 'all';
   if (raw === 'caller') return 'caller';
   return VOICE_HARDCODED_DEFAULTS.discordVoiceChannelListenFilter;
@@ -682,7 +682,7 @@ export function resolveDiscordVoiceChannelListenFilter(): VoiceDiscordChannelLis
 export function shouldDiscordVoiceChannelLeaveOnEmpty(): boolean {
   const fromConfig = getUserConfig().voice.discord.voiceChannel?.leaveOnEmpty;
   if (typeof fromConfig === 'boolean') return fromConfig;
-  const raw = process.env.MONAD_DISCORD_VOICE_LEAVE_ON_EMPTY?.trim().toLowerCase();
+  const raw = process.env.ELANOUS_DISCORD_VOICE_LEAVE_ON_EMPTY?.trim().toLowerCase();
   if (raw === '0' || raw === 'false' || raw === 'off' || raw === 'no') return false;
   if (raw === '1' || raw === 'true' || raw === 'on' || raw === 'yes') return true;
   return VOICE_HARDCODED_DEFAULTS.discordVoiceChannelLeaveOnEmpty;

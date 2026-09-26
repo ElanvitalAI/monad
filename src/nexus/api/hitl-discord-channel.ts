@@ -7,8 +7,8 @@
 // `/v1/hitl/callback/:id` POST endpoint.
 //
 // The narrow `DiscordBot` interface that `src/hitl/discord-channel.ts`
-// declares isn't satisfied directly by monad's DiscordBot class —
-// monad's bot speaks raw gateway+REST and exposes `onInteraction`
+// declares isn't satisfied directly by elanous's DiscordBot class —
+// elanous's bot speaks raw gateway+REST and exposes `onInteraction`
 // (raw INTERACTION_CREATE) + `respondToInteraction` (callback POST)
 // + the new `sendMessageWithComponents`. This module's
 // `createDiscordBotHitlAdapter` bridges the two so the existing
@@ -36,14 +36,14 @@ import {
 
 export interface NexusDiscordHitlOpts {
   /** Bot token (without `Bot ` prefix). Production reads
-   *  `MONAD_DISCORD_HITL_BOT_TOKEN` env when not supplied. */
+   *  `ELANOUS_DISCORD_HITL_BOT_TOKEN` env when not supplied. */
   token: string;
   /** Discord channel id (snowflake string) where HITL prompts post.
-   *  Production reads `MONAD_DISCORD_HITL_CHANNEL_ID` env. */
+   *  Production reads `ELANOUS_DISCORD_HITL_CHANNEL_ID` env. */
   channelId: string;
   /** Optional logger. Defaults to `[hitl/discord]` prefix. */
   log?: (msg: string) => void;
-  /** Test seam — pre-built monad DiscordBot. When supplied, the
+  /** Test seam — pre-built elanous DiscordBot. When supplied, the
    *  factory skips constructing one from `token` and skips the
    *  start() call so unit tests can drive `onInteraction` directly. */
   bot?: DiscordBot;
@@ -60,13 +60,13 @@ export interface NexusDiscordHitlHandle {
 }
 
 export function readNexusDiscordHitlOptsFromEnv(env: NodeJS.ProcessEnv = process.env): NexusDiscordHitlOpts | null {
-  const token = env['MONAD_DISCORD_HITL_BOT_TOKEN'];
-  const channelId = env['MONAD_DISCORD_HITL_CHANNEL_ID'];
+  const token = env['ELANOUS_DISCORD_HITL_BOT_TOKEN'];
+  const channelId = env['ELANOUS_DISCORD_HITL_CHANNEL_ID'];
   if (!token || !channelId) return null;
   return { token, channelId };
 }
 
-/** Bridge monad's DiscordBot to the narrow `DiscordBot` interface
+/** Bridge elanous's DiscordBot to the narrow `DiscordBot` interface
  *  expected by `src/hitl/discord-channel.ts`. Listens to the bot's
  *  raw INTERACTION_CREATE callback, filters MESSAGE_COMPONENT
  *  interactions (component_type=2 = button), and dispatches each
@@ -83,7 +83,7 @@ export function createDiscordBotHitlAdapter(opts: {
   // buttonHandler. Discord interaction `type=3` is MESSAGE_COMPONENT;
   // `data.component_type=2` narrows to button taps (the only kind
   // HITL emits).
-  // monad's DiscordBot.onInteraction is a single-slot callback (set
+  // elanous's DiscordBot.onInteraction is a single-slot callback (set
   // at construction). We attach our handler via the constructor
   // path; existing slash-router handlers must be merged externally
   // when both wires share the same bot.

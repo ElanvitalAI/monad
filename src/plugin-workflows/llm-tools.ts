@@ -2,7 +2,7 @@
 //
 // Three tools cover the 3 verbs the LLM needs on a workflow:
 //   WorkflowRun    — fire off an execution (writes state + handoff
-//                    files under .monad/workflows/...)
+//                    files under .elanous/workflows/...)
 //   WorkflowList   — enumerate registered workflows (id + steps
 //                    summary). Read-only.
 //   WorkflowStatus — inspect a specific run by runId. Read-only.

@@ -9,7 +9,7 @@
 // (cloud LLM · deferred) plug into this same `MissionRouter` interface
 // via composition — the predict() implementation is replaced at
 // factory time, the public surface stays stable so consumers
-// (`monad/route/predict` envelope · iOS chip · …) don't churn.
+// (`elanous/route/predict` envelope · iOS chip · …) don't churn.
 //
 // Default mission → provider map mirrors the ROADMAP §3.1 table:
 //   plan     → claude (opus tier)
@@ -19,7 +19,7 @@
 //   quick    → claude (haiku tier)
 //   vision   → gemini (pro)
 //
-// User overrides via `~/.monad/config.json` `llm.missionRouting` (P1-2)
+// User overrides via `~/.elanous/config.json` `llm.missionRouting` (P1-2)
 // flow through MissionRoutingConfig — pass the user-config slice into
 // createMissionRouter({ config }) at boot.
 
@@ -278,7 +278,7 @@ function tier2CacheKey(input: MissionPredictionInput): string {
  *  hiccups.
  *
  *  `configProvider` is invoked on every predict() so user-config edits
- *  (`monad config mission set …`) take effect without a daemon
+ *  (`elanous config mission set …`) take effect without a daemon
  *  restart. Static `config` (when configProvider is omitted) is the
  *  legacy path — kept for tests that want a frozen slice. */
 export function createMissionRouter(opts?: {

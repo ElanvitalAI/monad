@@ -4,7 +4,7 @@
 //
 // Until this landed, workflow YAML containing `skill:` or `cft:` nodes
 // failed with `'... not wired in this runtime'`. Both bridges share a
-// single source of truth (this file) so the CLI (`monad wf run`) and
+// single source of truth (this file) so the CLI (`elanous wf run`) and
 // the Nexus REST API (`POST /v1/workflows/:name/run`) agree on
 // behavior.
 //

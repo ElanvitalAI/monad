@@ -39,12 +39,12 @@ describe('agent embodiment contracts', () => {
       approvalPolicy: 'on-request',
       sandboxMode: 'workspace-write',
       extraArgs: ['--profile', 'fast'],
-      env: { MONAD_AGENT_BRAND: 'codex' },
+      env: { ELANOUS_AGENT_BRAND: 'codex' },
     };
 
     expect(spec.mode).toBe('hybrid');
     expect(spec.extraArgs).toEqual(['--profile', 'fast']);
-    expect(spec.env?.MONAD_AGENT_BRAND).toBe('codex');
+    expect(spec.env?.ELANOUS_AGENT_BRAND).toBe('codex');
   });
 
   test('EmbodiedAgentSession exposes launch, transport, and lifecycle seams', async () => {

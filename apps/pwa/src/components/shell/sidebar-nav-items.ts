@@ -106,7 +106,7 @@ export const SIDEBAR_NAV_ITEMS: readonly SidebarNavItem[] = [
   // R5 (2026-05-09) — 진행 중인 세션 카드 데크 · 좌우 스와이프로
   // 거절·승인, 위/아래로 잠시 멈춤·펼치기.
   { href: '/sessions', label: 'Sessions', hint: '세션 카드 데크 (스와이프 결정)', icon: Layers2, kind: null },
-  // R6 (2026-05-09) — 오늘 monad 활동 요약 (노트·세션·OCR 카운터).
+  // R6 (2026-05-09) — 오늘 elanous 활동 요약 (노트·세션·OCR 카운터).
   { href: '/reflection', label: 'Reflection', hint: '오늘의 회고 (5분 갱신)', icon: Lightbulb, kind: null },
   // R4 (2026-07-07 · organic-signal-engine) — 파이낸스 시그널 대시보드
   // (캡스톤 국면·US 섹터·매력도 히트맵·신호 타임라인·디깅 피드).

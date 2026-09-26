@@ -58,7 +58,7 @@ describe('consolidateEpisodes — 흐린 에피소드 → 의미 umbrella', () =
   test('opt-in LLM summarize 주입 시 그 요약 사용', async () => {
     const sdb = openSurfaceEventsDb(':memory:');
     const kdb = openKnowledgeDb(':memory:');
-    seedGroup(sdb, 5, 'digest', 'monad', 'warm');
+    seedGroup(sdb, 5, 'digest', 'elanous', 'warm');
     const r = await consolidateEpisodes(sdb, kdb, { embed: mockEmbed, minGroup: 5, summarize: async () => 'LLM 압축 요약 결과' });
     expect(r.groups).toBe(1);
     const doc = kdb.query(`SELECT text FROM docs WHERE kind='memory'`).get() as { text: string };
@@ -105,7 +105,7 @@ describe('pruneKnowledge — M5 knowledge retention', () => {
     const kdb = openKnowledgeDb(':memory:');
     await ingestText(kdb, { id: 'signal:old', ts: old(300), kind: 'signal', text: '낡은 신호' }, mockEmbed);
     await ingestText(kdb, { id: 'outbound:old', ts: old(300), kind: 'outbound', text: '낡은 발송' }, mockEmbed);
-    await ingestText(kdb, { id: 'docs:keep', ts: old(300), kind: 'docs', text: '구현 문서(보존)', domain: 'monad' }, mockEmbed);
+    await ingestText(kdb, { id: 'docs:keep', ts: old(300), kind: 'docs', text: '구현 문서(보존)', domain: 'elanous' }, mockEmbed);
     await ingestText(kdb, { id: 'memory:keep', ts: old(300), kind: 'memory', text: '의미 umbrella(보존)' }, mockEmbed);
     await ingestText(kdb, { id: 'signal:recent', ts: old(10), kind: 'signal', text: '최근 신호(보존)' }, mockEmbed);
 

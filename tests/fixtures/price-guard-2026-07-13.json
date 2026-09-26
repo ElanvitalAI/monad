@@ -6,17 +6,17 @@
     "sources": [
       {
         "id": "apm_conatus-price-guard-cycle-recovery-integration_4ca472/run.log",
-        "path": "~/.monad/conatus/missions/apm_conatus-price-guard-cycle-recovery-integration_4ca472/run.log",
+        "path": "~/.elanous/conatus/missions/apm_conatus-price-guard-cycle-recovery-integration_4ca472/run.log",
         "extract": "배경 — 2026-07-13 급락 미탐 사후분석: 122630 -6%, KORU -9%, SK하이닉스 -7.9%, composite 0.459→0.343"
       },
       {
         "id": "regime.db/regime_vector",
-        "path": "~/.monad/conatus/regime.db",
+        "path": "~/.elanous/conatus/regime.db",
         "extract": "2026-07-12T23:00:00.191Z composite=0.459 RISK_ON; 2026-07-13T00:30:00.127Z composite=0.343 RISK_ON transition=true transition_axes=[community_buzz,dislocation]"
       },
       {
         "id": "free_swing_cycle.log:137-139",
-        "path": "~/.monad/conatus/free_swing_cycle.log",
+        "path": "~/.elanous/conatus/free_swing_cycle.log",
         "extract": "2026-07-13T01:03:51.031Z 당시 한국 반도체와 SK하이닉스 -7.95% 하락 관측"
       }
     ],

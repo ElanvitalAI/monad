@@ -10,7 +10,7 @@
 
 import { describe, expect, test } from 'bun:test';
 import { createMissionTurnEmitter, type AcpBroadcastFn } from '../src/acp/mission-turn-emit.js';
-import { parseMonadFeedbackEnvelope } from '../src/acp/monad-extensions.js';
+import { parseElanousFeedbackEnvelope } from '../src/acp/elanous-extensions.js';
 import type { FeedbackEnvelope } from '../src/feedback/envelope.js';
 
 type CapturedUpdate = {
@@ -23,7 +23,7 @@ function capture(): { broadcast: AcpBroadcastFn; updates: CapturedUpdate[] } {
   const updates: CapturedUpdate[] = [];
   const broadcast: AcpBroadcastFn = async (sessionId, update) => {
     const text = update.content.text;
-    const parsed = parseMonadFeedbackEnvelope(text);
+    const parsed = parseElanousFeedbackEnvelope(text);
     updates.push({
       sessionId,
       text,

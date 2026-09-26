@@ -10,14 +10,14 @@
 // operational → walker 라우팅. description 이 마커 파일 write 를 요구 → walker 가 worktree 안에 write.
 //
 // 사용(전부 테스트 스코프 — 운영 무접촉):
-//   MONAD_STATE_DIR=$PWD/.monad-test bun scripts/dogfood-walker-worktree-isolation.ts        # 미션 생성 → id 출력
-//   MONAD_STATE_DIR=$PWD/.monad-test bun scripts/run-mission.ts <id> --config-dir $PWD/.monad-test
-//   MONAD_STATE_DIR=$PWD/.monad-test bun scripts/dogfood-walker-worktree-isolation.ts --cleanup <id>
+//   ELANOUS_STATE_DIR=$PWD/.elanous-test bun scripts/dogfood-walker-worktree-isolation.ts        # 미션 생성 → id 출력
+//   ELANOUS_STATE_DIR=$PWD/.elanous-test bun scripts/run-mission.ts <id> --config-dir $PWD/.elanous-test
+//   ELANOUS_STATE_DIR=$PWD/.elanous-test bun scripts/dogfood-walker-worktree-isolation.ts --cleanup <id>
 //
-// 선행: .monad-test/config.json 에 autopilot.missionWorktree=true · autopilot.budget.walker=[120000](write 여유).
-// 관측: monad logs --test --category mission.exec.worktree (created) · git status(main 무오염) · git worktree list(dispose).
+// 선행: .elanous-test/config.json 에 autopilot.missionWorktree=true · autopilot.budget.walker=[120000](write 여유).
+// 관측: elanous logs --test --category mission.exec.worktree (created) · git status(main 무오염) · git worktree list(dispose).
 
-// ★ config-dir 격리 필수 — tasks.db 는 getMonadConfigDir(config-dir) 스코프이지 MONAD_STATE_DIR 이 아니다
+// ★ config-dir 격리 필수 — tasks.db 는 getElanousConfigDir(config-dir) 스코프이지 ELANOUS_STATE_DIR 이 아니다
 //   (AGENTS.md §Isolated Test Instance 불변식 6). run-mission 과 반드시 동일 config-dir.
 import { applyConfigDirFlagFromArgv } from '../src/cli/config-dir-flag.js';
 applyConfigDirFlagFromArgv();
@@ -70,10 +70,10 @@ try {
   console.log(`walker 페이즈: ${task.id} · "${task.title}" · status=ready`);
   console.log('');
   console.log('다음(라이브 실행):');
-  console.log(`  MONAD_STATE_DIR=$PWD/.monad-test bun scripts/run-mission.ts ${missionId} --config-dir $PWD/.monad-test`);
+  console.log(`  ELANOUS_STATE_DIR=$PWD/.elanous-test bun scripts/run-mission.ts ${missionId} --config-dir $PWD/.elanous-test`);
   console.log('');
   console.log('확인:');
-  console.log(`  monad logs --test --category mission.exec.worktree     # created (worktree 경로)`);
+  console.log(`  elanous logs --test --category mission.exec.worktree     # created (worktree 경로)`);
   console.log(`  git status --short && git worktree list                # main 무오염 + dispose`);
 } finally {
   store.close();

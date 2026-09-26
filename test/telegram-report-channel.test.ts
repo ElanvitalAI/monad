@@ -163,11 +163,11 @@ describe('sendTelegramReport', () => {
   // channel's bot-scoped session so a follow-up in that chat can recall it
   // (was surface_events-only, session_id NULL → wrong/no answer).
   test('mirrors the alert into the report channel bot-scoped session', async () => {
-    const prev = process.env.MONAD_SESSION_ROOT;
-    process.env.MONAD_SESSION_ROOT = join(dir, 'sessions');
+    const prev = process.env.ELANOUS_SESSION_ROOT;
+    process.env.ELANOUS_SESSION_ROOT = join(dir, 'sessions');
     try {
       const fetchMock = (async () => ({ json: async () => ({ ok: true, result: { message_id: 1 } }) })) as unknown as typeof fetch;
-      const alert = '⚠️ 자율매매 국면 브레이크 — RISK_ON 전환. monad가 이 알림을 기억합니다.';
+      const alert = '⚠️ 자율매매 국면 브레이크 — RISK_ON 전환. elanous가 이 알림을 기억합니다.';
       await sendTelegramReport(
         cfgWith({ botToken: 'MAIN:tok', reportChannel: { chatId: 1301607555, botToken: 'REPORT:tok' } }),
         alert,
@@ -181,8 +181,8 @@ describe('sendTelegramReport', () => {
       // …NOT the default/main bot's session (bot-scoped isolation).
       expect(findSessionByTelegramChat(1301607555, undefined, 'MAIN')).toBeNull();
     } finally {
-      if (prev === undefined) delete process.env.MONAD_SESSION_ROOT;
-      else process.env.MONAD_SESSION_ROOT = prev;
+      if (prev === undefined) delete process.env.ELANOUS_SESSION_ROOT;
+      else process.env.ELANOUS_SESSION_ROOT = prev;
     }
   });
 });

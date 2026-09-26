@@ -5,7 +5,7 @@ import { join as joinPath } from 'node:path';
 
 import type { NativeToolCatalogEntry, ProbeSpec } from '../src/native-tool-catalog.js';
 import { debug } from '../src/debug/log.js';
-import { setMonadConfigDir, resetMonadConfigDir } from '../src/monad-config-dir.js';
+import { setElanousConfigDir, resetElanousConfigDir } from '../src/elanous-config-dir.js';
 import { evaluateGate, resetGateCache } from '../src/tool-hints/gate.js';
 import { resetUserConfig } from '../src/user-config.js';
 import { collectSignals, signalsSummary } from '../src/tool-hints/signals.js';
@@ -119,14 +119,14 @@ describe('signals — Firecrawl key resolution', () => {
 
   beforeEach(() => {
     configDir = mkdtempSync(joinPath(tmpdir(), 'tool-hints-firecrawl-'));
-    setMonadConfigDir(configDir);
+    setElanousConfigDir(configDir);
     delete process.env.FIRECRAWL_API_KEY;
     resetUserConfig();
   });
 
   afterEach(() => {
     rmSync(configDir, { recursive: true, force: true });
-    resetMonadConfigDir();
+    resetElanousConfigDir();
     delete process.env.FIRECRAWL_API_KEY;
     resetUserConfig();
   });

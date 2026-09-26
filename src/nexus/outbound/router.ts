@@ -5,7 +5,7 @@
 // router. Producers are UNCHANGED — everything still funnels through
 // sendOutbound() → POST /v1/outbound; only the delivery side fans out.
 //
-// Config lives at `outbound` in ~/.monad/config.json (user-config only
+// Config lives at `outbound` in ~/.elanous/config.json (user-config only
 // principle — sparse). Read via the `raw` passthrough, same precedent as
 // the root `dispatch` flag (src/nexus/index.ts) — the round-trip
 // serializer preserves unknown raw keys, so no user-config.ts change:
@@ -44,10 +44,10 @@ export interface OutboundChannelConfig {
   type: OutboundChannelType;
   /** discord: full webhook URL (required). pushcut: webhook URL — when
    *  omitted the adapter falls back to the API-key client
-   *  (~/.monad/pushcut.json) with `notification`. */
+   *  (~/.elanous/pushcut.json) with `notification`. */
   webhookUrl?: string;
   /** pushcut API-key path: notification name — must be allowlisted in
-   *  ~/.monad/pushcut.json `allowedNotificationNames`. */
+   *  ~/.elanous/pushcut.json `allowedNotificationNames`. */
   notification?: string;
 }
 
@@ -164,7 +164,7 @@ async function deliverDiscord(ch: OutboundChannelConfig, msg: OutboundMsg, deps:
 
 async function deliverPushcut(ch: OutboundChannelConfig, msg: OutboundMsg, deps: RouterDeps): Promise<ChannelResult> {
   const fmt = formatForChannel('pushcut', msg);
-  const title = fmt.title ?? `monad ${msg.kind}`;
+  const title = fmt.title ?? `elanous ${msg.kind}`;
   if (ch.webhookUrl) {
     const fetchImpl = deps.fetchImpl ?? fetch;
     const res = await fetchImpl(ch.webhookUrl, {
@@ -176,11 +176,11 @@ async function deliverPushcut(ch: OutboundChannelConfig, msg: OutboundMsg, deps:
       ? { type: 'pushcut', ok: true }
       : { type: 'pushcut', ok: false, error: `http-${res.status}` };
   }
-  // API-key path — reuses the already-provisioned ~/.monad/pushcut.json
+  // API-key path — reuses the already-provisioned ~/.elanous/pushcut.json
   // client (the name must be allowlisted there).
   const notify = deps.pushcutNotify
     ?? ((name: string, payload: { title: string; text: string }) => getPushcutClient().notify(name, payload));
-  const r = await notify(ch.notification ?? 'monad-outbound', { title, text: fmt.text });
+  const r = await notify(ch.notification ?? 'elanous-outbound', { title, text: fmt.text });
   return r.ok ? { type: 'pushcut', ok: true } : { type: 'pushcut', ok: false, error: r.reason ?? 'pushcut-failed' };
 }
 

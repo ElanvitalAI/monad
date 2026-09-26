@@ -107,7 +107,7 @@ export function tokenScopeAllows(
 }
 
 /** Generate an opaque random token. 32 bytes hex = 64 chars — same
- *  shape as the legacy `~/.monad/acp-token` mint path. */
+ *  shape as the legacy `~/.elanous/acp-token` mint path. */
 export function mintRandomToken(): string {
   // Lazy require to keep this module zero-side-effect on import.
   const { randomBytes } = require('node:crypto') as typeof import('node:crypto');

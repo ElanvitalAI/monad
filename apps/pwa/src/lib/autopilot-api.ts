@@ -3,7 +3,7 @@
  * Endpoints (all under /v1/autopilot):
  *   POST  /triage-preview   goal -> execution model classification (heuristic)
  *   GET   /repo-watch       watched repo state (hermes/openclaw/codex)
- *   GET   /autonomy         autonomous action log (surface_events domain=monad)
+ *   GET   /autonomy         autonomous action log (surface_events domain=elanous)
  *   GET   /arming           autonomy boundary gate status (booleans)
  */
 

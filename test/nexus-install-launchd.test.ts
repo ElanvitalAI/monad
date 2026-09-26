@@ -33,22 +33,22 @@ const detectedEnvNames = [
 ];
 
 beforeEach(() => {
-  tmpRoot = mkdtempSync(joinPath(tmpdir(), 'monad-nexus-psi-'));
+  tmpRoot = mkdtempSync(joinPath(tmpdir(), 'elanous-nexus-psi-'));
   plistDir = joinPath(tmpRoot, 'LaunchAgents');
-  prevEnv = process.env.MONAD_NEXUS_DIR;
+  prevEnv = process.env.ELANOUS_NEXUS_DIR;
   previousDetectedEnv = Object.fromEntries(detectedEnvNames.map(name => [name, process.env[name]]));
   for (const name of detectedEnvNames) delete process.env[name];
-  process.env.MONAD_NEXUS_DIR = tmpRoot;
+  process.env.ELANOUS_NEXUS_DIR = tmpRoot;
   // ⛔ install 이 셸 키를 키 캐시로 옮긴다(RFC S1) — 시험은 실물 ~/.cache 에 닿으면 안 된다.
-  prevKeyCacheDir = process.env.MONAD_KEY_CACHE_DIR;
-  process.env.MONAD_KEY_CACHE_DIR = joinPath(tmpRoot, 'key-cache');
+  prevKeyCacheDir = process.env.ELANOUS_KEY_CACHE_DIR;
+  process.env.ELANOUS_KEY_CACHE_DIR = joinPath(tmpRoot, 'key-cache');
 });
 
 afterEach(() => {
-  if (prevKeyCacheDir === undefined) delete process.env.MONAD_KEY_CACHE_DIR;
-  else process.env.MONAD_KEY_CACHE_DIR = prevKeyCacheDir;
-  if (prevEnv === undefined) delete process.env.MONAD_NEXUS_DIR;
-  else process.env.MONAD_NEXUS_DIR = prevEnv;
+  if (prevKeyCacheDir === undefined) delete process.env.ELANOUS_KEY_CACHE_DIR;
+  else process.env.ELANOUS_KEY_CACHE_DIR = prevKeyCacheDir;
+  if (prevEnv === undefined) delete process.env.ELANOUS_NEXUS_DIR;
+  else process.env.ELANOUS_NEXUS_DIR = prevEnv;
   for (const name of detectedEnvNames) {
     const value = previousDetectedEnv[name];
     if (value === undefined) delete process.env[name];
@@ -60,15 +60,15 @@ afterEach(() => {
 describe('renderLaunchdPlist · structure + escaping', () => {
   test('emits the required keys (Label / ProgramArguments / KeepAlive / ThrottleInterval)', () => {
     const xml = renderLaunchdPlist({
-      command: ['/usr/local/bin/monad', 'nexus', 'run'],
+      command: ['/usr/local/bin/elanous', 'nexus', 'run'],
       workingDirectory: '/Users/x',
-      stdoutPath: '/Users/x/.monad/nexus/logs/nexus-stdout.log',
-      stderrPath: '/Users/x/.monad/nexus/logs/nexus-stderr.log',
+      stdoutPath: '/Users/x/.elanous/nexus/logs/nexus-stdout.log',
+      stderrPath: '/Users/x/.elanous/nexus/logs/nexus-stderr.log',
     });
     expect(xml).toContain('<key>Label</key>');
     expect(xml).toContain(`<string>${LAUNCHD_LABEL}</string>`);
     expect(xml).toContain('<key>ProgramArguments</key>');
-    expect(xml).toContain('<string>/usr/local/bin/monad</string>');
+    expect(xml).toContain('<string>/usr/local/bin/elanous</string>');
     expect(xml).toContain('<string>nexus</string>');
     expect(xml).toContain('<string>run</string>');
     expect(xml).toContain('<key>KeepAlive</key>');
@@ -77,13 +77,13 @@ describe('renderLaunchdPlist · structure + escaping', () => {
     expect(xml).toContain('<integer>10</integer>');
     expect(xml).toContain('<key>WorkingDirectory</key>');
     expect(xml).toContain('<string>/Users/x</string>');
-    expect(xml).toContain('<string>/Users/x/.monad/nexus/logs/nexus-stdout.log</string>');
-    expect(xml).toContain('<string>/Users/x/.monad/nexus/logs/nexus-stderr.log</string>');
+    expect(xml).toContain('<string>/Users/x/.elanous/nexus/logs/nexus-stdout.log</string>');
+    expect(xml).toContain('<string>/Users/x/.elanous/nexus/logs/nexus-stderr.log</string>');
   });
 
   test('XML-escapes path components with special characters', () => {
     const xml = renderLaunchdPlist({
-      command: ['/usr/local/bin/monad'],
+      command: ['/usr/local/bin/elanous'],
       workingDirectory: "/Users/I'm a&b/x",
       stdoutPath: '/tmp/<a>.log',
       stderrPath: '/tmp/y.log',
@@ -132,10 +132,10 @@ describe('renderLaunchdPlist · structure + escaping', () => {
 
   test('determinism: same inputs produce byte-identical output', () => {
     const opts = {
-      command: ['/usr/local/bin/monad', 'nexus', 'run'],
+      command: ['/usr/local/bin/elanous', 'nexus', 'run'],
       workingDirectory: '/Users/x',
-      stdoutPath: '/Users/x/.monad/nexus/logs/nexus-stdout.log',
-      stderrPath: '/Users/x/.monad/nexus/logs/nexus-stderr.log',
+      stdoutPath: '/Users/x/.elanous/nexus/logs/nexus-stdout.log',
+      stderrPath: '/Users/x/.elanous/nexus/logs/nexus-stderr.log',
     };
     expect(renderLaunchdPlist(opts)).toBe(renderLaunchdPlist(opts));
   });
@@ -147,13 +147,13 @@ describe('resolveLaunchdEnvironment · derives target paths', () => {
       platformOverride: 'darwin',
       uid: 501,
       plistDir: '/tmp/agents',
-      label: 'com.monad.nexus',
+      label: 'com.elanous.nexus',
     });
     expect(env.platform).toBe('darwin');
     expect(env.uid).toBe(501);
     expect(env.bootstrapTarget).toBe('gui/501');
-    expect(env.serviceTarget).toBe('gui/501/com.monad.nexus');
-    expect(env.plistPath).toBe('/tmp/agents/com.monad.nexus.plist');
+    expect(env.serviceTarget).toBe('gui/501/com.elanous.nexus');
+    expect(env.plistPath).toBe('/tmp/agents/com.elanous.nexus.plist');
   });
 });
 
@@ -186,7 +186,7 @@ describe('installLaunchd · happy path', () => {
       platformOverride: 'darwin',
       uid: 501,
       plistDir,
-      command: ['/usr/local/bin/monad', 'nexus', 'run'],
+      command: ['/usr/local/bin/elanous', 'nexus', 'run'],
       runCli: stub,
     });
     expect(res.outcome).toBe('installed');
@@ -194,10 +194,10 @@ describe('installLaunchd · happy path', () => {
     expect(res.bootstrapped).toBe(true);
     expect(existsSync(res.plistPath)).toBe(true);
     const body = readFileSync(res.plistPath, 'utf-8');
-    expect(body).toContain('<string>/usr/local/bin/monad</string>');
+    expect(body).toContain('<string>/usr/local/bin/elanous</string>');
     // Should bootout-then-bootstrap (idempotent install).
     expect(calls.length).toBe(2);
-    expect(calls[0]).toEqual(['launchctl', 'bootout', 'gui/501/com.monad.nexus']);
+    expect(calls[0]).toEqual(['launchctl', 'bootout', 'gui/501/com.elanous.nexus']);
     expect(calls[1]).toEqual(['launchctl', 'bootstrap', 'gui/501', res.plistPath]);
   });
 
@@ -250,7 +250,7 @@ describe('installLaunchd · happy path', () => {
     expect(rendered).toContain('ELEVENLABS_API_KEY (voice TTS)');
     expect(rendered).toContain('not added to the launchd plist, so the daemon cannot access them');
     expect(rendered).toContain('Review each integration’s supported setup');
-    expect(rendered).not.toContain('monad config');
+    expect(rendered).not.toContain('elanous config');
     expect(JSON.stringify(res.auxiliaryAiEnvNotice)).not.toContain(auxiliarySecret);
     expect(rendered).not.toContain(auxiliarySecret);
     const plist = readFileSync(res.plistPath, 'utf-8');
@@ -259,7 +259,7 @@ describe('installLaunchd · happy path', () => {
     // 🆕 2026-09-24 (RFC S1) — provider 키는 plist 가 아니라 키 캐시(600)로. 데몬은 부팅 때 캐시로 env 를 채운다.
     expect(environmentKeys).toEqual(['HOME', 'PATH']);
     expect(plist).not.toContain(providerSecret);
-    const cacheFile = joinPath(process.env.MONAD_KEY_CACHE_DIR!, 'openai_api_key');
+    const cacheFile = joinPath(process.env.ELANOUS_KEY_CACHE_DIR!, 'openai_api_key');
     expect(readFileSync(cacheFile, 'utf-8').trim()).toBe(providerSecret);
     expect(statSync(cacheFile).mode & 0o777).toBe(0o600);
     expect(res.keyCache).toEqual({ written: ['OPENAI_API_KEY'], differs: [] });
@@ -269,7 +269,7 @@ describe('installLaunchd · happy path', () => {
   });
 
   test('an existing key cache is never overwritten — a differing shell key is reported by name only', async () => {
-    const dir = process.env.MONAD_KEY_CACHE_DIR!;
+    const dir = process.env.ELANOUS_KEY_CACHE_DIR!;
     mkdirSync(dir, { recursive: true });
     writeFileSync(joinPath(dir, 'openai_api_key'), 'cached-value\n');
     process.env.OPENAI_API_KEY = 'shell-value-differs';
@@ -320,7 +320,7 @@ describe('installLaunchd · happy path', () => {
     expect(res.outcome).toBe('error');
     if (res.outcome !== 'error') return;
     expect(res.reason).toContain('permission denied');
-    expect(res.plistPath).toContain('com.monad.nexus.plist');
+    expect(res.plistPath).toContain('com.elanous.nexus.plist');
   });
 });
 
@@ -349,7 +349,7 @@ describe('uninstallLaunchd', () => {
     expect(res.bootedOut).toBe(true);
     expect(res.removedFile).toBe(true);
     expect(existsSync(res.plistPath)).toBe(false);
-    expect(calls[0]).toEqual(['launchctl', 'bootout', 'gui/501/com.monad.nexus']);
+    expect(calls[0]).toEqual(['launchctl', 'bootout', 'gui/501/com.elanous.nexus']);
   });
 
   test('no plist + bootout fails → outcome:not-installed', async () => {

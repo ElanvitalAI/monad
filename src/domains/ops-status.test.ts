@@ -64,14 +64,14 @@ function schedRow(partial: Partial<ScheduleRow> & Pick<ScheduleRow, 'id' | 'name
     interval_ms: null,
     command: 'bun scripts/x.ts',
     category: 'monitor',
-    domain: 'monad',
+    domain: 'elanous',
     enabled: 1,
     last_seen: null,
     last_run: null,
     note: null,
-    managed_by: 'monad',
+    managed_by: 'elanous',
     raw: null,
-    run_via: 'monad',
+    run_via: 'elanous',
     ...partial,
   };
 }
@@ -94,7 +94,7 @@ function isolatedSnapOpts(listScheduleRows: () => ScheduleRow[]) {
 }
 
 describe('opsSnapshot — 예약 레지스트리 조회 seam', () => {
-  test('채워진 행을 주입하면 조회가 호출되고 헬스 monadTotal 이 그 수를 반영한다', () => {
+  test('채워진 행을 주입하면 조회가 호출되고 헬스 elanousTotal 이 그 수를 반영한다', () => {
     const rows = [
       schedRow({ id: 'job-a', name: 'job-a' }),
       schedRow({ id: 'job-b', name: 'job-b' }),
@@ -107,7 +107,7 @@ describe('opsSnapshot — 예약 레지스트리 조회 seam', () => {
       const snap = opsSnapshot(opts);
       expect(calls).toBe(1);
       expect(snap.schedules).not.toBeNull();
-      expect(snap.schedules!.monadTotal).toBe(3);
+      expect(snap.schedules!.elanousTotal).toBe(3);
       expect(snap.schedules!.excludedRunVia).toBe(0);
       expect(snap.schedules!.excludedUnwrappedCrontab).toBe(1);
       expect(snap.schedules!.excludedDisabled).toBe(0);
@@ -127,7 +127,7 @@ describe('opsSnapshot — 예약 레지스트리 조회 seam', () => {
       const snap = opsSnapshot(opts);
       expect(calls).toBe(1);
       expect(snap.schedules).not.toBeNull();
-      expect(snap.schedules!.monadTotal).toBe(0);
+      expect(snap.schedules!.elanousTotal).toBe(0);
       expect(snap.schedules!.stale).toEqual([]);
       expect(snap.schedules!.errored).toEqual([]);
       expect(snap.schedules!.excludedRunVia).toBe(0);
@@ -149,7 +149,7 @@ describe('opsSnapshot — 예약 레지스트리 조회 seam', () => {
     try {
       const snap = opsSnapshot(opts);
       expect(snap.schedules).not.toBeNull();
-      expect(snap.schedules!.monadTotal).toBe(0);
+      expect(snap.schedules!.elanousTotal).toBe(0);
       expect(snap.schedules!.excludedRunVia).toBe(0);
       expect(snap.schedules!.excludedUnwrappedCrontab).toBe(1);
       expect(snap.schedules!.excludedDisabled).toBe(1);
@@ -190,7 +190,7 @@ describe('opsSnapshot — 예약 레지스트리 조회 seam', () => {
       const emptySnap = opsSnapshot(empty.opts);
       const failedSnap = opsSnapshot(failed.opts);
       expect(emptySnap.schedules).not.toBeNull();
-      expect(emptySnap.schedules!.monadTotal).toBe(0);
+      expect(emptySnap.schedules!.elanousTotal).toBe(0);
       expect(failedSnap.schedules).toBeNull();
       expect(failedSnap.schedules).not.toEqual(emptySnap.schedules);
     } finally {
@@ -299,7 +299,7 @@ describe('opsSnapshot — 기본 조회 경계(부재 DB vs 진짜 빈 레지스
     }
   });
 
-  test('기본 조회 경계가 채워진 레지스트리 행을 읽어 monadTotal 에 반영한다', () => {
+  test('기본 조회 경계가 채워진 레지스트리 행을 읽어 elanousTotal 에 반영한다', () => {
     const dir = mkdtempSync(join(tmpdir(), 'ops-default-filled-'));
     const opsDbPath = join(dir, 'ops_events.db');
     const schedulesDbPath = join(dir, 'schedules.db');
@@ -307,17 +307,17 @@ describe('opsSnapshot — 기본 조회 경계(부재 DB vs 진짜 빈 레지스
     try {
       db.run(
         `INSERT INTO schedule_registry (id, name, source, cron, command, category, domain, enabled, managed_by, run_via)
-         VALUES (?, ?, 'crontab', ?, ?, 'monitor', 'monad', 1, 'monad', 'monad')`,
+         VALUES (?, ?, 'crontab', ?, ?, 'monitor', 'elanous', 1, 'elanous', 'elanous')`,
         ['job-a', 'job-a', '0 * * * *', 'bun scripts/a.ts'],
       );
       db.run(
         `INSERT INTO schedule_registry (id, name, source, cron, command, category, domain, enabled, managed_by, run_via)
-         VALUES (?, ?, 'crontab', ?, ?, 'monitor', 'monad', 1, 'monad', 'monad')`,
+         VALUES (?, ?, 'crontab', ?, ?, 'monitor', 'elanous', 1, 'elanous', 'elanous')`,
         ['job-b', 'job-b', '0 * * * *', 'bun scripts/b.ts'],
       );
       db.run(
         `INSERT INTO schedule_registry (id, name, source, cron, command, category, domain, enabled, managed_by, run_via)
-         VALUES (?, ?, 'crontab', ?, ?, 'monitor', 'monad', 1, 'manual', 'crontab')`,
+         VALUES (?, ?, 'crontab', ?, ?, 'monitor', 'elanous', 1, 'manual', 'crontab')`,
         ['job-c', 'job-c', '0 * * * *', 'bun scripts/c.ts'],
       );
     } finally {
@@ -330,13 +330,13 @@ describe('opsSnapshot — 기본 조회 경계(부재 DB vs 진짜 빈 레지스
         mandate: isolatedMandate,
       });
       expect(snap.schedules).not.toBeNull();
-      expect(snap.schedules!.monadTotal).toBe(2);
+      expect(snap.schedules!.elanousTotal).toBe(2);
     } finally {
       rmSync(dir, { recursive: true, force: true });
     }
   });
 
-  test('존재하는 빈 레지스트리 DB 는 monadTotal=0 이고 못 셌다(null)가 아니다', () => {
+  test('존재하는 빈 레지스트리 DB 는 elanousTotal=0 이고 못 셌다(null)가 아니다', () => {
     const dir = mkdtempSync(join(tmpdir(), 'ops-default-empty-'));
     const opsDbPath = join(dir, 'ops_events.db');
     const schedulesDbPath = join(dir, 'schedules.db');
@@ -350,7 +350,7 @@ describe('opsSnapshot — 기본 조회 경계(부재 DB vs 진짜 빈 레지스
         mandate: isolatedMandate,
       });
       expect(snap.schedules).not.toBeNull();
-      expect(snap.schedules!.monadTotal).toBe(0);
+      expect(snap.schedules!.elanousTotal).toBe(0);
       expect(snap.schedules!.stale).toEqual([]);
       expect(snap.schedules!.errored).toEqual([]);
     } finally {
@@ -381,7 +381,7 @@ describe('opsSnapshot — 기본 조회 경계(부재 DB vs 진짜 빈 레지스
       expect(existsSync(emptyPath)).toBe(true);
       expect(missingSnap.schedules).toBeNull();
       expect(emptySnap.schedules).not.toBeNull();
-      expect(emptySnap.schedules!.monadTotal).toBe(0);
+      expect(emptySnap.schedules!.elanousTotal).toBe(0);
       expect(missingSnap.schedules).not.toEqual(emptySnap.schedules);
     } finally {
       log.mockRestore();

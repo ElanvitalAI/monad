@@ -13,7 +13,7 @@ describe('McpAppFrame', () => {
       />,
     );
 
-    expect(markup).toContain('data-monad-mcp-app-frame="true"');
+    expect(markup).toContain('data-elanous-mcp-app-frame="true"');
     expect(markup).toContain('sandbox="allow-scripts"');
     expect(markup).not.toContain('allow-same-origin');
     expect(markup).toContain('srcDoc="&lt;meta http-equiv=');

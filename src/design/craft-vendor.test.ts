@@ -95,7 +95,7 @@ const VENDORED: Readonly<Record<string, string>> = {
   'LICENSE': '9d95806a26532623360eb84bb17d298f394b55ef73fb4c0796d99b4319b2b0da',
   'anti-ai-slop.md': 'd0f57d3064451663f9dca81af170fc754acc4b1e77280fd5cfb3a04afeef9a5c',
   'accessibility-baseline.md': 'ef6c5f670d114ceb4c347681bcf3be8637e5d1186165a9c79ca265f316c72d11',
-  // 2차 수입(2026-08-23) — 대표 결정 「ⓐ 소비: 규칙서를 monad 안으로」로 나머지 아홉을 들여왔다.
+  // 2차 수입(2026-08-23) — 대표 결정 「ⓐ 소비: 규칙서를 elanous 안으로」로 나머지 아홉을 들여왔다.
   'animation-discipline.md': '075273e8404f7931adfe196d508461efdd303b54e0d9a9ef3f642a682c12a760',
   'color.md': 'fb45b59fa3055f13d6549f45ae52e88cd09d3facd0e5aaab63600e7fb024db6d',
   'form-validation.md': 'a31410ce6ba8b7a762c2975386f2e93ae97b59a8bc85169aa58457927b0a88e6',
@@ -197,7 +197,7 @@ describe('scaffolded Craft rulebooks match the vendored directory', () => {
       '',
       '## Design direction',
       '',
-      '- monad-pastel-default',
+      '- elanous-pastel-default',
       '',
     ].join('\n');
 

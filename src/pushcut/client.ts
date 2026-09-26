@@ -37,15 +37,15 @@ export interface PushcutConfig {
   allowedNotificationNames?: string[];
 }
 
-// FU2 Tier 2 (PLAN-config-unification-monad-root-2026-05-10):
-//   moved from ~/.config/monad-agent/pushcut.json → ~/.monad/pushcut.json.
-import { migrateLegacyHomeFile } from '../storage/legacy-monad-dir-migrate.js';
+// FU2 Tier 2 (PLAN-config-unification-elanous-root-2026-05-10):
+//   moved from ~/.config/monad-agent/pushcut.json → ~/.elanous/pushcut.json.
+import { migrateLegacyHomeFile } from '../storage/legacy-elanous-dir-migrate.js';
 export function defaultPushcutConfigPath(): string {
   migrateLegacyHomeFile({
     legacyHomeRel: joinPath('.config', 'monad-agent', 'pushcut.json'),
-    monadRel: 'pushcut.json',
+    elanousRel: 'pushcut.json',
   });
-  return joinPath(homedir(), '.monad', 'pushcut.json');
+  return joinPath(homedir(), '.elanous', 'pushcut.json');
 }
 
 export function loadPushcutConfig(path = defaultPushcutConfigPath()): PushcutConfig | null {

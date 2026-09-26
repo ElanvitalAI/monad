@@ -97,7 +97,7 @@ export async function dispatchRead(
     throw new ToolSafetyError('path-traversal', `${inputPath} is not a regular file`);
   }
   // 제1원칙 관측 — 어떤 소스를 열람했나(로컬 vs 외부 트리 구분). external=cwd 밖
-  // (예: ~/source/ref) → "canonical 로컬 소스 대신 우회했나" 를 monad logs 로 판별.
+  // (예: ~/source/ref) → "canonical 로컬 소스 대신 우회했나" 를 elanous logs 로 판별.
   try {
     debug.log('agent.source', 'read', {
       path: inputPath, resolved: safe, bytes: stat.size,

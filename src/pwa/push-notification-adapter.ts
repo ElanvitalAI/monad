@@ -1,6 +1,6 @@
 // ── D (Phase 3 Bundle 2) — Push notification adapter ──
 //
-// Service Worker 와 Push API 를 추상화 — 모바일에서 monad 가 PFC
+// Service Worker 와 Push API 를 추상화 — 모바일에서 elanous 가 PFC
 // reverse-feedback 등 비동기 이벤트 발생 시 OS native push 띄움. PWA
 // 가 백그라운드인 상태에서도 사용자가 알림 받음.
 //

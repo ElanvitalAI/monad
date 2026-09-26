@@ -18,14 +18,14 @@
 //     `activateAgentStatusMirrorIfReachable({ store })` once after env
 //     detection.
 //   - Returns a deactivation handle (idempotent).
-//   - Daemon discovery uses `~/.monad/monad.runtime.json` (httpPort) +
-//     `~/.monad/acp-token` (auth). Same-host assumption matches the
+//   - Daemon discovery uses `~/.elanous/elanous.runtime.json` (httpPort) +
+//     `~/.elanous/acp-token` (auth). Same-host assumption matches the
 //     session mirror's contract.
 
 import { existsSync, readFileSync } from 'node:fs';
 import { join as joinPath } from 'node:path';
 
-import { monadDaemonDir, readMonadDaemonRuntime } from '../monad-daemon.js';
+import { elanousDaemonDir, readElanousDaemonRuntime } from '../elanous-daemon.js';
 import { AgentStatusStore, type AgentStatusRecord } from './store.js';
 
 export interface AgentStatusMirrorActivation {
@@ -52,7 +52,7 @@ export interface AgentStatusMirrorOpts {
 }
 
 function readAcpToken(): string | null {
-  const path = joinPath(monadDaemonDir(), 'acp-token');
+  const path = joinPath(elanousDaemonDir(), 'acp-token');
   if (!existsSync(path)) return null;
   try {
     return readFileSync(path, 'utf8').trim() || null;
@@ -62,7 +62,7 @@ function readAcpToken(): string | null {
 }
 
 function defaultDiscover(): { baseUrl: string; token?: string } | null {
-  const runtime = readMonadDaemonRuntime();
+  const runtime = readElanousDaemonRuntime();
   if (!runtime || !runtime.httpPort) return null;
   const host = runtime.httpHost ?? '127.0.0.1';
   const baseUrl = `http://${host}:${runtime.httpPort}`;

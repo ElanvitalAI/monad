@@ -12,13 +12,13 @@
 //
 // `auto_token` 정책:
 //   - server hostname = 127.0.0.1/localhost (loopback only) → 기존
-//     `~/.monad/acp-token` 파일 내용을 그대로 노출. Loopback 호출자는
+//     `~/.elanous/acp-token` 파일 내용을 그대로 노출. Loopback 호출자는
 //     이미 같은 user uid 로 file 을 읽을 수 있으므로 추가 leak 없음.
 //   - 그 외 (LAN/Tailscale) → null. 사용자가 token 을 paste 해야 함.
 //
-// `monad nexus connect <host>` (T4.B) 가 처음 실행할 때 본 endpoint 를
+// `elanous nexus connect <host>` (T4.B) 가 처음 실행할 때 본 endpoint 를
 // 호출 → metadata 로 bookmark 만들고 token 을 저장. 이후 일상 사용
-// `monad` (무인자 · T4.C) 가 bookmark 를 read 해서 자동 attach.
+// `elanous` (무인자 · T4.C) 가 bookmark 를 read 해서 자동 attach.
 //
 // PWA `Generate connect token` 카드 (T4.D) 는 별도 POST endpoint 로 5min
 // single-use JWT 를 mint. T4.D PR 에서 이 module 에 mint-token 추가 예정.
@@ -70,7 +70,7 @@ const LOOPBACK_HOSTS = new Set(['127.0.0.1', 'localhost', '::1']);
 const WILDCARD_BIND_HOSTS = new Set(['0.0.0.0', '::', '']);
 
 export function defaultAcpTokenPath(): string {
-  return joinPath(homedir(), '.monad', 'acp-token');
+  return joinPath(homedir(), '.elanous', 'acp-token');
 }
 
 export function isLoopbackHost(hostname: string): boolean {
@@ -187,8 +187,8 @@ export function buildConnectInfo(ctx: ConnectInfoCtx): ConnectInfoBody {
 
   const tokenRequired = autoToken === null;
   const tokenHint = autoToken
-    ? '~/.monad/acp-token (auto-loaded · loopback only)'
-    : '~/.monad/acp-token on the server host (paste content into bearer)';
+    ? '~/.elanous/acp-token (auto-loaded · loopback only)'
+    : '~/.elanous/acp-token on the server host (paste content into bearer)';
 
   return {
     acp_url: acpUrl,
@@ -224,17 +224,17 @@ export function handleConnectInfoGet(ctx: ConnectInfoCtx): Response {
 // ---------------------------------------------------------------------------
 //
 // PWA `Generate connect token` 카드 가 호출. 사용자가 다른 머신에서
-// `monad nexus connect <host>` 시 paste 할 token 을 mint. 본 endpoint 는
+// `elanous nexus connect <host>` 시 paste 할 token 을 mint. 본 endpoint 는
 // 이미 인증된 (bearer 있는) 호출자만 mint 가능 — http-server.ts 의 bearer
 // gate 가 가드. 미loopback caller 도 mint 할 수 있어 PWA on phone 에서
 // generate → copy → paste-on-laptop 흐름이 정착.
 //
-// 기본 모드: existing `~/.monad/acp-token` 의 raw bearer 를 그대로 반환.
+// 기본 모드: existing `~/.elanous/acp-token` 의 raw bearer 를 그대로 반환.
 // future v2 (ROADMAP §9.4) — mutual auth 시 5min TTL single-use JWT 로
 // 강화. 지금은 single-host dogfood 우선이라 raw bearer 가 합리적.
 
 export interface MintTokenBody {
-  /** Raw bearer the receiver pastes into `monad nexus connect`. */
+  /** Raw bearer the receiver pastes into `elanous nexus connect`. */
   token: string;
   /** ms-since-epoch. null = 만료 없음 (raw bearer · v1 simple mode). */
   expiresAt: number | null;
@@ -261,7 +261,7 @@ export function buildMintTokenResponse(ctx: ConnectInfoCtx): MintTokenBody {
   return {
     token,
     expiresAt: null,
-    hint: 'Paste into `monad nexus connect <host>` on the other device. Same token works on every device — re-mint after rotate.',
+    hint: 'Paste into `elanous nexus connect <host>` on the other device. Same token works on every device — re-mint after rotate.',
   };
 }
 

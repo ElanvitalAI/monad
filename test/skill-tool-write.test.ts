@@ -6,7 +6,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { dispatchWrite, buildWriteTool } from '../src/skills/tools/write';
 
-const tmpRoot = mkdtempSync(join(tmpdir(), 'monad-write-test-'));
+const tmpRoot = mkdtempSync(join(tmpdir(), 'elanous-write-test-'));
 let tmp: string;
 
 beforeEach(() => {

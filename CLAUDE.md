@@ -2,9 +2,9 @@
 
 Instructions for coding agents (and humans) working in this repository.
 
-## What monad is
+## What elanous is
 
-monad is a self-hosting agent runtime: a CLI, a local daemon, and a harness that
+elanous is a self-hosting agent runtime: a CLI, a local daemon, and a harness that
 turns a one-line request into a goal document, runs an implementer in an isolated
 git worktree, gates it with tests, reviews it, and opens a pull request.
 
@@ -12,8 +12,8 @@ git worktree, gates it with tests, reviews it, and opens a pull request.
 
 - Runtime and package manager: **bun** (see `package.json` `engines`).
 - Install dependencies: `bun install`
-- Run the CLI from a checkout: `bun bin/monad.mjs <command>`
-- Health check: `bun bin/monad.mjs doctor` — names every missing credential and what stops working without it.
+- Run the CLI from a checkout: `bun bin/elanous.mjs <command>`
+- Health check: `bun bin/elanous.mjs doctor` — names every missing credential and what stops working without it.
 
 ## Working agreement
 
@@ -39,5 +39,5 @@ git worktree, gates it with tests, reviews it, and opens a pull request.
 
 - One coherent change per PR. Describe the situation, the problem, and what changed.
 - Include the commands you ran and their results.
-- Do not commit local state: `.monad/` (goal documents, logs, run artifacts) is
+- Do not commit local state: `.elanous/` (goal documents, logs, run artifacts) is
   ignored on purpose.

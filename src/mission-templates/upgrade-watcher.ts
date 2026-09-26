@@ -2,7 +2,7 @@
 // detected fleet changes shape. Cf. ROADMAP §3 S23 + §4 Z15.b.
 //
 // The detector is point-in-time. When the user buys an Apple Watch, the
-// next iCloud sync repopulates `~/.monad/devices.json` with a new row
+// next iCloud sync repopulates `~/.elanous/devices.json` with a new row
 // and the daemon needs to re-resolve every installed mission template's
 // optional capabilities so PWA UI promotes (or demotes) accordingly.
 //

@@ -4,7 +4,7 @@
 // / sessions-sidebar-widget) now route their status glyphs through
 // `theme-icons.icon()` instead of hardcoded emoji. The observable
 // contract is:
-//   1. With MONAD_ASCII_ICONS=1 set, migrated glyphs fall back to the
+//   1. With ELANOUS_ASCII_ICONS=1 set, migrated glyphs fall back to the
 //      bracketed ASCII form (`[v] / [E] / [ ] / [>]`).
 //   2. Without the env, the default IconTokens glyph is used.
 //   3. The text label (step name, notification body, session title)
@@ -17,21 +17,21 @@ import {
 } from '../src/theme/icons.js';
 import { DEFAULT_THEME_TOKENS, DEFAULT_WIDGET_TOKENS } from '../src/theme/tokens.js';
 
-const ORIG_ASCII = process.env.MONAD_ASCII_ICONS;
+const ORIG_ASCII = process.env.ELANOUS_ASCII_ICONS;
 
 beforeEach(() => {
   __resetThemeIconsGetterForTests();
-  delete process.env.MONAD_ASCII_ICONS;
+  delete process.env.ELANOUS_ASCII_ICONS;
 });
 afterEach(() => {
   __resetThemeIconsGetterForTests();
-  if (ORIG_ASCII === undefined) delete process.env.MONAD_ASCII_ICONS;
-  else process.env.MONAD_ASCII_ICONS = ORIG_ASCII;
+  if (ORIG_ASCII === undefined) delete process.env.ELANOUS_ASCII_ICONS;
+  else process.env.ELANOUS_ASCII_ICONS = ORIG_ASCII;
 });
 
 describe('plan-renderer — icon migration', () => {
   test('ASCII mode swaps completed glyph for [v]', async () => {
-    process.env.MONAD_ASCII_ICONS = '1';
+    process.env.ELANOUS_ASCII_ICONS = '1';
     const { dispatchUpdatePlan, getPlanState } = await import('../src/code-edit/plan-tool.js');
     const { renderPlanBoard } = await import('../src/code-edit/plan-renderer.js');
     await dispatchUpdatePlan({
@@ -67,7 +67,7 @@ describe('notification-bell-modal — icon migration', () => {
   // same slot the modal uses and asserting the ASCII fallback reaches
   // the string.
   test('error slot resolves via theme-icons ASCII path', async () => {
-    process.env.MONAD_ASCII_ICONS = '1';
+    process.env.ELANOUS_ASCII_ICONS = '1';
     const { icon } = await import('../src/theme/icons.js');
     expect(icon('error')).toBe('[E]');
     expect(icon('warning')).toBe('[W]');
@@ -86,7 +86,7 @@ describe('notification-bell-modal — icon migration', () => {
 
 describe('sessions-sidebar-widget — icon migration', () => {
   test('session status glyphs survive ASCII mode without label clipping', async () => {
-    process.env.MONAD_ASCII_ICONS = '1';
+    process.env.ELANOUS_ASCII_ICONS = '1';
     const { default: sessionsSidebarWidget } = await import('../src/session/sidebar-widget.js');
     // render() is the WidgetDef shape — we need a ctx stub.
     const cards = [
@@ -103,7 +103,7 @@ describe('sessions-sidebar-widget — icon migration', () => {
   });
 
   test('idle / working / awaiting keep inline decorative glyphs', async () => {
-    process.env.MONAD_ASCII_ICONS = '1';
+    process.env.ELANOUS_ASCII_ICONS = '1';
     const { default: sessionsSidebarWidget } = await import('../src/session/sidebar-widget.js');
     const cards = [
       { id: 'a', title: 'Idle',     agentKind: 'claude' as const, status: 'idle'     as const, isAlive: true },

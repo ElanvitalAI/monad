@@ -41,9 +41,9 @@ describe('LSP pool · config-driven branches', () => {
     root = mkdtempSync(join(tmpdir(), 'lsp-pool-'));
     originalXdg = process.env.XDG_CONFIG_HOME;
     process.env.XDG_CONFIG_HOME = root;
-    const monadDir = join(root, 'monad');
-    mkdirSync(monadDir, { recursive: true });
-    cfgPath = join(monadDir, 'config.json');
+    const elanousDir = join(root, 'elanous');
+    mkdirSync(elanousDir, { recursive: true });
+    cfgPath = join(elanousDir, 'config.json');
     writeConfig({});
     __resetTypescriptServerProbeCacheForTests();
     __resetLspPoolForTests();

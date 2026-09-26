@@ -2,7 +2,7 @@
 //
 // ★ RESEARCH-orchestrator-free-system-core #2. 조율자 유무 무관 "루프-분리 교체형 context 전략" substrate
 //   프리미티브. 세 레포 동형: AutoGen ChatCompletionContext(get_messages=read-time projection)·LangGraph
-//   pre_model_hook(원본 보존·LLM view 만 가공)·Claude Code 2-tier(microcompact→autocompact). monad 는
+//   pre_model_hook(원본 보존·LLM view 만 가공)·Claude Code 2-tier(microcompact→autocompact). elanous 는
 //   `runCompactPipeline`(L1 tool-output=micro·L3 요약=auto)로 2-tier 를 이미 보유하나 streamLLMWithTools 에
 //   **인라인 산재** — 이 모듈이 그걸 **교체형 전략 인터페이스**로 추출해 loop/orchestrator 가 주입·공유하게.
 //

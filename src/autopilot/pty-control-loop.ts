@@ -131,7 +131,7 @@ export interface PtyControlDeps {
   readonly now?: () => number;
   /** ⭐관측 준비 게이트(주입식) — decide 전 자식 턴이 안정될 때까지 대기한다. 예: codex 처럼 턴이
    *  길고 버스티한 backend 는 `waitForQuiet`(출력 idle) 로 조용해질 때까지 기다린 뒤 판단해야 매 pollMs
-   *  LLM 낭비를 막는다. 미주입 시 no-op → 기존 poll cadence 유지(monad drive 무회귀). 매 스텝 observe
+   *  LLM 낭비를 막는다. 미주입 시 no-op → 기존 poll cadence 유지(elanous drive 무회귀). 매 스텝 observe
    *  직전 1회 호출. takeover/생존 감지는 다음 스텝 hasControl/isAlive 가 담당(settle 은 관측 대기 전용). */
   readonly settle?: () => Promise<void>;
   /** 스텝 관측 훅(진단·전사·관측). 저장이 끝난 뒤 다음 입력·완료 처리를 진행하도록 반환 Promise를 기다린다.
@@ -325,7 +325,7 @@ export async function runPtyControlLoop(
     }
   };
   // ⭐제1원칙 관측: 모든 종료(특히 self-heal 결정 — stuck/cancelled/error)는 관측 관문을 거친다.
-  // 어느 return 도 이 finish 를 통과해 `monad logs --category autopilot.control` 로 조회 가능.
+  // 어느 return 도 이 finish 를 통과해 `elanous logs --category autopilot.control` 로 조회 가능.
   const finish = (termination: AutopilotTermination, steps: number, intervention?: InterventionStep, interventionStop = false): PtyControlResult => {
     const detail =
       termination.kind === 'success' ? termination.reason
@@ -397,7 +397,7 @@ export async function runPtyControlLoop(
         return finish({ kind: 'cancelled' }, step);
       }
       // ⭐관측 준비 게이트(주입식·quiet-gate cadence) — 자식 턴이 안정될 때까지 대기(codex 등 버스티
-      // 턴서 매 pollMs LLM 낭비 방지). no-op 이면 기존 poll cadence(monad drive 무회귀). 예외는 아래
+      // 턴서 매 pollMs LLM 낭비 방지). no-op 이면 기존 poll cadence(elanous drive 무회귀). 예외는 아래
       // 전 스텝 try 가 잡아 error termination 으로 수렴(observe 실패와 동일 정책).
       if (deps.settle) await deps.settle();
       const screen = await deps.observe();
@@ -505,11 +505,11 @@ export async function runPtyControlLoop(
       // 놓쳐 done 을 success 로 확정할 수 있다. 여기서 재검사해 상실이면 결정 무시하고 cancelled.
       const postStance = controlStance();
       // Existing generic control-loop callers retain their historical input behavior unless
-      // they explicitly opt into supervisor assist gating. Input-capable monad children always
+      // they explicitly opt into supervisor assist gating. Input-capable elanous children always
       // pass this config (including its default-disabled value) from their spawner.
       // ⚠️ **게이트는 명시 opt-in 일 때만 판정한다.** `deps.autoAssist` 가 있기만 하면 상담하면,
       //   CLI 가 기본값(`enabled:false`)을 항상 실어 보내므로 게이트가 **항상 거부**하고
-      //   `monad drive` 의 오랜 input 주입이 통째로 멈춘다 — 기본 OFF 가 "옛 동작" 이 아니라
+      //   `elanous drive` 의 오랜 input 주입이 통째로 멈춘다 — 기본 OFF 가 "옛 동작" 이 아니라
       //   "새 동작" 이 되는 회귀다(리뷰 must-fix). 꺼져 있으면 아예 상담하지 않는다.
       const autoAssist = decision.action === 'input' && deps.autoAssist?.enabled === true
         ? decideAutoAssist({

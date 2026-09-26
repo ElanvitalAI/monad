@@ -1,6 +1,6 @@
 // ── 미션 페이즈 진단 + 셀프 힐 정책 (대표 2026-07-13·PLAN O1/O5/O6) ──────────
 //
-// 목적: monad가 자기 페이즈 실패를 opus 수준으로 진단(목표+시도 트레일+왜+추론)하고
+// 목적: elanous가 자기 페이즈 실패를 opus 수준으로 진단(목표+시도 트레일+왜+추론)하고
 // 셀프 힐(재시도/분할/골정정/건너뛰기)을 결정하게 한다. 여기는 순수 코어:
 //   O1  classifyFailClass  — 원시 신호 → failClass 6종(재시도 여부 판정 재사용)
 //   O5  synthesizePhaseDiagnosis — PhaseOutcome 사실 → 서술 진단(결정론 골격·LLM 선택 주입)
@@ -18,12 +18,12 @@ export type FailClass =
   | 'gate-failed-critique'  // 비평 FAIL(dead-code/no-op/scope)
   | 'already-satisfied'     // ★ 이미 구현/랜딩됨·변경 불필요(대표 2026-07-21·P1b) — 재구현 무의미·정직 skip
   | 'transient'             // 일시(timeout/network/rate-limit)
-  | 'missing-capability'    // gh 인증/네트워크 부재 등 환경 제약(monad가 못 고침)
+  | 'missing-capability'    // gh 인증/네트워크 부재 등 환경 제약(elanous가 못 고침)
   | 'provenance'            // 문서 명령 실행 거부 등 보안 경계
   | 'grounding-rejected';   // ★ walker 완주(PASS)했으나 grounding 게이트가 증거부족 반려 — 재조사(split 아님)
 
 export interface PhaseAttempt {
-  backend: string;                 // 'monad-self:gpt-5.6-terra' | 'opus-4.8' ...
+  backend: string;                 // 'elanous-self:gpt-5.6-terra' | 'opus-4.8' ...
   maxTurns?: number;
   budgetKrw?: number;
   gateResult: 'pass' | 'built' | 'no-change' | 'gate-failed' | 'error';
@@ -68,10 +68,10 @@ export function classifyFailClass(input: {
   envSignals?: PhaseEnvSignals;
 }): FailClass {
   const t = input.text ?? '';
-  // 1) 환경 제약(gh 인증/네트워크 부재) — 가장 actionable한 근본. monad가 못 고침.
+  // 1) 환경 제약(gh 인증/네트워크 부재) — 가장 actionable한 근본. elanous가 못 고침.
   if (input.envSignals?.ghAuth === false || input.envSignals?.network === false) return 'missing-capability';
   // 1.5) ★ P0(PLAN-context-propagation §1·2026-07-22) — LLM/API 인증 실패(401·invalid key)·delegate 커맨드
-  //   실행 실패는 크레덴셜/환경 제약(monad 가 재시도·분할로 못 고침). 종전엔 이 신호가 텍스트에 있어도
+  //   실행 실패는 크레덴셜/환경 제약(elanous 가 재시도·분할로 못 고침). 종전엔 이 신호가 텍스트에 있어도
   //   전용 분류가 없어 budget-exhausted 기본값으로 떨어져 split/rebuild 로 오귀속됐다(2a014e opus 401
   //   → budget-exhausted→rebuild 실증). missing-capability 로 분류 → revise(골 축소/사람 개입)·split 차단.
   if (/\b401\b|invalid x-api-key|authentication_error|\bunauthorized\b|invalid.{0,8}api[_ ]?key|delegate 오류[^]*command failed/i.test(t)) return 'missing-capability';
@@ -191,7 +191,7 @@ export function renderAttemptTrail(attempts: PhaseAttempt[]): string {
   const omitted = attempts.length - shown.length;
   const trail = shown
     .map((a) => {
-      const who = a.backend.replace(/^monad-self:/, '');
+      const who = a.backend.replace(/^elanous-self:/, '');
       const turns = a.maxTurns ? ` ${a.maxTurns}턴` : '';
       return `${who}${turns}→${GATE_LABEL[a.gateResult] ?? a.gateResult}`;
     })
@@ -297,7 +297,7 @@ export function buildPhaseOutcomeFromSummary(input: {
   for (let i = 0; i < attemptN; i++) {
     const isLastOpus = hadOpus && i === attemptN - 1;
     attempts.push({
-      backend: isLastOpus ? 'opus-4.8' : 'monad-self:gpt-5.6-terra',
+      backend: isLastOpus ? 'opus-4.8' : 'elanous-self:gpt-5.6-terra',
       ...(i === 0 && turnMatch ? { maxTurns: Number(turnMatch[1]) } : {}),
       gateResult: input.status === 'done' && i === attemptN - 1 ? gate : (input.status === 'done' ? 'gate-failed' : gate),
     });

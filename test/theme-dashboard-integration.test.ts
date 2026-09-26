@@ -12,7 +12,7 @@ import {
 import {
   CATPPUCCIN_LATTE,
   CATPPUCCIN_MOCHA,
-  MONAD_PASTEL_DEFAULT,
+  ELANOUS_PASTEL_DEFAULT,
   NORD_LIGHT,
   ROSE_PINE_DAWN,
 } from '../src/themes/index.js';
@@ -98,11 +98,11 @@ describe('IDX-6 Phase 4/5 createPillPainter', () => {
   test('hovered state falls back to pill when theme lacks pillHovered', () => {
     // Mutate a shallow clone to drop pillHovered.
     const theme = {
-      ...MONAD_PASTEL_DEFAULT,
+      ...ELANOUS_PASTEL_DEFAULT,
       widgetTokens: {
-        ...MONAD_PASTEL_DEFAULT.widgetTokens!,
+        ...ELANOUS_PASTEL_DEFAULT.widgetTokens!,
         statusBar: {
-          ...MONAD_PASTEL_DEFAULT.widgetTokens!.statusBar,
+          ...ELANOUS_PASTEL_DEFAULT.widgetTokens!.statusBar,
           pillHovered: undefined,
         },
       },
@@ -110,7 +110,7 @@ describe('IDX-6 Phase 4/5 createPillPainter', () => {
     const paint = createPillPainter(theme);
     const out = paint('hover', 'hovered');
     expect(out).toContain(
-      hexTriple(MONAD_PASTEL_DEFAULT.widgetTokens!.statusBar.pill.fg),
+      hexTriple(ELANOUS_PASTEL_DEFAULT.widgetTokens!.statusBar.pill.fg),
     );
   });
 
@@ -170,9 +170,9 @@ describe('IDX-6 Phase 4/5 createModalBorderPainter + createButtonStatePainter', 
   });
 
   test('modal border painter uses modal.border color', () => {
-    const paint = createModalBorderPainter(MONAD_PASTEL_DEFAULT);
+    const paint = createModalBorderPainter(ELANOUS_PASTEL_DEFAULT);
     const out = paint('┌───┐');
-    const tokens = resolveWidgetTokens(MONAD_PASTEL_DEFAULT, 'modal');
+    const tokens = resolveWidgetTokens(ELANOUS_PASTEL_DEFAULT, 'modal');
     expect(out).toContain(hexTriple(tokens.border.fg));
   });
 

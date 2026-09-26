@@ -5,7 +5,7 @@
 // 않도록 phaseShapeHint 로 강제(§3.6 자율 리서치의 뿌리).
 //
 // ★ D3 는 dry — 분해(플랜)만. 실제 매매 집행은 기존 mandate 게이트(armed/live·
-//   ~/.monad/finance-trade-mandate.json)로만 일어난다. executor/verifier/safetyGate 는
+//   ~/.elanous/finance-trade-mandate.json)로만 일어난다. executor/verifier/safetyGate 는
 //   umbrella §9 "승인→멀티페이즈 executor" 배선과 합류(현재 미배선·집행 disarmed).
 //   finance=conatus/ 네임스페이스 유지(core-not-customer).
 //
@@ -49,7 +49,7 @@ export const INVESTMENT_PACK: DomainPack = {
   //   막아, 실전 매매가 없는 "신호/구현/조사" 미션까지 사람 승인 후에도 실행 0이었다(대표 지적:
   //   신호 로직 짜는 미션인데 승인해도 막히는 로직이 이상). 이제 coding 과 동일하게 dependsOn
   //   존중 스테이징(root ready·나머지 blocked). ★안전 불변: 실제 매매 집행은 하위 trade-mandate
-  //   (armed/live·~/.monad/finance-trade-mandate.json)가 여전히 게이트 — armed=false 면 executor
+  //   (armed/live·~/.elanous/finance-trade-mandate.json)가 여전히 게이트 — armed=false 면 executor
   //   생성 안 됨/refuse/paper. 미션 실행해도 실매매 오집행 불가(도메인 통째 차단은 과잉 이중이었음).
   executor: async (missionId, ctx) => {
     const { promotePhasesRespectingDeps } = await import('./phase-exec.js');

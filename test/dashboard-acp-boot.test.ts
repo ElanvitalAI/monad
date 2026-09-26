@@ -92,14 +92,14 @@ describe('bootDashboardAcpSession — always boots (post-Phase-5c-2)', () => {
   test('calls DashboardSession.create with cwd + agent info', async () => {
     const result = await bootDashboardAcpSession(makeMinimalDeps({
       getCwd: () => '/Users/dev/repo',
-      agentName: 'monad',
+      agentName: 'elanous',
       agentVersion: '0.0.0-test',
     }));
     expect(result).not.toBeNull();
     expect(createCalls).toHaveLength(1);
     const opts = createCalls[0]!.opts;
     expect(opts.cwd).toBe('/Users/dev/repo');
-    expect(opts.agentName).toBe('monad');
+    expect(opts.agentName).toBe('elanous');
     expect(opts.agentVersion).toBe('0.0.0-test');
   });
 
@@ -469,13 +469,13 @@ describe('createDefaultRequestPermissionHandler — outcome mapping', () => {
 
 describe('bootDashboardAcpSession — preamble + history merge', () => {
   test('preamble prepends every message list', async () => {
-    const preamble: LLMMessage[] = [{ role: 'system', content: 'you are monad' }];
+    const preamble: LLMMessage[] = [{ role: 'system', content: 'you are elanous' }];
     await bootDashboardAcpSession(makeMinimalDeps({
       getPreamble: () => preamble,
     }));
     const opts = createCalls[0]!.opts;
     const m = await opts.getMessages({ sessionId: 's', userText: 'hi' });
-    expect(m[0]).toEqual({ role: 'system', content: 'you are monad' });
+    expect(m[0]).toEqual({ role: 'system', content: 'you are elanous' });
     expect(m[m.length - 1]).toEqual({ role: 'user', content: 'hi' });
   });
 });

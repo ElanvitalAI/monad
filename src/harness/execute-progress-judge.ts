@@ -6,7 +6,7 @@
 //
 // 순수(now 주입·테스트 가능). 관측(제1원칙)은 호출측(harness-seams)이 판단 결과를 남긴다.
 
-/** ANSI/제어 시퀀스 제거(headless-monad-driver 와 동형·중복 최소). */
+/** ANSI/제어 시퀀스 제거(headless-elanous-driver 와 동형·중복 최소). */
 function stripAnsi(s: string): string {
   return s
     .replace(/\x1B\][^\x07\x1B]*(?:\x07|\x1B\\)/g, '')

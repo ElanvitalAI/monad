@@ -23,18 +23,18 @@ export const ansi = {
   //   1000 — basic button press/release
   //   1002 — button-event (drag while button held)
   //   1003 — any-event (motion without button) — opt-in via env
-  //          MONAD_MOUSE_HOVER=1. Required for IDX-5 hover-stable +
+  //          ELANOUS_MOUSE_HOVER=1. Required for IDX-5 hover-stable +
   //          Tooltip auto-show. Default off because 1003 floods the
   //          input pipe on every pixel of mouse motion; users who
   //          don't want hover can keep the light mode.
   //   1006 — SGR extended coordinate encoding (required for > 223 cols)
   get mouseOn() {
-    const hover = process.env.MONAD_MOUSE_HOVER === '1';
+    const hover = process.env.ELANOUS_MOUSE_HOVER === '1';
     const motionMode = hover ? '1003' : '1002';
     return `${CSI}?1000h${CSI}?${motionMode}h${CSI}?1006h`;
   },
   get mouseOff() {
-    const hover = process.env.MONAD_MOUSE_HOVER === '1';
+    const hover = process.env.ELANOUS_MOUSE_HOVER === '1';
     const motionMode = hover ? '1003' : '1002';
     return `${CSI}?${motionMode}l${CSI}?1000l${CSI}?1006l`;
   },
@@ -179,7 +179,7 @@ interface LastPress { row: number; col: number; at: number }
 let lastPrimaryPress: LastPress | null = null;
 
 function doubleClickThresholdMs(): number {
-  const raw = process.env.MONAD_DOUBLE_CLICK_MS;
+  const raw = process.env.ELANOUS_DOUBLE_CLICK_MS;
   if (!raw) return 300;
   const n = Number.parseInt(raw, 10);
   return Number.isFinite(n) && n > 0 ? n : 300;
@@ -377,7 +377,7 @@ function parseKey(data: string | Buffer): Key {
     if (baseBtn === 2 && pressed)  return { name: 'mouse', ctrl: hasCtrl, shift: hasShift, alt: hasAlt, mouse: { row, col, type: 'right-click' } };
     if (baseBtn === 32 && pressed) return { name: 'mouse', ctrl: hasCtrl, shift: hasShift, alt: hasAlt, mouse: { row, col, type: 'drag' } };
     // IDX-5 — SGR any-event motion (1003 mode). btn 35 = motion bit (32) |
-    // button-3 (no-button) = 35. Requires MONAD_MOUSE_HOVER=1; terminals
+    // button-3 (no-button) = 35. Requires ELANOUS_MOUSE_HOVER=1; terminals
     // that don't know 1003 never emit this code so the branch is a no-op
     // for the default 1002 pipeline.
     if (baseBtn === 35 && pressed) return { name: 'mouse', ctrl: hasCtrl, shift: hasShift, alt: hasAlt, mouse: { row, col, type: 'motion' } };
@@ -1310,7 +1310,7 @@ export function renderHelp(context: 'dashboard' | 'select-multi' | 'select-singl
 
   lines.push('');
   lines.push(C.dim(`  \u256D${'\u2500'.repeat(w)}\u256E`));
-  lines.push(b(C.bold('MonadAgent Keybindings')));
+  lines.push(b(C.bold('ElanousAgent Keybindings')));
 
   // ── Browse mode ──
   if (context === 'dashboard') {

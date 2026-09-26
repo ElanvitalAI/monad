@@ -13,7 +13,7 @@
  *  agent-room/types `AgentBrand` but kept independent here so persona
  *  loading doesn't pull the whole agent-room subsystem. */
 export type PersonaBrand =
-  | 'claude' | 'codex' | 'gemini' | 'monad-as-child' | 'local-llm' | 'auto';
+  | 'claude' | 'codex' | 'gemini' | 'elanous-as-child' | 'local-llm' | 'auto';
 
 /** Light persona profile loaded from yaml. */
 export interface PersonaProfile {

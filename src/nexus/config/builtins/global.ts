@@ -43,8 +43,8 @@ export const GLOBAL_SWITCHES: SwitchSpec[] = [
         ? null : 'must be one of none|readonly|webterm|all',
     hotApplicable: false,
     restartTabs: ['daemon:1'],
-    envName: 'MONAD_TOOLS',
-    legacyEnvName: 'MONAD_TOOLS',
+    envName: 'ELANOUS_TOOLS',
+    legacyEnvName: 'ELANOUS_TOOLS',
   },
   {
     id: 'global.historyDir',
@@ -55,8 +55,8 @@ export const GLOBAL_SWITCHES: SwitchSpec[] = [
     default: '',
     hotApplicable: false,
     restartTabs: ['daemon:1'],
-    envName: 'MONAD_HISTORY_DIR',
-    legacyEnvName: 'MONAD_HISTORY_DIR',
+    envName: 'ELANOUS_HISTORY_DIR',
+    legacyEnvName: 'ELANOUS_HISTORY_DIR',
   },
   {
     // PWA mirror prep — webterm 탭의 register 정책. Off (기본) 시 NEXUS
@@ -78,7 +78,7 @@ export const GLOBAL_SWITCHES: SwitchSpec[] = [
     validate: (v) => typeof v === 'boolean' ? null : 'must be boolean',
     hotApplicable: false,
     restartTabs: [],
-    envName: 'MONAD_REGISTER_WEBTERM',
+    envName: 'ELANOUS_REGISTER_WEBTERM',
     pwaPreferred: true,
   },
   {
@@ -92,14 +92,14 @@ export const GLOBAL_SWITCHES: SwitchSpec[] = [
     label: 'daemon 탭 자동 register',
     description:
       'NEXUS 부트 시 daemon:1 탭을 register. Off (기본) 시 daemon-public-server '
-      + '의 자식 탭이 사이드바에 안 뜸. monad serve 가 freeze-deprecated 된 후 '
+      + '의 자식 탭이 사이드바에 안 뜸. elanous serve 가 freeze-deprecated 된 후 '
       + 'NEXUS 가 모든 surface 흡수했으므로 daemon 탭은 더 이상 첫 진입에 필요 없음. '
       + 'On 시 디버그 (구사용자 muscle memory) 또는 grace-window 호환에 유용.',
     default: false,
     validate: (v) => typeof v === 'boolean' ? null : 'must be boolean',
     hotApplicable: false,
     restartTabs: [],
-    envName: 'MONAD_REGISTER_DAEMON',
+    envName: 'ELANOUS_REGISTER_DAEMON',
     pwaPreferred: true,
   },
   {
@@ -143,7 +143,7 @@ export const GLOBAL_SWITCHES: SwitchSpec[] = [
     default: false,
     validate: (v) => typeof v === 'boolean' ? null : 'must be boolean',
     hotApplicable: true,
-    legacyEnvName: 'MONAD_DEBUG',
+    legacyEnvName: 'ELANOUS_DEBUG',
   },
   {
     id: 'global.debug.daemonMirrorVerbose',
@@ -153,7 +153,7 @@ export const GLOBAL_SWITCHES: SwitchSpec[] = [
     description: 'mirror 가 모든 daemon 메시지를 stderr 로 echo.',
     default: false,
     hotApplicable: true,
-    legacyEnvName: 'MONAD_DAEMON_MIRROR_VERBOSE',
+    legacyEnvName: 'ELANOUS_DAEMON_MIRROR_VERBOSE',
   },
   {
     id: 'global.debug.keymap',
@@ -163,7 +163,7 @@ export const GLOBAL_SWITCHES: SwitchSpec[] = [
     description: 'keybinding decision 을 debug 로 dump.',
     default: false,
     hotApplicable: true,
-    legacyEnvName: 'MONAD_DEBUG_KEYMAP',
+    legacyEnvName: 'ELANOUS_DEBUG_KEYMAP',
   },
   {
     id: 'global.debug.callStack',
@@ -173,7 +173,7 @@ export const GLOBAL_SWITCHES: SwitchSpec[] = [
     description: 'lifecycle 에서 call-stack snapshot 기록.',
     default: false,
     hotApplicable: true,
-    legacyEnvName: 'MONAD_DEBUG_CALL_STACK',
+    legacyEnvName: 'ELANOUS_DEBUG_CALL_STACK',
   },
   {
     id: 'global.nexus.autoRestartOnConfigChange',
@@ -185,8 +185,8 @@ export const GLOBAL_SWITCHES: SwitchSpec[] = [
     hotApplicable: true,
   },
   // NOTE: `global.entry.defaultMode` (N-1 cleanup PR f/g) was removed
-  // 2026-07-24. Bare `monad` now always launches the dashboard; the
-  // NEXUS daemon's entry is `monad nexus run`. See
+  // 2026-07-24. Bare `elanous` now always launches the dashboard; the
+  // NEXUS daemon's entry is `elanous nexus run`. See
   // 내부 문서 `REPORT-tui-observation-methodology-2026-07-24` §12.
   {
     id: 'global.secrets.backend',
@@ -196,7 +196,7 @@ export const GLOBAL_SWITCHES: SwitchSpec[] = [
     description: 'token / API key 저장소 백엔드. 변경 시 supervisor 가 다음 spawn 부터 새 backend 사용 (이미 spawned 된 child 는 영향 없음).',
     default: 'file',
     enumValues: [
-      { value: 'file',       label: 'Local file', description: '~/.monad/secrets.json (0o600 · 기본)' },
+      { value: 'file',       label: 'Local file', description: '~/.elanous/secrets.json (0o600 · 기본)' },
       { value: 'keychain',   label: 'macOS Keychain', description: 'system keychain · macOS only · `security` CLI' },
       { value: 'aws',        label: 'AWS Secrets Manager', description: '@aws-sdk/client-secrets-manager · 인증 = AWS SDK chain' },
       { value: 'gcp',        label: 'GCP Secret Manager', description: '@google-cloud/secret-manager · 인증 = ADC' },
@@ -230,7 +230,7 @@ export const GLOBAL_SWITCHES: SwitchSpec[] = [
     scope: 'global', kind: 'string',
     label: 'AWS secret prefix',
     description: 'NEXUS-managed secret 의 name prefix. IAM policy scoping 용도.',
-    default: 'monad/', hotApplicable: false, restartTabs: [], pwaPreferred: false,
+    default: 'elanous/', hotApplicable: false, restartTabs: [], pwaPreferred: false,
   },
   {
     id: 'global.secrets.gcp.projectId',
@@ -271,7 +271,7 @@ export const GLOBAL_SWITCHES: SwitchSpec[] = [
     //   enabled  → tailscale serve forward live · zero-prompt re-boots.
     //   disabled → local-only · zero-prompt re-boots.
     // Default 'ask' so dogfood users see the wizard once. P.4 adds
-    // `monad nexus pwa share enable|disable|status` for mind-change.
+    // `elanous nexus pwa share enable|disable|status` for mind-change.
     id: 'global.nexus.pwa.shareTailnet',
     scope: 'global',
     kind: 'enum',
@@ -279,7 +279,7 @@ export const GLOBAL_SWITCHES: SwitchSpec[] = [
     description:
       'NEXUS 의 PWA / HTTP API 를 tailnet 의 다른 device 에 노출할지 여부. '
       + 'ask=첫 부팅 wizard 가 묻기 · enabled=tailscale serve 활성 (외부 디바이스 가능) · '
-      + 'disabled=local-only (자기 머신 브라우저만). `monad nexus pwa share enable|disable|status` 로 변경.',
+      + 'disabled=local-only (자기 머신 브라우저만). `elanous nexus pwa share enable|disable|status` 로 변경.',
     default: 'ask',
     enumValues: [
       { value: 'ask',      label: 'ask',      description: '아직 결정 안 됨 — 다음 interactive 부트 시 wizard 가 묻기' },

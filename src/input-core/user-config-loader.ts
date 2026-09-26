@@ -1,6 +1,6 @@
 // User-config loader — Phase 7 (B1).
 //
-// Reads `~/.monad/input-bindings.json` and overlays the user-config
+// Reads `~/.elanous/input-bindings.json` and overlays the user-config
 // layer of the resolver binding table. Each entry is validated via
 // validateRebind() before application; violations are logged (to the
 // supplied reporter) and the entry is skipped. Keeps default + runtime
@@ -82,7 +82,7 @@ const EMPTY_REPORT: LoadReport = {
 const DEFAULT_REPORTER: LoadReporter = () => {};
 
 export function resolveUserBindingsPath(): string {
-  return join(homedir(), '.monad', 'input-bindings.json');
+  return join(homedir(), '.elanous', 'input-bindings.json');
 }
 
 /** Read + parse + validate. Returns a report; applies the overlay

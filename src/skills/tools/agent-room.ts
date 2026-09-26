@@ -150,7 +150,7 @@ export function buildAgentRoomComposeTool(): LLMToolSpec {
             properties: {
               brandRef: {
                 type: 'string',
-                description: 'Literal brand (codex/claude/gemini/monad), alias (cas/clc/gem/mac), "lll:<model>", or "auto".',
+                description: 'Literal brand (codex/claude/gemini/elanous), alias (cas/clc/gem/mac), "lll:<model>", or "auto".',
               },
               roleHint: {
                 type: 'string',

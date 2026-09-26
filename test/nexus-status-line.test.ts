@@ -6,7 +6,7 @@ import { resolveAgentTurnToolsKind, resolveToolsKind, runNexus } from '../src/ne
 import { classifyNexusStatus } from '../src/nexus/status-line.js';
 
 const originalFetch = globalThis.fetch;
-const originalNexusDir = process.env.MONAD_NEXUS_DIR;
+const originalNexusDir = process.env.ELANOUS_NEXUS_DIR;
 let root = '';
 let output: string[] = [];
 let logSpy: ReturnType<typeof spyOn>;
@@ -31,8 +31,8 @@ function writeLiveLock(): void {
 }
 
 beforeEach(() => {
-  root = mkdtempSync(join(tmpdir(), 'monad-nexus-status-'));
-  process.env.MONAD_NEXUS_DIR = root;
+  root = mkdtempSync(join(tmpdir(), 'elanous-nexus-status-'));
+  process.env.ELANOUS_NEXUS_DIR = root;
   output = [];
   logSpy = spyOn(console, 'log').mockImplementation((line: string) => { output.push(line); });
 });
@@ -40,8 +40,8 @@ beforeEach(() => {
 afterEach(() => {
   logSpy.mockRestore();
   globalThis.fetch = originalFetch;
-  if (originalNexusDir === undefined) delete process.env.MONAD_NEXUS_DIR;
-  else process.env.MONAD_NEXUS_DIR = originalNexusDir;
+  if (originalNexusDir === undefined) delete process.env.ELANOUS_NEXUS_DIR;
+  else process.env.ELANOUS_NEXUS_DIR = originalNexusDir;
   rmSync(root, { recursive: true, force: true });
 });
 

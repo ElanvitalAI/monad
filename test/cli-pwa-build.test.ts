@@ -1,4 +1,4 @@
-// P.2 — `monad nexus pwa build` subcommand · runPwaBuild unit coverage.
+// P.2 — `elanous nexus pwa build` subcommand · runPwaBuild unit coverage.
 
 import { describe, expect, test } from 'bun:test';
 import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from 'node:fs';
@@ -8,7 +8,7 @@ import { join as joinPath } from 'node:path';
 import { resolvePwaCwd, runPwaBuild } from '../src/cli/pwa-build.js';
 
 function mkRepoLike(): { argvBin: string; pwaDir: string; cleanup: () => void } {
-  const root = mkdtempSync(joinPath(tmpdir(), 'monad-pwa-build-'));
+  const root = mkdtempSync(joinPath(tmpdir(), 'elanous-pwa-build-'));
   const binDir = joinPath(root, 'src');
   const pwaDir = joinPath(root, 'apps/pwa');
   const argvBin = joinPath(binDir, 'index.ts');
@@ -47,7 +47,7 @@ describe('P.2 · resolvePwaCwd', () => {
   });
 
   test('apps/pwa/package.json 부재 시 undefined', () => {
-    const root = mkdtempSync(joinPath(tmpdir(), 'monad-pwa-build-'));
+    const root = mkdtempSync(joinPath(tmpdir(), 'elanous-pwa-build-'));
     const argvBin = joinPath(root, 'src/index.ts');
     mkdirSync(joinPath(root, 'src'), { recursive: true });
     expect(resolvePwaCwd(argvBin)).toBeUndefined();
@@ -118,7 +118,7 @@ describe('P.2 · runPwaBuild', () => {
   });
 
   test('cwd resolution 실패 시 spawn 미호출 + exit 1', async () => {
-    const root = mkdtempSync(joinPath(tmpdir(), 'monad-pwa-build-'));
+    const root = mkdtempSync(joinPath(tmpdir(), 'elanous-pwa-build-'));
     const argvBin = joinPath(root, 'src/index.ts');
     mkdirSync(joinPath(root, 'src'), { recursive: true });
     // No apps/pwa/package.json — resolvePwaCwd returns undefined.

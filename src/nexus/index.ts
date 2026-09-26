@@ -1,8 +1,8 @@
 // NEXUS · entry (Phase N-1 PR α — opt-in skeleton)
 //
-// `monad nexus` enters here. PR α delivers the minimum control surface:
-//   1. Acquire `~/.monad/nexus/.lock` (single instance per host)
-//   2. Write `~/.monad/nexus/runtime.json` (pid · startedAt · phase)
+// `elanous nexus` enters here. PR α delivers the minimum control surface:
+//   1. Acquire `~/.elanous/nexus/.lock` (single instance per host)
+//   2. Write `~/.elanous/nexus/runtime.json` (pid · startedAt · phase)
 //   3. Print boot banner (paths · phase · what's available)
 //   4. Wait for SIGINT/SIGTERM, then release + exit cleanly
 //
@@ -10,9 +10,9 @@
 // PR γ wires the always-on mini-terminal footer.
 // PR δ stands up the HTTP API + SSE on auto-picked port.
 //
-// Default flip (`monad` no-arg → NEXUS) lands in PR β alongside
+// Default flip (`elanous` no-arg → NEXUS) lands in PR β alongside
 // the chat kind so the no-arg path always boots into a usable tab.
-// In PR α `monad nexus` is opt-in only; `monad` continues to launch
+// In PR α `elanous nexus` is opt-in only; `elanous` continues to launch
 // the legacy dashboard.
 
 import { hostname } from 'node:os';
@@ -231,7 +231,7 @@ import {
 import { getIntakeStore } from '../intake-plane/runtime.js';
 import { existsSync, readFileSync } from 'node:fs';
 import { join as joinPath } from 'node:path';
-import { getMonadConfigDir } from '../monad-config-dir.js';
+import { getElanousConfigDir } from '../elanous-config-dir.js';
 import type { SupervisorSpawnBackend } from './supervisor/spawn.js';
 import type { HealthProbeBackend } from './supervisor/health.js';
 import { gracefulExit, cleanExit } from './supervisor/graceful-exit.js';
@@ -320,7 +320,7 @@ export function wireNexusTelegramQaPollers(
     debug.log('telegram.poll-lock', 'poller-deferred', { channel: channelConfig.name, botId: channelConfig.botToken.split(':')[0] });
     void deps.pollLock.acquire(channelConfig.botToken).then((late) => {
       if (!late.ok) {
-        console.warn(`[telegram] 채널 '${channelConfig.name}' 폴러를 띄우지 않았다 — 같은 토큰을 다른 프로세스가 폴링 중 (monad logs --category telegram.poll-lock)`);
+        console.warn(`[telegram] 채널 '${channelConfig.name}' 폴러를 띄우지 않았다 — 같은 토큰을 다른 프로세스가 폴링 중 (elanous logs --category telegram.poll-lock)`);
         return;
       }
       const wired = start(late.release);
@@ -417,7 +417,7 @@ export interface RunNexusOptions {
    *  matches !detachForTesting so opt-in tests can register without spawning. */
   autoStartPwaHostTab?: boolean;
   /** Register channel-bot tabs for telegram / discord. Default OFF.
-   *  When the relevant `MONAD_*_BOT_TOKEN` env is missing the spec is
+   *  When the relevant `ELANOUS_*_BOT_TOKEN` env is missing the spec is
    *  still registered (so the sidebar shows guidance) but auto-spawn
    *  is suppressed. */
   enableChannelBots?: ChannelBotPlatform[];
@@ -425,10 +425,10 @@ export interface RunNexusOptions {
   autoStartChannelBots?: boolean;
   /** Boot from a named template instead of the default chat+webterm[+daemon]
    *  registration. When the template name is unknown, runNexus throws.
-   *  User templates (~/.monad/nexus/templates/<name>.json) override builtins
+   *  User templates (~/.elanous/nexus/templates/<name>.json) override builtins
    *  of the same name. */
   template?: string;
-  /** Skip the boot-time MONAD_* env auto-migration (PR μ). Tests that
+  /** Skip the boot-time ELANOUS_* env auto-migration (PR μ). Tests that
    *  want to inspect raw env behavior pass `true`. Default false. */
   skipEnvMigration?: boolean;
   /** Skip the boot-time restart-state.json restore (PR χ). Default false
@@ -444,12 +444,12 @@ export interface RunNexusOptions {
    *  (powers `/v1/tools` + `/v1/prompt` + ACP runTurn). 'none'
    *  default keeps the daemon as text-only chat; 'readonly' enables
    *  Read + Grep + WebSearch; 'webterm' adds web-terminal tools.
-   *  Reads `MONAD_TOOLS` env when omitted. */
+   *  Reads `ELANOUS_TOOLS` env when omitted. */
   tools?: DaemonToolSurfaceKind;
   /** CWD for fs-bound tool dispatch (Read · Grep). Defaults to
-   *  `MONAD_TOOL_CWD` env then `process.cwd()`. */
+   *  `ELANOUS_TOOL_CWD` env then `process.cwd()`. */
   toolCwd?: string;
-  /** Disk-backed history dir. Defaults to `MONAD_HISTORY_DIR` env
+  /** Disk-backed history dir. Defaults to `ELANOUS_HISTORY_DIR` env
    *  (omit for in-memory). */
   historyDir?: string;
   /** System preamble injected at the head of every `/v1/prompt` and
@@ -473,7 +473,7 @@ export interface RunNexusOptions {
    *  needs the runtime hitlPending awaitCallback delegate). */
   skipPushcutChannel?: boolean;
   /** Pushcut notification name override. Defaults to env
-   *  `MONAD_HITL_NOTIFY` then `'monad-confirm'` — same convention the
+   *  `ELANOUS_HITL_NOTIFY` then `'monad-confirm'` — same convention the
    *  legacy dashboard hitl runtime uses. */
   pushcutNotificationName?: string;
   /** Skip the PWA in-app banner HITL confirm channel wire-up
@@ -485,8 +485,8 @@ export interface RunNexusOptions {
    *  hitlPending awaitCallback delegate). */
   skipPwaChannel?: boolean;
   /** Skip the Telegram HITL channel wire-up (β-1b · 2026-05-08).
-   *  Default `false` — production reads `MONAD_TELEGRAM_HITL_BOT_TOKEN`
-   *  + `MONAD_TELEGRAM_HITL_CHAT_ID` from the env; when both are set,
+   *  Default `false` — production reads `ELANOUS_TELEGRAM_HITL_BOT_TOKEN`
+   *  + `ELANOUS_TELEGRAM_HITL_CHAT_ID` from the env; when both are set,
    *  a poll-loop bot starts and the channel registers. When env is
    *  missing the channel is silently absent (no token → nothing to
    *  do; not an error). Tests pass `true` to skip even when the env
@@ -498,8 +498,8 @@ export interface RunNexusOptions {
    *  lets the env-based reader resolve. */
   telegramHitlOpts?: NexusTelegramHitlOpts;
   /** Skip the Discord HITL channel wire-up (β-1c · 2026-05-08).
-   *  Default `false` — production reads `MONAD_DISCORD_HITL_BOT_TOKEN`
-   *  + `MONAD_DISCORD_HITL_CHANNEL_ID`. When env is missing the
+   *  Default `false` — production reads `ELANOUS_DISCORD_HITL_BOT_TOKEN`
+   *  + `ELANOUS_DISCORD_HITL_CHANNEL_ID`. When env is missing the
    *  channel is silently absent. Tests pass `true` to skip. */
   skipDiscordChannel?: boolean;
   /** Override the Discord HITL opts read from env (test seam). */
@@ -536,7 +536,7 @@ export interface RunNexusOptions {
    *  instead of the TUI's `done` promise. The HTTP API + supervisor +
    *  meta-API stay live so PWA + remote attach keep working — only the
    *  developer-side TUI is suppressed. Set via `--headless` flag or
-   *  `MONAD_NEXUS_HEADLESS=1` env (resolved in `resolveHeadlessMode`).
+   *  `ELANOUS_NEXUS_HEADLESS=1` env (resolved in `resolveHeadlessMode`).
    *  Required for launchd / systemd-user / nohup / Docker — any
    *  environment without an interactive tty. */
   headless?: boolean;
@@ -557,7 +557,7 @@ export interface RunNexusOptions {
   skipHeadlessSetupCheckForTesting?: boolean;
   /** Spawn an fs.watch loop on apps/pwa/{src,public,...} after boot so
    *  source edits auto-rebuild without restarting the daemon. Forwarded
-   *  by `runPwaStart` when the user passes `--watch` (or runs `monad
+   *  by `runPwaStart` when the user passes `--watch` (or runs `elanous
    *  nexus run` with no args — watch is the no-arg default for static
    *  mode). HMR mode never sets this. */
   pwaWatch?: boolean;
@@ -648,7 +648,7 @@ export interface RunNexusHandle {
  *     (meta-api.ts:245 가 읽는다). 회귀 방어 = src/nexus/index.test.ts:19,22. */
 /** The set `/v1/acp` accepts **right now** — read per handshake, not at boot.
  *
- *  ⭐ 왜 봉투를 «매번» 읽나: `monad token rotate` 가 봉투에 새 `active` 를 쓰고 옛 값을
+ *  ⭐ 왜 봉투를 «매번» 읽나: `elanous token rotate` 가 봉투에 새 `active` 를 쓰고 옛 값을
  *  `prev` + `prevExpiresAt`(유예)로 남긴다. 부팅 때 잡은 문자열 하나를 들고 있으면
  *  ⑴ 회전이 «재기동 없이» 안 먹고 ⑵ 아직 옛 토큰을 든 원격이 «유예 없이» 끊긴다.
  *
@@ -724,10 +724,10 @@ export async function runNexus(opts: RunNexusOptions = {}): Promise<RunNexusHand
   if (headless && !opts.detachForTesting && !opts.skipHeadlessSetupCheckForTesting) {
     const setup = checkSetupStatus({ argvBin: process.argv[1] ?? '' });
     if (!setup.ok) {
-      console.error('✗ monad nexus --headless: setup incomplete');
+      console.error('✗ elanous nexus --headless: setup incomplete');
       renderSetupStatus(setup, console);
       console.log('');
-      console.log('  Run `monad nexus` (interactive) once to walk through the wizard.');
+      console.log('  Run `elanous nexus` (interactive) once to walk through the wizard.');
       process.exit(1);
     }
   }
@@ -766,7 +766,7 @@ export async function runNexus(opts: RunNexusOptions = {}): Promise<RunNexusHand
   // flight doesn't orphan child processes.
   let mcpClientsBootPromise: Promise<McpClientsHandle | undefined> | undefined;
   // 대표 2026-09-10 — MCP «전용» 재장전. 위 두 값은 기동 시 «한 번» 채워지므로
-  // config 에 서버를 더하거나 `monad mcp login` 으로 자격증명을 새로 받아도 이미
+  // config 에 서버를 더하거나 `elanous mcp login` 으로 자격증명을 새로 받아도 이미
   // 뜬 데몬은 그것을 모른다. 그 상태의 유일한 처방이 데몬 재부팅이었고, 재부팅은
   // MCP 와 무관한 것들(도는 미션·PTY·스케줄러·PWA 업스트림 등록)을 같이 끊는다.
   // ⇒ 이 심은 폭발 반경을 «MCP 클라이언트»로 좁힌다.
@@ -827,13 +827,13 @@ export async function runNexus(opts: RunNexusOptions = {}): Promise<RunNexusHand
       // killed every alphabetically-later test file). Throw so the
       // test fails loudly instead.
       if (opts.detachForTesting) throw err;
-      console.error('monad nexus already running:');
+      console.error('elanous nexus already running:');
       console.error(`  pid       ${err.existing.pid}`);
       console.error(`  host      ${err.existing.host}`);
       console.error(`  startedAt ${err.existing.startedAt}`);
       console.error(`  lock      ${err.lockPath}`);
       console.error('');
-      console.error('Use `monad nexus --status` to inspect, `--stop` to terminate, or `--force` to take over.');
+      console.error('Use `elanous nexus --status` to inspect, `--stop` to terminate, or `--force` to take over.');
       process.exit(1);
     }
     throw err;
@@ -851,21 +851,21 @@ export async function runNexus(opts: RunNexusOptions = {}): Promise<RunNexusHand
   const pwaRegistration = createPwaRegistration(opts.pwaRegistrationDeps);
 
   // Apply user-config debug level + file flag in nexus mode. Mirror of
-  // the `monad serve` and dashboard boot paths (src/index.ts:3720,
+  // the `elanous serve` and dashboard boot paths (src/index.ts:3720,
   // src/dashboard/index.ts:2186) — without this, `_keyTraceEnabled`
   // stays false and every `if (debug.enabled) debug.log(...)` hot-path
   // gate skips, leaving `log/debug-*.log` empty even when
-  // `~/.config/monad/config.json` has `debug.level: "keytrace"`.
-  // MONAD_DEBUG_LEVEL env override matches the dashboard precedence.
+  // `~/.config/elanous/config.json` has `debug.level: "keytrace"`.
+  // ELANOUS_DEBUG_LEVEL env override matches the dashboard precedence.
   // (Phase E follow-up · 2026-05-07 — fix for cross-surface ACP
   //  fan-out diagnostics not firing in nexus mode.)
   {
     const dbgMod = await import('../debug/log.js');
     const userConfigMod = await import('../user-config.js');
     const dbgCfg = userConfigMod.getUserConfig().debug;
-    const envLevel = process.env.MONAD_DEBUG_LEVEL?.trim().toLowerCase();
+    const envLevel = process.env.ELANOUS_DEBUG_LEVEL?.trim().toLowerCase();
     // LF7-c — 레벨 우선순위: env > 인스턴스 스코프 파일(logs/level.json) >
-    // config debug.level(기본값 강등). `monad logs level` 영속이 인스턴스
+    // config debug.level(기본값 강등). `elanous logs level` 영속이 인스턴스
     // 파일로 가므로 재기동 유지가 여기서 성립한다.
     const scopedMod = await import('../mss/logging/scoped-level.js');
     const scopedLevel = scopedMod.readScopedDebugLevel();
@@ -875,7 +875,7 @@ export async function runNexus(opts: RunNexusOptions = {}): Promise<RunNexusHand
       envLevel,
       scopedLevel,
       configLevel: dbgCfg.level,
-      // ⚠️ 리졸버 SSOT 로 판정한다 — "루트가 ~/.monad 가 아니면 테스트" 같은 자체 비교는
+      // ⚠️ 리졸버 SSOT 로 판정한다 — "루트가 ~/.elanous 가 아니면 테스트" 같은 자체 비교는
       //   별도 운영 인스턴스·커스텀 루트를 test 로 오판한다(리뷰 must-fix).
       isTestInstance: (await import('../instance/current.js')).resolveCurrentInstance().kind === 'test',
     });
@@ -906,7 +906,7 @@ export async function runNexus(opts: RunNexusOptions = {}): Promise<RunNexusHand
       const storeMod = await import('../mss/logging/log-store.js');
       const logsCfg = userConfigMod.getUserConfig().logs;
       // LF7-a — 인스턴스 identity: config 오버라이드가 있으면 주입, 없으면
-      // MONAD_STATE_DIR 기반 자동 유도(prod / test:<repo>). 스토어 생성 전 1회.
+      // ELANOUS_STATE_DIR 기반 자동 유도(prod / test:<repo>). 스토어 생성 전 1회.
       storeMod.setLogInstanceName(logsCfg.instanceName);
       const off = storeMod.registerLogStoreSink(
         (s) => dbgMod.debug.registerSink(s),
@@ -921,16 +921,16 @@ export async function runNexus(opts: RunNexusOptions = {}): Promise<RunNexusHand
         assertInstanceRootCoherence();
       } catch { /* 가드 자체 실패가 부팅을 막지 않는다 */ }
       // LF7-b — 인스턴스 레지스트리 등록(발견용 메타데이터 · prod 홈 고정).
-      // test 데몬도 여기 등록해야 `monad logs --all`/PWA 연합 뷰가 발견한다.
+      // test 데몬도 여기 등록해야 `elanous logs --all`/PWA 연합 뷰가 발견한다.
       const registryMod = await import('../mss/logging/instance-registry.js');
       const pathMod = await import('node:path');
-      const stateDirEnv = process.env.MONAD_STATE_DIR?.trim();
+      const stateDirEnv = process.env.ELANOUS_STATE_DIR?.trim();
       const stateDir = stateDirEnv && stateDirEnv.length > 0
         ? stateDirEnv
-        : pathMod.join((await import('node:os')).homedir(), '.monad');
+        : pathMod.join((await import('node:os')).homedir(), '.elanous');
       const name = storeMod.resolveLogInstanceName();
       const isTest = registryMod.isTestInstance({ name, stateDir });
-      const { getMonadConfigDir } = await import('../monad-config-dir.js');
+      const { getElanousConfigDir } = await import('../elanous-config-dir.js');
       const { resolveHostId } = await import('../platform/host-id.js');
       registryMod.registerLogInstance({
         hostId: resolveHostId(),
@@ -938,7 +938,7 @@ export async function runNexus(opts: RunNexusOptions = {}): Promise<RunNexusHand
         name,
         stateDir,
         kind: isTest ? 'test' : 'prod',
-        configDir: getMonadConfigDir(),
+        configDir: getElanousConfigDir(),
         ...(isTest ? { repoPath: pathMod.dirname(stateDir) } : {}),
         pid: process.pid,
         startedAt,
@@ -997,7 +997,7 @@ export async function runNexus(opts: RunNexusOptions = {}): Promise<RunNexusHand
   // 돌므로 onMessageAppended 가 여기서 발화 → session.updated 발행.
   wireSessionStoreEvents(eventBus);
   // S3b (2026-07-10) — cross-process 보강. in-process 리스너는 데몬 안 세션만 잡으므로
-  // 별 프로세스(CLI monad·agent-cli)가 디스크에 쓴 세션 갱신은 fs.watch 로 SSE 발행.
+  // 별 프로세스(CLI elanous·agent-cli)가 디스크에 쓴 세션 갱신은 fs.watch 로 SSE 발행.
   wireSessionDirWatch(eventBus);
   // 세션 object-storage 백업(2026-07-10) — 변경된 세션을 디바운스 후 S3 로 durable 백업.
   // S3 미가용이면 no-op(로컬only). 복원은 restoreSessionFile / session-s3 CLI.
@@ -1041,7 +1041,7 @@ export async function runNexus(opts: RunNexusOptions = {}): Promise<RunNexusHand
     // picker 미존재로 사람이 직접 인터랙션하기엔 placeholder 수준. LLM
     // tool surface (`--tools webterm`) 는 본 register 와 무관 — flag 가
     // 켜지면 PTY 도구를 LLM 만 driving + 탭은 안 뜸. switch on (또는
-    // env `MONAD_REGISTER_WEBTERM=1`) 으로 디버그 / PWA mirror 시 노출.
+    // env `ELANOUS_REGISTER_WEBTERM=1`) 으로 디버그 / PWA mirror 시 노출.
     if (shouldRegisterWebterm()) {
       registry.register(createWebtermTabSpec({ id: 'webterm:1', label: 'webterm#1' }));
     }
@@ -1101,7 +1101,7 @@ export async function runNexus(opts: RunNexusOptions = {}): Promise<RunNexusHand
     : undefined;
 
   // N-1 cleanup PR e — production node-pty backend factory wired by
-  // default for the live `monad nexus` boot. Tests (detachForTesting)
+  // default for the live `elanous nexus` boot. Tests (detachForTesting)
   // skip the auto-inject so the harness keeps its mock-only behavior;
   // they pass an explicit factory when a fixture wants a real PTY.
   // PLAN-nexus-shell-followup U1+U2 (2026-05-16) — MiniTerminal class
@@ -1187,11 +1187,11 @@ export async function runNexus(opts: RunNexusOptions = {}): Promise<RunNexusHand
   // it. Tests with detachForTesting set leave this undefined.
   let dailyReflectionScheduler: DailyReflectionSchedulerHandle | undefined;
   // RFC #2161 FU A8 (2026-05-11) — discovery cron via NEXUS. Dormant
-  // by default (opt-in via `MONAD_DISCOVERY_CRON_INTERVAL_MS`); when
+  // by default (opt-in via `ELANOUS_DISCOVERY_CRON_INTERVAL_MS`); when
   // configured, fires runDiscovery every interval and pushes the
   // resulting snapshot through the S3 mirror wired in FU A7.
   let discoveryCron: DiscoveryCronHandle | undefined;
-  // 스케줄 러너(S2 · 2026-07-07) — run_via='monad' 잡을 데몬이 실제 발화.
+  // 스케줄 러너(S2 · 2026-07-07) — run_via='elanous' 잡을 데몬이 실제 발화.
   // opt-in(adopt)만 실행 · crontab 중복 스킵 · reconcile로 adopt/release 반영.
   let scheduleRunner: ScheduleRunnerHandle | undefined;
   // R5 follow-up (2026-05-09) — session-decision → ACP forward
@@ -1244,9 +1244,9 @@ export async function runNexus(opts: RunNexusOptions = {}): Promise<RunNexusHand
     const toolCwd = resolveToolCwd({ tools: toolsKind, toolCwd: opts.toolCwd });
     runtimeToolCwd = toolCwd;
 
-    // History — disk-backed when historyDir / MONAD_HISTORY_DIR is set,
+    // History — disk-backed when historyDir / ELANOUS_HISTORY_DIR is set,
     // in-memory otherwise. Same defaulting as createDaemonRuntime.
-    const diskDir = opts.historyDir ?? process.env.MONAD_HISTORY_DIR?.trim();
+    const diskDir = opts.historyDir ?? process.env.ELANOUS_HISTORY_DIR?.trim();
     // 완전 무결 세션 공유(R5) — read-through(on-disk SessionStore lazy 로드)로 PWA
     // 챗이 텔레그램/CLI/이전 세션을 열면 그 context 로 이어감.
     runtimeHistory = new DaemonSessionHistory({
@@ -1254,7 +1254,7 @@ export async function runNexus(opts: RunNexusOptions = {}): Promise<RunNexusHand
       readThrough: makeSessionStoreReadThrough(),
     });
     // R3 write-through — DaemonSessionHistory.onAppend → on-disk SessionStore
-    // (~/.monad/sessions) 미러 → 목록/복원/공유 일원화. onAppend seam·미러 실패 무해.
+    // (~/.elanous/sessions) 미러 → 목록/복원/공유 일원화. onAppend seam·미러 실패 무해.
     wireDaemonHistoryToStore(runtimeHistory);
 
     // §P1 shadow fan-out(config gate·기본 OFF) — 세션 응답(assistant)을 subscribeSession
@@ -1347,9 +1347,9 @@ export async function runNexus(opts: RunNexusOptions = {}): Promise<RunNexusHand
 
     // ACP runTurn closure — multi-LLM-aware composer.
     // - When the inbound `session/prompt` carries
-    //   `_meta.monad.multiLlm.targets`, dispatch via the multi-LLM
+    //   `_meta.elanous.multiLlm.targets`, dispatch via the multi-LLM
     //   bridge (parallel `runCoreTurn` per target · per-chunk
-    //   `_meta.monad.modelId` annotation so Showroom demultiplexes
+    //   `_meta.elanous.modelId` annotation so Showroom demultiplexes
     //   per panel · DM stage 3 FU tool_call propagation rides this).
     // - When the hint is absent, the composer falls through to the
     //   legacy single-LLM bridge so vanilla ACP clients (chat tab ·
@@ -1414,7 +1414,7 @@ export async function runNexus(opts: RunNexusOptions = {}): Promise<RunNexusHand
     };
     // T5.E follow-up — daemon-public-server freeze 시 ACP-side 의 3개
     // callback (runAgentTurn / abortAgentTurn / recordLiveCameraFrame)
-    // 이 NEXUS path 로 옮겨오지 않아 `monad nexus pwa start` 로 띄운
+    // 이 NEXUS path 로 옮겨오지 않아 `elanous nexus pwa start` 로 띄운
     // 사용자에게서 `:agent <prompt>` 가 `daemon not wired with
     // runAgentTurn` 으로 실패. 같은 wire 가 abort + live-camera 도
     // 끊었음. daemon-public 의 wire (src/index.ts:4083-4114) 를
@@ -1426,7 +1426,7 @@ export async function runNexus(opts: RunNexusOptions = {}): Promise<RunNexusHand
       await import('../web-terminal/live-camera-registry.js');
     // `:agent` (통합 모드 webterm dock) toolsKind — distinct from the
     // standalone-chat `toolsKind` above. user-config (`global.tools` /
-    // `MONAD_TOOLS`) is intentionally bypassed here: WebTerminal* tools
+    // `ELANOUS_TOOLS`) is intentionally bypassed here: WebTerminal* tools
     // are the integrated-dock's reason for existing, so a config-
     // narrowed boot still gives the dock its full surface. CLI
     // `--tools` is honored for developer debugging.
@@ -1481,13 +1481,13 @@ export async function runNexus(opts: RunNexusOptions = {}): Promise<RunNexusHand
       // userText) pair as it goes by.
       onPromptReceived: (ctx) => {
         intentTurnTracker.recordPrompt(ctx.sessionId, ctx.userText);
-        // GN (2026-07-18) — 네이티브 iOS 앱이 ACP `_meta.monad.origin.surface='native'`
+        // GN (2026-07-18) — 네이티브 iOS 앱이 ACP `_meta.elanous.origin.surface='native'`
         // 를 보내면 세션 origin 을 태깅 → session-history-mirror(getOrigin)가 S1 세션에
-        // origin='native' 로 전파 → `monad session --origin native` 가시화 + taste 귀속.
+        // origin='native' 로 전파 → `elanous session --origin native` 가시화 + taste 귀속.
         // 종전엔 mirror 가 ACP 세션을 무조건 'pwa' 로 오라벨. Android(agent-cli)는 별경로.
         try {
-          const monadMeta = ctx.promptMeta?.monad as Record<string, unknown> | undefined;
-          const originMeta = monadMeta?.origin as Record<string, unknown> | undefined;
+          const elanousMeta = ctx.promptMeta?.elanous as Record<string, unknown> | undefined;
+          const originMeta = elanousMeta?.origin as Record<string, unknown> | undefined;
           const surface = originMeta?.surface;
           if (typeof surface === 'string' && isDaemonSessionOrigin(surface)) {
             // tagOrigin(setOrigin 아님) — 첫 append 前이라 세션이 아직 byId 에 없음.
@@ -1517,13 +1517,13 @@ export async function runNexus(opts: RunNexusOptions = {}): Promise<RunNexusHand
         },
       },
       // W8-A 후속 #1 (2026-05-14) — NEXUS-wide conversation aggregator.
-      // monad-builtin ACP turn (user prompt + agent response) 을 같은
-      // store 로 push → agent-cli `historyMode='rebuild'` 호출 시 monad-
-      // builtin turn 도 prefix 에 포함. 진정한 양방향 (monad-builtin ↔
+      // elanous-builtin ACP turn (user prompt + agent response) 을 같은
+      // store 로 push → agent-cli `historyMode='rebuild'` 호출 시 elanous-
+      // builtin turn 도 prefix 에 포함. 진정한 양방향 (elanous-builtin ↔
       // agent-cli) cross-backend conversation 통합.
       conversationAggregator: globalAgentCliConversationStore(),
       // PLAN-codex-app-server-hermes-parity §5 Phase H2·1 wire
-      // (2026-05-16) — bridge `monad/codex/plugins` ACP method to the
+      // (2026-05-16) — bridge `elanous/codex/plugins` ACP method to the
       // first running codex agent's JSON-RPC client. Codex plugins are
       // user-global (cwd-independent), so any active codex agent's
       // client gives the canonical `plugin/list` response. Empty list
@@ -1562,7 +1562,7 @@ export async function runNexus(opts: RunNexusOptions = {}): Promise<RunNexusHand
     if (!opts.skipPushcutChannel) {
       const pushcutClient = getPushcutClient();
       const notificationName = opts.pushcutNotificationName
-        ?? process.env['MONAD_HITL_NOTIFY']
+        ?? process.env['ELANOUS_HITL_NOTIFY']
         ?? 'monad-confirm';
       channels.push(createPushcutConfirmChannel({
         client: pushcutClient,
@@ -1639,7 +1639,7 @@ export async function runNexus(opts: RunNexusOptions = {}): Promise<RunNexusHand
       installedDefaultAskResolver = defaultAskResolver;
     }
     // cv-3 β-4 audit log (Round 2 · 2026-05-08). Every confirm
-    // round-trip lands in $MONAD_DIR/hitl-log.jsonl as line-delimited
+    // round-trip lands in $ELANOUS_DIR/hitl-log.jsonl as line-delimited
     // JSON. The hook is fire-and-forget — confirm.ts never awaits it,
     // so a slow/broken writer cannot stall the race winner. 100 MB
     // rotation keeps disk usage bounded across long-running daemons.
@@ -1738,7 +1738,7 @@ export async function runNexus(opts: RunNexusOptions = {}): Promise<RunNexusHand
     // poller. Polls the shared pty-manifest for framed tui/pty surfaces
     // (dashboard TUI + forwarded self-implement children · cross-process)
     // and records SALIENT screen changes (dedup + rate-limited) into
-    // surface_events so `monad self recall` can retrieve "what monad was
+    // surface_events so `elanous self recall` can retrieve "what elanous was
     // doing / seeing". Summary + refs pointers only (no frame blob · §9).
     try {
       const { startFrameMemoryPoller } = await import('../capture/frame-memory.js');
@@ -1861,7 +1861,7 @@ export async function runNexus(opts: RunNexusOptions = {}): Promise<RunNexusHand
   const shell = null as unknown as import('../ui/widgets/sidebar-tab-surface.js').SidebarTabSurface;
 
   // PR β' — Edit-in-PWA signing key + nonce store. The key persists at
-  // ~/.monad/nexus/edit-in-pwa.key (0o600); the nonce store is in-memory
+  // ~/.elanous/nexus/edit-in-pwa.key (0o600); the nonce store is in-memory
   // (acceptable since 5-min TTL means nexus restart drops at most a 5m
   // window of consumed nonces — replay is bounded by token expiration
   // anyway).
@@ -1888,8 +1888,8 @@ export async function runNexus(opts: RunNexusOptions = {}): Promise<RunNexusHand
     let metaApiOpts: import('./api/meta-api.js').MetaApiOpts | undefined;
 
     if (!skipRuntime && runtimeHistory) {
-      // Bearer token — read from getMonadConfigDir()/acp-token (the
-      // canonical store `monad serve` uses). Loopback default is
+      // Bearer token — read from getElanousConfigDir()/acp-token (the
+      // canonical store `elanous serve` uses). Loopback default is
       // noAuth; tests opt in by writing a token file before boot.
       const bearerToken = readAcpToken();
 
@@ -1904,7 +1904,7 @@ export async function runNexus(opts: RunNexusOptions = {}): Promise<RunNexusHand
       // Phase 5b (PWA voice 일원화 server-side TTS · 2026-05-07) —
       // when caller didn't override `opts.voiceAdapter`, try to
       // construct the real adapter + TTS bridge in NEXUS itself.
-      // Mirrors the legacy `monad serve` boot pattern (src/index.ts:
+      // Mirrors the legacy `elanous serve` boot pattern (src/index.ts:
       // 3957-4001) but inside the NEXUS runtime so chat REST `/v1/
       // prompt/stream` can dispatch text-deltas through the bridge
       // (metaApiOpts.pwaTtsBridge wire). When STT/TTS providers
@@ -2022,15 +2022,15 @@ export async function runNexus(opts: RunNexusOptions = {}): Promise<RunNexusHand
 
     // P.1 — PWA static export auto-detect. T5.A 의 /app/* handler 가
     // staticDir wired 되면 NEXUS HTTP 가 `/app/*` 로 PWA UI 서빙. 미wired
-    // 면 404 + P.2 banner hint 가 build 안내. `MONAD_PWA_STATIC_DIR` env
+    // 면 404 + P.2 banner hint 가 build 안내. `ELANOUS_PWA_STATIC_DIR` env
     // 로 override 가능 (test fixture / packaged path 후보 강제).
-    pwaStaticDir = process.env.MONAD_PWA_STATIC_DIR?.trim()
+    pwaStaticDir = process.env.ELANOUS_PWA_STATIC_DIR?.trim()
       || resolvePwaStaticDir();
 
     // P-2D.2 — dev-proxy upstream is no longer persisted in UserConfig.
     // http-server creates its own DevProxyRuntimeRef; admin endpoint
     // (`POST /v1/nexus/admin/pwa-dev-proxy`) flips it live. Boot
-    // default is null → static export. `monad nexus pwa dev` posts
+    // default is null → static export. `elanous nexus pwa dev` posts
     // to the admin endpoint on start + deletes on stop, so dev mode
     // is per-session ephemeral state — exactly what user feedback
     // 2026-05-07 ("거의 개발 간 default 이면 컨픽으로 할 필요 없음")
@@ -2047,7 +2047,7 @@ export async function runNexus(opts: RunNexusOptions = {}): Promise<RunNexusHand
     // so the /v1/notes/save endpoint can knowledgeWrite() without re-
     // probing the filesystem on every request. discoverObsidianVault
     // 의 3-tier cascade (env override → ~/Obsidian/.../AutoResearch →
-    // ~/Documents/Obsidian/AutoResearch → simulated `.monad/research`)
+    // ~/Documents/Obsidian/AutoResearch → simulated `.elanous/research`)
     // 가 처리하므로 사용자 설정 없이도 항상 destination 이 결정된다.
     // simulated fallback 경우 vaultLabel 이 PWA 응답에 surfaced 돼서
     // 사용자가 "Obsidian 미설치 → simulated 저장" 상황을 인지 가능.
@@ -2059,7 +2059,7 @@ export async function runNexus(opts: RunNexusOptions = {}): Promise<RunNexusHand
     // R6 v2 FU (2026-05-09) — day-bucket persistence so daemon
     // restart no longer zeroes today's count and reflection queries
     // for past dates return real data. The store is opt-in via env
-    // (MONAD_S3_DISABLED / no aws creds → local-only mode); see
+    // (ELANOUS_S3_DISABLED / no aws creds → local-only mode); see
     // `src/storage/s3.ts` for the canonical S3 path layout.
     const notesDayBucket = createDayBucketStore();
     const notesMetrics = createNotesMetricsCollector({ dayBucket: notesDayBucket });
@@ -2201,7 +2201,7 @@ export async function runNexus(opts: RunNexusOptions = {}): Promise<RunNexusHand
         });
         continuationScheduler.start();
         opts.onContinuationSchedulerStarted?.(continuationScheduler);
-        // ⛔ `console.debug` 는 run.log 에만 남고 **logs.db 에 안 닿는다** ⇒ `monad logs` 로 조회되지
+        // ⛔ `console.debug` 는 run.log 에만 남고 **logs.db 에 안 닿는다** ⇒ `elanous logs` 로 조회되지
         //   않아 "관측한 것이 아니다"(제1원칙). 상주 루프의 **기동**은 그 루프를 진단할 때 가장 먼저
         //   찾는 사실이라 다른 스케줄러 사건과 **같은 카테고리**에 남긴다(RFC P0/L1 잔여분).
         // ⚠️ 틱 주기는 여기서 넘기지 않아 스케줄러의 기본값이 쓰인다 — **모르는 값을 필드로 만들지
@@ -2309,7 +2309,7 @@ export async function runNexus(opts: RunNexusOptions = {}): Promise<RunNexusHand
         }
         // Mission Fabric 통합 U4b — 이관잡(run_via='trigger') catch-up 자기회복.
         // workflow Schedule Trigger(node-cron)는 놓친 발화를 복구하지 않으므로,
-        // schedule-runner 가 monad 잡에 주던 catch-up(랩탑 슬립·데몬 다운으로 놓친
+        // schedule-runner 가 elanous 잡에 주던 catch-up(랩탑 슬립·데몬 다운으로 놓친
         // 일간 잡 복구)을 이관잡에도 보존. 부팅 1회 + 5분 주기(wake) sweep.
         // 복구는 command 직접 spawn·markResult(via='catchup')·매매 제외.
         try {
@@ -2413,19 +2413,19 @@ export async function runNexus(opts: RunNexusOptions = {}): Promise<RunNexusHand
         // forwards inbound messages to `workflowDaemon.dispatchDiscord`
         // so `discordTrigger` nodes fire from real traffic. Skipped
         // when `cfg.discord.enabled` is false or the bot token isn't
-        // set. The HITL Discord bot (token = MONAD_DISCORD_HITL_*) is
+        // set. The HITL Discord bot (token = ELANOUS_DISCORD_HITL_*) is
         // a separate Discord application; this trigger bot uses the
         // main `cfg.discord.botToken` populated from
-        // MONAD_DISCORD_BOT_TOKEN via env-bridge.
+        // ELANOUS_DISCORD_BOT_TOKEN via env-bridge.
         try {
           const userConfigMod = await import('../user-config.js');
           const cfg = userConfigMod.getUserConfig();
           if (cfg.discord.enabled && cfg.discord.botToken && !isAutonomousRunContext()) {
             // M4b (2026-07-12) — the production discord bot answers DMs
-            // with the monad self turn + /cc·/cdx·/gem interweaving
+            // with the elanous self turn + /cc·/cdx·/gem interweaving
             // (텔레그램 동형·대표 확정: 기본 self·명시 위임). The
             // DM-only gate keeps guild traffic out; the isolated
-            // `monad discord-test` runner owns discord.testChannel.
+            // `elanous discord-test` runner owns discord.testChannel.
             const { makeDiscordAgentRunTurn } = await import('../discord-agent.js');
             const { buildDiscordSelfOnMessage } = await import('../discord-self-message.js');
             const { buildDiscordVoiceWire } = await import('../discord-voice-wire.js');
@@ -2441,7 +2441,7 @@ export async function runNexus(opts: RunNexusOptions = {}): Promise<RunNexusHand
               questionChannelFor: (ch) => questionRuntime.channelFor(ch),
             });
             // M4c — voice channel wire. Inert (voiceTap null + /voice-*
-            // replies explain the gate) unless MONAD_DISCORD_VOICE_CHANNEL
+            // replies explain the gate) unless ELANOUS_DISCORD_VOICE_CHANNEL
             // / voice.discord.voiceChannel.enabled is on. Shares the SAME
             // runTurnImpl as the DM text path.
             const voiceWire = buildDiscordVoiceWire({
@@ -2472,7 +2472,7 @@ export async function runNexus(opts: RunNexusOptions = {}): Promise<RunNexusHand
               dispatch: (event) => workflowDaemon!.dispatchDiscord(event),
               onMessage: composedOnMessage,
               onInteraction: async (raw) => {
-                // C1 버튼 탭 우선(monad-q: 소비) → 아니면 C3 슬래시.
+                // C1 버튼 탭 우선(elanous-q: 소비) → 아니면 C3 슬래시.
                 if (await questionRuntime.handleComponentInteraction(raw)) return;
                 await slashWire.onInteraction(raw);
               },
@@ -2488,7 +2488,7 @@ export async function runNexus(opts: RunNexusOptions = {}): Promise<RunNexusHand
           }
           // V2.2-4 (2026-05-12) — parallel Telegram wire. Reuses the
           // same `cfg.telegram.botToken` / `allowedUsers` shape via
-          // env-bridge so MONAD_TELEGRAM_BOT_TOKEN populates the
+          // env-bridge so ELANOUS_TELEGRAM_BOT_TOKEN populates the
           // config under the standard flow.
           // 2026-07-05 — unified inbound: pass `userConfig` so the ONE
           // nexus telegram bot answers Q&A (onMessage → runTurn) on top
@@ -2514,7 +2514,7 @@ export async function runNexus(opts: RunNexusOptions = {}): Promise<RunNexusHand
               console.log(`[nexus] telegram 채널 '${channel.name}' Q&A 폴러 활성 (${channel.botToken.slice(0, 8)}…·roles ${channel.roles.join('/')})`);
             };
             if (cfg.telegram.poller === 'standalone') {
-              // 폴링은 `monad telegram run` 이 맡는다 — 넥서스는 보내기만 한다. 배달 싱크는 «프로세스 안» 등록이라
+              // 폴링은 `elanous telegram run` 이 맡는다 — 넥서스는 보내기만 한다. 배달 싱크는 «프로세스 안» 등록이라
               // 여기서도 폴링 없는 봇으로 세워 둔다(없으면 core 에서 시작한 턴이 텔레그램 구독자에게 못 간다).
               debug.log('nexus.telegram', 'poller-skipped', { reason: 'telegram.poller=standalone' });
               const sendOnly = wireNexusTelegramQaPollers(cfg, workflowDaemon!, {
@@ -2527,7 +2527,7 @@ export async function runNexus(opts: RunNexusOptions = {}): Promise<RunNexusHand
                 telegramPollerHandles.push(handle);
                 if (channel.botToken === cfg.telegram.botToken) workflowTelegramBot = handle;
               }
-              console.log(`[nexus] telegram Q&A 폴러를 띄우지 않는다 (telegram.poller=standalone — monad telegram run 이 폴링) · 보내기 전용 싱크 ${sendOnly.length}개`);
+              console.log(`[nexus] telegram Q&A 폴러를 띄우지 않는다 (telegram.poller=standalone — elanous telegram run 이 폴링) · 보내기 전용 싱크 ${sendOnly.length}개`);
             } else {
               const handles = wireNexusTelegramQaPollers(cfg, workflowDaemon!, {
                 makeTelegramAgentRunTurn,
@@ -2580,7 +2580,7 @@ export async function runNexus(opts: RunNexusOptions = {}): Promise<RunNexusHand
       console.warn(`[nexus] outbound substrate boot skipped: ${msg}`);
     }
 
-    // B 트랙 Phase 2 (RFC-monad-mcp-client-2026-05-12 · #2474) —
+    // B 트랙 Phase 2 (RFC-elanous-mcp-client-2026-05-12 · #2474) —
     // Spawn each configured external MCP server (xcrun mcpbridge ·
     // xcodebuildmcp · …) and register its tools as proxy ToolRuntimes
     // under `<server-id>.<tool-name>`. Sparse — empty `mcp.servers[]`
@@ -2632,7 +2632,7 @@ export async function runNexus(opts: RunNexusOptions = {}): Promise<RunNexusHand
     }
 
     // W9d-FU U5 — Patcher daemon boot. Reads
-    // `~/.monad/background-reasoning/patcher.yaml` · disabled by default
+    // `~/.elanous/background-reasoning/patcher.yaml` · disabled by default
     // so a fresh install does not auto-fire LLM calls. When user flips
     // `enabled: true`, the LLM callable wire (entityExtractor +
     // embeddingGenerator) is still required — without it the substrate
@@ -2664,7 +2664,7 @@ export async function runNexus(opts: RunNexusOptions = {}): Promise<RunNexusHand
       console.warn(`[nexus] patcher substrate boot skipped: ${msg}`);
     }
 
-    // W9d-FU Z15.b — Devices fleet cron. Reads `~/.monad/devices.json`
+    // W9d-FU Z15.b — Devices fleet cron. Reads `~/.elanous/devices.json`
     // periodically, runs the upgrade watcher, and (when the outbound
     // router is wired) emits an `OutboundEvent` per significant change.
     // No user-config gate yet — defaults to enabled so a freshly
@@ -2775,7 +2775,7 @@ export async function runNexus(opts: RunNexusOptions = {}): Promise<RunNexusHand
       nextFluent: buildNextFluentRouteOpts(),
       // iPhone Showroom Phase 1 P1-4 (2026-05-14) + FU1 (2026-05-14) —
       // mission router DI seam. Pass a configProvider thunk so user
-      // config edits (`monad config mission set …`) take effect on
+      // config edits (`elanous config mission set …`) take effect on
       // the next predict() without a daemon restart. The thunk uses
       // Path A's `getUserConfig()` (mtime-cached read) so the per-
       // call overhead is just an object lookup, not a file IO.
@@ -2813,7 +2813,7 @@ export async function runNexus(opts: RunNexusOptions = {}): Promise<RunNexusHand
       notesMetrics: { metrics: notesMetrics },
       // W9e-FU Z13-d (2026-05-12) — devices fleet source forward. When
       // the devices boot composer (#2458) ran successfully it exposes
-      // a `DeviceFleetSource` that reads `~/.monad/devices.json` (or
+      // a `DeviceFleetSource` that reads `~/.elanous/devices.json` (or
       // returns `[]` on missing file). Passing it to opts.devices means
       // `/v1/devices` and `/v1/templates/capability-preview` serve the
       // live fleet snapshot instead of the 503 `devices-not-wired`
@@ -2911,15 +2911,15 @@ export async function runNexus(opts: RunNexusOptions = {}): Promise<RunNexusHand
     // R6 v2 (2026-05-09) — daily reflection scheduler. Boots once per
     // daemon when the runtime is wired (skipRuntime=false leaves this
     // off so detached tests don't accrue background timers). Hour /
-    // minute configurable via env (`MONAD_REFLECTION_HOUR` /
+    // minute configurable via env (`ELANOUS_REFLECTION_HOUR` /
     // `_MINUTE`), default 21:00 local. The Hansei polish callable
     // gates on isDailyReflectionPolishAvailable — when no LLM
     // provider is reachable (fresh install · no API key), the
     // scheduler still fires the push with a deterministic counts-
     // only fallback body.
     if (!skipRuntime) {
-      const envHour = Number.parseInt(process.env.MONAD_REFLECTION_HOUR ?? '', 10);
-      const envMin = Number.parseInt(process.env.MONAD_REFLECTION_MINUTE ?? '', 10);
+      const envHour = Number.parseInt(process.env.ELANOUS_REFLECTION_HOUR ?? '', 10);
+      const envMin = Number.parseInt(process.env.ELANOUS_REFLECTION_MINUTE ?? '', 10);
       dailyReflectionScheduler = startDailyReflectionScheduler({
         ...(Number.isFinite(envHour) ? { hour: envHour } : {}),
         ...(Number.isFinite(envMin) ? { minute: envMin } : {}),
@@ -2936,9 +2936,9 @@ export async function runNexus(opts: RunNexusOptions = {}): Promise<RunNexusHand
       // Mission Fabric 통합 U4d (2026-07-09) — schedule-runner 은퇴(B안 완성).
       // 모든 예약잡이 fabric Schedule Trigger(run_via='trigger')로 이관됨 →
       // 정시 발화=workflow 데몬, 놓친발화 복구=catchUpTriggerJobs(위 U4b). run_via=
-      // 'monad'(schedule-runner 발화)는 더 이상 생성 안 함(adopt→migrate 리다이렉트).
+      // 'elanous'(schedule-runner 발화)는 더 이상 생성 안 함(adopt→migrate 리다이렉트).
       // startScheduleRunner 은퇴(호출 안 함). defaultSpawnJob 는 catch-up 이 재사용.
-      // (레거시 run_via='monad' 잔재가 있으면 schedule list 에 보이나 미발화 →
+      // (레거시 run_via='elanous' 잔재가 있으면 schedule list 에 보이나 미발화 →
       //  schedule migrate 로 이관.) 롤백: 아래 한 줄 복원.
       // try { scheduleRunner = startScheduleRunner(); } catch { /* fail-soft */ }
       void scheduleRunner; // 은퇴(undefined 유지)
@@ -2946,14 +2946,14 @@ export async function runNexus(opts: RunNexusOptions = {}): Promise<RunNexusHand
   }
 
   // PR γ' — error snapshot writer subscribes to tab.halt events. Snapshots
-  // land at ~/.monad/nexus/errors/<tabId>/<ts>.json and surface via
+  // land at ~/.elanous/nexus/errors/<tabId>/<ts>.json and surface via
   // GET /v1/nexus/errors. Returns an unsubscribe used at shutdown.
   const unsubscribeErrorSnapshots = subscribeErrorSnapshotWriter({ state, registry, eventBus });
 
   pushEvent(state, { kind: 'nexus.boot', detail: { phase: NEXUS_PHASE, ...(httpServer ? { httpUrl: httpServer.url } : {}) } });
 
   if (supervisor) {
-    // PR μ — env auto-migration: scan MONAD_* env, persist into UserConfig
+    // PR μ — env auto-migration: scan ELANOUS_* env, persist into UserConfig
     // / secrets, surface deprecation. Runs AFTER all default tabs are
     // registered so tab-scope migrations (channel-bot tokens) find the
     // matching tab ids.
@@ -3272,7 +3272,7 @@ export async function runNexus(opts: RunNexusOptions = {}): Promise<RunNexusHand
 
   // P.3 — first-boot PWA share wizard. Only runs in interactive TUI mode
   // when the switch is still 'ask'. Headless / non-TTY boots skip it (the
-  // user can still flip via `monad nexus pwa share enable|disable` once
+  // user can still flip via `elanous nexus pwa share enable|disable` once
   // P.4 lands). detachForTesting boots return earlier so test fixtures
   // never hit this path.
   if (!opts.headless) {
@@ -3336,8 +3336,8 @@ export async function runNexus(opts: RunNexusOptions = {}): Promise<RunNexusHand
         // "run sudo -v".
         console.log(`  share        ERR  serve exit ${r.serveExitCode ?? '?'} (likely sudo cache empty in bg-launch child)`);
         console.log('               recover with EITHER:');
-        console.log('                 a) `sudo -v` once in a TTY, then `monad nexus stop && monad nexus run`');
-        console.log('                 b) `monad nexus pwa share enable` (parent-side mount · independent of daemon)');
+        console.log('                 a) `sudo -v` once in a TTY, then `elanous nexus stop && elanous nexus run`');
+        console.log('                 b) `elanous nexus pwa share enable` (parent-side mount · independent of daemon)');
       } else if (r.reason === 'tailscale-missing') {
         console.log('  share        OFF  Tailscale not installed — https://tailscale.com/download');
       } else if (r.reason === 'tailscale-down') {
@@ -3363,7 +3363,7 @@ export async function runNexus(opts: RunNexusOptions = {}): Promise<RunNexusHand
     });
   }
 
-  // P.1.5 — headless branch. When `--headless` / `MONAD_NEXUS_HEADLESS=1`
+  // P.1.5 — headless branch. When `--headless` / `ELANOUS_NEXUS_HEADLESS=1`
   // is set, skip the TUI render loop entirely and block on SIGINT instead
   // of `tui.done`. The HTTP API + supervisor + meta-API stay live (they
   // were wired above the banner), so PWA + remote attach keep working —
@@ -3389,11 +3389,11 @@ export async function runNexus(opts: RunNexusOptions = {}): Promise<RunNexusHand
         console.error(`  watch: failed to start — ${err instanceof Error ? err.message : String(err)}`);
       }
     }
-    console.log('  monad nexus: headless mode (TUI suppressed) — Ctrl-C / SIGTERM to exit.\n');
+    console.log('  elanous nexus: headless mode (TUI suppressed) — Ctrl-C / SIGTERM to exit.\n');
     let resolveDone: () => void = () => {};
     const done = new Promise<void>((r) => { resolveDone = r; });
     const onSigterm = (): void => {
-      console.error('\nmonad nexus: received SIGTERM, graceful restart pending (exit 75)...');
+      console.error('\nelanous nexus: received SIGTERM, graceful restart pending (exit 75)...');
       if (pwaWatchHandle) { try { pwaWatchHandle.stop(); } catch { /* */ } }
       // R1(재시작 최소화 RFC) — 이미 텔레그램에 «확인»된 턴이 재시작으로 말없이 사라지지 않게,
       //   SIGTERM 을 받은 «지금부터» 상한 안에서 봇의 대기 턴을 비운 뒤 나간다(부팅 시각 기준이 아니다).
@@ -3405,7 +3405,7 @@ export async function runNexus(opts: RunNexusOptions = {}): Promise<RunNexusHand
       }));
     };
     const onSigint = (): void => {
-      console.error('\nmonad nexus: received SIGINT, shutting down...');
+      console.error('\nelanous nexus: received SIGINT, shutting down...');
       if (pwaWatchHandle) { try { pwaWatchHandle.stop(); } catch { /* */ } }
       resolveDone();
     };
@@ -3445,15 +3445,15 @@ export async function runNexus(opts: RunNexusOptions = {}): Promise<RunNexusHand
 
   // PLAN-tui-redundancy-cleanup T4 (2026-05-16) — TUI render loop
   // (runNexusTui) 제거. `--legacy-tui` flag 가 T3 에서 제거되어 본 branch
-  // 가 dead 였다. `monad nexus run` 의 default 경로는 위 `headless` branch
+  // 가 dead 였다. `elanous nexus run` 의 default 경로는 위 `headless` branch
   // (L2175-) 또는 `runPwaStart` 가 처리. 본 위치 도달 시는 caller 가 명시
   // `headless:false` 를 주면서 호출한 비정상 path — SIGINT/SIGTERM 대기
   // 후 cleanExit 으로 fallback.
-  console.log('  monad nexus: TUI mount path deprecated (T4) — Ctrl-C / SIGTERM to exit.\n');
+  console.log('  elanous nexus: TUI mount path deprecated (T4) — Ctrl-C / SIGTERM to exit.\n');
   let resolveDone: () => void = () => {};
   const done = new Promise<void>((r) => { resolveDone = r; });
   const onSigterm = (): void => {
-    console.error('\nmonad nexus: received SIGTERM, graceful restart pending (exit 75)...');
+    console.error('\nelanous nexus: received SIGTERM, graceful restart pending (exit 75)...');
     void drainTelegramThen(() => gracefulExit({
       state,
       registry,
@@ -3463,7 +3463,7 @@ export async function runNexus(opts: RunNexusOptions = {}): Promise<RunNexusHand
     resolveDone();
   };
   const onSigint = (): void => {
-    console.error('\nmonad nexus: received SIGINT, shutting down...');
+    console.error('\nelanous nexus: received SIGINT, shutting down...');
     resolveDone();
   };
   process.once('SIGINT', onSigint);
@@ -3564,14 +3564,14 @@ function shouldAskPwaShareSwitch(): boolean {
 }
 
 /** PR k — load the persistent ACP bearer token at
- *  `getMonadConfigDir()/acp-token`. Mirrors the helper in
- *  `boot/acp-server.ts` that `monad serve` uses, so the same token
+ *  `getElanousConfigDir()/acp-token`. Mirrors the helper in
+ *  `boot/acp-server.ts` that `elanous serve` uses, so the same token
  *  gates daemon and NEXUS HTTP. Returns undefined when the token
  *  file is absent (loopback noAuth default — first-boot dogfood
  *  works without configuration). Read failures are swallowed. */
 export function readAcpToken(): string | undefined {
   try {
-    const tokenPath = joinPath(getMonadConfigDir(), 'acp-token');
+    const tokenPath = joinPath(getElanousConfigDir(), 'acp-token');
     if (existsSync(tokenPath)) {
       const tok = readFileSync(tokenPath, 'utf-8').trim();
       return tok || undefined;
@@ -3583,7 +3583,7 @@ export function readAcpToken(): string | undefined {
 function printBootBanner(runtime: NexusRuntimeMeta, pwaStaticDir?: string): void {
   const lines = [
     '',
-    `  monad NEXUS · ${runtime.nexusVersion} · ${runtime.phase}`,
+    `  elanous NEXUS · ${runtime.nexusVersion} · ${runtime.phase}`,
     '  ──────────────────────────────────────────────────────',
     `  pid       ${runtime.pid}`,
     `  host      ${hostname()}`,
@@ -3598,10 +3598,10 @@ function printBootBanner(runtime: NexusRuntimeMeta, pwaStaticDir?: string): void
     if (pwaStaticDir) {
       lines.push(`  pwa       ${httpUrl}/app/  (static export · ${pwaStaticDir})`);
     } else {
-      // P.2 — banner hint points at `monad nexus pwa build` so users
+      // P.2 — banner hint points at `elanous nexus pwa build` so users
       // don't need to remember the cd / build pair.
       lines.push(`  pwa       (not built)`);
-      lines.push(`  ⚠ run \`monad nexus pwa build\` (one-time · ~30s) to enable web UI`);
+      lines.push(`  ⚠ run \`elanous nexus pwa build\` (one-time · ~30s) to enable web UI`);
     }
   }
   lines.push(
@@ -3611,7 +3611,7 @@ function printBootBanner(runtime: NexusRuntimeMeta, pwaStaticDir?: string): void
     '  Toggle keys: Ctrl-` (primary) · Ctrl-\\ (Korean IME / SSH friendly).',
     '  SIGINT (Ctrl-C) → exit 0 (OS supervisor leaves nexus stopped).',
     '  SIGTERM        → exit 75 + restart-state.json (OS supervisor respawns).',
-    '  PR ψ/ω add `monad nexus install --launchd|--systemd-user`.',
+    '  PR ψ/ω add `elanous nexus install --launchd|--systemd-user`.',
     '',
     '  Ctrl-C to release lock and exit.',
     '',
@@ -3647,7 +3647,7 @@ async function printStatus(): Promise<void> {
   const runtime = lifecycle?.runtime ?? readNexusRuntime();
   const health = await probeNexusStatusHealth(runtime);
   const status = classifyNexusStatus({ lockAlive: lock !== null, health });
-  console.log(`  monad NEXUS · ${NEXUS_VERSION} · ${NEXUS_PHASE}`);
+  console.log(`  elanous NEXUS · ${NEXUS_VERSION} · ${NEXUS_PHASE}`);
   console.log('  ──────────────────────────────────────────────────────');
   console.log(`  root      ${root}`);
   console.log(`  lock      ${joinPath(root, '.lock')}`);
@@ -3670,11 +3670,11 @@ function stopExisting(): void {
   const lifecycle = findNexusLifecycleState();
   const lock = lifecycle?.lock ?? null;
   if (!lock) {
-    console.log('monad nexus: not running');
+    console.log('elanous nexus: not running');
     return;
   }
   if (lock.host !== hostname()) {
-    console.error(`monad nexus: lock held by remote host ${lock.host}; cannot stop from here`);
+    console.error(`elanous nexus: lock held by remote host ${lock.host}; cannot stop from here`);
     process.exit(1);
   }
   try {
@@ -3682,9 +3682,9 @@ function stopExisting(): void {
     // the OS supervisor's graceful-restart channel (exit 75); SIGINT is
     // the explicit user-stop channel (exit 0, clears restart-state).
     process.kill(lock.pid, 'SIGINT');
-    console.log(`monad nexus: SIGINT sent to pid ${lock.pid}`);
+    console.log(`elanous nexus: SIGINT sent to pid ${lock.pid}`);
   } catch (err) {
-    console.error(`monad nexus: failed to signal pid ${lock.pid}: ${(err as Error).message}`);
+    console.error(`elanous nexus: failed to signal pid ${lock.pid}: ${(err as Error).message}`);
     process.exit(1);
   }
 }
@@ -3693,7 +3693,7 @@ function stopExisting(): void {
  *  Resolution order:
  *
  *    1. UserConfig switch `global.tabs.registerWebterm` (true/false)
- *    2. env `MONAD_REGISTER_WEBTERM` truthy (`1` / `true` / `yes` / `on`)
+ *    2. env `ELANOUS_REGISTER_WEBTERM` truthy (`1` / `true` / `yes` / `on`)
  *    3. switch default = false
  *
  *  switch read is wrapped in try/catch — a malformed config file must
@@ -3705,7 +3705,7 @@ function shouldRegisterWebterm(): boolean {
     if (v === true) return true;
     if (v === false) return false;
   } catch { /* swallow — boot must not fail on a bad config */ }
-  const env = process.env.MONAD_REGISTER_WEBTERM?.trim().toLowerCase();
+  const env = process.env.ELANOUS_REGISTER_WEBTERM?.trim().toLowerCase();
   if (env === '1' || env === 'true' || env === 'yes' || env === 'on') return true;
   return false;
 }
@@ -3721,15 +3721,15 @@ function shouldRegisterWebterm(): boolean {
  *  process path too):
  *
  *    1. CLI flag (`opts.tools`)                                     ← 1회 boot
- *    2. `MONAD_TOOLS` env                                           ← shell session
+ *    2. `ELANOUS_TOOLS` env                                           ← shell session
  *    3. UserConfig switch `global.tools` (PWA Settings 토글이 여기) ← 영구
  *    4. switch default = `'webterm'` (`builtins/global.ts:12`)       ← fallback
  *
  *  Pre-fix the in-process branch fell back to `'none'` while
  *  `deriveChildEnv` fell back to the switch default `'webterm'`. That
- *  meant a clean-machine `monad nexus` (no flag/env) gave the in-process
+ *  meant a clean-machine `elanous nexus` (no flag/env) gave the in-process
  *  LLM call an empty tool catalog while a separately-launched
- *  `monad serve` daemon honored the switch default's full surface —
+ *  `elanous serve` daemon honored the switch default's full surface —
  *  surprising divergence the user had no way to discover.
  *
  *  `'all'` is in the switch enum but has no `toolSurface()` impl yet;
@@ -3749,7 +3749,7 @@ function resolveKnownToolsKind(raw: string): DaemonToolSurfaceKind | undefined {
 
 export function resolveToolsKind(opts: { tools?: string }): DaemonToolSurfaceKind {
   let raw: string | undefined = opts.tools;
-  if (!raw) raw = process.env.MONAD_TOOLS?.trim();
+  if (!raw) raw = process.env.ELANOUS_TOOLS?.trim();
   if (!raw) {
     try {
       const cfg = readUserConfig();
@@ -3778,7 +3778,7 @@ export function resolveToolsKind(opts: { tools?: string }): DaemonToolSurfaceKin
  *                                         skipped vs. resolveToolsKind
  *
  *  CLI flag is honored so a developer debugging tool selection
- *  (`monad nexus run --tools readonly`) still sees a readonly `:agent`;
+ *  (`elanous nexus run --tools readonly`) still sees a readonly `:agent`;
  *  but a clean-machine boot or a config-narrowed boot always gets
  *  webterm for the integrated dock. */
 export function resolveAgentTurnToolsKind(opts: { tools?: string }): DaemonToolSurfaceKind {

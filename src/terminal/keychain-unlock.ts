@@ -64,7 +64,7 @@ export function wrapCommandForKeychainUnlock(
   // "incorrect passphrase" line stays visible so the user can
   // re-spawn and retry.
   const preamble =
-    `echo "[monad] SSH session — unlocking login keychain (enter macOS password)"; ` +
+    `echo "[elanous] SSH session — unlocking login keychain (enter macOS password)"; ` +
     `security unlock-keychain "$HOME/Library/Keychains/login.keychain-db"`;
   return `sh -c '${preamble} && exec ${escaped}'`;
 }

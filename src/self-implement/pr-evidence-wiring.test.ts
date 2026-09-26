@@ -12,13 +12,13 @@ import { join } from 'node:path';
 import { runSelfImplement, type SelfImplementSeams } from './orchestrator.js';
 import { setUserConfigOverlay } from '../user-config.js';
 
-const isolatedStateDir = mkdtempSync(join(tmpdir(), 'monad-pr-evidence-wiring-'));
-const priorStateDir = process.env.MONAD_STATE_DIR;
+const isolatedStateDir = mkdtempSync(join(tmpdir(), 'elanous-pr-evidence-wiring-'));
+const priorStateDir = process.env.ELANOUS_STATE_DIR;
 
-beforeAll(() => { process.env.MONAD_STATE_DIR = isolatedStateDir; });
+beforeAll(() => { process.env.ELANOUS_STATE_DIR = isolatedStateDir; });
 afterAll(() => {
-  if (priorStateDir === undefined) delete process.env.MONAD_STATE_DIR;
-  else process.env.MONAD_STATE_DIR = priorStateDir;
+  if (priorStateDir === undefined) delete process.env.ELANOUS_STATE_DIR;
+  else process.env.ELANOUS_STATE_DIR = priorStateDir;
   rmSync(isolatedStateDir, { recursive: true, force: true });
 });
 

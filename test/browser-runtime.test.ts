@@ -141,16 +141,16 @@ describe('dispatchBrowserNavigate', () => {
 
   test('navigate emits a bounded observation with the harness run id while preserving its result', async () => {
     const observations: Array<{ event: string; data: Record<string, unknown> }> = [];
-    const previousRunId = process.env.MONAD_RUN_ID;
-    process.env.MONAD_RUN_ID = 'browser-runtime-run';
+    const previousRunId = process.env.ELANOUS_RUN_ID;
+    process.env.ELANOUS_RUN_ID = 'browser-runtime-run';
     setBrowserRuntimeDeps({ observe: (event, data) => observations.push({ event, data }) });
     try {
       const out = await dispatchBrowserNavigate({ url: 'https://example.com', waitForLoad: false });
       expect(out.finalUrl).toBe('https://example.com/');
       expect(out.title).toBe('Test Page');
     } finally {
-      if (previousRunId === undefined) delete process.env.MONAD_RUN_ID;
-      else process.env.MONAD_RUN_ID = previousRunId;
+      if (previousRunId === undefined) delete process.env.ELANOUS_RUN_ID;
+      else process.env.ELANOUS_RUN_ID = previousRunId;
     }
     expect(observations).toEqual([{
       event: 'executed',
@@ -216,15 +216,15 @@ describe('dispatchBrowserRead', () => {
 
   test('read emits bounded text and screenshot observations while preserving results', async () => {
     const observations: Array<{ event: string; data: Record<string, unknown> }> = [];
-    const previousRunId = process.env.MONAD_RUN_ID;
-    process.env.MONAD_RUN_ID = 'browser-runtime-read-run';
+    const previousRunId = process.env.ELANOUS_RUN_ID;
+    process.env.ELANOUS_RUN_ID = 'browser-runtime-read-run';
     setBrowserRuntimeDeps({ observe: (event, data) => observations.push({ event, data }) });
     try {
       expect((await dispatchBrowserRead({})).text).toBe('alpha beta gamma');
       expect((await dispatchBrowserRead({ mode: 'screenshot' })).screenshotBase64).toBeDefined();
     } finally {
-      if (previousRunId === undefined) delete process.env.MONAD_RUN_ID;
-      else process.env.MONAD_RUN_ID = previousRunId;
+      if (previousRunId === undefined) delete process.env.ELANOUS_RUN_ID;
+      else process.env.ELANOUS_RUN_ID = previousRunId;
     }
     expect(observations).toHaveLength(2);
     expect(observations[0]!.data).toEqual(expect.objectContaining({

@@ -11,7 +11,7 @@ let tmp: string;
 let storePath: string;
 
 beforeEach(() => {
-  tmp = mkdtempSync(joinPath(tmpdir(), 'monad-tg-bindings-'));
+  tmp = mkdtempSync(joinPath(tmpdir(), 'elanous-tg-bindings-'));
   storePath = joinPath(tmp, 'telegram-daemon-bindings.json');
 });
 
@@ -28,9 +28,9 @@ describe('openTelegramBindingsStore', () => {
 
   test('set + resolveSessionId round-trip', () => {
     const store = openTelegramBindingsStore({ storePath });
-    store.set({ chatId: 123, threadId: 0, sessionId: 'monad-session-3', lastSeenMsgIdx: 10 });
-    expect(store.resolveSessionId(123, 0)).toBe('monad-session-3');
-    expect(store.resolveSessionId(123, undefined)).toBe('monad-session-3');
+    store.set({ chatId: 123, threadId: 0, sessionId: 'elanous-session-3', lastSeenMsgIdx: 10 });
+    expect(store.resolveSessionId(123, 0)).toBe('elanous-session-3');
+    expect(store.resolveSessionId(123, undefined)).toBe('elanous-session-3');
   });
 
   test('thread isolation: same chatId different threads = separate bindings', () => {
@@ -52,7 +52,7 @@ describe('openTelegramBindingsStore', () => {
   test('persists to disk and reloads with state intact', () => {
     {
       const store = openTelegramBindingsStore({ storePath });
-      store.set({ chatId: 7, threadId: 0, sessionId: 'monad-session-7', lastSeenMsgIdx: 42 });
+      store.set({ chatId: 7, threadId: 0, sessionId: 'elanous-session-7', lastSeenMsgIdx: 42 });
     }
     expect(existsSync(storePath)).toBe(true);
     {
@@ -60,9 +60,9 @@ describe('openTelegramBindingsStore', () => {
       const list = reloaded.list();
       expect(list).toHaveLength(1);
       expect(list[0]!.chatId).toBe(7);
-      expect(list[0]!.sessionId).toBe('monad-session-7');
+      expect(list[0]!.sessionId).toBe('elanous-session-7');
       expect(list[0]!.lastSeenMsgIdx).toBe(42);
-      expect(reloaded.resolveSessionId(7, 0)).toBe('monad-session-7');
+      expect(reloaded.resolveSessionId(7, 0)).toBe('elanous-session-7');
     }
   });
 
@@ -88,8 +88,8 @@ describe('openTelegramBindingsStore', () => {
 
   test('findChatBySessionId returns the bound chat', () => {
     const store = openTelegramBindingsStore({ storePath });
-    store.set({ chatId: 42, threadId: 7, sessionId: 'monad-session-3', lastSeenMsgIdx: 0 });
-    const found = store.findChatBySessionId('monad-session-3');
+    store.set({ chatId: 42, threadId: 7, sessionId: 'elanous-session-3', lastSeenMsgIdx: 0 });
+    const found = store.findChatBySessionId('elanous-session-3');
     expect(found).toEqual({ chatId: 42, threadId: 7, lastSeenMsgIdx: 0 });
   });
 

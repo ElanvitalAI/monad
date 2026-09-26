@@ -48,7 +48,7 @@ describe('PluginHost discovery observation', () => {
   });
 
   test('records existing empty and missing directories with distinct existence states', async () => {
-    const existing = createDir('monad-plugin-existing-');
+    const existing = createDir('elanous-plugin-existing-');
     const missing = join(existing, 'missing');
     const host = new PluginHost(hooks, null, { userDir: existing });
 
@@ -68,8 +68,8 @@ describe('PluginHost discovery observation', () => {
   });
 
   test('records empty and two-plugin scan totals and the discovery completion total', async () => {
-    const empty = createDir('monad-plugin-empty-');
-    const plugins = createDir('monad-plugin-two-');
+    const empty = createDir('elanous-plugin-empty-');
+    const plugins = createDir('elanous-plugin-two-');
     writePlugin(plugins, 'first', `export default { name: 'first', version: '1', description: '', initialState: () => ({}), panes: {} };`);
     writePlugin(plugins, 'second', `export default { name: 'second', version: '1', description: '', initialState: () => ({}), panes: {} };`);
     const host = new PluginHost(hooks, null, { userDir: empty });
@@ -96,7 +96,7 @@ describe('PluginHost discovery observation', () => {
   });
 
   test('records failed plugin identity and reason without discovering it', async () => {
-    const plugins = createDir('monad-plugin-failed-');
+    const plugins = createDir('elanous-plugin-failed-');
     writePlugin(plugins, 'broken-plugin', 'export const plugin = null;');
     const host = new PluginHost(hooks, null, { userDir: plugins });
 

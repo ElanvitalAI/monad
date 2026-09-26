@@ -19,7 +19,7 @@
 //
 // What this adapter does
 // ───────────────────────
-//   1. `MONAD_DRAG_DISABLED=1` kill-switch — short-circuits before
+//   1. `ELANOUS_DRAG_DISABLED=1` kill-switch — short-circuits before
 //      any manager interaction. Runtime consumers get a clean
 //      "completely transparent" fallback path for incident response.
 //   2. Inactive session → false. No translation, no log, no cost.
@@ -66,9 +66,9 @@ import { debug } from '../debug/log.js';
 /** Whether drag dispatch is globally disabled via env flag. Read once
  *  at module load — callers cannot change this mid-session. Exposed
  *  for diagnostics / test introspection (see `isDragDispatchDisabled`). */
-const MODULE_ENV_DISABLED = process.env['MONAD_DRAG_DISABLED'] === '1';
+const MODULE_ENV_DISABLED = process.env['ELANOUS_DRAG_DISABLED'] === '1';
 
-/** Runtime query — returns whether the `MONAD_DRAG_DISABLED` env var
+/** Runtime query — returns whether the `ELANOUS_DRAG_DISABLED` env var
  *  was set at process start. Stable throughout the session. */
 export function isDragDispatchDisabled(): boolean {
   return MODULE_ENV_DISABLED;
@@ -76,7 +76,7 @@ export function isDragDispatchDisabled(): boolean {
 
 export interface DragDispatchOptions extends BuildMouseOpts {
   /** Override the env-flag kill switch (tests use this · production
-   *  should leave undefined and rely on `MONAD_DRAG_DISABLED`). */
+   *  should leave undefined and rely on `ELANOUS_DRAG_DISABLED`). */
   readonly forceDisabled?: boolean;
 }
 

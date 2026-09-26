@@ -3,11 +3,11 @@ import { formatHealthReport, humanizeMs } from './schedule-health-report.js';
 import type { ScheduleHealth } from './schedule-registry.js';
 
 const clean: ScheduleHealth = {
-  monadTotal: 30, excludedRunVia: 0, excludedUnwrappedCrontab: 0, excludedDisabled: 0, excludedMissingCron: 0,
+  elanousTotal: 30, excludedRunVia: 0, excludedUnwrappedCrontab: 0, excludedDisabled: 0, excludedMissingCron: 0,
   errored: [], stale: [], noncanonical: [], unmeasured: [], generatedAt: '2026-07-09T00:00:00Z',
 };
 const problem: ScheduleHealth = {
-  monadTotal: 30,
+  elanousTotal: 30,
   excludedRunVia: 0,
   excludedUnwrappedCrontab: 0,
   excludedDisabled: 0,
@@ -127,7 +127,7 @@ describe('formatHealthReport', () => {
 
 describe('formatHealthReport — 목록을 자르면 몇 개를 숨겼는지 말한다', () => {
   test('싱크 유실 20 이면 15 줄 뒤에 「… 외 5」가 붙는다', () => {
-    const health = { monadTotal: 20, stale: [], errored: [], noncanonical: [], unmeasured: [], ok: [] } as unknown as Parameters<typeof formatHealthReport>[0];
+    const health = { elanousTotal: 20, stale: [], errored: [], noncanonical: [], unmeasured: [], ok: [] } as unknown as Parameters<typeof formatHealthReport>[0];
     const sinkLoss = Array.from({ length: 20 }, (_, i) => ({ name: `job-${i}` }));
     const msg = formatHealthReport(health, { mode: 'digest', nowLabel: 'now', sinkCoverage: { sinkLoss, unmeasurable: [] } }) ?? '';
     expect(msg).toContain(' · job-14');

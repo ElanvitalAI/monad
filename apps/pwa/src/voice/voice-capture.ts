@@ -44,7 +44,7 @@ const DEFAULT_TARGET_HZ = 16000;
 const DEFAULT_FRAME_BYTES = 640;
 
 const WORKLET_PROCESSOR_SOURCE = `
-class MonadCaptureProcessor extends AudioWorkletProcessor {
+class ElanousCaptureProcessor extends AudioWorkletProcessor {
   constructor(opts) {
     super();
     const o = opts.processorOptions || {};
@@ -77,7 +77,7 @@ class MonadCaptureProcessor extends AudioWorkletProcessor {
     return true;
   }
 }
-registerProcessor('monad-capture', MonadCaptureProcessor);
+registerProcessor('elanous-capture', ElanousCaptureProcessor);
 `;
 
 async function loadWorkletModule(ctx: AudioContext): Promise<void> {
@@ -121,7 +121,7 @@ export async function startVoiceCapture(opts: VoiceCaptureOpts): Promise<VoiceCa
     debugLog('voice.capture.audiocontext', { sampleRate: ctx.sampleRate, state: ctx.state });
     await loadWorkletModule(ctx);
     debugLog('voice.capture.worklet-loaded');
-    node = new AudioWorkletNode(ctx, 'monad-capture', {
+    node = new AudioWorkletNode(ctx, 'elanous-capture', {
       processorOptions: { targetHz, frameBytes },
     });
     node.port.onmessage = (ev: MessageEvent<ArrayBuffer>) => {

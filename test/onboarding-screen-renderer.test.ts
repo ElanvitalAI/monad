@@ -447,7 +447,7 @@ describe('screen-renderer · excerpt multi-line wrap (Sprint 12)', () => {
         baseSpec({
           cols: 50, // narrow viewport → smaller box
           excerpt:
-            'monad-control is an always-on meta store separate from the daemon lifecycle.',
+            'elanous-control is an always-on meta store separate from the daemon lifecycle.',
         }),
       ),
     );

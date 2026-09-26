@@ -1,9 +1,9 @@
 // NEXUS · runtime sidecar (Phase N-1 PR α)
 //
-// `~/.monad/nexus/runtime.json` carries non-lock metadata so external
+// `~/.elanous/nexus/runtime.json` carries non-lock metadata so external
 // tools (PWA · control-client · external monitors) can discover the
-// running nexus without grepping ps. Mirrors `monad.runtime.json`
-// pattern from monad-daemon.ts but with nexus-specific fields.
+// running nexus without grepping ps. Mirrors `elanous.runtime.json`
+// pattern from elanous-daemon.ts but with nexus-specific fields.
 //
 // Fields (extended PR-by-PR — PR α has the minimum set):
 //   pid · startedAt · nexusVersion · phase
@@ -26,7 +26,7 @@ export interface NexusRuntimeMeta {
   startedAt: string;
   /** Nexus arc version — bumped per phase (N-1 = '0.1', N-2 = '0.2', ...). */
   nexusVersion: string;
-  /** Phase identifier surfaced by `monad nexus --status`. */
+  /** Phase identifier surfaced by `elanous nexus --status`. */
   phase: string;
   /** HTTP listener actual port (auto-picked starting from 31415 — PR δ). */
   httpPort?: number;

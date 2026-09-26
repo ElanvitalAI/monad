@@ -147,9 +147,9 @@ export function runObservabilityDebtScan(deps: DebtScanDeps = {}): DebtScanResul
 // ── 실 fs/self-memory 기본 배선(fail-soft) ─────────────────────────────────
 import { readdirSync, readFileSync, existsSync, writeFileSync, mkdirSync } from 'node:fs';
 import { join, dirname } from 'node:path';
-import { monadStateRoot } from './state-paths.js';
+import { elanousStateRoot } from './state-paths.js';
 
-const DEBT_MARKER = () => join(monadStateRoot(), 'autopilot', '.obs-debt-scan');
+const DEBT_MARKER = () => join(elanousStateRoot(), 'autopilot', '.obs-debt-scan');
 
 function defaultListFiles(): DebtScanInput[] {
   const dir = join(process.cwd(), 'src', 'autopilot');

@@ -115,8 +115,8 @@ async function walkResearchLoop(graphOverlays: readonly GraphOverlaySpec[] | und
   ].join('\n'));
   const ledgerDir = runLedgerDir(join(dir, 'state'));
   const runId = 'run-research-visit-budget';
-  const priorStateDir = process.env.MONAD_STATE_DIR;
-  process.env.MONAD_STATE_DIR = join(dir, 'state');
+  const priorStateDir = process.env.ELANOUS_STATE_DIR;
+  process.env.ELANOUS_STATE_DIR = join(dir, 'state');
   let gateCalls = 0;
   let gateFailures = 0;
   let judgeMustFixes = 0;
@@ -169,8 +169,8 @@ async function walkResearchLoop(graphOverlays: readonly GraphOverlaySpec[] | und
       transitions.filter(([left, right]) => left === from && right === to).length;
     return { result, ledgerExists, budgets, transitionCount, gateFailures, judgeMustFixes };
   } finally {
-    if (priorStateDir === undefined) delete process.env.MONAD_STATE_DIR;
-    else process.env.MONAD_STATE_DIR = priorStateDir;
+    if (priorStateDir === undefined) delete process.env.ELANOUS_STATE_DIR;
+    else process.env.ELANOUS_STATE_DIR = priorStateDir;
     rmSync(dir, { recursive: true, force: true });
   }
 }

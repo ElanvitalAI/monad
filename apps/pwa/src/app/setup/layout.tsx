@@ -8,8 +8,8 @@ import type { Metadata } from 'next';
 import type { ReactNode } from 'react';
 
 export const metadata: Metadata = {
-  title: 'monad · setup',
-  description: 'First-time LLM provider setup for monad PWA.',
+  title: 'elanous · setup',
+  description: 'First-time LLM provider setup for elanous PWA.',
 };
 
 export default function SetupLayout({ children }: { children: ReactNode }) {
@@ -17,7 +17,7 @@ export default function SetupLayout({ children }: { children: ReactNode }) {
     <main className="mx-auto flex min-h-screen w-full max-w-3xl flex-col gap-6 px-4 py-8 sm:px-6">
       <header className="flex flex-col gap-1">
         <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-          monad · setup
+          elanous · setup
         </p>
         <h1 className="text-2xl font-semibold tracking-tight">
           LLM provider 셋업

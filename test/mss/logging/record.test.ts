@@ -12,7 +12,7 @@ describe('mss log/record', () => {
       trace_id: '01ARZ3NDEKTSV4RRFFQ69G5FAV',
       span_id: '01ARZ3NDEKTSV4RRFFQ69G5FA2',
       parent_span_id: '01ARZ3NDEKTSV4RRFFQ69G5FA3',
-      monad_id: '01ARZ3NDEKTSV4RRFFQ69G5FA4',
+      elanous_id: '01ARZ3NDEKTSV4RRFFQ69G5FA4',
       source: { file: 'src/conductor/classify.ts', line: 142, fn: 'classify' },
       pid: 1234,
     };

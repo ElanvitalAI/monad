@@ -1,6 +1,6 @@
-// FU3 (PLAN-config-unification-monad-root-2026-05-10 closing follow-up):
+// FU3 (PLAN-config-unification-elanous-root-2026-05-10 closing follow-up):
 //   Cross-process advisory file lock for read-modify-write of the
-//   unified `~/.monad/config.json`.
+//   unified `~/.elanous/config.json`.
 //
 // Primitive: `fs.openSync(path, 'wx')` is an atomic exclusive-create —
 // the second concurrent caller fails with EEXIST. Holder writes its PID

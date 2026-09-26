@@ -1,6 +1,6 @@
 // PLAN-codex-app-server-hermes-parity §5 Phase H3·3 (2026-05-16) —
 // orchestrate the `~/.codex/config.toml` migration. Read the existing
-// file (or treat as empty when missing), generate the monad-tools
+// file (or treat as empty when missing), generate the elanous-tools
 // managed section body, splice it via regenerateManagedBlock, and
 // write back. Always create a `.bak.<timestamp>` snapshot before the
 // first edit so the user can roll back without git.
@@ -16,15 +16,15 @@ import {
   removeManagedBlock,
 } from './managed-block.js';
 import {
-  renderMonadToolsEntry,
-  type MonadToolsEntryOpts,
-} from './monad-tools-entry.js';
+  renderElanousToolsEntry,
+  type ElanousToolsEntryOpts,
+} from './elanous-tools-entry.js';
 
 export interface MigrateCodexConfigOpts {
   /** Override `~/.codex/config.toml` path (tests). */
   configPath?: string;
-  /** Entry-generator opts forwarded to renderMonadToolsEntry. */
-  entry?: MonadToolsEntryOpts;
+  /** Entry-generator opts forwarded to renderElanousToolsEntry. */
+  entry?: ElanousToolsEntryOpts;
   /** `true` → strip the managed section instead of writing it. */
   remove?: boolean;
   /** Skip backup creation (tests only). */
@@ -75,7 +75,7 @@ export async function migrateCodexConfig(
     };
   }
 
-  const body = renderMonadToolsEntry(opts.entry);
+  const body = renderElanousToolsEntry(opts.entry);
   const { content, replaced } = regenerateManagedBlock(existing, body);
   if (content === existing) {
     return { configPath, action: 'no-op', content };

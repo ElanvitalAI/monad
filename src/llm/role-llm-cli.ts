@@ -1,7 +1,7 @@
 // 역할별 LLM 선택의 «입력 파서» — CLI·슬래시·(장래) NL 이 «같은» 문법을 쓰게 하는 공용 심.
 //
 // ⛔ 이 모듈이 존재하는 이유(RFC-role-scoped-llm-selection-2026-08-18 §2a·§4e):
-//   110차에 `monad self review --acp-backend grok` 이 «조용히» API 로 갔다 — 플래그는 받았는데
+//   110차에 `elanous self review --acp-backend grok` 이 «조용히» API 로 갔다 — 플래그는 받았는데
 //   그것을 「한 번 정해서 아래로 내리는」 계약이 없어 그냥 버려졌다(verdict pass · exit 0 · 경고 0).
 //   그래서 여기서는 ***모르는 값을 삼키지 않는다*** — 반드시 이유를 달아 거부한다.
 //

@@ -21,7 +21,7 @@ printf '%-14s ' "$LABEL_B"; command rg --no-config -o 'self-impl-[a-z0-9-]*' -- 
 echo "   위 둘이 같으면 그 실험은 이미 무효다"
 
 echo "=== 3 child brain ==="
-bun "$REPO_ROOT/bin/monad.mjs" logs --event headless.spawn --since 10m --all --include-test --limit 6 --json --json-data 2>/dev/null \
+bun "$REPO_ROOT/bin/elanous.mjs" logs --event headless.spawn --since 10m --all --include-test --limit 6 --json --json-data 2>/dev/null \
   | jq -s -r '.[]|select(._meta==null)|"\(.data.runId[0:14])  childLlm=\(.data.childLlm|tojson)  tier=\(.data.escalateTier|tojson)"' | tail -3
 
 echo "=== 4 orphan ==="

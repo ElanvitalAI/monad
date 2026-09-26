@@ -88,7 +88,7 @@ type UnpressedDecisionSignalAxis = Axis & {
 };
 
 type UnpressedDecisionSignalRemedy = 'repeat-command' | 'specify-path' | 'unclassified';
-type NotAllowlistedRemedy = 'global-monad' | 'environment-prefix' | 'generic';
+type NotAllowlistedRemedy = 'global-elanous' | 'environment-prefix' | 'generic';
 
 function classifyUnpressedDecisionSignal(command: string): UnpressedDecisionSignalRemedy {
   if (/^\s*(?:같은\s*(?:시험|명령)|위와\s*같다)\s*$/u.test(command)) return 'repeat-command';
@@ -98,7 +98,7 @@ function classifyUnpressedDecisionSignal(command: string): UnpressedDecisionSign
 
 function classifyNotAllowlistedRemedy(command: string): NotAllowlistedRemedy {
   const firstWord = command.trim().split(/\s+/, 1)[0] ?? '';
-  if (firstWord === 'monad') return 'global-monad';
+  if (firstWord === 'elanous') return 'global-elanous';
   if (/^[A-Za-z_][A-Za-z0-9_]*=.*/u.test(firstWord)) return 'environment-prefix';
   return 'generic';
 }
@@ -117,8 +117,8 @@ function formatUnpressedDecisionSignalRemedy(
   }
   if (rejectionReason === 'not-allowlisted') {
     const notAllowlistedRemedy = classifyNotAllowlistedRemedy(command);
-    if (notAllowlistedRemedy === 'global-monad') {
-      return `ℹ️ 안 눌릴 신호 — ${ordinal}번째 신호 거부 이유: not-allowlisted; 전역 monad 대신 bun bin/monad.mjs …로 바꿔라`;
+    if (notAllowlistedRemedy === 'global-elanous') {
+      return `ℹ️ 안 눌릴 신호 — ${ordinal}번째 신호 거부 이유: not-allowlisted; 전역 elanous 대신 bun bin/elanous.mjs …로 바꿔라`;
     }
     if (notAllowlistedRemedy === 'environment-prefix') {
       return `ℹ️ 안 눌릴 신호 — ${ordinal}번째 신호 거부 이유: not-allowlisted; 환경 변수 접두를 떼거나 그 값이 꼭 필요하면 이 신호에서 실행할 수 없다고 적어라`;
@@ -277,7 +277,7 @@ export function inspectDecisionObservations(ask: string): DecisionObservationAxi
 
 const UNIT_TEST_OBSERVATION = /\bbun\s+(?:test|run\s+test)\b|\b(?:npm|pnpm|yarn)\s+(?:run\s+)?test\b|\bnode\s+--test\b|같은 시험/u;
 const LEGACY_REAL_OBSERVATION = /^(?:rg|ffmpeg|git|printf)\s+\S+|(?:^|[^\p{L}\p{N}])(?:호출|실행|돌려받|출력|종료 코드|통과 여부)(?=$|[^\p{L}\p{N}])/u;
-const EXECUTABLE_REAL_OBSERVATION = /^(?:\.\/\S+|bun\s+(?:bin\/monad\.mjs\s+\S+|run\s+\S+|-e\s+\S+|scripts\/\S+)|(?:python3|bash|sh|curl)\s+(?!(?:결과|개수)(?:\s|$))\S+)/u;
+const EXECUTABLE_REAL_OBSERVATION = /^(?:\.\/\S+|bun\s+(?:bin\/elanous\.mjs\s+\S+|run\s+\S+|-e\s+\S+|scripts\/\S+)|(?:python3|bash|sh|curl)\s+(?!(?:결과|개수)(?:\s|$))\S+)/u;
 
 const ASK_MARKER_REPOSITORY_ROOT_FOR_KIND = resolve(import.meta.dir, '..');
 
@@ -316,11 +316,11 @@ function spawnCallArguments(source: string): string[] {
   return calls;
 }
 const REPOSITORY_EXECUTABLE_TARGET =
-  /(?:^|[\s'"`])(?:\.\/)?(?:install\.sh|bin\/monad\.mjs|scripts\/[^\s'"`]+|\/bin\/bash)(?=$|[\s'"`])/u;
+  /(?:^|[\s'"`])(?:\.\/)?(?:install\.sh|bin\/elanous\.mjs|scripts\/[^\s'"`]+|\/bin\/bash)(?=$|[\s'"`])/u;
 /** 바인딩 리터럴은 그 네 타깃뿐이다. `fixture.ts` 같은 임의 `*.ts` 는 저장소 실행물이 아니다.
  *  `new URL('./….ts', import.meta.url)` 만 예외 — 그 형태가 이 저장소 스크립트를 가리킨다. */
 const REPOSITORY_EXECUTABLE_BINDING =
-  /\b(?:const|let|var)\s+([A-Za-z_$][\w$]*)\s*=\s*(?:fileURLToPath\s*\(\s*)?(?:new\s+URL|resolve)\s*\(\s*(?:import\.meta\.(?:url|dir)\s*,\s*)?(['"`])((?:\.\/)?(?:install\.sh|bin\/monad\.mjs|scripts\/[^\s'"`]+|\.\/[A-Za-z0-9_.-]+\.ts))(?:\2|\s*,)/gu;
+  /\b(?:const|let|var)\s+([A-Za-z_$][\w$]*)\s*=\s*(?:fileURLToPath\s*\(\s*)?(?:new\s+URL|resolve)\s*\(\s*(?:import\.meta\.(?:url|dir)\s*,\s*)?(['"`])((?:\.\/)?(?:install\.sh|bin\/elanous\.mjs|scripts\/[^\s'"`]+|\.\/[A-Za-z0-9_.-]+\.ts))(?:\2|\s*,)/gu;
 
 /** 축 문면의 «둘째 줄» 들여쓰기 — CLI 가 축 줄 앞에 붙이는 세 칸과 맞춘다(첫 줄은 그대로 둔다: 줄 단위로 무는 시험·소비자가 있다). */
 const VERDICT_FOLLOWUP_INDENT = '     ';
@@ -757,7 +757,7 @@ export function inspectUnportedIsolatedDaemonWarnings(ask: string): string[] {
       const condition = extractDecisionSignalField(signal, '조건');
       const fields = [observation, condition].filter((field): field is string => field !== undefined);
       if (!fields.some(launchesUnportedIsolatedNexus)) return [];
-      return [`⚠️ 무포트 격리 데몬 — ${ordinal}번째 신호는 bun bin/monad.mjs --test nexus run 을 포트 없이 띄워 운영 포트를 가린다; --http-port 로 포트를 명시하라.`];
+      return [`⚠️ 무포트 격리 데몬 — ${ordinal}번째 신호는 bun bin/elanous.mjs --test nexus run 을 포트 없이 띄워 운영 포트를 가린다; --http-port 로 포트를 명시하라.`];
     });
 }
 
@@ -767,7 +767,7 @@ function launchesUnportedIsolatedNexus(observation: string): boolean {
     isIsolatedNexusRun(command) && !specifiesHttpPort(command));
 }
 
-/** 셸 경계로 나눈 명령에 더해, 한국어 산문 토큰 뒤에 나오는 `bun`/`monad` 시작점도 후보로 본다. */
+/** 셸 경계로 나눈 명령에 더해, 한국어 산문 토큰 뒤에 나오는 `bun`/`elanous` 시작점도 후보로 본다. */
 function commandCandidates(tokens: readonly string[]): readonly (readonly string[])[] {
   const commands = splitShellCommands(tokens);
   const candidates: (readonly string[])[] = [];
@@ -784,7 +784,7 @@ function commandCandidates(tokens: readonly string[]): readonly (readonly string
 
 function isCommandExecutableToken(token: string): boolean {
   const name = programBasename(token);
-  return name === 'bun' || name === 'monad';
+  return name === 'bun' || name === 'elanous';
 }
 
 function hasHangul(token: string): boolean {
@@ -807,7 +807,7 @@ function splitShellCommands(tokens: readonly string[]): readonly (readonly strin
 }
 
 function isIsolatedNexusRun(tokens: readonly string[]): boolean {
-  const parsed = parseMonadInvocation(tokens);
+  const parsed = parseElanousInvocation(tokens);
   return parsed !== undefined && parsed.isolated && parsed.subcommand[0] === 'nexus' && parsed.subcommand[1] === 'run';
 }
 
@@ -821,7 +821,7 @@ const ENV_OPTIONS_WITH_VALUE = new Set([
   '--ignore-signal',
 ]);
 const ENV_SPLIT_STRING_LONG = '--split-string';
-const MONAD_OPTIONS_WITH_VALUE = new Set([
+const ELANOUS_OPTIONS_WITH_VALUE = new Set([
   '--tool-cwd',
   '--http-port',
   '--http-host',
@@ -843,11 +843,11 @@ function programBasename(token: string): string {
   return slash === -1 ? token : token.slice(slash + 1);
 }
 
-/** 현재 저장소의 `bin/monad.mjs`만 CLI로 인정한다. 절대 경로도 같은 파일이면 허용한다. */
-function isMonadCliScript(token: string): boolean {
-  if (token.startsWith('/')) return normalize(token) === resolve(import.meta.dir, '..', 'bin', 'monad.mjs');
+/** 현재 저장소의 `bin/elanous.mjs`만 CLI로 인정한다. 절대 경로도 같은 파일이면 허용한다. */
+function isElanousCliScript(token: string): boolean {
+  if (token.startsWith('/')) return normalize(token) === resolve(import.meta.dir, '..', 'bin', 'elanous.mjs');
   const parts = token.split('/').filter((part) => part !== '' && part !== '.');
-  return parts.length === 2 && parts[0] === 'bin' && parts[1] === 'monad.mjs';
+  return parts.length === 2 && parts[0] === 'bin' && parts[1] === 'elanous.mjs';
 }
 
 /** `-S`/`--split-string` 값은 버릴 옵션이 아니라 다시 해석해 실행하는 명령이다. */
@@ -906,7 +906,7 @@ function unwrapEnvWrappers(tokens: readonly string[]): readonly string[] {
   }
 }
 
-type MonadInvocation = {
+type ElanousInvocation = {
   readonly isolated: boolean;
   readonly specifiesHttpPort: boolean;
   readonly subcommand: readonly string[];
@@ -928,17 +928,17 @@ function httpPortOptionValue(token: string, next: string | undefined): { value: 
   return takeSeparate('--http-port') ?? takeSeparate('--port') ?? takeEquals('--http-port') ?? takeEquals('--port');
 }
 
-/** `monad` 또는 `bun [run] bin/monad.mjs` 의 옵션 값을 소비한 뒤 남은 자리만 서브커맨드로 본다. */
-function parseMonadInvocation(tokens: readonly string[]): MonadInvocation | undefined {
+/** `elanous` 또는 `bun [run] bin/elanous.mjs` 의 옵션 값을 소비한 뒤 남은 자리만 서브커맨드로 본다. */
+function parseElanousInvocation(tokens: readonly string[]): ElanousInvocation | undefined {
   const command = unwrapEnvWrappers(tokens);
   const executable = programBasename(command[0] ?? '');
-  const argumentIndex = executable === 'monad'
+  const argumentIndex = executable === 'elanous'
     ? 1
     : executable === 'bun'
       ? (command[1] === 'run' ? 3 : 2)
       : undefined;
   if (argumentIndex === undefined) return undefined;
-  if (executable === 'bun' && !isMonadCliScript(command[argumentIndex - 1] ?? '')) return undefined;
+  if (executable === 'bun' && !isElanousCliScript(command[argumentIndex - 1] ?? '')) return undefined;
   let isolated = false;
   let specifiesHttpPort = false;
   const subcommand: string[] = [];
@@ -960,7 +960,7 @@ function parseMonadInvocation(tokens: readonly string[]): MonadInvocation | unde
     }
     if (token.startsWith('--') && token.includes('=')) continue;
     if (token.startsWith('-')) {
-      if (MONAD_OPTIONS_WITH_VALUE.has(token) && index + 1 < command.length) index += 1;
+      if (ELANOUS_OPTIONS_WITH_VALUE.has(token) && index + 1 < command.length) index += 1;
       continue;
     }
     subcommand.push(token);
@@ -969,7 +969,7 @@ function parseMonadInvocation(tokens: readonly string[]): MonadInvocation | unde
 }
 
 function specifiesHttpPort(tokens: readonly string[]): boolean {
-  return parseMonadInvocation(tokens)?.specifiesHttpPort === true;
+  return parseElanousInvocation(tokens)?.specifiesHttpPort === true;
 }
 
 function extractDecisionSignalField(line: string, field: DecisionSignalField): string | undefined {

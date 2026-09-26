@@ -49,7 +49,7 @@ export interface ForwardInput {
    *  user keystrokes when both are landing on the same pty. */
   source: ForwardSource;
   /** Optional opaque label for the log line (e.g. mission id, plan step
-   *  id). Helps post-hoc correlation in `~/.monad/debug-tap/<date>.jsonl`. */
+   *  id). Helps post-hoc correlation in `~/.elanous/debug-tap/<date>.jsonl`. */
   origin?: string;
 }
 

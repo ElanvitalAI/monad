@@ -15,8 +15,8 @@ mock.module('../domains/standalone-log-sink.js', () => ({
   registerStandaloneLogSink: async (surface: string) => { calls.push(`sink:${surface}`); },
 }));
 mock.module('../self-dev/harness-run-cli.js', () => ({
-  HARNESS_RUN_DEPRECATION_HELP: 'deprecated: use monad dev --implement <objective>',
-  runHarnessRunCliCommand: async () => ({ ok: false, message: 'ℹ️  `monad harness run`은 deprecated 입구입니다 — `monad dev --implement <objective>`로 이행하세요.', exitCode: 1 }),
+  HARNESS_RUN_DEPRECATION_HELP: 'deprecated: use elanous dev --implement <objective>',
+  runHarnessRunCliCommand: async () => ({ ok: false, message: 'ℹ️  `elanous harness run`은 deprecated 입구입니다 — `elanous dev --implement <objective>`로 이행하세요.', exitCode: 1 }),
   applyHarnessRunOutcomeExit: (outcome: object) => {
     calls.push('action:run');
     observedRunOutcome = outcome as typeof outputs.run;
@@ -47,7 +47,7 @@ beforeAll(async () => {
 
 describe('production harness CLI sink wiring', () => {
   test('a real process rejects --domain with guidance to self orchestrate', () => {
-    const result = Bun.spawnSync(['bun', 'bin/monad.mjs', '--test', 'harness', 'orchestrate', '--domain', 'web', 'objective'], {
+    const result = Bun.spawnSync(['bun', 'bin/elanous.mjs', '--test', 'harness', 'orchestrate', '--domain', 'web', 'objective'], {
       cwd: process.cwd(),
       stderr: 'pipe',
       stdout: 'pipe',
@@ -56,15 +56,15 @@ describe('production harness CLI sink wiring', () => {
 
     expect(result.exitCode).not.toBe(0);
     expect(output).toContain('--domain');
-    expect(output).toContain('monad self orchestrate');
+    expect(output).toContain('elanous self orchestrate');
   });
 
   test('both actual index orchestrate entrances parse equivalent goals and options into one shared-seam call each', async () => {
     calls.length = 0;
     orchestrateInputs.length = 0;
     const args = ['objective', '--concurrency', '4', '--auto-review', '--json'];
-    await program.parseAsync(['node', 'monad', 'harness', 'orchestrate', ...args]);
-    await program.parseAsync(['node', 'monad', 'self', 'orchestrate', ...args]);
+    await program.parseAsync(['node', 'elanous', 'harness', 'orchestrate', ...args]);
+    await program.parseAsync(['node', 'elanous', 'self', 'orchestrate', ...args]);
 
     expect(orchestrateInputs).toHaveLength(2);
     for (const input of orchestrateInputs) {
@@ -92,8 +92,8 @@ describe('production harness CLI sink wiring', () => {
     calls.length = 0;
     orchestrateInputs.length = 0;
     observedRunOutcome = undefined;
-    await program.parseAsync(['node', 'monad', 'harness', 'run', 'objective']);
-    await program.parseAsync(['node', 'monad', 'harness', 'orchestrate', 'objective']);
+    await program.parseAsync(['node', 'elanous', 'harness', 'run', 'objective']);
+    await program.parseAsync(['node', 'elanous', 'harness', 'orchestrate', 'objective']);
 
     expect(calls).toHaveLength(4);
     expect(calls[0]).toStartWith('sink:');

@@ -31,13 +31,13 @@ nodes:
   - id: gather-calendar
     bash: |
       # Calendar adapter is environment-dependent. Honor user-provided
-      # MONAD_CALENDAR_CMD (returns markdown bullet list) when set;
+      # ELANOUS_CALENDAR_CMD (returns markdown bullet list) when set;
       # otherwise emit a placeholder so the workflow stays usable.
-      if [ -n "${MONAD_CALENDAR_CMD:-}" ]; then
-        eval "$MONAD_CALENDAR_CMD" 2>/dev/null \
-          || echo '(calendar adapter failed — check MONAD_CALENDAR_CMD)'
+      if [ -n "${ELANOUS_CALENDAR_CMD:-}" ]; then
+        eval "$ELANOUS_CALENDAR_CMD" 2>/dev/null \
+          || echo '(calendar adapter failed — check ELANOUS_CALENDAR_CMD)'
       else
-        echo '(no calendar adapter — set MONAD_CALENDAR_CMD to a script that prints today as markdown bullets)'
+        echo '(no calendar adapter — set ELANOUS_CALENDAR_CMD to a script that prints today as markdown bullets)'
       fi
 
   - id: synthesize
@@ -60,10 +60,10 @@ nodes:
 
   - id: save-commute
     bash: |
-      OBSIDIAN_DIR="${MONAD_OBSIDIAN_DIR:-$HOME/Documents/Obsidian}"
+      OBSIDIAN_DIR="${ELANOUS_OBSIDIAN_DIR:-$HOME/Documents/Obsidian}"
       DIR="$OBSIDIAN_DIR/Commute"
       mkdir -p "$DIR" 2>/dev/null || {
-        echo "ERROR: cannot create $DIR — set MONAD_OBSIDIAN_DIR"
+        echo "ERROR: cannot create $DIR — set ELANOUS_OBSIDIAN_DIR"
         exit 1
       }
       DATE=$(date +%Y-%m-%d)

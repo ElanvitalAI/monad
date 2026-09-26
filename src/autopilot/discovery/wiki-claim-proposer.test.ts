@@ -6,7 +6,7 @@ import {
 } from './wiki-claim-proposer.js';
 
 const HANDOFF = `# HANDOFF 테스트
-- monad 의 아크 검증은 grounded 실독으로만 PASS 한다.
+- elanous 의 아크 검증은 grounded 실독으로만 PASS 한다.
 - 적응형 grounding 은 skim→read→git→verify→external 로 디깅한다.
 짧다
 - \`code line\` 무시 대상은 아니지만 코드백틱만

@@ -17,7 +17,7 @@ export interface RegimeAxis {
   weight: number;
   /** composite=방향 합성 · transition=전환 감지 보조. */
   role: 'composite' | 'transition';
-  /** 소스 DB 파일명 힌트(~/.monad 또는 ~/.monad/conatus 하위). */
+  /** 소스 DB 파일명 힌트(~/.elanous 또는 ~/.elanous/conatus 하위). */
   sourceDb: string;
   /** 갱신 도구/스크립트(finance_* 도구명 또는 scripts 스크립트). */
   tool: string;

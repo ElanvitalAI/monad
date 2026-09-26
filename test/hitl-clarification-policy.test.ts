@@ -118,7 +118,7 @@ describe('progressive clarification policy', () => {
     expect(invalid.reason).toContain('2–4 options');
   });
 
-  test('observes ask/assume/defer decisions through the monad debug log', () => {
+  test('observes ask/assume/defer decisions through the elanous debug log', () => {
     const log = spyOn(debug, 'log').mockImplementation(() => {});
     try {
       const context = { phase: 'intake' as const, budget: defaultClarificationBudget('intake') };

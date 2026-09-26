@@ -7,7 +7,7 @@ import { NotificationStore } from '../src/notifications/store.js';
 import { createPersistence } from '../src/notifications/persistence.js';
 
 function mkTmp(): string {
-  return fs.mkdtempSync(path.join(os.tmpdir(), 'monad-notif-'));
+  return fs.mkdtempSync(path.join(os.tmpdir(), 'elanous-notif-'));
 }
 
 function rmDir(dir: string): void {

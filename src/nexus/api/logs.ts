@@ -7,8 +7,8 @@
 //                                                    500ms cadence)
 //
 // File sources:
-//   ~/.monad/nexus/logs/<id>/stdout.log
-//   ~/.monad/nexus/logs/<id>/stderr.log
+//   ~/.elanous/nexus/logs/<id>/stdout.log
+//   ~/.elanous/nexus/logs/<id>/stderr.log
 //   (Created by the supervisor's spawn primitive — see PR ε spawn.ts.)
 //
 // Tail mode reads the last `lines` lines from each file. Stream mode opens

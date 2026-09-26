@@ -65,7 +65,7 @@ export async function downloadDashboardMediaPreviewToTempFile(
   const ext = extFromUrl(preview.url, defaultExtFor(preview));
   const outPath = path.join(
     deps.tmpDir ?? tmpdir(),
-    `monad-media-preview-${deps.now?.() ?? Date.now()}${ext}`,
+    `elanous-media-preview-${deps.now?.() ?? Date.now()}${ext}`,
   );
   writeFileSync(outPath, Buffer.from(ab));
   return outPath;

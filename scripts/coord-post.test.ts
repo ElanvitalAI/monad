@@ -13,8 +13,8 @@ const script = resolve(import.meta.dir, 'coord-post.sh');
 //   안 봤다.*** 감시자는 startswith 로 고르므로 상대는 그 글을 ***「자기가 쓴 글」로 보고 건너뛴다***
 //   ⇒ 자료가 영영 안 닿는다(내 감시자에 «되울려» 와서야 잡혔다).
 // ⛔ 그리고 같은 판에 둘째가 드러났다 — 마지막 줄이 `rm` 이라 ***발신 실패가 삼켜졌다***(늘 rc=0).
-/** ⛔ 발신 경계(`bun bin/monad.mjs gh …`)를 PATH 스텁으로 «막는다» — 이 시험은 네트워크·자격에 기대지 않는다
- *  (같은 저장소의 `scripts/backup/monad-backup.test.ts` 가 쓰는 형태). `stubExit` 로 그 경계의 성패를 «고른다». */
+/** ⛔ 발신 경계(`bun bin/elanous.mjs gh …`)를 PATH 스텁으로 «막는다» — 이 시험은 네트워크·자격에 기대지 않는다
+ *  (같은 저장소의 `scripts/backup/elanous-backup.test.ts` 가 쓰는 형태). `stubExit` 로 그 경계의 성패를 «고른다». */
 async function runPost(
   body: string,
   env: Record<string, string> = {},

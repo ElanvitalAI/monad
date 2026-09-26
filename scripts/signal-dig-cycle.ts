@@ -16,7 +16,7 @@ import { ensureCronNodePath } from '../src/domains/cron-path.js';
 
 ensureCronNodePath();
 
-const LOG = join(homedir(), '.monad/conatus/signal_dig_cycle.log');
+const LOG = join(homedir(), '.elanous/conatus/signal_dig_cycle.log');
 const LIMIT = Number(process.env.SIGNAL_DIG_LIMIT || 5);   // 런당 상한(dig 비용 바운드)
 
 function log(msg: string): void {

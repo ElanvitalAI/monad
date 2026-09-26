@@ -5,10 +5,10 @@ import { join } from 'node:path';
 import { describe, expect, test } from 'bun:test';
 
 const repositoryRoot = process.cwd();
-const entrypoint = [join(repositoryRoot, 'bin/monad.mjs')];
+const entrypoint = [join(repositoryRoot, 'bin/elanous.mjs')];
 
 function inIsolatedGhWorktree<T>(run: (cwd: string) => T): T {
-  const cwd = mkdtempSync(join(tmpdir(), 'monad-gh-cli-cwd-'));
+  const cwd = mkdtempSync(join(tmpdir(), 'elanous-gh-cli-cwd-'));
   try {
     return run(cwd);
   } finally {
@@ -23,7 +23,7 @@ function isolatedCliEnvironment(home: string, env?: NodeJS.ProcessEnv): NodeJS.P
     HOME: home,
     XDG_CONFIG_HOME: join(home, '.config'),
     XDG_STATE_HOME: join(home, '.local', 'state'),
-    MONAD_SUPPRESS_XDG_WARNING: '1',
+    ELANOUS_SUPPRESS_XDG_WARNING: '1',
     // Keep child stderr byte-exact for the gh status-line contract.
     MSS_LOG_STORE_DIAGNOSTICS: '0',
   };
@@ -32,7 +32,7 @@ function isolatedCliEnvironment(home: string, env?: NodeJS.ProcessEnv): NodeJS.P
 type Fixture = { stdout?: Buffer; stderr?: Buffer; status?: number; attempts?: Buffer[] };
 
 function invokeGh(args: string[], fixture: Fixture) {
-  const binDir = mkdtempSync(join(tmpdir(), 'monad-gh-cli-'));
+  const binDir = mkdtempSync(join(tmpdir(), 'elanous-gh-cli-'));
   const ghPath = join(binDir, 'gh');
   const outPath = join(binDir, 'out.bin');
   const errPath = join(binDir, 'err.bin');
@@ -47,11 +47,11 @@ function invokeGh(args: string[], fixture: Fixture) {
   chmodSync(ghPath, 0o755);
   try {
     const result = inIsolatedGhWorktree((cwd) => {
-      const home = mkdtempSync(join(tmpdir(), 'monad-gh-cli-home-'));
+      const home = mkdtempSync(join(tmpdir(), 'elanous-gh-cli-home-'));
       const stateDir = join(cwd, 'state');
-      const registryPath = join(home, '.monad', 'logs', 'instances.json');
+      const registryPath = join(home, '.elanous', 'logs', 'instances.json');
       try {
-        mkdirSync(join(home, '.monad', 'logs'), { recursive: true });
+        mkdirSync(join(home, '.elanous', 'logs'), { recursive: true });
         writeFileSync(registryPath, JSON.stringify({ instances: [{ stateDir }] }));
         const result = spawnSync('bun', [...entrypoint, '--test-state-dir', stateDir, 'gh', ...args], {
           cwd,
@@ -83,7 +83,7 @@ type GhValue = {
 };
 
 function invokeGhValue(args: string[], fixture: Fixture) {
-  const binDir = mkdtempSync(join(tmpdir(), 'monad-gh-value-'));
+  const binDir = mkdtempSync(join(tmpdir(), 'elanous-gh-value-'));
   const ghPath = join(binDir, 'gh');
   const outPath = join(binDir, 'out.bin');
   const errPath = join(binDir, 'err.bin');
@@ -145,7 +145,7 @@ describe('runGhCliWithResult', () => {
   }, 90_000);
 });
 
-describe('monad gh', () => {
+describe('elanous gh', () => {
   test('forwards argv and distinguishes output, empty, and limit-bound results', () => {
     const output = invokeGh(['pr', 'list', '--limit', '2'], { stdout: Buffer.from('[{"id":1},{"id":2}]\n') });
     expect(output.result.status).toBe(0);
@@ -235,7 +235,7 @@ describe('monad gh', () => {
   }, 90_000);
 
   test('records the existing four gh outcome names without changing stdout or the exit code', () => {
-    const binDir = mkdtempSync(join(tmpdir(), 'monad-gh-cli-observation-'));
+    const binDir = mkdtempSync(join(tmpdir(), 'elanous-gh-cli-observation-'));
     const ghPath = join(binDir, 'gh');
     writeFileSync(ghPath, `#!/bin/sh\nprintf %s "$GH_FIXTURE_STDOUT"\nprintf %s "$GH_FIXTURE_STDERR" >&2\nexit "$GH_FIXTURE_STATUS"\n`);
     chmodSync(ghPath, 0o755);

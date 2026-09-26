@@ -6,27 +6,27 @@ import { tmpdir } from 'node:os';
 import { join as joinPath } from 'node:path';
 
 import { runTelegramBootCatchUp } from '../../src/telegram/boot-catchup.js';
-import { setMonadConfigDir, resetMonadConfigDir } from '../../src/monad-config-dir.js';
+import { setElanousConfigDir, resetElanousConfigDir } from '../../src/elanous-config-dir.js';
 
 let tmp: string;
 
 beforeEach(() => {
-  tmp = mkdtempSync(joinPath(tmpdir(), 'monad-tg-catchup-'));
-  setMonadConfigDir(tmp);
+  tmp = mkdtempSync(joinPath(tmpdir(), 'elanous-tg-catchup-'));
+  setElanousConfigDir(tmp);
 });
 
 afterEach(() => {
-  resetMonadConfigDir();
+  resetElanousConfigDir();
   rmSync(tmp, { recursive: true, force: true });
 });
 
 function writeRuntime(historyDir: string): void {
   writeFileSync(
-    joinPath(tmp, 'monad.runtime.json'),
+    joinPath(tmp, 'elanous.runtime.json'),
     JSON.stringify({
       pid: process.pid,
       startedAt: new Date().toISOString(),
-      socketPath: joinPath(tmp, 'monad.sock'),
+      socketPath: joinPath(tmp, 'elanous.sock'),
       historyDir,
     }, null, 2),
   );
@@ -71,7 +71,7 @@ describe('runTelegramBootCatchUp', () => {
     mkdirSync(historyDir, { recursive: true });
     writeRuntime(historyDir);
     writeFileSync(
-      joinPath(historyDir, 'monad-session-3.jsonl'),
+      joinPath(historyDir, 'elanous-session-3.jsonl'),
       [
         JSON.stringify({ role: 'user', content: 'hi' }),
         JSON.stringify({ role: 'assistant', content: 'hello' }),
@@ -79,7 +79,7 @@ describe('runTelegramBootCatchUp', () => {
     );
 
     const bridge = buildBridge([
-      { chatId: 1, threadId: 0, sessionId: 'monad-session-3', lastSeenMsgIdx: 2 },
+      { chatId: 1, threadId: 0, sessionId: 'elanous-session-3', lastSeenMsgIdx: 2 },
     ]);
     const sent: SentMessage[] = [];
     const n = await runTelegramBootCatchUp(
@@ -95,7 +95,7 @@ describe('runTelegramBootCatchUp', () => {
     mkdirSync(historyDir, { recursive: true });
     writeRuntime(historyDir);
     writeFileSync(
-      joinPath(historyDir, 'monad-session-3.jsonl'),
+      joinPath(historyDir, 'elanous-session-3.jsonl'),
       [
         JSON.stringify({ role: 'user', content: 'old user' }),
         JSON.stringify({ role: 'assistant', content: 'old reply' }),
@@ -105,7 +105,7 @@ describe('runTelegramBootCatchUp', () => {
     );
 
     const bridge = buildBridge([
-      { chatId: 99, threadId: 0, sessionId: 'monad-session-3', lastSeenMsgIdx: 2 },
+      { chatId: 99, threadId: 0, sessionId: 'elanous-session-3', lastSeenMsgIdx: 2 },
     ]);
     const sent: SentMessage[] = [];
     const n = await runTelegramBootCatchUp(
@@ -129,10 +129,10 @@ describe('runTelegramBootCatchUp', () => {
     const historyDir = joinPath(tmp, 'history');
     mkdirSync(historyDir, { recursive: true });
     writeRuntime(historyDir);
-    // No jsonl file written for monad-session-99.
+    // No jsonl file written for elanous-session-99.
 
     const bridge = buildBridge([
-      { chatId: 5, threadId: 0, sessionId: 'monad-session-99', lastSeenMsgIdx: 3 },
+      { chatId: 5, threadId: 0, sessionId: 'elanous-session-99', lastSeenMsgIdx: 3 },
     ]);
     const sent: SentMessage[] = [];
     const n = await runTelegramBootCatchUp(
@@ -150,12 +150,12 @@ describe('runTelegramBootCatchUp', () => {
     mkdirSync(historyDir, { recursive: true });
     writeRuntime(historyDir);
     writeFileSync(
-      joinPath(historyDir, 'monad-session-3.jsonl'),
+      joinPath(historyDir, 'elanous-session-3.jsonl'),
       JSON.stringify({ role: 'assistant', content: 'fresh' }) + '\n',
     );
 
     const bridge = buildBridge([
-      { chatId: 1, threadId: 0, sessionId: 'monad-session-3', lastSeenMsgIdx: 0 },
+      { chatId: 1, threadId: 0, sessionId: 'elanous-session-3', lastSeenMsgIdx: 0 },
     ]);
     const n = await runTelegramBootCatchUp(
       bridge,

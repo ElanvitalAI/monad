@@ -18,7 +18,7 @@
  *
  * I/O surfaces are injected:
  *   - `TaskStore`              — fresh Mission/Task rows
- *   - `saveWorkflow` callable  — writes to `~/.monad/workflows/` (R3 pattern)
+ *   - `saveWorkflow` callable  — writes to `~/.elanous/workflows/` (R3 pattern)
  *
  * Errors during a single task / workflow write are captured as
  * `errors[]` entries; the loop continues so the user always gets a

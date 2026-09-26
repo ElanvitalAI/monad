@@ -1,7 +1,7 @@
 // 미션 thread 저지연 push 레이어 — logs.db 내부 tail → govern edge-trigger (UR4d·2026-07-19)
 //
 // ★ RFC §7 UR4 저지연 push(선택층). 리서치(RESEARCH-agent-activity-detection §66·§69) 결론:
-//   detached(monad run-mission) 아키텍처의 truth 는 durable 저장소 폴링 — 하지만 데몬 sweep 이 3분
+//   detached(elanous run-mission) 아키텍처의 truth 는 durable 저장소 폴링 — 하지만 데몬 sweep 이 3분
 //   interval 이라 "체감 반응속도"가 interval 에 묶인다. 여기에 logs.db 저지연 tail 을 얹어 worker 활동을
 //   edge-trigger 로 감지 → govern/sweep 을 즉시(coalesced) 깨운다. push 는 lossy 라 truth 아님 — interval
 //   폴링이 안전망으로 남고(§69 edge-triggered + bounded-timeout), push 는 지연시간만 줄인다. 그래서 interval

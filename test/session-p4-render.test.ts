@@ -39,17 +39,17 @@ describe('renderForSurface — 표현 단계', () => {
 });
 
 describe('fan-out 표현법 통합', () => {
-  const ORIG = process.env.MONAD_SESSION_ROOT;
+  const ORIG = process.env.ELANOUS_SESSION_ROOT;
   let tmp: string;
   beforeEach(async () => {
     tmp = mkdtempSync(join(tmpdir(), 'sess-p4-'));
-    process.env.MONAD_SESSION_ROOT = tmp;
+    process.env.ELANOUS_SESSION_ROOT = tmp;
     const { _clearSubscriberIndexForTest } = await import('../src/session/index.js');
     _clearSubscriberIndexForTest();
   });
   afterEach(() => {
     if (tmp) rmSync(tmp, { recursive: true, force: true });
-    if (ORIG === undefined) delete process.env.MONAD_SESSION_ROOT; else process.env.MONAD_SESSION_ROOT = ORIG;
+    if (ORIG === undefined) delete process.env.ELANOUS_SESSION_ROOT; else process.env.ELANOUS_SESSION_ROOT = ORIG;
   });
 
   test('Stage C 렌더러가 서피스별로 다르게 배달(같은 스냅샷)', async () => {

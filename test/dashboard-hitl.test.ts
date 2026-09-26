@@ -29,7 +29,7 @@ afterEach(async () => {
 });
 
 function withIsolatedAllowlist(): string {
-  const tmp = mkdtempSync(joinPath(tmpdir(), 'monad-hitl-test-'));
+  const tmp = mkdtempSync(joinPath(tmpdir(), 'elanous-hitl-test-'));
   const path = joinPath(tmp, 'api-allow.json');
   setAllowlistPathForTesting(path);
   return path;
@@ -233,26 +233,26 @@ describe('initDashboardHitl', () => {
     expect(getHitlCallbackUrl()).toBeNull();
   });
 
-  test('CB4 — MONAD_HITL_CALLBACK_PORT=0 → OS-assigned, no scan', async () => {
-    const saved = process.env['MONAD_HITL_CALLBACK_PORT'];
-    process.env['MONAD_HITL_CALLBACK_PORT'] = '0';
+  test('CB4 — ELANOUS_HITL_CALLBACK_PORT=0 → OS-assigned, no scan', async () => {
+    const saved = process.env['ELANOUS_HITL_CALLBACK_PORT'];
+    process.env['ELANOUS_HITL_CALLBACK_PORT'] = '0';
     try {
       const state = await initDashboardHitl({ skipPushcut: true });
       expect(state.callbackPort).toBeGreaterThan(0);
       expect(state.wantedPort).toBe(0);
       expect(state.portShifted).toBe(false); // OS-assigned never shifts
     } finally {
-      if (saved === undefined) delete process.env['MONAD_HITL_CALLBACK_PORT'];
-      else process.env['MONAD_HITL_CALLBACK_PORT'] = saved;
+      if (saved === undefined) delete process.env['ELANOUS_HITL_CALLBACK_PORT'];
+      else process.env['ELANOUS_HITL_CALLBACK_PORT'] = saved;
     }
   });
 
-  test('CB4 — MONAD_HITL_CALLBACK_PORT=<busy> fails fast (no scan)', async () => {
+  test('CB4 — ELANOUS_HITL_CALLBACK_PORT=<busy> fails fast (no scan)', async () => {
     const squatter = createHitlCallbackServer({ port: 0, portScanRange: 1 });
     await squatter.start();
     const taken = squatter.port()!;
-    const saved = process.env['MONAD_HITL_CALLBACK_PORT'];
-    process.env['MONAD_HITL_CALLBACK_PORT'] = String(taken);
+    const saved = process.env['ELANOUS_HITL_CALLBACK_PORT'];
+    process.env['ELANOUS_HITL_CALLBACK_PORT'] = String(taken);
     try {
       await initDashboardHitl({ skipPushcut: true });
       // Strict mode surfaces failure via console.warn (caught inside
@@ -260,8 +260,8 @@ describe('initDashboardHitl', () => {
       const st = getDashboardHitl();
       expect(st?.callbackPort).toBeNull();
     } finally {
-      if (saved === undefined) delete process.env['MONAD_HITL_CALLBACK_PORT'];
-      else process.env['MONAD_HITL_CALLBACK_PORT'] = saved;
+      if (saved === undefined) delete process.env['ELANOUS_HITL_CALLBACK_PORT'];
+      else process.env['ELANOUS_HITL_CALLBACK_PORT'] = saved;
       await squatter.stop();
     }
   });
@@ -270,8 +270,8 @@ describe('initDashboardHitl', () => {
     const squatter = createHitlCallbackServer({ port: 0, portScanRange: 1 });
     await squatter.start();
     const taken = squatter.port()!;
-    const saved = process.env['MONAD_HITL_CALLBACK_PORT'];
-    process.env['MONAD_HITL_CALLBACK_PORT'] = String(taken);
+    const saved = process.env['ELANOUS_HITL_CALLBACK_PORT'];
+    process.env['ELANOUS_HITL_CALLBACK_PORT'] = String(taken);
     try {
       const state = await initDashboardHitl({
         skipPushcut: true,
@@ -279,8 +279,8 @@ describe('initDashboardHitl', () => {
       });
       expect(state.callbackPort).toBe(taken + 1);
     } finally {
-      if (saved === undefined) delete process.env['MONAD_HITL_CALLBACK_PORT'];
-      else process.env['MONAD_HITL_CALLBACK_PORT'] = saved;
+      if (saved === undefined) delete process.env['ELANOUS_HITL_CALLBACK_PORT'];
+      else process.env['ELANOUS_HITL_CALLBACK_PORT'] = saved;
       await squatter.stop();
     }
   });

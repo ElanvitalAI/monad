@@ -26,7 +26,7 @@ export interface PersonaLoadResult {
   readonly loadedFiles: readonly string[];   // absolute paths
 }
 
-/** Persona registry. Single instance per monad process. */
+/** Persona registry. Single instance per elanous process. */
 export class PersonaRegistry {
   private readonly byId = new Map<string, PersonaProfile>();
   private readonly fileToId = new Map<string, string>();   // absPath → personaId

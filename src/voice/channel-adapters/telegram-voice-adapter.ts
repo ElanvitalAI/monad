@@ -223,7 +223,7 @@ export function createTelegramVoiceAdapter(opts: TelegramVoiceAdapterOpts): Tele
 // ── Env / config helpers ───────────────────────────────────────────
 
 export function isTelegramVoiceEnabled(): boolean {
-  const raw = process.env.MONAD_TELEGRAM_VOICE?.trim().toLowerCase();
+  const raw = process.env.ELANOUS_TELEGRAM_VOICE?.trim().toLowerCase();
   return raw === '1' || raw === 'true' || raw === 'on' || raw === 'yes';
 }
 

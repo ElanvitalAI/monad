@@ -181,7 +181,7 @@ describe('SQLite-backed agent-cli conversation store', () => {
 
   function freshStore() {
     testCounter += 1;
-    dbPath = join(tmpdir(), `monad-test-conv-${testCounter}-${Date.now()}.db`);
+    dbPath = join(tmpdir(), `elanous-test-conv-${testCounter}-${Date.now()}.db`);
     return createSqliteAgentCliConversationStore(dbPath);
   }
 
@@ -198,7 +198,7 @@ describe('SQLite-backed agent-cli conversation store', () => {
 
   test('SQLite persistence — reopen file restores history', () => {
     testCounter += 1;
-    dbPath = join(tmpdir(), `monad-test-persist-${testCounter}-${Date.now()}.db`);
+    dbPath = join(tmpdir(), `elanous-test-persist-${testCounter}-${Date.now()}.db`);
     const store1 = createSqliteAgentCliConversationStore(dbPath);
     store1.append('c', { role: 'user', backendId: 'gemini', text: 'persisted', at: 1 });
     // 두 번째 store instance — 같은 db file.
@@ -211,7 +211,7 @@ describe('SQLite-backed agent-cli conversation store', () => {
 
   test('SQLite HARD_CAP per-chat eviction', () => {
     testCounter += 1;
-    dbPath = join(tmpdir(), `monad-test-cap-${testCounter}-${Date.now()}.db`);
+    dbPath = join(tmpdir(), `elanous-test-cap-${testCounter}-${Date.now()}.db`);
     const store = createSqliteAgentCliConversationStore(dbPath, { hardCapPerChat: 5 });
     for (let i = 0; i < 12; i++) {
       store.append('c', { role: 'user', backendId: 'b', text: `t${i}`, at: i });

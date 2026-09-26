@@ -1,7 +1,7 @@
 // ACP H2 #5 — Local file-backed session persistence.
 //
 // Snapshot rich ACP session state (history + plan + tool-call records
-// + metadata) so monad can list saved conversations and call
+// + metadata) so elanous can list saved conversations and call
 // `loadSession` on a capable peer to resume them. Gated by H2 #4's
 // `getCapabilities().loadSession` at the tool layer — this module
 // itself just reads/writes JSON files.
@@ -17,7 +17,7 @@
 //   mcpServers }. Only callable when peer advertises
 //   AgentCapabilities.loadSession === true.
 //
-// Storage layout: `$XDG_CONFIG_HOME/monad/acp-sessions/<sanitized>.json`
+// Storage layout: `$XDG_CONFIG_HOME/elanous/acp-sessions/<sanitized>.json`
 // · one file per session · atomic tmp+rename · corrupt files skipped
 // (logged to debug trail, not thrown).
 //
@@ -36,17 +36,17 @@ import {
   writeFileSync,
 } from 'node:fs';
 import { join as joinPath } from 'node:path';
-import { monadStateRoot } from '../autopilot/state-paths.js';
+import { elanousStateRoot } from '../autopilot/state-paths.js';
 import type { ContentBlock, ProtocolVersion } from '@agentclientprotocol/sdk';
 import type { PlanSnapshot } from './plan-model.js';
 import type { ToolCallRecord } from './tool-call-state.js';
 import { debug } from '../debug/log.js';
-import { migrateLegacyXdgSubdir } from '../storage/legacy-monad-dir-migrate.js';
+import { migrateLegacyXdgSubdir } from '../storage/legacy-elanous-dir-migrate.js';
 
 /** Serialized ACP session snapshot. Shape is the full persisted
  *  record — callers receive this on load/resume. */
 export interface PersistedAcpSession {
-  /** Monad-namespaced session id (e.g. `acp-cli:claude:abc-123`).
+  /** Elanous-namespaced session id (e.g. `acp-cli:claude:abc-123`).
    *  Used as the on-disk key and returned to the LLM. */
   sessionId: string;
   /** Raw backend session id (the part the ACP peer minted). Passed
@@ -105,20 +105,20 @@ export interface AcpSessionPersistence {
   readonly basePath: string;
 }
 
-// FU2 (PLAN-config-unification-monad-root-2026-05-10 closing follow-up):
-//   moved from ~/.config/monad/acp-sessions/ → ~/.monad/acp-sessions/.
+// FU2 (PLAN-config-unification-elanous-root-2026-05-10 closing follow-up):
+//   moved from ~/.config/elanous/acp-sessions/ → ~/.elanous/acp-sessions/.
 //   Dir migration via the shared once-per-process helper.
 function defaultBasePath(): string {
-  // MONAD_STATE_DIR — unified isolated-state knob (see sessionRoot). Wins
-  // over XDG so `monad telegram-test` keeps its /cc delegation sessions
+  // ELANOUS_STATE_DIR — unified isolated-state knob (see sessionRoot). Wins
+  // over XDG so `elanous telegram-test` keeps its /cc delegation sessions
   // separate from the daemon's.
-  const stateDir = process.env.MONAD_STATE_DIR?.trim();
+  const stateDir = process.env.ELANOUS_STATE_DIR?.trim();
   if (stateDir) return joinPath(stateDir, 'acp-sessions');
   const xdg = process.env.XDG_CONFIG_HOME?.trim();
-  if (xdg) return joinPath(xdg, 'monad', 'acp-sessions');
+  if (xdg) return joinPath(xdg, 'elanous', 'acp-sessions');
   migrateLegacyXdgSubdir('acp-sessions');
-  // MONAD_STATE_DIR 부재 확정(위 early-return) → monadStateRoot()=~/.monad (prod 동치).
-  return joinPath(monadStateRoot(), 'acp-sessions');
+  // ELANOUS_STATE_DIR 부재 확정(위 early-return) → elanousStateRoot()=~/.elanous (prod 동치).
+  return joinPath(elanousStateRoot(), 'acp-sessions');
 }
 
 /** Map a session id to a filesystem-safe filename. We keep the

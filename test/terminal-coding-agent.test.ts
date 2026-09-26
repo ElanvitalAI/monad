@@ -16,7 +16,7 @@ import type { PreviewTerminalOpts, PreviewTerminal } from '../src/preview/termin
 // dev machine running the tests) instead of trying to spawn the
 // user's login shell.
 beforeAll(() => {
-  process.env.MONAD_SKIP_LOGIN_ENV = '1';
+  process.env.ELANOUS_SKIP_LOGIN_ENV = '1';
 });
 
 function fakePreview(opts: PreviewTerminalOpts): PreviewTerminal {
@@ -153,7 +153,7 @@ describe('spawnCodingAgent', () => {
   });
 
   // Regression: an earlier version passed only 4 vars
-  // (MONAD_AGENT_BRAND/TERM/CLICOLOR/CLICOLOR_FORCE) as the spawn
+  // (ELANOUS_AGENT_BRAND/TERM/CLICOLOR/CLICOLOR_FORCE) as the spawn
   // env. PreviewTerminal replaces (not merges) when opts.env is
   // provided, so the child PTY ended up without HOME — and the
   // SSH keychain wrap's `$HOME/Library/Keychains/login.keychain-db`
@@ -177,10 +177,10 @@ describe('spawnCodingAgent', () => {
     expect(captured).toHaveLength(1);
     expect(captured[0].env).toBeDefined();
     // HOME comes from process.env via getCapturedEnv() (with
-    // MONAD_SKIP_LOGIN_ENV=1 set in beforeAll). Any dev machine has it.
+    // ELANOUS_SKIP_LOGIN_ENV=1 set in beforeAll). Any dev machine has it.
     expect(captured[0].env!.HOME).toBeTruthy();
     // The brand-specific overrides still win.
-    expect(captured[0].env!.MONAD_AGENT_BRAND).toBe('claude-code');
+    expect(captured[0].env!.ELANOUS_AGENT_BRAND).toBe('claude-code');
     expect(captured[0].env!.TERM).toBe('xterm-ghostty');
   });
 });

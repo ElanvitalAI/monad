@@ -24,7 +24,7 @@ import {
   type SyncStatus,
 } from '@/lib/model-tier-sync';
 
-const STORAGE_KEY = 'monad.active-preset';
+const STORAGE_KEY = 'elanous.active-preset';
 
 function loadActivePreset(): PresetId | undefined {
   if (typeof window === 'undefined' || typeof localStorage === 'undefined') return undefined;

@@ -54,7 +54,7 @@ const GOOD_RESPONSE = JSON.stringify({
         {
           id: 't-3',
           title: 'Read ouroboros agent loop',
-          intent: 'compare to monad turn loop',
+          intent: 'compare to elanous turn loop',
           urls: ['https://github.com/Q00/ouroboros'],
           refs: ['Q00/ouroboros'],
           confidence: 'high',

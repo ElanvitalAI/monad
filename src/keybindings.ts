@@ -1,9 +1,9 @@
 // ── Keybinding registry (catalog, not dispatcher) ──
 //
 // A static, single-source-of-truth table of every keybinding and slash
-// command monad exposes. The TUI dispatcher (dashboard.ts) still holds
+// command elanous exposes. The TUI dispatcher (dashboard.ts) still holds
 // the actual handler logic — rewriting that is invasive and risky —
-// but the help surfaces (F1, `/keys`, `monad keys`) pull from HERE so
+// but the help surfaces (F1, `/keys`, `elanous keys`) pull from HERE so
 // users can discover bindings without spelunking source.
 //
 // When you add a new key in dashboard.ts, widgets, plugins, or a
@@ -202,7 +202,7 @@ export function keyBindingsByContext(): Record<KeyContext, KeyBinding[]> {
 
 // ── Rendering ────────────────────────────────────────────────────────
 
-/** Render a plain-text, column-aligned help table. Used by `monad keys`
+/** Render a plain-text, column-aligned help table. Used by `elanous keys`
  *  and the `/keys` slash command. Context filter narrows to one group. */
 export function renderKeyHelp(opts: { context?: KeyContext } = {}): string {
   const groups = keyBindingsByContext();

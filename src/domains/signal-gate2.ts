@@ -13,8 +13,8 @@ import { debug } from '../debug/log.js';
 import { budgetModel } from '../llm/model-defaults.js';
 
 /** 2차 게이트 모델(대표 확정) — env 오버라이드 가능. */
-const GATE2_MODEL = () => process.env.MONAD_GATE2_MODEL || budgetModel();
-const GATE2_EFFORT = () => (process.env.MONAD_GATE2_EFFORT || 'low') as
+const GATE2_MODEL = () => process.env.ELANOUS_GATE2_MODEL || budgetModel();
+const GATE2_EFFORT = () => (process.env.ELANOUS_GATE2_EFFORT || 'low') as
   'minimal' | 'low' | 'medium' | 'high' | 'xhigh' | 'max';
 
 export interface Gate2Verdict {
@@ -140,7 +140,7 @@ export async function runGate2(
       at: now(),
     });
     // ★ 게이팅 사유 관측(대표 지시·2차 특히) — 판정 근거를 logs.db 3계층 척추에 남겨
-    //   `monad logs --category signal.gate2` 로 조회 가능. 안 남기면 sqlite 직접조회만 = 관측 안 한 것.
+    //   `elanous logs --category signal.gate2` 로 조회 가능. 안 남기면 sqlite 직접조회만 = 관측 안 한 것.
     //   sink 는 엔트리 스크립트가 등록(standalone-log-sink)·데몬은 상속. 미등록이면 no-op(fail-open).
     debug.log('signal.gate2', verdict.confirmed ? 'confirmed' : 'downgraded', {
       asset: s.asset ?? null,

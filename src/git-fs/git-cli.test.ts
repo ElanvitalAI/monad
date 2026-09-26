@@ -5,10 +5,10 @@ import { join } from 'node:path';
 import { describe, expect, test } from 'bun:test';
 
 const repositoryRoot = process.cwd();
-const entrypoint = [join(repositoryRoot, 'bin/monad.mjs')];
+const entrypoint = [join(repositoryRoot, 'bin/elanous.mjs')];
 
 function inIsolatedGitWorktree<T>(run: (cwd: string) => T): T {
-  const cwd = mkdtempSync(join(tmpdir(), 'monad-git-cli-cwd-'));
+  const cwd = mkdtempSync(join(tmpdir(), 'elanous-git-cli-cwd-'));
   const initialized = spawnSync('git', ['init', '-q'], { cwd });
   if (initialized.status !== 0) throw new Error(`test git init failed: ${initialized.stderr.toString()}`);
   try {
@@ -25,7 +25,7 @@ function isolatedCliEnvironment(home: string, env?: NodeJS.ProcessEnv): NodeJS.P
     HOME: home,
     XDG_CONFIG_HOME: join(home, '.config'),
     XDG_STATE_HOME: join(home, '.local', 'state'),
-    MONAD_SUPPRESS_XDG_WARNING: '1',
+    ELANOUS_SUPPRESS_XDG_WARNING: '1',
     // Keep child stderr byte-exact for the git status-line contract.
     MSS_LOG_STORE_DIAGNOSTICS: '0',
   };
@@ -33,7 +33,7 @@ function isolatedCliEnvironment(home: string, env?: NodeJS.ProcessEnv): NodeJS.P
 
 function invokeGit(args: string[], env?: NodeJS.ProcessEnv) {
   return inIsolatedGitWorktree((cwd) => {
-    const home = mkdtempSync(join(tmpdir(), 'monad-git-cli-home-'));
+    const home = mkdtempSync(join(tmpdir(), 'elanous-git-cli-home-'));
     try {
       return spawnSync('bun', [...entrypoint, '--test', 'git', ...args], {
         cwd,
@@ -48,7 +48,7 @@ function invokeGit(args: string[], env?: NodeJS.ProcessEnv) {
 }
 
 function invokeFakeGit(stdout: string, stderr: string, status: number) {
-  const binDir = mkdtempSync(join(tmpdir(), 'monad-git-cli-'));
+  const binDir = mkdtempSync(join(tmpdir(), 'elanous-git-cli-'));
   const gitPath = join(binDir, 'git');
   writeFileSync(gitPath, `#!/bin/sh\nprintf %s '${stdout}'\nprintf %s '${stderr}' >&2\nexit ${status}\n`);
   chmodSync(gitPath, 0o755);
@@ -59,11 +59,11 @@ function invokeFakeGit(stdout: string, stderr: string, status: number) {
   }
 }
 
-/** Spawn `monad git fixture` against a fake git whose stdout/stderr are written
+/** Spawn `elanous git fixture` against a fake git whose stdout/stderr are written
  *  from raw byte files, so the test can emit large payloads and invalid UTF-8
  *  bytes without any shell-quoting or encoding round-trip. */
 function invokeFakeGitBytes(stdout: Buffer, stderr: Buffer, status: number) {
-  const binDir = mkdtempSync(join(tmpdir(), 'monad-git-cli-bytes-'));
+  const binDir = mkdtempSync(join(tmpdir(), 'elanous-git-cli-bytes-'));
   const gitPath = join(binDir, 'git');
   const outPath = join(binDir, 'out.bin');
   const errPath = join(binDir, 'err.bin');
@@ -73,7 +73,7 @@ function invokeFakeGitBytes(stdout: Buffer, stderr: Buffer, status: number) {
   chmodSync(gitPath, 0o755);
   try {
     return inIsolatedGitWorktree((cwd) => {
-      const home = mkdtempSync(join(tmpdir(), 'monad-git-cli-home-'));
+      const home = mkdtempSync(join(tmpdir(), 'elanous-git-cli-home-'));
       try {
         return spawnSync('bun', [...entrypoint, '--test', 'git', 'fixture'], {
           cwd,
@@ -90,12 +90,12 @@ function invokeFakeGitBytes(stdout: Buffer, stderr: Buffer, status: number) {
   }
 }
 
-describe('monad git', () => {
+describe('elanous git', () => {
   test('forwards successful git output and appends its success status', () => {
     const result = invokeGit(['status', '--porcelain']);
     expect(result.status).toBe(0);
     // ⛔⭐ 2026-08-09 계약 정정 — 상태 줄은 «stderr» 다. stdout 은 «원 바이트 그대로»여야 한다.
-    //   초판은 stdout 에 붙였고 그래서 `$(monad git rev-parse HEAD)` 가 «두 줄»을 돌려줬다(실측).
+    //   초판은 stdout 에 붙였고 그래서 `$(elanous git rev-parse HEAD)` 가 «두 줄»을 돌려줬다(실측).
     expect(result.stderr.trimEnd().split(/\r?\n/).at(-1)).toBe('[git] status ok rc=0');
     expect(result.stdout).not.toContain('[git]');
   }, 90_000);
@@ -112,7 +112,7 @@ describe('monad git', () => {
   }, 90_000);
 
   test('does not show help guidance when help spellings are subcommand values or options', () => {
-    const binDir = mkdtempSync(join(tmpdir(), 'monad-git-cli-help-arguments-'));
+    const binDir = mkdtempSync(join(tmpdir(), 'elanous-git-cli-help-arguments-'));
     const gitPath = join(binDir, 'git');
     writeFileSync(gitPath, '#!/bin/sh\nprintf "<%s>\\n" "$@"\n');
     chmodSync(gitPath, 0o755);
@@ -126,7 +126,7 @@ describe('monad git', () => {
       for (const args of invocations) {
         const result = invokeGit(args, env);
         expect(result.status).toBe(0);
-        expect(result.stderr).not.toContain('[monad git]');
+        expect(result.stderr).not.toContain('[elanous git]');
         expect(result.stdout).toBe(args.map((arg) => `<${arg}>\n`).join(''));
       }
     } finally {
@@ -135,7 +135,7 @@ describe('monad git', () => {
   }, 90_000);
 
   test('passes option operands and following arguments to git in their original order', () => {
-    const binDir = mkdtempSync(join(tmpdir(), 'monad-git-cli-argv-'));
+    const binDir = mkdtempSync(join(tmpdir(), 'elanous-git-cli-argv-'));
     const gitPath = join(binDir, 'git');
     writeFileSync(gitPath, '#!/bin/sh\nprintf "<%s>\\n" "$@"\n');
     chmodSync(gitPath, 0o755);
@@ -175,14 +175,14 @@ describe('monad git', () => {
   }, 90_000);
 
   // ⭐⭐ 2026-08-19 — 「실패했다」와 「아무것도 안 바뀌었다」는 다른 값이다.
-  //   실측: `monad git merge origin/main` 이 충돌로 rc=1 을 냈는데 작업 트리엔 머지가 절반 들어가 있었다.
+  //   실측: `elanous git merge origin/main` 이 충돌로 rc=1 을 냈는데 작업 트리엔 머지가 절반 들어가 있었다.
   //   상태 줄이 `FAILED rc=1` 뿐이면 읽는 사람이 「아무 일도 없었다」로 읽고 되돌려서 작업을 잃는다.
   //
   // ⛔⭐ 리뷰 must-fix: 판정은 «문면»이 아니라 «파일시스템 상태»(git 이 남기는 MERGE_HEAD 등)로 한다.
   //   그래서 이 테스트들은 가짜 git 이 아니라 ***진짜 충돌 저장소***를 만든다 —
   //   가짜 git 으로 문구만 흉내내면 초판의 «오탐»을 오히려 정당화하는 테스트가 된다.
   function inRealConflictRepo<T>(run: (cwd: string) => T): T {
-    const cwd = mkdtempSync(join(tmpdir(), 'monad-git-cli-conflict-'));
+    const cwd = mkdtempSync(join(tmpdir(), 'elanous-git-cli-conflict-'));
     // ⛔ 리뷰 should-fix: 준비 명령의 종료 코드를 «본다». 안 보면 git 환경 차이가
     //   「원인 불명 실패」로 나타나고, 그때 사람은 테스트가 아니라 «구현»을 의심한다.
     const git = (...args: string[]) => {
@@ -209,7 +209,7 @@ describe('monad git', () => {
   }
 
   function runInRepo(cwd: string, args: string[]) {
-    const home = mkdtempSync(join(tmpdir(), 'monad-git-cli-home-'));
+    const home = mkdtempSync(join(tmpdir(), 'elanous-git-cli-home-'));
     try {
       return spawnSync('bun', [...entrypoint, '--test', 'git', ...args], {
         cwd, encoding: 'utf8', env: isolatedCliEnvironment(home), timeout: 60_000,
@@ -316,7 +316,7 @@ describe('monad git', () => {
     // ⛔ 리뷰 4라운드가 「gitSubcommand 가 <dir> 을 subcommand 로 오인한다」고 지적했으나
     //   실측하면 옳게 동작한다(GLOBAL_OPTIONS_WITH_OPERANDS 가 피연산자를 건너뛴다).
     //   ⇒ 반론만 하지 않고 «회귀로 못 박는다» — 이 경로가 깨지면 표지가 조용히 사라진다.
-    // ⚠️ 저장소 «밖»에서 돌리면 monad 의 격리 관문이 먼저 막는다(별개 축) — 그래서 저장소 «안»에서
+    // ⚠️ 저장소 «밖»에서 돌리면 elanous 의 격리 관문이 먼저 막는다(별개 축) — 그래서 저장소 «안»에서
     //   전역 옵션만 앞에 붙여 «파서»를 잰다. 피연산자를 건너뛰는지가 이 테스트의 대상이다.
     inRealConflictRepo((cwd) => {
       const result = runInRepo(cwd, ['-c', 'user.name=probe', '-C', cwd, 'merge', 'other']);
@@ -360,7 +360,7 @@ describe('monad git', () => {
     // ⚠️ 정직하게: ***이 테스트는 1MiB 조건을 «재현하지 않는다».*** 60개로는 그만큼이 안 나온다.
     //   이 테스트가 고정하는 것은 「경로가 여럿일 때도 판정이 유지된다」뿐이고,
     //   버퍼 부류의 제거는 «구조»(산출 0바이트)가 보장한다.
-    const cwd = mkdtempSync(join(tmpdir(), 'monad-git-cli-many-'));
+    const cwd = mkdtempSync(join(tmpdir(), 'elanous-git-cli-many-'));
     const git = (...args: string[]) => {
       const r = spawnSync('git', args, { cwd, encoding: 'utf8', timeout: 60_000 });
       if (r.status !== 0) throw new Error(`fixture git ${args.join(' ')} rc=${r.status}: ${r.stderr}`);
@@ -380,7 +380,7 @@ describe('monad git', () => {
       for (const n of names) writeFileSync(join(cwd, n), 'mine\n');
       git('commit', '-qam', 'mine');
 
-      const home = mkdtempSync(join(tmpdir(), 'monad-git-cli-home-'));
+      const home = mkdtempSync(join(tmpdir(), 'elanous-git-cli-home-'));
       try {
         const result = spawnSync('bun', [...entrypoint, '--test', 'git', 'merge', 'other'], {
           cwd, encoding: 'utf8', env: isolatedCliEnvironment(home), timeout: 60_000,
@@ -502,7 +502,7 @@ describe('monad git', () => {
   }, 90_000);
 
   test('records the wrapper numerator, exit code, duration, and lock retries without touching streams', () => {
-    const binDir = mkdtempSync(join(tmpdir(), 'monad-git-cli-observation-'));
+    const binDir = mkdtempSync(join(tmpdir(), 'elanous-git-cli-observation-'));
     const gitPath = join(binDir, 'git');
     const countPath = join(binDir, 'count');
     writeFileSync(gitPath, `#!/bin/sh\ncount=0; [ -f '${countPath}' ] && count=$(cat '${countPath}'); count=$((count + 1)); printf %s "$count" > '${countPath}'; if [ "$count" -eq 1 ]; then printf 'index.lock' >&2; exit 1; fi; printf raw-output; exit 0\n`);

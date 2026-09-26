@@ -13,9 +13,9 @@ test('repository documentation alone cannot prove a capability', () => {
     writeFileSync(join(root, 'catalog/external-commands.yaml'), 'commands: []\n');
     writeFileSync(join(root, 'src/index.ts'), '');
     writeFileSync(join(root, 'docs/FAQ.md'), '# FAQ\n');
-    writeFileSync(join(root, 'docs/PRFAQ-monad-docs-working-backwards-2026-09-22.md'), '# FAQ\n');
+    writeFileSync(join(root, 'docs/PRFAQ-elanous-docs-working-backwards-2026-09-22.md'), '# FAQ\n');
     writeFileSync(join(root, 'docs/notes.md'), `${token} is mentioned\n`);
-    const item = runIntakeCheck([{ text: `monad 에 \`${token}\` 가 있다` }], {
+    const item = runIntakeCheck([{ text: `elanous 에 \`${token}\` 가 있다` }], {
       root, readFile: (path) => readFileSync(path, 'utf8'), commit: () => 'test',
       draftDir: join(root, 'drafts'), log: () => {},
     }).items[0]!;

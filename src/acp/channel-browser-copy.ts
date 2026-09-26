@@ -18,7 +18,7 @@ export const ACP_CHANNEL_BROWSER_COPY = {
   liveClientNotes:
     'Client lanes keep their live room elsewhere. This shell is the fast index for choosing the right client session before you promote or join it.',
   liveServerNotes:
-    'Server lanes represent ACP sessions where monad is the agent side. Use this browser to inspect routing and activity before drilling into the full room.',
+    'Server lanes represent ACP sessions where elanous is the agent side. Use this browser to inspect routing and activity before drilling into the full room.',
   backgroundNotes:
     'Background lanes preserve async ACP work without opening one VW per run. Preview output here before you join, resume, or inspect the full transcript.',
   historyNotes:

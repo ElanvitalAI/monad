@@ -76,9 +76,9 @@ export function McpAppBlock({ block }: { block: McpAppBlockData }) {
 
   return (
     <section
-      data-monad-block-kind="mcp_app"
-      data-monad-tool-id={block.toolId}
-      data-monad-tool-name={block.toolName}
+      data-elanous-block-kind="mcp_app"
+      data-elanous-tool-id={block.toolId}
+      data-elanous-tool-name={block.toolName}
       className="rounded border border-border bg-muted/40 px-3 py-2 text-sm"
     >
       <div className="font-medium">{block.toolName}</div>

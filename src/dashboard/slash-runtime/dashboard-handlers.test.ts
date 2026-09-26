@@ -937,12 +937,12 @@ test('codex-setup on the human surface names the next command to type', async ()
   const lines: string[] = [];
   await expect(buildDashboardSlashRegistry().dispatch('codex-setup', [], createContext(lines)))
     .resolves.toEqual({ kind: 'continue' });
-  expect(lines.some((line) => line.includes('monad codex setup'))).toBe(true);
+  expect(lines.some((line) => line.includes('elanous codex setup'))).toBe(true);
 
   const initLines: string[] = [];
   await expect(buildDashboardSlashRegistry().dispatch('codex-init', [], createContext(initLines)))
     .resolves.toEqual({ kind: 'continue' });
-  expect(initLines.some((line) => line.includes('monad codex setup'))).toBe(true);
+  expect(initLines.some((line) => line.includes('elanous codex setup'))).toBe(true);
 });
 
 test('restoring a removed listed-only name fails the catalog baseline by that name', () => {

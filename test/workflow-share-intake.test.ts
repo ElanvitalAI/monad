@@ -60,10 +60,10 @@ describe('share-intake — YAML shape', () => {
     expect(wf.model).toBe('haiku');
   });
 
-  it('save-to-inbox honors MONAD_OBSIDIAN_DIR + writes under Inbox/', () => {
+  it('save-to-inbox honors ELANOUS_OBSIDIAN_DIR + writes under Inbox/', () => {
     const wf = loadWorkflow();
     const save = wf.nodes.find((n) => n.id === 'save-to-inbox')! as { bash?: string };
-    expect(save.bash).toContain('${MONAD_OBSIDIAN_DIR:-$HOME/Documents/Obsidian}');
+    expect(save.bash).toContain('${ELANOUS_OBSIDIAN_DIR:-$HOME/Documents/Obsidian}');
     expect(save.bash).toContain('Inbox');
     expect(save.bash).toContain('share-$DATE-$TIME.md');
   });
@@ -163,7 +163,7 @@ describe('share-intake — router cascade', () => {
     const prevCwd = process.cwd();
     process.chdir(tmpDir);
     try {
-      mkdirSync(join(tmpDir, '.monad', 'workflows'), { recursive: true });
+      mkdirSync(join(tmpDir, '.elanous', 'workflows'), { recursive: true });
       let llmCalls = 0;
       const fakeLLM: RouterLLMCaller = async () => {
         llmCalls += 1;
@@ -187,7 +187,7 @@ describe('share-intake — router cascade', () => {
     const prevCwd = process.cwd();
     process.chdir(tmpDir);
     try {
-      mkdirSync(join(tmpDir, '.monad', 'workflows'), { recursive: true });
+      mkdirSync(join(tmpDir, '.elanous', 'workflows'), { recursive: true });
       const fakeLLM: RouterLLMCaller = async () => '/invoke-workflow nothing';
       const r = await routeWorkflow(
         { userMessage: '이거 처리해줘 https://example.com' },

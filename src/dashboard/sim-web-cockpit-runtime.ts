@@ -93,7 +93,7 @@ function buildHtml(
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>monad sim cockpit</title>
+  <title>elanous sim cockpit</title>
   <style>
     :root {
       color-scheme: dark;
@@ -236,7 +236,7 @@ export async function openDashboardLocalSimulationWebCockpit(
   const observer = deps.getControlSignalObserver?.() ?? defaultControlSignalObserver();
   const availability = deps.getBrowserCdpAvailability?.() ?? getBrowserCdpAvailability();
   const html = buildHtml(scenarios, observer, availability);
-  const outDir = mkdtempSync(path.join(deps.tmpDir ?? tmpdir(), 'monad-sim-web-'));
+  const outDir = mkdtempSync(path.join(deps.tmpDir ?? tmpdir(), 'elanous-sim-web-'));
   const outPath = path.join(outDir, `index-${deps.now?.() ?? Date.now()}.html`);
   writeFileSync(outPath, html);
   await deps.openTarget(outPath);

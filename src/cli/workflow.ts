@@ -1,15 +1,15 @@
-// Archon-port T3 (2026-05-08) — `monad workflow` CLI sub-commands.
+// Archon-port T3 (2026-05-08) — `elanous workflow` CLI sub-commands.
 //
 // Backs the self-bootstrapping `samples/workflows/build-workflow.yaml`
-// flow: an author types `monad workflow run build-workflow "<idea>"`
+// flow: an author types `elanous workflow run build-workflow "<idea>"`
 // and the workflow does the rest (scan codebase → extract intent →
 // generate YAML → validate → save).
 //
 // Sub-commands:
-//   monad workflow list                                 — discover all
-//   monad workflow show <name>                          — print YAML
-//   monad workflow validate <path|name>                 — schema check
-//   monad workflow run <name> [args...]                 — execute
+//   elanous workflow list                                 — discover all
+//   elanous workflow show <name>                          — print YAML
+//   elanous workflow validate <path|name>                 — schema check
+//   elanous workflow run <name> [args...]                 — execute
 //
 // Run dispatch reuses the same default WorkflowDeps assembly the
 // Nexus API uses (callLLM ↔ streamLLM, runBash ↔ child_process).
@@ -61,7 +61,7 @@ export function buildCliWorkflowDeps(): WorkflowDeps {
         provider,
       };
       // V2.2-1 (2026-05-12) — CLI path forwards partial chunks when a
-      // streaming consumer attaches (rare for `monad workflow run` but
+      // streaming consumer attaches (rare for `elanous workflow run` but
       // kept for parity with the NEXUS deps wire so a future CLI flag
       // like `--stream` can opt in without touching the runtime).
       return llm.streamLLM(
@@ -126,8 +126,8 @@ export function workflowList(): void {
   const list = discoverWorkflows();
   if (list.length === 0) {
     console.log('No workflows discovered.');
-    console.log('  Project: <cwd>/.monad/workflows/*.yaml');
-    console.log('  Global:  ~/.monad/workflows/*.yaml');
+    console.log('  Project: <cwd>/.elanous/workflows/*.yaml');
+    console.log('  Global:  ~/.elanous/workflows/*.yaml');
     console.log('  Builtin: samples/workflows/*.yaml');
     return;
   }
@@ -159,12 +159,12 @@ export function workflowShow(name: string): number {
   return 0;
 }
 
-/** Scheduler-retirement R3 (2026-05-11) — `monad wf synth <intent>`.
+/** Scheduler-retirement R3 (2026-05-11) — `elanous wf synth <intent>`.
  *
  *  Calls the workflow-synth orchestrator with a real LLM. The intent
  *  + optional `--preview` / `--save-project` flags map to the
  *  WorkflowSynthOpts. Default scope is 'global' (saves under
- *  `~/.monad/workflows/`). */
+ *  `~/.elanous/workflows/`). */
 export async function workflowSynth(
   intent: string,
   opts: { preview?: boolean; saveProject?: boolean } = {},

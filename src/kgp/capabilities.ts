@@ -18,11 +18,11 @@ export type KgpMode =
 let cached: KgpMode | undefined;
 
 /** Manual override (test/benchmark/debug):
- *  - `MONAD_KGP=0`   → force null (disable KGP even on supported terminals)
- *  - `MONAD_KGP=1`   → force 'kgp' (useful when env-detection fails but you know it works)
- *  - `MONAD_KGP=old` → force 'kgp-old' */
+ *  - `ELANOUS_KGP=0`   → force null (disable KGP even on supported terminals)
+ *  - `ELANOUS_KGP=1`   → force 'kgp' (useful when env-detection fails but you know it works)
+ *  - `ELANOUS_KGP=old` → force 'kgp-old' */
 function readOverride(): KgpMode | 'unset' {
-  const v = process.env.MONAD_KGP;
+  const v = process.env.ELANOUS_KGP;
   if (v === undefined || v === '') return 'unset';
   if (v === '0' || v.toLowerCase() === 'off' || v.toLowerCase() === 'false') return null;
   if (v === '1' || v.toLowerCase() === 'on'  || v.toLowerCase() === 'true' ) return 'kgp';

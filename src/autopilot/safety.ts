@@ -1,6 +1,6 @@
 // ── Autopilot Safety Gates (2026-07-08 · P3) ──────────────────────────────
 //
-// 자동 재부팅 전제 안전 3종(RESEARCH §8·PLAN §D). self-improving 이 monad 자기 코드를
+// 자동 재부팅 전제 안전 3종(RESEARCH §8·PLAN §D). self-improving 이 elanous 자기 코드를
 // 바꾸므로, 잘못된 코드=brick 위험. 매매 mandate fail-closed 와 동일 역할:
 //   ① 빌드+테스트 게이트 — 통과 없이는 merge/재부팅 없음.
 //   ② health 실패 자동 롤백(blue-green) — 재부팅 후 health 실패 시 이전 상태 복원.
@@ -20,7 +20,7 @@ export const IMMUTABLE_CORE_PATTERNS: RegExp[] = [
   /(^|\/)trade-(mandate|autonomous|cycle|order-adapters)\.ts$/, // 매매 집행 코어
   /(^|\/)autopilot\/(arming|safety)\.ts$/,                       // 자율 경계·안전 게이트 자신
   /(^|\/)nexus\/.*reboot/i,                                       // 재부팅 경로
-  /(^|\/)(launchd|com\.monad\.nexus)/i,                          // 데몬 감독
+  /(^|\/)(launchd|com\.elanous\.nexus)/i,                          // 데몬 감독
   /finance-trade-mandate\.json$/,                                 // 매매 mandate 선언
 ];
 

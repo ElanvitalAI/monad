@@ -15,7 +15,7 @@ import { ToolSafetyError } from '../src/boot/daemon-tools/types.js';
 let cwd: string;
 
 beforeEach(() => {
-  cwd = mkdtempSync(joinPath(tmpdir(), 'monad-read-'));
+  cwd = mkdtempSync(joinPath(tmpdir(), 'elanous-read-'));
 });
 
 afterEach(() => {

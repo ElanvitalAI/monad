@@ -8,11 +8,11 @@ type Probe = { manifest?: string; logs?: string; state?: string };
 
 function probe(options: { treeDerivedTest: boolean; stateDir?: string }): { output: Probe; home: string } {
   const home = mkdtempSync(join(tmpdir(), 'pty-manifest-path-home-'));
-  mkdirSync(join(home, '.monad'));
-  writeFileSync(join(home, '.monad', 'config.json'), JSON.stringify({
+  mkdirSync(join(home, '.elanous'));
+  writeFileSync(join(home, '.elanous', 'config.json'), JSON.stringify({
     instance: { treeDerivedTest: options.treeDerivedTest },
   }));
-  writeFileSync(join(home, '.monad', 'leader.json'), JSON.stringify({
+  writeFileSync(join(home, '.elanous', 'leader.json'), JSON.stringify({
     tree: '/another/tree/leader',
     promotedAt: 'test',
   }));
@@ -20,8 +20,8 @@ function probe(options: { treeDerivedTest: boolean; stateDir?: string }): { outp
   const script = `
     const { ptyManifestDbPath } = require(${JSON.stringify(`${process.cwd()}/src/pty-shell/pty-manifest.ts`)});
     const { logsDbPath } = require(${JSON.stringify(`${process.cwd()}/src/mss/logging/log-store.ts`)});
-    const { monadStateRoot } = require(${JSON.stringify(`${process.cwd()}/src/autopilot/state-paths.ts`)});
-    console.log(JSON.stringify({ manifest: ptyManifestDbPath(), logs: logsDbPath(), state: monadStateRoot() }));
+    const { elanousStateRoot } = require(${JSON.stringify(`${process.cwd()}/src/autopilot/state-paths.ts`)});
+    console.log(JSON.stringify({ manifest: ptyManifestDbPath(), logs: logsDbPath(), state: elanousStateRoot() }));
   `;
   const result = spawnSync('bun', ['-e', script], {
     cwd: process.cwd(),
@@ -30,10 +30,10 @@ function probe(options: { treeDerivedTest: boolean; stateDir?: string }): { outp
     env: {
       ...process.env,
       HOME: home,
-      MONAD_STATE_DIR: options.stateDir ?? '',
-      MONAD_CONFIG_DIR: '',
-      MONAD_NEXUS_DIR: '',
-      MONAD_SESSION_ROOT: '',
+      ELANOUS_STATE_DIR: options.stateDir ?? '',
+      ELANOUS_CONFIG_DIR: '',
+      ELANOUS_NEXUS_DIR: '',
+      ELANOUS_SESSION_ROOT: '',
     },
   });
   expect(result.status).toBe(0);
@@ -44,10 +44,10 @@ function probe(options: { treeDerivedTest: boolean; stateDir?: string }): { outp
 }
 
 describe('ptyManifestDbPath instance resolution', () => {
-  test('tree-derived non-leader process without MONAD_STATE_DIR writes beside other state stores', () => {
+  test('tree-derived non-leader process without ELANOUS_STATE_DIR writes beside other state stores', () => {
     const { output, home } = probe({ treeDerivedTest: true });
     try {
-      expect(output.state).toEndWith('.monad-test');
+      expect(output.state).toEndWith('.elanous-test');
       expect(output.manifest).toBe(join(output.state!, 'pty', 'manifest.db'));
       expect(output.logs).toBe(join(output.state!, 'logs', 'logs.db'));
     } finally {
@@ -55,7 +55,7 @@ describe('ptyManifestDbPath instance resolution', () => {
     }
   }, 90_000);
 
-  test('explicit MONAD_STATE_DIR preserves the manifest path exactly', () => {
+  test('explicit ELANOUS_STATE_DIR preserves the manifest path exactly', () => {
     const stateDir = mkdtempSync(join(tmpdir(), 'pty-manifest-explicit-'));
     const { output, home } = probe({ treeDerivedTest: true, stateDir });
     try {
@@ -67,11 +67,11 @@ describe('ptyManifestDbPath instance resolution', () => {
     }
   }, 90_000);
 
-  test('tree-derived opt-in remains off by default without MONAD_STATE_DIR', () => {
+  test('tree-derived opt-in remains off by default without ELANOUS_STATE_DIR', () => {
     const { output, home } = probe({ treeDerivedTest: false });
     try {
-      expect(output.state).toBe(join(home, '.monad'));
-      expect(output.manifest).toBe(join(home, '.monad', 'pty', 'manifest.db'));
+      expect(output.state).toBe(join(home, '.elanous'));
+      expect(output.manifest).toBe(join(home, '.elanous', 'pty', 'manifest.db'));
     } finally {
       rmSync(home, { recursive: true, force: true });
     }

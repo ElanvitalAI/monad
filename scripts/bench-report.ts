@@ -146,18 +146,18 @@ if (import.meta.main) {
   const arg = (name: string): string | undefined => { const i = process.argv.indexOf(name); return i > 0 ? process.argv[i + 1] : undefined; };
   const runId = arg('--run');
   if (!runId) { console.error('사용: bun scripts/bench-report.ts --run <runId> [--since 24h] [--json]'); process.exit(2); }
-  const bin = join(dirname(import.meta.dir), 'bin', 'monad.mjs');
+  const bin = join(dirname(import.meta.dir), 'bin', 'elanous.mjs');
   const rows: LogRow[] = [];
   for (const q of [['--category', 'self-dev.orchestrate'], ['--category', 'self-implement.pod'], ['--event', 'llm-usage']]) {
     const r = spawnSync(process.execPath, [bin, 'logs', '--all', '--include-test', ...q, '--since', arg('--since') ?? '24h', '--limit', '50000', '--json', '--json-data'], { encoding: 'utf8', timeout: 180_000, maxBuffer: 512 * 1024 * 1024 });
-    if (r.status !== 0) { console.error(`monad logs ${q.join(' ')} 실패 rc=${r.status}: ${(r.stderr ?? '').slice(0, 300)}`); process.exit(1); }
+    if (r.status !== 0) { console.error(`elanous logs ${q.join(' ')} 실패 rc=${r.status}: ${(r.stderr ?? '').slice(0, 300)}`); process.exit(1); }
     let n = 0;
     for (const line of (r.stdout ?? '').split('\n')) {
       if (!line.startsWith('{')) continue;
       try { const o = JSON.parse(line) as LogRow & { _meta?: unknown }; if (!o._meta) { rows.push(o); n++; } } catch { /* skip */ }
     }
     // ⛔ 잘린 창은 «시작을 늦게» 틀린다 — 상한에 닿았으면 이 판의 앞쪽 행이 빠졌을 수 있다.
-    if (n >= 50_000) console.error(`⚠️ monad logs ${q.join(' ')} 가 상한 50000 에 닿았다 — --since 를 좁혀라(이 표는 «하한»이다).`);
+    if (n >= 50_000) console.error(`⚠️ elanous logs ${q.join(' ')} 가 상한 50000 에 닿았다 — --since 를 좁혀라(이 표는 «하한»이다).`);
   }
   const rep = buildBenchReport(rows, runId);
   console.log(process.argv.includes('--json') ? JSON.stringify(rep) : renderBenchReport(rep));

@@ -70,7 +70,7 @@ export function DailyReflectionPanel() {
         <div>
           <h1 className="font-heading text-lg font-medium">오늘의 회고</h1>
           <p className="text-xs text-muted-foreground">
-            오늘 monad 활동 요약 · 5분마다 자동 갱신
+            오늘 elanous 활동 요약 · 5분마다 자동 갱신
           </p>
         </div>
         <Button

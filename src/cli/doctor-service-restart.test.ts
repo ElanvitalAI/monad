@@ -4,7 +4,7 @@ import { applyServiceRestart } from './doctor-fix.js';
 import type { ReadinessDeps } from './doctor-readiness.js';
 
 const CODE = 'abc123def4567890abc123def4567890abc123de';
-const base: ReadinessDeps = { installPrefix: '/opt/monad', codeRevision: CODE, platform: 'darwin', health: { daemonSha: 'fffffffffff' } };
+const base: ReadinessDeps = { installPrefix: '/opt/elanous', codeRevision: CODE, platform: 'darwin', health: { daemonSha: 'fffffffffff' } };
 
 describe('applyServiceRestart', () => {
   test('restarts the launchd service and reports the verified daemonSha', async () => {
@@ -14,7 +14,7 @@ describe('applyServiceRestart', () => {
       run: (cmd, args) => { calls.push(`${cmd} ${args.join(' ')}`); return { status: 0, stderr: '' }; },
       verify: async (commit) => ({ ok: commit === CODE, daemonSha: 'abc123def456' }),
     });
-    expect(calls).toEqual(['launchctl kickstart -k gui/501/com.monad.nexus']);
+    expect(calls).toEqual(['launchctl kickstart -k gui/501/com.elanous.nexus']);
     expect(r).toEqual({ result: 'restarted', reason: 'daemonSha abc123def456 now matches this code', daemonSha: 'abc123def456' });
   });
 
@@ -25,7 +25,7 @@ describe('applyServiceRestart', () => {
       run: (cmd, args) => { calls.push(`${cmd} ${args.join(' ')}`); return { status: 0, stderr: '' }; },
       verify: async () => ({ ok: true, daemonSha: 'abc123def456' }),
     });
-    expect(calls).toEqual(['systemctl --user restart monad-nexus']);
+    expect(calls).toEqual(['systemctl --user restart elanous-nexus']);
   });
 
   test('does not restart when the service already runs this code, when unmeasured, or from a checkout', async () => {
@@ -34,7 +34,7 @@ describe('applyServiceRestart', () => {
     expect((await applyServiceRestart({ readiness: { ...base, health: null }, run: never })).result).toBe('skipped');
     const checkout = await applyServiceRestart({ readiness: { ...base, installPrefix: null }, run: never });
     expect(checkout.result).toBe('skipped');
-    expect(checkout.reason).toContain('monad self-update --restart');
+    expect(checkout.reason).toContain('elanous self-update --restart');
   });
 
   test('a failed restart command or a daemon that comes back on another version is a failure', async () => {

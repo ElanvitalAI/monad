@@ -2,7 +2,7 @@
 //
 // Closes the gap discovered during live daemon dogfood (FEATURE doc
 // §C-3): `globalMissionRouter()` cached the boot-time config and
-// ignored subsequent `monad config mission set …` edits — restart
+// ignored subsequent `elanous config mission set …` edits — restart
 // or not.
 //
 // Fix: createMissionRouter accepts a `configProvider` thunk invoked

@@ -1,4 +1,4 @@
-// `monad telegram-test` config builder — clones the production config with
+// `elanous telegram-test` config builder — clones the production config with
 // a TEST token + allowlist and drops outbound-to-production routes so the
 // standalone test bot can't post into live report/home chats.
 

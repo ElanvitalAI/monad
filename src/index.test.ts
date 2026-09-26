@@ -33,8 +33,8 @@ describe('Codex account CLI log sink', () => {
       registerStandaloneLogSink: async (surface) => { surfaces.push(surface); return true; },
     });
 
-    await accountCommand().parseAsync(['node', 'monad', 'list']);
-    await accountCommand().parseAsync(['node', 'monad', 'import', 'bad name', '--home', '/missing']);
+    await accountCommand().parseAsync(['node', 'elanous', 'list']);
+    await accountCommand().parseAsync(['node', 'elanous', 'import', 'bad name', '--home', '/missing']);
 
     expect(surfaces).toEqual(['codex-account-cli', 'codex-account-cli']);
   });
@@ -46,7 +46,7 @@ describe('Codex account CLI log sink', () => {
     const output: string[] = [];
     const consoleLog = spyOn(console, 'log').mockImplementation((...args: unknown[]) => { output.push(args.join(' ')); });
     try {
-      await accountCommand().parseAsync(['node', 'monad', 'list']);
+      await accountCommand().parseAsync(['node', 'elanous', 'list']);
     } finally {
       consoleLog.mockRestore();
     }
@@ -59,9 +59,9 @@ describe('Codex account import guidance', () => {
   test('distinguishes the stored-account quota entrance from per-run execution and quotes a spaced home', () => {
     const [quota, execution] = buildCodexAccountImportGuidance('b', '/tmp/codex home');
 
-    expect(quota).toBe("쿼터를 재려면: bun bin/monad.mjs provider codex usage --account 'b'");
-    expect(quota).not.toContain('MONAD_CODEX_ACCOUNT');
-    expect(execution).toBe("이 계정으로 «한 런만» 쓰려면: MONAD_CODEX_ACCOUNT='b' MONAD_CODEX_ACCOUNT_HOME='/tmp/codex home' bun bin/monad.mjs <명령>");
+    expect(quota).toBe("쿼터를 재려면: bun bin/elanous.mjs provider codex usage --account 'b'");
+    expect(quota).not.toContain('ELANOUS_CODEX_ACCOUNT');
+    expect(execution).toBe("이 계정으로 «한 런만» 쓰려면: ELANOUS_CODEX_ACCOUNT='b' ELANOUS_CODEX_ACCOUNT_HOME='/tmp/codex home' bun bin/elanous.mjs <명령>");
     expect(execution).not.toContain('provider codex usage');
   });
 });
@@ -126,12 +126,12 @@ describe('assembleAskLaunchPolicy', () => {
 });
 
 describe('self send superseded explicit target protection', () => {
-  const monad = new URL('../bin/monad.mjs', import.meta.url).pathname;
+  const elanous = new URL('../bin/elanous.mjs', import.meta.url).pathname;
   const cwd = new URL('../', import.meta.url).pathname;
   const decode = (output: Uint8Array | undefined) => new TextDecoder().decode(output);
 
   async function withStateDir(run: (stateDir: string) => void | Promise<void>): Promise<void> {
-    const stateDir = await mkdtemp(join(tmpdir(), 'monad-self-send-'));
+    const stateDir = await mkdtemp(join(tmpdir(), 'elanous-self-send-'));
     try {
       await run(stateDir);
     } finally {
@@ -154,9 +154,9 @@ describe('self send superseded explicit target protection', () => {
     // 소비자가 없는 시험이 «읽힘 대기»(기본 10초)를 기다리지 않게 한다 — 대기 자체는 아래 전용 시험이 잰다.
     const readWait = (args.includes('--memo') || args.includes('--stop')) && !args.includes('--read-wait') ? ['--read-wait', '0'] : [];
     return Bun.spawnSync({
-      cmd: [process.execPath, monad, `--test=${stateDir}`, 'self', 'send', ...args, ...readWait],
+      cmd: [process.execPath, elanous, `--test=${stateDir}`, 'self', 'send', ...args, ...readWait],
       cwd,
-      env: { ...process.env, MONAD_STATE_DIR: stateDir },
+      env: { ...process.env, ELANOUS_STATE_DIR: stateDir },
       stdout: 'pipe',
       stderr: 'pipe',
     });
@@ -180,15 +180,15 @@ describe('self send superseded explicit target protection', () => {
   }
 
   function writeRunScreen(stateDir: string, runId: string, screenKey: string, timestamp: string): void {
-    const previousStateDir = process.env.MONAD_STATE_DIR;
-    process.env.MONAD_STATE_DIR = stateDir;
+    const previousStateDir = process.env.ELANOUS_STATE_DIR;
+    process.env.ELANOUS_STATE_DIR = stateDir;
     try {
       const store = new LogStore(logsDbPath(), { instance: 'test' });
       store.insertBatch([{ surface: 'test', rec: { ts: timestamp, category: 'self-implement', event: 'headless.spawn', data: { runId, screenKey } } }]);
       store.close();
     } finally {
-      if (previousStateDir === undefined) delete process.env.MONAD_STATE_DIR;
-      else process.env.MONAD_STATE_DIR = previousStateDir;
+      if (previousStateDir === undefined) delete process.env.ELANOUS_STATE_DIR;
+      else process.env.ELANOUS_STATE_DIR = previousStateDir;
     }
   }
 
@@ -376,9 +376,9 @@ describe('self send superseded explicit target protection', () => {
       const target = 'self-impl-read-goal-aaaaaaaa';
       writeScreen(stateDir, target);
       const child = Bun.spawn({
-        cmd: [process.execPath, monad, `--test=${stateDir}`, 'self', 'send', target, '--memo', 'read me', '--read-wait', '5'],
+        cmd: [process.execPath, elanous, `--test=${stateDir}`, 'self', 'send', target, '--memo', 'read me', '--read-wait', '5'],
         cwd,
-        env: { ...process.env, MONAD_STATE_DIR: stateDir },
+        env: { ...process.env, ELANOUS_STATE_DIR: stateDir },
         stdout: 'pipe',
         stderr: 'pipe',
       });
@@ -678,13 +678,13 @@ describe('self send superseded explicit target protection', () => {
 });
 
 describe('root command help dispatch', () => {
-  const monad = new URL('../bin/monad.mjs', import.meta.url).pathname;
+  const elanous = new URL('../bin/elanous.mjs', import.meta.url).pathname;
   const cwd = new URL('../', import.meta.url).pathname;
   const decode = (output: Uint8Array | undefined) => new TextDecoder().decode(output);
 
   function invoke(...args: string[]) {
     return Bun.spawnSync({
-      cmd: [process.execPath, monad, '--test', ...args],
+      cmd: [process.execPath, elanous, '--test', ...args],
       cwd,
       stdout: 'pipe',
       stderr: 'pipe',
@@ -710,9 +710,9 @@ describe('root command help dispatch', () => {
 
   // ⚠️ 2026-09-21 `#19291` 재작성으로 `setup` 은 단계 인자·답변 파일(`--config`)을 받지 않는다 — 옛 계약을 재던 시험을 지금 계약으로.
   test('setup prints the non-TTY onboarding refusal without a stack trace, and --non-interactive reports without prompting', async () => {
-    const home = await mkdtemp(join(tmpdir(), 'monad-setup-home-'));
+    const home = await mkdtemp(join(tmpdir(), 'elanous-setup-home-'));
     const invokeSetup = (...args: string[]) => Bun.spawnSync({
-      cmd: [process.execPath, monad, '--test', 'setup', ...args],
+      cmd: [process.execPath, elanous, '--test', 'setup', ...args],
       cwd,
       env: { ...process.env, HOME: home },
       stdin: 'pipe',
@@ -725,7 +725,7 @@ describe('root command help dispatch', () => {
       const nonTtyOutput = `${decode(nonTty.stdout)}${decode(nonTty.stderr)}`;
       expect(nonTty.exitCode).not.toBe(0);
       expect(nonTtyOutput).toContain('대화형 온보딩은 stdin TTY가 있는 자리에서만 실행할 수 있다.');
-      expect(nonTtyOutput).toContain('`monad setup --non-interactive`를 사용하라.');
+      expect(nonTtyOutput).toContain('`elanous setup --non-interactive`를 사용하라.');
       expect(nonTtyOutput).not.toMatch(/\n\s*at\s+/);
 
       const report = invokeSetup('--non-interactive');
@@ -744,11 +744,11 @@ describe('root command help dispatch', () => {
     expect(registered.exitCode).toBe(0);
     expect(decode(registered.stdout)).toContain('Self-awareness memory');
     expect(root.exitCode).toBe(0);
-    expect(decode(root.stdout)).toContain('Usage: monad [options] [command]');
+    expect(decode(root.stdout)).toContain('Usage: elanous [options] [command]');
   });
 
   test('self unfinished-runs-cleanup plans by default, removes only on request, and blocks removal for incomplete queries', async () => {
-    const stateDir = await mkdtemp(join(tmpdir(), 'monad-unfinished-runs-cleanup-'));
+    const stateDir = await mkdtemp(join(tmpdir(), 'elanous-unfinished-runs-cleanup-'));
     const ledgerDir = join(stateDir, 'run-ledger');
     const oldRunId = 'run-00000000-0000-4000-8000-000000000101';
     const recentRunId = 'run-00000000-0000-4000-8000-000000000102';
@@ -760,9 +760,9 @@ describe('root command help dispatch', () => {
       writeFileSync(ledgerPath(runId), `${JSON.stringify({ timestamp, runId, event: 'start', data: {} })}\n`);
     };
     const cleanup = (...args: string[]) => Bun.spawnSync({
-      cmd: [process.execPath, monad, `--test=${stateDir}`, 'self', 'unfinished-runs-cleanup', '--json', ...args],
+      cmd: [process.execPath, elanous, `--test=${stateDir}`, 'self', 'unfinished-runs-cleanup', '--json', ...args],
       cwd,
-      env: { ...process.env, MONAD_STATE_DIR: stateDir },
+      env: { ...process.env, ELANOUS_STATE_DIR: stateDir },
       stdout: 'pipe',
       stderr: 'pipe',
     });
@@ -837,14 +837,14 @@ describe('root command help dispatch', () => {
     const nestedHelp = invoke('help', 'self', '--help');
 
     expect(help.exitCode).toBe(1);
-    expect(decode(help.stderr)).toContain('Usage: monad [options] [command]');
+    expect(decode(help.stderr)).toContain('Usage: elanous [options] [command]');
     expect(decode(help.stderr)).not.toContain("error: unknown command 'help'");
     expect(nestedHelp.exitCode).toBe(0);
     expect(decode(nestedHelp.stdout)).toContain('Self-awareness memory');
   });
 
   test('token rotate uses --config-dir, masks default output, and only reveals on request', async () => {
-    const configDir = await mkdtemp(join(tmpdir(), 'monad-token-rotate-'));
+    const configDir = await mkdtemp(join(tmpdir(), 'elanous-token-rotate-'));
     try {
       const first = invoke('--config-dir', configDir, 'token', 'rotate');
       const firstOutput = decode(first.stdout);
@@ -955,10 +955,10 @@ describe('agent-mission backend help', () => {
 });
 
 describe('harness ask production entry wiring', () => {
-  const originalMonadRunId = process.env.MONAD_RUN_ID;
+  const originalElanousRunId = process.env.ELANOUS_RUN_ID;
   afterEach(() => {
-    if (originalMonadRunId === undefined) delete process.env.MONAD_RUN_ID;
-    else process.env.MONAD_RUN_ID = originalMonadRunId;
+    if (originalElanousRunId === undefined) delete process.env.ELANOUS_RUN_ID;
+    else process.env.ELANOUS_RUN_ID = originalElanousRunId;
   });
 
   const withHarnessRunIdentity = <T extends object>(spec: T) => ({
@@ -1042,7 +1042,7 @@ describe('harness ask production entry wiring', () => {
         solveMissionViaHarness: (async () => ({ })) as never,
       });
 
-      await program.parseAsync(['node', 'monad', 'harness', 'mission', 'apm-one', 'apm-two', '--executor', 'self-implement']);
+      await program.parseAsync(['node', 'elanous', 'harness', 'mission', 'apm-one', 'apm-two', '--executor', 'self-implement']);
 
       expect(received).toEqual([expect.objectContaining({
         missionIds: ['apm-one', 'apm-two'],
@@ -1113,7 +1113,7 @@ describe('harness ask production entry wiring', () => {
         ['ask', ['harness', 'ask', '--target', relativeTarget, '/tmp/ask-grounding.txt']],
         ['say', ['harness', 'say', '--target', relativeTarget, 'ground', 'this']],
       ] as const) {
-        await program.parseAsync(['node', 'monad', ...command]);
+        await program.parseAsync(['node', 'elanous', ...command]);
         expect(selections.at(-1)).toEqual({ entrance, selection: { groundingCwd: resolve(launchCwd, relativeTarget) } });
       }
       for (const [entrance, command] of [
@@ -1122,7 +1122,7 @@ describe('harness ask production entry wiring', () => {
         ['ask', ['harness', 'ask', '--target', 'self', '/tmp/ask-self-target.txt']],
         ['say', ['harness', 'say', '--target', 'self', 'self', 'grounding']],
       ] as const) {
-        await program.parseAsync(['node', 'monad', ...command]);
+        await program.parseAsync(['node', 'elanous', ...command]);
         expect(selections.at(-1)).toEqual({ entrance, selection: {} });
       }
       for (const [entrance, command, reason] of [
@@ -1132,7 +1132,7 @@ describe('harness ask production entry wiring', () => {
         ['say', ['harness', 'say', '--target', 'target-file', 'file', 'grounding'], 'is not a directory'],
       ] as const) {
         const before = lines.length;
-        await program.parseAsync(['node', 'monad', ...command]);
+        await program.parseAsync(['node', 'elanous', ...command]);
         expect(selections.at(-1)).toEqual({ entrance, selection: {} });
         const warnings = lines.slice(before).filter((line) => line.startsWith('[ask] ⚠️ --target 을 접지 루트로 못 풀었다 — 발사 트리로 접지한다:'));
         expect(warnings).toHaveLength(1);
@@ -1176,7 +1176,7 @@ describe('harness ask production entry wiring', () => {
         setExitCode: (code) => { exitCodes.push(code); },
       });
 
-      await program.parseAsync(['node', 'monad', 'harness', 'ask', goalPath]);
+      await program.parseAsync(['node', 'elanous', 'harness', 'ask', goalPath]);
 
       expect(specs).toEqual([{ input: { file: goalPath }, executor: { kind: 'self' }, opts: {} }]);
       expect(pipelineSpecs).toEqual(specs.map((spec) => withHarnessRunIdentity(spec as object)));
@@ -1193,10 +1193,10 @@ describe('harness ask production entry wiring', () => {
   //   `llm.request` 0/133 은 «하나도» 안 찍혔다. `debug.log` 는 그 순간 env 가 서 있어야만 찍는다
   //   (src/debug/log.ts enrichDebugRecord) ⇒ mint 가 늦으면 저작 구간 로그가 런에 «영영» 안 묶인다.
   // ⛔ 이 시험은 「그 함수를 부르나」가 아니라 ***「저작 seam 이 불릴 때 env 가 이미 서 있나」***를 문다.
-  test('harness ask 는 저작 seam 이 불리기 «전»에 MONAD_RUN_ID 를 세운다', async () => {
+  test('harness ask 는 저작 seam 이 불리기 «전»에 ELANOUS_RUN_ID 를 세운다', async () => {
     const { program, setRunDevAskFromGoalFileDepsForTesting } = await import('./index.js');
-    const previous = process.env.MONAD_RUN_ID;
-    delete process.env.MONAD_RUN_ID;
+    const previous = process.env.ELANOUS_RUN_ID;
+    delete process.env.ELANOUS_RUN_ID;
     let runIdAtPreflight: string | undefined = 'NOT-CALLED';
     try {
       const base = passingPreflightDeps();
@@ -1204,7 +1204,7 @@ describe('harness ask production entry wiring', () => {
         ...base,
         loadLaunchPreflight: async () => {
           // 저작·발사 전 검사 모듈을 «읽는 순간»이 저작 구간의 첫 자리다.
-          runIdAtPreflight = process.env.MONAD_RUN_ID;
+          runIdAtPreflight = process.env.ELANOUS_RUN_ID;
           return (await base.loadLaunchPreflight!()) as never;
         },
         loadDevCli: async () => ({
@@ -1220,11 +1220,11 @@ describe('harness ask production entry wiring', () => {
         runSayLaunchFlow: async () => ({ kind: 'launch', goalFile: '/unused' } as never),
         setExitCode: () => {},
       });
-      await program.parseAsync(['node', 'monad', 'harness', 'ask', '/tmp/GOAL-runid-order.md']);
+      await program.parseAsync(['node', 'elanous', 'harness', 'ask', '/tmp/GOAL-runid-order.md']);
     } finally {
       setRunDevAskFromGoalFileDepsForTesting(undefined);
-      if (previous === undefined) delete process.env.MONAD_RUN_ID;
-      else process.env.MONAD_RUN_ID = previous;
+      if (previous === undefined) delete process.env.ELANOUS_RUN_ID;
+      else process.env.ELANOUS_RUN_ID = previous;
     }
     // ⛔ 'NOT-CALLED' 면 시험이 «안 문» 것이고, undefined 면 mint 가 «늦은» 것이다 — 둘을 가른다.
     expect(runIdAtPreflight).not.toBe('NOT-CALLED');
@@ -1234,10 +1234,10 @@ describe('harness ask production entry wiring', () => {
 
   // ⛔ 리뷰 should-fix ①: `harness say` 도 «같은» 선행 mint 를 받았는데 시험은 ask 만 돌렸다.
   //   두 진입은 «다른 함수»라 하나가 초록이어도 다른 하나는 열려 있을 수 있다.
-  test('harness say 도 저작 seam 이 불리기 «전»에 MONAD_RUN_ID 를 세운다', async () => {
+  test('harness say 도 저작 seam 이 불리기 «전»에 ELANOUS_RUN_ID 를 세운다', async () => {
     const { program, setRunDevAskFromGoalFileDepsForTesting } = await import('./index.js');
-    const previous = process.env.MONAD_RUN_ID;
-    delete process.env.MONAD_RUN_ID;
+    const previous = process.env.ELANOUS_RUN_ID;
+    delete process.env.ELANOUS_RUN_ID;
     let runIdAtPreflight: string | undefined = 'NOT-CALLED';
     try {
       const base = passingPreflightDeps();
@@ -1256,16 +1256,16 @@ describe('harness ask production entry wiring', () => {
         }),
         // ⛔ say 경로의 «저작 seam» 은 이것이다(ask 와 달리 loadLaunchPreflight 를 안 탄다).
         runSayLaunchFlow: async () => {
-          runIdAtPreflight = process.env.MONAD_RUN_ID;
+          runIdAtPreflight = process.env.ELANOUS_RUN_ID;
           return { kind: 'launch', goalFile: '/unused' } as never;
         },
         setExitCode: () => {},
       });
-      await program.parseAsync(['node', 'monad', 'harness', 'say', '무언가를', '고쳐라']);
+      await program.parseAsync(['node', 'elanous', 'harness', 'say', '무언가를', '고쳐라']);
     } finally {
       setRunDevAskFromGoalFileDepsForTesting(undefined);
-      if (previous === undefined) delete process.env.MONAD_RUN_ID;
-      else process.env.MONAD_RUN_ID = previous;
+      if (previous === undefined) delete process.env.ELANOUS_RUN_ID;
+      else process.env.ELANOUS_RUN_ID = previous;
     }
     expect(runIdAtPreflight).not.toBe('NOT-CALLED');
     expect(runIdAtPreflight).toMatch(/^run-/);
@@ -1281,13 +1281,13 @@ describe('harness ask production entry wiring', () => {
     expect(first.source).toBe('minted');
     expect(second.source).toBe('inherited');
     expect(second.runId).toBe(first.runId);
-    expect(env.MONAD_RUN_ID).toBe(first.runId);
+    expect(env.ELANOUS_RUN_ID).toBe(first.runId);
   });
 
   test('debug.log 는 호출부가 실은 runId 를 env 값으로 «안 덮는다»', async () => {
     const { debug } = await import('./debug/log.js');
-    const previous = process.env.MONAD_RUN_ID;
-    process.env.MONAD_RUN_ID = 'run-from-env';
+    const previous = process.env.ELANOUS_RUN_ID;
+    process.env.ELANOUS_RUN_ID = 'run-from-env';
     const seen: Array<Record<string, unknown>> = [];
     const off = debug.registerSink({
       name: 'runid-precedence-probe',
@@ -1302,8 +1302,8 @@ describe('harness ask production entry wiring', () => {
       debug.log('probe.runid-precedence', 'absent', { marker: 'x' });
     } finally {
       off();
-      if (previous === undefined) delete process.env.MONAD_RUN_ID;
-      else process.env.MONAD_RUN_ID = previous;
+      if (previous === undefined) delete process.env.ELANOUS_RUN_ID;
+      else process.env.ELANOUS_RUN_ID = previous;
     }
     // ⛔ 0 이면 시험이 «안 문» 것이다 — 「덮지 않는다」와 구분한다.
     expect(seen.length).toBe(2);
@@ -1338,7 +1338,7 @@ describe('harness ask production entry wiring', () => {
         setExitCode: () => {},
       });
 
-      await program.parseAsync(['node', 'monad', 'harness', 'ask', '/tmp/plain.ask']);
+      await program.parseAsync(['node', 'elanous', 'harness', 'ask', '/tmp/plain.ask']);
 
       expect(pipelineSpecs).toHaveLength(2);
       expect(pipelineSpecs[0]).not.toHaveProperty('relaunch');
@@ -1401,8 +1401,8 @@ describe('harness ask production entry wiring', () => {
         setExitCode: () => {},
       });
 
-      await program.parseAsync(['node', 'monad', 'harness', 'ask', '/tmp/GOAL-ask.md']);
-      await program.parseAsync(['node', 'monad', 'harness', 'say', 'write', 'goal']);
+      await program.parseAsync(['node', 'elanous', 'harness', 'ask', '/tmp/GOAL-ask.md']);
+      await program.parseAsync(['node', 'elanous', 'harness', 'say', 'write', 'goal']);
 
       expect(decisions.map((decision) => decision.input)).toEqual([
         '/tmp/GOAL-ask.md',
@@ -1464,7 +1464,7 @@ describe('harness ask production entry wiring', () => {
         setExitCode: () => {},
       });
 
-      await program.parseAsync(['node', 'monad', 'harness', 'ask', '/tmp/plain.ask']);
+      await program.parseAsync(['node', 'elanous', 'harness', 'ask', '/tmp/plain.ask']);
 
       expect(pipelineSpecs).toMatchObject([
         { input: { file: '/tmp/ask-goal.md' }, base: 'default-base' },
@@ -1478,7 +1478,7 @@ describe('harness ask production entry wiring', () => {
 
   test('dev command executes promoted pieces at the pipeline boundary, forwards a chained base, and preserves the initial base without opts', async () => {
     const { program, setDevLaunchControlTestSeams } = await import('./index.js');
-    const previousRunId = process.env.MONAD_RUN_ID;
+    const previousRunId = process.env.ELANOUS_RUN_ID;
     const pipelineSpecs: Array<{ input?: unknown; base?: string }> = [];
     const launchOrder: string[] = [];
     const triageEvents: Array<Record<string, unknown>> = [];
@@ -1489,7 +1489,7 @@ describe('harness ask production entry wiring', () => {
     });
     let supervisorCalls = 0;
     try {
-      process.env.MONAD_RUN_ID = 'run-dev-triage';
+      process.env.ELANOUS_RUN_ID = 'run-dev-triage';
       setDevLaunchControlTestSeams({
         startDraftTriageOptions: {
           queryAbandonedDraftPrs: () => { launchOrder.push('triage'); return []; },
@@ -1525,7 +1525,7 @@ describe('harness ask production entry wiring', () => {
         }) as never,
       });
 
-      await program.parseAsync(['node', 'monad', 'dev', '--no-open-pr', '--no-auto-merge', '--no-auto-review', '--base', 'default-base', 'goal']);
+      await program.parseAsync(['node', 'elanous', 'dev', '--no-open-pr', '--no-auto-merge', '--no-auto-review', '--base', 'default-base', 'goal']);
 
       expect(supervisorCalls).toBe(1);
       expect(launchOrder).toEqual(['triage', 'pipeline', 'pipeline', 'pipeline']);
@@ -1537,8 +1537,8 @@ describe('harness ask production entry wiring', () => {
         { input: { text: 'second fragment' }, base: 'first-branch' },
       ]);
     } finally {
-      if (previousRunId === undefined) delete process.env.MONAD_RUN_ID;
-      else process.env.MONAD_RUN_ID = previousRunId;
+      if (previousRunId === undefined) delete process.env.ELANOUS_RUN_ID;
+      else process.env.ELANOUS_RUN_ID = previousRunId;
       setDevLaunchControlTestSeams(undefined);
       log.mockRestore();
       exit.mockRestore();
@@ -1572,8 +1572,8 @@ describe('harness ask production entry wiring', () => {
         setExitCode: () => {},
       });
 
-      await program.parseAsync(['node', 'monad', 'harness', 'ask', '--no-supervise', '/tmp/GOAL-ask.md']);
-      await program.parseAsync(['node', 'monad', 'harness', 'say', '--no-supervise', 'write', 'goal']);
+      await program.parseAsync(['node', 'elanous', 'harness', 'ask', '--no-supervise', '/tmp/GOAL-ask.md']);
+      await program.parseAsync(['node', 'elanous', 'harness', 'say', '--no-supervise', 'write', 'goal']);
 
       expect(decisions).toEqual([
         { input: '/tmp/GOAL-ask.md', options: undefined },
@@ -1586,10 +1586,10 @@ describe('harness ask production entry wiring', () => {
 
   test('harness ask and say stamp ensureRunIdentity onto the pipeline spec', async () => {
     const { program, setRunDevAskFromGoalFileDepsForTesting } = await import('./index.js');
-    const previousRunId = process.env.MONAD_RUN_ID;
+    const previousRunId = process.env.ELANOUS_RUN_ID;
     const pipelineSpecs: Array<{ runId?: string; runIdSource?: string }> = [];
     try {
-      process.env.MONAD_RUN_ID = 'run-harness-identity-ask';
+      process.env.ELANOUS_RUN_ID = 'run-harness-identity-ask';
       setRunDevAskFromGoalFileDepsForTesting({
         ...passingPreflightDeps(),
         loadDevCli: async () => ({
@@ -1611,24 +1611,24 @@ describe('harness ask production entry wiring', () => {
         setExitCode: () => {},
       });
 
-      await program.parseAsync(['node', 'monad', 'harness', 'ask', '/tmp/GOAL-identity-goal.md']);
-      process.env.MONAD_RUN_ID = 'run-harness-identity-say';
-      await program.parseAsync(['node', 'monad', 'harness', 'say', 'stamp', 'identity']);
+      await program.parseAsync(['node', 'elanous', 'harness', 'ask', '/tmp/GOAL-identity-goal.md']);
+      process.env.ELANOUS_RUN_ID = 'run-harness-identity-say';
+      await program.parseAsync(['node', 'elanous', 'harness', 'say', 'stamp', 'identity']);
 
       expect(pipelineSpecs).toEqual([
         { runId: 'run-harness-identity-ask', runIdSource: 'inherited' },
         { runId: 'run-harness-identity-say', runIdSource: 'inherited' },
       ]);
     } finally {
-      if (previousRunId === undefined) delete process.env.MONAD_RUN_ID;
-      else process.env.MONAD_RUN_ID = previousRunId;
+      if (previousRunId === undefined) delete process.env.ELANOUS_RUN_ID;
+      else process.env.ELANOUS_RUN_ID = previousRunId;
       setRunDevAskFromGoalFileDepsForTesting(undefined);
     }
   });
 
   test('harness ask and say run injected start triage once before each initial pipeline with their launch run ids', async () => {
     const { program, setRunDevAskFromGoalFileDepsForTesting } = await import('./index.js');
-    const previousRunId = process.env.MONAD_RUN_ID;
+    const previousRunId = process.env.ELANOUS_RUN_ID;
     const order: string[] = [];
     const triageEvents: Array<Record<string, unknown>> = [];
     const log = spyOn(debug, 'log').mockImplementation((_category, event, data) => {
@@ -1659,10 +1659,10 @@ describe('harness ask production entry wiring', () => {
         setExitCode: () => {},
       });
 
-      process.env.MONAD_RUN_ID = 'run-triage-ask';
-      await program.parseAsync(['node', 'monad', 'harness', 'ask', '/tmp/GOAL-triage-ask.md']);
-      process.env.MONAD_RUN_ID = 'run-triage-say';
-      await program.parseAsync(['node', 'monad', 'harness', 'say', 'triage', 'say']);
+      process.env.ELANOUS_RUN_ID = 'run-triage-ask';
+      await program.parseAsync(['node', 'elanous', 'harness', 'ask', '/tmp/GOAL-triage-ask.md']);
+      process.env.ELANOUS_RUN_ID = 'run-triage-say';
+      await program.parseAsync(['node', 'elanous', 'harness', 'say', 'triage', 'say']);
 
       expect(order).toEqual(['triage', 'pipeline', 'triage', 'pipeline']);
       expect(triageEvents).toEqual([
@@ -1670,8 +1670,8 @@ describe('harness ask production entry wiring', () => {
         expect.objectContaining({ runId: 'run-triage-say' }),
       ]);
     } finally {
-      if (previousRunId === undefined) delete process.env.MONAD_RUN_ID;
-      else process.env.MONAD_RUN_ID = previousRunId;
+      if (previousRunId === undefined) delete process.env.ELANOUS_RUN_ID;
+      else process.env.ELANOUS_RUN_ID = previousRunId;
       setRunDevAskFromGoalFileDepsForTesting(undefined);
       log.mockRestore();
     }
@@ -1679,10 +1679,10 @@ describe('harness ask production entry wiring', () => {
 
   test('harness ask runs start triage once before an initial pipeline exception', async () => {
     const { program, setRunDevAskFromGoalFileDepsForTesting } = await import('./index.js');
-    const previousRunId = process.env.MONAD_RUN_ID;
+    const previousRunId = process.env.ELANOUS_RUN_ID;
     const order: string[] = [];
     try {
-      process.env.MONAD_RUN_ID = 'run-triage-throw';
+      process.env.ELANOUS_RUN_ID = 'run-triage-throw';
       setRunDevAskFromGoalFileDepsForTesting({
         ...passingPreflightDeps(),
         loadDevCli: async () => ({
@@ -1701,11 +1701,11 @@ describe('harness ask production entry wiring', () => {
         setExitCode: () => {},
       });
 
-      await program.parseAsync(['node', 'monad', 'harness', 'ask', '/tmp/GOAL-triage-throw.md']);
+      await program.parseAsync(['node', 'elanous', 'harness', 'ask', '/tmp/GOAL-triage-throw.md']);
       expect(order).toEqual(['triage', 'pipeline']);
     } finally {
-      if (previousRunId === undefined) delete process.env.MONAD_RUN_ID;
-      else process.env.MONAD_RUN_ID = previousRunId;
+      if (previousRunId === undefined) delete process.env.ELANOUS_RUN_ID;
+      else process.env.ELANOUS_RUN_ID = previousRunId;
       setRunDevAskFromGoalFileDepsForTesting(undefined);
     }
   });
@@ -1771,7 +1771,7 @@ describe('harness ask production entry wiring', () => {
         setExitCode: () => {},
       });
 
-      await program.parseAsync(['node', 'monad', 'harness', 'ask', '--json', '--base', 'release/base', '--no-auto-merge', '--observe-only', '/tmp/GOAL-knobs.md']);
+      await program.parseAsync(['node', 'elanous', 'harness', 'ask', '--json', '--base', 'release/base', '--no-auto-merge', '--observe-only', '/tmp/GOAL-knobs.md']);
 
       expect(specs).toEqual([{
         input: { file: '/tmp/GOAL-knobs.md' },
@@ -1812,9 +1812,9 @@ describe('harness ask production entry wiring', () => {
         runSayLaunchFlow: async () => ({ kind: 'launch', goalFile: '/unused' } as never),
         setExitCode: () => {},
       });
-      await program.parseAsync(['node', 'monad', 'harness', 'ask', '--graph', 'on', '/tmp/GOAL-graph-on.md']);
-      await program.parseAsync(['node', 'monad', 'harness', 'ask', '--graph', 'off', '/tmp/GOAL-graph-off.md']);
-      await program.parseAsync(['node', 'monad', 'harness', 'ask', '/tmp/GOAL-graph-omitted.md']);
+      await program.parseAsync(['node', 'elanous', 'harness', 'ask', '--graph', 'on', '/tmp/GOAL-graph-on.md']);
+      await program.parseAsync(['node', 'elanous', 'harness', 'ask', '--graph', 'off', '/tmp/GOAL-graph-off.md']);
+      await program.parseAsync(['node', 'elanous', 'harness', 'ask', '/tmp/GOAL-graph-omitted.md']);
       expect(specs).toEqual([
         { input: { file: '/tmp/GOAL-graph-on.md' }, executor: { kind: 'self' }, opts: { graph: true }, explicitNames: ['graph'] },
         { input: { file: '/tmp/GOAL-graph-off.md' }, executor: { kind: 'self' }, opts: { graph: false }, explicitNames: ['graph'] },
@@ -1850,12 +1850,12 @@ describe('harness ask production entry wiring', () => {
       });
 
       await program.parseAsync([
-        'node', 'monad', 'harness', 'ask',
+        'node', 'elanous', 'harness', 'ask',
         '--correlation', 't156-denom-press',
         '--child-llm-provider', 'grok', '--child-llm-model', 'grok-4.6', '--child-llm-effort', 'high',
         '--target', 'src/index.ts', '--graph', 'on', '/tmp/GOAL-correlation.md',
       ]);
-      await program.parseAsync(['node', 'monad', 'harness', 'ask', '/tmp/GOAL-correlation-omitted.md']);
+      await program.parseAsync(['node', 'elanous', 'harness', 'ask', '/tmp/GOAL-correlation-omitted.md']);
 
       expect(specs).toEqual([
         {
@@ -1908,7 +1908,7 @@ describe('harness ask production entry wiring', () => {
       });
 
       await program.parseAsync([
-        'node', 'monad', 'harness', 'ask',
+        'node', 'elanous', 'harness', 'ask',
         '--child-llm-provider', 'grok', '--child-llm-model', 'grok-4.6',
         '/tmp/GOAL-child-llm.md',
       ]);
@@ -1946,7 +1946,7 @@ describe('harness ask production entry wiring', () => {
         setExitCode: () => {},
       });
 
-      await program.parseAsync(['node', 'monad', 'harness', 'ask', '--child-llm-provider', 'grok', '/tmp/GOAL-unpaired.md']);
+      await program.parseAsync(['node', 'elanous', 'harness', 'ask', '--child-llm-provider', 'grok', '/tmp/GOAL-unpaired.md']);
 
       // ⭐ 2026-09-02 (대표) — provider «만» 줘도 이제 «거부하지 않는다». 기본 모델이 채워져 파이프라인이 «돈다».
       //   ⛔ 종전 계약은 「짝이 없으면 거부」였다. 그 문면을 무는 이 줄을 «갱신»한다.
@@ -1960,7 +1960,7 @@ describe('harness ask production entry wiring', () => {
 
   test('harness ask emits a pre-launch decomposition recommendation before pipeline execution', async () => {
     const { program, setRunDevAskFromGoalFileDepsForTesting } = await import('./index.js');
-    const goalDir = await mkdtemp(join(tmpdir(), 'monad-harness-ask-decompose-'));
+    const goalDir = await mkdtemp(join(tmpdir(), 'elanous-harness-ask-decompose-'));
     const goalPath = join(goalDir, 'GOAL-goal.md');
     const printed: string[] = [];
     const pipelineSpecs: unknown[] = [];
@@ -2008,7 +2008,7 @@ describe('harness ask production entry wiring', () => {
         setExitCode: () => {},
       });
 
-      await program.parseAsync(['node', 'monad', 'harness', 'ask', goalPath]);
+      await program.parseAsync(['node', 'elanous', 'harness', 'ask', goalPath]);
 
       expect(printed.some((line) => line.startsWith('[ask]') && line.includes('발사 전 분해 권고'))).toBe(true);
       expect(decompositionInputs).toEqual([expect.objectContaining({
@@ -2083,7 +2083,7 @@ describe('harness ask production entry wiring', () => {
         setExitCode: (code) => { exitCodes.push(code); },
       });
 
-      await program.parseAsync(['node', 'monad', 'harness', 'ask', goalPath]);
+      await program.parseAsync(['node', 'elanous', 'harness', 'ask', goalPath]);
 
       const output = printed.join('\n');
       expect(output.split('\n').filter((line) => line.startsWith('[preflight]')).length).toBeGreaterThan(0);
@@ -2157,7 +2157,7 @@ describe('harness ask production entry wiring', () => {
         setExitCode: () => {},
       });
 
-      await program.parseAsync(['node', 'monad', 'harness', 'ask', '/tmp/GOAL-no-target.md']);
+      await program.parseAsync(['node', 'elanous', 'harness', 'ask', '/tmp/GOAL-no-target.md']);
 
       const unforcedOutput = printed.join('\n');
       expect(decideForceArgs).toEqual([false]);
@@ -2167,7 +2167,7 @@ describe('harness ask production entry wiring', () => {
       expect(unforcedOutput).not.toContain('위 막힘을 «뚫고» 발사한다');
 
       printed.length = 0;
-      await program.parseAsync(['node', 'monad', 'harness', 'ask', '--force-preflight', '/tmp/GOAL-no-target.md']);
+      await program.parseAsync(['node', 'elanous', 'harness', 'ask', '--force-preflight', '/tmp/GOAL-no-target.md']);
 
       const forcedOutput = printed.join('\n');
       expect(decideForceArgs).toEqual([false, true]);
@@ -2198,7 +2198,7 @@ describe('harness ask production entry wiring', () => {
         setExitCode: (code) => { exitCodes.push(code); },
       });
 
-      await program.parseAsync(['node', 'monad', 'harness', 'ask', '/tmp/GOAL-failing-goal.md']);
+      await program.parseAsync(['node', 'elanous', 'harness', 'ask', '/tmp/GOAL-failing-goal.md']);
 
       expect(exitCodes).toEqual([2]);
     } finally {
@@ -2236,7 +2236,7 @@ describe('harness ask production entry wiring', () => {
         setExitCode: () => {},
       });
 
-      await program.parseAsync(['node', 'monad', 'harness', 'ask', '/tmp/GOAL-goal.md']);
+      await program.parseAsync(['node', 'elanous', 'harness', 'ask', '/tmp/GOAL-goal.md']);
 
       const line = printed.find((entry) => entry.includes('run='));
       expect(line).toBeDefined();
@@ -2294,8 +2294,8 @@ describe('harness ask production entry wiring', () => {
         setExitCode: () => {},
       });
 
-      await program.parseAsync(['node', 'monad', 'harness', 'say', 'author this goal']);
-      await program.parseAsync(['node', 'monad', 'harness', 'say', 'author this goal', '--force-preflight']);
+      await program.parseAsync(['node', 'elanous', 'harness', 'say', 'author this goal']);
+      await program.parseAsync(['node', 'elanous', 'harness', 'say', 'author this goal', '--force-preflight']);
 
       expect(authoringEntrances).toEqual(['cli-harness-say:false', 'cli-harness-say:true']);
       expect(assembledSpecs.map((spec) => spec.entrance)).toEqual(['cli-harness-say', 'cli-harness-say']);
@@ -2328,7 +2328,7 @@ describe('harness ask production entry wiring', () => {
         setExitCode: () => {},
       });
 
-      await program.parseAsync(['node', 'monad', 'harness', 'ask', '/tmp/GOAL-goal.md']);
+      await program.parseAsync(['node', 'elanous', 'harness', 'ask', '/tmp/GOAL-goal.md']);
 
       expect(printed.some((entry) => entry.includes('run='))).toBe(false);
     } finally {
@@ -2370,7 +2370,7 @@ describe('harness ask production entry wiring', () => {
         setExitCode: () => {},
       });
 
-      await program.parseAsync(['node', 'monad', 'harness', 'plan', 'write', 'a', 'plan']);
+      await program.parseAsync(['node', 'elanous', 'harness', 'plan', 'write', 'a', 'plan']);
 
       const output = printed.join('\n');
       expect(planRfcCalls).toEqual([['write a plan', { dryRun: false }]]);
@@ -2423,7 +2423,7 @@ describe('harness ask production entry wiring', () => {
         setExitCode: (code) => { exitCodes.push(code); },
       });
 
-      await program.parseAsync(['node', 'monad', 'harness', 'say', 'one', 'two', 'three']);
+      await program.parseAsync(['node', 'elanous', 'harness', 'say', 'one', 'two', 'three']);
 
       expect(selected).toEqual([{ textParts: [], opts: { say: 'one two three' } }]);
       expect(sayLaunchInputs).toEqual(['one two three']);
@@ -2456,7 +2456,7 @@ describe('harness ask production entry wiring', () => {
         setExitCode: (code) => { exitCodes.push(code); },
       });
 
-      await program.parseAsync(['node', 'monad', 'harness', 'say', '--observe-only', 'write', 'goal']);
+      await program.parseAsync(['node', 'elanous', 'harness', 'say', '--observe-only', 'write', 'goal']);
 
       expect(sayLaunchInputs).toEqual([]);
       expect(printed.join('\n')).toContain('--observe-only');
@@ -2490,7 +2490,7 @@ describe('harness ask production entry wiring', () => {
         setExitCode: () => {},
       });
 
-      await program.parseAsync(['node', 'monad', 'harness', 'say', '--base', 'main', '--no-auto-merge', 'write', 'goal']);
+      await program.parseAsync(['node', 'elanous', 'harness', 'say', '--base', 'main', '--no-auto-merge', 'write', 'goal']);
 
       expect(sayLaunchInputs).toEqual(['write goal']);
     } finally {
@@ -2526,7 +2526,7 @@ describe('harness ask production entry wiring', () => {
         setExitCode: () => {},
       });
 
-      await program.parseAsync(['node', 'monad', 'harness', 'say', '--json', '--base', 'main', '--no-auto-merge', '--observe-only', 'write', 'goal']);
+      await program.parseAsync(['node', 'elanous', 'harness', 'say', '--json', '--base', 'main', '--no-auto-merge', '--observe-only', 'write', 'goal']);
 
       expect(specs).toEqual([{
         input: { file: '/tmp/say-knobs.md' },
@@ -2565,7 +2565,7 @@ describe('harness ask production entry wiring', () => {
       });
 
       await program.parseAsync([
-        'node', 'monad', 'harness', 'say',
+        'node', 'elanous', 'harness', 'say',
         '--child-llm-provider', 'grok', '--child-llm-model', 'grok-4.6',
         'write', 'goal',
       ]);
@@ -2620,7 +2620,7 @@ describe('harness ask production entry wiring', () => {
       });
 
       await program.parseAsync([
-        'node', 'monad', 'harness', 'plan',
+        'node', 'elanous', 'harness', 'plan',
         '--role-llm', 'implement=grok/best',
         '--role-llm', 'review=anthropic',
         'write', 'a', 'plan',
@@ -2661,7 +2661,7 @@ describe('harness ask production entry wiring', () => {
         setExitCode: (code) => { exitCodes.push(code); },
       });
 
-      await program.parseAsync(['node', 'monad', 'harness', 'say', 'blocked', 'launch']);
+      await program.parseAsync(['node', 'elanous', 'harness', 'say', 'blocked', 'launch']);
 
       expect(pipelineSpecs).toEqual([]);
       expect(exitCodes).toEqual([1]);
@@ -2691,7 +2691,7 @@ describe('harness ask production entry wiring', () => {
         setExitCode: (code) => { exitCodes.push(code); },
       });
 
-      await program.parseAsync(['node', 'monad', 'harness', 'say', 'pipeline', 'fails']);
+      await program.parseAsync(['node', 'elanous', 'harness', 'say', 'pipeline', 'fails']);
 
       expect(exitCodes).toEqual([2]);
     } finally {
@@ -2738,7 +2738,7 @@ describe('harness ask production entry wiring', () => {
         setExitCode: (code) => { exitCodes.push(code); },
       });
 
-      await program.parseAsync(['node', 'monad', 'harness', 'ask', askPath, '--goal-type', 'research']);
+      await program.parseAsync(['node', 'elanous', 'harness', 'ask', askPath, '--goal-type', 'research']);
 
       expect(printed[0]).toBe('[harness ask] 입력 종류: ask-file');
       expect(selected).toEqual([{ textParts: [], opts: { ask: askPath } }]);
@@ -2791,7 +2791,7 @@ describe('harness ask production entry wiring', () => {
         setExitCode: () => {},
       });
 
-      await program.parseAsync(['node', 'monad', 'harness', 'ask', '--json', askPath]);
+      await program.parseAsync(['node', 'elanous', 'harness', 'ask', '--json', askPath]);
 
       expect(printed[0]).toBe('[harness ask] 입력 종류: ask-file');
       expect(selected).toEqual([{ textParts: [], opts: { ask: askPath } }]);
@@ -2837,7 +2837,7 @@ describe('harness ask production entry wiring', () => {
         setExitCode: () => {},
       });
 
-      await program.parseAsync(['node', 'monad', 'harness', 'ask', goalPath]);
+      await program.parseAsync(['node', 'elanous', 'harness', 'ask', goalPath]);
 
       expect(printed.some((line) => line.includes('[harness ask] 입력 종류:'))).toBe(false);
       expect(printed[0]).toBe('[preflight] 인보커 작업 트리 원격 기본 브랜치 대비 — 뒤처지지 않았다 (origin/main)');
@@ -2939,7 +2939,7 @@ describe('dev and drive Commander option-source wiring', () => {
 
 describe('self orchestrate CLI decomposer selection wiring', () => {
   const source = readFileSync(new URL('./index.ts', import.meta.url), 'utf8');
-  const monad = new URL('../bin/monad.mjs', import.meta.url).pathname;
+  const elanous = new URL('../bin/elanous.mjs', import.meta.url).pathname;
   const cwd = new URL('../', import.meta.url).pathname;
 
   function commandBlock(text: string, marker: string): string {
@@ -2991,7 +2991,7 @@ describe('self orchestrate CLI decomposer selection wiring', () => {
 
   test('rejects an explicit fabric flag without decomposition with exit code 2', () => {
     const result = Bun.spawnSync({
-      cmd: [process.execPath, monad, '--test', 'self', 'orchestrate', 'goal', '--fabric-decompose'],
+      cmd: [process.execPath, elanous, '--test', 'self', 'orchestrate', 'goal', '--fabric-decompose'],
       cwd,
       stdout: 'pipe',
       stderr: 'pipe',
@@ -3003,7 +3003,7 @@ describe('self orchestrate CLI decomposer selection wiring', () => {
 
   test('harness still rejects fabric decompose because decompose remains outside this landing', () => {
     const result = Bun.spawnSync({
-      cmd: [process.execPath, monad, '--test', 'harness', 'orchestrate', 'goal', '--fabric-decompose'],
+      cmd: [process.execPath, elanous, '--test', 'harness', 'orchestrate', 'goal', '--fabric-decompose'],
       cwd,
       stdout: 'pipe',
       stderr: 'pipe',
@@ -3025,7 +3025,7 @@ describe('self orchestrate CLI decomposer selection wiring', () => {
 });
 
 describe('self orchestrate CLI help tiers', () => {
-  const monad = new URL('../bin/monad.mjs', import.meta.url).pathname;
+  const elanous = new URL('../bin/elanous.mjs', import.meta.url).pathname;
   const cwd = new URL('../', import.meta.url).pathname;
   // ⭐⭐ 이 집합이 ***`self orchestrate` 옵션 계약의 canonical***이다.
   //   「옵션이 살아 있나」는 아래 `preserves the existing option set…` 이 «두 티어의 실제 산출»로 판정하고,
@@ -3047,7 +3047,7 @@ describe('self orchestrate CLI help tiers', () => {
 
   function help(...args: string[]): string {
     const result = Bun.spawnSync({
-      cmd: [process.execPath, monad, '--test', 'self', 'orchestrate', ...args],
+      cmd: [process.execPath, elanous, '--test', 'self', 'orchestrate', ...args],
       cwd,
       stdout: 'pipe',
       stderr: 'pipe',
@@ -3088,14 +3088,14 @@ describe('self orchestrate CLI help tiers', () => {
     ['--help', 'Options:'],
     ['--help-all', 'All options:'],
   ])('prints %s before self preAction can create a log store', async (helpFlag, expectedHeading) => {
-    const isolatedCwd = await mkdtemp(join(tmpdir(), 'monad-orchestrate-help-'));
+    const isolatedCwd = await mkdtemp(join(tmpdir(), 'elanous-orchestrate-help-'));
     const stateDir = join(isolatedCwd, 'state');
     const configDir = join(isolatedCwd, 'config');
     try {
       const result = Bun.spawnSync({
-        cmd: [process.execPath, monad, 'self', 'orchestrate', helpFlag],
+        cmd: [process.execPath, elanous, 'self', 'orchestrate', helpFlag],
         cwd: isolatedCwd,
-        env: { ...process.env, MONAD_STATE_DIR: stateDir, MONAD_CONFIG_DIR: configDir },
+        env: { ...process.env, ELANOUS_STATE_DIR: stateDir, ELANOUS_CONFIG_DIR: configDir },
         stdout: 'pipe',
         stderr: 'pipe',
       });
@@ -3117,12 +3117,12 @@ describe('self orchestrate CLI help tiers', () => {
 });
 
 describe('dev CLI help tiers', () => {
-  const monad = new URL('../bin/monad.mjs', import.meta.url).pathname;
+  const elanous = new URL('../bin/elanous.mjs', import.meta.url).pathname;
   const cwd = new URL('../', import.meta.url).pathname;
   const existingOptionNames = new Set([
     '--file', '--ask', '--say', '--graph', '--force-preflight', '--allow-no-evidence',
     '--allow-superseded-goal', '--allow-goal-lint-errors', '--backend', '--transport',
-    '--branch', '--base', '--plan', '--implement', '--monad', '--hold', '--goal',
+    '--branch', '--base', '--plan', '--implement', '--elanous', '--hold', '--goal',
     '--max-steps', '--poll-ms', '--ready-timeout-ms', '--model', '--observe-only', '--isolated-root', '--cwd',
     '--worktree', '--no-open-pr', '--no-auto-merge', '--no-auto-review', '--no-draft',
     '--no-supervise', '--child-llm-provider', '--child-llm-model', '--child-llm-effort', '--correlation', '--target', '--context',
@@ -3131,7 +3131,7 @@ describe('dev CLI help tiers', () => {
   ]);
   const primaryOptionNames = new Set([
     '--ask', '--say', '--file', '--backend', '--target',
-    '--plan', '--implement', '--monad', '--attach', '--json', '--help-all', '--help',
+    '--plan', '--implement', '--elanous', '--attach', '--json', '--help-all', '--help',
   ]);
 
   test('option contract set itself does not silently shrink beyond the fourteen intentional retirements', () => {
@@ -3140,7 +3140,7 @@ describe('dev CLI help tiers', () => {
 
   function help(...args: string[]): string {
     const result = Bun.spawnSync({
-      cmd: [process.execPath, monad, '--test', 'dev', ...args],
+      cmd: [process.execPath, elanous, '--test', 'dev', ...args],
       cwd,
       stdout: 'pipe',
       stderr: 'pipe',
@@ -3180,7 +3180,7 @@ describe('dev CLI help tiers', () => {
 
   test('accepts a folded option as a real CLI argument instead of unknown option', () => {
     const result = Bun.spawnSync({
-      cmd: [process.execPath, monad, '--test', 'dev', '--force-preflight'],
+      cmd: [process.execPath, elanous, '--test', 'dev', '--force-preflight'],
       cwd,
       stdout: 'pipe',
       stderr: 'pipe',
@@ -3191,7 +3191,7 @@ describe('dev CLI help tiers', () => {
 
   test('correlation reaches dev file validation instead of being rejected by the parser', () => {
     const result = Bun.spawnSync({
-      cmd: [process.execPath, monad, '--test', 'dev', '--file', 'tmp/nonexistent-zzz.md', '--correlation', 'request-zzz'],
+      cmd: [process.execPath, elanous, '--test', 'dev', '--file', 'tmp/nonexistent-zzz.md', '--correlation', 'request-zzz'],
       cwd,
       stdout: 'pipe',
       stderr: 'pipe',
@@ -3204,7 +3204,7 @@ describe('dev CLI help tiers', () => {
 
   test('dev say action carries force-preflight and graph on/off through the same launch invocation while omission stays absent', async () => {
     const { program, setDevLaunchControlTestSeams } = await import('./index.js');
-    const goalDir = await mkdtemp(join(tmpdir(), 'monad-dev-graph-action-'));
+    const goalDir = await mkdtemp(join(tmpdir(), 'elanous-dev-graph-action-'));
     const goalFile = join(goalDir, 'GOAL-dev-graph.md');
     await writeFile(goalFile, '대상 경로: src/index.ts\n\n## WHAT TO BUILD\n- graph action wiring');
     const launchForceValues: boolean[] = [];
@@ -3225,7 +3225,7 @@ describe('dev CLI help tiers', () => {
             return { kind: 'interactive', result: null, plan: { base: 'main' } } as never;
           }) as never,
         });
-        const argv = ['node', 'monad', 'dev', '--say', '같은 objective', '--force-preflight'];
+        const argv = ['node', 'elanous', 'dev', '--say', '같은 objective', '--force-preflight'];
         if (graph !== undefined) argv.push('--graph', graph);
         await expect(program.parseAsync(argv)).rejects.toThrow('PROCESS_EXIT_1');
       }
@@ -3241,7 +3241,7 @@ describe('dev CLI help tiers', () => {
     expect(pipelineSpecs[2]?.self).not.toHaveProperty('graphAuthoritative');
   });
 
-  test('dev --monad --hold --json leaves the hold JSON as the only stdout document', async () => {
+  test('dev --elanous --hold --json leaves the hold JSON as the only stdout document', async () => {
     const { program, setDevLaunchControlTestSeams } = await import('./index.js');
     const lines: string[] = [];
     const output = spyOn(console, 'log').mockImplementation((line?: unknown) => { lines.push(String(line)); });
@@ -3252,10 +3252,10 @@ describe('dev CLI help tiers', () => {
       setDevLaunchControlTestSeams({
         runDevPipeline: (async () => {
           console.log(JSON.stringify({ held: true, ptyId: 'pty_12345678', spaceId: 'dev-run-x', workdir: '/work' }));
-          return { kind: 'monad-tui', result: { exitCode: 0 }, plan: { base: 'main', monad: { hold: true } } } as never;
+          return { kind: 'elanous-tui', result: { exitCode: 0 }, plan: { base: 'main', elanous: { hold: true } } } as never;
         }) as never,
       });
-      await expect(program.parseAsync(['node', 'monad', 'dev', '--monad', '--hold', '--json'])).resolves.toBeDefined();
+      await expect(program.parseAsync(['node', 'elanous', 'dev', '--elanous', '--hold', '--json'])).resolves.toBeDefined();
     } finally {
       setDevLaunchControlTestSeams(undefined);
       output.mockRestore();
@@ -3272,7 +3272,7 @@ describe('dev CLI help tiers', () => {
 
   test('records raw hold-owner predicate values only when a requested hold does not enter the owner wait', async () => {
     const { program, setDevLaunchControlTestSeams } = await import('./index.js');
-    const goalDir = await mkdtemp(join(tmpdir(), 'monad-hold-owner-observation-'));
+    const goalDir = await mkdtemp(join(tmpdir(), 'elanous-hold-owner-observation-'));
     const goalFile = join(goalDir, 'GOAL-hold-owner.md');
     await writeFile(goalFile, '대상 경로: src/index.ts\n');
     const seen: Array<Record<string, unknown>> = [];
@@ -3289,58 +3289,58 @@ describe('dev CLI help tiers', () => {
     const exit = spyOn(process, 'exit').mockImplementation(((code?: number) => {
       throw new Error(`PROCESS_EXIT_${code}`);
     }) as never);
-    const previousOwner = process.env.MONAD_HOLD_OWNER;
-    const previousRunId = process.env.MONAD_RUN_ID;
+    const previousOwner = process.env.ELANOUS_HOLD_OWNER;
+    const previousRunId = process.env.ELANOUS_RUN_ID;
 
     try {
-      process.env.MONAD_HOLD_OWNER = '1';
+      process.env.ELANOUS_HOLD_OWNER = '1';
       setDevLaunchControlTestSeams({
         runDevPipeline: (async () => ({
-          kind: 'shell-drive', result: { exitCode: 0 }, plan: { base: 'main', monad: { hold: true } },
+          kind: 'shell-drive', result: { exitCode: 0 }, plan: { base: 'main', elanous: { hold: true } },
         }) as never),
       });
-      await expect(program.parseAsync(['node', 'monad', 'dev', '--monad', '--goal', goalFile])).rejects.toThrow('PROCESS_EXIT_1');
+      await expect(program.parseAsync(['node', 'elanous', 'dev', '--elanous', '--goal', goalFile])).rejects.toThrow('PROCESS_EXIT_1');
 
       setDevLaunchControlTestSeams({
         runDevPipeline: (async () => ({
-          kind: 'monad-tui', result: { exitCode: 0 }, plan: { base: 'main' },
+          kind: 'elanous-tui', result: { exitCode: 0 }, plan: { base: 'main' },
         }) as never),
       });
-      await expect(program.parseAsync(['node', 'monad', 'dev', '--monad', '--hold'])).rejects.toThrow('PROCESS_EXIT_1');
+      await expect(program.parseAsync(['node', 'elanous', 'dev', '--elanous', '--hold'])).rejects.toThrow('PROCESS_EXIT_1');
 
-      process.env.MONAD_HOLD_OWNER = '0';
+      process.env.ELANOUS_HOLD_OWNER = '0';
       setDevLaunchControlTestSeams({
         runDevPipeline: (async () => ({
-          kind: 'monad-tui', result: { exitCode: 0 }, plan: { base: 'main', monad: { hold: true } },
+          kind: 'elanous-tui', result: { exitCode: 0 }, plan: { base: 'main', elanous: { hold: true } },
         }) as never),
       });
-      await expect(program.parseAsync(['node', 'monad', 'dev', '--monad', '--goal', goalFile])).rejects.toThrow('PROCESS_EXIT_1');
+      await expect(program.parseAsync(['node', 'elanous', 'dev', '--elanous', '--goal', goalFile])).rejects.toThrow('PROCESS_EXIT_1');
 
-      delete process.env.MONAD_HOLD_OWNER;
+      delete process.env.ELANOUS_HOLD_OWNER;
       setDevLaunchControlTestSeams({
         runDevPipeline: (async () => ({
-          kind: 'monad-tui', result: { exitCode: 0 }, plan: { base: 'main', monad: { hold: false } },
+          kind: 'elanous-tui', result: { exitCode: 0 }, plan: { base: 'main', elanous: { hold: false } },
         }) as never),
       });
-      await expect(program.parseAsync(['node', 'monad', 'dev', '--monad', '--goal', goalFile])).rejects.toThrow('PROCESS_EXIT_1');
+      await expect(program.parseAsync(['node', 'elanous', 'dev', '--elanous', '--goal', goalFile])).rejects.toThrow('PROCESS_EXIT_1');
     } finally {
       setDevLaunchControlTestSeams(undefined);
       off();
       exit.mockRestore();
-      if (previousOwner === undefined) delete process.env.MONAD_HOLD_OWNER;
-      else process.env.MONAD_HOLD_OWNER = previousOwner;
-      if (previousRunId === undefined) delete process.env.MONAD_RUN_ID;
-      else process.env.MONAD_RUN_ID = previousRunId;
+      if (previousOwner === undefined) delete process.env.ELANOUS_HOLD_OWNER;
+      else process.env.ELANOUS_HOLD_OWNER = previousOwner;
+      if (previousRunId === undefined) delete process.env.ELANOUS_RUN_ID;
+      else process.env.ELANOUS_RUN_ID = previousRunId;
       await rm(goalDir, { recursive: true, force: true });
     }
 
     // ⛔⭐ 셋째 줄이 `hold-delegated-to-owner` 인 것이 2026-09-12 정정의 핵심이다 —
-    //   `MONAD_HOLD_OWNER` 가 '1' 이 아니면 그 프로세스는 **런처**이고, 안 붙드는 것이 «정상»이다.
-    // ⭐ 2026-09-25: `debug.log` 가 `MONAD_HOST_ID` 를 `hostId` 로 자동 부착한다(RFC 런 출처 O2 · #20468) — runId 처럼 뺀다.
+    //   `ELANOUS_HOLD_OWNER` 가 '1' 이 아니면 그 프로세스는 **런처**이고, 안 붙드는 것이 «정상»이다.
+    // ⭐ 2026-09-25: `debug.log` 가 `ELANOUS_HOST_ID` 를 `hostId` 로 자동 부착한다(RFC 런 출처 O2 · #20468) — runId 처럼 뺀다.
     expect(seen.map(({ runId: _runId, hostId: _hostId, ...predicate }) => predicate)).toEqual([
       { event: 'hold-owner-not-entered', kind: 'shell-drive', planHold: true, holdOwner: '1', holdRequestedByCli: false },
-      { event: 'hold-owner-not-entered', kind: 'monad-tui', planHold: 'missing', holdOwner: '1', holdRequestedByCli: true },
-      { event: 'hold-delegated-to-owner', kind: 'monad-tui', planHold: true, holdOwner: '0', holdRequestedByCli: false },
+      { event: 'hold-owner-not-entered', kind: 'elanous-tui', planHold: 'missing', holdOwner: '1', holdRequestedByCli: true },
+      { event: 'hold-delegated-to-owner', kind: 'elanous-tui', planHold: true, holdOwner: '0', holdRequestedByCli: false },
     ]);
   });
 
@@ -3358,28 +3358,28 @@ describe('dev CLI help tiers', () => {
     const exit = spyOn(process, 'exit').mockImplementation(((code?: number) => {
       throw new Error(`PROCESS_EXIT_${code}`);
     }) as never);
-    const previousOwner = process.env.MONAD_HOLD_OWNER;
+    const previousOwner = process.env.ELANOUS_HOLD_OWNER;
 
     try {
-      process.env.MONAD_HOLD_OWNER = '1';
+      process.env.ELANOUS_HOLD_OWNER = '1';
       setDevLaunchControlTestSeams({
         runDevPipeline: (async () => ({
-          kind: 'monad-tui', result: { exitCode: 0 }, plan: { base: 'main', monad: { hold: false } },
+          kind: 'elanous-tui', result: { exitCode: 0 }, plan: { base: 'main', elanous: { hold: false } },
         }) as never),
       });
-      await expect(program.parseAsync(['node', 'monad', 'dev', '--monad'])).rejects.toThrow('PROCESS_EXIT_1');
+      await expect(program.parseAsync(['node', 'elanous', 'dev', '--elanous'])).rejects.toThrow('PROCESS_EXIT_1');
     } finally {
       setDevLaunchControlTestSeams(undefined);
       off();
       exit.mockRestore();
-      if (previousOwner === undefined) delete process.env.MONAD_HOLD_OWNER;
-      else process.env.MONAD_HOLD_OWNER = previousOwner;
+      if (previousOwner === undefined) delete process.env.ELANOUS_HOLD_OWNER;
+      else process.env.ELANOUS_HOLD_OWNER = previousOwner;
     }
 
     expect(seen).toHaveLength(0);
   });
 
-  // ⛔⭐⭐ 2026-09-12 라이브가 낸 정정의 «회귀 방어» — 실물 런처는 `MONAD_HOLD_OWNER` 를 **안 갖는다**.
+  // ⛔⭐⭐ 2026-09-12 라이브가 낸 정정의 «회귀 방어» — 실물 런처는 `ELANOUS_HOLD_OWNER` 를 **안 갖는다**.
   //   종전 문면은 그 성공 경로에서 `hold-owner-not-entered` 를 울렸고, 나는 그것을 결함 신호로 읽을 뻔했다.
   test('names the launcher delegation instead of calling it a failure to enter the owner wait', async () => {
     const { program, setDevLaunchControlTestSeams } = await import('./index.js');
@@ -3396,22 +3396,22 @@ describe('dev CLI help tiers', () => {
     const exit = spyOn(process, 'exit').mockImplementation(((code?: number) => {
       throw new Error(`PROCESS_EXIT_${code}`);
     }) as never);
-    const previousOwner = process.env.MONAD_HOLD_OWNER;
+    const previousOwner = process.env.ELANOUS_HOLD_OWNER;
 
     try {
-      delete process.env.MONAD_HOLD_OWNER;
+      delete process.env.ELANOUS_HOLD_OWNER;
       setDevLaunchControlTestSeams({
         runDevPipeline: (async () => ({
-          kind: 'monad-tui', result: { exitCode: 0 }, plan: { base: 'main', monad: { hold: true } },
+          kind: 'elanous-tui', result: { exitCode: 0 }, plan: { base: 'main', elanous: { hold: true } },
         }) as never),
       });
-      await expect(program.parseAsync(['node', 'monad', 'dev', '--monad', '--hold'])).rejects.toThrow('PROCESS_EXIT_1');
+      await expect(program.parseAsync(['node', 'elanous', 'dev', '--elanous', '--hold'])).rejects.toThrow('PROCESS_EXIT_1');
     } finally {
       setDevLaunchControlTestSeams(undefined);
       off();
       exit.mockRestore();
-      if (previousOwner === undefined) delete process.env.MONAD_HOLD_OWNER;
-      else process.env.MONAD_HOLD_OWNER = previousOwner;
+      if (previousOwner === undefined) delete process.env.ELANOUS_HOLD_OWNER;
+      else process.env.ELANOUS_HOLD_OWNER = previousOwner;
     }
 
     expect(seen).toEqual([{ event: 'hold-delegated-to-owner' }]);
@@ -3424,19 +3424,19 @@ describe('dev CLI help tiers', () => {
     const exited = spyOn(process, 'exit').mockImplementation(((code?: number) => {
       throw new Error(`PROCESS_EXIT_${code}`);
     }) as never);
-    const previousOwner = process.env.MONAD_HOLD_OWNER;
-    const previousRunId = process.env.MONAD_RUN_ID;
+    const previousOwner = process.env.ELANOUS_HOLD_OWNER;
+    const previousRunId = process.env.ELANOUS_RUN_ID;
     let enteredWaitResolve: (() => void) | undefined;
     const enteredWait = new Promise<void>((resolve) => { enteredWaitResolve = resolve; });
     const heldWait = new Promise<void>((resolve) => { releaseWait = resolve; });
 
     try {
-      process.env.MONAD_HOLD_OWNER = '1';
+      process.env.ELANOUS_HOLD_OWNER = '1';
       setDevLaunchControlTestSeams({
         runDevPipeline: (async () => ({
-          kind: 'monad-tui',
+          kind: 'elanous-tui',
           result: { exitCode: 0 },
-          plan: { base: 'main', monad: { hold: true } },
+          plan: { base: 'main', elanous: { hold: true } },
         }) as never),
         startHoldOwnerPoller: () => { pollerStarts += 1; },
         waitForHoldOwner: async () => {
@@ -3445,7 +3445,7 @@ describe('dev CLI help tiers', () => {
         },
       });
       let parsingSettled = false;
-      const parsing = program.parseAsync(['node', 'monad', 'dev', '--monad', '--hold']);
+      const parsing = program.parseAsync(['node', 'elanous', 'dev', '--elanous', '--hold']);
       const parseObservation = parsing.then(
         () => { parsingSettled = true; },
         () => { parsingSettled = true; },
@@ -3461,10 +3461,10 @@ describe('dev CLI help tiers', () => {
     } finally {
       setDevLaunchControlTestSeams(undefined);
       exited.mockRestore();
-      if (previousOwner === undefined) delete process.env.MONAD_HOLD_OWNER;
-      else process.env.MONAD_HOLD_OWNER = previousOwner;
-      if (previousRunId === undefined) delete process.env.MONAD_RUN_ID;
-      else process.env.MONAD_RUN_ID = previousRunId;
+      if (previousOwner === undefined) delete process.env.ELANOUS_HOLD_OWNER;
+      else process.env.ELANOUS_HOLD_OWNER = previousOwner;
+      if (previousRunId === undefined) delete process.env.ELANOUS_RUN_ID;
+      else process.env.ELANOUS_RUN_ID = previousRunId;
     }
   });
 
@@ -3473,15 +3473,15 @@ describe('dev CLI help tiers', () => {
     const exited = spyOn(process, 'exit').mockImplementation(((code?: number) => {
       throw new Error(`PROCESS_EXIT_${code}`);
     }) as never);
-    const previousOwner = process.env.MONAD_HOLD_OWNER;
-    const previousPtyId = process.env.MONAD_HOLD_PTY_ID;
+    const previousOwner = process.env.ELANOUS_HOLD_OWNER;
+    const previousPtyId = process.env.ELANOUS_HOLD_PTY_ID;
     let observations = 0;
     try {
-      process.env.MONAD_HOLD_OWNER = '1';
-      process.env.MONAD_HOLD_PTY_ID = 'pty_deadbeef';
+      process.env.ELANOUS_HOLD_OWNER = '1';
+      process.env.ELANOUS_HOLD_PTY_ID = 'pty_deadbeef';
       setDevLaunchControlTestSeams({
         runDevPipeline: (async () => ({
-          kind: 'monad-tui', result: { exitCode: 0 }, plan: { base: 'main', monad: { hold: true } },
+          kind: 'elanous-tui', result: { exitCode: 0 }, plan: { base: 'main', elanous: { hold: true } },
         }) as never),
         startHoldOwnerPoller: () => {},
         holdOwnerChildAlive: () => observations++ === 0
@@ -3490,15 +3490,15 @@ describe('dev CLI help tiers', () => {
         holdOwnerWatchMs: 0,
         holdOwnerWatchTimeoutMs: 30,
       });
-      await expect(program.parseAsync(['node', 'monad', 'dev', '--monad', '--hold'])).rejects.toThrow('PROCESS_EXIT_1');
+      await expect(program.parseAsync(['node', 'elanous', 'dev', '--elanous', '--hold'])).rejects.toThrow('PROCESS_EXIT_1');
       expect(observations).toBeGreaterThanOrEqual(2);
     } finally {
       setDevLaunchControlTestSeams(undefined);
       exited.mockRestore();
-      if (previousOwner === undefined) delete process.env.MONAD_HOLD_OWNER;
-      else process.env.MONAD_HOLD_OWNER = previousOwner;
-      if (previousPtyId === undefined) delete process.env.MONAD_HOLD_PTY_ID;
-      else process.env.MONAD_HOLD_PTY_ID = previousPtyId;
+      if (previousOwner === undefined) delete process.env.ELANOUS_HOLD_OWNER;
+      else process.env.ELANOUS_HOLD_OWNER = previousOwner;
+      if (previousPtyId === undefined) delete process.env.ELANOUS_HOLD_PTY_ID;
+      else process.env.ELANOUS_HOLD_PTY_ID = previousPtyId;
     }
   }, 5_000);
 
@@ -3531,7 +3531,7 @@ describe('dev CLI help tiers', () => {
 
   test('hold owner child watch is unbounded without a configured timeout and records its start metadata', async () => {
     const { setDevLaunchControlTestSeams, waitForHoldOwnerChild } = await import('./index.js');
-    const previousTimeout = process.env.MONAD_HOLD_OWNER_TIMEOUT_MS;
+    const previousTimeout = process.env.ELANOUS_HOLD_OWNER_TIMEOUT_MS;
     const records: Array<{ event?: string; data?: Record<string, unknown> }> = [];
     const off = debug.registerSink({
       name: 'hold-owner-unbounded-probe',
@@ -3543,7 +3543,7 @@ describe('dev CLI help tiers', () => {
     } as never);
     let alive = true;
     try {
-      delete process.env.MONAD_HOLD_OWNER_TIMEOUT_MS;
+      delete process.env.ELANOUS_HOLD_OWNER_TIMEOUT_MS;
       setDevLaunchControlTestSeams({
         holdOwnerChildAlive: () => alive ? { alive: true, exitCode: null } : { alive: false, exitCode: 0 },
         holdOwnerWatchMs: 1,
@@ -3559,14 +3559,14 @@ describe('dev CLI help tiers', () => {
     } finally {
       off();
       setDevLaunchControlTestSeams(undefined);
-      if (previousTimeout === undefined) delete process.env.MONAD_HOLD_OWNER_TIMEOUT_MS;
-      else process.env.MONAD_HOLD_OWNER_TIMEOUT_MS = previousTimeout;
+      if (previousTimeout === undefined) delete process.env.ELANOUS_HOLD_OWNER_TIMEOUT_MS;
+      else process.env.ELANOUS_HOLD_OWNER_TIMEOUT_MS = previousTimeout;
     }
   }, 5_000);
 
   test('hold owner child watch uses a positive environment timeout', async () => {
     const { setDevLaunchControlTestSeams, waitForHoldOwnerChild } = await import('./index.js');
-    const previousTimeout = process.env.MONAD_HOLD_OWNER_TIMEOUT_MS;
+    const previousTimeout = process.env.ELANOUS_HOLD_OWNER_TIMEOUT_MS;
     const records: Array<{ event?: string; data?: Record<string, unknown> }> = [];
     const off = debug.registerSink({
       name: 'hold-owner-env-timeout-probe',
@@ -3577,7 +3577,7 @@ describe('dev CLI help tiers', () => {
       },
     } as never);
     try {
-      process.env.MONAD_HOLD_OWNER_TIMEOUT_MS = '20';
+      process.env.ELANOUS_HOLD_OWNER_TIMEOUT_MS = '20';
       setDevLaunchControlTestSeams({
         holdOwnerChildAlive: () => ({ alive: true, exitCode: null }),
         holdOwnerWatchMs: 1,
@@ -3592,14 +3592,14 @@ describe('dev CLI help tiers', () => {
     } finally {
       off();
       setDevLaunchControlTestSeams(undefined);
-      if (previousTimeout === undefined) delete process.env.MONAD_HOLD_OWNER_TIMEOUT_MS;
-      else process.env.MONAD_HOLD_OWNER_TIMEOUT_MS = previousTimeout;
+      if (previousTimeout === undefined) delete process.env.ELANOUS_HOLD_OWNER_TIMEOUT_MS;
+      else process.env.ELANOUS_HOLD_OWNER_TIMEOUT_MS = previousTimeout;
     }
   }, 5_000);
 
   test('hold owner child watch gives its test seam precedence over the environment timeout', async () => {
     const { setDevLaunchControlTestSeams, waitForHoldOwnerChild } = await import('./index.js');
-    const previousTimeout = process.env.MONAD_HOLD_OWNER_TIMEOUT_MS;
+    const previousTimeout = process.env.ELANOUS_HOLD_OWNER_TIMEOUT_MS;
     const starts: Array<Record<string, unknown>> = [];
     const off = debug.registerSink({
       name: 'hold-owner-test-seam-timeout-probe',
@@ -3610,7 +3610,7 @@ describe('dev CLI help tiers', () => {
       },
     } as never);
     try {
-      process.env.MONAD_HOLD_OWNER_TIMEOUT_MS = '20';
+      process.env.ELANOUS_HOLD_OWNER_TIMEOUT_MS = '20';
       setDevLaunchControlTestSeams({
         holdOwnerChildAlive: () => ({ alive: true, exitCode: null }),
         holdOwnerWatchMs: 0,
@@ -3621,14 +3621,14 @@ describe('dev CLI help tiers', () => {
     } finally {
       off();
       setDevLaunchControlTestSeams(undefined);
-      if (previousTimeout === undefined) delete process.env.MONAD_HOLD_OWNER_TIMEOUT_MS;
-      else process.env.MONAD_HOLD_OWNER_TIMEOUT_MS = previousTimeout;
+      if (previousTimeout === undefined) delete process.env.ELANOUS_HOLD_OWNER_TIMEOUT_MS;
+      else process.env.ELANOUS_HOLD_OWNER_TIMEOUT_MS = previousTimeout;
     }
   }, 5_000);
 
   test('dev rejects an invalid graph value with the shared readable contract and no stack trace', () => {
     const result = Bun.spawnSync({
-      cmd: [process.execPath, monad, '--test', 'dev', '--ask', '/tmp/goal.md', '--graph', 'maybe'],
+      cmd: [process.execPath, elanous, '--test', 'dev', '--ask', '/tmp/goal.md', '--graph', 'maybe'],
       cwd,
       stdout: 'pipe',
       stderr: 'pipe',
@@ -3685,14 +3685,14 @@ describe('orchestrate CLI entrances wiring', () => {
   });
 
   // ⛔⭐ 종전 이 시험은 «틀린 목적지»를 계약으로 잠그고 있었다.
-  //   📏 실측 2026-08-21: 안내가 `monad self orchestrate` 를 가리켰는데 «그쪽도» --domain 을 안 받는다
+  //   📏 실측 2026-08-21: 안내가 `elanous self orchestrate` 를 가리켰는데 «그쪽도» --domain 을 안 받는다
   //     (`error: unknown option '--domain'` · exit 1) ⇒ 사람을 «막다른 곳»으로 보냈다.
   //   ⇒ `--domain` 의 진짜 집은 NL 표면의 `RunDevHarness` 툴이고 CLI 어디에도 «없다».
   //   🔑 그래서 이 시험은 「무엇을 가리키나」가 아니라 ***「가리킨 곳이 실제로 받나」***를 기준으로 쓴다.
   test('harness rejects --domain and names a destination that «actually» accepts it', () => {
     expect(harnessCommand).toContain('opts.domain !== undefined');
     // ⛔ CLI 명령을 목적지로 대지 않는다 — 어느 CLI 도 --domain 을 받지 않는다.
-    expect(harnessCommand).not.toContain('`monad self orchestrate`를 사용하십시오');
+    expect(harnessCommand).not.toContain('`elanous self orchestrate`를 사용하십시오');
     // ✅ 실제로 그 축을 갖는 표면을 이름으로 댄다.
     expect(harnessCommand).toContain('RunDevHarness');
   });
@@ -3984,7 +3984,7 @@ describe('harness browser-act CLI wiring', () => {
 
   test('actual Commander browser-act entrance emits the unarmed structured refusal', () => {
     const result = Bun.spawnSync({
-      cmd: [process.execPath, new URL('../bin/monad.mjs', import.meta.url).pathname, '--test', 'harness', 'browser-act', 'https://example.test', '#save'],
+      cmd: [process.execPath, new URL('../bin/elanous.mjs', import.meta.url).pathname, '--test', 'harness', 'browser-act', 'https://example.test', '#save'],
       cwd: new URL('../', import.meta.url).pathname,
       stdout: 'pipe',
       stderr: 'pipe',
@@ -4001,7 +4001,7 @@ describe('harness browser-act CLI wiring', () => {
 });
 
 describe('harness orchestrate canonical entrance capability', () => {
-  const monad = new URL('../bin/monad.mjs', import.meta.url).pathname;
+  const elanous = new URL('../bin/elanous.mjs', import.meta.url).pathname;
   const cwd = new URL('../', import.meta.url).pathname;
   const source = readFileSync(new URL('./index.ts', import.meta.url), 'utf8');
   const promotedHarnessOptions = ['--auto-merge', '--auto-review', '--open-pr', '--base', '--decompose'] as const;
@@ -4029,7 +4029,7 @@ describe('harness orchestrate canonical entrance capability', () => {
 
   function help(entrance: readonly string[], ...args: string[]): { text: string; exitCode: number } {
     const result = Bun.spawnSync({
-      cmd: [process.execPath, monad, '--test', ...entrance, ...args],
+      cmd: [process.execPath, elanous, '--test', ...entrance, ...args],
       cwd,
       stdout: 'pipe',
       stderr: 'pipe',
@@ -4091,7 +4091,7 @@ describe('harness orchestrate canonical entrance capability', () => {
     expect(plan.error).toContain('--domain');
     expect(plan.error).toContain('RunDevHarness');
     const result = Bun.spawnSync({
-      cmd: [process.execPath, monad, '--test', 'harness', 'orchestrate', 'goal-a', '--domain', 'web'],
+      cmd: [process.execPath, elanous, '--test', 'harness', 'orchestrate', 'goal-a', '--domain', 'web'],
       cwd,
       stdout: 'pipe',
       stderr: 'pipe',
@@ -4111,7 +4111,7 @@ describe('harness orchestrate canonical entrance capability', () => {
   });
 
   test('canonical entrance persists run lifecycle through the real run-store format before invoking the shared execution seam', async () => {
-    const dir = await mkdtemp(join(tmpdir(), 'monad-harness-run-store-'));
+    const dir = await mkdtemp(join(tmpdir(), 'elanous-harness-run-store-'));
     try {
       const plan = buildHarnessOrchestratePlan(['goal-a'], { concurrency: '4' });
       expect(plan.ok).toBe(true);
@@ -4170,7 +4170,7 @@ describe('harness orchestrate canonical entrance capability', () => {
   });
 
   test('canonical entrance restores resume goals from real run-store and uses the shared resume classifier for start metadata', async () => {
-    const dir = await mkdtemp(join(tmpdir(), 'monad-harness-resume-store-'));
+    const dir = await mkdtemp(join(tmpdir(), 'elanous-harness-resume-store-'));
     try {
       const plan = buildHarnessOrchestratePlan(['ignored'], { resume: 'prior-run' });
       expect(plan.ok).toBe(true);
@@ -4410,12 +4410,12 @@ describe('schedule create --dry-run --from', () => {
     const completeSpecification = [
       '- **주기:** 매일 한 번.',
       'cron: `0 7 * * *`',
-      'bun bin/monad.mjs self parked --json',
+      'bun bin/elanous.mjs self parked --json',
       'reports/ops/complete/YYYY-MM-DD.json',
     ].join('\n');
     const cases = [
       ['schedule', completeSpecification.replace('- **주기:** 매일 한 번.\n', '')],
-      ['commands', completeSpecification.replace('bun bin/monad.mjs self parked --json\n', '')],
+      ['commands', completeSpecification.replace('bun bin/elanous.mjs self parked --json\n', '')],
       ['resultPath', completeSpecification.replace('reports/ops/complete/YYYY-MM-DD.json', '')],
       ['cron', completeSpecification.replace('cron: `0 7 * * *`\n', '')],
     ] as const;
@@ -4458,8 +4458,8 @@ describe('schedule create --dry-run --from', () => {
       '- **주기:** 매일 한 번.',
       'cron: `0 7 * * *`',
       '```sh',
-      'bun bin/monad.mjs self parked --json',
-      'bun bin/monad.mjs self unfinished-runs --all --include-test --json',
+      'bun bin/elanous.mjs self parked --json',
+      'bun bin/elanous.mjs self unfinished-runs --all --include-test --json',
       '```',
       'reports/ops/complete/YYYY-MM-DD.json',
     ].join('\n'));
@@ -4476,8 +4476,8 @@ describe('schedule create --dry-run --from', () => {
       await writeFile(alternatePath, [
         '- **주기:** 평일마다 한 번.',
         'cron: `0 7 * * *`',
-        'bun bin/monad.mjs self parked --json',
-        'bun bin/monad.mjs self unfinished-runs --all --include-test --json',
+        'bun bin/elanous.mjs self parked --json',
+        'bun bin/elanous.mjs self unfinished-runs --all --include-test --json',
         'reports/ops/alternate/YYYY-MM-DD.json',
       ].join('\n'));
       await runSchedule('create', { from: alternatePath, json: true }, async args => {
@@ -4491,7 +4491,7 @@ describe('schedule create --dry-run --from', () => {
           id: undefined,
           category: undefined,
           cron: '0 7 * * *',
-          command: 'bun bin/monad.mjs self parked --json && bun bin/monad.mjs self unfinished-runs --all --include-test --json',
+          command: 'bun bin/elanous.mjs self parked --json && bun bin/elanous.mjs self unfinished-runs --all --include-test --json',
           schedule: '매일 한 번',
           resultPath: 'reports/ops/complete/YYYY-MM-DD.json',
           yes: true,
@@ -4501,7 +4501,7 @@ describe('schedule create --dry-run --from', () => {
           id: undefined,
           category: undefined,
           cron: '0 7 * * *',
-          command: 'bun bin/monad.mjs self parked --json && bun bin/monad.mjs self unfinished-runs --all --include-test --json',
+          command: 'bun bin/elanous.mjs self parked --json && bun bin/elanous.mjs self unfinished-runs --all --include-test --json',
           schedule: '평일마다 한 번',
           resultPath: 'reports/ops/alternate/YYYY-MM-DD.json',
           yes: true,
@@ -4594,7 +4594,7 @@ describe('self orchestrate 시작 안내 배선 (보조 — 소스만 답할 수
 
 describe('chat --json finalReply (2026-09-23)', () => {
   test('reply 는 모든 조각을 잇고, finalReply 는 «마지막 어시스턴트 메시지»만 — 목표 루프가 최종 답을 반복해도 한 번', async () => {
-    const cwd = await mkdtemp(join(tmpdir(), 'monad-cli-final-reply-'));
+    const cwd = await mkdtemp(join(tmpdir(), 'elanous-cli-final-reply-'));
     const indexModule = new URL('./index.ts', import.meta.url).pathname;
     const configModule = new URL('./user-config.ts', import.meta.url).pathname;
     try {
@@ -4614,7 +4614,7 @@ describe('chat --json finalReply (2026-09-23)', () => {
           await runChatTurnCli({ cfg, userText: 'q', explicitSessionId: undefined, reuseActive: false, forceNew: true, json: true, enableTools: true, runTurn });
         `],
         cwd,
-        env: { ...process.env, MONAD_STATE_DIR: join(cwd, 'state'), MONAD_CONFIG_DIR: join(cwd, 'config') },
+        env: { ...process.env, ELANOUS_STATE_DIR: join(cwd, 'state'), ELANOUS_CONFIG_DIR: join(cwd, 'config') },
         stdout: 'pipe', stderr: 'pipe',
       });
       expect(result.exitCode, new TextDecoder().decode(result.stderr)).toBe(0);
@@ -4629,7 +4629,7 @@ describe('chat --json finalReply (2026-09-23)', () => {
 
 describe('CLI universal preamble wiring', () => {
   test('both tool modes pass the project anchor to the production runTurn request, but only tools mode receives session guidance', async () => {
-    const cwd = await mkdtemp(join(tmpdir(), 'monad-cli-preamble-'));
+    const cwd = await mkdtemp(join(tmpdir(), 'elanous-cli-preamble-'));
     const stateDir = join(cwd, 'state');
     const configDir = join(cwd, 'config');
     const anchor = 'CLI_ANCHOR_SENTINEL: use zzq-build --plum-mode';
@@ -4660,7 +4660,7 @@ describe('CLI universal preamble wiring', () => {
           console.log(JSON.stringify(requests));
         `],
         cwd,
-        env: { ...process.env, MONAD_STATE_DIR: stateDir, MONAD_CONFIG_DIR: configDir },
+        env: { ...process.env, ELANOUS_STATE_DIR: stateDir, ELANOUS_CONFIG_DIR: configDir },
         stdout: 'pipe',
         stderr: 'pipe',
       });
@@ -4695,7 +4695,7 @@ describe('self author inspection observation', () => {
     }) as typeof process.stdout.write;
     const log = spyOn(debug, 'log').mockImplementation(() => {});
     try {
-      await program.parseAsync(['node', 'monad', 'self', 'author', '--inspect-decision-signal', '판정 신호: 조건 = x; 관측 = y; 기대 = z']);
+      await program.parseAsync(['node', 'elanous', 'self', 'author', '--inspect-decision-signal', '판정 신호: 조건 = x; 관측 = y; 기대 = z']);
 
       expect(log).toHaveBeenCalledWith('goal-author.inspect', 'result', expect.objectContaining({ kind: 'decision-signal', decision: true }));
       expect(JSON.parse(output.join(''))).toMatchObject({ extracted: true, condition: 'x', observation: 'y', expectedResult: 'z', unreadableCount: 1 });
@@ -4733,7 +4733,7 @@ describe('self repair-signals CLI combined population', () => {
       limitation: '이 자는 현재 self-dev run 저장소와 self-implement 원장만 읽고 다른 우주는 보지 않으며, 그 런이 아직 열려 있는지도 보지 않습니다.',
     });
     try {
-      await program.parseAsync(['node', 'monad', 'self', 'repair-signals', ...args]);
+      await program.parseAsync(['node', 'elanous', 'self', 'repair-signals', ...args]);
       return { text: output.join('\n'), combinedCalls: combined.mock.calls.length };
     } finally {
       combined.mockRestore();
@@ -4908,7 +4908,7 @@ describe('decide / ax-screen / decide-recipe JSON stdout completion', () => {
     }) as typeof process.stdout.write;
     try {
       let settled = false;
-      const parsed = program.parseAsync(['node', 'monad', 'decide', '이 신호는 강한가', '--json']).then(
+      const parsed = program.parseAsync(['node', 'elanous', 'decide', '이 신호는 강한가', '--json']).then(
         (value) => { settled = true; return value; },
         (error) => { settled = true; throw error; },
       );
@@ -4947,7 +4947,7 @@ describe('decide / ax-screen / decide-recipe JSON stdout completion', () => {
     const exit = spyOn(process, 'exit').mockImplementation((() => undefined) as never);
     try {
       const text = await captureStdout(async () => {
-        await program.parseAsync(['node', 'monad', 'decide', '이 신호는 강한가', '--json']);
+        await program.parseAsync(['node', 'elanous', 'decide', '이 신호는 강한가', '--json']);
       });
       expect(JSON.parse(text)).toEqual(payload);
       expect(text).toBe(JSON.stringify(payload, null, 2) + '\n');
@@ -4962,7 +4962,7 @@ describe('decide / ax-screen / decide-recipe JSON stdout completion', () => {
   });
 
   test('decide --json --file writes the fan-out callJev payload as complete pretty JSON and returns', async () => {
-    const dir = await mkdtemp(join(tmpdir(), 'monad-decide-file-json-'));
+    const dir = await mkdtemp(join(tmpdir(), 'elanous-decide-file-json-'));
     const file = join(dir, 'questions.json');
     await writeFile(file, JSON.stringify({
       state: '상황',
@@ -4981,7 +4981,7 @@ describe('decide / ax-screen / decide-recipe JSON stdout completion', () => {
     const exit = spyOn(process, 'exit').mockImplementation((() => undefined) as never);
     try {
       const text = await captureStdout(async () => {
-        await program.parseAsync(['node', 'monad', 'decide', 'ignored', '--file', file, '--json']);
+        await program.parseAsync(['node', 'elanous', 'decide', 'ignored', '--file', file, '--json']);
       });
       expect(JSON.parse(text)).toEqual(payload);
       expect(text).toBe(JSON.stringify(payload, null, 2) + '\n');
@@ -4997,7 +4997,7 @@ describe('decide / ax-screen / decide-recipe JSON stdout completion', () => {
   });
 
   test('ax-screen --json writes the merged task+verdict rows as complete pretty JSON and returns', async () => {
-    const dir = await mkdtemp(join(tmpdir(), 'monad-ax-screen-json-'));
+    const dir = await mkdtemp(join(tmpdir(), 'elanous-ax-screen-json-'));
     const tasksPath = join(dir, 'tasks.json');
     const task = { id: 'T1', 업무: '알람 확인', 현재판단: 'human-judgment' as const };
     await writeFile(tasksPath, JSON.stringify([task]));
@@ -5020,7 +5020,7 @@ describe('decide / ax-screen / decide-recipe JSON stdout completion', () => {
     const exit = spyOn(process, 'exit').mockImplementation((() => undefined) as never);
     try {
       const text = await captureStdout(async () => {
-        await program.parseAsync(['node', 'monad', 'ax-screen', tasksPath, '--json']);
+        await program.parseAsync(['node', 'elanous', 'ax-screen', tasksPath, '--json']);
       });
       const expected = [{
         ...task,
@@ -5045,7 +5045,7 @@ describe('decide / ax-screen / decide-recipe JSON stdout completion', () => {
   });
 
   test('decide-recipe --json writes recipe+callJev+verdict as complete pretty JSON', async () => {
-    const dir = await mkdtemp(join(tmpdir(), 'monad-decide-recipe-json-'));
+    const dir = await mkdtemp(join(tmpdir(), 'elanous-decide-recipe-json-'));
     const recipesDir = join(dir, 'recipes');
     mkdirSync(recipesDir);
     await writeFile(join(recipesDir, 'json-complete.json'), JSON.stringify({
@@ -5076,7 +5076,7 @@ describe('decide / ax-screen / decide-recipe JSON stdout completion', () => {
     const exit = spyOn(process, 'exit').mockImplementation((() => undefined) as never);
     try {
       const text = await captureStdout(async () => {
-        await program.parseAsync(['node', 'monad', 'decide-recipe', 'json-complete', statePath, '--recipes-dir', recipesDir, '--json']);
+        await program.parseAsync(['node', 'elanous', 'decide-recipe', 'json-complete', statePath, '--recipes-dir', recipesDir, '--json']);
       });
       const d = decideByRecipe(
         {

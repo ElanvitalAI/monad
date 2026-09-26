@@ -70,10 +70,10 @@ describe('renderTelegramReplayPreviewHtml', () => {
   test('prepends header when provided', () => {
     const messages: LLMMessage[] = [{ role: 'user', content: 'hi' }];
     const out = renderTelegramReplayPreviewHtml(messages, {
-      header: '↩ Resumed <code>monad-session-3</code> — last turns:',
+      header: '↩ Resumed <code>elanous-session-3</code> — last turns:',
     });
     expect(out[0]!.html).toContain('Resumed');
-    expect(out[0]!.html).toContain('monad-session-3');
+    expect(out[0]!.html).toContain('elanous-session-3');
   });
 
   test('appends more-footer when input exceeds limit and prefix supplied', () => {

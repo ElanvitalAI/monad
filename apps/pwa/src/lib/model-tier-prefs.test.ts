@@ -10,7 +10,7 @@ import {
   saveModelTierPrefs,
 } from './model-tier-prefs';
 
-const KEY = 'monad.model-tier.prefs';
+const KEY = 'elanous.model-tier.prefs';
 
 // Minimal browser-like localStorage shim — bun:test runs in node so
 // `window`/`localStorage` are absent by default.

@@ -1,5 +1,5 @@
 #!/usr/bin/env bun
-// 브라우저로 본 monad PWA 화면을 세 상태로 가르는 관측 사이클.
+// 브라우저로 본 elanous PWA 화면을 세 상태로 가르는 관측 사이클.
 // 값 획득(MCP/브라우저)과 판정(순수 분류)을 분리한다 — 분류는 네트워크 없이 값만으로 호출한다.
 // 기본 MCP 전송은 기존 McpClient 의 initialize + Mcp-Session-Id 수명주기를 탄다.
 // 스케줄러 진입점 배선은 다음 조각의 몫이다. 이 파일은 호출 가능한 함수만 내보낸다.
@@ -7,8 +7,8 @@
 import { McpClient, McpServerError, type McpHttpFetch } from '../src/mcp/client.js';
 import { debug } from '../src/debug/log.js';
 
-export const MONAD_PWA_URL = 'http://127.0.0.1:31415/app';
-export const MONAD_MCP_URL = 'http://127.0.0.1:31415/v1/mcp';
+export const ELANOUS_PWA_URL = 'http://127.0.0.1:31415/app';
+export const ELANOUS_MCP_URL = 'http://127.0.0.1:31415/v1/mcp';
 export const ASIDE_REPL_TOOL = 'aside.repl';
 export const BROWSER_OBSERVE_LOG_CATEGORY = 'browser.observe';
 export const BROWSER_OBSERVE_LOG_SURFACE = 'browser-observe';
@@ -61,22 +61,22 @@ export interface BrowserObserveDeps {
 }
 
 /**
- * 2026-08-24 실측 접근성 개요에서 monad PWA 를 식별하는 마커.
+ * 2026-08-24 실측 접근성 개요에서 elanous PWA 를 식별하는 마커.
  * HTML·data-testid·role="main" 이 아니라 tree 문자열의 접근성 항목이다.
  */
-export const MONAD_PWA_TREE_MARKERS: readonly string[] = [
-  'title: "monad"',
+export const ELANOUS_PWA_TREE_MARKERS: readonly string[] = [
+  'title: "elanous"',
   '- complementary:',
   'link "Observatory',
   'link "Autopilot',
 ];
 
-export function isMonadPwaUrl(url: string): boolean {
-  return url === MONAD_PWA_URL || url === `${MONAD_PWA_URL}/`;
+export function isElanousPwaUrl(url: string): boolean {
+  return url === ELANOUS_PWA_URL || url === `${ELANOUS_PWA_URL}/`;
 }
 
-export function isMonadPwaTree(tree: string): boolean {
-  return MONAD_PWA_TREE_MARKERS.every((marker) => tree.includes(marker));
+export function isElanousPwaTree(tree: string): boolean {
+  return ELANOUS_PWA_TREE_MARKERS.every((marker) => tree.includes(marker));
 }
 
 function readTree(value: unknown): string | null {
@@ -105,21 +105,21 @@ export function classifyBrowserObserve(input: {
       reason: tree === null ? 'tree-unreadable' : 'url-unreadable',
     };
   }
-  if (!isMonadPwaTree(tree) || !isMonadPwaUrl(observedUrl)) {
+  if (!isElanousPwaTree(tree) || !isElanousPwaUrl(observedUrl)) {
     return {
       status: BROWSER_OBSERVE_WRONG_SCREEN,
       observedUrl,
-      reason: 'not-monad-pwa',
+      reason: 'not-elanous-pwa',
     };
   }
   return {
     status: BROWSER_OBSERVE_OK,
     observedUrl,
-    reason: 'monad-pwa',
+    reason: 'elanous-pwa',
   };
 }
 
-export function buildBrowserObserveReplCode(pwaUrl: string = MONAD_PWA_URL): string {
+export function buildBrowserObserveReplCode(pwaUrl: string = ELANOUS_PWA_URL): string {
   // aside.repl keeps one persistent top-level scope across calls, so a
   // top-level const/let (e.g. `const pwaUrl`) collides on the second send.
   // Bindings stay inside this IIFE; top-level await is allowed in that REPL.
@@ -137,7 +137,7 @@ export function buildBrowserObserveReplCode(pwaUrl: string = MONAD_PWA_URL): str
 }
 
 export function buildBrowserObserveMcpRequest(
-  pwaUrl: string = MONAD_PWA_URL,
+  pwaUrl: string = ELANOUS_PWA_URL,
 ): BrowserObserveMcpRequest {
   return {
     jsonrpc: '2.0',
@@ -266,7 +266,7 @@ function snapshotFromUnknown(value: unknown): { tree: unknown; url: unknown } {
 export function createBrowserObserveMcpClient(fetchImpl?: BrowserObserveHttpFetch): McpClient {
   return new McpClient({
     id: BROWSER_OBSERVE_MCP_CLIENT_ID,
-    url: MONAD_MCP_URL,
+    url: ELANOUS_MCP_URL,
     reconnectBackoffMs: [],
     httpTimeoutMs: 30_000,
     ...(fetchImpl ? { fetch: fetchImpl } : {}),

@@ -196,7 +196,7 @@ export function createExecutionSurface(
 }
 
 export function keyEventToTerminalBytes(ev: KeyEvent): string | null {
-  // Order matters: try semantic translation FIRST. monad's outer TUI
+  // Order matters: try semantic translation FIRST. elanous's outer TUI
   // receives keystrokes in kitty keyboard protocol form (`CSI <code>;<mod> u`)
   // when the user's terminal is ghostty/kitty/etc. with kitty mode
   // enabled. tui.parseKey() decodes these into Key{name,ctrl,…} but

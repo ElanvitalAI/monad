@@ -7,12 +7,12 @@ describe('makeTestSpawnBackend · invocation capture', () => {
   test('records command/cwd/env per spawn', () => {
     const backend = makeTestSpawnBackend();
     backend.spawn({
-      command: ['monad', 'serve', '--gateway-mode'],
+      command: ['elanous', 'serve', '--gateway-mode'],
       cwd: '/tmp/work',
       env: { TOKEN: 'redacted' },
     });
     expect(backend.invocations).toHaveLength(1);
-    expect(backend.invocations[0].command).toEqual(['monad', 'serve', '--gateway-mode']);
+    expect(backend.invocations[0].command).toEqual(['elanous', 'serve', '--gateway-mode']);
     expect(backend.invocations[0].cwd).toBe('/tmp/work');
     expect(backend.invocations[0].env).toEqual({ TOKEN: 'redacted' });
   });

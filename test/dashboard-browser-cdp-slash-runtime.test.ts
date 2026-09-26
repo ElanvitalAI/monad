@@ -43,7 +43,7 @@ describe('createDashboardBrowserCdpSlashRuntime', () => {
       navigate: async () => ({
         output: 'ok',
         finalUrl: 'data:text/html,smoke',
-        title: 'Monad Browser CDP Smoke',
+        title: 'Elanous Browser CDP Smoke',
         loadMs: 5,
       }),
       read: async ({ mode }) => {
@@ -65,7 +65,7 @@ describe('createDashboardBrowserCdpSlashRuntime', () => {
     const lines = await runtime.smokeLines();
     expect(lines).toEqual([
       '  browser-cdp smoke: ok',
-      '  navigate: Monad Browser CDP Smoke · data:text/html,smoke',
+      '  navigate: Elanous Browser CDP Smoke · data:text/html,smoke',
       '  text: browser runtime smoke ok',
       '  screenshot bytes: 3',
     ]);

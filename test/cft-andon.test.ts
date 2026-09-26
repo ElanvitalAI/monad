@@ -118,7 +118,7 @@ describe('PFC-S3.1 — Andon core', () => {
   test('Obsidian incident artifact written for CRITICAL', async () => {
     const home = mkdtempSync(join(tmpdir(), 'andon-obs-'));
     const vault = discoverObsidianVault({
-      env: { MONAD_OBSIDIAN_VAULT: join(home, 'vault') },
+      env: { ELANOUS_OBSIDIAN_VAULT: join(home, 'vault') },
       cwd: home,
     });
     const signal = await emitEscalation(
@@ -136,7 +136,7 @@ describe('PFC-S3.1 — Andon core', () => {
   test('Obsidian incident skipped for non-CRITICAL', async () => {
     const home = mkdtempSync(join(tmpdir(), 'andon-obs-low-'));
     const vault = discoverObsidianVault({
-      env: { MONAD_OBSIDIAN_VAULT: join(home, 'vault') },
+      env: { ELANOUS_OBSIDIAN_VAULT: join(home, 'vault') },
       cwd: home,
     });
     const signal = await emitEscalation(

@@ -2,20 +2,20 @@
 //
 // User-edited config and secrets live next to the daemon dir so admin
 // tooling can manage them with one mental model. Tests override via
-// the central `setMonadConfigDir()` helper (or the legacy
-// `MONAD_DAEMON_DIR` env var, which now emits a deprecation nudge).
+// the central `setElanousConfigDir()` helper (or the legacy
+// `ELANOUS_DAEMON_DIR` env var, which now emits a deprecation nudge).
 
 import { join as joinPath } from 'node:path';
-import { getMonadConfigDir } from '../../monad-config-dir.js';
+import { getElanousConfigDir } from '../../elanous-config-dir.js';
 
-export function monadConfigDir(): string {
-  return getMonadConfigDir();
+export function elanousConfigDir(): string {
+  return getElanousConfigDir();
 }
 
 export function userConfigPath(): string {
-  return joinPath(monadConfigDir(), 'config.json');
+  return joinPath(elanousConfigDir(), 'config.json');
 }
 
 export function secretsPath(): string {
-  return joinPath(monadConfigDir(), 'secrets.json');
+  return joinPath(elanousConfigDir(), 'secrets.json');
 }

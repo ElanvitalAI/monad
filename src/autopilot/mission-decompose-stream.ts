@@ -5,12 +5,12 @@
 
 import { join, dirname } from 'node:path';
 import { existsSync, mkdirSync, writeFileSync, appendFileSync, readFileSync, statSync } from 'node:fs';
-import { monadStateRoot } from './state-paths.js';
+import { elanousStateRoot } from './state-paths.js';
 
 /** 미션별 분해 스트림 파일 경로. */
 export function decomposeStreamPath(missionId: string): string {
   const safe = (missionId || 'unknown').replace(/[^\w.-]/g, '_').slice(0, 80);
-  return join(monadStateRoot(), 'conatus/decompose_stream', `${safe}.log`);
+  return join(elanousStateRoot(), 'conatus/decompose_stream', `${safe}.log`);
 }
 
 /** 분해 시작 시 초기화(재분해마다 새로). 헤더에 시각·모델 기록. fail-soft. */

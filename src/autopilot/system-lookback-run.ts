@@ -17,7 +17,7 @@ import { buildLookbackPrompt, suspectSourceFiles } from './system-lookback.js';
  *  llmReviewCritique(mission-se-bridge) 와 같은 streamLLM 패턴(모델만 Opus·진단은 길게 maxTokens 2500). */
 async function opusLookback(prompt: string): Promise<string> {
   const { streamLLM, resolveDefaultProvider, getProvider } = await import('../llm.js');
-  const model = process.env.MONAD_LOOKBACK_MODEL || 'claude-opus-4-8';
+  const model = process.env.ELANOUS_LOOKBACK_MODEL || 'claude-opus-4-8';
   // ★ claude 모델은 prefix 매칭(getProvider)으로 anthropic 확정(dogfood 2026-07-13 발견) —
   //   resolveDefaultProvider 는 user-config provider(codex 등)를 모델 무관하게 반환해 claude 를
   //   codex 로 오라우팅한다(Codex 400: model not supported). 폴백 방어까지.

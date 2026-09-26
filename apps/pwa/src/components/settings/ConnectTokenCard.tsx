@@ -2,7 +2,7 @@
 
 // T4.D — Generate connect token card.
 //
-// 사용자가 다른 기기 (laptop · phone · desktop) 에서 `monad nexus connect`
+// 사용자가 다른 기기 (laptop · phone · desktop) 에서 `elanous nexus connect`
 // 시 paste 할 token 을 mint + clipboard 로 복사. NEXUS 가 single-host
 // dogfood 인 동안은 raw bearer 를 그대로 노출 (v1 simple mode); v2 (mutual
 // auth) 에서 5min single-use JWT 로 강화. ROADMAP §6.2 (T4.D · ~100 LOC).
@@ -60,7 +60,7 @@ export function ConnectTokenCard() {
       <h2 className="text-sm font-medium">Connect token (other devices)</h2>
       <div className="rounded-md border border-border bg-card p-3 text-xs space-y-2">
         <p className="text-muted-foreground">
-          다른 머신에서 <code className="rounded bg-muted px-1">monad nexus connect &lt;host&gt;</code> 시
+          다른 머신에서 <code className="rounded bg-muted px-1">elanous nexus connect &lt;host&gt;</code> 시
           paste 할 bearer token 을 발급. 한 번 paste 하면 그 머신의 bookmark 에 영구 저장 — 매번 재발급할 필요 없음.
         </p>
         {state.status === 'idle' && (

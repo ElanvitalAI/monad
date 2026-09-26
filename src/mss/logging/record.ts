@@ -1,7 +1,7 @@
 // ── LogRecord — MSS canonical log envelope (PLAN §8.1) ──
 //
 // Superset of the legacy `DebugEvent` shape — every legacy field is kept
-// and the new MSS fields (trace_id / span_id / parent_span_id / monad_id /
+// and the new MSS fields (trace_id / span_id / parent_span_id / elanous_id /
 // source / level) layer on as optionals. `src/debug/log.ts` emits records
 // that conform to this interface while keeping its public API
 // (`debug.log(category, event, data?)`) byte-identical.
@@ -45,7 +45,7 @@ export interface LogRecord {
   trace_id?: string;
   span_id?: string;
   parent_span_id?: string;
-  monad_id?: string;
+  elanous_id?: string;
   source?: LogSource;
   pid?: number;
 }

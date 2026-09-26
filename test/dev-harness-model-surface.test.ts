@@ -4,7 +4,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { buildAutonomousToolSpecs } from '../src/agent/autonomous-tools.js';
 import { toolSurface } from '../src/boot/daemon-tools/index.js';
-import { setMonadConfigDir, resetMonadConfigDir } from '../src/monad-config-dir.js';
+import { setElanousConfigDir, resetElanousConfigDir } from '../src/elanous-config-dir.js';
 import { resolveDynamicSessionNativeToolSpecs, shouldExposeDevHarnessSessionTool } from '../src/session-runtime/index.js';
 import { dispatchRunDevHarness, isDevHarnessModelSurfaceEnabled, buildRunDevHarnessTool } from '../src/skills/tools/dev-harness.js';
 import { lookupEntrance } from '../src/self-dev/entrance-registry.js';
@@ -40,13 +40,13 @@ function names(specs: readonly { name: string }[]): string[] {
 
 beforeEach(() => {
   configDir = mkdtempSync(join(tmpdir(), 'dev-harness-model-surface-'));
-  setMonadConfigDir(configDir);
+  setElanousConfigDir(configDir);
   resetUserConfig();
 });
 
 afterEach(() => {
   resetUserConfig();
-  resetMonadConfigDir();
+  resetElanousConfigDir();
   rmSync(configDir, { recursive: true, force: true });
 });
 

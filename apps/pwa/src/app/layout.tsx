@@ -13,10 +13,10 @@ import { ServiceWorkerRegister } from '@/components/providers/ServiceWorkerRegis
 const geist = Geist({ subsets: ['latin'], variable: '--font-sans' });
 
 export const metadata: Metadata = {
-  title: 'monad',
+  title: 'elanous',
   description: 'monad-agent unified PWA — voice · chat · intake · control · terminal.',
   manifest: '/app/manifest.webmanifest',
-  applicationName: 'monad',
+  applicationName: 'elanous',
 };
 
 export const viewport: Viewport = {

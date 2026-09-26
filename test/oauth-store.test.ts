@@ -19,7 +19,7 @@ let codexHome: string;
 
 beforeEach(() => {
   root = mkdtempSync(join(tmpdir(), 'oauth-store-'));
-  cfgPath = join(root, 'monad', 'auth.json');
+  cfgPath = join(root, 'elanous', 'auth.json');
   codexHome = join(root, 'codex-home');
   process.env.XDG_CONFIG_HOME = root;
   process.env.CODEX_HOME = codexHome;
@@ -44,8 +44,8 @@ function codexIdToken(accountId: string): string {
 }
 
 describe('authStorePath respects XDG_CONFIG_HOME', () => {
-  test('under XDG_CONFIG_HOME/monad/auth.json', () => {
-    expect(authStorePath()).toBe(join(root, 'monad', 'auth.json'));
+  test('under XDG_CONFIG_HOME/elanous/auth.json', () => {
+    expect(authStorePath()).toBe(join(root, 'elanous', 'auth.json'));
   });
 });
 
@@ -94,7 +94,7 @@ describe('deleteTokens', () => {
 });
 
 describe('Codex dual-write mirror', () => {
-  test('writes a Codex CLI usable ~/.codex/auth.json alongside monad store', () => {
+  test('writes a Codex CLI usable ~/.codex/auth.json alongside elanous store', () => {
     const idToken = codexIdToken('cdx-account-123');
     saveTokens('openai-codex', { ...sampleTokens, idToken }, { authMode: 'chatgpt' }, cfgPath);
     const mirror = join(codexHome, 'auth.json');
@@ -192,7 +192,7 @@ describe('reconcileCodexTokensFromMirror — dual-store divergence (regression f
   const nowSec = () => Math.floor(Date.now() / 1000);
 
   test('adopts mirror tokens when the mirror is strictly fresher + persists them', () => {
-    // monad store: stale (access token already expired · dead refresh token).
+    // elanous store: stale (access token already expired · dead refresh token).
     saveTokens('openai-codex', {
       accessToken: jwt(nowSec() - 3600),
       refreshToken: 'dead-refresh',
@@ -204,44 +204,44 @@ describe('reconcileCodexTokensFromMirror — dual-store divergence (regression f
 
     const out = reconcileCodexTokensFromMirror(loadTokens('openai-codex'));
     expect(out?.tokens.refreshToken).toBe('live-refresh');
-    // Persisted back to monad's canonical store (next turn reads it fresh).
+    // Persisted back to elanous's canonical store (next turn reads it fresh).
     expect(loadTokens('openai-codex')?.tokens.refreshToken).toBe('live-refresh');
   });
 
-  test('keeps monad tokens when monad is fresher (no ping-pong)', () => {
+  test('keeps elanous tokens when elanous is fresher (no ping-pong)', () => {
     saveTokens('openai-codex', {
       accessToken: jwt(nowSec() + 7 * 24 * 3600),
-      refreshToken: 'monad-refresh',
+      refreshToken: 'elanous-refresh',
       expiresAt: Date.now() + 7 * 24 * 3600_000,
       tokenType: 'Bearer',
     }, { authMode: 'chatgpt', mirrorCodex: false });
     writeMirror(nowSec() + 3600, 'older-mirror-refresh');
 
     const out = reconcileCodexTokensFromMirror(loadTokens('openai-codex'));
-    expect(out?.tokens.refreshToken).toBe('monad-refresh');
+    expect(out?.tokens.refreshToken).toBe('elanous-refresh');
   });
 
   test('returns input unchanged when no mirror file exists', () => {
     const state = saveTokens('openai-codex', {
       accessToken: jwt(nowSec() - 10),
-      refreshToken: 'only-monad',
+      refreshToken: 'only-elanous',
       expiresAt: Date.now() - 10_000,
       tokenType: 'Bearer',
     }, { authMode: 'chatgpt', mirrorCodex: false });
     const out = reconcileCodexTokensFromMirror(state);
-    expect(out?.tokens.refreshToken).toBe('only-monad');
+    expect(out?.tokens.refreshToken).toBe('only-elanous');
   });
 
   test('returns input unchanged when the mirror has no usable tokens', () => {
     saveTokens('openai-codex', {
       accessToken: jwt(nowSec() - 10),
-      refreshToken: 'only-monad',
+      refreshToken: 'only-elanous',
       expiresAt: Date.now() - 10_000,
       tokenType: 'Bearer',
     }, { authMode: 'chatgpt', mirrorCodex: false });
     mkdirSync(codexHome, { recursive: true });
     writeFileSync(join(codexHome, 'auth.json'), JSON.stringify({ tokens: {} }) + '\n');
     const out = reconcileCodexTokensFromMirror(loadTokens('openai-codex'));
-    expect(out?.tokens.refreshToken).toBe('only-monad');
+    expect(out?.tokens.refreshToken).toBe('only-elanous');
   });
 });

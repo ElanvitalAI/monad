@@ -1,19 +1,19 @@
-// P-2D.1 — `monad nexus pwa dev --bg` self-detach + `--status` + `--stop`.
+// P-2D.1 — `elanous nexus pwa dev --bg` self-detach + `--status` + `--stop`.
 //
 // User report (2026-05-07): "지금처럼 foreground 도는 것을 BG 에서
 // 돌아가고 명령어 셋트도 단순화…좀더 심플하게 가는 방법이 있을까요?"
 //
 // We already have a self-detach pattern in src/cli/bg-launch.ts for
-// `monad nexus --bg` — same shape works here. The PWA dev child is
-// just `monad nexus pwa dev` (foreground) re-spawned with stdio piped
+// `elanous nexus --bg` — same shape works here. The PWA dev child is
+// just `elanous nexus pwa dev` (foreground) re-spawned with stdio piped
 // to a log file and the parent exiting. P-2B.γ's auto-config + auto-
 // restart cleanup runs in the child's `finally`, so SIGTERM (via
 // `--stop`) still unsets devProxyUpstream and flips nexus back to
 // static — no extra wiring needed in the foreground path.
 //
 // Files we own:
-//   ~/.monad/nexus/.pwa-dev.lock       JSON: { pid, host, startedAt, port, logPath }
-//   ~/.monad/nexus/logs/pwa-dev-<stamp>.log
+//   ~/.elanous/nexus/.pwa-dev.lock       JSON: { pid, host, startedAt, port, logPath }
+//   ~/.elanous/nexus/logs/pwa-dev-<stamp>.log
 //
 // Lifecycle:
 //   pwa dev --bg     → spawn detached + write lock + parent exits (0)
@@ -107,7 +107,7 @@ function defaultWriteLock(meta: PwaDevLockMeta): void {
   writeFileSync(path, JSON.stringify(meta, null, 2), { mode: 0o600 });
 }
 
-/** Launch `monad nexus pwa dev` in the background. Caller should
+/** Launch `elanous nexus pwa dev` in the background. Caller should
  *  `process.exit` with the returned exitCode. */
 export async function runPwaDevBgLaunch(
   opts: PwaDevBgLaunchOpts = {},
@@ -116,7 +116,7 @@ export async function runPwaDevBgLaunch(
   const port = opts.port ?? 3210;
   const argvBin = opts.argvBin ?? process.argv[1] ?? '';
   if (!argvBin) {
-    out.error('monad nexus pwa dev --bg: could not determine argv[1] for self-detach.');
+    out.error('elanous nexus pwa dev --bg: could not determine argv[1] for self-detach.');
     return { exitCode: 1 };
   }
   const readLockFn = opts.readLockFn ?? defaultReadLock;
@@ -126,13 +126,13 @@ export async function runPwaDevBgLaunch(
 
   const existing = readLockFn();
   if (existing && isAliveFn(existing.pid)) {
-    out.error('monad nexus pwa dev --bg: already running');
+    out.error('elanous nexus pwa dev --bg: already running');
     out.error(`  pid       ${existing.pid}`);
     out.error(`  host      ${existing.host}`);
     out.error(`  startedAt ${existing.startedAt}`);
     out.error(`  log       ${existing.logPath}`);
     out.error('');
-    out.error('Use `monad nexus pwa dev --stop` to terminate.');
+    out.error('Use `elanous nexus pwa dev --stop` to terminate.');
     return { exitCode: 1 };
   }
 
@@ -156,10 +156,10 @@ export async function runPwaDevBgLaunch(
     child = spawnFn(process.execPath, args, {
       detached: true,
       stdio: ['ignore', logFd, logFd],
-      env: { ...process.env, MONAD_PWA_DEV_BG_PARENT: '1' },
+      env: { ...process.env, ELANOUS_PWA_DEV_BG_PARENT: '1' },
     });
     if (!child.pid) {
-      out.error('monad nexus pwa dev --bg: spawn returned no pid');
+      out.error('elanous nexus pwa dev --bg: spawn returned no pid');
       return { exitCode: 1 };
     }
     child.unref();
@@ -171,15 +171,15 @@ export async function runPwaDevBgLaunch(
       logPath,
     };
     writeLockFn(meta);
-    out.log('monad nexus pwa dev: started in background');
+    out.log('elanous nexus pwa dev: started in background');
     out.log(`  pid       ${meta.pid}`);
     out.log(`  port      ${meta.port}  (Next.js dev server)`);
     out.log(`  log       ${meta.logPath}`);
-    out.log('  status    monad nexus pwa dev --status');
-    out.log('  stop      monad nexus pwa dev --stop');
+    out.log('  status    elanous nexus pwa dev --status');
+    out.log('  stop      elanous nexus pwa dev --stop');
     return { exitCode: 0, pid: meta.pid, logPath: meta.logPath };
   } catch (err) {
-    out.error(`monad nexus pwa dev --bg: spawn failed — ${(err as Error).message}`);
+    out.error(`elanous nexus pwa dev --bg: spawn failed — ${(err as Error).message}`);
     return { exitCode: 1 };
   } finally {
     try { closeSync(logFd); } catch { /* best-effort */ }
@@ -198,7 +198,7 @@ export interface PwaDevStatusResult {
   meta?: PwaDevLockMeta;
 }
 
-/** `monad nexus pwa dev --status` — report whether the BG child is
+/** `elanous nexus pwa dev --status` — report whether the BG child is
  *  alive. Returns exitCode 0 when alive, 1 when stopped or stale. */
 export function runPwaDevStatus(opts: PwaDevStatusOpts = {}): PwaDevStatusResult {
   const out = opts.out ?? console;
@@ -206,18 +206,18 @@ export function runPwaDevStatus(opts: PwaDevStatusOpts = {}): PwaDevStatusResult
   const isAliveFn = opts.isAliveFn ?? defaultIsAlive;
   const meta = readLockFn();
   if (!meta) {
-    out.log('monad nexus pwa dev: not running (no lock).');
+    out.log('elanous nexus pwa dev: not running (no lock).');
     return { exitCode: 1, alive: false };
   }
   const alive = isAliveFn(meta.pid);
   if (!alive) {
-    out.log('monad nexus pwa dev: stale lock (pid is gone).');
+    out.log('elanous nexus pwa dev: stale lock (pid is gone).');
     out.log(`  pid       ${meta.pid}`);
     out.log(`  startedAt ${meta.startedAt}`);
     out.log(`  log       ${meta.logPath}`);
     return { exitCode: 1, alive: false, meta };
   }
-  out.log('monad nexus pwa dev: running');
+  out.log('elanous nexus pwa dev: running');
   out.log(`  pid       ${meta.pid}`);
   out.log(`  host      ${meta.host}`);
   out.log(`  startedAt ${meta.startedAt}`);
@@ -301,7 +301,7 @@ function defaultListGroupSurvivors(leaderPid: number): number[] {
   }
 }
 
-/** `monad nexus pwa dev --stop` — graceful process-group reap.
+/** `elanous nexus pwa dev --stop` — graceful process-group reap.
  *
  *  Sequence:
  *    1. SIGTERM to the WHOLE process group (`kill(-leader, SIGTERM)`).
@@ -324,7 +324,7 @@ export async function runPwaDevStop(opts: PwaDevStopOpts = {}): Promise<PwaDevSt
 
   const meta = readLockFn();
   if (!meta) {
-    out.log('monad nexus pwa dev --stop: nothing to stop (no lock).');
+    out.log('elanous nexus pwa dev --stop: nothing to stop (no lock).');
     return { exitCode: 0, killed: false };
   }
   if (!isAliveFn(meta.pid)) {
@@ -332,12 +332,12 @@ export async function runPwaDevStop(opts: PwaDevStopOpts = {}): Promise<PwaDevSt
     if (survivors.length > 0) {
       // Leader died but children were reparented to init — pre-existing
       // orphans from a previous botched stop. Reap them now.
-      out.log(`monad nexus pwa dev --stop: stale lock + ${survivors.length} orphan(s) from PGID ${meta.pid} — reaping`);
+      out.log(`elanous nexus pwa dev --stop: stale lock + ${survivors.length} orphan(s) from PGID ${meta.pid} — reaping`);
       if (debug.enabled) debug.log('pwa.dev.stop.orphans', `pgid=${meta.pid}`, { survivors });
       try { killFn(-meta.pid, 'SIGKILL'); } catch { /* group might already be dissolved */ }
       for (const pid of survivors) { try { killFn(pid, 'SIGKILL'); } catch { /* gone */ } }
     } else {
-      out.log('monad nexus pwa dev --stop: stale lock — clearing.');
+      out.log('elanous nexus pwa dev --stop: stale lock — clearing.');
     }
     removeLockFn();
     return { exitCode: 0, killed: false, escalated: survivors };
@@ -346,16 +346,16 @@ export async function runPwaDevStop(opts: PwaDevStopOpts = {}): Promise<PwaDevSt
   // Step 1: SIGTERM the whole group.
   try {
     killFn(-meta.pid, 'SIGTERM');
-    out.log(`monad nexus pwa dev --stop: SIGTERM → process group ${meta.pid}`);
+    out.log(`elanous nexus pwa dev --stop: SIGTERM → process group ${meta.pid}`);
     if (debug.enabled) debug.log('pwa.dev.stop.sigterm', `pgid=${meta.pid}`, { target: 'group' });
   } catch (err) {
     // Group target failed (rare — leader might have just exited). Try
     // leader-only as fallback so we don't bail without trying.
     try {
       killFn(meta.pid, 'SIGTERM');
-      out.log(`monad nexus pwa dev --stop: SIGTERM → leader pid ${meta.pid} (group target failed: ${(err as Error).message})`);
+      out.log(`elanous nexus pwa dev --stop: SIGTERM → leader pid ${meta.pid} (group target failed: ${(err as Error).message})`);
     } catch (err2) {
-      out.error(`monad nexus pwa dev --stop: kill failed — ${(err2 as Error).message}`);
+      out.error(`elanous nexus pwa dev --stop: kill failed — ${(err2 as Error).message}`);
       if (debug.enabled) debug.log('pwa.dev.stop.killFailed', `${(err2 as Error).message}`, { pid: meta.pid });
       return { exitCode: 1, killed: false };
     }
@@ -383,7 +383,7 @@ export async function runPwaDevStop(opts: PwaDevStopOpts = {}): Promise<PwaDevSt
   // (leader and/or descendants) still alive.
   const survivorsAtEscalation = listGroupSurvivorsFn(meta.pid);
   const leaderStillAlive = isAliveFn(meta.pid);
-  out.error(`monad nexus pwa dev --stop: SIGTERM grace ${maxWaitMs}ms expired — escalating to SIGKILL`);
+  out.error(`elanous nexus pwa dev --stop: SIGTERM grace ${maxWaitMs}ms expired — escalating to SIGKILL`);
   out.error(`  leader pid ${meta.pid}: ${leaderStillAlive ? 'alive' : 'gone'}`);
   out.error(`  group survivors: ${survivorsAtEscalation.length === 0 ? '(none)' : survivorsAtEscalation.join(', ')}`);
   if (debug.enabled) {

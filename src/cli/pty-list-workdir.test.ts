@@ -77,16 +77,16 @@ describe('listPtyRefs — workdir 노출', () => {
     const refs = listPtyRefs(
       [handle('pty_local', '/repo/current')],
       [{
-        id: 'pty_local', kind: 'stale-kind', nickname: 'stale-name', alive: false, workdir: '/repo/stale', runId: 'run-monad',
-        terminalOriginCategory: 'monad', terminalOriginReason: 'inherited-monad-marker',
+        id: 'pty_local', kind: 'stale-kind', nickname: 'stale-name', alive: false, workdir: '/repo/stale', runId: 'run-elanous',
+        terminalOriginCategory: 'elanous', terminalOriginReason: 'inherited-elanous-marker',
       }],
     );
     expect(refs).toEqual([expect.objectContaining({
       id: 'pty_local', kind: 'pty', source: 'local', alive: true, mode: 'auto', workdir: '/repo/current',
-      terminalOriginCategory: 'monad', terminalOriginReason: 'inherited-monad-marker',
+      terminalOriginCategory: 'elanous', terminalOriginReason: 'inherited-elanous-marker',
     })]);
     const result = runPtyList(listOnlyDeps(() => refs));
-    expect(result.message).toContain('origin=monad reason=inherited-monad-marker');
+    expect(result.message).toContain('origin=elanous reason=inherited-elanous-marker');
   });
 });
 
@@ -134,9 +134,9 @@ describe('resolvePtyWorktreeProvenance — worktree 목적 config', () => {
     expect(result).toEqual({ known: true, goalId: 'goal-1' });
     expect(calls).toEqual([
       { args: ['rev-parse', '--is-inside-work-tree'], cwd: '/repo/wt' },
-      { args: ['config', '--worktree', '--get', 'monad.harness.goalId'], cwd: '/repo/wt' },
-      { args: ['config', '--worktree', '--get', 'monad.harness.goalFile'], cwd: '/repo/wt' },
-      { args: ['config', '--worktree', '--get', 'monad.harness.goalTitle'], cwd: '/repo/wt' },
+      { args: ['config', '--worktree', '--get', 'elanous.harness.goalId'], cwd: '/repo/wt' },
+      { args: ['config', '--worktree', '--get', 'elanous.harness.goalFile'], cwd: '/repo/wt' },
+      { args: ['config', '--worktree', '--get', 'elanous.harness.goalTitle'], cwd: '/repo/wt' },
     ]);
   });
 
@@ -247,7 +247,7 @@ describe('resolvePtyWorktreeProvenance — worktree 목적 config', () => {
       expect(spawnSync('git', ['init', '-q', root], { encoding: 'utf8' }).status).toBe(0);
       expect(run('config', 'extensions.worktreeConfig', 'true').status).toBe(0);
       for (const [key, value] of [['goalId', 'g-1'], ['goalFile', '/goals/g-1.md'], ['goalTitle', 'Purpose\there']] as const) {
-        expect(run('config', '--worktree', `monad.harness.${key}`, value).status).toBe(0);
+        expect(run('config', '--worktree', `elanous.harness.${key}`, value).status).toBe(0);
       }
       // ⑴ resolver 를 «주입하지 않고» — 실제 git 이 값을 돌려준다
       expect(resolvePtyWorktreeProvenance(root)).toEqual({ known: true, goalId: 'g-1', goalFile: '/goals/g-1.md', goalTitle: 'Purpose\there' });
@@ -372,10 +372,10 @@ describe('runPtyList — runId 노출', () => {
 });
 
 describe('runPtyList terminal origin projection', () => {
-  test('preserves JSON fields and renders distinct non-empty human, monad, and external origins locally and federated', () => {
+  test('preserves JSON fields and renders distinct non-empty human, elanous, and external origins locally and federated', () => {
     const refs = [
       { id: 'human', kind: 'pty', source: 'local' as const, alive: true, mode: 'auto' as const, terminalOriginCategory: 'direct-human' as const, terminalOriginReason: 'inherited-human-cli-marker' },
-      { id: 'harness', kind: 'pty', source: 'local' as const, alive: true, mode: 'auto' as const, terminalOriginCategory: 'monad' as const, terminalOriginReason: 'inherited-monad-marker' },
+      { id: 'harness', kind: 'pty', source: 'local' as const, alive: true, mode: 'auto' as const, terminalOriginCategory: 'elanous' as const, terminalOriginReason: 'inherited-elanous-marker' },
       { id: 'tool', kind: 'pty', source: 'remote' as const, alive: true, terminalOriginCategory: 'external-tool' as const, terminalOriginReason: 'inherited-external-agent-marker', externalToolName: 'codex' },
     ];
     const json = JSON.parse(runPtyList({
@@ -387,12 +387,12 @@ describe('runPtyList terminal origin projection', () => {
       now: () => 0,
     }, { json: true }).message!);
     expect(json.map((row: { terminalOriginCategory: string; terminalOriginReason: string }) => [row.terminalOriginCategory, row.terminalOriginReason])).toEqual([
-      ['direct-human', 'inherited-human-cli-marker'], ['monad', 'inherited-monad-marker'], ['external-tool', 'inherited-external-agent-marker'],
+      ['direct-human', 'inherited-human-cli-marker'], ['elanous', 'inherited-elanous-marker'], ['external-tool', 'inherited-external-agent-marker'],
     ]);
     expect(json[2].externalToolName).toBe('codex');
     const localText = runPtyList(listOnlyDeps(() => refs)).message!;
     expect(localText).toContain('origin=direct-human reason=inherited-human-cli-marker');
-    expect(localText).toContain('origin=monad reason=inherited-monad-marker');
+    expect(localText).toContain('origin=elanous reason=inherited-elanous-marker');
     const federatedRefs = refs.map((ref) => ({ ...ref, instance: 'test', sourceRoot: '/test/pty/manifest.db' }));
     const federatedText = runPtyList({ ...listOnlyDeps(() => []), listFederatedRefs: () => ({ refs: federatedRefs, unreadable: [] }) }, { all: true }).message!;
     expect(federatedText).toContain('origin=external-tool reason=inherited-external-agent-marker tool=codex');

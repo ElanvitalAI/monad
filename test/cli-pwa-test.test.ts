@@ -1,4 +1,4 @@
-// `monad nexus pwa test` orchestrator — unit tests.
+// `elanous nexus pwa test` orchestrator — unit tests.
 //
 // The orchestrator composes existing primitives (runPwaStart,
 // runPwaStop, mountTailscaleServe). These tests inject those as
@@ -34,12 +34,12 @@ let repoRoot: string;
 let pwaOutDir: string;
 
 beforeEach(() => {
-  repoRoot = mkdtempSync(joinPath(tmpdir(), 'monad-pwa-test-'));
-  // Synthesize the repo layout the orchestrator expects (bin/monad.mjs
+  repoRoot = mkdtempSync(joinPath(tmpdir(), 'elanous-pwa-test-'));
+  // Synthesize the repo layout the orchestrator expects (bin/elanous.mjs
   // + apps/pwa). The orchestrator's resolveRepoRoot sanity-checks
   // these so we have to materialize them.
   mkdirSync(joinPath(repoRoot, 'bin'), { recursive: true });
-  writeFileSync(joinPath(repoRoot, 'bin', 'monad.mjs'), '#!/usr/bin/env bun\n');
+  writeFileSync(joinPath(repoRoot, 'bin', 'elanous.mjs'), '#!/usr/bin/env bun\n');
   pwaOutDir = joinPath(repoRoot, 'apps', 'pwa', 'out');
   mkdirSync(pwaOutDir, { recursive: true });
   writeFileSync(joinPath(pwaOutDir, 'index.html'), '<html></html>');
@@ -48,7 +48,7 @@ beforeEach(() => {
 afterEach(() => {
   try { rmSync(repoRoot, { recursive: true, force: true }); } catch { /* swallow */ }
   // Restore env we may have polluted.
-  delete process.env.MONAD_NEXUS_DIR;
+  delete process.env.ELANOUS_NEXUS_DIR;
 });
 
 const baseSeams: Partial<PwaTestOpts> = {
@@ -74,7 +74,7 @@ describe('runPwaTest — repo layout resolution', () => {
   test('errors when argv[1] does not point at a monad-agent checkout', async () => {
     const out = makeOut();
     const r = await runPwaTest({
-      argvBin: '/nowhere/monad',
+      argvBin: '/nowhere/elanous',
       out,
       ...baseSeams,
     });
@@ -82,10 +82,10 @@ describe('runPwaTest — repo layout resolution', () => {
     expect(out.errors.some((e) => e.includes('could not resolve repo root'))).toBe(true);
   });
 
-  test('resolves repo root from argvBin via bin/monad.mjs sibling check', async () => {
+  test('resolves repo root from argvBin via bin/elanous.mjs sibling check', async () => {
     const out = makeOut();
     const r = await runPwaTest({
-      argvBin: joinPath(repoRoot, 'bin', 'monad.mjs'),
+      argvBin: joinPath(repoRoot, 'bin', 'elanous.mjs'),
       out,
       ...baseSeams,
     });
@@ -344,21 +344,21 @@ describe('runPwaTest — canonical test-mode banner guidance', () => {
 
     const banner = out.logs.join('\n');
     expect(r.exitCode).toBe(0);
-    expect(banner).toContain('stop      monad nexus run --test --stop');
-    expect(banner).toContain('status    monad nexus run --test --status');
-    expect(banner).not.toContain('monad nexus pwa test --stop');
-    expect(banner).not.toContain('monad nexus pwa test --status');
+    expect(banner).toContain('stop      elanous nexus run --test --stop');
+    expect(banner).toContain('status    elanous nexus run --test --status');
+    expect(banner).not.toContain('elanous nexus pwa test --stop');
+    expect(banner).not.toContain('elanous nexus pwa test --status');
   });
 });
 
 describe('runPwaTest — project-local state', () => {
-  test('writes test-state.json under <repo>/.monad-test/', async () => {
+  test('writes test-state.json under <repo>/.elanous-test/', async () => {
     const out = makeOut();
     await runPwaTest({
       repoRoot, out,
       ...baseSeams,
     });
-    const stateFile = joinPath(repoRoot, '.monad-test', 'test-state.json');
+    const stateFile = joinPath(repoRoot, '.elanous-test', 'test-state.json');
     expect(existsSync(stateFile)).toBe(true);
     const parsed = JSON.parse(readFileSync(stateFile, 'utf8'));
     expect(parsed.mode).toBe('static');
@@ -373,9 +373,9 @@ describe('runPwaTest — project-local state', () => {
       ...baseSeams,
     });
     const { getTestStateRoot, setTestStateRoot } = await import('../src/nexus/paths');
-    expect(getTestStateRoot()).toBe(joinPath(repoRoot, '.monad-test'));
+    expect(getTestStateRoot()).toBe(joinPath(repoRoot, '.elanous-test'));
     // The env var that used to mirror this value is now untouched.
-    expect(process.env.MONAD_NEXUS_DIR).toBeUndefined();
+    expect(process.env.ELANOUS_NEXUS_DIR).toBeUndefined();
     setTestStateRoot(null);
   });
 });
@@ -392,7 +392,7 @@ describe('runPwaTest --status', () => {
   });
 
   test('reads + prints active instance state', async () => {
-    const stateDir = joinPath(repoRoot, '.monad-test');
+    const stateDir = joinPath(repoRoot, '.elanous-test');
     mkdirSync(stateDir, { recursive: true });
     writeFileSync(
       joinPath(stateDir, 'test-state.json'),
@@ -422,7 +422,7 @@ describe('runPwaTest --stop', () => {
   test('cascades stop: Tailscale unmount + pwa stop', async () => {
     let stopCalls = 0;
     let unmountCalls = 0;
-    const stateDir = joinPath(repoRoot, '.monad-test');
+    const stateDir = joinPath(repoRoot, '.elanous-test');
     mkdirSync(stateDir, { recursive: true });
     writeFileSync(joinPath(stateDir, 'test-state.json'), '{}');
     const out = makeOut();
@@ -466,7 +466,7 @@ describe('FU8 PR #5 · --fresh prune + isolation flip', () => {
   test('--fresh prunes stale workflows/tasks/backups and preserves daemon state', async () => {
     const out = makeOut();
     // Pre-populate the state dir as a prior test run would leave it.
-    const stateDir = joinPath(repoRoot, '.monad-test');
+    const stateDir = joinPath(repoRoot, '.elanous-test');
     mkdirSync(joinPath(stateDir, 'workflows'), { recursive: true });
     writeFileSync(joinPath(stateDir, 'workflows', 'greet-stale.yaml'), 'name: greet-stale\n');
     mkdirSync(joinPath(stateDir, 'tasks'), { recursive: true });
@@ -507,7 +507,7 @@ describe('FU8 PR #5 · --fresh prune + isolation flip', () => {
 
   test('without --fresh, prior workflows survive (default behaviour preserved)', async () => {
     const out = makeOut();
-    const stateDir = joinPath(repoRoot, '.monad-test');
+    const stateDir = joinPath(repoRoot, '.elanous-test');
     mkdirSync(joinPath(stateDir, 'workflows'), { recursive: true });
     writeFileSync(joinPath(stateDir, 'workflows', 'greet-stale.yaml'), 'name: greet-stale\n');
     const r = await runPwaTest({
@@ -522,7 +522,7 @@ describe('FU8 PR #5 · --fresh prune + isolation flip', () => {
 
   test('--test DOES redirect the config dir to the test root (ISO-2 · 2026-07-13)', async () => {
     const out = makeOut();
-    delete process.env.MONAD_DAEMON_DIR;
+    delete process.env.ELANOUS_DAEMON_DIR;
     const r = await runPwaTest({
       repoRoot, out,
       ...baseSeams,
@@ -531,12 +531,12 @@ describe('FU8 PR #5 · --fresh prune + isolation flip', () => {
     // 2026-05-13 config-dir-unify 는 "--test 는 state 만 격리·config 공유+
     // overlay" 였으나, overlay 뷰 디스크 박제 오염 사건(#4029)과 미션 오발송
     // (2026-07-13) 후 대표 결정으로 **config 완전 격리**로 반전 — 테스트
-    // 프로세스는 <repo>/.monad-test/config.json(물질화 사본)만 본다.
-    const { getMonadConfigDir, resetMonadConfigDir } = await import('../src/monad-config-dir');
-    expect(getMonadConfigDir()).toBe(joinPath(repoRoot, '.monad-test'));
-    expect(process.env.MONAD_DAEMON_DIR).toBeUndefined();
+    // 프로세스는 <repo>/.elanous-test/config.json(물질화 사본)만 본다.
+    const { getElanousConfigDir, resetElanousConfigDir } = await import('../src/elanous-config-dir');
+    expect(getElanousConfigDir()).toBe(joinPath(repoRoot, '.elanous-test'));
+    expect(process.env.ELANOUS_DAEMON_DIR).toBeUndefined();
     const { setTestStateRoot } = await import('../src/nexus/paths');
     setTestStateRoot(null);
-    resetMonadConfigDir();
+    resetElanousConfigDir();
   });
 });

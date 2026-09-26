@@ -184,7 +184,7 @@ export class ToastStack {
   }
 
   private labelOf(t: Toast): string {
-    // IDX-6 Phase 6 — route through theme-icons so MONAD_ASCII_ICONS
+    // IDX-6 Phase 6 — route through theme-icons so ELANOUS_ASCII_ICONS
     // + future theme-specific overrides apply uniformly. The hard-
     // coded `•` for 'info' kept — it has no dedicated IconTokens slot
     // (notification is the closest match but semantically different).

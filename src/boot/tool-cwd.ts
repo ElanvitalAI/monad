@@ -63,7 +63,7 @@ export function resolveToolCwd(
 
   const envToolCwd = 'envToolCwd' in deps
     ? deps.envToolCwd
-    : process.env.MONAD_TOOL_CWD?.trim();
+    : process.env.ELANOUS_TOOL_CWD?.trim();
   if (envToolCwd !== undefined) {
     emitToolCwdDecision('resolved', isolated, 'env');
     return envToolCwd;
@@ -71,7 +71,7 @@ export function resolveToolCwd(
 
   if (isolated) {
     emitToolCwdDecision('refused', isolated, 'refused');
-    throw new Error('Isolated instance requires an explicit tool cwd; pass --tool-cwd <path> or set MONAD_TOOL_CWD.');
+    throw new Error('Isolated instance requires an explicit tool cwd; pass --tool-cwd <path> or set ELANOUS_TOOL_CWD.');
   }
 
   const cwd = deps.cwd ?? process.cwd();
@@ -89,7 +89,7 @@ export function createToolCwdResolver(
   const instanceKind = deps.instanceKind ?? resolveCurrentInstance().kind;
   const envToolCwd = 'envToolCwd' in deps
     ? deps.envToolCwd
-    : process.env.MONAD_TOOL_CWD?.trim();
+    : process.env.ELANOUS_TOOL_CWD?.trim();
   const mayCreateWorktree = opts.tools !== 'none'
     && instanceKind !== 'test'
     && opts.toolCwd === undefined

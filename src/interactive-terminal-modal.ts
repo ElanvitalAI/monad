@@ -240,7 +240,7 @@ export function createInteractiveTerminalModal(
   }
 
   // Drive the spinner animation only while pendingStart is true.
-  // 80ms cadence matches monad's existing spinner conventions
+  // 80ms cadence matches elanous's existing spinner conventions
   // (status bar, thinking line). Timer is unref'd so it never
   // pins the event loop on its own.
   if (pendingStart) {

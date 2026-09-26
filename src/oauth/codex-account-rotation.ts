@@ -61,7 +61,7 @@ type ResetCreditAvailability = 'available' | 'unavailable' | 'unknown';
 interface RotationInput {
   /** 지금 해석된 계정(회전 «전»). */
   readonly current: CodexAccountResolution;
-  /** 사람이 `MONAD_CODEX_ACCOUNT` 로 «명시»했나. */
+  /** 사람이 `ELANOUS_CODEX_ACCOUNT` 로 «명시»했나. */
   readonly explicit: boolean;
   /** config 가 회전을 허용하나. 기본 ON 이므로 «명시적 false 일 때만» 꺼진다. */
   readonly enabled: boolean;

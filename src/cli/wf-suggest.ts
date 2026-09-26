@@ -1,7 +1,7 @@
-// M4-1 (2026-05-12 · Phase 4 N5-1) — `monad wf suggest-next` CLI.
+// M4-1 (2026-05-12 · Phase 4 N5-1) — `elanous wf suggest-next` CLI.
 //
 // Loads a workflow by name (project / global / builtin · same lookup
-// as `monad wf show`), calls `suggestNextNodes` with the configured
+// as `elanous wf show`), calls `suggestNextNodes` with the configured
 // LLM, prints the N suggestions to stdout. F3 default: invoked on
 // demand · no auto-fire.
 

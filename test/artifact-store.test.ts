@@ -2,7 +2,7 @@
 //
 // Covers types · path resolver · meta encode/decode · store put/get/
 // list/subscribe. Uses an in-memory fs fake so tests never touch
-// `~/.monad/artifacts/`.
+// `~/.elanous/artifacts/`.
 
 import { describe, expect, test } from 'bun:test';
 import path from 'node:path';
@@ -78,7 +78,7 @@ function makeFakeFs(): ArtifactFs & { files: Map<string, string | Buffer>; dirs:
 
 describe('artifact · paths', () => {
   test('defaultArtifactBaseDir appends artifacts to the isolated state root', () => {
-    const isolatedStateRoot = process.env.MONAD_STATE_DIR;
+    const isolatedStateRoot = process.env.ELANOUS_STATE_DIR;
     expect(isolatedStateRoot).toBeDefined();
     expect(defaultArtifactBaseDir()).toBe(path.join(isolatedStateRoot!, 'artifacts'));
   });

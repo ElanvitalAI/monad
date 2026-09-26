@@ -31,7 +31,7 @@ export interface DiscordWebhookRecord {
 }
 
 /** Cache key — channelId + personaId. We attach personaId to the
- *  webhook name (`monad-persona:<personaId>`) so we can recover the
+ *  webhook name (`elanous-persona:<personaId>`) so we can recover the
  *  mapping on bot restart by listing the channel's webhooks. */
 function cacheKey(channelId: string, personaId: string): string {
   return `${channelId}:${personaId}`;
@@ -42,13 +42,13 @@ function cacheKey(channelId: string, personaId: string): string {
  *  human-friendly displayName is overridden per-message via
  *  `username` field on execute. */
 export function webhookNameForPersona(personaId: string): string {
-  return `monad-persona:${personaId}`;
+  return `elanous-persona:${personaId}`;
 }
 
 /** Reverse — extract personaId from a webhook name, or null if the
  *  name doesn't match our convention. */
 export function personaIdFromWebhookName(name: string): string | null {
-  const prefix = 'monad-persona:';
+  const prefix = 'elanous-persona:';
   return name.startsWith(prefix) ? name.slice(prefix.length) : null;
 }
 

@@ -17,12 +17,12 @@ function fixture(text = 'existing startup\n') {
   const reads: string[] = [];
   const deps: DoctorFixDeps = {
     home: '/home/test',
-    env: { SHELL: '/bin/zsh', MONAD_KEY_CACHE_DIR: '/cache' },
+    env: { SHELL: '/bin/zsh', ELANOUS_KEY_CACHE_DIR: '/cache' },
     readdir: (path) => {
       if (path !== '/cache') throw new Error('unexpected directory');
       return [...files.keys()].filter((name) => name.startsWith('/cache/')).map((name) => name.slice('/cache/'.length));
     },
-    readiness: { installPrefix: '/install/monad', pathEntries: ['/usr/bin'] },
+    readiness: { installPrefix: '/install/elanous', pathEntries: ['/usr/bin'] },
     exists: (path) => path === '/cache' || files.has(path),
     readFile: (path) => { reads.push(path); const entry = files.get(path); if (!entry) throw new Error('missing'); return entry.text; },
     writeFile: (path, text, mode) => { writes.push(path); files.set(path, { text, mode: mode ?? files.get(path)?.mode ?? 0o644 }); },
@@ -42,7 +42,7 @@ function fixture(text = 'existing startup\n') {
   return { files, writes, reads, deps };
 }
 
-const block = '# >>> monad installer PATH >>>\nexport PATH=\'/install/monad/bin\':"$PATH"\n# <<< monad installer PATH <<<';
+const block = '# >>> elanous installer PATH >>>\nexport PATH=\'/install/elanous/bin\':"$PATH"\n# <<< elanous installer PATH <<<';
 
 describe('doctor --fix', () => {
   test('dry run lists exact installer block, file and permissions without writes or cache contents', () => {
@@ -64,22 +64,22 @@ describe('doctor --fix', () => {
 
   test('Windows writes the installer PowerShell block to the profile, then skips an existing marker', () => {
     const f = fixture();
-    const prefix = "C:\\Users\\O'Brien\\AppData\\Local\\monad";
+    const prefix = "C:\\Users\\O'Brien\\AppData\\Local\\elanous";
     const profile = 'C:\\Users\\u\\Documents\\WindowsPowerShell\\Microsoft.PowerShell_profile.ps1';
     f.deps.readiness = { platform: 'win32', installPrefix: prefix, pathEntries: [] };
-    f.deps.env = { USERPROFILE: 'C:\\Users\\u', MONAD_KEY_CACHE_DIR: '/cache', SHELL: '/bin/bash' };
+    f.deps.env = { USERPROFILE: 'C:\\Users\\u', ELANOUS_KEY_CACHE_DIR: '/cache', SHELL: '/bin/bash' };
     f.deps.mkdir = (path) => { expect(path).toBe('C:\\Users\\u\\Documents\\WindowsPowerShell'); };
-    const action = "# >>> monad installer PATH >>>\n$env:PATH = 'C:\\Users\\O''Brien\\AppData\\Local\\monad\\bin' + [IO.Path]::PathSeparator + $env:PATH\n# <<< monad installer PATH <<<";
+    const action = "# >>> elanous installer PATH >>>\n$env:PATH = 'C:\\Users\\O''Brien\\AppData\\Local\\elanous\\bin' + [IO.Path]::PathSeparator + $env:PATH\n# <<< elanous installer PATH <<<";
     expect(planDoctorFixes(f.deps).items[0]).toMatchObject({ id: 'install-path', path: profile, action, status: 'fixable' });
     expect(applyDoctorFixes(f.deps, true).items[0]).toMatchObject({ result: 'fixed' });
     expect(f.files.get(profile)?.text).toBe(`\n${action}\n`);
-    expect(f.files.get(`${profile}.monad-doctor.bak`)?.text).toBe('');
+    expect(f.files.get(`${profile}.elanous-doctor.bak`)?.text).toBe('');
     expect(planDoctorFixes(f.deps).items[0]).toMatchObject({ status: 'skipped' });
     const writes = f.writes.length;
     expect(applyDoctorFixes(f.deps, true).items[0]?.result).toBe('skipped');
     expect(f.writes.length).toBe(writes);
     expect(f.files.has('/home/test/.bashrc')).toBe(false);
-    f.deps.env.MONAD_POWERSHELL_PROFILE = 'C:\\custom\\profile.ps1';
+    f.deps.env.ELANOUS_POWERSHELL_PROFILE = 'C:\\custom\\profile.ps1';
     expect(planDoctorFixes(f.deps).items[0]?.path).toBe('C:\\custom\\profile.ps1');
   });
 
@@ -89,8 +89,8 @@ describe('doctor --fix', () => {
     expect(result.exitCode).toBe(0);
     expect(result.items.map((item) => item.result)).toEqual(['fixed', 'fixed']);
     expect(result.items[0]?.reason).toContain('current process readiness is fixable until a new shell loads it');
-    expect(f.files.get('/home/test/.zshrc.monad-doctor.bak')?.text).toBe('existing startup\n');
-    expect(f.files.get('/home/test/.zshrc.monad-doctor.bak')?.mode).toBe(0o644);
+    expect(f.files.get('/home/test/.zshrc.elanous-doctor.bak')?.text).toBe('existing startup\n');
+    expect(f.files.get('/home/test/.zshrc.elanous-doctor.bak')?.mode).toBe(0o644);
     expect(f.files.get('/home/test/.zshrc')?.text).toBe(`existing startup\n\n${block}\n`);
     expect(f.files.get('/cache/one_key')?.mode).toBe(0o600);
     expect(f.files.get('/cache/other_key')?.mode).toBe(0o600);
@@ -104,7 +104,7 @@ describe('doctor --fix', () => {
     const f = fixture();
     f.files.get('/home/test/.zshrc')!.mode = 0o600;
     expect(applyDoctorFixes(f.deps, true).items[0]?.result).toBe('fixed');
-    expect(f.files.get('/home/test/.zshrc.monad-doctor.bak')).toEqual({ text: 'existing startup\n', mode: 0o600 });
+    expect(f.files.get('/home/test/.zshrc.elanous-doctor.bak')).toEqual({ text: 'existing startup\n', mode: 0o600 });
   });
 
   // ⛔ 2026-09-24(리뷰 must-fix) 계약 뒤집힘 — 키 캐시 폴더(기본 `~/.cache`)엔 다른 프로그램 파일이 산다. 자격 이름만 다룬다.
@@ -152,18 +152,18 @@ describe('doctor --fix', () => {
   });
 
   test('conflicting prefix skips PATH write, even when cache repair is independently possible', () => {
-    const original = '# >>> monad installer PATH >>>\nexport PATH=\'/old/bin\':"$PATH"\n# <<< monad installer PATH <<<\n';
+    const original = '# >>> elanous installer PATH >>>\nexport PATH=\'/old/bin\':"$PATH"\n# <<< elanous installer PATH <<<\n';
     const f = fixture(original);
     const result = applyDoctorFixes(f.deps, true);
     expect(result.items[0]).toMatchObject({ result: 'skipped', reason: 'PATH block already points to a different installation prefix' });
     expect(result.items[1]?.result).toBe('fixed');
     expect(f.files.get('/home/test/.zshrc')?.text).toBe(original);
-    expect(f.files.has('/home/test/.zshrc.monad-doctor.bak')).toBe(false);
+    expect(f.files.has('/home/test/.zshrc.elanous-doctor.bak')).toBe(false);
   });
 
   test('existing backup stays private until replacement; temporary contents start private', () => {
     const f = fixture();
-    const backup = '/home/test/.zshrc.monad-doctor.bak';
+    const backup = '/home/test/.zshrc.elanous-doctor.bak';
     const temporary = `${backup}.temporary`;
     f.files.set(backup, { text: 'PREVIOUS-BACKUP', mode: 0o600 });
     const originalWrite = f.deps.writeFile!;
@@ -188,16 +188,16 @@ describe('doctor --fix', () => {
   });
 
   test('conflicting marked prefix wins over a matching unmarked PATH line', () => {
-    const original = `${block.split('\n')[1]}\n# >>> monad installer PATH >>>\nexport PATH='/old/bin':"$PATH"\n# <<< monad installer PATH <<<\n`;
+    const original = `${block.split('\n')[1]}\n# >>> elanous installer PATH >>>\nexport PATH='/old/bin':"$PATH"\n# <<< elanous installer PATH <<<\n`;
     const f = fixture(original);
     expect(applyDoctorFixes(f.deps, true).items[0]).toMatchObject({ result: 'skipped', reason: 'PATH block already points to a different installation prefix' });
     expect(f.files.get('/home/test/.zshrc')?.text).toBe(original);
-    expect(f.files.has('/home/test/.zshrc.monad-doctor.bak')).toBe(false);
+    expect(f.files.has('/home/test/.zshrc.elanous-doctor.bak')).toBe(false);
   });
 
   test('no fixable entries yields success and no writes', () => {
     const f = fixture();
-    f.deps.readiness = { installPrefix: '/install/monad', pathEntries: ['/install/monad/bin'] };
+    f.deps.readiness = { installPrefix: '/install/elanous', pathEntries: ['/install/elanous/bin'] };
     f.files.get('/cache/one_key')!.mode = 0o600;
     expect(applyDoctorFixes(f.deps, true)).toMatchObject({ items: [], exitCode: 0 });
     expect(f.writes).toEqual([]);
@@ -206,7 +206,7 @@ describe('doctor --fix', () => {
   test('failed backup prevents startup modification and returns failure', () => {
     const f = fixture();
     f.deps.writeFile = (path, text) => {
-      if (path.endsWith('.monad-doctor.bak.temporary')) throw new Error('secret-not-reported');
+      if (path.endsWith('.elanous-doctor.bak.temporary')) throw new Error('secret-not-reported');
       f.writes.push(path);
       f.files.set(path, { text, mode: 0o644 });
     };
@@ -229,8 +229,8 @@ describe('doctor --fix', () => {
     expect(f.files.get('/home/test/.zshrc')?.text).toBe('existing startup\n');
     const result = applyDoctorFixes(f.deps, true);
     expect(result.items.find((entry) => entry.id === 'bun-tmpdir')?.result).toBe('fixed');
-    expect(f.files.get('/home/test/.zshrc')?.text).toContain('# >>> monad doctor TMPDIR >>>');
-    expect(f.files.get('/home/test/.zshrc.monad-doctor-tmpdir.bak')?.text).toBe('existing startup\n');
+    expect(f.files.get('/home/test/.zshrc')?.text).toContain('# >>> elanous doctor TMPDIR >>>');
+    expect(f.files.get('/home/test/.zshrc.elanous-doctor-tmpdir.bak')?.text).toBe('existing startup\n');
     expect(planDoctorFixes(f.deps).items.find((entry) => entry.id === 'bun-tmpdir')).toMatchObject({ status: 'skipped' });
   });
 
@@ -267,7 +267,7 @@ describe('doctor --fix', () => {
     f.files.delete('/home/test/.zshrc');
     const result = applyDoctorFixes(f.deps, true);
     expect(result.items[0]?.result).toBe('fixed');
-    expect(f.files.get('/home/test/.zshrc.monad-doctor.bak')?.text).toBe('');
+    expect(f.files.get('/home/test/.zshrc.elanous-doctor.bak')?.text).toBe('');
     expect(f.files.get('/home/test/.zshrc')?.text).toBe(`\n${block}\n`);
   });
 
@@ -276,12 +276,12 @@ describe('doctor --fix', () => {
     const result = applyDoctorFixes(f.deps, true);
     expect(result.items[0]).toMatchObject({ id: 'install-path', result: 'skipped' });
     expect(f.writes).toEqual(['/cache/one_key']);
-    expect(f.files.has('/home/test/.zshrc.monad-doctor.bak')).toBe(false);
+    expect(f.files.has('/home/test/.zshrc.elanous-doctor.bak')).toBe(false);
   });
 
   test('startup override and POSIX quote match installer; no changes when PATH already present', () => {
     const f = fixture();
-    f.deps.env = { SHELL: '/bin/bash', MONAD_SHELL_STARTUP: '/override', MONAD_KEY_CACHE_DIR: '/empty' };
+    f.deps.env = { SHELL: '/bin/bash', ELANOUS_SHELL_STARTUP: '/override', ELANOUS_KEY_CACHE_DIR: '/empty' };
     f.deps.readiness = { installPrefix: "/prefix/it's", pathEntries: ['/usr/bin'] };
     f.deps.exists = (path) => path === '/empty';
     f.deps.readdir = (path) => { expect(path).toBe('/empty'); return []; };
@@ -294,7 +294,7 @@ describe('doctor --fix', () => {
 
   test('registered doctor --fix --yes reports a failed item and exits 1', async () => {
     const f = fixture();
-    f.deps.readiness = { installPrefix: '/install/monad', pathEntries: ['/install/monad/bin'] };
+    f.deps.readiness = { installPrefix: '/install/elanous', pathEntries: ['/install/elanous/bin'] };
     const logs: string[] = [];
     const codes: number[] = [];
     f.deps.chmod = (path) => { if (path === '/cache/one_key') throw new Error('SECRET-VALUE'); };
@@ -310,7 +310,7 @@ describe('doctor --fix', () => {
       out: { log: (s) => logs.push(s) },
       setExitCode: (n) => codes.push(n),
     });
-    await program.parseAsync(['node', 'monad', 'doctor', '--fix', '--yes', '--json']);
+    await program.parseAsync(['node', 'elanous', 'doctor', '--fix', '--yes', '--json']);
     const output = JSON.parse(logs.at(-1)!);
     expect(output.results.items).toMatchObject([{ id: 'key-cache-permissions', path: 'one_key', result: 'failed', reason: 'could not chmod or recheck cache file' }]);
     expect(output.results.exitCode).toBe(1);
@@ -320,7 +320,7 @@ describe('doctor --fix', () => {
 
   test('registered doctor --restart needs --fix --yes, and then runs the injected restart after the other repairs', async () => {
     const f = fixture();
-    f.deps.readiness = { installPrefix: '/install/monad', pathEntries: ['/install/monad/bin'], codeRevision: 'abc123', platform: 'darwin', health: { daemonSha: 'fff' } };
+    f.deps.readiness = { installPrefix: '/install/elanous', pathEntries: ['/install/elanous/bin'], codeRevision: 'abc123', platform: 'darwin', health: { daemonSha: 'fff' } };
     const logs: string[] = [];
     const errors: string[] = [];
     const codes: number[] = [];
@@ -340,13 +340,13 @@ describe('doctor --fix', () => {
         setExitCode: (n) => codes.push(n),
         applyServiceRestart: async (deps) => { restarts.push(deps.readiness.installPrefix); return { result: 'failed', reason: 'new daemon does not run this code' }; },
       });
-      return program.parseAsync(['node', 'monad', ...args]);
+      return program.parseAsync(['node', 'elanous', ...args]);
     };
     await register(['doctor', '--fix', '--restart']);
     expect(errors).toEqual(['--restart requires --fix --yes']);
     expect(restarts).toEqual([]);
     await register(['doctor', '--fix', '--yes', '--restart', '--json']);
-    expect(restarts).toEqual(['/install/monad']);
+    expect(restarts).toEqual(['/install/elanous']);
     expect(JSON.parse(logs.at(-1)!).restart).toEqual({ result: 'failed', reason: 'new daemon does not run this code' });
     expect(codes.at(-1)).toBe(1);
   });
@@ -375,12 +375,12 @@ describe('doctor --fix', () => {
         listAuthProviders: () => [],
         codeRevision: () => undefined,
         fetchHealth: () => null,
-        readInstallPrefix: () => { probes.push('install-prefix'); return '/install/monad'; },
+        readInstallPrefix: () => { probes.push('install-prefix'); return '/install/elanous'; },
         out: { log: (s) => logs.push(s) },
         err: { error: (s) => logs.push(s) },
         setExitCode: (n) => codes.push(n),
       });
-      return program.parseAsync(['node', 'monad', ...args]);
+      return program.parseAsync(['node', 'elanous', ...args]);
     };
     await register(['doctor', '--json']);
     const ordinary = JSON.parse(logs.at(-1)!);
@@ -411,36 +411,36 @@ describe('doctor --fix', () => {
 
 describe('doctor --fix — service file (T2 · 2026-09-24)', () => {
   const plist = (path: string) => `<plist><dict><key>ProgramArguments</key><array><string>/usr/bin/bun</string><string>${path}</string><string>nexus</string><string>run</string></array></dict></plist>`;
-  const versioned = '/i/monad/versions/1.0.0-abc/node_modules/monadagent/bin/monad.mjs';
-  const stable = '/i/monad/current/node_modules/monadagent/bin/monad.mjs';
+  const versioned = '/i/elanous/versions/1.0.0-abc/node_modules/elanous/bin/elanous.mjs';
+  const stable = '/i/elanous/current/node_modules/elanous/bin/elanous.mjs';
 
   test('a service file pinned to a version folder is fixable and rewritten to current, with a backup and no restart', () => {
     const f = fixture();
-    f.files.set('/la/com.monad.nexus.plist', { text: plist(versioned), mode: 0o644 });
+    f.files.set('/la/com.elanous.nexus.plist', { text: plist(versioned), mode: 0o644 });
     const exists = f.deps.exists!;
-    f.deps.exists = (path) => path === '/i/monad/current/node_modules/monadagent/' || exists(path);
-    f.deps.readiness = { ...f.deps.readiness, serviceFile: { path: '/la/com.monad.nexus.plist', text: plist(versioned) } };
+    f.deps.exists = (path) => path === '/i/elanous/current/node_modules/elanous/' || exists(path);
+    f.deps.readiness = { ...f.deps.readiness, serviceFile: { path: '/la/com.elanous.nexus.plist', text: plist(versioned) } };
     const plan = planDoctorFixes(f.deps);
-    expect(plan.items.find((item) => item.id === 'service-file')).toMatchObject({ status: 'fixable', path: '/la/com.monad.nexus.plist' });
+    expect(plan.items.find((item) => item.id === 'service-file')).toMatchObject({ status: 'fixable', path: '/la/com.elanous.nexus.plist' });
     const result = applyDoctorFixes(f.deps, true).items.find((item) => item.id === 'service-file');
     expect(result).toMatchObject({ result: 'fixed' });
     expect(result?.reason).toContain('nothing was restarted');
-    expect(f.files.get('/la/com.monad.nexus.plist')?.text).toBe(plist(stable));
-    expect(f.files.get('/la/com.monad.nexus.plist.monad-doctor.bak')?.text).toBe(plist(versioned));
+    expect(f.files.get('/la/com.elanous.nexus.plist')?.text).toBe(plist(stable));
+    expect(f.files.get('/la/com.elanous.nexus.plist.elanous-doctor.bak')?.text).toBe(plist(versioned));
   });
 
   test('without an existing current path the service item is skipped, never half-rewritten', () => {
     const f = fixture();
-    f.files.set('/la/com.monad.nexus.plist', { text: plist(versioned), mode: 0o644 });
-    f.deps.readiness = { ...f.deps.readiness, serviceFile: { path: '/la/com.monad.nexus.plist', text: plist(versioned) } };
+    f.files.set('/la/com.elanous.nexus.plist', { text: plist(versioned), mode: 0o644 });
+    f.deps.readiness = { ...f.deps.readiness, serviceFile: { path: '/la/com.elanous.nexus.plist', text: plist(versioned) } };
     expect(planDoctorFixes(f.deps).items.find((item) => item.id === 'service-file')).toMatchObject({ status: 'skipped' });
     applyDoctorFixes(f.deps, true);
-    expect(f.files.get('/la/com.monad.nexus.plist')?.text).toBe(plist(versioned));
+    expect(f.files.get('/la/com.elanous.nexus.plist')?.text).toBe(plist(versioned));
   });
 
   test('a stable service file yields no service item', () => {
     const f = fixture();
-    f.deps.readiness = { ...f.deps.readiness, serviceFile: { path: '/la/com.monad.nexus.plist', text: plist(stable) } };
+    f.deps.readiness = { ...f.deps.readiness, serviceFile: { path: '/la/com.elanous.nexus.plist', text: plist(stable) } };
     expect(planDoctorFixes(f.deps).items.find((item) => item.id === 'service-file')).toBeUndefined();
   });
 });
@@ -449,8 +449,8 @@ test('plist provider keys migrate only on cache match or absence; backup, mode, 
   const f = fixture();
   const openai = 'unique-openai-plain-value';
   const xai = 'unique-xai-plain-value';
-  const path = '/la/com.monad.nexus.plist';
-  const original = `<plist><dict><key>EnvironmentVariables</key><dict>\n<key>OPENAI_API_KEY</key><string>${openai}</string>\n<key>XAI_API_KEY</key><string>${xai}</string>\n<key>MONAD_PWA_STATIC_DIR</key><string>/public</string>\n</dict></dict></plist>`;
+  const path = '/la/com.elanous.nexus.plist';
+  const original = `<plist><dict><key>EnvironmentVariables</key><dict>\n<key>OPENAI_API_KEY</key><string>${openai}</string>\n<key>XAI_API_KEY</key><string>${xai}</string>\n<key>ELANOUS_PWA_STATIC_DIR</key><string>/public</string>\n</dict></dict></plist>`;
   f.files.set(path, { text: original, mode: 0o644 });
   f.files.set('/cache/xai_api_key', { text: 'other-value\n', mode: 0o600 });
   f.deps.readiness = { serviceFile: { path, text: original } };
@@ -469,18 +469,18 @@ test('plist provider keys migrate only on cache match or absence; backup, mode, 
   expect(f.files.get('/cache/xai_api_key')?.text).toBe('other-value\n');
   expect(f.files.get(path)?.text).not.toContain('OPENAI_API_KEY');
   expect(f.files.get(path)?.text).toContain(`<key>XAI_API_KEY</key><string>${xai}</string>`);
-  expect(f.files.get(path)?.text).toContain('MONAD_PWA_STATIC_DIR');
-  expect(f.files.get(`${path}.monad-doctor.bak`)?.text).toBe(original);
+  expect(f.files.get(path)?.text).toContain('ELANOUS_PWA_STATIC_DIR');
+  expect(f.files.get(`${path}.elanous-doctor.bak`)?.text).toBe(original);
   expect(JSON.stringify(result)).not.toContain(openai);
   expect(JSON.stringify(result)).not.toContain(xai);
   expect(f.files.get(path)?.mode).toBe(0o644);
-  expect(f.files.get(`${path}.monad-doctor.bak`)?.mode).toBe(0o600);
+  expect(f.files.get(`${path}.elanous-doctor.bak`)?.mode).toBe(0o600);
   expect(f.writes).not.toContain('/cache/xai_api_key');
 });
 
 test('registered doctor emits neither provider value in JSON or human output', async () => {
   const f = fixture();
-  const path = '/la/com.monad.nexus.plist';
+  const path = '/la/com.elanous.nexus.plist';
   const openai = 'private-openai-for-cli';
   const xai = 'private-xai-for-cli';
   const original = `<plist><dict><key>EnvironmentVariables</key><dict><key>OPENAI_API_KEY</key><string>${openai}</string><key>XAI_API_KEY</key><string>${xai}</string></dict></dict></plist>`;
@@ -502,7 +502,7 @@ test('registered doctor emits neither provider value in JSON or human output', a
       out: { log: (line) => logs.push(line) },
       setExitCode: () => {},
     });
-    await program.parseAsync(['node', 'monad', 'doctor', ...args]);
+    await program.parseAsync(['node', 'elanous', 'doctor', ...args]);
   }
   expect(logs.join('\n')).not.toContain(openai);
   expect(logs.join('\n')).not.toContain(xai);
@@ -512,22 +512,22 @@ test('registered doctor emits neither provider value in JSON or human output', a
 
 test('plist XML entities are decoded for the cache without exposing or rewriting unrelated keys', () => {
   const f = fixture();
-  const path = '/la/com.monad.nexus.plist';
-  const original = '<plist><dict><key>EnvironmentVariables</key><dict><key>OPENAI_API_KEY</key><string>abc&amp;def</string><key>MONAD_PWA_STATIC_DIR</key><string>/public</string></dict></dict></plist>';
+  const path = '/la/com.elanous.nexus.plist';
+  const original = '<plist><dict><key>EnvironmentVariables</key><dict><key>OPENAI_API_KEY</key><string>abc&amp;def</string><key>ELANOUS_PWA_STATIC_DIR</key><string>/public</string></dict></dict></plist>';
   f.files.set(path, { text: original, mode: 0o644 });
   f.deps.readiness = { serviceFile: { path, text: original } };
   f.deps.mkdir = (dir) => { expect(dir).toBe('/cache'); };
   const result = applyDoctorFixes(f.deps, true);
   expect(result.items.find((item) => item.id === 'service-secrets')?.result).toBe('fixed');
   expect(f.files.get('/cache/openai_api_key')?.text).toBe('abc&def\n');
-  expect(f.files.get(path)?.text).toContain('<key>MONAD_PWA_STATIC_DIR</key><string>/public</string>');
+  expect(f.files.get(path)?.text).toContain('<key>ELANOUS_PWA_STATIC_DIR</key><string>/public</string>');
   expect(JSON.stringify(result)).not.toContain('abc&def');
   expect(JSON.stringify(result)).not.toContain('abc&amp;def');
 });
 
 test('an existing empty cache receives a key in mode 600 before its service entry is removed', () => {
   const f = fixture();
-  const path = '/unit/monad-nexus.service';
+  const path = '/unit/elanous-nexus.service';
   const original = '[Service]\nEnvironment="OPENAI_API_KEY=private-empty-cache-value"\n';
   f.files.set(path, { text: original, mode: 0o644 });
   f.files.set('/cache/openai_api_key', { text: '', mode: 0o644 });
@@ -541,9 +541,9 @@ test('an existing empty cache receives a key in mode 600 before its service entr
 });
 
 test('a real empty cache is populated without changing the service until cache verification succeeds', () => {
-  const dir = mkdtempSync(join(tmpdir(), 'monad-doctor-service-'));
+  const dir = mkdtempSync(join(tmpdir(), 'elanous-doctor-service-'));
   try {
-    const path = join(dir, 'monad-nexus.service');
+    const path = join(dir, 'elanous-nexus.service');
     const cached = join(dir, 'openai_api_key');
     const original = '[Service]\nEnvironment="OPENAI_API_KEY=private-real-file-value"\n';
     writeFileSync(path, original, { mode: 0o644 });
@@ -561,7 +561,7 @@ test('a real empty cache is populated without changing the service until cache v
 
 test('a conflicting cache leaves the only service key and does not create a backup', () => {
   const f = fixture();
-  const path = '/unit/monad-nexus.service';
+  const path = '/unit/elanous-nexus.service';
   const original = '[Service]\nEnvironment="XAI_API_KEY=private-xai-value"\n';
   f.files.set(path, { text: original, mode: 0o644 });
   f.files.set('/cache/xai_api_key', { text: 'different-cache-value\n', mode: 0o600 });
@@ -569,15 +569,15 @@ test('a conflicting cache leaves the only service key and does not create a back
   const result = applyDoctorFixes(f.deps, true);
   expect(result.items.find((item) => item.id === 'service-secrets')).toMatchObject({ result: 'skipped' });
   expect(f.files.get(path)?.text).toBe(original);
-  expect(f.files.has(`${path}.monad-doctor.bak`)).toBe(false);
+  expect(f.files.has(`${path}.elanous-doctor.bak`)).toBe(false);
   expect(JSON.stringify(result)).not.toContain('private-xai-value');
   expect(JSON.stringify(result)).not.toContain('different-cache-value');
 });
 
 test('a cache symlink is never followed and the service keeps its only key', () => {
-  const dir = mkdtempSync(join(tmpdir(), 'monad-doctor-symlink-'));
+  const dir = mkdtempSync(join(tmpdir(), 'elanous-doctor-symlink-'));
   try {
-    const path = join(dir, 'monad-nexus.service');
+    const path = join(dir, 'elanous-nexus.service');
     const outside = join(dir, 'outside');
     const original = '[Service]\nEnvironment="OPENAI_API_KEY=private-symlink-value"\n';
     writeFileSync(path, original, { mode: 0o644 });
@@ -595,31 +595,31 @@ test('a cache symlink is never followed and the service keeps its only key', () 
 
 test('systemd migrated Environment line is removed and existing backup is not overwritten', () => {
   const f = fixture();
-  const path = '/unit/monad-nexus.service';
-  const original = '[Service]\nEnvironment="OPENAI_API_KEY=unit-private-value"\nEnvironment="MONAD_PWA_STATIC_DIR=/public"\n';
+  const path = '/unit/elanous-nexus.service';
+  const original = '[Service]\nEnvironment="OPENAI_API_KEY=unit-private-value"\nEnvironment="ELANOUS_PWA_STATIC_DIR=/public"\n';
   f.files.set(path, { text: original, mode: 0o644 });
-  f.files.set(`${path}.monad-doctor.bak`, { text: 'previous', mode: 0o600 });
+  f.files.set(`${path}.elanous-doctor.bak`, { text: 'previous', mode: 0o600 });
   f.deps.readiness = { serviceFile: { path, text: original } };
   f.deps.mkdir = (dir) => { expect(dir).toBe('/cache'); };
   expect(applyDoctorFixes(f.deps, true).items.find((item) => item.id === 'service-secrets')?.result).toBe('fixed');
-  expect(f.files.get(path)?.text).toBe('[Service]\nEnvironment="MONAD_PWA_STATIC_DIR=/public"\n');
-  expect(f.files.get(`${path}.monad-doctor.bak`)?.text).toBe('previous');
-  expect([...f.files.keys()].some((name) => name.startsWith(`${path}.monad-doctor.bak.`))).toBe(true);
+  expect(f.files.get(path)?.text).toBe('[Service]\nEnvironment="ELANOUS_PWA_STATIC_DIR=/public"\n');
+  expect(f.files.get(`${path}.elanous-doctor.bak`)?.text).toBe('previous');
+  expect([...f.files.keys()].some((name) => name.startsWith(`${path}.elanous-doctor.bak.`))).toBe(true);
 });
 
 describe('doctor --fix — node-pty rebuild (RFC #20265 P2)', () => {
   const base = (distro: 'debian' | 'amzn2') => ({
-    readiness: { installPrefix: '/i/monad', nodePty: 'missing' as const, buildToolchain: { make: true, cxx20: true }, distro },
-    realpath: (path: string) => path === '/i/monad/current' ? '/i/monad/versions/1.0.0-abc' : path,
+    readiness: { installPrefix: '/i/elanous', nodePty: 'missing' as const, buildToolchain: { make: true, cxx20: true }, distro },
+    realpath: (path: string) => path === '/i/elanous/current' ? '/i/elanous/versions/1.0.0-abc' : path,
     readFile: (path: string) => {
-      if (path === '/i/monad/versions/1.0.0-abc/node_modules/monadagent/package.json') return JSON.stringify({ optionalDependencies: { 'node-pty': '^1.1.0' } });
+      if (path === '/i/elanous/versions/1.0.0-abc/node_modules/elanous/package.json') return JSON.stringify({ optionalDependencies: { 'node-pty': '^1.1.0' } });
       throw new Error('missing');
     },
   });
 
   test('plans a rebuild in the installed version folder with the pinned spec, and amzn2 adds the compiler env', () => {
     expect(planDoctorFixes(base('debian')).items.find((item) => item.id === 'node-pty-rebuild'))
-      .toMatchObject({ status: 'fixable', path: '/i/monad/versions/1.0.0-abc', action: 'bun add node-pty@^1.1.0 (in /i/monad/versions/1.0.0-abc) — then require(\'node-pty\')' });
+      .toMatchObject({ status: 'fixable', path: '/i/elanous/versions/1.0.0-abc', action: 'bun add node-pty@^1.1.0 (in /i/elanous/versions/1.0.0-abc) — then require(\'node-pty\')' });
     expect(planDoctorFixes(base('amzn2')).items.find((item) => item.id === 'node-pty-rebuild')?.action)
       .toContain('CC=gcc10-gcc CXX=gcc10-g++ PYTHON=python3.8 bun add');
   });
@@ -628,7 +628,7 @@ describe('doctor --fix — node-pty rebuild (RFC #20265 P2)', () => {
     const calls: Array<{ command: string; args: readonly string[]; cwd: string; cc?: string }> = [];
     const ok = applyDoctorFixes({ ...base('amzn2'), runCommand: (command, args, opts) => { calls.push({ command, args, cwd: opts.cwd, cc: opts.env.CC }); return { status: 0, stderr: '' }; }, verifyNodePty: () => true }, true);
     expect(ok.items.find((item) => item.id === 'node-pty-rebuild')).toMatchObject({ result: 'fixed' });
-    expect(calls).toEqual([{ command: 'bun', args: ['add', 'node-pty@^1.1.0'], cwd: '/i/monad/versions/1.0.0-abc', cc: 'gcc10-gcc' }]);
+    expect(calls).toEqual([{ command: 'bun', args: ['add', 'node-pty@^1.1.0'], cwd: '/i/elanous/versions/1.0.0-abc', cc: 'gcc10-gcc' }]);
     const failed = applyDoctorFixes({ ...base('debian'), runCommand: () => ({ status: 1, stderr: 'gyp ERR! build error' }), verifyNodePty: () => true }, true);
     expect(failed.items.find((item) => item.id === 'node-pty-rebuild')).toMatchObject({ result: 'failed', reason: 'bun add failed: gyp ERR! build error' });
     expect(failed.exitCode).toBe(1);
@@ -639,9 +639,9 @@ describe('doctor --fix — node-pty rebuild (RFC #20265 P2)', () => {
   });
 });
 
-// 🆕 2026-09-24 — doctor --fix 가 python-env 를 monad venv 셋업으로 고친다.
+// 🆕 2026-09-24 — doctor --fix 가 python-env 를 elanous venv 셋업으로 고친다.
 describe('doctor --fix python-env', () => {
-  const readiness = { pythonEnv: { status: 'fixable' as const, evidence: 'monad venv missing' } };
+  const readiness = { pythonEnv: { status: 'fixable' as const, evidence: 'elanous venv missing' } };
   test('plans python-env only when fixable; applies setup and rechecks', () => {
     const { planDoctorFixes: plan, applyDoctorFixes: apply } = require('./doctor-fix.js') as typeof import('./doctor-fix.js');
     expect(plan({ readiness: { pythonEnv: { status: 'ok', evidence: 'ok' } }, keyNames: [] }).items.some((i) => i.id === 'python-env')).toBe(false);
@@ -662,7 +662,7 @@ describe('doctor --fix --yes --sudo (RFC #20265 P5)', () => {
   const manual = [
     { id: 'build-toolchain', status: 'manual' as const, evidence: 'x', remedy: 'sudo dnf install -y gcc-c++ make' },
     { id: 'node-pty', status: 'manual' as const, evidence: 'x', remedy: 'sudo dnf install -y gcc-c++ make' },
-    { id: 'provider-decision', status: 'manual' as const, evidence: 'x', remedy: 'monad login openai-codex' },
+    { id: 'provider-decision', status: 'manual' as const, evidence: 'x', remedy: 'elanous login openai-codex' },
   ];
 
   test('only our sudo install lines, once each', () => {
@@ -670,7 +670,7 @@ describe('doctor --fix --yes --sudo (RFC #20265 P5)', () => {
   });
 
   test('a remedy that needs pyenv is not run by --sudo (2026-09-25 amazonlinux:2023)', () => {
-    const py = [{ id: 'python-env', status: 'manual' as const, evidence: 'x', remedy: 'sudo dnf install -y gcc make && pyenv install 3.12.12 (build deps per distro: RFC A2) · then: monad python setup --yes' }];
+    const py = [{ id: 'python-env', status: 'manual' as const, evidence: 'x', remedy: 'sudo dnf install -y gcc make && pyenv install 3.12.12 (build deps per distro: RFC A2) · then: elanous python setup --yes' }];
     expect(sudoFixCommands(py)).toEqual([]);
   });
 
@@ -706,7 +706,7 @@ describe('doctor --fix --yes --sudo (RFC #20265 P5)', () => {
 // 🩸 09-25 GCP debian-12 — 설명문이 붙은 처방이 문자열 가드를 빠져나가 `sh` 에서 문법 오류로 죽고 rc 1 을 냈다.
 describe('applySudoFixes — 셸이 «명령이 아니다»라고 하면 치지 않는다', () => {
   test('a remedy with prose is skipped by the sh -n check, never executed, and does not fail the run', () => {
-    const prose = 'sudo apt-get install -y build-essential libssl-dev && reinstall monad (the package must ship requirements-python.txt)';
+    const prose = 'sudo apt-get install -y build-essential libssl-dev && reinstall elanous (the package must ship requirements-python.txt)';
     const calls: string[] = [];
     const result = applySudoFixes([{ id: 'python-env', status: 'manual', evidence: 'x', remedy: prose }], { run: (command, args) => {
       calls.push([command, ...args].join(' '));
@@ -728,8 +728,8 @@ describe('node-pty rebuild uses the native build shim', () => {
     let seenPath = '';
     const result = apply({
       keyNames: [],
-      readiness: { installPrefix: '/opt/monad', nodePty: 'missing', buildToolchain: { make: true, cxx20: true }, distro: 'debian' },
-      realpath: () => '/opt/monad/versions/1.0.0',
+      readiness: { installPrefix: '/opt/elanous', nodePty: 'missing', buildToolchain: { make: true, cxx20: true }, distro: 'debian' },
+      realpath: () => '/opt/elanous/versions/1.0.0',
       readFile: () => JSON.stringify({ optionalDependencies: { 'node-pty': '^1.1.0' } }),
       exists: () => false,
       shimDir: () => '/tmp/shim-x',
@@ -738,7 +738,7 @@ describe('node-pty rebuild uses the native build shim', () => {
       verifyNodePty: () => true,
     }, true);
     expect(result.items.find((i) => i.id === 'node-pty-rebuild')).toMatchObject({ result: 'fixed' });
-    expect(removed).toEqual(['/opt/monad/versions/1.0.0/node_modules/node-pty']);
+    expect(removed).toEqual(['/opt/elanous/versions/1.0.0/node_modules/node-pty']);
     expect(seenPath.startsWith('/tmp/shim-x')).toBe(true);
   });
 });

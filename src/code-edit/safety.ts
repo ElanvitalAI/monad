@@ -2,7 +2,7 @@
 //
 // Adapted from codex-rs/core/src/safety.rs (Apache 2.0). The enum is
 // the same three-valued `SafetyCheck { AutoApprove | AskUser | Reject }`;
-// the policies are Monad-specific (no sandbox / landlock story yet,
+// the policies are Elanous-specific (no sandbox / landlock story yet,
 // just a trusted-dirs whitelist + ask modes).
 //
 // Default policy is `ask-edit` — any Edit/Write asks the user before
@@ -117,7 +117,7 @@ function assessPath(rawPath: string, policy: ApprovalPolicy): SafetyDecision {
       if (isInside(abs, sysDir)) {
         return {
           kind: 'ask-user',
-          reason: `monad self-source (${sysDir}) — UndoTurn auto-attached`,
+          reason: `elanous self-source (${sysDir}) — UndoTurn auto-attached`,
         };
       }
     }

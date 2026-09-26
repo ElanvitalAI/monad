@@ -7,7 +7,7 @@ import { fileURLToPath } from 'node:url';
 const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const WORKING_DIR_MODULE = join(REPO_ROOT, 'src/session/working-dir.ts');
 const DEBUG_LOG_MODULE = join(REPO_ROOT, 'src/debug/log.ts');
-const BIN = join(REPO_ROOT, 'bin/monad.mjs');
+const BIN = join(REPO_ROOT, 'bin/elanous.mjs');
 const created: string[] = [];
 
 function temp(prefix: string): string {
@@ -65,12 +65,12 @@ describe('debug log directory placement', () => {
     writeFileSync(join(project, 'package.json'), '{}');
     const home = temp('debug-log-placement-home-');
 
-    expect(resolveInFreshProcess(session, home)).toBe(join(project, '.monad', 'debug'));
-    expect(existsSync(join(project, '.monad', 'debug'))).toBe(true);
-    expect(existsSync(join(session, '.monad', 'debug'))).toBe(false);
+    expect(resolveInFreshProcess(session, home)).toBe(join(project, '.elanous', 'debug'));
+    expect(existsSync(join(project, '.elanous', 'debug'))).toBe(true);
+    expect(existsSync(join(session, '.elanous', 'debug'))).toBe(false);
   });
 
-  test('puts an external sibling-prefix project under .monad/debug without creating root log', () => {
+  test('puts an external sibling-prefix project under .elanous/debug without creating root log', () => {
     const externalProject = join(
       dirname(REPO_ROOT),
       `${basename(REPO_ROOT)}-external-${process.pid}-${Date.now()}`,
@@ -80,8 +80,8 @@ describe('debug log directory placement', () => {
     created.push(externalProject);
     const home = temp('debug-log-placement-home-');
 
-    expect(resolveInFreshProcess(externalProject, home)).toBe(join(externalProject, '.monad', 'debug'));
-    expect(existsSync(join(externalProject, '.monad', 'debug'))).toBe(true);
+    expect(resolveInFreshProcess(externalProject, home)).toBe(join(externalProject, '.elanous', 'debug'));
+    expect(existsSync(join(externalProject, '.elanous', 'debug'))).toBe(true);
     expect(existsSync(join(externalProject, 'log'))).toBe(false);
   });
 
@@ -91,39 +91,39 @@ describe('debug log directory placement', () => {
     writeFileSync(join(sourceSession, 'log'), 'not a directory');
     const home = temp('debug-log-placement-home-');
 
-    expect(resolveInFreshProcess(sourceSession, home)).toBe(join(home, '.local', 'share', 'monad', 'debug'));
-    expect(existsSync(join(home, '.local', 'share', 'monad', 'debug'))).toBe(true);
+    expect(resolveInFreshProcess(sourceSession, home)).toBe(join(home, '.local', 'share', 'elanous', 'debug'));
+    expect(existsSync(join(home, '.local', 'share', 'elanous', 'debug'))).toBe(true);
   });
 
   test('does not adopt a home marker for an unmarked external session', () => {
     const home = temp('debug-log-placement-home-');
     const session = join(home, 'unmarked', 'sub');
-    mkdirSync(join(home, '.monad'), { recursive: true });
+    mkdirSync(join(home, '.elanous'), { recursive: true });
     mkdirSync(session, { recursive: true });
 
-    expect(resolveInFreshProcess(session, home)).toBe(join(session, '.monad', 'debug'));
-    expect(existsSync(join(home, '.monad', 'debug'))).toBe(false);
+    expect(resolveInFreshProcess(session, home)).toBe(join(session, '.elanous', 'debug'));
+    expect(existsSync(join(home, '.elanous', 'debug'))).toBe(false);
   });
 
   test('the deployed CLI leaves an unrelated project root without log/', () => {
     const fixture = temp('debug-log-placement-isolated-tmp-');
     const isolatedTmpdir = join(fixture, 'tmp');
-    mkdirSync(join(isolatedTmpdir, '.monad'), { recursive: true });
+    mkdirSync(join(isolatedTmpdir, '.elanous'), { recursive: true });
     const project = mkdtempSync(join(isolatedTmpdir, 'project-'));
     const home = join(fixture, 'home');
-    const configDir = join(home, '.monad');
+    const configDir = join(home, '.elanous');
     const stateDir = join(home, 'state');
     const result = Bun.spawnSync({
       cmd: ['bun', BIN, '--config-dir', configDir, '--help'],
       cwd: project,
-      env: { ...process.env, TMPDIR: isolatedTmpdir, HOME: home, MONAD_STATE_DIR: stateDir },
+      env: { ...process.env, TMPDIR: isolatedTmpdir, HOME: home, ELANOUS_STATE_DIR: stateDir },
       stdout: 'pipe',
       stderr: 'pipe',
     });
 
     expect(result.exitCode).toBe(0);
     expect(existsSync(join(project, 'log'))).toBe(false);
-    expect(existsSync(join(project, '.monad', 'debug'))).toBe(true);
-    expect(existsSync(join(isolatedTmpdir, '.monad', 'debug'))).toBe(false);
+    expect(existsSync(join(project, '.elanous', 'debug'))).toBe(true);
+    expect(existsSync(join(isolatedTmpdir, '.elanous', 'debug'))).toBe(false);
   });
 });

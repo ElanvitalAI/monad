@@ -21,7 +21,7 @@ export async function buildRunHighlightReel(runId: string, deps: RunHighlightRee
     return {
       kind: 'no-keyframes',
       frames: 0,
-      message: `run '${runId}' 에 키프레임 PNG 없음 (전이 미발생·미스폰·다른 MONAD_STATE_DIR·grace TTL). executor(goal-loop PTY) run 만 캡처됨.`,
+      message: `run '${runId}' 에 키프레임 PNG 없음 (전이 미발생·미스폰·다른 ELANOUS_STATE_DIR·grace TTL). executor(goal-loop PTY) run 만 캡처됨.`,
     };
   }
 

@@ -1,18 +1,18 @@
 // ── 인스턴스 스코프 로그 레벨 (LF7-c · 2026-07-13) ───────────────────────────
 //
 // 런타임 레벨 노브를 공유 config(debug.level)에서 state dir 스코프 파일로
-// 이관한다. 멀티 모나드에서 테스트 A 가 diag 로 올린 게 prod/테스트 B 의
+// 이관한다. 멀티 엘라누스에서 테스트 A 가 diag 로 올린 게 prod/테스트 B 의
 // 레벨을 흔들면 안 된다 — config 본체(토큰 등)는 공유 유지, 레벨만 로컬.
 //
-// 우선순위(데몬 부팅): MONAD_DEBUG_LEVEL env > 이 파일 > config debug.level.
+// 우선순위(데몬 부팅): ELANOUS_DEBUG_LEVEL env > 이 파일 > config debug.level.
 // config 의 debug.level 은 "인스턴스 파일이 없을 때의 기본값"으로 강등 —
-// `monad logs level <lvl>` 은 더 이상 config.json 을 만지지 않는다
+// `elanous logs level <lvl>` 은 더 이상 config.json 을 만지지 않는다
 // (overlay persist 사건 2026-07-13 의 오염 벡터 원천 제거).
 //
 // 파일: `<stateRoot>/logs/level.json` — logs.db 와 같은 루트(격리 동형).
 
 import { existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from 'node:fs';
-import { monadStateRoot } from '../../autopilot/state-paths.js';
+import { elanousStateRoot } from '../../autopilot/state-paths.js';
 import { dirname, join } from 'node:path';
 
 import type { DebugLevel } from '../../debug/log.js';
@@ -20,14 +20,14 @@ import type { DebugLevel } from '../../debug/log.js';
 const VALID_LEVELS: readonly DebugLevel[] = ['off', 'trail', 'diag', 'normal', 'verbose', 'detail', 'keytrace'];
 
 export function scopedLevelPath(): string {
-  return join(monadStateRoot(), 'logs', 'level.json');
+  return join(elanousStateRoot(), 'logs', 'level.json');
 }
 
 interface ScopedLevelFile {
   level?: unknown;
   /** OH9(2026-07-24) — 렌더 로그 발화 여부(축은 level 과 직교). true = 렌더 로그
    *  ON(비억제) · false = 억제(무음). 부재(undefined) = 명시 없음 → config/uiMode
-   *  시드로 폴백. `monad logs level --render on|off` 가 이 한 필드를 관리한다. */
+   *  시드로 폴백. `elanous logs level --render on|off` 가 이 한 필드를 관리한다. */
   render?: unknown;
   updatedAt?: unknown;
   pid?: unknown;
@@ -89,15 +89,15 @@ export function hotPathGateOpen(level: DebugLevel): boolean {
 /** 부팅 시작 레벨 해석 — env > 인스턴스 스코프 파일 > config, **그리고 테스트 우주 바닥**.
  *
  *  ⭐ 테스트 바닥(2026-07-27): 격리 인스턴스는 **자기 config 를 본다** — 운영에서 diag/detail 을
- *     켜둬도 `.monad-test` 우주는 그걸 모른다. 그래서 자식 PTY·L2 TUI 를 격리로 띄우면
+ *     켜둬도 `.elanous-test` 우주는 그걸 모른다. 그래서 자식 PTY·L2 TUI 를 격리로 띄우면
  *     관측 해상도가 조용히 떨어져 있었다(실측: 운영 게이트는 열려 있는데 테스트는 아님).
  *     테스트 우주에서 게이트가 닫히는 레벨로 시작하면 **`diag` 로 올린다** —
  *     파일 ON + 핫패스 ON, mirror 는 OFF 라 화면은 조용하다(진단용 정확한 조합).
- *  ⚠️ **명시를 덮지 않는다** — env 와 **스코프 파일**(`monad logs level <lvl>` 의 영속처)은
+ *  ⚠️ **명시를 덮지 않는다** — env 와 **스코프 파일**(`elanous logs level <lvl>` 의 영속처)은
  *     사람의 명시이므로 바닥이 손대지 않는다. 바닥이 걸리는 유일한 자리는 **config 상속값**이다.
  *     내리는 일은 절대 없다(관측을 줄이는 방향으로는 이 함수가 움직이지 않는다).
  *  ⚠️ 운영(prod)에는 무접촉 — `isTestInstance` 판정은 호출측이 **리졸버 SSOT**
- *     (`resolveInstance().kind === 'test'`)로 넘긴다. "루트가 `~/.monad` 가 아니면 테스트"
+ *     (`resolveInstance().kind === 'test'`)로 넘긴다. "루트가 `~/.elanous` 가 아니면 테스트"
  *     같은 자체 비교를 쓰면 별도 운영 인스턴스·커스텀 루트까지 test 로 오판한다(리뷰 must-fix). */
 export function resolveStartupDebugLevel(input: {
   envLevel?: string | undefined;
@@ -109,7 +109,7 @@ export function resolveStartupDebugLevel(input: {
   if (env && (VALID_LEVELS as readonly string[]).includes(env)) {
     return { level: env as DebugLevel, source: 'env' };
   }
-  // ⭐ 스코프 파일은 **사람의 명시**다 — `monad logs level off` 가 여기에 영속한다.
+  // ⭐ 스코프 파일은 **사람의 명시**다 — `elanous logs level off` 가 여기에 영속한다.
   //   바닥이 그걸 덮으면 "꺼둔 게 재기동마다 되살아나는" 것이라 명시를 무시하는 셈이다
   //   (리뷰 must-fix — 내가 계약으로 적어놓고 코드는 env 만 예외로 뒀다).
   if (input.scopedLevel) return { level: input.scopedLevel, source: 'scoped' };

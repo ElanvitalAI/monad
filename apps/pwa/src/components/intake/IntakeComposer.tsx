@@ -15,7 +15,7 @@ const MODES = [
 ] as const;
 
 /** Autopilot triage 미리보기 (Phase B3) — 입력 텍스트를 실행모델로 어떻게 라우팅할지
- *  실시간 칩. intake → autopilot 통합: "이 메모를 던지면 monad 가 어떻게 풀지" 힌트.
+ *  실시간 칩. intake → autopilot 통합: "이 메모를 던지면 elanous 가 어떻게 풀지" 힌트.
  *  600ms 디바운스·fail-soft(미리보기 실패가 캡처를 막지 않음). */
 function TriagePreview({ text }: { text: string }) {
   const { client } = useDaemon();

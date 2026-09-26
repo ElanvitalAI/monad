@@ -292,7 +292,7 @@ function TaskCard({
             className="flex items-center gap-1 rounded-full bg-sky-500/15 px-2 py-0.5 text-sky-200 ring-1 ring-sky-500/30"
             title={`빌드 ${task.build.buildId} · ${task.build.backend}${task.build.maxTurns ? ` · ${task.build.maxTurns}턴` : ''}`}
           >
-            <span className="animate-pulse">●</span> 빌드중 {task.build.backend.replace(/^monad-self:/, '')} 시도{task.build.attemptSeq}
+            <span className="animate-pulse">●</span> 빌드중 {task.build.backend.replace(/^elanous-self:/, '')} 시도{task.build.attemptSeq}
           </span>
         )}
         {/* 아크 뱃지(2026-07-14) — 멀티아크 미션의 이 페이즈가 속한 아크·진행·통합검증 상태. */}

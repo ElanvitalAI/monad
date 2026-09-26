@@ -2,7 +2,7 @@
 //
 // Uses the official `codex app-server` JSON-RPC protocol (now documented
 // at developers.openai.com/codex/app-server · omni-crawl 2026-04-22).
-// Monad already ships `CodexAppServerClient` + `spawnCodexAppServer`
+// Elanous already ships `CodexAppServerClient` + `spawnCodexAppServer`
 // for H4 P3.B · we reuse that plumbing rather than respawning a fresh
 // SDK child on every refresh.
 //
@@ -162,7 +162,7 @@ async function fetchViaAppServer(opts: CodexFetcherOpts): Promise<RateLimitsRead
     await spawned.client.request<Record<string, unknown>, InitializeResult>(
       'initialize',
       {
-        clientInfo: { name: 'monad-budget', version: '1' },
+        clientInfo: { name: 'elanous-budget', version: '1' },
         capabilities: {},
       },
     );

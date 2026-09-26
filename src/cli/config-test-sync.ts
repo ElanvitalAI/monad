@@ -1,12 +1,12 @@
-// ── monad config sync-test — 운영→테스트 config 물질화 동기화 (ISO-1 · 2026-07-13) ──
+// ── elanous config sync-test — 운영→테스트 config 물질화 동기화 (ISO-1 · 2026-07-13) ──
 //
 // 격리 테스트 인스턴스의 config 완전 분리(대표 결정 2026-07-13). 종전에는 테스트
 // 데몬이 **운영 config 를 공유**하고 in-memory overlay(buildTestSafeDaemonConfig)로
 // 아웃바운드만 가렸다 — overlay 뷰가 디스크에 박제되는 오염 사건(#4029)과 "공유
 // config write-through" 함정의 뿌리. 이제:
 //
-//   ~/.monad/config.json            ← 운영 유일 진실원 (테스트 프로세스 무접촉)
-//   <repo>/.monad-test/config.json  ← 이 CLI 가 변환·물질화한 테스트 사본
+//   ~/.elanous/config.json            ← 운영 유일 진실원 (테스트 프로세스 무접촉)
+//   <repo>/.elanous-test/config.json  ← 이 CLI 가 변환·물질화한 테스트 사본
 //
 // 변환은 **raw JSON 레벨** — 정규화(getUserConfig)를 거치지 않아 미지 필드가
 // 보존된다(정규화 저장이 필드를 조용히 떨어뜨리는 사고 클래스 회피). 정책은
@@ -27,7 +27,7 @@ import { basename, dirname, join } from 'node:path';
 
 /** 운영 config 루트(항상 실 운영 — --config-dir 오버라이드와 무관하게 원본을 읽는다). */
 export function prodConfigDir(): string {
-  return join(homedir(), '.monad');
+  return join(homedir(), '.elanous');
 }
 
 /** 그대로 복사할 부속 파일 (운영 config dir 상대). 없는 파일은 조용히 스킵. */
@@ -146,7 +146,7 @@ export function isTestConfigStale(testDir: string, srcDir: string = prodConfigDi
   }
 }
 
-// ── monad config promote — 테스트→운영 필드 단위 전파 (ISO-4) ─────────────
+// ── elanous config promote — 테스트→운영 필드 단위 전파 (ISO-4) ─────────────
 //
 // 테스트 인스턴스에서 조정한 노브를 운영에 반영하는 유일한 정방향 통로.
 // **필드 경로 단위 raw patch 만** — 전체 파일 되쓰기는 구조적으로 불가
@@ -200,24 +200,24 @@ export function buildPromotedProdConfig(
   return { next, before, after };
 }
 
-/** CLI 진입 — `monad config promote <path...> [--repo] [--yes]`. 다중 경로(provider 세트 원샷·2026-07-15). */
+/** CLI 진입 — `elanous config promote <path...> [--repo] [--yes]`. 다중 경로(provider 세트 원샷·2026-07-15). */
 export function runConfigPromote(paths: readonly string[], opts: { repo?: string; yes?: boolean }): number {
   const list = paths.filter(Boolean);
-  if (list.length === 0) { console.error('monad config promote: 경로 최소 1개 필요'); return 1; }
+  if (list.length === 0) { console.error('elanous config promote: 경로 최소 1개 필요'); return 1; }
   const bad = list.filter((p) => !isPromotable(p));
   if (bad.length) {
-    console.error(`monad config promote: 전파 금지 경로 (${PROMOTE_DENYLIST_PREFIXES.join('·')}): ${bad.join(', ')}`);
+    console.error(`elanous config promote: 전파 금지 경로 (${PROMOTE_DENYLIST_PREFIXES.join('·')}): ${bad.join(', ')}`);
     return 1;
   }
   const repoRoot = opts.repo ?? findRepoRootUp(process.cwd());
   if (!repoRoot) {
-    console.error('monad config promote: 레포 루트(.git) 미발견 — --repo <path>');
+    console.error('elanous config promote: 레포 루트(.git) 미발견 — --repo <path>');
     return 1;
   }
-  const testPath = join(repoRoot, '.monad-test', 'config.json');
+  const testPath = join(repoRoot, '.elanous-test', 'config.json');
   const prodPath = join(prodConfigDir(), 'config.json');
   if (!existsSync(testPath)) {
-    console.error(`monad config promote: 테스트 config 없음 (${testPath}) — 먼저 monad config sync-test`);
+    console.error(`elanous config promote: 테스트 config 없음 (${testPath}) — 먼저 elanous config sync-test`);
     return 1;
   }
   try {
@@ -240,14 +240,14 @@ export function runConfigPromote(paths: readonly string[], opts: { repo?: string
     console.log(`적용 완료 → ${prodPath} (${list.length} 필드 patch: ${list.join(', ')})`);
     return 0;
   } catch (e) {
-    console.error(`monad config promote 실패: ${e instanceof Error ? e.message : String(e)}`);
+    console.error(`elanous config promote 실패: ${e instanceof Error ? e.message : String(e)}`);
     return 1;
   }
 }
 
-/** CLI 진입 — `monad config sync-test [--repo <path>] [--state-dir <dir>]`.
+/** CLI 진입 — `elanous config sync-test [--repo <path>] [--state-dir <dir>]`.
  *  --state-dir 은 임의 격리 루트 직접 지정(telegram-test 의
- *  ~/.monad/telegram-test 등 — ISO-5) · 미지정 시 레포의 .monad-test. */
+ *  ~/.elanous/telegram-test 등 — ISO-5) · 미지정 시 레포의 .elanous-test. */
 export function runConfigSyncTest(opts: { repo?: string; stateDir?: string; json?: boolean }): number {
   let testDir: string;
   if (opts.stateDir?.trim()) {
@@ -255,10 +255,10 @@ export function runConfigSyncTest(opts: { repo?: string; stateDir?: string; json
   } else {
     const repoRoot = opts.repo ?? findRepoRootUp(process.cwd());
     if (!repoRoot) {
-      console.error('monad config sync-test: 레포 루트(.git) 미발견 — 레포 안에서 실행하거나 --repo/--state-dir');
+      console.error('elanous config sync-test: 레포 루트(.git) 미발견 — 레포 안에서 실행하거나 --repo/--state-dir');
       return 1;
     }
-    testDir = join(repoRoot, '.monad-test');
+    testDir = join(repoRoot, '.elanous-test');
   }
   try {
     const r = syncTestConfig(testDir);
@@ -271,10 +271,10 @@ export function runConfigSyncTest(opts: { repo?: string; stateDir?: string; json
     console.log(`  discord: off`);
     console.log(`  부속 복사: ${r.copied.join(', ') || '없음'}${r.skippedMissing.length ? ` (부재 스킵: ${r.skippedMissing.join(', ')})` : ''}${r.skippedIdentical.length ? ` (동일 스킵: ${r.skippedIdentical.join(', ')})` : ''}`);
     console.log(`  제외(정책): ${TEST_SYNC_EXCLUDED.map((e) => e.file).join(', ')}`);
-    console.log(`격리 루트: ${basename(testDir) === '.monad-test' ? basename(dirname(testDir)) : testDir} — 테스트 인스턴스 재기동 시 반영`);
+    console.log(`격리 루트: ${basename(testDir) === '.elanous-test' ? basename(dirname(testDir)) : testDir} — 테스트 인스턴스 재기동 시 반영`);
     return 0;
   } catch (e) {
-    console.error(`monad config sync-test 실패: ${e instanceof Error ? e.message : String(e)}`);
+    console.error(`elanous config sync-test 실패: ${e instanceof Error ? e.message : String(e)}`);
     return 1;
   }
 }

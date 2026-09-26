@@ -101,7 +101,7 @@ export function twoProportionZ(a: DecompositionCompletionRow[], b: Decomposition
  *  📏 2026-08-27 실측: `--state all` 로 UNCONVERGEABLE ***20건 중 «온전한 것 2건»***(85% 절단 · `OBS-T342`).
  *
  *  🪞🚨 **⛔ 「되찾을 수 없다」는 «거짓»이었다 — 30분 만에 반증됐다**(🅕 33차 · 2026-08-27):
- *  ***게이트 귀속은 관측에 «남아 있다»*** — `monad logs --event gate.baseline` 의 `data.failures[]` 가
+ *  ***게이트 귀속은 관측에 «남아 있다»*** — `elanous logs --event gate.baseline` 의 `data.failures[]` 가
  *  `{ file, attribution }` 을 싣는다. 📏 실측: 행 ***394*** · runId ***102*** ·
  *  ***`attribution='introduced'` 인 파일을 가진 행 40***(PR 본문에서 온전한 것은 «둘»뿐이었다).
  *  ⇒ ✅ 그러므로 이 칸은 ***PR 본문 대신 «로그»로 소급해 채울 수 있다***.
@@ -153,10 +153,10 @@ export function collectGoalTargetPaths(goalsDir: string): Map<string, string[]> 
 
 /** ⭐ `gate.baseline` 관측에서 runId → 「새로 깨진(introduced) 파일 집합」.
  *  ⛔⭐ ***원천은 PR 본문이 아니라 «로그»다*** — 본문은 85% 가 절단됐고 로그는 «안 잘린다»(🅣 131차 제보).
- *  ⚠️ 이 함수는 `monad logs` 를 부른다(느리다 · 네트워크는 아니다). */
+ *  ⚠️ 이 함수는 `elanous logs` 를 부른다(느리다 · 네트워크는 아니다). */
 export function collectIntroducedFilesByRun(repoRoot: string, limit = 3000): Map<string, Set<string>> {
   const raw = new TextDecoder().decode(Bun.spawnSync(
-    ['bun', 'bin/monad.mjs', 'logs', '--all', '--include-test', '--event', 'gate.baseline', '--limit', String(limit), '--json', '--json-data'],
+    ['bun', 'bin/elanous.mjs', 'logs', '--all', '--include-test', '--event', 'gate.baseline', '--limit', String(limit), '--json', '--json-data'],
     { cwd: repoRoot },
   ).stdout);
   let rows: unknown[] = [];

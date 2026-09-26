@@ -1,14 +1,14 @@
 // PLAN-codex-app-server-hermes-parity §5 Phase H3·1 (2026-05-16) —
 // marker-aware regenerate of a managed section inside a foreign config
 // file. The intent is to wire codex's `~/.codex/config.toml` so codex
-// learns to spawn `monad mcp serve` (exposing the 5 monad_* tools
+// learns to spawn `elanous mcp serve` (exposing the 5 elanous_* tools
 // landed in H1·5a-e), WITHOUT clobbering the user's hand-edited
 // model / projects / mcp_servers entries that live OUTSIDE our
 // managed section.
 //
 // Marker shape (matches Hermes parity):
 //
-//   # managed by monad-agent — `monad codex config-migrate` regenerates this section
+//   # managed by monad-agent — `elanous codex config-migrate` regenerates this section
 //   …generated block…
 //   # end monad-agent managed section
 //
@@ -18,7 +18,7 @@
 // whitespace + comments survive a regenerate.
 
 export const MARKER_START =
-  '# managed by monad-agent — `monad codex config-migrate` regenerates this section';
+  '# managed by monad-agent — `elanous codex config-migrate` regenerates this section';
 export const MARKER_END = '# end monad-agent managed section';
 
 export interface RegenerateOpts {

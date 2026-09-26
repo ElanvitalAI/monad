@@ -1,12 +1,12 @@
-// `monad config mission <get|set|reset|mode>` — thin wrapper around
+// `elanous config mission <get|set|reset|mode>` — thin wrapper around
 // the generic `config set llm.missionRouting.…` so users don't have to
 // memorise dotted paths or hand-craft JSON for a 6-mission table.
 //
 // Sub-commands:
-//   monad config mission get [<mission>]
-//   monad config mission set <mission> <provider> [<model>]
-//   monad config mission reset [<mission>]
-//   monad config mission mode <auto|manual>
+//   elanous config mission get [<mission>]
+//   elanous config mission set <mission> <provider> [<model>]
+//   elanous config mission reset [<mission>]
+//   elanous config mission mode <auto|manual>
 //
 // Pure helpers are exported so unit tests can drive the surface without
 // spawning a subprocess — the index.ts Commander wiring is the only

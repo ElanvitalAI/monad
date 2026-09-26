@@ -77,7 +77,7 @@ export async function syncTasteVectors(deps: TasteSyncDeps = {}): Promise<TasteS
     const source_ref = JSON.stringify({ type, negative, importance: r.importance ?? 5, srcTs: r.ts });
     try {
       const ok = await ingestText(kdb, {
-        id: r.id, ts: r.ts, kind: 'taste', text: r.text, domain: 'monad',
+        id: r.id, ts: r.ts, kind: 'taste', text: r.text, domain: 'elanous',
         sector_tags: type, source_ref,
       }, embed);
       if (ok) embedded++; else skipped++;
@@ -143,7 +143,7 @@ function parseRef(source_ref: string | null): { type: string | null; negative: b
 export function computeTasteProfile(deps: ProfileDeps = {}): TasteProfile {
   const kdb = deps.knowledgeDb ?? openKnowledgeDb(knowledgeDbPath());
   const shortDays = deps.shortWindowDays ?? 7;
-  const all = loadKindVectors(kdb, 'taste', 'monad');
+  const all = loadKindVectors(kdb, 'taste', 'elanous');
   const empty: TasteProfile = { long: null, short: null, neg: null, counts: { total: 0, long: 0, short: 0, neg: 0 }, embedModel: null };
   if (!all.length) return empty;
 

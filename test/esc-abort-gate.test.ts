@@ -6,15 +6,15 @@ import { DEFAULT_THEME_TOKENS } from '../src/theme/tokens.js';
 import { debug } from '../src/debug/log.js';
 import { KeyStreamParser } from '../src/tui.js';
 
-const originalMonadRunId = process.env.MONAD_RUN_ID;
+const originalElanousRunId = process.env.ELANOUS_RUN_ID;
 
 beforeAll(() => {
-  delete process.env.MONAD_RUN_ID;
+  delete process.env.ELANOUS_RUN_ID;
 });
 
 afterAll(() => {
-  if (originalMonadRunId === undefined) delete process.env.MONAD_RUN_ID;
-  else process.env.MONAD_RUN_ID = originalMonadRunId;
+  if (originalElanousRunId === undefined) delete process.env.ELANOUS_RUN_ID;
+  else process.env.ELANOUS_RUN_ID = originalElanousRunId;
 });
 
 function mk(running: number, targetNames: readonly string[] = []) {

@@ -40,7 +40,7 @@ describe('McpAppBlock', () => {
       />,
     );
 
-    expect(html).toContain('data-monad-mcp-app-frame="true"');
+    expect(html).toContain('data-elanous-mcp-app-frame="true"');
     expect(html).toContain('sandbox="allow-scripts"');
     expect(html).toContain('connect-src https://api.example.test');
     expect(html).toContain('img-src https://cdn.example.test');
@@ -98,12 +98,12 @@ describe('the server the frame is actually given', () => {
 
   test('comes from the registry name, not the call id', () => {
     const html = renderToStaticMarkup(<McpAppBlock block={block} />);
-    expect(html).toContain('data-monad-mcp-server="higgsfield"');
+    expect(html).toContain('data-elanous-mcp-server="higgsfield"');
   });
 
   test('is empty when the tool has no server prefix', () => {
     const html = renderToStaticMarkup(<McpAppBlock block={{ ...block, toolName: 'Read' }} />);
-    expect(html).toContain('data-monad-mcp-server=""');
+    expect(html).toContain('data-elanous-mcp-server=""');
   });
 });
 

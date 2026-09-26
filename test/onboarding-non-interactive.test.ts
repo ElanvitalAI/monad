@@ -72,7 +72,7 @@ describe('onboarding/non-interactive · scripted answer resolution', () => {
   test('env bridge layered above answer file', async () => {
     const io = nonInteractiveIO({
       answers: { llm: { apiKey: 'k1' } },
-      env: { MONAD_LLM_API_KEY: 'k2' },
+      env: { ELANOUS_LLM_API_KEY: 'k2' },
     });
     io.showStep!({ index: 1, total: 5, title: '任意の翻訳済みタイトル' });
     expect(await io.askSecret!('unrelated localized secret prompt', 'apiKey')).toBe('k2');
@@ -138,7 +138,7 @@ describe('onboarding/non-interactive · scripted answer resolution', () => {
     const configPath = join(root, 'config.json');
     const answerFilePath = join(root, 'answers.json');
     const stderr = spyOn(process.stderr, 'write').mockImplementation(() => true);
-    const previousLanguage = process.env.MONAD_LANG;
+    const previousLanguage = process.env.ELANOUS_LANG;
     try {
       writeFileSync(configPath, JSON.stringify({ obsidian: { vault: join(root, 'existing-vault') } }));
       writeFileSync(answerFilePath, JSON.stringify({
@@ -147,7 +147,7 @@ describe('onboarding/non-interactive · scripted answer resolution', () => {
         telegram: { enabled: false },
         discord: { enabled: false },
       }));
-      process.env.MONAD_LANG = 'ko';
+      process.env.ELANOUS_LANG = 'ko';
 
       const cfg = await runOnboardingNonInteractive({ path: configPath, answerFilePath, env: {} });
 
@@ -157,8 +157,8 @@ describe('onboarding/non-interactive · scripted answer resolution', () => {
       expect(stderr).not.toHaveBeenCalledWith(expect.stringContaining('obsidian.vault'));
     } finally {
       stderr.mockRestore();
-      if (previousLanguage === undefined) delete process.env.MONAD_LANG;
-      else process.env.MONAD_LANG = previousLanguage;
+      if (previousLanguage === undefined) delete process.env.ELANOUS_LANG;
+      else process.env.ELANOUS_LANG = previousLanguage;
       rmSync(root, { recursive: true, force: true });
     }
   });

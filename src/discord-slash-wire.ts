@@ -26,7 +26,7 @@ const REST_BASE = 'https://discord.com/api/v10';
 
 /** C3 명령 세트 — 기존 텍스트 명령과 1:1. 옵션 값은 합성 문장의 인자로
  *  순서대로 이어붙는다 (`/cc prompt:빌드 고쳐줘` → `/cc 빌드 고쳐줘`). */
-export const MONAD_SLASH_COMMANDS: readonly SlashCommandSchema[] = [
+export const ELANOUS_SLASH_COMMANDS: readonly SlashCommandSchema[] = [
   { name: 'cc', description: 'Claude Code에 위임 (ACP 코딩 세션)', options: [
     { name: 'prompt', description: '지시문', type: 3, required: true },
     { name: 'file', description: '첨부 (이미지/문서 — 백엔드가 봄)', type: 11, required: false },
@@ -121,7 +121,7 @@ export function buildDiscordSlashWire(deps: DiscordSlashWireDeps): DiscordSlashW
     const guilds = await (await fetchImpl(`${REST_BASE}/users/@me/guilds`, auth)).json() as Array<{ id: string }>;
     const rest = makeCommandRest({ token, ...(deps.__fetchImpl ? { fetchImpl: deps.__fetchImpl } : {}) });
     for (const g of Array.isArray(guilds) ? guilds : []) {
-      const registered = await rest.bulkOverwriteGuild(app.id, g.id, [...MONAD_SLASH_COMMANDS]);
+      const registered = await rest.bulkOverwriteGuild(app.id, g.id, [...ELANOUS_SLASH_COMMANDS]);
       log(`[slash] registered ${registered.length} commands in guild ${g.id}`);
     }
   }

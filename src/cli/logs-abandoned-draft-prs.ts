@@ -851,19 +851,19 @@ export function queryAbandonedDraftPrs(
     });
 }
 
-/** `monad logs abandoned-draft-prs` — 개설됐으나 최종 salvage 가 없는 draft PR 을 세고 이름을 댄다. */
+/** `elanous logs abandoned-draft-prs` — 개설됐으나 최종 salvage 가 없는 draft PR 을 세고 이름을 댄다. */
 export function runLogsAbandonedDraftPrs(
   opts: LogsAbandonedDraftPrsOpts,
   deps: LogsAbandonedDraftPrsDeps = DEFAULT_DEPS,
 ): number {
   const limit = opts.limit === undefined ? STORE_SAFETY_MAX : Number(opts.limit);
   if (!Number.isInteger(limit) || limit < 1) {
-    deps.writeError('monad logs abandoned-draft-prs: --limit 은 양의 정수');
+    deps.writeError('elanous logs abandoned-draft-prs: --limit 은 양의 정수');
     return 1;
   }
   const sinceMs = opts.since ? parseSince(opts.since) : undefined;
   if (opts.since && sinceMs === null) {
-    deps.writeError(`monad logs abandoned-draft-prs: --since 파싱 불가 '${opts.since}' (30s|15m|2h|7d 또는 ISO)`);
+    deps.writeError(`elanous logs abandoned-draft-prs: --since 파싱 불가 '${opts.since}' (30s|15m|2h|7d 또는 ISO)`);
     return 1;
   }
   const resolved = deps.resolveTargets({
@@ -873,7 +873,7 @@ export function runLogsAbandonedDraftPrs(
     includeTest: opts.includeTest,
   });
   if (resolved.error) {
-    deps.writeError(`monad logs abandoned-draft-prs: ${resolved.error}`);
+    deps.writeError(`elanous logs abandoned-draft-prs: ${resolved.error}`);
     return 1;
   }
 

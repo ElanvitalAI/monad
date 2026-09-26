@@ -60,7 +60,7 @@ export function noveltyFromVerdict(verdict: FactVerdict | string): Novelty {
   switch (verdict) {
     case 'not-found': return { novelty: 0.9, label: 'leading(뉴스前·SNS선행)' };
     case 'found-external': return { novelty: 0.3, label: 'lagging(이미 뉴스)' };
-    case 'found-internal': return { novelty: 0.1, label: '기보고(monad 발송)' };
+    case 'found-internal': return { novelty: 0.1, label: '기보고(elanous 발송)' };
     default: return { novelty: 0.5, label: '미상' };
   }
 }

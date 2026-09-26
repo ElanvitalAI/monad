@@ -64,21 +64,21 @@ describe('createDiscordHitlPostDeps', () => {
     expect(m.channelId).toBe('C1');
     expect(m.text).toBe('Run tests?');
     expect(m.buttons).toHaveLength(2);
-    expect(m.buttons[0]!.customId).toBe('monad-hitl-disc:hitl-abc:yes');
-    expect(m.buttons[1]!.customId).toBe('monad-hitl-disc:hitl-abc:no');
+    expect(m.buttons[0]!.customId).toBe('elanous-hitl-disc:hitl-abc:yes');
+    expect(m.buttons[1]!.customId).toBe('elanous-hitl-disc:hitl-abc:no');
   });
 
   it('resolves the answer to true when the Yes button is clicked', async () => {
     const deps = createDiscordHitlPostDeps({ bot: env.bot, channelId: 'C1' });
     const handle = await deps.post({ prompt: 'go?', requestId: 'hitl-yes' });
-    await env.tap('monad-hitl-disc:hitl-yes:yes', 'C1');
+    await env.tap('elanous-hitl-disc:hitl-yes:yes', 'C1');
     expect(await handle.answer).toBe(true);
   });
 
   it('resolves the answer to false when the No button is clicked', async () => {
     const deps = createDiscordHitlPostDeps({ bot: env.bot, channelId: 'C1' });
     const handle = await deps.post({ prompt: 'go?', requestId: 'hitl-no' });
-    await env.tap('monad-hitl-disc:hitl-no:no', 'C1');
+    await env.tap('elanous-hitl-disc:hitl-no:no', 'C1');
     expect(await handle.answer).toBe(false);
   });
 
@@ -86,19 +86,19 @@ describe('createDiscordHitlPostDeps', () => {
     const deps = createDiscordHitlPostDeps({ bot: env.bot, channelId: 'C1' });
     const handle = await deps.post({ prompt: 'go?', requestId: 'hitl-xcc' });
     // Tap from a different channel — should not resolve.
-    await env.tap('monad-hitl-disc:hitl-xcc:yes', 'CDIFFERENT');
+    await env.tap('elanous-hitl-disc:hitl-xcc:yes', 'CDIFFERENT');
     // Now the right channel clicks:
-    await env.tap('monad-hitl-disc:hitl-xcc:no', 'C1');
+    await env.tap('elanous-hitl-disc:hitl-xcc:no', 'C1');
     expect(await handle.answer).toBe(false);
   });
 
-  it('ignores clicks that do not use the monad-hitl prefix', async () => {
+  it('ignores clicks that do not use the elanous-hitl prefix', async () => {
     const deps = createDiscordHitlPostDeps({ bot: env.bot, channelId: 'C1' });
     const handle = await deps.post({ prompt: 'go?', requestId: 'hitl-pfx' });
     const acks: string[] = [];
     await env.tap('some-other-plugin:123:yes', 'C1', acks);
     // Still pending — resolve via matching prefix:
-    await env.tap('monad-hitl-disc:hitl-pfx:yes', 'C1');
+    await env.tap('elanous-hitl-disc:hitl-pfx:yes', 'C1');
     expect(await handle.answer).toBe(true);
     expect(acks).toEqual([]);   // no ack for the unrelated click
   });
@@ -106,14 +106,14 @@ describe('createDiscordHitlPostDeps', () => {
   it('acks expired requests with "request expired"', async () => {
     const deps = createDiscordHitlPostDeps({ bot: env.bot, channelId: 'C1' });
     const acks: string[] = [];
-    await env.tap('monad-hitl-disc:never-posted:yes', 'C1', acks);
+    await env.tap('elanous-hitl-disc:never-posted:yes', 'C1', acks);
     expect(acks).toEqual(['request expired']);
   });
 
   it('edits the message with the outcome when editOnResolve is on (default)', async () => {
     const deps = createDiscordHitlPostDeps({ bot: env.bot, channelId: 'C1' });
     await deps.post({ prompt: 'go?', requestId: 'hitl-edit' });
-    await env.tap('monad-hitl-disc:hitl-edit:yes', 'C1');
+    await env.tap('elanous-hitl-disc:hitl-edit:yes', 'C1');
     expect(env.edits).toHaveLength(1);
     expect(env.edits[0]!.text).toBe('✓ confirmed');
   });
@@ -123,7 +123,7 @@ describe('createDiscordHitlPostDeps', () => {
       bot: env.bot, channelId: 'C1', editOnResolve: false,
     });
     await deps.post({ prompt: 'go?', requestId: 'hitl-noedit' });
-    await env.tap('monad-hitl-disc:hitl-noedit:no', 'C1');
+    await env.tap('elanous-hitl-disc:hitl-noedit:no', 'C1');
     expect(env.edits).toEqual([]);
   });
 
@@ -137,9 +137,9 @@ describe('createDiscordHitlPostDeps', () => {
   it('second tap on the same request is ignored (request already resolved)', async () => {
     const deps = createDiscordHitlPostDeps({ bot: env.bot, channelId: 'C1' });
     const handle = await deps.post({ prompt: 'go?', requestId: 'hitl-dup' });
-    await env.tap('monad-hitl-disc:hitl-dup:yes', 'C1');
+    await env.tap('elanous-hitl-disc:hitl-dup:yes', 'C1');
     const acks: string[] = [];
-    await env.tap('monad-hitl-disc:hitl-dup:no', 'C1', acks);
+    await env.tap('elanous-hitl-disc:hitl-dup:no', 'C1', acks);
     // First answer wins — answer is still true, second tap gets expired.
     expect(await handle.answer).toBe(true);
     expect(acks).toEqual(['request expired']);
@@ -149,6 +149,6 @@ describe('createDiscordHitlPostDeps', () => {
     const deps = createDiscordHitlPostDeps({ bot: env.bot, channelId: 'C1' });
     await deps.post({ prompt: 'go?' });
     const customId = env.posts[0]!.buttons[0]!.customId;
-    expect(customId.startsWith('monad-hitl-disc:hitl-')).toBe(true);
+    expect(customId.startsWith('elanous-hitl-disc:hitl-')).toBe(true);
   });
 });

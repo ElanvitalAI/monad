@@ -1,6 +1,6 @@
 // ── VW-term-infra Bundle B-4 · P6-3 — Legacy timeline provider ──
 //
-// Scans a legacy directory (default `~/.monad/timelines/`) for
+// Scans a legacy directory (default `~/.elanous/timelines/`) for
 // asciicast `.cast` files saved BEFORE Bundle B-3's timeline
 // migration · synthesizes `ArtifactMeta` from filename + fs stat ·
 // surfaces them via `ArtifactStore.list('timeline')`.

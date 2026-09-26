@@ -6,7 +6,7 @@
 //   • openUrlOnSafari(url) — open a link in Safari via
 //     Pushcut execute(openUrl).
 //   • triggerCamera({mode?, callbackUrl?}) — run an iOS Shortcut
-//     named 'monad-camera' that takes a photo and POSTs to
+//     named 'elanous-camera' that takes a photo and POSTs to
 //     callbackUrl (the user wires the Shortcut themselves; see
 //     HANDOFF for the template description).
 //   • triggerLocationPreset(name) — fire a notification whose
@@ -39,13 +39,13 @@ export interface AgentResultPayload {
 export interface IPhonePresetFns {
   openUrlOnSafari(url: string, opts?: { notificationName?: string }): Promise<PushcutSendResult>;
   triggerCamera(opts?: {
-    /** Named iOS Shortcut to invoke. Default 'monad-camera'. */
+    /** Named iOS Shortcut to invoke. Default 'elanous-camera'. */
     shortcut?: string;
     /** Input passed to the Shortcut (e.g. camera mode). */
     input?: string;
   }): Promise<PushcutSendResult>;
   triggerLocationPreset(name: string, opts?: {
-    /** Override the named Shortcut (default 'monad-location-<name>'). */
+    /** Override the named Shortcut (default 'elanous-location-<name>'). */
     shortcut?: string;
     input?: string;
   }): Promise<PushcutSendResult>;
@@ -62,9 +62,9 @@ export interface IPhonePresetsDeps {
   agentResultNotificationName?: string;
 }
 
-export const DEFAULT_OPEN_URL_NOTIFICATION = 'monad-open-url';
+export const DEFAULT_OPEN_URL_NOTIFICATION = 'elanous-open-url';
 export const DEFAULT_AGENT_RESULT_NOTIFICATION = 'monad-agent-result';
-export const DEFAULT_CAMERA_SHORTCUT = 'monad-camera';
+export const DEFAULT_CAMERA_SHORTCUT = 'elanous-camera';
 
 export function createIPhonePresets(deps: IPhonePresetsDeps): IPhonePresetFns {
   const { client } = deps;
@@ -92,7 +92,7 @@ export function createIPhonePresets(deps: IPhonePresetsDeps): IPhonePresetFns {
       });
     },
     async triggerLocationPreset(name, opts) {
-      const shortcut = opts?.shortcut ?? `monad-location-${name}`;
+      const shortcut = opts?.shortcut ?? `elanous-location-${name}`;
       return client.execute('runShortcut', {
         shortcut,
         input: opts?.input ?? name,

@@ -1,7 +1,7 @@
 // 산출물 기동기 — 골 문서의 기동 선언을 읽어 «켜고», 준비될 때까지 기다리고, 반드시 «끈다».
 //
 // ⛔ 이 층이 하지 않는 것: 명령을 «해석»하지 않는다. `resolveArtifactLaunchCommand` 가
-//   저장소의 실재하는 선언(package.json scripts · Makefile · Procfile · monad 하위명령)에서
+//   저장소의 실재하는 선언(package.json scripts · Makefile · Procfile · elanous 하위명령)에서
 //   읽은 명령이 «정확히 하나»일 때만 켠다. 후보가 0이거나 둘 이상이면 켜지 않고 사유를 값으로 낸다.
 //
 // ⭐ 프로세스 수명주기가 이 모듈의 «본체»다. 앞선 시도가 리뷰 must-fix 다섯으로 기각됐고

@@ -73,14 +73,14 @@ export const messagesZh: Messages = {
   notificationLevelError: '错误',
 
   // Setup wizard — banner + completion (PR α/3 of setup-tui-overhaul)
-  setupBanner: 'monad — 设置向导',
+  setupBanner: 'elanous — 设置向导',
   setupWritingTo: '保存到: {path}',
   setupComplete: '设置完成',
   setupRerunHint: '重新运行: {cmd}',
 
   // Setup wizard — Step 1 (LLM provider)
   setupStepLLMTitle: 'LLM 提供商',
-  setupStepLLMExcerpt: '选择 monad 使用的 LLM 提供商。每个提供商需要 API 密钥 (或 Codex 的 OAuth)。',
+  setupStepLLMExcerpt: '选择 elanous 使用的 LLM 提供商。每个提供商需要 API 密钥 (或 Codex 的 OAuth)。',
 
   // Setup wizard — Step 2 (Skill directories)
   setupStepSkillsTitle: '技能目录',
@@ -89,17 +89,17 @@ export const messagesZh: Messages = {
   // Setup wizard — Step 3 (Obsidian vault)
   setupStepObsidianTitle: 'Obsidian 仓库',
   setupStepObsidianExcerpt: 'Obsidian 仓库根目录的绝对路径。供 Obsidian 浏览器面板和 vault-save 技能使用。',
-  setupStepObsidianSkipBehavior: '跳过 → vault-save / obsidian-browser 技能禁用。稍后添加: `monad setup obsidian`。',
+  setupStepObsidianSkipBehavior: '跳过 → vault-save / obsidian-browser 技能禁用。稍后添加: `elanous setup obsidian`。',
 
   // Setup wizard — Step 4 (Telegram bot)
   setupStepTelegramTitle: 'Telegram 机器人 (可选)',
   setupStepTelegramExcerpt: '通过 Telegram 机器人在手机上与代理对话。',
-  setupStepTelegramSkipBehavior: '跳过 → 移动聊天不可用。稍后添加: `monad setup telegram`。',
+  setupStepTelegramSkipBehavior: '跳过 → 移动聊天不可用。稍后添加: `elanous setup telegram`。',
 
   // Setup wizard — Step 5 (Discord bot)
   setupStepDiscordTitle: 'Discord 机器人 (可选)',
   setupStepDiscordExcerpt: '在任意 Discord 服务器 / 私信中与代理对话。',
-  setupStepDiscordSkipBehavior: '跳过 → Discord 聊天不可用。稍后添加: `monad setup discord`。',
+  setupStepDiscordSkipBehavior: '跳过 → Discord 聊天不可用。稍后添加: `elanous setup discord`。',
 
   // Setup wizard — Step 6 (Wrap-up · Sprint 12)
   setupWrapUpTitle: '设置完成 — 检查并保存',

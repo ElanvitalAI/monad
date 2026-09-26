@@ -12,7 +12,7 @@
 // Not in spike:
 //   - safety / sandbox / risky pattern detect (D1.1)
 //   - mission envelope · ACP feedback stream wire (D1.2)
-//   - CLI entry `monad autopilot run` (D1.3)
+//   - CLI entry `elanous autopilot run` (D1.3)
 //   - iOS client wire (D2)
 
 import type { LlmTurnRunner } from './runner.js';
@@ -90,7 +90,7 @@ export interface AutopilotConfig {
    * Session-scoped LLM turn substrate. The driver invokes `runner.prompt`
    * per iteration and `runner.cancel` for risky / forwarded / aborted
    * paths. Construct an {@link AcpTurnRunner} (today) or
-   * `MonadBuiltinTurnRunner` (MB-3) — both implement {@link LlmTurnRunner}.
+   * `ElanousBuiltinTurnRunner` (MB-3) — both implement {@link LlmTurnRunner}.
    * The driver does not own the runner's lifecycle.
    */
   runner: LlmTurnRunner;
@@ -359,7 +359,7 @@ function makeDefaultStuckPredicate(): (text: string, iter: number) => boolean {
  * Production hardening (D1):
  *   - safety / risky pattern detection on tool calls
  *   - sandbox cwd enforcement
- *   - monad/ask/request fall-through for decision points
+ *   - elanous/ask/request fall-through for decision points
  *   - mission envelope emission (agent.plan / agent.tool / agent.status)
  *   - per-step token & wall-clock budget enforcement
  */

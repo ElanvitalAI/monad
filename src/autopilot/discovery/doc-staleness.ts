@@ -311,7 +311,7 @@ export const RECENT_WINDOW_DAYS = 30;
 export const OLD_WINDOW_DAYS = 90;
 
 export function sourceIdentifierInventoryAtRevision(repoRoot: string, revision: string): Set<string> {
-  const dir = mkdtempSync(join(tmpdir(), 'monad-doc-staleness-'));
+  const dir = mkdtempSync(join(tmpdir(), 'elanous-doc-staleness-'));
   try {
     // ⛔⭐⭐⭐ **아카이브를 «부모 프로세스»로 들이지 않는다** — 이 저장소의 그것은 실측 ***255 MB*** 다
     //   (`git archive HEAD | wc -c` = 255,252,480 · 2026-08-27). 옛 문면은 그 255MB 를 통째로 Node

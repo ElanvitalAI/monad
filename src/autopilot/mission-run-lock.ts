@@ -8,13 +8,13 @@
 // 리셋·재spawn 을 거부(진행 중인 세대를 오염시키지 않음). stale 락(죽은 pid)은 자동 청소.
 
 import { existsSync, mkdirSync, readFileSync, writeFileSync, rmSync } from 'node:fs';
-import { monadStateRoot } from './state-paths.js';
+import { elanousStateRoot } from './state-paths.js';
 import { homedir } from 'node:os';
 import { join } from 'node:path';
 import { createHash } from 'node:crypto';
 
 export interface RunLockOpts {
-  /** 락 디렉토리(테스트 격리). 기본 ~/.monad/autopilot/run-locks. */
+  /** 락 디렉토리(테스트 격리). 기본 ~/.elanous/autopilot/run-locks. */
   baseDir?: string;
   /** 이 프로세스 pid(테스트 주입). 기본 process.pid. */
   pid?: number;
@@ -23,7 +23,7 @@ export interface RunLockOpts {
 }
 
 function lockDir(opts?: RunLockOpts): string {
-  return opts?.baseDir ?? join(monadStateRoot(), 'autopilot', 'run-locks');
+  return opts?.baseDir ?? join(elanousStateRoot(), 'autopilot', 'run-locks');
 }
 
 /** 미션 id → 락 파일 경로(id 해시로 파일명 안전화). 순수(경로 계산만). */

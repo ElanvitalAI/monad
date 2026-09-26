@@ -26,7 +26,7 @@ let tmp: string;
 let port = 54000;
 
 beforeEach(() => {
-  tmp = mkdtempSync(join(tmpdir(), 'monad-session-input-wiring-'));
+  tmp = mkdtempSync(join(tmpdir(), 'elanous-session-input-wiring-'));
   _clearTurnsForTest();
 });
 

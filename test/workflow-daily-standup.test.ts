@@ -3,7 +3,7 @@
 //
 // Verifies YAML shape, trigger isolation vs builtins + 4 sibling
 // Round-1 workflows, runtime carry-over, env-gated broadcast intent
-// emission (MONAD_STANDUP_CHANNEL), and router regex single-hit on
+// emission (ELANOUS_STANDUP_CHANNEL), and router regex single-hit on
 // canonical EN + KR phrases.
 
 import { describe, it, expect } from 'bun:test';
@@ -55,9 +55,9 @@ describe('daily-standup — YAML shape', () => {
     expect(byId.get('broadcast')!.depends_on).toEqual(['save-standup']);
     expect(byId.get('broadcast')!.trigger_rule).toBe('all_done');
 
-    expect(byId.get('save-standup')!.bash).toContain('${MONAD_OBSIDIAN_DIR:-$HOME/Documents/Obsidian}');
+    expect(byId.get('save-standup')!.bash).toContain('${ELANOUS_OBSIDIAN_DIR:-$HOME/Documents/Obsidian}');
     expect(byId.get('save-standup')!.bash).toContain('Standup');
-    expect(byId.get('broadcast')!.bash).toContain('${MONAD_STANDUP_CHANNEL:-}');
+    expect(byId.get('broadcast')!.bash).toContain('${ELANOUS_STANDUP_CHANNEL:-}');
   });
 
   it('uses haiku model hint (cost-conscious daily run)', () => {
@@ -76,7 +76,7 @@ describe('daily-standup — trigger isolation', () => {
     ];
     const morning = ['morning briefing', "what's today", '오늘 뭐 해야 해', 'daily kickoff', "today's plan"];
     const share = ['share-intake', 'process this', 'intake', '이거 처리해줘', '공유 처리'];
-    const voice = ['voice quick task', 'voice memo', 'monad capture', '음성 받아 적어', 'remember this voice'];
+    const voice = ['voice quick task', 'voice memo', 'elanous capture', '음성 받아 적어', 'remember this voice'];
     const research = ['research deep', 'deep dive', 'deep research', '리서치 딥', '백그라운드 조사'];
     const mine = ['daily standup', 'standup recap', 'EoD recap', '오늘 마감', '야근전 정리'];
     for (const a of mine) {
@@ -106,8 +106,8 @@ describe('daily-standup — runtime', () => {
         if (body.includes('OBSIDIAN_DIR') && body.includes('Standup')) {
           return { stdout: 'saved=/tmp/Obsidian/Standup/2026-05-08.md date=2026-05-08 time=18:00', stderr: '', exitCode: 0 };
         }
-        if (body.includes('MONAD_STANDUP_CHANNEL')) {
-          return { stdout: 'broadcast=skipped reason=MONAD_STANDUP_CHANNEL_not_set', stderr: '', exitCode: 0 };
+        if (body.includes('ELANOUS_STANDUP_CHANNEL')) {
+          return { stdout: 'broadcast=skipped reason=ELANOUS_STANDUP_CHANNEL_not_set', stderr: '', exitCode: 0 };
         }
         return { stdout: '', stderr: '', exitCode: 0 };
       },
@@ -127,11 +127,11 @@ describe('daily-standup — runtime', () => {
     expect(saveBody).toContain('start Round 2 audit log');
   });
 
-  it('broadcast emits skip line when MONAD_STANDUP_CHANNEL is unset (default)', () => {
+  it('broadcast emits skip line when ELANOUS_STANDUP_CHANNEL is unset (default)', () => {
     const wf = loadWorkflow();
     type RawNode = { id: string; bash?: string };
     const broadcast = (wf.nodes.find((n) => n.id === 'broadcast') as unknown as RawNode);
-    expect(broadcast.bash).toContain('broadcast=skipped reason=MONAD_STANDUP_CHANNEL_not_set');
+    expect(broadcast.bash).toContain('broadcast=skipped reason=ELANOUS_STANDUP_CHANNEL_not_set');
     expect(broadcast.bash).toContain('discord|telegram|both');
     expect(broadcast.bash).toContain('cv-3_beta-1_infra');
   });
@@ -143,7 +143,7 @@ describe('daily-standup — router cascade', () => {
     const prevCwd = process.cwd();
     process.chdir(tmpDir);
     try {
-      mkdirSync(join(tmpDir, '.monad', 'workflows'), { recursive: true });
+      mkdirSync(join(tmpDir, '.elanous', 'workflows'), { recursive: true });
       let llmCalls = 0;
       const fakeLLM: RouterLLMCaller = async () => {
         llmCalls += 1;
@@ -167,7 +167,7 @@ describe('daily-standup — router cascade', () => {
     const prevCwd = process.cwd();
     process.chdir(tmpDir);
     try {
-      mkdirSync(join(tmpDir, '.monad', 'workflows'), { recursive: true });
+      mkdirSync(join(tmpDir, '.elanous', 'workflows'), { recursive: true });
       const fakeLLM: RouterLLMCaller = async () => '/invoke-workflow nothing';
       const r = await routeWorkflow(
         { userMessage: '오늘 마감 정리해줘' },

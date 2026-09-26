@@ -77,16 +77,16 @@ function userCfg(): UserConfig {
 }
 
 beforeEach(() => {
-  tmpRoot = mkdtempSync(join(tmpdir(), 'monad-handoff-'));
-  // MONAD_STATE_DIR is the knob `sessionRoot()` honors — XDG alone is NOT
-  // enough. 2026-07-09 rooted the store at ~/.monad and made XDG an
+  tmpRoot = mkdtempSync(join(tmpdir(), 'elanous-handoff-'));
+  // ELANOUS_STATE_DIR is the knob `sessionRoot()` honors — XDG alone is NOT
+  // enough. 2026-07-09 rooted the store at ~/.elanous and made XDG an
   // explicit no-op (src/session/index.ts:56-58), which silently turned
   // this isolation off and leaked ~97 runs' worth of fixture sessions
   // into the real store. Keep XDG for anything else that still reads it.
-  savedEnv.MONAD_STATE_DIR = process.env.MONAD_STATE_DIR;
+  savedEnv.ELANOUS_STATE_DIR = process.env.ELANOUS_STATE_DIR;
   savedEnv.XDG_DATA_HOME = process.env.XDG_DATA_HOME;
   savedEnv.XDG_STATE_HOME = process.env.XDG_STATE_HOME;
-  process.env.MONAD_STATE_DIR = join(tmpRoot, 'state');
+  process.env.ELANOUS_STATE_DIR = join(tmpRoot, 'state');
   process.env.XDG_DATA_HOME = join(tmpRoot, 'data');
   process.env.XDG_STATE_HOME = join(tmpRoot, 'state');
 });

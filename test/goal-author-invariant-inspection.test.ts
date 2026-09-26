@@ -21,7 +21,7 @@ const facts = {
 };
 
 function inspectFromCli(root: string, ask: string): Record<string, unknown> {
-  const output = execFileSync('bun', [join(process.cwd(), 'bin', 'monad.mjs'), '--test', 'self', 'author', '--cwd', root, '--inspect-invariant', ask], {
+  const output = execFileSync('bun', [join(process.cwd(), 'bin', 'elanous.mjs'), '--test', 'self', 'author', '--cwd', root, '--inspect-invariant', ask], {
     cwd: root,
     encoding: 'utf8',
   });

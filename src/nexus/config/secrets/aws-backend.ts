@@ -8,13 +8,13 @@
 // (AWS_REGION / AWS_DEFAULT_REGION).
 //
 // Optional `secretPrefix` namespaces NEXUS-managed secrets (default
-// "monad/") so the user can scope IAM policies.
+// "elanous/") so the user can scope IAM policies.
 
 import type { SecretBackend, SecretBackendAvailability } from './types.js';
 
 export interface AwsBackendOpts {
   region?: string;
-  /** Default 'monad/'. Set to '' to disable prefixing. */
+  /** Default 'elanous/'. Set to '' to disable prefixing. */
   secretPrefix?: string;
   /** Optional KMS key ARN/alias for at-rest encryption (otherwise AWS-managed). */
   kmsKeyId?: string;
@@ -26,7 +26,7 @@ export interface AwsSecretsClientLike {
   send(cmd: { name: string; input: Record<string, unknown> }): Promise<unknown>;
 }
 
-const DEFAULT_PREFIX = 'monad/';
+const DEFAULT_PREFIX = 'elanous/';
 
 export function createAwsBackend(opts: AwsBackendOpts = {}): SecretBackend {
   const prefix = opts.secretPrefix ?? DEFAULT_PREFIX;

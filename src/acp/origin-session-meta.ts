@@ -1,7 +1,7 @@
 // ⭐⭐⭐ ACP `_meta` 에 **이 턴을 연 쪽의 세션**(예: TUI 채팅 세션)을 실어 보낸다.
 //
 // ⛔ 왜 필요한가 (실측 2026-08-02 · 원장 `MEAS-S14` · 계획 `PLAN-session-join-across-scope-switch`):
-// TUI 의 턴은 **ACP 서버를 지난다**. 서버 쪽 `runCoreTurn` 은 자기 세션(`monad-session-N`)으로
+// TUI 의 턴은 **ACP 서버를 지난다**. 서버 쪽 `runCoreTurn` 은 자기 세션(`elanous-session-N`)으로
 // ambient 스코프를 열고, 그 뒤 모든 로그(`capability.resolve/tool-selected` 포함)가 그 세션으로 찍힌다.
 // ⇒ ***채팅 세션으로 "그 턴에 무슨 툴을 썼나" 를 물으면 위임 턴이 통째로 사라진다.***
 // 계측으로 확인: `runCoreTurn` 진입 시 ambient 부모가 **null** — 채팅 세션은 **ACP 경계를 넘지 않는다**.

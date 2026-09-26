@@ -11,7 +11,7 @@
 // cf. daemon-side `src/capture/tui-frame-broadcaster.ts` (producer) +
 // PLAN-self-observation-capture-substrate §2/§5.
 
-import { parseMonadTermEnvelope } from './monad-term-envelope';
+import { parseElanousTermEnvelope } from './elanous-term-envelope';
 
 /** Strip ANSI escape sequences so a renderScreen() grid with color SGR
  *  renders as clean text in the mirror. Mirrors the daemon observatory's
@@ -87,7 +87,7 @@ export function applyTuiFrameEnvelope(
   text: string,
   now: number = Date.now(),
 ): TuiObserveState {
-  const env = parseMonadTermEnvelope(text);
+  const env = parseElanousTermEnvelope(text);
   if (!env || env.method !== 'terminalFrame') return state;
   const { terminalId, frame, instance, at } = env.payload;
   const key = surfaceKey(instance, terminalId);

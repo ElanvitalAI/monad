@@ -1,7 +1,7 @@
 // ── 산출물 린트 실행부 — 한 구현, 두 문 (2026-09-08) ─────────────────────────
 //
 // 🩸 왜 모듈로 있나: 이 로직이 `scripts/webclone/lint-design.ts` «안»에만 있어
-//    `monad self entrances` 에 «0건»이었다. 이 창의 도구 여섯 중 닿는 것은 «하나»뿐이었다.
+//    `elanous self entrances` 에 «0건»이었다. 이 창의 도구 여섯 중 닿는 것은 «하나»뿐이었다.
 // ⛔ 이 파일은 화면에 «찍지 않는다» — 호출자가 표현을 소유한다.
 
 import { existsSync, readFileSync } from 'node:fs';

@@ -131,7 +131,7 @@ async function main() {
   // Render output
   if (flags.json) {
     // provider 마커 주입 — object 데이터엔 실제 서빙 provider(toss/yahoo/eodhd/…)를 실어 소비자
-    // (monad omniQuote 등)가 출처를 정확히 판별하게 한다(제1원칙 자기 관측성). 종전엔 --json 에
+    // (elanous omniQuote 등)가 출처를 정확히 판별하게 한다(제1원칙 자기 관측성). 종전엔 --json 에
     // provider 정보가 없어 소비자가 브래킷 regex 실패→오라벨. 배열 데이터(eod 등)는 형태 보존 위해 미주입.
     const payload = (result.data && typeof result.data === 'object' && !Array.isArray(result.data))
       ? { ...result.data, provider: result.provider }

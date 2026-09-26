@@ -9,12 +9,12 @@ description: |
   후의 cross-provider 회귀 detector.
 
   Run:
-    monad repl --new --json \
+    elanous repl --new --json \
       --scenario tests/scenarios/repl-rotation-chain.yaml \
       --exit-after-scenario
 
   CI-friendly (asserts 자동):
-    monad repl --new --json \
+    elanous repl --new --json \
       --scenario tests/scenarios/repl-rotation-chain.yaml \
       --exit-after-scenario \
       | jq -c '{turnId, provider, replyLen: (.reply|length), durationMs}'

@@ -277,7 +277,7 @@ describe('iul-presets · /iul-preset slash command', () => {
 // ── Section 4: Plugin manifest ─────────────────────────
 
 describe('iul-presets · plugin manifest', () => {
-  test('declares required MonadPlugin fields', () => {
+  test('declares required ElanousPlugin fields', () => {
     expect(iulPresetsPlugin.name).toBe('iul-presets');
     expect(iulPresetsPlugin.version).toBeTruthy();
     expect(iulPresetsPlugin.description.toLowerCase()).toContain('iul');

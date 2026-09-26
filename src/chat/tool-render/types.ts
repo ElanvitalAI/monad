@@ -22,7 +22,6 @@ export type ToolRenderStatus = 'running' | 'success' | 'error';
 
 export interface ToolRenderConfig {
   displayMode: ChatRenderingToolDisplayMode;
-  inlineOneLine: boolean;
   blockMaxLines: number;
   /** Fold strategy for collapsed tool bodies. Default `'line'` keeps the
    *  existing line-budget truncation; `'task-unit'` hides a multi-line body

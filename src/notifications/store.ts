@@ -1,6 +1,6 @@
 // ── NotificationStore (NT1) ──
 //
-// 세션별 이벤트 history ring buffer. 기존 monad 는 toast 나
+// 세션별 이벤트 history ring buffer. 기존 elanous 는 toast 나
 // chatLines push 로 "즉시 알림" 만 있었고 되짚어 보는 수단이
 // 없었다. 여기서 세션별로 events 를 모아두고 sidebar unread
 // badge + bell modal (NT4) 에 공급한다.
@@ -55,7 +55,7 @@ export type NotificationSubscriber = (event: NotificationEvent) => void;
 const DEFAULT_CAP = 50;
 
 function envCap(): number | undefined {
-  const raw = process.env['MONAD_NOTIFICATION_STORE_CAP'];
+  const raw = process.env['ELANOUS_NOTIFICATION_STORE_CAP'];
   if (!raw) return undefined;
   const n = Number.parseInt(raw, 10);
   return Number.isFinite(n) && n > 0 ? n : undefined;

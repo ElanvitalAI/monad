@@ -1,6 +1,6 @@
 // user-config: `notifications.apns` read path · `global.<...>` precedence
 //
-// `monad nexus config set notifications.apns ...` is rejected (`use
+// `elanous nexus config set notifications.apns ...` is rejected (`use
 // global.<...> or tabs.<id>.<...>`), so any APNs config the CLI writes
 // lands under `global.notifications.apns`. Before this fix the parser
 // only read top-level `rawObj.notifications`, so daemon boot logged
@@ -24,8 +24,8 @@ let cfgPath: string;
 const APNS_FIXTURE = {
   keyId: 'ABCDEFGHIJ',
   teamId: 'ZZZZ123456',
-  bundleId: 'com.elanvitalai.monad.ios',
-  keyPath: '/Users/test/.monad/apns.p8',
+  bundleId: 'com.elanvitalai.elanous.ios',
+  keyPath: '/Users/test/.elanous/apns.p8',
 };
 
 function write(json: unknown): void {

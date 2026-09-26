@@ -13,8 +13,8 @@
 // spawner. `AgentGraph.removeSession({cascade:true})` is opt-in.
 //
 // Consumers: `src/agent/handoff.ts` records a 'handoff' edge,
-// `src/agent/monad-as-child.ts` records 'spawn' when wrapping a sub-
-// monad as an embodied session, and dashboard UI queries nodes/edges
+// `src/agent/elanous-as-child.ts` records 'spawn' when wrapping a sub-
+// elanous as an embodied session, and dashboard UI queries nodes/edges
 // for multi-agent visualisation.
 //
 // Design ref: `내부 문서 `PLAN-h5-embodied-agent-bus-phase-3`` §4.1.
@@ -28,7 +28,7 @@ export interface AgentGraphNode {
   /** Session id · primary key · stable for session lifetime. */
   readonly sessionId: string;
   /** Brand taken from the session's launchSpec (codex / claude /
-   *  gemini / monad / ...). */
+   *  gemini / elanous / ...). */
   readonly brand: string;
   /** Adapter id — first transport's label or a fallback. */
   readonly adapterId: string;

@@ -59,7 +59,7 @@ export interface BuildPatcherSubstrateOpts {
   embeddingCallable?: EmbeddingCallable;
   /** Override config source. Defaults to
    *  `fileSystemPatcherConfigSource()` (reads
-   *  `~/.monad/background-reasoning/patcher.yaml`). */
+   *  `~/.elanous/background-reasoning/patcher.yaml`). */
   configSource?: PatcherConfigSource;
   /** Override the UserIntentLogger singleton (test seam). */
   loggerOverride?: UserIntentLogger;
@@ -77,7 +77,7 @@ export function buildPatcherSubstrate(opts: BuildPatcherSubstrateOpts = {}): Pat
     return {
       handle: null,
       skipReason: 'patcher-disabled-in-config',
-      detail: 'set enabled: true in ~/.monad/background-reasoning/patcher.yaml',
+      detail: 'set enabled: true in ~/.elanous/background-reasoning/patcher.yaml',
       config,
     };
   }

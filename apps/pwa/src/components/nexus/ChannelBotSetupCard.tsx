@@ -9,8 +9,8 @@
 //
 // 3 setup paths:
 //   📱 PWA Settings → Secret modal (이 PWA 안에서 직접 셋업)
-//   💻 monad setup <platform>   (full wizard · desktop)
-//   🔑 export MONAD_*_BOT_TOKEN=…  (env-var direct)
+//   💻 elanous setup <platform>   (full wizard · desktop)
+//   🔑 export ELANOUS_*_BOT_TOKEN=…  (env-var direct)
 
 export type ChannelBotPlatform = 'telegram' | 'discord';
 
@@ -24,8 +24,8 @@ interface SetupPathCopy {
 }
 
 const TOKEN_ENV: Record<ChannelBotPlatform, string> = {
-  telegram: 'MONAD_TELEGRAM_BOT_TOKEN',
-  discord: 'MONAD_DISCORD_BOT_TOKEN',
+  telegram: 'ELANOUS_TELEGRAM_BOT_TOKEN',
+  discord: 'ELANOUS_DISCORD_BOT_TOKEN',
 };
 
 const TOKEN_SOURCE: Record<ChannelBotPlatform, string> = {
@@ -41,7 +41,7 @@ export function deriveSetupHint(platform: ChannelBotPlatform): SetupPathCopy {
   return {
     tokenEnvName,
     pwaPath: `PWA Settings → Secret modal → ${tokenEnvName}`,
-    wizardCmd: `monad setup ${platform}`,
+    wizardCmd: `elanous setup ${platform}`,
     envSnippet: `export ${tokenEnvName}=…`,
     tokenSource: TOKEN_SOURCE[platform],
     wizardOnlyNote:

@@ -7,11 +7,11 @@ import {
   registerToolRuntime,
 } from '../tool-runtime/registry.js';
 import {
-  monadAutopilotLaunchRuntime,
-  setMonadAutopilotLaunchRuntimeDispatcherForTest,
-  type MonadAutopilotLaunchArgs,
-  type MonadAutopilotLaunchResult,
-} from '../tool-runtime/monad-autopilot-launch-runtime.js';
+  elanousAutopilotLaunchRuntime,
+  setElanousAutopilotLaunchRuntimeDispatcherForTest,
+  type ElanousAutopilotLaunchArgs,
+  type ElanousAutopilotLaunchResult,
+} from '../tool-runtime/elanous-autopilot-launch-runtime.js';
 import {
   _setSelfImplementCliCommandForTesting,
   _setSelfImplementGoalAuthorForTesting,
@@ -20,7 +20,7 @@ import type { ToolRuntime } from '../tool-runtime/types.js';
 
 afterEach(() => {
   _resetToolRuntimeRegistryForTest();
-  setMonadAutopilotLaunchRuntimeDispatcherForTest();
+  setElanousAutopilotLaunchRuntimeDispatcherForTest();
   _setSelfImplementCliCommandForTesting(null);
   _setSelfImplementGoalAuthorForTesting(null);
 });
@@ -56,13 +56,13 @@ describe('MCP native runtime exposure', () => {
     ]));
     expect(mcpRuntimeIds.length).toBeGreaterThanOrEqual(37);
     expect(mcpRuntimeIds).toEqual(expect.arrayContaining([
-      'monad_skills_list',
+      'elanous_skills_list',
       'skill_exec',
-      'monad_autopilot_launch',
+      'elanous_autopilot_launch',
     ]));
     expect(names).toContain('aside.repl');
     expect(names).toContain('SelfImplement');
-    expect(names).toContain('monad_autopilot_launch');
+    expect(names).toContain('elanous_autopilot_launch');
     expect(names).toEqual(expect.arrayContaining([
       'self_recall',
       'logs_query',
@@ -151,30 +151,30 @@ describe('MCP native runtime exposure', () => {
 
   test('tools/call invokes the harness dispatcher and returns its run identifier without fabrication', async () => {
     const runId = 'run-produced-by-harness-seam';
-    const received: MonadAutopilotLaunchArgs[] = [];
-    const dispatcherResult: MonadAutopilotLaunchResult = {
+    const received: ElanousAutopilotLaunchArgs[] = [];
+    const dispatcherResult: ElanousAutopilotLaunchResult = {
       output: runId,
       runId,
       ok: true,
-      termination: { kind: 'success' } as MonadAutopilotLaunchResult['termination'],
+      termination: { kind: 'success' } as ElanousAutopilotLaunchResult['termination'],
       iterations: 1,
       text: '',
       envelopeCount: 0,
       durationMs: 1,
       diagnostics: [],
     };
-    setMonadAutopilotLaunchRuntimeDispatcherForTest(async args => {
+    setElanousAutopilotLaunchRuntimeDispatcherForTest(async args => {
       received.push(args);
       return dispatcherResult;
     });
-    registerToolRuntime(monadAutopilotLaunchRuntime);
+    registerToolRuntime(elanousAutopilotLaunchRuntime);
 
     const response = await handleMcpRequest({
       jsonrpc: '2.0',
       id: 2,
       method: 'tools/call',
       params: {
-        name: 'monad_autopilot_launch',
+        name: 'elanous_autopilot_launch',
         arguments: { mission: 'implement this request', backend: 'codex', maxIterations: 2 },
       },
     });

@@ -10,7 +10,7 @@
 set -u
 PORT="${1:-31421}"
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-TOKF="$ROOT/.monad-test/acp-token"
+TOKF="$ROOT/.elanous-test/acp-token"
 
 echo "== 격리 데몬 인증 검증 (port $PORT)"
 
@@ -38,7 +38,7 @@ case "$S" in
        exit 0 ;;
   401) echo "🚨 401 — 이 데몬은 #15780 «이전» 코드다(부팅 시점 코드를 쓴다)."
        echo "   ⇒ ⛔ 앱 결함으로 «오독하지 마라». 격리 데몬을 재시작하면 풀린다."
-       echo "   ⚠️ 재시작 «전»에 monad config get global.nexus.pwa.shareTailnet 을 봐라 —"
+       echo "   ⚠️ 재시작 «전»에 elanous config get global.nexus.pwa.shareTailnet 을 봐라 —"
        echo "      enabled 면 기동이 Tailscale Serve 를 «자동 발화»한다(끄는 플래그가 없다)."
        exit 1 ;;
   *)   echo "⚠️ 예상 밖 코드 $S — 「인증 실패」로 접지 마라. 그 코드 자체를 읽어라."

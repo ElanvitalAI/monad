@@ -29,7 +29,7 @@ export interface SpawnSystemRepairInput {
   origin?: MissionOrigin | null;
   /** submitIntent seam(테스트 격리). 없으면 실제 intent-gate. */
   submit?: (goal: string, origin?: MissionOrigin | null) => Promise<{ route: string; missionId?: string }>;
-  /** system-repair 권한 등재 seam(테스트 격리·실 ~/.monad 미접촉). 없으면 authorizeSystemRepair. */
+  /** system-repair 권한 등재 seam(테스트 격리·실 ~/.elanous 미접촉). 없으면 authorizeSystemRepair. */
   authorize?: (missionId: string) => void;
 }
 
@@ -54,7 +54,7 @@ export function buildRepairGoal(input: {
   // ASCII+한글만(en-dash 등 특수문자는 agent 프롬프트 truncation 유발·feedback_agent_prompt_ascii_only).
   // signal.detail(contradiction-detector)이 em-dash 를 담을 수 있어 조립 후 정규화(방어).
   return asciiSafe([
-    'monad 시스템 결함 수리(self-heal): 미션 fabric 자기 코드/설정의 시스템 결함을 조사하고 수리하라.',
+    'elanous 시스템 결함 수리(self-heal): 미션 fabric 자기 코드/설정의 시스템 결함을 조사하고 수리하라.',
     `계기: 페이즈 "${input.phaseTitle}" 에서 시스템 모순 ${input.signals.length}건 감지(예산/분할로 안 풀리는 시스템 결함).`,
     '',
     '## 감지된 모순(R2)',

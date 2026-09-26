@@ -1,8 +1,8 @@
-// ⑨ 런컨텍스트 자기인지 (2026-07-20) — monad 가 "자기가 지금 어떤 환경에서 도는지"(production /
+// ⑨ 런컨텍스트 자기인지 (2026-07-20) — elanous 가 "자기가 지금 어떤 환경에서 도는지"(production /
 // benchmark / simulator / self-build)를 env 로 인지해 서피스·로깅을 적응한다.
 //
 // [[PLAN-unified-autonomous-agent-substrate-2026-07-20]] §6·§9. 제1원칙(자기인지)의 실체화.
-// 주 소비자 = PTY 로 자식 monad 를 띄우는 경로(driveHeadlessMonad): 자율빌드/시뮬 컨텍스트면
+// 주 소비자 = PTY 로 자식 elanous 를 띄우는 경로(driveHeadlessElanous): 자율빌드/시뮬 컨텍스트면
 // telegram/discord/nexus autostart 등 outward 서피스를 억제해 운영 데몬과 충돌(409)·노이즈를 막는다.
 // ⚠️ 헤드리스 subcommand 경로(chat/self implement)는 서피스를 애초에 안 띄우므로 이 신호가 no-op.
 // per-run 관측 신호라 env 허용([[feedback_config_over_env]] 예외 — per-run observation).
@@ -14,9 +14,9 @@ export type RunContext = 'production' | 'benchmark' | 'simulator' | 'self-build'
 
 const CONTEXTS: readonly RunContext[] = ['production', 'benchmark', 'simulator', 'self-build'];
 
-/** 이 프로세스의 런컨텍스트(부모가 env MONAD_RUN_CONTEXT 로 주입·기본 production). */
+/** 이 프로세스의 런컨텍스트(부모가 env ELANOUS_RUN_CONTEXT 로 주입·기본 production). */
 export function getRunContext(): RunContext {
-  const raw = (process.env.MONAD_RUN_CONTEXT ?? '').trim() as RunContext;
+  const raw = (process.env.ELANOUS_RUN_CONTEXT ?? '').trim() as RunContext;
   return (CONTEXTS as readonly string[]).includes(raw) ? raw : 'production';
 }
 
@@ -27,7 +27,7 @@ export function isAutonomousRunContext(): boolean {
 
 /** 자식 프로세스 env 에 실을 런컨텍스트. 부모 spawn 시 `{ ...env, ...childRunContextEnv('self-build') }`. */
 export function childRunContextEnv(ctx: RunContext): Record<string, string> {
-  return { MONAD_RUN_CONTEXT: ctx };
+  return { ELANOUS_RUN_CONTEXT: ctx };
 }
 
 /** 자식 spawn(replace env)에 provider API key 릴레이(2026-07-22 대표) — 자식이 부모와 **다른 provider**를
@@ -89,24 +89,24 @@ export function childLlmSelectionEnv(selection?: ChildLlmSelection): Record<stri
   if (selection) {
     const provider = normalizeChildLlmProvider(selection.provider);
     return {
-      MONAD_LLM_PROVIDER: provider,
-      MONAD_LLM_MODEL: childRelayModel(provider, selection.model),
-      // ⛔⭐ 새 env 이름을 «짓지 않는다» — `MONAD_ESCALATE_EFFORT` 가 «이미» 있고
+      ELANOUS_LLM_PROVIDER: provider,
+      ELANOUS_LLM_MODEL: childRelayModel(provider, selection.model),
+      // ⛔⭐ 새 env 이름을 «짓지 않는다» — `ELANOUS_ESCALATE_EFFORT` 가 «이미» 있고
       //    `user-config.ts` 가 그것으로 `reasoningLevel`(anthropic)과
       //    `codexReasoning.effort`(openai-codex/sol) 를 ***둘 다*** 덮는다.
       //    ⇒ 여기서는 「판마다 주는 길」만 잇는다. 재발명 0.
-      ...(selection.effort ? { MONAD_ESCALATE_EFFORT: selection.effort } : {}),
+      ...(selection.effort ? { ELANOUS_ESCALATE_EFFORT: selection.effort } : {}),
       ...childProviderKeyEnv(provider),
       ...childLocalEndpointEnv(provider),
     };
   }
   // ⛔⭐ 상속 갈래도 local 이면 «주소»를 같이 넘긴다(BACKLOG B12 · 2026-09-25).
-  //   🩸 부모 env `MONAD_LLM_PROVIDER=local` ⊕ `LOCAL_LLM_URL=<node-b 경유 프록시>` 로 띄웠는데 자식엔 provider·model 만 가고
+  //   🩸 부모 env `ELANOUS_LLM_PROVIDER=local` ⊕ `LOCAL_LLM_URL=<node-b 경유 프록시>` 로 띄웠는데 자식엔 provider·model 만 가고
   //     주소가 빠져, 자식이 노드 캐시로 «호스트» LM Studio(127.0.0.1:1234)에 붙었다 — 준 엔드포인트가 조용히 무시됐다.
-  const inheritedProvider = process.env.MONAD_LLM_PROVIDER?.trim();
+  const inheritedProvider = process.env.ELANOUS_LLM_PROVIDER?.trim();
   return {
-    ...(process.env.MONAD_LLM_PROVIDER !== undefined ? { MONAD_LLM_PROVIDER: process.env.MONAD_LLM_PROVIDER } : {}),
-    ...(process.env.MONAD_LLM_MODEL !== undefined ? { MONAD_LLM_MODEL: process.env.MONAD_LLM_MODEL } : {}),
+    ...(process.env.ELANOUS_LLM_PROVIDER !== undefined ? { ELANOUS_LLM_PROVIDER: process.env.ELANOUS_LLM_PROVIDER } : {}),
+    ...(process.env.ELANOUS_LLM_MODEL !== undefined ? { ELANOUS_LLM_MODEL: process.env.ELANOUS_LLM_MODEL } : {}),
     ...(inheritedProvider ? childLocalEndpointEnv(inheritedProvider) : {}),
   };
 }

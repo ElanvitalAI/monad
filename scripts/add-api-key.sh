@@ -22,8 +22,8 @@
 # ⛔ 값은 화면에 «절대» 안 찍는다 — 길이와 앞 4자만.
 set -uo pipefail
 
-CACHE_DIR="${MONAD_KEY_CACHE_DIR:-$HOME/.cache}"
-LOADER="${MONAD_KEY_LOADER:-$HOME/.config/api-key-setup/api-keys.zsh}"
+CACHE_DIR="${ELANOUS_KEY_CACHE_DIR:-$HOME/.cache}"
+LOADER="${ELANOUS_KEY_LOADER:-$HOME/.config/api-key-setup/api-keys.zsh}"
 
 ENV_NAME="${1:-}"
 shift || true
@@ -61,15 +61,15 @@ echo ""
 
 # ── ⓵ 키를 «가려서» 받는다 ─────────────────────────────────────────
 # ⛔⭐ 2026-09-23 실측 결함 둘 — ***이 자리가 «멈췄고», 파이프가 «안 먹었다».***
-#   ⑴ `MONAD_KEY_VALUE=""`(빈 값)로 부르면 `-n` 검사가 거짓이 돼 대화형 read 로 떨어졌고,
+#   ⑴ `ELANOUS_KEY_VALUE=""`(빈 값)로 부르면 `-n` 검사가 거짓이 돼 대화형 read 로 떨어졌고,
 #      stdin 이 TTY 가 아니어서 ***영영 기다렸다***(600초 타임아웃으로 잡혔다).
 #      ⇒ 「설정됨」과 「빈 값」을 «가른다»(`${VAR+set}`).
 #   ⑵ `printf '%s' "$K" | …` 는 ***개행이 없어*** `read` 가 «비영 종료»를 낸다.
 #      값은 들어왔는데 else 로 떨어져 「입력이 없다」를 냈다.
 #      ⇒ 종료 코드가 아니라 ***「값이 들어왔나」***로 판정한다.
-if [ "${MONAD_KEY_VALUE+set}" = "set" ]; then
-  KEY="$MONAD_KEY_VALUE"
-  echo "   (MONAD_KEY_VALUE 로 받음 — 비대화형)"
+if [ "${ELANOUS_KEY_VALUE+set}" = "set" ]; then
+  KEY="$ELANOUS_KEY_VALUE"
+  echo "   (ELANOUS_KEY_VALUE 로 받음 — 비대화형)"
 elif [ ! -t 0 ]; then
   IFS= read -r KEY || true
   if [ -n "${KEY:-}" ]; then

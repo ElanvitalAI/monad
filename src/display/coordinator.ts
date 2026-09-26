@@ -363,7 +363,7 @@ export class DisplayCoordinator {
   private readonly surfaceGenerationBumps = new Map<SurfaceId, { bumps: number; lastBumpAt: number }>();
   // Phase 5 (substrate Occam · F8 shadow mode · 2026-05-03) — env-
   // gated runtime check that complements the F8 telemetry. When
-  // `MONAD_F8_SHADOW=1`, every paint cache HIT also re-runs paint()
+  // `ELANOUS_F8_SHADOW=1`, every paint cache HIT also re-runs paint()
   // and compares the fresh string against the cached `prior.ansi`.
   // A divergence means the surface mutated state without bumping
   // generation (= F8 violation: data ↔ paint seam broken). Cached
@@ -375,7 +375,7 @@ export class DisplayCoordinator {
   // Off-state (env unset · default) is zero-cost — `shadowMode`
   // false propagates into renderModalStack which short-circuits
   // before any extra paint() call.
-  private readonly f8ShadowMode: boolean = process.env.MONAD_F8_SHADOW === '1';
+  private readonly f8ShadowMode: boolean = process.env.ELANOUS_F8_SHADOW === '1';
   private f8ShadowDivergences = 0;
 
   // Phase B-2 (2026-04-21) — ModalLifecycle primitive attached to
@@ -775,7 +775,7 @@ export class DisplayCoordinator {
     // event. With the inverse mirror, `primitive.setFocus(...)` alone
     // drives the full coord focus transition; coord.setFocus / clearFocus
     // bodies are thin primitive delegators. Q5 partial (Phase 3,
-    // 2026-05-03): the MONAD_LEGACY_FOCUS rollback flag is gone — the
+    // 2026-05-03): the ELANOUS_LEGACY_FOCUS rollback flag is gone — the
     // primitive path is the only path.
     this.focusManager.on('focused', (ev) => {
       if (debug.enabled) {
@@ -1110,14 +1110,14 @@ export class DisplayCoordinator {
         caller: callerFrames(),
       });
     }
-    // IDX-F4 — MONAD_BOUNDARY_CHECK=1 turns on dev-time assertions
+    // IDX-F4 — ELANOUS_BOUNDARY_CHECK=1 turns on dev-time assertions
     // for modal tier hygiene. Violations are logged (not thrown) so
     // production never crashes; the env gate keeps the check out of
     // the hot path when absent. Two rules:
     //   1. tier must be declared for every modal-kind surface
     //   2. the new tier must not sit below the current top tier in
     //      TIER_ORDER (i.e. tiersCompatible(top, next) must hold)
-    if (process.env.MONAD_BOUNDARY_CHECK === '1') {
+    if (process.env.ELANOUS_BOUNDARY_CHECK === '1') {
       if (!surface.tier) {
         debug.log('window.boundaryCheck.missingTier', surface.id, {
           id: surface.id, kind: surface.kind, owner: surface.owner,
@@ -1555,7 +1555,7 @@ export class DisplayCoordinator {
     this.overlayWritesEmitted = 0;
   }
 
-  /** Phase 5 F8 shadow stats (2026-05-03 · MONAD_F8_SHADOW=1). When
+  /** Phase 5 F8 shadow stats (2026-05-03 · ELANOUS_F8_SHADOW=1). When
    *  shadow mode is enabled, reports the count of cache hits whose
    *  fresh paint() output diverged from the cached `prior.ansi` —
    *  divergence = surface mutated state without bumping generation
@@ -2464,7 +2464,7 @@ export class DisplayCoordinator {
       });
     }
     // Q5 (Phase 3, 2026-05-03) — primitive-direct only; legacy mode
-    // (MONAD_LEGACY_FOCUS) removed.
+    // (ELANOUS_LEGACY_FOCUS) removed.
     const coordNode = this.focusNodes.get(target);
     if (coordNode && !coordNode.focusable) return;
     this._ensureRegistered(target);
@@ -2648,7 +2648,7 @@ export class DisplayCoordinator {
     // flicker that appears when dashboard onRender → afterRender →
     // modal overlay paint in sequence. Terminals that don't
     // understand the sequence ignore it (no-op). Env escape hatch:
-    // `MONAD_SYNC_OUTPUT=off` for buggy terminals (none observed in
+    // `ELANOUS_SYNC_OUTPUT=off` for buggy terminals (none observed in
     // practice, 2026-04-21). Pattern matches Textual (synchronized
     // output since v0.47) + Ratatui backend buffer-swap semantics.
     const syncOutput = this.syncOutputEnabled;
@@ -2703,7 +2703,7 @@ export class DisplayCoordinator {
    *  not a TTY (unit-test + CI environment) so overlay assertions
    *  don't have to strip the ?2026h / ?2026l pair. */
   private get syncOutputEnabled(): boolean {
-    const v = (process.env.MONAD_SYNC_OUTPUT ?? 'on').toLowerCase();
+    const v = (process.env.ELANOUS_SYNC_OUTPUT ?? 'on').toLowerCase();
     if (v === 'off' || v === '0' || v === 'false') return false;
     // Non-TTY environments (tests, piped output) gain nothing from
     // atomic frame wrapping and the sequences would pollute assertions.
@@ -2817,7 +2817,7 @@ export class DisplayCoordinator {
           if (ev.hit) this.paintCacheHits++;
           else this.paintCacheMisses++;
         },
-      // Phase 5 F8 shadow mode — env-gated by MONAD_F8_SHADOW=1.
+      // Phase 5 F8 shadow mode — env-gated by ELANOUS_F8_SHADOW=1.
       // The callback fires ONLY on divergence (renderModalStack
       // checks fresh !== prior.ansi before invoking). Counter + log
       // so operators can grep `window.f8.shadowDivergence` for the

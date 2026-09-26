@@ -35,7 +35,7 @@ test('acp test canonicalizes aliases through the agent manager and records the s
   process.stderr.write = ((chunk: string | Uint8Array) => { errors.push(String(chunk)); return true; }) as typeof process.stderr.write;
   console.log = (...args: unknown[]) => { output.push(`${args.join(' ')}\n`); };
   try {
-    await program.parseAsync(['node', 'monad', 'acp', 'test', '--backend', 'codex', '--prompt', 'hello', '--cwd', '/tmp/acp-test-command']);
+    await program.parseAsync(['node', 'elanous', 'acp', 'test', '--backend', 'codex', '--prompt', 'hello', '--cwd', '/tmp/acp-test-command']);
   } finally {
     manager.getAgent = originalGetAgent;
     debugSpy.mockRestore();

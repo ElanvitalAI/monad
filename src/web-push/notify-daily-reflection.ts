@@ -57,7 +57,7 @@ export async function notifyDailyReflection(
     : buildFallbackReflectionBody(input.snapshot);
   try {
     const result = await sendPushToAll({
-      title: 'monad — 오늘의 회고',
+      title: 'elanous — 오늘의 회고',
       body,
       url: `/app/reflection?date=${encodeURIComponent(input.snapshot.date)}`,
       tag: `daily-reflection-${input.snapshot.date}`,

@@ -5,7 +5,7 @@ import { join } from 'path';
 import {
   __resetIdentityForTests,
   __setIdentityFileForTests,
-  getOrCreateMonadId,
+  getOrCreateElanousId,
   newUlid,
 } from '../../src/mss/identity.js';
 
@@ -38,34 +38,34 @@ describe('mss identity', () => {
   });
 
   test('first call creates identity file; second call returns cached value', () => {
-    const id1 = getOrCreateMonadId();
+    const id1 = getOrCreateElanousId();
     expect(id1).toHaveLength(26);
     const fileContent = JSON.parse(readFileSync(idFile, 'utf8'));
-    expect(fileContent.monad_id).toBe(id1);
+    expect(fileContent.elanous_id).toBe(id1);
     expect(fileContent.schema_version).toBe(1);
 
-    const id2 = getOrCreateMonadId();
+    const id2 = getOrCreateElanousId();
     expect(id2).toBe(id1);
   });
 
   test('persisted identity recovered after cache reset', () => {
-    const id1 = getOrCreateMonadId();
+    const id1 = getOrCreateElanousId();
     __resetIdentityForTests();
-    const id2 = getOrCreateMonadId();
+    const id2 = getOrCreateElanousId();
     expect(id2).toBe(id1);
   });
 
   test('corrupt file triggers regeneration without throwing', () => {
     writeFileSync(idFile, 'not-json-at-all');
-    const id = getOrCreateMonadId();
+    const id = getOrCreateElanousId();
     expect(id).toHaveLength(26);
     const reloaded = JSON.parse(readFileSync(idFile, 'utf8'));
-    expect(reloaded.monad_id).toBe(id);
+    expect(reloaded.elanous_id).toBe(id);
   });
 
-  test('wrong-length monad_id treated as corrupt and regenerated', () => {
-    writeFileSync(idFile, JSON.stringify({ monad_id: 'tooshort', schema_version: 1 }));
-    const id = getOrCreateMonadId();
+  test('wrong-length elanous_id treated as corrupt and regenerated', () => {
+    writeFileSync(idFile, JSON.stringify({ elanous_id: 'tooshort', schema_version: 1 }));
+    const id = getOrCreateElanousId();
     expect(id).toHaveLength(26);
     expect(id).not.toBe('tooshort');
   });

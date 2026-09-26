@@ -8,7 +8,7 @@
 //
 // Responsibilities:
 //   1. Inject `spec.spawn.env` over process.env when launching children
-//   2. Pipe stdout/stderr to `~/.monad/nexus/logs/<id>/{stdout,stderr}.log`
+//   2. Pipe stdout/stderr to `~/.elanous/nexus/logs/<id>/{stdout,stderr}.log`
 //      (per HANDOFF D-2 · 10MB rotate is deferred to PR ε.+ since the
 //      Bun stream API doesn't expose rotation primitives — a follow-up
 //      task tracked in BACKLOG)

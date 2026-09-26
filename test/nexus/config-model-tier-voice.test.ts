@@ -18,7 +18,7 @@ const PREV_XDG = process.env.XDG_CONFIG_HOME;
 beforeEach(() => {
   tmpDir = mkdtempSync(join(tmpdir(), 'm2-2b-'));
   process.env.XDG_CONFIG_HOME = tmpDir;
-  process.env.MONAD_SUPPRESS_XDG_WARNING = '1';
+  process.env.ELANOUS_SUPPRESS_XDG_WARNING = '1';
   __resetXdgDeprecationWarningForTests();
   reloadUserConfig();
 });

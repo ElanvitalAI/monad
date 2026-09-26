@@ -23,7 +23,7 @@ describe('PFC-S3 P1 — discoverObsidianVault', () => {
     const dir = scratch();
     const custom = join(dir, 'custom-vault');
     const v = discoverObsidianVault({
-      env: { MONAD_OBSIDIAN_VAULT: custom },
+      env: { ELANOUS_OBSIDIAN_VAULT: custom },
       cwd: dir,
     });
     expect(v.root).toBe(custom);
@@ -31,14 +31,14 @@ describe('PFC-S3 P1 — discoverObsidianVault', () => {
     expect(existsSync(custom)).toBe(true);   // auto-created
   });
 
-  test('fallback .monad/research/ when Obsidian directories missing', () => {
+  test('fallback .elanous/research/ when Obsidian directories missing', () => {
     const dir = scratch();
     // Point home to a directory without Obsidian → will fall to simulated.
     const fakeHome = join(dir, 'nohome');
     mkdirSync(fakeHome, { recursive: true });
     const v = discoverObsidianVault({ env: {}, cwd: dir, home: fakeHome });
     expect(v.isSimulated).toBe(true);
-    expect(v.root).toBe(join(dir, '.monad', 'research'));
+    expect(v.root).toBe(join(dir, '.elanous', 'research'));
   });
 });
 

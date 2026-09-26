@@ -1,7 +1,7 @@
 // NEXUS · /v1/setup/llm-provider routes (PWA `/setup` wizard · Phase 1)
 //
 // 사용자가 PWA `/setup` 에서 LLM provider 를 처음 고를 때 호출하는 wire.
-// 기존 TUI 의 popup-terminal setup 흐름 (`monad setup llm`) 과 동일한 결과
+// 기존 TUI 의 popup-terminal setup 흐름 (`elanous setup llm`) 과 동일한 결과
 // (user-config 의 `llm.provider / llm.apiKey / llm.rotation` 갱신) 를
 // PWA 한 화면에서 처리.
 //
@@ -173,8 +173,8 @@ export async function handleLlmProviderSet(req: Request): Promise<Response> {
         flow: option.flow,
         hint:
           option.flow === 'codex'
-            ? 'Run `monad setup llm` to complete OAuth flow.'
-            : 'Run `monad setup llm` to probe local runtimes.',
+            ? 'Run `elanous setup llm` to complete OAuth flow.'
+            : 'Run `elanous setup llm` to probe local runtimes.',
       },
       422,
     );

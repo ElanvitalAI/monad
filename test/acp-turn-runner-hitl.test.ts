@@ -31,7 +31,7 @@ import type { ConfirmChannel, ConfirmRequest, HitlAnswer } from '../src/hitl/con
 import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { resetMonadConfigDir, setMonadConfigDir } from '../src/monad-config-dir.js';
+import { resetElanousConfigDir, setElanousConfigDir } from '../src/elanous-config-dir.js';
 import { resetUserConfig } from '../src/user-config.js';
 
 let testConfigDir: string | null = null;
@@ -95,7 +95,7 @@ function fakeChannel(answer: HitlAnswer): { channel: ConfirmChannel; seen: Confi
 
 beforeEach(() => {
   testConfigDir = mkdtempSync(join(tmpdir(), 'turn-runner-hitl-'));
-  setMonadConfigDir(testConfigDir);
+  setElanousConfigDir(testConfigDir);
   writeFileSync(join(testConfigDir, 'config.json'), JSON.stringify({ acp: { editApproval: true } }));
   resetUserConfig();
   _resetTurnRunnerCachesForTests();
@@ -106,7 +106,7 @@ afterEach(() => {
   _resetTurnRunnerCachesForTests();
   _resetAcpSessionStoreForTests();
   resetUserConfig();
-  resetMonadConfigDir();
+  resetElanousConfigDir();
   if (testConfigDir) {
     try { rmSync(testConfigDir, { recursive: true, force: true }); } catch { /* noop */ }
     testConfigDir = null;

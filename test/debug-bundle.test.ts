@@ -1,7 +1,7 @@
 // debug-bundle.test.ts — POST /v1/debug-bundle pipeline.
 //
 // All disk + S3 dependencies are seam-injected so the test never
-// touches ~/.monad/log or the real AWS CLI.
+// touches ~/.elanous/log or the real AWS CLI.
 
 import { describe, expect, test } from 'bun:test';
 import { buildAndUploadBundle, composePrompt, handleDebugBundlePost } from '../src/nexus/api/debug-bundle';

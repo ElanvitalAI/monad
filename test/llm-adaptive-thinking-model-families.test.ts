@@ -3,7 +3,7 @@
 // ⛔ 왜 이 테스트가 있나(2026-08-12): 종전 규칙 `/-4-(?:[89]|\d\d)\b/` 이 「4 세대의 8 이상」만 물어
 //   `claude-opus-5` 가 legacy 형상으로 나갔고 API 가 거부했다 —
 //   `Anthropic API 400: "thinking.type.enabled" is not supported`.
-//   그 상태에서 monad 는 Anthropic 4.7 «이상 전부»를 못 썼다. 그런데 그 함수 주석은
+//   그 상태에서 elanous 는 Anthropic 4.7 «이상 전부»를 못 썼다. 그런데 그 함수 주석은
 //   *"5.x+ should be re-checked when they ship"* 라고 «예고해 두고» 있었다 — 예고는 게이트가 아니다.
 //
 // 📏 기대값의 출처 = live `GET /v1/models` capabilities (2026-08-12 · HTTP 200)

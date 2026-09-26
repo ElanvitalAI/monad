@@ -17,7 +17,7 @@ import type { TerminationRule } from '../src/auto-research/termination-dsl';
 async function makeGoal(slug: string, termination?: TerminationRule, budget?: any) {
   const home = mkdtempSync(join(tmpdir(), 'tc-tool-'));
   const vault = discoverObsidianVault({
-    env: { MONAD_OBSIDIAN_VAULT: join(home, 'vault') },
+    env: { ELANOUS_OBSIDIAN_VAULT: join(home, 'vault') },
     cwd: home,
   });
   const input: any = {
@@ -41,7 +41,7 @@ describe('PFC-S4 P4 — TerminationCheck tool', () => {
   test('uninitialised goal throws', async () => {
     const home = mkdtempSync(join(tmpdir(), 'tc-missing-'));
     const vault = discoverObsidianVault({
-      env: { MONAD_OBSIDIAN_VAULT: join(home, 'vault') },
+      env: { ELANOUS_OBSIDIAN_VAULT: join(home, 'vault') },
       cwd: home,
     });
     await expect(

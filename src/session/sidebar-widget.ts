@@ -93,7 +93,7 @@ export interface SessionsSidebarConfig {
 // `idle` / `working` / `awaiting` have no direct IconTokens slot
 // (they're session-specific), so their decorative glyphs stay inline;
 // `done` → IconTokens.done (✅/[v]), `err` → IconTokens.error (❌/[E]).
-// Evaluated per-call so /theme switch / MONAD_ASCII_ICONS updates
+// Evaluated per-call so /theme switch / ELANOUS_ASCII_ICONS updates
 // propagate on next render without widget rebuild.
 function statusGlyph(status: SessionStatus): string {
   switch (status) {

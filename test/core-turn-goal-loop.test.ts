@@ -40,18 +40,18 @@ describe('getToolLoopPhaseRejectedTools', () => {
   });
 });
 
-// ⭐ 2026-09-25: `debug.log` 가 `MONAD_HOST_ID` 를 `hostId` 로 자동 부착한다(#20468) — 앞 파일이 남긴 env 가
+// ⭐ 2026-09-25: `debug.log` 가 `ELANOUS_HOST_ID` 를 `hostId` 로 자동 부착한다(#20468) — 앞 파일이 남긴 env 가
 //   관측 payload `toEqual` 을 깨지 않게 이 파일 동안 비우고 되돌린다.
 let priorHostId: string | undefined;
 beforeEach(() => {
-  priorHostId = process.env.MONAD_HOST_ID;
-  delete process.env.MONAD_HOST_ID;
+  priorHostId = process.env.ELANOUS_HOST_ID;
+  delete process.env.ELANOUS_HOST_ID;
 });
 
 afterEach(() => {
   resetGoalLoopLifecycleBridgeForTesting();
-  if (priorHostId === undefined) delete process.env.MONAD_HOST_ID;
-  else process.env.MONAD_HOST_ID = priorHostId;
+  if (priorHostId === undefined) delete process.env.ELANOUS_HOST_ID;
+  else process.env.ELANOUS_HOST_ID = priorHostId;
 });
 
 function baseCtx(userText: string): CoreTurnContext {
@@ -133,7 +133,7 @@ describe('runGoalLoop — across-turn 목표 실행 (구조화 완료)', () => {
         const runTurn = async (ctx: CoreTurnContext): Promise<CoreTurnResult> => {
           calls += 1;
           enqueueSoftStop(surface, {
-            env: { MONAD_STATE_DIR: isolated },
+            env: { ELANOUS_STATE_DIR: isolated },
             log: (_category, event, data) => observed.push({ event, stop: data.stop }),
           });
           ctx.callbacks?.onTurnComplete?.(toolTurn);
@@ -143,11 +143,11 @@ describe('runGoalLoop — across-turn 목표 실행 (구조화 완료)', () => {
           runTurn,
           controlSpaceId: surface,
           drainControlInbox: (spaceId) => drainControlInbox(spaceId, {
-            env: { MONAD_STATE_DIR: isolated },
+            env: { ELANOUS_STATE_DIR: isolated },
             log: (_category, event, data) => observed.push({ event, stop: data.stop }),
           }),
           drainSoftStopControlInbox: (spaceId) => drainSoftStopControlInbox(spaceId, {
-            env: { MONAD_STATE_DIR: isolated },
+            env: { ELANOUS_STATE_DIR: isolated },
             log: (_category, event, data) => observed.push({ event, stop: data.stop }),
           }),
         });
@@ -172,7 +172,7 @@ describe('runGoalLoop — across-turn 목표 실행 (구조화 완료)', () => {
 
   it('첫 tool result 뒤 stop만 소비해 같은 turn의 두 번째 tool result를 막고 memo를 보존한다', async () => {
     const isolated = mkdtempSync(join(tmpdir(), 'goal-loop-post-tool-stop-'));
-    const io = { env: { MONAD_STATE_DIR: isolated }, log: () => {} };
+    const io = { env: { ELANOUS_STATE_DIR: isolated }, log: () => {} };
     const forwarded: string[] = [];
     const records: Array<{ event: string; data: unknown }> = [];
     const off = debug.registerSink({
@@ -215,7 +215,7 @@ describe('runGoalLoop — across-turn 목표 실행 (구조화 완료)', () => {
 
   it('same tool result batch의 update_goal(complete)는 post-tool stop보다 우선한다', async () => {
     const isolated = mkdtempSync(join(tmpdir(), 'goal-loop-post-tool-stop-complete-'));
-    const io = { env: { MONAD_STATE_DIR: isolated }, log: () => {} };
+    const io = { env: { ELANOUS_STATE_DIR: isolated }, log: () => {} };
     const forwarded: string[] = [];
     const ctx = baseCtx('build X');
     ctx.callbacks = { onToolResult: (call) => forwarded.push(call.name) };
@@ -241,7 +241,7 @@ describe('runGoalLoop — across-turn 목표 실행 (구조화 완료)', () => {
 
   it('불완전 update_goal과 deprecated 완료 마커가 있어도 post-tool stop 뒤 다음 turn으로 진행하지 않는다', async () => {
     const isolated = mkdtempSync(join(tmpdir(), 'goal-loop-post-tool-stop-incomplete-'));
-    const io = { env: { MONAD_STATE_DIR: isolated }, log: () => {} };
+    const io = { env: { ELANOUS_STATE_DIR: isolated }, log: () => {} };
     let calls = 0;
     try {
       const result = await runGoalLoop(baseCtx('build X'), {
@@ -353,15 +353,15 @@ describe('runGoalLoop — across-turn 목표 실행 (구조화 완료)', () => {
       const runTurn = async (ctx: CoreTurnContext): Promise<CoreTurnResult> => {
         calls += 1;
         // 같은 iteration 안에서 외부 stop 이 들어오고, 그 turn 이 목표를 완료 선언한다.
-        enqueueSoftStop('running-harness', { env: { MONAD_STATE_DIR: isolated }, log: () => {} });
+        enqueueSoftStop('running-harness', { env: { ELANOUS_STATE_DIR: isolated }, log: () => {} });
         ctx.callbacks?.onTurnComplete?.(updateGoalTurn('complete', 'claimed file and tests'));
         return { stopReason: 'end_turn', finalText: 'done' };
       };
       const r = await runGoalLoop(baseCtx('build X'), {
         runTurn,
         controlSpaceId: 'running-harness',
-        drainControlInbox: (spaceId) => drainControlInbox(spaceId, { env: { MONAD_STATE_DIR: isolated }, log: () => {} }),
-        drainSoftStopControlInbox: (spaceId) => drainSoftStopControlInbox(spaceId, { env: { MONAD_STATE_DIR: isolated }, log: () => {} }),
+        drainControlInbox: (spaceId) => drainControlInbox(spaceId, { env: { ELANOUS_STATE_DIR: isolated }, log: () => {} }),
+        drainSoftStopControlInbox: (spaceId) => drainSoftStopControlInbox(spaceId, { env: { ELANOUS_STATE_DIR: isolated }, log: () => {} }),
         changedFiles: () => ['src/x.ts'],
       });
 
@@ -381,15 +381,15 @@ describe('runGoalLoop — across-turn 목표 실행 (구조화 완료)', () => {
     try {
       const runTurn = async (ctx: CoreTurnContext): Promise<CoreTurnResult> => {
         calls += 1;
-        enqueueSoftStop('running-harness', { env: { MONAD_STATE_DIR: isolated }, log: () => {} });
+        enqueueSoftStop('running-harness', { env: { ELANOUS_STATE_DIR: isolated }, log: () => {} });
         ctx.callbacks?.onTurnComplete?.(toolTurn);
         return { stopReason: 'end_turn', finalText: `turn ${calls}` };
       };
       const r = await runGoalLoop(baseCtx('build X'), {
         runTurn,
         controlSpaceId: 'running-harness',
-        drainControlInbox: (spaceId) => drainControlInbox(spaceId, { env: { MONAD_STATE_DIR: isolated }, log: () => {} }),
-        drainSoftStopControlInbox: (spaceId) => drainSoftStopControlInbox(spaceId, { env: { MONAD_STATE_DIR: isolated }, log: () => {} }),
+        drainControlInbox: (spaceId) => drainControlInbox(spaceId, { env: { ELANOUS_STATE_DIR: isolated }, log: () => {} }),
+        drainSoftStopControlInbox: (spaceId) => drainSoftStopControlInbox(spaceId, { env: { ELANOUS_STATE_DIR: isolated }, log: () => {} }),
       });
 
       expect(calls).toBe(1);
@@ -402,7 +402,7 @@ describe('runGoalLoop — across-turn 목표 실행 (구조화 완료)', () => {
 
   it('iteration entry에서 stop과 같이 소비된 감독 메모를 관측에 남기고 재진입하지 않는다', async () => {
     const isolated = mkdtempSync(join(tmpdir(), 'goal-loop-stop-with-control-memo-'));
-    const io = { env: { MONAD_STATE_DIR: isolated }, log: () => {} };
+    const io = { env: { ELANOUS_STATE_DIR: isolated }, log: () => {} };
     const records: Array<{ event: string; data: unknown }> = [];
     const off = debug.registerSink({
       name: 'goal-loop-stop-with-control-memo-test',
@@ -447,7 +447,7 @@ describe('runGoalLoop — across-turn 목표 실행 (구조화 완료)', () => {
 
   it('런 시작 전 soft stop과 함께 온 감독 메모는 다음 런에 한 번만 배달된다', async () => {
     const isolated = mkdtempSync(join(tmpdir(), 'goal-loop-entry-stop-memo-survival-'));
-    const io = { env: { MONAD_STATE_DIR: isolated }, log: () => {} };
+    const io = { env: { ELANOUS_STATE_DIR: isolated }, log: () => {} };
     const seenByRun: string[][] = [];
     try {
       enqueueControlMemo('running-harness', 'memo for next run only', io);
@@ -529,7 +529,7 @@ describe('runGoalLoop — across-turn 목표 실행 (구조화 완료)', () => {
   //     「가장 최신 요청」이 되어 계획을 밀어낸다(그 형태가 앞선 시도를 죽였다).
   it('감독 메모가 이어가기 문구를 «대체하지 않고» 실린 순서대로 덧붙는다', async () => {
     const isolated = mkdtempSync(join(tmpdir(), 'goal-loop-control-memo-'));
-    const io = { env: { MONAD_STATE_DIR: isolated }, log: () => {} };
+    const io = { env: { ELANOUS_STATE_DIR: isolated }, log: () => {} };
     const seen: string[] = [];
     let calls = 0;
     try {
@@ -573,7 +573,7 @@ describe('runGoalLoop — across-turn 목표 실행 (구조화 완료)', () => {
 
   it('urgent structured memos precede normal and legacy memos after continuation and expose intake counts', async () => {
     const isolated = mkdtempSync(join(tmpdir(), 'goal-loop-structured-control-memo-'));
-    const io = { env: { MONAD_STATE_DIR: isolated }, log: () => {} };
+    const io = { env: { ELANOUS_STATE_DIR: isolated }, log: () => {} };
     const seen: string[] = [];
     const records: Array<{ event: string; data: unknown }> = [];
     const off = debug.registerSink({
@@ -621,10 +621,10 @@ describe('runGoalLoop — across-turn 목표 실행 (구조화 완료)', () => {
   });
 
   it('caller-side dispatch records the selected tool while forwarding its arguments and result', async () => {
-    const originalRunId = process.env.MONAD_RUN_ID;
+    const originalRunId = process.env.ELANOUS_RUN_ID;
     const records: Array<{ category: string; event: string; data: unknown }> = [];
     let off: (() => void) | undefined;
-    process.env.MONAD_RUN_ID = 'run-goal-loop-dispatch';
+    process.env.ELANOUS_RUN_ID = 'run-goal-loop-dispatch';
     try {
       off = debug.registerSink({
         name: 'goal-loop-dispatch-test',
@@ -648,8 +648,8 @@ describe('runGoalLoop — across-turn 목표 실행 (구조화 완료)', () => {
       });
     } finally {
       off?.();
-      if (originalRunId === undefined) delete process.env.MONAD_RUN_ID;
-      else process.env.MONAD_RUN_ID = originalRunId;
+      if (originalRunId === undefined) delete process.env.ELANOUS_RUN_ID;
+      else process.env.ELANOUS_RUN_ID = originalRunId;
     }
 
     expect(records).toContainEqual({
@@ -717,12 +717,12 @@ describe('runGoalLoop — across-turn 목표 실행 (구조화 완료)', () => {
   });
 
   it('update_goal dispatch 는 실 dispatcher 로 새지 않고 관측·집계한 뒤 ack 를 돌려준다', async () => {
-    const originalRunId = process.env.MONAD_RUN_ID;
+    const originalRunId = process.env.ELANOUS_RUN_ID;
     const records: Array<{ category: string; event: string; data: unknown }> = [];
     let off: (() => void) | undefined;
     let leaked = false;
     let acked: unknown;
-    process.env.MONAD_RUN_ID = 'run-goal-loop-update-goal-dispatch';
+    process.env.ELANOUS_RUN_ID = 'run-goal-loop-update-goal-dispatch';
     try {
       off = debug.registerSink({
         name: 'goal-loop-update-goal-dispatch-test',
@@ -738,8 +738,8 @@ describe('runGoalLoop — across-turn 목표 실행 (구조화 완료)', () => {
       await runGoalLoop(ctx, { runTurn });
     } finally {
       off?.();
-      if (originalRunId === undefined) delete process.env.MONAD_RUN_ID;
-      else process.env.MONAD_RUN_ID = originalRunId;
+      if (originalRunId === undefined) delete process.env.ELANOUS_RUN_ID;
+      else process.env.ELANOUS_RUN_ID = originalRunId;
     }
     expect(leaked).toBe(false);
     expect((acked as { ok?: boolean }).ok).toBe(true);
@@ -864,10 +864,10 @@ describe('runGoalLoop — across-turn 목표 실행 (구조화 완료)', () => {
   });
 
   it('성공 시 helper 스냅샷과 evidence로 complete를 정확히 한 번 발행하고 실계약을 통과한다', async () => {
-    const originalRunId = process.env.MONAD_RUN_ID;
-    const originalPtyId = process.env.MONAD_PTY_ID;
-    process.env.MONAD_RUN_ID = 'run-goal-loop-complete';
-    process.env.MONAD_PTY_ID = 'pty-goal-loop-complete';
+    const originalRunId = process.env.ELANOUS_RUN_ID;
+    const originalPtyId = process.env.ELANOUS_PTY_ID;
+    process.env.ELANOUS_RUN_ID = 'run-goal-loop-complete';
+    process.env.ELANOUS_PTY_ID = 'pty-goal-loop-complete';
     resetTerminalMatrix();
     try {
       const files = ['src/actual.ts', 'test/actual.test.ts'];
@@ -885,18 +885,18 @@ describe('runGoalLoop — across-turn 목표 실행 (구조화 완료)', () => {
       expect(validateLifecycleRecord(complete[0])).toBeNull();
     } finally {
       resetTerminalMatrix();
-      if (originalRunId === undefined) delete process.env.MONAD_RUN_ID;
-      else process.env.MONAD_RUN_ID = originalRunId;
-      if (originalPtyId === undefined) delete process.env.MONAD_PTY_ID;
-      else process.env.MONAD_PTY_ID = originalPtyId;
+      if (originalRunId === undefined) delete process.env.ELANOUS_RUN_ID;
+      else process.env.ELANOUS_RUN_ID = originalRunId;
+      if (originalPtyId === undefined) delete process.env.ELANOUS_PTY_ID;
+      else process.env.ELANOUS_PTY_ID = originalPtyId;
     }
   });
 
   it('스냅샷 실패도 빈 목록과 실패 사실을 담은 complete로 보존한다', async () => {
-    const originalRunId = process.env.MONAD_RUN_ID;
-    const originalPtyId = process.env.MONAD_PTY_ID;
-    process.env.MONAD_RUN_ID = 'run-goal-loop-complete-helper';
-    process.env.MONAD_PTY_ID = 'pty-goal-loop-complete-helper';
+    const originalRunId = process.env.ELANOUS_RUN_ID;
+    const originalPtyId = process.env.ELANOUS_PTY_ID;
+    process.env.ELANOUS_RUN_ID = 'run-goal-loop-complete-helper';
+    process.env.ELANOUS_PTY_ID = 'pty-goal-loop-complete-helper';
     resetTerminalMatrix();
     const log = spyOn(debug, 'log').mockImplementation(() => {});
     const runTurn = async (ctx: CoreTurnContext): Promise<CoreTurnResult> => {
@@ -931,18 +931,18 @@ describe('runGoalLoop — across-turn 목표 실행 (구조화 완료)', () => {
     } finally {
       log.mockRestore();
       resetTerminalMatrix();
-      if (originalRunId === undefined) delete process.env.MONAD_RUN_ID;
-      else process.env.MONAD_RUN_ID = originalRunId;
-      if (originalPtyId === undefined) delete process.env.MONAD_PTY_ID;
-      else process.env.MONAD_PTY_ID = originalPtyId;
+      if (originalRunId === undefined) delete process.env.ELANOUS_RUN_ID;
+      else process.env.ELANOUS_RUN_ID = originalRunId;
+      if (originalPtyId === undefined) delete process.env.ELANOUS_PTY_ID;
+      else process.env.ELANOUS_PTY_ID = originalPtyId;
     }
   });
 
   it('complete의 긴 파일 목록은 레코드 계층에서 절단되고 bus 예외는 성공 결과를 바꾸지 않는다', async () => {
-    const originalRunId = process.env.MONAD_RUN_ID;
-    const originalPtyId = process.env.MONAD_PTY_ID;
-    process.env.MONAD_RUN_ID = 'run-goal-loop-complete-truncated';
-    process.env.MONAD_PTY_ID = 'pty-goal-loop-complete-truncated';
+    const originalRunId = process.env.ELANOUS_RUN_ID;
+    const originalPtyId = process.env.ELANOUS_PTY_ID;
+    process.env.ELANOUS_RUN_ID = 'run-goal-loop-complete-truncated';
+    process.env.ELANOUS_PTY_ID = 'pty-goal-loop-complete-truncated';
     resetTerminalMatrix();
     const runTurn = async (ctx: CoreTurnContext): Promise<CoreTurnResult> => {
       ctx.callbacks?.onTurnComplete?.(updateGoalTurn('complete', 'evidence'));
@@ -976,18 +976,18 @@ describe('runGoalLoop — across-turn 목표 실행 (구조화 완료)', () => {
       publish.mockRestore();
     } finally {
       resetTerminalMatrix();
-      if (originalRunId === undefined) delete process.env.MONAD_RUN_ID;
-      else process.env.MONAD_RUN_ID = originalRunId;
-      if (originalPtyId === undefined) delete process.env.MONAD_PTY_ID;
-      else process.env.MONAD_PTY_ID = originalPtyId;
+      if (originalRunId === undefined) delete process.env.ELANOUS_RUN_ID;
+      else process.env.ELANOUS_RUN_ID = originalRunId;
+      if (originalPtyId === undefined) delete process.env.ELANOUS_PTY_ID;
+      else process.env.ELANOUS_PTY_ID = originalPtyId;
     }
   });
 
   it('abort/error 는 즉시 전파하고 started/failed lifecycle을 발행한다', async () => {
-    const originalRunId = process.env.MONAD_RUN_ID;
-    const originalPtyId = process.env.MONAD_PTY_ID;
-    process.env.MONAD_RUN_ID = 'run-core-turn-goal-loop';
-    process.env.MONAD_PTY_ID = 'pty-core-turn-goal-loop';
+    const originalRunId = process.env.ELANOUS_RUN_ID;
+    const originalPtyId = process.env.ELANOUS_PTY_ID;
+    process.env.ELANOUS_RUN_ID = 'run-core-turn-goal-loop';
+    process.env.ELANOUS_PTY_ID = 'pty-core-turn-goal-loop';
     resetTerminalMatrix();
     const log = spyOn(debug, 'log').mockImplementation(() => {});
     try {
@@ -1004,21 +1004,21 @@ describe('runGoalLoop — across-turn 목표 실행 (구조화 완료)', () => {
     } finally {
       log.mockRestore();
       resetTerminalMatrix();
-      if (originalRunId === undefined) delete process.env.MONAD_RUN_ID;
-      else process.env.MONAD_RUN_ID = originalRunId;
-      if (originalPtyId === undefined) delete process.env.MONAD_PTY_ID;
-      else process.env.MONAD_PTY_ID = originalPtyId;
+      if (originalRunId === undefined) delete process.env.ELANOUS_RUN_ID;
+      else process.env.ELANOUS_RUN_ID = originalRunId;
+      if (originalPtyId === undefined) delete process.env.ELANOUS_PTY_ID;
+      else process.env.ELANOUS_PTY_ID = originalPtyId;
     }
   });
 
   it('발행 프로세스에 브리지를 한 번 붙여 SQLite에 미러링하고 종료 시 해제한다', async () => {
-    const originalRunId = process.env.MONAD_RUN_ID;
-    const originalPtyId = process.env.MONAD_PTY_ID;
-    const originalStateDir = process.env.MONAD_STATE_DIR;
+    const originalRunId = process.env.ELANOUS_RUN_ID;
+    const originalPtyId = process.env.ELANOUS_PTY_ID;
+    const originalStateDir = process.env.ELANOUS_STATE_DIR;
     const stateDir = mkdtempSync(join(tmpdir(), 'goal-loop-lifecycle-bridge-'));
-    process.env.MONAD_RUN_ID = 'run-goal-loop-bridge';
-    process.env.MONAD_PTY_ID = 'pty-goal-loop-bridge';
-    process.env.MONAD_STATE_DIR = stateDir;
+    process.env.ELANOUS_RUN_ID = 'run-goal-loop-bridge';
+    process.env.ELANOUS_PTY_ID = 'pty-goal-loop-bridge';
+    process.env.ELANOUS_STATE_DIR = stateDir;
     resetTerminalMatrix();
     resetLifecycleBridgeForTesting();
     const log = spyOn(debug, 'log').mockImplementation(() => {});
@@ -1045,20 +1045,20 @@ describe('runGoalLoop — across-turn 목표 실행 (구조화 완료)', () => {
       resetTerminalMatrix();
       resetLifecycleBridgeForTesting();
       rmSync(stateDir, { recursive: true, force: true });
-      if (originalRunId === undefined) delete process.env.MONAD_RUN_ID;
-      else process.env.MONAD_RUN_ID = originalRunId;
-      if (originalPtyId === undefined) delete process.env.MONAD_PTY_ID;
-      else process.env.MONAD_PTY_ID = originalPtyId;
-      if (originalStateDir === undefined) delete process.env.MONAD_STATE_DIR;
-      else process.env.MONAD_STATE_DIR = originalStateDir;
+      if (originalRunId === undefined) delete process.env.ELANOUS_RUN_ID;
+      else process.env.ELANOUS_RUN_ID = originalRunId;
+      if (originalPtyId === undefined) delete process.env.ELANOUS_PTY_ID;
+      else process.env.ELANOUS_PTY_ID = originalPtyId;
+      if (originalStateDir === undefined) delete process.env.ELANOUS_STATE_DIR;
+      else process.env.ELANOUS_STATE_DIR = originalStateDir;
     }
   });
 
   it('순차·동시 goal loop 호출도 프로세스 브리지를 한 번만 붙이고 lifecycle을 한 번만 쓴다', async () => {
-    const originalRunId = process.env.MONAD_RUN_ID;
-    const originalPtyId = process.env.MONAD_PTY_ID;
-    process.env.MONAD_RUN_ID = 'run-goal-loop-bridge-once';
-    process.env.MONAD_PTY_ID = 'pty-goal-loop-bridge-once';
+    const originalRunId = process.env.ELANOUS_RUN_ID;
+    const originalPtyId = process.env.ELANOUS_PTY_ID;
+    process.env.ELANOUS_RUN_ID = 'run-goal-loop-bridge-once';
+    process.env.ELANOUS_PTY_ID = 'pty-goal-loop-bridge-once';
     resetTerminalMatrix();
     let attachCalls = 0;
     let writes = 0;
@@ -1089,23 +1089,23 @@ describe('runGoalLoop — across-turn 목표 실행 (구조화 완료)', () => {
       expect(detachCalls).toBe(1);
     } finally {
       resetTerminalMatrix();
-      if (originalRunId === undefined) delete process.env.MONAD_RUN_ID;
-      else process.env.MONAD_RUN_ID = originalRunId;
-      if (originalPtyId === undefined) delete process.env.MONAD_PTY_ID;
-      else process.env.MONAD_PTY_ID = originalPtyId;
+      if (originalRunId === undefined) delete process.env.ELANOUS_RUN_ID;
+      else process.env.ELANOUS_RUN_ID = originalRunId;
+      if (originalPtyId === undefined) delete process.env.ELANOUS_PTY_ID;
+      else process.env.ELANOUS_PTY_ID = originalPtyId;
     }
   });
 
   it('브리지 저장소가 불능이어도 goal loop 결과를 바꾸지 않는다', async () => {
-    const originalRunId = process.env.MONAD_RUN_ID;
-    const originalPtyId = process.env.MONAD_PTY_ID;
-    const originalStateDir = process.env.MONAD_STATE_DIR;
+    const originalRunId = process.env.ELANOUS_RUN_ID;
+    const originalPtyId = process.env.ELANOUS_PTY_ID;
+    const originalStateDir = process.env.ELANOUS_STATE_DIR;
     const stateDir = mkdtempSync(join(tmpdir(), 'goal-loop-lifecycle-bridge-failsoft-'));
     const blockedPath = join(stateDir, 'not-a-directory');
     writeFileSync(blockedPath, 'file');
-    process.env.MONAD_RUN_ID = 'run-goal-loop-bridge-failsoft';
-    process.env.MONAD_PTY_ID = 'pty-goal-loop-bridge-failsoft';
-    process.env.MONAD_STATE_DIR = blockedPath;
+    process.env.ELANOUS_RUN_ID = 'run-goal-loop-bridge-failsoft';
+    process.env.ELANOUS_PTY_ID = 'pty-goal-loop-bridge-failsoft';
+    process.env.ELANOUS_STATE_DIR = blockedPath;
     resetTerminalMatrix();
     resetLifecycleBridgeForTesting();
     try {
@@ -1117,20 +1117,20 @@ describe('runGoalLoop — across-turn 목표 실행 (구조화 완료)', () => {
       resetTerminalMatrix();
       resetLifecycleBridgeForTesting();
       rmSync(stateDir, { recursive: true, force: true });
-      if (originalRunId === undefined) delete process.env.MONAD_RUN_ID;
-      else process.env.MONAD_RUN_ID = originalRunId;
-      if (originalPtyId === undefined) delete process.env.MONAD_PTY_ID;
-      else process.env.MONAD_PTY_ID = originalPtyId;
-      if (originalStateDir === undefined) delete process.env.MONAD_STATE_DIR;
-      else process.env.MONAD_STATE_DIR = originalStateDir;
+      if (originalRunId === undefined) delete process.env.ELANOUS_RUN_ID;
+      else process.env.ELANOUS_RUN_ID = originalRunId;
+      if (originalPtyId === undefined) delete process.env.ELANOUS_PTY_ID;
+      else process.env.ELANOUS_PTY_ID = originalPtyId;
+      if (originalStateDir === undefined) delete process.env.ELANOUS_STATE_DIR;
+      else process.env.ELANOUS_STATE_DIR = originalStateDir;
     }
   });
 
   it('정체성이 없으면 lifecycle을 발행하지 않고 skip 관측을 남긴다', async () => {
-    const originalRunId = process.env.MONAD_RUN_ID;
-    const originalPtyId = process.env.MONAD_PTY_ID;
-    delete process.env.MONAD_RUN_ID;
-    delete process.env.MONAD_PTY_ID;
+    const originalRunId = process.env.ELANOUS_RUN_ID;
+    const originalPtyId = process.env.ELANOUS_PTY_ID;
+    delete process.env.ELANOUS_RUN_ID;
+    delete process.env.ELANOUS_PTY_ID;
     resetTerminalMatrix();
     const log = spyOn(debug, 'log').mockImplementation(() => {});
     try {
@@ -1147,10 +1147,10 @@ describe('runGoalLoop — across-turn 목표 실행 (구조화 완료)', () => {
     } finally {
       log.mockRestore();
       resetTerminalMatrix();
-      if (originalRunId === undefined) delete process.env.MONAD_RUN_ID;
-      else process.env.MONAD_RUN_ID = originalRunId;
-      if (originalPtyId === undefined) delete process.env.MONAD_PTY_ID;
-      else process.env.MONAD_PTY_ID = originalPtyId;
+      if (originalRunId === undefined) delete process.env.ELANOUS_RUN_ID;
+      else process.env.ELANOUS_RUN_ID = originalRunId;
+      if (originalPtyId === undefined) delete process.env.ELANOUS_PTY_ID;
+      else process.env.ELANOUS_PTY_ID = originalPtyId;
     }
   });
 
@@ -1328,9 +1328,9 @@ describe('runGoalLoop — run_tests evidence 대조 (OH8 후속 PR-2)', () => {
   });
 
   it('모든 비완료 종료 경로는 started 뒤 failed 하나를 stopReason과 함께 발행한다', async () => {
-    const originalRunId = process.env.MONAD_RUN_ID;
-    const originalPtyId = process.env.MONAD_PTY_ID;
-    process.env.MONAD_PTY_ID = 'pty-goal-loop-terminal-paths';
+    const originalRunId = process.env.ELANOUS_RUN_ID;
+    const originalPtyId = process.env.ELANOUS_PTY_ID;
+    process.env.ELANOUS_PTY_ID = 'pty-goal-loop-terminal-paths';
     const cases: Array<{
       name: string;
       expected: GoalLoopResult['stopReason'];
@@ -1393,10 +1393,10 @@ describe('runGoalLoop — run_tests evidence 대조 (OH8 후속 PR-2)', () => {
     ];
     try {
       for (const testCase of cases) {
-        process.env.MONAD_RUN_ID = `run-goal-loop-terminal-${testCase.name}`;
+        process.env.ELANOUS_RUN_ID = `run-goal-loop-terminal-${testCase.name}`;
         resetTerminalMatrix();
         const result = await runGoalLoop(baseCtx(testCase.name), { ...testCase.options, runTurn: testCase.runTurn });
-        const terminal = snapshotRunLifecycle(getChannelBus(), process.env.MONAD_RUN_ID)
+        const terminal = snapshotRunLifecycle(getChannelBus(), process.env.ELANOUS_RUN_ID)
           .filter((record) => record.name === 'complete' || record.name === 'failed');
         expect(result.stopReason).toBe(testCase.expected);
         expect(result.goalComplete).toBe(false);
@@ -1405,18 +1405,18 @@ describe('runGoalLoop — run_tests evidence 대조 (OH8 후속 PR-2)', () => {
       }
     } finally {
       resetTerminalMatrix();
-      if (originalRunId === undefined) delete process.env.MONAD_RUN_ID;
-      else process.env.MONAD_RUN_ID = originalRunId;
-      if (originalPtyId === undefined) delete process.env.MONAD_PTY_ID;
-      else process.env.MONAD_PTY_ID = originalPtyId;
+      if (originalRunId === undefined) delete process.env.ELANOUS_RUN_ID;
+      else process.env.ELANOUS_RUN_ID = originalRunId;
+      if (originalPtyId === undefined) delete process.env.ELANOUS_PTY_ID;
+      else process.env.ELANOUS_PTY_ID = originalPtyId;
     }
   });
 
   it('terminal lifecycle publish가 던져도 비완료 반환값은 바뀌지 않는다', async () => {
-    const originalRunId = process.env.MONAD_RUN_ID;
-    const originalPtyId = process.env.MONAD_PTY_ID;
-    process.env.MONAD_RUN_ID = 'run-goal-loop-terminal-publish-throw';
-    process.env.MONAD_PTY_ID = 'pty-goal-loop-terminal-publish-throw';
+    const originalRunId = process.env.ELANOUS_RUN_ID;
+    const originalPtyId = process.env.ELANOUS_PTY_ID;
+    process.env.ELANOUS_RUN_ID = 'run-goal-loop-terminal-publish-throw';
+    process.env.ELANOUS_PTY_ID = 'pty-goal-loop-terminal-publish-throw';
     resetTerminalMatrix();
     const bus = getChannelBus();
     const publish = spyOn(bus, 'publish').mockImplementation(() => { throw new Error('bus down'); });
@@ -1428,10 +1428,10 @@ describe('runGoalLoop — run_tests evidence 대조 (OH8 후속 PR-2)', () => {
     } finally {
       publish.mockRestore();
       resetTerminalMatrix();
-      if (originalRunId === undefined) delete process.env.MONAD_RUN_ID;
-      else process.env.MONAD_RUN_ID = originalRunId;
-      if (originalPtyId === undefined) delete process.env.MONAD_PTY_ID;
-      else process.env.MONAD_PTY_ID = originalPtyId;
+      if (originalRunId === undefined) delete process.env.ELANOUS_RUN_ID;
+      else process.env.ELANOUS_RUN_ID = originalRunId;
+      if (originalPtyId === undefined) delete process.env.ELANOUS_PTY_ID;
+      else process.env.ELANOUS_PTY_ID = originalPtyId;
     }
   });
 });

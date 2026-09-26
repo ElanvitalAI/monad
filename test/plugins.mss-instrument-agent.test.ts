@@ -92,7 +92,7 @@ describe('renderMssReviewPrompt', () => {
     const lines = renderMssReviewPrompt({
       base: 'main',
       head: 'HEAD',
-      diffPath: '/tmp/monad-mss-review/diff-1.diff',
+      diffPath: '/tmp/elanous-mss-review/diff-1.diff',
       diffBytes: 1024,
       changedFiles: 5,
       insertions: 50,
@@ -104,7 +104,7 @@ describe('renderMssReviewPrompt', () => {
     expect(body).toContain('+50');
     expect(body).toContain('-10');
     expect(body).toContain('bytes=1024');
-    expect(body).toContain('/tmp/monad-mss-review/diff-1.diff');
+    expect(body).toContain('/tmp/elanous-mss-review/diff-1.diff');
     expect(body).toContain('mss-instrument-reviewer');
     expect(body).toContain('PLAN §11.5');
   });

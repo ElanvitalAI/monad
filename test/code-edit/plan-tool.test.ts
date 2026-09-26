@@ -127,7 +127,7 @@ describe('renderPlanBoard', () => {
     // theme-icons (`done` / `running` / `backlog` slots). The default
     // theme ships emoji (✅ 🟢 ⚪); ASCII mode swaps to `[v]` / `[>]` /
     // `[ ]`. Assertions use `includes` so either set is acceptable,
-    // which matches real user runtime where MONAD_ASCII_ICONS decides.
+    // which matches real user runtime where ELANOUS_ASCII_ICONS decides.
     await dispatchUpdatePlan({
       explanation: 'kicking off',
       plan: [

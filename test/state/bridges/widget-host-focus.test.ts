@@ -6,7 +6,7 @@
 
 import { describe, test, expect, beforeEach } from 'bun:test';
 import { createStore } from '../../../src/state/store.js';
-import { defaultMonadState, type MonadState } from '../../../src/state/types.js';
+import { defaultElanousState, type ElanousState } from '../../../src/state/types.js';
 import { bridgeWidgetHostFocusToStore } from '../../../src/state/bridges/widget-host-focus.js';
 import { WidgetHost } from '../../../src/widgets/host.js';
 import type { WidgetDef } from '../../../src/widgets/types.js';
@@ -20,7 +20,7 @@ const fakeDef: WidgetDef<{ count: number }> = {
 };
 
 function mkStore() {
-  return createStore<MonadState>(defaultMonadState());
+  return createStore<ElanousState>(defaultElanousState());
 }
 
 function mkHost(): WidgetHost {

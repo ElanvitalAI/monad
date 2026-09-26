@@ -1,4 +1,4 @@
-// ── Monad URI builder — ULID minting, path join, tier conversion ──
+// ── Elanous URI builder — ULID minting, path join, tier conversion ──
 //
 // PLAN §7.3 + §7.4 · DD-MSS-22 / 23 / 39.
 //
@@ -9,8 +9,8 @@
 // suffix length (4–12 chars) via the `shortLen` option.
 
 import { newUlid } from '../identity.js';
-import { isEntityKind, TIER1_ABBREV_REVERSE, type EntityKind, type MonadUri, type AgentUri, type SessionUri, type MemoryUri, type SignalUri, type TurnUri, type RunUri, type PluginUri, type WidgetUri, type ModalUri } from './brand.js';
-import { isUlid, parseMonadUri, type ParsedMonadUri, type ParsedUriSegment } from './parser.js';
+import { isEntityKind, TIER1_ABBREV_REVERSE, type EntityKind, type ElanousUri, type AgentUri, type SessionUri, type MemoryUri, type SignalUri, type TurnUri, type RunUri, type PluginUri, type WidgetUri, type ModalUri } from './brand.js';
+import { isUlid, parseElanousUri, type ParsedElanousUri, type ParsedUriSegment } from './parser.js';
 
 export const DEFAULT_HOST = 'local';
 const DEFAULT_SHORT_LEN = 6;
@@ -18,15 +18,15 @@ const DEFAULT_SHORT_LEN = 6;
 /** Runtime validation + brand cast. Throws on malformed input so a
  *  mis-typed literal at a system boundary fails loud rather than
  *  silently poisoning downstream assumptions. */
-export function asMonadUri(s: string): MonadUri {
-  if (!parseMonadUri(s)) {
-    throw new Error(`Invalid MonadUri: ${s}`);
+export function asElanousUri(s: string): ElanousUri {
+  if (!parseElanousUri(s)) {
+    throw new Error(`Invalid ElanousUri: ${s}`);
   }
-  return s as MonadUri;
+  return s as ElanousUri;
 }
 
 export function asSessionUri(s: string): SessionUri {
-  const parsed = parseMonadUri(s);
+  const parsed = parseElanousUri(s);
   if (!parsed || !parsed.segments.some(seg => seg.kind === 'session')) {
     throw new Error(`Invalid SessionUri: ${s}`);
   }
@@ -34,7 +34,7 @@ export function asSessionUri(s: string): SessionUri {
 }
 
 export function asAgentUri(s: string): AgentUri {
-  const parsed = parseMonadUri(s);
+  const parsed = parseElanousUri(s);
   if (!parsed || !parsed.segments.some(seg => seg.kind === 'agent')) {
     throw new Error(`Invalid AgentUri: ${s}`);
   }
@@ -48,11 +48,11 @@ export function asAgentUri(s: string): AgentUri {
  *  ULID-shaped, URI-formatted identifier without disturbing the legacy
  *  UUID-keyed task registry. */
 export function mintAgentUri(): AgentUri {
-  return asAgentUri(newMonadUri('agent'));
+  return asAgentUri(newElanousUri('agent'));
 }
 
 export function asMemoryUri(s: string): MemoryUri {
-  const parsed = parseMonadUri(s);
+  const parsed = parseElanousUri(s);
   const kinds = new Set(parsed?.segments.map(seg => seg.kind) ?? []);
   if (!parsed || !(kinds.has('stm') || kinds.has('ltm') || kinds.has('sensory'))) {
     throw new Error(`Invalid MemoryUri: ${s}`);
@@ -61,7 +61,7 @@ export function asMemoryUri(s: string): MemoryUri {
 }
 
 export function asSignalUri(s: string): SignalUri {
-  const parsed = parseMonadUri(s);
+  const parsed = parseElanousUri(s);
   if (!parsed || !parsed.segments.some(seg => seg.kind === 'signal')) {
     throw new Error(`Invalid SignalUri: ${s}`);
   }
@@ -70,11 +70,11 @@ export function asSignalUri(s: string): SignalUri {
 
 /** Validate + brand cast for a turn identifier. Lenient on purpose — SAM S0
  *  persists bare ULIDs as `turn_id`, and richer M1.2+ code may use a
- *  `turn/<ULID>` Tier 2 form or a full `monad://…/turn/<ULID>` Tier 3
+ *  `turn/<ULID>` Tier 2 form or a full `elanous://…/turn/<ULID>` Tier 3
  *  address. All three survive round-tripping through this helper. */
 export function asTurnUri(s: string): TurnUri {
   if (isUlid(s)) return s as TurnUri;
-  const parsed = parseMonadUri(s);
+  const parsed = parseElanousUri(s);
   if (parsed && parsed.segments.some(seg => seg.kind === 'turn')) {
     return s as TurnUri;
   }
@@ -85,17 +85,17 @@ export function asTurnUri(s: string): TurnUri {
  *  carry the ULID alone rather than the Tier 2 prefix) so persisted
  *  sessions stay byte-identical across the M1.2 narrowing. Callers that
  *  need a Tier 2 or Tier 3 form should build it explicitly via
- *  `newMonadUri('turn', parent)` + `asTurnUri`. */
+ *  `newElanousUri('turn', parent)` + `asTurnUri`. */
 export function mintTurnUri(): TurnUri {
   return newUlid() as TurnUri;
 }
 
 /** Validate + brand cast for a TOX run identifier. Strict — accepts only
- *  MonadUri values whose entity-path includes a `run/<ULID>` segment. Run
+ *  ElanousUri values whose entity-path includes a `run/<ULID>` segment. Run
  *  identifiers are minted fresh (no legacy wire format), so the canonical
  *  shape is enforced from day one. */
 export function asRunUri(s: string): RunUri {
-  const parsed = parseMonadUri(s);
+  const parsed = parseElanousUri(s);
   if (!parsed || !parsed.segments.some(seg => seg.kind === 'run')) {
     throw new Error(`Invalid RunUri: ${s}`);
   }
@@ -104,15 +104,15 @@ export function asRunUri(s: string): RunUri {
 
 /** Mint a fresh Tier 2 RunUri of the form `run/<ULID>`. Caller may attach
  *  it under a parent (e.g. a `SessionUri` or `AgentUri`) by passing the
- *  result through `joinMonadUri()` instead. */
+ *  result through `joinElanousUri()` instead. */
 export function mintRunUri(): RunUri {
-  return asRunUri(newMonadUri('run'));
+  return asRunUri(newElanousUri('run'));
 }
 
 /** Validate + brand cast for a plugin activation identifier. Strict —
- *  requires a MonadUri with a `plugin/<ULID>` segment. */
+ *  requires a ElanousUri with a `plugin/<ULID>` segment. */
 export function asPluginUri(s: string): PluginUri {
-  const parsed = parseMonadUri(s);
+  const parsed = parseElanousUri(s);
   if (!parsed || !parsed.segments.some(seg => seg.kind === 'plugin')) {
     throw new Error(`Invalid PluginUri: ${s}`);
   }
@@ -123,13 +123,13 @@ export function asPluginUri(s: string): PluginUri {
  *  manifest's slug `id` is unaffected — this URI identifies a specific
  *  activation of the plugin, not the plugin definition itself. */
 export function mintPluginUri(): PluginUri {
-  return asPluginUri(newMonadUri('plugin'));
+  return asPluginUri(newElanousUri('plugin'));
 }
 
 /** Validate + brand cast for a widget instance identifier. Strict —
- *  requires a MonadUri with a `widget/<ULID>` segment. */
+ *  requires a ElanousUri with a `widget/<ULID>` segment. */
 export function asWidgetUri(s: string): WidgetUri {
-  const parsed = parseMonadUri(s);
+  const parsed = parseElanousUri(s);
   if (!parsed || !parsed.segments.some(seg => seg.kind === 'widget')) {
     throw new Error(`Invalid WidgetUri: ${s}`);
   }
@@ -141,13 +141,13 @@ export function asWidgetUri(s: string): WidgetUri {
  *  a plain string — this URI identifies the same instance to MSS
  *  bridges that need a typed handle. */
 export function mintWidgetUri(): WidgetUri {
-  return asWidgetUri(newMonadUri('widget'));
+  return asWidgetUri(newElanousUri('widget'));
 }
 
 /** Validate + brand cast for a modal handle identifier. Strict —
- *  requires a MonadUri with a `modal/<ULID>` segment. */
+ *  requires a ElanousUri with a `modal/<ULID>` segment. */
 export function asModalUri(s: string): ModalUri {
-  const parsed = parseMonadUri(s);
+  const parsed = parseElanousUri(s);
   if (!parsed || !parsed.segments.some(seg => seg.kind === 'modal')) {
     throw new Error(`Invalid ModalUri: ${s}`);
   }
@@ -159,33 +159,33 @@ export function asModalUri(s: string): ModalUri {
  *  stays the coordinator's bookkeeping key — this URI is the typed
  *  handle for downstream MSS bridges. */
 export function mintModalUri(): ModalUri {
-  return asModalUri(newMonadUri('modal'));
+  return asModalUri(newElanousUri('modal'));
 }
 
 /** Mint a new Tier 2 (local) URI. When `parent` is provided the new
  *  segment is appended to the parent's entity-path; otherwise the URI
  *  starts fresh at `<kind>/<ulid>`. */
-export function newMonadUri(kind: EntityKind, parent?: MonadUri): MonadUri {
+export function newElanousUri(kind: EntityKind, parent?: ElanousUri): ElanousUri {
   if (!isEntityKind(kind)) throw new Error(`Unknown EntityKind: ${kind}`);
   const id = newUlid();
-  if (!parent) return (`${kind}/${id}`) as MonadUri;
-  return joinMonadUri(parent, kind, id);
+  if (!parent) return (`${kind}/${id}`) as ElanousUri;
+  return joinElanousUri(parent, kind, id);
 }
 
 /** Append a child segment to a parent URI, generating a fresh ULID when
  *  `id` is omitted. Preserves the parent's tier (Tier 2 parent → Tier 2
  *  child; Tier 3 parent → Tier 3 child). Tier 1 cannot be joined onto —
  *  callers must upgrade to Tier 2 first via a registry lookup (future M1.5). */
-export function joinMonadUri(parent: MonadUri, kind: EntityKind, id?: string): MonadUri {
+export function joinElanousUri(parent: ElanousUri, kind: EntityKind, id?: string): ElanousUri {
   if (!isEntityKind(kind)) throw new Error(`Unknown EntityKind: ${kind}`);
-  const parsed = parseMonadUri(parent);
+  const parsed = parseElanousUri(parent);
   if (!parsed) throw new Error(`Cannot join onto invalid URI: ${parent}`);
   if (parsed.tier === 1) {
     throw new Error(`Cannot join onto Tier 1 short form: ${parent}`);
   }
   const childId = id ?? newUlid();
   if (parsed.tier === 2) {
-    return (`${parent}/${kind}/${childId}`) as MonadUri;
+    return (`${parent}/${kind}/${childId}`) as ElanousUri;
   }
   // Tier 3 — strip any fragment/query, append, restore
   const qIdx = (parent as string).indexOf('?');
@@ -193,14 +193,14 @@ export function joinMonadUri(parent: MonadUri, kind: EntityKind, id?: string): M
   const cut = [qIdx, hIdx].filter(i => i >= 0).sort((a, b) => a - b)[0] ?? -1;
   const base = cut >= 0 ? (parent as string).slice(0, cut) : (parent as string);
   const tail = cut >= 0 ? (parent as string).slice(cut) : '';
-  return (`${base}/${kind}/${childId}${tail}`) as MonadUri;
+  return (`${base}/${kind}/${childId}${tail}`) as ElanousUri;
 }
 
 /** Collapse a Tier 2/3 URI to its Tier 1 short form — `<kind>_<suffix>`.
  *  Reflects the *last* segment only (the leaf entity) since that's what
  *  a human displays. Pass `shortLen` to control suffix length (4–12). */
-export function toTier1(uri: MonadUri, shortLen: number = DEFAULT_SHORT_LEN): string {
-  const parsed = parseMonadUri(uri);
+export function toTier1(uri: ElanousUri, shortLen: number = DEFAULT_SHORT_LEN): string {
+  const parsed = parseElanousUri(uri);
   if (!parsed || parsed.segments.length === 0) {
     throw new Error(`Cannot collapse invalid URI: ${uri}`);
   }
@@ -211,10 +211,10 @@ export function toTier1(uri: MonadUri, shortLen: number = DEFAULT_SHORT_LEN): st
   return `${token}_${suffix.toUpperCase()}`;
 }
 
-/** Render any URI as its Tier 2 (local) form. Strips host/monad-id when
+/** Render any URI as its Tier 2 (local) form. Strips host/elanous-id when
  *  present; no-op for inputs already in Tier 2. */
-export function toTier2(uri: MonadUri): string {
-  const parsed = parseMonadUri(uri);
+export function toTier2(uri: ElanousUri): string {
+  const parsed = parseElanousUri(uri);
   if (!parsed) throw new Error(`Cannot render invalid URI: ${uri}`);
   if (parsed.tier === 1) {
     throw new Error(`Tier 1 → Tier 2 requires a registry lookup: ${uri}`);
@@ -223,26 +223,26 @@ export function toTier2(uri: MonadUri): string {
 }
 
 /** Render any URI as its Tier 3 (distributed) form. Supplies the caller-
- *  provided host + monadId when the input is Tier 2 (which has no host). */
-export function toTier3(uri: MonadUri, host: string, monadId: string): string {
-  if (!isUlid(monadId)) throw new Error(`monadId must be a ULID: ${monadId}`);
-  const parsed = parseMonadUri(uri);
+ *  provided host + elanousId when the input is Tier 2 (which has no host). */
+export function toTier3(uri: ElanousUri, host: string, elanousId: string): string {
+  if (!isUlid(elanousId)) throw new Error(`elanousId must be a ULID: ${elanousId}`);
+  const parsed = parseElanousUri(uri);
   if (!parsed) throw new Error(`Cannot render invalid URI: ${uri}`);
   if (parsed.tier === 1) {
     throw new Error(`Tier 1 → Tier 3 requires a registry lookup: ${uri}`);
   }
   const path = renderSegments(parsed.segments);
   const h = parsed.host ?? host;
-  const m = parsed.monadId ?? monadId;
+  const m = parsed.elanousId ?? elanousId;
   const tail = renderQueryFragment(parsed);
-  return `monad://${h}/${m}/${path}${tail}`;
+  return `elanous://${h}/${m}/${path}${tail}`;
 }
 
 function renderSegments(segs: ParsedUriSegment[]): string {
   return segs.map(s => `${s.kind}/${s.id}`).join('/');
 }
 
-function renderQueryFragment(p: ParsedMonadUri): string {
+function renderQueryFragment(p: ParsedElanousUri): string {
   const q = p.query ? `?${Object.entries(p.query).map(([k, v]) => v === '' ? encodeURIComponent(k) : `${encodeURIComponent(k)}=${encodeURIComponent(v)}`).join('&')}` : '';
   const f = p.fragment ? `#${p.fragment}` : '';
   return `${q}${f}`;

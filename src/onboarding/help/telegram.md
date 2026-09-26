@@ -1,6 +1,6 @@
 Telegram bot — Step 4 / 5
 
-Chat with monad from your phone. Three things needed:
+Chat with elanous from your phone. Three things needed:
 
   1) Bot token — DM @BotFather → /newbot → copy the
                   `12345:ABCdef...` token.
@@ -13,9 +13,9 @@ Chat with monad from your phone. Three things needed:
   3) Optional: open the bot's privacy mode in @BotFather →
      /setprivacy → Disable so the bot can read group messages.
 
-After setup, run `monad telegram` to start the bot in a panel.
+After setup, run `elanous telegram` to start the bot in a panel.
 The wizard validates the token by calling /getMe — typos catch
 immediately.
 
 Skipping is fine — you can revisit any time:
-    monad setup telegram
+    elanous setup telegram

@@ -2,7 +2,7 @@
 //
 // S3a(session-store-events)는 데몬 in-process onSessionCreated/onMessageAppended
 // 만 SSE 로 브릿지한다 → 텔레그램 등 데몬 안에서 도는 세션만 즉시 갱신되고, 별
-// 프로세스(CLI `monad`·agent-cli)가 디스크에 쓴 세션은 놓쳐 PWA 가 10s 폴링 폴백에
+// 프로세스(CLI `elanous`·agent-cli)가 디스크에 쓴 세션은 놓쳐 PWA 가 10s 폴링 폴백에
 // 의존했다. 이 워처는 sessionRoot() 를 fs.watch 로 감시해 그 갭을 메운다:
 //   - 새 {id}.jsonl 등장 → session.created(source=external)
 //   - 기존 {id}.jsonl 변경 → session.updated(세션별 스로틀 · in-process 와 동일)

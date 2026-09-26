@@ -7,7 +7,7 @@
 // 범위: **모든 autoDrive**(off/safe/on) 위임 — off/safe 의 HITL(confirm/question)은 자식↔부모 양방향
 //   IPC 로 릴레이한다(#24 완결·2026-07-21). 자식은 stdout `HITLREQ:` 로 승인/질문을 요청하고, 부모가
 //   진짜 surface 채널(telegram 등)로 물어 stdin `HITLRES:` 로 회신한다(detached-hitl.ts). 진행보고는
-//   stdout `PROGRESS:`(라이브 카드) + 공유 logs.db(`monad logs`) 둘 다.
+//   stdout `PROGRESS:`(라이브 카드) + 공유 logs.db(`elanous logs`) 둘 다.
 
 import { spawn } from 'node:child_process';
 import { resolveMainRepoRoot } from '../git-fs/worktree.js';
@@ -159,20 +159,20 @@ export function dispatchRunDevHarnessDetached(
   return new Promise((resolve) => {
     const binRoot = resolveMainRepoRoot(process.cwd()) ?? process.cwd();
     const payload = encodeDetachedPayload(rawArgs);
-    // ★ 자기인지 공간 마커(2026-07-21) — 자식(격리 하니스 공간)이 "나는 <kind> 격리 공간의 monad"임을
+    // ★ 자기인지 공간 마커(2026-07-21) — 자식(격리 하니스 공간)이 "나는 <kind> 격리 공간의 elanous"임을
     //   self-recognize 하게 SPACE/SPACE_ID 를 심는다(자식이 다시 스폰하는 goal-loop 도 env 상속). kind 는
-    //   위임 종류(dev-harness|solve-mission), id 는 objective slug. MONAD_HARNESS_DETACHED(재귀 가드)와 직교.
+    //   위임 종류(dev-harness|solve-mission), id 는 objective slug. ELANOUS_HARNESS_DETACHED(재귀 가드)와 직교.
     const spaceKind = rawArgs._detachedKind === 'solve-mission' ? 'solve-mission' : 'dev-harness';
     const spaceId = String(rawArgs.objective ?? rawArgs.goal ?? rawArgs.feature ?? rawArgs.mission_id ?? '').slice(0, 48);
     // ★ K run-identity(2026-07-25·[[PLAN §K]]·MF1) — 부모가 구운 runId를 최우선으로, 없으면 상속·mint
     //   순으로 SSOT에서 해석한다. process.env를 바꾸지 않아 반복 dispatch의 identity bleed를 막고, 자식에는
     //   harnessSpaceEnv 명시 stamp로만 전파한다 → K3 pty_manifest join.
     const { runId, source: runIdSource } = resolveDetachedRunIdentity(rawArgs);
-    const child = spawn('bun', [`${binRoot}/bin/monad.mjs`, 'harness', 'run-detached', payload], {
+    const child = spawn('bun', [`${binRoot}/bin/elanous.mjs`, 'harness', 'run-detached', payload], {
       cwd: process.cwd(),
-      // ★ configDir/stateDir 격리 상속 + MONAD_HARNESS_DETACHED=1(재귀 위임 가드 — subprocess 안에선
+      // ★ configDir/stateDir 격리 상속 + ELANOUS_HARNESS_DETACHED=1(재귀 위임 가드 — subprocess 안에선
       //   dispatchRunDevHarness 가 다시 detached 로 안 빠지고 인프로세스 실행) + 공간 자기인지 마커.
-      env: { ...process.env, MONAD_HARNESS_DETACHED: '1', ...harnessSpaceEnv(spaceKind, spaceId, runId) },
+      env: { ...process.env, ELANOUS_HARNESS_DETACHED: '1', ...harnessSpaceEnv(spaceKind, spaceId, runId) },
       // stdin 'pipe' — 부모→자식 HITLRES 회신 경로(#24 완결). 없으면 off/safe HITL 이 안 돌아온다.
       stdio: ['pipe', 'pipe', 'pipe'],
     });

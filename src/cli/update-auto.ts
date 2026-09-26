@@ -1,7 +1,7 @@
-// `monad update --auto on|off|status` — 설치본의 자동 갱신(09-26 요청 · 로드맵 09-26 #1).
+// `elanous update --auto on|off|status` — 설치본의 자동 갱신(09-26 요청 · 로드맵 09-26 #1).
 //
-// macOS  → ~/Library/LaunchAgents/com.monad.update.plist  (StartCalendarInterval 매일 04:17)
-// Linux  → ~/.config/systemd/user/monad-update.{service,timer}  (OnCalendar 매일 04:17 · Persistent · 30분 무작위 지연)
+// macOS  → ~/Library/LaunchAgents/com.elanous.update.plist  (StartCalendarInterval 매일 04:17)
+// Linux  → ~/.config/systemd/user/elanous-update.{service,timer}  (OnCalendar 매일 04:17 · Persistent · 30분 무작위 지연)
 // 둘 다 `self-update --restart --alert` 를 부른다 — 넥서스 서비스와 같은 방식으로 bun 실행 파일 ⊕ `current` 고정 경로를
 // 박는다(`nexusRunCommand`) · 판이 바뀌어도 깨지지 않는다.
 //
@@ -15,10 +15,10 @@ import { spawnSync } from 'node:child_process';
 import { nexusRunCommand } from '../nexus/install/launchd.js';
 import { runCli as defaultRunCli, type RunCli } from '../nexus/config/secrets/cli-helper.js';
 import { debug } from '../debug/log.js';
-import { monadStateRoot } from '../autopilot/state-paths.js';
+import { elanousStateRoot } from '../autopilot/state-paths.js';
 
-export const UPDATE_LAUNCHD_LABEL = 'com.monad.update';
-export const UPDATE_SYSTEMD_UNIT = 'monad-update';
+export const UPDATE_LAUNCHD_LABEL = 'com.elanous.update';
+export const UPDATE_SYSTEMD_UNIT = 'elanous-update';
 export const UPDATE_HOUR = 4;
 export const UPDATE_MINUTE = 17;
 
@@ -28,7 +28,7 @@ export interface AutoUpdateDeps {
   platform?: NodeJS.Platform;
   home?: string;
   uid?: number;
-  /** 서비스가 부를 명령 — 기본 = bun ⊕ 이 monad 의 고정 경로 ⊕ `self-update --restart --alert`. */
+  /** 서비스가 부를 명령 — 기본 = bun ⊕ 이 elanous 의 고정 경로 ⊕ `self-update --restart --alert`. */
   command?: string[];
   exists?: (path: string) => boolean;
   write?: (path: string, body: string) => void;
@@ -47,7 +47,7 @@ export interface AutoUpdateResult {
 
 export function updateCommand(): string[] {
   const run = nexusRunCommand();
-  // nexusRunCommand = [bun, <monad.mjs>, 'nexus', 'run'] — 앞 둘만 쓴다(폴백 ['monad','nexus','run'] 도 같은 자리).
+  // nexusRunCommand = [bun, <elanous.mjs>, 'nexus', 'run'] — 앞 둘만 쓴다(폴백 ['elanous','nexus','run'] 도 같은 자리).
   return [...run.slice(0, run.length - 2), 'self-update', '--restart', '--alert'];
 }
 
@@ -91,7 +91,7 @@ function unitQuote(arg: string): string {
 export function renderUpdateUnits(command: string[], home: string): { service: string; timer: string } {
   return {
     service: `[Unit]
-Description=monad self-update (auto)
+Description=elanous self-update (auto)
 
 [Service]
 Type=oneshot
@@ -99,7 +99,7 @@ WorkingDirectory=${home}
 ExecStart=${command.map(unitQuote).join(' ')}
 `,
     timer: `[Unit]
-Description=monad self-update (daily)
+Description=elanous self-update (daily)
 
 [Timer]
 OnCalendar=*-*-* ${String(UPDATE_HOUR).padStart(2, '0')}:${String(UPDATE_MINUTE).padStart(2, '0')}:00
@@ -143,12 +143,12 @@ export async function runAutoUpdate(action: AutoAction, deps: AutoUpdateDeps = {
   debug.log('self-update.auto', action, { platform, own: own.length, cron: cronLines.length });
 
   if (platform !== 'darwin' && platform !== 'linux') {
-    log(`⛔ monad update --auto: ${platform} 은 아직 지원하지 않는다(macOS launchd · Linux systemd 만).`);
+    log(`⛔ elanous update --auto: ${platform} 은 아직 지원하지 않는다(macOS launchd · Linux systemd 만).`);
     return { exitCode: 2, schedulers };
   }
 
   if (action === 'status') {
-    if (schedulers.length === 0) log('자동 갱신: 꺼짐 — 켜려면 monad update --auto on');
+    if (schedulers.length === 0) log('자동 갱신: 꺼짐 — 켜려면 elanous update --auto on');
     else for (const s of schedulers) log(`자동 갱신: ${s}`);
     return { exitCode: 0, schedulers };
   }
@@ -160,7 +160,7 @@ export async function runAutoUpdate(action: AutoAction, deps: AutoUpdateDeps = {
     }
     const command = deps.command ?? updateCommand();
     if (platform === 'darwin') {
-      const logPath = join(monadStateRoot(), 'logs', 'self-update-auto.log');   // 우주 해석기로(격리 게이트)
+      const logPath = join(elanousStateRoot(), 'logs', 'self-update-auto.log');   // 우주 해석기로(격리 게이트)
       write(plist, renderUpdatePlist(command, home, logPath));
       await run(['launchctl', 'bootout', `gui/${uid}/${UPDATE_LAUNCHD_LABEL}`]);   // 이전 판이 올라가 있으면 내린다(없으면 실패해도 괜찮다)
       const boot = await run(['launchctl', 'bootstrap', `gui/${uid}`, plist]);

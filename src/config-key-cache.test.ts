@@ -14,7 +14,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { keyFromCacheOrEnv, refreshKeyFromCache } from './config.js';
 
-const KEY = 'MONAD_TEST_FAKE_API_KEY';
+const KEY = 'ELANOUS_TEST_FAKE_API_KEY';
 let home = '';
 let prevHome: string | undefined;
 let prevKeep: string | undefined;
@@ -25,16 +25,16 @@ function writeCache(value: string): void {
 }
 
 beforeEach(() => {
-  home = mkdtempSync(join(tmpdir(), 'monad-key-'));
-  prevHome = process.env.MONAD_KEY_CACHE_DIR;
-  prevKeep = process.env.MONAD_KEEP_ENV_KEYS;
+  home = mkdtempSync(join(tmpdir(), 'elanous-key-'));
+  prevHome = process.env.ELANOUS_KEY_CACHE_DIR;
+  prevKeep = process.env.ELANOUS_KEEP_ENV_KEYS;
   // ⛔ `HOME` 이 아니라 이 seam 을 쓴다 — `os.homedir()` 는 바뀐 `HOME` 을 안 따라온다(실측).
-  process.env.MONAD_KEY_CACHE_DIR = join(home, '.cache');
-  delete process.env.MONAD_KEEP_ENV_KEYS;
+  process.env.ELANOUS_KEY_CACHE_DIR = join(home, '.cache');
+  delete process.env.ELANOUS_KEEP_ENV_KEYS;
 });
 afterEach(() => {
-  if (prevHome === undefined) delete process.env.MONAD_KEY_CACHE_DIR; else process.env.MONAD_KEY_CACHE_DIR = prevHome;
-  if (prevKeep === undefined) delete process.env.MONAD_KEEP_ENV_KEYS; else process.env.MONAD_KEEP_ENV_KEYS = prevKeep;
+  if (prevHome === undefined) delete process.env.ELANOUS_KEY_CACHE_DIR; else process.env.ELANOUS_KEY_CACHE_DIR = prevHome;
+  if (prevKeep === undefined) delete process.env.ELANOUS_KEEP_ENV_KEYS; else process.env.ELANOUS_KEEP_ENV_KEYS = prevKeep;
   delete process.env[KEY];
   rmSync(home, { recursive: true, force: true });
 });
@@ -60,10 +60,10 @@ describe('키 해석 — 파일이 SSOT, env 는 캐시', () => {
     expect(keyFromCacheOrEnv(KEY)).toBe('from-env');
   });
 
-  test('MONAD_KEEP_ENV_KEYS=1 이면 캐시를 무시한다(임시 키 탈출구)', () => {
+  test('ELANOUS_KEEP_ENV_KEYS=1 이면 캐시를 무시한다(임시 키 탈출구)', () => {
     process.env[KEY] = 'deliberate-override';
     writeCache('fresh-from-cache');
-    process.env.MONAD_KEEP_ENV_KEYS = '1';
+    process.env.ELANOUS_KEEP_ENV_KEYS = '1';
     expect(refreshKeyFromCache(KEY)).toBe(false);
     expect(keyFromCacheOrEnv(KEY)).toBe('deliberate-override');
   });
@@ -75,9 +75,9 @@ describe('키 해석 — 파일이 SSOT, env 는 캐시', () => {
   });
 
   test('env 별칭 폴백은 캐시가 없을 때만 쓰인다', () => {
-    process.env['MONAD_TEST_ALIAS_KEY'] = 'alias-value';
+    process.env['ELANOUS_TEST_ALIAS_KEY'] = 'alias-value';
     refreshKeyFromCache(KEY);
-    expect(keyFromCacheOrEnv(KEY, 'MONAD_TEST_ALIAS_KEY')).toBe('alias-value');
-    delete process.env['MONAD_TEST_ALIAS_KEY'];
+    expect(keyFromCacheOrEnv(KEY, 'ELANOUS_TEST_ALIAS_KEY')).toBe('alias-value');
+    delete process.env['ELANOUS_TEST_ALIAS_KEY'];
   });
 });

@@ -53,7 +53,7 @@ export async function runHarnessPlanRfc(
   options: HarnessPlanRfcOptions = {},
   deps: HarnessPlanRfcDeps = {},
 ): Promise<HarnessPlanRfcResult> {
-  if (deps.env?.MONAD_HARNESS_SPACE_ID?.trim() || (!deps.env && process.env.MONAD_HARNESS_SPACE_ID?.trim())) {
+  if (deps.env?.ELANOUS_HARNESS_SPACE_ID?.trim() || (!deps.env && process.env.ELANOUS_HARNESS_SPACE_ID?.trim())) {
     throw new Error('하니스 자식은 plan RFC를 저작할 수 없습니다; 사람 셸에서 harness plan을 실행하세요.');
   }
   const now = deps.now?.() ?? new Date();

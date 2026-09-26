@@ -124,7 +124,7 @@ export function LlmModelTierCard(): React.ReactNode {
       <header className="mb-2">
         <h3 className="text-sm font-semibold">🧠 AI assistant quality</h3>
         <p className="text-xs text-muted-foreground">
-          Pick how careful vs. fast the model should think. monad chooses the
+          Pick how careful vs. fast the model should think. elanous chooses the
           right model on your active provider · the slider stays the same
           across providers.
         </p>

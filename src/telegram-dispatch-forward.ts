@@ -1,13 +1,13 @@
 // 넥서스 밖 텔레그램 폴러 → core 워크플로 트리거 전달.
 //
-// `monad telegram run` 은 core 와 다른 프로세스라 `workflowDaemon.dispatchTelegram` 을 직접 못 부른다.
+// `elanous telegram run` 은 core 와 다른 프로세스라 `workflowDaemon.dispatchTelegram` 을 직접 못 부른다.
 // core 의 `POST /v1/workflows/telegram-dispatch`(bearer)로 넘긴다. core 가 재시작 중이면(연결 실패·503)
 // 짧게 재시도하고, 그래도 안 되면 버리고 관측을 남긴다 — 큐는 아직 없다(관측으로 빈도를 먼저 잰다).
 
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { debug } from './debug/log.js';
-import { getMonadConfigDir } from './monad-config-dir.js';
+import { getElanousConfigDir } from './elanous-config-dir.js';
 import { readNexusRuntime } from './nexus/runtime.js';
 import type { TelegramEvent } from './workflow-runtime/triggers/telegram-source.js';
 
@@ -43,7 +43,7 @@ export function defaultBaseUrl(deps: { runtime?: () => ReturnType<typeof readNex
 }
 
 function defaultToken(): string | null {
-  const p = join(getMonadConfigDir(), 'acp-token');
+  const p = join(getElanousConfigDir(), 'acp-token');
   try { return existsSync(p) ? readFileSync(p, 'utf-8').trim() || null : null; } catch { return null; }
 }
 

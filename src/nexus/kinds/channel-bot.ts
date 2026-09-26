@@ -1,9 +1,9 @@
 // NEXUS · channel-bot kind (Phase N-2 PR θ)
 //
 // Wraps the telegram / discord ACP-attach bots as supervisor-managed tabs.
-// The bot connects to the daemon (`monad serve`) over the unix socket
+// The bot connects to the daemon (`elanous serve`) over the unix socket
 // using `--gateway-mode` (i.e., the existing `--via-daemon` pattern):
-//   spawn:    [<monad>, 'telegram'|'discord', '--gateway-mode']
+//   spawn:    [<elanous>, 'telegram'|'discord', '--gateway-mode']
 //   health:   ipc-ping every 30s (PR ε's default backend currently maps
 //             this to process-alive; full IPC roundtrip is a follow-up
 //             once Bun.spawn IPC is wired into the bot binary)
@@ -13,8 +13,8 @@
 //   grace:    3000ms
 //
 // Token sourcing per OQ2 (N-3 SwitchRegistry 까지 임시):
-//   telegram → MONAD_TELEGRAM_BOT_TOKEN
-//   discord  → MONAD_DISCORD_BOT_TOKEN
+//   telegram → ELANOUS_TELEGRAM_BOT_TOKEN
+//   discord  → ELANOUS_DISCORD_BOT_TOKEN
 // If the env var is missing, the spec is still created but `meta.disabled`
 // is set so the supervisor + sidebar can show the user a clear hint
 // instead of looping on auth failures.
@@ -23,7 +23,7 @@
 // is alive but pid != tab.pid → status='external'.
 
 import type { TabKind, TabSpec } from './types.js';
-import { getMonadConfigDir } from '../../monad-config-dir.js';
+import { getElanousConfigDir } from '../../elanous-config-dir.js';
 import { defaultLockPath as defaultTelegramLockPath } from '../../telegram-lock.js';
 import { defaultDiscordLockPath } from '../../discord-lock.js';
 import {
@@ -51,7 +51,7 @@ export interface ChannelBotTabOpts {
   /** Default = `<platform>:1` (e.g., `telegram:1`). */
   id?: string;
   label?: string;
-  /** Argv override · default = `[<monad>, <platform>, '--gateway-mode']`. */
+  /** Argv override · default = `[<elanous>, <platform>, '--gateway-mode']`. */
   command?: string[];
   cwd?: string;
   /** Extra env merged over process.env at spawn time. The platform's
@@ -66,18 +66,18 @@ export interface ChannelBotTabOpts {
 }
 
 const TOKEN_ENV: Record<ChannelBotPlatform, string> = {
-  telegram: 'MONAD_TELEGRAM_BOT_TOKEN',
-  discord: 'MONAD_DISCORD_BOT_TOKEN',
+  telegram: 'ELANOUS_TELEGRAM_BOT_TOKEN',
+  discord: 'ELANOUS_DISCORD_BOT_TOKEN',
 };
 
-function defaultMonadCommand(): string {
+function defaultElanousCommand(): string {
   const bin = process.argv[1];
-  return bin && bin.length > 0 ? bin : 'monad';
+  return bin && bin.length > 0 ? bin : 'elanous';
 }
 
 function defaultLockPathFor(platform: ChannelBotPlatform): string {
-  // 로컬 config-dir 스코프 lock 경로 — getMonadConfigDir() 치환 prod 동치(~/.monad) + --config-dir 정합.
-  const configDir = getMonadConfigDir();
+  // 로컬 config-dir 스코프 lock 경로 — getElanousConfigDir() 치환 prod 동치(~/.elanous) + --config-dir 정합.
+  const configDir = getElanousConfigDir();
   return platform === 'telegram'
     ? defaultTelegramLockPath(configDir)
     : defaultDiscordLockPath(configDir);
@@ -100,7 +100,7 @@ export function createChannelBotTabSpec(opts: ChannelBotTabOpts): TabSpec {
   const tokenEnvName = opts.tokenEnvName ?? TOKEN_ENV[platform];
   const tokenValue = process.env[tokenEnvName];
   const disabled = !tokenValue || tokenValue.trim().length === 0;
-  const command = opts.command ?? [defaultMonadCommand(), platform, '--gateway-mode'];
+  const command = opts.command ?? [defaultElanousCommand(), platform, '--gateway-mode'];
   const lockPath = opts.lockPath ?? defaultLockPathFor(platform);
 
   const meta: ChannelBotMeta = {
@@ -112,7 +112,7 @@ export function createChannelBotTabSpec(opts: ChannelBotTabOpts): TabSpec {
   };
 
   // When token is missing we still register the spec so the sidebar
-  // shows the user a clear "set MONAD_TELEGRAM_BOT_TOKEN" hint instead
+  // shows the user a clear "set ELANOUS_TELEGRAM_BOT_TOKEN" hint instead
   // of silently dropping the tab. Spawn fields stay populated so a
   // later config flip + restart can re-enable the kind without re-register.
   return {
@@ -190,7 +190,7 @@ export function buildChannelBotSetupHint(
     platform,
     tokenEnvName,
     pwaPath: `PWA Settings → Secret modal → ${tokenEnvName}`,
-    wizardCmd: `monad setup ${platform}`,
+    wizardCmd: `elanous setup ${platform}`,
     envSnippet: `export ${tokenEnvName}=…`,
     tokenSource: TOKEN_HINT_URL[platform],
     wizardOnlyNote:

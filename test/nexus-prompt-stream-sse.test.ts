@@ -46,16 +46,16 @@ let tmpRoot: string;
 let prevEnv: string | undefined;
 
 beforeEach(() => {
-  tmpRoot = mkdtempSync(join(tmpdir(), 'monad-nexus-prompt-stream-'));
-  prevEnv = process.env.MONAD_NEXUS_DIR;
-  process.env.MONAD_NEXUS_DIR = tmpRoot;
+  tmpRoot = mkdtempSync(join(tmpdir(), 'elanous-nexus-prompt-stream-'));
+  prevEnv = process.env.ELANOUS_NEXUS_DIR;
+  process.env.ELANOUS_NEXUS_DIR = tmpRoot;
   spyOn(userConfigModule, 'getUserConfig').mockReturnValue({ finance: { enabled: false } } as userConfigModule.UserConfig);
 });
 
 afterEach(() => {
   mock.restore();
-  if (prevEnv === undefined) delete process.env.MONAD_NEXUS_DIR;
-  else process.env.MONAD_NEXUS_DIR = prevEnv;
+  if (prevEnv === undefined) delete process.env.ELANOUS_NEXUS_DIR;
+  else process.env.ELANOUS_NEXUS_DIR = prevEnv;
   try { rmSync(tmpRoot, { recursive: true, force: true }); } catch { /* ignore */ }
 });
 
@@ -857,7 +857,7 @@ describe('POST /v1/prompt/stream — SSE routing + wire contract', () => {
           'Read', 'Grep', 'WebSearch', 'Plan', 'MarkStepDone', 'Edit', 'Write', 'Bash',
           'delegate_code_agent', 'schedule_manage', 'session_manage', 'memory_recall',
           'fact_check', 'self_recall', 'autopilot_missions', 'ops_status', 'se_build',
-          'logs_query', 'mission_decide', 'monad_skills_list', 'skill_exec',
+          'logs_query', 'mission_decide', 'elanous_skills_list', 'skill_exec',
         ]]);
       } finally { srv.stop(); }
     });

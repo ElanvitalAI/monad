@@ -3,7 +3,7 @@
 //
 // 급부상 top-1 종목을 runTurn 에이전트로 순간 디깅(파생·수급·뉴스·lead/lag 교차) → verdict.
 // 레버리지 runTurn+Contract 계승·읽기전용(매매 격리). codex 구독(토큰0). 비용 바운드(1건/run).
-// 등록: monad schedule create --cron '5,35 9-15 * * 1-5' --command 'scripts/buzz-dig-agent.ts'
+// 등록: elanous schedule create --cron '5,35 9-15 * * 1-5' --command 'scripts/buzz-dig-agent.ts'
 
 import { ensureCronNodePath } from '../src/domains/cron-path.js';
 ensureCronNodePath();
@@ -21,7 +21,7 @@ import { appendFileSync, existsSync, mkdirSync } from 'node:fs';
 import { homedir } from 'node:os';
 import { dirname, join } from 'node:path';
 
-const LOG = join(homedir(), '.monad/conatus/buzz_dig.log');
+const LOG = join(homedir(), '.elanous/conatus/buzz_dig.log');
 function log(s: string): void {
   console.log(s);
   try { if (!existsSync(dirname(LOG))) mkdirSync(dirname(LOG), { recursive: true }); appendFileSync(LOG, `${new Date().toISOString()} ${s}\n`); } catch { /* */ }

@@ -13,8 +13,8 @@ param(
 # becomes a cp1252 closing quote (0x94) on an English Windows and the parser fails (bare Server 2025, 2026-09-25).
 #   $Prefix\versions\<version>[-<commit12>]\  one folder per build (own node_modules) - older builds stay (rollback)
 #   $Prefix\current  -> versions\<...>         directory junction; switching builds = re-pointing one junction
-#   $Prefix\bin\monad.cmd -> current\...        the fixed path that goes on PATH
-# The default prefix is NOT the state folder (~\.monad) - installed files and state (auth, logs, worktrees) stay apart.
+#   $Prefix\bin\elanous.cmd -> current\...        the fixed path that goes on PATH
+# The default prefix is NOT the state folder (~\.elanous) - installed files and state (auth, logs, worktrees) stay apart.
 
 $ErrorActionPreference = 'Stop'
 
@@ -23,12 +23,12 @@ function Show-Usage {
 Usage: powershell -File scripts/install.ps1 [-Prefix PATH] [-Source PATH.tgz|URL] [-NoModifyPath] [-Help]
        powershell -File scripts/install.ps1 [--prefix PATH] [--source PATH.tgz|URL] [--no-modify-path] [--help]
 
-Install monadagent into a versioned layout.
-  Prefix / --prefix               installation root (default: $MONAD_INSTALL_PREFIX or %LOCALAPPDATA%\monad)
-                                  layout: versions\<version>[-<commit12>]\ / current -> versions\... / bin\monad.cmd
-  Source / --source               install a package tarball (local path or http(s) URL; default: $MONAD_INSTALL_SOURCE,
+Install elanous into a versioned layout.
+  Prefix / --prefix               installation root (default: $ELANOUS_INSTALL_PREFIX or %LOCALAPPDATA%\elanous)
+                                  layout: versions\<version>[-<commit12>]\ / current -> versions\... / bin\elanous.cmd
+  Source / --source               install a package tarball (local path or http(s) URL; default: $ELANOUS_INSTALL_SOURCE,
                                   else pack the checkout or fetch the verified release when standalone)
-  NoModifyPath / --no-modify-path do not append the monad PATH block to the PowerShell profile
+  NoModifyPath / --no-modify-path do not append the elanous PATH block to the PowerShell profile
   Help / --help                   show this help
 '@ | Write-Output
 }
@@ -94,9 +94,9 @@ for ($index = 0; $index -lt $RemainingArgs.Count; $index++) {
 if ($Help) { Show-Usage; exit 0 }
 if (-not $Prefix) {
   $dataHome = if ($env:LOCALAPPDATA) { $env:LOCALAPPDATA } else { Join-Path $HOME 'AppData\Local' }
-  $Prefix = if ($env:MONAD_INSTALL_PREFIX) { $env:MONAD_INSTALL_PREFIX } else { Join-Path $dataHome 'monad' }
+  $Prefix = if ($env:ELANOUS_INSTALL_PREFIX) { $env:ELANOUS_INSTALL_PREFIX } else { Join-Path $dataHome 'elanous' }
 }
-if (-not $Source -and $env:MONAD_INSTALL_SOURCE) { $Source = $env:MONAD_INSTALL_SOURCE }
+if (-not $Source -and $env:ELANOUS_INSTALL_SOURCE) { $Source = $env:ELANOUS_INSTALL_SOURCE }
 
 $scriptDir = if ($PSCommandPath) { Split-Path -Parent $PSCommandPath } else { $null }
 $repoRoot = if ($scriptDir) { [IO.Path]::GetFullPath((Join-Path $scriptDir '..')) } else { $null }
@@ -109,23 +109,23 @@ $bunPath = (Get-Command bun).Source
 # A standalone installer fetches a verified release; explicit sources and checkouts keep their existing paths.
 $isCheckout = $false
 if ($repoRoot -and (Test-Path -LiteralPath (Join-Path $repoRoot 'package.json'))) {
-  $isCheckout = (Read-Text (Join-Path $repoRoot 'package.json')) -match '"name":\s*"monadagent"'
+  $isCheckout = (Read-Text (Join-Path $repoRoot 'package.json')) -match '"name":\s*"elanous"'
 }
 $releaseDirectory = $null
 if (-not $Source -and -not $isCheckout) {
-  $releaseBase = if ($env:MONAD_RELEASE_BASE) { $env:MONAD_RELEASE_BASE } else { 'https://github.com/ElanvitalAI/monad/releases' }
-  $releaseDirectory = $releaseBase.TrimEnd('/') + $(if ($env:MONAD_VERSION) { '/download/v' + $env:MONAD_VERSION + '/' } else { '/latest/download/' })
+  $releaseBase = if ($env:ELANOUS_RELEASE_BASE) { $env:ELANOUS_RELEASE_BASE } else { 'https://github.com/ElanvitalAI/elanous/releases' }
+  $releaseDirectory = $releaseBase.TrimEnd('/') + $(if ($env:ELANOUS_VERSION) { '/download/v' + $env:ELANOUS_VERSION + '/' } else { '/latest/download/' })
 }
 
 $profilePath = $null
-$markerStart = '# >>> monad installer PATH >>>'
-$markerEnd = '# <<< monad installer PATH <<<'
+$markerStart = '# >>> elanous installer PATH >>>'
+$markerEnd = '# <<< elanous installer PATH <<<'
 New-Item -ItemType Directory -Force -Path $Prefix | Out-Null
 $Prefix = (Resolve-Path -LiteralPath $Prefix).Path
 $pathLiteral = (Join-Path $Prefix 'bin').Replace("'", "''")
 $pathLine = '$env:PATH = ''' + $pathLiteral + ''' + [IO.Path]::PathSeparator + $env:PATH'
 if (-not $NoModifyPath) {
-  $profilePath = if ($env:MONAD_POWERSHELL_PROFILE) { $env:MONAD_POWERSHELL_PROFILE } else { $PROFILE }
+  $profilePath = if ($env:ELANOUS_POWERSHELL_PROFILE) { $env:ELANOUS_POWERSHELL_PROFILE } else { $PROFILE }
   $profileDirectory = Split-Path -Parent $profilePath
   New-Item -ItemType Directory -Force -Path $profileDirectory | Out-Null
   if (-not (Test-Path -LiteralPath $profilePath)) { New-Item -ItemType File -Path $profilePath | Out-Null }
@@ -135,14 +135,14 @@ if (-not $NoModifyPath) {
   }
 }
 
-$tempDirectory = Join-Path ([IO.Path]::GetTempPath()) ("monad-install-" + [guid]::NewGuid().ToString('N'))
+$tempDirectory = Join-Path ([IO.Path]::GetTempPath()) ("elanous-install-" + [guid]::NewGuid().ToString('N'))
 $metadataCommit = $null
 $versionSuffix = ''
 try {
   New-Item -ItemType Directory -Force -Path $tempDirectory | Out-Null
   $installTarball = Join-Path $tempDirectory 'package.tgz'
   if ($releaseDirectory) {
-    $packageUrl = $releaseDirectory + 'monadagent.tgz'
+    $packageUrl = $releaseDirectory + 'elanous.tgz'
     $checksumUrl = $releaseDirectory + 'SHA256SUMS'
     $checksumFile = Join-Path $tempDirectory 'SHA256SUMS'
     try {
@@ -153,8 +153,8 @@ try {
       if ($checksumUrl -match '^file://') { Copy-Item -LiteralPath ([uri]$checksumUrl).LocalPath -Destination $checksumFile }
       else { Invoke-WebRequest -UseBasicParsing -Uri $checksumUrl -OutFile $checksumFile }
     } catch { Fail "download failed: $checksumUrl" 1 }
-    $checksumLine = [regex]::Match((Read-Text $checksumFile), '(?m)^([0-9a-fA-F]{64})[ \t]+monadagent\.tgz\s*$')
-    if (-not $checksumLine.Success) { Fail "checksum missing for monadagent.tgz: $checksumUrl" 1 }
+    $checksumLine = [regex]::Match((Read-Text $checksumFile), '(?m)^([0-9a-fA-F]{64})[ \t]+elanous\.tgz\s*$')
+    if (-not $checksumLine.Success) { Fail "checksum missing for elanous.tgz: $checksumUrl" 1 }
     $expected = $checksumLine.Groups[1].Value
     $actual = (Get-FileHash -LiteralPath $installTarball -Algorithm SHA256).Hash
     if ($expected -ine $actual) { Fail "checksum mismatch for $packageUrl`: expected $expected actual $actual" 1 }
@@ -168,7 +168,7 @@ try {
     $metadataSource = (Resolve-Path -LiteralPath $Source).Path
   } else {
     if (-not (Test-Path -LiteralPath (Join-Path $repoRoot 'apps\pwa\out\index.html'))) {
-      [Console]::Error.WriteLine('WARNING: PWA build not found (apps/pwa/out/index.html) - the installed copy will have no web UI. Build it first: bun bin/monad.mjs nexus build')
+      [Console]::Error.WriteLine('WARNING: PWA build not found (apps/pwa/out/index.html) - the installed copy will have no web UI. Build it first: bun bin/elanous.mjs nexus build')
     }
     Push-Location $repoRoot
     try {
@@ -213,17 +213,17 @@ try {
     }
   } finally { Pop-Location }
 
-  $installedEntrypoint = Join-Path $versionDirectory 'node_modules\monadagent\bin\monad.mjs'
-  if (-not (Test-Path -LiteralPath $installedEntrypoint -PathType Leaf)) { Fail "installed monad entrypoint missing: $installedEntrypoint" 1 }
+  $installedEntrypoint = Join-Path $versionDirectory 'node_modules\elanous\bin\elanous.mjs'
+  if (-not (Test-Path -LiteralPath $installedEntrypoint -PathType Leaf)) { Fail "installed elanous entrypoint missing: $installedEntrypoint" 1 }
   Set-Junction (Join-Path $Prefix 'current') $versionDirectory
 
   $binDirectory = Join-Path $Prefix 'bin'
   New-Item -ItemType Directory -Force -Path $binDirectory | Out-Null
-  $shimPath = Join-Path $binDirectory 'monad.cmd'
-  # The shim names bun by its absolute path so `monad` works in a shell whose PATH lacks ~\.bun\bin.
-  Set-Content -LiteralPath $shimPath -Value "@echo off`r`n`"$bunPath`" `"%~dp0..\current\node_modules\monadagent\bin\monad.mjs`" %*`r`n" -NoNewline -Encoding ascii
+  $shimPath = Join-Path $binDirectory 'elanous.cmd'
+  # The shim names bun by its absolute path so `elanous` works in a shell whose PATH lacks ~\.bun\bin.
+  Set-Content -LiteralPath $shimPath -Value "@echo off`r`n`"$bunPath`" `"%~dp0..\current\node_modules\elanous\bin\elanous.mjs`" %*`r`n" -NoNewline -Encoding ascii
 
-  $installedPackage = Join-Path $Prefix 'current\node_modules\monadagent\package.json'
+  $installedPackage = Join-Path $Prefix 'current\node_modules\elanous\package.json'
   if (-not (Test-Path -LiteralPath $installedPackage)) { Fail "package version missing: $installedPackage" 1 }
   $version = (Read-Text $installedPackage | ConvertFrom-Json).version
   if (-not $version) { Fail "package version missing: $installedPackage" 1 }
@@ -231,13 +231,13 @@ try {
   if ($metadataCommit) { $metadata.commit = $metadataCommit }
   $metadataJson = $metadata | ConvertTo-Json -Compress
   $metadataJson | Set-Content -LiteralPath (Join-Path $Prefix 'install.json') -NoNewline
-  # The build folder keeps its own copy - `monad --version` reads its own build's metadata after a rollback.
+  # The build folder keeps its own copy - `elanous --version` reads its own build's metadata after a rollback.
   $metadataJson | Set-Content -LiteralPath (Join-Path $versionDirectory 'install.json') -NoNewline
 
   if (-not $NoModifyPath -and -not (Read-Text $profilePath).Contains($markerStart)) {
     Add-Content -LiteralPath $profilePath -Value ("`r`n$markerStart`r`n$pathLine`r`n$markerEnd")
   }
-  Write-Output "Installed monad $version at $shimPath"
+  Write-Output "Installed elanous $version at $shimPath"
 } finally {
   Remove-Item -LiteralPath $tempDirectory -Recurse -Force -ErrorAction SilentlyContinue
 }

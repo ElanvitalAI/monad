@@ -4,7 +4,7 @@
 // xcodebuildmcp · …), performs the JSON-RPC `initialize` +
 // `tools/list` handshake, and registers every remote tool as a proxy
 // ToolRuntime under `<server-id>.<tool-name>`. Once registered the
-// tool flows through all five monad surfaces (TUI · PWA `/chat` ·
+// tool flows through all five elanous surfaces (TUI · PWA `/chat` ·
 // webterm `:agent` · NEXUS HTTP · MCP server relay) automatically —
 // see RFC §5.
 //
@@ -136,11 +136,11 @@ export async function registerMcpClients(
   // A boot owns its ledger: same configured ids in concurrent/restarted boots
   // cannot inherit grants or revoke one another's authorization lifetime.
   const authorizer = createMcpToolAuthorizer();
-  // FU3 (2026-05-13) — pipe McpClient lifecycle events into monad's
+  // FU3 (2026-05-13) — pipe McpClient lifecycle events into elanous's
   // keytrace logger so `mcp.client.spawn / .ready / .exit / .parse-error
   // / .stderr` all land in the daemon's debug log. Without this hook
   // the events landed on McpClient's default no-op logger, leaving zero
-  // breadcrumbs when a child (e.g. xcrun mcpbridge) deadlocked monad's
+  // breadcrumbs when a child (e.g. xcrun mcpbridge) deadlocked elanous's
   // boot. The trace category prefix `mcp.client.boot.*` keeps these
   // distinct from any per-call instrumentation a future PR adds.
   const bootLogger = (id: string) => (event: string, data?: Record<string, unknown>) => {
@@ -222,7 +222,7 @@ export async function registerMcpClients(
           //    초판은 `{"id":…, ..., "authorizedTools":[…]}` 를 줬는데 그 `...` 때문에
           //    «유효한 JSON 이 아니었다» — 말과 산출이 어긋났다(리뷰가 잡음).
           //    ⇒ 서버 항목 «전체»를 흉내 내지 말고 ***더할 필드 한 줄***만 준다.
-          `Add this field to the ${JSON.stringify(spec.id)} entry of mcp.servers in your monad config: ` +
+          `Add this field to the ${JSON.stringify(spec.id)} entry of mcp.servers in your elanous config: ` +
           `"authorizedTools": [${tools.slice(0, 3).map((t) => JSON.stringify(t.name)).join(', ')}]`,
         );
       } else if (grantedCount < tools.length) {
@@ -261,7 +261,7 @@ export async function registerMcpClients(
       logger.warn(`[nexus] mcp-client failed to start: ${spec.id} (${msg})`);
       if (msg.includes('-timeout after ')) {
         logger.warn(
-          `[nexus] mcp-client ${spec.id} was excluded after its ${serverHandshakeTimeoutMs}ms handshake timeout; raise mcp.handshakeTimeoutMs or mcp.servers[].handshakeTimeoutMs, then run monad mcp reload.`,
+          `[nexus] mcp-client ${spec.id} was excluded after its ${serverHandshakeTimeoutMs}ms handshake timeout; raise mcp.handshakeTimeoutMs or mcp.servers[].handshakeTimeoutMs, then run elanous mcp reload.`,
         );
       }
       // Dispose any partially-spawned child so a hanging stdin pipe

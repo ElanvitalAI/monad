@@ -31,7 +31,7 @@ function recordDebugEvents(): { events: DebugEvent[]; restore: () => void } {
 afterEach(() => { spyOn(debug, 'log').mockRestore(); });
 
 /** In-memory CasThreadIndex stub · prevents tests from touching the
- *  real `~/.config/monad/codex-app-server-threads.json` file. */
+ *  real `~/.config/elanous/codex-app-server-threads.json` file. */
 function makeMemThreadIndex(): CasThreadIndex {
   const map = new Map<string, CasThreadIndexEntry>();
   return {
@@ -90,7 +90,7 @@ function makeHarness(opts: {
   imageTempDir?: string;
   turnQuietMs?: number;
   turnHardMs?: number;
-  onCapabilities?: (capabilities: import('../src/acp/capabilities.js').MonadCapabilities) => void;
+  onCapabilities?: (capabilities: import('../src/acp/capabilities.js').ElanousCapabilities) => void;
 } = {}): Harness {
   const stdin = new PassThrough();
   const stdout = new PassThrough();
@@ -181,7 +181,7 @@ describe('CodexAppServerAgent · start / initialize', () => {
     await tick();
     const init = findRequest(h.sent, 'initialize');
     expect(init).toBeDefined();
-    expect(init!.params).toMatchObject({ clientInfo: { name: 'monad' } });
+    expect(init!.params).toMatchObject({ clientInfo: { name: 'elanous' } });
     h.reply(init!.id, { serverInfo: { name: 'codex', version: '0.x' } });
     await p;
     expect(h.agent.getCapabilities()).toMatchObject({ protocolVersion: 1 });
@@ -394,7 +394,7 @@ describe('CodexAppServerAgent · lifecycle observation', () => {
 });
 
 describe('CodexAppServerAgent · newSession', () => {
-  test('thread/start params include cwd · returns monad-synth sessionId', async () => {
+  test('thread/start params include cwd · returns elanous-synth sessionId', async () => {
     const h = makeHarness();
     const sp = h.agent.start();
     await tick();
@@ -407,7 +407,7 @@ describe('CodexAppServerAgent · newSession', () => {
     // v2 ThreadStartResponse · thread.id nested under `thread`.
     h.reply(start.id, { thread: { id: 'codex-thread-xyz' }, model: 'gpt-5' });
     const sessionId = await np;
-    // MSS M1.1 Phase B1 · sessionId is now a Tier 2 MonadUri
+    // MSS M1.1 Phase B1 · sessionId is now a Tier 2 ElanousUri
     // (`session/<ULID>`). Backend identification moved off the id
     // string and onto the session→thread Map.
     expect(sessionId).toMatch(/^session\/[0-9A-HJKMNP-TV-Z]{26}$/);

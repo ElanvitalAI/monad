@@ -9,7 +9,7 @@
 //
 //  2) LIVE — only when `TAILSCALE_TEST=1` AND `TAILSCALE_HOST` is
 //     set AND the `tailscale` binary resolves on PATH. Actually
-//     spawns `tailscale ssh <host> -- echo monad-smoke` and
+//     spawns `tailscale ssh <host> -- echo elanous-smoke` and
 //     captures stdout via the existing SpawnFn seam. Skips
 //     otherwise (logged as pending rather than fail).
 //
@@ -43,8 +43,8 @@ describe('Tailscale transport — argv construction (unconditional)', () => {
     );
     expect(r.shell).toBe('tailscale');
     expect(r.args).toEqual(['ssh', 'node-a', '--']);
-    expect(r.env.MONAD_REMOTE_HOST).toBe('node-a');
-    expect(r.env.MONAD_REMOTE_TRANSPORT).toBe('tailscale');
+    expect(r.env.ELANOUS_REMOTE_HOST).toBe('node-a');
+    expect(r.env.ELANOUS_REMOTE_TRANSPORT).toBe('tailscale');
   });
 
   test('user@host formatting preserved in argv', () => {
@@ -102,7 +102,7 @@ describe('Tailscale transport — LIVE smoke', () => {
     return;
   }
 
-  // This test runs `tailscale ssh <host> -- echo monad-smoke` via
+  // This test runs `tailscale ssh <host> -- echo elanous-smoke` via
   // spawnSync (not via PreviewTerminal) and asserts the expected
   // sentinel comes back. That proves (a) tailscale binary works,
   // (b) the host is reachable, (c) argv we'd hand to node-pty at
@@ -114,11 +114,11 @@ describe('Tailscale transport — LIVE smoke', () => {
       { character: { kind: 'shell' }, defaultShell: '/bin/bash' },
     );
     // Append an echo so we don't need to start a real shell.
-    const argv = [...r.args, 'echo', 'monad-smoke-ok'];
+    const argv = [...r.args, 'echo', 'elanous-smoke-ok'];
     const output = execSync(`${r.shell} ${argv.join(' ')}`, {
       timeout: 15_000,
       env: { ...process.env, ...r.env },
     }).toString('utf8');
-    expect(output).toContain('monad-smoke-ok');
+    expect(output).toContain('elanous-smoke-ok');
   }, 20_000);
 });

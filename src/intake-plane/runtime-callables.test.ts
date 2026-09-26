@@ -8,7 +8,7 @@ test('document preprocessing asks for affirmative claims and rejects an unsafe n
     resolveRoleProvider: () => ({ provider: { name: 'stub' } }),
     streamLLM: async (messages) => {
       prompt = messages[0]?.content ?? '';
-      return JSON.stringify({ claims: [{ text: 'monad 는 기능을 보유하지 않는다', quote: 'outside quote', lens: 'L1 능력' }], discards: [] });
+      return JSON.stringify({ claims: [{ text: 'elanous 는 기능을 보유하지 않는다', quote: 'outside quote', lens: 'L1 능력' }], discards: [] });
     },
   });
   const parsed = parsePreprocessCallerText(await callables.preprocess({ document: 'outside quote', lenses: ['L1 능력'] }), 'outside quote');

@@ -151,7 +151,7 @@ export function buildSetInputBindingTool(): LLMToolSpec {
   return {
     name: 'SetInputBinding',
     description:
-      'Add or replace a runtime keybinding that maps one or more matchers to an action. Matchers use monad\'s canonical form: "ctrl+p" for Ctrl+P, "ctrl+x s" for the Ctrl+X chord followed by s, "click:pill.model" for clicking the model pill. Runtime bindings override user-config and defaults for the same matcher. Pass an empty `keys` array to REMOVE the runtime binding for that action. Rebinding a reserved key (ctrl+c, escape, enter, ctrl+q, ctrl+d) or a reserved action id (app.interrupt, app.quit, modal.cancel, modal.submit) is rejected. Pass `context` to scope the binding to a specific mode ("control-mode", "plan-mode", etc.) — omit for global. Audit trail written to ~/.monad-agent/audit/control-*.ndjson.',
+      'Add or replace a runtime keybinding that maps one or more matchers to an action. Matchers use elanous\'s canonical form: "ctrl+p" for Ctrl+P, "ctrl+x s" for the Ctrl+X chord followed by s, "click:pill.model" for clicking the model pill. Runtime bindings override user-config and defaults for the same matcher. Pass an empty `keys` array to REMOVE the runtime binding for that action. Rebinding a reserved key (ctrl+c, escape, enter, ctrl+q, ctrl+d) or a reserved action id (app.interrupt, app.quit, modal.cancel, modal.submit) is rejected. Pass `context` to scope the binding to a specific mode ("control-mode", "plan-mode", etc.) — omit for global. Audit trail written to ~/.monad-agent/audit/control-*.ndjson.',
     parameters: {
       type: 'object',
       properties: {

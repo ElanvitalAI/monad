@@ -10,7 +10,7 @@
 export interface ShellGroupRecord {
   readonly shellId: string;
   /** Channel where the shell was spawned (Discord channel id or
-   *  monad session id). */
+   *  elanous session id). */
   readonly channelId: string;
   readonly persona: string;
   /** Verb / command label. */

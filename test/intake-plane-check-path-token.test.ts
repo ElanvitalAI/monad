@@ -20,7 +20,7 @@ function fixture(): IntakeCheckDeps {
     draftDir: join(root, 'drafts'), log: () => {} };
 }
 
-const claim = (name: string) => ({ text: `monad 에 \`${name}\` 가 있다` });
+const claim = (name: string) => ({ text: `elanous 에 \`${name}\` 가 있다` });
 
 test('an existing path is observed by file existence, not a content match', () => {
   const deps = fixture();
@@ -86,7 +86,7 @@ test('a line-numbered path measures the file without treating the line as conten
 test('existence alone does not assert a behavioral claim', () => {
   const deps = fixture();
   writeFileSync(join(deps.root, 'src/tool.ts'), 'export const tool = 1;\n');
-  const report = runIntakeCheck([{ text: 'monad 는 `src/tool.ts` 에 비용을 기록한다' }], deps);
+  const report = runIntakeCheck([{ text: 'elanous 는 `src/tool.ts` 에 비용을 기록한다' }], deps);
   expect(report.items[0]?.verdict).toBe('판단 필요');
   expect(report.goalDraftPaths).toEqual([]);
 });
@@ -103,7 +103,7 @@ test('a genuinely absent path is 없음 and writes only the gap draft', () => {
 test('identifier contents and the no-name verdict remain distinct from paths', () => {
   const deps = fixture();
   writeFileSync(join(deps.root, 'src/tool.ts'), "export const tool = 'sample-marker';\n");
-  const report = runIntakeCheck([claim('sample-marker'), { text: 'monad 에 이름 없는 기능이 있다' }], deps);
+  const report = runIntakeCheck([claim('sample-marker'), { text: 'elanous 에 이름 없는 기능이 있다' }], deps);
   expect(report.items[0]?.verdict).toBe('있음');
   expect(report.items[0]?.patterns).toContain('rg -F -e sample-marker');
   expect(report.items[1]?.verdict).toBe('판단 필요');
@@ -163,7 +163,7 @@ test('fact mode does not invoke document preprocessing', () => {
   expect(report.goalDraftPaths).toEqual([]);
 });
 
-test('document preprocess excludes the monad check section but retains following sections', async () => {
+test('document preprocess excludes the elanous check section but retains following sections', async () => {
   const deps = fixture();
   let prompt = '';
   const stages = buildIntakeDocumentStageCallables({
@@ -173,12 +173,12 @@ test('document preprocess excludes the monad check section but retains following
       return JSON.stringify({ claims: [], discards: [{ quote: 'external', reason: 'not a claim' }] });
     },
   });
-  const document = '# 노트\n- 외부 사실만\n## 🧭 monad 점검\n- 사람 판정 전용 문장\n  ## 다음 절\n- 다음 절 외부 문장\n';
+  const document = '# 노트\n- 외부 사실만\n## 🧭 elanous 점검\n- 사람 판정 전용 문장\n  ## 다음 절\n- 다음 절 외부 문장\n';
   await runIntakeCheckDocument([], { ...deps, preprocess: stages.preprocess }, { document });
   expect(prompt).toContain('외부 사실만');
   expect(prompt).toContain('다음 절 외부 문장');
   expect(prompt).not.toContain('사람 판정 전용 문장');
-  expect(prompt).not.toContain('## 🧭 monad 점검');
+  expect(prompt).not.toContain('## 🧭 elanous 점검');
 });
 
 test('a same-named root file alone does not make a dotted identifier present', () => {

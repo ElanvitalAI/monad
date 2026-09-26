@@ -29,8 +29,8 @@ let tmp: string;
 let sockPath: string;
 
 beforeEach(() => {
-  tmp = mkdtempSync(joinPath(tmpdir(), 'monad-tg-bridge-test-'));
-  sockPath = joinPath(tmp, 'monad.sock');
+  tmp = mkdtempSync(joinPath(tmpdir(), 'elanous-tg-bridge-test-'));
+  sockPath = joinPath(tmp, 'elanous.sock');
 });
 
 afterEach(() => {
@@ -111,7 +111,7 @@ describe('TelegramAcpBridge', () => {
         sessionId: 'whatever',
         userText: 'hi',
       }),
-    ).rejects.toThrow(/no monad daemon/);
+    ).rejects.toThrow(/no elanous daemon/);
     await bridge.close();
   });
 

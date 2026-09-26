@@ -18,7 +18,7 @@ import { seams as sharedTestSeams } from '../src/self-implement/test-seams.js';
 function okSeams(over: Partial<SelfImplementSeams> = {}): SelfImplementSeams {
   return {
     // ⛔⭐⭐⭐ 기본을 «무동작»으로 — 안 채우면 실제 계정 스토어를 읽고 codex 자식을 띄우고
-    //   ~/.monad/budget 에 쓴다(= 테스트가 «운영 쿼터를 소모»한다 · 리뷰 must-fix).
+    //   ~/.elanous/budget 에 쓴다(= 테스트가 «운영 쿼터를 소모»한다 · 리뷰 must-fix).
     refreshCodexQuotaSignals: async () => ({ accounts: [] }),
     writeRunLedger: () => {},
     createWorktree: async ({ branch, base }) => ({ path: `/tmp/wt/${branch}`, branch, base, resolvedBase: 'a'.repeat(40), invokedHead: 'a'.repeat(40) }),
@@ -40,9 +40,9 @@ function okSeams(over: Partial<SelfImplementSeams> = {}): SelfImplementSeams {
 
 describe('makeRunObserver — run JSONL ledger', () => {
   it('writes exactly the injected observer event list in order to one run ledger', () => {
-    const stateDir = mkdtempSync(join(tmpdir(), 'monad-run-ledger-'));
-    const previous = process.env.MONAD_STATE_DIR;
-    process.env.MONAD_STATE_DIR = stateDir;
+    const stateDir = mkdtempSync(join(tmpdir(), 'elanous-run-ledger-'));
+    const previous = process.env.ELANOUS_STATE_DIR;
+    process.env.ELANOUS_STATE_DIR = stateDir;
     const observed: string[] = [];
     try {
       const observe = makeRunObserver('ledger-order', 'goal-1', ((_category: string, event: string) => { observed.push(event); }) as typeof debug.log, appendRunLedgerEntry);
@@ -56,7 +56,7 @@ describe('makeRunObserver — run JSONL ledger', () => {
         expect.objectContaining({ runId: 'ledger-order', event: 'second', goalId: 'goal-1', data: expect.objectContaining({ ordinal: 2, runId: 'ledger-order', goalId: 'goal-1' }) }),
       ]);
     } finally {
-      if (previous === undefined) delete process.env.MONAD_STATE_DIR; else process.env.MONAD_STATE_DIR = previous;
+      if (previous === undefined) delete process.env.ELANOUS_STATE_DIR; else process.env.ELANOUS_STATE_DIR = previous;
       rmSync(stateDir, { recursive: true, force: true });
     }
   });
@@ -74,7 +74,7 @@ describe('makeRunObserver — run JSONL ledger', () => {
   });
 
   it('distinguishes a missing ledger from invalid ids, corrupt JSONL, and read failures', () => {
-    const stateDir = mkdtempSync(join(tmpdir(), 'monad-run-ledger-'));
+    const stateDir = mkdtempSync(join(tmpdir(), 'elanous-run-ledger-'));
     try {
       expect(loadRunLedger('missing', stateDir)).toBeNull();
       expect(() => loadRunLedger('../invalid', stateDir)).toThrow('invalid runId');
@@ -93,7 +93,7 @@ describe('makeRunObserver — run JSONL ledger', () => {
 
 describe('queryMergedRunLedgers — multi-run merge facts', () => {
   it('collects merged events across readable ledgers while counting an unreadable ledger', () => {
-    const ledgerDir = mkdtempSync(join(tmpdir(), 'monad-merged-ledgers-'));
+    const ledgerDir = mkdtempSync(join(tmpdir(), 'elanous-merged-ledgers-'));
     try {
       appendRunLedgerEntry({ timestamp: '2026-08-05T10:00:00.000Z', runId: 'run-00000000-0000-0000-0000-000000007158', event: 'merged', data: { number: 7158, merged: true, detail: null } }, ledgerDir);
       appendRunLedgerEntry({ timestamp: '2026-08-05T11:00:00.000Z', runId: 'run-00000000-0000-0000-0000-000000007161', event: 'merged', data: { number: 7161, merged: false, detail: 'blocked' } }, ledgerDir);
@@ -113,7 +113,7 @@ describe('queryMergedRunLedgers — multi-run merge facts', () => {
       expect(result.ledgerDirectoryMissing).toBe(false);
       expect(result).toMatchObject({
         scope: 'self-implement-run-ledger',
-        note: expect.stringContaining('excludes review-loop and merges performed outside monad'),
+        note: expect.stringContaining('excludes review-loop and merges performed outside elanous'),
       });
     } finally {
       rmSync(ledgerDir, { recursive: true, force: true });
@@ -121,7 +121,7 @@ describe('queryMergedRunLedgers — multi-run merge facts', () => {
   });
 
   it('excludes every merged entry from ledgers with multiple merged events while retaining normal ledgers', () => {
-    const ledgerDir = mkdtempSync(join(tmpdir(), 'monad-contaminated-merged-ledgers-'));
+    const ledgerDir = mkdtempSync(join(tmpdir(), 'elanous-contaminated-merged-ledgers-'));
     try {
       appendRunLedgerEntry({ timestamp: '2026-08-05T10:00:00.000Z', runId: 'run-00000000-0000-0000-0000-000000007173', event: 'merged', data: { number: 1, merged: true } }, ledgerDir);
       appendRunLedgerEntry({ timestamp: '2026-08-05T10:01:00.000Z', runId: 'run-00000000-0000-0000-0000-000000007173', event: 'merged', data: { number: 7173, merged: true } }, ledgerDir);
@@ -141,7 +141,7 @@ describe('queryMergedRunLedgers — multi-run merge facts', () => {
   });
 
   it('excludes a ledger when a malformed merged event accompanies a valid merged event', () => {
-    const ledgerDir = mkdtempSync(join(tmpdir(), 'monad-malformed-contaminated-ledger-'));
+    const ledgerDir = mkdtempSync(join(tmpdir(), 'elanous-malformed-contaminated-ledger-'));
     try {
       appendRunLedgerEntry({ timestamp: '2026-08-05T10:00:00.000Z', runId: 'run-00000000-0000-0000-0000-000000007174', event: 'merged', data: { detail: 'missing merge fields' } }, ledgerDir);
       appendRunLedgerEntry({ timestamp: '2026-08-05T10:01:00.000Z', runId: 'run-00000000-0000-0000-0000-000000007174', event: 'merged', data: { number: 7173, merged: true } }, ledgerDir);
@@ -157,7 +157,7 @@ describe('queryMergedRunLedgers — multi-run merge facts', () => {
   });
 
   it('filters by inclusive timestamp range and distinguishes a missing directory from an empty one', () => {
-    const ledgerDir = mkdtempSync(join(tmpdir(), 'monad-merged-range-'));
+    const ledgerDir = mkdtempSync(join(tmpdir(), 'elanous-merged-range-'));
     const missingDir = join(ledgerDir, 'missing');
     try {
       appendRunLedgerEntry({ timestamp: '2026-08-05T10:00:00.000Z', runId: 'run-00000000-0000-0000-0000-000000000001', event: 'merged', data: { number: 1, merged: true } }, ledgerDir);
@@ -176,7 +176,7 @@ describe('queryMergedRunLedgers — multi-run merge facts', () => {
 
 describe('queryMergeAttribution — observable merge attribution facts', () => {
   it('attributes merged:false directly to a human handoff after a merge attempt without inventing an unattributable count', () => {
-    const ledgerDir = mkdtempSync(join(tmpdir(), 'monad-merge-attribution-'));
+    const ledgerDir = mkdtempSync(join(tmpdir(), 'elanous-merge-attribution-'));
     try {
       appendRunLedgerEntry({ timestamp: '2026-08-05T10:00:00.000Z', runId: 'run-00000000-0000-0000-0000-000000007158', event: 'merged', data: { number: 7158, merged: true } }, ledgerDir);
       appendRunLedgerEntry({ timestamp: '2026-08-05T10:30:00.000Z', runId: 'run-00000000-0000-0000-0000-000000007159', event: 'merged', data: { number: 7159, merged: false } }, ledgerDir);
@@ -192,7 +192,7 @@ describe('queryMergeAttribution — observable merge attribution facts', () => {
 
       const result = queryMergeAttribution({ dir: ledgerDir });
 
-      expect(result.monadMergedEntries).toEqual([
+      expect(result.elanousMergedEntries).toEqual([
         { prNumber: 7158, merged: true, runId: 'run-00000000-0000-0000-0000-000000007158', timestamp: '2026-08-05T10:00:00.000Z' },
       ]);
       expect(result.handedToHumanWithoutMergeAttemptCount).toBe(2);
@@ -216,7 +216,7 @@ describe('queryMergeAttribution — observable merge attribution facts', () => {
   });
 
   it('uses one terminal status per non-merged run and applies the range to every attribution bucket', () => {
-    const ledgerDir = mkdtempSync(join(tmpdir(), 'monad-merge-attribution-range-'));
+    const ledgerDir = mkdtempSync(join(tmpdir(), 'elanous-merge-attribution-range-'));
     try {
       appendRunLedgerEntry({ timestamp: '2026-08-05T09:00:00.000Z', runId: 'run-00000000-0000-0000-0000-000000000201', event: 'run-status', data: { stage: 'pr-opened', node: 'open-pr' } }, ledgerDir);
       appendRunLedgerEntry({ timestamp: '2026-08-05T10:00:00.000Z', runId: 'run-00000000-0000-0000-0000-000000000202', event: 'merged', data: { number: 1, merged: true } }, ledgerDir);
@@ -233,7 +233,7 @@ describe('queryMergeAttribution — observable merge attribution facts', () => {
         to: '2026-08-05T10:59:59.999Z',
       });
 
-      expect(result.monadMergedEntries.map((entry) => entry.runId)).toEqual([
+      expect(result.elanousMergedEntries.map((entry) => entry.runId)).toEqual([
         'run-00000000-0000-0000-0000-000000000202',
         'run-00000000-0000-0000-0000-000000000205',
       ]);
@@ -245,7 +245,7 @@ describe('queryMergeAttribution — observable merge attribution facts', () => {
   });
 
   it('reports the absolute ledger directory for relative and missing directories', () => {
-    const ledgerDir = mkdtempSync(join(tmpdir(), 'monad-merge-attribution-directory-'));
+    const ledgerDir = mkdtempSync(join(tmpdir(), 'elanous-merge-attribution-directory-'));
     const relativeDir = relative(process.cwd(), ledgerDir) || '.';
     const missingDir = join(ledgerDir, 'missing');
     try {
@@ -257,7 +257,7 @@ describe('queryMergeAttribution — observable merge attribution facts', () => {
   });
 
   it('does not mutate ledger fixtures while querying', () => {
-    const ledgerDir = mkdtempSync(join(tmpdir(), 'monad-merge-attribution-read-only-'));
+    const ledgerDir = mkdtempSync(join(tmpdir(), 'elanous-merge-attribution-read-only-'));
     try {
       appendRunLedgerEntry({ timestamp: '2026-08-05T10:00:00.000Z', runId: 'human-open-pr', event: 'run-status', data: { stage: 'pr-opened', node: 'open-pr' } }, ledgerDir);
       const path = join(ledgerDir, 'human-open-pr.jsonl');
@@ -323,9 +323,9 @@ describe('runSelfImplement — 파이프라인 시퀀싱', () => {
   // ⛔ 이름이 «검증하는 것»과 같아야 한다 — 종전 이름은 "goal execution summary 를 같은 원장에 쓴다"
   //    였는데 실제로는 골 문서 writer 만 확인한다. 이름이 거짓 명세면 다음 사람이 없는 보장을 믿는다.
   it('writes terminal run-status to the run ledger while the goal execution summary stays in the goal document', async () => {
-    const stateDir = mkdtempSync(join(tmpdir(), 'monad-run-ledger-'));
-    const previous = process.env.MONAD_STATE_DIR;
-    process.env.MONAD_STATE_DIR = stateDir;
+    const stateDir = mkdtempSync(join(tmpdir(), 'elanous-run-ledger-'));
+    const previous = process.env.ELANOUS_STATE_DIR;
+    process.env.ELANOUS_STATE_DIR = stateDir;
     const records: Array<Record<string, unknown>> = [];
     const storedRecords: Array<Record<string, unknown>> = [];
     try {
@@ -348,15 +348,15 @@ describe('runSelfImplement — 파이프라인 시퀀싱', () => {
       expect(records[0]).not.toHaveProperty('observationMeasurementBasis');
       expect(storedRecords[0]).not.toHaveProperty('observationMeasurementBasis');
     } finally {
-      if (previous === undefined) delete process.env.MONAD_STATE_DIR; else process.env.MONAD_STATE_DIR = previous;
+      if (previous === undefined) delete process.env.ELANOUS_STATE_DIR; else process.env.ELANOUS_STATE_DIR = previous;
       rmSync(stateDir, { recursive: true, force: true });
     }
   });
 
   it('uses the injected ledger writer for the inner merged observer', async () => {
-    const stateDir = mkdtempSync(join(tmpdir(), 'monad-merged-ledger-seam-'));
-    const previous = process.env.MONAD_STATE_DIR;
-    process.env.MONAD_STATE_DIR = stateDir;
+    const stateDir = mkdtempSync(join(tmpdir(), 'elanous-merged-ledger-seam-'));
+    const previous = process.env.ELANOUS_STATE_DIR;
+    process.env.ELANOUS_STATE_DIR = stateDir;
     const writtenEvents: string[] = [];
     try {
       const result = await runSelfImplement({
@@ -376,7 +376,7 @@ describe('runSelfImplement — 파이프라인 시퀀싱', () => {
       expect(writtenEvents).toContain('merged');
       expect(loadRunLedger(result.runId)).toBeNull();
     } finally {
-      if (previous === undefined) delete process.env.MONAD_STATE_DIR; else process.env.MONAD_STATE_DIR = previous;
+      if (previous === undefined) delete process.env.ELANOUS_STATE_DIR; else process.env.ELANOUS_STATE_DIR = previous;
       rmSync(stateDir, { recursive: true, force: true });
     }
   });
@@ -610,35 +610,35 @@ describe('runSelfImplement — 파이프라인 시퀀싱', () => {
     const log = spyOn(debug, 'log').mockImplementation(((_c: string, event: string, data?: Record<string, unknown>) => {
       if (event === 'own') identities.push(data ?? {});
     }) as never);
-    const priorEnv = process.env.MONAD_RUN_ID;
-    delete process.env.MONAD_RUN_ID;                       // mint 경로 강제
+    const priorEnv = process.env.ELANOUS_RUN_ID;
+    delete process.env.ELANOUS_RUN_ID;                       // mint 경로 강제
     let result: Awaited<ReturnType<typeof runSelfImplement>>;
     try {
       result = await runSelfImplement({ feature: 'minted addressable', seams: okSeams() });
     } finally {
       log.mockRestore();
-      if (priorEnv === undefined) delete process.env.MONAD_RUN_ID; else process.env.MONAD_RUN_ID = priorEnv;
+      if (priorEnv === undefined) delete process.env.ELANOUS_RUN_ID; else process.env.ELANOUS_RUN_ID = priorEnv;
     }
     expect(result!.runId).toBeTruthy();
     expect(identities).toContainEqual(expect.objectContaining({ runId: result!.runId, source: 'minted' }));
   });
 
   // ⚠️ 이것은 **드리프트 테스트가 아니다**(뮤테이션으로 확인 · 2026-07-28): inherited 경로는 두 resolve 가
-  //   같은 env(`MONAD_RUN_ID`)를 읽으므로 **구조적으로 드리프트할 수 없다**. 이 테스트가 고정하는 것은
+  //   같은 env(`ELANOUS_RUN_ID`)를 읽으므로 **구조적으로 드리프트할 수 없다**. 이 테스트가 고정하는 것은
   //   "env 가 준 id 가 result·기록 양쪽에 그대로 온다" 이고, 드리프트를 잡는 것은 위 minted 테스트다.
   it('result runId is the env-supplied id on the inherited path (NOT a drift test — see note)', async () => {
     const identities: Record<string, unknown>[] = [];
     const log = spyOn(debug, 'log').mockImplementation(((_c: string, event: string, data?: Record<string, unknown>) => {
       if (event === 'own') identities.push(data ?? {});
     }) as never);
-    const priorEnv = process.env.MONAD_RUN_ID;
-    process.env.MONAD_RUN_ID = 'run-inherited-addressable';  // inherit 경로 강제
+    const priorEnv = process.env.ELANOUS_RUN_ID;
+    process.env.ELANOUS_RUN_ID = 'run-inherited-addressable';  // inherit 경로 강제
     let result: Awaited<ReturnType<typeof runSelfImplement>>;
     try {
       result = await runSelfImplement({ feature: 'inherited addressable', seams: okSeams() });
     } finally {
       log.mockRestore();
-      if (priorEnv === undefined) delete process.env.MONAD_RUN_ID; else process.env.MONAD_RUN_ID = priorEnv;
+      if (priorEnv === undefined) delete process.env.ELANOUS_RUN_ID; else process.env.ELANOUS_RUN_ID = priorEnv;
     }
     expect(result!.runId).toBe('run-inherited-addressable');
     expect(identities).toContainEqual(expect.objectContaining({ runId: result!.runId, source: 'inherited' }));

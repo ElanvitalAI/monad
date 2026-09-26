@@ -24,7 +24,7 @@ import { streamLLM, resolveDefaultProvider } from '../llm.js';
 import type { LLMMessage } from '../llm.js';
 import type { DailyReflectionSnapshot } from './daily-reflection.js';
 
-const DEFAULT_PROMPT = `다음은 오늘 하루 monad 에이전트와 함께 한 작업의 데이터 스냅샷이야.
+const DEFAULT_PROMPT = `다음은 오늘 하루 elanous 에이전트와 함께 한 작업의 데이터 스냅샷이야.
 이 데이터를 바탕으로 1인칭 시점의 짧은 반성문 (Hansei) 을 한국어로 작성해줘.
 
 작성 규칙:

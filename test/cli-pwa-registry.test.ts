@@ -52,20 +52,20 @@ function fixtureEntry(overrides: Partial<PwaRegistryEntry> = {}): PwaRegistryEnt
 
 describe('pwa-registry launcher provenance', () => {
   test('classifies injected launch signals with autonomous identity precedence', () => {
-    expect(resolvePwaLauncherProvenance({ env: { MONAD_RUN_ID: 'run-42' }, isTTY: true }))
+    expect(resolvePwaLauncherProvenance({ env: { ELANOUS_RUN_ID: 'run-42' }, isTTY: true }))
       .toEqual({ kind: 'autonomous-run', runId: 'run-42' });
     expect(resolvePwaLauncherProvenance({ env: {
-      MONAD_RUN_ID: 'run-42', LAUNCH_JOB_NAME: 'com.monad.nexus', MONAD_NEXUS_BG_PARENT: '1',
+      ELANOUS_RUN_ID: 'run-42', LAUNCH_JOB_NAME: 'com.elanous.nexus', ELANOUS_NEXUS_BG_PARENT: '1',
     }, isTTY: true })).toEqual({ kind: 'autonomous-run', runId: 'run-42' });
   });
 
   test('distinguishes service manager, background child, terminal, and unknown signals', () => {
-    expect(resolvePwaLauncherProvenance({ env: { LAUNCH_JOB_NAME: 'com.monad.nexus' }, isTTY: true }))
-      .toEqual({ kind: 'service-manager', serviceName: 'com.monad.nexus' });
+    expect(resolvePwaLauncherProvenance({ env: { LAUNCH_JOB_NAME: 'com.elanous.nexus' }, isTTY: true }))
+      .toEqual({ kind: 'service-manager', serviceName: 'com.elanous.nexus' });
     expect(resolvePwaLauncherProvenance({ env: {
-      LAUNCH_JOB_NAME: 'com.monad.nexus', MONAD_NEXUS_BG_PARENT: '1',
-    }, isTTY: true })).toEqual({ kind: 'service-manager', serviceName: 'com.monad.nexus' });
-    expect(resolvePwaLauncherProvenance({ env: { MONAD_NEXUS_BG_PARENT: '1' }, isTTY: true }))
+      LAUNCH_JOB_NAME: 'com.elanous.nexus', ELANOUS_NEXUS_BG_PARENT: '1',
+    }, isTTY: true })).toEqual({ kind: 'service-manager', serviceName: 'com.elanous.nexus' });
+    expect(resolvePwaLauncherProvenance({ env: { ELANOUS_NEXUS_BG_PARENT: '1' }, isTTY: true }))
       .toEqual({ kind: 'background-child' });
     expect(resolvePwaLauncherProvenance({ env: {}, isTTY: true })).toEqual({ kind: 'human-terminal' });
     expect(resolvePwaLauncherProvenance({ env: {}, isTTY: false })).toEqual({ kind: 'unknown' });

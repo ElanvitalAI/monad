@@ -1,6 +1,6 @@
 // ── 미션 내부 grounding 게이트 — 기존 코드/문서 검증 (대표 지시 2026-07-12) ──────
 //
-// 구현·변경·분석형 미션은 외부 웹조사(omni-crawl)만으로 부족하다. monad 는 방대한 기존
+// 구현·변경·분석형 미션은 외부 웹조사(omni-crawl)만으로 부족하다. elanous 는 방대한 기존
 // 코드(특히 Conatus/finance: trade-*·signal-*·asset-attractiveness)·문서를 보유 → 골 관련
 // 기존 파일을 실제로 grep 해서 분해 컨텍스트에 주입해야 환각 파일명·중복 구현을 막는다.
 // 외부조사(research=횡단능력)와 대칭인 "내부 grounding=횡단능력". 대부분 도메인에 적용
@@ -220,7 +220,7 @@ function containsAsWholeWord(haystack: string, needle: string): boolean {
  * 실측 대조군: `#6228` 직전 `1 pass 0 fail` / 이후 `0 pass 1 fail`).
  * ⇒ **낱말 경계**로 판정한다. 경로 안의 식별자(`src/goal-author.ts` 의 `goal-author`)는 앞뒤가
  * `/`·`.` 이라 그대로 걸리고, 낱말 안쪽(`long-running` 의 `run`)은 안 걸린다. */
-export function hasRepositorySpecificIdentifier(goal: string, identifiers: readonly string[] = ['monad']): boolean {
+export function hasRepositorySpecificIdentifier(goal: string, identifiers: readonly string[] = ['elanous']): boolean {
   const normalized = goal.toLowerCase();
   const tokens: string[] = normalized.match(IDENTIFIER_TOKEN) ?? [];
   return identifiers.some((identifier) => {
@@ -467,7 +467,7 @@ function defaultRecallMemory(query: string, limit: number): string[] {
   } catch { return []; }
 }
 
-/** 자기 구현이력(surface_events domain=monad) + 문서벡터(knowledge.db·HANDOFF/REPORT/PLAN) 회상 →
+/** 자기 구현이력(surface_events domain=elanous) + 문서벡터(knowledge.db·HANDOFF/REPORT/PLAN) 회상 →
  *  `[self:kind]`·`[doc]` 팩트. dispatchSelfRecall 재사용(db 라이프사이클·임베딩 fail-soft 내장·db 없으면 no-op). */
 async function defaultRecallSelf(query: string, limit: number): Promise<string[]> {
   try {
@@ -702,7 +702,7 @@ export async function groundMissionInCodebase(
       terms: terms.length,
     });
     const repositoryIdentifiers = Array.from(new Set([
-      'monad',
+      'elanous',
       ...files.flatMap((path) => path.split(/[/.\\-]+/)).filter((part) => part.length >= 3),
       ...documentFacts.flatMap((path) => path.split(/[/.\\-]+/)).filter((part) => part.length >= 3),
     ]));
@@ -738,7 +738,7 @@ export async function groundMissionInCodebase(
     const context = contextSections.length
       ? contextSections.join('\n\n')
       : `참조 지식 ${memoryFacts.length + refFacts.length + ptyFacts.length}건(기억·자기이력·문서·로컬 ref·상류 capsule — decisions 참조·repo 파일 실존 주장 아님)`;
-    // 관측(제1원칙) — grounding corpus 확장 결과(코드·문서·skill·기억·로컬 ref·상류 capsule 팩트). 조회: monad logs --category mission.grounding
+    // 관측(제1원칙) — grounding corpus 확장 결과(코드·문서·skill·기억·로컬 ref·상류 capsule 팩트). 조회: elanous logs --category mission.grounding
     const grounded = isCorpusGrounded({ files, documentFacts, skillFacts: skills.facts, memoryFacts, refFacts, ptyFacts });
     debug.log('mission.grounding', 'corpus', { grounded, cwd: searchRoot, cwdSource, code: files.length, docs: documentFacts.length, skills: skills.files.length, skillFacts: skills.facts.length, codeFacts: codeFacts.length, memoryFacts: memoryFacts.length, refFacts: refFacts.length, ptyFacts: ptyFacts.length, terms: terms.length, persistentEvidence: persistent?.evidence.length ?? null, persistentStopReason: persistent?.stopReason ?? null, codeChannel });
     renderingElapsedMs = performance.now() - renderingStartedAt;

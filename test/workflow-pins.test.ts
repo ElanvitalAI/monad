@@ -14,7 +14,7 @@ import { startNexusHttpServer } from '../src/nexus/api/http-server.js';
 import { NexusEventBus } from '../src/nexus/api/event-bus.js';
 import { createNexusState } from '../src/nexus/state/state.js';
 import { TabRegistry } from '../src/nexus/state/tab-registry.js';
-import { setMonadConfigDir, resetMonadConfigDir } from '../src/monad-config-dir.js';
+import { setElanousConfigDir, resetElanousConfigDir } from '../src/elanous-config-dir.js';
 
 // ──────────────────── In-memory fs seam ─────────────────────────────
 
@@ -136,11 +136,11 @@ let prevHome: string | undefined;
 beforeEach(() => {
   tmpRoot = mkdtempSync(join(tmpdir(), 'm4-4-nexus-'));
   tmpHome = mkdtempSync(join(tmpdir(), 'm4-4-home-'));
-  prevNexus = process.env.MONAD_NEXUS_DIR;
+  prevNexus = process.env.ELANOUS_NEXUS_DIR;
   prevHome = process.env.HOME;
-  process.env.MONAD_NEXUS_DIR = tmpRoot;
+  process.env.ELANOUS_NEXUS_DIR = tmpRoot;
   process.env.HOME = tmpHome;
-  setMonadConfigDir(join(tmpHome, '.monad'));
+  setElanousConfigDir(join(tmpHome, '.elanous'));
 });
 
 afterEach(() => {
@@ -148,9 +148,9 @@ afterEach(() => {
     if (prev === undefined) delete process.env[key];
     else process.env[key] = prev;
   };
-  restore('MONAD_NEXUS_DIR', prevNexus);
+  restore('ELANOUS_NEXUS_DIR', prevNexus);
   restore('HOME', prevHome);
-  resetMonadConfigDir();
+  resetElanousConfigDir();
   try { rmSync(tmpRoot, { recursive: true, force: true }); } catch { /* ignore */ }
   try { rmSync(tmpHome, { recursive: true, force: true }); } catch { /* ignore */ }
 });

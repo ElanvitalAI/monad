@@ -122,7 +122,7 @@ export function TuiMirrorView({ sessionId }: Props) {
         aria-live="polite"
         aria-label="선택한 TUI 화면의 라이브 렌더 프레임"
       >
-        {current ? stripAnsi(current.frame) : '자기신고하는 monad 화면이 아직 없습니다. 대시보드(monad)를 실행하면 여기 라이브로 미러링됩니다.'}
+        {current ? stripAnsi(current.frame) : '자기신고하는 elanous 화면이 아직 없습니다. 대시보드(elanous)를 실행하면 여기 라이브로 미러링됩니다.'}
       </pre>
     </div>
   );

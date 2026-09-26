@@ -59,7 +59,7 @@ describe('extractDelegateFailureReason — delegate 실패 "왜" 관측(유실 �
     expect(extractDelegateFailureReason('   ')).toBe('');
   });
   it('goal-loop stopReason+iter+tools 추출', () => {
-    const tail = '[monad-self] goal-loop stopReason=no_progress · iterations=4 · toolCalls=18';
+    const tail = '[elanous-self] goal-loop stopReason=no_progress · iterations=4 · toolCalls=18';
     const r = extractDelegateFailureReason(tail);
     expect(r).toContain('stopReason=no_progress');
     expect(r).toContain('iter=4');
@@ -70,7 +70,7 @@ describe('extractDelegateFailureReason — delegate 실패 "왜" 관측(유실 �
       'IMPLEMENTATION_STATUS: SKIPPED_BLOCKED — Task 0 remains CONTRACT_STATUS: BLOCKED pending approval',
       'Verification passed: bun test src/autopilot/ — 2156 passed, 0 failed',
       '명시적 HITL 승인 전 receiver 변경은 금지되어 있어 목표를 blocked로 기록했습니다.',
-      '[monad-self] goal-loop stopReason=no_progress · iterations=4 · toolCalls=18',
+      '[elanous-self] goal-loop stopReason=no_progress · iterations=4 · toolCalls=18',
     ].join('\n');
     const r = extractDelegateFailureReason(tail);
     expect(r).toContain('stopReason=no_progress');
@@ -79,7 +79,7 @@ describe('extractDelegateFailureReason — delegate 실패 "왜" 관측(유실 �
     expect(r).toContain('마지막:');             // 에이전트 마지막 서술
   });
   it('tool/마커 라인은 마지막 서술에서 제외', () => {
-    const tail = '실제 사유 문장\n[tool #5] Bash\n[monad-self] goal-loop stopReason=done';
+    const tail = '실제 사유 문장\n[tool #5] Bash\n[elanous-self] goal-loop stopReason=done';
     const r = extractDelegateFailureReason(tail);
     expect(r).toContain('마지막: 실제 사유 문장');
   });

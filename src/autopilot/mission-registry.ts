@@ -14,7 +14,7 @@
 // 계보 fan-in(schedule_registry.autopilot_id·tox_tasks.goal_slug)이 그대로 작동.
 // 설계: 내부 문서 `DESIGN-mission-fabric-unification-2026-07-09` §4·§5(U1).
 
-import { monadStateRoot } from './state-paths.js';
+import { elanousStateRoot } from './state-paths.js';
 import { addMissionEdge } from './mission-edges.js';
 import { join } from 'node:path';
 import { createHash } from 'node:crypto';
@@ -27,9 +27,9 @@ import { ensureMissionOrigin } from './mission-origin.js';
 
 /** Legacy apm Mission db 경로 — U1b 이후 미사용(실 미션=TOX tasks.db·백업/참조용 보존).
  *  core = autopilot/ (conatus/ 는 투자 customer 네임스페이스·대표 정정 2026-07-11). */
-/** [ISO-3] MONAD_STATE_DIR 존중(lazy) — 격리 테스트 데몬은 자기 미션 우주만 본다. */
+/** [ISO-3] ELANOUS_STATE_DIR 존중(lazy) — 격리 테스트 데몬은 자기 미션 우주만 본다. */
 export function autopilotMissionsDbPath(): string {
-  return join(monadStateRoot(), 'autopilot/autopilot_missions.db');
+  return join(elanousStateRoot(), 'autopilot/autopilot_missions.db');
 }
 
 // ★ 'building'(대표 2026-07-21·조율자 상태소유) — 조율자가 골을 분해/구현(decompose·build)하는 몇 분간의
@@ -39,7 +39,7 @@ export function autopilotMissionsDbPath(): string {
 export const MISSION_STATUSES = ['proposed', 'building', 'armed', 'running', 'done', 'failed', 'disarmed', 'rejected'] as const;
 export type MissionStatus = (typeof MISSION_STATUSES)[number];
 // 미션 출처(provenance) — 누가 이 미션을 촉발했나. 'human-intent'(대표 지시 2026-07-10 리네임:
-// 구 'intake' = 사람이 채널로 던진 의도·narrow-waist 게이트 통과) · 'discovery'(monad 자율 발굴)
+// 구 'intake' = 사람이 채널로 던진 의도·narrow-waist 게이트 통과) · 'discovery'(elanous 자율 발굴)
 // · 'repo-watch'(레포 감시) · 'manual'(CLI 직접). 저장된 레거시 'intake' 는 read 시 normalizeMissionSource 로 흡수.
 export type MissionSource = 'human-intent' | 'discovery' | 'repo-watch' | 'manual';
 
@@ -54,7 +54,7 @@ export function normalizeMissionSource(raw: string | null | undefined): MissionS
 export function missionSourceLabel(source: string | null | undefined): string {
   switch (normalizeMissionSource(source)) {
     case 'human-intent': return '휴먼 인텐트 (내가 던진 골)';
-    case 'discovery': return 'monad 자율 발굴';
+    case 'discovery': return 'elanous 자율 발굴';
     case 'repo-watch': return '레포 감시';
     case 'manual': return '수동(CLI)';
     default: return String(source ?? 'manual');
@@ -124,7 +124,7 @@ function toMissionRow(m: Mission): MissionRow {
 
 /** slug 불용어 — 조사·주어·흔한 동사꼬리(핵심 명사만 남겨 id 가독성↑). 전부 걸리면 원본 유지. */
 const SLUG_STOPWORDS = new Set([
-  'monad', '가', '이', '을', '를', '은', '는', '의', '에', '도', '로', '와', '과', '만', '에서', '에게',
+  'elanous', '가', '이', '을', '를', '은', '는', '의', '에', '도', '로', '와', '과', '만', '에서', '에게',
   '해줘', '해', '하도록', '만들어', '만들어줘', '구현', '설계', '줘', '하는', '하고', '않도록', '되게', '있게', '좀', '그',
   'a', 'an', 'the', 'to', 'for', 'of', 'and', 'or', 'in', 'on',
 ]);

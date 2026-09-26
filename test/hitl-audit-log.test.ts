@@ -208,25 +208,25 @@ describe('audit-log — module-level hook register/clear', () => {
 });
 
 describe('audit-log — defaultAuditLogPath', () => {
-  it('honors MONAD_DIR env override', () => {
-    const old = process.env['MONAD_DIR'];
+  it('honors ELANOUS_DIR env override', () => {
+    const old = process.env['ELANOUS_DIR'];
     try {
-      process.env['MONAD_DIR'] = '/tmp/test-monad-dir';
-      expect(defaultAuditLogPath()).toBe('/tmp/test-monad-dir/hitl-log.jsonl');
+      process.env['ELANOUS_DIR'] = '/tmp/test-elanous-dir';
+      expect(defaultAuditLogPath()).toBe('/tmp/test-elanous-dir/hitl-log.jsonl');
     } finally {
-      if (old === undefined) delete process.env['MONAD_DIR'];
-      else process.env['MONAD_DIR'] = old;
+      if (old === undefined) delete process.env['ELANOUS_DIR'];
+      else process.env['ELANOUS_DIR'] = old;
     }
   });
 
-  it('falls back to ~/.monad/hitl-log.jsonl when MONAD_DIR is unset', () => {
-    const old = process.env['MONAD_DIR'];
+  it('falls back to ~/.elanous/hitl-log.jsonl when ELANOUS_DIR is unset', () => {
+    const old = process.env['ELANOUS_DIR'];
     try {
-      delete process.env['MONAD_DIR'];
+      delete process.env['ELANOUS_DIR'];
       const p = defaultAuditLogPath();
-      expect(p.endsWith('/.monad/hitl-log.jsonl')).toBe(true);
+      expect(p.endsWith('/.elanous/hitl-log.jsonl')).toBe(true);
     } finally {
-      if (old !== undefined) process.env['MONAD_DIR'] = old;
+      if (old !== undefined) process.env['ELANOUS_DIR'] = old;
     }
   });
 });

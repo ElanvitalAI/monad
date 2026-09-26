@@ -11,7 +11,7 @@
 //   스킬이 원문(구체 사실)을 못 봐 일반화로 샌다. P3(2026-07-23)에서 **enhance(verbatim+커버리지 체크리스트) +
 //   entry-independent 기억**을 compass 로 각 스킬에 실어 근원을 닫았다(agent-mission/self-implement 동형·재발명0).
 //
-// 배선: resolveDomainExecute(domain='skill' 또는 미매칭) → 이 executor. 예) `monad harness run "PPT 만들어줘" --domain skill`.
+// 배선: resolveDomainExecute(domain='skill' 또는 미매칭) → 이 executor. 예) `elanous harness run "PPT 만들어줘" --domain skill`.
 // 재사용: pickSkillsViaLlm(luna) + getSkillIndex(설명) + streamLLM(체인 계획) + parseSkillMd/executeSkill(Write 허용·web-executor 패턴).
 // 관측(제1원칙): harness.skill-compose — discover-start/discovered/planned-chain/step-start/step-progress/step-done/published.
 // 안전: BLOCK 규율(Agent 배치·고비용) · 체인 상한 MAX_STEPS. 부작용 스킬 capability tier 는 로드맵.
@@ -94,7 +94,7 @@ export interface ComposedSkillDeps {
   /** ★ anti-drift 인핸싱 명시 override(P3·2026-07-23) — undefined 면 capability/진입정책이 결정(기본 ON).
    *  false 면 강제 OFF(원문만 나침반·체크리스트 없음). resolveActiveCapabilities 의 explicitEnhance 로 전달. */
   enhance?: boolean;
-  /** 진입 클래스(§6e) — enhance mode-gating. 기본 monad-apparatus(하니스=monad 가 프롬프트 prep). 중첩/외부는 external-verbatim. */
+  /** 진입 클래스(§6e) — enhance mode-gating. 기본 elanous-apparatus(하니스=elanous 가 프롬프트 prep). 중첩/외부는 external-verbatim. */
   entry?: IngestionEntry;
 }
 
@@ -112,11 +112,11 @@ export function buildGenericSkillExecute(deps: ComposedSkillDeps): DomainExecute
 
     // ★ substrate 편입(P3 부채 해소·2026-07-23) — 이 실행의 롤·capability 를 선언·관측(executor:skill).
     //   agent-mission/self-implement 시드와 동형. 선언된 capability 가 아래 enhance/memory behavior 를 **구동**한다
-    //   (descriptor→살아있는 아키텍처·PLAN §L1/§L2·§6e). 진입 정책(monad-apparatus)이 enhance mode-gate.
+    //   (descriptor→살아있는 아키텍처·PLAN §L1/§L2·§6e). 진입 정책(elanous-apparatus)이 enhance mode-gate.
     const { resolveActiveCapabilities } = await import('../agent-substrate/execution/capabilities.js');
     const { describeRole } = await import('../agent-substrate/execution/roles.js');
     const caps = resolveActiveCapabilities('skill', {
-      entry: deps.entry ?? 'monad-apparatus',
+      entry: deps.entry ?? 'elanous-apparatus',
       ...(deps.enhance !== undefined ? { explicitEnhance: deps.enhance } : {}),
     });
     observe('role', { role: describeRole({ role: 'executor', executorKind: 'skill' }), capabilities: [...caps.active] });
@@ -177,7 +177,7 @@ export function buildGenericSkillExecute(deps: ComposedSkillDeps): DomainExecute
       // ★ anti-drift(P3): 플래너 한문장 task 뒤에 원문 나침반(compass)을 실어 스킬이 원문 사실을 직접 보게 한다.
       //   plannerTask = 이 스킬의 구체 역할(scope) · compass = 원문 SSOT(누락·요약·일반화 금지 기준). scope+facts 분리.
       const plannerTask = steps[i]!.task || objective;
-      const artifactRoot = resolve(ctx.cwd, '.monad-skill-artifacts');
+      const artifactRoot = resolve(ctx.cwd, '.elanous-skill-artifacts');
       if (lstatArtifactRootIsSymlink(artifactRoot)) {
         const error = `artifact root must not be a symbolic link: ${artifactRoot}`;
         observe('step-failed', { i, skill, error });
@@ -268,10 +268,10 @@ export function defaultGenericSkill(): ComposedSkillDeps {
     },
     planChain: async (objective, candidates) => {
       const { streamLLM } = await import('../llm.js');
-      const model = process.env.MONAD_SKILL_PLAN_MODEL || process.env.MONAD_PR_REVIEW_MODEL || tierModel('better');
+      const model = process.env.ELANOUS_SKILL_PLAN_MODEL || process.env.ELANOUS_PR_REVIEW_MODEL || tierModel('better');
       const menu = candidates.map((c) => `- ${c.name}: ${c.description}`).join('\n');
       const prompt = [
-        '너는 monad 하니스의 스킬 조합 플래너다. 주어진 objective 를 완수하기 위해 아래 후보 스킬(executor) 중',
+        '너는 elanous 하니스의 스킬 조합 플래너다. 주어진 objective 를 완수하기 위해 아래 후보 스킬(executor) 중',
         '필요한 것들을 골라 **실행 순서(체인)**를 짠다. 한 스킬로 충분하면 1개, 여러 산출/단계가 필요하면 여러 개',
         `(최대 ${MAX_STEPS}개). 각 스킬은 파일/웹을 실제로 생성한다(예: frontend-slides=웹 슬라이드덱 HTML,`,
         'native-deck=PPT pptx, diagram-master=다이어그램/이미지, content-to-web=웹 게시). 앞 단계 산출은 다음',

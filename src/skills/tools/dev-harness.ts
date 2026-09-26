@@ -7,7 +7,7 @@
 //   dispatch: ctx→SurfaceUx → defaultSeams(repoRoot) → runStagedHarnessOnSurface(막·autoDrive)
 //
 // 배선 패턴 = SelfImplement(#4794)/RelayShellPrompt(#4806) 복제 — monad-agent-turn 인터셉트로
-// per-turn surface HITL 채널을 ctx 로 실어줘 승인/진행이 그 서피스로. P2 는 **monad 자신** 타깃
+// per-turn surface HITL 채널을 ctx 로 실어줘 승인/진행이 그 서피스로. P2 는 **elanous 자신** 타깃
 // (repoRoot 생략 = 데몬 cwd repo). 외부 repo(target)는 P3.
 //
 // ★ 제1원칙: front door 결정 observe(harness.frontdoor) — objective digest·autoDrive·terminal.
@@ -36,10 +36,10 @@ const RUN_DEV_HARNESS_DESCRIPTION =
   'Develop a feature/fix end-to-end through the full staged harness — Planner → Executor → Reviewer → ' +
   'Deployer — in an isolated git worktree, then open a DRAFT pull request. Unlike SelfImplement (single ' +
   'implement+gate pass), this runs the explicit P→E→R→D pipeline with review rounds and a divergence cap. ' +
-  'Targets monad itself, an external git repo (worktree+PR), a non-git directory or a single config/dotfile ' +
+  'Targets elanous itself, an external git repo (worktree+PR), a non-git directory or a single config/dotfile ' +
   '(git-init shadow staging → syntax/manifest gate → HITL diff → backup + in-place apply; never PR). ' +
   'In-place apply always requires human diff confirmation (no auto-apply, even auto_drive="on"). ' +
-  'Use when the user wants monad to develop something through the ' +
+  'Use when the user wants elanous to develop something through the ' +
   'planner/executor/reviewer harness (e.g. "P→E→R→D로 X 개발해줘", "하니스로 구현해줘", "플래너부터 리뷰기까지 돌려서"). ' +
   'auto_drive: "safe" (default — low-risk stages autonomous, PR-open → operator approval), "off" (every ' +
   'gate → operator), "on" (fully autonomous; PR-open still fail-closed). Coding + gate autonomous; ' +
@@ -74,7 +74,7 @@ export function buildRunDevHarnessTool(): LLMToolSpec {
       type: 'object',
       properties: {
         objective: { type: 'string', description: 'What to build/fix — the feature description the harness will plan, implement, review, and PR.' },
-        target: { type: 'string', description: 'What to develop: omit this (or use "self") to develop monad itself. Set an absolute path only when the user explicitly names an external repository, directory, or config/dotfile; never invent or construct a path. External targets may be an external git repo (worktree+PR), a non-git directory, or a single config/dotfile (shadow staging → backup + HITL in-place apply). Must be inside the home directory; system paths outside home are refused.' },
+        target: { type: 'string', description: 'What to develop: omit this (or use "self") to develop elanous itself. Set an absolute path only when the user explicitly names an external repository, directory, or config/dotfile; never invent or construct a path. External targets may be an external git repo (worktree+PR), a non-git directory, or a single config/dotfile (shadow staging → backup + HITL in-place apply). Must be inside the home directory; system paths outside home are refused.' },
         auto_drive: { type: 'string', enum: ['off', 'safe', 'on'], description: 'Autonomy level (default "safe"). "off"=every gate to operator; "safe"=low-risk auto, PR-open to operator; "on"=fully autonomous (PR-open still fail-closed).' },
         base: { type: 'string', description: 'Base branch to worktree from (default: repo default).' },
         auto_review: { type: 'boolean', description: 'G8/G9 — **defaults to TRUE** (unattended review is the norm; set false, or say "내가 직접 검토"/"manual review", to suppress). Attaches the `auto-review` label on the opened PR (subject to work-risk self-assessment; external-deploy/live-order/design-fork/destructive/security are refused). A labeled PR is completed unmanned by the L3 poller (rework→judge→merge). Symmetric with the dev line (self implement/orchestrate --auto-review).' },
@@ -105,7 +105,7 @@ export interface DevHarnessDeps {
   seamsOptions?: DefaultSeamsOptions;
   /** ⭐ 인프로세스 경로의 SurfaceUx 원천 — ctx 없는 CLI 호출이 «진행 sink» 를 넣는 자리.
    *  ⛔ ctx 로 넣으면 안 된다: 위 detached 가드가 `ctx && !deps` 라 ctx 를 주는 순간 subprocess 위임으로 갈린다.
-   *  📏 왜 생겼나(2026-08-11 실측): `monad harness run` 이 8분 3초를 완주하는 동안 부모 stdout 이 «0줄»이었다.
+   *  📏 왜 생겼나(2026-08-11 실측): `elanous harness run` 이 8분 3초를 완주하는 동안 부모 stdout 이 «0줄»이었다.
    *    시퀀서는 스테이지마다 progress 를 내고 있었고(`staged-harness.ts`), 막이 그것을 `ux.progress` 로
    *    보내고 있었는데(`harness-membrane.ts:212`), CLI 경로의 ux 는 `emitFeedback` 이 없어 no-op 였다.
    *    ⇒ ***만들어져 있는데 CLI 경로만 안 이어져 있었다.*** */
@@ -128,7 +128,7 @@ export function resolveAutoDrive(rawArgs: Record<string, unknown>, fallbackText?
 /** ★ auto-review 발동 판정(대표 2026-07-27) — **기본 ON**, 억제 표현이 있을 때만 OFF.
  *
  *  배경: 설명은 *"Symmetric with the dev line"* 이라 적혀 있는데 **기본값이 비대칭**이었다.
- *  `monad dev` 는 auto-review 가 기본 on 인데 이 툴은 `rawArgs.auto_review` 를 명시해야만 켜져,
+ *  `elanous dev` 는 auto-review 가 기본 on 인데 이 툴은 `rawArgs.auto_review` 를 명시해야만 켜져,
  *  L2 자연어로 부르면 사실상 영영 안 켜졌다(실측: RunDevHarness 호출 1건 · auto_review 미지정 →
  *  PR 도 무인 리뷰도 안 붙음). 사람이 *"내가 볼게"* 라 하지 않는 한 무인이 기본이어야 한다.
  *
@@ -246,8 +246,8 @@ export async function dispatchRunDevHarness(
   //   이벤트루프를 격리(하니스 동기 op 가 telegram 폴링/HTTP 를 굶기던 근본 차단). **모든 autoDrive**
   //   (off/safe/on) 위임 — off/safe 의 HITL(confirm/question)은 자식↔부모 IPC 로 릴레이한다(detached-hitl).
   //   두 caller(monad-agent-turn 직접 · daemon-tools)가 모두 이 함수를 타므로 여기서 판정. 재귀 가드:
-  //   ① 위임된 subprocess(run-detached·MONAD_HARNESS_DETACHED) ② 테스트 주입(deps) ③ ctx 없는 직접 CLI 는 인프로세스.
-  if (ctx && (!deps || deps.dispatchDetached) && !process.env.MONAD_HARNESS_DETACHED) {
+  //   ① 위임된 subprocess(run-detached·ELANOUS_HARNESS_DETACHED) ② 테스트 주입(deps) ③ ctx 없는 직접 CLI 는 인프로세스.
+  if (ctx && (!deps || deps.dispatchDetached) && !process.env.ELANOUS_HARNESS_DETACHED) {
     const { dispatchRunDevHarnessDetached: defaultDispatchDetached } = await import('../../harness/dispatch-detached.js');
     const dispatchDetached = deps?.dispatchDetached ?? defaultDispatchDetached;
     const relayUx = surfaceUxFromDispatchCtx(ctx);   // 데몬 surface(telegram 등) — 진행/HITL 을 이리로 relay
@@ -277,7 +277,7 @@ export async function dispatchRunDevHarness(
       const { buildLlmHitlRelay: defaultHitlRelayFactory } = await import('../../harness/llm-hitl-relay.js');
       const hitlRelayFactory = deps?.hitlRelayFactory ?? defaultHitlRelayFactory;
       const { streamLLM } = await import('../../llm.js');
-      const hitlModel = process.env.MONAD_PR_REVIEW_MODEL || tierModel('better');
+      const hitlModel = process.env.ELANOUS_PR_REVIEW_MODEL || tierModel('better');
       hitlRelay = hitlRelayFactory({ context: objective, ask: (p) => streamLLM([{ role: 'user', content: p }], () => {}, { model: hitlModel, reasoningEffort: 'low' }) });
       debug.log('harness.frontdoor', 'hitl-llm-relay', { reason: 'non-interactive-autonomous', model: hitlModel });
     }
@@ -287,7 +287,7 @@ export async function dispatchRunDevHarness(
     });
   }
   const base = typeof rawArgs.base === 'string' && rawArgs.base.trim() ? rawArgs.base.trim() : undefined;
-  // P3 — 타깃 repo: 'self'/생략 = monad 자신(seamsOptions 없음). 그 외 = 외부 repo 경로.
+  // P3 — 타깃 repo: 'self'/생략 = elanous 자신(seamsOptions 없음). 그 외 = 외부 repo 경로.
   const target = typeof rawArgs.target === 'string' && rawArgs.target.trim() && rawArgs.target.trim() !== 'self'
     ? rawArgs.target.trim() : null;
 
@@ -312,15 +312,15 @@ export async function dispatchRunDevHarness(
   let targetOptions: DefaultSeamsOptions | undefined = deps?.seamsOptions;
   let targetResolution: HarnessTargetResolution | undefined;
   if (!targetOptions && target) {
-    const monadBinRoot = resolveMainRepoRoot(process.cwd()) ?? process.cwd();
+    const elanousBinRoot = resolveMainRepoRoot(process.cwd()) ?? process.cwd();
     const resolution = resolveHarnessTarget(target);
     targetResolution = resolution;
     debug.log('harness.frontdoor', 'target.resolved', {
-      target, kind: resolution.status, monadBinRoot,
+      target, kind: resolution.status, elanousBinRoot,
       canonicalTarget: resolution.canonicalTarget, repoRoot: resolution.repoRoot,
     });
     if (resolution.status === 'git-repo' || resolution.status === 'non-git-dir' || resolution.status === 'file') {
-      targetOptions = harnessTargetOptions(resolution, monadBinRoot);
+      targetOptions = harnessTargetOptions(resolution, elanousBinRoot);
     } else if (resolution.status === 'outside-home') {
       // The classifier does not own HITL; the front door retains the existing
       // fail-closed authorization contract for canonical outside-home targets.
@@ -342,7 +342,7 @@ export async function dispatchRunDevHarness(
         debug.log('harness.frontdoor', 'refused', { target, reason: 'outside-home-revalidation-failed', detail: authorized.reason });
         return { output: `RunDevHarness ⚠️ 거부: target '${target}' — 승인 중 경로 재검증에 실패했습니다.` };
       }
-      const authorizedOptions = harnessTargetOptions(authorized, monadBinRoot);
+      const authorizedOptions = harnessTargetOptions(authorized, elanousBinRoot);
       if (!authorizedOptions) {
         debug.log('harness.frontdoor', 'refused', { target, reason: 'outside-home-options-unavailable', detail: authorized.reason });
         return { output: `RunDevHarness ⚠️ 거부: target '${target}' — 승인된 경로의 실행 옵션을 만들 수 없습니다.` };
@@ -356,7 +356,7 @@ export async function dispatchRunDevHarness(
       const message = resolution.status === 'missing'
         ? '존재하지 않는 경로'
         : '경로를 안전하게 정규화할 수 없음';
-      return { output: `RunDevHarness ⚠️ 거부: target '${target}' — ${message}. 홈 안의 git repo·디렉토리·config 파일만 지원(홈 밖은 확인 후 진행). 외부 저장소를 사용하지 않는다면 target을 생략하세요(그러면 monad 자신을 대상으로 합니다).` };
+      return { output: `RunDevHarness ⚠️ 거부: target '${target}' — ${message}. 홈 안의 git repo·디렉토리·config 파일만 지원(홈 밖은 확인 후 진행). 외부 저장소를 사용하지 않는다면 target을 생략하세요(그러면 elanous 자신을 대상으로 합니다).` };
     }
   }
 
@@ -370,7 +370,7 @@ export async function dispatchRunDevHarness(
     }
   }
 
-  // seam — configDir/stateDir 격리(자식 monad 코딩에이전트). P2: repoRoot 생략 = monad 자신.
+  // seam — configDir/stateDir 격리(자식 elanous 코딩에이전트). P2: repoRoot 생략 = elanous 자신.
   const { defaultSeams } = await import('../../self-implement/seams.js');
   const { runStagedHarnessOnSurface } = await import('../../harness/harness-membrane.js');
   const { groundMissionInCodebase } = await import('../../autopilot/mission-codebase-gate.js'); // ★ 이식 §3.1 — 하니스 Planner grounding
@@ -436,14 +436,14 @@ export async function dispatchRunDevHarness(
   }
 
   // ★ LLM 리뷰어 주입(대표 2026-07-21) — Review critique(FAIL findings → rework 자동수정)·PR 제목·post-PR
-  //   리뷰 커멘트. `monad self review` 와 동일 엔진(reviewPullRequest·gpt-5.6-sol). fail-soft(미주입=게이트-only).
+  //   리뷰 커멘트. `elanous self review` 와 동일 엔진(reviewPullRequest·gpt-5.6-sol). fail-soft(미주입=게이트-only).
   const { streamLLM } = await import('../../llm.js');
-  const reviewModel = process.env.MONAD_PR_REVIEW_MODEL || tierModel('better');
+  const reviewModel = process.env.ELANOUS_PR_REVIEW_MODEL || tierModel('better');
   const llmReview = (prompt: string): Promise<string> =>
     streamLLM([{ role: 'user', content: prompt }], () => {}, { model: reviewModel, reasoningEffort: 'medium' });
 
   // ★ HITL 완주 in-process 배선(2026-07-22·트랙 HITL·#5037 확장) — 인프로세스 경로(ctx 없는 직접 CLI:
-  //   `monad self implement --plan`)는 ux 가 비인터랙티브라 confirm=fail-closed·question=null 로 HITL dead-end.
+  //   `elanous self implement --plan`)는 ux 가 비인터랙티브라 confirm=fail-closed·question=null 로 HITL dead-end.
   //   #5037 은 detached(daemon) 경로만 LLM relay 를 붙였다 — 인프로세스도 동일하게 붙여 CLI --plan 무인 완주.
   //   비인터랙티브일 때만 confirm/question 을 LLM relay 로 위임(progress/spill/surface 원본 유지). ⚠️ X3 규율:
   //   부작용(apply/배포/집행)은 relay 가 기본 fail-closed(approveSideEffects off) — 자율 임의 집행 금지 유지.
@@ -470,7 +470,7 @@ export async function dispatchRunDevHarness(
   const result = await runHarness({
     // ⛔⭐ `naturalLanguageDispatch` 를 «단정»하지 않는다 — 증거로 정한다.
     //   이 함수는 «둘» 이 지난다: ⑴ 모델이 부른 도구(사용자 턴 문면이 ctx.userText 로 온다)
-    //   ⑵ `monad harness run` CLI(사용자 턴이 «없다» — ctx 자체가 undefined).
+    //   ⑵ `elanous harness run` CLI(사용자 턴이 «없다» — ctx 자체가 undefined).
     //   종전엔 `true` 로 못 박혀 ⑵ 도 「자연어 유래」로 기록됐다(2026-08-06 라이브 실측:
     //   CLI 로 띄운 런의 원장에 goalSource=natural-language-dispatch 가 찍혔다).
     //   ⇒ v25 ⑷ 의 «분자»가 부풀어 그 수가 못 믿을 값이 된다.
@@ -502,7 +502,7 @@ export async function dispatchRunDevHarness(
     //   callable=streamLLM(mission-engine 우회·방화벽). grounding 을 context 로 실어 재조사 없이 분해. fail-soft([]).
     decompose: (objective, context) => llmDecomposeSteps(
       objective,
-      (inp) => streamLLM([{ role: 'user', content: inp.prompt }], () => {}, { model: process.env.MONAD_DECOMPOSE_MODEL || reviewModel, reasoningEffort: 'high' }).then((text) => ({ text })),
+      (inp) => streamLLM([{ role: 'user', content: inp.prompt }], () => {}, { model: process.env.ELANOUS_DECOMPOSE_MODEL || reviewModel, reasoningEffort: 'high' }).then((text) => ({ text })),
       { ...(context ? { context } : {}), maxTasks: 8, ...(ctx?.signal ? { signal: ctx.signal } : {}) },
     ),
     // ★ H2 adversarial — 계획 실행 前 크리틱이 공격해 보강. 두 모드:

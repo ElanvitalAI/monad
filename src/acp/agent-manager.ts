@@ -69,7 +69,7 @@ export class AcpAgentManager {
     const spec = getAcpBackend(backendId);
     let agent: AcpAgent;
     if (spec.transport === 'codex-app-server') {
-      // ⛔📏 2026-08-21: 여기가 «비어 있어서» monad 는 코덱스의 물음을 구조적으로 전부 거절했다.
+      // ⛔📏 2026-08-21: 여기가 «비어 있어서» elanous 는 코덱스의 물음을 구조적으로 전부 거절했다.
       //   `setElicitationHandler` 의 프로덕션 호출자가 0 이었고, 기본 핸들러는 decline 이다.
       //   ⇒ 사람에게 묻는 기계는 이미 «끝까지» 있었다(ask-user-question · PWA 시트 · HITL).
       //     끊긴 것은 이 한 줄이다. ⭐ 매핑은 못 고르는 스키마를 «거절»한다 — 지어내지 않는다.

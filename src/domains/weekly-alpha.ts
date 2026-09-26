@@ -12,7 +12,7 @@
 //   → LLM 종합: 추천 3~5건 (대상·방향·비중·레버리지·근거·무효화 조건)
 //
 // 거버넌스: READ-ONLY 추천 — 집행은 verify게이트+HITL+대표 승인. 노출 150% 정책 언급.
-// 산출물은 ~/.monad/conatus/alpha_reports/ 에 영속 (R3 지식레이어 인제스트 대상).
+// 산출물은 ~/.elanous/conatus/alpha_reports/ 에 영속 (R3 지식레이어 인제스트 대상).
 
 import { buildFinanceTools } from './finance-tools.js';
 import { openSignalsDb, periodStats, topSignals } from './breaking-signals.js';

@@ -73,14 +73,14 @@ function prepStateDir(benchRoot: string, spec: Spec, goalLoop = false): string {
   const dir = join(benchRoot, spec.label);
   rmSync(dir, { recursive: true, force: true });
   mkdirSync(dir, { recursive: true });
-  // 베이스 config — **`.monad-test/config.json`(서피스 off 테스트 config) 우선**. 프로덕션 `~/.monad` 를
+  // 베이스 config — **`.elanous-test/config.json`(서피스 off 테스트 config) 우선**. 프로덕션 `~/.elanous` 를
   // 복사하면 Discord/Telegram/MCP 등 전 서피스가 부팅돼(telegram 은 프로덕션 데몬과 409 Conflict) 노이즈로
   // goal 제출이 삼켜진다(실측). 테스트 config 는 서피스가 꺼진 클린 TUI → 순수 goal-loop.
-  const baseCfg = [join(repoRoot, '.monad-test', 'config.json'), join(homedir(), '.monad', 'config.json'), join(homedir(), '.config', 'monad', 'config.json')].find((p) => existsSync(p));
+  const baseCfg = [join(repoRoot, '.elanous-test', 'config.json'), join(homedir(), '.elanous', 'config.json'), join(homedir(), '.config', 'elanous', 'config.json')].find((p) => existsSync(p));
   if (baseCfg) cpSync(baseCfg, join(dir, 'config.json'));
   else console.error(`[bench] ⚠️ ${spec.label}: 베이스 config 없음 — provider 미설정 위험`);
   // provider/model override (config-dir 스코프).
-  const cfg = (kv: string[]) => execFileSync('bun', ['run', join(repoRoot, 'bin/monad.mjs'), ...kv, '--config-dir', dir], { cwd: repoRoot, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'], env: { ...process.env, MONAD_STATE_DIR: dir } });
+  const cfg = (kv: string[]) => execFileSync('bun', ['run', join(repoRoot, 'bin/elanous.mjs'), ...kv, '--config-dir', dir], { cwd: repoRoot, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'], env: { ...process.env, ELANOUS_STATE_DIR: dir } });
   // 서피스 비활성화 — bench 인스턴스는 순수 goal-loop TUI 여야 한다. Telegram(프로덕션 데몬과 409
   // Conflict)·Discord·nexus autostart 가 켜지면 부팅 노이즈가 goal 제출(Enter)을 삼킨다(실측).
   for (const k of ['telegram.enabled', 'discord.enabled', 'nexus.autostart', 'nexus.enabled']) {
@@ -108,7 +108,7 @@ function prepStateDir(benchRoot: string, spec: Spec, goalLoop = false): string {
   return dir;
 }
 
-/** 한 spec 실행 — **헤드리스 에이전트**(`monad chat --tools`)로 격리 워크트리에서 goal 빌드.
+/** 한 spec 실행 — **헤드리스 에이전트**(`elanous chat --tools`)로 격리 워크트리에서 goal 빌드.
  *  tui-sim PTY 드라이빙(부팅·붙여넣기·서피스 노이즈)이 멀티라인 goal 제출에 근본적으로 취약해, 동일한
  *  tool-loop(Read/Grep/Edit/Write/Bash)을 헤드리스로 직접 돈다. cwd=worktree → Write/Edit 가 워크트리에
  *  쓰고, `git diff` 로 산출물 회수. config-dir 격리로 모델별 provider/키 적용.
@@ -121,9 +121,9 @@ async function runSpec(_spec: Spec, stateDir: string, goal: string, timeoutMs: n
   try { execFileSync('git', ['worktree', 'add', '--detach', wt, 'HEAD'], { cwd: repoRoot, stdio: 'ignore' }); }
   catch (e: any) { return { worktree: null, completed: false, note: `worktree 실패: ${String(e?.message ?? e).slice(0, 60)}` }; }
   try {
-    execFileSync('bun', ['run', join(repoRoot, 'bin/monad.mjs'), 'chat', '--tools', ...(goalLoop ? ['--goal-loop'] : []), '--config-dir', stateDir, goal], {
+    execFileSync('bun', ['run', join(repoRoot, 'bin/elanous.mjs'), 'chat', '--tools', ...(goalLoop ? ['--goal-loop'] : []), '--config-dir', stateDir, goal], {
       cwd: wt, encoding: 'utf8', timeout: timeoutMs, maxBuffer: 32 * 1024 * 1024,
-      stdio: ['ignore', 'pipe', 'pipe'], env: { ...process.env, MONAD_STATE_DIR: stateDir },
+      stdio: ['ignore', 'pipe', 'pipe'], env: { ...process.env, ELANOUS_STATE_DIR: stateDir },
     });
     return { worktree: wt, completed: true, note: '완료' };
   } catch (e: any) {
@@ -146,7 +146,7 @@ function collectDiff(worktree: string): { diffStat: string; diff: string } {
 }
 
 /** LLM judge — 모든 diff 를 한 프롬프트로 넣어 모델별 코드품질 점수/랭킹. judge 전용 config-dir(frontier
- *  모델 활성화)에서 `monad chat --config-dir` 일회성 호출. ⚠️ chat 은 --provider/--model 플래그가 없고
+ *  모델 활성화)에서 `elanous chat --config-dir` 일회성 호출. ⚠️ chat 은 --provider/--model 플래그가 없고
  *  active provider 를 쓰므로, judge 모델은 config-dir 로 지정한다(모델별 인스턴스와 동형). */
 async function judge(results: Result[], judgeSpec: string, goal: string, benchRoot: string): Promise<string> {
   const blocks = results.map((r) => `### [${r.spec.label}] (${r.spec.provider}:${r.spec.model}) · ${r.completed ? '완료' : '미완'}\n\`\`\`diff\n${r.diff || '(변경 없음)'}\n\`\`\``).join('\n\n');
@@ -162,9 +162,9 @@ async function judge(results: Result[], judgeSpec: string, goal: string, benchRo
   const jspec = parseSpec(`judge=${judgeSpec}`);
   const jdir = prepStateDir(benchRoot, jspec);
   try {
-    const out = execFileSync('bun', ['run', join(repoRoot, 'bin/monad.mjs'), 'chat', '--config-dir', jdir, '--json', prompt], {
+    const out = execFileSync('bun', ['run', join(repoRoot, 'bin/elanous.mjs'), 'chat', '--config-dir', jdir, '--json', prompt], {
       cwd: repoRoot, encoding: 'utf8', timeout: 300_000, maxBuffer: 8 * 1024 * 1024, stdio: ['ignore', 'pipe', 'pipe'],
-      env: { ...process.env, MONAD_STATE_DIR: jdir },
+      env: { ...process.env, ELANOUS_STATE_DIR: jdir },
     });
     // --json → {reply,...} (마지막 JSON 라인).
     const jline = out.trim().split('\n').filter((l) => l.trim().startsWith('{')).pop();
@@ -207,7 +207,7 @@ async function main(): Promise<void> {
   // per-spec 프롬프트 보강 — 튜닝 효과 측정용(같은 goal 을 plain vs augmented 나란히 비교). csv 라벨만.
   const augLabels = new Set((argVal(args, '--augment-labels') ?? '').split(',').map((s) => s.trim()).filter(Boolean));
   const timeoutMs = (Number(argVal(args, '--timeout')) || 900) * 1000;
-  const benchRoot = join(repoRoot, '.monad-test', 'bench', `run-${execFileSync('git', ['rev-parse', '--short', 'HEAD'], { cwd: repoRoot, encoding: 'utf8' }).trim()}`);
+  const benchRoot = join(repoRoot, '.elanous-test', 'bench', `run-${execFileSync('git', ['rev-parse', '--short', 'HEAD'], { cwd: repoRoot, encoding: 'utf8' }).trim()}`);
   mkdirSync(benchRoot, { recursive: true });
 
   console.error(`\n🏁 tui-sim-bench · ${specs.length}종 · goal ${goal.length}자${augEnabled ? ' · +보강' : ''}${goalLoopMode ? ' · +goal-loop' : ''}`);

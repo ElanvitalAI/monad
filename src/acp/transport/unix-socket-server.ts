@@ -2,8 +2,8 @@
 //
 // Loopback-only by construction — the kernel enforces `chmod 0600`
 // so no token check is needed. A bound socket file at
-// `~/.monad/monad.sock` is the canonical contact point for a local
-// TUI/CLI that wants to talk to a headless Monad core running in
+// `~/.elanous/elanous.sock` is the canonical contact point for a local
+// TUI/CLI that wants to talk to a headless Elanous core running in
 // another shell (or as a launchd/systemd daemon).
 //
 // On process exit we unlink the stale socket file so the next boot
@@ -34,7 +34,7 @@ import type {
 import { AcpTransportError } from './types.js';
 
 export interface UnixSocketServerOpts {
-  /** Filesystem path for the socket. `~/.monad/monad.sock` by convention. */
+  /** Filesystem path for the socket. `~/.elanous/elanous.sock` by convention. */
   path: string;
   /** Called once per inbound connection. */
   onConnection: AcpConnectionHandler;

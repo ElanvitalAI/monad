@@ -22,8 +22,8 @@ import { dirname, join } from 'node:path';
  * 기존 silentFor 경로를 재사용한다. 파일이 없거나 at 이 안 전진하면 갱신하지 않는다 — 말을
  * 안 내는 자식·쓰기를 멈춘 파일은 옛 타임아웃 tick 그대로다.
  */
-export const CHILD_LIVENESS_HEARTBEAT_ENV = 'MONAD_CHILD_LIVENESS_HEARTBEAT';
-export const CHILD_LIVENESS_HEARTBEAT_FILE = '.monad-child-liveness.hb';
+export const CHILD_LIVENESS_HEARTBEAT_ENV = 'ELANOUS_CHILD_LIVENESS_HEARTBEAT';
+export const CHILD_LIVENESS_HEARTBEAT_FILE = '.elanous-child-liveness.hb';
 export const DEFAULT_CHILD_LIVENESS_HEARTBEAT_MS = 5_000;
 
 export function resolveChildLivenessHeartbeatPath(cwd: string): string {

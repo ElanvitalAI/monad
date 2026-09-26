@@ -43,7 +43,7 @@ export interface SnapshotWorkspace {
 }
 
 export interface SnapshotPane {
-  /** Opaque pane id (monad uses string ids via mintPaneId). */
+  /** Opaque pane id (elanous uses string ids via mintPaneId). */
   id: string;
   kind: string;
   title: string;
@@ -104,7 +104,7 @@ export interface DashboardStateSnapshot {
     exposure?: TerminalExposureSnapshot;
   }>;
   /** Recent host-side terminal intent events. This keeps terminal
-   *  double-click / motion visible to monad even when PTY forwarding
+   *  double-click / motion visible to elanous even when PTY forwarding
    *  cannot carry them. */
   recentTerminalMouseIntents: SnapshotTerminalMouseIntent[];
 }

@@ -4,7 +4,7 @@
 // status pill) 의 공통 wire. user-config 의 `llm.rotation` (RotationEntry[])
 // 를 list 로 surface + tap-to-cycle 시 다음 entry 를 active 로 mutate.
 //
-// **Active state**: ~/.monad/config.json 의 top-level `llm.provider/model`
+// **Active state**: ~/.elanous/config.json 의 top-level `llm.provider/model`
 // 이 SoT (rotateNextProvider 가 이 두 field 를 다음 entry 로 갱신).
 // in-memory 추가 state 없음 — daemon restart 후에도 사용자가 마지막에
 // 선택한 model 유지. feedback_user_config_over_env 정합.

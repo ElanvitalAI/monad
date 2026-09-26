@@ -25,7 +25,7 @@ beforeEach(() => {
   cfgPath = join(root, 'config.json');
   resetUserConfig();
   // Isolate the OAuth token store so the wizard's "keep existing tokens?"
-  // probe doesn't pick up the user's real ~/.config/monad/auth.json.
+  // probe doesn't pick up the user's real ~/.config/elanous/auth.json.
   savedEnv.XDG_CONFIG_HOME = process.env.XDG_CONFIG_HOME;
   savedEnv.CODEX_HOME = process.env.CODEX_HOME;
   savedEnv.XAI_API_KEY = process.env.XAI_API_KEY;
@@ -146,14 +146,14 @@ describe('interactive onboarding refusal', () => {
   test('piped setup llm refuses before prompting or saving config', async () => {
     const stateRoot = mkdtempSync(join(tmpdir(), 'onboarding-piped-cli-'));
     try {
-      const proc = Bun.spawn(['bun', 'bin/monad.mjs', '--test', 'setup', 'llm'], {
+      const proc = Bun.spawn(['bun', 'bin/elanous.mjs', '--test', 'setup', 'llm'], {
         cwd: join(import.meta.dir, '..'),
         env: {
           ...process.env,
           HOME: stateRoot,
           XDG_CONFIG_HOME: join(stateRoot, 'config'),
-          MONAD_STATE_DIR: join(stateRoot, 'state'),
-          MONAD_SUPPRESS_XDG_WARNING: '1',
+          ELANOUS_STATE_DIR: join(stateRoot, 'state'),
+          ELANOUS_SUPPRESS_XDG_WARNING: '1',
           PATH: process.env.PATH ?? '',
         },
         stdin: new TextEncoder().encode('3\nxai-1234567890abcdef\n'),
@@ -166,8 +166,8 @@ describe('interactive onboarding refusal', () => {
         new Response(proc.stderr).text(),
       ]);
       expect(code).not.toBe(0);
-      expect(`${stdout}\n${stderr}`).toContain('monad setup --non-interactive --config <path>');
-      expect(existsSync(join(stateRoot, '.monad-test', 'config.json'))).toBe(false);
+      expect(`${stdout}\n${stderr}`).toContain('elanous setup --non-interactive --config <path>');
+      expect(existsSync(join(stateRoot, '.elanous-test', 'config.json'))).toBe(false);
     } finally {
       rmSync(stateRoot, { recursive: true, force: true });
     }
@@ -481,7 +481,7 @@ describe('onboarding wizard', () => {
     const fetchCalls: string[] = [];
     const fakeFetch: any = async (url: string) => {
       fetchCalls.push(url);
-      return { json: async () => ({ ok: true, result: { id: 77, username: 'monadtestbot' } }) };
+      return { json: async () => ({ ok: true, result: { id: 77, username: 'elanoustestbot' } }) };
     };
     const io = scriptedIO([
       '10',                     // llm: auto
@@ -501,7 +501,7 @@ describe('onboarding wizard', () => {
     expect(cfg.telegram.enabled).toBe(true);
     expect(cfg.telegram.botToken).toBe('12345:ABCDEFGHIJKLMNOPQRSTUVWXYZabcdef');
     expect(fetchCalls.some(u => u.endsWith('/getMe'))).toBe(true);
-    expect(io.outputs.join('\n')).toMatch(/@monadtestbot/);
+    expect(io.outputs.join('\n')).toMatch(/@elanoustestbot/);
   });
 
   test('telegram shape-invalid token retries 3x then accepts last', async () => {
@@ -529,7 +529,7 @@ describe('onboarding wizard', () => {
     expect(cfg.telegram.botToken).toBe('final-bad');
   });
 
-  test('codex mode 3 (skip) leaves apiKey undefined for later `monad login`', async () => {
+  test('codex mode 3 (skip) leaves apiKey undefined for later `elanous login`', async () => {
     const vault = join(root, 'vault-codex-skip');
     mkdirSync(vault);
     const io = scriptedIO([
@@ -547,7 +547,7 @@ describe('onboarding wizard', () => {
     expect(cfg.llm.provider).toBe('openai-codex');
     expect(cfg.llm.apiKey).toBeUndefined();
     const output = io.outputs.join('\n');
-    expect(output).toMatch(/monad login openai-codex/);
+    expect(output).toMatch(/elanous login openai-codex/);
   });
 
   test('explicit auto provider selection (last index) succeeds', async () => {
@@ -650,7 +650,7 @@ describe('onboarding wizard', () => {
         ok: true,
         status: 200,
         text: async () => '',
-        json: async () => ({ id: '987654321098765432', username: 'monadtestbot', discriminator: '0' }),
+        json: async () => ({ id: '987654321098765432', username: 'elanoustestbot', discriminator: '0' }),
       };
     };
     const io = scriptedIO([
@@ -667,7 +667,7 @@ describe('onboarding wizard', () => {
     });
     expect(cfg.discord.enabled).toBe(true);
     expect(fetchCalls.some(u => u.endsWith('/users/@me'))).toBe(true);
-    expect(io.outputs.join('\n')).toMatch(/Connected as monadtestbot/);
+    expect(io.outputs.join('\n')).toMatch(/Connected as elanoustestbot/);
   });
 
   // ── Bundle 4' · /setup reset (2026-04-27) ──────────────────────────

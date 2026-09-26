@@ -5,7 +5,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import type { PtyControlResult } from '../pty-shell/pty-control-ipc.js';
 
-process.env.MONAD_STATE_DIR = mkdtempSync(join(tmpdir(), 'pty-drive-'));
+process.env.ELANOUS_STATE_DIR = mkdtempSync(join(tmpdir(), 'pty-drive-'));
 
 const { runPtyDrive, runDriveCliCommand, runPtyAttachDrive, registerPtyAttachDriveCommand, ptyListReportsAlive, stripScopeArgs, withScopeArgs } = await import('./pty-drive-cli.js');
 const { controlDepsForRemoteRef } = await import('../autopilot/pty-control-loop.js');
@@ -14,7 +14,7 @@ const { buildDevCliSpec } = await import('../self-dev/dev-cli.js');
 const { planDevPipeline } = await import('../self-dev/dev-pipeline.js');
 const { debug } = await import('../debug/log.js');
 const { KNOWN_LOG_EVENT_NAMES } = await import('./log-event-names.js');
-const { setMonadConfigDir, resetMonadConfigDir } = await import('../monad-config-dir.js');
+const { setElanousConfigDir, resetElanousConfigDir } = await import('../elanous-config-dir.js');
 const { effectiveInstanceRoot, resetEffectiveInstanceRoot } = await import('../instance/resolve.js');
 const { setPtyAdapterForTesting, getPty, listPty, unregisterPty } = await import('../pty-shell/registry.js');
 
@@ -202,20 +202,20 @@ describe('runPtyAttachDrive (existing PTY control-axis handler)', () => {
   });
 });
 
-describe('runPtyDrive (monad drive 핸들러)', () => {
-  test('dev --monad --hold parses --ready-timeout-ms into the dispatched PTY readiness timeout', () => {
+describe('runPtyDrive (elanous drive 핸들러)', () => {
+  test('dev --elanous --hold parses --ready-timeout-ms into the dispatched PTY readiness timeout', () => {
     const spec = buildDevCliSpec({ text: '' }, { kind: 'self' }, {
-      monad: true, hold: true, readyTimeoutMs: '180000',
+      elanous: true, hold: true, readyTimeoutMs: '180000',
     });
     const plan = planDevPipeline(spec);
-    expect(plan.dispatch).toBe('monad-tui');
-    expect(plan.monad).toEqual({ hold: true, readyTimeoutMs: 180000 });
+    expect(plan.dispatch).toBe('elanous-tui');
+    expect(plan.elanous).toEqual({ hold: true, readyTimeoutMs: 180000 });
   });
 
-  test('dev --monad --hold rejects non-positive and nonnumeric --ready-timeout-ms values by name', () => {
+  test('dev --elanous --hold rejects non-positive and nonnumeric --ready-timeout-ms values by name', () => {
     for (const raw of ['0', '-1', 'nope']) {
       expect(() => buildDevCliSpec({ text: '' }, { kind: 'self' }, {
-        monad: true, hold: true, readyTimeoutMs: raw,
+        elanous: true, hold: true, readyTimeoutMs: raw,
       })).toThrow(/--ready-timeout-ms.*양의 정수/);
     }
   });
@@ -228,27 +228,27 @@ describe('runPtyDrive (monad drive 핸들러)', () => {
 
   // ⭐ `drive` 의 계약은 한 문장이다 — **표면은 `dev` 와 같고, 런타임이 받는 것은 5개뿐이다.**
   //   ① 표면: `--help` 가 `dev` 것과 글자 그대로 같고 top-level 에 독립 항목으로 서지 않는다(C-4 수렴).
-  //      ⇒ 그래서 도움말에는 `--monad` 를 포함한 dev 옵션이 다 보인다.
+  //      ⇒ 그래서 도움말에는 `--elanous` 를 포함한 dev 옵션이 다 보인다.
   //   ② 런타임: `assertDriveAliasOptions` 가 goal·max-steps·poll-ms·model·cwd 외 **전부 명시 거부**한다.
-  //      ⇒ `drive --monad` 는 거부된다(그 축은 test/cli-dev-command.test.ts 가 검증한다).
-  //   ⛔ 초판 주석이 ①만 보고 *"--monad 를 상속한다"* 라 적어 두 테스트가 모순돼 보였다(리뷰 3R must-fix).
+  //      ⇒ `drive --elanous` 는 거부된다(그 축은 test/cli-dev-command.test.ts 가 검증한다).
+  //   ⛔ 초판 주석이 ①만 보고 *"--elanous 를 상속한다"* 라 적어 두 테스트가 모순돼 보였다(리뷰 3R must-fix).
   //      **보이는 것과 받는 것은 다르다** — 두 테스트는 같은 계약의 두 축이지 충돌이 아니다.
   test('drive resolves as an alias of dev, not a coexisting command', () => {
     const run = (args: string[]) => {
       const proc = Bun.spawnSync({
-        cmd: ['bun', 'bin/monad.mjs', ...args, '--help'],
+        cmd: ['bun', 'bin/elanous.mjs', ...args, '--help'],
         cwd: join(import.meta.dir, '..', '..'),
         stdout: 'pipe',
         stderr: 'pipe',
-        env: { ...process.env, MONAD_STATE_DIR: mkdtempSync(join(tmpdir(), 'pty-drive-cli-')) },
+        env: { ...process.env, ELANOUS_STATE_DIR: mkdtempSync(join(tmpdir(), 'pty-drive-cli-')) },
       });
       return new TextDecoder().decode(proc.stdout);
     };
-    expect(run(['drive'])).toMatch(/Usage: monad dev\|drive/);
+    expect(run(['drive'])).toMatch(/Usage: elanous dev\|drive/);
     expect(run(['drive'])).toBe(run(['dev']));
     expect(run([])).not.toMatch(/^\s{2}drive\b/m);
     // ① 의 직접 단언 — 도움말에는 dev 옵션이 그대로 보인다(런타임 거부와는 별개 축).
-    expect(run(['drive'])).toContain('--monad');
+    expect(run(['drive'])).toContain('--elanous');
   }, 15_000);
 
   test('drive Commander action preserves shell flags, default bash target, and child exit code', async () => {
@@ -344,33 +344,33 @@ describe('runPtyDrive (monad drive 핸들러)', () => {
     expect(killed).toBe(true);
   });
 
-  test('monad target uses the shared bare TUI root, delivers before brain input, and mirrors via parent storage', async () => {
+  test('elanous target uses the shared bare TUI root, delivers before brain input, and mirrors via parent storage', async () => {
     const writes: string[] = [];
     const mirrors: Array<{ key: string; frame: string; stateDir: string | undefined }> = [];
     let spawned: { cmd?: string; args?: string[]; env?: Record<string, string>; accessMode?: string; transitionPolicy?: string } | undefined;
     setPtyAdapterForTesting((opts) => { spawned = opts; return mockAdapter(writes, () => {}); });
-    const root = mkdtempSync(join(tmpdir(), 'monad-drive-isolated-'));
-    const callerState = mkdtempSync(join(tmpdir(), 'monad-drive-parent-'));
-    const originalState = process.env.MONAD_STATE_DIR;
-    process.env.MONAD_STATE_DIR = callerState;
+    const root = mkdtempSync(join(tmpdir(), 'elanous-drive-isolated-'));
+    const callerState = mkdtempSync(join(tmpdir(), 'elanous-drive-parent-'));
+    const originalState = process.env.ELANOUS_STATE_DIR;
+    process.env.ELANOUS_STATE_DIR = callerState;
     try {
       const r = await runPtyDrive({
-        monad: true, goal: 'implement the child goal', repoRoot: '/repo', cwd: root, isolatedRoot: root,
+        elanous: true, goal: 'implement the child goal', repoRoot: '/repo', cwd: root, isolatedRoot: root,
         bootMs: 0, sleep: async () => {}, stream: async () => '{"action":"done","reason":"ready"}', out: () => {}, maxSteps: 2, pollMs: 0,
-        writeScreen: (key, frame, env) => mirrors.push({ key, frame, stateDir: env?.MONAD_STATE_DIR }),
+        writeScreen: (key, frame, env) => mirrors.push({ key, frame, stateDir: env?.ELANOUS_STATE_DIR }),
       });
       expect(r.exitCode).toBe(0);
     } finally {
       // ⚠️ `env[k] = undefined` stores the STRING "undefined" — a later test then
       // reads a caller state directory literally named that. Restore by deleting.
-      if (originalState === undefined) delete process.env.MONAD_STATE_DIR;
-      else process.env.MONAD_STATE_DIR = originalState;
+      if (originalState === undefined) delete process.env.ELANOUS_STATE_DIR;
+      else process.env.ELANOUS_STATE_DIR = originalState;
     }
     const configDir = realpathSync(root);
     const stateDir = configDir;
     expect(spawned).toMatchObject({
-      cmd: 'bun', args: ['/repo/bin/monad.mjs', '--config-dir', configDir, '--test-state-dir', stateDir],
-      env: { MONAD_STATE_DIR: stateDir }, accessMode: 'auto', transitionPolicy: 'open',
+      cmd: 'bun', args: ['/repo/bin/elanous.mjs', '--config-dir', configDir, '--test-state-dir', stateDir],
+      env: { ELANOUS_STATE_DIR: stateDir }, accessMode: 'auto', transitionPolicy: 'open',
     });
     expect(writes.slice(0, 2)).toEqual(['implement the child goal', '\r']);
     expect(mirrors).toHaveLength(3);
@@ -380,15 +380,15 @@ describe('runPtyDrive (monad drive 핸들러)', () => {
     expect(existsSync(stateDir)).toBe(true);
   });
 
-  test('monad hold spawns a detached externally writable child without a brain, mirrors once, and reports its registry ref', async () => {
+  test('elanous hold spawns a detached externally writable child without a brain, mirrors once, and reports its registry ref', async () => {
     const writes: string[] = [];
     const output: string[] = [];
     const mirrors: Array<{ key: string; frame: string }> = [];
     let spawned: { detach?: boolean; accessMode?: string; transitionPolicy?: string } | undefined;
     setPtyAdapterForTesting((opts) => { spawned = opts; return mockAdapter(writes, () => {}); });
-    const root = mkdtempSync(join(tmpdir(), 'monad-hold-'));
+    const root = mkdtempSync(join(tmpdir(), 'elanous-hold-'));
     const result = await runPtyDrive({
-      monad: true, hold: true, spawnOwner: false, repoRoot: '/repo', cwd: root, isolatedRoot: root,
+      elanous: true, hold: true, spawnOwner: false, repoRoot: '/repo', cwd: root, isolatedRoot: root,
       out: (line) => output.push(line),
       writeScreen: (key, frame) => mirrors.push({ key, frame }),
       stream: async () => { throw new Error('hold must not create a brain'); },
@@ -402,18 +402,18 @@ describe('runPtyDrive (monad drive 핸들러)', () => {
     expect(getPty(ref!)).toMatchObject({ id: ref, detach: true, accessMode: 'write' });
   });
 
-  test('monad hold JSON success emits one structured line instead of the legacy held text', async () => {
+  test('elanous hold JSON success emits one structured line instead of the legacy held text', async () => {
     const output: string[] = [];
     setPtyAdapterForTesting(() => mockAdapter([], () => {}));
-    const root = mkdtempSync(join(tmpdir(), 'monad-hold-json-'));
-    const originalSpaceId = process.env.MONAD_HOLD_SPACE_ID;
-    process.env.MONAD_HOLD_SPACE_ID = 'dev-run-x';
+    const root = mkdtempSync(join(tmpdir(), 'elanous-hold-json-'));
+    const originalSpaceId = process.env.ELANOUS_HOLD_SPACE_ID;
+    process.env.ELANOUS_HOLD_SPACE_ID = 'dev-run-x';
     const result = await runPtyDrive({
-      monad: true, hold: true, json: true, spawnOwner: false, repoRoot: '/repo', cwd: root, isolatedRoot: root,
+      elanous: true, hold: true, json: true, spawnOwner: false, repoRoot: '/repo', cwd: root, isolatedRoot: root,
       out: (line) => output.push(line), writeScreen: () => {},
     });
-    if (originalSpaceId === undefined) delete process.env.MONAD_HOLD_SPACE_ID;
-    else process.env.MONAD_HOLD_SPACE_ID = originalSpaceId;
+    if (originalSpaceId === undefined) delete process.env.ELANOUS_HOLD_SPACE_ID;
+    else process.env.ELANOUS_HOLD_SPACE_ID = originalSpaceId;
     expect(result.exitCode).toBe(0);
     expect(output).toHaveLength(1);
     const held = JSON.parse(output[0]!);
@@ -429,9 +429,9 @@ describe('runPtyDrive (monad drive 핸들러)', () => {
   test('hold 가 handoff 전에 던지면 PTY 를 유출하지 않고 거둔다', async () => {
     let killed = false;
     setPtyAdapterForTesting(() => mockAdapter([], () => { killed = true; }));
-    const root = mkdtempSync(join(tmpdir(), 'monad-hold-leak-'));
+    const root = mkdtempSync(join(tmpdir(), 'elanous-hold-leak-'));
     await expect(runPtyDrive({
-      monad: true, hold: true, spawnOwner: false, repoRoot: '/repo', cwd: root, isolatedRoot: root,
+      elanous: true, hold: true, spawnOwner: false, repoRoot: '/repo', cwd: root, isolatedRoot: root,
       out: () => {},
       // ⭐ handoff 직전 단계에서 던진다 — 이때 정리가 돌아야 한다.
       writeScreen: () => { throw new Error('mirror failed'); },
@@ -455,7 +455,7 @@ describe('runPtyDrive (monad drive 핸들러)', () => {
       // ⭐ 실제 owner 를 띄우지 않는다. 대신 그 프로세스가 넘겨받는 id 를 가로채
       //    아래 spawnSync 스파이가 그것을 `alive` 로 돌려주게 한다(폴링 1회로 즉시 반환 ⇒ 30초 회피).
       ownerEnv = (a[0] as { env?: Record<string, string> }).env;
-      mintedId = ownerEnv?.MONAD_HOLD_PTY_ID ?? '';
+      mintedId = ownerEnv?.ELANOUS_HOLD_PTY_ID ?? '';
       return { unref() {}, kill() {} } as unknown as ReturnType<typeof Bun.spawn>;
     }) as typeof Bun.spawn;
     (Bun as { spawnSync: typeof Bun.spawnSync }).spawnSync = ((...a: Parameters<typeof Bun.spawnSync>) => {
@@ -468,19 +468,19 @@ describe('runPtyDrive (monad drive 핸들러)', () => {
       }) as unknown as ReturnType<typeof Bun.spawnSync>;
     }) as typeof Bun.spawnSync;
     setPtyAdapterForTesting(() => mockAdapter([], () => {}));
-    const root = mkdtempSync(join(tmpdir(), 'monad-hold-owner-'));
+    const root = mkdtempSync(join(tmpdir(), 'elanous-hold-owner-'));
     try {
       // ⭐ out/writeScreen 을 **주입해도** spawnOwner 를 끄지 않았으면 owner 를 띄우려 한다.
       await runPtyDrive({
-        monad: true, hold: true, repoRoot: '/repo', cwd: root, isolatedRoot: root,
+        elanous: true, hold: true, repoRoot: '/repo', cwd: root, isolatedRoot: root,
         out: () => {}, writeScreen: () => {},
       }).catch(() => {});
       expect(calls).toBeGreaterThan(0);
-      expect(checkerEnv?.MONAD_STATE_DIR).toBe(ownerEnv?.MONAD_STATE_DIR);
+      expect(checkerEnv?.ELANOUS_STATE_DIR).toBe(ownerEnv?.ELANOUS_STATE_DIR);
       // ⭐ 반대로 spawnOwner:false 면 주입이 없어도 owner 를 띄우지 않는다.
       calls = 0;
       await runPtyDrive({
-        monad: true, hold: true, spawnOwner: false, repoRoot: '/repo', cwd: root, isolatedRoot: root,
+        elanous: true, hold: true, spawnOwner: false, repoRoot: '/repo', cwd: root, isolatedRoot: root,
         out: () => {}, writeScreen: () => {},
       });
       expect(calls).toBe(0);
@@ -505,7 +505,7 @@ describe('runPtyDrive (monad drive 핸들러)', () => {
     const originalSpawnSync = Bun.spawnSync;
     let mintedId = '';
     (Bun as { spawn: typeof Bun.spawn }).spawn = ((...a: Parameters<typeof Bun.spawn>) => {
-      mintedId = (a[0] as { env?: Record<string, string> }).env?.MONAD_HOLD_PTY_ID ?? '';
+      mintedId = (a[0] as { env?: Record<string, string> }).env?.ELANOUS_HOLD_PTY_ID ?? '';
       return { unref() {}, kill() {} } as unknown as ReturnType<typeof Bun.spawn>;
     }) as typeof Bun.spawn;
     (Bun as { spawnSync: typeof Bun.spawnSync }).spawnSync = ((
@@ -516,10 +516,10 @@ describe('runPtyDrive (monad drive 핸들러)', () => {
       return sync(mintedId) as unknown as ReturnType<typeof Bun.spawnSync>;
     }) as typeof Bun.spawnSync;
     setPtyAdapterForTesting(() => mockAdapter([], () => {}));
-    const root = options.root ?? mkdtempSync(join(tmpdir(), 'monad-hold-ready-'));
+    const root = options.root ?? mkdtempSync(join(tmpdir(), 'elanous-hold-ready-'));
     try {
       await runPtyDrive({
-        monad: true, hold: true, repoRoot: '/repo', cwd: root, isolatedRoot: root,
+        elanous: true, hold: true, repoRoot: '/repo', cwd: root, isolatedRoot: root,
         readyTimeoutMs: 30, settlementMs: 0, out: () => {}, writeScreen: () => {},
       });
       return '(threw nothing)';
@@ -544,10 +544,10 @@ describe('runPtyDrive (monad drive 핸들러)', () => {
     (Bun as { spawnSync: typeof Bun.spawnSync }).spawnSync = (() => ({
       stdout: new TextEncoder().encode(''), exitCode: 0,
     }) as unknown as ReturnType<typeof Bun.spawnSync>) as typeof Bun.spawnSync;
-    const root = mkdtempSync(join(tmpdir(), 'monad-hold-json-failure-'));
+    const root = mkdtempSync(join(tmpdir(), 'elanous-hold-json-failure-'));
     try {
       await expect(runPtyDrive({
-        monad: true, hold: true, json: true, repoRoot: '/repo', cwd: root, isolatedRoot: root,
+        elanous: true, hold: true, json: true, repoRoot: '/repo', cwd: root, isolatedRoot: root,
         readyTimeoutMs: 0, settlementMs: 0, out: (line) => output.push(line), writeScreen: () => {},
       })).rejects.toThrow('did not become ready');
       expect(output).toHaveLength(1);
@@ -565,16 +565,16 @@ describe('runPtyDrive (monad drive 핸들러)', () => {
     let checks = 0;
     const output: string[] = [];
     (Bun as { spawn: typeof Bun.spawn }).spawn = ((...a: Parameters<typeof Bun.spawn>) => {
-      mintedId = (a[0] as { env?: Record<string, string> }).env?.MONAD_HOLD_PTY_ID ?? '';
+      mintedId = (a[0] as { env?: Record<string, string> }).env?.ELANOUS_HOLD_PTY_ID ?? '';
       return { unref() {}, kill() {}, exitCode: null, exited: Promise.resolve(1) } as unknown as ReturnType<typeof Bun.spawn>;
     }) as typeof Bun.spawn;
     (Bun as { spawnSync: typeof Bun.spawnSync }).spawnSync = (() => ({
       stdout: new TextEncoder().encode(checks++ === 0 ? `${mintedId}\ttui\t-\tremote\talive\n` : ''), exitCode: 0,
     }) as unknown as ReturnType<typeof Bun.spawnSync>) as typeof Bun.spawnSync;
-    const root = mkdtempSync(join(tmpdir(), 'monad-hold-settlement-death-'));
+    const root = mkdtempSync(join(tmpdir(), 'elanous-hold-settlement-death-'));
     try {
       await expect(runPtyDrive({
-        monad: true, hold: true, repoRoot: '/repo', cwd: root, isolatedRoot: root,
+        elanous: true, hold: true, repoRoot: '/repo', cwd: root, isolatedRoot: root,
         readyTimeoutMs: 30, settlementMs: 0, out: (line) => output.push(line), writeScreen: () => {},
       })).rejects.toThrow(/registered then died.*last exit=1/);
       expect(output.join('')).not.toContain('⛭ held');
@@ -596,7 +596,7 @@ describe('runPtyDrive (monad drive 핸들러)', () => {
     let checks = 0;
     const output: string[] = [];
     (Bun as { spawn: typeof Bun.spawn }).spawn = ((...a: Parameters<typeof Bun.spawn>) => {
-      mintedId = (a[0] as { env?: Record<string, string> }).env?.MONAD_HOLD_PTY_ID ?? '';
+      mintedId = (a[0] as { env?: Record<string, string> }).env?.ELANOUS_HOLD_PTY_ID ?? '';
       return { unref() {}, kill() {} } as unknown as ReturnType<typeof Bun.spawn>;
     }) as typeof Bun.spawn;
     (Bun as { spawnSync: typeof Bun.spawnSync }).spawnSync = (() => {
@@ -605,10 +605,10 @@ describe('runPtyDrive (monad drive 핸들러)', () => {
         stdout: new TextEncoder().encode(`${mintedId}\ttui\t-\tremote\talive\n`), exitCode: 0,
       } as unknown as ReturnType<typeof Bun.spawnSync>;
     }) as typeof Bun.spawnSync;
-    const root = mkdtempSync(join(tmpdir(), 'monad-hold-settlement-alive-'));
+    const root = mkdtempSync(join(tmpdir(), 'elanous-hold-settlement-alive-'));
     try {
       const result = await runPtyDrive({
-        monad: true, hold: true, repoRoot: '/repo', cwd: root, isolatedRoot: root,
+        elanous: true, hold: true, repoRoot: '/repo', cwd: root, isolatedRoot: root,
         settlementMs: 0, out: (line) => output.push(line), writeScreen: () => {},
       });
       expect(result.exitCode).toBe(0);
@@ -632,16 +632,16 @@ describe('runPtyDrive (monad drive 핸들러)', () => {
     debug.enable();
     let mintedId = '';
     (Bun as { spawn: typeof Bun.spawn }).spawn = ((...a: Parameters<typeof Bun.spawn>) => {
-      mintedId = (a[0] as { env?: Record<string, string> }).env?.MONAD_HOLD_PTY_ID ?? '';
+      mintedId = (a[0] as { env?: Record<string, string> }).env?.ELANOUS_HOLD_PTY_ID ?? '';
       return { unref() {}, kill() {} } as unknown as ReturnType<typeof Bun.spawn>;
     }) as typeof Bun.spawn;
     (Bun as { spawnSync: typeof Bun.spawnSync }).spawnSync = (() => ({
       stdout: new TextEncoder().encode(`${mintedId}\ttui\t-\tremote\talive\n`), exitCode: 0,
     }) as unknown as ReturnType<typeof Bun.spawnSync>) as typeof Bun.spawnSync;
-    const root = mkdtempSync(join(tmpdir(), 'monad-hold-settlement-explicit-'));
+    const root = mkdtempSync(join(tmpdir(), 'elanous-hold-settlement-explicit-'));
     try {
       const result = await runPtyDrive({
-        monad: true, hold: true, repoRoot: '/repo', cwd: root, isolatedRoot: root,
+        elanous: true, hold: true, repoRoot: '/repo', cwd: root, isolatedRoot: root,
         readyTimeoutMs: 180_000, settlementMs: 0, out: () => {}, writeScreen: () => {},
       });
       expect(result.exitCode).toBe(0);
@@ -660,26 +660,26 @@ describe('runPtyDrive (monad drive 핸들러)', () => {
     let mintedId = '';
     const output: string[] = [];
     (Bun as { spawn: typeof Bun.spawn }).spawn = ((...a: Parameters<typeof Bun.spawn>) => {
-      mintedId = (a[0] as { env?: Record<string, string> }).env?.MONAD_HOLD_PTY_ID ?? '';
+      mintedId = (a[0] as { env?: Record<string, string> }).env?.ELANOUS_HOLD_PTY_ID ?? '';
       return { unref() {}, kill() {} } as unknown as ReturnType<typeof Bun.spawn>;
     }) as typeof Bun.spawn;
     (Bun as { spawnSync: typeof Bun.spawnSync }).spawnSync = (() => ({
       stdout: new TextEncoder().encode(`${mintedId}\ttui\t-\tremote\talive\n`), exitCode: 0,
     }) as unknown as ReturnType<typeof Bun.spawnSync>) as typeof Bun.spawnSync;
-    const root = mkdtempSync(join(tmpdir(), 'monad-hold-owner-json-'));
-    const originalSpaceId = process.env.MONAD_HOLD_SPACE_ID;
-    process.env.MONAD_HOLD_SPACE_ID = 'dev-run-x';
+    const root = mkdtempSync(join(tmpdir(), 'elanous-hold-owner-json-'));
+    const originalSpaceId = process.env.ELANOUS_HOLD_SPACE_ID;
+    process.env.ELANOUS_HOLD_SPACE_ID = 'dev-run-x';
     try {
       const result = await runPtyDrive({
-        monad: true, hold: true, json: true, repoRoot: '/repo', cwd: root, isolatedRoot: root,
+        elanous: true, hold: true, json: true, repoRoot: '/repo', cwd: root, isolatedRoot: root,
         settlementMs: 0, out: (line) => output.push(line), writeScreen: () => {},
       });
       expect(result.exitCode).toBe(0);
       expect(output).toHaveLength(1);
       expect(JSON.parse(output[0]!)).toEqual({ held: true, ptyId: mintedId, spaceId: 'dev-run-x', workdir: root });
     } finally {
-      if (originalSpaceId === undefined) delete process.env.MONAD_HOLD_SPACE_ID;
-      else process.env.MONAD_HOLD_SPACE_ID = originalSpaceId;
+      if (originalSpaceId === undefined) delete process.env.ELANOUS_HOLD_SPACE_ID;
+      else process.env.ELANOUS_HOLD_SPACE_ID = originalSpaceId;
       (Bun as { spawn: typeof Bun.spawn }).spawn = originalSpawn;
       (Bun as { spawnSync: typeof Bun.spawnSync }).spawnSync = originalSpawnSync;
     }
@@ -748,8 +748,8 @@ describe('runPtyDrive (monad drive 핸들러)', () => {
     const records: Array<{ category: string; event: string; data?: Record<string, unknown> }> = [];
     // ⭐ 값을 **알고 있는 상태**로 재야 `undefined` 퇴행이 잡힌다(존재 검사만으론 안 잡힌다).
     const expectedState = mkdtempSync(join(tmpdir(), 'hold-wait-state-'));
-    const priorState = process.env.MONAD_STATE_DIR;
-    process.env.MONAD_STATE_DIR = expectedState;
+    const priorState = process.env.ELANOUS_STATE_DIR;
+    process.env.ELANOUS_STATE_DIR = expectedState;
     const off = debug.registerSink({
       name: 'hold-wait-test-capture',
       emit: (rec) => { records.push({ category: rec.category, event: rec.event, data: rec.data as Record<string, unknown> }); },
@@ -770,8 +770,8 @@ describe('runPtyDrive (monad drive 핸들러)', () => {
       off();
       if (!wasEnabled) debug.disable();
       // ⚠️ `env[k] = undefined` 는 문자열 "undefined" 를 넣는다 — 지워서 복원한다.
-      if (priorState === undefined) delete process.env.MONAD_STATE_DIR;
-      else process.env.MONAD_STATE_DIR = priorState;
+      if (priorState === undefined) delete process.env.ELANOUS_STATE_DIR;
+      else process.env.ELANOUS_STATE_DIR = priorState;
     }
     const decision = records.find((r) => r.category === 'pty.drive' && r.event === 'tui-workdir-decision');
     const start = records.find((r) => r.category === 'pty.drive' && r.event === 'hold-wait-start');
@@ -834,18 +834,18 @@ describe('runPtyDrive (monad drive 핸들러)', () => {
     state: { stateDir?: string; configOverride?: string },
     body: () => Promise<T> | T,
   ): Promise<T> => {
-    const originalState = process.env.MONAD_STATE_DIR;
-    if (state.stateDir) process.env.MONAD_STATE_DIR = state.stateDir;
-    else delete process.env.MONAD_STATE_DIR;
+    const originalState = process.env.ELANOUS_STATE_DIR;
+    if (state.stateDir) process.env.ELANOUS_STATE_DIR = state.stateDir;
+    else delete process.env.ELANOUS_STATE_DIR;
     // ⛔⭐ `--config-dir` 은 argv 에 있는 것만으로는 해석에 안 잡힌다 — CLI 파서가
-    //    `setMonadConfigDir()` 로 process-local override 를 세우고 해석 1층이 그것을 읽는다.
-    if (state.configOverride) setMonadConfigDir(state.configOverride);
-    else resetMonadConfigDir();
+    //    `setElanousConfigDir()` 로 process-local override 를 세우고 해석 1층이 그것을 읽는다.
+    if (state.configOverride) setElanousConfigDir(state.configOverride);
+    else resetElanousConfigDir();
     resetEffectiveInstanceRoot();      // 메모 무효화 — 안 하면 앞 조합의 값이 새어 나온다
     try { return await body(); } finally {
-      resetMonadConfigDir();
-      if (originalState === undefined) delete process.env.MONAD_STATE_DIR;
-      else process.env.MONAD_STATE_DIR = originalState;
+      resetElanousConfigDir();
+      if (originalState === undefined) delete process.env.ELANOUS_STATE_DIR;
+      else process.env.ELANOUS_STATE_DIR = originalState;
       resetEffectiveInstanceRoot();
     }
   };
@@ -870,13 +870,13 @@ describe('runPtyDrive (monad drive 핸들러)', () => {
       return { stdout: new TextEncoder().encode(''), exitCode: 0 } as unknown as ReturnType<typeof Bun.spawnSync>;
     }) as typeof Bun.spawnSync;
     setPtyAdapterForTesting(() => mockAdapter([], () => {}));
-    const root = mkdtempSync(join(tmpdir(), 'monad-four-universes-'));
+    const root = mkdtempSync(join(tmpdir(), 'elanous-four-universes-'));
     const originalArgv = process.argv;
     // ⭐ 부모 argv 를 실제로 심는다 — owner 는 이걸 물려받으므로 **스코프 결정자가 남는지**가 여기서 갈린다.
-    if (state.parentArgv) process.argv = ['bun', '/repo/bin/monad.mjs', ...state.parentArgv];
+    if (state.parentArgv) process.argv = ['bun', '/repo/bin/elanous.mjs', ...state.parentArgv];
     try {
       await withProcessState(state, () => runPtyDrive({
-        monad: true, hold: true, repoRoot: '/repo', cwd: root, isolatedRoot: root,
+        elanous: true, hold: true, repoRoot: '/repo', cwd: root, isolatedRoot: root,
         readyTimeoutMs: 30, settlementMs: 0, out: () => {}, writeScreen: () => {},
       }).catch(() => {}));
 
@@ -892,7 +892,7 @@ describe('runPtyDrive (monad drive 핸들러)', () => {
         ownerRoot,
         ownerScope: scopeSlice(ownerArgv),
         checkerScope: scopeSlice(checkerArgv),
-        ownerStamp: ownerEnv.MONAD_STATE_DIR,
+        ownerStamp: ownerEnv.ELANOUS_STATE_DIR,
       };
     } finally {
       (Bun as { spawn: typeof Bun.spawn }).spawn = originalSpawn;
@@ -911,37 +911,37 @@ describe('runPtyDrive (monad drive 핸들러)', () => {
   //    `runPtyDrive` 배선이 끊겨도 통과한다(무인 리뷰 should-fix).
   //    ⚠️ 이것은 정체성 전파일 뿐 pty↔session 결속이 아니다(세션은 데몬 소유 · 매뉴얼 §0a ⑶b).
   const heldChildEnv = async (over: { ptyId?: string; ambient?: string; observeOnly?: boolean; root?: string; harnessSpace?: string; harnessSpaceId?: string }): Promise<Record<string, string>> => {
-    const priorAmbient = process.env.MONAD_HOLD_PTY_ID;
-    const priorObserveOnly = process.env.MONAD_SELF_IMPLEMENT_OBSERVE_ONLY;
-    const priorHarnessSpace = process.env.MONAD_HARNESS_SPACE;
-    const priorHarnessSpaceId = process.env.MONAD_HARNESS_SPACE_ID;
-    if (over.ambient) process.env.MONAD_HOLD_PTY_ID = over.ambient;
-    else delete process.env.MONAD_HOLD_PTY_ID;
-    if (over.observeOnly) process.env.MONAD_SELF_IMPLEMENT_OBSERVE_ONLY = '1';
-    else delete process.env.MONAD_SELF_IMPLEMENT_OBSERVE_ONLY;
-    if (over.harnessSpace) process.env.MONAD_HARNESS_SPACE = over.harnessSpace;
-    else delete process.env.MONAD_HARNESS_SPACE;
-    if (over.harnessSpaceId) process.env.MONAD_HARNESS_SPACE_ID = over.harnessSpaceId;
-    else delete process.env.MONAD_HARNESS_SPACE_ID;
+    const priorAmbient = process.env.ELANOUS_HOLD_PTY_ID;
+    const priorObserveOnly = process.env.ELANOUS_SELF_IMPLEMENT_OBSERVE_ONLY;
+    const priorHarnessSpace = process.env.ELANOUS_HARNESS_SPACE;
+    const priorHarnessSpaceId = process.env.ELANOUS_HARNESS_SPACE_ID;
+    if (over.ambient) process.env.ELANOUS_HOLD_PTY_ID = over.ambient;
+    else delete process.env.ELANOUS_HOLD_PTY_ID;
+    if (over.observeOnly) process.env.ELANOUS_SELF_IMPLEMENT_OBSERVE_ONLY = '1';
+    else delete process.env.ELANOUS_SELF_IMPLEMENT_OBSERVE_ONLY;
+    if (over.harnessSpace) process.env.ELANOUS_HARNESS_SPACE = over.harnessSpace;
+    else delete process.env.ELANOUS_HARNESS_SPACE;
+    if (over.harnessSpaceId) process.env.ELANOUS_HARNESS_SPACE_ID = over.harnessSpaceId;
+    else delete process.env.ELANOUS_HARNESS_SPACE_ID;
     let spawned: { env?: Record<string, string> } | undefined;
     setPtyAdapterForTesting((o) => { spawned = o as { env?: Record<string, string> }; return mockAdapter([], () => {}); });
-    const root = over.root ?? mkdtempSync(join(tmpdir(), 'monad-held-identity-'));
+    const root = over.root ?? mkdtempSync(join(tmpdir(), 'elanous-held-identity-'));
     try {
       await runPtyDrive({
-        monad: true, hold: true, spawnOwner: false, repoRoot: '/repo', cwd: root, isolatedRoot: root,
+        elanous: true, hold: true, spawnOwner: false, repoRoot: '/repo', cwd: root, isolatedRoot: root,
         ...(over.ptyId ? { ptyId: over.ptyId } : {}),
         out: () => {}, writeScreen: () => {},
       });
       return spawned?.env ?? {};
     } finally {
-      if (priorAmbient === undefined) delete process.env.MONAD_HOLD_PTY_ID;
-      else process.env.MONAD_HOLD_PTY_ID = priorAmbient;
-      if (priorObserveOnly === undefined) delete process.env.MONAD_SELF_IMPLEMENT_OBSERVE_ONLY;
-      else process.env.MONAD_SELF_IMPLEMENT_OBSERVE_ONLY = priorObserveOnly;
-      if (priorHarnessSpace === undefined) delete process.env.MONAD_HARNESS_SPACE;
-      else process.env.MONAD_HARNESS_SPACE = priorHarnessSpace;
-      if (priorHarnessSpaceId === undefined) delete process.env.MONAD_HARNESS_SPACE_ID;
-      else process.env.MONAD_HARNESS_SPACE_ID = priorHarnessSpaceId;
+      if (priorAmbient === undefined) delete process.env.ELANOUS_HOLD_PTY_ID;
+      else process.env.ELANOUS_HOLD_PTY_ID = priorAmbient;
+      if (priorObserveOnly === undefined) delete process.env.ELANOUS_SELF_IMPLEMENT_OBSERVE_ONLY;
+      else process.env.ELANOUS_SELF_IMPLEMENT_OBSERVE_ONLY = priorObserveOnly;
+      if (priorHarnessSpace === undefined) delete process.env.ELANOUS_HARNESS_SPACE;
+      else process.env.ELANOUS_HARNESS_SPACE = priorHarnessSpace;
+      if (priorHarnessSpaceId === undefined) delete process.env.ELANOUS_HARNESS_SPACE_ID;
+      else process.env.ELANOUS_HARNESS_SPACE_ID = priorHarnessSpaceId;
     }
   };
 
@@ -950,51 +950,51 @@ describe('runPtyDrive (monad drive 핸들러)', () => {
     const outside = await heldChildEnv({ root });
     const inherited = await heldChildEnv({ root, harnessSpace: 'self-implement', harnessSpaceId: 'existing-space' });
 
-    expect(outside.MONAD_HARNESS_SPACE).toBe('dev-hold');
-    expect(outside.MONAD_HARNESS_SPACE_ID).toMatch(/^manual-hold-child-/);
-    expect(inherited.MONAD_HARNESS_SPACE).toBe('self-implement');
-    expect(inherited.MONAD_HARNESS_SPACE_ID).toBe('existing-space');
+    expect(outside.ELANOUS_HARNESS_SPACE).toBe('dev-hold');
+    expect(outside.ELANOUS_HARNESS_SPACE_ID).toMatch(/^manual-hold-child-/);
+    expect(inherited.ELANOUS_HARNESS_SPACE).toBe('self-implement');
+    expect(inherited.ELANOUS_HARNESS_SPACE_ID).toBe('existing-space');
   });
 
   test('held 자식 env 에 PTY 정체성이 실린다 — 명시 ptyId 가 ambient 를 이긴다', async () => {
     // ⭐ ambient(부모가 owner 로 재실행될 때 넘기는 값)만 있을 때
-    expect((await heldChildEnv({ ambient: 'pty_11111111' })).MONAD_PTY_ID).toBe('pty_11111111');
+    expect((await heldChildEnv({ ambient: 'pty_11111111' })).ELANOUS_PTY_ID).toBe('pty_11111111');
     // ⭐ 명시 opts.ptyId 가 있으면 그것이 이긴다
-    expect((await heldChildEnv({ ptyId: 'pty_22222222', ambient: 'pty_11111111' })).MONAD_PTY_ID).toBe('pty_22222222');
+    expect((await heldChildEnv({ ptyId: 'pty_22222222', ambient: 'pty_11111111' })).ELANOUS_PTY_ID).toBe('pty_22222222');
     // ⛔ 둘 다 없으면 키를 만들지 않는다 (빈 경로)
-    expect((await heldChildEnv({})).MONAD_PTY_ID).toBeUndefined();
+    expect((await heldChildEnv({})).ELANOUS_PTY_ID).toBeUndefined();
   });
 
   test('held 자식은 부모 observe-only 플래그만 부팅 전 env 로 물려받고 나머지 env 는 보존한다', async () => {
-    const root = mkdtempSync(join(tmpdir(), 'monad-held-observe-only-'));
-    const priorRunId = process.env.MONAD_RUN_ID;
+    const root = mkdtempSync(join(tmpdir(), 'elanous-held-observe-only-'));
+    const priorRunId = process.env.ELANOUS_RUN_ID;
     const runId = 'run-held-observe-only';
-    process.env.MONAD_RUN_ID = runId;
+    process.env.ELANOUS_RUN_ID = runId;
     try {
       const enabled = await heldChildEnv({ observeOnly: true, root });
       const disabled = await heldChildEnv({ root });
 
-      expect(enabled.MONAD_SELF_IMPLEMENT_OBSERVE_ONLY).toBe('1');
-      expect(disabled.MONAD_SELF_IMPLEMENT_OBSERVE_ONLY).toBeUndefined();
-      expect(enabled.MONAD_RUN_ID).toBe(runId);
-      expect(disabled.MONAD_RUN_ID).toBe(runId);
-      const { MONAD_SELF_IMPLEMENT_OBSERVE_ONLY: _enabledFlag, ...enabledRest } = enabled;
-      const { MONAD_SELF_IMPLEMENT_OBSERVE_ONLY: _disabledFlag, ...disabledRest } = disabled;
+      expect(enabled.ELANOUS_SELF_IMPLEMENT_OBSERVE_ONLY).toBe('1');
+      expect(disabled.ELANOUS_SELF_IMPLEMENT_OBSERVE_ONLY).toBeUndefined();
+      expect(enabled.ELANOUS_RUN_ID).toBe(runId);
+      expect(disabled.ELANOUS_RUN_ID).toBe(runId);
+      const { ELANOUS_SELF_IMPLEMENT_OBSERVE_ONLY: _enabledFlag, ...enabledRest } = enabled;
+      const { ELANOUS_SELF_IMPLEMENT_OBSERVE_ONLY: _disabledFlag, ...disabledRest } = disabled;
       expect(enabledRest).toEqual(disabledRest);
     } finally {
-      if (priorRunId === undefined) delete process.env.MONAD_RUN_ID;
-      else process.env.MONAD_RUN_ID = priorRunId;
+      if (priorRunId === undefined) delete process.env.ELANOUS_RUN_ID;
+      else process.env.ELANOUS_RUN_ID = priorRunId;
     }
   });
 
   test('owner argv 는 스코프 결정자를 물려받지 않는다 (1층이 스탬프를 이기지 못하게)', () => {
     // ⛔ 부모가 어떤 형태로 우주를 정했든, 자식에겐 **해석 결과 하나**만 간다.
-    expect(stripScopeArgs(['--test', 'dev', '--monad'])).toEqual(['dev', '--monad']);
+    expect(stripScopeArgs(['--test', 'dev', '--elanous'])).toEqual(['dev', '--elanous']);
     expect(stripScopeArgs(['--test=/tmp/x', 'dev'])).toEqual(['dev']);
     expect(stripScopeArgs(['--config-dir', '/tmp/x', 'dev'])).toEqual(['dev']);
     expect(stripScopeArgs(['--config-dir=/tmp/x', 'dev'])).toEqual(['dev']);
     // ⭐ 스코프와 무관한 인자는 건드리지 않는다(값 토큰을 잘못 먹으면 명령이 깨진다).
-    expect(stripScopeArgs(['dev', '--monad', '--hold', '-d', '/w'])).toEqual(['dev', '--monad', '--hold', '-d', '/w']);
+    expect(stripScopeArgs(['dev', '--elanous', '--hold', '-d', '/w'])).toEqual(['dev', '--elanous', '--hold', '-d', '/w']);
     // ⛔ `--` 뒤는 자식 명령의 인자다 — 걷어내면 남의 명령이 깨진다.
     expect(stripScopeArgs(['--test', 'drive', '--', 'sh', '--test'])).toEqual(['drive', '--', 'sh', '--test']);
   });
@@ -1003,8 +1003,8 @@ describe('runPtyDrive (monad drive 핸들러)', () => {
     // ⛔ 끝에 붙이면 passthrough 뒤라 우리 플래그로 안 읽힌다(무인 리뷰 must-fix).
     expect(withScopeArgs(['drive', '--', 'sh', '-c', 'x'], '/R'))
       .toEqual(['drive', '--config-dir', '/R', '--', 'sh', '-c', 'x']);
-    expect(withScopeArgs(['--test', 'dev', '--monad'], '/R'))
-      .toEqual(['dev', '--monad', '--config-dir', '/R']);
+    expect(withScopeArgs(['--test', 'dev', '--elanous'], '/R'))
+      .toEqual(['dev', '--elanous', '--config-dir', '/R']);
   });
 
   test('4우주 — owner 가 해석하는 뿌리와 checker 가 조회하는 뿌리가 넷 전부에서 같다', async () => {
@@ -1019,8 +1019,8 @@ describe('runPtyDrive (monad drive 핸들러)', () => {
       '①prod': await universe({}),
       '②prod→격리': await universe({ configOverride: childRoot }),
       // ⭐ ③④ 는 부모가 **`--test` argv 로** 결정한 우주다 — owner 가 그걸 물려받으면 안 된다.
-      '③test': await universe({ stateDir: testRoot, parentArgv: ['--test', 'dev', '--monad', '--hold'] }),
-      '④test→격리': await universe({ stateDir: testRoot, configOverride: childRoot, parentArgv: ['--test', 'dev', '--monad', '--hold'] }),
+      '③test': await universe({ stateDir: testRoot, parentArgv: ['--test', 'dev', '--elanous', '--hold'] }),
+      '④test→격리': await universe({ stateDir: testRoot, configOverride: childRoot, parentArgv: ['--test', 'dev', '--elanous', '--hold'] }),
     };
 
     for (const [label, u] of Object.entries(universes)) {
@@ -1045,9 +1045,9 @@ describe('runPtyDrive (monad drive 핸들러)', () => {
   //    뮤테이션으로 확인: `hold cannot be combined with goal` 을 무력화해도 16 tests 가 0 fail 이었다.
   //    ⇒ "수락 후 무시 금지" 는 이 레포의 불변식이므로 그 거부를 테스트로 고정한다.
   test.each([
-    ['hold requires monad target', { hold: true, cwd: '/tmp' }, /hold requires monad target/],
-    ['hold rejects a goal instead of silently ignoring it', { monad: true, hold: true, goal: 'g', cwd: '/tmp' }, /hold cannot be combined with goal/],
-    ['non-hold drive still requires a goal', { monad: true, cwd: '/tmp' }, /drive requires a non-empty goal/],
+    ['hold requires elanous target', { hold: true, cwd: '/tmp' }, /hold requires elanous target/],
+    ['hold rejects a goal instead of silently ignoring it', { elanous: true, hold: true, goal: 'g', cwd: '/tmp' }, /hold cannot be combined with goal/],
+    ['non-hold drive still requires a goal', { elanous: true, cwd: '/tmp' }, /drive requires a non-empty goal/],
   ] as const)('%s', async (_name, opts, expected) => {
     setPtyAdapterForTesting(() => mockAdapter([], () => {}));
     await expect(runPtyDrive({ ...opts, repoRoot: '/repo', out: () => {}, writeScreen: () => {} } as Parameters<typeof runPtyDrive>[0]))
@@ -1060,16 +1060,16 @@ describe('runPtyDrive (monad drive 핸들러)', () => {
   // ⇒ 거부를 spawn 앞으로 옮겼으므로 **주입 없이도** spawn 전에 던져야 한다. 그것을 여기서 고정한다.
   //    ⭐ 판정: Bun.spawn 이 한 번도 불리지 않아야 한다(불렸다면 우회 경로가 되살아난 것이다).
   test.each([
-    ['hold+non-monad rejects before spawning an owner', { hold: true, cwd: '/tmp' }, /hold requires monad target/],
-    ['hold+goal rejects before spawning an owner', { monad: true, hold: true, goal: 'g', cwd: '/tmp' }, /hold cannot be combined with goal/],
+    ['hold+non-elanous rejects before spawning an owner', { hold: true, cwd: '/tmp' }, /hold requires elanous target/],
+    ['hold+goal rejects before spawning an owner', { elanous: true, hold: true, goal: 'g', cwd: '/tmp' }, /hold cannot be combined with goal/],
     // ⛔ 경계값 — `--goal ''` 은 trim() 기준이면 통과해 **조용히 무시**된다(수락 후 무시 금지 위반).
-    ['hold+empty goal still rejects (accepted-then-ignored is forbidden)', { monad: true, hold: true, goal: '', cwd: '/tmp' }, /hold cannot be combined with goal/],
-    ['hold+whitespace goal still rejects', { monad: true, hold: true, goal: '   ', cwd: '/tmp' }, /hold cannot be combined with goal/],
+    ['hold+empty goal still rejects (accepted-then-ignored is forbidden)', { elanous: true, hold: true, goal: '', cwd: '/tmp' }, /hold cannot be combined with goal/],
+    ['hold+whitespace goal still rejects', { elanous: true, hold: true, goal: '   ', cwd: '/tmp' }, /hold cannot be combined with goal/],
     // ⛔ 런타임 계층에도 brain 전용 옵션 거부 테스트가 필요하다(리뷰 must-fix · 2026-07-30) —
     //    상위 두 층(dev-cli·dev-pipeline)에만 있어서 **이 층의 brainOnly 블록을 삭제해도 전부 통과**했다.
-    ['hold+maxSteps rejects before spawning (brain-only)', { monad: true, hold: true, maxSteps: 5, cwd: '/tmp' }, /brain-only options: maxSteps/],
-    ['hold+pollMs rejects before spawning (brain-only)', { monad: true, hold: true, pollMs: 0, cwd: '/tmp' }, /brain-only options: pollMs/],
-    ['hold+model rejects before spawning (brain-only)', { monad: true, hold: true, model: 'x', cwd: '/tmp' }, /brain-only options: model/],
+    ['hold+maxSteps rejects before spawning (brain-only)', { elanous: true, hold: true, maxSteps: 5, cwd: '/tmp' }, /brain-only options: maxSteps/],
+    ['hold+pollMs rejects before spawning (brain-only)', { elanous: true, hold: true, pollMs: 0, cwd: '/tmp' }, /brain-only options: pollMs/],
+    ['hold+model rejects before spawning (brain-only)', { elanous: true, hold: true, model: 'x', cwd: '/tmp' }, /brain-only options: model/],
   ] as const)('%s', async (_name, opts, expected) => {
     const originalSpawn = Bun.spawn;
     let spawnCalls = 0;
@@ -1085,106 +1085,106 @@ describe('runPtyDrive (monad drive 핸들러)', () => {
     }
   });
 
-  test('monad target preserves its established harness space in child env and mirror key', async () => {
+  test('elanous target preserves its established harness space in child env and mirror key', async () => {
     const writes: string[] = [];
     const mirrors: string[] = [];
     let spawned: { env?: Record<string, string> } | undefined;
     setPtyAdapterForTesting((opts) => { spawned = opts; return mockAdapter(writes, () => {}); });
-    const root = mkdtempSync(join(tmpdir(), 'monad-drive-space-'));
+    const root = mkdtempSync(join(tmpdir(), 'elanous-drive-space-'));
     const previous = {
-      space: process.env.MONAD_HARNESS_SPACE,
-      id: process.env.MONAD_HARNESS_SPACE_ID,
-      run: process.env.MONAD_RUN_ID,
+      space: process.env.ELANOUS_HARNESS_SPACE,
+      id: process.env.ELANOUS_HARNESS_SPACE_ID,
+      run: process.env.ELANOUS_RUN_ID,
     };
-    process.env.MONAD_HARNESS_SPACE = 'dev-harness';
-    process.env.MONAD_HARNESS_SPACE_ID = 'explicit-space';
-    process.env.MONAD_RUN_ID = 'run-explicit-space';
+    process.env.ELANOUS_HARNESS_SPACE = 'dev-harness';
+    process.env.ELANOUS_HARNESS_SPACE_ID = 'explicit-space';
+    process.env.ELANOUS_RUN_ID = 'run-explicit-space';
     try {
       await runPtyDrive({
-        monad: true, goal: 'x', repoRoot: '/repo', cwd: root, isolatedRoot: root, bootMs: 0, sleep: async () => {},
+        elanous: true, goal: 'x', repoRoot: '/repo', cwd: root, isolatedRoot: root, bootMs: 0, sleep: async () => {},
         stream: async () => '{"action":"done","reason":"ready"}', out: () => {}, maxSteps: 1, pollMs: 0,
         writeScreen: (key) => { mirrors.push(key); },
       });
     } finally {
-      if (previous.space === undefined) delete process.env.MONAD_HARNESS_SPACE; else process.env.MONAD_HARNESS_SPACE = previous.space;
-      if (previous.id === undefined) delete process.env.MONAD_HARNESS_SPACE_ID; else process.env.MONAD_HARNESS_SPACE_ID = previous.id;
-      if (previous.run === undefined) delete process.env.MONAD_RUN_ID; else process.env.MONAD_RUN_ID = previous.run;
+      if (previous.space === undefined) delete process.env.ELANOUS_HARNESS_SPACE; else process.env.ELANOUS_HARNESS_SPACE = previous.space;
+      if (previous.id === undefined) delete process.env.ELANOUS_HARNESS_SPACE_ID; else process.env.ELANOUS_HARNESS_SPACE_ID = previous.id;
+      if (previous.run === undefined) delete process.env.ELANOUS_RUN_ID; else process.env.ELANOUS_RUN_ID = previous.run;
     }
     expect(spawned!.env).toMatchObject({
-      MONAD_HARNESS_SPACE: 'dev-harness', MONAD_HARNESS_SPACE_ID: 'explicit-space', MONAD_RUN_ID: 'run-explicit-space',
+      ELANOUS_HARNESS_SPACE: 'dev-harness', ELANOUS_HARNESS_SPACE_ID: 'explicit-space', ELANOUS_RUN_ID: 'run-explicit-space',
     });
     expect(mirrors).toEqual(['explicit-space', 'explicit-space', 'explicit-space']);
   });
 
-  test('monad target creates and removes an OS-temporary isolated root rather than polluting cwd or inheriting caller state', async () => {
+  test('elanous target creates and removes an OS-temporary isolated root rather than polluting cwd or inheriting caller state', async () => {
     let spawned: { args?: string[]; env?: Record<string, string> } | undefined;
     setPtyAdapterForTesting((opts) => { spawned = opts; return mockAdapter([], () => {}); });
-    const cwd = mkdtempSync(join(tmpdir(), 'monad-drive-worktree-'));
+    const cwd = mkdtempSync(join(tmpdir(), 'elanous-drive-worktree-'));
     const result = await runPtyDrive({
-      monad: true, goal: 'x', repoRoot: '/repo', cwd, bootMs: 0, sleep: async () => {},
+      elanous: true, goal: 'x', repoRoot: '/repo', cwd, bootMs: 0, sleep: async () => {},
       stream: async () => '{"action":"done","reason":"ready"}', out: () => {}, maxSteps: 1, pollMs: 0,
     });
     expect(result.exitCode).toBe(0);
     const configDir = spawned!.args![2]!;
     const stateDir = spawned!.args![4]!;
     expect(configDir).not.toContain(cwd);
-    expect(configDir).not.toBe(process.env.MONAD_STATE_DIR);
+    expect(configDir).not.toBe(process.env.ELANOUS_STATE_DIR);
     expect(stateDir).toBe(configDir);
-    expect(spawned!.env!.MONAD_STATE_DIR).toBe(configDir);
+    expect(spawned!.env!.ELANOUS_STATE_DIR).toBe(configDir);
     expect(existsSync(configDir)).toBe(false);
     expect(existsSync(stateDir)).toBe(false);
   });
 
-  test('monad target rejects an explicit isolated root that is not a writable directory before spawning', async () => {
+  test('elanous target rejects an explicit isolated root that is not a writable directory before spawning', async () => {
     let spawned = false;
     setPtyAdapterForTesting(() => { spawned = true; return mockAdapter([], () => {}); });
-    const root = join(mkdtempSync(join(tmpdir(), 'monad-drive-file-')), 'not-a-directory');
+    const root = join(mkdtempSync(join(tmpdir(), 'elanous-drive-file-')), 'not-a-directory');
     writeFileSync(root, 'file');
     await expect(runPtyDrive({
-      monad: true, goal: 'x', cwd: mkdtempSync(join(tmpdir(), 'monad-drive-worktree-')), isolatedRoot: root,
+      elanous: true, goal: 'x', cwd: mkdtempSync(join(tmpdir(), 'elanous-drive-worktree-')), isolatedRoot: root,
       stream: async () => '{"action":"done","reason":"x"}', out: () => {},
-    })).rejects.toThrow(`cannot establish isolated monad TUI root at ${root}`);
+    })).rejects.toThrow(`cannot establish isolated elanous TUI root at ${root}`);
     expect(spawned).toBe(false);
   });
 
-  test('monad target rejects caller state identity and a symlink alias before spawning', async () => {
+  test('elanous target rejects caller state identity and a symlink alias before spawning', async () => {
     let spawned = false;
     setPtyAdapterForTesting(() => { spawned = true; return mockAdapter([], () => {}); });
-    const callerState = mkdtempSync(join(tmpdir(), 'monad-drive-parent-'));
-    const alias = join(mkdtempSync(join(tmpdir(), 'monad-drive-alias-')), 'state-link');
+    const callerState = mkdtempSync(join(tmpdir(), 'elanous-drive-parent-'));
+    const alias = join(mkdtempSync(join(tmpdir(), 'elanous-drive-alias-')), 'state-link');
     symlinkSync(callerState, alias);
-    const originalState = process.env.MONAD_STATE_DIR;
-    process.env.MONAD_STATE_DIR = callerState;
+    const originalState = process.env.ELANOUS_STATE_DIR;
+    process.env.ELANOUS_STATE_DIR = callerState;
     try {
-      await expect(runPtyDrive({ monad: true, goal: 'x', cwd: mkdtempSync(join(tmpdir(), 'monad-drive-worktree-')), isolatedRoot: callerState, out: () => {} })).rejects.toThrow('overlaps caller state directory');
-      await expect(runPtyDrive({ monad: true, goal: 'x', cwd: mkdtempSync(join(tmpdir(), 'monad-drive-worktree-')), isolatedRoot: alias, out: () => {} })).rejects.toThrow('overlaps caller state directory');
+      await expect(runPtyDrive({ elanous: true, goal: 'x', cwd: mkdtempSync(join(tmpdir(), 'elanous-drive-worktree-')), isolatedRoot: callerState, out: () => {} })).rejects.toThrow('overlaps caller state directory');
+      await expect(runPtyDrive({ elanous: true, goal: 'x', cwd: mkdtempSync(join(tmpdir(), 'elanous-drive-worktree-')), isolatedRoot: alias, out: () => {} })).rejects.toThrow('overlaps caller state directory');
     } finally {
       // ⚠️ `env[k] = undefined` stores the STRING "undefined" — a later test then
       // reads a caller state directory literally named that. Restore by deleting.
-      if (originalState === undefined) delete process.env.MONAD_STATE_DIR;
-      else process.env.MONAD_STATE_DIR = originalState;
+      if (originalState === undefined) delete process.env.ELANOUS_STATE_DIR;
+      else process.env.ELANOUS_STATE_DIR = originalState;
     }
     expect(spawned).toBe(false);
   });
 
-  test('monad target rejects caller-state descendants and symlinked descendants before spawning', async () => {
+  test('elanous target rejects caller-state descendants and symlinked descendants before spawning', async () => {
     let spawned = false;
     setPtyAdapterForTesting(() => { spawned = true; return mockAdapter([], () => {}); });
-    const callerState = mkdtempSync(join(tmpdir(), 'monad-drive-parent-'));
+    const callerState = mkdtempSync(join(tmpdir(), 'elanous-drive-parent-'));
     const descendant = join(callerState, 'child');
-    const aliasParent = mkdtempSync(join(tmpdir(), 'monad-drive-alias-parent-'));
+    const aliasParent = mkdtempSync(join(tmpdir(), 'elanous-drive-alias-parent-'));
     const alias = join(aliasParent, 'state-link');
     symlinkSync(callerState, alias);
-    const originalState = process.env.MONAD_STATE_DIR;
-    process.env.MONAD_STATE_DIR = callerState;
+    const originalState = process.env.ELANOUS_STATE_DIR;
+    process.env.ELANOUS_STATE_DIR = callerState;
     try {
-      await expect(runPtyDrive({ monad: true, goal: 'x', cwd: mkdtempSync(join(tmpdir(), 'monad-drive-worktree-')), isolatedRoot: descendant, out: () => {} })).rejects.toThrow('overlaps caller state directory');
-      await expect(runPtyDrive({ monad: true, goal: 'x', cwd: mkdtempSync(join(tmpdir(), 'monad-drive-worktree-')), isolatedRoot: join(alias, 'child'), out: () => {} })).rejects.toThrow('overlaps caller state directory');
+      await expect(runPtyDrive({ elanous: true, goal: 'x', cwd: mkdtempSync(join(tmpdir(), 'elanous-drive-worktree-')), isolatedRoot: descendant, out: () => {} })).rejects.toThrow('overlaps caller state directory');
+      await expect(runPtyDrive({ elanous: true, goal: 'x', cwd: mkdtempSync(join(tmpdir(), 'elanous-drive-worktree-')), isolatedRoot: join(alias, 'child'), out: () => {} })).rejects.toThrow('overlaps caller state directory');
     } finally {
       // ⚠️ `env[k] = undefined` stores the STRING "undefined" — a later test then
       // reads a caller state directory literally named that. Restore by deleting.
-      if (originalState === undefined) delete process.env.MONAD_STATE_DIR;
-      else process.env.MONAD_STATE_DIR = originalState;
+      if (originalState === undefined) delete process.env.ELANOUS_STATE_DIR;
+      else process.env.ELANOUS_STATE_DIR = originalState;
     }
     expect(spawned).toBe(false);
   });
@@ -1194,44 +1194,44 @@ describe('runPtyDrive (monad drive 핸들러)', () => {
   // (`/tmp/r` is not under `/tmp/r/state/existing`, and neither is `/tmp/r/state`),
   // so the run was declared isolated while writing straight onto the caller's
   // state. Touching is symmetric; the check has to be too.
-  test('monad target rejects a caller state that lives INSIDE the isolated root', async () => {
+  test('elanous target rejects a caller state that lives INSIDE the isolated root', async () => {
     let spawned = false;
     setPtyAdapterForTesting(() => { spawned = true; return mockAdapter([], () => {}); });
-    const root = mkdtempSync(join(tmpdir(), 'monad-drive-root-'));
+    const root = mkdtempSync(join(tmpdir(), 'elanous-drive-root-'));
     const callerState = join(root, 'state', 'existing');
     mkdirSync(callerState, { recursive: true });
-    const originalState = process.env.MONAD_STATE_DIR;
-    process.env.MONAD_STATE_DIR = callerState;
+    const originalState = process.env.ELANOUS_STATE_DIR;
+    process.env.ELANOUS_STATE_DIR = callerState;
     try {
-      await expect(runPtyDrive({ monad: true, goal: 'x', cwd: mkdtempSync(join(tmpdir(), 'monad-drive-worktree-')), isolatedRoot: root, out: () => {} })).rejects.toThrow('overlaps caller state directory');
+      await expect(runPtyDrive({ elanous: true, goal: 'x', cwd: mkdtempSync(join(tmpdir(), 'elanous-drive-worktree-')), isolatedRoot: root, out: () => {} })).rejects.toThrow('overlaps caller state directory');
     } finally {
       // ⚠️ `env[k] = undefined` stores the STRING "undefined" — a later test then
       // reads a caller state directory literally named that. Restore by deleting.
-      if (originalState === undefined) delete process.env.MONAD_STATE_DIR;
-      else process.env.MONAD_STATE_DIR = originalState;
+      if (originalState === undefined) delete process.env.ELANOUS_STATE_DIR;
+      else process.env.ELANOUS_STATE_DIR = originalState;
     }
     expect(spawned).toBe(false);
   });
 
-  test('monad target rejects a symlinked caller state that resolves inside the isolated root', async () => {
+  test('elanous target rejects a symlinked caller state that resolves inside the isolated root', async () => {
     let spawned = false;
     setPtyAdapterForTesting(() => { spawned = true; return mockAdapter([], () => {}); });
-    const root = mkdtempSync(join(tmpdir(), 'monad-drive-root-'));
+    const root = mkdtempSync(join(tmpdir(), 'elanous-drive-root-'));
     const realInside = join(root, 'state', 'existing');
     mkdirSync(realInside, { recursive: true });
     // The caller points at a symlink that lands inside the isolated root — the
     // overlap is only visible after realpath resolution.
-    const alias = join(mkdtempSync(join(tmpdir(), 'monad-drive-alias-')), 'state-link');
+    const alias = join(mkdtempSync(join(tmpdir(), 'elanous-drive-alias-')), 'state-link');
     symlinkSync(realInside, alias);
-    const originalState = process.env.MONAD_STATE_DIR;
-    process.env.MONAD_STATE_DIR = alias;
+    const originalState = process.env.ELANOUS_STATE_DIR;
+    process.env.ELANOUS_STATE_DIR = alias;
     try {
-      await expect(runPtyDrive({ monad: true, goal: 'x', cwd: mkdtempSync(join(tmpdir(), 'monad-drive-worktree-')), isolatedRoot: root, out: () => {} })).rejects.toThrow('overlaps caller state directory');
+      await expect(runPtyDrive({ elanous: true, goal: 'x', cwd: mkdtempSync(join(tmpdir(), 'elanous-drive-worktree-')), isolatedRoot: root, out: () => {} })).rejects.toThrow('overlaps caller state directory');
     } finally {
       // ⚠️ `env[k] = undefined` stores the STRING "undefined" — a later test then
       // reads a caller state directory literally named that. Restore by deleting.
-      if (originalState === undefined) delete process.env.MONAD_STATE_DIR;
-      else process.env.MONAD_STATE_DIR = originalState;
+      if (originalState === undefined) delete process.env.ELANOUS_STATE_DIR;
+      else process.env.ELANOUS_STATE_DIR = originalState;
     }
     expect(spawned).toBe(false);
   });
@@ -1241,33 +1241,33 @@ describe('runPtyDrive (monad drive 핸들러)', () => {
   // contained" for a path plainly inside the isolated root, so the spawn guard
   // was bypassed. The escape cases are only: absolute, exactly `..`, or `..` +
   // separator.
-  test('monad target rejects a caller state in a child directory whose name starts with dots', async () => {
+  test('elanous target rejects a caller state in a child directory whose name starts with dots', async () => {
     let spawned = false;
     setPtyAdapterForTesting(() => { spawned = true; return mockAdapter([], () => {}); });
-    const root = mkdtempSync(join(tmpdir(), 'monad-drive-root-'));
+    const root = mkdtempSync(join(tmpdir(), 'elanous-drive-root-'));
     const callerState = join(root, '..state');
     mkdirSync(callerState, { recursive: true });
-    const originalState = process.env.MONAD_STATE_DIR;
-    process.env.MONAD_STATE_DIR = callerState;
+    const originalState = process.env.ELANOUS_STATE_DIR;
+    process.env.ELANOUS_STATE_DIR = callerState;
     try {
-      await expect(runPtyDrive({ monad: true, goal: 'x', cwd: mkdtempSync(join(tmpdir(), 'monad-drive-worktree-')), isolatedRoot: root, out: () => {} })).rejects.toThrow('overlaps caller state directory');
+      await expect(runPtyDrive({ elanous: true, goal: 'x', cwd: mkdtempSync(join(tmpdir(), 'elanous-drive-worktree-')), isolatedRoot: root, out: () => {} })).rejects.toThrow('overlaps caller state directory');
     } finally {
       // ⚠️ `env[k] = undefined` stores the STRING "undefined" — a later test then
       // reads a caller state directory literally named that. Restore by deleting.
-      if (originalState === undefined) delete process.env.MONAD_STATE_DIR;
-      else process.env.MONAD_STATE_DIR = originalState;
+      if (originalState === undefined) delete process.env.ELANOUS_STATE_DIR;
+      else process.env.ELANOUS_STATE_DIR = originalState;
     }
     // The guard must stop it BEFORE spawning — that is what "fail closed" means here.
     expect(spawned).toBe(false);
   });
 
-  test('monad target fails closed when an isolated root cannot be established', async () => {
+  test('elanous target fails closed when an isolated root cannot be established', async () => {
     let spawned = false;
     setPtyAdapterForTesting(() => { spawned = true; return mockAdapter([], () => {}); });
     await expect(runPtyDrive({
-      monad: true, goal: 'x', cwd: mkdtempSync(join(tmpdir(), 'monad-drive-worktree-')), isolatedRoot: '/dev/null/monad-drive-root',
+      elanous: true, goal: 'x', cwd: mkdtempSync(join(tmpdir(), 'elanous-drive-worktree-')), isolatedRoot: '/dev/null/elanous-drive-root',
       stream: async () => '{"action":"done","reason":"x"}', out: () => {},
-    })).rejects.toThrow('cannot establish isolated monad TUI root');
+    })).rejects.toThrow('cannot establish isolated elanous TUI root');
     expect(spawned).toBe(false);
   });
 
@@ -1340,7 +1340,7 @@ describe('ptyListReportsAlive — hold ready 판정', () => {
   });
 });
 
-// ⛔⭐⭐⭐ 2026-08-05 · `[S]` 제보 — `dev --monad --hold --worktree` 가 «항상» 안 떴다.
+// ⛔⭐⭐⭐ 2026-08-05 · `[S]` 제보 — `dev --elanous --hold --worktree` 가 «항상» 안 떴다.
 //   기전: owner 가 부모 argv 를 물려받아 `--worktree` 를 «다시» 보고, 런 신원은 상속되므로
 //   같은 이름의 워크트리를 만들려다 실패해 ***PTY 등록 전에 죽었다.***
 //   📏 기전 재현(별도 실측): 같은 runId 로 두 번 부르면
@@ -1348,8 +1348,8 @@ describe('ptyListReportsAlive — hold ready 판정', () => {
 describe('owner argv — 부모가 «이미 소비한» 인자를 물려주지 않는다', () => {
   test('⛔ --worktree 와 짧은 형태 -w 를 걷는다', async () => {
     const { stripParentAppliedArgs } = await import('./pty-drive-cli');
-    expect(stripParentAppliedArgs(['dev', '--monad', '--hold', '--worktree'])).toEqual(['dev', '--monad', '--hold']);
-    expect(stripParentAppliedArgs(['dev', '-w', '--monad'])).toEqual(['dev', '--monad']);
+    expect(stripParentAppliedArgs(['dev', '--elanous', '--hold', '--worktree'])).toEqual(['dev', '--elanous', '--hold']);
+    expect(stripParentAppliedArgs(['dev', '-w', '--elanous'])).toEqual(['dev', '--elanous']);
   });
 
   test('⛔ `--` 뒤는 «건드리지 않는다» — 남의 명령의 인자다', async () => {
@@ -1360,17 +1360,17 @@ describe('owner argv — 부모가 «이미 소비한» 인자를 물려주지 �
 
   test('⭐ 그 밖의 인자는 «한 바이트도» 안 건드린다', async () => {
     const { stripParentAppliedArgs } = await import('./pty-drive-cli');
-    const argv = ['dev', '--monad', '--hold', '--cwd', '/x', '--model', 'sol'];
+    const argv = ['dev', '--elanous', '--hold', '--cwd', '/x', '--model', 'sol'];
     expect(stripParentAppliedArgs(argv)).toEqual(argv);
   });
 
   test('⛔ 스코프 걷기와 «함께» 걸어도 둘 다 먹는다 — owner 가 받는 최종 형태', async () => {
     const { stripParentAppliedArgs, withScopeArgs } = await import('./pty-drive-cli');
-    const out = withScopeArgs(stripParentAppliedArgs(['dev', '--test', '--worktree', '--monad', '--hold']), '/root');
+    const out = withScopeArgs(stripParentAppliedArgs(['dev', '--test', '--worktree', '--elanous', '--hold']), '/root');
     expect(out).not.toContain('--worktree');
     expect(out).not.toContain('--test');
     expect(out).toContain('--config-dir');
-    expect(out).toContain('--monad');
+    expect(out).toContain('--elanous');
   });
 });
 
@@ -1380,8 +1380,8 @@ describe('owner argv — 부모가 «이미 소비한» 인자를 물려주지 �
 describe('owner argv — 걷은 자리를 --cwd 로 메운다', () => {
   test('⛔ --cwd 가 없으면 «부모가 만든 경로»를 명시로 넣는다', async () => {
     const { withOwnerCwdArg } = await import('./pty-drive-cli');
-    expect(withOwnerCwdArg(['dev', '--monad', '--hold'], '/wt/a'))
-      .toEqual(['dev', '--monad', '--hold', '--cwd', '/wt/a']);
+    expect(withOwnerCwdArg(['dev', '--elanous', '--hold'], '/wt/a'))
+      .toEqual(['dev', '--elanous', '--hold', '--cwd', '/wt/a']);
   });
 
   test('⛔ 사람이 이미 준 --cwd 는 «덮지 않는다» — 명시가 이긴다', async () => {
@@ -1400,7 +1400,7 @@ describe('owner argv — 걷은 자리를 --cwd 로 메운다', () => {
   test('⭐ 세 걷기·메우기의 «최종 형태» — owner 가 실제로 받는 argv', async () => {
     const { stripParentAppliedArgs, withScopeArgs, withOwnerCwdArg } = await import('./pty-drive-cli');
     const out = withOwnerCwdArg(
-      withScopeArgs(stripParentAppliedArgs(['dev', '--test', '--worktree', '--monad', '--hold']), '/root'),
+      withScopeArgs(stripParentAppliedArgs(['dev', '--test', '--worktree', '--elanous', '--hold']), '/root'),
       '/wt/a',
     );
     expect(out).not.toContain('--worktree');
@@ -1426,10 +1426,10 @@ describe('hold owner 사망 — 세 갈래', () => {
     const originalSpawnSync = Bun.spawnSync;
     let mintedId = '';
     (Bun as { spawn: typeof Bun.spawn }).spawn = ((...a: Parameters<typeof Bun.spawn>) => {
-      mintedId = (a[0] as { env?: Record<string, string> }).env?.MONAD_HOLD_PTY_ID ?? '';
+      mintedId = (a[0] as { env?: Record<string, string> }).env?.ELANOUS_HOLD_PTY_ID ?? '';
       // ⭐ 실제 owner 가 남겼을 산출을 그 자리에 심는다 — 문면이 그것을 싣는지 본다.
       if (ownerLogText !== undefined) {
-        try { wf(join(tmpdir(), `monad-hold-owner-${mintedId}.log`), ownerLogText); } catch { /* best-effort */ }
+        try { wf(join(tmpdir(), `elanous-hold-owner-${mintedId}.log`), ownerLogText); } catch { /* best-effort */ }
       }
       // ⛔⭐ `{...owner}` 로 «복사»하면 스폰 시점 값이 얼어붙어 «전이»를 못 잰다
       //   (첫 판이 그래서 ⑸⑹이 못 물렸다 — 자가 대상보다 먼저 굳은 자리다).
@@ -1443,10 +1443,10 @@ describe('hold owner 사망 — 세 갈래', () => {
       ..._a: Parameters<typeof Bun.spawnSync>
     ) => sync(mintedId) as unknown as ReturnType<typeof Bun.spawnSync>) as typeof Bun.spawnSync;
     setPtyAdapterForTesting(() => mockAdapter([], () => {}));
-    const root = mkdtempSync(join(tmpdir(), 'monad-hold-owner-died-'));
+    const root = mkdtempSync(join(tmpdir(), 'elanous-hold-owner-died-'));
     try {
       await runPtyDrive({
-        monad: true, hold: true, repoRoot: '/repo', cwd: root, isolatedRoot: root,
+        elanous: true, hold: true, repoRoot: '/repo', cwd: root, isolatedRoot: root,
         readyTimeoutMs: 30, settlementMs: 0, out: () => {}, writeScreen: () => {},
       });
       return '(threw nothing)';

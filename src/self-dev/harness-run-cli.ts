@@ -3,12 +3,12 @@ import type { SurfaceUxSource } from '../agent/surface-ux/build.js';
 import { debug } from '../debug/log.js';
 import { CLI_HARNESS_RUN_ENTRANCE, describeEntranceCommand, retiredEntranceNotice } from './entrance-registry.js';
 
-/** `monad logs --category`로 레거시 입구의 제거 안전시점을 조회하는 브레드크럼. */
+/** `elanous logs --category`로 레거시 입구의 제거 안전시점을 조회하는 브레드크럼. */
 export const HARNESS_RUN_DEPRECATION_LOG_CATEGORY = 'harness-cli.deprecated';
-export const HARNESS_RUN_REPLACEMENT = 'monad harness say <objective>';
+export const HARNESS_RUN_REPLACEMENT = 'elanous harness say <objective>';
 /** 실행 «중»에 사람에게 내는 한 줄. ⛔ `--help` 용은 아래 HARNESS_RUN_DEPRECATION_HELP 다 —
  *  그쪽은 레지스트리가 은퇴 표시와 «갈 곳»을 이미 붙이므로 여기서 그것을 되풀이하지 않는다. */
-export const HARNESS_RUN_DEPRECATION_NOTICE = `ℹ️  \`monad harness run\`은 deprecated 입구입니다 — \`${HARNESS_RUN_REPLACEMENT}\`로 이행하세요.`;
+export const HARNESS_RUN_DEPRECATION_NOTICE = `ℹ️  \`elanous harness run\`은 deprecated 입구입니다 — \`${HARNESS_RUN_REPLACEMENT}\`로 이행하세요.`;
 
 /** `--help` 머리에 붙는 은퇴 표시.
  *

@@ -1,5 +1,8 @@
 import { describe, expect, test } from 'bun:test';
-import { resolveSelfSendTarget, type SelfSendTargetDeps } from './self-send-target.js';
+import { dispatchPodSelfSend, finishPodFragment, readPodFragment, resolveSelfSendTarget, writePodFragment, type SelfSendTargetDeps } from './self-send-target.js';
+import { mkdtempSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 
 function deps(overrides: Partial<SelfSendTargetDeps> = {}): SelfSendTargetDeps {
   return {
@@ -8,6 +11,24 @@ function deps(overrides: Partial<SelfSendTargetDeps> = {}): SelfSendTargetDeps {
     ...overrides,
   };
 }
+
+test('Pod dispatch uses the recorded target, refuses a finished fragment, and leaves local target untouched', () => {
+  const root = mkdtempSync(join(tmpdir(), 'pod-dispatch-'));
+  const env = { ELANOUS_STATE_DIR: root };
+  try {
+    expect(dispatchPodSelfSend('local', { stop: true }, () => { throw new Error('local must not exec'); }, env)).toBeNull();
+    const record = { spaceId: 'pod-a', context: 'ctx', namespace: 'ns', job: 'job-a', inboxDir: '/tmp/inbox' };
+    writePodFragment(record, env);
+    expect(readPodFragment('pod-a', env)).toEqual(record);
+    let args: readonly string[] = [];
+    const result = dispatchPodSelfSend('pod-a', { memo: { version: 1, kind: 'supervisor', urgency: 'normal', body: 'hello' } }, (a) => { args = a; return { status: 0, stdout: '', stderr: '' }; }, env);
+    expect(result).toEqual({ job: 'job-a' });
+    expect(args).toContain('job/job-a');
+    finishPodFragment('pod-a', env);
+    expect(readPodFragment('pod-a', env)).toBeNull();
+    expect(() => dispatchPodSelfSend('pod-a', { stop: true }, () => { throw new Error('must not exec'); }, env)).toThrow('self send 대상 조각이 이미 끝났다: pod-a');
+  } finally { rmSync(root, { recursive: true, force: true }); }
+});
 
 describe('resolveSelfSendTarget', () => {
   test('refuses a TUI self-report with no manifest hint', () => {

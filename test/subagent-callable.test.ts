@@ -1,7 +1,7 @@
 // ── createGlobalSubagentCallable · unit tests ──
 //
 // Phase 2 of RESEARCH-tox-surface-agnostic-boot-2026-05-13. Verifies
-// the bridge between TOX's SubagentCallable contract and monad's
+// the bridge between TOX's SubagentCallable contract and elanous's
 // process-wide AgentRegistry. Real-LLM exercise lives in integration
 // tests — here we lock in the no-LLM contract paths (resolve failure,
 // id passthrough, signal chaining, model copy-on-write).

@@ -2,7 +2,7 @@
 //
 // When `policy.archiveEnabled` is true (default), every cleared
 // chunk produced by Layer 1 / Layer 2 / fallback truncation is
-// appended to `~/.monad/compact-archive/<sessionId>.jsonl`. The
+// appended to `~/.elanous/compact-archive/<sessionId>.jsonl`. The
 // pipeline writes asynchronously and best-effort — IO errors never
 // surface to the chat loop (project policy:
 // feedback_persistence_swallow_errors).
@@ -17,7 +17,7 @@ import { cleanupLogDir, type RetentionPolicy, type RetentionResult } from '../ms
 import type { CompactArchiveEntry } from './types.js';
 
 export function getDefaultArchiveDir(home: string = homedir()): string {
-  return join(home, '.monad', 'compact-archive');
+  return join(home, '.elanous', 'compact-archive');
 }
 
 export function archivePath(sessionId: string, dir?: string): string {

@@ -38,7 +38,7 @@ describe('createEmbodiedTimeline — append + list', () => {
     let t = 1000;
     const tl = createEmbodiedTimeline({ now: () => (t += 100) });
     tl.append({ kind: 'shell-spawn', actor: 'a', payload: {} });
-    tl.append({ kind: 'voice-utterance', actor: 'monad', payload: {} });
+    tl.append({ kind: 'voice-utterance', actor: 'elanous', payload: {} });
     tl.append({ kind: 'shell-end', actor: 'a', payload: {} });
     const list = tl.list();
     expect(list[0]!.atMs).toBeLessThan(list[1]!.atMs);
@@ -59,10 +59,10 @@ describe('createEmbodiedTimeline — list filters', () => {
   function seed() {
     const t = createEmbodiedTimeline();
     t.append({ kind: 'shell-spawn', actor: 'alice', channelId: 'ch-dev', shellId: 'sh-1', payload: {} });
-    t.append({ kind: 'voice-utterance', actor: 'monad', channelId: 'ch-dev', payload: {} });
+    t.append({ kind: 'voice-utterance', actor: 'elanous', channelId: 'ch-dev', payload: {} });
     t.append({ kind: 'debate-round', actor: 'codex', channelId: 'ch-prod', payload: {} });
     t.append({ kind: 'shell-end', actor: 'alice', shellId: 'sh-1', channelId: 'ch-dev', payload: {} });
-    t.append({ kind: 'hitl-prompt', actor: 'monad', channelId: 'ch-dev', payload: {} });
+    t.append({ kind: 'hitl-prompt', actor: 'elanous', channelId: 'ch-dev', payload: {} });
     return t;
   }
 
@@ -129,9 +129,9 @@ describe('createEmbodiedTimeline — summary + groupBy', () => {
 
   test('groupByKind', () => {
     const t = createEmbodiedTimeline();
-    t.append({ kind: 'voice-utterance', actor: 'monad', payload: {} });
-    t.append({ kind: 'voice-utterance', actor: 'monad', payload: {} });
-    t.append({ kind: 'capture-frame', actor: 'monad', payload: {} });
+    t.append({ kind: 'voice-utterance', actor: 'elanous', payload: {} });
+    t.append({ kind: 'voice-utterance', actor: 'elanous', payload: {} });
+    t.append({ kind: 'capture-frame', actor: 'elanous', payload: {} });
     const grouped = t.groupByKind();
     expect(grouped['voice-utterance']).toHaveLength(2);
     expect(grouped['capture-frame']).toHaveLength(1);
@@ -168,7 +168,7 @@ describe('createEmbodiedTimeline — finish', () => {
 describe('createEmbodiedTimeline — relatesTo cross-link', () => {
   test('hitl-answer references hitl-prompt', () => {
     const t = createEmbodiedTimeline();
-    const promptId = t.append({ kind: 'hitl-prompt', actor: 'monad', payload: { question: 'q' } });
+    const promptId = t.append({ kind: 'hitl-prompt', actor: 'elanous', payload: { question: 'q' } });
     t.append({
       kind: 'hitl-answer',
       actor: 'user',

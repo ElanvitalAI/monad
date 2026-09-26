@@ -18,7 +18,7 @@ beforeEach(() => {
   __resetActionRegistryForTests();
   __resetBindingsForTests();
   __resetContextForTests();
-  tmpDir = join(tmpdir(), `monad-rebind-${Date.now()}-${Math.random().toString(36).slice(2)}`);
+  tmpDir = join(tmpdir(), `elanous-rebind-${Date.now()}-${Math.random().toString(36).slice(2)}`);
   mkdirSync(tmpDir, { recursive: true });
 });
 

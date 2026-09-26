@@ -5,7 +5,7 @@
 //   그 파일의 beforeEach 가 자를 결정론으로 만들려고 `CODEX_HOME` 을 «삭제»해서
 //   미러 기본값이 사용자의 실제 `~/.codex/auth.json` 이 됐다.
 //   실측 피해: access_token = {"alg":"none"}…"sig" · refresh_token = "d-r"
-//   ⇒ 공식 codex CLI 와 `monad provider codex usage` 가 «둘 다» 401.
+//   ⇒ 공식 codex CLI 와 `elanous provider codex usage` 가 «둘 다» 401.
 //
 // ⛔⭐⭐ **이 파일은 실홈을 대상으로 `saveTokens` 를 «부르지 않는다»** (리뷰 should-fix).
 //   종전 판은 그렇게 했는데, ***러너 판정이 깨지는 순간 그 테스트가 인시던트를 «재연»한다.***

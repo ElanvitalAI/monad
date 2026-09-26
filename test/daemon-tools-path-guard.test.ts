@@ -24,8 +24,8 @@ let cwd: string;
 let outsideRoot: string;
 
 beforeEach(() => {
-  cwd = mkdtempSync(joinPath(tmpdir(), 'monad-pg-cwd-'));
-  outsideRoot = mkdtempSync(joinPath(tmpdir(), 'monad-pg-outside-'));
+  cwd = mkdtempSync(joinPath(tmpdir(), 'elanous-pg-cwd-'));
+  outsideRoot = mkdtempSync(joinPath(tmpdir(), 'elanous-pg-outside-'));
 });
 
 afterEach(() => {
@@ -91,15 +91,15 @@ describe('resolveSafe — sensitive deny-list', () => {
     expect(() => resolveSafe('.env.production', cwd)).toThrow(ToolSafetyError);
   });
 
-  test('rejects a Windows-separated .monad auth.json path through the shared policy', () => {
-    const windowsPath = `${cwd.replace(/\//g, '\\')}\\.monad\\auth.json`;
+  test('rejects a Windows-separated .elanous auth.json path through the shared policy', () => {
+    const windowsPath = `${cwd.replace(/\//g, '\\')}\\.elanous\\auth.json`;
     expect(() => resolveSafe(windowsPath, cwd)).toThrow(ToolSafetyError);
   });
 
-  test('rejects .monad/auth.json provider tokens', () => {
-    mkdirSync(joinPath(cwd, '.monad'));
-    writeFileSync(joinPath(cwd, '.monad', 'auth.json'), '{"provider":"token"}');
-    expect(() => resolveSafe('.monad/auth.json', cwd)).toThrow(ToolSafetyError);
+  test('rejects .elanous/auth.json provider tokens', () => {
+    mkdirSync(joinPath(cwd, '.elanous'));
+    writeFileSync(joinPath(cwd, '.elanous', 'auth.json'), '{"provider":"token"}');
+    expect(() => resolveSafe('.elanous/auth.json', cwd)).toThrow(ToolSafetyError);
   });
 
   test('rejects *.pem files', () => {

@@ -5,7 +5,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
 const stateDir = mkdtempSync(join(tmpdir(), 'lifecycle-bridge-test-'));
-process.env.MONAD_STATE_DIR = stateDir;
+process.env.ELANOUS_STATE_DIR = stateDir;
 
 const { ChannelBus } = await import('../terminal-matrix/channel-bus.js');
 const { ptyManifestDbPath } = await import('../pty-shell/pty-manifest.js');
@@ -162,17 +162,17 @@ describe('lifecycle SQLite bridge', () => {
 
   test('is fail-soft when its SQLite path cannot be opened', () => {
     resetLifecycleBridgeForTesting();
-    const prior = process.env.MONAD_STATE_DIR;
+    const prior = process.env.ELANOUS_STATE_DIR;
     const blockedPath = join(stateDir, 'not-a-directory');
     writeFileSync(blockedPath, 'file');
-    process.env.MONAD_STATE_DIR = blockedPath;
+    process.env.ELANOUS_STATE_DIR = blockedPath;
     const bus = new ChannelBus();
     try {
       expect(() => attachLifecycleBridge(bus, 'run-a')).not.toThrow();
       expect(() => publishLifecycleRecord(bus, started())).not.toThrow();
       expect(readRunLifecycle('run-a')).toEqual([]);
     } finally {
-      process.env.MONAD_STATE_DIR = prior;
+      process.env.ELANOUS_STATE_DIR = prior;
       resetLifecycleBridgeForTesting();
     }
   });

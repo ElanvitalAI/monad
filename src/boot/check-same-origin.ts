@@ -3,7 +3,7 @@
 // host without the user pasting a bearer token. Cross-origin / curl
 // callers still hit the bearer gate.
 //
-// Rationale: when `monad nexus pwa start` brings up daemon + PWA on
+// Rationale: when `elanous nexus pwa start` brings up daemon + PWA on
 // the same origin, the browser's fetch is functionally equivalent to
 // the daemon talking to itself — yet the bearer flow forced the user
 // to mint + paste a token they never asked for. `Sec-Fetch-Site`

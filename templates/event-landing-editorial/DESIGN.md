@@ -19,10 +19,10 @@
 
 ## Design direction
 
-- monad-pastel-default
+- elanous-pastel-default
 
-> ⚠️ 위 `## Design direction` 은 monad `design-check` 가 읽는 칸이고, 고를 수 있는 여섯은 **전부 터미널 색 구성표**다
-> (`catppuccin-*` · `rose-pine-dawn` · `nord-light` · `monad-pastel-default`). ⛔ **이 문서의 웹 팔레트는 거기서 안 나온다** —
+> ⚠️ 위 `## Design direction` 은 elanous `design-check` 가 읽는 칸이고, 고를 수 있는 여섯은 **전부 터미널 색 구성표**다
+> (`catppuccin-*` · `rose-pine-dawn` · `nord-light` · `elanous-pastel-default`). ⛔ **이 문서의 웹 팔레트는 거기서 안 나온다** —
 > 아래 §Palette 가 정본이고, 위 선언은 「어느 방향을 표방하나」의 «기록»일 뿐이다. 그 간극이 매뉴얼 §5 의 보강 항목 ①이다.
 
 ---
@@ -107,7 +107,7 @@
 
 ### 대비 근거 (WCAG 2.x · 본문 문턱 4.5:1)
 
-📏 **실측 2026-09-08** — monad `measureContrast`(`src/theme/contrast.ts`)로 잰 값이다. 추정이 아니다.
+📏 **실측 2026-09-08** — elanous `measureContrast`(`src/theme/contrast.ts`)로 잰 값이다. 추정이 아니다.
 
 | 쌍 | 비율 | 판정 |
 |---|---|---|

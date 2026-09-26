@@ -85,7 +85,7 @@ export async function runChannelBotSetup(opts: ChannelBotSetupDeps): Promise<Cha
     await setSecretFn(meta.secretId, token);
     saveSwitchFn(meta.switchId, makeSecretRef(meta.secretId));
     out.log(`✓ ${opts.platform}: token saved (secret=${meta.secretId})`);
-    out.log('  Tab will start on next `monad nexus` boot.');
+    out.log('  Tab will start on next `elanous nexus` boot.');
     return { exitCode: 0, switchId: meta.switchId, secretId: meta.secretId };
   } catch (err) {
     out.error(`channel-bot setup failed: ${(err as Error).message}`);

@@ -14,7 +14,7 @@ let legacyPath = '';
 let channelPath = '';
 
 beforeEach(() => {
-  tmpDir = mkdtempSync(joinPath(tmpdir(), 'monad-channel-migrate-'));
+  tmpDir = mkdtempSync(joinPath(tmpdir(), 'elanous-channel-migrate-'));
   legacyPath = joinPath(tmpDir, 'telegram-daemon-bindings.json');
   channelPath = joinPath(tmpDir, 'channel-bindings.json');
 });

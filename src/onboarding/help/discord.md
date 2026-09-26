@@ -1,6 +1,6 @@
 Discord bot — Step 5 / 5
 
-Chat with monad in any Discord server / DM. Setup steps:
+Chat with elanous in any Discord server / DM. Setup steps:
 
   1) Create the bot:
      https://discord.com/developers/applications →
@@ -24,4 +24,4 @@ The wizard validates the token by calling /users/@me — typos
 catch immediately.
 
 Skipping is fine — re-run via:
-    monad setup discord
+    elanous setup discord

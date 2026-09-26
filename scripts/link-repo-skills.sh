@@ -32,7 +32,7 @@ case "${1:-}" in
 esac
 
 REPO="$(cd "$(dirname "$0")/.." && pwd)"
-DEST="${MONAD_SKILLS_DIR:-$HOME/.claude/skills}"
+DEST="${ELANOUS_SKILLS_DIR:-$HOME/.claude/skills}"
 rc=0
 count=0
 linked=0

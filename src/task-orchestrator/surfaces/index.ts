@@ -31,7 +31,7 @@ export interface SurfaceAdapterDeps {
   subagent?: SubagentCallable;
   cron?: CronCallable;
   vwSlot?: VwSlotCallable;
-  /** AXON P6 — ACP session callable (external agent or monad-self).
+  /** AXON P6 — ACP session callable (external agent or elanous-self).
    *  Production wires `src/acp/dual-role-manager.ts` → AcpAgent prompt
    *  + text-chunk buffering. */
   acxSession?: AcxSessionCallable;

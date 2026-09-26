@@ -7,7 +7,7 @@
 
 import { join, dirname } from 'node:path';
 import { existsSync, mkdirSync, writeFileSync, readFileSync, rmSync } from 'node:fs';
-import { monadStateRoot } from './state-paths.js';
+import { elanousStateRoot } from './state-paths.js';
 
 /** 재분해 대기 슬롯 — comment(critique 반영 지시)·taps(누적 재분해 탭·예산). */
 export interface PendingRedecompose {
@@ -19,7 +19,7 @@ export interface PendingRedecompose {
 /** 미션별 pending redecompose 슬롯 경로(pending-clarify 옆·같은 safe-slug). */
 export function pendingRedecomposePath(missionId: string): string {
   const safe = (missionId || 'unknown').replace(/[^\w.-]/g, '_').slice(0, 80);
-  return join(monadStateRoot(), 'conatus/missions', safe, 'pending-redecompose.json');
+  return join(elanousStateRoot(), 'conatus/missions', safe, 'pending-redecompose.json');
 }
 
 /** 조회 — 없거나 깨졌으면 null. 순수 조회. */

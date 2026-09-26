@@ -8,10 +8,10 @@
 // 사용 의의:
 //   - iOS-side client-side prefix (#2654) 가 cache miss only 였음 — 본 store
 //     는 server-side · 사용자 backend swap 빈도와 무관하게 양방향 work.
-//   - 다만 본 cut 의 한계: monad-builtin ACP path 는 본 store push 안 함
+//   - 다만 본 cut 의 한계: elanous-builtin ACP path 는 본 store push 안 함
 //     (NEXUS sessions store 가 별 substrate · 통합은 multi-week 작업).
 //     agent-cli 끼리 (codex ↔ claude ↔ gemini) 의 양방향만 cover.
-//   - 진짜 모든 backend (monad-builtin 포함) 양방향 = future plan (RFC
+//   - 진짜 모든 backend (elanous-builtin 포함) 양방향 = future plan (RFC
 //     doc · process-wide single conversation store + ACP turn-end mirror).
 //
 // In-memory only (process restart 시 lost). Persistence 는 사용자 dogfood 신호
@@ -36,7 +36,7 @@ export interface AgentCliConversationTurn {
   readonly at: number;
 }
 
-/** per-chat history (chatId = monad ACP session id 또는 stable client-side
+/** per-chat history (chatId = elanous ACP session id 또는 stable client-side
  *  identifier). 본 store 는 lookup + append 두 operation · O(1). */
 export interface AgentCliConversationStore {
   append(chatId: string, turn: AgentCliConversationTurn): void;
@@ -82,19 +82,19 @@ export function createInMemoryAgentCliConversationStore(): AgentCliConversationS
 let globalStore: AgentCliConversationStore | null = null;
 
 /** Singleton getter. Lazy init — first call decides backing:
- *    1. `MONAD_CONVERSATION_STORE_MODE=memory` env → in-memory (test mode)
- *    2. 그 외 (production daemon) → SQLite (`~/.monad/agent-cli-conversation.db`
- *       또는 `MONAD_CONVERSATION_DB_PATH` env override). SQLite open 실패 시
+ *    1. `ELANOUS_CONVERSATION_STORE_MODE=memory` env → in-memory (test mode)
+ *    2. 그 외 (production daemon) → SQLite (`~/.elanous/agent-cli-conversation.db`
+ *       또는 `ELANOUS_CONVERSATION_DB_PATH` env override). SQLite open 실패 시
  *       in-memory fallback (graceful · readonly fs / Bun 미설치 등). */
 export function globalAgentCliConversationStore(): AgentCliConversationStore {
   if (!globalStore) {
-    const modeEnv = process.env.MONAD_CONVERSATION_STORE_MODE;
+    const modeEnv = process.env.ELANOUS_CONVERSATION_STORE_MODE;
     const home = process.env.HOME ?? '';
     if (modeEnv === 'memory' || !home) {
       globalStore = createInMemoryAgentCliConversationStore();
     } else {
-      const dbPath = process.env.MONAD_CONVERSATION_DB_PATH
-        ?? `${home}/.monad/agent-cli-conversation.db`;
+      const dbPath = process.env.ELANOUS_CONVERSATION_DB_PATH
+        ?? `${home}/.elanous/agent-cli-conversation.db`;
       try {
         globalStore = createSqliteAgentCliConversationStore(dbPath);
       } catch {
@@ -123,13 +123,13 @@ export function __resetAgentCliConversationStoreForTest(): void {
 //
 // process restart 시 conversation history 보존. in-memory 는 dev / test 의 lost
 // 비용을 감수 (사용자 dogfood path 의 frequency 감안 시 acceptable). production
-// daemon (`monad nexus run`) 은 본 SQLite store 로 swap → 사용자가 monad 를
+// daemon (`elanous nexus run`) 은 본 SQLite store 로 swap → 사용자가 elanous 를
 // 재시작해도 chat 의 cross-backend conversation context 유지.
 //
-// Bun built-in sqlite (bun:sqlite) — 외부 dep 0. 본 monad 의 task-orchestrator/
+// Bun built-in sqlite (bun:sqlite) — 외부 dep 0. 본 elanous 의 task-orchestrator/
 // store.ts (TaskStore) · u5/patcher 등 같은 substrate 재사용.
 
-/** SQLite-backed store. file path 는 `~/.monad/agent-cli-conversation.db`
+/** SQLite-backed store. file path 는 `~/.elanous/agent-cli-conversation.db`
  *  default · nexus boot 시 명시. HARD_CAP 동일 (oldest evict on overflow). */
 export function createSqliteAgentCliConversationStore(
   dbPath: string,

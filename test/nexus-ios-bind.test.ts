@@ -2,7 +2,7 @@
 //
 // `bun run dev nexus ios-bind` 가 시뮬레이터 booted device 의 UserDefaults 에
 // host/port/bearerToken 을 `xcrun simctl spawn booted defaults write
-// com.elanvitalai.monad.ios <key> ...` 3 회로 inject.
+// com.elanvitalai.elanous.ios <key> ...` 3 회로 inject.
 //
 // 본 test 는 DI seam (spawnSyncFn · readRuntimeFn · readTokenFn) 으로
 // xcrun · 파일시스템 · runtime sidecar 모두 mock — 시뮬레이터 부팅
@@ -61,17 +61,17 @@ describe('runNexusIosBind · L2 helper', () => {
     // 1) host
     expect(spawn.calls[0]!.args).toEqual([
       'simctl', 'spawn', 'booted', 'defaults', 'write',
-      'com.elanvitalai.monad.ios', 'nexusHost', '127.0.0.1',
+      'com.elanvitalai.elanous.ios', 'nexusHost', '127.0.0.1',
     ]);
     // 2) port (int)
     expect(spawn.calls[1]!.args).toEqual([
       'simctl', 'spawn', 'booted', 'defaults', 'write',
-      'com.elanvitalai.monad.ios', 'nexusPort', '-int', '31432',
+      'com.elanvitalai.elanous.ios', 'nexusPort', '-int', '31432',
     ]);
     // 3) token
     expect(spawn.calls[2]!.args).toEqual([
       'simctl', 'spawn', 'booted', 'defaults', 'write',
-      'com.elanvitalai.monad.ios', 'bearerToken', 'test-token-1234567890',
+      'com.elanvitalai.elanous.ios', 'bearerToken', 'test-token-1234567890',
     ]);
   });
 

@@ -6,16 +6,16 @@
 // 예산강제↔self-heal 연결 수정) → GoalBlocker run_failed → decideAutonomousAct autonomous → [AA1-HEAL:retry].
 //
 // 사용(전부 테스트 스코프 — 운영 무접촉):
-//   MONAD_STATE_DIR=$PWD/.monad-test bun scripts/dogfood-selfheal-walker-budget.ts        # 미션 생성 → id 출력
-//   MONAD_STATE_DIR=$PWD/.monad-test bun scripts/run-mission.ts <id> --config-dir $PWD/.monad-test
-//   MONAD_STATE_DIR=$PWD/.monad-test bun scripts/dogfood-selfheal-walker-budget.ts --inspect <id>   # 힐 흔적 확인
-//   MONAD_STATE_DIR=$PWD/.monad-test bun scripts/dogfood-selfheal-walker-budget.ts --cleanup <id>
+//   ELANOUS_STATE_DIR=$PWD/.elanous-test bun scripts/dogfood-selfheal-walker-budget.ts        # 미션 생성 → id 출력
+//   ELANOUS_STATE_DIR=$PWD/.elanous-test bun scripts/run-mission.ts <id> --config-dir $PWD/.elanous-test
+//   ELANOUS_STATE_DIR=$PWD/.elanous-test bun scripts/dogfood-selfheal-walker-budget.ts --inspect <id>   # 힐 흔적 확인
+//   ELANOUS_STATE_DIR=$PWD/.elanous-test bun scripts/dogfood-selfheal-walker-budget.ts --cleanup <id>
 //
-// 선행: .monad-test/config.json 에 autopilot.selfHealAutoExec=true · autopilot.budget.walker=[8000].
+// 선행: .elanous-test/config.json 에 autopilot.selfHealAutoExec=true · autopilot.budget.walker=[8000].
 // 안전: 테스트 인스턴스라 DISARMED(무장 파일 부재) · walker=읽기전용 조사 · self-heal=비파괴 워킹메모리 주입.
 
-// ★ config-dir 격리 필수 — tasks.db 는 getMonadConfigDir(config-dir) 스코프이지 MONAD_STATE_DIR 이
-//   아니다(paths.ts:33). --config-dir 미적용 시 운영 ~/.monad/tasks/tasks.db 에 미션이 새어든다.
+// ★ config-dir 격리 필수 — tasks.db 는 getElanousConfigDir(config-dir) 스코프이지 ELANOUS_STATE_DIR 이
+//   아니다(paths.ts:33). --config-dir 미적용 시 운영 ~/.elanous/tasks/tasks.db 에 미션이 새어든다.
 //   TaskStore 열기 전에 strip+적용(run-mission/se-mission-prepare 동형). run-mission 과 반드시 동일 config-dir.
 import { applyConfigDirFlagFromArgv } from '../src/cli/config-dir-flag.js';
 applyConfigDirFlagFromArgv();
@@ -54,7 +54,7 @@ if (process.argv.includes('--reproduce-heal')) {
   const { observeCoordinator } = await import('../src/autopilot/pipeline/mission-progress-ledger.js');
   const { coordinatorRecordMemory } = await import('../src/autopilot/pipeline/coordinator-memory.js');
   // 관측 3박자 — standalone 프로세스라 StoreSink 미상속. 등록해야 observeCoordinator 가 logs.db 에 닿는다
-  // (run-mission.ts:246 동형). 미등록 시 힐 흔적은 파일 트레일만 → `monad logs --category mission.coordinator` 무실효.
+  // (run-mission.ts:246 동형). 미등록 시 힐 흔적은 파일 트레일만 → `elanous logs --category mission.coordinator` 무실효.
   try {
     const [storeMod, dbgMod, cfgMod] = await Promise.all([
       import('../src/mss/logging/log-store.js'), import('../src/debug/log.js'), import('../src/user-config.js'),
@@ -101,7 +101,7 @@ if (process.argv.includes('--reproduce-heal')) {
   console.log(`실 executor 결과 : done=${r.done} failed=${r.failed}`);
   console.log(`분류            : ${JSON.stringify(goalBlockerToHealRecommend(classifyGoalBlocker(injectedSummary)))}`);
   console.log(`페이즈 힐 흔적   : ${healMark ?? '(없음)'}`);
-  console.log(`관측(logs.db)   : monad logs --test --category mission.coordinator (heal-blocker·heal-execute)`);
+  console.log(`관측(logs.db)   : elanous logs --test --category mission.coordinator (heal-blocker·heal-execute)`);
   store.close();
   process.exit(healMark && /AA1-HEAL:retry/.test(healMark) ? 0 : 1);
 }
@@ -142,11 +142,11 @@ try {
   console.log(`walker 페이즈: ${task.id} · "${task.title}" · status=ready`);
   console.log('');
   console.log('다음(라이브 실행):');
-  console.log(`  MONAD_STATE_DIR=$PWD/.monad-test bun scripts/run-mission.ts ${missionId} --config-dir $PWD/.monad-test`);
+  console.log(`  ELANOUS_STATE_DIR=$PWD/.elanous-test bun scripts/run-mission.ts ${missionId} --config-dir $PWD/.elanous-test`);
   console.log(`  → tiny 예산(8000)→maxTurns=1→조사 미완→[budget]→run_failed→autonomous→[AA1-HEAL:retry]`);
   console.log('');
   console.log('확인:');
-  console.log(`  MONAD_STATE_DIR=$PWD/.monad-test bun scripts/dogfood-selfheal-walker-budget.ts --inspect ${missionId}`);
+  console.log(`  ELANOUS_STATE_DIR=$PWD/.elanous-test bun scripts/dogfood-selfheal-walker-budget.ts --inspect ${missionId}`);
 } finally {
   store.close();
 }

@@ -45,7 +45,7 @@ describe('buildOtelUserIntentSink', () => {
       user_id: '',
       session_id: 's-1',
       device_id: 'host',
-      monad_id: 'M-1',
+      elanous_id: 'M-1',
       surface: 'pwa',
       intent: { layer: 'gesture', kind: 'pwa.gesture.swipe_right' },
     };
@@ -64,7 +64,7 @@ describe('buildOtelUserIntentSink', () => {
       }>;
     };
     const rl = parsed.resourceLogs[0]!;
-    expect(rl.resource.attributes.find((a) => a.key === 'monad.monad_id')?.value.stringValue).toBe('M-1');
+    expect(rl.resource.attributes.find((a) => a.key === 'elanous.elanous_id')?.value.stringValue).toBe('M-1');
     const lr = rl.scopeLogs[0]!.logRecords[0]!;
     expect(lr.body.stringValue).toBe('pwa.gesture.swipe_right');
     const attrMap = Object.fromEntries(lr.attributes.map((a) => [a.key, a.value.stringValue]));

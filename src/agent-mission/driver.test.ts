@@ -1,9 +1,11 @@
 import { describe, expect, test } from 'bun:test';
 import { spawnSync } from 'node:child_process';
-import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { mkdtempSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { asideBackend, buildMissionWorktreeProvenance, buildScreenLogPayload, checkEvidence, claudeBackend, codexBackend, collectTscDiagnostics, createMissionControlBrain, createMissionSearch, createMissionVerifyDone, grokBackend, recordMissionWorktreeProvenance, runTsc, SCREEN_LOG_TAIL_MAX_LINE_LENGTH, SCREEN_LOG_TAIL_MAX_LINES, type EvidenceMode } from './driver.js';
+import { asideBackend, buildMissionWorktreeProvenance, buildScreenLogPayload, checkEvidence, claudeBackend, codexBackend, collectTscDiagnostics, createMissionControlBrain, createMissionSearch, createMissionVerifyDone, grokBackend, recordMissionWorktreeProvenance, runAgentMission, runTsc, SCREEN_LOG_TAIL_MAX_LINE_LENGTH, SCREEN_LOG_TAIL_MAX_LINES, type EvidenceMode } from './driver.js';
+import { emitPtyEvent } from '../pty-shell/registry.js';
+import type { PtyHandle } from '../pty-shell/registry.js';
 import { createWorktree, gateWorktreeReuse } from '../git-fs/worktree.js';
 import { recordHarnessWorktreeProvenance } from '../harness/harness-worktree-add.js';
 import { debug } from '../debug/log.js';
@@ -36,6 +38,56 @@ function scriptedStream(raw: string): StreamLLMFn {
   return async () => raw;
 }
 
+test('runAgentMission re-emits exactly once on its Codex child exit with the spawned CODEX_HOME and runId', async () => {
+  const dir = mkdtempSync(join(tmpdir(), 'mission-pty-usage-'));
+  const home = join(dir, 'codex-home');
+  mkdirSync(home);
+  const oldHome = process.env.CODEX_HOME;
+  process.env.CODEX_HOME = home;
+  const calls: Array<{ codexHome: string; runId: string; workdir: string; sinceMs?: number }> = [];
+  try {
+    let spawnedId = '';
+    let spawnedRunId = '';
+    const result = await runAgentMission({ mission: 'done', repo: dir, branch: 'fixture', agent: codexBackend,
+      evidence: { kind: 'doc', dirRel: 'docs', glob: /fixture/ }, memory: false, commit: false,
+      screensDir: join(dir, 'screens'),
+    }, {
+      createWorktree: (() => ({ path: dir, branch: 'fixture', base: 'HEAD' })) as never,
+      recordWorktreeProvenance: () => {},
+      startPty: ((opts) => {
+        const id = opts.id!;
+        spawnedId = id;
+        spawnedRunId = opts.env?.ELANOUS_RUN_ID ?? '';
+        expect(opts.env?.CODEX_HOME).toBe(home);
+        return { id, kind: 'codex', nickname: 'fixture', accessMode: 'auto',
+          isAlive: () => true, canWrite: () => true, drainDelta: () => '', renderScreen: async () => 'ready',
+          renderScreenPng: async () => null, write: () => {}, kill: () => {},
+        } as unknown as PtyHandle;
+      }),
+      runControlLoop: async () => {
+        emitPtyEvent({ type: 'exit', id: 'unrelated-child', exitCode: 0 });
+        expect(calls).toHaveLength(0);
+        emitPtyEvent({ type: 'output', id: spawnedId, chunk: 'Session ID: 12345678-1234-1234-1234-123456789abc' });
+        emitPtyEvent({ type: 'exit', id: spawnedId, exitCode: 0 });
+        emitPtyEvent({ type: 'exit', id: spawnedId, exitCode: 0 });
+        return { termination: { kind: 'success' }, steps: 1 } as never;
+      },
+      reemitPtyUsage: (opts) => { calls.push(opts); return 0; },
+    });
+    expect(result.ok).toBe(false);
+    expect(spawnedRunId).toBeTruthy();
+    expect(calls).toHaveLength(1);
+    expect(calls[0]).toMatchObject({ codexHome: home, runId: spawnedRunId, workdir: dir, sessionId: '12345678-1234-1234-1234-123456789abc' });
+    expect(typeof calls[0]?.sinceMs).toBe('number');
+    emitPtyEvent({ type: 'exit', id: spawnedId, exitCode: 0 });
+    expect(calls).toHaveLength(1);
+  } finally {
+    if (oldHome === undefined) delete process.env.CODEX_HOME;
+    else process.env.CODEX_HOME = oldHome;
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
 describe('agent-mission worktree provenance', () => {
   test('records literal agent owner and command in worktree scope, then opens the strict reuse gate', () => {
     const tmp = mkdtempSync(join(tmpdir(), 'agent-mission-provenance-'));
@@ -54,9 +106,9 @@ describe('agent-mission worktree provenance', () => {
 
       recordHarnessWorktreeProvenance(created.path, provenance);
 
-      expect(git(created.path, 'config', '--worktree', '--get', 'monad.harness.owner')).toBe('agent:agent/provenance-reuse');
-      expect(git(created.path, 'config', '--worktree', '--get', 'monad.harness.command')).toBe('monad agent-mission');
-      expect(git(created.path, 'config', '--worktree', '--get', 'monad.harness.createdAt')).toBe('2026-08-12T00:00:00.000Z');
+      expect(git(created.path, 'config', '--worktree', '--get', 'elanous.harness.owner')).toBe('agent:agent/provenance-reuse');
+      expect(git(created.path, 'config', '--worktree', '--get', 'elanous.harness.command')).toBe('elanous agent-mission');
+      expect(git(created.path, 'config', '--worktree', '--get', 'elanous.harness.createdAt')).toBe('2026-08-12T00:00:00.000Z');
       expect(gateWorktreeReuse(created.path, true, {
         branch,
         commonGitDir: join(repo, git(repo, 'rev-parse', '--git-common-dir')),
@@ -75,7 +127,7 @@ describe('agent-mission worktree provenance', () => {
       expect(() => recordMissionWorktreeProvenance('/wt', provenance, () => { throw new Error('write denied'); }))
         .toThrow('agent-mission worktree provenance failed — write denied');
       expect(observed).toContainEqual(['agent-mission', 'provenance-failed', {
-        path: '/wt', owner: 'agent:agent/failure', command: 'monad agent-mission', createdAt: '2026-08-12T00:00:00.000Z', reason: 'write denied',
+        path: '/wt', owner: 'agent:agent/failure', command: 'elanous agent-mission', createdAt: '2026-08-12T00:00:00.000Z', reason: 'write denied',
       }, { level: 'warn' }]);
     } finally {
       debug.log = original;

@@ -36,7 +36,7 @@ describe('harness boundary response mailbox', () => {
       const response = harnessBoundaryResponsesEnv(executionId)[HARNESS_BOUNDARY_RESPONSES_ENV]!;
       // ⛔⭐ `dirname(response)` 를 기준으로 삼으면 그 검사는 «항상 참»이라 아무것도 증명하지 않는다
       //    (리뷰 should-fix ①). ⇒ 계약이 정한 «고정된» mailbox 부모를 기준으로 잰다.
-      const mailboxParent = resolve(tmpdir(), 'monad-harness-boundary-requests');
+      const mailboxParent = resolve(tmpdir(), 'elanous-harness-boundary-requests');
       expect(relative(mailboxParent, resolve(response))).not.toStartWith('..');
       expect(dirname(resolve(response))).toBe(mailboxParent);
       expect(existsSync(response)).toBe(false);
@@ -94,13 +94,13 @@ describe('harnessSpaceEnv — 자식 스폰용 마커 생성', () => {
     expect(getHarnessSpace(env)).toEqual({ inHarness: true, kind: 'dev-harness', id: 'my-objective', runId: '' });
   });
 
-  test('runId 넘기면 MONAD_RUN_ID stamp·왕복 인지', () => {
+  test('runId 넘기면 ELANOUS_RUN_ID stamp·왕복 인지', () => {
     const env = harnessSpaceEnv('self-implement', 'sp1', 'run-abc123');
     expect(env[HARNESS_RUN_ID_ENV]).toBe('run-abc123');
     expect(getHarnessSpace(env)?.runId).toBe('run-abc123');
   });
 
-  test('runId 생략하면 MONAD_RUN_ID 키 없음(coordinator 가 process.env 로 전파)', () => {
+  test('runId 생략하면 ELANOUS_RUN_ID 키 없음(coordinator 가 process.env 로 전파)', () => {
     const env = harnessSpaceEnv('self-implement', 'sp1');
     expect(env[HARNESS_RUN_ID_ENV]).toBeUndefined();
   });
@@ -207,12 +207,12 @@ describe('run-identity — per-run join anchor(K·2026-07-25)', () => {
   });
 
   test('ensureRunIdentity — 최외곽에서 env에 심고 minted·inherited 출처를 함께 반환한다', () => {
-    const fresh: NodeJS.ProcessEnv = { MONAD_HOST_ID: '01HOSTTEST' };
+    const fresh: NodeJS.ProcessEnv = { ELANOUS_HOST_ID: '01HOSTTEST' };
     const minted = ensureRunIdentity(fresh);
     expect(minted.source).toBe('minted');
     expect(minted.runId).toMatch(/^run-/);
     expect(fresh[HARNESS_RUN_ID_ENV]).toBe(minted.runId);
-    expect(fresh.MONAD_HOST_ID).toBe('01HOSTTEST');
+    expect(fresh.ELANOUS_HOST_ID).toBe('01HOSTTEST');
     // 기존 반환 계약: env에 값이 생긴 뒤 재호출하면 inherited다. PTY reader만 최초 minted 기록을 본다.
     expect(ensureRunIdentity(fresh)).toEqual({ runId: minted.runId, source: 'inherited' });
     expect(getHarnessRunIdSource(fresh)).toBe('minted');
@@ -284,7 +284,7 @@ describe('run-identity — per-run join anchor(K·2026-07-25)', () => {
 // ── resolveRunIdentity 단일 resolver (2026-07-26 · 리뷰 should-fix 로 4곳 중복 통합) ──────
 //   계약: 명시 > 상속 > canonical mint · 전 입력 normalizeRunId 통과 · 반환은 항상 non-empty·안전문자.
 describe('resolveRunIdentity — runId 해석 SSOT', () => {
-  const RUN_ID_ENV = 'MONAD_RUN_ID';
+  const RUN_ID_ENV = 'ELANOUS_RUN_ID';
   const env = (v?: string): NodeJS.ProcessEnv => (v === undefined ? {} : { [RUN_ID_ENV]: v });
 
   test('명시값 최우선 — 환경값과 같아도 source=explicit', () => {

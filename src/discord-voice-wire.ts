@@ -27,9 +27,9 @@
 // command usually arrives WITHOUT guild_id, and users shouldn't need
 // to paste snowflakes — the wire lazily discovers the bot's (single)
 // guild + first voice channel via REST and caches the result, so a
-// bare `/voice-join` just works in both DM and #monad_test.
+// bare `/voice-join` just works in both DM and #elanous_test.
 //
-// Everything is inert unless MONAD_DISCORD_VOICE_CHANNEL (or
+// Everything is inert unless ELANOUS_DISCORD_VOICE_CHANNEL (or
 // `voice.discord.voiceChannel.enabled`) is on: voiceTap is null (no
 // GUILD_VOICE_STATES intent change) and /voice-* replies explain the
 // gate. Production behavior is unchanged until the operator opts in.
@@ -192,26 +192,26 @@ export function buildDiscordVoiceWire(deps: DiscordVoiceWireDeps): DiscordVoiceW
     // STT 언어 힌트 — 한국어 인식 정확도의 핵심 레버 (config
     // voice.discord.voiceLanguage > env). 미설정이면 프로바이더 자동감지.
     const sttLanguage = cfg.voice?.discord?.voiceLanguage
-      ?? process.env.MONAD_VOICE_STT_LANGUAGE?.trim();
+      ?? process.env.ELANOUS_VOICE_STT_LANGUAGE?.trim();
     // 재생 중 청취 정책 — 기본 half-duplex(에코 원천차단·barge-in 불가),
     // barge-in 켜면 지속발화 인터럽트 + 에코 트랜스크립트 가드 (이어폰/
     // 디스코드 에코제거 환경 권장).
     //
     // 갭 #4 (2026-07-12) — 튜닝 상수 표면화. 하네스 하드코딩이던
     // 700(침묵갭)/350(반이중 꼬리)/350(barge-in 지속) 을 user-config
-    // `voice.discord.voiceChannel.*` > env `MONAD_VOICE_*` > 기본값
+    // `voice.discord.voiceChannel.*` > env `ELANOUS_VOICE_*` > 기본값
     // 레이어로 노출 (AGENTS.md §user-config-over-env). barge-in 에너지
     // VAD 임계는 기존 voice.vad 레이어(readVadOptsFromEnv)를 재사용.
     const vc = cfg.voice?.discord?.voiceChannel;
-    const bargeInRaw = process.env.MONAD_VOICE_BARGE_IN?.trim().toLowerCase();
+    const bargeInRaw = process.env.ELANOUS_VOICE_BARGE_IN?.trim().toLowerCase();
     const bargeIn = vc?.bargeIn
       ?? (bargeInRaw === '1' || bargeInRaw === 'true' || bargeInRaw === 'on');
     const bargeInSustainMs = vc?.bargeInSustainMs
-      ?? readPositiveIntEnv('MONAD_VOICE_BARGE_IN_SUSTAIN_MS');
+      ?? readPositiveIntEnv('ELANOUS_VOICE_BARGE_IN_SUSTAIN_MS');
     const selfEchoTailMs = vc?.selfEchoTailMs
-      ?? readPositiveIntEnv('MONAD_VOICE_SELF_ECHO_TAIL_MS');
+      ?? readPositiveIntEnv('ELANOUS_VOICE_SELF_ECHO_TAIL_MS');
     const sttSilenceFinalizeMs = vc?.sttSilenceFinalizeMs
-      ?? readPositiveIntEnv('MONAD_VOICE_STT_SILENCE_FINALIZE_MS');
+      ?? readPositiveIntEnv('ELANOUS_VOICE_STT_SILENCE_FINALIZE_MS');
     const bargeInVadThreshold = readVadOptsFromEnv({}, {
       configOverride: cfg.voice?.vad ?? {},
     }).threshold;

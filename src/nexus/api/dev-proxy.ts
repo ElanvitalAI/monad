@@ -3,7 +3,7 @@
 //
 // Production serves PWA UI via static export (apps/pwa/out → /app/*).
 // During UI development the static export costs a 30s rebuild per
-// change, killing iteration. P-2A added `monad nexus pwa dev` which
+// change, killing iteration. P-2A added `elanous nexus pwa dev` which
 // spawns `next dev` at a separate port (3210) but cross-origin to the
 // daemon at :31415 — CORS preflight, ServiceWorker scope, cookie
 // sameSite, and Tailscale Serve TLS termination all break.
@@ -129,7 +129,7 @@ function stripHopByHop(headers: Headers): Headers {
  * `pathMatchesDevProxy(url.pathname)` and intercepted any WebSocket
  * upgrade (P-2B.2). Connection failures surface as `502 Bad Gateway`
  * with a JSON error body — gives the user a clear hint that
- * `monad nexus pwa dev` (or `bun run dev`) hasn't been started.
+ * `elanous nexus pwa dev` (or `bun run dev`) hasn't been started.
  */
 export async function handleDevProxyHttpRequest(
   req: Request,
@@ -170,7 +170,7 @@ export async function handleDevProxyHttpRequest(
         upstream,
         path: url.pathname,
         reason: err instanceof Error ? err.message : String(err),
-        hint: 'Is `monad nexus pwa dev` (or `cd apps/pwa && bun run dev`) running?',
+        hint: 'Is `elanous nexus pwa dev` (or `cd apps/pwa && bun run dev`) running?',
       }),
       {
         status: 502,

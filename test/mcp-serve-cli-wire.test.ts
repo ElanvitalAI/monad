@@ -1,7 +1,7 @@
-// ── monad mcp serve CLI wire — source-level + smoke guard ──
+// ── elanous mcp serve CLI wire — source-level + smoke guard ──
 //
 // Phase 3 closure piece (S-5 Relay · RFC §5.5). Guarantees the CLI
-// path exists so `claude mcp add --transport stdio monad -- monad
+// path exists so `claude mcp add --transport stdio elanous -- elanous
 // mcp serve` is operable. The actual MCP protocol behavior is
 // covered by `mcp-client.test.ts` (Phase 1) and the registry
 // integration is covered by `tool-runtime-mcp-relay.test.ts`
@@ -66,9 +66,9 @@ describe('src/index.ts — mcp serve subcommand wiring', () => {
 });
 
 describe('mcp serve binary smoke', () => {
-  test('`monad mcp --help` lists `serve` subcommand', () => {
+  test('`elanous mcp --help` lists `serve` subcommand', () => {
     // Run the bin via bun + src/index.ts directly to avoid relying
-    // on `which monad` from the test environment.
+    // on `which elanous` from the test environment.
     const result = spawnSync(
       'bun',
       ['run', SRC_INDEX, 'mcp', '--help'],

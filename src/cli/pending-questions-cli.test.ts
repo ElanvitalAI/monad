@@ -51,7 +51,7 @@ describe('pending questions CLI answerability', () => {
     const output: string[] = [];
     const program = createProgram(output);
 
-    await program.parseAsync(['node', 'monad', 'questions', 'pending']);
+    await program.parseAsync(['node', 'elanous', 'questions', 'pending']);
     expect(output.shift()).toBe([
       'active-file  waiting=2s  expiry=active  surface=file  questions=Use Prettier?  answerable=true  answerableReason=cli-answerable',
       'expired-file  waiting=2s  expiry=expired  surface=file  questions=Use Prettier?  answerable=false  answerableReason=expired',
@@ -59,7 +59,7 @@ describe('pending questions CLI answerability', () => {
       'delivered-question  waiting=2s  expiry=active  surface=file  questions=Use Prettier?  answerable=false  answerableReason=requires-delivery:telegram',
     ].join('\n'));
 
-    await program.parseAsync(['node', 'monad', 'questions', 'pending', '--json']);
+    await program.parseAsync(['node', 'elanous', 'questions', 'pending', '--json']);
     const pending = JSON.parse(output.shift()!);
     expect(pending.questions.map((question: { id: string; answerable: boolean; answerableReason: string }) => [
       question.id,
@@ -79,15 +79,15 @@ describe('pending questions CLI answerability', () => {
     const program = createProgram(output, writes);
     const answer = '{"answers":{"format":"Yes"}}';
 
-    await program.parseAsync(['node', 'monad', 'questions', 'answer', 'active-file', answer]);
+    await program.parseAsync(['node', 'elanous', 'questions', 'answer', 'active-file', answer]);
     expect(output.shift()).toBe('Recorded answer for active-file.');
     expect(writes).toEqual([{ id: 'active-file', result: { answers: { format: 'Yes' } } }]);
 
-    await program.parseAsync(['node', 'monad', 'questions', 'answer', 'expired-file', answer]);
+    await program.parseAsync(['node', 'elanous', 'questions', 'answer', 'expired-file', answer]);
     expect(output.shift()).toBe('Pending question expired-file has expired.');
-    await program.parseAsync(['node', 'monad', 'questions', 'answer', 'modal-question', answer]);
+    await program.parseAsync(['node', 'elanous', 'questions', 'answer', 'modal-question', answer]);
     expect(output.shift()).toBe('Pending question modal-question exists but cannot be answered through this CLI (surface=tui, delivery=modal).');
-    await program.parseAsync(['node', 'monad', 'questions', 'answer', 'missing-question', answer]);
+    await program.parseAsync(['node', 'elanous', 'questions', 'answer', 'missing-question', answer]);
     expect(output.shift()).toBe('No active file question found for missing-question.');
     expect(writes).toHaveLength(1);
   });

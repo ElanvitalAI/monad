@@ -47,9 +47,9 @@ describe('compactSchedule — command truncation observability', () => {
 
   test('dispatchScheduleManage list returns the truncation marker for a stored 121-character command', async () => {
     const stateDir = mkdtempSync(join(tmpdir(), 'schedule-manage-list-'));
-    const previousStateDir = process.env.MONAD_STATE_DIR;
+    const previousStateDir = process.env.ELANOUS_STATE_DIR;
     const command = 'x'.repeat(121);
-    process.env.MONAD_STATE_DIR = stateDir;
+    process.env.ELANOUS_STATE_DIR = stateDir;
     const db = openSchedulesDb(schedulesDbPath());
     try {
       db.run(
@@ -70,19 +70,19 @@ describe('compactSchedule — command truncation observability', () => {
       expect(listed?.command).toHaveLength(120);
     } finally {
       db.close();
-      if (previousStateDir === undefined) delete process.env.MONAD_STATE_DIR;
-      else process.env.MONAD_STATE_DIR = previousStateDir;
+      if (previousStateDir === undefined) delete process.env.ELANOUS_STATE_DIR;
+      else process.env.ELANOUS_STATE_DIR = previousStateDir;
       rmSync(stateDir, { recursive: true, force: true });
     }
   });
 
   test('list and inspect expose unavailable execution history while preserving legacy fields', async () => {
     const stateDir = mkdtempSync(join(tmpdir(), 'schedule-manage-history-'));
-    const previousStateDir = process.env.MONAD_STATE_DIR;
+    const previousStateDir = process.env.ELANOUS_STATE_DIR;
     const command = 'bun scripts/tree-sync-apply.ts';
     const raw = `0 7 * * 1 ${command}`;
     const lastRun = '2026-09-03T00:42:00.000Z';
-    process.env.MONAD_STATE_DIR = stateDir;
+    process.env.ELANOUS_STATE_DIR = stateDir;
     const db = openSchedulesDb(schedulesDbPath());
     try {
       db.run(
@@ -112,18 +112,18 @@ describe('compactSchedule — command truncation observability', () => {
       }));
     } finally {
       db.close();
-      if (previousStateDir === undefined) delete process.env.MONAD_STATE_DIR;
-      else process.env.MONAD_STATE_DIR = previousStateDir;
+      if (previousStateDir === undefined) delete process.env.ELANOUS_STATE_DIR;
+      else process.env.ELANOUS_STATE_DIR = previousStateDir;
       rmSync(stateDir, { recursive: true, force: true });
     }
   });
 
   test('inspect dispatch preserves the full raw command while compacting command with its truncation marker', async () => {
     const stateDir = mkdtempSync(join(tmpdir(), 'schedule-manage-inspect-'));
-    const previousStateDir = process.env.MONAD_STATE_DIR;
+    const previousStateDir = process.env.ELANOUS_STATE_DIR;
     const command = 'x'.repeat(121);
     const raw = `0 7 * * 1 ${command}`;
-    process.env.MONAD_STATE_DIR = stateDir;
+    process.env.ELANOUS_STATE_DIR = stateDir;
     const db = openSchedulesDb(schedulesDbPath());
     try {
       db.run(
@@ -142,8 +142,8 @@ describe('compactSchedule — command truncation observability', () => {
       expect(result.schedule.raw).toBe(raw);
     } finally {
       db.close();
-      if (previousStateDir === undefined) delete process.env.MONAD_STATE_DIR;
-      else process.env.MONAD_STATE_DIR = previousStateDir;
+      if (previousStateDir === undefined) delete process.env.ELANOUS_STATE_DIR;
+      else process.env.ELANOUS_STATE_DIR = previousStateDir;
       rmSync(stateDir, { recursive: true, force: true });
     }
   });
@@ -233,8 +233,8 @@ describe('compactSchedule — last-run result projection', () => {
 
   test('list and inspect propagate last-run result fields including unknown-vs-failure', async () => {
     const stateDir = mkdtempSync(join(tmpdir(), 'schedule-manage-result-'));
-    const previousStateDir = process.env.MONAD_STATE_DIR;
-    process.env.MONAD_STATE_DIR = stateDir;
+    const previousStateDir = process.env.ELANOUS_STATE_DIR;
+    process.env.ELANOUS_STATE_DIR = stateDir;
     const db = openSchedulesDb(schedulesDbPath());
     try {
       db.run(
@@ -328,8 +328,8 @@ describe('compactSchedule — last-run result projection', () => {
       expect(longInspect.schedule.last_error_truncated).toBe(true);
     } finally {
       db.close();
-      if (previousStateDir === undefined) delete process.env.MONAD_STATE_DIR;
-      else process.env.MONAD_STATE_DIR = previousStateDir;
+      if (previousStateDir === undefined) delete process.env.ELANOUS_STATE_DIR;
+      else process.env.ELANOUS_STATE_DIR = previousStateDir;
       rmSync(stateDir, { recursive: true, force: true });
     }
   });
@@ -350,7 +350,7 @@ describe('SCHEDULE_MANAGE_SPEC — 공유 spec', () => {
     const src = readFileSync(join(import.meta.dir, 'schedule-manage-tool.ts'), 'utf-8');
     expect(src).toContain("action === 'migrate'");
     expect(src).toContain('migrateJobToTrigger');
-    // raw 부재 가드보다 앞(monad 러너 잡도 이관) — 소스 순서 가드
+    // raw 부재 가드보다 앞(elanous 러너 잡도 이관) — 소스 순서 가드
     expect(src.indexOf("action === 'migrate'")).toBeLessThan(src.indexOf('원문 부재(수정 불가)'));
   });
 });

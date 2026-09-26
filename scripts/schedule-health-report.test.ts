@@ -7,7 +7,7 @@ import type { ScheduleHealth } from '../src/domains/schedule-registry.js';
 import { measureStandaloneSinkCoverage, renderScheduleHealthReport } from './schedule-health-report.js';
 
 const clean: ScheduleHealth = {
-  monadTotal: 3, excludedRunVia: 0, excludedUnwrappedCrontab: 0, excludedDisabled: 0, excludedMissingCron: 0,
+  elanousTotal: 3, excludedRunVia: 0, excludedUnwrappedCrontab: 0, excludedDisabled: 0, excludedMissingCron: 0,
   errored: [], stale: [], noncanonical: [], unmeasured: [], generatedAt: '2026-09-24T00:00:00Z',
 };
 

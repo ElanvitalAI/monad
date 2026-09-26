@@ -147,7 +147,7 @@ function candidatesOrBlocked(result: CmdResult): PullRequestCandidate[] | Salvag
 export function evaluateSalvageCli(runId: string, branch: string, topic: string, run: CmdRunner = defaultRunner): SalvageVerdict {
   const logMatches: number[] = [];
   for (const since of LOG_WINDOWS) {
-    const logs = run('monad', ['logs', '--grep', runId, '--since', since, '--test', '--limit', '40']);
+    const logs = run('elanous', ['logs', '--grep', runId, '--since', since, '--test', '--limit', '40']);
     if (!logs.ok) return blocked('logs-failed', logs);
     const evidence = parseLogEvidence(logs.out);
     logMatches.push(evidence.length);

@@ -1,4 +1,4 @@
-# monad voice (PWA)
+# elanous voice (PWA)
 
 monad-agent 의 PWA frontend. 모바일/데스크톱 브라우저에서 voice channel
 사용 — getUserMedia 로 마이크 캡처, AudioWorkletNode 로 24kHz mono PCM

@@ -46,16 +46,16 @@ const X_ASSET_DB = join(HOME, '.claude/skills/apify-x-asset-sentiment/data/x_ass
 const SCORES_DB = join(HOME, '.cache/asset-attractiveness/scores.db');
 const ASA_SKILL = join(HOME, '.claude/skills/asset-attractiveness');
 const CONATUS = CONATUS_DIR;  // 단일 출처(conatus-env·dated-path landmine 근본수정 2026-07-22)
-/** monad 소유 Conatus 데이터(백필 DB/캐시 물리이전, 2026-07-06). backtest/backfill이
+/** elanous 소유 Conatus 데이터(백필 DB/캐시 물리이전, 2026-07-06). backtest/backfill이
  *  CONATUS_DATA_DIR로 읽는다(data.py/db.py env 지원). 없으면 스크립트가 자기 위치 fallback. */
-const MONAD_CONATUS = conatusDataDir();  // 2026-07-24 — 하드코딩 제거(#5262 리뷰): backtest/backfill 이 cwd 로 쓰므로 테스트 격리 대상이다.
+const ELANOUS_CONATUS = conatusDataDir();  // 2026-07-24 — 하드코딩 제거(#5262 리뷰): backtest/backfill 이 cwd 로 쓰므로 테스트 격리 대상이다.
 /** ⛔ 절대경로를 박지 않는다 — 이 상수는 ***꾸러미에 실려서 남의 기계에서 돌아간다.***
  *  📏 2026-09-21 실측: `bun pm pack` 한 tgz 의 4,378 파일 중 94개가 `/Users/user` 을 담았고,
  *     `src/` 의 여섯 중 ***이 한 줄만 «살아 있는 코드»***였다(나머지 다섯은 참조 경로 주석).
  *  ⭐ 이 파일의 이웃은 전부 `join(HOME, …)` 이다 — 이것만 예외였다.
- *     그리고 선례도 같은 파일에 있다: `MONAD_CONATUS = conatusDataDir()` (2026-07-24 하드코딩 제거 `#5262`).
+ *     그리고 선례도 같은 파일에 있다: `ELANOUS_CONATUS = conatusDataDir()` (2026-07-24 하드코딩 제거 `#5262`).
  *  ⇒ 홈 상대로 두고, 다른 자리에 둔 사람은 env 로 덮는다. */
-const REGION_DIR = process.env.MONAD_REGION_REPORTS_DIR?.trim()
+const REGION_DIR = process.env.ELANOUS_REGION_REPORTS_DIR?.trim()
   || join(HOME, 'obsidian/ElanvitalAI/40. Project/EMBA_Field_Project/Crawling/X-regions');
 const PANEL_DIR = join(HOME, '.claude/skills/attractiveness-panel/panels');
 const OMNI_SKILL = join(HOME, '.claude/skills/omni-market');
@@ -225,7 +225,7 @@ const FINANCE_TOOL_SPECS: LLMToolSpec[] = [
   },
   {
     name: 'finance_13f_movers',
-    description: 'Cross-fund CONSENSUS from the accumulated 13F knowledge DB (~/.monad/knowledge_13f.db, populated by the periodic 13f ingest): which issuers are held by the MOST funds in their latest filing. Use for "여러 헤지펀드가 공통 보유/매수한 종목". Complements finance_13f (single fund) with the aggregate picture. Fast (local DB).',
+    description: 'Cross-fund CONSENSUS from the accumulated 13F knowledge DB (~/.elanous/knowledge_13f.db, populated by the periodic 13f ingest): which issuers are held by the MOST funds in their latest filing. Use for "여러 헤지펀드가 공통 보유/매수한 종목". Complements finance_13f (single fund) with the aggregate picture. Fast (local DB).',
     parameters: { type: 'object', properties: { min_funds: { type: 'number', description: 'min distinct funds holding (default 2).' } }, required: [] },
   },
   {
@@ -279,7 +279,7 @@ const FINANCE_TOOL_SPECS: LLMToolSpec[] = [
   },
   {
     name: 'finance_capstone_override',
-    description: "캡스톤 자동 신호 위에 대표(사람) 재량 오버라이드를 걸고/조회/취소 — **우선순위 사람>자동**. 베어장 판단·매수 시점·진입 금지·홀드를 자동 ABCDE보다 우선 적용. kind: force_regime(regime=BULL/BEAR 국면강제)·arm_entry(매수 무장)·block_entry(진입 금지)·hold_position(현 포지션 홀드)·pause_auto(자동 정지). scope: next_decision·until_date(expiresAt=YYYY-MM-DD)·until_event(event)·until_cancelled. Use for '베어장으로 봐/강세로 보고 매수해/7/11까지 진입금지/이번 포지션 홀드/자동 멈춰/오버라이드 목록/취소'. SQLite 감사(~/.monad/conatus/capstone.db). 저장·조회만·주문 없음(집행은 verify+HITL).",
+    description: "캡스톤 자동 신호 위에 대표(사람) 재량 오버라이드를 걸고/조회/취소 — **우선순위 사람>자동**. 베어장 판단·매수 시점·진입 금지·홀드를 자동 ABCDE보다 우선 적용. kind: force_regime(regime=BULL/BEAR 국면강제)·arm_entry(매수 무장)·block_entry(진입 금지)·hold_position(현 포지션 홀드)·pause_auto(자동 정지). scope: next_decision·until_date(expiresAt=YYYY-MM-DD)·until_event(event)·until_cancelled. Use for '베어장으로 봐/강세로 보고 매수해/7/11까지 진입금지/이번 포지션 홀드/자동 멈춰/오버라이드 목록/취소'. SQLite 감사(~/.elanous/conatus/capstone.db). 저장·조회만·주문 없음(집행은 verify+HITL).",
     parameters: { type: 'object', properties: {
       action: { type: 'string', enum: ['set', 'list', 'cancel'], description: 'set(추가)·list(active 조회)·cancel(취소)' },
       kind: { type: 'string', enum: ['force_regime', 'arm_entry', 'block_entry', 'hold_position', 'pause_auto'], description: 'set 시 오버라이드 종류' },
@@ -294,7 +294,7 @@ const FINANCE_TOOL_SPECS: LLMToolSpec[] = [
   },
   {
     name: 'finance_backtest',
-    description: "가격기반 신호 정직 백테스트(READ-ONLY 연구·검증도구). Conatus backtest.py/factor_research.py를 monad 소유 데이터(~/.monad/conatus: screener.db + bulk EOD 캐시)로 실행. 신호(대세후보·상승율상위·상한가·아웃퍼포머)의 forward 수익을 익일시가 진입 ρ=0 정직체결로 시장 대비 초과수익 평가(룩어헤드 방지). factor=true면 factor_research.py(저변동성+단기반전 5분위 롱숏). Use for '백테스트/신호 검증/전략 성과/알파 확인/팩터 IC'. 주문 없음·비실시간 연구용.",
+    description: "가격기반 신호 정직 백테스트(READ-ONLY 연구·검증도구). Conatus backtest.py/factor_research.py를 elanous 소유 데이터(~/.elanous/conatus: screener.db + bulk EOD 캐시)로 실행. 신호(대세후보·상승율상위·상한가·아웃퍼포머)의 forward 수익을 익일시가 진입 ρ=0 정직체결로 시장 대비 초과수익 평가(룩어헤드 방지). factor=true면 factor_research.py(저변동성+단기반전 5분위 롱숏). Use for '백테스트/신호 검증/전략 성과/알파 확인/팩터 IC'. 주문 없음·비실시간 연구용.",
     parameters: { type: 'object', properties: { factor: { type: 'boolean', description: 'true면 factor_research.py(저변동·단기반전 팩터). 기본 backtest.py.' } }, required: [] },
   },
   {
@@ -832,8 +832,8 @@ export function buildFinanceTools(): {
           };
         }
         case 'finance_backtest': {
-          // 백필 DB/캐시 물리이전(~/.monad/conatus) 위에서 Conatus 백테스트 파이썬
-          // 재사용(대표 결정: 파이썬 재사용). CONATUS_DATA_DIR env로 monad 소유
+          // 백필 DB/캐시 물리이전(~/.elanous/conatus) 위에서 Conatus 백테스트 파이썬
+          // 재사용(대표 결정: 파이썬 재사용). CONATUS_DATA_DIR env로 elanous 소유
           // 데이터를 읽게 한다. READ-ONLY·비실시간 연구용·주문 없음.
           const script = args.factor === true ? 'factor_research.py' : 'backtest.py';
           // 파리티 검증된 TS 포트 라우팅(config flag·기본 false → 아래 python 경로 불변).
@@ -846,7 +846,7 @@ export function buildFinanceTools(): {
               return {
                 script,
                 output: r.render().slice(-6000) || '(no output)',
-                note: 'monad 소유 데이터(~/.monad/conatus) 정직 백테스트 — 익일시가 ρ=0·시장 대비 초과수익·룩어헤드 방지. READ-ONLY 연구용·주문 없음. 캐시 기간이 짧으면 forward 윈도 일부 공백(백필 누적으로 확장). [conatus-native TS 포트]',
+                note: 'elanous 소유 데이터(~/.elanous/conatus) 정직 백테스트 — 익일시가 ρ=0·시장 대비 초과수익·룩어헤드 방지. READ-ONLY 연구용·주문 없음. 캐시 기간이 짧으면 forward 윈도 일부 공백(백필 누적으로 확장). [conatus-native TS 포트]',
               };
             } catch (e) {
               const msg = e instanceof Error ? e.message : String(e);
@@ -857,12 +857,12 @@ export function buildFinanceTools(): {
           try {
             const out = execFileSync('python3', [join(CONATUS, 'screener', script)], {
               cwd: CONATUS, encoding: 'utf-8', timeout: 120_000, maxBuffer: 8_000_000,
-              env: { ...process.env, CONATUS_DATA_DIR: MONAD_CONATUS },
+              env: { ...process.env, CONATUS_DATA_DIR: ELANOUS_CONATUS },
             }).trim();
             return {
               script,
               output: out.slice(-6000) || '(no output)',
-              note: 'monad 소유 데이터(~/.monad/conatus) 정직 백테스트 — 익일시가 ρ=0·시장 대비 초과수익·룩어헤드 방지. READ-ONLY 연구용·주문 없음. 캐시 기간이 짧으면 forward 윈도 일부 공백(백필 누적으로 확장).',
+              note: 'elanous 소유 데이터(~/.elanous/conatus) 정직 백테스트 — 익일시가 ρ=0·시장 대비 초과수익·룩어헤드 방지. READ-ONLY 연구용·주문 없음. 캐시 기간이 짧으면 forward 윈도 일부 공백(백필 누적으로 확장).',
             };
           } catch (e) {
             const msg = e instanceof Error ? e.message : String(e);

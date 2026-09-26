@@ -119,7 +119,7 @@ export function buildAcpContextPreambleForSession(
   }
   if (picked.length === 0) return '';
   picked.reverse();
-  const lines = picked.map(t => `${t.role === 'user' ? '사용자' : 'monad'}: ${t.text.replace(/\s+/g, ' ').slice(0, 240)}`);
+  const lines = picked.map(t => `${t.role === 'user' ? '사용자' : 'elanous'}: ${t.text.replace(/\s+/g, ' ').slice(0, 240)}`);
   const body = lines.join('\n').slice(0, delta ? 2500 : 1500);
   const header = delta
     ? '[직전 위임 이후 이 대화에서 진행된 상황(self·다른 백엔드 포함) — 이어서 반영. 실제 지시는 아래]'
@@ -251,7 +251,7 @@ export async function dispatchTelegramSlash(
 /** Start a FRESH conversation on this chat — unbind the current session so
  *  the next message creates a new one, but PRESERVE the old transcript
  *  (unbind, not delete). Shared by /new, /clear, /reset (aliases matching
- *  chat muscle-memory). The old session stays in history — `monad session
+ *  chat muscle-memory). The old session stays in history — `elanous session
  *  list/show <id>` still reach it. (Previously this deleted the whole
  *  session, wiping past history — wrong concept: /new should reset context,
  *  not erase the record.) */
@@ -284,7 +284,7 @@ function dropChatSessionReply(ctx: TgIncoming): string {
   const unbound = unbindTelegramSession(sess.id);
   const acpNote = droppedAcp.length > 0 ? ` ACP 코딩 세션(${droppedAcp.join(', ')})도 종료.` : '';
   return unbound
-    ? `✓ 새 대화 시작. 이전 세션 \`${sess.id.slice(0, 8)}\`(${sess.messageCount} msg)은 기록에 **보존**됨 (\`monad session show ${sess.id.slice(0, 8)}\`).${acpNote} 다음 메시지부터 새 세션.`
+    ? `✓ 새 대화 시작. 이전 세션 \`${sess.id.slice(0, 8)}\`(${sess.messageCount} msg)은 기록에 **보존**됨 (\`elanous session show ${sess.id.slice(0, 8)}\`).${acpNote} 다음 메시지부터 새 세션.`
     : `_Session \`${sess.id.slice(0, 8)}\` was already gone._`;
 }
 
@@ -338,7 +338,7 @@ export function defaultTelegramCommands(): TgSlashCommand[] {
     },
     {
       name: 'brain',
-      description: 'ACP 위임 연속 모드를 끄고 monad 브레인(self)으로 복귀',
+      description: 'ACP 위임 연속 모드를 끄고 elanous 브레인(self)으로 복귀',
       handler: async (_args, ctx) => {
         const key = delegationChatKey(ctx.botId, ctx.chatId, ctx.threadId);
         const was = getActiveDelegation(key);
@@ -371,7 +371,7 @@ export function defaultTelegramCommands(): TgSlashCommand[] {
           `provider: \`${provider}\``,
           `model:    \`${model}\``,
           '',
-          '_Change via `monad setup` on the host — the bot reads from user-config._',
+          '_Change via `elanous setup` on the host — the bot reads from user-config._',
         ];
         return lines.join('\n');
       },
@@ -387,7 +387,7 @@ export function defaultTelegramCommands(): TgSlashCommand[] {
           allow: skillsCfg.allow, deny: skillsCfg.deny,
         });
         if (index.length === 0) {
-          return '_No skills indexed. Install via `monad sync` on the host._';
+          return '_No skills indexed. Install via `elanous sync` on the host._';
         }
         const lines = ['**Installed skills**', ''];
         // Cap the description to 80 chars so a 40-skill list doesn't
@@ -468,7 +468,7 @@ export function defaultTelegramCommands(): TgSlashCommand[] {
         }
 
         if (!url || !model) {
-          return '_baseUrl or model not configured. Run `monad local setup --url … --model …` on the host._';
+          return '_baseUrl or model not configured. Run `elanous local setup --url … --model …` on the host._';
         }
 
         const { resolveLocalEndpoints, runLocalLLMCompat } = await import('./local-llm-test.js');
@@ -618,20 +618,20 @@ export function defaultTelegramCommands(): TgSlashCommand[] {
     },
     {
       name: 'resume',
-      description: 'Resume a daemon session by id: /resume <monad-session-N> — binds chat + shows last turns',
+      description: 'Resume a daemon session by id: /resume <elanous-session-N> — binds chat + shows last turns',
       handler: async (args, ctx, opts): Promise<string | void> => {
         // Tier 1 telegram fan-out arc — /resume surfaces a daemon
         // session's recent turns as immediate context. PR 3 scope:
         // preview only. PR 4 wires the daemon-sessionId into the
         // bridge's chat→session map so subsequent messages route
         // through the resumed session (currently the next message
-        // still hits the chat's default monad-TUI session).
+        // still hits the chat's default elanous-TUI session).
         const id = (args[0] ?? '').trim();
         if (!id) {
           return [
             'Usage: `/resume <daemon-session-id>`',
             '',
-            '_Lists daemon sessions with `/status` (when MONAD_HISTORY_DIR is set on the daemon)._',
+            '_Lists daemon sessions with `/status` (when ELANOUS_HISTORY_DIR is set on the daemon)._',
           ].join('\n');
         }
 
@@ -639,7 +639,7 @@ export function defaultTelegramCommands(): TgSlashCommand[] {
         if (!result.exists) {
           const hint = result.historyDir
             ? `_searched ${result.historyDir}_`
-            : '_(daemon runtime metadata missing — is `monad serve` running with MONAD_HISTORY_DIR set?)_';
+            : '_(daemon runtime metadata missing — is `elanous serve` running with ELANOUS_HISTORY_DIR set?)_';
           return [
             `✗ Unknown daemon session: \`${id}\``,
             hint,
@@ -919,7 +919,7 @@ export async function runAcpViaSlash(
 
   // The /cc turn runs in a SEPARATE backend ACP subprocess session — it
   // is NOT written to this chat's telegram session by runAcpTurn. Without
-  // a breadcrumb here, monad's brain (the NL chat path, which reads THIS
+  // a breadcrumb here, elanous's brain (the NL chat path, which reads THIS
   // session's transcript) has zero record of the delegated job, so a
   // follow-up "is my CC job done?" hallucinates about unrelated state.
   // Resolve-or-create + append the user turn up front (mirrors

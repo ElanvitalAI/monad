@@ -3,7 +3,7 @@
 // Covers:
 //   1. semanticForIcon — name → semantic slot mapping invariants
 //   2. themedIcon / paintedIcon — explicit-theme lookups, cross-preset
-//      divergence, MONAD_ASCII_ICONS fallback
+//      divergence, ELANOUS_ASCII_ICONS fallback
 //   3. icon / paintedIconCurrent — ambient-getter convenience wrappers
 //      + graceful fallback when getter not configured
 //   4. Integration: toast-stack uses the helper end-to-end, ASCII mode
@@ -25,7 +25,7 @@ import {
 import {
   CATPPUCCIN_LATTE,
   CATPPUCCIN_MOCHA,
-  MONAD_PASTEL_DEFAULT,
+  ELANOUS_PASTEL_DEFAULT,
   ROSE_PINE_DAWN,
 } from '../src/themes/index.js';
 import { DEFAULT_THEME_TOKENS, DEFAULT_WIDGET_TOKENS } from '../src/theme/tokens.js';
@@ -33,18 +33,18 @@ import { ToastStack } from '../src/ui/widgets/toast-stack.js';
 import { Printer } from '../src/ui/printer.js';
 
 const ORIG_CHALK_LEVEL = chalk.level;
-const ORIG_ASCII = process.env.MONAD_ASCII_ICONS;
+const ORIG_ASCII = process.env.ELANOUS_ASCII_ICONS;
 
 beforeEach(() => {
   chalk.level = 3;
   __resetThemeIconsGetterForTests();
-  delete process.env.MONAD_ASCII_ICONS;
+  delete process.env.ELANOUS_ASCII_ICONS;
 });
 afterEach(() => {
   chalk.level = ORIG_CHALK_LEVEL;
   __resetThemeIconsGetterForTests();
-  if (ORIG_ASCII === undefined) delete process.env.MONAD_ASCII_ICONS;
-  else process.env.MONAD_ASCII_ICONS = ORIG_ASCII;
+  if (ORIG_ASCII === undefined) delete process.env.ELANOUS_ASCII_ICONS;
+  else process.env.ELANOUS_ASCII_ICONS = ORIG_ASCII;
 });
 
 describe('semanticForIcon', () => {
@@ -90,8 +90,8 @@ describe('themedIcon', () => {
     expect(latte).toBeDefined();
   });
 
-  test('MONAD_ASCII_ICONS=1 swaps in ASCII_SAFE_ICONS', () => {
-    process.env.MONAD_ASCII_ICONS = '1';
+  test('ELANOUS_ASCII_ICONS=1 swaps in ASCII_SAFE_ICONS', () => {
+    process.env.ELANOUS_ASCII_ICONS = '1';
     expect(themedIcon(CATPPUCCIN_MOCHA, 'error')).toBe('[E]');
     expect(themedIcon(CATPPUCCIN_MOCHA, 'success')).toBe('[v]');
     expect(themedIcon(CATPPUCCIN_MOCHA, 'warning')).toBe('[W]');
@@ -115,7 +115,7 @@ describe('paintedIcon', () => {
       paintedIcon(CATPPUCCIN_MOCHA, 'error'),
       paintedIcon(CATPPUCCIN_LATTE, 'error'),
       paintedIcon(ROSE_PINE_DAWN, 'error'),
-      paintedIcon(MONAD_PASTEL_DEFAULT, 'error'),
+      paintedIcon(ELANOUS_PASTEL_DEFAULT, 'error'),
     ]);
     // At least 2 distinct ANSI prefixes across the 4 presets — the
     // semantic.critical hex is preset-specific.
@@ -155,9 +155,9 @@ describe('icon (ambient getter)', () => {
     expect(second.length).toBeGreaterThan(0);
   });
 
-  test('MONAD_ASCII_ICONS=1 reaches icon() through ambient getter', () => {
+  test('ELANOUS_ASCII_ICONS=1 reaches icon() through ambient getter', () => {
     configureThemeIconsGetter(() => CATPPUCCIN_MOCHA);
-    process.env.MONAD_ASCII_ICONS = '1';
+    process.env.ELANOUS_ASCII_ICONS = '1';
     expect(icon('error')).toBe('[E]');
   });
 });
@@ -196,7 +196,7 @@ describe('toast-stack integration', () => {
 
   test('ASCII mode propagates → glyph is bracketed literal', () => {
     configureThemeIconsGetter(() => CATPPUCCIN_MOCHA);
-    process.env.MONAD_ASCII_ICONS = '1';
+    process.env.ELANOUS_ASCII_ICONS = '1';
     const stack = new ToastStack({ nowMs: () => 0 });
     stack.push({ text: 'saved', kind: 'success' });
     const lines = renderToastLines(stack).join('\n');

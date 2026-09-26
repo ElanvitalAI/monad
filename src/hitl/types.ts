@@ -1,6 +1,6 @@
 // AXON P4 — HITL public type surface.
 //
-// This module is the re-export hub for the types monad code outside of
+// This module is the re-export hub for the types elanous code outside of
 // src/hitl/ needs to talk about HITL. The runtime lives in confirm.ts
 // (multi-channel race + default channels) and per-channel deps in
 // telegram-channel.ts / discord-channel.ts. By collecting the types

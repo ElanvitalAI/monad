@@ -1,10 +1,10 @@
 // src/autopilot/tool-registry.ts
 //
-// ROADMAP-monad-builtin-autopilot-cascade §MB-2 (+ MB-6 + MB-11 + MB-13 polish).
+// ROADMAP-elanous-builtin-autopilot-cascade §MB-2 (+ MB-6 + MB-11 + MB-13 polish).
 //
-// monad-builtin autopilot 의 tool surface 추출. ACP backend 는 binary
-// 내장 tool catalog (vendor 결정) 을 사용했지만, monad-builtin path 는
-// `src/tool-runtime/` 의 in-process registry 를 직접 활용 — monad 가
+// elanous-builtin autopilot 의 tool surface 추출. ACP backend 는 binary
+// 내장 tool catalog (vendor 결정) 을 사용했지만, elanous-builtin path 는
+// `src/tool-runtime/` 의 in-process registry 를 직접 활용 — elanous 가
 // permission · 정의 변경 · 새 tool 추가를 native 통제.
 //
 // MB-14 expanded surface = 16 essentials:
@@ -84,7 +84,7 @@ import { SELF_COGNITION_RUNTIMES, SELF_COGNITION_TOOL_NAMES } from '../tool-runt
 import type { ToolRuntime, ToolRuntimeContext } from '../tool-runtime/types.js';
 
 /** 미션 실행 중 능동 자기조회 — READ-ONLY 자기관측 4종.
- *  self_recall(monad 구현 이력)·logs_query(자기 로그)·ops_status(운영 상태)·
+ *  self_recall(elanous 구현 이력)·logs_query(자기 로그)·ops_status(운영 상태)·
  *  memory_recall(크로스서피스 기억). 코어툴 dispatch 재사용. */
 const selfCognitionRuntimeByName = new Map(
   SELF_COGNITION_RUNTIMES.map(runtime => [runtime.id, runtime]),
@@ -133,7 +133,7 @@ export interface AutopilotToolRegistryOptions {
 }
 
 /**
- * Returns the curated autopilot tool surface for the monad-builtin
+ * Returns the curated autopilot tool surface for the elanous-builtin
  * path — both the `LLMToolSpec[]` advertised to the model and the
  * `dispatchTool` callback `runCoreTurn` invokes when the model picks
  * one.

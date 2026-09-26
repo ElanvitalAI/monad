@@ -184,7 +184,7 @@ describe('WidgetHost registry', () => {
   });
 
   test('registerFromFile loads a widget module and unregisterType removes it', async () => {
-    const root = mkdtempSync(join(tmpdir(), 'monad-widget-file-'));
+    const root = mkdtempSync(join(tmpdir(), 'elanous-widget-file-'));
     try {
       const widgetDir = join(root, 'widgets');
       mkdirSync(widgetDir, { recursive: true });

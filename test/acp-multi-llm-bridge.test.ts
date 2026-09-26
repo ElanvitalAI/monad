@@ -23,23 +23,23 @@ describe('readMultiLlmHint (DM-1)', () => {
     expect(readMultiLlmHint(undefined)).toBeNull();
   });
 
-  it('returns null when monad namespace is missing', () => {
+  it('returns null when elanous namespace is missing', () => {
     expect(readMultiLlmHint({ source: 'pwa' })).toBeNull();
   });
 
   it('returns null when multiLlm key is missing', () => {
-    expect(readMultiLlmHint({ monad: { ui: {} } })).toBeNull();
+    expect(readMultiLlmHint({ elanous: { ui: {} } })).toBeNull();
   });
 
   it('returns null when targets array is empty', () => {
     expect(
-      readMultiLlmHint({ monad: { multiLlm: { targets: [] } } }),
+      readMultiLlmHint({ elanous: { multiLlm: { targets: [] } } }),
     ).toBeNull();
   });
 
   it('parses a 2-target hint with id + provider', () => {
     const hint = readMultiLlmHint({
-      monad: {
+      elanous: {
         multiLlm: {
           targets: [
             { id: 'p1', provider: 'claude' },
@@ -62,7 +62,7 @@ describe('readMultiLlmHint (DM-1)', () => {
 
   it('drops malformed targets (missing id or provider)', () => {
     const hint = readMultiLlmHint({
-      monad: {
+      elanous: {
         multiLlm: {
           targets: [
             { id: 'p1', provider: 'claude' },
@@ -81,7 +81,7 @@ describe('readMultiLlmHint (DM-1)', () => {
 
   it('parses historyMode "mixed"', () => {
     const hint = readMultiLlmHint({
-      monad: {
+      elanous: {
         multiLlm: {
           targets: [{ id: 'p1', provider: 'claude' }],
           historyMode: 'mixed',
@@ -93,7 +93,7 @@ describe('readMultiLlmHint (DM-1)', () => {
 
   it('parses historyMode "isolated"', () => {
     const hint = readMultiLlmHint({
-      monad: {
+      elanous: {
         multiLlm: {
           targets: [{ id: 'p1', provider: 'claude' }],
           historyMode: 'isolated',
@@ -105,7 +105,7 @@ describe('readMultiLlmHint (DM-1)', () => {
 
   it('drops invalid historyMode silently (defaults applied later)', () => {
     const hint = readMultiLlmHint({
-      monad: {
+      elanous: {
         multiLlm: {
           targets: [{ id: 'p1', provider: 'claude' }],
           historyMode: 'banana',
@@ -118,7 +118,7 @@ describe('readMultiLlmHint (DM-1)', () => {
   // DM stage 2 (#1982 follow-up) — agent kind/backend sniffing.
   it('parses agent kind + backend (DM stage 2)', () => {
     const hint = readMultiLlmHint({
-      monad: {
+      elanous: {
         multiLlm: {
           targets: [
             { id: 'a1', provider: 'codex', kind: 'agent', backend: 'codex-app-server' },
@@ -139,7 +139,7 @@ describe('readMultiLlmHint (DM-1)', () => {
 
   it('drops agent kind with unknown backend (defensive)', () => {
     const hint = readMultiLlmHint({
-      monad: {
+      elanous: {
         multiLlm: {
           targets: [
             { id: 'a1', provider: 'codex', kind: 'agent', backend: 'fictional' },
@@ -157,7 +157,7 @@ describe('readMultiLlmHint (DM-1)', () => {
 
   it('returns null when targets is not an array', () => {
     expect(
-      readMultiLlmHint({ monad: { multiLlm: { targets: 'p1' } } }),
+      readMultiLlmHint({ elanous: { multiLlm: { targets: 'p1' } } }),
     ).toBeNull();
   });
 });
@@ -224,7 +224,7 @@ describe('bridgeMultiLlmCoreTurnsToAcp · silent skip (DM-1)', () => {
         dispatchTool: async () => ({ ok: true, content: [] }),
       });
       const ctx = makeStubTurnCtx({
-        monad: { multiLlm: { targets: [{ id: 'panel-1', provider: 'claude' }] } },
+        elanous: { multiLlm: { targets: [{ id: 'panel-1', provider: 'claude' }] } },
       });
       ctx.userText = 'current human utterance';
 
@@ -242,7 +242,7 @@ describe('bridgeMultiLlmCoreTurnsToAcp · silent skip (DM-1)', () => {
 describe('readMultiLlmHint · §6.4 personaId sniff', () => {
   it('valid personaId string survives sniff', () => {
     const hint = readMultiLlmHint({
-      monad: {
+      elanous: {
         multiLlm: {
           targets: [
             { id: 'p1', provider: 'claude', personaId: 'skeptic-claude' },
@@ -256,7 +256,7 @@ describe('readMultiLlmHint · §6.4 personaId sniff', () => {
 
   it('omitted personaId leaves field undefined', () => {
     const hint = readMultiLlmHint({
-      monad: { multiLlm: { targets: [{ id: 'p1', provider: 'claude' }] } },
+      elanous: { multiLlm: { targets: [{ id: 'p1', provider: 'claude' }] } },
     });
     expect(hint).not.toBeNull();
     expect(hint!.targets[0]?.personaId).toBeUndefined();
@@ -264,7 +264,7 @@ describe('readMultiLlmHint · §6.4 personaId sniff', () => {
 
   it('non-string personaId rejected (defensive)', () => {
     const hint = readMultiLlmHint({
-      monad: { multiLlm: { targets: [{ id: 'p1', provider: 'claude', personaId: 42 }] } },
+      elanous: { multiLlm: { targets: [{ id: 'p1', provider: 'claude', personaId: 42 }] } },
     });
     expect(hint).not.toBeNull();
     expect(hint!.targets[0]?.personaId).toBeUndefined();
@@ -272,7 +272,7 @@ describe('readMultiLlmHint · §6.4 personaId sniff', () => {
 
   it('empty/whitespace personaId rejected (trim → length 0)', () => {
     const hint = readMultiLlmHint({
-      monad: { multiLlm: { targets: [{ id: 'p1', provider: 'claude', personaId: '   ' }] } },
+      elanous: { multiLlm: { targets: [{ id: 'p1', provider: 'claude', personaId: '   ' }] } },
     });
     expect(hint).not.toBeNull();
     expect(hint!.targets[0]?.personaId).toBeUndefined();
@@ -281,7 +281,7 @@ describe('readMultiLlmHint · §6.4 personaId sniff', () => {
   it('overlong personaId rejected (length cap defensive)', () => {
     const long = 'x'.repeat(300);
     const hint = readMultiLlmHint({
-      monad: { multiLlm: { targets: [{ id: 'p1', provider: 'claude', personaId: long }] } },
+      elanous: { multiLlm: { targets: [{ id: 'p1', provider: 'claude', personaId: long }] } },
     });
     expect(hint).not.toBeNull();
     expect(hint!.targets[0]?.personaId).toBeUndefined();
@@ -289,7 +289,7 @@ describe('readMultiLlmHint · §6.4 personaId sniff', () => {
 
   it('personaId trimmed before storing', () => {
     const hint = readMultiLlmHint({
-      monad: { multiLlm: { targets: [{ id: 'p1', provider: 'claude', personaId: '  alpha  ' }] } },
+      elanous: { multiLlm: { targets: [{ id: 'p1', provider: 'claude', personaId: '  alpha  ' }] } },
     });
     expect(hint!.targets[0]?.personaId).toBe('alpha');
   });
@@ -415,7 +415,7 @@ describe('routeAgentSessionUpdate (DM stage 3 FU)', () => {
 describe('readMultiLlmHint · DM stage 4 lastAssistant sniff', () => {
   it('parses lastAssistant string when present', () => {
     const hint = readMultiLlmHint({
-      monad: {
+      elanous: {
         multiLlm: {
           historyMode: 'mixed',
           targets: [
@@ -430,7 +430,7 @@ describe('readMultiLlmHint · DM stage 4 lastAssistant sniff', () => {
   });
   it('omitted lastAssistant leaves field undefined (first turn)', () => {
     const hint = readMultiLlmHint({
-      monad: {
+      elanous: {
         multiLlm: {
           historyMode: 'mixed',
           targets: [{ id: 'p1', provider: 'claude' }],
@@ -441,7 +441,7 @@ describe('readMultiLlmHint · DM stage 4 lastAssistant sniff', () => {
   });
   it('rejects non-string lastAssistant (defensive)', () => {
     const hint = readMultiLlmHint({
-      monad: {
+      elanous: {
         multiLlm: {
           targets: [{ id: 'p1', provider: 'claude', lastAssistant: 12345 }],
         },
@@ -451,7 +451,7 @@ describe('readMultiLlmHint · DM stage 4 lastAssistant sniff', () => {
   });
   it('rejects empty string lastAssistant (no point in injecting nothing)', () => {
     const hint = readMultiLlmHint({
-      monad: {
+      elanous: {
         multiLlm: {
           targets: [{ id: 'p1', provider: 'claude', lastAssistant: '' }],
         },
@@ -462,7 +462,7 @@ describe('readMultiLlmHint · DM stage 4 lastAssistant sniff', () => {
   it('caps lastAssistant at 32KB (token-bloat protection)', () => {
     const huge = 'x'.repeat(33 * 1024);
     const hint = readMultiLlmHint({
-      monad: {
+      elanous: {
         multiLlm: {
           targets: [{ id: 'p1', provider: 'claude', lastAssistant: huge }],
         },
@@ -473,7 +473,7 @@ describe('readMultiLlmHint · DM stage 4 lastAssistant sniff', () => {
   it('accepts exactly 32KB (boundary)', () => {
     const at32k = 'x'.repeat(32 * 1024);
     const hint = readMultiLlmHint({
-      monad: {
+      elanous: {
         multiLlm: {
           targets: [{ id: 'p1', provider: 'claude', lastAssistant: at32k }],
         },

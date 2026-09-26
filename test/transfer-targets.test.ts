@@ -22,7 +22,7 @@ afterEach(() => {
 });
 
 function withTransferConfig(json: string): string {
-  const dir = mkdtempSync(joinPath(tmpdir(), 'monad-xfer-'));
+  const dir = mkdtempSync(joinPath(tmpdir(), 'elanous-xfer-'));
   const path = joinPath(dir, 'transfer-targets.json');
   writeFileSync(path, json, 'utf-8');
   setTransferTargetsPathForTesting(path);
@@ -49,7 +49,7 @@ describe('listTransferTargets', () => {
     withTransferConfig(JSON.stringify({
       targets: [
         { kind: 'ssh', name: 'backup', host: 'mba', remoteDir: '~/Transfers/' },
-        { kind: 'iphone', name: 'work phone', pushcutName: 'monad-work' },
+        { kind: 'iphone', name: 'work phone', pushcutName: 'elanous-work' },
       ],
     }));
     const targets = listTransferTargets();

@@ -20,13 +20,13 @@ export interface AcpBackendSpec {
   command: string;
   /** Extra args (the bin usually needs none for ACP mode). */
   args: string[];
-  /** npm package providing the binary. `monad acp init` uses this
+  /** npm package providing the binary. `elanous acp init` uses this
    *  to auto-install on first use. */
   npmPackage: string;
   /** Pinned version range — kept in lockstep with our SDK pin so a
    *  protocol-version mismatch never silently lands. */
   npmVersion: string;
-  /** How monad drives this backend.
+  /** How elanous drives this backend.
    *  - 'acp' (default): spawn `command args` and speak ACP JSON-RPC
    *    over stdio via `AcpAgent`.
    *  - 'codex-app-server': direct JSON-RPC v2 to a persistent `codex
@@ -106,7 +106,7 @@ export const ACP_BACKENDS: Record<string, AcpBackendSpec> = {
     npmVersion: '*',
     transport: 'codex-app-server',
     // Canonical codex path. Approval adapter + MCP bridge wired
-    // (sprint 1-4) · plan mode · file ops · monad/ui parity ·
+    // (sprint 1-4) · plan mode · file ops · elanous/ui parity ·
     // streaming backpressure · daemon idle hibernate · MCP policy
     // persistence. Sprint 5A (D1) made `/acp codex` resolve here;
     // sprint 5B (D2) removed the legacy `codex` (Zed shim) and
@@ -121,7 +121,7 @@ export const ACP_BACKENDS: Record<string, AcpBackendSpec> = {
     // | bash` → `~/.grok/bin/grok` · PATH 통해 resolve).
     command: 'grok',
     args: ['agent', 'stdio'],
-    // sentinel — xAI install.sh 사용 · npm install 시도 X. `monad acp
+    // sentinel — xAI install.sh 사용 · npm install 시도 X. `elanous acp
     // init` (future · plan G2) 의 install 안내가 별도 처리한다.
     npmPackage: '',
     npmVersion: '0.1.210+',
@@ -145,7 +145,7 @@ export const ACP_BACKENDS: Record<string, AcpBackendSpec> = {
  *
  *  H4 phase 1 — if the spec has `requiresEnv`, we also throw when
  *  that env var is unset / falsy so the user gets a clear "this
- *  backend needs MONAD_X=1" message rather than a cryptic spawn
+ *  backend needs ELANOUS_X=1" message rather than a cryptic spawn
  *  failure deeper in the stack. Tests / advanced callers can pass
  *  `{ skipEnvGate: true }` to ignore the gate. */
 /** Friendly aliases → canonical backend id. `codex-app-server` is the
@@ -191,7 +191,7 @@ export function getAcpBackend(
     const val = env[spec.requiresEnv];
     if (!isTruthyEnv(val)) {
       throw new Error(
-        `ACP backend "${id}" requires env ${spec.requiresEnv}=1. Set it and restart monad to enable.`,
+        `ACP backend "${id}" requires env ${spec.requiresEnv}=1. Set it and restart elanous to enable.`,
       );
     }
   }

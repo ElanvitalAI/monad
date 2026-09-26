@@ -139,7 +139,7 @@ export function notifyMissionDocument(origin: MissionOrigin | null, filePath: st
 
 /** 미션 완료/실패 후 "처음부터 재실행" 버튼 발송(대표 2026-07-12·미션 유지). 텔레그램 origin
  *  이면 버튼 메시지 발송(message_id 반환). rerun 콜백은 mission-hitl-callback 이 rerunMission 으로
- *  처리. 특정 페이즈 재실행은 CLI(monad autopilot rerun --from). */
+ *  처리. 특정 페이즈 재실행은 CLI(elanous autopilot rerun --from). */
 export function notifyMissionRerunButton(
   origin: MissionOrigin | null, missionId: string, text: string,
   // ★ 실패 지점 재개(대표 2026-07-12) — 페이즈 실패로 중단 시 그 페이즈부터 재개(앞 성공 보존).
@@ -370,7 +370,7 @@ export function notifyPhaseResult(
     }
   } catch { /* fail-soft */ }
   const logLine = diag && info.missionId
-    ? `\n📄 상세 로그: monad ops mission-log ${info.missionId}`
+    ? `\n📄 상세 로그: elanous ops mission-log ${info.missionId}`
     : '';
   const diagCard = diag
     ? `\n\n🔁 시도: ${trail}\n🧭 진단(추정): ${diag.rootCauseInference}\n💡 권장: ${HEAL_KO[diag.healRecommendation.kind]} (신뢰도 ${diag.confidence})${armingLine}${logLine}`
@@ -386,7 +386,7 @@ export function notifyPhaseResult(
     if (!attachLong || origin.chatId === undefined) return;
     try {
       const safe = info.title.replace(/[^\w가-힣]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 40) || 'phase';
-      const fp = join(tmpdir(), `monad-phase-${info.index + 1}-${safe}.md`);
+      const fp = join(tmpdir(), `elanous-phase-${info.index + 1}-${safe}.md`);
       writeFileSync(fp, `# 페이즈 ${info.index + 1}/${info.total} — ${info.title}\n\n${rawSummary}\n`);
       sendTelegramDocumentTo(token, origin.chatId, fp, `페이즈 ${info.index + 1}/${info.total} 전문 · ${info.title}`.slice(0, 200), origin.threadId);
     } catch { /* fail-soft */ }

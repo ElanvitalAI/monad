@@ -107,10 +107,10 @@ describe('agent-session provider · snapshot', () => {
 
   test('PTY-less session rejected', async () => {
     const provider = createAgentSessionProvider({
-      listSessions: () => [{ session: makeSession('monad-1', { withPty: false }) }],
+      listSessions: () => [{ session: makeSession('elanous-1', { withPty: false }) }],
     });
     await expect(
-      provider.snapshot('agent-session:monad-1', {}),
+      provider.snapshot('agent-session:elanous-1', {}),
     ).rejects.toThrow(/no PTY transport/);
   });
 

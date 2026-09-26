@@ -23,7 +23,7 @@ const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
 function loadTestTelegram(): { token: string; chatId: number } | null {
   try {
-    const cfg = JSON.parse(readFileSync(join(process.cwd(), '.monad-test', 'config.json'), 'utf8'));
+    const cfg = JSON.parse(readFileSync(join(process.cwd(), '.elanous-test', 'config.json'), 'utf8'));
     const tg = cfg.telegram ?? cfg.channels?.telegram;
     const token = tg?.botToken ?? tg?.testChannel?.botToken;
     const chatId = tg?.allowedUsers?.[0] ?? tg?.testChannel?.allowedUsers?.[0];
@@ -37,7 +37,7 @@ async function main(): Promise<void> {
   const token = process.env.TG_TOKEN ?? fromCfg?.token;
   const chatId = Number(process.env.TG_CHAT ?? fromCfg?.chatId ?? NaN);
   if (!token || !Number.isFinite(chatId)) {
-    console.error('❌ 봇 토큰/chatId 미해결. TG_TOKEN·TG_CHAT env 또는 .monad-test/config.json telegram 설정 필요.');
+    console.error('❌ 봇 토큰/chatId 미해결. TG_TOKEN·TG_CHAT env 또는 .elanous-test/config.json telegram 설정 필요.');
     process.exit(1);
   }
   console.log(`▶ C5 스트리밍 dogfood → chatId ${chatId} (테스트 봇). 폰의 텔레그램을 보세요.`);

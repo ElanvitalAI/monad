@@ -3,14 +3,14 @@ import { runGitCommand } from '../git-fs/runner.js';
 import { configuredWorktreeRoot } from '../user-config.js';
 import { debug } from '../debug/log.js';
 
-const OWNER_CONFIG_KEY = 'monad.harness.owner';
-const COMMAND_CONFIG_KEY = 'monad.harness.command';
-const CREATED_AT_CONFIG_KEY = 'monad.harness.createdAt';
-const GOAL_ID_CONFIG_KEY = 'monad.harness.goalId';
-const GOAL_FILE_CONFIG_KEY = 'monad.harness.goalFile';
-const GOAL_TITLE_CONFIG_KEY = 'monad.harness.goalTitle';
-const GOAL_DESCRIPTION_CONFIG_KEY = 'monad.harness.goalDescription';
-const GOAL_DESCRIPTION_SOURCE_CONFIG_KEY = 'monad.harness.goalDescriptionSource';
+const OWNER_CONFIG_KEY = 'elanous.harness.owner';
+const COMMAND_CONFIG_KEY = 'elanous.harness.command';
+const CREATED_AT_CONFIG_KEY = 'elanous.harness.createdAt';
+const GOAL_ID_CONFIG_KEY = 'elanous.harness.goalId';
+const GOAL_FILE_CONFIG_KEY = 'elanous.harness.goalFile';
+const GOAL_TITLE_CONFIG_KEY = 'elanous.harness.goalTitle';
+const GOAL_DESCRIPTION_CONFIG_KEY = 'elanous.harness.goalDescription';
+const GOAL_DESCRIPTION_SOURCE_CONFIG_KEY = 'elanous.harness.goalDescriptionSource';
 
 type HarnessWorktreeAddOptions = {
   repoRoot: string;

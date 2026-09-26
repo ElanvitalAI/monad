@@ -41,7 +41,7 @@ function stubRunner(responses: Record<string, CmdResult>): { run: CmdRunner; cal
   return { run, calls };
 }
 
-const logArgs = (runId: string, since: string) => ['monad', 'logs', '--grep', runId, '--since', since, '--test', '--limit', '40'].join(' ');
+const logArgs = (runId: string, since: string) => ['elanous', 'logs', '--grep', runId, '--since', since, '--test', '--limit', '40'].join(' ');
 const scriptPath = join(dirname(fileURLToPath(import.meta.url)), 'salvage-review-blocked.ts');
 const tempDirs: string[] = [];
 
@@ -49,10 +49,10 @@ afterEach(() => {
   for (const path of tempDirs.splice(0)) rmSync(path, { recursive: true, force: true });
 });
 
-function failingMonadPath(): string {
+function failingElanousPath(): string {
   const dir = mkdtempSync(join(tmpdir(), 'salvage-cli-'));
   tempDirs.push(dir);
-  const executable = join(dir, 'monad');
+  const executable = join(dir, 'elanous');
   writeFileSync(executable, '#!/bin/sh\necho "logs unavailable" >&2\nexit 17\n');
   chmodSync(executable, 0o755);
   return dir;
@@ -125,10 +125,10 @@ describe('runSalvageCli §6b orchestration', () => {
 
     expect(runSalvageCli(runId, 'feature/a', 'salvage procedure', run)).toEqual({ status: 'search-prs', topic: 'salvage procedure', limit: 200, candidates });
     expect(calls).toEqual([
-      ['monad', 'logs', '--grep', runId, '--since', '60m', '--test', '--limit', '40'],
-      ['monad', 'logs', '--grep', runId, '--since', '6h', '--test', '--limit', '40'],
-      ['monad', 'logs', '--grep', runId, '--since', '24h', '--test', '--limit', '40'],
-      ['monad', 'logs', '--grep', runId, '--since', '7d', '--test', '--limit', '40'],
+      ['elanous', 'logs', '--grep', runId, '--since', '60m', '--test', '--limit', '40'],
+      ['elanous', 'logs', '--grep', runId, '--since', '6h', '--test', '--limit', '40'],
+      ['elanous', 'logs', '--grep', runId, '--since', '24h', '--test', '--limit', '40'],
+      ['elanous', 'logs', '--grep', runId, '--since', '7d', '--test', '--limit', '40'],
       ['gh', 'pr', 'list', '--state', 'all', '--search', 'salvage procedure', '--limit', '200', '--json', 'number,state,headRefName,isDraft'],
     ]);
   });
@@ -146,7 +146,7 @@ describe('runSalvageCli §6b orchestration', () => {
 
     expect(runSalvageCli(runId, branch, 'unused after evidence', run)).toEqual({ status: 'ready', branch, fetchRefspec: salvageFetchRefspec(branch) });
     expect(calls).toEqual([
-      ['monad', 'logs', '--grep', runId, '--since', '60m', '--test', '--limit', '40'],
+      ['elanous', 'logs', '--grep', runId, '--since', '60m', '--test', '--limit', '40'],
       ['gh', 'pr', 'list', '--head', 'feature/a.b', '--state', 'open', '--limit', '200', '--json', 'number,state,headRefName,isDraft'],
       ['git', 'ls-remote', '--exit-code', '--heads', 'origin', 'refs/heads/feature/a.b'],
       ['git', 'fetch', 'origin', '+refs/heads/feature/a.b:refs/remotes/origin/feature/a.b'],
@@ -164,7 +164,7 @@ describe('runSalvageCli §6b orchestration', () => {
 
     expect(runSalvageCli(runId, branch, 'topic', run)).toEqual({ status: 'blocked', reason: 'pr-data-invalid', detail: 'gh pr list returned malformed JSON' });
     expect(calls).toEqual([
-      ['monad', 'logs', '--grep', runId, '--since', '60m', '--test', '--limit', '40'],
+      ['elanous', 'logs', '--grep', runId, '--since', '60m', '--test', '--limit', '40'],
       ['gh', 'pr', 'list', '--head', 'feature/a', '--state', 'open', '--limit', '200', '--json', 'number,state,headRefName,isDraft'],
     ]);
   });
@@ -179,7 +179,7 @@ describe('runSalvageCli §6b orchestration', () => {
 
     expect(runSalvageCli(runId, branch, 'topic', run)).toEqual({ status: 'blocked', reason: 'open-pr-exists', detail: 'open PR already exists for head feature/a: #73' });
     expect(calls).toEqual([
-      ['monad', 'logs', '--grep', runId, '--since', '60m', '--test', '--limit', '40'],
+      ['elanous', 'logs', '--grep', runId, '--since', '60m', '--test', '--limit', '40'],
       ['gh', 'pr', 'list', '--head', 'feature/a', '--state', 'open', '--limit', '200', '--json', 'number,state,headRefName,isDraft'],
     ]);
   });
@@ -195,7 +195,7 @@ describe('runSalvageCli §6b orchestration', () => {
 
     expect(runSalvageCli(runId, branch, 'topic', run)).toEqual({ status: 'blocked', reason: 'branch-query-failed', detail: 'remote authentication failed' });
     expect(calls).toEqual([
-      ['monad', 'logs', '--grep', runId, '--since', '60m', '--test', '--limit', '40'],
+      ['elanous', 'logs', '--grep', runId, '--since', '60m', '--test', '--limit', '40'],
       ['gh', 'pr', 'list', '--head', 'feature/a', '--state', 'open', '--limit', '200', '--json', 'number,state,headRefName,isDraft'],
       ['git', 'ls-remote', '--exit-code', '--heads', 'origin', 'refs/heads/feature/a'],
     ]);
@@ -213,7 +213,7 @@ describe('runSalvageCli §6b orchestration', () => {
 
     expect(runSalvageCli(runId, branch, 'topic', run)).toEqual({ status: 'blocked', reason: 'fetch-failed', detail: 'network unavailable' });
     expect(calls).toEqual([
-      ['monad', 'logs', '--grep', runId, '--since', '60m', '--test', '--limit', '40'],
+      ['elanous', 'logs', '--grep', runId, '--since', '60m', '--test', '--limit', '40'],
       ['gh', 'pr', 'list', '--head', 'feature/a', '--state', 'open', '--limit', '200', '--json', 'number,state,headRefName,isDraft'],
       ['git', 'ls-remote', '--exit-code', '--heads', 'origin', 'refs/heads/feature/a'],
       ['git', 'fetch', 'origin', '+refs/heads/feature/a:refs/remotes/origin/feature/a'],
@@ -225,7 +225,7 @@ describe('runSalvageCli §6b orchestration', () => {
     const runId = 'run-fail';
     const { run, calls } = stubRunner({ [logArgs(runId, '60m')]: fail('logs unavailable') });
     expect(runSalvageCli(runId, 'feature/a', 'topic', run)).toEqual({ status: 'blocked', reason: 'logs-failed', detail: 'logs unavailable' });
-    expect(calls).toEqual([['monad', 'logs', '--grep', runId, '--since', '60m', '--test', '--limit', '40']]);
+    expect(calls).toEqual([['elanous', 'logs', '--grep', runId, '--since', '60m', '--test', '--limit', '40']]);
   });
 
   it('returns a failure verdict when PR fallback cannot be queried', () => {
@@ -242,8 +242,8 @@ describe('runSalvageCli §6b orchestration', () => {
 });
 
 describe('salvage review-blocked executable contract', () => {
-  it('prints a monad logs failure verdict as exactly one stdout JSON line', () => {
-    const fakeBin = failingMonadPath();
+  it('prints a elanous logs failure verdict as exactly one stdout JSON line', () => {
+    const fakeBin = failingElanousPath();
     const child = Bun.spawnSync({
       cmd: [process.execPath, scriptPath, 'run-subprocess-fail', 'feature/a', 'topic'],
       env: { ...process.env, PATH: `${fakeBin}${delimiter}${process.env.PATH ?? ''}` },

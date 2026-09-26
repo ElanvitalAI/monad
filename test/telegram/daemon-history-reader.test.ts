@@ -16,7 +16,7 @@ import { readDaemonSessionHistoryFromDir } from '../../src/telegram/daemon-histo
 let tmp: string;
 
 beforeEach(() => {
-  tmp = mkdtempSync(joinPath(tmpdir(), 'monad-tg-history-reader-'));
+  tmp = mkdtempSync(joinPath(tmpdir(), 'elanous-tg-history-reader-'));
 });
 
 afterEach(() => {
@@ -32,7 +32,7 @@ describe('readDaemonSessionHistoryFromDir', () => {
   });
 
   test('reads and parses jsonl messages in order', () => {
-    const path = joinPath(tmp, 'monad-session-3.jsonl');
+    const path = joinPath(tmp, 'elanous-session-3.jsonl');
     writeFileSync(
       path,
       [
@@ -41,7 +41,7 @@ describe('readDaemonSessionHistoryFromDir', () => {
         JSON.stringify({ role: 'user', content: 'second' }),
       ].join('\n') + '\n',
     );
-    const r = readDaemonSessionHistoryFromDir(tmp, 'monad-session-3');
+    const r = readDaemonSessionHistoryFromDir(tmp, 'elanous-session-3');
     expect(r.exists).toBe(true);
     expect(r.messages).toEqual([
       { role: 'user', content: 'first' },

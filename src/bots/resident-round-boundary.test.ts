@@ -3,7 +3,7 @@ import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 const TARGET_FILE = join(import.meta.dir, 'resident-round.ts');
-const LIVENESS_VOCABULARY = ['verdict', 'alive', 'machine-dead', 'monad-dead'] as const;
+const LIVENESS_VOCABULARY = ['verdict', 'alive', 'machine-dead', 'elanous-dead'] as const;
 
 type LivenessTerm = typeof LIVENESS_VOCABULARY[number];
 
@@ -21,7 +21,7 @@ describe('resident-round liveness boundary', () => {
   });
 
   test('detects liveness vocabulary in a fake source body', () => {
-    const fakeSource = "const verdict = 'alive'; // machine-dead monad-dead";
+    const fakeSource = "const verdict = 'alive'; // machine-dead elanous-dead";
 
     expect(detectLivenessTerms(fakeSource)).toEqual([...LIVENESS_VOCABULARY]);
   });

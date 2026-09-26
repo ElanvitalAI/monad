@@ -69,7 +69,7 @@ function setupActiveSync(): {
 // ── Manifest ─────────────────────────────────────────────
 
 describe('sync plugin manifest', () => {
-  test('declares required MonadPlugin fields', () => {
+  test('declares required ElanousPlugin fields', () => {
     expect(syncPlugin.name).toBe('sync');
     expect(syncPlugin.version).toBeTruthy();
     expect(syncPlugin.description.toLowerCase()).toContain('rsync');

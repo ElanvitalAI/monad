@@ -2,7 +2,7 @@
 // Natural-language tier switch detector + apply planner.
 //
 // Pillar 5 (PLAN §3.5 / §4.5) — user says "이번 회의는 의료 용어 많아"
-// in chat · monad detects the intent · proposes a preset/tier switch
+// in chat · elanous detects the intent · proposes a preset/tier switch
 // with cost preview · auto-reverts when the session ends.
 //
 // This file is split into three layers:
@@ -83,7 +83,7 @@ export function buildNlTierIntentMessages(text: string): ReturnType<typeof build
     {
       role: 'system',
       content: [
-        'You decide whether the user\'s chat message is asking monad to change voice / LLM tier settings.',
+        'You decide whether the user\'s chat message is asking elanous to change voice / LLM tier settings.',
         'Respond with ONE single-line JSON object — no fences, no commentary.',
         '',
         'Schema:',

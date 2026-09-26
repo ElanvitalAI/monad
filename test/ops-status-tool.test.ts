@@ -13,7 +13,7 @@ const SNAPSHOT_FIXTURE: OpsSnapshot = {
   loops: { loops: [], armed: false, live: false, executionMode: 'per-cycle', paperSources: [] },
   orchestration: { recent: [] },
   schedules: {
-    monadTotal: 1, stale: [], errored: [],
+    elanousTotal: 1, stale: [], errored: [],
     noncanonical: [], unmeasured: [],
     excludedRunVia: 0, excludedUnwrappedCrontab: 0, excludedDisabled: 0, excludedMissingCron: 0,
     generatedAt: '2026-09-02T00:00:00.000Z',
@@ -41,7 +41,7 @@ describe('ops_status tool — dispatch action 분기', () => {
       expect(r).toHaveProperty('generatedAt');
       const schedules = r.schedules as Record<string, unknown> | null;
       if (schedules) {
-        expect(typeof schedules.monadTotal).toBe('number');
+        expect(typeof schedules.elanousTotal).toBe('number');
         expect(typeof schedules.staleCount).toBe('number');
         expect(typeof schedules.erroredCount).toBe('number');
         expect(typeof schedules.noncanonicalCount).toBe('number');
@@ -69,7 +69,7 @@ describe('ops_status tool — dispatch action 분기', () => {
       loops: { loops: [], armed: false, live: false, executionMode: 'per-cycle', paperSources: [] },
       orchestration: { recent: [] },
       schedules: {
-        monadTotal: 1, stale: [], errored: [],
+        elanousTotal: 1, stale: [], errored: [],
         noncanonical: [{ id: 'noncanonical', name: 'noncanonical', cron: '0 * * * *', lastRun: null, lastStatus: null, overdueMs: 0 }],
         unmeasured: [], excludedRunVia: 0, excludedUnwrappedCrontab: 0, excludedDisabled: 0, excludedMissingCron: 0,
         generatedAt: '2026-09-02T00:00:00.000Z',

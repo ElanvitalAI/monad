@@ -4,7 +4,7 @@ import { DailyReflectionPanel } from '@/components/reflection/DailyReflectionPan
 import { ReflectionRouteIntentBeacon } from '@/components/reflection/ReflectionRouteIntentBeacon';
 
 export const metadata = {
-  title: 'Reflection · monad',
+  title: 'Reflection · elanous',
 };
 
 export default function ReflectionPage() {

@@ -1,4 +1,4 @@
-import type { PollExitReason } from './headless-monad-driver.js';
+import type { PollExitReason } from './headless-elanous-driver.js';
 import type { LifecycleRecord } from '../signal/lifecycle-record.js';
 
 export type LifecycleScreenComparison =

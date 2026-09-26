@@ -2,7 +2,7 @@
 //
 // PLAN-community-buzz-surveillance-2026-07-09 §5-①. 특정 사실/뉴스/이벤트가 실제로
 // 있었는지 확인한다. 캐스케이드:
-//   ① 내부 — monad 가 발송한 리포트/알림 + 나눈 대화(surface_events) 먼저 검색.
+//   ① 내부 — elanous 가 발송한 리포트/알림 + 나눈 대화(surface_events) 먼저 검색.
 //      있으면 출처와 함께 "내부에서 확인"(우리가 이미 봤/보낸 사실).
 //   ② 외부 — 내부에 없거나 약하면 자동으로 X/레딧/웹(omni_search)까지 에스컬레이션.
 //
@@ -71,7 +71,7 @@ export interface FactCheckResult {
 
 // ── 관련성 게이트 ────────────────────────────────────────────────────
 // ⚠️ FTS OR-prefix + recency 가중 스코어만으론 오판한다(라이브 실증 2026-07-09):
-// "SpaceX Starship test flight outcome" 가 일반 토큰(test/latest/outcome)으로 monad
+// "SpaceX Starship test flight outcome" 가 일반 토큰(test/latest/outcome)으로 elanous
 // 자기 로그(backtest/delegate)와 매칭 → 무관한데 score 0.73 → 거짓 '내부확인'.
 // → 질의의 '유의 토큰'이 실제 히트 본문에 있어야 내부확인으로 인정(정밀도 우선).
 
@@ -139,7 +139,7 @@ function searchCommunityBuzz(query: string, limit: number, nowMs: number): FactC
   } catch { return []; } finally { db.close(); }
 }
 
-/** 기본 내부 검색 — surface_events(monad 가 발송한 vetted 원장)만. 검증(verdict)의 근거.
+/** 기본 내부 검색 — surface_events(elanous 가 발송한 vetted 원장)만. 검증(verdict)의 근거.
  *  ⚠️ 펨코(무필터 커뮤니티)는 여기 안 넣는다 — rumor 를 confirmed 로 오인하면 위험(대표 지적).
  *  펨코는 factCheck 가 별도 '미검증 회자' 신호로 다룬다. */
 function defaultRecallInternal(
@@ -198,7 +198,7 @@ export async function factCheck(opts: FactCheckOpts, deps: FactCheckDeps = {}): 
 
   // ① vetted 내부에서 확인 → 외부 비용 절약.
   if (topScore >= minInternalScore) {
-    return { ...base, verdict: 'found-internal', note: `내부(monad 발송 리포트/대화)에서 확인 — 상위 ${topScore}${commNote}` };
+    return { ...base, verdict: 'found-internal', note: `내부(elanous 발송 리포트/대화)에서 확인 — 상위 ${topScore}${commNote}` };
   }
 
   // ② 외부(뉴스/X/레딧) 에스컬레이션.
@@ -219,7 +219,7 @@ export async function factCheck(opts: FactCheckOpts, deps: FactCheckDeps = {}): 
 
 export const FACT_CHECK_SPEC: LLMToolSpec = {
   name: 'fact_check',
-  description: "⭐ 팩트체크 캐스케이드 (코어) — 특정 사실/뉴스가 실제로 있었는지 확인. **검증(verdict)** = ① monad 가 발송한 vetted 리포트/대화(surface_events) → ② 없으면 외부 뉴스/X/레딧(omni_search) 에스컬레이션. verdict = found-internal|found-external|not-found. **★ 펨코(에펨코리아) 회자는 검증 근거로 안 씀 — 대신 별도 'community' 필드에 참고로 표시. 단 crowd 가 추천·검증한 인기글만(전체글 개인 잡담은 노이즈라 제외)**. 뉴스에 없는데 펨코 인기글만 회자 = 선행 신호 가능(미검증·뉴스 대기). '이거 진짜야?' '그 뉴스 났어?' 급 사실확인에 사용. READ-ONLY·fail-soft. (과거 발송 회상만=memory_recall · 순수 웹검색=OmniSearch 와 구분.)",
+  description: "⭐ 팩트체크 캐스케이드 (코어) — 특정 사실/뉴스가 실제로 있었는지 확인. **검증(verdict)** = ① elanous 가 발송한 vetted 리포트/대화(surface_events) → ② 없으면 외부 뉴스/X/레딧(omni_search) 에스컬레이션. verdict = found-internal|found-external|not-found. **★ 펨코(에펨코리아) 회자는 검증 근거로 안 씀 — 대신 별도 'community' 필드에 참고로 표시. 단 crowd 가 추천·검증한 인기글만(전체글 개인 잡담은 노이즈라 제외)**. 뉴스에 없는데 펨코 인기글만 회자 = 선행 신호 가능(미검증·뉴스 대기). '이거 진짜야?' '그 뉴스 났어?' 급 사실확인에 사용. READ-ONLY·fail-soft. (과거 발송 회상만=memory_recall · 순수 웹검색=OmniSearch 와 구분.)",
   parameters: {
     type: 'object',
     properties: {

@@ -462,7 +462,7 @@ describe('measureGoalGroundingCorpus', () => {
   }, 20_000);
 
   // ⛔ 골 결함 수리(2026-07-30): 수용 기준이 `debug.log(...)` 만 요구해서 **조회에 뜨는지**는
-  //    안 봤다. 자식은 문자 그대로 충족했고 `monad logs --category goal-grounding.corpus` 는 **0건**이었다.
+  //    안 봤다. 자식은 문자 그대로 충족했고 `elanous logs --category goal-grounding.corpus` 는 **0건**이었다.
   //    ⇒ ***검사할 수 없는 것을 계약에 넣으면 충족과 무용이 같은 값이 된다.***
   //    ⇒ 러너·worker 두 진입점이 **싱크를 등록한다**는 것을 소스로 고정한다.
   //    ⚠️ logs.db 왕복은 이 스위트의 범위가 아니다(격리 state-dir 가 필요하다) — 배선만 본다.

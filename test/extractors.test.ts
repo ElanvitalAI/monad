@@ -27,7 +27,7 @@ import {
 import { clearImageCache } from '../src/image/utils';
 import { createContextRegistry, addAttachment } from '../src/context';
 
-const tmpDir = mkdtempSync(join(tmpdir(), 'monad-ext-'));
+const tmpDir = mkdtempSync(join(tmpdir(), 'elanous-ext-'));
 const created: string[] = [];
 
 function tmpPath(name: string): string {

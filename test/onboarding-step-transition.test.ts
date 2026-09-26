@@ -3,7 +3,7 @@
 // stepTransition prints a one-line "Step N → N+1" hint and pauses
 // briefly so the user's eye latches onto the boundary. Auto-disables
 // on mono profile, when the caller explicitly opts out, when the
-// fadeMs is zero, or when MONAD_SETUP_TRANSITION_MS=0 in the env.
+// fadeMs is zero, or when ELANOUS_SETUP_TRANSITION_MS=0 in the env.
 
 import { describe, expect, test, beforeEach, afterEach } from 'bun:test';
 import { stepTransition } from '../src/onboarding/transition';
@@ -17,17 +17,17 @@ function recordingSleep() {
   };
 }
 
-// Tests pin MONAD_SETUP_TRANSITION_MS so a CI / local override (e.g.
-// MONAD_SETUP_TRANSITION_MS=0 used by other suites to suppress the
+// Tests pin ELANOUS_SETUP_TRANSITION_MS so a CI / local override (e.g.
+// ELANOUS_SETUP_TRANSITION_MS=0 used by other suites to suppress the
 // 60ms-per-step pause) doesn't flip the default-fade assertion.
 let savedTransitionMs: string | undefined;
 beforeEach(() => {
-  savedTransitionMs = process.env.MONAD_SETUP_TRANSITION_MS;
-  delete process.env.MONAD_SETUP_TRANSITION_MS;
+  savedTransitionMs = process.env.ELANOUS_SETUP_TRANSITION_MS;
+  delete process.env.ELANOUS_SETUP_TRANSITION_MS;
 });
 afterEach(() => {
-  if (savedTransitionMs === undefined) delete process.env.MONAD_SETUP_TRANSITION_MS;
-  else process.env.MONAD_SETUP_TRANSITION_MS = savedTransitionMs;
+  if (savedTransitionMs === undefined) delete process.env.ELANOUS_SETUP_TRANSITION_MS;
+  else process.env.ELANOUS_SETUP_TRANSITION_MS = savedTransitionMs;
 });
 
 describe('Δ24 · stepTransition', () => {
@@ -80,31 +80,31 @@ describe('Δ24 · stepTransition', () => {
     expect(sleep.calls).toEqual([200]);
   });
 
-  test('MONAD_SETUP_TRANSITION_MS env override is honored when fadeMs not set', async () => {
-    const saved = process.env.MONAD_SETUP_TRANSITION_MS;
-    process.env.MONAD_SETUP_TRANSITION_MS = '120';
+  test('ELANOUS_SETUP_TRANSITION_MS env override is honored when fadeMs not set', async () => {
+    const saved = process.env.ELANOUS_SETUP_TRANSITION_MS;
+    process.env.ELANOUS_SETUP_TRANSITION_MS = '120';
     try {
       const io = scriptedIO([]);
       const sleep = recordingSleep();
       await stepTransition(io, 1, 2, { profile: 'truecolor', sleep: sleep.sleep });
       expect(sleep.calls).toEqual([120]);
     } finally {
-      if (saved === undefined) delete process.env.MONAD_SETUP_TRANSITION_MS;
-      else process.env.MONAD_SETUP_TRANSITION_MS = saved;
+      if (saved === undefined) delete process.env.ELANOUS_SETUP_TRANSITION_MS;
+      else process.env.ELANOUS_SETUP_TRANSITION_MS = saved;
     }
   });
 
   test('explicit opts.fadeMs takes precedence over env', async () => {
-    const saved = process.env.MONAD_SETUP_TRANSITION_MS;
-    process.env.MONAD_SETUP_TRANSITION_MS = '500';
+    const saved = process.env.ELANOUS_SETUP_TRANSITION_MS;
+    process.env.ELANOUS_SETUP_TRANSITION_MS = '500';
     try {
       const io = scriptedIO([]);
       const sleep = recordingSleep();
       await stepTransition(io, 1, 2, { profile: 'truecolor', fadeMs: 30, sleep: sleep.sleep });
       expect(sleep.calls).toEqual([30]);
     } finally {
-      if (saved === undefined) delete process.env.MONAD_SETUP_TRANSITION_MS;
-      else process.env.MONAD_SETUP_TRANSITION_MS = saved;
+      if (saved === undefined) delete process.env.ELANOUS_SETUP_TRANSITION_MS;
+      else process.env.ELANOUS_SETUP_TRANSITION_MS = saved;
     }
   });
 });

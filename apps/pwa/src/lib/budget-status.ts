@@ -79,7 +79,7 @@ export async function applyBudgetFallback(
 
 // ── Dismissal (localStorage) ────────────────────────────────────────
 
-const DISMISS_KEY_PREFIX = 'monad.budget.dismissed.';
+const DISMISS_KEY_PREFIX = 'elanous.budget.dismissed.';
 
 export function budgetDismissalKey(monthYYYYMM: string, status: BudgetStatus): string {
   return `${DISMISS_KEY_PREFIX}${monthYYYYMM}.${status}`;

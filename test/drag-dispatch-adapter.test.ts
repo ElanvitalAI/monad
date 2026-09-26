@@ -64,11 +64,11 @@ function makeManagerWithSource(opts?: {
 // ───── §env flag / kill switch ──────────────────────────────────
 
 describe('dragDispatch · kill-switch', () => {
-  test('isDragDispatchDisabled reflects MONAD_DRAG_DISABLED at module load (default false)', () => {
+  test('isDragDispatchDisabled reflects ELANOUS_DRAG_DISABLED at module load (default false)', () => {
     // Env var is read once at module load. In the test harness it is
     // not set, so the adapter should report enabled. If the test
     // runner does set it, this test documents that fact.
-    expect(isDragDispatchDisabled()).toBe(process.env['MONAD_DRAG_DISABLED'] === '1');
+    expect(isDragDispatchDisabled()).toBe(process.env['ELANOUS_DRAG_DISABLED'] === '1');
   });
 
   test('forceDisabled: true short-circuits even when session is active', () => {
@@ -87,7 +87,7 @@ describe('dragDispatch · kill-switch', () => {
     const result = dragDispatch(ev('drag', 5, 5), manager, { forceDisabled: false });
     // Only passes if the env is also unset, which is the default test
     // environment.
-    expect(result).toBe(process.env['MONAD_DRAG_DISABLED'] !== '1');
+    expect(result).toBe(process.env['ELANOUS_DRAG_DISABLED'] !== '1');
   });
 });
 

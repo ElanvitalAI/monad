@@ -200,7 +200,7 @@ describe('QC measurement adapter', () => {
     const plan = buildQcMeasurementPlan(scene([0, 10]), '/tmp/master.mp4', 'darwin');
     const visionOutput = [
       'regions=2',
-      '  0.99  Hello Monad box=0.125000,0.250000,0.500000,0.100000',
+      '  0.99  Hello Elanous box=0.125000,0.250000,0.500000,0.100000',
       '  0.90  안녕하세요 box=0,0.5,0.25,0.125',
     ].join('\n');
     const measured = parseQcMeasurements(plan, outputs({ 'text-regions': { stdout: visionOutput } }));

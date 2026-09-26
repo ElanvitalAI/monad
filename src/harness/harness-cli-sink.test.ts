@@ -5,7 +5,7 @@ import { Command } from 'commander';
 import { installHarnessCliCommand } from './harness-cli-command.js';
 
 const repoRoot = resolve(import.meta.dir, '../..');
-const monadBin = join(repoRoot, 'bin/monad.mjs');
+const elanousBin = join(repoRoot, 'bin/elanous.mjs');
 const stackFramePattern = /(^|\n)\s+at\s+[^\n]+/;
 
 function productionHarness(
@@ -58,7 +58,7 @@ type HarnessHelpCommand = {
   readonly requiresArgument: boolean;
 };
 
-type MonadCliRun = {
+type ElanousCliRun = {
   readonly status: number | null;
   readonly signal: NodeJS.Signals | null;
   readonly error: Error | undefined;
@@ -71,8 +71,8 @@ type HarnessEntranceMeasurement = {
   readonly argumentRequiringCommands: readonly string[];
 };
 
-function runMonadCli(args: string[]): MonadCliRun {
-  const result = spawnSync('bun', [monadBin, '--test', ...args], {
+function runElanousCli(args: string[]): ElanousCliRun {
+  const result = spawnSync('bun', [elanousBin, '--test', ...args], {
     cwd: repoRoot,
     encoding: 'utf8',
     env: { ...process.env, NO_COLOR: '1' },
@@ -81,7 +81,7 @@ function runMonadCli(args: string[]): MonadCliRun {
   return { status: result.status, signal: result.signal, error: result.error, output: `${result.stdout ?? ''}${result.stderr ?? ''}` };
 }
 
-function expectCleanIntegerExit(run: MonadCliRun): number {
+function expectCleanIntegerExit(run: ElanousCliRun): number {
   expect(run.error).toBeUndefined();
   expect(run.signal).toBeNull();
   expect(typeof run.status).toBe('number');
@@ -118,7 +118,7 @@ function parseHarnessHelpCommands(help: string): HarnessHelpCommand[] {
   });
 }
 
-function measureHarnessEntranceContract(help: string, runCommandWithoutArguments: (name: string) => MonadCliRun): HarnessEntranceMeasurement {
+function measureHarnessEntranceContract(help: string, runCommandWithoutArguments: (name: string) => ElanousCliRun): HarnessEntranceMeasurement {
   const commands = parseHarnessHelpCommands(help);
   expect(commands.length).toBeGreaterThan(0);
 
@@ -161,7 +161,7 @@ describe('harness CLI sink hook', () => {
     installRepresentativeProductionActions(harnessCmd, calls, outputs, returned);
 
     for (const name of Object.keys(outputs)) {
-      await program.parseAsync(['node', 'monad', 'harness', name]);
+      await program.parseAsync(['node', 'elanous', 'harness', name]);
     }
 
     expect(calls).toEqual([
@@ -184,7 +184,7 @@ describe('harness CLI sink hook', () => {
     });
 
     expect(harnessCmd.commands.map((command) => command.name())).toContain('deliverable-verify');
-    await program.parseAsync(['node', 'monad', 'harness', 'deliverable-verify', '/goals/installed.md']);
+    await program.parseAsync(['node', 'elanous', 'harness', 'deliverable-verify', '/goals/installed.md']);
     expect(output.join('')).toContain('[deliverable verify] /goals/installed.md');
   });
 
@@ -202,7 +202,7 @@ describe('harness CLI sink hook', () => {
       return output as unknown as void;
     });
 
-    const result = await program.parseAsync(['node', 'monad', 'harness', 'run']);
+    const result = await program.parseAsync(['node', 'elanous', 'harness', 'run']);
 
     expect(calls).toEqual(['sink', 'action:run']);
     expect(returned).toBe(output);
@@ -236,7 +236,7 @@ describe('harness CLI sink hook', () => {
       },
     );
 
-    await program.parseAsync(['node', 'monad', 'harness', 'ask', goalPath]);
+    await program.parseAsync(['node', 'elanous', 'harness', 'ask', goalPath]);
 
     expect(received).toEqual([{ path: goalPath, opts: { supervise: true, supervisorSource: 'default' } }]);
     expect(calls).toEqual(['sink:harness', 'ask']);
@@ -272,7 +272,7 @@ describe('harness CLI sink hook', () => {
       async (path, opts) => { received.push({ path, opts }); },
     );
 
-    await program.parseAsync(['node', 'monad', 'harness', 'ask', '--json', '--base', 'main', '--no-auto-merge', '--observe-only', '/goals/goal.md']);
+    await program.parseAsync(['node', 'elanous', 'harness', 'ask', '--json', '--base', 'main', '--no-auto-merge', '--observe-only', '/goals/goal.md']);
 
     expect(received).toEqual([{ path: '/goals/goal.md', opts: { json: true, base: 'main', autoMerge: false, observeOnly: true, supervise: true, supervisorSource: 'default' } }]);
   });
@@ -280,14 +280,14 @@ describe('harness CLI sink hook', () => {
   test('ask rejects unpromoted dev knobs by name', async () => {
     const { program } = productionHarness(async () => {}, undefined, async () => {});
 
-    await expect(program.parseAsync(['node', 'monad', 'harness', 'ask', '--plan', '/goals/goal.md'])).rejects.toThrow(/unknown option '--plan'/i);
+    await expect(program.parseAsync(['node', 'elanous', 'harness', 'ask', '--plan', '/goals/goal.md'])).rejects.toThrow(/unknown option '--plan'/i);
   });
 
   test('injected ask without the required goal path ends with a non-zero Commander rejection', async () => {
     let called = 0;
     const { program } = productionHarness(async () => {}, undefined, async () => { called += 1; });
 
-    await expect(program.parseAsync(['node', 'monad', 'harness', 'ask'])).rejects.toThrow(/missing required argument/i);
+    await expect(program.parseAsync(['node', 'elanous', 'harness', 'ask'])).rejects.toThrow(/missing required argument/i);
     expect(called).toBe(0);
   });
 
@@ -320,7 +320,7 @@ describe('harness CLI sink hook', () => {
       },
     );
 
-    await program.parseAsync(['node', 'monad', 'harness', 'say', 'write', 'the', 'goal']);
+    await program.parseAsync(['node', 'elanous', 'harness', 'say', 'write', 'the', 'goal']);
 
     expect(received).toEqual([{ words: ['write', 'the', 'goal'], opts: { supervise: true, supervisorSource: 'default' } }]);
     expect(calls).toEqual(['sink:harness', 'say']);
@@ -357,7 +357,7 @@ describe('harness CLI sink hook', () => {
       async (words, opts) => { received.push({ words, opts }); },
     );
 
-    await program.parseAsync(['node', 'monad', 'harness', 'say', '--json', '--base', 'release', '--no-auto-merge', '--observe-only', 'write', 'goal']);
+    await program.parseAsync(['node', 'elanous', 'harness', 'say', '--json', '--base', 'release', '--no-auto-merge', '--observe-only', 'write', 'goal']);
 
     expect(received).toEqual([{ words: ['write', 'goal'], opts: { json: true, base: 'release', autoMerge: false, observeOnly: true, supervise: true, supervisorSource: 'default' } }]);
   });
@@ -366,7 +366,7 @@ describe('harness CLI sink hook', () => {
     let called = 0;
     const { program } = productionHarness(async () => {}, undefined, undefined, async () => { called += 1; });
 
-    await expect(program.parseAsync(['node', 'monad', 'harness', 'say'])).rejects.toThrow(/missing required argument/i);
+    await expect(program.parseAsync(['node', 'elanous', 'harness', 'say'])).rejects.toThrow(/missing required argument/i);
     expect(called).toBe(0);
   });
 
@@ -406,7 +406,7 @@ describe('harness CLI sink hook', () => {
       },
     );
 
-    await program.parseAsync(['node', 'monad', 'harness', 'plan', 'write', 'the', 'plan']);
+    await program.parseAsync(['node', 'elanous', 'harness', 'plan', 'write', 'the', 'plan']);
 
     expect(received).toEqual([{ words: ['write', 'the', 'plan'], opts: { supervise: true, supervisorSource: 'default', dryRun: false } }]);
     expect(calls).toEqual(['sink:harness', 'plan']);
@@ -438,7 +438,7 @@ describe('harness CLI sink hook', () => {
       async (words, opts) => { received.push({ words, opts }); },
     );
 
-    await program.parseAsync(['node', 'monad', 'harness', 'plan', '--json', '--base', 'release', '--no-auto-merge', '--observe-only', 'write', 'plan']);
+    await program.parseAsync(['node', 'elanous', 'harness', 'plan', '--json', '--base', 'release', '--no-auto-merge', '--observe-only', 'write', 'plan']);
 
     expect(received).toEqual([{ words: ['write', 'plan'], opts: { json: true, base: 'release', autoMerge: false, observeOnly: true, supervise: true, supervisorSource: 'default', dryRun: false } }]);
   });
@@ -447,7 +447,7 @@ describe('harness CLI sink hook', () => {
     let called = 0;
     const { program } = productionHarness(async () => {}, undefined, undefined, undefined, async () => { called += 1; });
 
-    await expect(program.parseAsync(['node', 'monad', 'harness', 'plan'])).rejects.toThrow(/missing required argument/i);
+    await expect(program.parseAsync(['node', 'elanous', 'harness', 'plan'])).rejects.toThrow(/missing required argument/i);
     expect(called).toBe(0);
   });
 
@@ -457,7 +457,7 @@ describe('harness CLI sink hook', () => {
     });
     const { program } = productionHarness(async () => {}, undefined, async () => { throw error; });
 
-    const lines = await captureConsoleError(() => program.parseAsync(['node', 'monad', 'harness', 'ask', '/tmp/nope.md']));
+    const lines = await captureConsoleError(() => program.parseAsync(['node', 'elanous', 'harness', 'ask', '/tmp/nope.md']));
 
     expect(lines).toEqual(["❌ ENOENT: no such file or directory, open '/tmp/nope.md'"]);
     expect(lines.join('\n')).not.toContain(' at ');
@@ -473,11 +473,11 @@ describe('harness CLI sink hook', () => {
     const sayProgram = productionHarness(async () => {}, undefined, undefined, async () => failure()).program;
     const planProgram = productionHarness(async () => {}, undefined, undefined, undefined, async () => failure()).program;
 
-    askLines.push(await captureConsoleError(() => askProgram.parseAsync(['node', 'monad', 'harness', 'ask', '/tmp/bad.md'])));
+    askLines.push(await captureConsoleError(() => askProgram.parseAsync(['node', 'elanous', 'harness', 'ask', '/tmp/bad.md'])));
     process.exitCode = 0;
-    sayLines.push(await captureConsoleError(() => sayProgram.parseAsync(['node', 'monad', 'harness', 'say', 'bad'])));
+    sayLines.push(await captureConsoleError(() => sayProgram.parseAsync(['node', 'elanous', 'harness', 'say', 'bad'])));
     process.exitCode = 0;
-    planLines.push(await captureConsoleError(() => planProgram.parseAsync(['node', 'monad', 'harness', 'plan', 'bad'])));
+    planLines.push(await captureConsoleError(() => planProgram.parseAsync(['node', 'elanous', 'harness', 'plan', 'bad'])));
 
     expect(askLines[0]).toEqual(['❌ goal author rejected empty request']);
     expect(sayLines[0]).toEqual(askLines[0]);
@@ -489,10 +489,10 @@ describe('harness CLI sink hook', () => {
   });
 
   test('live harness help-derived entrance contract covers every argument-requiring subcommand without a hand-maintained list', () => {
-    const helpRun = runMonadCli(['harness', '--help']);
+    const helpRun = runElanousCli(['harness', '--help']);
     expect(expectCleanIntegerExit(helpRun)).toBe(0);
 
-    const measured = measureHarnessEntranceContract(helpRun.output, (name) => runMonadCli(['harness', name]));
+    const measured = measureHarnessEntranceContract(helpRun.output, (name) => runElanousCli(['harness', name]));
 
     expect(measured.helpVisible).not.toContain('Canonical');
     expect(measured.helpVisible).not.toContain('Unset');
@@ -503,7 +503,7 @@ describe('harness CLI sink hook', () => {
 
   test('help-derived entrance measurement automatically reaches a newly help-visible argument-requiring subcommand and reports no-argument exclusions', () => {
     const help = [
-      'Usage: monad harness [options] [command]',
+      'Usage: elanous harness [options] [command]',
       '',
       'Commands:',
       '  alpha [options] <goal-path>  requires a goal path',
@@ -529,7 +529,7 @@ describe('harness CLI sink hook', () => {
 
   test('help-derived entrance parser fails on unparsed command-section rows instead of silently dropping them', () => {
     const help = [
-      'Usage: monad harness [options] [command]',
+      'Usage: elanous harness [options] [command]',
       '',
       'Commands:',
       '  valid <input>  measured',

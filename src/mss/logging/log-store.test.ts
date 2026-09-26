@@ -1,7 +1,7 @@
 /**
  * LogStore / StoreSink — 통합 로그 패브릭 LF0 계약 (2026-07-13).
  *
- * 전부 `:memory:` DB — 실 ~/.monad/logs 미접촉. 기본 싱글톤은 NODE_ENV=test
+ * 전부 `:memory:` DB — 실 ~/.elanous/logs 미접촉. 기본 싱글톤은 NODE_ENV=test
  * 에서 null 이므로(오염 가드) 여기서는 명시 인스턴스만 쓴다.
  */
 import { afterEach, beforeEach, describe, expect, it, spyOn } from 'bun:test';
@@ -61,15 +61,15 @@ describe('deriveLogLevel — 명시 level only · 기본 debug (OH10 PR-b2)', ()
 
 describe('LogStore host identity', () => {
   it('inserts inherited host ID with explicit data.hostId precedence and empty fallback', () => {
-    const previous = process.env.MONAD_HOST_ID;
+    const previous = process.env.ELANOUS_HOST_ID;
     const store = new LogStore(':memory:', { instance: 'test:universe' });
     try {
-      process.env.MONAD_HOST_ID = '01HOSTTEST';
+      process.env.ELANOUS_HOST_ID = '01HOSTTEST';
       store.insertBatch([
         { rec: rec({ event: 'inherited', data: { value: 1 } }), surface: 'nexus' },
         { rec: rec({ event: 'explicit', data: { hostId: 'caller-host' } }), surface: 'nexus' },
       ]);
-      delete process.env.MONAD_HOST_ID;
+      delete process.env.ELANOUS_HOST_ID;
       store.insertBatch([{ rec: rec({ event: 'absent' }), surface: 'nexus' }]);
       const rows = Object.fromEntries(store.recent(3).map((row) => [row.event, row]));
       expect(rows.inherited!.host_id).toBe('01HOSTTEST');
@@ -78,13 +78,13 @@ describe('LogStore host identity', () => {
       expect(rows.inherited!.instance).toBe('test:universe');
     } finally {
       store.close();
-      if (previous === undefined) delete process.env.MONAD_HOST_ID;
-      else process.env.MONAD_HOST_ID = previous;
+      if (previous === undefined) delete process.env.ELANOUS_HOST_ID;
+      else process.env.ELANOUS_HOST_ID = previous;
     }
   });
 
   it('migrates old schema without changing old row host identity', () => {
-    const dir = mkdtempSync(join(tmpdir(), 'monad-host-migrate-'));
+    const dir = mkdtempSync(join(tmpdir(), 'elanous-host-migrate-'));
     const path = join(dir, 'logs.db');
     try {
       const old = new Database(path);
@@ -553,7 +553,7 @@ describe('StoreSink — 종료 플러시', () => {
   });
 
   it('짧은 프로세스가 emit 후 바로 끝나도 원장에 마지막 줄이 남는다', async () => {
-    const dir = mkdtempSync(join(tmpdir(), 'monad-storesink-exit-'));
+    const dir = mkdtempSync(join(tmpdir(), 'elanous-storesink-exit-'));
     try {
       const { proc, dbPath } = await spawnStoreChild({
         dir,
@@ -571,7 +571,7 @@ describe('StoreSink — 종료 플러시', () => {
   }, 10_000);
 
   it('debug.log 가 프로세스의 마지막 문장이어도 임시 logs.db 에 그 category 행이 1개 이상이다', async () => {
-    const dir = mkdtempSync(join(tmpdir(), 'monad-storesink-debug-log-'));
+    const dir = mkdtempSync(join(tmpdir(), 'elanous-storesink-debug-log-'));
     const dbPath = join(dir, 'logs.db');
     const childPath = join(dir, 'last-debug-log.ts');
     const debugSrc = join(import.meta.dir, '../../debug/log.ts');
@@ -599,7 +599,7 @@ describe('StoreSink — 종료 플러시', () => {
           ...process.env,
           STORE_DB_PATH: dbPath,
           NODE_ENV: 'production',
-          MONAD_STATE_DIR: dir,
+          ELANOUS_STATE_DIR: dir,
         },
       });
       const code = await proc.exited;
@@ -631,7 +631,7 @@ describe('StoreSink — 종료 플러시', () => {
   }, 10_000);
 
   it('SIGINT 로 죽어도 그때까지의 버퍼가 원장에 닿고 남의 리스너는 산다', async () => {
-    const dir = mkdtempSync(join(tmpdir(), 'monad-storesink-int-'));
+    const dir = mkdtempSync(join(tmpdir(), 'elanous-storesink-int-'));
     try {
       const { proc, dbPath, markerPath, readyPath } = await spawnStoreChild({
         dir,
@@ -657,7 +657,7 @@ describe('StoreSink — 종료 플러시', () => {
   }, 10_000);
 
   it('SIGTERM 으로 죽어도 그때까지의 버퍼가 원장에 닿고 남의 리스너는 산다', async () => {
-    const dir = mkdtempSync(join(tmpdir(), 'monad-storesink-term-'));
+    const dir = mkdtempSync(join(tmpdir(), 'elanous-storesink-term-'));
     try {
       const { proc, dbPath, markerPath, readyPath } = await spawnStoreChild({
         dir,
@@ -683,7 +683,7 @@ describe('StoreSink — 종료 플러시', () => {
   }, 10_000);
 
   it('남은 리스너가 없으면 SIGINT 를 재전달한다', async () => {
-    const dir = mkdtempSync(join(tmpdir(), 'monad-storesink-int-solo-'));
+    const dir = mkdtempSync(join(tmpdir(), 'elanous-storesink-int-solo-'));
     try {
       const { proc, dbPath, readyPath } = await spawnStoreChild({
         dir,
@@ -703,7 +703,7 @@ describe('StoreSink — 종료 플러시', () => {
   }, 10_000);
 
   it('남은 리스너가 없으면 SIGTERM 을 재전달한다', async () => {
-    const dir = mkdtempSync(join(tmpdir(), 'monad-storesink-term-solo-'));
+    const dir = mkdtempSync(join(tmpdir(), 'elanous-storesink-term-solo-'));
     try {
       const { proc, dbPath, readyPath } = await spawnStoreChild({
         dir,
@@ -723,7 +723,7 @@ describe('StoreSink — 종료 플러시', () => {
   }, 10_000);
 
   it('같은 sink 를 두 번 emit 해도 SIGINT 리스너는 하나다', async () => {
-    const dir = mkdtempSync(join(tmpdir(), 'monad-storesink-double-'));
+    const dir = mkdtempSync(join(tmpdir(), 'elanous-storesink-double-'));
     try {
       const { proc, markerPath } = await spawnStoreChild({
         dir,
@@ -743,10 +743,10 @@ describe('StoreSink — 종료 플러시', () => {
 describe('registerLogStoreSink — sink 이후 부팅 관측', () => {
   function withLogStoreEnv<T>(fn: () => T): T {
     const nodeEnv = process.env.NODE_ENV;
-    const stateDir = process.env.MONAD_STATE_DIR;
-    const dir = mkdtempSync(join(tmpdir(), 'monad-logstore-sink-'));
+    const stateDir = process.env.ELANOUS_STATE_DIR;
+    const dir = mkdtempSync(join(tmpdir(), 'elanous-logstore-sink-'));
     process.env.NODE_ENV = 'production';
-    process.env.MONAD_STATE_DIR = dir;
+    process.env.ELANOUS_STATE_DIR = dir;
     _resetDefaultLogStoreForTest();
     resetNestBootObservationForTest();
     try {
@@ -757,17 +757,17 @@ describe('registerLogStoreSink — sink 이후 부팅 관측', () => {
       rmSync(dir, { recursive: true, force: true });
       if (nodeEnv === undefined) delete process.env.NODE_ENV;
       else process.env.NODE_ENV = nodeEnv;
-      if (stateDir === undefined) delete process.env.MONAD_STATE_DIR;
-      else process.env.MONAD_STATE_DIR = stateDir;
+      if (stateDir === undefined) delete process.env.ELANOUS_STATE_DIR;
+      else process.env.ELANOUS_STATE_DIR = stateDir;
     }
   }
 
   async function withLogStoreEnvAsync(fn: () => Promise<void>): Promise<void> {
     const nodeEnv = process.env.NODE_ENV;
-    const stateDir = process.env.MONAD_STATE_DIR;
-    const dir = mkdtempSync(join(tmpdir(), 'monad-logstore-sink-'));
+    const stateDir = process.env.ELANOUS_STATE_DIR;
+    const dir = mkdtempSync(join(tmpdir(), 'elanous-logstore-sink-'));
     process.env.NODE_ENV = 'production';
-    process.env.MONAD_STATE_DIR = dir;
+    process.env.ELANOUS_STATE_DIR = dir;
     _resetDefaultLogStoreForTest();
     resetNestBootObservationForTest();
     try {
@@ -778,8 +778,8 @@ describe('registerLogStoreSink — sink 이후 부팅 관측', () => {
       rmSync(dir, { recursive: true, force: true });
       if (nodeEnv === undefined) delete process.env.NODE_ENV;
       else process.env.NODE_ENV = nodeEnv;
-      if (stateDir === undefined) delete process.env.MONAD_STATE_DIR;
-      else process.env.MONAD_STATE_DIR = stateDir;
+      if (stateDir === undefined) delete process.env.ELANOUS_STATE_DIR;
+      else process.env.ELANOUS_STATE_DIR = stateDir;
     }
   }
 
@@ -879,14 +879,14 @@ describe('registerLogStoreSink — sink 이후 부팅 관측', () => {
 });
 
 describe('경로/싱글톤 격리', () => {
-  it('logsDbPath 는 MONAD_STATE_DIR 을 존중한다', () => {
-    const prev = process.env.MONAD_STATE_DIR;
-    process.env.MONAD_STATE_DIR = '/tmp/monad-isolated';
+  it('logsDbPath 는 ELANOUS_STATE_DIR 을 존중한다', () => {
+    const prev = process.env.ELANOUS_STATE_DIR;
+    process.env.ELANOUS_STATE_DIR = '/tmp/elanous-isolated';
     try {
-      expect(logsDbPath()).toBe('/tmp/monad-isolated/logs/logs.db');
+      expect(logsDbPath()).toBe('/tmp/elanous-isolated/logs/logs.db');
     } finally {
-      if (prev === undefined) delete process.env.MONAD_STATE_DIR;
-      else process.env.MONAD_STATE_DIR = prev;
+      if (prev === undefined) delete process.env.ELANOUS_STATE_DIR;
+      else process.env.ELANOUS_STATE_DIR = prev;
     }
   });
 
@@ -896,11 +896,11 @@ describe('경로/싱글톤 격리', () => {
 
   it('테스트 비활성화는 debug에 남기고 열기 실패만 stderr에 한 번 알린다', () => {
     const nodeEnv = process.env.NODE_ENV;
-    const stateDir = process.env.MONAD_STATE_DIR;
+    const stateDir = process.env.ELANOUS_STATE_DIR;
     const stderr = spyOn(process.stderr, 'write').mockImplementation(() => true);
     const stdout = spyOn(process.stdout, 'write').mockImplementation(() => true);
     const debugLog = spyOn(debug, 'log').mockImplementation(() => undefined);
-    const dir = mkdtempSync(join(tmpdir(), 'monad-logstore-unavailable-'));
+    const dir = mkdtempSync(join(tmpdir(), 'elanous-logstore-unavailable-'));
     try {
       process.env.NODE_ENV = 'test';
       _resetDefaultLogStoreForTest();
@@ -911,8 +911,8 @@ describe('경로/싱글톤 격리', () => {
       expect(stderr).not.toHaveBeenCalled();
 
       process.env.NODE_ENV = 'production';
-      process.env.MONAD_STATE_DIR = join(dir, 'state-file');
-      writeFileSync(process.env.MONAD_STATE_DIR, 'not a directory');
+      process.env.ELANOUS_STATE_DIR = join(dir, 'state-file');
+      writeFileSync(process.env.ELANOUS_STATE_DIR, 'not a directory');
       _resetDefaultLogStoreForTest();
       expect(getDefaultLogStore()).toBeNull();
       expect(getDefaultLogStore()).toBeNull();
@@ -927,8 +927,8 @@ describe('경로/싱글톤 격리', () => {
       rmSync(dir, { recursive: true, force: true });
       if (nodeEnv === undefined) delete process.env.NODE_ENV;
       else process.env.NODE_ENV = nodeEnv;
-      if (stateDir === undefined) delete process.env.MONAD_STATE_DIR;
-      else process.env.MONAD_STATE_DIR = stateDir;
+      if (stateDir === undefined) delete process.env.ELANOUS_STATE_DIR;
+      else process.env.ELANOUS_STATE_DIR = stateDir;
     }
   });
 
@@ -953,51 +953,51 @@ describe('경로/싱글톤 격리', () => {
   });
 });
 
-describe('인스턴스 identity (LF7-a) — 멀티 모나드 출처 스탬프', () => {
-  const originalStateDir = process.env.MONAD_STATE_DIR;
+describe('인스턴스 identity (LF7-a) — 멀티 엘라누스 출처 스탬프', () => {
+  const originalStateDir = process.env.ELANOUS_STATE_DIR;
 
   beforeEach(() => {
     setLogInstanceName(undefined);
     setTreeDerivedTestForTesting(false);
-    if (originalStateDir === undefined) delete process.env.MONAD_STATE_DIR;
-    else process.env.MONAD_STATE_DIR = originalStateDir;
+    if (originalStateDir === undefined) delete process.env.ELANOUS_STATE_DIR;
+    else process.env.ELANOUS_STATE_DIR = originalStateDir;
     resetEffectiveInstanceRoot();
   });
 
   afterEach(() => {
     setLogInstanceName(undefined);
     setTreeDerivedTestForTesting(undefined);
-    if (originalStateDir === undefined) delete process.env.MONAD_STATE_DIR;
-    else process.env.MONAD_STATE_DIR = originalStateDir;
+    if (originalStateDir === undefined) delete process.env.ELANOUS_STATE_DIR;
+    else process.env.ELANOUS_STATE_DIR = originalStateDir;
     resetEffectiveInstanceRoot();
   });
 
   function withStateDir<T>(dir: string | undefined, fn: () => T): T {
-    const prev = process.env.MONAD_STATE_DIR;
-    if (dir === undefined) delete process.env.MONAD_STATE_DIR;
-    else process.env.MONAD_STATE_DIR = dir;
+    const prev = process.env.ELANOUS_STATE_DIR;
+    if (dir === undefined) delete process.env.ELANOUS_STATE_DIR;
+    else process.env.ELANOUS_STATE_DIR = dir;
     resetEffectiveInstanceRoot();
     try { return fn(); } finally {
-      if (prev === undefined) delete process.env.MONAD_STATE_DIR;
-      else process.env.MONAD_STATE_DIR = prev;
+      if (prev === undefined) delete process.env.ELANOUS_STATE_DIR;
+      else process.env.ELANOUS_STATE_DIR = prev;
       resetEffectiveInstanceRoot();
     }
   }
 
-  it('MONAD_STATE_DIR 미설정 → prod', () => {
+  it('ELANOUS_STATE_DIR 미설정 → prod', () => {
     withStateDir(undefined, () => {
       expect(resolveLogInstanceName()).toBe('prod');
     });
   });
 
-  it('.monad-test state dir → test:<repo폴더명>', () => {
-    withStateDir('/Users/x/source/monad-agent/.monad-test', () => {
+  it('.elanous-test state dir → test:<repo폴더명>', () => {
+    withStateDir('/Users/x/source/monad-agent/.elanous-test', () => {
       expect(resolveLogInstanceName()).toBe('test:monad-agent');
     });
   });
 
   it('그 외 state dir → test:<dir 이름> (telegram-test 등)', () => {
-    withStateDir('/Users/x/.monad/telegram-test', () => {
+    withStateDir('/Users/x/.elanous/telegram-test', () => {
       expect(resolveLogInstanceName()).toBe('test:telegram-test');
     });
   });
@@ -1035,7 +1035,7 @@ describe('인스턴스 identity (LF7-a) — 멀티 모나드 출처 스탬프', 
   });
 
   it('구 스키마 DB 마이그레이션 — instance 컬럼 추가 + 자기 이름 backfill', () => {
-    const dir = mkdtempSync(join(tmpdir(), 'monad-logstore-'));
+    const dir = mkdtempSync(join(tmpdir(), 'elanous-logstore-'));
     const path = join(dir, 'logs.db');
     // LF7-a 이전 스키마를 손으로 재현
     const legacy = new Database(path);
@@ -1056,7 +1056,7 @@ describe('인스턴스 identity (LF7-a) — 멀티 모나드 출처 스탬프', 
 
 describe('read-only open (LF7-b) — 연합 조회 불변식', () => {
   it('openReadOnly — 조회는 되고 insert 는 throw (write 0 구조 집행)', () => {
-    const dir = mkdtempSync(join(tmpdir(), 'monad-logstore-ro-'));
+    const dir = mkdtempSync(join(tmpdir(), 'elanous-logstore-ro-'));
     const path = join(dir, 'logs.db');
     const writer = new LogStore(path, { instance: 'test:monad-agent' });
     writer.insertBatch([{ rec: rec(), surface: 'nexus' }]);
@@ -1071,7 +1071,7 @@ describe('read-only open (LF7-b) — 연합 조회 불변식', () => {
   });
 
   it('openReadOnly — busy timeout은 이름 붙인 값으로 설정한다', () => {
-    const dir = mkdtempSync(join(tmpdir(), 'monad-logstore-ro-timeout-'));
+    const dir = mkdtempSync(join(tmpdir(), 'elanous-logstore-ro-timeout-'));
     const path = join(dir, 'logs.db');
     const writer = new LogStore(path);
     writer.close();
@@ -1082,7 +1082,7 @@ describe('read-only open (LF7-b) — 연합 조회 불변식', () => {
   });
 
   it('openReadOnly — 지속 잠금은 timeout 뒤에도 조회 실패로 남긴다', () => {
-    const dir = mkdtempSync(join(tmpdir(), 'monad-logstore-ro-lock-'));
+    const dir = mkdtempSync(join(tmpdir(), 'elanous-logstore-ro-lock-'));
     const path = join(dir, 'logs.db');
     const seed = new Database(path);
     seed.run(`CREATE TABLE logs(

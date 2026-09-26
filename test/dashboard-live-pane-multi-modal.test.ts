@@ -11,7 +11,7 @@ import type { DisplayMouseEvent, KeyEvent } from '../src/display/types.js';
 import type { WidgetDef, WidgetInstance } from '../src/widgets/types.js';
 import { createLayerTree } from '../src/primitives/layer-tree/index.js';
 import { createRenderCoordinator } from '../src/primitives/render-coordinator/index.js';
-import { MONAD_PASTEL_DEFAULT } from '../src/themes/monad-pastel-default.js';
+import { ELANOUS_PASTEL_DEFAULT } from '../src/themes/elanous-pastel-default.js';
 
 // ── Stubs ───────────────────────────────────────────────────────────
 
@@ -300,7 +300,7 @@ describe('showLivePaneMultiModal (Track A · live-widget modal)', () => {
       termCols: 140,
       termRows: 36,
       chrome: {
-        theme: MONAD_PASTEL_DEFAULT,
+        theme: ELANOUS_PASTEL_DEFAULT,
         titleControls: [{ id: 'close', label: '✕' }],
       },
     });
@@ -324,7 +324,7 @@ describe('showLivePaneMultiModal (Track A · live-widget modal)', () => {
       termCols: 140,
       termRows: 36,
       chrome: {
-        theme: MONAD_PASTEL_DEFAULT,
+        theme: ELANOUS_PASTEL_DEFAULT,
         titleControls: [{ id: 'close', label: '✕' }],
       },
     });
@@ -926,7 +926,7 @@ describe('showLivePaneMultiModal (Track A · live-widget modal)', () => {
       termCols: 140,
       termRows: 36,
       chrome: {
-        theme: MONAD_PASTEL_DEFAULT,
+        theme: ELANOUS_PASTEL_DEFAULT,
         variant: 'rounded',
         titleAlign: 'left',
         titlePrefix: '⠿',
@@ -956,7 +956,7 @@ describe('showLivePaneMultiModal (Track A · live-widget modal)', () => {
       termCols: 140,
       termRows: 36,
       chrome: {
-        theme: MONAD_PASTEL_DEFAULT,
+        theme: ELANOUS_PASTEL_DEFAULT,
         titleControls: [
           { id: 'model', label: '⌥' },
           { id: 'close', label: '✕' },

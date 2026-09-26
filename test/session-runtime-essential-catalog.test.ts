@@ -26,8 +26,8 @@ describe('essential dashboard catalog', () => {
     const savedXdg = process.env.XDG_CONFIG_HOME;
     const xdg = mkdtempSync(join(tmpdir(), 'session-runtime-model-surface-'));
     try {
-      mkdirSync(join(xdg, 'monad'), { recursive: true });
-      writeFileSync(join(xdg, 'monad', 'config.json'), '{}');
+      mkdirSync(join(xdg, 'elanous'), { recursive: true });
+      writeFileSync(join(xdg, 'elanous', 'config.json'), '{}');
       process.env.XDG_CONFIG_HOME = xdg;
       resetUserConfig();
 
@@ -44,7 +44,7 @@ describe('essential dashboard catalog', () => {
       ['bash', 'Bash'], ['run_shell', 'RunShell'], ['pty_shell_start', 'PtyShellStart'],
       ['pty_shell_poll', 'PtyShellPoll'], ['pty_shell_send', 'PtyShellSend'],
       ['pty_shell_kill', 'PtyShellKill'], ['pty_shell_list', 'PtyShellList'], ['run_tests', 'run_tests'],
-      ['monad_skills_list', 'monad_skills_list'], ['skill_exec', 'skill_exec'],
+      ['elanous_skills_list', 'elanous_skills_list'], ['skill_exec', 'skill_exec'],
     ].map(([id, name]) => ({ id, spec: { name, description: name, parameters: { type: 'object' } }, run: async () => ({ output: 'ok' }) }));
     const optionalTools = [
       'GetDashboardState',
@@ -63,7 +63,7 @@ describe('essential dashboard catalog', () => {
       'schedule_manage', 'fact_check', 'se_build',
       'Bash', 'RunShell',
       'PtyShellStart', 'PtyShellPoll', 'PtyShellSend', 'PtyShellKill', 'PtyShellList',
-      'run_tests', 'monad_skills_list', 'skill_exec', 'GetDashboardState',
+      'run_tests', 'elanous_skills_list', 'skill_exec', 'GetDashboardState',
       'TerminalModalList', 'TerminalModalObserve', 'TerminalModalFocus', 'TerminalModalDetach', 'TerminalModalKill',
     ];
 

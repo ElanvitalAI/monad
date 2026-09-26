@@ -13,7 +13,7 @@ import { join } from 'node:path';
 
 import * as acpServerModule from '../src/acp/server.js';
 import * as acpTransportModule from '../src/acp/transport/index.js';
-import { getMonadConfigDir, resetMonadConfigDir, setMonadConfigDir } from '../src/monad-config-dir.js';
+import { getElanousConfigDir, resetElanousConfigDir, setElanousConfigDir } from '../src/elanous-config-dir.js';
 
 type RunAcpServerOpts = Record<string, unknown>;
 const runCalls: RunAcpServerOpts[] = [];
@@ -21,7 +21,7 @@ const runCalls: RunAcpServerOpts[] = [];
 type TokenCleanup = { path: string; existedBefore: boolean };
 
 function acpTokenPath(): string {
-  return join(getMonadConfigDir(), 'acp-token');
+  return join(getElanousConfigDir(), 'acp-token');
 }
 
 function beginTokenLifecycle(): TokenCleanup {
@@ -50,7 +50,7 @@ const {
 beforeEach(() => {
   runCalls.length = 0;
   isolatedConfigDir = mkdtempSync(join(tmpdir(), 'boot-acp-config-'));
-  setMonadConfigDir(isolatedConfigDir);
+  setElanousConfigDir(isolatedConfigDir);
   tokenCleanup = beginTokenLifecycle();
   // BACKLOG #5 — spyOn replaces named exports for this test file
   // only. Pre-cleanup version used `mock.module()` which leaked
@@ -91,7 +91,7 @@ afterEach(() => {
     rmSync(isolatedConfigDir, { recursive: true, force: true });
     isolatedConfigDir = undefined;
   }
-  resetMonadConfigDir();
+  resetElanousConfigDir();
 });
 
 describe('readFlagValue', () => {
@@ -195,9 +195,9 @@ describe('bootAcpServer dispatch', () => {
   });
 
   // MT5b — runTurn / hasSession deps must be forwarded to runAcpServer
-  // for every transport. Without this, `monad --acp-server` falls
+  // for every transport. Without this, `elanous --acp-server` falls
   // through to the echo skeleton (server.ts:660) and external IDEs
-  // get back `"monad-acp echo: " + input` instead of a real LLM turn.
+  // get back `"elanous-acp echo: " + input` instead of a real LLM turn.
   // index.ts:3169 wires createDaemonRuntime + passes the runtime
   // through to bootAcpServer; this test pins the contract that any
   // such handoff propagates intact.
@@ -265,9 +265,9 @@ describe('bootAcpServer dispatch', () => {
 
   // MT5b polish — startup banner emission. Pre-polish, stdio mode
   // wrote 0 bytes to stderr so users couldn't tell whether
-  // MONAD_HISTORY_DIR / MONAD_TOOLS env vars had been picked up.
-  // Now every transport emits a uniform `[monad-acp] history: ...`
-  // + `[monad-acp] tools: ...` line (when runtimeStatus is supplied)
+  // ELANOUS_HISTORY_DIR / ELANOUS_TOOLS env vars had been picked up.
+  // Now every transport emits a uniform `[elanous-acp] history: ...`
+  // + `[elanous-acp] tools: ...` line (when runtimeStatus is supplied)
   // and stdio additionally emits a `starting (transport: stdio)`
   // line so the process is visibly alive.
   describe('startup banner (MT5b polish)', () => {
@@ -286,12 +286,12 @@ describe('bootAcpServer dispatch', () => {
         stderr,
         shutdownSignal: makePreAbortedSignal(),
         runtimeStatus: {
-          historyDir: '/tmp/monad-acp-h',
+          historyDir: '/tmp/elanous-acp-h',
           tools: 'readonly',
           toolCwd: '/Users/dev/proj',
         },
       });
-      expect(stderr.writes.some((w) => w.includes('history: disk-backed at /tmp/monad-acp-h'))).toBe(true);
+      expect(stderr.writes.some((w) => w.includes('history: disk-backed at /tmp/elanous-acp-h'))).toBe(true);
       expect(stderr.writes.some((w) => w.includes('tools: readonly'))).toBe(true);
       expect(stderr.writes.some((w) => w.includes('cwd=/Users/dev/proj'))).toBe(true);
     });
@@ -304,9 +304,9 @@ describe('bootAcpServer dispatch', () => {
         runtimeStatus: { tools: 'none' },
       });
       expect(stderr.writes.some((w) => w.includes('history: in-memory'))).toBe(true);
-      expect(stderr.writes.some((w) => w.includes('MONAD_HISTORY_DIR'))).toBe(true);
+      expect(stderr.writes.some((w) => w.includes('ELANOUS_HISTORY_DIR'))).toBe(true);
       expect(stderr.writes.some((w) => w.includes('tools: none'))).toBe(true);
-      expect(stderr.writes.some((w) => w.includes('MONAD_TOOLS=readonly'))).toBe(true);
+      expect(stderr.writes.some((w) => w.includes('ELANOUS_TOOLS=readonly'))).toBe(true);
     });
 
     test('stdio without runtimeStatus omits history/tools lines (smoke-test mode)', async () => {
@@ -361,7 +361,7 @@ describe('bootAcpServer dispatch', () => {
 describe('defaults', () => {
   test('defaultUnixSocketPath returns the instance config socket path', () => {
     const p = defaultUnixSocketPath();
-    expect(p.endsWith('/monad.sock')).toBe(true);
+    expect(p.endsWith('/elanous.sock')).toBe(true);
   });
   test('DEFAULT_WEBSOCKET_PORT = 31415', () => {
     expect(DEFAULT_WEBSOCKET_PORT).toBe(31415);

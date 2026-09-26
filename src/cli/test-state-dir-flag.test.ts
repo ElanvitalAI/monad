@@ -10,7 +10,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
 import { applyTestStateDirFlagFromArgv, extractTestStateDirFlag } from './test-state-dir-flag.js';
-import { getMonadConfigDirOverride, resetMonadConfigDir, setMonadConfigDir } from '../monad-config-dir.js';
+import { getElanousConfigDirOverride, resetElanousConfigDir, setElanousConfigDir } from '../elanous-config-dir.js';
 import { setTestStateRoot } from '../nexus/paths.js';
 
 describe('extractTestStateDirFlag — 순수 추출', () => {
@@ -23,40 +23,40 @@ describe('extractTestStateDirFlag — 순수 추출', () => {
 
 describe('applyTestStateDirFlagFromArgv — ISO-2 완전 분기', () => {
   const savedArgv = [...process.argv];
-  const savedStateDir = process.env.MONAD_STATE_DIR;
+  const savedStateDir = process.env.ELANOUS_STATE_DIR;
 
   afterEach(() => {
     process.argv = [...savedArgv];
-    if (savedStateDir === undefined) delete process.env.MONAD_STATE_DIR;
-    else process.env.MONAD_STATE_DIR = savedStateDir;
-    resetMonadConfigDir();
+    if (savedStateDir === undefined) delete process.env.ELANOUS_STATE_DIR;
+    else process.env.ELANOUS_STATE_DIR = savedStateDir;
+    resetElanousConfigDir();
     setTestStateRoot(null);
   });
 
-  it('플래그 하나로 state root + MONAD_STATE_DIR + config dir 전부 test 루트로', () => {
-    const dir = mkdtempSync(join(tmpdir(), 'monad-testflag-'));
-    delete process.env.MONAD_STATE_DIR;
+  it('플래그 하나로 state root + ELANOUS_STATE_DIR + config dir 전부 test 루트로', () => {
+    const dir = mkdtempSync(join(tmpdir(), 'elanous-testflag-'));
+    delete process.env.ELANOUS_STATE_DIR;
     process.argv = ['bun', 'index.ts', '--test-state-dir', dir, 'nexus', 'run'];
     const applied = applyTestStateDirFlagFromArgv();
     expect(applied).toBe(dir);
-    expect(process.env.MONAD_STATE_DIR ?? '').toBe(dir);
-    expect(getMonadConfigDirOverride()).toBe(dir); // ← config 완전 분기 핵심
+    expect(process.env.ELANOUS_STATE_DIR ?? '').toBe(dir);
+    expect(getElanousConfigDirOverride()).toBe(dir); // ← config 완전 분기 핵심
     expect(process.argv).toEqual(['bun', 'index.ts', 'nexus', 'run']);
     rmSync(dir, { recursive: true, force: true });
   });
 
   it('선행 --config-dir(운영 등)이 있어도 test 루트가 이긴다', () => {
-    const dir = mkdtempSync(join(tmpdir(), 'monad-testflag-'));
-    setMonadConfigDir('/somewhere/prod-like');
+    const dir = mkdtempSync(join(tmpdir(), 'elanous-testflag-'));
+    setElanousConfigDir('/somewhere/prod-like');
     process.argv = ['bun', 'index.ts', '--test-state-dir', dir];
     applyTestStateDirFlagFromArgv();
-    expect(getMonadConfigDirOverride()).toBe(dir);
+    expect(getElanousConfigDirOverride()).toBe(dir);
     rmSync(dir, { recursive: true, force: true });
   });
 
   it('플래그 없으면 아무것도 안 바꾼다', () => {
     process.argv = ['bun', 'index.ts', 'nexus', 'run'];
     expect(applyTestStateDirFlagFromArgv()).toBeUndefined();
-    expect(getMonadConfigDirOverride()).toBeUndefined();
+    expect(getElanousConfigDirOverride()).toBeUndefined();
   });
 });

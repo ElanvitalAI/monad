@@ -1,7 +1,7 @@
 // ── 자율tool 조립기 — turn 조립기 통일 Phase 1 (2026-07-22) ──
 //
 // 메신저 서피스(telegram/discord)가 노출하던 무거운 자율툴 5종의 spec 조립 + per-turn
-// dispatch 배선을 makeMonadAgentRunTurn 인라인에서 이 헬퍼로 추출한다. 종전 telegram 이 ~120줄
+// dispatch 배선을 makeElanousAgentRunTurn 인라인에서 이 헬퍼로 추출한다. 종전 telegram 이 ~120줄
 // 인라인으로 굴리던 것(delegate_code_agent · SelfImplement · RelayShellPrompt · RunDevHarness ·
 // SolveMission)을 단일 출처로 — daemon-tools 가 부분 중복(delegate·SelfImplement)하던 것도 이후
 // 이 헬퍼로 수렴 가능. 공통 앱 tool 단일화(Phase 0 buildSharedAppTools)의 자율tool 대응편.
@@ -130,7 +130,7 @@ export async function dispatchAutonomousTool(
     return result;
   }
 
-  // SelfImplement(monad self-build): 승인(approvePr)·진행·spill 을 막(SurfaceUx)으로 — per-turn
+  // SelfImplement(elanous self-build): 승인(approvePr)·진행·spill 을 막(SurfaceUx)으로 — per-turn
   // HITL 채널을 ctx 로 넘겨 dispatchSelfImplement 가 surfaceUxFromDispatchCtx 로 소비.
   // PR-open 승인은 ①operator 사전승인(config `tools.selfImplement.autoOpenPr`·기본 ON) →
   // ②아니면 ux.confirm(채널 없으면 fail-closed). 병합은 별도 게이트로 남는다.

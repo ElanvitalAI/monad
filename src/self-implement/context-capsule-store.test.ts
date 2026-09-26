@@ -7,7 +7,7 @@ import { persistContextCapsule, readContextCapsule, listContextCapsules } from '
 import { buildHarnessContextCapsule, type HarnessContextCapsule } from './context-capsule.js';
 import { groundMissionInCapsules, groundMissionInCodebase } from '../autopilot/mission-codebase-gate.js';
 import { writeColdSnapshot } from '../agent-substrate/cold-ledger.js';
-import { setMonadConfigDir, resetMonadConfigDir } from '../monad-config-dir.js';
+import { setElanousConfigDir, resetElanousConfigDir } from '../elanous-config-dir.js';
 
 // CAPSULE_KIND 는 모듈-비공개 → 테스트 손상 주입은 리터럴 kind 사용.
 const CAPSULE_KIND = 'context-capsule';
@@ -23,8 +23,8 @@ function mkCapsule(over: Partial<HarnessContextCapsule> = {}): HarnessContextCap
 
 describe('context-capsule-store — F2 durable handoff(cold-ledger 재사용)', () => {
   let dir: string;
-  beforeEach(() => { dir = mkdtempSync(join(tmpdir(), 'capsule-store-')); setMonadConfigDir(dir); });
-  afterEach(() => { resetMonadConfigDir(); try { rmSync(dir, { recursive: true, force: true }); } catch { /* noop */ } });
+  beforeEach(() => { dir = mkdtempSync(join(tmpdir(), 'capsule-store-')); setElanousConfigDir(dir); });
+  afterEach(() => { resetElanousConfigDir(); try { rmSync(dir, { recursive: true, force: true }); } catch { /* noop */ } });
 
   it('persist → read 왕복(상류→하류 handoff)', () => {
     const cap = mkCapsule();
@@ -40,7 +40,7 @@ describe('context-capsule-store — F2 durable handoff(cold-ledger 재사용)', 
   it('config-dir 격리 — 다른 스코프에선 안 보임', () => {
     persistContextCapsule('job-2', mkCapsule());
     const other = mkdtempSync(join(tmpdir(), 'capsule-other-'));
-    setMonadConfigDir(other);
+    setElanousConfigDir(other);
     expect(readContextCapsule('job-2')).toBeNull();   // 다른 config-dir → 격리
     try { rmSync(other, { recursive: true, force: true }); } catch { /* noop */ }
   });

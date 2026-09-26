@@ -15,7 +15,7 @@ import {
   sliceUtf8AtBoundary,
 } from '../src/registry/discovery/sources/firecrawl-crawl.js';
 import { resetUserConfig } from '../src/user-config.js';
-import { setMonadConfigDir, resetMonadConfigDir } from '../src/monad-config-dir.js';
+import { setElanousConfigDir, resetElanousConfigDir } from '../src/elanous-config-dir.js';
 
 let tmpDir: string;
 const ENV_KEYS = ['FIRECRAWL_API_KEY'];
@@ -28,7 +28,7 @@ function writeConfig(payload: Record<string, unknown>): void {
 
 beforeEach(() => {
   tmpDir = mkdtempSync(join(tmpdir(), 'firecrawl-crawl-'));
-  setMonadConfigDir(tmpDir);
+  setElanousConfigDir(tmpDir);
   for (const k of ENV_KEYS) delete process.env[k];
   resetUserConfig();
   __resetFirecrawlCliCache();
@@ -36,7 +36,7 @@ beforeEach(() => {
 
 afterEach(() => {
   rmSync(tmpDir, { recursive: true, force: true });
-  resetMonadConfigDir();
+  resetElanousConfigDir();
   for (const k of ENV_KEYS) delete process.env[k];
   resetUserConfig();
   __resetFirecrawlCliCache();

@@ -155,7 +155,7 @@ async function renderTabs(
   };
   harness.unmount();
   storage.clear();
-  if (initialTabs.length > 0) storage.set('monad.webterm.tabs', JSON.stringify(initialTabs));
+  if (initialTabs.length > 0) storage.set('elanous.webterm.tabs', JSON.stringify(initialTabs));
   connection.state = 'CONNECTING';
   stateListener = undefined;
   spawnCalls = 0;
@@ -189,14 +189,14 @@ describe('TerminalTabs PTY-list selection interaction', () => {
     };
     harness.unmount();
     storage.clear();
-    storage.set('monad.webterm.tabs', JSON.stringify(['existing']));
+    storage.set('elanous.webterm.tabs', JSON.stringify(['existing']));
     connection.state = 'CONNECTING';
     debugCalls.length = 0;
     harness.render(PanelTabs as never);
     await harness.settle();
 
     expect(active).toEqual(['pty-new']);
-    expect(storage.get('monad.webterm.tabs')).toBe('["existing","pty-new"]');
+    expect(storage.get('elanous.webterm.tabs')).toBe('["existing","pty-new"]');
     expect(tabSnapshots.at(-1)).toEqual(['existing', 'pty-new']);
     expect(debugCalls.filter((call) => call.event === 'webterm.tabs.pty-select.add')).toEqual([
       { event: 'webterm.tabs.pty-select.add', data: { id: 'pty-new', total: 2 } },
@@ -207,7 +207,7 @@ describe('TerminalTabs PTY-list selection interaction', () => {
     await harness.settle();
 
     expect(active).toEqual(['pty-new', 'pty-new']);
-    expect(storage.get('monad.webterm.tabs')).toBe('["existing","pty-new"]');
+    expect(storage.get('elanous.webterm.tabs')).toBe('["existing","pty-new"]');
     expect(debugCalls.filter((call) => call.event === 'webterm.tabs.pty-select.existing')).toEqual([
       { event: 'webterm.tabs.pty-select.existing', data: { id: 'pty-new', total: 2 } },
     ]);
@@ -231,7 +231,7 @@ describe('TerminalTabs initial daemon issuance interaction', () => {
     expect(spawnCalls).toBe(1);
     expect(active).toContain('daemon-1');
     expect(states).toContainEqual({ status: 'ready', issuedBy: 'daemon' });
-    expect(storage.get('monad.webterm.tabs')).toBe('["daemon-1"]');
+    expect(storage.get('elanous.webterm.tabs')).toBe('["daemon-1"]');
   });
 
   test('closing a daemon-known tab keeps it hidden after the immediate daemon refresh without destroying it', async () => {
@@ -248,8 +248,8 @@ describe('TerminalTabs initial daemon issuance interaction', () => {
 
     expect(destroyCalls).toBe(0);
     expect(listCalls).toBeGreaterThanOrEqual(1);
-    expect(storage.get('monad.webterm.tabs')).not.toContain('daemon-1');
-    expect(storage.get('monad.webterm.hidden-tabs')).toBe('["daemon-1"]');
+    expect(storage.get('elanous.webterm.tabs')).not.toContain('daemon-1');
+    expect(storage.get('elanous.webterm.hidden-tabs')).toBe('["daemon-1"]');
   });
 
   test('closing the only committed tab returns to pending and reuses the OPEN-gated daemon issuance path', async () => {
@@ -268,7 +268,7 @@ describe('TerminalTabs initial daemon issuance interaction', () => {
     expect(active).toContain('daemon-2');
     expect(states).toContainEqual({ status: 'pending' });
     expect(states).toContainEqual({ status: 'ready', issuedBy: 'daemon' });
-    expect(storage.get('monad.webterm.tabs')).toBe('["daemon-2"]');
+    expect(storage.get('elanous.webterm.tabs')).toBe('["daemon-2"]');
   });
 });
 
@@ -290,7 +290,7 @@ describe('TerminalTabs explicit termination interaction', () => {
 
     expect(destroyCalls).toBe(0);
     expect(active).toEqual([]);
-    expect(storage.get('monad.webterm.tabs')).toBe('["daemon-1"]');
+    expect(storage.get('elanous.webterm.tabs')).toBe('["daemon-1"]');
 
     await renderTabs(active, states, 'daemon-1', ['daemon-1', 'daemon-2']);
     connection.state = 'OPEN';
@@ -302,7 +302,7 @@ describe('TerminalTabs explicit termination interaction', () => {
 
     expect(destroyCalls).toBe(0);
     expect(active).toEqual([]);
-    expect(storage.get('monad.webterm.tabs')).toBe('["daemon-1","daemon-2"]');
+    expect(storage.get('elanous.webterm.tabs')).toBe('["daemon-1","daemon-2"]');
 
     confirmResult = true;
     clickWithPropagationGuard(terminateButton('daemon-2'));
@@ -310,8 +310,8 @@ describe('TerminalTabs explicit termination interaction', () => {
 
     expect(destroyCalls).toBe(1);
     expect(active).toEqual([]);
-    expect(storage.get('monad.webterm.tabs')).toBe('["daemon-1"]');
-    expect(storage.get('monad.webterm.tabs')).not.toContain('daemon-2');
+    expect(storage.get('elanous.webterm.tabs')).toBe('["daemon-1"]');
+    expect(storage.get('elanous.webterm.tabs')).not.toContain('daemon-2');
   });
 
   test('cancelling termination changes neither daemon nor local tabs', async () => {
@@ -327,7 +327,7 @@ describe('TerminalTabs explicit termination interaction', () => {
     await harness.settle();
 
     expect(destroyCalls).toBe(0);
-    expect(storage.get('monad.webterm.tabs')).toBe('["daemon-1"]');
+    expect(storage.get('elanous.webterm.tabs')).toBe('["daemon-1"]');
     expect(confirmMessages.at(-1)).toContain('사용 상태를 확인할 수 없습니다');
   });
 
@@ -343,7 +343,7 @@ describe('TerminalTabs explicit termination interaction', () => {
     await harness.settle();
 
     expect(destroyCalls).toBe(1);
-    expect(storage.get('monad.webterm.tabs')).not.toContain('daemon-1');
+    expect(storage.get('elanous.webterm.tabs')).not.toContain('daemon-1');
   });
 
   test('preserves the latest active tab during a delayed termination in both switch directions', async () => {
@@ -367,7 +367,7 @@ describe('TerminalTabs explicit termination interaction', () => {
     resolvePendingDestroy?.();
     await harness.settle();
     expect(active.at(-1)).toBe('daemon-2');
-    expect(storage.get('monad.webterm.tabs')).toBe('["daemon-2"]');
+    expect(storage.get('elanous.webterm.tabs')).toBe('["daemon-2"]');
 
     await renderTabs(active, states, 'daemon-1', ['daemon-1', 'daemon-2']);
     connection.state = 'OPEN';
@@ -383,7 +383,7 @@ describe('TerminalTabs explicit termination interaction', () => {
     resolvePendingDestroy?.();
     await harness.settle();
     expect(active.at(-1)).toBe('daemon-2');
-    expect(storage.get('monad.webterm.tabs')).toBe('["daemon-2"]');
+    expect(storage.get('elanous.webterm.tabs')).toBe('["daemon-2"]');
     expect(harness.findAll((element) => element.props['aria-label'] === 'switch to daemon-1')).toHaveLength(0);
   });
 
@@ -400,7 +400,7 @@ describe('TerminalTabs explicit termination interaction', () => {
     await harness.settle();
 
     expect(destroyCalls).toBe(1);
-    expect(storage.get('monad.webterm.tabs')).toBe('["daemon-1"]');
+    expect(storage.get('elanous.webterm.tabs')).toBe('["daemon-1"]');
   });
 });
 
@@ -409,7 +409,7 @@ describe('TerminalTabs ownership control interaction', () => {
     const active: string[] = [];
     const states: unknown[] = [];
     await renderTabs(active, states, 'daemon-1', ['daemon-1'], [
-      { terminalId: 'daemon-1', isAlive: true, terminalOriginCategory: 'monad', controller: 'agent' },
+      { terminalId: 'daemon-1', isAlive: true, terminalOriginCategory: 'elanous', controller: 'agent' },
       { terminalId: 'daemon-2', isAlive: true, terminalOriginCategory: 'direct-human', controller: 'human' },
       { terminalId: 'unknown', isAlive: true, terminalOriginCategory: 'unknown' },
     ]);
@@ -451,7 +451,7 @@ describe('TerminalTabs ownership control interaction', () => {
       const active: string[] = [];
       const states: unknown[] = [];
       await renderTabs(active, states, 'daemon-1', ['daemon-1'], [
-        { terminalId: 'daemon-1', isAlive: true, terminalOriginCategory: 'monad', controller: 'agent' },
+        { terminalId: 'daemon-1', isAlive: true, terminalOriginCategory: 'elanous', controller: 'agent' },
       ]);
       connection.state = 'OPEN';
       harness.act(() => stateListener?.('OPEN'));
@@ -469,7 +469,7 @@ describe('TerminalTabs ownership control interaction', () => {
     const active: string[] = [];
     const states: unknown[] = [];
     await renderTabs(active, states, 'daemon-1', ['daemon-1'], [
-      { terminalId: 'daemon-1', isAlive: true, terminalOriginCategory: 'monad', controller: 'agent' },
+      { terminalId: 'daemon-1', isAlive: true, terminalOriginCategory: 'elanous', controller: 'agent' },
     ]);
     connection.state = 'OPEN';
     harness.act(() => stateListener?.('OPEN'));
@@ -490,8 +490,8 @@ describe('TerminalTabs ownership control interaction', () => {
     const active: string[] = [];
     const states: unknown[] = [];
     await renderTabs(active, states, 'daemon-1', ['daemon-1', 'daemon-2'], [
-      { terminalId: 'daemon-1', isAlive: true, terminalOriginCategory: 'monad', controller: 'agent' },
-      { terminalId: 'daemon-2', isAlive: true, terminalOriginCategory: 'monad', controller: 'agent' },
+      { terminalId: 'daemon-1', isAlive: true, terminalOriginCategory: 'elanous', controller: 'agent' },
+      { terminalId: 'daemon-2', isAlive: true, terminalOriginCategory: 'elanous', controller: 'agent' },
     ]);
     connection.state = 'OPEN';
     harness.act(() => stateListener?.('OPEN'));
@@ -512,8 +512,8 @@ describe('TerminalTabs ownership control interaction', () => {
     const active: string[] = [];
     const states: unknown[] = [];
     await renderTabs(active, states, 'daemon-1', ['daemon-1', 'daemon-2'], [
-      { terminalId: 'daemon-1', isAlive: true, terminalOriginCategory: 'monad', controller: 'agent' },
-      { terminalId: 'daemon-2', isAlive: true, terminalOriginCategory: 'monad', controller: 'agent' },
+      { terminalId: 'daemon-1', isAlive: true, terminalOriginCategory: 'elanous', controller: 'agent' },
+      { terminalId: 'daemon-2', isAlive: true, terminalOriginCategory: 'elanous', controller: 'agent' },
     ]);
     connection.state = 'OPEN';
     harness.act(() => stateListener?.('OPEN'));

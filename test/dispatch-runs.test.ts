@@ -35,17 +35,17 @@ let prevDispatch: string | undefined;
 beforeEach(() => {
   tmpRoot = mkdtempSync(join(tmpdir(), 'd8-runs-nexus-'));
   tmpDispatch = mkdtempSync(join(tmpdir(), 'd8-runs-dispatch-'));
-  prevNexus = process.env.MONAD_NEXUS_DIR;
-  prevDispatch = process.env.MONAD_DISPATCH_DIR;
-  process.env.MONAD_NEXUS_DIR = tmpRoot;
-  process.env.MONAD_DISPATCH_DIR = tmpDispatch;
+  prevNexus = process.env.ELANOUS_NEXUS_DIR;
+  prevDispatch = process.env.ELANOUS_DISPATCH_DIR;
+  process.env.ELANOUS_NEXUS_DIR = tmpRoot;
+  process.env.ELANOUS_DISPATCH_DIR = tmpDispatch;
 });
 
 afterEach(() => {
-  if (prevNexus === undefined) delete process.env.MONAD_NEXUS_DIR;
-  else process.env.MONAD_NEXUS_DIR = prevNexus;
-  if (prevDispatch === undefined) delete process.env.MONAD_DISPATCH_DIR;
-  else process.env.MONAD_DISPATCH_DIR = prevDispatch;
+  if (prevNexus === undefined) delete process.env.ELANOUS_NEXUS_DIR;
+  else process.env.ELANOUS_NEXUS_DIR = prevNexus;
+  if (prevDispatch === undefined) delete process.env.ELANOUS_DISPATCH_DIR;
+  else process.env.ELANOUS_DISPATCH_DIR = prevDispatch;
   try { rmSync(tmpRoot, { recursive: true, force: true }); } catch { /* ignore */ }
   try { rmSync(tmpDispatch, { recursive: true, force: true }); } catch { /* ignore */ }
 });

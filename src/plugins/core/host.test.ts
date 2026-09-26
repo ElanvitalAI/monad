@@ -63,7 +63,7 @@ describe('PluginHost user-dir contract vs Claude package management', () => {
   });
 
   test('discover() finds seven repository built-ins including botlab', async () => {
-    const userDir = createDir('monad-host-user-empty-');
+    const userDir = createDir('elanous-host-user-empty-');
     const host = new PluginHost(hooks, null, { userDir });
     await host.discover();
     const builtins = host.list().filter((entry) => entry.source === 'builtin');
@@ -73,7 +73,7 @@ describe('PluginHost user-dir contract vs Claude package management', () => {
   });
 
   test('Claude management dirs are not adopted as plugins when injected as userDir', async () => {
-    const userDir = createDir('monad-host-claude-layout-');
+    const userDir = createDir('elanous-host-claude-layout-');
     writeClaudeManagedLayout(userDir);
     const host = new PluginHost(hooks, null, { userDir });
     await host.discover();
@@ -87,8 +87,8 @@ describe('PluginHost user-dir contract vs Claude package management', () => {
     expect(host.list().filter((entry) => entry.source === 'builtin')).toHaveLength(7);
   });
 
-  test('a sibling mine/plugin.ts following the Monad convention is discovered', async () => {
-    const userDir = createDir('monad-host-claude-layout-mine-');
+  test('a sibling mine/plugin.ts following the Elanous convention is discovered', async () => {
+    const userDir = createDir('elanous-host-claude-layout-mine-');
     writeClaudeManagedLayout(userDir);
     writeMinePlugin(userDir);
     const host = new PluginHost(hooks, null, { userDir });

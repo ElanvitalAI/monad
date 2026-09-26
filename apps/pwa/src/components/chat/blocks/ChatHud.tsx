@@ -67,9 +67,9 @@ function HudSegmentChip({ segment }: { segment: HudSegmentPayload }) {
   const toneClass = segment.tone ? TONE_CLASSES[segment.tone] : TONE_CLASSES.normal;
   return (
     <span
-      data-monad-hud-key={segment.key}
-      data-monad-hud-tone={segment.tone ?? 'normal'}
-      data-monad-hud-priority={String(segment.priority ?? 50)}
+      data-elanous-hud-key={segment.key}
+      data-elanous-hud-tone={segment.tone ?? 'normal'}
+      data-elanous-hud-priority={String(segment.priority ?? 50)}
       className={cn(
         'inline-flex items-center gap-1 font-mono text-[11px]',
         toneClass,
@@ -93,7 +93,7 @@ function HudRow({
   if (segments.length === 0) return null;
   return (
     <div
-      data-monad-hud-row={row}
+      data-elanous-hud-row={row}
       className={cn(
         'flex flex-wrap items-center gap-x-3 gap-y-1',
         className,
@@ -125,7 +125,7 @@ export function ChatHudView({ segments }: { segments: HudSegmentPayload[] }) {
   const { top, bottom } = partition(segments);
   return (
     <div
-      data-monad-hud="strip"
+      data-elanous-hud="strip"
       role="status"
       aria-label="HUD status"
       className="flex flex-col gap-0.5 border-b border-border/40 bg-muted/10 px-3 py-1.5"

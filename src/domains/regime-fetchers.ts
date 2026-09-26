@@ -220,7 +220,7 @@ export function defaultRawFetchers(): RawFetchers {
     krSector: () => {
       const db = openRO(SCREENER_DB); if (!db) return null;
       try {
-        // ★ SP3: monad sector_scores(rolling window·monthly·TS 계산) 우선 — 오늘 기준이라
+        // ★ SP3: elanous sector_scores(rolling window·monthly·TS 계산) 우선 — 오늘 기준이라
         //   신선(레거시 sector 는 외부 파이썬 월봉이라 stale). 없으면 레거시 sector 폴백.
         let chain: string, mom: number, asOf: string, points: number;
         const sw = db.query(`SELECT chain, mom, date FROM sector_scores WHERE market='KR' AND window='monthly' AND date=(SELECT MAX(date) FROM sector_scores WHERE market='KR' AND window='monthly') ORDER BY rank LIMIT 1`).get() as { chain: string; mom: number; date: string } | null;

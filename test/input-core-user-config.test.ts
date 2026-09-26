@@ -19,7 +19,7 @@ let configPath: string;
 beforeEach(() => {
   __resetBindingsForTests();
   __resetInputSettingsForTests();
-  tmpDir = join(tmpdir(), `monad-user-bindings-${Date.now()}-${Math.random().toString(36).slice(2)}`);
+  tmpDir = join(tmpdir(), `elanous-user-bindings-${Date.now()}-${Math.random().toString(36).slice(2)}`);
   mkdirSync(tmpDir, { recursive: true });
   configPath = join(tmpDir, 'input-bindings.json');
 });

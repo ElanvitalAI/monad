@@ -6,8 +6,8 @@
 // surface.
 //
 // Layout:
-//   ~/.monad/state/<plugin-id>/<key>.json      (user scope)
-//   <cwd>/.monad/state/<plugin-id>/<key>.json  (project scope; overrides user)
+//   ~/.elanous/state/<plugin-id>/<key>.json      (user scope)
+//   <cwd>/.elanous/state/<plugin-id>/<key>.json  (project scope; overrides user)
 //
 // Scope precedence (DD-PX2-1): project wins over user on read when both
 // exist. Writes target the caller-specified scope — default is 'user'
@@ -18,14 +18,14 @@ import { join } from 'node:path';
 
 /** Root for user-global plugin state. */
 export function userStateRoot(): string {
-  return join(homedir(), '.monad', 'state');
+  return join(homedir(), '.elanous', 'state');
 }
 
 /** Root for project-local plugin state. Caller passes its session cwd
  *  (or getSessionCwd()) rather than process.cwd() so the state dir
  *  follows SWD switches (EnterWorktree / SetWorkingDir). */
 export function projectStateRoot(cwd: string): string {
-  return join(cwd, '.monad', 'state');
+  return join(cwd, '.elanous', 'state');
 }
 
 /** Resolve a `<root>/<pluginId>/<key>.json` path. Caller supplies the

@@ -24,60 +24,60 @@ let prevKeyCacheDir: string | undefined;
 let prevProviderKeys: Record<string, string | undefined> = {};
 
 beforeEach(() => {
-  tmpRoot = mkdtempSync(joinPath(tmpdir(), 'monad-nexus-omega-'));
+  tmpRoot = mkdtempSync(joinPath(tmpdir(), 'elanous-nexus-omega-'));
   unitDir = joinPath(tmpRoot, 'systemd', 'user');
-  prevEnv = process.env.MONAD_NEXUS_DIR;
-  process.env.MONAD_NEXUS_DIR = tmpRoot;
+  prevEnv = process.env.ELANOUS_NEXUS_DIR;
+  process.env.ELANOUS_NEXUS_DIR = tmpRoot;
   // ⛔ install 이 셸 키를 키 캐시로 옮긴다(RFC S1b) — 시험은 실물 ~/.cache 에 닿으면 안 된다.
-  prevKeyCacheDir = process.env.MONAD_KEY_CACHE_DIR;
-  process.env.MONAD_KEY_CACHE_DIR = joinPath(tmpRoot, 'key-cache');
+  prevKeyCacheDir = process.env.ELANOUS_KEY_CACHE_DIR;
+  process.env.ELANOUS_KEY_CACHE_DIR = joinPath(tmpRoot, 'key-cache');
   prevProviderKeys = Object.fromEntries(PROVIDER_KEY_NAMES.map((n) => [n, process.env[n]]));
   for (const n of PROVIDER_KEY_NAMES) delete process.env[n];
 });
 
 afterEach(() => {
-  if (prevKeyCacheDir === undefined) delete process.env.MONAD_KEY_CACHE_DIR; else process.env.MONAD_KEY_CACHE_DIR = prevKeyCacheDir;
+  if (prevKeyCacheDir === undefined) delete process.env.ELANOUS_KEY_CACHE_DIR; else process.env.ELANOUS_KEY_CACHE_DIR = prevKeyCacheDir;
   for (const [n, v] of Object.entries(prevProviderKeys)) { if (v === undefined) delete process.env[n]; else process.env[n] = v; }
-  if (prevEnv === undefined) delete process.env.MONAD_NEXUS_DIR;
-  else process.env.MONAD_NEXUS_DIR = prevEnv;
+  if (prevEnv === undefined) delete process.env.ELANOUS_NEXUS_DIR;
+  else process.env.ELANOUS_NEXUS_DIR = prevEnv;
   try { rmSync(tmpRoot, { recursive: true, force: true }); } catch { /* ignore */ }
 });
 
 describe('renderSystemdServiceUnit · structure', () => {
   test('emits Unit / Service / Install sections + Restart=on-failure', () => {
     const body = renderSystemdServiceUnit({
-      command: ['/usr/local/bin/monad', 'nexus', 'run'],
+      command: ['/usr/local/bin/elanous', 'nexus', 'run'],
       workingDirectory: '/home/x',
-      stdoutPath: '/home/x/.monad/nexus/logs/nexus-stdout.log',
-      stderrPath: '/home/x/.monad/nexus/logs/nexus-stderr.log',
+      stdoutPath: '/home/x/.elanous/nexus/logs/nexus-stdout.log',
+      stderrPath: '/home/x/.elanous/nexus/logs/nexus-stderr.log',
     });
     expect(body).toContain('[Unit]');
-    expect(body).toContain('Description=monad NEXUS');
+    expect(body).toContain('Description=elanous NEXUS');
     expect(body).toContain('[Service]');
     expect(body).toContain('Type=simple');
-    expect(body).toContain('ExecStart=/usr/local/bin/monad nexus run');
+    expect(body).toContain('ExecStart=/usr/local/bin/elanous nexus run');
     expect(body).toContain('WorkingDirectory=/home/x');
     expect(body).toContain('Restart=on-failure');
     expect(body).toContain('RestartSec=10');
-    expect(body).toContain('StandardOutput=append:/home/x/.monad/nexus/logs/nexus-stdout.log');
-    expect(body).toContain('StandardError=append:/home/x/.monad/nexus/logs/nexus-stderr.log');
+    expect(body).toContain('StandardOutput=append:/home/x/.elanous/nexus/logs/nexus-stdout.log');
+    expect(body).toContain('StandardError=append:/home/x/.elanous/nexus/logs/nexus-stderr.log');
     expect(body).toContain('[Install]');
     expect(body).toContain('WantedBy=default.target');
   });
 
   test('quotes ExecStart args containing spaces / specials', () => {
     const body = renderSystemdServiceUnit({
-      command: ['/bin/monad', 'nexus', 'run', '--config=/path with spaces/cfg'],
+      command: ['/bin/elanous', 'nexus', 'run', '--config=/path with spaces/cfg'],
       workingDirectory: '/home/x',
       stdoutPath: '/home/x/o',
       stderrPath: '/home/x/e',
     });
-    expect(body).toContain('ExecStart=/bin/monad nexus run "--config=/path with spaces/cfg"');
+    expect(body).toContain('ExecStart=/bin/elanous nexus run "--config=/path with spaces/cfg"');
   });
 
   test('emits Environment lines for each env var', () => {
     const body = renderSystemdServiceUnit({
-      command: ['/bin/monad'],
+      command: ['/bin/elanous'],
       workingDirectory: '/home/x',
       stdoutPath: '/home/x/o',
       stderrPath: '/home/x/e',
@@ -89,7 +89,7 @@ describe('renderSystemdServiceUnit · structure', () => {
 
   test('omits Environment lines when env is empty', () => {
     const body = renderSystemdServiceUnit({
-      command: ['/bin/monad'],
+      command: ['/bin/elanous'],
       workingDirectory: '/home/x',
       stdoutPath: '/home/x/o',
       stderrPath: '/home/x/e',
@@ -99,7 +99,7 @@ describe('renderSystemdServiceUnit · structure', () => {
 
   test('determinism: same inputs produce byte-identical output', () => {
     const opts = {
-      command: ['/usr/local/bin/monad', 'nexus', 'run'],
+      command: ['/usr/local/bin/elanous', 'nexus', 'run'],
       workingDirectory: '/home/x',
       stdoutPath: '/home/x/o',
       stderrPath: '/home/x/e',
@@ -156,7 +156,7 @@ describe('installSystemd · happy path', () => {
     const res = await installSystemd({
       platformOverride: 'linux',
       unitDir,
-      command: ['/usr/local/bin/monad', 'nexus', 'run'],
+      command: ['/usr/local/bin/elanous', 'nexus', 'run'],
       runCli: stub,
     });
     expect(res.outcome).toBe('installed');
@@ -165,7 +165,7 @@ describe('installSystemd · happy path', () => {
     expect(res.started).toBe(true);
     expect(existsSync(res.unitPath)).toBe(true);
     const body = readFileSync(res.unitPath, 'utf-8');
-    expect(body).toContain('ExecStart=/usr/local/bin/monad nexus run');
+    expect(body).toContain('ExecStart=/usr/local/bin/elanous nexus run');
     expect(calls.length).toBe(3);
     expect(calls[0]).toEqual(['systemctl', '--user', 'daemon-reload']);
     expect(calls[1]).toEqual(['systemctl', '--user', 'enable', SYSTEMD_UNIT_NAME]);
@@ -201,7 +201,7 @@ describe('installSystemd · happy path', () => {
     expect(res.outcome).toBe('installed');
     if (res.outcome !== 'installed') return;
     expect(readFileSync(res.unitPath, 'utf-8')).not.toContain(secret);
-    const cacheFile = joinPath(process.env.MONAD_KEY_CACHE_DIR!, 'openai_api_key');
+    const cacheFile = joinPath(process.env.ELANOUS_KEY_CACHE_DIR!, 'openai_api_key');
     expect(readFileSync(cacheFile, 'utf-8').trim()).toBe(secret);
     expect(statSync(cacheFile).mode & 0o777).toBe(0o600);
     expect(res.keyCache).toEqual({ written: ['OPENAI_API_KEY'], differs: [] });
@@ -366,7 +366,7 @@ describe('statusSystemd', () => {
 // 🆕 2026-09-24 빈 Ubuntu VM 실측 — 로그 폴더가 없으면 systemd 가 209/STDOUT 으로 죽었다.
 describe('installSystemd · log directory', () => {
   test('creates the stdout/stderr directories before writing the unit', async () => {
-    const root = mkdtempSync(joinPath(tmpdir(), 'monad-systemd-logs-'));
+    const root = mkdtempSync(joinPath(tmpdir(), 'elanous-systemd-logs-'));
     try {
       const order: string[] = [];
       const res = await installSystemd({

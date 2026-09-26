@@ -170,7 +170,7 @@ async function llmJson(prompt: string, envModel: string): Promise<Record<string,
 }
 
 export async function defaultSufficiencyResolve(e: StuckEvidence): Promise<RawSufficiency> {
-  const o = await llmJson(sufficiencyPrompt(e), 'MONAD_SUFFICIENCY_MODEL');
+  const o = await llmJson(sufficiencyPrompt(e), 'ELANOUS_SUFFICIENCY_MODEL');
   return {
     ...(typeof o.sufficient === 'boolean' ? { sufficient: o.sufficient } : {}),
     ...(Array.isArray(o.gaps) ? { gaps: o.gaps.filter((x): x is string => typeof x === 'string') } : {}),
@@ -179,7 +179,7 @@ export async function defaultSufficiencyResolve(e: StuckEvidence): Promise<RawSu
 }
 
 export async function defaultVerdictResolve(e: StuckEvidence): Promise<RawVerdict> {
-  const o = await llmJson(verdictPrompt(e), 'MONAD_VERDICT_MODEL');
+  const o = await llmJson(verdictPrompt(e), 'ELANOUS_VERDICT_MODEL');
   return {
     ...(typeof o.action === 'string' ? { action: o.action } : {}),
     ...(typeof o.reason === 'string' ? { reason: o.reason } : {}),

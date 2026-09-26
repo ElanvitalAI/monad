@@ -100,7 +100,7 @@ export async function suggestNextNodes(
 
 // ── prompt + parser (exported for unit tests) ──────────────────────
 
-export const SUGGEST_SYSTEM_PROMPT = `당신은 monad workflow author 의 작성 도우미입니다.
+export const SUGGEST_SYSTEM_PROMPT = `당신은 elanous workflow author 의 작성 도우미입니다.
 
 사용자가 작성 중인 workflow YAML 과 의도를 보고, 다음에 추가할 node 를 추천하세요. 추천은 정확히 N 개 · JSON 배열 형식:
 

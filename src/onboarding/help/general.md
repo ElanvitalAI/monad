@@ -1,4 +1,4 @@
-monad — setup wizard
+elanous — setup wizard
 
 The wizard walks you through 5 steps:
 
@@ -13,7 +13,7 @@ Tips:
   · Press Enter at any prompt to accept the default in [brackets].
   · Type "?" or "help" at any prompt for context-specific help.
   · Press Esc / Ctrl-C to cancel — no config is written.
-  · Re-run `monad setup` any time to revisit answers, or `monad
+  · Re-run `elanous setup` any time to revisit answers, or `elanous
     setup <step>` to update just one step.
-  · Drop a JSON file at ~/.config/monad/setup-answers.json and run
-    `monad setup --non-interactive` to deploy without prompts.
+  · Drop a JSON file at ~/.config/elanous/setup-answers.json and run
+    `elanous setup --non-interactive` to deploy without prompts.

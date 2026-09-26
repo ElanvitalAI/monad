@@ -157,7 +157,7 @@ function runGit(cwd: string, ...args: string[]): void {
   if (r.status !== 0) throw new Error(`git ${args.join(' ')} failed`);
 }
 
-const tmpRoot = join(tmpdir(), `monad-file-index-${process.pid}-${Date.now()}`);
+const tmpRoot = join(tmpdir(), `elanous-file-index-${process.pid}-${Date.now()}`);
 
 beforeAll(() => {
   mkdirSync(tmpRoot, { recursive: true });
@@ -212,7 +212,7 @@ describe('loadFileList — git mode', () => {
 
 describe('loadFileList — walk fallback', () => {
   test('non-git dir falls back to walk', () => {
-    const plain = join(tmpdir(), `monad-walk-${process.pid}-${Date.now()}`);
+    const plain = join(tmpdir(), `elanous-walk-${process.pid}-${Date.now()}`);
     mkdirSync(plain, { recursive: true });
     writeFileSync(join(plain, 'a.ts'), '');
     mkdirSync(join(plain, 'sub'));

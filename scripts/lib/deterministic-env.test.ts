@@ -23,10 +23,10 @@ describe('prepareDeterministicChildEnvironment', () => {
     process.env.ANTHROPIC_API_KEY = 'live-secret';
     process.env.APIFY_TOKEN = 'live-token';
     process.env.OPENAI_BASE_URL = 'https://example.invalid';
-    process.env.MONAD_STATE_DIR = '/real/state';
-    process.env.MONAD_CONFIG_DIR = '/real/config';
+    process.env.ELANOUS_STATE_DIR = '/real/state';
+    process.env.ELANOUS_CONFIG_DIR = '/real/config';
 
-    const isolated = prepareDeterministicChildEnvironment('monad-deterministic-env-test-');
+    const isolated = prepareDeterministicChildEnvironment('elanous-deterministic-env-test-');
     cleanups.push(isolated.cleanup);
 
     expect(isCredentialKey('ANTHROPIC_API_KEY')).toBe(true);
@@ -35,13 +35,13 @@ describe('prepareDeterministicChildEnvironment', () => {
     expect(isolated.env.OPENAI_BASE_URL).toBe('https://example.invalid');
     expect(isolated.env.HOME).toBe(isolated.root);
     expect(isolated.env.XDG_CONFIG_HOME).toBe(`${isolated.root}/.config`);
-    expect(isolated.env.MONAD_STATE_DIR).toBe(`${isolated.root}/state`);
-    expect(isolated.env.MONAD_CONFIG_DIR).toBe(`${isolated.root}/config`);
+    expect(isolated.env.ELANOUS_STATE_DIR).toBe(`${isolated.root}/state`);
+    expect(isolated.env.ELANOUS_CONFIG_DIR).toBe(`${isolated.root}/config`);
     expect(existsSync(isolated.root)).toBe(true);
   });
 
   test('cleanup removes the per-run root and is idempotent', () => {
-    const isolated = prepareDeterministicChildEnvironment('monad-deterministic-env-test-');
+    const isolated = prepareDeterministicChildEnvironment('elanous-deterministic-env-test-');
     expect(existsSync(isolated.root)).toBe(true);
     isolated.cleanup();
     isolated.cleanup();
@@ -49,9 +49,9 @@ describe('prepareDeterministicChildEnvironment', () => {
   });
 
   test('cleanup retries after a removal failure', () => {
-    const root = mkdtempSync(join(tmpdir(), 'monad-deterministic-env-retry-'));
+    const root = mkdtempSync(join(tmpdir(), 'elanous-deterministic-env-retry-'));
     let calls = 0;
-    const isolated = prepareDeterministicChildEnvironment('monad-deterministic-env-test-', {
+    const isolated = prepareDeterministicChildEnvironment('elanous-deterministic-env-test-', {
       mkdtempSync: (_prefix: string) => root,
       rmSync: (path, options) => {
         calls += 1;
@@ -68,7 +68,7 @@ describe('prepareDeterministicChildEnvironment', () => {
 
   test('throws on preparation failure instead of returning the parent environment', () => {
     process.env.ANTHROPIC_API_KEY = 'parent-secret';
-    expect(() => prepareDeterministicChildEnvironment('monad-deterministic-env-test-', {
+    expect(() => prepareDeterministicChildEnvironment('elanous-deterministic-env-test-', {
       mkdtempSync: () => { throw new Error('cannot create isolated root'); },
     })).toThrow('cannot create isolated root');
   });

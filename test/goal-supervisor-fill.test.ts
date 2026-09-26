@@ -25,7 +25,7 @@ function goal(): string {
 
 const productionGateLog = [
   '[test] PASS bun test test/goal-supervisor-fill.test.ts — 12 pass | 0 fail',
-  '[cli-smoke] PASS bun bin/monad.mjs --help —',
+  '[cli-smoke] PASS bun bin/elanous.mjs --help —',
   '',
   '[gate-baseline] introduced=0, preexisting=0, unknown=0, precondition-unmet=0',
 ].join('\n');

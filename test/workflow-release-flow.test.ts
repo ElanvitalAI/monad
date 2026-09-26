@@ -56,7 +56,7 @@ describe('release-flow — runtime: approve path', () => {
         if (body.includes('git describe')) {
           return { stdout: '## Last tag: v1.0\n\n## Commits since v1.0\n- abc123 feat: thing', stderr: '', exitCode: 0 };
         }
-        if (body.includes('MONAD_RELEASE_VERSION')) {
+        if (body.includes('ELANOUS_RELEASE_VERSION')) {
           cutBody = body;
           return { stdout: 'release=tagging version=v2026.05.08-1430\nrelease=gh_release_will_be_created', stderr: '', exitCode: 0 };
         }
@@ -69,7 +69,7 @@ describe('release-flow — runtime: approve path', () => {
       deps,
     );
     expect(r.ok).toBe(true);
-    expect(cutBody).toContain('MONAD_RELEASE_VERSION');
+    expect(cutBody).toContain('ELANOUS_RELEASE_VERSION');
     expect(cutBody).toContain('approved');
   });
 });
@@ -84,7 +84,7 @@ describe('release-flow — runtime: reject path', () => {
         if (body.includes('git describe')) {
           return { stdout: 'history', stderr: '', exitCode: 0 };
         }
-        if (body.includes('MONAD_RELEASE_VERSION')) {
+        if (body.includes('ELANOUS_RELEASE_VERSION')) {
           cutOutput = body;
           return { stdout: 'release=aborted reason=user_rejected', stderr: '', exitCode: 0 };
         }
@@ -110,7 +110,7 @@ describe('release-flow — trigger isolation', () => {
       'build workflow', 'new workflow', '워크플로우 만들어줘', 'workflow builder',
       'morning briefing', "what's today", '오늘 뭐 해야 해', 'daily kickoff', "today's plan",
       'share-intake', 'process this', 'intake', '이거 처리해줘', '공유 처리',
-      'voice quick task', 'voice memo', 'monad capture', '음성 받아 적어', 'remember this voice',
+      'voice quick task', 'voice memo', 'elanous capture', '음성 받아 적어', 'remember this voice',
       'research deep', 'deep dive', 'deep research', '리서치 딥', '백그라운드 조사',
       'daily standup', 'standup recap', 'EoD recap', '오늘 마감', '야근전 정리',
       'commute digest', 'leaving home', '출퇴근 정리', '운전 준비', 'transit brief',
@@ -131,7 +131,7 @@ describe('release-flow — router cascade', () => {
     const prevCwd = process.cwd();
     process.chdir(tmpDir);
     try {
-      mkdirSync(join(tmpDir, '.monad', 'workflows'), { recursive: true });
+      mkdirSync(join(tmpDir, '.elanous', 'workflows'), { recursive: true });
       let llmCalls = 0;
       const fakeLLM: RouterLLMCaller = async () => { llmCalls += 1; return ''; };
       const r = await routeWorkflow(

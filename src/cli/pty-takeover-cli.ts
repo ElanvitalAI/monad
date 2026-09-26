@@ -141,7 +141,7 @@ interface PtyLineageRoot {
 }
 
 const PTY_LINEAGE_SCOPE = 'process-lineage';
-const PTY_LINEAGE_NOTE = '이 런에 누가 참가했는지는 monad self participants가 답합니다.';
+const PTY_LINEAGE_NOTE = '이 런에 누가 참가했는지는 elanous self participants가 답합니다.';
 
 interface PtyLineageResult {
   readonly scope: typeof PTY_LINEAGE_SCOPE;
@@ -560,8 +560,8 @@ const liveDeps: PtyTakeoverCommandDeps = {
       (event, data) => debug.log('pty.takeover', event, data),
     );
   },
-  // ⚠️ 관측 갭 봉합 — `monad pty` 는 독립 CLI 프로세스라 데몬의 StoreSink 를 상속하지 않는다. 등록 없이는
-  //    아래 `log`(=`debug.log('pty.takeover', …)`)가 **파일 트레일에만** 남아 `monad logs --category
+  // ⚠️ 관측 갭 봉합 — `elanous pty` 는 독립 CLI 프로세스라 데몬의 StoreSink 를 상속하지 않는다. 등록 없이는
+  //    아래 `log`(=`debug.log('pty.takeover', …)`)가 **파일 트레일에만** 남아 `elanous logs --category
   //    pty.takeover` 로 안 보였다(= 관측 안 한 것). 인가 거부 사유가 조회되지 않으면 이 슬라이스는
   //    진단 자체가 불가능하다. fail-open — 등록이 실패해도 명령은 그대로 돈다.
   async registerObservationSink() {
@@ -599,9 +599,9 @@ function resolveId(ref: string, action: string, deps: PtyTakeoverCommandDeps): s
   if (resolved.reason === 'ambiguous') return { exitCode: 1, message: `pty: ambiguous ref ${ref}; candidates: ${resolved.candidates.map((x) => x.id).join(', ')}` };
   const dead = deadPtyRef(ref, addressBook);
   if (dead) return { exitCode: 1, message: deadPtyMessage(action, ref, dead) };
-  if (ref.startsWith('agent:')) return { exitCode: 1, message: `pty: ${ref} is a participant without a PTY and cannot be controlled by this command; inspect it via the observatory list or monad logs` };
+  if (ref.startsWith('agent:')) return { exitCode: 1, message: `pty: ${ref} is a participant without a PTY and cannot be controlled by this command; inspect it via the observatory list or elanous logs` };
   const count = addressBook.refs.length;
-  return { exitCode: 1, message: `pty: ${ref} was not found in the current instance address book (${count} live PTY ref${count === 1 ? '' : 's'}); inspect all registered instances with monad pty list --all --include-test` };
+  return { exitCode: 1, message: `pty: ${ref} was not found in the current instance address book (${count} live PTY ref${count === 1 ? '' : 's'}); inspect all registered instances with elanous pty list --all --include-test` };
 }
 function unreachableMessage(action: string, ptyId: string, deps: PtyTakeoverCommandDeps): PtyTakeoverCommandResult {
   if (!deps.readAddressBook) return { exitCode: 1, message: `pty ${action}: owner for ${ptyId} is unreachable` };
@@ -1245,7 +1245,7 @@ type PtyPathInspector = (path: string) => void;
  *  ⛔ 세 값이다. 「못 봤다」를 「없다」로 접으면 권한 오류인 «진짜 저장소»가 not-git-worktree 로 둔갑한다. */
 type PtyGitEntryProbeResult = 'present' | 'absent' | 'unknown';
 type PtyGitEntryProbe = (workdir: string) => PtyGitEntryProbeResult;
-const GOAL_PROVENANCE_KEYS = ['monad.harness.goalId', 'monad.harness.goalFile', 'monad.harness.goalTitle'] as const;
+const GOAL_PROVENANCE_KEYS = ['elanous.harness.goalId', 'elanous.harness.goalFile', 'elanous.harness.goalTitle'] as const;
 
 /** ⛔⭐ git 의 «탐색 정책»을 바꾸는 환경변수들. 이것들이 상속되면 git 은 이 파일의 probe 와
  *  «다른 규칙»으로 저장소를 찾고, 그 순간 「저장소가 아니다」와 「못 읽었다」의 판정이 어긋난다.
@@ -1377,7 +1377,7 @@ function formatPtyWorktreeProvenance(raw: PtyWorktreeProvenance): string {
 function terminalOriginFields(row: Pick<PtyManifestRow, 'terminalOriginCategory' | 'terminalOriginReason' | 'externalToolName'>): { readonly terminalOriginCategory: NonNullable<PtyManifestRow['terminalOriginCategory']>; readonly terminalOriginReason: string; readonly externalToolName?: string } {
   const category = row.terminalOriginCategory;
   const reason = row.terminalOriginReason;
-  if ((category === 'direct-human' || category === 'monad' || category === 'external-tool' || category === 'unknown') && reason) {
+  if ((category === 'direct-human' || category === 'elanous' || category === 'external-tool' || category === 'unknown') && reason) {
     return { terminalOriginCategory: category, terminalOriginReason: reason, ...(category === 'external-tool' && row.externalToolName ? { externalToolName: row.externalToolName } : {}) };
   }
   return { terminalOriginCategory: 'unknown', terminalOriginReason: 'legacy-or-malformed-origin-decision' };
@@ -1396,7 +1396,7 @@ function remoteTerminalOriginFields(row: RemoteTerminalListItem): {
 } {
   const category = row.terminalOriginCategory;
   const reason = row.terminalOriginReason;
-  if ((category === 'direct-human' || category === 'monad' || category === 'external-tool' || category === 'unknown') && reason) {
+  if ((category === 'direct-human' || category === 'elanous' || category === 'external-tool' || category === 'unknown') && reason) {
     return { terminalOriginCategory: category, terminalOriginReason: reason, ...(category === 'external-tool' && row.externalToolName ? { externalToolName: row.externalToolName } : {}) };
   }
   return { terminalOriginCategory: 'unknown', terminalOriginReason: 'remote-origin-not-reported' };
@@ -1602,7 +1602,7 @@ function parseRemoteTerminalItem(value: unknown): RemoteTerminalListItem | null 
     //      그러면 저쪽이 «칸을 보냈는데 값이 비었다」와 «칸을 아예 안 보냈다」가 같은 산출이 된다.
     //      리뷰 must-fix 로 잡혔고, 그 전 시험은 이 파서를 «우회»해서 못 잡았다.
     ...(typeof row.workdir === 'string' ? { workdir: row.workdir } : {}),
-    ...(originCategory === 'direct-human' || originCategory === 'monad' || originCategory === 'external-tool' || originCategory === 'unknown'
+    ...(originCategory === 'direct-human' || originCategory === 'elanous' || originCategory === 'external-tool' || originCategory === 'unknown'
       ? { terminalOriginCategory: originCategory }
       : {}),
     ...(stringOrUndefined(row.terminalOriginReason) ? { terminalOriginReason: stringOrUndefined(row.terminalOriginReason) } : {}),
@@ -1676,8 +1676,8 @@ function ptyBookmarkError(command: string | undefined, named: string | undefined
   return {
     exitCode: 1,
     message: named
-      ? `${prefix}--remote ${named}: unknown bookmark. Run \`monad nexus list\` to see available remotes.`
-      : `${prefix}no default remote bookmark. Run \`monad nexus connect <host> --default\` to set one.`,
+      ? `${prefix}--remote ${named}: unknown bookmark. Run \`elanous nexus list\` to see available remotes.`
+      : `${prefix}no default remote bookmark. Run \`elanous nexus connect <host> --default\` to set one.`,
   };
 }
 

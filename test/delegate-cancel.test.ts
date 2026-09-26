@@ -1,5 +1,5 @@
 // /cancel wiring for the NL delegate — the piece that lets a user stop an
-// in-flight `delegate_code_agent` (which blocks monad's brain via
+// in-flight `delegate_code_agent` (which blocks elanous's brain via
 // clientSessionSend) instead of killing processes.
 //
 // Two halves:

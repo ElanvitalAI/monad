@@ -53,7 +53,7 @@ import { registerSetupCommand } from './cli/setup-cli.js';
 // time by several config-touching imports below, so the override
 // has to be live before they fire. `--test-state-dir` is an internal
 // flag bg-launch'd children receive to inherit the parent's
-// `setTestStateRoot()` (replaces the removed MONAD_NEXUS_DIR env
+// `setTestStateRoot()` (replaces the removed ELANOUS_NEXUS_DIR env
 // inheritance · 2026-05-13 config-dir-unify).
 applyTestStateDirFlagFromArgv();
 // ★ 전역 `--test` (P2 · 2026-07-26) — 사람/에이전트용 공개 입구. 위 두 내부 플래그와 같은
@@ -119,7 +119,7 @@ import { stdin as procStdin, stdout as procStdout } from 'node:process';
 /** ⛔⭐⭐ **되돌림 지뢰**(`[T]` 실측 2026-08-07) — 지금 **부르는 데가 없다**(정의 한 줄뿐).
  *  위험은 죽은 코드라는 점이 아니라, ***누군가 「이미 있으니」 하고 자식 경로 폴백에 배선하는 순간
  *  `canReceiveInput: false` 계약이 «조용히» 거짓이 된다***는 데 있다
- *  (`self-implement/headless-monad-driver.ts` 의 `canReceiveInput` 주석이 그 계약의 canonical).
+ *  (`self-implement/headless-elanous-driver.ts` 의 `canReceiveInput` 주석이 그 계약의 canonical).
  *  ⇒ 배선하려면 그 계약을 «같이» 고쳐라. 아니면 지워라. */
 async function readStdinLine(prompt: string = ''): Promise<string> {
   // Pass the prompt directly to rl.question so readline's terminal
@@ -243,7 +243,7 @@ export function assembleAskLaunchPolicy(selection: {
   };
 }
 
-/** ⛔⭐⭐ 이 흐름은 ***`monad harness say` 전용***이다(`dev --say` 는 :6199 의 «다른» 자리를 쓴다).
+/** ⛔⭐⭐ 이 흐름은 ***`elanous harness say` 전용***이다(`dev --say` 는 :6199 의 «다른» 자리를 쓴다).
  *  📏 2026-08-23 실측: 그래서 한 발사가 ***두 이름***을 남겼다 —
  *    저작 단계(`ask-launch`·`harness.entrance`)는 `cli-dev-ask` · 발사 단계(`selection`)만 `cli-harness-say`.
  *  🔑 ⇒ ***「그 문이 몇 번 쓰였나」를 저작 축에서 세면 «남의 계정»으로 흐른다.***
@@ -608,7 +608,7 @@ async function runDevAskFromAskFile(askPath: string, opts: HarnessAskSayChildLlm
 
 async function runDevAskFromGoalFile(goalPath: string, opts: HarnessAskSayChildLlmOptions = {}): Promise<void> {
   // ⭐⛔ 런 신원은 «저작 «전»» 에 정한다 — `ensureRunIdentity` 는 mint-once 라 뒤의 호출은 `inherited` 를 받는다.
-  //   기전: `debug.log` 는 `process.env.MONAD_RUN_ID` 가 «그 순간» 서 있을 때만 `data.runId` 를 찍는다
+  //   기전: `debug.log` 는 `process.env.ELANOUS_RUN_ID` 가 «그 순간» 서 있을 때만 `data.runId` 를 찍는다
   //   (src/debug/log.ts enrichDebugRecord). 그래서 mint 가 늦으면 그 «앞» 로그가 런에 안 묶인다.
   //   📏 실측 2026-09-02 (prod 전수 · surface=harness): mint 뒤인 `self-implement` 1566/1640 · `harness.boundary`
   //      136/136 은 찍혔고, mint «앞»인 `goal-author` 0/120 · `llm.request` 0/133 은 «하나도» 안 찍혔다
@@ -710,7 +710,7 @@ async function runDevAskFromGoalFile(goalPath: string, opts: HarnessAskSayChildL
   if (!ok) runDevAskFromGoalFileDeps.setExitCode(2);
 }
 
-/** ⭐ `monad harness plan` — `say` 와 «같은 저작 흐름»을 타고 ***plan-staged dispatch*** 로 간다.
+/** ⭐ `elanous harness plan` — `say` 와 «같은 저작 흐름»을 타고 ***plan-staged dispatch*** 로 간다.
  *  ⛔⭐ `say` 를 복제하지 «않는다» — 다른 것은 ***`plan: true` 한 칸***뿐이고 나머지는 그 함수를 그대로 쓴다.
  *    (오늘 접기 축이 계속 가르친 것: ***같은 판단의 두 번째 구현을 만들지 않는다***.)
  *  📏 각인은 흐름마다 자기 등기 식별자를 쓴다: `plan`은 `cli-harness-plan`, `say`는 `cli-harness-say`.
@@ -727,7 +727,7 @@ async function runDevSayFromWords(
   internal: { readonly planStaged?: boolean } = {},
 ): Promise<void> {
   // ⭐⛔ 런 신원은 «저작 «전»» 에 정한다 — `ensureRunIdentity` 는 mint-once 라 뒤의 호출은 `inherited` 를 받는다.
-  //   기전: `debug.log` 는 `process.env.MONAD_RUN_ID` 가 «그 순간» 서 있을 때만 `data.runId` 를 찍는다
+  //   기전: `debug.log` 는 `process.env.ELANOUS_RUN_ID` 가 «그 순간» 서 있을 때만 `data.runId` 를 찍는다
   //   (src/debug/log.ts enrichDebugRecord). 그래서 mint 가 늦으면 그 «앞» 로그가 런에 안 묶인다.
   //   📏 실측 2026-09-02 (prod 전수 · surface=harness): mint 뒤인 `self-implement` 1566/1640 · `harness.boundary`
   //      136/136 은 찍혔고, mint «앞»인 `goal-author` 0/120 · `llm.request` 0/133 은 «하나도» 안 찍혔다
@@ -920,20 +920,20 @@ registerModelWatchCommand(program);
 registerDoctorCommand(program);
 registerSetupCommand(program);
 
-const pythonCmd = program.command('python').description('monad 가 쓰는 파이썬(해석 · 점검 · monad venv 셋업) — RFC-doctor-fix-build-toolchain-and-python-by-distro');
-pythonCmd.command('where').description('어느 파이썬을 쓰나(MONAD_PYTHON > monad venv > pyenv .python-version > PATH)').option('--json').option('--path', '경로만 한 줄(스크립트·스킬용)').action(async (o: { json?: boolean; path?: boolean }) => {
+const pythonCmd = program.command('python').description('elanous 가 쓰는 파이썬(해석 · 점검 · elanous venv 셋업) — RFC-doctor-fix-build-toolchain-and-python-by-distro');
+pythonCmd.command('where').description('어느 파이썬을 쓰나(ELANOUS_PYTHON > elanous venv > pyenv .python-version > PATH)').option('--json').option('--path', '경로만 한 줄(스크립트·스킬용)').action(async (o: { json?: boolean; path?: boolean }) => {
   const { runPythonWhere } = await import('./cli/python-cli.js'); process.exitCode = runPythonWhere(console, o.json, o.path);
 });
 pythonCmd.command('check').description('python-env 준비 상태(버전 · venv · 선언 모듈 import) — exit 0 ok · 10 fixable · 2 manual').option('--extra', '선택 의존성도 본다').option('--json').action(async (o: { extra?: boolean; json?: boolean }) => {
   const { runPythonCheck } = await import('./cli/python-cli.js'); process.exitCode = runPythonCheck(o);
 });
-pythonCmd.command('setup').description('monad venv(~/.local/share/monad/python/venv · --system-site-packages)를 만들고 선언 의존성을 설치 — 기본 = 계획만').option('--yes', '적용').option('--extra', '선택 의존성도 설치').action(async (o: { yes?: boolean; extra?: boolean }) => {
+pythonCmd.command('setup').description('elanous venv(~/.local/share/elanous/python/venv · --system-site-packages)를 만들고 선언 의존성을 설치 — 기본 = 계획만').option('--yes', '적용').option('--extra', '선택 의존성도 설치').action(async (o: { yes?: boolean; extra?: boolean }) => {
   const { runPythonSetup } = await import('./cli/python-cli.js'); process.exitCode = runPythonSetup(o);
 });
 
 program.command('self-update')
   .alias('update')
-  .description('설치본은 릴리스로, 체크아웃은 깨끗한 체크아웃으로 갱신하고 승인 시 넥서스 재시작 · `monad update` 와 같다 · `--auto on` 이면 매일 자동')
+  .description('설치본은 릴리스로, 체크아웃은 깨끗한 체크아웃으로 갱신하고 승인 시 넥서스 재시작 · `elanous update` 와 같다 · `--auto on` 이면 매일 자동')
   .option('--from <checkout>', '설치할 체크아웃 (기본: 설치본은 릴리스, 체크아웃은 현재 체크아웃)')
   .option('--version <version>', '설치본에서 지정한 릴리스 버전 설치 (기본: latest)')
   .option('--restart', '넥서스 재시작 승인')
@@ -957,32 +957,32 @@ program.command('self-update')
   });
 
 program
-  .name('monad')
+  .name('elanous')
   .description('TUI skill runner — Yazi-style 3-pane + multi-LLM, with remote sync, smart diff, and SQLite logging')
   .version(cliVersion())
   // Documentation-only entry — the flag is extracted from argv by
   // `applyConfigDirFlagFromArgv` at module init (above) so Commander
   // never actually sees it. The `.option()` call is here purely so
-  // `monad --help` surfaces it to users.
+  // `elanous --help` surfaces it to users.
   .option(
     '--config-dir <dir>',
-    'Override the monad config / daemon root directory (default ~/.monad). Pass at any position — works at the global or subcommand level. Replaces the legacy MONAD_DAEMON_DIR env var.',
+    'Override the elanous config / daemon root directory (default ~/.elanous). Pass at any position — works at the global or subcommand level. Replaces the legacy ELANOUS_DAEMON_DIR env var.',
   )
   // Documentation-only — `resolveRemoteAttach`/`stripRemoteFlags` 가 commander «전»에
   // argv 에서 걷어내므로 Commander 는 이 옵션을 «보지 못한다». 여기 선언하는 이유는
-  // ⭐ ***`monad --help` 에 «보이게» 하기 위해서***다(리뷰 지적: 새 진입점인데 발견 불가였다).
+  // ⭐ ***`elanous --help` 에 «보이게» 하기 위해서***다(리뷰 지적: 새 진입점인데 발견 불가였다).
   // ⛔ `-r` 은 값을 받지 않는다 — 이름을 대려면 `--remote <name>`.
   //    (`[name]` 으로 선언하는 것은 도움말에 긴 형태의 값 자리를 보이기 위해서다.)
   .option(
     '-r, --remote [name]',
-    '원격 북마크로 붙는다. `-r` 만 쓰면 default 북마크(값을 받지 않는다), 이름을 대려면 `--remote <name>`. 처음 1회 `monad nexus connect <host> --default`.',
+    '원격 북마크로 붙는다. `-r` 만 쓰면 default 북마크(값을 받지 않는다), 이름을 대려면 `--remote <name>`. 처음 1회 `elanous nexus connect <host> --default`.',
   )
   // Documentation-only — extracted from argv by `applyTestFlagFromArgv` at module
   // init (above) before Commander sees it. Commands that declare their own
   // `--test` keep owning it (see OWNED_TEST_FLAG_PATHS).
   .option(
     '--test',
-    '격리 테스트 인스턴스로 실행 — cwd 의 git 트리(worktree 포함)에서 `<트리>/.monad-test` 를 루트로 잡고 state·config 두 축을 함께 격리한다. config 사본이 없으면 자동 물질화. `--test=<dir>` 로 루트 직접 지정 가능(값 문법은 `=` 형태 하나 — 모호함 없음). MONAD_STATE_DIR/--config-dir 을 손으로 줄 필요가 없다.',
+    '격리 테스트 인스턴스로 실행 — cwd 의 git 트리(worktree 포함)에서 `<트리>/.elanous-test` 를 루트로 잡고 state·config 두 축을 함께 격리한다. config 사본이 없으면 자동 물질화. `--test=<dir>` 로 루트 직접 지정 가능(값 문법은 `=` 형태 하나 — 모호함 없음). ELANOUS_STATE_DIR/--config-dir 을 손으로 줄 필요가 없다.',
   );
 
 program
@@ -995,20 +995,20 @@ program
 
 // ── mcp command — stdio MCP server / client integration (B 트랙 #2474) ──
 //
-// `monad mcp serve` runs a stdio JSON-RPC 2.0 MCP server in this
+// `elanous mcp serve` runs a stdio JSON-RPC 2.0 MCP server in this
 // process so external MCP clients (Claude Code · Cursor · Codex)
-// can call into monad's ToolRuntime registry — including the
+// can call into elanous's ToolRuntime registry — including the
 // proxy tools from the *active universe's* config `mcp.servers`
 // (e.g. xcrun mcpbridge · getsentry/xcodebuildmcp).
 //
-// ⛔ NOT hardcoded to `~/.monad/config.json`. `getUserConfig()` →
-// `getMonadConfigDir()` → `effectiveInstanceRoot()`, so prod, test
+// ⛔ NOT hardcoded to `~/.elanous/config.json`. `getUserConfig()` →
+// `getElanousConfigDir()` → `effectiveInstanceRoot()`, so prod, test
 // and tree-derived universes each resolve their own file. Measured
 // 2026-08-20: a fake universe's canary server is the only one this
 // command sees. The old wording named the prod path and made
 // readers conclude — backwards — that MCP ignores isolation.
 // This is the S-5
-// (Relay) wire described in RFC §5.5: Claude Code → monad → external
+// (Relay) wire described in RFC §5.5: Claude Code → elanous → external
 // MCP server → tool result back to Claude Code.
 //
 // Architecture (Phase 3 closure piece · 2026-05-13):
@@ -1033,7 +1033,7 @@ const mcpCmd = program
 
 mcpCmd
   .command('serve')
-  .description('Run a stdio MCP server exposing the configured mcp.servers as proxy tools (used by `claude mcp add monad -- monad mcp serve`)')
+  .description('Run a stdio MCP server exposing the configured mcp.servers as proxy tools (used by `claude mcp add elanous -- elanous mcp serve`)')
   .action(async () => {
     const { getUserConfig } = await import('./user-config.js');
     const { registerMcpClients } = await import('./nexus/boot/register-mcp-clients.js');
@@ -1070,7 +1070,7 @@ mcpCmd
     });
   });
 
-// `monad mcp diagnose [id]` — PR3 (D · 2026-05-13). Single-shot
+// `elanous mcp diagnose [id]` — PR3 (D · 2026-05-13). Single-shot
 // reproduction of the boot-time `initialize` + `tools/list` handshake
 // against one (or every enabled) MCP server in user-config. Useful
 // when daemon-side boot hangs but a manual `echo … | <bin>` answers
@@ -1091,7 +1091,7 @@ mcpCmd
 
 mcpCmd
   .command('reload')
-  .description('Re-read user-config and rebuild the running daemon\'s MCP clients — no daemon restart. Use after editing mcp.servers[] or `monad mcp login`.')
+  .description('Re-read user-config and rebuild the running daemon\'s MCP clients — no daemon restart. Use after editing mcp.servers[] or `elanous mcp login`.')
   .option('--nexus-url <url>', 'NEXUS base URL. Default http://127.0.0.1:31415.')
   .option('--timeout <ms>', 'Deadline for the reload request.', (v) => Number.parseInt(v, 10))
   .action(async (opts: { nexusUrl?: string; timeout?: number }) => {
@@ -1164,7 +1164,7 @@ program
   .command('telegram-test')
   .description('Standalone TEST telegram bot (separate token) — full Q&A/HITL/delegate path with ISOLATED state, WITHOUT touching the production daemon. Restart THIS process to test code changes; the live daemon stays up.')
   .option('--token <token>', 'override the config token (default: telegram.testChannel.botToken)')
-  .option('--state-dir <dir>', 'isolated state dir (default ~/.monad/telegram-test)')
+  .option('--state-dir <dir>', 'isolated state dir (default ~/.elanous/telegram-test)')
   .option('--allow <ids>', 'comma-separated allowed telegram user ids (default: testChannel.allowedUsers or main allowlist)')
   .option('--reset', 'wipe the isolated state dir before starting (fresh test)')
   .action(async (opts: { token?: string; stateDir?: string; allow?: string; reset?: boolean }) => {
@@ -1219,7 +1219,7 @@ telegramCmd
     }
     console.log(`# 놓을 자리: ${file.path}`);
     console.log('# ⛔ 이 명령은 파일을 쓰지 않았다. 켜기 전에 RFC-nexus-restart-minimization §R2 «켜기 전 볼 것»을 본다.');
-    console.log(`# 켜는 명령(사람이 친다): ${file.enable.join(' && ')}  ⊕ monad config set telegram.poller standalone`);
+    console.log(`# 켜는 명령(사람이 친다): ${file.enable.join(' && ')}  ⊕ elanous config set telegram.poller standalone`);
     console.log(file.content);
   });
 
@@ -1228,7 +1228,7 @@ program
   .description('Standalone TEST discord session (SAME app/token, scoped to discord.testChannel.channelId) with ISOLATED state, WITHOUT touching the production daemon. Restart THIS process to test code changes; the live daemon stays up.')
   .option('--token <token>', 'override the token (default: discord.testChannel.botToken → discord.botToken)')
   .option('--channel <id>', 'override the test channel snowflake (default: discord.testChannel.channelId)')
-  .option('--state-dir <dir>', 'isolated state dir (default ~/.monad/discord-test)')
+  .option('--state-dir <dir>', 'isolated state dir (default ~/.elanous/discord-test)')
   .option('--allow <ids>', 'comma-separated allowed discord user ids (default: testChannel.allowedUsers or main allowlist)')
   .option('--reset', 'wipe the isolated state dir before starting (fresh test)')
   .action(async (opts: { token?: string; channel?: string; stateDir?: string; allow?: string; reset?: boolean }) => {
@@ -1352,7 +1352,7 @@ function parseToolCountSpec(
 
 const REPRO_RETIREMENT_NOTICE = [
   'repro is retired and no longer runs an LLM evaluation loop.',
-  'Use monad attach --message <prompt> for live tool verification.',
+  'Use elanous attach --message <prompt> for live tool verification.',
   'Supported assertions: --assert-tool-min, --assert-tool-max, --assert-text-contains.',
 ].join('\n');
 
@@ -1456,7 +1456,7 @@ autopilotCmd
   .option('-i, --max-iterations <n>', 'Max loop iterations', '1')
   .option('-w, --max-wallclock-ms <ms>', 'Wall-clock budget in milliseconds', '0')
   .option('-c, --max-output-chars <n>', 'Cumulative output character budget (token proxy)', '0')
-  .option('-d, --cwd <path>', 'Working directory for the spawned backend (default: monad session cwd)')
+  .option('-d, --cwd <path>', 'Working directory for the spawned backend (default: elanous session cwd)')
   .option('-v, --verbose', 'Mirror ACP subprocess log lines to stderr')
   .option('-p, --auto-plan', 'Parse mission numbered/bulleted list into AutopilotPlan (D1.4b heuristic · no LLM)')
   .action(async (
@@ -1597,7 +1597,7 @@ memCmd
     const t = type as MemoryType | undefined;
     const entries = listMemories({ type: t, limit: parseInt(opts?.limit ?? '30', 10) });
     if (entries.length === 0) {
-      ui.info('No memories yet. Add one with `monad memory add <type> "<name>" "<description>"`.');
+      ui.info('No memories yet. Add one with `elanous memory add <type> "<name>" "<description>"`.');
       return;
     }
     ui.header(`memories (${entries.length})`);
@@ -1755,7 +1755,7 @@ memCmd
     console.log(`index file   ${memoryIndexPath()}`);
   });
 
-// ── self (self-awareness memory — 외부 도구가 monad 구현 이력을 주입/회상) ──
+// ── self (self-awareness memory — 외부 도구가 elanous 구현 이력을 주입/회상) ──
 // ── decide (Jev · System One — ⛔ 텍스트를 «생성하지 않는다». 확률이 붙은 판정만 받는다) ──
 program
   .command('decide <question>')
@@ -2185,7 +2185,7 @@ harnessCmd
         ? (await import('./skills/tools/solve-mission.js')).dispatchSolveMission
         : dispatchRunDevHarness;
       // ★ 진행 릴레이 — 하니스 진행(ux.progress→emitFeedback)을 stdout `PROGRESS:` 로 내보내면 데몬이
-      //   읽어 surface(telegram)로 relay(라이브 카드). MONAD_HARNESS_DETACHED=1 이라 재위임 안 함.
+      //   읽어 surface(telegram)로 relay(라이브 카드). ELANOUS_HARNESS_DETACHED=1 이라 재위임 안 함.
       // ★ #24 완결 — off/safe HITL 릴레이: 자식의 confirm/question 을 IPC-백드 채널로 만들어 ctx 에
       //   심는다. ux.confirm/question(surfaceUxFromDispatchCtx)이 무변경으로 이 채널을 race → stdout
       //   `HITLREQ:` emit → 부모가 진짜 채널로 물어 stdin `HITLRES:` 회신 → resolve. 부모가 relay 를
@@ -2328,7 +2328,7 @@ harnessCmd
     // ⛔⭐ 은퇴 안내가 «검증된 문»을 지목해야 한다 — 2026-08-31 실측: 여기가 `dev --ask` 를 가리켰고
     //   레지스트리는 그 문의 legacyParity 를 ***'unknown'*** 으로, `harness ask` 는 ***'verified'*** 로 둔다.
     //   ⇒ 은퇴 안내가 「덜 검증된 문」으로 보내고 있었다. `harness ask` 가 골 문서를 받는 «대응 문»이다.
-    'monad harness ask <골문서>',
+    'elanous harness ask <골문서>',
     'Telegram/TUI 없이 dev-harness P→E→R→D를 headless로 실행(auto-approve). ⚠️ target은 시스템 temp 하위(throwaway)만 — auto-approve가 apply-in-place HITL을 우회하므로 실경로는 거부(실 대상은 RunDevHarness로 HITL 유지). shadow-stage·gate·backup/apply 재사용·--config-dir 격리 상속.',
   ))
   .action(async () => {
@@ -2344,7 +2344,7 @@ harnessCmd
 harnessCmd
   .command('run <objective...>', { hidden: true })
   .description(HARNESS_RUN_DEPRECATION_HELP)
-  .option('--target <path>', "타깃 repo/경로(기본 'self'=monad 자신)")
+  .option('--target <path>', "타깃 repo/경로(기본 'self'=elanous 자신)")
   .option('--auto-drive <mode>', 'off|safe|on (기본 자연어 추론)')
   .option('--auto-review', '★ G8/G9 — 열린 PR 에 auto-review opt-in 라벨 부착(작업 위험도 자기판단·외부배포/실주문/설계분기/파괴/보안 거부). 붙으면 L3 폴러가 무인 완결(rework→심판→머지). 개발 라인(self implement/orchestrate --auto-review)과 대칭.')
   .option('--base <ref>', '분기 base ref')
@@ -2529,7 +2529,7 @@ harnessCmd
     const { readTrajectory, describeTrajectory } = await import('./harness/browser-act-trajectory.js');
     const args = ['logs', '--category', 'harness.browser-act', '--all', '--include-test',
       '--since', opts.since, '--limit', opts.limit, '--json'];
-    const proc = Bun.spawnSync([process.execPath, new URL('../bin/monad.mjs', import.meta.url).pathname, ...args],
+    const proc = Bun.spawnSync([process.execPath, new URL('../bin/elanous.mjs', import.meta.url).pathname, ...args],
       { stdout: 'pipe', stderr: 'pipe' });
     const result = readTrajectory(new TextDecoder().decode(proc.stdout), {
       ...(opts.persona === undefined ? {} : { personaId: opts.persona }),
@@ -2585,7 +2585,7 @@ harnessCmd
   .action(async (opts: { persona?: string; since: string; limit: string; steps?: string; tolerance: string; dryRun?: boolean }) => {
     const { readTrajectory, describeTrajectory } = await import('./harness/browser-act-trajectory.js');
     const { judgeReplayStep, summarizeReplay } = await import('./harness/browser-act-replay.js');
-    const proc = Bun.spawnSync([process.execPath, new URL('../bin/monad.mjs', import.meta.url).pathname,
+    const proc = Bun.spawnSync([process.execPath, new URL('../bin/elanous.mjs', import.meta.url).pathname,
       'logs', '--category', 'harness.browser-act', '--all', '--include-test',
       '--since', opts.since, '--limit', opts.limit, '--json'], { stdout: 'pipe', stderr: 'pipe' });
     const recorded = readTrajectory(new TextDecoder().decode(proc.stdout),
@@ -2606,7 +2606,7 @@ harnessCmd
       const now = await runHarnessBrowserAction(step.url, step.target,
         { armed: true, ...(step.personaId === null ? {} : { persona: step.personaId }), entryPoint: 'src/index.ts:harness replay' });
       // ⛔⭐⭐ 「지금」은 조작이 «자기가 본 것»으로 온다 — ***신원 조인***이다.
-      //    옛 방식은 `monad logs` 를 다시 spawn 해 «가장 최근 행»을 집었다: 그것은 조인이 아니라
+      //    옛 방식은 `elanous logs` 를 다시 spawn 해 «가장 최근 행»을 집었다: 그것은 조인이 아니라
       //    ***시간 근접***이라, 같은 창에 다른 봇(카나리아는 4대를 «동시에» 몬다)이 조작하면
       //    «남의 행»을 집었다(`personaId` 가 null 이면 아무 필터도 없었다). 400ms 잠은 «희망»이었다.
       //    ⇒ 덤: 걸음마다 하위 프로세스 2회와 그 잠이 사라진다.
@@ -2697,7 +2697,7 @@ harnessCmd
     L.push('', '▎실행 공간(space)', `  ${HARNESS_SPACE_KINDS.join(' · ')}  (role: coordinator | executor)`);
     L.push('', '▎종결상태(terminal)');
     for (const t of terminals) L.push(`  ${t.terminal.padEnd(16)} ${t.note}`);
-    L.push('', '관측: monad logs --category harness.sequencer|harness.seams|harness.frontdoor');
+    L.push('', '관측: elanous logs --category harness.sequencer|harness.seams|harness.frontdoor');
     console.log(L.join('\n'));
   });
 
@@ -2763,7 +2763,7 @@ export function buildHarnessOrchestratePlan(
   if (opts.domain !== undefined) {
     return {
       ok: false,
-      error: '`--domain`은 `harness orchestrate`에서 지원하지 않습니다. ⛔ `monad self orchestrate` 도 받지 않습니다(unknown option). 실행 도메인 축은 NL 표면의 `RunDevHarness` 툴이 갖습니다 — web|publish|invest|research|digest|skill.',
+      error: '`--domain`은 `harness orchestrate`에서 지원하지 않습니다. ⛔ `elanous self orchestrate` 도 받지 않습니다(unknown option). 실행 도메인 축은 NL 표면의 `RunDevHarness` 툴이 갖습니다 — web|publish|invest|research|digest|skill.',
       exitCode: 2,
     };
   }
@@ -2776,7 +2776,7 @@ export function buildHarnessOrchestratePlan(
   }
   const goalTexts = splitOrchestrateGoalTexts(parts);
   if (goalTexts.length === 0 && !opts.resume) {
-    return { ok: false, error: 'goal 필요: monad harness orchestrate "<goal1>" "<goal2>"', exitCode: 2 };
+    return { ok: false, error: 'goal 필요: elanous harness orchestrate "<goal1>" "<goal2>"', exitCode: 2 };
   }
   const concurrency = opts.concurrency ? Math.max(1, Number(opts.concurrency) || 2) : undefined;
   const promoteDefaults = {
@@ -3035,7 +3035,7 @@ function registerHarnessOrchestrateCapabilityOptions(command: Command): Command 
     .option('--teardown', 'S3 — 실행 후 worktree 정리(PR 개설된 잡은 항상 보존·기본 off=산출물 검토 위해 보존)')
     .option('--resume <runId>', 'S3 — 이전 run(runId) 이어서 — done 된 goal 은 건너뛰고 미완만 재실행(체크포인트 자동)')
     .option('--board', 'S3 — 라이브 칸반 보드(잡 상태 실시간 렌더·매 사이클 리드로)')
-    .option('--no-supervise', '⛔ 런 슈퍼바이저를 «끈다»(대표 2026-08-22: ***기본 ON***) — 켜져 있으면 런이 끝나면 실패를 «트리아지»해서 다시 걸 것이 있으면 «스스로» 재개한다(골루프처럼 끝까지). 정지 사유는 converged|needs-human|max-rounds|no-progress 로 각각 «다른 값»으로 말한다. 관측=monad logs --category self-dev.supervisor')
+    .option('--no-supervise', '⛔ 런 슈퍼바이저를 «끈다»(대표 2026-08-22: ***기본 ON***) — 켜져 있으면 런이 끝나면 실패를 «트리아지»해서 다시 걸 것이 있으면 «스스로» 재개한다(골루프처럼 끝까지). 정지 사유는 converged|needs-human|max-rounds|no-progress 로 각각 «다른 값»으로 말한다. 관측=elanous logs --category self-dev.supervisor')
     .option('--supervise-rounds <n>', '슈퍼바이저 재개 라운드 상한 (기본 3 · 끄려면 --no-supervise)')
     .option('--json', '구조화 출력');
 }
@@ -3049,7 +3049,7 @@ const harnessOrchestrateCmd = registerHarnessOrchestrateCapabilityOptions(
 )
   .action(async (parts: string[], opts: HarnessOrchestrateCliOpts) => {
     if (opts.domain !== undefined) {
-      ui.error('`--domain`은 `harness orchestrate`에서 지원하지 않습니다. ⛔ `monad self orchestrate` 도 받지 않습니다(unknown option). 실행 도메인 축은 NL 표면의 `RunDevHarness` 툴이 갖습니다 — web|publish|invest|research|digest|skill.');
+      ui.error('`--domain`은 `harness orchestrate`에서 지원하지 않습니다. ⛔ `elanous self orchestrate` 도 받지 않습니다(unknown option). 실행 도메인 축은 NL 표면의 `RunDevHarness` 툴이 갖습니다 — web|publish|invest|research|digest|skill.');
       process.exitCode = 2;
       return;
     }
@@ -3062,7 +3062,7 @@ const harnessOrchestrateCmd = registerHarnessOrchestrateCapabilityOptions(
     await runHarnessOrchestrateExecution(plan, parts);
   });
 
-const selfCmd = program.command('self').description('Self-awareness memory — 외부 도구(Claude Code/Codex)가 구현/변경 이력을 monad 기억에 주입·회상');
+const selfCmd = program.command('self').description('Self-awareness memory — 외부 도구(Claude Code/Codex)가 구현/변경 이력을 elanous 기억에 주입·회상');
 
 function printExtendedOrchestrateHelp(command: Command, positional = '[goals...]'): void {
   const optionLines = command.options
@@ -3110,7 +3110,7 @@ foldCommandHelpBehindHelpAll(
 //   ⛔ 종전엔 액션마다 손으로 등록했고 **15개 중 6개만** 붙어 있었다(실측 2026-07-30 · main
 //   1c527191a): `implement`·`typecheck`·`screen`·`run`·`log`·`provision`·`recall`·`capability`
 //   ·`capabilities` **9개**가 빠져 있었다. `self implement` 는 문서가 가리키는 self-build 진입점인데, 같은 파이프라인을
-//   `monad dev` 로 타면 관측되고 `self implement` 로 타면 **관측이 통째로 유실**됐다.
+//   `elanous dev` 로 타면 관측되고 `self implement` 로 타면 **관측이 통째로 유실**됐다.
 //   ⇒ 같은 결함이 이 레포에서 세 번째다(`self review` sink 가 분기 안 · `self author` #5930).
 //   **하나씩 고치는 대신 빼먹을 수 없게** 만든다. 선례 = `agentCmd.hook('preAction')`.
 //   surface 결정·중복 회피는 `selfCliSinkSurface` 가 소유하고 테스트가 잠근다.
@@ -3223,7 +3223,7 @@ selfCmd
         console.error(`checked ${missing.checkedPaths.length} paths: ${missing.checkedPaths.join('; ')}`);
         if (missing.selfDevRunFound) {
           console.error(`self-dev run checkpoint found: ${missing.selfDevRunPath}`);
-          console.error(`inspect it with: monad self participants ${runId}`);
+          console.error(`inspect it with: elanous self participants ${runId}`);
         } else {
           console.error(`self-dev run checkpoint not found: ${missing.selfDevRunPath}`);
         }
@@ -3504,7 +3504,7 @@ selfCmd
         return;
       }
       console.log(`ledger directory: ${result.ledgerDirectory}`);
-      console.log(`monad merged: ${result.monadMergedEntries.length}`);
+      console.log(`elanous merged: ${result.elanousMergedEntries.length}`);
       console.log(`handed to human (no merge attempt): ${result.handedToHumanWithoutMergeAttemptCount}`);
       for (const entry of result.handedToHumanEntries.filter((entry) => entry.branch === 'without-merge-attempt')) {
         console.log(`  PR ${entry.prNumber ?? 'unknown'} runId=${entry.runId} timestamp=${entry.timestamp} mergeReason=${entry.mergeReason ?? 'none'}`);
@@ -3698,9 +3698,9 @@ selfCmd
     //   깨뜨린다(리뷰 실측). 빈 입력 판정에만 trim 을 쓰고, 저작기에는 결합한 원문을 그대로 넘긴다.
     //   ⚠️ 셸이 인자를 이미 나눠 주므로 단어 사이 공백은 여기서 복원할 수 없다 — 정확한 원문이
     //   필요하면 따옴표로 감싸 한 인자로 준다.
-    if (!parts.join(' ').trim() && !opts.fromClarification && !opts.supersedes) { console.error('❌ ask 필요: monad self author "<goal>" 또는 --from-clarification <goalFile>#<questionId> 또는 --supersedes <goalFile>'); process.exit(2); }
+    if (!parts.join(' ').trim() && !opts.fromClarification && !opts.supersedes) { console.error('❌ ask 필요: elanous self author "<goal>" 또는 --from-clarification <goalFile>#<questionId> 또는 --supersedes <goalFile>'); process.exit(2); }
     // ⭐ 관측 sink 등록(2026-07-30) — ⛔ 이것이 없으면 저작기가 남기는 발화가 **logs.db 에 닿지
-    //   않는다**. 실측: `monad self author` 직후 `grounding.persistent`·`grounding.search` 가
+    //   않는다**. 실측: `elanous self author` 직후 `grounding.persistent`·`grounding.search` 가
     //   **양쪽 인스턴스에서 0건**이었는데, 같은 창의 A/B 는 탐색이 실제로 돈 것을 보여 줬다
     //   (정답 파일이 없음→1·2위). ⇒ "안 탔다" 가 아니라 **"관측이 안 닿았다"** 였다.
     //   같은 결함이 `self review` 에서 이미 한 번 났다(sink 등록이 분기 안에 있어 기본 경로 0건).
@@ -3813,13 +3813,13 @@ clarifyCmd
         import('./self-implement/run-ledger.js'),
         import('./self-implement/clarify-pending-triage.js'),
       ]);
-      const { findMonadRepoRoot } = await import('./code-edit/system-file-guard.js');
+      const { findElanousRepoRoot } = await import('./code-edit/system-file-guard.js');
       const dir = resolveCliDirOption(opts.dir);
       const hasRelativeDirOption = !isAbsolute(opts.dir) && process.argv.some((arg) => arg === '--dir' || arg.startsWith('--dir='));
-      const dirRepoRoot = findMonadRepoRoot(dir);
+      const dirRepoRoot = findElanousRepoRoot(dir);
       const dirIsWithinCwd = !relative(process.cwd(), dir).startsWith('..');
       // Goal-run records and pending-row paths share the repository-root basis so nested cwd and --dir invocations remain stable.
-      const goalRunBaseDirectory = dirRepoRoot ?? findMonadRepoRoot(process.cwd()) ?? process.cwd();
+      const goalRunBaseDirectory = dirRepoRoot ?? findElanousRepoRoot(process.cwd()) ?? process.cwd();
       const paths = readdirSync(dir, { withFileTypes: true })
         .filter((entry) => entry.isFile() && /^GOAL-.*\.md$/.test(entry.name))
         .map((entry) => join(dir, entry.name))
@@ -3990,7 +3990,7 @@ selfCmd
     }
   });
 
-// self implement — 외부(Claude Code/Codex/ACP)가 monad self-build 를 CLI 로 구동하는 창구.
+// self implement — 외부(Claude Code/Codex/ACP)가 elanous self-build 를 CLI 로 구동하는 창구.
 // runSelfImplement(내부 SelfImplement 툴과 동일 코어)를 감싼다: fork→worktree→헤드리스 goal-loop
 // (+클린빌드 앵커)→gate(bun test)→PR(HITL). PR-open 은 --open-pr(명시 승인)일 때만·기본 fail-closed.
 selfCmd
@@ -4002,16 +4002,16 @@ selfCmd
   .option('--auto-merge', '★ 내부 리뷰가 clean(실제 리뷰 완료·verdict≠fail)이면 자동 병합(squash). must-fix 있으면 무시(hold·rework). outward-facing(main 병합)이라 명시 opt-in. 미지정=리뷰 후 HITL/draft.')
   .option('--auto-review', '★ G8 자기판단 — PR 에 auto-review opt-in 라벨 부착(저위험·객관게이트 통과 작업만·fail-safe 거부권). 붙으면 L3 폴러(agent-mission review-watch)가 이후 리뷰를 무인 완결(rework→심판→머지). 외부배포·실주문·설계분기·파괴·보안·리뷰 must-fix 면 플래그 있어도 안 붙음.')
   .option('--max-wait <sec>', '구현(goal-loop) 최대 대기 초')
-  .option('--enhance', '★ monad 내부 프롬프트 인핸싱 ON(원문 verbatim 보존 + 커버리지 체크리스트·anti-drift). 기본 off — CLI 는 외부 창구라 external-verbatim(외부가 프롬프트 엔지니어) 존중. 켜면 monad-apparatus 로 인핸싱.')
+  .option('--enhance', '★ elanous 내부 프롬프트 인핸싱 ON(원문 verbatim 보존 + 커버리지 체크리스트·anti-drift). 기본 off — CLI 는 외부 창구라 external-verbatim(외부가 프롬프트 엔지니어) 존중. 켜면 elanous-apparatus 로 인핸싱.')
   .option('--ground', 'round-0 goal-loop 전에 codebase-only grounding을 실행해 관련 파일·export 계약을 objective에 추가(기본 off·fail-soft).')
   .option('--observe-only', 'SelfImplement 호출을 기록만 하고 self-build를 시작하지 않는다.')
   .option('--plan', '은퇴한 staged 하니스 옵션 — 호환 파싱만 유지하며 지정하면 명시적으로 거부됨.')
-  .option('--no-supervise', '⛔ 런 슈퍼바이저를 «끈다»(대표 2026-08-22: ***기본 ON***) — 켜져 있으면 실행이 끝나면 실패를 «트리아지»해서 다시 걸 수 있으면 스스로 재개한다(끝까지). 정지 사유는 converged|needs-human|max-rounds|no-progress 로 각각 «다른 값». 관측=monad logs --category self-dev.supervisor')
+  .option('--no-supervise', '⛔ 런 슈퍼바이저를 «끈다»(대표 2026-08-22: ***기본 ON***) — 켜져 있으면 실행이 끝나면 실패를 «트리아지»해서 다시 걸 수 있으면 스스로 재개한다(끝까지). 정지 사유는 converged|needs-human|max-rounds|no-progress 로 각각 «다른 값». 관측=elanous logs --category self-dev.supervisor')
   .option('--supervise-rounds <n>', '슈퍼바이저 재개 라운드 상한 (기본 3 · 끄려면 --no-supervise)')
   .option('--json', '구조화 출력 {stage, ok, branch, worktree, prUrl?, merged?}')
   .action(async (parts: string[], opts: { base?: string; draft?: boolean; openPr?: boolean; autoMerge?: boolean; autoReview?: boolean; maxWait?: string; json?: boolean; plan?: boolean; enhance?: boolean; ground?: boolean; observeOnly?: boolean }) => {
     const feature = parts.join(' ').trim();
-    if (!feature) { ui.error('feature 필요: monad self implement "<무엇을 구현할지>"'); process.exit(2); }
+    if (!feature) { ui.error('feature 필요: elanous self implement "<무엇을 구현할지>"'); process.exit(2); }
     // Retired entry points must fail before run identity or log-sink setup creates observable execution state.
     if (opts.plan) { ui.error('self implement --plan is retired and rejected'); process.exit(1); return; }
     // ★ 액션레벨 셋업 substrate(U4b 추출·[[standalone-run-context]]) — harness-space 자기인지 마커 +
@@ -4100,7 +4100,7 @@ selfCmd
     } catch (e) { console.error(`⛔ ${(e as Error).message}`); process.exitCode = 1; }
   });
 
-// self orchestrate — 병렬 self-dev(S1·2026-07-21) — N개 독립 goal 을 각자 `monad self implement` 서브프로세스로
+// self orchestrate — 병렬 self-dev(S1·2026-07-21) — N개 독립 goal 을 각자 `elanous self implement` 서브프로세스로
 //   TOX 디스패처 위에서 동시성캡 병렬 실행. 각 잡=자기 프로세스=자기 harness-space(병렬안전). 엔진(그래프/
 //   디스패처)은 기존 재사용·새 조각=self-implement surface 어댑터. [[PLAN-parallel-self-dev-orchestrator-2026-07-21]].
 const selfOrchestrateCmd = selfCmd
@@ -4113,11 +4113,11 @@ const selfOrchestrateCmd = selfCmd
   .option('--base <branch>', '각 잡 PR base 브랜치')
   .option('--decompose', 'S2 — goal 1개를 LLM 으로 의존성 서브-DAG(위상 병렬 + hot-file 직렬)로 분해 후 실행')
   .option('--pod-skill-env', 'pod: 필수 스킬(설정 pod-skills.txt)의 키(.env)를 이 런의 Secret 으로 넘긴다 — 명시 opt-in(유료 크레딧) · 이미지엔 안 들어간다')
-  .option('--pod-pool <spec>', 'pod 풀 — 컨텍스트[@ssh호스트][:상한] 을 쉼표로, 앞이 우선(예 pool-node-b@node-b:12,pool-node-c@node-c:3) · 없으면 MONAD_POD_POOL · 그것도 없으면 현재 컨텍스트 하나')
-  .option('--reduce', '끝에 PR 을 연 조각들을 통합 브랜치 하나로 모아(게이트 한 번) PR 하나 — `--open-pr` 과 짝 · `--auto-merge` 와는 함께 못 쓴다(monad self reduce)')
-  .option('--substrate <kind>', '실행 칸: local(기본 · 격리 워크트리) | pod(k8s Job · docker/harness 이미지 · MANUAL-pods-for-monad-ops-and-dev)')
-  .option('--pod-account <name>', 'pod: codex 계정(~/.monad/auth.json openai-codex:<name> · refresh 제외 사본) · 없으면 브로커가 Job 마다 잔량 많은 계정을 돌려 준다')
-  .option('--no-pod-rebuild', 'pod: 이미지 판(monad.commit)이 HEAD 와 달라도 다시 굽지 않는다 — 측정은 «이미지 판»을 잰다')
+  .option('--pod-pool <spec>', 'pod 풀 — 컨텍스트[@ssh호스트][:상한] 을 쉼표로, 앞이 우선(예 pool-node-b@node-b:12,pool-node-c@node-c:3) · 없으면 ELANOUS_POD_POOL · 그것도 없으면 현재 컨텍스트 하나')
+  .option('--reduce', '끝에 PR 을 연 조각들을 통합 브랜치 하나로 모아(게이트 한 번) PR 하나 — `--open-pr` 과 짝 · `--auto-merge` 와는 함께 못 쓴다(elanous self reduce)')
+  .option('--substrate <kind>', '실행 칸: local(기본 · 격리 워크트리) | pod(k8s Job · docker/harness 이미지 · MANUAL-pods-for-elanous-ops-and-dev)')
+  .option('--pod-account <name>', 'pod: codex 계정(~/.elanous/auth.json openai-codex:<name> · refresh 제외 사본) · 없으면 브로커가 Job 마다 잔량 많은 계정을 돌려 준다')
+  .option('--no-pod-rebuild', 'pod: 이미지 판(elanous.commit)이 HEAD 와 달라도 다시 굽지 않는다 — 측정은 «이미지 판»을 잰다')
   .option('--pod-pass-env <keys>', 'pod: 호스트 env 에서 Pod 로 넘길 키(쉼표) — 예 OPENROUTER_API_KEY,ANTHROPIC_API_KEY(벤치마크 과금 경로)')
   .option('--bench-arms <spec>', 'pod 벤치마크: 골 1개를 팔마다 «라벨 한 줄만 다르게» 복제해 동시에 — "id=provider[:model][@KEY+KEY];…" (예 codex=openai-codex;or-kimi=openrouter:openrouter/moonshotai/kimi-k3@OPENROUTER_API_KEY) · --auto-merge 거부 · RFC fleet 슈퍼바이저 §A3')
   .option('--help-all', '모든 orchestrate 옵션 표시')
@@ -4141,7 +4141,7 @@ const selfOrchestrateCmd = selfCmd
     }
     // ⭐ --resume 이면 goal 을 다시 안 줘도 된다 — 체크포인트가 goal 원형을 갖는다(2026-08-19).
     //   ⛔ 그래도 «옛 체크포인트»면 아래에서 goals 가 비어 있을 수 있어, 그 경우를 뒤에서 다시 막는다.
-    if (goalTexts.length === 0 && !opts.resume) { ui.error('goal 필요: monad self orchestrate "<goal1>" "<goal2>" (또는 "g1 ;; g2" · --decompose 로 1 goal 자동분해 · --resume <runId> 면 goal 불요)'); process.exit(2); }
+    if (goalTexts.length === 0 && !opts.resume) { ui.error('goal 필요: elanous self orchestrate "<goal1>" "<goal2>" (또는 "g1 ;; g2" · --decompose 로 1 goal 자동분해 · --resume <runId> 면 goal 불요)'); process.exit(2); }
     const concurrency = opts.concurrency ? Math.max(1, Number(opts.concurrency) || 2) : undefined;
     try {
       const { debug } = await import('./debug/log.js');
@@ -4275,7 +4275,7 @@ const selfOrchestrateCmd = selfCmd
           ready = podSubstrateReady();
         }
         if (!ready.ok) { ui.error(`--substrate pod: ${ready.reason}`); process.exit(2); }
-        // ⛔ Pod 의 monad 는 이미지 판이다 — HEAD 와 다르면 다시 굽는다(BACKLOG E6 · 09-25 세 판이 옛 판을 쟀다).
+        // ⛔ Pod 의 elanous 는 이미지 판이다 — HEAD 와 다르면 다시 굽는다(BACKLOG E6 · 09-25 세 판이 옛 판을 쟀다).
         const { podImageFreshness } = await import('./task-orchestrator/surfaces/self-implement-pod.js');
         let image = podImageFreshness();
         if (!image.fresh) {
@@ -4295,7 +4295,7 @@ const selfOrchestrateCmd = selfCmd
         if (pool) {
           const synced: typeof poolMembers = [];
           // ⭐ 노드들을 «동시에» — 노드 쪽 빌드(바뀐 층만) 1순위 · 실패하면 통째 전송.
-          const syncs = await poolMod.syncPoolImages(poolMembers, 'monad-harness:local', image.imageCommit);
+          const syncs = await poolMod.syncPoolImages(poolMembers, 'elanous-harness:local', image.imageCommit);
           for (const m of poolMembers) {
             const r = syncs.get(m.context)!;
             debug.log('self-implement.pod', 'pool-image-sync', { context: m.context, ...r });
@@ -4394,7 +4394,7 @@ const selfOrchestrateCmd = selfCmd
       const promoted = results.filter((r) => r.prUrl).length;
       const incomplete = results.length - done;
       console.log([
-        `[self-dev] 완료 — ${done}/${results.length} done${promoted ? ` · ${promoted} PR 승격` : ''}${incomplete ? ` · 이어서: monad self orchestrate <goals> --resume ${runId}` : ''}`,
+        `[self-dev] 완료 — ${done}/${results.length} done${promoted ? ` · ${promoted} PR 승격` : ''}${incomplete ? ` · 이어서: elanous self orchestrate <goals> --resume ${runId}` : ''}`,
         ...results.map((r) => {
           const icon = r.status === 'done' ? '✅' : r.status === 'cancelled' ? '⛔' : '❌';
           const disp = r.merged ? ` → merged ${r.prUrl}` : r.prUrl ? ` → PR ${r.prUrl}` : r.stage ? ` [${r.stage}]` : '';
@@ -4421,7 +4421,7 @@ selfOrchestrateCmd
   .addOption(new Option('--board', 'S3 — 라이브 칸반 보드(잡 상태 실시간 렌더·매 사이클 리드로)').hideHelp())
   .addOption(new Option('--max-tasks <n>', '--decompose 시 최대 서브-goal 수 (기본 6)').hideHelp())
   .addOption(new Option('--fabric-decompose', '--decompose 와 «함께» — 기본 분해기 대신 Fabric grounding/RFC 어댑터로 분해한다(ACP 툴 인자 `fabric_decompose` 와 동형)').hideHelp())
-  .addOption(new Option('--no-supervise', '⛔ 런 슈퍼바이저를 «끈다»(대표 2026-08-22 ***기본 ON***) — 켜져 있으면 런이 끝나면 실패를 «트리아지»해서 다시 걸 것이 있으면 «스스로» 재개한다(골루프처럼 끝까지). 정지 사유는 converged|needs-human|max-rounds|no-progress 로 각각 «다른 값»으로 말한다. 관측=monad logs --category self-dev.supervisor').hideHelp())
+  .addOption(new Option('--no-supervise', '⛔ 런 슈퍼바이저를 «끈다»(대표 2026-08-22 ***기본 ON***) — 켜져 있으면 런이 끝나면 실패를 «트리아지»해서 다시 걸 것이 있으면 «스스로» 재개한다(골루프처럼 끝까지). 정지 사유는 converged|needs-human|max-rounds|no-progress 로 각각 «다른 값»으로 말한다. 관측=elanous logs --category self-dev.supervisor').hideHelp())
   .addOption(new Option('--supervise-rounds <n>', '슈퍼바이저 재개 라운드 상한 (기본 3 · 끄려면 --no-supervise)').hideHelp())
   .addOption(new Option('--json', '구조화 출력 [{taskId, feature, status, stage?, prUrl?, merged?, error?}]').hideHelp());
 
@@ -4437,8 +4437,8 @@ function formatRelativeAge(updatedAt: number, now = Date.now()): string {
 
 // self parked — G4(1b·2026-07-21) — 무인 self-dev 루프에서 실패(gate-failed/review-blocked/merge-conflict/
 //   cancelled)한 goal 을 per-failure 로 부르지 않고 **parked 백로그**로 모아 배치 결정(재정의/포기/직접)을 받는다.
-//   run-store 스캔·각 feature 최신 run 이 done 아니면 parked. 재실행은 `monad self orchestrate <goal> --resume <runId>`.
-//   [[ROADMAP-monad-is-all-pty-unified-autonomy-2026-07-21]] G4.
+//   run-store 스캔·각 feature 최신 run 이 done 아니면 parked. 재실행은 `elanous self orchestrate <goal> --resume <runId>`.
+//   [[ROADMAP-elanous-is-all-pty-unified-autonomy-2026-07-21]] G4.
 selfCmd
   .command('parked')
   .description('G4 — 무인 self-dev 루프에서 막힌(실패/취소) goal 백로그(배치 결정용). --resolve <runId> --reason <이유>로 처리 표시. --json 구조화.')
@@ -4491,7 +4491,7 @@ selfCmd
         //   + 전체 전사 재생 포인터("docker logs" 등가). exit-code 만 보던 맹점 제거.
         if (g.reconcileMismatch) lines.push(`     ⚑ false-failure 의심 — 화면 outcome=GOAL-COMPLETE 인데 exit=failed (스폰 신호 단절)`);
         else if (g.screenOutcome) lines.push(`     goal-loop 화면 outcome: ${g.screenOutcome}`);
-        if (g.screenSpace) lines.push(`     전사 재생: monad self screen --space ${g.screenSpace}`);
+        if (g.screenSpace) lines.push(`     전사 재생: elanous self screen --space ${g.screenSpace}`);
         if (g.goalFile) lines.push(`     골 문서: ${basename(g.goalFile)}`);
         return lines;
       }),
@@ -4502,7 +4502,7 @@ selfCmd
 
 // self repair-signals — G7(1d·2026-07-21) — parked 실패를 패턴으로 클러스터해 harness 시스템 이슈(수리 후보)
 //   vs 단일 goal 이슈를 구분 surface. 1d 는 raw 실패가 아니라 "무엇을 수리할지" 결정 신호를 본다.
-//   [[ROADMAP-monad-is-all-pty-unified-autonomy-2026-07-21]] G7.
+//   [[ROADMAP-elanous-is-all-pty-unified-autonomy-2026-07-21]] G7.
 selfCmd
   .command('repair-signals')
   .description('G7 — parked 실패를 패턴 클러스터로 분석(system 수리 후보 vs 단일 goal 이슈). 관측→시스템 수리.')
@@ -4651,6 +4651,25 @@ selfCmd
       }
       requestedSpace = resolution.spaceId;
     }
+    // Pod fragments have their own container inbox; never enqueue into the host worktree inbox.
+    if (requestedSpace !== undefined) {
+      const { readPodFragment, podFragmentFinished, dispatchPodSelfSend } = await import('./harness/self-send-target.js');
+      const record = readPodFragment(requestedSpace);
+      if (record || podFragmentFinished(requestedSpace)) {
+        try {
+          if (hasMemo) {
+            if (!opts.memo || /[\r\n]/.test(opts.memo)) throw new Error('control inbox memo must be a non-empty single line');
+            const urgent = opts.memo.startsWith('[urgent] ');
+            dispatchPodSelfSend(requestedSpace, { memo: { version: 1, kind: 'supervisor', urgency: urgent ? 'urgent' : 'normal', body: urgent ? opts.memo.slice('[urgent] '.length) : opts.memo } });
+          } else dispatchPodSelfSend(requestedSpace, { stop: true });
+          ui.info(`Pod 조각에 ${hasMemo ? '감독 메모' : 'soft stop'} 기록: ${requestedSpace} (${record?.job ?? 'finished'})`);
+          return;
+        } catch (error) {
+          process.stderr.write(`${error instanceof Error ? error.message : String(error)}\n`);
+          process.exit(1);
+        }
+      }
+    }
     const { listHarnessScreens, readHarnessHeartbeat } = await import('./harness/harness-screen.js');
     const screens = listHarnessScreens().map((screen): SelfSendCandidate => {
       const heartbeat = readHarnessHeartbeat(screen.spaceId);
@@ -4778,7 +4797,7 @@ selfCmd
       //   `.inbox.ready` 는 «빈 디렉토리»다(2026-09-24: 그 빈 디렉토리를 «안 닿았다»로 오판한 사례).
       const readWaitSeconds = Number(opts.readWait ?? '10');
       const readWaitMs = Number.isFinite(readWaitSeconds) && readWaitSeconds > 0 ? readWaitSeconds * 1000 : 0;
-      const verifyHint = 'bun bin/monad.mjs logs --all --include-test --category control-inbox --event drain --json --json-data';
+      const verifyHint = 'bun bin/elanous.mjs logs --all --include-test --category control-inbox --event drain --json --json-data';
       const startedAt = Date.now();
       while (readWaitMs > 0 && existsSync(memoRecordPath) && Date.now() - startedAt < readWaitMs) {
         await new Promise((resolve) => setTimeout(resolve, 250));
@@ -4808,14 +4827,14 @@ selfCmd
     if (stopWaitMs > 0 && !existsSync(stopLatchPath)) {
       ui.info(`자식이 읽음 (${((Date.now() - stopWaitStartedAt) / 1000).toFixed(1)}초) — 이번 반복을 마치고 멈추며, 부모는 다음 관문·재발사를 건너뛴다.`);
     } else {
-      ui.info(`아직 안 읽힘${stopWaitMs > 0 ? ` (${stopWaitSeconds}초 기다림)` : ''} — 자식은 «도구 결과마다·반복 경계»에서만 확인한다(긴 도구 호출 중이면 늦다). 확인: bun bin/monad.mjs logs --all --include-test --category goal.loop --event soft-stop-after-tool-result --json --json-data`);
+      ui.info(`아직 안 읽힘${stopWaitMs > 0 ? ` (${stopWaitSeconds}초 기다림)` : ''} — 자식은 «도구 결과마다·반복 경계»에서만 확인한다(긴 도구 호출 중이면 늦다). 확인: bun bin/elanous.mjs logs --all --include-test --category goal.loop --event soft-stop-after-tool-result --json --json-data`);
     }
   });
 
 // self screen — 격리 하니스 공간(self-dev goal-loop)의 child 화면 뷰어(X11 forwarding식·2026-07-21 대표 co-design).
 //   구조: PtyShell 레지스트리는 프로세스-로컬이라 self-implement CLI(별도 스폰)의 PTY 는 데몬 PWA 로 안 보인다.
-//   → 공유 드라이버(driveHeadlessMonad)가 full snapshot 을 공간 화면 버퍼(file)에 쓰고 이 뷰어가 읽는다. 어느
-//   진입점(self-implement·dev-harness)이든 커버. 격리는 MONAD_STATE_DIR 스코프(테스트는 같은 env 로 실행).
+//   → 공유 드라이버(driveHeadlessElanous)가 full snapshot 을 공간 화면 버퍼(file)에 쓰고 이 뷰어가 읽는다. 어느
+//   진입점(self-implement·dev-harness)이든 커버. 격리는 ELANOUS_STATE_DIR 스코프(테스트는 같은 env 로 실행).
 selfCmd
   .command('screen')
   .description('격리 하니스 공간(self-dev goal-loop)의 child 화면을 본다(X11 forwarding식). --space 또는 --run으로 지정·생략 시 최신/목록. -f 라이브(1s·Ctrl-C 종료).')
@@ -4887,7 +4906,7 @@ selfCmd
       process.exit(0);
     }
     if (!key) {
-      if (list.length === 0) ui.info('활성 하니스 화면 없음 (self-implement/dev-harness 구동 중이어야·같은 MONAD_STATE_DIR 로 실행).');
+      if (list.length === 0) ui.info('활성 하니스 화면 없음 (self-implement/dev-harness 구동 중이어야·같은 ELANOUS_STATE_DIR 로 실행).');
       else ui.info('활성 화면 목록:\n' + list.map((e) => `  ${e.spaceId}  (${Math.round((Date.now() - e.mtimeMs) / 1000)}s 전·${e.bytes}B)`).join('\n'));
       process.exit(0);
     }
@@ -4911,12 +4930,12 @@ selfCmd
 // self participants — self-dev run checkpoint에 기록된 참여 주체만 읽는다. PTY 계보는 별도 `self run` 표면의 정의역이다.
 selfCmd
   .command('participants <runId>')
-  .description('run-participation 조회 — self-dev run checkpoint에 기록된 참가자의 id·kind·runIdSource를 출력한다. 프로세스 조상/후손은 `monad pty lineage`가 답한다.')
+  .description('run-participation 조회 — self-dev run checkpoint에 기록된 참가자의 id·kind·runIdSource를 출력한다. 프로세스 조상/후손은 `elanous pty lineage`가 답한다.')
   .action(async (runId: string) => {
     const { loadSelfDevRun } = await import('./self-dev/run-store.js');
     const run = loadSelfDevRun(runId);
     process.stdout.write('scope: run-participation\n');
-    process.stdout.write('note: 프로세스 조상과 후손은 monad pty lineage가 답합니다.\n');
+    process.stdout.write('note: 프로세스 조상과 후손은 elanous pty lineage가 답합니다.\n');
     if (!run) {
       process.stdout.write(`run 없음: ${runId}\n`);
       return;
@@ -4938,7 +4957,7 @@ selfCmd
 //   통째로 본다(runId≡spaceId≡sessionId≡ptyId 수동 상관 불필요·K1~K3 이 심은 join anchor 를 pty_manifest 로 소비).
 selfCmd
   .command('run <runId>')
-  .description('run-identity join 뷰 — 한 run(runId)의 전 PTY(space/session/종료행 포함)를 통째로 조회. runId 는 self orchestrate/implement 의 run 값(monad logs --category run-identity 로 확인). --json 구조화. --png <dir> 로 결정적-순간 키프레임 PNG 추출.')
+  .description('run-identity join 뷰 — 한 run(runId)의 전 PTY(space/session/종료행 포함)를 통째로 조회. runId 는 self orchestrate/implement 의 run 값(elanous logs --category run-identity 로 확인). --json 구조화. --png <dir> 로 결정적-순간 키프레임 PNG 추출.')
   .option('--json', '구조화 출력 [{ptyId, kind, spaceId, sessionId, instance, alive, closedAt, startedAt, cmd}]')
   .option('--png [dir]', '⭐ 이 run 의 결정적-순간 키프레임 PNG 를 <dir>(생략 시 현재 디렉터리)로 추출·나열')
   .option('--mp4 [path]', '⭐ 이 run 의 결정적-순간 키프레임들을 MP4 하이라이트릴로 조립(생략 시 <cwd>/run-<runId>.mp4·ffmpeg 필요)')
@@ -4959,7 +4978,7 @@ selfCmd
       const outDir = typeof opts.png === 'string' && opts.png.trim() ? opts.png.trim() : process.cwd();
       const kfs = listKeyframes(runId);
       if (kfs.length === 0) {
-        ui.info(`run '${runId}' 에 키프레임 PNG 없음 (전이 미발생·미스폰·다른 MONAD_STATE_DIR·grace TTL). executor(goal-loop PTY) run 만 캡처됨.`);
+        ui.info(`run '${runId}' 에 키프레임 PNG 없음 (전이 미발생·미스폰·다른 ELANOUS_STATE_DIR·grace TTL). executor(goal-loop PTY) run 만 캡처됨.`);
         process.exit(0);
       }
       let mkOk = true;
@@ -5008,7 +5027,7 @@ selfCmd
       process.exit(0);
     }
     if (rows.length === 0) {
-      ui.info(`run '${runId}' 에 속한 PTY 없음 (미스폰·다른 MONAD_STATE_DIR·grace TTL 경과·runId 오타). 'monad logs --category run-identity' 로 run 확인.`);
+      ui.info(`run '${runId}' 에 속한 PTY 없음 (미스폰·다른 ELANOUS_STATE_DIR·grace TTL 경과·runId 오타). 'elanous logs --category run-identity' 로 run 확인.`);
       process.exit(0);
     }
     const live = rows.filter((r) => r.alive).length;
@@ -5021,14 +5040,14 @@ selfCmd
     process.exit(0);
   });
 
-// self review — 외부/대표가 임의 GitHub PR 을 monad 의 자율 PR 리뷰어(substrate·sol)로 리뷰하는 창구.
+// self review — 외부/대표가 임의 GitHub PR 을 elanous 의 자율 PR 리뷰어(substrate·sol)로 리뷰하는 창구.
 // gh pr diff → reviewPullRequest(agent-substrate/pr-reviewer·미션/하니스와 동일 엔진) → verdict/must-fix/
 // should-fix. read-only(머지 안 함·머지=HITL 불변). self implement(구현)와 짝: 구현→PR→review.
 selfCmd
   .command('review <pr...>')
-  .description('자율 PR 리뷰 — GitHub PR(번호/URL/여러개)을 monad 리뷰어(substrate·codex 사다리 best 칸)가 correctness/미배선/수용기준/설계 검증. gh pr diff → verdict(pass/warn/fail)+must-fix/should-fix. read-only(머지 안 함). --intent 로 리뷰 의도 지정(생략 시 PR 본문 → 제목 → `PR <번호>` 순 폴백).')
+  .description('자율 PR 리뷰 — GitHub PR(번호/URL/여러개)을 elanous 리뷰어(substrate·codex 사다리 best 칸)가 correctness/미배선/수용기준/설계 검증. gh pr diff → verdict(pass/warn/fail)+must-fix/should-fix. read-only(머지 안 함). --intent 로 리뷰 의도 지정(생략 시 PR 본문 → 제목 → `PR <번호>` 순 폴백).')
   .option('--intent <text>', '리뷰 의도/수용기준(생략 시 PR 본문 → 제목 → `PR <번호>` 순 폴백)')
-  .option('--model <model>', '리뷰어 모델(기본 = codex 사다리 best 칸·MONAD_PR_REVIEW_MODEL)')
+  .option('--model <model>', '리뷰어 모델(기본 = codex 사다리 best 칸·ELANOUS_PR_REVIEW_MODEL)')
   .option('--acp', '⭐ ACP(독립 프로세스)로 리뷰 — API 대신 선택한 ACP 백엔드로 독립 리뷰')
   .option('--acp-model <alias>', 'ACP 모델 tier (지정 시 고정, 생략 시 선택한 백엔드 기본값)')
   .option('--acp-backend <id>', 'ACP 백엔드 id (기본: 설정 acp.reviewBackend, 없으면 공유 기본값)')
@@ -5038,7 +5057,7 @@ selfCmd
   .option('--json', '구조화 출력 {pr, verdict, mustFix, shouldFix, reviewed}')
   .action(async (prParts: string[], opts: { intent?: string; model?: string; acp?: boolean; acpModel?: string; acpBackend?: string; acpTimeout?: string; context?: string[]; contextText?: string[]; json?: boolean }) => {
     const prArgs = prParts.flatMap((p) => String(p).split(/[,\s]+/).filter(Boolean)); // 번호/#번호/URL·콤마목록.
-    if (!prArgs.length) { ui.error('PR 필요: monad self review <번호|URL> [..]'); process.exit(2); }
+    if (!prArgs.length) { ui.error('PR 필요: elanous self review <번호|URL> [..]'); process.exit(2); }
     // ⭐ 본문은 seam(`runSelfReviewCliCommand`)에 있다 — 이 액션은 **의존 배선만** 한다.
     //   이유: 이 트랙이 고친 결함이 payload 가 아니라 **배선**(sink 가 --acp 분기 안에 있었다)이라,
     //   소스 문자열 검사가 아니라 **런타임 호출**로 잠가야 했다. index.ts 클로저 안에서는 그게
@@ -5097,14 +5116,14 @@ selfCmd
       error: (t) => ui.error(t),
       print: (t) => console.log(t),
       now: () => Date.now(),
-      envModel: () => process.env.MONAD_PR_REVIEW_MODEL,
+      envModel: () => process.env.ELANOUS_PR_REVIEW_MODEL,
     });
     if (opts.json) await writeStdoutJson(JSON.stringify(results.length === 1 ? results[0] : results) + '\n');
   });
 
 selfCmd
   .command('log')
-  .description('구현/변경 이벤트를 monad 자기인지 기억에 주입(surface_events domain=monad + 선택 문서 벡터)')
+  .description('구현/변경 이벤트를 elanous 자기인지 기억에 주입(surface_events domain=elanous + 선택 문서 벡터)')
   .requiredOption('-s, --summary <text>', '1-2줄 요약(무엇을 구현/변경했나)')
   .option('-t, --tool <name>', '주입한 도구', 'claude-code')
   .option('-k, --kind <kind>', 'impl|change|fix|design|refactor', 'impl')
@@ -5134,11 +5153,11 @@ selfCmd
 
 // ★ self provision — L3 역량 프로비저닝(P4·#7-5) 데모/구동 surface. discoverCapability(발굴)+buildSelfProvision
 //   (설치)를 실제로 배선한 첫 소비자. **기본 dry-run**(정책 판정만·부작용 0)·--apply 로만 실제 설치. self 대상
-//   (monad repo pkg / 활성 레지스트리 skill·subagent·in-process reload). skill/subagent 는 --source 로 allowlist
+//   (elanous repo pkg / 활성 레지스트리 skill·subagent·in-process reload). skill/subagent 는 --source 로 allowlist
 //   등록해야 설치(없으면 deny-all=안전 기본). --discover 로 먼저 web 발굴(⭐Grok x_search 커뮤니티 + web registry).
 selfCmd
   .command('provision <layer> <spec>')
-  .description('L3 역량 프로비저닝 — monad-self 에 pkg/skill/subagent 설치. 기본 dry-run(정책 판정)·--apply 로 실제 설치. --discover 로 web 발굴 먼저. skill/subagent 는 --source 필요(allowlist).')
+  .description('L3 역량 프로비저닝 — elanous-self 에 pkg/skill/subagent 설치. 기본 dry-run(정책 판정)·--apply 로 실제 설치. --discover 로 web 발굴 먼저. skill/subagent 는 --source 필요(allowlist).')
   .option('--source <path>', 'skill/subagent 설치 소스 경로 — allowlist 등록(없으면 deny-all=거부)')
   .option('--discover', '먼저 web 발굴 후보 출력(Grok x_search 커뮤니티 + web-search registry·단일 seam)')
   .option('--apply', '실제 설치 실행(기본 dry-run=정책 판정만·부작용 없음)')
@@ -5147,7 +5166,7 @@ selfCmd
     const { discoverCapability } = await import('./agent-mission/discover-capability.js');
     const { buildSelfProvision, planSelfProvision } = await import('./agent-mission/provision.js');
     const { resolveMainRepoRoot } = await import('./git-fs/worktree.js');
-    // self = monad 저장소 대상 — raw cwd(하위 디렉토리/타 프로젝트)가 아니라 repo 루트로 못박음(리뷰 should-fix).
+    // self = elanous 저장소 대상 — raw cwd(하위 디렉토리/타 프로젝트)가 아니라 repo 루트로 못박음(리뷰 should-fix).
     const repoRoot = resolveMainRepoRoot(process.cwd()) ?? process.cwd();
     // ① --discover: 발굴(읽기·부작용 0) — 대표 지목 Grok+web 열쇠 시연.
     if (opts.discover) {
@@ -5170,11 +5189,11 @@ selfCmd
     process.exit(res.ok ? 0 : 1);
   });
 
-// 발화 ingress(2026-07-19) — 외부 도구(Claude Code/Codex/Gemini)의 사용자 발화를 monad 기억에
+// 발화 ingress(2026-07-19) — 외부 도구(Claude Code/Codex/Gemini)의 사용자 발화를 elanous 기억에
 // provenance 태그(origin·git·branch·cwd·시간)와 함께 편입. hook 이 이걸 호출. text 는 --text 또는 stdin.
 selfCmd
   .command('utterance')
-  .description('외부 도구 발화를 monad 기억에 주입 — origin/git/branch/cwd/시간 태그(회상이 "누가 언제 어디서" 구분). text=--text 또는 stdin')
+  .description('외부 도구 발화를 elanous 기억에 주입 — origin/git/branch/cwd/시간 태그(회상이 "누가 언제 어디서" 구분). text=--text 또는 stdin')
   .option('-s, --text <text>', '발화 원문(생략 시 stdin)')
   .option('--source <origin>', 'claude-code|codex|gemini|…', 'claude-code')
   .option('--session <id>', '세션 id')
@@ -5205,10 +5224,10 @@ selfCmd
 
 selfCmd
   .command('recall <query...>')
-  .description('monad 자기인지 기억 회상 — "내가 최근 뭘 구현했지"(surface_events domain=monad)')
+  .description('elanous 자기인지 기억 회상 — "내가 최근 뭘 구현했지"(surface_events domain=elanous)')
   .option('-n, --limit <n>', '반환 건수', '8')
   .option('--since-hours <n>', '조회 기간(시간)', '720')
-  .option('--all-instances', '등록 monad 인스턴스 전체의 기억을 연합 회상(fleet · read-only union · §10)')
+  .option('--all-instances', '등록 elanous 인스턴스 전체의 기억을 연합 회상(fleet · read-only union · §10)')
   .option('--include-test', '연합에 격리 test 인스턴스도 포함(기본 제외)')
   .option('--include-observer-output', '관측기가 생성한 출력도 회상에 포함(기본 제외)')
   .action(async (queryParts: string[], opts: { limit: string; sinceHours: string; allInstances?: boolean; includeTest?: boolean; includeObserverOutput?: boolean }) => {
@@ -5244,7 +5263,7 @@ selfCmd
     const db = openSurfaceEventsDb();
     try {
       const hits = recallSelfEvents(db, query, { limit: limitN, sinceHours: sinceH, excludeObserverOutput: opts.includeObserverOutput !== true });
-      if (hits.length === 0) { ui.info(`"${query}" 관련 구현 기억 없음(domain=monad).`); return; }
+      if (hits.length === 0) { ui.info(`"${query}" 관련 구현 기억 없음(domain=elanous).`); return; }
       ui.header(`self-awareness 회상 (${hits.length})`);
       for (const h of hits) {
         console.log(`  [${h.ts.slice(0, 16).replace('T', ' ')} ${h.surface}] (score ${h.score.toFixed(2)})`);
@@ -5262,9 +5281,9 @@ selfCmd
   .option('--mission <id>', '귀속 미션 id')
   .option('--pr <urls>', 'PR URL(쉼표구분)')
   .option('--files <paths>', '핵심 파일(쉼표구분)')
-  .option('--schedule <ids>', '만든 크론 id(쉼표구분·monad schedule 핸들)')
+  .option('--schedule <ids>', '만든 크론 id(쉼표구분·elanous schedule 핸들)')
   .option('--task <ids>', '만든 태스크 id(쉼표구분)')
-  .option('--cli <cmd>', '노출한 CLI(예: "monad local inventory")')
+  .option('--cli <cmd>', '노출한 CLI(예: "elanous local inventory")')
   .option('--status <status>', 'active|superseded|removed', 'active')
   .option('--source <s>', "'mission' | 'external:<tool>'", 'external:claude-code')
   .option('--doc <path>', '함께 인제스트할 문서(FEATURE/HANDOFF)')
@@ -5301,7 +5320,7 @@ selfCmd
     try {
       const caps = listCapabilities(db, { ...(opts.mission ? { missionId: opts.mission } : {}), includeRemoved: !!opts.all, limit: parseInt(opts.limit, 10) || 100 });
       if (opts.json) { await writeStdoutJson(JSON.stringify(caps, null, 2) + '\n'); return; }
-      if (!caps.length) { ui.info('등록된 능력 없음(domain=monad·kind=capability).'); return; }
+      if (!caps.length) { ui.info('등록된 능력 없음(domain=elanous·kind=capability).'); return; }
       ui.header(`등록된 능력 (${caps.length})${opts.mission ? ` · 미션 ${opts.mission}` : ''}`);
       for (const c of caps) {
         const mark = c.status === 'active' ? '●' : c.status === 'superseded' ? '◐' : '○';
@@ -5309,8 +5328,8 @@ selfCmd
         console.log(`    ${c.summary.slice(0, 120)}`);
         if (c.cliCommand) console.log(`    CLI: ${c.cliCommand}`);
         if (c.prUrls.length) console.log(`    PR: ${c.prUrls.join(', ')}`);
-        if (c.scheduleIds.length) console.log(`    크론: ${c.scheduleIds.join(', ')} (monad schedule 로 관리)`);
-        if (c.taskIds.length) console.log(`    태스크: ${c.taskIds.join(', ')} (monad autopilot/task 로 관리)`);
+        if (c.scheduleIds.length) console.log(`    크론: ${c.scheduleIds.join(', ')} (elanous schedule 로 관리)`);
+        if (c.taskIds.length) console.log(`    태스크: ${c.taskIds.join(', ')} (elanous autopilot/task 로 관리)`);
         if (c.files.length) console.log(`    파일: ${c.files.slice(0, 5).join(', ')}`);
       }
     } finally { db.close(); }
@@ -5366,7 +5385,7 @@ const providerCmd = program
 //   canonical = 내부 문서 `MANUAL-llm-provider-operations-2026-08-05` · 규칙 = .rules/70-llm-provider/
 //   ⛔⭐ 이름이 최상위 `codex` 가 «아니다» — 그 이름은 이미 `agent-mission` 의 «별칭»이고,
 //     최상위 `provider` 도 이미 있다(둘 다 commander 가 «실행 시점»에 거부해서 알았다).
-//     ⇒ 그래서 기존 `provider` 명령의 «하위»로 붙인다. `monad provider` 는 종전대로 상태를 보여준다.
+//     ⇒ 그래서 기존 `provider` 명령의 «하위»로 붙인다. `elanous provider` 는 종전대로 상태를 보여준다.
 const codexCmd = providerCmd.command('codex').description('Codex — 사용량·리밋·리셋 크레딧 조회와 사용');
 
 /**
@@ -5377,8 +5396,8 @@ const codexCmd = providerCmd.command('codex').description('Codex — 사용량·
 export function buildCodexAccountImportGuidance(name: string, home: string): readonly [quota: string, execution: string] {
   // POSIX quoting stays centralized in shellQuoteRemote; do not recreate it here.
   return [
-    `쿼터를 재려면: bun bin/monad.mjs provider codex usage --account ${shellQuoteRemote(name)}`,
-    `이 계정으로 «한 런만» 쓰려면: MONAD_CODEX_ACCOUNT=${shellQuoteRemote(name)} MONAD_CODEX_ACCOUNT_HOME=${shellQuoteRemote(home)} bun bin/monad.mjs <명령>`,
+    `쿼터를 재려면: bun bin/elanous.mjs provider codex usage --account ${shellQuoteRemote(name)}`,
+    `이 계정으로 «한 런만» 쓰려면: ELANOUS_CODEX_ACCOUNT=${shellQuoteRemote(name)} ELANOUS_CODEX_ACCOUNT_HOME=${shellQuoteRemote(home)} bun bin/elanous.mjs <명령>`,
   ];
 }
 
@@ -5434,12 +5453,12 @@ codexCmd
     // ⛔⭐⭐⭐ 우주는 «정식 resolver»로 잡는다(리뷰 must-fix) — env 로 재구성하면 `--test`·
     //   `--test-state-dir`(setTestStateRoot 경유) 격리를 «놓친다». 표면이 런타임과 다른 자를
     //   쓰면 안 된다는 이 축의 규칙이 여기에도 그대로 걸린다.
-    const { monadStateRoot } = await import('./autopilot/state-paths.js');
+    const { elanousStateRoot } = await import('./autopilot/state-paths.js');
     // 쿼터 신호는 계정 자격에서 파생된 공유 사실이므로 인스턴스 격리 축이 아니라 자격 뿌리를 따른다.
     const { quotaSignalDir } = await import('./budget/codex-reset-credit-state.js');
     const now = Date.now();
     const s = inspectCodexRotation(process.env, { now });
-    const instanceRoot = monadStateRoot();
+    const instanceRoot = elanousStateRoot();
     const signalDir = quotaSignalDir();
     const { findOrphanQuotaSignals } = await import('./budget/orphan-quota-signals.js');
     const { codexCredentialRoot } = await import('./budget/codex-reset-credit-state.js');
@@ -5530,9 +5549,9 @@ codexCmd
         const known = s.knownAccountCount;
         console.log(known <= 1
           ? '⛔ 찼는데 «갈 곳이 없다» — 정본이 아는 계정이 «이것 하나»다(고장이 아니라 구성이다).'
-            + '\n   🩹 둘째 계정을 들인다: 그 홈으로 `codex login` 한 뒤 `monad provider codex account import <이름> --home <홈>`'
+            + '\n   🩹 둘째 계정을 들인다: 그 홈으로 `codex login` 한 뒤 `elanous provider codex account import <이름> --home <홈>`'
           : '⛔ 찼는데 «갈 곳이 없다» — 다른 계정은 있는데 «홈을 몰라» 후보가 못 됐다.'
-            + '\n   🩹 `monad provider codex account list` 로 홈을 확인하고, 없으면 그 계정을 다시 import 한다.');
+            + '\n   🩹 `elanous provider codex account list` 로 홈을 확인하고, 없으면 그 계정을 다시 import 한다.');
       } else {
         console.log('⛔ 찼는데 «갈 곳이 없다» — 후보는 있는데 «그들도 찼다»(위 후보 목록의 사용률을 보라).');
       }
@@ -5559,7 +5578,7 @@ accountCmd.hook('preAction', async () => {
 
 accountCmd
   .command('list')
-  .description('monad 정본 스토어가 아는 codex 계정을 보여준다 (READ-ONLY · ⛔ 토큰 값은 안 찍는다)')
+  .description('elanous 정본 스토어가 아는 codex 계정을 보여준다 (READ-ONLY · ⛔ 토큰 값은 안 찍는다)')
   .action(async () => {
     const { listCodexAccountsInStore, activeCodexAccountView } = await import('./oauth/codex-account-store.js');
     // ⛔⭐⭐ 「홈」은 «실효» 홈이어야 한다 — env 해석을 그대로 찍으면 정본 기록이 이기는 경우에
@@ -5577,7 +5596,7 @@ accountCmd
 
 accountCmd
   .command('import <name>')
-  .description('그 홈의 codex 로그인을 monad 정본 스토어로 들여온다 — 그래야 monad 가 그 계정으로 «실행»한다')
+  .description('그 홈의 codex 로그인을 elanous 정본 스토어로 들여온다 — 그래야 elanous 가 그 계정으로 «실행»한다')
   .requiredOption('--home <path>', '그 계정의 CODEX_HOME (예: ~/.codex-new)')
   .action(async (name: string, opts: { home: string }) => {
     const { importCodexAccountFromHome } = await import('./oauth/codex-account-store.js');
@@ -5592,7 +5611,7 @@ accountCmd
     //   실측 근거: `account list` 가 `source=rotated` 를 찍고 있었다. ⇒ 기능이 늙은 문면을 앞질렀다.
     console.log('⭐ 이 계정은 «자동 회전 후보»가 됐다 — 별도 설정 불필요. 현재 계정이 임계(기본 95%)에 닿으면 이름 사전순으로 넘어간다.');
     console.log('   끄려면 config `llm.codexAccountRotation: false` · 임계는 `llm.codexAccountRotationThresholdPercent`.');
-    console.log('   확인:  bun bin/monad.mjs provider codex account list   ·   bun bin/monad.mjs usage');
+    console.log('   확인:  bun bin/elanous.mjs provider codex account list   ·   bun bin/elanous.mjs usage');
   });
 
 const resetCreditsCmd = codexCmd.command('reset-credits').description('리셋 크레딧 — 조회 · 관측 · 사용(⛔ 사용은 되돌릴 수 없다)');
@@ -5664,13 +5683,13 @@ resetCreditsCmd
       }, { level: 'warn' });
     }
     await writeStdoutJson(JSON.stringify(r.value, null, 2) + '\n');
-    console.log('⭐ 효과 확인은 `monad provider codex usage` 로 — usedPercent 가 떨어졌는지 본다.');
+    console.log('⭐ 효과 확인은 `elanous provider codex usage` 로 — usedPercent 가 떨어졌는지 본다.');
   });
 
 
 
 /** Per-provider sensible-default model when --model is omitted. These
- *  are what a user running "monad provider set <name>" expects to get
+ *  are what a user running "elanous provider set <name>" expects to get
  *  without thinking — the flagship or recommended-for-agent model.
  *
  *  ⛔⭐⭐ 2026-09-23 — ***fallback 을 여기 «적지 않는다».*** `user-config.ts` 의
@@ -5680,7 +5699,7 @@ resetCreditsCmd
  *    grok `grok-4-1-fast` — xAI 실호출 대조 결과 «200 OK 인데 실제로는 grok-4.3 이 돈다»
  *    gemini `gemini-2.0-flash` — 카탈로그의 «가장 낡은» 항목
  *    local `llama-3` — LM Studio 실물 목록에 «없다»
- *  ⛔ 그리고 이것은 `monad provider:set <name>` 이라 ***사람이 직접 치는 명령***이다.
+ *  ⛔ 그리고 이것은 `elanous provider:set <name>` 이라 ***사람이 직접 치는 명령***이다.
  *  ⇒ 사본을 지우고 «환경변수 이름»만 여기 남긴다(그건 이 축의 고유 정보다). */
 const PROVIDER_MODEL_ENV: Record<string, string> = {
   anthropic:      'ANTHROPIC_MODEL',
@@ -5696,7 +5715,7 @@ const PROVIDER_DEFAULT_MODEL: Record<string, { env: string; fallback: string }> 
     { env, fallback: USER_CONFIG_PROVIDER_DEFAULT_MODEL[provider as never] ?? '' },
   ]));
 
-/** Env var holding the API key for each provider. When `monad provider
+/** Env var holding the API key for each provider. When `elanous provider
  *  set` runs without --api-key, we pull from this env as a convenience
  *  (anthropic/openai users typically have ANTHROPIC_API_KEY /
  *  OPENAI_API_KEY exported already). */
@@ -5712,10 +5731,10 @@ program
   .command('provider:set <name>')
   .description(
     'Swap active LLM provider in config.json (auto-backs-up the previous config ' +
-    'to its `.bak` sibling — ⛔ the path is the ACTIVE config, not a fixed one: run `monad where` to see it). ' +
+    'to its `.bak` sibling — ⛔ the path is the ACTIVE config, not a fixed one: run `elanous where` to see it). ' +
     'Useful for A/B testing model behaviour ' +
-    '— e.g. `monad provider:set anthropic` to force-switch to Claude, then ' +
-    '`monad provider:set restore` (or `monad provider:restore`) to roll back.',
+    '— e.g. `elanous provider:set anthropic` to force-switch to Claude, then ' +
+    '`elanous provider:set restore` (or `elanous provider:restore`) to roll back.',
   )
   .option('-m, --model <model>', 'Model id. Default: $<PROVIDER>_MODEL env or a sensible fallback')
   .option('-k, --api-key <key>', 'API key. Default: pulled from the provider-specific env (ANTHROPIC_API_KEY, etc.)')
@@ -5769,7 +5788,7 @@ program
       saveUserConfig(cfg, path);
     } catch (err: any) {
       ui.error(`save failed: ${err?.message ?? err}`);
-      if (backedUp) ui.info(`backup remains at ${bakPath} — restore with \`monad provider:restore\``);
+      if (backedUp) ui.info(`backup remains at ${bakPath} — restore with \`elanous provider:restore\``);
       process.exit(1);
     }
     reloadUserConfig();
@@ -5791,7 +5810,7 @@ program
 
 program
   .command('provider:restore')
-  .description('Restore config.json from the automatic backup written by `monad provider:set`.')
+  .description('Restore config.json from the automatic backup written by `elanous provider:set`.')
   .action(() => {
     const path = userConfigPath();
     const bakPath = backupConfigPath(path);
@@ -5853,7 +5872,7 @@ function defaultModelIdFor(providerName: string): string | undefined {
 /** API-key env var name for a provider, sourced from the registry
  *  catalog's `apiKeyEnv` field. `local` doesn't surface an env name
  *  here (LOCAL_LLM_API_KEY is rarely set; users wire local hosts via
- *  MONAD_LLM_HOSTS instead). */
+ *  ELANOUS_LLM_HOSTS instead). */
 function apiKeyEnvFor(providerName: string): string | undefined {
   const lookupName = providerName === 'openai-codex' ? 'openai' : providerName;
   const provider = getCatalog().providers.get(lookupName);
@@ -5866,7 +5885,7 @@ function apiKeyEnvFor(providerName: string): string | undefined {
  *  entry with a ▸ arrow so users can see which one is active. */
 function formatRotationList(cfg: ReturnType<typeof getUserConfig>, highlightIdx: number): string {
   const rot = cfg.llm.rotation;
-  if (!rot || rot.length === 0) return '  (rotation list is empty — `monad provider:rotate add <name>` to start)';
+  if (!rot || rot.length === 0) return '  (rotation list is empty — `elanous provider:rotate add <name>` to start)';
   const lines: string[] = [];
   const labelW = Math.max(...rot.map(e => rotationEntryLabel(e).length));
   const provW = Math.max(...rot.map(e => e.provider.length));
@@ -5939,7 +5958,7 @@ program
       if (!providerName || !known.has(providerName)) {
         const sortedKnown = [...known].sort().join(', ');
         ui.error(
-          `usage: monad provider:rotate add <provider> [-m model] [-l label]\n`
+          `usage: elanous provider:rotate add <provider> [-m model] [-l label]\n`
           + `Known providers: ${sortedKnown}`,
         );
         process.exit(1);
@@ -5967,7 +5986,7 @@ program
 
     if (verb === 'remove' || verb === 'rm' || verb === 'del') {
       if (!target) {
-        ui.error('usage: monad provider:rotate remove <label>');
+        ui.error('usage: elanous provider:rotate remove <label>');
         process.exit(1);
       }
       backupUserConfig(path).valueOf();
@@ -5996,11 +6015,11 @@ program
     if (!rot || rot.length === 0) {
       ui.error(
         'rotation is empty — add entries first:\n' +
-        '  monad provider:rotate add anthropic    -m claude-opus-4-8    -l opus\n' +
-        '  monad provider:rotate add openai-codex -m gpt-5.5            -l codex\n' +
-        '  monad provider:rotate add grok         -m grok-4.20          -l grok\n' +
-        '  monad provider:rotate          # advance\n' +
-        '  monad provider:rotate list     # show list',
+        '  elanous provider:rotate add anthropic    -m claude-opus-4-8    -l opus\n' +
+        '  elanous provider:rotate add openai-codex -m gpt-5.5            -l codex\n' +
+        '  elanous provider:rotate add grok         -m grok-4.20          -l grok\n' +
+        '  elanous provider:rotate          # advance\n' +
+        '  elanous provider:rotate list     # show list',
       );
       process.exit(1);
     }
@@ -6020,8 +6039,8 @@ program
   .command('provider:use <needle>')
   .description(
     'Jump to a specific rotation entry by label / provider name / model substring. ' +
-    'Auto-backs-up config.json before the switch (restore with `monad provider:restore`). ' +
-    'Example: `monad provider:use opus`, `monad provider:use grok`, `monad provider:use gpt-5`.',
+    'Auto-backs-up config.json before the switch (restore with `elanous provider:restore`). ' +
+    'Example: `elanous provider:use opus`, `elanous provider:use grok`, `elanous provider:use gpt-5`.',
   )
   .action((needle: string) => {
     const path = userConfigPath();
@@ -6029,7 +6048,7 @@ program
     const rot = cfg.llm.rotation;
     if (!rot || rot.length === 0) {
       ui.error(
-        'rotation is empty — add entries first with `monad provider:rotate add <provider>`',
+        'rotation is empty — add entries first with `elanous provider:rotate add <provider>`',
       );
       process.exit(1);
     }
@@ -6095,7 +6114,7 @@ async function parseScheduleCreatePlan(from?: string): Promise<ParsedScheduleCre
   }
 
   const schedule = specification.match(/^\s*-\s*\*\*주기:\*\*\s*(.+?)(?:\.|$)/m)?.[1]?.trim();
-  const commands = [...specification.matchAll(/^\s*bun bin\/monad\.mjs\s+(.+)$/gm)].map(match => match[1].trim());
+  const commands = [...specification.matchAll(/^\s*bun bin\/elanous\.mjs\s+(.+)$/gm)].map(match => match[1].trim());
   const resultPath = specification.match(/^(reports\/[^\s`]+)$/m)?.[1];
   const cron = specification.match(/^\s*(?:-\s*)?cron\s*:\s*`?([^`\n]+)`?\s*$/mi)?.[1]?.trim();
   return {
@@ -6160,7 +6179,7 @@ export async function runSchedule(action: string, opts: ScheduleOpts, dispatch?:
           id: opts.id,
           category: opts.category,
           cron: parsed.plan.cron.found,
-          command: parsed.plan.commands.found.map(command => `bun bin/monad.mjs ${command}`).join(' && '),
+          command: parsed.plan.commands.found.map(command => `bun bin/elanous.mjs ${command}`).join(' && '),
           schedule: parsed.plan.schedule.found,
           resultPath: parsed.plan.resultPath.found,
           yes: true,
@@ -6228,7 +6247,7 @@ scheduleCmd.command('wrap [id]').description('★관측성 래핑 — bun .ts �
   .action((id: string | undefined, o: ScheduleOpts) => runSchedule('wrap', { ...o, ...(id ? { id } : {}) }));
 scheduleCmd.command('unwrap [id]').description('관측성 래퍼 제거(가역) — id 생략=전 래핑 크론. 기본 dry-run·--yes 적용').option('--yes', '적용(기본 dry-run)').option('--json')
   .action((id: string | undefined, o: ScheduleOpts) => runSchedule('unwrap', { ...o, ...(id ? { id } : {}) }));
-scheduleCmd.command('migrate <id>').description('fabric Schedule Trigger 로 이관(monad 데몬 발화·Mission Fabric B안)').option('--json')
+scheduleCmd.command('migrate <id>').description('fabric Schedule Trigger 로 이관(elanous 데몬 발화·Mission Fabric B안)').option('--json')
   .action((id: string, o: ScheduleOpts) => runSchedule('migrate', { ...o, id }));
 scheduleCmd.command('adopt <id>').description('=migrate 별칭(schedule-runner 은퇴로 통합)').option('--json')
   .action((id: string, o: ScheduleOpts) => runSchedule('adopt', { ...o, id }));
@@ -6242,7 +6261,7 @@ scheduleCmd.command('retarget').description('크론 cd <folder> 일괄 교체 �
   .option('--json')
   .action((o: ScheduleOpts) => runSchedule('retarget', o));
 
-/** `monad decide*` 공통 — 보낼 곳과 자격을 정한다(설정 decide.endpoint > MONAD_JEV_ENDPOINT > Typesafe). 없으면 안내하고 rc 2. */
+/** `elanous decide*` 공통 — 보낼 곳과 자격을 정한다(설정 decide.endpoint > ELANOUS_JEV_ENDPOINT > Typesafe). 없으면 안내하고 rc 2. */
 async function loadJevAccessOrExit(): Promise<import('./decide/jev.js').JevAccess> {
   const { readFileSync, existsSync } = await import('node:fs');
   const { homedir } = await import('node:os');
@@ -6266,8 +6285,8 @@ async function loadJevAccessOrExit(): Promise<import('./decide/jev.js').JevAcces
   return resolved.access;
 }
 
-// ── intake check — 바깥 사실을 monad 현재와 대조 (태스크 등록 없음) ──
-const intakeCmd = program.command('intake').description('바깥 사실·문서를 monad 현재와 대조하거나 태스크로 받는다');
+// ── intake check — 바깥 사실을 elanous 현재와 대조 (태스크 등록 없음) ──
+const intakeCmd = program.command('intake').description('바깥 사실·문서를 elanous 현재와 대조하거나 태스크로 받는다');
 intakeCmd.hook('preAction', async () => {
   try {
     const { registerStandaloneLogSink } = await import('./domains/standalone-log-sink.js');
@@ -6276,7 +6295,7 @@ intakeCmd.hook('preAction', async () => {
 });
 intakeCmd
   .command('check')
-  .description('사실 목록·문서 경로·URL·표준입력을 monad 현재와 대조한다. 구멍/낡음은 골 초안만 쓴다.')
+  .description('사실 목록·문서 경로·URL·표준입력을 elanous 현재와 대조한다. 구멍/낡음은 골 초안만 쓴다.')
   .option('--file <path>', '문서 경로')
   .option('--url <url>', 'URL')
   .option('--fact <text>', '사실 한 줄 (반복 가능)', (value: string, prev: string[]) => [...prev, value], [] as string[])
@@ -6383,7 +6402,7 @@ const logsCmd = program.command('logs')
   .option('--limit <n>', '최대 행 수 (기본 100 · 로컬 직독은 1000 에 갇히지 않는다 — 그 상한은 HTTP 경계로 옮겼다)')
   .option('--json', 'JSON 출력')
   .option('--json-data', '--json 출력에서 JSON data를 파싱된 값으로 출력')
-  .option('--test', 'cwd 레포의 격리 테스트 인스턴스(.monad-test/) 로그를 본다 (LF7-b)')
+  .option('--test', 'cwd 레포의 격리 테스트 인스턴스(.elanous-test/) 로그를 본다 (LF7-b)')
   .option('--instance <name>', '레지스트리 등록 인스턴스 타겟 (prod|test:<repo>|…)')
   .option('--all', '전 인스턴스 연합 조회 — read-only 병합·⟨instance⟩ 태그')
   .option('--include-test', '--all 연합에 격리 test 인스턴스도 포함(기본 제외)')
@@ -6401,29 +6420,29 @@ const logsCmd = program.command('logs')
 logsCmd.addHelpText('before', `
 자주 쓰는 5가지 (복사해서 그대로 실행 · 자리표시자는 대문자)
 
-  monad logs --category dev-pipeline --since 30m
+  elanous logs --category dev-pipeline --since 30m
       최근 시간창. ⭐ --since 는 상대 표기를 받는다(30s|15m|2h|7d) — date 로 계산하지 마라.
 
-  monad logs --category self-review -f
+  elanous logs --category self-review -f
       실시간 follow (tail -f 동형 · Ctrl-C 종료).
 
-  monad logs --event headless.spawn --since 6h | grep -c .
+  elanous logs --event headless.spawn --since 6h | grep -c .
       그 이벤트가 몇 건인가. ⭐ --event 는 정확 일치 — --grep 은 data 본문도 매칭해 과다 계수한다.
       ⚠️ 0건은 stderr 로 나가므로 이 파이프는 정직하게 0 을 낸다.
 
-  monad logs --grep RUNID --since 3h --all --include-test
+  elanous logs --grep RUNID --since 3h --all --include-test
       한 실행을 끝까지 따라간다. ⚠️ 런의 이벤트는 prod 와 격리 인스턴스에 **나뉘어** 있어
       --all --include-test 가 없으면 일부만 보인다. (--space RUNID 는 harness 공간만 본다)
 
-  monad logs --category self-review --event done --since 6h --json | jq '.data | fromjson | .verdict'
+  elanous logs --category self-review --event done --since 6h --json | jq '.data | fromjson | .verdict'
       JSON 파이프. ⚠️ data 는 **문자열**이라 fromjson 을 거쳐야 필드를 뽑는다.
 
-  monad logs --event frame-stall --since 7d --instance prod --limit 1000 --json | tail -1
+  elanous logs --event frame-stall --since 7d --instance prod --limit 1000 --json | tail -1
       ⭐ 과거로 가려면 페이지를 넘긴다. --since 를 넓히는 것으로는 못 간다 —
       정렬이 최근순이라 어떤 창을 걸어도 **최근 상한만큼**만 온다(실측).
       상한에 걸리면 다음 쪽 명령(--before ID)을 stderr 로 찍어 준다.
 
-더 보기: monad logs timeline --help (자율빌드 드라이브를 내러티브로) · monad logs instances
+더 보기: elanous logs timeline --help (자율빌드 드라이브를 내러티브로) · elanous logs instances
 `);
 logsCmd.command('instances')
   .description('로그 인스턴스 레지스트리 조회 — 이름·state dir·liveness·store 유무 (LF7-b)')
@@ -6442,11 +6461,11 @@ logsCmd.command('level [lvl]')
   });
 logsCmd.command('timeline')
   .description('세션/드라이브를 휴먼 리더블 내러티브로 렌더 — 렌더 노이즈 제외·turn/tool-call/reasoning/edit 타임라인 (자율빌드 드라이브 진단용)')
-  .option('--session <id>', 'session_id 필터 (예: monad-session-1)')
+  .option('--session <id>', 'session_id 필터 (예: elanous-session-1)')
   .option('--since <t>', '시작 시각 (30s|15m|2h|7d 상대 또는 ISO/epoch)')
   .option('--until <t>', '종료 시각 (동일 문법)')
   .option('--out <path>', '파일로 저장 (미지정 시 stdout)')
-  .option('--test', 'cwd 레포의 격리 테스트 인스턴스(.monad-test/)')
+  .option('--test', 'cwd 레포의 격리 테스트 인스턴스(.elanous-test/)')
   .option('--instance <name>', '레지스트리 등록 인스턴스 (prod|test:<repo>|…)')
   .action(async (o: import('./cli/logs-timeline.js').LogsTimelineOpts, cmd: { optsWithGlobals(): Record<string, unknown> }) => {
     // Parent `logs` also declares --since/--session/--test/--instance; merge
@@ -6460,7 +6479,7 @@ logsCmd.command('durations')
   .description('대화 표면과 헤드리스 core 경로를 분리해 툴별 소요 분포(count·median·p90·max)를 조회')
   .option('--json', '구조화 JSON 출력')
   .option('--limit <n>', '인스턴스별 최대 수집 행 수 (상한 도달 여부를 산출에 표시)')
-  .option('--test', 'cwd 레포의 격리 테스트 인스턴스(.monad-test/)')
+  .option('--test', 'cwd 레포의 격리 테스트 인스턴스(.elanous-test/)')
   .option('--instance <name>', '레지스트리 등록 인스턴스 (prod|test:<repo>|…)')
   .option('--all', '등록된 모든 로그 인스턴스를 연합 조회')
   .option('--include-test', '--all 연합에 격리 test 인스턴스 포함')
@@ -6476,7 +6495,7 @@ logsCmd.command('degenerate')
   .option('--event <event>', '이벤트 정확 일치 필터 (복수는 쉼표)')
   .option('--since <t>', '시작 시각 (30s|15m|2h|7d 상대 또는 ISO)')
   .option('--min-samples <n>', '판정 최소 표본 수 (기본 50)')
-  .option('--test', 'cwd 레포의 격리 테스트 인스턴스(.monad-test/)')
+  .option('--test', 'cwd 레포의 격리 테스트 인스턴스(.elanous-test/)')
   .option('--instance <name>', '레지스트리 등록 인스턴스 (prod|test:<repo>|…)')
   .option('--all', '등록된 모든 로그 인스턴스를 연합 조회')
   .option('--include-test', '--all 연합에 격리 test 인스턴스 포함')
@@ -6494,7 +6513,7 @@ logsCmd.command('fields')
   .option('--since <t>', '시작 시각 (30s|15m|2h|7d 상대 또는 ISO)')
   .option('--limit <n>', '최대 수집 행 수 (상한 도달 시 firstSeen은 창 안에서 처음)')
   .option('--values [n]', '필드별 최빈 primitive 값 분포 (기본 10개)')
-  .option('--test', 'cwd 레포의 격리 테스트 인스턴스(.monad-test/)')
+  .option('--test', 'cwd 레포의 격리 테스트 인스턴스(.elanous-test/)')
   .option('--instance <name>', '레지스트리 등록 인스턴스 (prod|test:<repo>|…)')
   .option('--all', '등록된 모든 로그 인스턴스를 연합 조회')
   .option('--include-test', '--all 연합에 격리 test 인스턴스 포함')
@@ -6509,7 +6528,7 @@ logsCmd.command('unclosed')
   .option('--since <t>', '스캔 창 (30s|15m|2h|7d · 기본 24h)')
   .option('--older-than <t>', '이 나이 이상만 (동일 문법 · 미지정 시 전부)')
   .option('--json', 'JSON Lines 출력')
-  .option('--test', 'cwd 레포의 격리 테스트 인스턴스(.monad-test/)')
+  .option('--test', 'cwd 레포의 격리 테스트 인스턴스(.elanous-test/)')
   .option('--instance <name>', '레지스트리 등록 인스턴스 (prod|test:<repo>|…)')
   .action(async (o: import('./cli/logs-unclosed.js').LogsUnclosedOpts, cmd: { optsWithGlobals(): Record<string, unknown> }) => {
     const merged = { ...cmd.optsWithGlobals(), ...o } as import('./cli/logs-unclosed.js').LogsUnclosedOpts;
@@ -6527,7 +6546,7 @@ logsCmd.command('abandoned-draft-prs')
   .option('--run-lineage', '같은 런 원장에서 draft 뒤 병합된 PR 번호를 이름으로 댄다 (로컬 원장 읽기 전용)')
   .option('--limit <n>', '전역 최대 수집 행 수 (스토어 합산, 상한 도달 여부를 산출에 표시)')
   .option('--since <t>', '시작 시각 (30s|15m|2h|7d 상대 또는 ISO)')
-  .option('--test', 'cwd 레포의 격리 테스트 인스턴스(.monad-test/)')
+  .option('--test', 'cwd 레포의 격리 테스트 인스턴스(.elanous-test/)')
   .option('--instance <name>', '레지스트리 등록 인스턴스 (prod|test:<repo>|…)')
   .option('--all', '등록된 모든 로그 인스턴스를 연합 조회')
   .option('--include-test', '--all 연합에 격리 test 인스턴스 포함')
@@ -6663,7 +6682,7 @@ const docsCmd = program.command('docs')
 docsCmd.command('search <query>')
   .description('하이브리드 검색(RRF) — 의미(임베딩)+키워드(FTS5) 융합. 임베딩 다운 시 키워드 단독')
   .option('--limit <n>', '최대 결과 (기본 8·최대 20)')
-  .option('--domain <d>', '도메인 (기본 monad — finance 신호와 격리)')
+  .option('--domain <d>', '도메인 (기본 elanous — finance 신호와 격리)')
   .option('--kind <k>', 'kind 필터 (docs|memory|signal|…)')
   .option('--json')
   .action(async (query: string, o: { limit?: string; domain?: string; kind?: string; json?: boolean }) => {
@@ -6684,7 +6703,7 @@ docsCmd.command('stale [path]')
   .option('--history', '사라진 식별자의 마지막 제거 커밋을 읽기 전용 이력으로 보강 (느릴 수 있음)')
   .action(async (path: string | undefined, o: { json?: boolean; axis?: string; history?: boolean }) => {
     // ⛔⭐ **sink 를 «먼저» 붙인다** — 붙이지 않으면 `debug.log('docs.stale', …)` 가 «불리는데»
-    //   logs.db 에 안 닿아 `monad logs --exact-category docs.stale` 이 «0건»을 낸다.
+    //   logs.db 에 안 닿아 `elanous logs --exact-category docs.stale` 이 «0건»을 낸다.
     //   📏 2026-08-12 실측: 이 줄이 없어서 라이브 판정 신호 ③(관측이 남는가)이 실패했다.
     //   ⚠️ 「로그 0건」의 세 뜻(미배선 · 다른 경로 · ***sink 미등록***) 중 셋째다 — 계측은 있었다.
     await (await import('./domains/standalone-log-sink.js')).registerStandaloneLogSink('cli');
@@ -6695,7 +6714,7 @@ docsCmd.command('stale [path]')
 // ── ops (운영 관측 — 지금 뭐 도나·이상 없나·상태 전이) ──
 // ── fleet (멀티 인스턴스 통합 뷰 · §10 Control Plane/Fleet) ──
 const fleetCmd = program.command('fleet')
-  .description('멀티 monad 인스턴스 통합 뷰(READ-ONLY 연합) — 등록 인스턴스·보유 스토어 매트릭스. `logs instances` 일반화(kubectl get nodes 등가). 연합 조회는 `session list --all-instances` 등.');
+  .description('멀티 elanous 인스턴스 통합 뷰(READ-ONLY 연합) — 등록 인스턴스·보유 스토어 매트릭스. `logs instances` 일반화(kubectl get nodes 등가). 연합 조회는 `session list --all-instances` 등.');
 
 fleetCmd
   .command('list', { isDefault: true })
@@ -6719,7 +6738,7 @@ fleetCmd
 
 fleetCmd
   .command('screen')
-  .description('등록 monad 인스턴스의 PTY 화면 프레임을 read-only로 조회한다')
+  .description('등록 elanous 인스턴스의 PTY 화면 프레임을 read-only로 조회한다')
   .option('--all', '등록 인스턴스 전체를 연합 조회한다(격리 test 기본 제외)')
   .option('--include-test', '--all 연합에 격리 test 인스턴스를 포함한다')
   .option('--json', '구조화된 프레임 행을 출력한다')
@@ -6730,14 +6749,14 @@ fleetCmd
     const { instanceStorePaths, ptyManifestTargets } = await import('./domains/fleet.js');
     const { listPtyManifestAt } = await import('./pty-shell/pty-manifest.js');
     const { stripScreenAnsi } = await import('./harness/harness-screen.js');
-    const currentStateDir = process.env.MONAD_STATE_DIR?.trim() || join(homedir(), '.monad');
+    const currentStateDir = process.env.ELANOUS_STATE_DIR?.trim() || join(homedir(), '.elanous');
     const targets: Array<{ name: string; dbPath: string }> = [];
     if (opts.all) {
       // ⭐⭐ 열거는 `ptyManifestTargets`(SSOT) 한 곳이다 — `pty list --all` 과 **같은 함수**를 쓴다.
       //    ⛔ 여기서 따로 조립하면 두 창구가 조용히 갈린다(2026-07-30 리뷰 must-fix).
       targets.push(...ptyManifestTargets({ includeTest: opts.includeTest === true }));
     } else {
-      targets.push({ name: process.env.MONAD_INSTANCE_NAME?.trim() || 'prod', dbPath: instanceStorePaths(currentStateDir).frame });
+      targets.push({ name: process.env.ELANOUS_INSTANCE_NAME?.trim() || 'prod', dbPath: instanceStorePaths(currentStateDir).frame });
     }
     const rows = targets.flatMap((target) => existsSync(target.dbPath)
       ? listPtyManifestAt(target.dbPath).map((row) => ({ ...row, instance: row.instance || target.name }))
@@ -6762,7 +6781,7 @@ interface OpsOpts { id?: string; entityType?: string; event?: string; sinceHours
 //   · schedulesDbPath 주입 → crontab inventory skip(ops-status.ts `if(!opts.schedulesDbPath)`)
 //   · mandate 명시 주입 → loadMandate() 기본(prod) 미호출(ops-status.ts `opts.mandate!==undefined`)
 // loadMandate(path) 는 파일 부재 시 DEFAULT_MANDATE(DISARMED) fail-soft — test 인스턴스 안전.
-// prod 는 instanceStorePaths(~/.monad)==기본 경로라 종전 loops/스케줄이 그대로 보인다(무회귀).
+// prod 는 instanceStorePaths(~/.elanous)==기본 경로라 종전 loops/스케줄이 그대로 보인다(무회귀).
 async function runOpsFleet(json: boolean, includeTest = false): Promise<never> {
   const { buildFleetView, instanceStorePaths } = await import('./domains/fleet.js');
   const { TaskStore } = await import('./task-orchestrator/store.js');
@@ -6789,12 +6808,12 @@ async function runOpsFleet(json: boolean, includeTest = false): Promise<never> {
   ui.header(`ops · fleet (${rows.length} instances · read-only union · loops/스케줄/오케스트레이션 포함)`);
   for (const { name, kind, snapshot: s } of rows) {
     const kindTag = kind === 'test' ? ui.dim(' [test]') : '';
-    const sched = s.schedules ? `${s.schedules.monadTotal}개(stale ${s.schedules.stale.length}·err ${s.schedules.errored.length})` : '—';
+    const sched = s.schedules ? `${s.schedules.elanousTotal}개(stale ${s.schedules.stale.length}·err ${s.schedules.errored.length})` : '—';
     console.log(`  ${name.padEnd(22)}${kindTag} 미션 ${String(s.missions.total).padStart(3)} ${JSON.stringify(s.missions.byStatus)}`);
     console.log(ui.dim(`  ${''.padEnd(22)} 태스크 ${String(s.tasks.total).padStart(3)} ${JSON.stringify(s.tasks.byStatus)} — 스케줄실행 ${s.tasks.scheduleBacked}(최근 ${s.tasks.recentlyActive}) · blocked ${s.tasks.blocked.length}`));
     console.log(ui.dim(`  ${''.padEnd(22)} 루프 ${s.loops.loops.length}개 armed=${s.loops.armed}${s.loops.live ? '·LIVE' : ''} mode=${s.loops.executionMode} · 오케스트 ${s.orchestration.recent.length}건 · 스케줄 ${sched}`));
   }
-  ui.info(ui.dim('연합=미션/태스크/loops/스케줄/오케스트레이션 전체 종합(스토어 경로 주입). 단일 인스턴스 상세=`monad ops status`.'));
+  ui.info(ui.dim('연합=미션/태스크/loops/스케줄/오케스트레이션 전체 종합(스토어 경로 주입). 단일 인스턴스 상세=`elanous ops status`.'));
   process.exit(0);
 }
 
@@ -6951,7 +6970,7 @@ opsCmd.command('timeline').description('상태 전이 최근순 통합')
 opsCmd.command('mission <id>').description('미션 1건 상세 — 내용 + 페이즈별 진단(failClass·권장 힐) + 관련 태스크/스케줄/자율행동 fan-in + 전이')
   .option('--json').action((id: string, o: OpsOpts) => runOps('mission', { ...o, id }));
 // P5 (2026-07-13) — 미션별 영속 run.log tail(O3 의 표면 완결·READ-ONLY). 빌드 단위 실시간
-// follow 는 `monad ops build --follow`(B3) — 여긴 미션 레벨 스냅샷 tail.
+// follow 는 `elanous ops build --follow`(B3) — 여긴 미션 레벨 스냅샷 tail.
 opsCmd.command('mission-log <id>').description('미션 실행 로그(run.log) tail — 진단 근거의 실체(재부팅에도 영속)')
   .option('-n, --lines <n>', '마지막 N줄(기본 40·최대 200)').option('--json')
   .action(async (id: string, o: { lines?: string; json?: boolean }) => {
@@ -7053,7 +7072,7 @@ async function runAutopilot(action: string, opts: AutopilotOpts): Promise<never>
     if (r.shouldRevise) {
       console.log(`\n  정정 지시(comment):\n    ${r.comment}`);
       console.log(`\n  근거: ${r.rationale}`);
-      console.log(`\n  집행: monad autopilot revise ${r.missionId} "${r.comment.slice(0, 40)}..."  (또는 텔레그램 원탭 승인)`);
+      console.log(`\n  집행: elanous autopilot revise ${r.missionId} "${r.comment.slice(0, 40)}..."  (또는 텔레그램 원탭 승인)`);
     } else {
       console.log(`  ${r.rationale}`);
     }
@@ -7217,15 +7236,15 @@ autopilotCmd.command('threads').description('★조율자 상주 thread authorit
   .action((o: AutopilotOpts) => runAutopilot('threads', o));
 autopilotCmd.command('trace <id>').description('미션 계보 트리(파생 크론/태스크/자율행동 live 상태)').option('--json')
   .action((id: string, o: AutopilotOpts) => runAutopilot('trace', { ...o, id }));
-autopilotCmd.command('resources <id>').aliases(['res']).description('★미션 자원 원장 — 미션이 만든 살아있는 자원(태스크·크론)을 미션ID로 역추적·링크. PR은 부가정보(관리 아님). 삭제/수정은 monad schedule/task CRUD로 라우팅.').option('--json')
+autopilotCmd.command('resources <id>').aliases(['res']).description('★미션 자원 원장 — 미션이 만든 살아있는 자원(태스크·크론)을 미션ID로 역추적·링크. PR은 부가정보(관리 아님). 삭제/수정은 elanous schedule/task CRUD로 라우팅.').option('--json')
   .action(async (id: string, o: { json?: boolean }) => {
     const { missionResources } = await import('./autopilot/mission-resources.js');
     const led = missionResources(id);
     if (o.json) { await writeStdoutJson(JSON.stringify(led, null, 2) + '\n'); return; }
     ui.header(`미션 자원 원장 — ${id.slice(0, 52)}`);
-    console.log(`\n▸ 태스크 ${led.tasks.length}  (CRUD: monad autopilot / task)`);
+    console.log(`\n▸ 태스크 ${led.tasks.length}  (CRUD: elanous autopilot / task)`);
     for (const t of led.tasks) console.log(`  [${t.status}] ${t.title.slice(0, 52)}${t.prUrl ? `  · ${t.prUrl.replace(/.*\/pull\//, 'PR#')}` : ''}`);
-    console.log(`\n▸ 크론 ${led.crons.length}  (CRUD: monad schedule update/release <id>)`);
+    console.log(`\n▸ 크론 ${led.crons.length}  (CRUD: elanous schedule update/release <id>)`);
     for (const c of led.crons) console.log(`  ${c.enabled ? '●' : '○'} ${c.id} · ${c.cron ?? '-'} · ${(c.command ?? '').replace(/^cd .*&& /, '').slice(0, 44)}`);
     console.log(`\n▸ 루프 에이전트 ${led.loopAgents.length}  (반복 실행 주체 · CRUD: EnterAutoMode off · 크론 release)`);
     for (const l of led.loopAgents) console.log(`  ◆ ${l.loopKind}/${l.lifecycle} · ${l.name.slice(0, 40)}${l.ttlMin ? ` (TTL ${l.ttlMin}m)` : ''}${l.scheduleIds.length ? ` · 크론 ${l.scheduleIds.join(',')}` : ''}`);
@@ -7277,7 +7296,7 @@ autopilotCmd.command('escalate <id> <phase>').description('★시스템 셀프�
   .action((id: string, phase: string, o: AutopilotOpts) => runAutopilot('escalate', { ...o, id, phase }));
 autopilotCmd.command('prepare-log <id>').description('★재분해 진행 관측 — se-mission-prepare 단계 전이(준비→조사→grounding→중복체크→분해)를 tail 로 본다("ING만" 해소)').option('--tail <n>', '마지막 N줄(기본 40)').option('--json')
   .action((id: string, o: AutopilotOpts & { tail?: string }) => runAutopilot('prepare-log', { ...o, id, ...(o.tail ? { tail: Number(o.tail) } : {}) }));
-autopilotCmd.command('decompose-crash [id]').description('★분해 실패 근본조사 — decompose_crash.log(code·validationErrors·rawText 원문·컨텍스트) 조회. id 지정 시 해당 미션만. monad logs(요약) 너머 전문 진단(스키마 위반 정확한 필드).').option('--limit <n>', '최근 N건(기본 3)').option('--json')
+autopilotCmd.command('decompose-crash [id]').description('★분해 실패 근본조사 — decompose_crash.log(code·validationErrors·rawText 원문·컨텍스트) 조회. id 지정 시 해당 미션만. elanous logs(요약) 너머 전문 진단(스키마 위반 정확한 필드).').option('--limit <n>', '최근 N건(기본 3)').option('--json')
   .action(async (id: string | undefined, o: { limit?: string; json?: boolean }) => {
     const { readDecomposeCrashLog, formatCrashEntry } = await import('./autopilot/decompose-crash-log.js');
     const entries = readDecomposeCrashLog({ ...(id ? { missionId: id } : {}), limit: o.limit ? Number(o.limit) : 3 });
@@ -7295,7 +7314,7 @@ autopilotCmd.command('decompose-stream <id>').description('★분해 스트리�
     for (;;) { const cur = render(); if (cur !== prev) { console.clear(); console.log(cur); prev = cur; } await new Promise((r) => setTimeout(r, 2000)); }
   });
 autopilotCmd.command('promote <id>').description('★테스트→운영 캐스케이드(ISO 상향) — 격리 테스트에서 셋업/분해한 미션+플랜(+태스크)을 운영 스토어로 이관. proposed 로 착지(arm/materialize 는 운영 HITL). origin(notify)/이력/cron 스트립·config promote 동형. dry-run 기본')
-  .option('--from <dir>', '소스 테스트 state 루트(기본 <repo>/.monad-test)').option('--repo <path>', '레포 루트 override').option('--with-tasks', '파생 태스크도 이관').option('--yes', '적용(기본 dry-run)')
+  .option('--from <dir>', '소스 테스트 state 루트(기본 <repo>/.elanous-test)').option('--repo <path>', '레포 루트 override').option('--with-tasks', '파생 태스크도 이관').option('--yes', '적용(기본 dry-run)')
   .action(async (id: string, o: { from?: string; repo?: string; withTasks?: boolean; yes?: boolean }) => {
     const { runMissionPromote } = await import('./cli/mission-promote-cli.js');
     process.exit(runMissionPromote(id, o));
@@ -7426,7 +7445,7 @@ autopilotCmd.command('decide <id> <note...>')
   .option('--json')
   .action(async (id: string, note: string[], o: { kind?: string; appliesTo?: string; rationale?: string; actor?: string; arc?: string; json?: boolean }) => {
     // ★ 결정을 logs.db 에 관측 — CLI 프로세스는 데몬 sink 미상속(negotiate 동형). mission.selfheal.decision
-    //   debug.log 가 logs.db 에 닿아 `monad logs --category mission.selfheal.decision` 회상 가능.
+    //   debug.log 가 logs.db 에 닿아 `elanous logs --category mission.selfheal.decision` 회상 가능.
     try {
       const [sMod, dMod, cMod] = await Promise.all([import('./mss/logging/log-store.js'), import('./debug/log.js'), import('./user-config.js')]);
       const lc = cMod.getUserConfig().logs; sMod.setLogInstanceName(lc.instanceName);
@@ -7447,7 +7466,7 @@ autopilotCmd.command('decide <id> <note...>')
       ...(o.arc ? { arcId: o.arc } : {}),
     });
     if (o.json) { await writeStdoutJson(JSON.stringify({ ok: true, recorded: line }, null, 2) + '\n'); return; }
-    process.stdout.write(`🧭 결정 기록: ${line}\n   → 워킹메모리+logs.db(mission.selfheal.decision)+기억(회상)+ops. monad logs --category mission.selfheal.decision\n`);
+    process.stdout.write(`🧭 결정 기록: ${line}\n   → 워킹메모리+logs.db(mission.selfheal.decision)+기억(회상)+ops. elanous logs --category mission.selfheal.decision\n`);
   });
 
 // ── A6-c 연관 미션 fabric (동급 관계 CRUD·RFC §9) ──
@@ -7500,7 +7519,7 @@ autopilotCmd.command('maturity-split <id>')
       const proposal = buildMaturityProposal(m.autopilot?.arcs, m.autopilot?.tier as 'light' | 'heavy');
       if (!proposal.oversized) { process.stdout.write(`✅ 과대 아님 — 분리 불필요 (${proposal.reason})\n`); process.exit(0); }
       process.stdout.write(`${formatMaturityProposal(proposal)}\n`);
-      if (!opts.apply) { process.stdout.write(`\n집행하려면: monad autopilot maturity-split ${id} --apply\n`); process.exit(0); }
+      if (!opts.apply) { process.stdout.write(`\n집행하려면: elanous autopilot maturity-split ${id} --apply\n`); process.exit(0); }
       const r = applyMaturitySplit(store, id);
       if (r.ok) process.stdout.write(`\n✂️ 성숙도 분리: 후속 ${r.created.length}개 proposed 생성(M1 종속·자동 실행 없음)\n${r.created.map((c) => `  · ${c}`).join('\n')}\n`);
       else process.stderr.write(`분리 실패: ${r.reason}\n`);
@@ -7532,7 +7551,7 @@ autopilotCmd.command('negotiate <id> <phase>')
   .description('교착 페이즈 실현가능성 협상(READ-ONLY) — 근본원인 규명 → replan 또는 ★스코프컷(acceptance 축소·나머지 defer) 제안. 자동 집행 없음·항상 HITL.')
   .action(async (id: string, phase: string) => {
     // ★ D3 협상 결정을 logs.db 에 관측(2026-07-15) — CLI 프로세스는 데몬 sink 미상속. mission.negotiate
-    //   debug.log 가 logs.db 에 닿아 `monad logs --category mission.negotiate` 로 회상 가능(자가진단 소스).
+    //   debug.log 가 logs.db 에 닿아 `elanous logs --category mission.negotiate` 로 회상 가능(자가진단 소스).
     try {
       const [sMod, dMod, cMod] = await Promise.all([import('./mss/logging/log-store.js'), import('./debug/log.js'), import('./user-config.js')]);
       const lc = cMod.getUserConfig().logs; sMod.setLogInstanceName(lc.instanceName);
@@ -7562,8 +7581,8 @@ autopilotCmd.command('negotiate <id> <phase>')
 const publishCmd = program.command('publish').description('external-markdown 게시 라이프사이클 — 만료 게시물 GC(S3 콜드 백업·삭제 아님)');
 publishCmd
   .command('gc')
-  .description('만료 게시물 GC — 1년 만료분을 S3 콜드(Glacier) 백업(삭제 아님)·permanent 자동보존. monad schedule 크론용.')
-  .option('--root <dir>', '게시 저장 루트(기본 ~/.monad/publishing·MONAD_PUBLISH_ROOT)')
+  .description('만료 게시물 GC — 1년 만료분을 S3 콜드(Glacier) 백업(삭제 아님)·permanent 자동보존. elanous schedule 크론용.')
+  .option('--root <dir>', '게시 저장 루트(기본 ~/.elanous/publishing·ELANOUS_PUBLISH_ROOT)')
   .option('--json', '구조화 출력 {archived, kept, errors}')
   .action(async (opts: { root?: string; json?: boolean }) => {
     const { runPublishGc } = await import('./nexus/api/markdown-publish.js');
@@ -7575,7 +7594,7 @@ publishCmd
 publishCmd
   .command('catalog')
   .description('공개 콘텐츠 카탈로그(피드 보드 데이터) 빌드 — 전 게시물을 newest-first 공개 레코드로 프로젝션(만료·타깃없음 제외).')
-  .option('--root <dir>', '게시 저장 루트(기본 ~/.monad/publishing·MONAD_PUBLISH_ROOT)')
+  .option('--root <dir>', '게시 저장 루트(기본 ~/.elanous/publishing·ELANOUS_PUBLISH_ROOT)')
   .option('--json', '구조화 출력 — CatalogRecord[] JSON (피드/파이프라인용)')
   .action(async (opts: { root?: string; json?: boolean }) => {
     const { buildPublishCatalog } = await import('./nexus/api/markdown-publish.js');
@@ -7593,7 +7612,7 @@ publishCmd
     const url = publishObsidianFile(path);
     if (opts.json) await writeStdoutJson(JSON.stringify({ ok: !!url, url, path }) + '\n');
     else if (url) console.log(url);
-    else console.error('게시 실패 — 파일 없음·빈 파일·S3 미가용·게시 오류(monad logs --category url-route.publish 확인)');
+    else console.error('게시 실패 — 파일 없음·빈 파일·S3 미가용·게시 오류(elanous logs --category url-route.publish 확인)');
     process.exit(url ? 0 : 1);
   });
 
@@ -7601,7 +7620,7 @@ publishCmd
 //   U2(명명 중립화): U1 이 backend 를 애그노스틱화했으므로 CLI 이름도 codex-특정 → 중립으로.
 //   등록 backend가 바뀌면 사람용 설명도 source-of-truth에서 따라간다. canonical 은 `agent-mission`(모듈
 //   src/agent-mission/·관측 카테고리 agent-mission·U1 핸드오프 용어와 정합) — 최상위 `agent`(single-turn
-//   chat-with-tools)가 이미 점유해 충돌하므로 그 이름은 못 쓴다. 기존 cron/스크립트(`monad codex review-watch`
+//   chat-with-tools)가 이미 점유해 충돌하므로 그 이름은 못 쓴다. 기존 cron/스크립트(`elanous codex review-watch`
 //   등)는 commander alias 로 그대로 resolvable(하위호환 불변). 상태경로 codex-mission 은 별도로 보존(아래 락/DB).
 const agentBackendHelpNames = agentBackendNames();
 const agentBackendHelpList = agentBackendHelpNames.map((name, index) => index === 0 ? `${name}[디폴트]` : name).join('·');
@@ -7617,7 +7636,7 @@ const agentCmd = program
 //   • surface 보존: 기존에 싱크를 등록하던 서브커맨드는 옛 surface 를 그대로 유지(관측 attribution 계약
 //     불변 — 명명 PR 이 대시보드/조회 소비자를 건드리지 않음). 신규 커버 서브커맨드만 'agent-mission'.
 //   • robust 판정: isLegacyCodexInvocation(argv 첫 positional 스캔) — argv[2] 브리틀함 회피.
-//   관측=monad logs --category agent-cli.alias · sink 실패는 fail-open(파일트레일이 진실원).
+//   관측=elanous logs --category agent-cli.alias · sink 실패는 fail-open(파일트레일이 진실원).
 // 기존 surface(리네임 전 각 액션이 등록하던 값) — attribution 보존용. 나머지는 'agent-mission'.
 const AGENT_MISSION_SURFACE_BY_SUB: Record<string, string> = {
   mission: 'agent-mission',
@@ -7638,20 +7657,20 @@ agentCmd.hook('preAction', async (_thisCommand, actionCommand) => {
       // 사용자 폐기 안내(should-fix) — 대화형(TTY)일 때만 stderr 한 줄. cron/파이프(non-TTY)는
       // 침묵(스팸·로그오염 방지)하고 브레드크럼만 남긴다 → 하위호환 불변, cron 안 깨짐.
       if (process.stderr.isTTY) {
-        process.stderr.write(`ℹ️  \`monad codex\` 는 deprecated alias 입니다 — \`monad agent-mission ${actionCommand.name()}\` 로 이행하세요(현재는 동일 동작).\n`);
+        process.stderr.write(`ℹ️  \`elanous codex\` 는 deprecated alias 입니다 — \`elanous agent-mission ${actionCommand.name()}\` 로 이행하세요(현재는 동일 동작).\n`);
       }
     }
   } catch { /* fail-soft — 관측 실패가 명령 실행을 막지 않음 */ }
 });
 
-// ★ monad→codex PTY RFC 미션 (ROADMAP 3차 역전) — codex --yolo 를 PTY 로 열어
-// worktree 에서 미션을 자율 완주(구독 모드·브레인=monad LLM·omni-crawl 폴백·증거 게이트).
+// ★ elanous→codex PTY RFC 미션 (ROADMAP 3차 역전) — codex --yolo 를 PTY 로 열어
+// worktree 에서 미션을 자율 완주(구독 모드·브레인=elanous LLM·omni-crawl 폴백·증거 게이트).
 agentCmd
   .command('mission [text...]')
-  .description(`★ 선택 backend(디폴트 ${agentBackendHelpNames[0]} --yolo·--backend 로 ${agentBackendHelpNames.slice(1).join('/')})를 PTY 로 열어 worktree 에서 미션을 RFC(입력→결과→재입력)로 자율 완주. 구독 모드·omni-crawl 폴백·증거 게이트(doc|tsc|test). 원문은 verbatim(외부 재해석 금지)·monad 내부에서 가산 인핸싱(기본 on·anti-drift). 관측=monad logs --category agent-mission`)
+  .description(`★ 선택 backend(디폴트 ${agentBackendHelpNames[0]} --yolo·--backend 로 ${agentBackendHelpNames.slice(1).join('/')})를 PTY 로 열어 worktree 에서 미션을 RFC(입력→결과→재입력)로 자율 완주. 구독 모드·omni-crawl 폴백·증거 게이트(doc|tsc|test). 원문은 verbatim(외부 재해석 금지)·elanous 내부에서 가산 인핸싱(기본 on·anti-drift). 관측=elanous logs --category agent-mission`)
 
   .option('--mission-file <path>', '★ verbatim 진입 — 원문을 파일에서 정확한 바이트로 읽음(줄바꿈 보존). 외부 에이전트는 원문을 이 파일로 넘겨 재해석 없이 전달(<text...> 대신)')
-  .option('--no-enhance', 'monad 내부 인핸싱 끄기(순수 verbatim 전송)')
+  .option('--no-enhance', 'elanous 내부 인핸싱 끄기(순수 verbatim 전송)')
   .option('--deliverable <hint>', '인핸싱 산출물 유형 힌트(예: "PPT 발표덱")')
   .requiredOption('--branch <name>', '새 worktree 브랜치명')
   .option('--base <branch>', '분기 base (기본 HEAD · 이전 미션 산출 위에 쌓으려면 그 브랜치)')
@@ -7683,7 +7702,7 @@ agentCmd
 registerReviewLoopOptions(
   agentCmd
     .command('review-loop <pr>')
-    .description('★ PR 리뷰(OK/보강/거절)를 읽어 반응 — 보강이면 에이전트(디폴트 codex)가 지적을 자율 반영(제1원칙 렌즈)+re-push, 거절이면 HITL 표면화. 관측=monad logs --category review-loop'),
+    .description('★ PR 리뷰(OK/보강/거절)를 읽어 반응 — 보강이면 에이전트(디폴트 codex)가 지적을 자율 반영(제1원칙 렌즈)+re-push, 거절이면 HITL 표면화. 관측=elanous logs --category review-loop'),
 )
   .action(async (pr: string, opts: Record<string, any>) => {
     delete process.env.OPENAI_API_KEY; // 구독 모드
@@ -7786,7 +7805,7 @@ export function formatReviewStatsPercentage(rate: number, denominator: number): 
 
 agentCmd
   .command('review-stats')
-  .description('★ G9 학습루프 — 무인 리뷰 결정 결과 통계(무게별 회귀율) + 무게 경계 보정 제안. 관측=monad logs --category review-loop')
+  .description('★ G9 학습루프 — 무인 리뷰 결정 결과 통계(무게별 회귀율) + 무게 경계 보정 제안. 관측=elanous logs --category review-loop')
   .option('--json', '구조화 출력')
   .action(async (opts: Record<string, any>) => {
     const { openReviewOutcomeDb, queryReviewStats, detectFollowups } = await import('./agent-mission/review-outcomes.js');
@@ -7819,7 +7838,7 @@ agentCmd
 
 agentCmd
   .command('review-watch')
-  .description('★ L3 standing 폴러 — opt-in 라벨(auto-review) 붙은 열린 PR 을 주기 폴링, 새 사람 리뷰 감지 시 review-loop 무인 발동. 관측=monad logs --category review-watch')
+  .description('★ L3 standing 폴러 — opt-in 라벨(auto-review) 붙은 열린 PR 을 주기 폴링, 새 사람 리뷰 감지 시 review-loop 무인 발동. 관측=elanous logs --category review-watch')
   .option('--label <name>', 'opt-in 감시 라벨 (기본 auto-review)', 'auto-review')
   .option('--once', '1사이클만 실행하고 종료 (기본: interval 폴링 루프)')
   .option('--interval <sec>', '폴링 주기 초 (기본 300)', '300')
@@ -7837,16 +7856,16 @@ agentCmd
     delete process.env.OPENAI_API_KEY; // 구독 모드
     // logs.db 싱크·레거시 alias 관측은 agentCmd preAction 훅에서 중앙 배선(위).
     const { debug: watchDebug } = await import('./debug/log.js');
-    // ★ in-flight lock(G10 안전봉투·2026-07-23·[[ROADMAP-monad-is-all §2b]]) — cron/수동으로 review-watch
+    // ★ in-flight lock(G10 안전봉투·2026-07-23·[[ROADMAP-elanous-is-all §2b]]) — cron/수동으로 review-watch
     //   프로세스가 겹쳐 뜨면 각자 runReviewLoop(codex rework+ACP 심판·수분 소요)을 동시 발동 → codex 미션
     //   rate limit 충돌·중복 rework. 파일락+pid liveness(mission-run-lock 재사용·stale 자동청소)로
     //   single-flight 보장. dry-run 은 발동 안 하므로(읽기만) 제외. release=exit 훅 + --once finally.
     let releaseWatchLock: (() => void) | null = null;
     if (opts.dryRun !== true) {
       const { acquireRunLock, releaseRunLock } = await import('./autopilot/mission-run-lock.js');
-      const { monadStateRoot } = await import('./autopilot/state-paths.js');
+      const { elanousStateRoot } = await import('./autopilot/state-paths.js');
       // 상태 경로는 안정 식별자로 codex-mission 유지(코드는 agent-mission 로 리네임했으나 기존 락/DB 고아화 방지).
-      const lockOpts = { baseDir: _joinPath(monadStateRoot(), 'codex-mission', 'locks') };
+      const lockOpts = { baseDir: _joinPath(elanousStateRoot(), 'codex-mission', 'locks') };
       if (!acquireRunLock('review-watch', lockOpts)) {
         console.log('[review-watch] 이전 폴러가 진행 중 — skip (in-flight lock)');
         watchDebug.log('review-watch', 'lock-held', {});
@@ -7953,20 +7972,20 @@ agentCmd
     console.log('');
     console.log(renderAllModels());
     console.log('');
-    console.log('Run `monad agent-mission setup` to pick one. Any id from the OpenAI /v1/models');
+    console.log('Run `elanous agent-mission setup` to pick one. Any id from the OpenAI /v1/models');
     console.log('list works — type "Custom" at the picker and paste a model id.');
   });
 
 // PLAN-codex-app-server-hermes-parity §5 Phase H3·3 (2026-05-16) —
-// write a managed `[mcp_servers.monad-tools]` block into
-// `~/.codex/config.toml` so codex spawns `monad mcp serve` and gets
-// the 5 monad_* tools (skills_list / obsidian_search / obsidian_info /
+// write a managed `[mcp_servers.elanous-tools]` block into
+// `~/.codex/config.toml` so codex spawns `elanous mcp serve` and gets
+// the 5 elanous_* tools (skills_list / obsidian_search / obsidian_info /
 // fs_list / fs_read · H1·5a-e). User content outside the markers is
 // byte-equivalent preserved.
 agentCmd
   .command('config-migrate')
   .description(
-    'Write/refresh the managed [mcp_servers.monad-tools] block in ~/.codex/config.toml. Idempotent · creates a .bak snapshot · `--remove` strips the block.',
+    'Write/refresh the managed [mcp_servers.elanous-tools] block in ~/.codex/config.toml. Idempotent · creates a .bak snapshot · `--remove` strips the block.',
   )
   .option('--remove', 'Strip the managed monad-agent section instead of writing it')
   .option('--dry-run', 'Print the regenerated file to stdout without writing')
@@ -7978,7 +7997,7 @@ agentCmd
       const res = await migrateCodexConfig({
         ...(opts?.remove ? { remove: true } : {}),
         skipBackup: true,
-        configPath: '/dev/null-monad-dry-run',
+        configPath: '/dev/null-elanous-dry-run',
       });
       console.log(res.content);
       return;
@@ -8020,7 +8039,7 @@ function resolveHoldOwnerWatchTimeout(): { readonly timeoutMs: number | null; re
   if (holdOwnerWatchTimeoutMsForTesting !== undefined) {
     return { timeoutMs: holdOwnerWatchTimeoutMsForTesting, source: 'test-seam' };
   }
-  const configured = process.env.MONAD_HOLD_OWNER_TIMEOUT_MS;
+  const configured = process.env.ELANOUS_HOLD_OWNER_TIMEOUT_MS;
   if (configured !== undefined && /^\d+$/.test(configured)) {
     const timeoutMs = Number(configured);
     if (Number.isSafeInteger(timeoutMs) && timeoutMs > 0) return { timeoutMs, source: 'env' };
@@ -8208,9 +8227,9 @@ function devHarnessRetirementNotice(
       })
     : '';
   const replacement = input?.kind === 'ask' || input?.kind === 'file'
-    ? `monad harness ask ${quoted}`
+    ? `elanous harness ask ${quoted}`
     : input?.kind === 'say'
-      ? `monad harness say ${quoted}`
+      ? `elanous harness say ${quoted}`
       : plan && input?.kind === 'text'
         ? `${DEV_PLAN_REPLACEMENT} ${quoteDevHarnessArgument(input.value)}`
         : undefined;
@@ -8226,7 +8245,7 @@ const selfDevCmd = program
   //   `drive --help` 에도 그대로 보이고 자식이 그것을 계약으로 읽는다.
   //   ⇒ 별칭을 없애지 않는다([[RFC-two-command-convergence-dev-and-pty-2026-07-28]] §6-2 = 층이 다르니
   //     `drive` 는 프리미티브로 **유지**한다) — 대신 **도움말이 그 갈림을 먼저 말하게** 한다.
-  .description('⛔ `drive` 별칭으로 부르면 옵션은 여덟뿐 (--goal · --attach · --max-steps · --poll-ms · --model · --cwd · --worktree · --json) — `--attach <ref>` 는 이미 있는 PTY 를 몬다(생략하면 셸 명령을 새로 띄운다). 나머지는 전부 `dev` 전용이고 `drive` 에서는 거부된다. dev 와 drive 는 한 명령이라 이 도움말을 공유하므로, 아래 목록은 `dev` 기준이다. ⚠️ 실험 — 통합 self-dev 파이프라인 runDevPipeline. --backend self(디폴트·monad-chat 자체구현)|codex/claude/gemini/grok(외부). --transport pty(디폴트·worktree·--branch 필수)|acp(cwd 세션·U6·capability 미검증). 미배선 조합은 NotYetUnified 명시 거부. ★self 는 무인 완결이 기본(PR 개설→auto-review 라벨→리뷰 clean 시 병합) — 끄려면 --no-open-pr/--no-auto-review/--no-auto-merge. 관측=monad logs --category dev-pipeline · 상세=docs/manual/MANUAL-frontdoor-selfdev-dogfood-mechanism-2026-07-25.md')
+  .description('⛔ `drive` 별칭으로 부르면 옵션은 여덟뿐 (--goal · --attach · --max-steps · --poll-ms · --model · --cwd · --worktree · --json) — `--attach <ref>` 는 이미 있는 PTY 를 몬다(생략하면 셸 명령을 새로 띄운다). 나머지는 전부 `dev` 전용이고 `drive` 에서는 거부된다. dev 와 drive 는 한 명령이라 이 도움말을 공유하므로, 아래 목록은 `dev` 기준이다. ⚠️ 실험 — 통합 self-dev 파이프라인 runDevPipeline. --backend self(디폴트·elanous-chat 자체구현)|codex/claude/gemini/grok(외부). --transport pty(디폴트·worktree·--branch 필수)|acp(cwd 세션·U6·capability 미검증). 미배선 조합은 NotYetUnified 명시 거부. ★self 는 무인 완결이 기본(PR 개설→auto-review 라벨→리뷰 clean 시 병합) — 끄려면 --no-open-pr/--no-auto-review/--no-auto-merge. 관측=elanous logs --category dev-pipeline · 상세=docs/manual/MANUAL-frontdoor-selfdev-dogfood-mechanism-2026-07-25.md')
   .option('--file <path>', 'input 파일(verbatim 바이트·<text...> 대신)')
   // ⭐ 대표 2026-08-11 — 발사 절차 «넷»을 한 명령으로. ask 파일을 주면 ⑴저작 → ⑵열린 PR ⊕ ⑶도는 런 검사 → ⑷발사.
   //   ⛔ 걸리면 «이름을 대며» 멈춘다(조용히 진행하지 않는다). 우회는 --force-preflight 이고 그 사실이 관측에 남는다.
@@ -8248,18 +8267,18 @@ const selfDevCmd = program
   // ── T7: 재라우팅 경로별 핵심 옵션 노출(통합 도그푸드) ──
   .option('--plan', formatDevPlanOptionHelp(DEV_PLAN_REPLACEMENT))
   .option('--implement', 'self: headless implementation chat turn(--new·--tools·--goal-loop·interactive dispatch)')
-  .option('--monad', 'self: 격리 bare monad TUI child를 LLM 제어 루프로 목표까지 구동')
-  .option('--hold', 'monad: brain 없이 띄우고 monad pty 로 밖에서 몬다(--monad 전용·--goal과 동시 사용 불가)')
-  .option('--ready-timeout-ms <ms>', 'monad hold: PTY readiness 대기 상한(ms·양의 정수·기본 30000)')
-  .option('-g, --goal <goal>', 'monad 또는 셸 drive: child가 달성할 목표(--monad 또는 <command> 또는 --attach와 함께)')
-  .option('-n, --max-steps <n>', 'monad 또는 셸 drive: 최대 제어 스텝(기본 30)')
-  .option('-p, --poll-ms <ms>', 'monad 또는 셸 drive: 제어 스텝 간 폴 간격(ms·0 허용·기본 800)')
+  .option('--elanous', 'self: 격리 bare elanous TUI child를 LLM 제어 루프로 목표까지 구동')
+  .option('--hold', 'elanous: brain 없이 띄우고 elanous pty 로 밖에서 몬다(--elanous 전용·--goal과 동시 사용 불가)')
+  .option('--ready-timeout-ms <ms>', 'elanous hold: PTY readiness 대기 상한(ms·양의 정수·기본 30000)')
+  .option('-g, --goal <goal>', 'elanous 또는 셸 drive: child가 달성할 목표(--elanous 또는 <command> 또는 --attach와 함께)')
+  .option('-n, --max-steps <n>', 'elanous 또는 셸 drive: 최대 제어 스텝(기본 30)')
+  .option('-p, --poll-ms <ms>', 'elanous 또는 셸 drive: 제어 스텝 간 폴 간격(ms·0 허용·기본 800)')
   .option('--attach <ref>', 'drive: 이미 있는 PTY 를 몬다(생략하면 셸 명령을 새로 띄운다·pty auto 와 같은 루프)')
-  .option('-m, --model <id>', 'monad 또는 셸 drive: 제어 brain LLM 모델(기본 config)')
-  .option('--observe-only', 'monad: child boot부터 SelfImplement 호출을 기록만 한다')
-  .option('--isolated-root <path>', 'monad: child config/state 격리 루트(설정 실패 시 fail-closed)')
-  .option('-d, --cwd <path>', 'monad 또는 셸 drive: child 작업 디렉토리')
-  .option('-w, --worktree', 'monad 또는 셸 drive: harness 관문으로 새 child 작업 워크트리를 자동 생성(--cwd와 동시 사용 불가)')
+  .option('-m, --model <id>', 'elanous 또는 셸 drive: 제어 brain LLM 모델(기본 config)')
+  .option('--observe-only', 'elanous: child boot부터 SelfImplement 호출을 기록만 한다')
+  .option('--isolated-root <path>', 'elanous: child config/state 격리 루트(설정 실패 시 fail-closed)')
+  .option('-d, --cwd <path>', 'elanous 또는 셸 drive: child 작업 디렉토리')
+  .option('-w, --worktree', 'elanous 또는 셸 drive: harness 관문으로 새 child 작업 워크트리를 자동 생성(--cwd와 동시 사용 불가)')
   .addOption(new Option('--no-open-pr', 'self: PR 개설을 끄고 worktree-only로 종료(--auto-merge와 동시 사용 불가)').default(undefined))
   .addOption(new Option('--no-auto-merge', 'self: PR 생성 후 자동 병합을 끔').default(undefined))
   .addOption(new Option('--no-auto-review', 'self: auto-review 라벨을 붙이지 않음').default(undefined))
@@ -8329,7 +8348,7 @@ const selfDevCmd = program
     //   ⚠️ 정확히 '1' 일 때만 · `return` 이라 `process.exit` 도 `conclude` 도 «안» 부른다
     //      ⇒ 이벤트 루프가 스스로 비고 `beforeExit` 가 뜬다 = 42차 사망의 정확한 형태.
     //   ⭐ 선례 = `src/git-fs/runner.ts` 의 `setGitCommandRunnerForTesting`(테스트용 주입 seam).
-    if (process.env.MONAD_DEV_TEST_UNCONCLUDED_EXIT === '1') return;
+    if (process.env.ELANOUS_DEV_TEST_UNCONCLUDED_EXIT === '1') return;
 
     // ⭐ 여기부터가 「가드가 덮는 구간」이다 — 위로 올릴 것은 아무것도 없다.
     const invokedAsDrive = command.parent?.args[0] === 'drive';
@@ -8373,7 +8392,7 @@ const selfDevCmd = program
     // ★ T7 — 옵션→spec 라우팅(plan/self?/mission?/completion/autoReview)은 테스트 가능 seam(buildDevCliSpec)으로.
     const { buildDevCliSpec } = await import('./self-dev/dev-cli.js');
     const { devResultOk } = await import('./self-dev/dev-pipeline.js');
-    // ⭐ 실행 식별자 확정 — `monad dev` 는 **가장 바깥 진입점**이라 여기서 runId·출처를 정하고 env 에 심어
+    // ⭐ 실행 식별자 확정 — `elanous dev` 는 **가장 바깥 진입점**이라 여기서 runId·출처를 정하고 env 에 심어
     //   아래 전 계층(orchestrator·헤드리스 자식)이 같은 값을 상속하게 한다(`ensureRunIdentity` = mint-once).
     //   동시에 여러 dev 를 띄우면 각자 별개 프로세스라 서로 다른 runId 를 갖는다 = 조회에서 갈린다.
     //   ⚠️ 이 진입점은 1회성 CLI(끝나면 exit)라 env 를 심어도 dispatch 간 identity bleed 가 없다
@@ -8523,10 +8542,10 @@ const selfDevCmd = program
       const explicitOptions = devCli.explicitDevOptionNames(command);
       if (!opts.json && !invokedAsDrive && typeof devOpts.attach === 'string' && devOpts.attach.trim()) {
         const attach = `'${devOpts.attach.replaceAll("'", "'\\''")}'`;
-        console.error(`[dev] --attach 갈래는 \`monad pty auto\` 와 같은 루프입니다; 대응 명령: monad pty auto ${attach}`);
+        console.error(`[dev] --attach 갈래는 \`elanous pty auto\` 와 같은 루프입니다; 대응 명령: elanous pty auto ${attach}`);
       }
       if (!opts.json && !invokedAsDrive && explicitOptions.includes('backend') && executor.kind === 'external') {
-        console.error(`[dev] 외부 backend 미션의 자기 명령은 \`monad agent-mission mission\` 입니다; 대응 명령: monad agent-mission mission --backend ${executor.backend}`);
+        console.error(`[dev] 외부 backend 미션의 자기 명령은 \`elanous agent-mission mission\` 입니다; 대응 명령: elanous agent-mission mission --backend ${executor.backend}`);
       }
       let spec = invokedAsDrive
         ? devCli.buildDriveAliasDevSpec(hasText ? textParts.join(' ') : undefined, devOpts, devCli.explicitDevOptionNames(command))
@@ -8581,9 +8600,9 @@ const selfDevCmd = program
           : undefined;
         const prepared = prepareDevWorktree(process.cwd(), devRunId, invokedAsDrive ? 'drive' : 'dev', goal);
         preparedWorktree = prepared;
-        if (spec.monad) spec = { ...spec, monad: { ...spec.monad, cwd: prepared.worktree.path } };
+        if (spec.elanous) spec = { ...spec, elanous: { ...spec.elanous, cwd: prepared.worktree.path } };
         else if (spec.drive) spec = { ...spec, drive: { ...spec.drive, cwd: prepared.worktree.path } };
-        else throw new DevPipelineError('--worktree 는 monad 또는 셸 drive child에만 유효');
+        else throw new DevPipelineError('--worktree 는 elanous 또는 셸 drive child에만 유효');
         if (!opts.json) console.log(renderPreparedDevWorktree(prepared).join('\n'));
         debug.log('dev-pipeline', 'auto-worktree-prepared', { runId: devRunId, ...prepared.environment, worktree: prepared.worktree });
       }
@@ -8708,7 +8727,7 @@ const selfDevCmd = program
         ? { ...r.result, supervisorStopReason }
         : r.result;
       const suppressHoldJsonWrapper = devCli.shouldSuppressDevJsonWrapper({
-        monad: devOpts.monad,
+        elanous: devOpts.elanous,
         hold: devOpts.hold,
         json: opts.json,
       });
@@ -8725,14 +8744,14 @@ const selfDevCmd = program
       //   ⚠️ 리뷰는 그 호출을 *"사용되지 않는다"* 고 했으나 **틀렸다** — 여기서 쓰였다.
       //   ⇒ 지우는 대신 **결과가 실어 오는 `r.plan`** 을 쓴다. 계획은 한 번만 세워지고,
       //     그 계산은 이제 관측을 감싼 `runDevPipeline` **안**에 있다.
-      const planHold = r.plan.monad?.hold;
-      const holdOwnerValue = process.env.MONAD_HOLD_OWNER;
+      const planHold = r.plan.elanous?.hold;
+      const holdOwnerValue = process.env.ELANOUS_HOLD_OWNER;
       const holdRequestedByCli = devOpts.hold === true;
       const holdRequested = planHold === true || holdRequestedByCli;
       const holdOwner = holdOwnerValue === '1';
-      const shouldHoldOwner = r.kind === 'monad-tui' && planHold === true && holdOwner;
+      const shouldHoldOwner = r.kind === 'elanous-tui' && planHold === true && holdOwner;
       // ⛔⭐⭐ **정정(2026-09-12 라이브)** — 종전 이 자리는 `holdRequested && !shouldHoldOwner` 하나로
-      //   울렸고, 그래서 ***성공 경로인 「런처」까지 결함처럼 말했다***. 런처는 `MONAD_HOLD_OWNER` 없이
+      //   울렸고, 그래서 ***성공 경로인 「런처」까지 결함처럼 말했다***. 런처는 `ELANOUS_HOLD_OWNER` 없이
       //   돌면서 **소유자를 spawn 하는 것이 자기 역할**이라 여기서 안 붙드는 것이 «정상»이다.
       //   📏 실측: held TUI 한 번에 `hold-owner-not-entered` 1건 · 전부 런처 것(`holdOwner=missing`).
       //   ⇒ 두 상태를 **다른 이름**으로 가른다. 「소유자인데 안 붙들었다」만 이상이다.
@@ -8754,13 +8773,13 @@ const selfDevCmd = program
         }
         if (waitForHoldOwnerForTesting) await waitForHoldOwnerForTesting();
         else {
-          const ptyId = process.env.MONAD_HOLD_PTY_ID;
-          if (!ptyId) throw new Error('hold owner is missing MONAD_HOLD_PTY_ID');
+          const ptyId = process.env.ELANOUS_HOLD_PTY_ID;
+          if (!ptyId) throw new Error('hold owner is missing ELANOUS_HOLD_PTY_ID');
           const childExitCode = await waitForHoldOwnerChild(ptyId);
           if (childExitCode !== null) r.result.exitCode = childExitCode;
         }
       }
-      if (r.kind === 'shell-drive' || r.kind === 'monad-tui') {
+      if (r.kind === 'shell-drive' || r.kind === 'elanous-tui') {
         // ⛔ 프로세스 경계는 숫자를 요구하지만 `?? 0` 은 금지다 — 0 은 '정상 완료' 로 읽힌다.
         //    죽었는데 코드를 모르면 그것은 실패이고, 왜 그 값이 나갔는지 사람이 볼 수 있어야 한다.
         if (r.result.exitCode === null) {
@@ -8798,7 +8817,7 @@ const selfDevCmd = program
 
 const DEV_PRIMARY_HELP_OPTIONS = [
   '--ask', '--say', '--file', '--backend', '--target',
-  '--plan', '--implement', '--monad', '--attach', '--json', '--help-all', '-h', '--help',
+  '--plan', '--implement', '--elanous', '--attach', '--json', '--help-all', '-h', '--help',
 ] as const;
 foldCommandHelpBehindHelpAll(selfDevCmd, DEV_PRIMARY_HELP_OPTIONS, '[text...]', '모든 dev 옵션 표시');
 
@@ -8815,7 +8834,7 @@ program
         process.exit(1);
       }
     }
-    ui.header('monad keybindings');
+    ui.header('elanous keybindings');
     console.log(renderKeyHelp({ context: context as KeyContext | undefined }));
     if (opts?.audit) {
       console.log('');
@@ -8823,12 +8842,12 @@ program
       console.log(renderKeymapAudit(auditKeybindings()));
     }
     console.log('');
-    console.log('Tip: filter a context, e.g. `monad keys browser`, `monad keys log`.');
+    console.log('Tip: filter a context, e.g. `elanous keys browser`, `elanous keys log`.');
   });
 
 // ── finance — 네이티브 도메인 로직 CLI (SSOT·skill thin-client 진입점·2026-07-22) ──
-//   "monad is ALL": 네이티브 로직을 standalone CLI 로 노출 → skill 이 자기 python/Conatus
-//   스크립트 대신 `monad finance <x> --json` 호출. 데몬 불필요(one-shot).
+//   "elanous is ALL": 네이티브 로직을 standalone CLI 로 노출 → skill 이 자기 python/Conatus
+//   스크립트 대신 `elanous finance <x> --json` 호출. 데몬 불필요(one-shot).
 const financeCmd = program.command('finance')
   .description('Native finance/investment logic (SSOT) — skill thin-client 진입점');
 financeCmd
@@ -8856,7 +8875,7 @@ function redactConfigDisplay(value: unknown): unknown {
   return typeof value === 'string' ? redactSecretText(value) : value;
 }
 
-const configCmd = program.command('config').description('Inspect and edit ~/.config/monad/config.json');
+const configCmd = program.command('config').description('Inspect and edit ~/.config/elanous/config.json');
 
 configCmd
   .command('path')
@@ -8968,9 +8987,9 @@ configCmd
 // 격리 테스트 인스턴스는 운영 config 를 공유하지 않는다(overlay 은퇴 방향).
 configCmd
   .command('sync-test')
-  .description('운영 config 를 test-safe 변환해 격리 루트로 물질화 (+부속 복사 · 기본 <repo>/.monad-test)')
+  .description('운영 config 를 test-safe 변환해 격리 루트로 물질화 (+부속 복사 · 기본 <repo>/.elanous-test)')
   .option('--repo <path>', '레포 루트 (기본: cwd 상위 .git 탐색)')
-  .option('--state-dir <dir>', '격리 루트 직접 지정 (telegram-test 의 ~/.monad/telegram-test 등)')
+  .option('--state-dir <dir>', '격리 루트 직접 지정 (telegram-test 의 ~/.elanous/telegram-test 등)')
   .option('--json')
   .action(async (o: { repo?: string; stateDir?: string; json?: boolean }) => {
     const { runConfigSyncTest } = await import('./cli/config-test-sync.js');
@@ -8987,9 +9006,9 @@ configCmd
     process.exit(runConfigPromote(path, o));
   });
 
-// ── monad config mission · iPhone Showroom P1-2 (2026-05-14) ──
+// ── elanous config mission · iPhone Showroom P1-2 (2026-05-14) ──
 //
-// Thin wrapper around `monad config set llm.missionRouting.…` so users
+// Thin wrapper around `elanous config set llm.missionRouting.…` so users
 // don't memorise dotted paths. Pure work lives in src/cli/mission-config.ts;
 // the wiring here handles read → outcome → save round-trip.
 const missionCmd = configCmd
@@ -9022,7 +9041,7 @@ missionCmd
 
 missionCmd
   .command('set <mission> <provider> [model]')
-  .description('Override one mission. Example: monad config mission set plan claude claude-opus-4-7')
+  .description('Override one mission. Example: elanous config mission set plan claude claude-opus-4-7')
   .action((mission: string, provider: string, model?: string) => {
     const cfg = getUserConfig();
     persistMissionOutcome(setMissionEntry(cfg.llm.missionRouting, mission, provider, model));
@@ -9046,28 +9065,28 @@ missionCmd
 
 // ── task CLI · retired (scheduler retirement ROADMAP §R1) ──
 //
-// The legacy `monad task` (scheduler task management) CLI was retired
-// in R1 of the scheduler-retirement ROADMAP. Use `monad wf` (workflow-
-// runtime DAG runtime) instead. The `monad workflow` retirement stub
+// The legacy `elanous task` (scheduler task management) CLI was retired
+// in R1 of the scheduler-retirement ROADMAP. Use `elanous wf` (workflow-
+// runtime DAG runtime) instead. The `elanous workflow` retirement stub
 // was replaced in R4 by the real workflow-runtime alias on `wfCmd`
 // below (`.alias('workflow')`).
 function emitSchedulerRetirementNotice(family: 'task' | 'scheduler'): void {
-  ui.error(`[monad ${family}] retired in scheduler-retirement ROADMAP §R1.`);
-  ui.info('Use `monad wf` for workflow management (workflow-runtime DAG · supersedes scheduler v2).');
+  ui.error(`[elanous ${family}] retired in scheduler-retirement ROADMAP §R1.`);
+  ui.info('Use `elanous wf` for workflow management (workflow-runtime DAG · supersedes scheduler v2).');
   process.exit(1);
 }
 
 program
   .command('task [args...]')
   .alias('tasks')
-  .description('Retired — use `monad wf` (workflow-runtime DAG · supersedes scheduler v2)')
+  .description('Retired — use `elanous wf` (workflow-runtime DAG · supersedes scheduler v2)')
   .allowUnknownOption(true)
   .action(() => emitSchedulerRetirementNotice('task'));
 
 // ── ask alias (script-friendly one-shot query) ──
 program
   .command('ask <text...>')
-  .description('Alias for `monad chat --new`: send one query and print the reply')
+  .description('Alias for `elanous chat --new`: send one query and print the reply')
   .option('--reuse', 'Reuse the active CLI session instead of creating a new one')
   .option('--session <id>', 'Continue an explicit session (id or unique prefix). Overrides --reuse and active session.')
   .option('--json', 'Emit a single JSON line {sessionId, provider, model, reply, logPath, budget} instead of streaming text + ui.info trailer. Stable shape for LLM self-spawn.')
@@ -9095,7 +9114,7 @@ function walkDottedPath(root: unknown, path: string): unknown {
   return current;
 }
 
-// FU1 (PLAN-config-unification-monad-root-2026-05-10 closing follow-up):
+// FU1 (PLAN-config-unification-elanous-root-2026-05-10 closing follow-up):
 //   typed UserConfig 의 sub-schema 가 모든 사용자 nested key 를 정의하지
 //   않는다 (예: voice.stt.language). buildUserConfig 가 그것을 cfg.raw
 //   에 보존하므로, dotted-path resolver 가 typed walk 후 undefined 면
@@ -9192,9 +9211,9 @@ program
   .option('--config <path>', 'Load answers from a JSON answer file (overrides interactive prompts)')
   .option('--non-interactive', 'Run without prompts — resolve all answers from --config + env vars')
   .action(async (step: string | undefined, opts: { config?: string; nonInteractive?: boolean }) => {
-    // C-4e (cleanup ROADMAP 2026-05-08) restricted `monad setup <step>`
+    // C-4e (cleanup ROADMAP 2026-05-08) restricted `elanous setup <step>`
     // to llm/skills/obsidian. Telegram/Discord setup migrated to NEXUS
-    // — `monad channel-setup --platform telegram|discord` (Track Q).
+    // — `elanous channel-setup --platform telegram|discord` (Track Q).
     // Control plane (askControlPlane wizard step) was deleted in A-1
     // — NEXUS is in-process so no separate control-plane setup exists.
     const stepIds: OnboardingStepId[] = ['llm', 'skills', 'obsidian', 'telegram', 'discord', 'voice-ai'];
@@ -9292,7 +9311,7 @@ loginCmd
   .action(() => {
     const names = listAuthProviders();
     if (names.length === 0) {
-      ui.info('No OAuth tokens stored. Try `monad login openai-codex`.');
+      ui.info('No OAuth tokens stored. Try `elanous login openai-codex`.');
       return;
     }
     ui.header('OAuth providers');
@@ -9331,7 +9350,7 @@ sessionCmd
   .option('--instance <name>', 'Filter by creating instance: prod | test:<repo>')
   .option('--min-msg <n>', 'Only sessions with at least N messages')
   .option('--all', 'Include empty (0msg) sessions — missions·"(new session)"·scratch (hidden by default)')
-  .option('--all-instances', 'Federate sessions across ALL registered monad instances (fleet · read-only union · §10)')
+  .option('--all-instances', 'Federate sessions across ALL registered elanous instances (fleet · read-only union · §10)')
   .option('--include-test', 'Include isolated test instances in --all-instances federation (excluded by default)')
   .option('--json', 'Output the session array as machine-readable JSON')
   .option('--no-preview', 'Hide the last-message snippet under each session')
@@ -9407,7 +9426,7 @@ sessionCmd
     if (rows.length === 0) {
       ui.info(hidden > 0
         ? `표시할 세션 없음 (빈 세션 ${hidden}건 숨김 · --all 로 표시).`
-        : 'No sessions yet. Start one with `monad session new` or run the dashboard.');
+        : 'No sessions yet. Start one with `elanous session new` or run the dashboard.');
       return;
     }
     ui.header(`Sessions (${rows.length}${rows.length < visible.length ? `/${visible.length}` : ''})`);
@@ -9485,11 +9504,11 @@ sessionCmd
   .description('Force-compact a session history NOW — bypasses the auto token-ratio gate and runs the full pipeline incl. Layer3 LLM summarize. External on-demand trigger (default: active session · forced by default).')
   .option('--force', 'Compact unconditionally, bypassing the token-ratio gate (this is the default for this command)')
   .option('--auto', 'Respect the auto token-ratio gate instead of forcing (no-op below threshold)')
-  .option('--test', '격리 테스트 스토어를 대상으로 (MONAD_STATE_DIR)')
+  .option('--test', '격리 테스트 스토어를 대상으로 (ELANOUS_STATE_DIR)')
   .action(async (prefix: string | undefined, opts: { force?: boolean; auto?: boolean; test?: boolean }) => {
-    if (opts.test && !process.env.MONAD_STATE_DIR) {
+    if (opts.test && !process.env.ELANOUS_STATE_DIR) {
       const { DEFAULT_TELEGRAM_TEST_STATE_DIR } = await import('./telegram-test-runner.js');
-      process.env.MONAD_STATE_DIR = DEFAULT_TELEGRAM_TEST_STATE_DIR;
+      process.env.ELANOUS_STATE_DIR = DEFAULT_TELEGRAM_TEST_STATE_DIR;
     }
     const id = prefix ? resolveSessionId(prefix) : getActiveSessionId();
     if (!id) { ui.error('no session'); process.exit(1); }
@@ -9517,14 +9536,14 @@ sessionCmd
   .option('--debug', '툴콜(role:tool · ⚙️ toolName·args·result)까지 표시 — 진행 중 도구 호출을 라이브로')
   .option('--from-start', '기존 전사 전체를 먼저 출력 (기본: 최근 몇 개만 보여주고 팔로우)')
   .option('--tail <n>', '팔로우 전에 보여줄 최근 메시지 수 (기본 5)', (v: string) => parseInt(v, 10))
-  .option('--test', `테스트 봇 격리 스토어를 본다 (MONAD_STATE_DIR → ~/.monad/telegram-test). \`monad telegram-test\`가 쓰는 세션`)
+  .option('--test', `테스트 봇 격리 스토어를 본다 (ELANOUS_STATE_DIR → ~/.elanous/telegram-test). \`elanous telegram-test\`가 쓰는 세션`)
   .action(async (prefix: string | undefined, opts: { debug?: boolean; fromStart?: boolean; tail?: number; test?: boolean }) => {
     // --test: point ALL store resolution at the test bot's isolated state
     // BEFORE any session is resolved. Path fns read the env lazily, so
-    // setting it here is sufficient (same store `monad telegram-test` writes).
-    if (opts.test && !process.env.MONAD_STATE_DIR) {
+    // setting it here is sufficient (same store `elanous telegram-test` writes).
+    if (opts.test && !process.env.ELANOUS_STATE_DIR) {
       const { DEFAULT_TELEGRAM_TEST_STATE_DIR } = await import('./telegram-test-runner.js');
-      process.env.MONAD_STATE_DIR = DEFAULT_TELEGRAM_TEST_STATE_DIR;
+      process.env.ELANOUS_STATE_DIR = DEFAULT_TELEGRAM_TEST_STATE_DIR;
     }
     let id: string | null = null;
     if (prefix) {
@@ -9602,10 +9621,10 @@ sessionCmd
   });
 
 // 대화 전사 내보내기 — TUI /export 와 같은 exportSessionTranscript 순수함수 공유
-// (PLAN 1-D · 단일 창구). 기본 ~/temp/monad-transcript-<stamp>.md · 홈 밖 거부.
+// (PLAN 1-D · 단일 창구). 기본 ~/temp/elanous-transcript-<stamp>.md · 홈 밖 거부.
 sessionCmd
   .command('export [prefix]')
-  .description('Export a session transcript to a markdown file (default: active · ~/temp/monad-transcript-<stamp>.md)')
+  .description('Export a session transcript to a markdown file (default: active · ~/temp/elanous-transcript-<stamp>.md)')
   .option('--to <path>', 'Target file or directory (~ expanded · must be inside home)')
   .option('--json', 'Emit JSON')
   .action(async (prefix: string | undefined, opts: { to?: string; json?: boolean }) => {
@@ -9686,7 +9705,7 @@ sessionCmd
       const s0 = h.snippets[0];
       if (s0) console.log(`            ${s0.role}: ${s0.text.slice(0, 120)}`);
     }
-    if ((result.count ?? 0) === 0) ui.info('No sessions contain that text. Try `monad session list` to browse.');
+    if ((result.count ?? 0) === 0) ui.info('No sessions contain that text. Try `elanous session list` to browse.');
   });
 
 // P2 (2026-07-16) — 동시 구독 + presence. 세션 패브릭 구독 관리를 CLI 로 노출(session_manage
@@ -9694,7 +9713,7 @@ sessionCmd
 //
 // CLI 관측 배선(2026-07-16): bare CLI 프로세스는 데몬 StoreSink 를 상속 안 해 session.*
 // 관측이 logs.db 에 안 닿았다(실측). 세션을 변이하는 CLI(subscribe/unsubscribe)는 데몬과
-// 같은 logs.db 싱크를 붙여, 외부 codex/claude code 의 세션 조작도 `monad logs --category
+// 같은 logs.db 싱크를 붙여, 외부 codex/claude code 의 세션 조작도 `elanous logs --category
 // session.*` 로 관측되게 한다(제1원칙 — 관측 없는 세션 변이 = 미완).
 let _sessionCliSinkReady = false;
 async function ensureSessionCliObservability(): Promise<void> {
@@ -9866,7 +9885,7 @@ sessionCmd
   });
 
 function announceChatToolsCompatibility(): void {
-  process.stderr.write('`chat --tools` is a compatibility entrypoint; use `monad agent` for tool-loop calls.\n');
+  process.stderr.write('`chat --tools` is a compatibility entrypoint; use `elanous agent` for tool-loop calls.\n');
   debug.log('chat.tools-compatibility', 'invoked', { toolLoopEnabled: true });
   debug.flush();
 }
@@ -9878,7 +9897,7 @@ program
   .option('--new', 'Force a new session instead of using the active one')
   .option('--session <id>', 'Continue an explicit session (id or unique prefix). Overrides --new and active session.')
   .option('--json', 'Emit a single JSON line {sessionId, provider, model, reply, logPath, budget} instead of streaming text + ui.info trailer. Stable shape for LLM self-spawn.')
-  .option('--tools', 'Enable the tool-loop path (Read/Grep/Glob/ListDir/Edit/Write + Bash). Default off — chat is text-only by default for backward compatibility. `monad agent` is a thin wrapper that flips this on.')
+  .option('--tools', 'Enable the tool-loop path (Read/Grep/Glob/ListDir/Edit/Write + Bash). Default off — chat is text-only by default for backward compatibility. `elanous agent` is a thin wrapper that flips this on.')
   .option('--goal-loop', 'Arm the across-turn goal loop (runGoalLoop): wrap the tool-loop so the model keeps iterating until the goal is complete (GOAL-COMPLETE evidence gate) or maxIterations. Requires --tools. Same engine as ACP/dashboard (재발명 없음). Config `llm.goalLoop.enabled` also arms it.')
   .option('--implement', 'Bypass the harness goal-loop guard for the legacy implementation child entrypoint')
   .action(async (parts: string[], opts: { new?: boolean; session?: string; json?: boolean; tools?: boolean; goalLoop?: boolean; implement?: boolean }) => {
@@ -9897,12 +9916,12 @@ program
     // ★ 관측갭 수리(2026-07-21·제1원칙·트랙A) — self-implement 자식 goal-loop(`chat --goal-loop`)은 데몬과
     //   별개 독립 프로세스라 nexus StoreSink 를 상속 안 한다. 부모 `self implement`(위 self 커맨드)는 sink 를
     //   붙이지만 이 자식 프로세스는 자기 sink 를 등록해야 runGoalLoop 의 debug.log('goal.loop',…)
-    //   (iteration/stopReason/context-pressure)가 logs.db 에 도달 → `monad logs --category goal.loop` 로 조회 가능
-    //   = monad 가 "내 루프가 왜 멈췄나"를 스스로 관측. 부모가 심은 MONAD_HARNESS_SPACE_ID 를 상속한 하니스-공간
-    //   자식일 때만 공간 surface(harness:<kind>)로 등록(일반 대화형 `monad chat` 은 env 미설정 → 무영향·무회귀).
+    //   (iteration/stopReason/context-pressure)가 logs.db 에 도달 → `elanous logs --category goal.loop` 로 조회 가능
+    //   = elanous 가 "내 루프가 왜 멈췄나"를 스스로 관측. 부모가 심은 ELANOUS_HARNESS_SPACE_ID 를 상속한 하니스-공간
+    //   자식일 때만 공간 surface(harness:<kind>)로 등록(일반 대화형 `elanous chat` 은 env 미설정 → 무영향·무회귀).
     //   line ~1022 self-implement 부모 패턴을 그대로 미러링(재발명 0·fail-open). getHarnessSpace() 는 kind 마커
-    //   (MONAD_HARNESS_SPACE)로 판정하므로 게이트도 그 마커로(SPACE_ID 는 빈 값 가능 → id 없는 공간을 놓침).
-    if (process.env.MONAD_HARNESS_SPACE) {
+    //   (ELANOUS_HARNESS_SPACE)로 판정하므로 게이트도 그 마커로(SPACE_ID 는 빈 값 가능 → id 없는 공간을 놓침).
+    if (process.env.ELANOUS_HARNESS_SPACE) {
       try {
         const { getHarnessSpace, harnessSpaceSurface } = await import('./harness/harness-space.js');
         const _space = getHarnessSpace();
@@ -10007,7 +10026,7 @@ const agentCommand = program
       console.error("error: missing required argument 'text'");
       process.exit(1);
     }
-    // `monad agent` is a standalone process that does not inherit the nexus
+    // `elanous agent` is a standalone process that does not inherit the nexus
     // StoreSink, so register the agent logs.db sink first — otherwise core-turn
     // debug.log (e.g. capability.resolve) never reaches logs.db. Fail-open:
     // logging must never block the agent turn. See src/chat/agent-cli-entry.ts.
@@ -10057,7 +10076,7 @@ const agentCommand = program
 // currently take.
 agentCommand
   .command('dispatch <subagent_type> <prompt...>')
-  .description('Spawn one sub-agent from the terminal and print its final message. Observe with `monad logs --category agent.spawn` / `--category agent.done` — the printed cid pairs the two.')
+  .description('Spawn one sub-agent from the terminal and print its final message. Observe with `elanous logs --category agent.spawn` / `--category agent.done` — the printed cid pairs the two.')
   .option('--description <text>', 'Short label for the spawn (3–8 words). Defaults to the first 8 words of the prompt.')
   .option('--max-turns <n>', 'Tool-loop budget for the sub-agent. Defaults to the Agent tool default.')
   .option('--background', 'Return as soon as the child is spawned instead of waiting for its final message.')
@@ -10073,9 +10092,9 @@ agentCommand
       isolation?: string; name?: string; quiet?: boolean; json?: boolean;
     },
   ) => {
-    // Same rationale as `monad agent`: a standalone CLI process does not
+    // Same rationale as `elanous agent`: a standalone CLI process does not
     // inherit the nexus StoreSink, so without this the dispatch would run but
-    // `monad logs --category agent.spawn` would show nothing — the exact
+    // `elanous logs --category agent.spawn` would show nothing — the exact
     // "instrumented but invisible" failure this command exists to close.
     try {
       const { initializeAgentCliLogSink } = await import('./chat/agent-cli-entry.js');
@@ -10171,7 +10190,7 @@ agentCommand
         console.error(
           `\n[agent dispatch] cid=${cid} agent=${res.agent} taskId=${res.taskId} `
           + `durationMs=${res.durationMs}${res.background ? ' background=true' : ''}`
-          + `\n[agent dispatch] observe: monad logs --category agent.done --json --json-data | rg ${cid}`,
+          + `\n[agent dispatch] observe: elanous logs --category agent.done --json --json-data | rg ${cid}`,
         );
       }
     } catch (err) {
@@ -10182,7 +10201,7 @@ agentCommand
     }
   });
 
-/** Single-turn CLI driver shared by `monad ask` and `monad chat`.
+/** Single-turn CLI driver shared by `elanous ask` and `elanous chat`.
  *
  *  Resolution order for sessionId:
  *    1. opts.explicitSessionId (`--session`)  — wins, validates against
@@ -10195,7 +10214,7 @@ agentCommand
  *  at end-of-turn:
  *    {sessionId, provider, model, reply, logPath, budget, durationMs,
  *     turnIndex, ts}
- *  Stable shape so LLMs can self-spawn `monad chat` for follow-ups
+ *  Stable shape so LLMs can self-spawn `elanous chat` for follow-ups
  *  without parsing human-readable terminal output. */
 export async function runChatTurnCli(opts: {
   cfg: ReturnType<typeof reloadUserConfig>;
@@ -10208,7 +10227,7 @@ export async function runChatTurnCli(opts: {
    *  through streamLLMWithTools so the LLM can drive multi-turn
    *  exploration (file reads, grep, shell). Default false — CLI
    *  chat path stays text-only and matches telegram/discord etc.
-   *  for backward compatibility. `monad agent` flips this on. */
+   *  for backward compatibility. `elanous agent` flips this on. */
   enableTools?: boolean;
   /** ⭐ substrate 통합 — goal-loop 아밍. true 면 tool-loop 을 runGoalLoop 으로 감싸
    *  목표 완료(GOAL-COMPLETE 증거게이트)까지 across-turn 반복. config
@@ -10251,11 +10270,11 @@ export async function runChatTurnCli(opts: {
     segmentChunks = [];
   };
   if (!opts.json) {
-    console.log(`[monad] ${oneLineProvider(inspectActiveProvider(opts.cfg))}`);
+    console.log(`[elanous] ${oneLineProvider(inspectActiveProvider(opts.cfg))}`);
     process.stdout.write('');  // flush
   }
   // Tool catalog + dispatcher — only built when enableTools is on
-  // (i.e. `monad agent` or `monad chat --tools`). The catalog mirrors
+  // (i.e. `elanous agent` or `elanous chat --tools`). The catalog mirrors
   // the dashboard's CORE 6 native (Read/Grep/Glob/ListDir/Edit/Write)
   // and adds Bash so the LLM can shell out for self-debugging.
   // Scheduler/plugin/runtime tools are deliberately excluded — they
@@ -10300,13 +10319,13 @@ export async function runChatTurnCli(opts: {
   // Archon-port T1.2 (2026-05-08) — apply user-config `chat.toolDeny`
   // to the CLI agent's tool roster. Prior to T1.2 this code path
   // ignored toolDeny entirely (only `eval-prompt-cli.ts` honored it),
-  // so a global block list silently failed in `monad ask`.
+  // so a global block list silently failed in `elanous ask`.
   let cliToolSpecs = tools?.specs;
   if (cliToolSpecs && opts.cfg.chat.toolDeny.length > 0) {
     const { applyToolPolicy } = require('./tool-runtime/tool-policy.js') as typeof import('./tool-runtime/tool-policy.js');
     cliToolSpecs = applyToolPolicy(cliToolSpecs, { deny: opts.cfg.chat.toolDeny }) ?? cliToolSpecs;
   }
-  // ⭐ 도구 프로필(BACKLOG L1) — 하니스 구현 자식은 `MONAD_TOOL_PROFILE=coding` 으로 도메인·운영 도구를 뺀다.
+  // ⭐ 도구 프로필(BACKLOG L1) — 하니스 구현 자식은 `ELANOUS_TOOL_PROFILE=coding` 으로 도메인·운영 도구를 뺀다.
   {
     const { activeToolProfile, applyToolProfile, omittedToolGroupsNote } = require('./agent/tool-profile.js') as typeof import('./agent/tool-profile.js');
     const profile = activeToolProfile();
@@ -10517,12 +10536,12 @@ function truncateResultForLog(result: unknown): string {
 
 // ── Local LLM (OpenAI-compatible endpoint: LM Studio / llama.cpp / ollama) ──
 //
-// Distinct from `monad provider:set local` — those manipulate user-config.
+// Distinct from `elanous provider:set local` — those manipulate user-config.
 // This group is the day-to-day driver: ping the endpoint, list models,
 // run the full compatibility matrix, and shortcut to `set + test` as
 // a single setup command. Every subcommand reads the live endpoint
 // rather than the stored config so the user can diagnose before saving.
-// ── monad registry — 모델 카탈로그 SSoT 관측(drift 자기감지·제1원칙) ──
+// ── elanous registry — 모델 카탈로그 SSoT 관측(drift 자기감지·제1원칙) ──
 const registryCmd = program
   .command('registry')
   .description('모델 카탈로그(catalog/=SSoT) 관측 — 라우팅 맵 drift 감사');
@@ -10655,13 +10674,13 @@ const localCmd = program
   .addHelpText('after', [
     '',
     'Examples:',
-    '  monad local ping  --url http://192.168.0.50:1234',
-    '  monad local models --url http://192.168.0.50:1234',
-    '  monad local test  --url http://192.168.0.50:1234 --model mlx-community/gemma-4-26b-a4b-it',
-    '  monad local setup --url http://192.168.0.50:1234 --model mlx-community/gemma-4-26b-a4b-it',
+    '  elanous local ping  --url http://192.168.0.50:1234',
+    '  elanous local models --url http://192.168.0.50:1234',
+    '  elanous local test  --url http://192.168.0.50:1234 --model mlx-community/gemma-4-26b-a4b-it',
+    '  elanous local setup --url http://192.168.0.50:1234 --model mlx-community/gemma-4-26b-a4b-it',
     '',
     'When --url is omitted these commands fall back to the LOCAL_LLM_URL env var,',
-    'then to `llm.baseUrl` in ~/.config/monad/config.json (set by `monad local setup`).',
+    'then to `llm.baseUrl` in ~/.config/elanous/config.json (set by `elanous local setup`).',
   ].join('\n'));
 
 localCmd.hook('preAction', async () => {
@@ -10684,11 +10703,11 @@ function resolveLocalArgs(opts: { url?: string; model?: string }): { url: string
     ?? cfg.llm.model
     ?? '';
   if (!url) {
-    ui.error('No endpoint configured. Pass --url, set LOCAL_LLM_URL, or run `monad local setup`.');
+    ui.error('No endpoint configured. Pass --url, set LOCAL_LLM_URL, or run `elanous local setup`.');
     process.exit(2);
   }
   if (!model) {
-    ui.error('No model configured. Pass --model, set LOCAL_LLM_MODEL, or run `monad local setup`.');
+    ui.error('No model configured. Pass --model, set LOCAL_LLM_MODEL, or run `elanous local setup`.');
     process.exit(2);
   }
   return { url, model };
@@ -10702,7 +10721,7 @@ localCmd
     const cfg = getUserConfig();
     const url = opts.url ?? process.env.LOCAL_LLM_URL ?? cfg.llm.baseUrl;
     if (!url) {
-      ui.error('No endpoint configured. Pass --url, set LOCAL_LLM_URL, or run `monad local setup`.');
+      ui.error('No endpoint configured. Pass --url, set LOCAL_LLM_URL, or run `elanous local setup`.');
       process.exit(2);
     }
     const { resolveLocalEndpoints } = await import('./local-llm-test.js');
@@ -10732,7 +10751,7 @@ localCmd
     const cfg = getUserConfig();
     const url = opts.url ?? process.env.LOCAL_LLM_URL ?? cfg.llm.baseUrl;
     if (!url) {
-      ui.error('No endpoint configured. Pass --url, set LOCAL_LLM_URL, or run `monad local setup`.');
+      ui.error('No endpoint configured. Pass --url, set LOCAL_LLM_URL, or run `elanous local setup`.');
       process.exit(2);
     }
     const { resolveLocalEndpoints } = await import('./local-llm-test.js');
@@ -10831,7 +10850,7 @@ localCmd
       }
       models = [...loaded];
     }
-    if (!models.length) { ui.error('벤치할 모델을 지정하라(예: monad local bench gemma-4-26b-a4b-it) 또는 --loaded.'); process.exit(2); }
+    if (!models.length) { ui.error('벤치할 모델을 지정하라(예: elanous local bench gemma-4-26b-a4b-it) 또는 --loaded.'); process.exit(2); }
 
     // 4) target 배정 — 각 모델을 그 모델을 보유한 노드에 배정(없으면 --url/첫 엔드포인트). 라운드로빈 분산.
     const servedBy = (model: string): string[] => {
@@ -10888,12 +10907,12 @@ localCmd
     }
     const cards = chosen.map((c) => c.card);
 
-    // 5) 영속: ~/.monad/llm-bench.jsonl 에 레코드 append(회귀추적·미션 소비). repeat 시 runs/spread 태깅.
+    // 5) 영속: ~/.elanous/llm-bench.jsonl 에 레코드 append(회귀추적·미션 소비). repeat 시 runs/spread 태깅.
     try {
       const { appendFileSync, mkdirSync } = await import('node:fs');
       const { join } = await import('node:path');
-      const { monadStateRoot } = await import('./autopilot/state-paths.js');
-      const root = monadStateRoot();
+      const { elanousStateRoot } = await import('./autopilot/state-paths.js');
+      const root = elanousStateRoot();
       const path = join(root, 'llm-bench.jsonl');
       mkdirSync(root, { recursive: true });
       const at = new Date().toISOString();
@@ -10926,7 +10945,7 @@ localCmd
 localCmd
   .command('scores')
   .aliases(['map', 'leaderboard'])
-  .description('통합 맵 — 벤치 스코어(속도 tok/s × 용도 100점 × RAM × 노드 × tier)를 한 표로. ~/.monad/llm-bench.jsonl 읽어 inventory RAM 조인. fleet 라우팅 근거.')
+  .description('통합 맵 — 벤치 스코어(속도 tok/s × 용도 100점 × RAM × 노드 × tier)를 한 표로. ~/.elanous/llm-bench.jsonl 읽어 inventory RAM 조인. fleet 라우팅 근거.')
   .option('--sort <key>', '정렬: speed|coding|total|ram (기본 total)', 'total')
   .option('--best', '모델×노드별 최고 total (기본: 최근 벤치)')
   .option('--node <id>', '특정 노드로 제한')
@@ -10939,13 +10958,13 @@ localCmd
     const bench = await import('./llm/local-manager/benchmark/index.js');
     const { readFileSync } = await import('node:fs');
     const { join } = await import('node:path');
-    const { monadStateRoot } = await import('./autopilot/state-paths.js');
+    const { elanousStateRoot } = await import('./autopilot/state-paths.js');
 
     // 1) 영속 스코어 read (bench CLI 가 append 하는 JSONL) — 없으면 안내.
-    const path = join(monadStateRoot(), 'llm-bench.jsonl');
+    const path = join(elanousStateRoot(), 'llm-bench.jsonl');
     let text = '';
     try { text = readFileSync(path, 'utf8'); }
-    catch { ui.info(`스코어 파일 없음(${path}). \`monad local bench <model>\` 로 벤치를 먼저 돌려라.`); return; }
+    catch { ui.info(`스코어 파일 없음(${path}). \`elanous local bench <model>\` 로 벤치를 먼저 돌려라.`); return; }
     const split = bench.splitBenchRecords(text);
     let records = split.records;
     if (split.mismatches.length > 0) {
@@ -11059,7 +11078,7 @@ localCmd
 
 localCmd
   .command('chat <prompt...>')
-  .description('One-shot chat through the full monad provider stack (integration smoke)')
+  .description('One-shot chat through the full elanous provider stack (integration smoke)')
   .option('--url <url>', 'Override base URL for this call')
   .option('--model <id>', 'Override model id for this call')
   .action(async (prompt: string[], opts: { url?: string; model?: string }) => {
@@ -11071,7 +11090,7 @@ localCmd
     // parse) is working for 'local'.
     const { buildUserConfig } = await import('./user-config.js');
     const { resolveLocalEndpoints: _rle } = await import('./local-llm-test.js');
-    const cfg = buildUserConfig('/tmp/__monad-local-test-cfg.nonexistent');  // defaults
+    const cfg = buildUserConfig('/tmp/__elanous-local-test-cfg.nonexistent');  // defaults
     // Normalize `http://host:1234` → `http://host:1234/v1` so the
     // provider's `${baseUrl}/chat/completions` concatenation lands on
     // the right path. LM Studio + llama.cpp serve at /v1 by default.
@@ -11099,7 +11118,7 @@ localCmd
 
 localCmd
   .command('setup')
-  .description('Save endpoint + model to ~/.config/monad/config.json (provider=local)')
+  .description('Save endpoint + model to ~/.config/elanous/config.json (provider=local)')
   .option('--url <url>', 'Base URL (e.g. http://192.168.0.50:1234)')
   .option('--model <id>', 'Model id (e.g. mlx-community/gemma-4-26b-a4b-it)')
   .option('--api-key <key>', 'Optional bearer token for the endpoint')
@@ -11140,26 +11159,26 @@ localCmd
     ui.info(`  baseUrl  = ${url}`);
     ui.info(`  model    = ${model}`);
     if (opts.rotateLabel) ui.info(`  rotation += ${opts.rotateLabel}`);
-    if (backedUp) ui.info(`  backup   = ${bakPath}  (restore via \`monad provider:restore\`)`);
+    if (backedUp) ui.info(`  backup   = ${bakPath}  (restore via \`elanous provider:restore\`)`);
     console.log('');
-    ui.info(`Next: \`monad local ping\` to verify, then \`monad local test\` for the full matrix.`);
+    ui.info(`Next: \`elanous local ping\` to verify, then \`elanous local test\` for the full matrix.`);
   });
 
 // ── Scheduler CLI · retired (scheduler retirement ROADMAP §R1) ──
 //
-// `monad scheduler` / `monad sched` family retired. Scheduling becomes
+// `elanous scheduler` / `elanous sched` family retired. Scheduling becomes
 // a workflow-runtime Schedule Trigger node (R2 daemon v2 wires real
-// cron tick). For now, route users to `monad wf`.
+// cron tick). For now, route users to `elanous wf`.
 program
   .command('scheduler [args...]')
   .alias('sched')
-  .description('Retired — scheduling is now a workflow-runtime Schedule Trigger node (`monad wf`)')
+  .description('Retired — scheduling is now a workflow-runtime Schedule Trigger node (`elanous wf`)')
   .allowUnknownOption(true)
   .action(() => emitSchedulerRetirementNotice('scheduler'));
 
-// ── monad attach — minimal ACP client for daemon smoke + scripting (MVP M1.3) ──
+// ── elanous attach — minimal ACP client for daemon smoke + scripting (MVP M1.3) ──
 //
-// Connects to a running `monad serve` daemon and runs a single
+// Connects to a running `elanous serve` daemon and runs a single
 // prompt round-trip. Useful for:
 //   - Smoke testing a freshly-started daemon
 //   - Shell scripts / cron one-shot prompts
@@ -11172,14 +11191,14 @@ program
 program
   .command('attach')
   .description(
-    'ACP client for the running monad daemon. Three modes: handshake-only (default), one-shot (--message), interactive REPL (--interactive). Local (unix socket) or remote (--host / --url) over Tailscale.',
+    'ACP client for the running elanous daemon. Three modes: handshake-only (default), one-shot (--message), interactive REPL (--interactive). Local (unix socket) or remote (--host / --url) over Tailscale.',
   )
-  .option('--socket <path>', 'Override the unix socket path (default: ~/.monad/monad.sock)')
+  .option('--socket <path>', 'Override the unix socket path (default: ~/.elanous/elanous.sock)')
   .option('--host <hostport>', 'Remote daemon host:port (e.g. mbp.tailnet:31415). Coerced to ws://<hostport>/v1/acp.')
   .option('--url <wsurl>', 'Remote daemon WS URL (e.g. ws://host:31415/v1/acp). Overrides --host.')
   .option('-r, --remote [name]', 'Bookmark name (`-r` alone = default). Fills host/token-file; explicit --url/--host/--token/--token-file win.')
-  .option('--token <token>', 'Bearer token for remote auth. Overrides --token-file and MONAD_TOKEN.')
-  .option('--token-file <path>', 'Read bearer token from this file (e.g. ~/.monad/acp-token scp\'d from the daemon).')
+  .option('--token <token>', 'Bearer token for remote auth. Overrides --token-file and ELANOUS_TOKEN.')
+  .option('--token-file <path>', 'Read bearer token from this file (e.g. ~/.elanous/acp-token scp\'d from the daemon).')
   .option('--no-auth', 'Skip token handshake (Tailscale-only mode; daemon must run with --no-http-auth).')
   .option('--label <name>', 'Best-effort client label sent in the auth handshake (debug log only).')
   .option('--session <id>', 'M2.3 — attach to an EXISTING session id (loaded via ACP session/load) instead of minting a new one. Daemon must know the id (use /list on a prior session to discover).')
@@ -11234,8 +11253,8 @@ program
       const entry = named ? store.getRemote(named) : store.getDefaultRemote();
       if (!entry) {
         throw new Error(named
-          ? `--remote ${named}: unknown bookmark. Run \`monad nexus list\` to see available remotes.`
-          : 'no default remote bookmark. Run `monad nexus connect <host> --default` to set one.');
+          ? `--remote ${named}: unknown bookmark. Run \`elanous nexus list\` to see available remotes.`
+          : 'no default remote bookmark. Run `elanous nexus connect <host> --default` to set one.');
       }
       const defaults = bookmarkAttachDefaults(entry);
       bookmarkHost = defaults.host;
@@ -11243,7 +11262,7 @@ program
     }
 
     // Resolve transport — remote (ws) takes precedence when --host /
-    // --url / MONAD_REMOTE is provided; otherwise fall back to local
+    // --url / ELANOUS_REMOTE is provided; otherwise fall back to local
     // unix socket (existing behavior, preserved for backward compat).
     // ⭐ 명시 인자가 북마크를 «이긴다» — 아래 순서가 그것을 보장한다.
     const remote = await resolveRemoteTarget({
@@ -11281,16 +11300,16 @@ program
         return DashboardSession.attach({ conn, cwd: opts.cwd });
       };
     } else {
-      const { monadDaemonSocketPath } = await import('./monad-daemon.js');
+      const { elanousDaemonSocketPath } = await import('./elanous-daemon.js');
       const { connectUnixSocket, isUnixSocketAlive } = await import(
         './tui-client/acp-transport-unix-client.js'
       );
-      const socketPath = opts.socket ?? monadDaemonSocketPath();
+      const socketPath = opts.socket ?? elanousDaemonSocketPath();
       if (!(await isUnixSocketAlive(socketPath))) {
         ui.error(`No listening or usable Unix socket found at ${socketPath}; only the local Unix-socket transport was checked.`);
-        ui.info('A daemon may be listening on TCP only; attach with `monad attach --host <host>:<port>`.');
-        ui.info('Start NEXUS with `monad nexus` (foreground) or `monad nexus --bg`.');
-        ui.info('For a remote daemon, pass --host <tailnet>:<port> or set MONAD_REMOTE.');
+        ui.info('A daemon may be listening on TCP only; attach with `elanous attach --host <host>:<port>`.');
+        ui.info('Start NEXUS with `elanous nexus` (foreground) or `elanous nexus --bg`.');
+        ui.info('For a remote daemon, pass --host <tailnet>:<port> or set ELANOUS_REMOTE.');
         process.exit(1);
       }
       attachLabel = socketPath;
@@ -11324,8 +11343,8 @@ program
         ui.error(`attach failed: ${reason}`);
         ui.info(`Remote target: ${attachLabel}`);
         ui.info('Check the daemon is reachable: curl -sS -o /dev/null -w "%{http_code}\\n" <http-origin>/v1/nexus/connect-info');
-        ui.info('If the socket opens but the handshake is unanswered, the daemon accepted the upgrade without an ACP agent behind it — check the daemon\'s logs (monad logs --category acp).');
-        ui.info('Token: --token-file ~/.monad/acp-token from the daemon host, or --no-auth when the daemon runs with --no-http-auth.');
+        ui.info('If the socket opens but the handshake is unanswered, the daemon accepted the upgrade without an ACP agent behind it — check the daemon\'s logs (elanous logs --category acp).');
+        ui.info('Token: --token-file ~/.elanous/acp-token from the daemon host, or --no-auth when the daemon runs with --no-http-auth.');
         process.exit(1);
       }
     }
@@ -11376,8 +11395,8 @@ program
                 httpUrl = `http://${u.host}/v1/sessions`;
                 if (remote.token) headers['authorization'] = `Bearer ${remote.token}`;
               } else {
-                const { readMonadDaemonRuntime } = await import('./monad-daemon.js');
-                const rt = readMonadDaemonRuntime();
+                const { readElanousDaemonRuntime } = await import('./elanous-daemon.js');
+                const rt = readElanousDaemonRuntime();
                 if (rt?.httpPort) {
                   const host = rt.httpHost === '0.0.0.0' ? '127.0.0.1' : (rt.httpHost ?? '127.0.0.1');
                   httpUrl = `http://${host}:${rt.httpPort}/v1/sessions`;
@@ -11492,15 +11511,15 @@ program
     }
   });
 
-// Archon-port T3 (2026-05-08) — `monad wf` CLI sub-commands.
+// Archon-port T3 (2026-05-08) — `elanous wf` CLI sub-commands.
 //
 // `wf` is the namespace for the workflow-runtime DAG runtime:
 // prompt|bash|skill|cft|approval nodes authored as YAML in
-// ~/.monad/workflows/ · <cwd>/.monad/workflows/ · samples/workflows/.
+// ~/.elanous/workflows/ · <cwd>/.elanous/workflows/ · samples/workflows/.
 //
-// Singular `monad workflow` is an additional alias alongside the plural
-// `monad workflows` so the natural-language form works the same as
-// `monad wf run ...` (history: scheduler-retirement R4 · 2026-05-11).
+// Singular `elanous workflow` is an additional alias alongside the plural
+// `elanous workflows` so the natural-language form works the same as
+// `elanous wf run ...` (history: scheduler-retirement R4 · 2026-05-11).
 const wfCmd = program
   .command('wf')
   .alias('workflows')
@@ -11541,7 +11560,7 @@ wfCmd
     process.exit(await workflowRun(name, joined));
   });
 
-// M4-5 (2026-05-12 · Phase 4 N5-5) — `monad wf node {list,spec,search}`
+// M4-5 (2026-05-12 · Phase 4 N5-5) — `elanous wf node {list,spec,search}`
 // node catalog reference. Source = src/workflow-runtime/node-catalog.ts
 // (single truth · F6 default · co-located with types.ts).
 const wfNodeCmd = wfCmd.command('node').description('Workflow node catalog reference — kinds, specs, and search.');
@@ -11576,7 +11595,7 @@ wfNodeCmd
     }));
   });
 
-// M4-1 (2026-05-12 · Phase 4 N5-1) — `monad wf suggest-next <workflow>`.
+// M4-1 (2026-05-12 · Phase 4 N5-1) — `elanous wf suggest-next <workflow>`.
 // LLM-driven recommendation for the next node to add. F3 default:
 // invoked on demand · no auto-fire.
 wfCmd
@@ -11594,12 +11613,12 @@ wfCmd
     process.exit(await wfSuggestNext(workflowName, passed));
   });
 
-// Scheduler-retirement R3 — `monad wf synth <intent>` LLM synthesis.
+// Scheduler-retirement R3 — `elanous wf synth <intent>` LLM synthesis.
 wfCmd
   .command('synth <intent...>')
   .description('Synthesize a workflow YAML from a natural-language intent (LLM-driven · scheduler-retirement R3)')
   .option('--preview', 'Print the synthesized YAML without saving')
-  .option('--save-project', 'Save under `<cwd>/.monad/workflows/` instead of `~/.monad/workflows/`')
+  .option('--save-project', 'Save under `<cwd>/.elanous/workflows/` instead of `~/.elanous/workflows/`')
   .action(async (parts: string[], opts: { preview?: boolean; saveProject?: boolean }) => {
     const { workflowSynth } = await import('./cli/workflow.js');
     const intent = parts.join(' ');
@@ -11615,7 +11634,7 @@ wfCmd
 
 const nexusCmd = program.command('nexus').description('NEXUS — unified TUI shell + supervisor + meta-api (Phase N-1, opt-in)');
 
-// `monad nexus run` — simplified surface (2026-05-11 refactor).
+// `elanous nexus run` — simplified surface (2026-05-11 refactor).
 //
 // Single user-facing entrypoint. Defaults to PWA-ready daemon with
 // auto-detected lifecycle:
@@ -11635,9 +11654,9 @@ const nexusRunCmd = nexusCmd
   // Visible flags
   .option('--hmr', 'Run apps/pwa via Next.js dev server proxy (live reload · PWA UI iteration). Implies fork+detach.')
   .option('--https', 'Mount Tailscale Serve tls-tcp on the picked port (sudo required · iPad voice/camera needs HTTPS). User-config `global.nexus.pwa.shareTailnet=enabled` auto-fires this even without the flag.')
-  .option('--port <n>', 'HTTP API port override. Default = user-config `global.nexus.pwa.port` ?? 31415. Env: MONAD_NEXUS_HTTP_PORT.', (v) => Number.parseInt(v, 10))
-  .option('--test', 'Project-local isolated mode — state dir = `<repo>/.monad-test/` (gitignored, disposable). Auto port fallback (31415 → 31420 → ...). Daily driver at `~/.monad/nexus/` untouched. Combine with --hmr / --https / --port / --rebuild / --fresh / --stop / --status.')
-  .option('--fresh', 'Prune `<repo>/.monad-test/{workflows,tasks,backups}/` before starting (--test only). Default off — preserves in-progress test artifacts across runs.')
+  .option('--port <n>', 'HTTP API port override. Default = user-config `global.nexus.pwa.port` ?? 31415. Env: ELANOUS_NEXUS_HTTP_PORT.', (v) => Number.parseInt(v, 10))
+  .option('--test', 'Project-local isolated mode — state dir = `<repo>/.elanous-test/` (gitignored, disposable). Auto port fallback (31415 → 31420 → ...). Daily driver at `~/.elanous/nexus/` untouched. Combine with --hmr / --https / --port / --rebuild / --fresh / --stop / --status.')
+  .option('--fresh', 'Prune `<repo>/.elanous-test/{workflows,tasks,backups}/` before starting (--test only). Default off — preserves in-progress test artifacts across runs.')
   .option('--rebuild', 'Force a fresh `apps/pwa` build before start (skips the staleness check). Independent of --test.')
   .option('--auto-build', 'Static-mode: build apps/pwa/out before start when it is stale. Default on for `nexus run`, off for `--test`.')
   .option('--no-auto-build', 'Disable the static-mode auto-build (canonical entry default-on).')
@@ -11650,26 +11669,26 @@ const nexusRunCmd = nexusCmd
   .option('--no-mcp', 'Skip the entire MCP-client boot wire (every `mcp.servers[]` in user-config). Use when a misbehaving server (e.g. xcrun mcpbridge tools/list hang) drags every startup through its 8s timeout.')
   .option('--dispatch', '§5-③ — enable the autonomous idle-continuation scheduler for this run (drives an active auto-mode goal on idle). Same as user-config `dispatch.enabled`. Default off — ignites self-firing turns, so opt-in.')
   .option('--force', 'Take the lock even if another nexus instance is recorded as running.')
-  .option('--status', 'Alias for `monad nexus status` (or test-mode status when combined with --test).')
-  .option('--stop', 'Alias for `monad nexus stop` (or test-mode cascade stop when combined with --test).')
+  .option('--status', 'Alias for `elanous nexus status` (or test-mode status when combined with --test).')
+  .option('--stop', 'Alias for `elanous nexus stop` (or test-mode cascade stop when combined with --test).')
   // Hidden: developer + backwards-compat. Suppressed from `--help` so
   // the 3-flag user surface stays clean.
   //
   // PLAN-tui-redundancy-cleanup T3 (2026-05-16) — `--legacy-tui` / `--tui`
   // flag 제거. NEXUS TUI shell (src/nexus/shell/*) 가 opt-in deprecated 였고,
   // 전략 전환 (TUI-BEST → iOS/iPadOS-first) 으로 본 cascade 에서 정리.
-  // 사용자 daemon-only mode (`monad nexus run`) 그대로 사용.
+  // 사용자 daemon-only mode (`elanous nexus run`) 그대로 사용.
   .addOption(new Option('--headless', 'Backwards-compat: lifecycle now auto-detects from TTY. Flag silently accepted.').hideHelp())
   .addOption(new Option('--foreground', 'Backwards-compat: lifecycle now auto-detects from TTY. Flag silently accepted.').hideHelp())
   .addOption(new Option('--bg', 'Backwards-compat: lifecycle now auto-detects from TTY. Flag silently accepted.').hideHelp())
-  .addOption(new Option('--http-port <n>', 'Backwards-compat alias for `--port`. Env: MONAD_NEXUS_HTTP_PORT.').argParser((v) => Number.parseInt(v, 10)).hideHelp())
+  .addOption(new Option('--http-port <n>', 'Backwards-compat alias for `--port`. Env: ELANOUS_NEXUS_HTTP_PORT.').argParser((v) => Number.parseInt(v, 10)).hideHelp())
   .addOption(new Option('--http-host <host>', 'HTTP bind hostname (advanced · Tailscale deployments pin to a specific IP).').hideHelp())
   .addOption(new Option('--tools <kind>', 'In-process daemon tool surface — "none" / "readonly" / "chat" / "webterm". Default = "webterm" (everything: Read · Grep · WebSearch · Plan · MarkStepDone · Edit · Bash · WebTerminal* triple). Opt down to "chat" (drops WebTerminal*) for lightweight chat-only backends, or "readonly" (drops Edit + Bash too) for safety.').hideHelp())
   // ⛔ hideHelp() 를 «걷었다»(2026-09-06) — 격리 인스턴스에서 이 플래그는 «선택»이 아니라 «필수»다.
   //    숨겨져 있으면 `nexus run --test` 가 부팅 중 throw 하고 죽는데, 런처는 이미 성공 화면(포트·URL)을
   //    찍은 뒤라 «떴다»로 보인다. 실제로 그렇게 한 번 잃었다: 리스너 0인데 status 는 URL 을 말했고,
   //    원인은 로그 파일을 열어야만 보였다. ⇒ 필수 조건은 `--help` 에 «있어야» 한다.
-  .addOption(new Option('--tool-cwd <path>', 'Working directory for Read/Grep tool dispatch. REQUIRED in isolated mode (--test): boot fails without it (or MONAD_TOOL_CWD) so the daemon cannot silently edit a live checkout.'))
+  .addOption(new Option('--tool-cwd <path>', 'Working directory for Read/Grep tool dispatch. REQUIRED in isolated mode (--test): boot fails without it (or ELANOUS_TOOL_CWD) so the daemon cannot silently edit a live checkout.'))
   .addOption(new Option('--history-dir <path>', 'Disk-backed jsonl-per-session history dir.').hideHelp())
   .action(async (opts: {
     // visible
@@ -11755,17 +11774,17 @@ const nexusRunCmd = nexusCmd
       && toolsKind !== 'chat'
       && toolsKind !== 'webterm'
     ) {
-      console.error(`monad nexus --tools must be 'none' | 'readonly' | 'chat' | 'webterm' (got: ${opts.tools})`);
+      console.error(`elanous nexus --tools must be 'none' | 'readonly' | 'chat' | 'webterm' (got: ${opts.tools})`);
       process.exit(1);
     }
 
     // 3. Resolve --port (canonical) ← --http-port (compat) ← env.
-    const envPortRaw = process.env.MONAD_NEXUS_HTTP_PORT?.trim();
+    const envPortRaw = process.env.ELANOUS_NEXUS_HTTP_PORT?.trim();
     const envPort = envPortRaw ? Number.parseInt(envPortRaw, 10) : NaN;
     const resolvedPort = opts.port
       ?? opts.httpPort
       ?? (Number.isFinite(envPort) && envPort > 0 ? envPort : undefined);
-    const resolvedHttpHost = opts.httpHost ?? process.env.MONAD_NEXUS_HTTP_HOST?.trim() ?? undefined;
+    const resolvedHttpHost = opts.httpHost ?? process.env.ELANOUS_NEXUS_HTTP_HOST?.trim() ?? undefined;
 
     // 4. Legacy TUI mode 제거됨 (T3 · PLAN-tui-redundancy-cleanup
     //    2026-05-16). `--legacy-tui` / `--tui` flag 가 NEXUS TUI shell
@@ -11774,10 +11793,10 @@ const nexusRunCmd = nexusCmd
 
     // 5. Auto-detect lifecycle. TTY → fork+detach + orch; !TTY → inline.
     //
-    // MONAD_NEXUS_BG_PARENT=1 is set by bg-launch on the child it forks,
+    // ELANOUS_NEXUS_BG_PARENT=1 is set by bg-launch on the child it forks,
     // so the child detects "I am the bg-launched daemon, run inline"
     // even though some TTY-providing harness might still report isTTY.
-    const bgChild = process.env.MONAD_NEXUS_BG_PARENT === '1';
+    const bgChild = process.env.ELANOUS_NEXUS_BG_PARENT === '1';
     const isTty = (process.stdin.isTTY ?? false) && !bgChild;
 
     if (!isTty) {
@@ -11802,7 +11821,7 @@ const nexusRunCmd = nexusCmd
       // (runPwaStart.bringShareUp) own the mount, so pass false. Pure
       // headless launches (launchd / Docker / etc.) own it themselves —
       // let runNexus mount based on `global.nexus.pwa.shareTailnet=enabled`.
-      // `monad nexus run` (no args) defaults to static + watch — the
+      // `elanous nexus run` (no args) defaults to static + watch — the
       // "calm auto-reload" mode. Explicit --no-watch / --hmr disables.
       // `--rebuild` / `--no-auto-build` / `--no-auto-restart` are pass-
       // through to runPwaStart for both TTY and !TTY HMR branches.
@@ -11881,7 +11900,7 @@ nexusRunCmd.addHelpText('after', () => {
 
 nexusCmd
   .command('status')
-  .description('Print NEXUS lock + runtime sidecar state. Same as `monad nexus --status`.')
+  .description('Print NEXUS lock + runtime sidecar state. Same as `elanous nexus --status`.')
   .action(async () => {
     const { runNexus } = await import('./nexus/index.js');
     await runNexus({ status: true });
@@ -11889,22 +11908,22 @@ nexusCmd
 
 nexusCmd
   .command('stop')
-  .description('Send SIGINT to the local NEXUS lock holder. Same as `monad nexus --stop`.')
+  .description('Send SIGINT to the local NEXUS lock holder. Same as `elanous nexus --stop`.')
   .action(async () => {
     const { runNexus } = await import('./nexus/index.js');
     await runNexus({ stop: true });
   });
 
-// `monad nexus ios-bind` (L2 helper · 2026-05-13) — iOS Stage A simulator dogfood 의
+// `elanous nexus ios-bind` (L2 helper · 2026-05-13) — iOS Stage A simulator dogfood 의
 // entry friction 제거. daemon 의 현재 host/port (runtime sidecar 에서 추출) +
-// ~/.monad/acp-token 을 `xcrun simctl spawn booted defaults write
-// com.elanvitalai.monad.ios <key> ...` 3 회로 시뮬레이터 booted device 의
+// ~/.elanous/acp-token 을 `xcrun simctl spawn booted defaults write
+// com.elanvitalai.elanous.ios <key> ...` 3 회로 시뮬레이터 booted device 의
 // UserDefaults 에 자동 inject. iOS app 의 NexusEndpoint L1 (Settings) + L3
 // (auto-discovery) 와 동일 효과 · 사용자 0 입력으로 첫 connect 가능.
 nexusCmd
   .command('ios-bind')
   .description('Inject NEXUS host/port + bearer token to the booted iOS simulator (L2 helper).')
-  .option('--bundle-id <id>', 'iOS app bundle id (default: com.elanvitalai.monad.ios)')
+  .option('--bundle-id <id>', 'iOS app bundle id (default: com.elanvitalai.elanous.ios)')
   .option('--host <host>', 'Override host (skip runtime sidecar · for test mode or stale state)')
   .option('--port <port>', 'Override port (e.g. 31432 for test mode)', (v) => parseInt(v, 10))
   .option('--no-token', 'Skip bearer token inject (host/port only)')
@@ -11932,13 +11951,13 @@ nexusCmd
     }
   });
 
-// P-2B.β — `monad nexus config <list|get|set|unset>` generic CLI for
+// P-2B.β — `elanous nexus config <list|get|set|unset>` generic CLI for
 // every UserConfig knob (env vars are not used; everything routes
-// through ~/.monad/config.json). Sibling of `nexus pwa` / `nexus
+// through ~/.elanous/config.json). Sibling of `nexus pwa` / `nexus
 // channel-bot`. Path shape: `global.<...>` or `tabs.<id>.<...>`.
 const nexusConfigCmd = nexusCmd
   .command('config')
-  .description('Read/write the UserConfig at ~/.monad/config.json.');
+  .description('Read/write the UserConfig at ~/.elanous/config.json.');
 
 nexusConfigCmd
   .command('list', { isDefault: true })
@@ -11976,8 +11995,8 @@ nexusConfigCmd
     process.exit(r.exitCode);
   });
 
-// `monad nexus build` — PWA static export build (top-level verb · 2026-05-11
-// refactor). Was `monad nexus pwa build`; the `pwa` namespace now holds
+// `elanous nexus build` — PWA static export build (top-level verb · 2026-05-11
+// refactor). Was `elanous nexus pwa build`; the `pwa` namespace now holds
 // only operational helpers (stop/show/global/share/restart/dev).
 // `nexus pwa build` stays as a deprecation forward (see below).
 nexusCmd
@@ -11992,9 +12011,9 @@ nexusCmd
 	    process.exit(result.exitCode);
 	  });
 
-	// `monad nexus dist <subcommand>` group — Stage B remote-install over
+	// `elanous nexus dist <subcommand>` group — Stage B remote-install over
 // Tailscale (2026-05-18). `publish` ingests an Ad Hoc IPA into
-// ~/.monad/dist; `link` prints the itms-services:// install URL for
+// ~/.elanous/dist; `link` prints the itms-services:// install URL for
 // iPad Safari. The daemon's `/v1/dist/*` endpoints serve manifest +
 // IPA without bearer auth (the Tailscale tailnet is the access gate).
 const nexusDistCmd = nexusCmd
@@ -12003,7 +12022,7 @@ const nexusDistCmd = nexusCmd
 
 nexusDistCmd
   .command('publish <ipa>')
-  .description('Copy an Ad Hoc IPA into ~/.monad/dist + write dist.json. Prints the Safari install link.')
+  .description('Copy an Ad Hoc IPA into ~/.elanous/dist + write dist.json. Prints the Safari install link.')
   .option('--title <title>', 'Override CFBundleDisplayName for the install confirmation.')
   .option('--version <version>', 'Override CFBundleShortVersionString.')
   .option('--build <build>', 'Override CFBundleVersion (build number).')
@@ -12037,7 +12056,7 @@ nexusDistCmd
     process.exit(r.exitCode);
   });
 
-// `monad nexus pwa <subcommand>` group — operational helpers only after
+// `elanous nexus pwa <subcommand>` group — operational helpers only after
 // the 2026-05-11 simplification. `start` / `test` / `build` are
 // deprecation forwards; the new canonical entries are `nexus run`,
 // `nexus run --test`, and `nexus build` respectively.
@@ -12048,11 +12067,11 @@ const nexusPwaCmd = nexusCmd
 // Deprecation forward: `nexus pwa build` → `nexus build`.
 nexusPwaCmd
   .command('build')
-  .description('DEPRECATED — forwards to `monad nexus build`.')
+  .description('DEPRECATED — forwards to `elanous nexus build`.')
   .option('--cwd <path>', 'Override the apps/pwa working directory.')
-  .addHelpText('after', '\nNote: `monad nexus pwa build` is deprecated. Use `monad nexus build` (same behavior).\n')
+  .addHelpText('after', '\nNote: `elanous nexus pwa build` is deprecated. Use `elanous nexus build` (same behavior).\n')
   .action(async (opts: { cwd?: string }) => {
-    console.error('monad nexus pwa build: deprecated — forwarding to `monad nexus build`.');
+    console.error('elanous nexus pwa build: deprecated — forwarding to `elanous nexus build`.');
     const { runPwaBuild } = await import('./cli/pwa-build.js');
     const result = await runPwaBuild({
       ...(opts.cwd ? { cwd: opts.cwd } : {}),
@@ -12060,9 +12079,9 @@ nexusPwaCmd
     process.exit(result.exitCode);
   });
 
-// `monad nexus pwa start` — deprecation shim (2026-05-11).
+// `elanous nexus pwa start` — deprecation shim (2026-05-11).
 //
-// The user-facing PWA daemon entry consolidated into `monad nexus run`,
+// The user-facing PWA daemon entry consolidated into `elanous nexus run`,
 // which auto-detects lifecycle (TTY → fork+detach + orch; !TTY →
 // inline). This shim forwards the same call with the same flags so
 // scripts / muscle memory / pre-existing automation keeps working
@@ -12072,9 +12091,9 @@ nexusPwaCmd
 // rendered help so it's seen by anyone exploring the surface.
 nexusPwaCmd
   .command('start')
-  .description('DEPRECATED — forwards to `monad nexus run`. Same flags · same behavior.')
+  .description('DEPRECATED — forwards to `elanous nexus run`. Same flags · same behavior.')
   .option('--static', 'Default mode (serve apps/pwa/out static export).')
-  .option('--hmr', 'Forward to `monad nexus run --hmr`.')
+  .option('--hmr', 'Forward to `elanous nexus run --hmr`.')
   .option('--dev-port <n>', 'Next.js dev server port (--hmr only · default 3210).', (v) => Number.parseInt(v, 10))
   .option('--loopback', 'Bind nexus + next-dev to 127.0.0.1.')
   .option('--force', 'Take over an existing lock.')
@@ -12082,8 +12101,8 @@ nexusPwaCmd
   .option('--history-dir <path>', 'Disk-backed jsonl-per-session history dir.')
   .option('--http-host <host>', 'HTTP bind hostname.')
   .option('--http-port <n>', 'HTTP API start port.', (v) => Number.parseInt(v, 10))
-  .option('--https', 'Forward to `monad nexus run --https`.')
-  .addHelpText('after', '\nNote: `monad nexus pwa start` is deprecated. Use `monad nexus run` (same behavior · auto-detects TTY lifecycle).\n')
+  .option('--https', 'Forward to `elanous nexus run --https`.')
+  .addHelpText('after', '\nNote: `elanous nexus pwa start` is deprecated. Use `elanous nexus run` (same behavior · auto-detects TTY lifecycle).\n')
   .action(async (opts: {
     static?: boolean;
     hmr?: boolean;
@@ -12100,7 +12119,7 @@ nexusPwaCmd
       console.error('error: --static and --hmr are mutually exclusive');
       process.exit(2);
     }
-    console.error('monad nexus pwa start: deprecated — forwarding to `monad nexus run` (same behavior).');
+    console.error('elanous nexus pwa start: deprecated — forwarding to `elanous nexus run` (same behavior).');
     const { runPwaStart } = await import('./cli/pwa-start.js');
     const result = await runPwaStart({
       mode: opts.hmr ? 'hmr' : 'static',
@@ -12116,7 +12135,7 @@ nexusPwaCmd
     process.exit(result.exitCode);
   });
 
-// P-2D.3' — `monad nexus pwa stop` cascades: stops the BG dev server
+// P-2D.3' — `elanous nexus pwa stop` cascades: stops the BG dev server
 // (DELETE admin endpoint via dev BG's own cleanup) + then the nexus
 // daemon. Sibling of `pwa start` so the user never has to remember
 // which mode is active.
@@ -12129,14 +12148,14 @@ nexusPwaCmd
     process.exit(r.exitCode);
   });
 
-// `monad nexus pwa test` was deprecated 2026-05-11 in favor of
-// `monad nexus run --test` (same runPwaTest under the hood). Removed
+// `elanous nexus pwa test` was deprecated 2026-05-11 in favor of
+// `elanous nexus run --test` (same runPwaTest under the hood). Removed
 // 2026-05-13 — the forward + duplicated option surface had been
 // drifting out of sync with the canonical entry every time we added a
 // new flag (rebuild / watch / auto-build). The internal helper
 // `runPwaTest` stays; only the user-facing subcommand goes away.
 
-// `monad nexus pwa restart` — one-shot stop + start. Default follows the
+// `elanous nexus pwa restart` — one-shot stop + start. Default follows the
 // running service: a live PWA dev lock means HMR is up, so we restart
 // into HMR; no live dev lock means the static-export path. Explicit
 // --static / --hmr forces a mode (used to switch modes via restart).
@@ -12147,7 +12166,7 @@ nexusPwaCmd
   .description('Restart the PWA service. Default follows the running mode; --static / --hmr forces a switch. No rebuild by default.')
   .option('--static', 'Force restart into static-export mode (apps/pwa/out).')
   .option('--hmr', 'Force restart into HMR mode (next-dev + admin hot-swap).')
-  .option('--rebuild', 'Run `monad nexus pwa build` before restart (static export refresh).')
+  .option('--rebuild', 'Run `elanous nexus pwa build` before restart (static export refresh).')
   .option('--cwd <path>', 'apps/pwa cwd for --rebuild (default = repo apps/pwa).')
   .option('--dev-port <n>', 'Next.js dev server port (--hmr only). Default 3210.', (v) => Number.parseInt(v, 10))
   .option('--loopback', 'Bind nexus and next-dev to 127.0.0.1 instead of 0.0.0.0.')
@@ -12190,7 +12209,7 @@ nexusPwaCmd
     process.exit(result.exitCode);
   });
 
-// P-2A · γ · D.1 · D.2 — `monad nexus pwa dev` runs the apps/pwa
+// P-2A · γ · D.1 · D.2 — `elanous nexus pwa dev` runs the apps/pwa
 // Next.js dev server with HMR. `--bg` self-detaches; `--stop` /
 // `--status` manage the BG child. The foreground process POSTs to
 // `/v1/nexus/admin/pwa-dev-proxy` on start and DELETEs on exit so
@@ -12202,7 +12221,7 @@ nexusPwaCmd
   .option('--port <n>', 'Dev server port (default 3210).', (v) => Number.parseInt(v, 10))
   .option('--host <host>', 'Bind interface for next-dev (default 0.0.0.0 — all interfaces).')
   .option('--no-auto-config', 'Skip the admin endpoint POST/DELETE — leave nexus untouched.')
-  .option('--bg', 'Detach into background. Logs to ~/.monad/nexus/logs/pwa-dev-<stamp>.log.')
+  .option('--bg', 'Detach into background. Logs to ~/.elanous/nexus/logs/pwa-dev-<stamp>.log.')
   .option('--stop', 'Signal the BG child to stop + clear the lock.')
   .option('--status', 'Report whether the BG child is running.')
   .action(async (opts: {
@@ -12242,7 +12261,7 @@ nexusPwaCmd
     process.exit(result.exitCode);
   });
 
-// P.4 — `monad nexus pwa share enable|disable|status`. Mind-change knob
+// P.4 — `elanous nexus pwa share enable|disable|status`. Mind-change knob
 // for the first-boot wizard's outcome.
 const nexusPwaShareCmd = nexusPwaCmd
   .command('share', { isDefault: false })
@@ -12250,7 +12269,7 @@ const nexusPwaShareCmd = nexusPwaCmd
 
 nexusPwaShareCmd
   .command('status', { isDefault: true })
-  .description('Show current share switch + Tailscale state. Default subcommand so `monad nexus pwa share` 도 동일.')
+  .description('Show current share switch + Tailscale state. Default subcommand so `elanous nexus pwa share` 도 동일.')
   .option('--json', 'Emit JSON (script-friendly).')
   .action(async (opts: { json?: boolean }) => {
     const { pwaShareStatus } = await import('./cli/pwa-share.js');
@@ -12277,7 +12296,7 @@ nexusPwaShareCmd
     process.exit(result.exitCode);
   });
 
-// `monad nexus show` (2026-05-13) — consolidated daemon overview.
+// `elanous nexus show` (2026-05-13) — consolidated daemon overview.
 // Superset of `pwa show` (kept as a sibling): adds REST API + SSE
 // event URLs alongside PWA UI URLs so the user gets every link in
 // one shot.
@@ -12290,7 +12309,7 @@ nexusCmd
     const result = await runNexusShow({ format: opts.json ? 'json' : 'human' });
     process.exit(result.exitCode);
   });
-// R0 — `monad nexus restart-needed`: classify the daemon-sha..HEAD path diff.
+// R0 — `elanous nexus restart-needed`: classify the daemon-sha..HEAD path diff.
 // Read-only. Exit: none 0 · build 10 · restart 11 · unknown 2.
 nexusCmd
   .command('restart-needed')
@@ -12308,14 +12327,14 @@ nexusCmd
     process.exit(result.exitCode);
   });
 
-// P5 (2026-05-10) — `monad nexus pwa show` — current project's daemon
+// P5 (2026-05-10) — `elanous nexus pwa show` — current project's daemon
 // view (cwd-matched). Sibling of `pwa global status` (host-wide).
 // Surfaces: alive · ports · loopback URL · tailnet URL when
 // shareMounted. User asked: "현재 서빙된 상태를 표시 + 현재 프로젝트
 // 서빙 시 주소값을 알려줌".
 nexusPwaCmd
   .command('show')
-  .description('Show this project\'s PWA daemon — alive flag · ports · loopback + tailnet URLs. (For the consolidated link view incl. REST/SSE, use `monad nexus show`.)')
+  .description('Show this project\'s PWA daemon — alive flag · ports · loopback + tailnet URLs. (For the consolidated link view incl. REST/SSE, use `elanous nexus show`.)')
   .option('--json', 'Emit JSON (script-friendly).')
   .action(async (opts: { json?: boolean }) => {
     const { runPwaShow } = await import('./cli/pwa-show.js');
@@ -12338,13 +12357,13 @@ nexusPwaCmd
     process.exit(result.exitCode);
   });
 
-// P5 (2026-05-10) — `monad nexus pwa global <status|clean>` — registry-
+// P5 (2026-05-10) — `elanous nexus pwa global <status|clean>` — registry-
 // driven view across all PWA daemons on this host (multi-folder /
 // multi-project) + cleanup orchestrator. Uses the P4 registry from
-// `~/.monad/pwa-registry.json`.
+// `~/.elanous/pwa-registry.json`.
 const nexusPwaGlobalCmd = nexusPwaCmd
   .command('global', { isDefault: false })
-  .description('Cross-instance PWA daemon view (registry from `~/.monad/pwa-registry.json`).');
+  .description('Cross-instance PWA daemon view (registry from `~/.elanous/pwa-registry.json`).');
 
 nexusPwaGlobalCmd
   .command('status', { isDefault: true })
@@ -12379,7 +12398,7 @@ nexusChannelBotCmd
   .description('Store the Telegram or Discord bot token in the NEXUS secret store.')
   .action(async (platform: string) => {
     if (platform !== 'telegram' && platform !== 'discord') {
-      console.error('monad nexus channel-bot setup: platform must be telegram or discord.');
+      console.error('elanous nexus channel-bot setup: platform must be telegram or discord.');
       process.exit(1);
     }
     const { runChannelBotSetup } = await import('./cli/channel-bot-setup.js');
@@ -12403,15 +12422,15 @@ nexusCmd
     process.exit(result.exitCode);
   });
 
-// T4.B — Remote bookmark CLI. ~/.monad/remotes.json + ~/.monad/remotes/<name>.token
+// T4.B — Remote bookmark CLI. ~/.elanous/remotes.json + ~/.elanous/remotes/<name>.token
 nexusCmd
   .command('connect <host>')
-  .description('Bookmark a remote NEXUS host so `monad` (no-arg) auto-attaches. Pulls metadata from /v1/nexus/connect-info.')
+  .description('Bookmark a remote NEXUS host so `elanous` (no-arg) auto-attaches. Pulls metadata from /v1/nexus/connect-info.')
   .option('--name <name>', 'Bookmark name (default = slug of host).')
   .option('--port <port>', 'HTTP port (default 31415; --host can also embed :port).', (v) => Number.parseInt(v, 10))
   .option('--token <token>', 'Bearer token (use --token-file to load from disk instead).')
   .option('--token-file <path>', 'Read bearer token from this file.')
-  .option('--default', 'Set as the default remote (`monad` no-arg routes here).')
+  .option('--default', 'Set as the default remote (`elanous` no-arg routes here).')
   .option('--no-default', 'Don\'t modify the existing default remote on add.')
   .option('--no-ping', 'Skip /v1/health probe (useful when the remote is offline).')
   .action(async (host: string, opts: {
@@ -12452,7 +12471,7 @@ nexusCmd
 
 nexusCmd
   .command('switch <name>')
-  .description('Set <name> as the default remote (used by `monad` no-arg).')
+  .description('Set <name> as the default remote (used by `elanous` no-arg).')
   .action(async (name: string) => {
     const { switchRemote } = await import('./cli/remotes-cli.js');
     const code = await switchRemote({ name });
@@ -12469,23 +12488,23 @@ nexusCmd
     if (code !== 0) process.exit(code);
   });
 
-// PR ψ + ω — `monad nexus install --launchd|--systemd-user`. Cross-platform
+// PR ψ + ω — `elanous nexus install --launchd|--systemd-user`. Cross-platform
 // dispatcher; the macOS plist + Linux service unit live in dedicated modules.
 nexusCmd
   .command('install')
   .description('Install nexus as an OS-supervised service (launchd / systemd)')
-  .option('--launchd', 'macOS LaunchAgent install (~/Library/LaunchAgents/com.monad.nexus.plist)')
-  .option('--systemd-user', 'Linux systemd --user install (~/.config/systemd/user/monad-nexus.service)')
+  .option('--launchd', 'macOS LaunchAgent install (~/Library/LaunchAgents/com.elanous.nexus.plist)')
+  .option('--systemd-user', 'Linux systemd --user install (~/.config/systemd/user/elanous-nexus.service)')
   .option('--no-start', 'Write the unit file but skip launchctl bootstrap / systemctl enable+start')
   .action(async (opts: { launchd?: boolean; systemdUser?: boolean; start?: boolean }) => {
     const wantsLaunchd = opts.launchd === true;
     const wantsSystemd = opts.systemdUser === true;
     if (!wantsLaunchd && !wantsSystemd) {
-      console.error('monad nexus install: pass --launchd (macOS) or --systemd-user (Linux).');
+      console.error('elanous nexus install: pass --launchd (macOS) or --systemd-user (Linux).');
       process.exit(1);
     }
     if (wantsLaunchd && wantsSystemd) {
-      console.error('monad nexus install: pass exactly one of --launchd / --systemd-user.');
+      console.error('elanous nexus install: pass exactly one of --launchd / --systemd-user.');
       process.exit(1);
     }
     const noStart = opts.start === false;
@@ -12540,7 +12559,7 @@ nexusCmd
     const wantsLaunchd = opts.launchd === true;
     const wantsSystemd = opts.systemdUser === true;
     if (!wantsLaunchd && !wantsSystemd) {
-      console.error('monad nexus uninstall: pass --launchd or --systemd-user.');
+      console.error('elanous nexus uninstall: pass --launchd or --systemd-user.');
       process.exit(1);
     }
     if (wantsLaunchd) {
@@ -12587,12 +12606,12 @@ program
     if (opts.graceMs !== undefined && (!Number.isFinite(opts.graceMs) || opts.graceMs < 0)) {
       throw new Error('--grace-ms must be a non-negative finite number');
     }
-    const [{ rotateAdminToken }, { getMonadConfigDir }] = await Promise.all([
+    const [{ rotateAdminToken }, { getElanousConfigDir }] = await Promise.all([
       import('./auth/token-store.js'),
-      import('./monad-config-dir.js'),
+      import('./elanous-config-dir.js'),
     ]);
     const result = rotateAdminToken({
-      configDir: getMonadConfigDir(),
+      configDir: getElanousConfigDir(),
       ...(opts.graceMs !== undefined ? { gracePeriodMs: opts.graceMs } : {}),
     });
     if (opts.showToken) {
@@ -12613,7 +12632,7 @@ acpCmd.hook('preAction', async () => {
   } catch { /* fail-open — observation wiring must not block ACP */ }
 });
 
-// `monad acp login <backend>` — 구독 OAuth 로그인 «구동» 표면.
+// `elanous acp login <backend>` — 구독 OAuth 로그인 «구동» 표면.
 //
 // ⛔ 이 명령이 존재하는 이유: 로그인 spawn 함수를 만들어 두고 «아무 데도 안
 // 꽂으면» 그건 없는 것과 같다(F38 · codex 의 `spawnCodexLogin` 이 실제로
@@ -12674,7 +12693,7 @@ acpCmd
     process.exitCode = 1;
   });
 
-// `monad acp usage grok` — 구독 사용량. ⛔ 조회기를 만들어 두고 안 꽂으면 F38 이다.
+// `elanous acp usage grok` — 구독 사용량. ⛔ 조회기를 만들어 두고 안 꽂으면 F38 이다.
 acpCmd
   .command('usage')
   .description('구독 사용량을 조회한다 (현재 grok 만 — 구독 OAuth 자격이 있어야 한다)')
@@ -12818,7 +12837,7 @@ async function runSyncFlow(fromDashboard: boolean): Promise<void> {
   try {
     result = await showSyncSelector(fromDashboard);
   } catch (error) {
-    if (error instanceof Error && error.message.startsWith('monad sync 선택기는 stdin TTY가 있는 자리에서만')) {
+    if (error instanceof Error && error.message.startsWith('elanous sync 선택기는 stdin TTY가 있는 자리에서만')) {
       writeSyncFailure(error.message);
       return;
     }
@@ -12839,24 +12858,24 @@ async function runSyncFlow(fromDashboard: boolean): Promise<void> {
 
 // ── M1.5 A.3 — daemon-attach mode resolver ──
 //
-// Reads `MONAD_USE_DAEMON` / `MONAD_NO_DAEMON` env, optionally
+// Reads `ELANOUS_USE_DAEMON` / `ELANOUS_NO_DAEMON` env, optionally
 // auto-spawns a local daemon, and returns the socket path the
 // dashboard should attach to. Returns `null` when the dashboard
 // should boot in-process (default, unchanged behavior).
 //
 // Sequence:
-//   1. MONAD_NO_DAEMON=1                     → null  (force in-process)
-//   2. MONAD_USE_DAEMON unset                → null  (default in-process)
-//   3. MONAD_USE_DAEMON=1 + socket alive     → { socketPath }
-//   4. MONAD_USE_DAEMON=1 + socket absent    → spawn `monad serve --background`,
+//   1. ELANOUS_NO_DAEMON=1                     → null  (force in-process)
+//   2. ELANOUS_USE_DAEMON unset                → null  (default in-process)
+//   3. ELANOUS_USE_DAEMON=1 + socket alive     → { socketPath }
+//   4. ELANOUS_USE_DAEMON=1 + socket absent    → spawn `elanous serve --background`,
 //                                              wait up to 5s, then { socketPath }
 async function resolveDaemonAttachMode(): Promise<{ socketPath: string } | null> {
-  if (process.env.MONAD_NO_DAEMON === '1') return null;
-  if (process.env.MONAD_USE_DAEMON !== '1') return null;
+  if (process.env.ELANOUS_NO_DAEMON === '1') return null;
+  if (process.env.ELANOUS_USE_DAEMON !== '1') return null;
 
-  const { monadDaemonSocketPath } = await import('./monad-daemon.js');
+  const { elanousDaemonSocketPath } = await import('./elanous-daemon.js');
   const { isUnixSocketAlive } = await import('./tui-client/acp-transport-unix-client.js');
-  const socketPath = monadDaemonSocketPath();
+  const socketPath = elanousDaemonSocketPath();
 
   if (await isUnixSocketAlive(socketPath)) {
     return { socketPath };
@@ -12864,20 +12883,20 @@ async function resolveDaemonAttachMode(): Promise<{ socketPath: string } | null>
 
   // Auto-spawn a detached daemon. Caller blocks up to 5s on socket
   // readiness so the dashboard can attach right after spawn returns.
-  console.log(`[monad] no daemon at ${socketPath} — auto-spawning…`);
+  console.log(`[elanous] no daemon at ${socketPath} — auto-spawning…`);
   const ok = await spawnDaemonAndWait(socketPath);
   if (!ok) {
-    console.error(`[monad] auto-spawned daemon did not bind ${socketPath} within 5s`);
-    console.error(`[monad] falling back to in-process dashboard.`);
+    console.error(`[elanous] auto-spawned daemon did not bind ${socketPath} within 5s`);
+    console.error(`[elanous] falling back to in-process dashboard.`);
     return null;
   }
-  console.log(`[monad] daemon started (${socketPath}).`);
+  console.log(`[elanous] daemon started (${socketPath}).`);
   return { socketPath };
 }
 
 async function spawnDaemonAndWait(socketPath: string): Promise<boolean> {
   const { spawn } = await import('node:child_process');
-  // argv[0] = bun/node binary, argv[1] = monad entry script.
+  // argv[0] = bun/node binary, argv[1] = elanous entry script.
   const child = spawn(
     process.argv[0]!,
     [process.argv[1]!, 'serve', '--background'],
@@ -12899,7 +12918,7 @@ async function spawnDaemonAndWait(socketPath: string): Promise<boolean> {
 
 // ── voice command group (M1-4 · friction-free model selection) ──
 //
-// `monad voice status` prints the resolved STT tier + model + projected
+// `elanous voice status` prints the resolved STT tier + model + projected
 // monthly cost (PLAN-friction-free-model-selection-ux-2026-05-12 §4a.3).
 // Future entries — `voice select` (ElevenLabs voice id picker · M2-2b) and
 // `voice set-voice` (per-context mapping · M2-2c) — hang off this group.
@@ -12943,7 +12962,7 @@ voiceCmd
     if (result.exitCode !== 0) process.exit(result.exitCode);
   });
 
-// M3-3 (Phase 3) — `monad voice nl-switch <text>` CLI. Detect-only by
+// M3-3 (Phase 3) — `elanous voice nl-switch <text>` CLI. Detect-only by
 // default · pass `--apply --session <id>` to install a session-scoped
 // override that the tier-resolver respects until TTL expiry. Used
 // before the full chat surface integration lands.
@@ -13002,7 +13021,7 @@ async function main(): Promise<void> {
 
   // ★ #4 격리 누출 봉쇄(2026-07-25·내부 문서 §2) — 하니스 공간
   //   자식(self-implement/dev-harness/solve-mission)은 격리 worktree 안에서 부팅한다(cwd=worktree,
-  //   MONAD_HARNESS_SPACE 상속). getHarnessSpace() 로 "나는 격리됐다"를 자기인지한 위에 쓰기 경계를
+  //   ELANOUS_HARNESS_SPACE 상속). getHarnessSpace() 로 "나는 격리됐다"를 자기인지한 위에 쓰기 경계를
   //   worktree 로 활성화 → 정본 트리 절대경로 오염을 봉쇄(가드 인프라는 완비됐으나 활성화 호출이 0건이었다).
   //   코디네이터(self implement CLI)는 boot 시점엔 아직 space 마커 미설정 → 미활성(cwd=정본 트리라 정상).
   //   fail-open(경계 활성 실패가 부팅을 막지 않는다). 관측=harness.boundary.
@@ -13019,7 +13038,7 @@ async function main(): Promise<void> {
   }
 
   // Instance-identity footgun (backlog #1) — prod 인스턴스를 nested 인터랙티브로
-  // 수동 spawn한 경우(--test/MONAD_STATE_DIR 없이) prod 스토어 오염 위험을 부팅에서
+  // 수동 spawn한 경우(--test/ELANOUS_STATE_DIR 없이) prod 스토어 오염 위험을 부팅에서
   // 시끄럽게 surfacing. warn-only(부팅 불침몰). 데몬은 nested/TTY 아니라 자연 제외.
   // (assertInstanceRootCoherence 의 형제 축 — 그건 config-dir≠state-dir '어긋남',
   //  이건 '격리를 아예 안 건 것'. divergence 가드는 nexus 데몬 부팅에서만 호출되므로
@@ -13038,11 +13057,11 @@ async function main(): Promise<void> {
   // this mode; parent program drives the agent through ACP.
   //
   // U4b Step 3 — flag-based transport selection:
-  //   monad --acp-server                                   # stdio (default)
-  //   monad --acp-server --transport=unix-socket           # ~/.monad/monad.sock
-  //   monad --acp-server --transport=unix-socket --socket-path=/tmp/x.sock
-  //   monad --acp-server --transport=websocket --port=31415
-  //   monad --acp-server --transport=websocket --no-auth   # skip token check
+  //   elanous --acp-server                                   # stdio (default)
+  //   elanous --acp-server --transport=unix-socket           # ~/.elanous/elanous.sock
+  //   elanous --acp-server --transport=unix-socket --socket-path=/tmp/x.sock
+  //   elanous --acp-server --transport=websocket --port=31415
+  //   elanous --acp-server --transport=websocket --no-auth   # skip token check
   if (rawArgs.includes('--acp-server')) {
     const { bootAcpServer, parseAcpBootArgs } = await import('./boot/acp-server.js');
     const { createDaemonRuntime } = await import('./boot/daemon-runtime.js');
@@ -13051,21 +13070,21 @@ async function main(): Promise<void> {
     const acpConfig = getUserConfig();
     const agentBrand = acpConfig.llm.provider;
     const agentModel = acpConfig.llm.model;
-    // MT5b — wire the same daemon runtime that `monad serve` uses
+    // MT5b — wire the same daemon runtime that `elanous serve` uses
     // (index.ts:2593+2714) so `--acp-server` answers real LLM prompts
     // instead of falling through to the pre-MVP echo skeleton in
-    // `acp/server.ts`. `createDaemonRuntime()` reads MONAD_HISTORY_DIR /
-    // MONAD_TOOLS / MONAD_TOOL_CWD env vars, so disk-backed history +
+    // `acp/server.ts`. `createDaemonRuntime()` reads ELANOUS_HISTORY_DIR /
+    // ELANOUS_TOOLS / ELANOUS_TOOL_CWD env vars, so disk-backed history +
     // readonly tool surface (Read · Grep · WebSearch · M1.5 A.1/A.2)
     // are opt-in without further CLI surface area. `hasSession`
-    // mirrors `monad serve` so loadSession can validate ids minted by
+    // mirrors `elanous serve` so loadSession can validate ids minted by
     // this same process across reconnect (M2.3).
     const { runTurn, history, tools, toolCwd } = createDaemonRuntime({ killNonDetachedPty });
     const hasSession = (id: string): boolean => history.has(id);
     // MT5b polish — surface env-var resolution in the startup banner
     // (boot/acp-server.ts writeRuntimeBanner). Without this, stdio
     // mode printed 0 bytes and users couldn't tell whether
-    // MONAD_HISTORY_DIR / MONAD_TOOLS stuck.
+    // ELANOUS_HISTORY_DIR / ELANOUS_TOOLS stuck.
     const runtimeStatus = {
       ...(history.persistencePath ? { historyDir: history.persistencePath } : {}),
       tools,
@@ -13084,7 +13103,7 @@ async function main(): Promise<void> {
   }
 
   // Root-level launch flags for the dashboard. Stripped before
-  // commander sees them so `monad --debug` alone falls through to
+  // commander sees them so `elanous --debug` alone falls through to
   // showDashboard instead of being misread as a missing subcommand.
   //   --debug       mirror ON + file ON + chat-only (tablet friendly)
   //   --chat-only   chat-only layout only (log fills the viewport)
@@ -13096,38 +13115,38 @@ async function main(): Promise<void> {
   //                 Q&A benchmark loops (`bun run dev --benchmark`).
   // --rich        TUI 부활 T0 — 이번 실행만 uiMode rich(기존 full
   //               dashboard) 강제. essential 이 기본이 된 뒤의 탈출구.
-  // T4.C — `monad` no-arg default remote bookmark resolve. Order:
-  //   --local > --remote <name> > MONAD_REMOTE > remotes.json default > local.
-  // When a bookmark resolves, we synthesize MONAD_REMOTE / MONAD_TOKEN
+  // T4.C — `elanous` no-arg default remote bookmark resolve. Order:
+  //   --local > --remote <name> > ELANOUS_REMOTE > remotes.json default > local.
+  // When a bookmark resolves, we synthesize ELANOUS_REMOTE / ELANOUS_TOKEN
   // env so the existing resolveRemoteTarget path picks it up unchanged.
   // `--local` / `--remote <name>` are stripped from rawArgs so commander
   // doesn't see them.
-  const { resolveRemoteAttach, stripRemoteFlags, bookmarkToMonadRemote } =
+  const { resolveRemoteAttach, stripRemoteFlags, bookmarkToElanousRemote } =
     await import('./cli/remote-resolve.js');
   let resolutionForReporting: ReturnType<typeof resolveRemoteAttach> | null = null;
   try {
     resolutionForReporting = resolveRemoteAttach({ rawArgs });
   } catch (err) {
-    console.error(`monad: ${(err as Error).message}`);
+    console.error(`elanous: ${(err as Error).message}`);
     process.exit(1);
   }
   if (resolutionForReporting?.kind === 'remote') {
     const { entry, token, name, reason } = resolutionForReporting;
     // 🩸 이 블록은 원래 위 try «밖»에 있었다 — 그래서 손상된 remotes.json 이
-    //    사람에게 `monad: <이유>` 대신 ***스택 트레이스***로 나왔다.
+    //    사람에게 `elanous: <이유>` 대신 ***스택 트레이스***로 나왔다.
     //    📏 통합 시험이 그것을 잡았다(2026-09-01). 같은 가드 안으로 들인다.
     //    ⛔ 「해석은 지키고 «사용»은 안 지키는」 반쪽 가드를 남기지 않는다.
     try {
-      process.env.MONAD_REMOTE = bookmarkToMonadRemote(entry);
+      process.env.ELANOUS_REMOTE = bookmarkToElanousRemote(entry);
     } catch (err) {
-      console.error(`monad: ${(err as Error).message}`);
+      console.error(`elanous: ${(err as Error).message}`);
       process.exit(1);
     }
-    if (token) process.env.MONAD_TOKEN = token;
+    if (token) process.env.ELANOUS_TOKEN = token;
     if (reason === 'default-bookmark') {
-      console.log(`[monad] attaching to default remote: ${name} (${entry.label ?? entry.host})`);
+      console.log(`[elanous] attaching to default remote: ${name} (${entry.label ?? entry.host})`);
     } else {
-      console.log(`[monad] attaching to remote: ${name}`);
+      console.log(`[elanous] attaching to remote: ${name}`);
     }
   }
   // ⭐ readRemoteFlag 와 «같은» 규칙으로 걷어낸다 — 갈리면 한쪽이 값을 먹고
@@ -13135,12 +13154,12 @@ async function main(): Promise<void> {
   //    ⇒ 이제 규칙이 «문법»뿐이라(북마크 스토어를 안 본다) 인자도 없다.
   rawArgs = stripRemoteFlags(rawArgs);
 
-  // M2.4 — remote-daemon path. `MONAD_REMOTE=mbp.tailnet:31415` (or
+  // M2.4 — remote-daemon path. `ELANOUS_REMOTE=mbp.tailnet:31415` (or
   // a full ws:// URL) makes the dashboard attach to a remote daemon
   // instead of booting an in-process ACP pair. Token + no-auth
-  // mirror the `monad attach` flag set so users can drive both the
+  // mirror the `elanous attach` flag set so users can drive both the
   // REPL and the dashboard from a single shell config.
-  const remoteEnv = process.env.MONAD_REMOTE?.trim();
+  const remoteEnv = process.env.ELANOUS_REMOTE?.trim();
   let remote: { url: string; token?: string; label?: string } | undefined;
   if (remoteEnv) {
     const { resolveRemoteTarget } = await import('./tui-client/remote-target.js');
@@ -13148,9 +13167,9 @@ async function main(): Promise<void> {
     if (resolved) remote = resolved;
   }
 
-  // M1.5 A.3 — local daemon-attach (opt-in via MONAD_USE_DAEMON).
+  // M1.5 A.3 — local daemon-attach (opt-in via ELANOUS_USE_DAEMON).
   // When set AND no `remote` is active, the dashboard becomes a
-  // thin client over the local daemon's unix socket. MONAD_NO_DAEMON=1
+  // thin client over the local daemon's unix socket. ELANOUS_NO_DAEMON=1
   // forces in-process even when a daemon is alive. Mechanism only;
   // true default flip waits for A.4+ write-side tools on the daemon.
   const localDaemon = remote ? null : await resolveDaemonAttachMode();
@@ -13171,7 +13190,7 @@ async function main(): Promise<void> {
   // user gets a one-shot deprecation warning when the env override
   // drives the resume path. CLI flag wins outright (no warning).
   const { readDeprecatedEnv: readDeprecatedEnvForResume } = await import('./control-client/env-resolver.js');
-  const resumeFromEnv = readDeprecatedEnvForResume('MONAD_RESUME_SESSION').value;
+  const resumeFromEnv = readDeprecatedEnvForResume('ELANOUS_RESUME_SESSION').value;
   const resumeSessionId = (resumeFromFlag ?? resumeFromEnv ?? '').trim() || undefined;
 
   // user-config can opt into benchmark mode persistently
@@ -13202,11 +13221,11 @@ async function main(): Promise<void> {
   // eat that subcommand's own option before commander ever sees it.
   const args = filterDashboardArgs(rawArgs, resumeFlagIdx);
 
-  // Bare `monad` (no subcommand) → the dashboard, always. The former
+  // Bare `elanous` (no subcommand) → the dashboard, always. The former
   // `global.entry.defaultMode` switch (which could route here to the
   // headless NEXUS daemon) was removed 2026-07-24: T3/T4 deleted the
   // NEXUS interactive TUI, so every non-dashboard route was a dead-end
-  // and the daemon has its own canonical entry (`monad nexus run`).
+  // and the daemon has its own canonical entry (`elanous nexus run`).
   // We stay quiet on the common path, but if a NEXUS daemon is live on
   // this host emit one hint so the user knows the dashboard + daemon
   // coexist. See 내부 문서 `REPORT-tui-observation-methodology-2026-07-24` §12.
@@ -13217,13 +13236,13 @@ async function main(): Promise<void> {
 
   if (args.length > 0) {
     // C-4e (cleanup ROADMAP 2026-05-08): FROZEN_ROOTS gate removed.
-    // The 17 entrypoints (monad ctl/telegram/discord + serve) were
+    // The 17 entrypoints (elanous ctl/telegram/discord + serve) were
     // physically deleted in C-4a-d, so unknown commands now fall through
     // to commander's default "unknown command" handling.
-    // ★ 소유권 감사 훅 — `MONAD_TEST_FLAG_AUDIT=1` 이면 실 Commander 트리의 미포함 경로를
+    // ★ 소유권 감사 훅 — `ELANOUS_TEST_FLAG_AUDIT=1` 이면 실 Commander 트리의 미포함 경로를
     //   JSON 으로 뱉고 종료한다. 테스트가 이걸 spawn 해 **CI 에서 차단**한다(경고 fail-open 만으로는
     //   테이블 누락이 조용히 통과하므로). 일반 실행 경로에는 영향 0.
-    if (process.env.MONAD_TEST_FLAG_AUDIT === '1') {
+    if (process.env.ELANOUS_TEST_FLAG_AUDIT === '1') {
       const missing = uncoveredTestFlagPaths(program as never);
       const stale = staleTestFlagPaths(program as never);
       await writeStdoutJson(JSON.stringify({
@@ -13247,14 +13266,14 @@ async function main(): Promise<void> {
       program.error(`error: unknown command '${firstCommand}'`);
       return;
     }
-    await program.parseAsync(['node', 'monad', ...args]);
+    await program.parseAsync(['node', 'elanous', ...args]);
     return;
   }
 
   // First-run: trigger the onboarding wizard before dropping into the
   // dashboard so we don't need to handle half-configured state in the
   // TUI chrome. Subsequent launches skip straight to the dashboard.
-  // (Bare `monad` always lands on the dashboard now, so the wizard just
+  // (Bare `elanous` always lands on the dashboard now, so the wizard just
   // gates on config completeness — no entry-mode branch.)
   const cfg = getUserConfig();
   if (needsOnboarding(cfg)) {
@@ -13264,27 +13283,27 @@ async function main(): Promise<void> {
   // Active-provider banner so users know WHICH model/auth is about to
   // answer their first prompt. Printed above the dashboard altscreen
   // so it stays visible on quit (scrolls back into the terminal).
-  console.log(`[monad] ${oneLineProvider()}`);
+  console.log(`[elanous] ${oneLineProvider()}`);
   if (remote) {
     const authNote = remote.token ? 'token' : 'no-auth';
-    console.log(`[monad] remote daemon: ${remote.url} (${authNote})`);
+    console.log(`[elanous] remote daemon: ${remote.url} (${authNote})`);
     if (resumeSessionId) {
-      console.log(`[monad] resuming daemon session: ${resumeSessionId}`);
+      console.log(`[elanous] resuming daemon session: ${resumeSessionId}`);
     }
   } else if (localDaemon) {
-    console.log(`[monad] dashboard attached to daemon at ${localDaemon.socketPath}`);
+    console.log(`[elanous] dashboard attached to daemon at ${localDaemon.socketPath}`);
     if (resumeSessionId) {
-      console.log(`[monad] resuming daemon session: ${resumeSessionId}`);
+      console.log(`[elanous] resuming daemon session: ${resumeSessionId}`);
     }
     // A.1 + A.2 are now in main, so the sidecar carries historyDir +
     // tools. Surface them so the user knows what's active without
-    // running `monad serve --status` separately.
+    // running `elanous serve --status` separately.
     try {
-      const { readMonadDaemonRuntime } = await import('./monad-daemon.js');
-      const rt = readMonadDaemonRuntime();
-      if (rt?.historyDir) console.log(`[monad] history: disk(${rt.historyDir})`);
+      const { readElanousDaemonRuntime } = await import('./elanous-daemon.js');
+      const rt = readElanousDaemonRuntime();
+      if (rt?.historyDir) console.log(`[elanous] history: disk(${rt.historyDir})`);
       if (rt?.tools === 'readonly') {
-        console.log(`[monad] tool surface: readonly (Read · Grep · WebSearch)`);
+        console.log(`[elanous] tool surface: readonly (Read · Grep · WebSearch)`);
       }
     } catch { /* status echo is best-effort */ }
   }
@@ -13298,13 +13317,13 @@ async function main(): Promise<void> {
     try {
       const { activateDaemonMirrorIfReachable } = await import('./session/daemon-mirror.js');
       await activateDaemonMirrorIfReachable({
-        log: (m) => { if (process.env.MONAD_DAEMON_MIRROR_VERBOSE) console.log(`[monad] ${m}`); },
+        log: (m) => { if (process.env.ELANOUS_DAEMON_MIRROR_VERBOSE) console.log(`[elanous] ${m}`); },
       });
     } catch { /* mirror is opportunistic — never break dashboard boot */ }
   })();
 
   // 독립 TUI 프로세스 — 데몬과 동형으로 logs.db StoreSink 를 등록해 `debug.log(...)`
-  // (특히 agent.source 소스수집 관측 · #4631)가 logs.db 에 닿고 `monad logs` 로 조회되게
+  // (특히 agent.source 소스수집 관측 · #4631)가 logs.db 에 닿고 `elanous logs` 로 조회되게
   // 한다. 인터랙티브 TUI 는 데몬 sink 를 상속 안 하므로 안 붙이면 debug.log 가 no-op
   // (제1원칙 관측 갭 · tui-sim 드라이브에서 agent.source 0건으로 실측 2026-07-19).
   // PR#4622(self utterance CLI)·session-cli 미러. fail-open·비블로킹.
@@ -13313,7 +13332,7 @@ async function main(): Promise<void> {
   //   StoreSink 등록 前이라 debug.log 가 logs.db 미도달이었다(순서 갭). sink 등록 직후 관측만 재발행(stderr 중복 X).
   try { (await import('./instance-root-coherence.js')).warnProdSpawnFootgun({ emit: 'log' }); } catch { /* fail-open */ }
   // P1(2026-07-26) — 운영 리더 권위 부트스트랩 + 3축 드리프트 관측. **거부하지 않는다**(P4 가 거부).
-  // sink 등록 後라 debug.log 가 logs.db 에 닿는다(`monad logs --category instance.leader`).
+  // sink 등록 後라 debug.log 가 logs.db 에 닿는다(`elanous logs --category instance.leader`).
   try {
     const L = await import('./instance/leader.js');
     L.bootstrapLeader(new Date().toISOString());
@@ -13322,7 +13341,7 @@ async function main(): Promise<void> {
 
   // Self-observation (PLAN P1b · S1) — the interactive TUI self-reports
   // its rendered frames to the ChannelBus + cross-process pty-manifest,
-  // so `monad self screen` / `/v1/terminals` / (P2) PWA can see the
+  // so `elanous self screen` / `/v1/terminals` / (P2) PWA can see the
   // dashboard the user is actually looking at. Off unless this boots
   // (no producer in headless/daemon paths). fail-soft·비블로킹.
   try { (await import('./capture/tui-self-report.js')).startTuiSelfReport(); } catch { /* fail-soft */ }
@@ -13352,15 +13371,15 @@ async function main(): Promise<void> {
  * CLI 진입 — **엔트리가 명시적으로 부른다.**
  *
  * ⛔ `if (import.meta.main)` 만으로 감싸지 말 것(#6701 회귀 · GIT-T13).
- *   배포 엔트리는 `bin/monad.mjs` 이고 그것이 이 모듈을 **import** 하므로
- *   여기의 `import.meta.main` 은 **항상 false** 다. 그 가드 하나로 `monad` 전
+ *   배포 엔트리는 `bin/elanous.mjs` 이고 그것이 이 모듈을 **import** 하므로
+ *   여기의 `import.meta.main` 은 **항상 false** 다. 그 가드 하나로 `elanous` 전
  *   명령이 출력 0바이트·exit 0 의 조용한 no-op 이 됐다(테스트 3 pass 통과).
  *   가드의 원래 목적(테스트가 `program` 을 import 해도 main 이 안 돌 것)은
  *   유지하되, 실행은 **엔트리의 명시 호출**로 되돌린다.
- *   - `bun bin/monad.mjs …`  → bin 이 `runCli()` 를 부른다
+ *   - `bun bin/elanous.mjs …`  → bin 이 `runCli()` 를 부른다
  *   - `bun run src/index.ts …`(package.json `dev`) → 아래 import.meta.main 분기
  *   - `import { program } from './index.js'`(테스트) → 둘 다 안 걸려 조용하다
- * 회귀 방어 = `src/cli-entry.test.ts`(실물 `bin/monad.mjs` 를 spawn 한다).
+ * 회귀 방어 = `src/cli-entry.test.ts`(실물 `bin/elanous.mjs` 를 spawn 한다).
  */
 export function runCli(): void {
   main().catch((err) => {

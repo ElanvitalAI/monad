@@ -71,7 +71,7 @@ export function VoiceCostPill() {
       <div
         className="inline-flex items-center gap-1 rounded-md border border-border bg-muted/40 px-2 py-1 text-[11px] text-muted-foreground"
         title="voice cost — daemon /v1/voice/cost 응답 없음"
-        data-monad-pill="voice-cost"
+        data-elanous-pill="voice-cost"
       >
         <Mic className="h-3 w-3" aria-hidden />
         <span>—</span>
@@ -83,7 +83,7 @@ export function VoiceCostPill() {
     return (
       <div
         className="inline-flex items-center gap-1 rounded-md border border-border bg-muted/40 px-2 py-1 text-[11px] text-muted-foreground"
-        data-monad-pill="voice-cost"
+        data-elanous-pill="voice-cost"
       >
         <Mic className="h-3 w-3" aria-hidden />
         <span>…</span>
@@ -104,7 +104,7 @@ export function VoiceCostPill() {
           : 'border-border bg-muted/40 text-muted-foreground',
       )}
       title={`voice cost ${summary.monthYYYYMM} · STT ${formatVoiceCost(summary.sttUsd)} · TTS ${formatVoiceCost(summary.ttsUsd)}`}
-      data-monad-pill="voice-cost"
+      data-elanous-pill="voice-cost"
     >
       <Mic className="h-3 w-3" aria-hidden />
       <span>{formatVoiceCost(summary.totalUsd)}</span>

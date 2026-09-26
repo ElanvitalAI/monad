@@ -245,7 +245,7 @@ describe("ⓕ 원장 «하나»로 판정하면 «거짓 통과»가 난다", ()
 describe("실물 프로세스 줄 읽기", () => {
   test("워크트리 소유 트리와 워크트리 이름을 뽑는다", () => {
     const line =
-      "node /Users/j/.monad/worktrees/elan-7665ee85/monad-agent.worktrees/self-impl-in-src-webclone-computed-tokens-ts-defin-5d9c8685/node_modules/.bin/tsc --noEmit";
+      "node /Users/j/.elanous/worktrees/elan-7665ee85/monad-agent.worktrees/self-impl-in-src-webclone-computed-tokens-ts-defin-5d9c8685/node_modules/.bin/tsc --noEmit";
     expect(parseWorktreeProcess(line)).toEqual({
       tree: "elan",
       worktree: "self-impl-in-src-webclone-computed-tokens-ts-defin-5d9c8685",
@@ -253,13 +253,13 @@ describe("실물 프로세스 줄 읽기", () => {
   });
 
   test("남의 트리도 트리 이름으로 갈린다", () => {
-    const line = "node /Users/j/.monad/worktrees/pilot-b2431b2b/monad-agent.worktrees/self-impl-x/node_modules/.bin/tsc";
+    const line = "node /Users/j/.elanous/worktrees/pilot-b2431b2b/monad-agent.worktrees/self-impl-x/node_modules/.bin/tsc";
     expect(parseWorktreeProcess(line)?.tree).toBe("pilot");
   });
 
   test("워크트리와 무관한 줄은 «세지 않는다»(null)", () => {
     expect(parseWorktreeProcess("/Applications/Adobe/Creative Cloud")).toBeNull();
-    expect(parseWorktreeProcess("bun bin/monad.mjs logs --category self-dev")).toBeNull();
+    expect(parseWorktreeProcess("bun bin/elanous.mjs logs --category self-dev")).toBeNull();
   });
 });
 
@@ -332,11 +332,11 @@ describe('⛔⭐ 「템플릿 둘로 자 시험」 — 「손으로 돌린다」
   });
 });
 
-// 🩸 2026-09-10: 원장을 `.monad-session/`(=.gitignore 안)에 뒀다가 «기록이 트리를 못 떠나는» 것을 잡았다.
+// 🩸 2026-09-10: 원장을 `.elanous-session/`(=.gitignore 안)에 뒀다가 «기록이 트리를 못 떠나는» 것을 잡았다.
 //    ⇒ 「재는 자리」는 «추적되는» 자리여야 한다. 이 시험이 그 자리를 못 박는다.
-test('⛔ 원장은 «추적되는» 자리에 있다 — .monad-session/ 은 .gitignore 안이다', () => {
+test('⛔ 원장은 «추적되는» 자리에 있다 — .elanous-session/ 은 .gitignore 안이다', () => {
   expect(TEMPLATE_LEDGER.startsWith('docs/')).toBe(true);
-  expect(TEMPLATE_LEDGER).not.toContain('.monad-session');
+  expect(TEMPLATE_LEDGER).not.toContain('.elanous-session');
 });
 
 // 🩸 2026-09-11: 「로드 < 5」 관문이 «내 상태»가 아니라 «기계 상태»를 재고 있었다.

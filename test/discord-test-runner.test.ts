@@ -1,4 +1,4 @@
-// `monad discord-test` — config builder + discord.testChannel schema.
+// `elanous discord-test` — config builder + discord.testChannel schema.
 //
 // PLAN-multi-surface-pty-shell M4a-0: unlike telegram (409-forced token
 // split), the discord test session reuses the PRODUCTION token and
@@ -21,7 +21,6 @@ function prodCfg(): UserConfig {
       botToken: 'PROD-TOKEN',
       allowedUsers: ['514820469845655553'],
       homeChannel: '1500104676551430155',
-      sprint21: { enabled: true, appId: '1500100829875540112' },
       testChannel: { channelId: '1525654199935963227' },
     },
     raw: {},
@@ -34,9 +33,8 @@ describe('buildDiscordTestConfig', () => {
     expect(t.discord.botToken).toBe('PROD-TOKEN');
     expect(t.discord.allowedUsers).toEqual(['42']);
     expect(t.discord.enabled).toBe(true);
-    // Outbound + prod-app slash wiring removed so the test bot stays contained.
+    // Outbound-to-prod route removed so the test bot stays contained.
     expect(t.discord.homeChannel).toBeUndefined();
-    expect(t.discord.sprint21).toBeUndefined();
   });
 
   test('preserves the rest of the production config (LLM keys etc.)', () => {
@@ -50,7 +48,6 @@ describe('buildDiscordTestConfig', () => {
     const prod = prodCfg();
     buildDiscordTestConfig(prod, 'PROD-TOKEN', ['42']);
     expect(prod.discord.homeChannel).toBe('1500104676551430155');
-    expect(prod.discord.sprint21).toBeDefined();
   });
 });
 

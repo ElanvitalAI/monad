@@ -13,7 +13,7 @@
 set -u
 SINCE="${1:?창 시작 UTC ISO 를 주십시오 (예: 2026-08-31T03:23:00Z)}"
 REPO_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-REPO_BIN="$REPO_ROOT/bin/monad.mjs"
+REPO_BIN="$REPO_ROOT/bin/elanous.mjs"
 
 # ⛔⭐ 「자리 셋」을 «산출이 스스로» 말한다 — 어디서 · 무엇으로 · ***언제***.
 #   📏 2026-08-31: 이 스크립트를 만든 날, ***자기 규칙(R-OBS14)의 «3분의 1»만 지키고 있었다***

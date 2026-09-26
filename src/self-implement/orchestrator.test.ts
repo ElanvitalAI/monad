@@ -31,16 +31,16 @@ import type { DocumentReferenceStatus } from './self-implement-runtime.js';
 import { DEV_PIPELINE_SINK_SURFACE } from './self-cli-sink-surface.js';
 import { PIPELINE_EDGES_BY_NODE, PIPELINE_GRAPH_ID, TERMINAL_STAGES_BY_NODE, pipelineGraphIdentity, pipelineGraphVersion, type PipelineNodeId } from './pipeline-shape.js';
 
-const isolatedStateDir = mkdtempSync(join(tmpdir(), 'monad-orchestrator-goal-run-store-'));
-const priorStateDir = process.env.MONAD_STATE_DIR;
+const isolatedStateDir = mkdtempSync(join(tmpdir(), 'elanous-orchestrator-goal-run-store-'));
+const priorStateDir = process.env.ELANOUS_STATE_DIR;
 
 beforeAll(() => {
-  process.env.MONAD_STATE_DIR = isolatedStateDir;
+  process.env.ELANOUS_STATE_DIR = isolatedStateDir;
 });
 
 afterAll(() => {
-  if (priorStateDir === undefined) delete process.env.MONAD_STATE_DIR;
-  else process.env.MONAD_STATE_DIR = priorStateDir;
+  if (priorStateDir === undefined) delete process.env.ELANOUS_STATE_DIR;
+  else process.env.ELANOUS_STATE_DIR = priorStateDir;
   rmSync(isolatedStateDir, { recursive: true, force: true });
 });
 
@@ -53,7 +53,7 @@ import type { SoftStopRequestRead } from '../harness/control-inbox.js';
 //   기본값 자체는 test/user-config-self-implement-auto-open-pr.test.ts 가 잰다. 자기 오버레이를 거는 시험은 그 값이 이긴다.
 const PINNED_REWORK_BUDGET = { shadowStop: true, maxRounds: 6 } as const;
 const REVIEW_GOAL_TEXT = '# Goal\n- GoalId: ee1733e0ae11fea7\n\n## PROBLEM\nA reproducible review fixture.\n\n## ACCEPTANCE CRITERIA\n- Preserve the review result.\n';
-const REVIEW_GOAL_DIRECTORY = mkdtempSync(join(tmpdir(), 'monad-review-goal-fixture-'));
+const REVIEW_GOAL_DIRECTORY = mkdtempSync(join(tmpdir(), 'elanous-review-goal-fixture-'));
 const REVIEW_GOAL_FILE = join(REVIEW_GOAL_DIRECTORY, 'GOAL-review.txt');
 const PRIVATE_REVIEW_GOAL = 'docs/goals/GOAL-atomic-backlink-updates-prevent-stuck-inheritance-6a9a7f40-2026-07-31.txt';
 const reviewGoalFile = () => existsSync(PRIVATE_REVIEW_GOAL) ? PRIVATE_REVIEW_GOAL : REVIEW_GOAL_FILE;
@@ -71,25 +71,25 @@ afterEach(() => { setUserConfigOverlay(null); });
 
 describe('run-origin ledger attribution', () => {
   test('each run writes exactly one run-origin with host metadata via the ledger seam', async () => {
-    const before = process.env.MONAD_HOST_ID;
-    const substrate = process.env.MONAD_SUBSTRATE;
-    const optionalKeys = ['MONAD_POD_NAME', 'MONAD_NODE_NAME', 'MONAD_POD_NAMESPACE', 'MONAD_IMAGE_COMMIT'] as const;
+    const before = process.env.ELANOUS_HOST_ID;
+    const substrate = process.env.ELANOUS_SUBSTRATE;
+    const optionalKeys = ['ELANOUS_POD_NAME', 'ELANOUS_NODE_NAME', 'ELANOUS_POD_NAMESPACE', 'ELANOUS_IMAGE_COMMIT'] as const;
     const previousOptional = optionalKeys.map((key) => process.env[key]);
-    process.env.MONAD_HOST_ID = '01HOSTTEST';
-    delete process.env.MONAD_SUBSTRATE;
-    process.env.MONAD_POD_NAME = 'pod-a';
-    process.env.MONAD_NODE_NAME = 'node-b';
-    process.env.MONAD_POD_NAMESPACE = 'namespace-c';
-    process.env.MONAD_IMAGE_COMMIT = 'commit-d';
-    // 🩸 2026-09-25 공개본 시험 대조: 앞 시험 파일이 남긴 `MONAD_RUN_ID` 를 두 런이 «물려받아» 같은 runId 가 됐다
+    process.env.ELANOUS_HOST_ID = '01HOSTTEST';
+    delete process.env.ELANOUS_SUBSTRATE;
+    process.env.ELANOUS_POD_NAME = 'pod-a';
+    process.env.ELANOUS_NODE_NAME = 'node-b';
+    process.env.ELANOUS_POD_NAMESPACE = 'namespace-c';
+    process.env.ELANOUS_IMAGE_COMMIT = 'commit-d';
+    // 🩸 2026-09-25 공개본 시험 대조: 앞 시험 파일이 남긴 `ELANOUS_RUN_ID` 를 두 런이 «물려받아» 같은 runId 가 됐다
     //    (`ensureRunIdentity` 는 env 에 있으면 재발급하지 않는다 — 계약이다). ⇒ 런마다 비우고 끝나면 되돌린다.
-    const runIdBefore = process.env.MONAD_RUN_ID;
+    const runIdBefore = process.env.ELANOUS_RUN_ID;
     try {
       const ledgers: Array<Array<import('./run-ledger.js').RunLedgerEntry>> = [];
       for (let index = 0; index < 2; index++) {
         const entries: Array<import('./run-ledger.js').RunLedgerEntry> = [];
         ledgers.push(entries);
-        delete process.env.MONAD_RUN_ID;
+        delete process.env.ELANOUS_RUN_ID;
         await runSelfImplement({
           feature: `origin fixture ${index}`, observeOnly: true,
           seams: seams({ writeRunLedger: (entry) => entries.push(entry) }),
@@ -101,7 +101,7 @@ describe('run-origin ledger attribution', () => {
         expect(origins[0]!.data).toMatchObject({
           hostId: '01HOSTTEST', hostname: expect.any(String), substrate: 'host',
           platform: process.platform, arch: process.arch,
-          monadVersion: JSON.parse(readFileSync(join(import.meta.dir, '../../package.json'), 'utf8')).version,
+          elanousVersion: JSON.parse(readFileSync(join(import.meta.dir, '../../package.json'), 'utf8')).version,
           podName: 'pod-a', nodeName: 'node-b', podNamespace: 'namespace-c', imageCommit: 'commit-d',
           instance: expect.any(String),
         });
@@ -109,12 +109,12 @@ describe('run-origin ledger attribution', () => {
       }
       expect(ledgers[0]![0]!.runId).not.toBe(ledgers[1]![0]!.runId);
     } finally {
-      if (runIdBefore === undefined) delete process.env.MONAD_RUN_ID;
-      else process.env.MONAD_RUN_ID = runIdBefore;
-      if (before === undefined) delete process.env.MONAD_HOST_ID;
-      else process.env.MONAD_HOST_ID = before;
-      if (substrate === undefined) delete process.env.MONAD_SUBSTRATE;
-      else process.env.MONAD_SUBSTRATE = substrate;
+      if (runIdBefore === undefined) delete process.env.ELANOUS_RUN_ID;
+      else process.env.ELANOUS_RUN_ID = runIdBefore;
+      if (before === undefined) delete process.env.ELANOUS_HOST_ID;
+      else process.env.ELANOUS_HOST_ID = before;
+      if (substrate === undefined) delete process.env.ELANOUS_SUBSTRATE;
+      else process.env.ELANOUS_SUBSTRATE = substrate;
       optionalKeys.forEach((key, index) => {
         const value = previousOptional[index];
         if (value === undefined) delete process.env[key];
@@ -245,10 +245,10 @@ describe('runSelfImplement — parent soft-stop marker', () => {
   });
 
   test('without a space seam or harness env, the parent reads the child worktree space that self send targets', async () => {
-    const previousSpaceId = process.env.MONAD_HARNESS_SPACE_ID;
-    const previousSpace = process.env.MONAD_HARNESS_SPACE;
-    delete process.env.MONAD_HARNESS_SPACE_ID;
-    delete process.env.MONAD_HARNESS_SPACE;
+    const previousSpaceId = process.env.ELANOUS_HARNESS_SPACE_ID;
+    const previousSpace = process.env.ELANOUS_HARNESS_SPACE;
+    delete process.env.ELANOUS_HARNESS_SPACE_ID;
+    delete process.env.ELANOUS_HARNESS_SPACE;
     const readIds: string[] = [];
     let gateCalls = 0;
     try {
@@ -267,8 +267,8 @@ describe('runSelfImplement — parent soft-stop marker', () => {
       expect(gateCalls).toBe(0);
       expect(result.stage).toBe('soft-stopped');
     } finally {
-      if (previousSpaceId === undefined) delete process.env.MONAD_HARNESS_SPACE_ID; else process.env.MONAD_HARNESS_SPACE_ID = previousSpaceId;
-      if (previousSpace === undefined) delete process.env.MONAD_HARNESS_SPACE; else process.env.MONAD_HARNESS_SPACE = previousSpace;
+      if (previousSpaceId === undefined) delete process.env.ELANOUS_HARNESS_SPACE_ID; else process.env.ELANOUS_HARNESS_SPACE_ID = previousSpaceId;
+      if (previousSpace === undefined) delete process.env.ELANOUS_HARNESS_SPACE; else process.env.ELANOUS_HARNESS_SPACE = previousSpace;
     }
   });
 
@@ -1246,13 +1246,13 @@ describe('runSelfImplement — Fix A rework', () => {
 
   test('start observation records active provider identity while preserving every existing start key', async () => {
     const originEnv = {
-      MONAD_ORIGIN_AGENT: process.env.MONAD_ORIGIN_AGENT,
-      MONAD_ORIGIN_ROOT: process.env.MONAD_ORIGIN_ROOT,
-      MONAD_ORIGIN_SESSION: process.env.MONAD_ORIGIN_SESSION,
+      ELANOUS_ORIGIN_AGENT: process.env.ELANOUS_ORIGIN_AGENT,
+      ELANOUS_ORIGIN_ROOT: process.env.ELANOUS_ORIGIN_ROOT,
+      ELANOUS_ORIGIN_SESSION: process.env.ELANOUS_ORIGIN_SESSION,
     };
-    process.env.MONAD_ORIGIN_AGENT = 'test-origin-agent';
-    process.env.MONAD_ORIGIN_ROOT = 'test-origin-root';
-    process.env.MONAD_ORIGIN_SESSION = 'test-origin-session';
+    process.env.ELANOUS_ORIGIN_AGENT = 'test-origin-agent';
+    process.env.ELANOUS_ORIGIN_ROOT = 'test-origin-root';
+    process.env.ELANOUS_ORIGIN_SESSION = 'test-origin-session';
 
     try {
       const ledger: Array<{ event: string; data: Record<string, unknown> }> = [];
@@ -1540,7 +1540,7 @@ describe('runSelfImplement — Fix A rework', () => {
   });
 
   test('file-backed execution records use an injected collector without changing the goal directory', async () => {
-    const directory = mkdtempSync(join(tmpdir(), 'monad-goal-records-'));
+    const directory = mkdtempSync(join(tmpdir(), 'elanous-goal-records-'));
     const goalFile = join(directory, 'GOAL-record.txt');
     writeFileSync(goalFile, '# Record goal\n');
     const snapshotGoals = () => readdirSync(directory)
@@ -1570,7 +1570,7 @@ describe('runSelfImplement — Fix A rework', () => {
   });
 
   test('copies AskFile from the goal header onto the ledger record and omits the field when the line is absent', async () => {
-    const directory = mkdtempSync(join(tmpdir(), 'monad-orchestrator-ask-file-'));
+    const directory = mkdtempSync(join(tmpdir(), 'elanous-orchestrator-ask-file-'));
     const withAskFile = join(directory, 'GOAL-with-ask-file.txt');
     const withoutAskFile = join(directory, 'GOAL-without-ask-file.txt');
     writeFileSync(withAskFile, 'Ask lineage\n- GoalId: 0123456789abcdef\n- GoalType: implement\n- AskFile: docs/goals/ASK-x.md\n\n');
@@ -1594,7 +1594,7 @@ describe('runSelfImplement — Fix A rework', () => {
   });
 
   test('records declared, default, and malformed GoalType provenance from leading metadata', async () => {
-    const directory = mkdtempSync(join(tmpdir(), 'monad-orchestrator-goal-type-'));
+    const directory = mkdtempSync(join(tmpdir(), 'elanous-orchestrator-goal-type-'));
     const goalFiles = {
       declared: join(directory, 'GOAL-declared.txt'),
       defaulted: join(directory, 'GOAL-default.txt'),
@@ -1633,7 +1633,7 @@ describe('runSelfImplement — Fix A rework', () => {
   });
 
   test('appendGoalExecutionRecord serializes available GoalType provenance and leaves malformed types absent', () => {
-    const directory = mkdtempSync(join(tmpdir(), 'monad-goal-type-record-'));
+    const directory = mkdtempSync(join(tmpdir(), 'elanous-goal-type-record-'));
     const declaredGoal = join(directory, 'GOAL-declared.txt');
     const malformedGoal = join(directory, 'GOAL-malformed.txt');
     writeFileSync(declaredGoal, '# Goal\n');
@@ -1656,7 +1656,7 @@ describe('runSelfImplement — Fix A rework', () => {
   });
 
   test('writes document and SQLite records independently through injected seams', async () => {
-    const directory = mkdtempSync(join(tmpdir(), 'monad-orchestrator-dual-record-'));
+    const directory = mkdtempSync(join(tmpdir(), 'elanous-orchestrator-dual-record-'));
     const goalFile = join(directory, 'GOAL-dual-record.txt');
     writeFileSync(goalFile, '- GoalId: 0123456789abcdef\n');
     const documentRecords: GoalExecutionRecord[] = [];
@@ -1700,7 +1700,7 @@ describe('runSelfImplement — Fix A rework', () => {
   });
 
   test('terminal records hash only the goal body, remain stable after appending a record, and omit unreadable goal hashes', async () => {
-    const directory = mkdtempSync(join(tmpdir(), 'monad-orchestrator-goal-hash-'));
+    const directory = mkdtempSync(join(tmpdir(), 'elanous-orchestrator-goal-hash-'));
     const plainGoal = join(directory, 'GOAL-plain.txt');
     const recordedGoal = join(directory, 'GOAL-recorded.txt');
     const changedGoal = join(directory, 'GOAL-changed.txt');
@@ -2060,16 +2060,16 @@ describe('runSelfImplement — Fix A rework', () => {
       writeGoalExecutionRecord: (_path, record) => { records.push(record); },
       seams: revSeams({
         reviews: [
-          { verdict: 'fail', mustFix: ['Verify arrival logs from `debug.log` and `.monad-test/logs.db`'] },
-          { verdict: 'fail', mustFix: ['Confirm both ` .monad-test/logs.db ` and `debug.log` receive the event'] },
+          { verdict: 'fail', mustFix: ['Verify arrival logs from `debug.log` and `.elanous-test/logs.db`'] },
+          { verdict: 'fail', mustFix: ['Confirm both ` .elanous-test/logs.db ` and `debug.log` receive the event'] },
         ],
       }),
     });
 
-    const symbolKey = 'symbol:[".monad-test/logs.db","debug.log"]';
-    expect(reviewFindingKey('Verify arrival logs from `debug.log` and `.monad-test/logs.db`')).toEqual(sharedReviewFindingKey('Verify arrival logs from `debug.log` and `.monad-test/logs.db`'));
-    expect(reviewFindingKey('Confirm both ` .monad-test/logs.db ` and `debug.log` receive the event')).toEqual(sharedReviewFindingKey('Confirm both ` .monad-test/logs.db ` and `debug.log` receive the event'));
-    expect(reviewFindingKey('Verify arrival logs from `debug.log` and `.monad-test/logs.db`')).toEqual({ key: symbolKey, source: 'symbol' });
+    const symbolKey = 'symbol:[".elanous-test/logs.db","debug.log"]';
+    expect(reviewFindingKey('Verify arrival logs from `debug.log` and `.elanous-test/logs.db`')).toEqual(sharedReviewFindingKey('Verify arrival logs from `debug.log` and `.elanous-test/logs.db`'));
+    expect(reviewFindingKey('Confirm both ` .elanous-test/logs.db ` and `debug.log` receive the event')).toEqual(sharedReviewFindingKey('Confirm both ` .elanous-test/logs.db ` and `debug.log` receive the event'));
+    expect(reviewFindingKey('Verify arrival logs from `debug.log` and `.elanous-test/logs.db`')).toEqual({ key: symbolKey, source: 'symbol' });
     expect(shortNormalizedReviewFindingHash(symbolKey)).toBe(createHash('sha256').update(symbolKey).digest('hex').slice(0, 8));
     expect(records).toEqual([expect.objectContaining({
       normalizedRepeatedReviewFindingCount: 1,
@@ -2149,10 +2149,10 @@ describe('runSelfImplement — Fix A rework', () => {
     const partialGoalFile = join(directory, 'GOAL-partial.txt');
     writeFileSync(completeGoalFile, '- GoalId: 0123456789abcdef\n');
     writeFileSync(partialGoalFile, '- GoalId: 0123456789abcdef\n');
-    const previousSpace = process.env.MONAD_HARNESS_SPACE;
-    const previousSpaceId = process.env.MONAD_HARNESS_SPACE_ID;
-    process.env.MONAD_HARNESS_SPACE = 'self-implement';
-    process.env.MONAD_HARNESS_SPACE_ID = 'parent-space';
+    const previousSpace = process.env.ELANOUS_HARNESS_SPACE;
+    const previousSpaceId = process.env.ELANOUS_HARNESS_SPACE_ID;
+    process.env.ELANOUS_HARNESS_SPACE = 'self-implement';
+    process.env.ELANOUS_HARNESS_SPACE_ID = 'parent-space';
     const completeRecords: GoalExecutionRecord[] = [];
     const partialRecords: GoalExecutionRecord[] = [];
     try {
@@ -2161,7 +2161,7 @@ describe('runSelfImplement — Fix A rework', () => {
         writeGoalExecutionRecord: (path, record) => { completeRecords.push(record); appendGoalExecutionRecord(path, record); },
         seams: seams({ createWorktree: async ({ branch, base }) => ({ path: `/wt/${branch}`, branch, base, resolvedBase: 'b'.repeat(40), invokedHead: 'a'.repeat(40) }) }),
       });
-      process.env.MONAD_HARNESS_SPACE_ID = '';
+      process.env.ELANOUS_HARNESS_SPACE_ID = '';
       await runSelfImplement({
         feature: 'partial environment anchor record', runId: 'run-partial-environment', goalFile: partialGoalFile,
         writeGoalExecutionRecord: (path, record) => { partialRecords.push(record); appendGoalExecutionRecord(path, record); },
@@ -2171,10 +2171,10 @@ describe('runSelfImplement — Fix A rework', () => {
         }),
       });
     } finally {
-      if (previousSpace === undefined) delete process.env.MONAD_HARNESS_SPACE;
-      else process.env.MONAD_HARNESS_SPACE = previousSpace;
-      if (previousSpaceId === undefined) delete process.env.MONAD_HARNESS_SPACE_ID;
-      else process.env.MONAD_HARNESS_SPACE_ID = previousSpaceId;
+      if (previousSpace === undefined) delete process.env.ELANOUS_HARNESS_SPACE;
+      else process.env.ELANOUS_HARNESS_SPACE = previousSpace;
+      if (previousSpaceId === undefined) delete process.env.ELANOUS_HARNESS_SPACE_ID;
+      else process.env.ELANOUS_HARNESS_SPACE_ID = previousSpaceId;
     }
 
     expect(completeRecords).toEqual([expect.objectContaining({
@@ -3738,7 +3738,7 @@ describe('runSelfImplement — Fix A rework', () => {
   });
 
   test('default seam은 child state universe의 구조화된 provider 오류를 read-only로 집계한다', async () => {
-    const stateDir = mkdtempSync(join(tmpdir(), 'monad-child-provider-log-'));
+    const stateDir = mkdtempSync(join(tmpdir(), 'elanous-child-provider-log-'));
     const store = new LogStore(join(stateDir, 'logs', 'logs.db'), { instance: instanceNameForStateDir(stateDir) });
     try {
       store.insertBatch([{ surface: 'dev-pipeline', rec: {
@@ -3754,7 +3754,7 @@ describe('runSelfImplement — Fix A rework', () => {
   });
 
   test('default seam은 child provider 로그 조회의 성공과 실패 뒤 store를 닫는다', async () => {
-    const stateDir = mkdtempSync(join(tmpdir(), 'monad-child-provider-close-'));
+    const stateDir = mkdtempSync(join(tmpdir(), 'elanous-child-provider-close-'));
     mkdirSync(join(stateDir, 'logs'), { recursive: true });
     writeFileSync(join(stateDir, 'logs', 'logs.db'), '');
     const originalOpenReadOnly = LogStore.openReadOnly;
@@ -3779,17 +3779,17 @@ describe('runSelfImplement — Fix A rework', () => {
     }
   });
 
-  test('monad dev sink surface의 공유 값은 기존 attribution을 보존한다', () => {
+  test('elanous dev sink surface의 공유 값은 기존 attribution을 보존한다', () => {
     expect(DEV_PIPELINE_SINK_SURFACE).toBe('dev-pipeline');
   });
 
-  test('monad dev 생산자는 공유 sink surface를 import한다', () => {
+  test('elanous dev 생산자는 공유 sink surface를 import한다', () => {
     const cliSource = readFileSync(resolve(import.meta.dir, '../index.ts'), 'utf8');
 
     expect(cliSource).toContain("import { DEV_PIPELINE_SINK_SURFACE } from './self-implement/self-cli-sink-surface.js';");
   });
 
-  test('monad dev 생산자는 공유 sink surface를 등록한다', () => {
+  test('elanous dev 생산자는 공유 sink surface를 등록한다', () => {
     const cliSource = readFileSync(resolve(import.meta.dir, '../index.ts'), 'utf8');
 
     expect(cliSource).toContain('registerStandaloneLogSink(DEV_PIPELINE_SINK_SURFACE)');
@@ -5659,7 +5659,7 @@ describe('runSelfImplement — pre-launch authored clarification escalation', ()
         escalateGoalClarifications: async (request, dispatchContext) => {
           order.push('escalate');
           expect(request).toMatchObject({ delivery: 'discord', questions: [{ id: 'delivery_scope' }] });
-          expect(dispatchContext).toEqual({ sessionId: 'monad-session-parent' });
+          expect(dispatchContext).toEqual({ sessionId: 'elanous-session-parent' });
           return { output: '{}', result: { answers: { delivery_scope: 'Discord' } } };
         },
       });
@@ -5667,7 +5667,7 @@ describe('runSelfImplement — pre-launch authored clarification escalation', ()
         feature: 'F',
         goalFile,
         clarificationDelivery: 'discord',
-        parentSessionId: 'monad-session-parent',
+        parentSessionId: 'elanous-session-parent',
         seams: s,
       });
       expect(order).toEqual(['escalate', 'implement']);
@@ -5680,13 +5680,13 @@ describe('runSelfImplement — pre-launch authored clarification escalation', ()
     const root = mkdtempSync(join(tmpdir(), 'supervisor-clarification-origin-delivery-'));
     const sessionRoot = join(root, 'sessions');
     const goalFile = join(root, 'GOAL.txt');
-    const priorSessionRoot = process.env.MONAD_SESSION_ROOT;
+    const priorSessionRoot = process.env.ELANOUS_SESSION_ROOT;
     writeFileSync(goalFile, [
       'Goal', '- Clarification:', '  - id: delivery_scope', '  - header: Delivery',
       '  - question: Which surface?', '  - options:', '    - label: Telegram', '      description: Send there.',
       '  - answer: DEFERRED-UNTIL: Which surface?', '',
     ].join('\n'));
-    process.env.MONAD_SESSION_ROOT = sessionRoot;
+    process.env.ELANOUS_SESSION_ROOT = sessionRoot;
     const parent = createSession({}, sessionRoot);
     subscribeSession(parent.id, { surface: 'telegram', endpoint: '1234' }, { now: '2026-08-12T00:00:00.000Z' }, sessionRoot);
     try {
@@ -5708,8 +5708,8 @@ describe('runSelfImplement — pre-launch authored clarification escalation', ()
       expect(dispatchContext).toEqual({ sessionId: parent.id });
       expect(dispatchRequest).toMatchObject({ delivery: 'telegram', questions: [{ id: 'delivery_scope' }] });
     } finally {
-      if (priorSessionRoot === undefined) delete process.env.MONAD_SESSION_ROOT;
-      else process.env.MONAD_SESSION_ROOT = priorSessionRoot;
+      if (priorSessionRoot === undefined) delete process.env.ELANOUS_SESSION_ROOT;
+      else process.env.ELANOUS_SESSION_ROOT = priorSessionRoot;
       rmSync(root, { recursive: true, force: true });
     }
   });
@@ -9494,10 +9494,10 @@ describe('runSelfImplement — 반사-기각(Facet C)', () => {
 });
 
 // ── K run-identity 소유권 (2026-07-26 실측 갭) ─────────────────────────────────────
-//   라이브 관측이 `run-identity propagate {"runId":""}` 를 찍었다 — `monad self run <runId>` 조인 불가.
+//   라이브 관측이 `run-identity propagate {"runId":""}` 를 찍었다 — `elanous self run <runId>` 조인 불가.
 //   계약: self-implement **1회 호출**이 run 의 경계 → 리워크 라운드 전부가 같은 non-empty runId 를 받는다.
 describe('runSelfImplement — run-identity 소유권', () => {
-  const RUN_ID_ENV = 'MONAD_RUN_ID';
+  const RUN_ID_ENV = 'ELANOUS_RUN_ID';
   const withoutInherited = async <T>(fn: () => Promise<T>): Promise<T> => {
     const prev = process.env[RUN_ID_ENV];
     delete process.env[RUN_ID_ENV];
@@ -9505,11 +9505,11 @@ describe('runSelfImplement — run-identity 소유권', () => {
   };
 
   const withoutRunLedgerLeak = async <T>(fn: () => Promise<T>): Promise<T> => {
-    const stateDir = mkdtempSync(join(tmpdir(), 'monad-orchestrator-ledger-'));
+    const stateDir = mkdtempSync(join(tmpdir(), 'elanous-orchestrator-ledger-'));
     const ledgerDir = join(stateDir, 'run-ledger');
-    const previousStateDir = process.env.MONAD_STATE_DIR;
+    const previousStateDir = process.env.ELANOUS_STATE_DIR;
     try {
-      process.env.MONAD_STATE_DIR = stateDir;
+      process.env.ELANOUS_STATE_DIR = stateDir;
       const result = await fn();
       const ledgerFiles = readdirSync(stateDir, { withFileTypes: true })
         .find((entry) => entry.name === 'run-ledger' && entry.isDirectory())
@@ -9518,8 +9518,8 @@ describe('runSelfImplement — run-identity 소유권', () => {
       expect(ledgerFiles).toEqual([]);
       return result;
     } finally {
-      if (previousStateDir === undefined) delete process.env.MONAD_STATE_DIR;
-      else process.env.MONAD_STATE_DIR = previousStateDir;
+      if (previousStateDir === undefined) delete process.env.ELANOUS_STATE_DIR;
+      else process.env.ELANOUS_STATE_DIR = previousStateDir;
       rmSync(stateDir, { recursive: true, force: true });
     }
   };
@@ -12278,9 +12278,9 @@ describe('runSelfImplement — all non-convergence preservation exits', () => {
   });
 
   test('implement-abort artifact default persistence stores the abort round and stage in extra', () => {
-    const artifactStateDir = mkdtempSync(join(tmpdir(), 'monad-implement-abort-artifact-'));
-    const priorArtifactStateDir = process.env.MONAD_STATE_DIR;
-    process.env.MONAD_STATE_DIR = artifactStateDir;
+    const artifactStateDir = mkdtempSync(join(tmpdir(), 'elanous-implement-abort-artifact-'));
+    const priorArtifactStateDir = process.env.ELANOUS_STATE_DIR;
+    process.env.ELANOUS_STATE_DIR = artifactStateDir;
     try {
       const artifact = persistImplementAbortChildSummary(undefined, {
         origin: 'self-implement-abort',
@@ -12303,8 +12303,8 @@ describe('runSelfImplement — all non-convergence preservation exits', () => {
         stage: 'aborted',
       });
     } finally {
-      if (priorArtifactStateDir === undefined) delete process.env.MONAD_STATE_DIR;
-      else process.env.MONAD_STATE_DIR = priorArtifactStateDir;
+      if (priorArtifactStateDir === undefined) delete process.env.ELANOUS_STATE_DIR;
+      else process.env.ELANOUS_STATE_DIR = priorArtifactStateDir;
       rmSync(artifactStateDir, { recursive: true, force: true });
     }
   });
@@ -12873,7 +12873,7 @@ describe('runSelfImplement — diff 밖 이행 증거가 리뷰어에게 간다'
             ok: true,
             summary: [
               'done',
-              'EVIDENCE: 격리에서 draft PR 이 열리는 것을 봤다 || monad logs --category dev-pipeline',
+              'EVIDENCE: 격리에서 draft PR 이 열리는 것을 봤다 || elanous logs --category dev-pipeline',
               'RESULT: draft PR #42 opened',
               'RESULT: 짝 없는 결과',
               'EVIDENCE: 확인 방법 없는 주장',
@@ -12888,7 +12888,7 @@ describe('runSelfImplement — diff 밖 이행 증거가 리뷰어에게 간다'
         }),
       });
       expect(seenCtx?.diffOutsideClaims).toEqual([
-        { claim: '격리에서 draft PR 이 열리는 것을 봤다', verify: 'monad logs --category dev-pipeline', result: 'draft PR #42 opened' },
+        { claim: '격리에서 draft PR 이 열리는 것을 봤다', verify: 'elanous logs --category dev-pipeline', result: 'draft PR #42 opened' },
       ]);
       expect(seenCtx?.gateEvidenceNote).toContain('Ran 1 tests across 1 file');
       // ⛔ 조용히 버리면 관측값이 항상 0 이 되어 거짓 초록이 된다(#5920 리뷰 must-fix).

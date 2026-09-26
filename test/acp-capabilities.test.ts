@@ -13,15 +13,15 @@ import {
   buildDeclaration,
   checkProtocolVersion,
   defaultAgentCapabilities,
-  MONAD_PROTOCOL_VERSION,
+  ELANOUS_PROTOCOL_VERSION,
   negotiate,
   parsePeerCapabilities,
-  type MonadCapabilities,
+  type ElanousCapabilities,
 } from '../src/acp/capabilities.js';
 
-function monadCaps(overrides: Partial<MonadCapabilities>): MonadCapabilities {
+function elanousCaps(overrides: Partial<ElanousCapabilities>): ElanousCapabilities {
   return {
-    protocolVersion: MONAD_PROTOCOL_VERSION,
+    protocolVersion: ELANOUS_PROTOCOL_VERSION,
     prompt: {
       text: true,
       resourceLink: true,
@@ -53,7 +53,7 @@ function monadCaps(overrides: Partial<MonadCapabilities>): MonadCapabilities {
 
 describe('parsePeerCapabilities', () => {
   test('undefined peer → conservative baseline', () => {
-    const c = parsePeerCapabilities(undefined, MONAD_PROTOCOL_VERSION);
+    const c = parsePeerCapabilities(undefined, ELANOUS_PROTOCOL_VERSION);
     expect(c.prompt.text).toBe(true);
     expect(c.prompt.resourceLink).toBe(true);
     expect(c.prompt.image).toBe(false);
@@ -63,23 +63,23 @@ describe('parsePeerCapabilities', () => {
     expect(c.session).toEqual({ fork: false, list: false, resume: false });
     expect(c.mcp).toEqual({ http: false, sse: false });
     expect(c.planMode).toBe(false);
-    expect(c.protocolVersion).toBe(MONAD_PROTOCOL_VERSION);
+    expect(c.protocolVersion).toBe(ELANOUS_PROTOCOL_VERSION);
   });
 
   test('null peer → conservative baseline (same as undefined)', () => {
-    const c = parsePeerCapabilities(null, MONAD_PROTOCOL_VERSION);
+    const c = parsePeerCapabilities(null, ELANOUS_PROTOCOL_VERSION);
     expect(c.prompt.image).toBe(false);
     expect(c.loadSession).toBe(false);
   });
 
   test('empty object peer → conservative baseline', () => {
-    const c = parsePeerCapabilities({}, MONAD_PROTOCOL_VERSION);
+    const c = parsePeerCapabilities({}, ELANOUS_PROTOCOL_VERSION);
     expect(c.prompt.image).toBe(false);
     expect(c.loadSession).toBe(false);
   });
 
   test('loadSession:true passes through', () => {
-    const c = parsePeerCapabilities({ loadSession: true }, MONAD_PROTOCOL_VERSION);
+    const c = parsePeerCapabilities({ loadSession: true }, ELANOUS_PROTOCOL_VERSION);
     expect(c.loadSession).toBe(true);
     expect(c.prompt.image).toBe(false);
   });
@@ -87,7 +87,7 @@ describe('parsePeerCapabilities', () => {
   test('promptCapabilities.image:true passes through', () => {
     const c = parsePeerCapabilities(
       { promptCapabilities: { image: true } },
-      MONAD_PROTOCOL_VERSION,
+      ELANOUS_PROTOCOL_VERSION,
     );
     expect(c.prompt.image).toBe(true);
     expect(c.prompt.audio).toBe(false);
@@ -96,7 +96,7 @@ describe('parsePeerCapabilities', () => {
   test('full promptCapabilities passes through each flag independently', () => {
     const c = parsePeerCapabilities(
       { promptCapabilities: { audio: true, embeddedContext: true, image: false } },
-      MONAD_PROTOCOL_VERSION,
+      ELANOUS_PROTOCOL_VERSION,
     );
     expect(c.prompt.audio).toBe(true);
     expect(c.prompt.embeddedContext).toBe(true);
@@ -115,7 +115,7 @@ describe('parsePeerCapabilities', () => {
         sessionCapabilities: { fork: {}, list: {}, resume: {} },
         mcpCapabilities: { http: true, sse: true },
       },
-      MONAD_PROTOCOL_VERSION,
+      ELANOUS_PROTOCOL_VERSION,
     );
     expect(c.loadSession).toBe(true);
     expect(c.session).toEqual({ fork: true, list: true, resume: true });
@@ -123,14 +123,14 @@ describe('parsePeerCapabilities', () => {
   });
 
   test('missing session and MCP capability bundles normalize to unsupported', () => {
-    const c = parsePeerCapabilities({ loadSession: true }, MONAD_PROTOCOL_VERSION);
+    const c = parsePeerCapabilities({ loadSession: true }, ELANOUS_PROTOCOL_VERSION);
     expect(c.loadSession).toBe(true);
     expect(c.session).toEqual({ fork: false, list: false, resume: false });
     expect(c.mcp).toEqual({ http: false, sse: false });
   });
 
   test('peer fileOps always false (fs lives on client side)', () => {
-    const c = parsePeerCapabilities({ loadSession: true }, MONAD_PROTOCOL_VERSION);
+    const c = parsePeerCapabilities({ loadSession: true }, ELANOUS_PROTOCOL_VERSION);
     expect(c.fileOps.readTextFile).toBe(false);
     expect(c.fileOps.writeTextFile).toBe(false);
   });
@@ -142,7 +142,7 @@ describe('defaultAgentCapabilities', () => {
     expect(c.prompt.image).toBe(false);
     expect(c.prompt.audio).toBe(false);
     expect(c.loadSession).toBe(false);
-    expect(c.protocolVersion).toBe(MONAD_PROTOCOL_VERSION);
+    expect(c.protocolVersion).toBe(ELANOUS_PROTOCOL_VERSION);
   });
 
   test('gemini advertises image', () => {
@@ -187,7 +187,7 @@ describe('PR9 — video capability advertise + parse + negotiate', () => {
     const peer = {
       promptCapabilities: { image: true, audio: false, embeddedContext: false, video: true },
     } as unknown as Parameters<typeof parsePeerCapabilities>[0];
-    const c = parsePeerCapabilities(peer, MONAD_PROTOCOL_VERSION);
+    const c = parsePeerCapabilities(peer, ELANOUS_PROTOCOL_VERSION);
     expect(c.prompt.video).toBe(true);
     expect(c.prompt.image).toBe(true);
   });
@@ -196,7 +196,7 @@ describe('PR9 — video capability advertise + parse + negotiate', () => {
     const peer = {
       promptCapabilities: { image: true, audio: false, embeddedContext: false },
     } as unknown as Parameters<typeof parsePeerCapabilities>[0];
-    const c = parsePeerCapabilities(peer, MONAD_PROTOCOL_VERSION);
+    const c = parsePeerCapabilities(peer, ELANOUS_PROTOCOL_VERSION);
     expect(c.prompt.video).toBe(false);
   });
 
@@ -213,9 +213,9 @@ describe('PR9 — video capability advertise + parse + negotiate', () => {
   });
 
   test('negotiate AND-merges video (both must be true)', () => {
-    const local = monadCaps({ prompt: { text: true, resourceLink: true, image: false, audio: false, embeddedContext: false, video: true } });
-    const peerYes = monadCaps({ prompt: { text: true, resourceLink: true, image: false, audio: false, embeddedContext: false, video: true } });
-    const peerNo = monadCaps({ prompt: { text: true, resourceLink: true, image: false, audio: false, embeddedContext: false, video: false } });
+    const local = elanousCaps({ prompt: { text: true, resourceLink: true, image: false, audio: false, embeddedContext: false, video: true } });
+    const peerYes = elanousCaps({ prompt: { text: true, resourceLink: true, image: false, audio: false, embeddedContext: false, video: true } });
+    const peerNo = elanousCaps({ prompt: { text: true, resourceLink: true, image: false, audio: false, embeddedContext: false, video: false } });
     expect(negotiate(local, peerYes).prompt.video).toBe(true);
     expect(negotiate(local, peerNo).prompt.video).toBe(false);
     expect(negotiate(peerNo, peerYes).prompt.video).toBe(false); // local off blocks
@@ -278,7 +278,7 @@ describe('buildAgentDeclaration', () => {
 describe('buildDeclaration', () => {
   test('bundles client + agent + protocol version', () => {
     const d = buildDeclaration();
-    expect(d.protocolVersion).toBe(MONAD_PROTOCOL_VERSION);
+    expect(d.protocolVersion).toBe(ELANOUS_PROTOCOL_VERSION);
     expect(d.asClient.terminal).toBe(false);
     // M2.3 — loadSession defaults ON. PR9 — video advertise ON.
     expect(d.asAgent.loadSession).toBe(true);
@@ -288,8 +288,8 @@ describe('buildDeclaration', () => {
 
 describe('negotiate', () => {
   test('AND semantics — both sides must be true', () => {
-    const local = monadCaps({ prompt: { image: true, audio: true, embeddedContext: true } } as any);
-    const peer = monadCaps({ prompt: { image: true, audio: false, embeddedContext: true } } as any);
+    const local = elanousCaps({ prompt: { image: true, audio: true, embeddedContext: true } } as any);
+    const peer = elanousCaps({ prompt: { image: true, audio: false, embeddedContext: true } } as any);
     const n = negotiate(local, peer);
     expect(n.prompt.image).toBe(true);
     expect(n.prompt.audio).toBe(false);
@@ -297,16 +297,16 @@ describe('negotiate', () => {
   });
 
   test('loadSession requires both sides', () => {
-    const local = monadCaps({ loadSession: true });
-    const peer = monadCaps({ loadSession: false });
+    const local = elanousCaps({ loadSession: true });
+    const peer = elanousCaps({ loadSession: false });
     expect(negotiate(local, peer).loadSession).toBe(false);
     expect(negotiate(peer, local).loadSession).toBe(false);
     expect(negotiate(local, local).loadSession).toBe(true);
   });
 
   test('protocolVersion = min(local, peer)', () => {
-    const local = monadCaps({ protocolVersion: 3 as any });
-    const peer = monadCaps({ protocolVersion: 2 as any });
+    const local = elanousCaps({ protocolVersion: 3 as any });
+    const peer = elanousCaps({ protocolVersion: 2 as any });
     expect(negotiate(local, peer).protocolVersion).toBe(2);
     expect(negotiate(peer, local).protocolVersion).toBe(2);
   });

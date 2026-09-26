@@ -14,7 +14,7 @@ import type { ModalSurface } from '../display/modal-stack.js';
 // below sidesteps with a dynamic `await import('../llm.js')`. Keeping
 // ChatMessage structurally compatible with LLMMessage lets the
 // dashboard stash rich tool_use/tool_result blocks in chat.history
-// instead of dropping them after each turn — the monad side of the
+// instead of dropping them after each turn — the elanous side of the
 // "history-as-source-of-truth" pattern claude-code-fork uses.
 import type { ContentBlock } from '../llm.js';
 import { debug } from '../debug/log.js';
@@ -415,10 +415,10 @@ export interface SlashCommand {
 export const SLASH_COMMANDS: SlashCommand[] = [
   { name: 'run-skill', aliases: ['rs', 'run'], description: 'Execute a skill via its SKILL.md prompt' },
   { name: 'ad', aliases: [], description: 'Create an advertising plan from a URL, brief, or attached image' },
-  // B4 — craft rulebook verdict, same resolution as `monad repo design-check`
+  // B4 — craft rulebook verdict, same resolution as `elanous repo design-check`
   //   and the PWA `/design-check` panel. Listed (not baselined as hidden) on
   //   purpose: a surface nobody can discover is not a surface.
-  { name: 'design',    aliases: ['design-check'], description: 'Craft rulebooks — 이 저장소 DESIGN.md 가 선언한 규칙집 · 못 찾은 것 · monad 가 주는데 선언 안 된 것. /design [--declared]', subcommands: ['--declared'] },
+  { name: 'design',    aliases: ['design-check'], description: 'Craft rulebooks — 이 저장소 DESIGN.md 가 선언한 규칙집 · 못 찾은 것 · elanous 가 주는데 선언 안 된 것. /design [--declared]', subcommands: ['--declared'] },
   { name: 'provider',  aliases: ['p'],          description: 'LLM providers — /provider (list) · next (cycle, also Alt+M / pill click) · use <name> · pick (visual picker) · reset', subcommands: ['next', 'use', 'pick', 'picker', 'menu', 'reset', 'list'] },
   { name: 'reasoning', aliases: ['r', 'think'],  description: 'Reasoning level (codex effort + summary, anthropic extended-thinking budget) — /reasoning [off|low|medium|high|xhigh] (cycle when no arg · xhigh 는 모델 상한이 xhigh 이상일 때만 wire 에 실린다, 아니면 high 로 깎인다)', subcommands: ['off', 'low', 'medium', 'high', 'xhigh'] },
   { name: 'model',     aliases: ['m'],           description: 'Switch active model — /model <codex|terra|sol|luna|opus|sonnet|grok> (list + current when no arg). OpenAI 는 Codex(Responses API)만. effort 는 /reasoning.', subcommands: ['codex', 'terra', 'sol', 'luna', 'opus', 'sonnet', 'grok'] },
@@ -442,9 +442,9 @@ export const SLASH_COMMANDS: SlashCommand[] = [
   { name: 'help',  aliases: ['?'],         description: 'Show help overlay' },
   { name: 'codex-setup', aliases: ['codex-init'], description: 'Codex 1-point setup — OAuth login + model pick + save config' },
   { name: 'setup', aliases: [], description: 'Onboarding wizard guide — /setup (anchor) · /setup reset (re-run wizard on next boot)', subcommands: ['help', 'reset'] },
-  { name: 'memory', aliases: ['mem'], description: 'Memory ops — list / show / search / add / delete (see `monad memory --help`)', subcommands: ['list', 'show', 'search', 'add', 'delete', 'index'] },
+  { name: 'memory', aliases: ['mem'], description: 'Memory ops — list / show / search / add / delete (see `elanous memory --help`)', subcommands: ['list', 'show', 'search', 'add', 'delete', 'index'] },
   { name: 'status', aliases: ['st'], description: 'Print the claude-code-style status pills (working dir + git + model)' },
-  { name: 'export', aliases: [], description: 'Export this conversation transcript to a markdown file — /export [path] (default ~/temp/monad-transcript-<stamp>.md)' },
+  { name: 'export', aliases: [], description: 'Export this conversation transcript to a markdown file — /export [path] (default ~/temp/elanous-transcript-<stamp>.md)' },
   { name: 'cache', aliases: [], description: 'Prompt-cache metrics — show session totals / reset', subcommands: ['show', 'reset'] },
   { name: 'delta', aliases: ['diffs'], description: 'Source delta browser — open the latest turn-scoped file diff popup', subcommands: ['open', 'help'] },
   { name: 'theme', aliases: [], description: 'Theme controls — list / switch / use / reset / preview / export', subcommands: ['list', 'switch', 'use', 'reset', 'preview', 'export'] },
@@ -495,10 +495,10 @@ export const SLASH_COMMANDS: SlashCommand[] = [
   { name: 'acp',    aliases: [], description: 'ACP chat — stream claude-code / codex / gemini replies into the chat pane (not a VW spawn). /acp codex points at the canonical codex app-server path; /acp cas is a synonym.', subcommands: ['claude', 'codex', 'gemini', 'cas', 'cancel', 'status', 'drop'] },
   { name: 'acp-vw', aliases: [], description: 'Spawn claude-code/codex/gemini/local-llm inside a new virtual window pane. /acp-vw clc (claude-code) · /acp-vw gem (gemini) · /acp-vw lll <node>:<model> (local-llm via lms chat · local node only) route through the H5 Embodied Agent Bus.', subcommands: ['claude', 'codex', 'clc', 'gem', 'lll'] },
   { name: 'conv', aliases: [], description: 'Conversation widget/popup host — /conv list · /conv open <session-id> · /conv layout <cascade|tile|stack> · /conv focus <next|prev>.', subcommands: ['list', 'ls', 'open', 'layout', 'focus'] },
-  { name: 'handoff', aliases: [], description: 'H5 P3 cross-agent context handoff: /handoff <from_session_id> <to_brand> [--channels r,p,m] [--prompt "prefix"]. Takes source session snapshot (filtered by channels if observer present) and launches target via adapter registry. Brands: codex · claude · claude-code · gemini · monad.' },
+  { name: 'handoff', aliases: [], description: 'H5 P3 cross-agent context handoff: /handoff <from_session_id> <to_brand> [--channels r,p,m] [--prompt "prefix"]. Takes source session snapshot (filtered by channels if observer present) and launches target via adapter registry. Brands: codex · claude · claude-code · gemini · elanous.' },
   { name: 'budget',  aliases: ['b'], description: 'H6 P1 budget tracker — /budget [brand] · /budget remaining · /budget set <b> <w> <q> · /budget refresh · /budget forecast · /budget help', subcommands: ['set', 'refresh', 'forecast', 'status', 'remaining', 'help'] },
   { name: 'remaining', aliases: [], description: '계정마다 행으로 「지금 쓸 수 있는 것이 얼마나 남았나」를 본다 — 크레딧 축과 구독 축을 갈라 낸다. 화면은 명령 산출을 그대로 읽는다.' },
-  { name: 'agent-room', aliases: [], description: 'H6 P4 VW agent-room — /agent-room <N> <brands...> · /agent-room list · /agent-room close <id> · N ∈ {2,3,4} · brands: codex/claude/gemini/monad/auto/lll:<m>', subcommands: ['list', 'close', 'preset', 'help'] },
+  { name: 'agent-room', aliases: [], description: 'H6 P4 VW agent-room — /agent-room <N> <brands...> · /agent-room list · /agent-room close <id> · N ∈ {2,3,4} · brands: codex/claude/gemini/elanous/auto/lll:<m>', subcommands: ['list', 'close', 'preset', 'help'] },
   { name: 'showroom', aliases: ['sr'], description: 'Showroom v2 multi-LLM lane composer — /showroom (default 2-pane) · /showroom <lane1> <lane2> [<lane3> [<lane4>]] · lane = role:provider[:transport] · roles plan/build/exec/review/reflect · pair with /lane and /relay for cross-lane handoffs.', subcommands: ['help'] },
   { name: 'reply',   aliases: [], description: 'H6 P5 AgentReply — /reply <target-session-id> <message...> · send message to a live session, capture the response · flags: --from · --channels r,m · --idle-ms · --timeout-ms', subcommands: ['help'] },
   { name: 'capture',   aliases: [], description: 'H6 P6 capture source registry — /capture list · /capture snapshot <sourceId> · enumerate VW panes / agent sessions / browser CDP pages · dispatch text/ansi/png snapshot', subcommands: ['list', 'snapshot', 'help'] },
@@ -517,7 +517,7 @@ export const SLASH_COMMANDS: SlashCommand[] = [
   { name: 'qc',      aliases: [],          description: 'Quick-control — arm one-shot control mode; next message runs as control, then auto-return to chat.' },
   { name: 'ctoggle', aliases: [],          description: 'Toggle persistent control mode (alternative to /control ↔ /default).' },
   { name: 'fullscreen', aliases: ['fs'], description: 'Toggle fullscreen mode for the current terminal modal' },
-  { name: 'voice-chat', aliases: ['vc'], description: 'Continuous voice chat mode — speak, monad replies in voice (Phase 4-5). Subcommands: start / stop / cancel / status. Chord: Alt+R toggles enter/exit anywhere.', subcommands: ['start', 'stop', 'cancel', 'status'] },
+  { name: 'voice-chat', aliases: ['vc'], description: 'Continuous voice chat mode — speak, elanous replies in voice (Phase 4-5). Subcommands: start / stop / cancel / status. Chord: Alt+R toggles enter/exit anywhere.', subcommands: ['start', 'stop', 'cancel', 'status'] },
   { name: 'auto-tts', aliases: ['tts', 'autotts'], description: 'Auto-TTS for chat responses (Phase 2) — speaks LLM replies sentence-by-sentence. Subcommands: on / off / toggle / status.', subcommands: ['on', 'off', 'toggle', 'status'] },
   { name: 'quit',  aliases: ['q', 'exit'], description: 'Exit application' },
 ];

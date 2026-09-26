@@ -154,8 +154,8 @@ describe('buildPromotedMission — 스트립/리셋/provenance', () => {
 });
 
 describe('instanceNameForStateDir', () => {
-  test('.monad-test → test:<repo>', () => {
-    expect(instanceNameForStateDir('/Users/x/source/axon/monad-agent/.monad-test')).toBe('test:monad-agent');
+  test('.elanous-test → test:<repo>', () => {
+    expect(instanceNameForStateDir('/Users/x/source/axon/monad-agent/.elanous-test')).toBe('test:monad-agent');
   });
   test('그 외 base → test:<base>', () => {
     expect(instanceNameForStateDir('/tmp/telegram-test')).toBe('test:telegram-test');

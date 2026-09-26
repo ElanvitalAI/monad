@@ -10,7 +10,7 @@ import { generateLaunchdPlist, installLaunchdPlist, LAUNCHD_PLIST_LABEL } from '
 let tmpDir = '';
 
 beforeEach(() => {
-  tmpDir = mkdtempSync(joinPath(tmpdir(), 'monad-launchd-'));
+  tmpDir = mkdtempSync(joinPath(tmpdir(), 'elanous-launchd-'));
 });
 
 afterEach(() => {
@@ -18,11 +18,11 @@ afterEach(() => {
 });
 
 describe('generateLaunchdPlist', () => {
-  test('produces XML with monad ctl serve', () => {
-    const body = generateLaunchdPlist({ monadBinaryPath: '/bin/monad', port: 31413 });
+  test('produces XML with elanous ctl serve', () => {
+    const body = generateLaunchdPlist({ elanousBinaryPath: '/bin/elanous', port: 31413 });
     expect(body).toContain('<?xml version="1.0"');
     expect(body).toContain(`<string>${LAUNCHD_PLIST_LABEL}</string>`);
-    expect(body).toContain('<string>/bin/monad</string>');
+    expect(body).toContain('<string>/bin/elanous</string>');
     expect(body).toContain('<string>ctl</string>');
     expect(body).toContain('<string>serve</string>');
     expect(body).toContain('<string>31413</string>');
@@ -30,7 +30,7 @@ describe('generateLaunchdPlist', () => {
 
   test('honors custom port + host', () => {
     const body = generateLaunchdPlist({
-      monadBinaryPath: '/bin/monad',
+      elanousBinaryPath: '/bin/elanous',
       port: 8888,
       hostname: '0.0.0.0',
     });
@@ -52,7 +52,7 @@ describe('installLaunchdPlist', () => {
       return;
     }
     const r = installLaunchdPlist({
-      monadBinaryPath: '/bin/monad',
+      elanousBinaryPath: '/bin/elanous',
       launchAgentsDirOverride: tmpDir,
       port: 31413,
     });

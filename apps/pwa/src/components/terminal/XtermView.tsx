@@ -2,7 +2,7 @@
 
 // WT-S-1 — read-only xterm.js view wired to a daemon-side
 // PreviewTerminal via the ACP `agent_thought_chunk` channel + the
-// `monad/term/*` envelope. Input writeback / mouse / spawn arrive in
+// `elanous/term/*` envelope. Input writeback / mouse / spawn arrive in
 // later slices (WT-A).
 //
 // The component owns the xterm.js Terminal lifecycle and one ACP
@@ -13,7 +13,7 @@
 // Wire shape (incoming):
 //   { method: 'session/update', params: { sessionId, update: {
 //       sessionUpdate: 'agent_thought_chunk',
-//       content: { type: 'text', text: '<MonadTermEnvelope>' } } } }
+//       content: { type: 'text', text: '<ElanousTermEnvelope>' } } } }
 
 import { useEffect, useRef, useState } from 'react';
 // We intentionally exclude `sessionId` from the effect deps so the
@@ -29,7 +29,7 @@ import '@xterm/xterm/css/xterm.css';
 
 import { useDaemon } from '@/components/providers/DaemonProvider';
 import { debugLog } from '@/lib/debug';
-import { parseMonadTermEnvelope } from '@/lib/monad-term-envelope';
+import { parseElanousTermEnvelope } from '@/lib/elanous-term-envelope';
 import { getPeerId } from '@/lib/peer-id';
 import {
   loadSnapshot,
@@ -222,7 +222,7 @@ export function XtermView({ sessionId, terminalId, readOnly = false, onForeignIn
       if (!u || u.sessionUpdate !== 'agent_thought_chunk') return;
       const text = u.content?.type === 'text' ? u.content.text : null;
       if (!text) return;
-      const env = parseMonadTermEnvelope(text);
+      const env = parseElanousTermEnvelope(text);
       if (!env) return;
       if (env.method === 'terminalOutput' && env.payload.terminalId === terminalId) {
         debugLog('webterm.ws.frame.in', {

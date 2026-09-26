@@ -2,8 +2,8 @@
 //
 // Drives the slash dispatcher with synthetic TgIncoming messages and
 // asserts on the rendered reply. The history reader uses the real
-// runtime.json discovery path; tests stub MONAD_HISTORY_DIR via
-// a temp dir + monad.runtime.json side-file.
+// runtime.json discovery path; tests stub ELANOUS_HISTORY_DIR via
+// a temp dir + elanous.runtime.json side-file.
 
 import { afterEach, beforeEach, describe, expect, test } from 'bun:test';
 import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from 'node:fs';
@@ -17,19 +17,19 @@ import {
 } from '../src/telegram-commands.js';
 import type { TgIncoming } from '../src/telegram.js';
 import type { UserConfig } from '../src/user-config.js';
-import { setMonadConfigDir, resetMonadConfigDir } from '../src/monad-config-dir.js';
+import { setElanousConfigDir, resetElanousConfigDir } from '../src/elanous-config-dir.js';
 
 let tmp: string;
 
 beforeEach(() => {
-  tmp = mkdtempSync(joinPath(tmpdir(), 'monad-tg-resume-test-'));
-  // monadDaemonDir() honors setMonadConfigDir() over homedir(). The
-  // daemon dir is where monad.runtime.json lives.
-  setMonadConfigDir(tmp);
+  tmp = mkdtempSync(joinPath(tmpdir(), 'elanous-tg-resume-test-'));
+  // elanousDaemonDir() honors setElanousConfigDir() over homedir(). The
+  // daemon dir is where elanous.runtime.json lives.
+  setElanousConfigDir(tmp);
 });
 
 afterEach(() => {
-  resetMonadConfigDir();
+  resetElanousConfigDir();
   rmSync(tmp, { recursive: true, force: true });
 });
 
@@ -51,14 +51,14 @@ function dummyConfig(): UserConfig {
 }
 
 function writeRuntime(historyDir: string): void {
-  // monadDaemonDir() === tmp (overridden), so runtime.json lands at
-  // <tmp>/monad.runtime.json directly.
+  // elanousDaemonDir() === tmp (overridden), so runtime.json lands at
+  // <tmp>/elanous.runtime.json directly.
   writeFileSync(
-    joinPath(tmp, 'monad.runtime.json'),
+    joinPath(tmp, 'elanous.runtime.json'),
     JSON.stringify({
       pid: process.pid,
       startedAt: new Date().toISOString(),
-      socketPath: joinPath(tmp, 'monad.sock'),
+      socketPath: joinPath(tmp, 'elanous.sock'),
       historyDir,
     }, null, 2),
   );
@@ -80,7 +80,7 @@ describe('/resume slash command', () => {
 
   test('reports unknown daemon session when runtime metadata absent', async () => {
     const cmds = defaultTelegramCommands();
-    const result = await dispatchTelegramSlash(syntheticIncoming('/resume monad-session-bogus'), {
+    const result = await dispatchTelegramSlash(syntheticIncoming('/resume elanous-session-bogus'), {
       userConfig: dummyConfig(),
       allCommands: cmds,
     });
@@ -88,7 +88,7 @@ describe('/resume slash command', () => {
     if (result.handled) {
       const reply = result.reply as string;
       expect(reply).toContain('Unknown daemon session');
-      expect(reply).toContain('monad-session-bogus');
+      expect(reply).toContain('elanous-session-bogus');
     }
   });
 
@@ -98,7 +98,7 @@ describe('/resume slash command', () => {
     writeRuntime(historyDir);
 
     const cmds = defaultTelegramCommands();
-    const result = await dispatchTelegramSlash(syntheticIncoming('/resume monad-session-99'), {
+    const result = await dispatchTelegramSlash(syntheticIncoming('/resume elanous-session-99'), {
       userConfig: dummyConfig(),
       allCommands: cmds,
     });
@@ -115,7 +115,7 @@ describe('/resume slash command', () => {
     writeRuntime(historyDir);
 
     writeFileSync(
-      joinPath(historyDir, 'monad-session-3.jsonl'),
+      joinPath(historyDir, 'elanous-session-3.jsonl'),
       [
         JSON.stringify({ role: 'user', content: 'what is 2+2?' }),
         JSON.stringify({ role: 'assistant', content: '4' }),
@@ -123,7 +123,7 @@ describe('/resume slash command', () => {
     );
 
     const cmds = defaultTelegramCommands();
-    const result = await dispatchTelegramSlash(syntheticIncoming('/resume monad-session-3'), {
+    const result = await dispatchTelegramSlash(syntheticIncoming('/resume elanous-session-3'), {
       userConfig: dummyConfig(),
       allCommands: cmds,
     });
@@ -132,7 +132,7 @@ describe('/resume slash command', () => {
     if (result.handled) {
       const reply = result.reply as string;
       expect(reply).toContain('Resumed');
-      expect(reply).toContain('monad-session-3');
+      expect(reply).toContain('elanous-session-3');
       expect(reply).toContain('what is 2+2?');
       expect(reply).toContain('4');
     }
@@ -142,10 +142,10 @@ describe('/resume slash command', () => {
     const historyDir = joinPath(tmp, 'history');
     mkdirSync(historyDir, { recursive: true });
     writeRuntime(historyDir);
-    writeFileSync(joinPath(historyDir, 'monad-session-empty.jsonl'), '');
+    writeFileSync(joinPath(historyDir, 'elanous-session-empty.jsonl'), '');
 
     const cmds = defaultTelegramCommands();
-    const result = await dispatchTelegramSlash(syntheticIncoming('/resume monad-session-empty'), {
+    const result = await dispatchTelegramSlash(syntheticIncoming('/resume elanous-session-empty'), {
       userConfig: dummyConfig(),
       allCommands: cmds,
     });
@@ -161,7 +161,7 @@ describe('/resume slash command', () => {
     mkdirSync(historyDir, { recursive: true });
     writeRuntime(historyDir);
     writeFileSync(
-      joinPath(historyDir, 'monad-session-9.jsonl'),
+      joinPath(historyDir, 'elanous-session-9.jsonl'),
       [
         JSON.stringify({ role: 'user', content: 'hi' }),
         JSON.stringify({ role: 'assistant', content: 'hello' }),
@@ -176,7 +176,7 @@ describe('/resume slash command', () => {
     };
 
     const cmds = defaultTelegramCommands();
-    const result = await dispatchTelegramSlash(syntheticIncoming('/resume monad-session-9'), {
+    const result = await dispatchTelegramSlash(syntheticIncoming('/resume elanous-session-9'), {
       userConfig: dummyConfig(),
       allCommands: cmds,
       daemonBridge: stubBridge,
@@ -184,7 +184,7 @@ describe('/resume slash command', () => {
     expect(result.handled).toBe(true);
     expect(setCalls).toHaveLength(1);
     expect(setCalls[0]!.chatId).toBe(99);
-    expect(setCalls[0]!.sessionId).toBe('monad-session-9');
+    expect(setCalls[0]!.sessionId).toBe('elanous-session-9');
     // Cursor starts at jsonl length so the preview's last-N isn't
     // re-emitted on the next boot.
     expect(setCalls[0]!.lastSeenMsgIdx).toBe(2);
@@ -197,7 +197,7 @@ describe('/resume slash command', () => {
     };
 
     const cmds = defaultTelegramCommands();
-    await dispatchTelegramSlash(syntheticIncoming('/resume monad-session-bogus'), {
+    await dispatchTelegramSlash(syntheticIncoming('/resume elanous-session-bogus'), {
       userConfig: dummyConfig(),
       allCommands: cmds,
       daemonBridge: stubBridge,
@@ -210,13 +210,13 @@ describe('/resume slash command', () => {
     mkdirSync(historyDir, { recursive: true });
     writeRuntime(historyDir);
     writeFileSync(
-      joinPath(historyDir, 'monad-session-7.jsonl'),
+      joinPath(historyDir, 'elanous-session-7.jsonl'),
       JSON.stringify({ role: 'user', content: 'hello' }) + '\n',
     );
 
     const edits: string[] = [];
     const cmds = defaultTelegramCommands();
-    const result = await dispatchTelegramSlash(syntheticIncoming('/resume monad-session-7'), {
+    const result = await dispatchTelegramSlash(syntheticIncoming('/resume elanous-session-7'), {
       userConfig: dummyConfig(),
       allCommands: cmds,
       streamer: { edit: (t) => edits.push(t) },

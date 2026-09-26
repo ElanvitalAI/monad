@@ -2,9 +2,9 @@
  * `POST /v1/intake/pipeline-commit` — Phase 1 pipeline real-register (FU-I7c).
  *
  * Sibling of `/v1/intake/pipeline-preview` (FU3) but writes Mission +
- * Task rows into the user's **real** TaskStore (`~/.monad/tasks/tasks.db`,
+ * Task rows into the user's **real** TaskStore (`~/.elanous/tasks/tasks.db`,
  * TOX_SCHEMA_VERSION=2 with `tox_missions`) and persists workflow YAMLs
- * into `~/.monad/workflows/`. Until this endpoint landed, the only
+ * into `~/.elanous/workflows/`. Until this endpoint landed, the only
  * register surface (`pipeline-preview` with `register: true`) wrote to
  * an in-memory store so the user could verify the pipeline without
  * touching production data.
@@ -81,7 +81,7 @@ interface PipelineCommitBody {
  *  callable contract (`{name, yaml, scope, skeleton, taskKey}` →
  *  `{ok, path}|{ok:false, error}`) to the workflow-runtime
  *  `saveWorkflow()` disk writer. `scope` defaults to 'global' so the
- *  YAML lives under `~/.monad/workflows/` (matches R3 `monad workflow
+ *  YAML lives under `~/.elanous/workflows/` (matches R3 `elanous workflow
  *  synth` save destination); a project scope could be threaded later
  *  via body opts. */
 function buildProductionSaveWorkflowCallable(): SaveWorkflowCallable {
@@ -105,7 +105,7 @@ function buildProductionSaveWorkflowCallable(): SaveWorkflowCallable {
         error: result.error ?? validationMessage ?? 'save_failed',
       };
     }
-    return { ok: true, path: result.path ?? `~/.monad/workflows/${name}.yaml` };
+    return { ok: true, path: result.path ?? `~/.elanous/workflows/${name}.yaml` };
   };
 }
 
@@ -215,7 +215,7 @@ export async function handleIntakePipelineCommitPost(
   );
 
   // FU-I7c — production TaskStore (no `:memory:`). The bare `new
-  // TaskStore()` constructor reads `~/.monad/tasks/tasks.db` (the
+  // TaskStore()` constructor reads `~/.elanous/tasks/tasks.db` (the
   // user's TOX) — same pattern as `tasks-scheduler.ts` handlers.
   const store = new TaskStore();
   const saveWorkflow = buildProductionSaveWorkflowCallable();

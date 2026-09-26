@@ -51,7 +51,7 @@ export function buildLaneHandoffTool(): LLMToolSpec {
       'Targets the most recently-spawned `/showroom` room unless `roomId` is given. ' +
       '`fromLane` and `toLane` accept: ' +
       'integer pane index (0-based), role hint (`plan`/`build`/`exec`/`review`/`reflect`), ' +
-      'or brand name (`claude`/`codex`/`gemini`/`monad`/alias). ' +
+      'or brand name (`claude`/`codex`/`gemini`/`elanous`/alias). ' +
       '`as` controls how the captured pane body is wrapped (default `user-message`). ' +
       'Every call routes through the HITL binary approver — denial/timeout returns ' +
       '`ok: false` WITHOUT `isError` (intentional user decision). ' +

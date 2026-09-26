@@ -32,7 +32,7 @@ import { requirePosixShellCommand } from '../../platform/default-shell.js';
 import { spawn } from 'child_process';
 import { existsSync, readFileSync, readdirSync, statSync } from 'fs';
 import { join } from 'path';
-import { monadStateRoot } from '../../autopilot/state-paths.js';
+import { elanousStateRoot } from '../../autopilot/state-paths.js';
 import {
   deleteWorkflow,
   discoverWorkflows,
@@ -84,7 +84,7 @@ function rememberRun(rec: RunRecord): void {
 // ── Default WorkflowDeps wiring ────────────────────────────────────
 
 /** Build the default deps used by /run. callLLM wires through the
- *  monad LLM stack (src/llm.ts streamLLM). bash uses child_process.
+ *  elanous LLM stack (src/llm.ts streamLLM). bash uses child_process.
  *  Skill/cft are bridged via deps-bridge.ts; approval registers a
  *  deferred Promise keyed by the runId so a later POST /approve can
  *  resolve it (§5.1 follow-up). */
@@ -453,7 +453,7 @@ export function handleWorkflowRunGet(
     );
   }
   // Caveat #2 follow-up (2026-05-08): cache miss → disk fallback.
-  // Run files are written by the executor to ~/.monad/workflows-runs/
+  // Run files are written by the executor to ~/.elanous/workflows-runs/
   // <runId>/{run.json, nodes/<id>.json}; if Nexus restarted between the
   // run's start and this GET, the in-memory registry is empty but the
   // disk record survives.
@@ -463,7 +463,7 @@ export function handleWorkflowRunGet(
 }
 
 /** Caveat #2 follow-up — list every run that has a `run.json` on
- *  disk under `~/.monad/workflows-runs/`. Sorted newest-first by
+ *  disk under `~/.elanous/workflows-runs/`. Sorted newest-first by
  *  startedAt. Each entry is a thin summary so a UI can paginate
  *  before fetching the full record via GET /runs/<id>. */
 export function handleWorkflowRunsList(
@@ -558,7 +558,7 @@ export function _resetWorkflowRunRegistryForTest(): void {
 /** Default location where the executor writes per-run state. Mirrors
  *  `defaultRunDir(runId)` inside `src/workflow-runtime/executor.ts`.
  *
- *  Precedence: test override > `MONAD_WORKFLOWS_RUNS_DIR` env > home.
+ *  Precedence: test override > `ELANOUS_WORKFLOWS_RUNS_DIR` env > home.
  *  Tests prefer `_setWorkflowRunsRootForTest` because Node's
  *  `os.homedir()` caches its result on first call, so flipping
  *  `process.env.HOME` mid-process doesn't move the root. The env var
@@ -567,9 +567,9 @@ let workflowsRunsRootOverride: string | null = null;
 
 function workflowsRunsRoot(): string {
   if (workflowsRunsRootOverride) return workflowsRunsRootOverride;
-  const envRoot = process.env.MONAD_WORKFLOWS_RUNS_DIR?.trim();
+  const envRoot = process.env.ELANOUS_WORKFLOWS_RUNS_DIR?.trim();
   if (envRoot) return envRoot;
-  return join(monadStateRoot(), 'workflows-runs');
+  return join(elanousStateRoot(), 'workflows-runs');
 }
 
 /** Test-only: override the root the disk loader walks. Pass `null` to

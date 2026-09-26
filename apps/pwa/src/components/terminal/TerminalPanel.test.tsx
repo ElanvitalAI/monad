@@ -171,7 +171,7 @@ describe('TerminalPanel · source wiring only; not behavior validation', () => {
   });
 
   test('pins minimized-storage and PTY summary, selection, and lineage names', () => {
-    expect(SRC).toContain("const MINIMIZED_KEY = 'monad.webterm.panelsMinimized'");
+    expect(SRC).toContain("const MINIMIZED_KEY = 'elanous.webterm.panelsMinimized'");
     expect(SRC).toContain('window.localStorage.setItem(MINIMIZED_KEY');
     expect(SRC).toContain('ptyTerminalRowSummary(terminal)');
     // The row travels whole, not as an id — the id alone drops its source root.

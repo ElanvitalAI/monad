@@ -61,10 +61,10 @@ let prevHome: string | undefined;
 let activeHandle: RunNexusHandle | undefined;
 
 beforeEach(() => {
-  tmpRoot = mkdtempSync(join(tmpdir(), 'monad-nexus-hitl-pwa-'));
-  prevNexusDir = process.env.MONAD_NEXUS_DIR;
+  tmpRoot = mkdtempSync(join(tmpdir(), 'elanous-nexus-hitl-pwa-'));
+  prevNexusDir = process.env.ELANOUS_NEXUS_DIR;
   prevHome = process.env.HOME;
-  process.env.MONAD_NEXUS_DIR = tmpRoot;
+  process.env.ELANOUS_NEXUS_DIR = tmpRoot;
   process.env.HOME = tmpRoot;
   setIntakeStoreForTest(createIntakeStore({ archiveDir: null, replayOnInit: false }));
   registerDefaultConfirmChannels([]);
@@ -78,8 +78,8 @@ afterEach(async () => {
     try { activeHandle.release(); } catch { /* swallow */ }
     activeHandle = undefined;
   }
-  if (prevNexusDir === undefined) delete process.env.MONAD_NEXUS_DIR;
-  else process.env.MONAD_NEXUS_DIR = prevNexusDir;
+  if (prevNexusDir === undefined) delete process.env.ELANOUS_NEXUS_DIR;
+  else process.env.ELANOUS_NEXUS_DIR = prevNexusDir;
   if (prevHome === undefined) delete process.env.HOME;
   else process.env.HOME = prevHome;
   setIntakeStoreForTest(null);

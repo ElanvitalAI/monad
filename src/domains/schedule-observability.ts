@@ -1,7 +1,7 @@
 // ── 스케줄 실행 관측성 3계층 공통 창구 (RFC-scheduler-execution-observability·2026-07-15) ──────
 //
 // 크론이 실제 파이어할 때 그 실행을 3계층에 기록하는 단일 헬퍼(래퍼·데몬 runner·trigger 공통):
-//   ① logs.db (활동·매 실행)   — debug.log('schedule.run', ...) → `monad logs --surface scheduler`
+//   ① logs.db (활동·매 실행)   — debug.log('schedule.run', ...) → `elanous logs --surface scheduler`
 //   ② 레지스트리 (인지·최신)    — markResult 제자리 갱신(1행/잡·바운디드)
 //   ③ 자기기억 (최적화·이상만)  — recordAutonomousActionSafe(loop='scheduler') 를 error 온셋에만
 //

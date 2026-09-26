@@ -1,15 +1,15 @@
 import { basename } from 'node:path';
 
-const CHAIN_ORIGIN_ENV = 'MONAD_PTY_CHAIN_ORIGIN';
+const CHAIN_ORIGIN_ENV = 'ELANOUS_PTY_CHAIN_ORIGIN';
 
 /** PTY identity inherited by a process running inside a PTY. */
 export function getCurrentPtyId(): string | undefined {
-  return process.env.MONAD_PTY_ID || undefined;
+  return process.env.ELANOUS_PTY_ID || undefined;
 }
 
 /** Parent PTY identity, when the spawning path has propagated it. */
 export function getParentPtyId(): string | undefined {
-  return process.env.MONAD_PARENT_PTY_ID || undefined;
+  return process.env.ELANOUS_PARENT_PTY_ID || undefined;
 }
 
 /** Human-readable execution-chain origin, if an ancestor supplied one. */
@@ -26,8 +26,8 @@ export function childPtyIdentityEnv(childPtyId: string): Record<string, string> 
   const parentPtyId = getCurrentPtyId();
   const inheritedOrigin = getPtyChainOrigin();
   return {
-    MONAD_PTY_ID: childPtyId,
-    ...(parentPtyId ? { MONAD_PARENT_PTY_ID: parentPtyId } : {}),
+    ELANOUS_PTY_ID: childPtyId,
+    ...(parentPtyId ? { ELANOUS_PARENT_PTY_ID: parentPtyId } : {}),
     [CHAIN_ORIGIN_ENV]: inheritedOrigin ?? currentProcessOrigin(),
   };
 }
@@ -35,8 +35,8 @@ export function childPtyIdentityEnv(childPtyId: string): Record<string, string> 
 /**
  * Merge child PTY identity into an inherited base env (e.g. a copy of `process.env`).
  *
- * A plain spread cannot express deletion: when the current process has no `MONAD_PTY_ID`,
- * `childPtyIdentityEnv` legitimately omits `MONAD_PARENT_PTY_ID`, but a stale value carried
+ * A plain spread cannot express deletion: when the current process has no `ELANOUS_PTY_ID`,
+ * `childPtyIdentityEnv` legitimately omits `ELANOUS_PARENT_PTY_ID`, but a stale value carried
  * over from the base env would silently survive the merge and mis-attribute the child's parent.
  * So we strip all identity keys from the base first, then apply the freshly derived identity.
  */
@@ -45,9 +45,9 @@ export function withChildPtyIdentity(
   childPtyId: string,
 ): Record<string, string> {
   const {
-    MONAD_PTY_ID: _pty,
-    MONAD_PARENT_PTY_ID: _parent,
-    MONAD_PTY_CHAIN_DEPTH: _legacyChainDepth,
+    ELANOUS_PTY_ID: _pty,
+    ELANOUS_PARENT_PTY_ID: _parent,
+    ELANOUS_PTY_CHAIN_DEPTH: _legacyChainDepth,
     [CHAIN_ORIGIN_ENV]: _origin,
     ...rest
   } = baseEnv;

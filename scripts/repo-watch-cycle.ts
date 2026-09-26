@@ -3,7 +3,7 @@
 //
 // 참조 에이전트 repo(hermes/openclaw/codex) 주기 감시 → 새 커밋 → 흡수 제안 리포트.
 // triage 라우터(P1.1)의 scheduler 실행모델 첫 실사례. READ-ONLY(gh api 조회만).
-// cron 등록: schedule_manage(대표 arming). 로그: ~/.monad/conatus/repo_watch.log.
+// cron 등록: schedule_manage(대표 arming). 로그: ~/.elanous/conatus/repo_watch.log.
 
 import { runRepoWatchCycle } from '../src/autopilot/repo-watch.js';
 import { recordAutonomousActionSafe } from '../src/domains/autonomy-log.js';
@@ -16,7 +16,7 @@ import { dirname, join } from 'node:path';
 import { ensureCronNodePath } from '../src/domains/cron-path.js';
 ensureCronNodePath();
 
-const LOG = join(homedir(), '.monad/conatus/repo_watch.log');
+const LOG = join(homedir(), '.elanous/conatus/repo_watch.log');
 function log(s: string): void {
   const stamp = `${new Date().toISOString()} ${s}`;
   console.log(s);

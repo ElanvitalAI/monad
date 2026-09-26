@@ -2,12 +2,12 @@
 // ── 시스템 셀프힐링 라이브 dogfood — 합성 결함 escalate 시나리오 (2026-07-13) ──────
 //
 // 목적: escalate 자율구조(R2 시스템 결함 의심 → R3 Opus 룩백 → system-repair 수리미션 스폰)를
-// 실제 monad 코드를 망가뜨리지 않고 라이브 검증. 합성 결함 미션 + 실패 페이즈([SUSPECT] 신호)를
+// 실제 elanous 코드를 망가뜨리지 않고 라이브 검증. 합성 결함 미션 + 실패 페이즈([SUSPECT] 신호)를
 // 실제 DB 에 만들어, escalate 가 그 신호를 복원해 R3 Opus 조사 후 수리 미션을 스폰하는지 본다.
 //
 // 사용:
 //   bun scripts/dogfood-selfheal-escalate.ts            # 합성 결함 미션 생성 → id 출력
-//   monad autopilot escalate <missionId> 0              # escalate 트리거(별도·라이브 관찰)
+//   elanous autopilot escalate <missionId> 0              # escalate 트리거(별도·라이브 관찰)
 //   bun scripts/dogfood-selfheal-escalate.ts --cleanup <missionId>   # dogfood 미션 정리
 //
 // 안전: escalate 가 스폰하는 수리 미션은 human-intent 라 분해 후 HITL 승인 대기(자동 실행 안 함).
@@ -75,7 +75,7 @@ try {
   console.log(`R2 모순     : ${signals.map((s) => s.kind).join(', ')}`);
   console.log('');
   console.log('다음(라이브 관찰):');
-  console.log(`  monad autopilot escalate ${missionId} 0`);
+  console.log(`  elanous autopilot escalate ${missionId} 0`);
   console.log('  → [SUSPECT] 복원 → R3 fresh Opus 룩백 → system-repair 수리 미션 스폰(분해→HITL 대기)');
   console.log('');
   console.log('정리:');

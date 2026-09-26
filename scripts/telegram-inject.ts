@@ -1,7 +1,7 @@
 #!/usr/bin/env bun
 // 텔레그램 무인 테스트 주입 (GramJS 유저봇 · #24 인시던트 후 · 2026-07-21)
 //
-// 목적: 에이전트/스크립트가 **유저 계정으로** monad 봇에게 objective 를 무인 전송 → 데몬이 처리.
+// 목적: 에이전트/스크립트가 **유저 계정으로** elanous 봇에게 objective 를 무인 전송 → 데몬이 처리.
 //   Bot API `sendMessage` 로는 봇 자기트리거 불가(bot-to-bot 서버 차단) → MTProto userbot(GramJS)만 가능.
 //   유저 계정으로 보내므로 **그 계정의 텔레그램 앱에도 대화가 보인다**(무인 주입 + 사람 관찰 동시).
 //
@@ -11,7 +11,7 @@
 //   ③ `bun scripts/telegram-inject.ts --login` → 전화+코드 인증 → SESSION STRING 출력 → TELEGRAM_USER_SESSION 저장
 //   ④ `bun scripts/telegram-inject.ts --to @monad_test_bot --text "<objective>"` → 무인 주입
 //
-// ⚠️ 보안: SESSION STRING = 계정 접근권. git 커밋 금지·안전 저장(예: .monad-test config·env). API_HASH 도 비밀.
+// ⚠️ 보안: SESSION STRING = 계정 접근권. git 커밋 금지·안전 저장(예: .elanous-test config·env). API_HASH 도 비밀.
 
 import { TelegramClient, Api } from 'telegram';
 import { StringSession } from 'telegram/sessions';
@@ -80,7 +80,7 @@ if (has('--check')) {
 }
 
 // --read: 봇과의 대화(봇 응답 포함)를 직접 읽는다(#24 후속·완전 무인 왕복). getMessages 히스토리.
-//   → 사람에게 "봇이 뭐라 답했나" 부탁 없이 에이전트가 텔레그램 내용을 직접 read(monad session 의 텔레그램판).
+//   → 사람에게 "봇이 뭐라 답했나" 부탁 없이 에이전트가 텔레그램 내용을 직접 read(elanous session 의 텔레그램판).
 if (has('--read')) {
   const sess = process.env.TELEGRAM_USER_SESSION ?? val('--session');
   const from = val('--from') ?? val('--to') ?? process.env.TELEGRAM_TEST_BOT ?? configBot;

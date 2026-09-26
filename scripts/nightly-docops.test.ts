@@ -30,7 +30,7 @@ function queue(files: Record<string, string>, logs: string[] = []): SemanticQueu
 describe('nightly-docops module import', () => {
   it('does not create the checkpoint directory outside the CLI main path', async () => {
     const home = mkdtempSync(join(tmpdir(), 'nightly-docops-import-'));
-    const checkpointDir = join(home, '.monad', 'doc-curation', 'checkpoints');
+    const checkpointDir = join(home, '.elanous', 'doc-curation', 'checkpoints');
     const previousHome = process.env.HOME;
     try {
       const child = Bun.spawn({

@@ -31,7 +31,7 @@ const INLINE_FORM = `대상 경로: scripts/ask-marker-check.ts
 판정 신호: 조건 = A; 관측 = B; 기대 = C 가 있다.
 `;
 
-const PATH_LIKE_TEXT_WITHOUT_TARGET_LABEL = `fix apps/android/app/src/main/kotlin/com/elanvitalai/monad/android/ChatModels.kt typo
+const PATH_LIKE_TEXT_WITHOUT_TARGET_LABEL = `fix apps/android/app/src/main/kotlin/com/elanvitalai/elanous/android/ChatModels.kt typo
 
 불변식: scripts/ask-marker-check.ts 를 계속 쓴다.
 경계: src/dashboard/ 를 고치지 않는다.
@@ -979,10 +979,10 @@ describe('판정 신호 종류 — 구현을 문다', () => {
   it('다섯 관측 모양을 관측 축과 같은 분류로 세고 CLI의 연속 출력이 실물 수를 일치시킨다', () => {
     const signals = [
       '판정 신호: 조건 = direct; 관측 = bun test src/a.test.ts; 기대 = unit',
-      '판정 신호: 조건 = env; 관측 = env MONAD_X=1 bun test src/a.test.ts; 기대 = unit',
+      '판정 신호: 조건 = env; 관측 = env ELANOUS_X=1 bun test src/a.test.ts; 기대 = unit',
       '판정 신호: 조건 = time; 관측 = time bun test src/a.test.ts; 기대 = unit',
       '판정 신호: 조건 = prose; 관측 = bun is worth investigating tomorrow; 기대 = unresolved',
-      '판정 신호: 조건 = logs; 관측 = bun bin/monad.mjs logs --since 1h; 기대 = real',
+      '판정 신호: 조건 = logs; 관측 = bun bin/elanous.mjs logs --since 1h; 기대 = real',
     ];
     const source = ask(...signals);
     const observationAxis = inspectDecisionObservations(source);
@@ -1161,7 +1161,7 @@ describe('판정 신호 종류 — 구현을 문다', () => {
         `판정 신호: 조건 = harness; 관측 = bun test ${harness}; 기대 = real`,
         `판정 신호: 조건 = fixture; 관측 = bun test ${fixture}; 기대 = unit-test`,
         `판정 신호: 조건 = missing; 관측 = bun test ${missing}; 기대 = unit-test`,
-        '판정 신호: 조건 = logs; 관측 = bun bin/monad.mjs logs --since 1h; 기대 = real',
+        '판정 신호: 조건 = logs; 관측 = bun bin/elanous.mjs logs --since 1h; 기대 = real',
         '판정 신호: 조건 = prose; 관측 = bun is worth investigating tomorrow; 기대 = unresolved',
       )).map(({ kind }) => kind);
       expect(kinds).toEqual(['real', 'unit-test', 'unit-test', 'real', 'unresolved']);
@@ -1180,7 +1180,7 @@ describe('판정 신호 종류 — 구현을 문다', () => {
       writeFileSync(relativePrefix, [
         "import { spawnSync } from 'node:child_process';",
         "spawnSync('./install.sh', []);",
-        "Bun.spawn(['./bin/monad.mjs']);",
+        "Bun.spawn(['./bin/elanous.mjs']);",
         "execFileSync('./scripts/check.ts');",
         '',
       ].join('\n'));
@@ -1434,15 +1434,15 @@ describe('안 눌릴 신호 — canonical parser CLI 배선', () => {
     expect(r.stdout).toContain('ℹ️ 안 눌릴 신호 — 1번째 신호 처방: 자리표시자 대신 실제 경로를 명시하라');
   });
 
-  it('전역 monad 거절에는 작업 트리 monad 진입을 이름으로 처방한다', () => {
-    const r = runCli(ask('판정 신호: 조건 = 전역 monad; 관측 = monad logs --category harness --json; 기대 = 유지된다'));
+  it('전역 elanous 거절에는 작업 트리 elanous 진입을 이름으로 처방한다', () => {
+    const r = runCli(ask('판정 신호: 조건 = 전역 elanous; 관측 = elanous logs --category harness --json; 기대 = 유지된다'));
 
     expect(r.status).toBe(0);
-    expect(r.stdout).toContain('ℹ️ 안 눌릴 신호 — 1번째 신호 거부 이유: not-allowlisted; 전역 monad 대신 bun bin/monad.mjs …로 바꿔라');
+    expect(r.stdout).toContain('ℹ️ 안 눌릴 신호 — 1번째 신호 거부 이유: not-allowlisted; 전역 elanous 대신 bun bin/elanous.mjs …로 바꿔라');
   });
 
   it('환경 변수 접두 거절에는 접두를 이름으로 처방한다', () => {
-    const r = runCli(ask('판정 신호: 조건 = 환경 변수; 관측 = MONAD_STATE_DIR=/tmp/monad bun bin/monad.mjs self send x; 기대 = 유지된다'));
+    const r = runCli(ask('판정 신호: 조건 = 환경 변수; 관측 = ELANOUS_STATE_DIR=/tmp/elanous bun bin/elanous.mjs self send x; 기대 = 유지된다'));
 
     expect(r.status).toBe(0);
     expect(r.stdout).toContain('ℹ️ 안 눌릴 신호 — 1번째 신호 거부 이유: not-allowlisted; 환경 변수 접두를 떼거나 그 값이 꼭 필요하면 이 신호에서 실행할 수 없다고 적어라');
@@ -1495,11 +1495,11 @@ describe('안 눌릴 신호 — canonical parser CLI 배선', () => {
 describe('무포트 격리 데몬 — 비차단 경고', () => {
   const HEAD = ['대상 경로: scripts/ask-marker-check.ts', '불변식: scripts/ask-marker-check.ts 를 그대로 둔다.', '경계: 다른 파일은 대상이 아니다.'];
   const ask = (...signals: string[]) => [...HEAD, ...signals].join('\n');
-  const UNPORTED = 'bun bin/monad.mjs --test nexus run';
-  const PORTED = 'bun bin/monad.mjs --test nexus run --http-port 47101';
-  const PORTED_EQUALS = 'bun bin/monad.mjs --test --http-port=47101 nexus run';
+  const UNPORTED = 'bun bin/elanous.mjs --test nexus run';
+  const PORTED = 'bun bin/elanous.mjs --test nexus run --http-port 47101';
+  const PORTED_EQUALS = 'bun bin/elanous.mjs --test --http-port=47101 nexus run';
   const warning = (ordinal: number) =>
-    `⚠️ 무포트 격리 데몬 — ${ordinal}번째 신호는 bun bin/monad.mjs --test nexus run 을 포트 없이 띄워 운영 포트를 가린다; --http-port 로 포트를 명시하라.`;
+    `⚠️ 무포트 격리 데몬 — ${ordinal}번째 신호는 bun bin/elanous.mjs --test nexus run 을 포트 없이 띄워 운영 포트를 가린다; --http-port 로 포트를 명시하라.`;
 
   it('관측 명령의 무포트 격리 데몬만 순번과 함께 경고한다', () => {
     const source = ask(
@@ -1550,13 +1550,13 @@ describe('무포트 격리 데몬 — 비차단 경고', () => {
   });
 
   it('셸 뒤 명령의 --http-port 는 데몬 포트를 명시한 것으로 보지 않는다', () => {
-    const source = ask('판정 신호: 조건 = 합성; 관측 = bun bin/monad.mjs --test nexus run && curl --http-port 9; 기대 = 경고');
+    const source = ask('판정 신호: 조건 = 합성; 관측 = bun bin/elanous.mjs --test nexus run && curl --http-port 9; 기대 = 경고');
 
     expect(inspectUnportedIsolatedDaemonWarnings(source)).toEqual([warning(1)]);
   });
 
   it('echo 인자로만 적힌 문면은 무경고이고 실제 무포트 기동은 경고한다', () => {
-    const echoed = ask(`판정 신호: 조건 = 출력; 관측 = echo bun bin/monad.mjs --test nexus run; 기대 = 무경고`);
+    const echoed = ask(`판정 신호: 조건 = 출력; 관측 = echo bun bin/elanous.mjs --test nexus run; 기대 = 무경고`);
     const launched = ask(`판정 신호: 조건 = 기동; 관측 = ${UNPORTED}; 기대 = 경고`);
     const echoedCli = runCli(echoed);
     const launchedCli = runCli(launched);
@@ -1570,7 +1570,7 @@ describe('무포트 격리 데몬 — 비차단 경고', () => {
   });
 
   it('env 래퍼 뒤의 무포트 격리 데몬은 경고하고 rc 는 0 이다', () => {
-    const source = ask('판정 신호: 조건 = env 래퍼; 관측 = env bun bin/monad.mjs --test nexus run; 기대 = 경고');
+    const source = ask('판정 신호: 조건 = env 래퍼; 관측 = env bun bin/elanous.mjs --test nexus run; 기대 = 경고');
     const r = runCli(source);
 
     expect(inspectUnportedIsolatedDaemonWarnings(source)).toEqual([warning(1)]);
@@ -1579,16 +1579,16 @@ describe('무포트 격리 데몬 — 비차단 경고', () => {
   });
 
   it('env -S 실행 문자열의 env 옵션 뒤 무포트 격리 데몬은 경고하고 명시 포트에는 무경고다', () => {
-    const unported = ask("판정 신호: 조건 = split-string; 관측 = env -S '-i bun bin/monad.mjs --test nexus run'; 기대 = 경고");
-    const ported = ask("판정 신호: 조건 = split-string 포트; 관측 = env --split-string '-i bun bin/monad.mjs --test nexus run --http-port 47101'; 기대 = 무경고");
+    const unported = ask("판정 신호: 조건 = split-string; 관측 = env -S '-i bun bin/elanous.mjs --test nexus run'; 기대 = 경고");
+    const ported = ask("판정 신호: 조건 = split-string 포트; 관측 = env --split-string '-i bun bin/elanous.mjs --test nexus run --http-port 47101'; 기대 = 무경고");
 
     expect(inspectUnportedIsolatedDaemonWarnings(unported)).toEqual([warning(1)]);
     expect(inspectUnportedIsolatedDaemonWarnings(ported)).toEqual([]);
   });
 
-  it("env -S 'bun bin/monad.mjs --test nexus run' 은 무포트 경고를 내고 --split-string 명시 포트에는 무경고다", () => {
-    const unported = ask("판정 신호: 조건 = split-string 인용; 관측 = env -S 'bun bin/monad.mjs --test nexus run'; 기대 = 경고");
-    const ported = ask("판정 신호: 조건 = split-string 인용 포트; 관측 = env --split-string 'bun bin/monad.mjs --test nexus run --http-port 47101'; 기대 = 무경고");
+  it("env -S 'bun bin/elanous.mjs --test nexus run' 은 무포트 경고를 내고 --split-string 명시 포트에는 무경고다", () => {
+    const unported = ask("판정 신호: 조건 = split-string 인용; 관측 = env -S 'bun bin/elanous.mjs --test nexus run'; 기대 = 경고");
+    const ported = ask("판정 신호: 조건 = split-string 인용 포트; 관측 = env --split-string 'bun bin/elanous.mjs --test nexus run --http-port 47101'; 기대 = 무경고");
     const unportedCli = runCli(unported);
     const portedCli = runCli(ported);
 
@@ -1601,7 +1601,7 @@ describe('무포트 격리 데몬 — 비차단 경고', () => {
   });
 
   it('--tool-cwd 값의 nexus 는 서브커맨드가 아니므로 무경고이고 실제 무포트 기동은 경고한다', () => {
-    const optionValue = ask('판정 신호: 조건 = 옵션 값; 관측 = bun bin/monad.mjs --test --tool-cwd nexus run; 기대 = 무경고');
+    const optionValue = ask('판정 신호: 조건 = 옵션 값; 관측 = bun bin/elanous.mjs --test --tool-cwd nexus run; 기대 = 무경고');
     const launched = ask(`판정 신호: 조건 = 기동; 관측 = ${UNPORTED}; 기대 = 경고`);
     const optionValueCli = runCli(optionValue);
     const launchedCli = runCli(launched);
@@ -1614,9 +1614,9 @@ describe('무포트 격리 데몬 — 비차단 경고', () => {
     expect(launchedCli.stdout.split(/\r?\n/).filter((line) => line.includes('⚠️ 무포트 격리 데몬'))).toEqual([`   ${warning(1)}`]);
   });
 
-  it('bun run bin/monad.mjs --test nexus run 은 무포트 경고를 내고 --http-port 가 있으면 무경고다', () => {
-    const runUnported = ask('판정 신호: 조건 = bun run; 관측 = bun run bin/monad.mjs --test nexus run; 기대 = 경고');
-    const runPorted = ask('판정 신호: 조건 = bun run 포트; 관측 = bun run bin/monad.mjs --test nexus run --http-port 47101; 기대 = 무경고');
+  it('bun run bin/elanous.mjs --test nexus run 은 무포트 경고를 내고 --http-port 가 있으면 무경고다', () => {
+    const runUnported = ask('판정 신호: 조건 = bun run; 관측 = bun run bin/elanous.mjs --test nexus run; 기대 = 경고');
+    const runPorted = ask('판정 신호: 조건 = bun run 포트; 관측 = bun run bin/elanous.mjs --test nexus run --http-port 47101; 기대 = 무경고');
     const runUnportedCli = runCli(runUnported);
     const runPortedCli = runCli(runPorted);
 
@@ -1628,9 +1628,9 @@ describe('무포트 격리 데몬 — 비차단 경고', () => {
     expect(runPortedCli.stdout).not.toContain('⚠️ 무포트 격리 데몬');
   });
 
-  it('monad 직접 실행은 무포트 경고를 내고 --http-port 가 있으면 무경고다', () => {
-    const directUnported = ask('판정 신호: 조건 = 직접 실행; 관측 = monad --test nexus run; 기대 = 경고');
-    const directPorted = ask('판정 신호: 조건 = 직접 실행 포트; 관측 = monad --test nexus run --http-port 47101; 기대 = 무경고');
+  it('elanous 직접 실행은 무포트 경고를 내고 --http-port 가 있으면 무경고다', () => {
+    const directUnported = ask('판정 신호: 조건 = 직접 실행; 관측 = elanous --test nexus run; 기대 = 경고');
+    const directPorted = ask('판정 신호: 조건 = 직접 실행 포트; 관측 = elanous --test nexus run --http-port 47101; 기대 = 무경고');
     const directUnportedCli = runCli(directUnported);
     const directPortedCli = runCli(directPorted);
 
@@ -1643,12 +1643,12 @@ describe('무포트 격리 데몬 — 비차단 경고', () => {
   });
 
   it('--http-port 값 누락·빈 값은 경고하고 비어 있지 않은 포트는 무경고다', () => {
-    const missing = ask('판정 신호: 조건 = 값 누락; 관측 = monad --test nexus run --http-port; 기대 = 경고');
-    const emptyEquals = ask('판정 신호: 조건 = 빈 값; 관측 = monad --test nexus run --http-port=; 기대 = 경고');
-    const bunMissing = ask('판정 신호: 조건 = bun 값 누락; 관측 = bun bin/monad.mjs --test nexus run --http-port; 기대 = 경고');
-    const bunEmpty = ask('판정 신호: 조건 = bun 빈 값; 관측 = bun bin/monad.mjs --test nexus run --http-port=; 기대 = 경고');
-    const nextOption = ask('판정 신호: 조건 = 다음 옵션; 관측 = monad --test nexus run --http-port --http-host 127.0.0.1; 기대 = 경고');
-    const ported = ask('판정 신호: 조건 = 명시 포트; 관측 = monad --test nexus run --http-port 47101; 기대 = 무경고');
+    const missing = ask('판정 신호: 조건 = 값 누락; 관측 = elanous --test nexus run --http-port; 기대 = 경고');
+    const emptyEquals = ask('판정 신호: 조건 = 빈 값; 관측 = elanous --test nexus run --http-port=; 기대 = 경고');
+    const bunMissing = ask('판정 신호: 조건 = bun 값 누락; 관측 = bun bin/elanous.mjs --test nexus run --http-port; 기대 = 경고');
+    const bunEmpty = ask('판정 신호: 조건 = bun 빈 값; 관측 = bun bin/elanous.mjs --test nexus run --http-port=; 기대 = 경고');
+    const nextOption = ask('판정 신호: 조건 = 다음 옵션; 관측 = elanous --test nexus run --http-port --http-host 127.0.0.1; 기대 = 경고');
+    const ported = ask('판정 신호: 조건 = 명시 포트; 관측 = elanous --test nexus run --http-port 47101; 기대 = 무경고');
     const missingCli = runCli(missing);
 
     expect(inspectUnportedIsolatedDaemonWarnings(missing)).toEqual([warning(1)]);
@@ -1662,7 +1662,7 @@ describe('무포트 격리 데몬 — 비차단 경고', () => {
   });
 
   it('현재 저장소 CLI의 절대 경로는 무포트 경고를 내고 --http-port 가 있으면 무경고다', () => {
-    const absoluteCli = join(repositoryRoot, 'bin/monad.mjs');
+    const absoluteCli = join(repositoryRoot, 'bin/elanous.mjs');
     const absoluteUnported = ask(`판정 신호: 조건 = 절대 경로; 관측 = bun ${absoluteCli} --test nexus run; 기대 = 경고`);
     const absolutePorted = ask(`판정 신호: 조건 = 절대 경로 포트; 관측 = bun ${absoluteCli} --test nexus run --http-port 47101; 기대 = 무경고`);
     const unportedCli = runCli(absoluteUnported);
@@ -1676,10 +1676,10 @@ describe('무포트 격리 데몬 — 비차단 경고', () => {
     expect(portedCli.stdout).not.toContain('⚠️ 무포트 격리 데몬');
   });
 
-  it('bun ./bin/monad.mjs --test nexus run 은 무포트 경고를 내고 --http-port 가 있으면 무경고다', () => {
-    const dottedUnported = ask('판정 신호: 조건 = 점 경로; 관측 = bun ./bin/monad.mjs --test nexus run; 기대 = 경고');
-    const dottedPorted = ask('판정 신호: 조건 = 점 경로 포트; 관측 = bun ./bin/monad.mjs --test nexus run --http-port 47101; 기대 = 무경고');
-    const otherDir = ask('판정 신호: 조건 = 다른 디렉터리; 관측 = bun scripts/bin/monad.mjs --test nexus run; 기대 = 무경고');
+  it('bun ./bin/elanous.mjs --test nexus run 은 무포트 경고를 내고 --http-port 가 있으면 무경고다', () => {
+    const dottedUnported = ask('판정 신호: 조건 = 점 경로; 관측 = bun ./bin/elanous.mjs --test nexus run; 기대 = 경고');
+    const dottedPorted = ask('판정 신호: 조건 = 점 경로 포트; 관측 = bun ./bin/elanous.mjs --test nexus run --http-port 47101; 기대 = 무경고');
+    const otherDir = ask('판정 신호: 조건 = 다른 디렉터리; 관측 = bun scripts/bin/elanous.mjs --test nexus run; 기대 = 무경고');
     const dottedUnportedCli = runCli(dottedUnported);
     const dottedPortedCli = runCli(dottedPorted);
 
@@ -1709,10 +1709,10 @@ describe('무포트 격리 데몬 — 비차단 경고', () => {
   });
 
   it('한국어 산문 속 무포트 기동은 경고 1건·rc 0 이고 --http-port 가 있으면 무경고다', () => {
-    const prose = '격리 데몬을 bun bin/monad.mjs --test nexus run 으로 띄우고';
+    const prose = '격리 데몬을 bun bin/elanous.mjs --test nexus run 으로 띄우고';
     const unported = ask(`판정 신호: 조건 = 산문; 관측 = ${prose}; 기대 = 경고 한 줄`);
-    const portedHttp = ask('판정 신호: 조건 = 산문 포트; 관측 = 격리 데몬을 bun bin/monad.mjs --test nexus run --http-port 31420 으로 띄우고; 기대 = 무경고');
-    const portedPort = ask('판정 신호: 조건 = 산문 포트 별칭; 관측 = 격리 데몬을 bun bin/monad.mjs --test nexus run --port 31420 으로 띄우고; 기대 = 무경고');
+    const portedHttp = ask('판정 신호: 조건 = 산문 포트; 관측 = 격리 데몬을 bun bin/elanous.mjs --test nexus run --http-port 31420 으로 띄우고; 기대 = 무경고');
+    const portedPort = ask('판정 신호: 조건 = 산문 포트 별칭; 관측 = 격리 데몬을 bun bin/elanous.mjs --test nexus run --port 31420 으로 띄우고; 기대 = 무경고');
     const unportedCli = runCli(unported);
     const portedHttpCli = runCli(portedHttp);
     const portedPortCli = runCli(portedPort);
@@ -1729,8 +1729,8 @@ describe('무포트 격리 데몬 — 비차단 경고', () => {
   });
 
   it('관측이 포트 지정 기동이어도 조건의 무포트 기동은 경고 1건이고 rc 는 0 이다', () => {
-    const mixedHttp = ask('판정 신호: 조건 = bun bin/monad.mjs --test nexus run; 관측 = bun bin/monad.mjs --test nexus run --http-port 31420; 기대 = 정상');
-    const mixedPort = ask('판정 신호: 조건 = bun bin/monad.mjs --test nexus run; 관측 = bun bin/monad.mjs --test nexus run --port 31420; 기대 = 정상');
+    const mixedHttp = ask('판정 신호: 조건 = bun bin/elanous.mjs --test nexus run; 관측 = bun bin/elanous.mjs --test nexus run --http-port 31420; 기대 = 정상');
+    const mixedPort = ask('판정 신호: 조건 = bun bin/elanous.mjs --test nexus run; 관측 = bun bin/elanous.mjs --test nexus run --port 31420; 기대 = 정상');
     const mixedHttpCli = runCli(mixedHttp);
     const mixedPortCli = runCli(mixedPort);
 
@@ -1743,7 +1743,7 @@ describe('무포트 격리 데몬 — 비차단 경고', () => {
   });
 
   it('조건 칸에만 있는 무포트 기동이 경고 1건을 내고 rc 는 0 이다', () => {
-    const source = ask('판정 신호: 조건 = 격리 데몬을 bun bin/monad.mjs --test nexus run 으로 띄운다; 관측 = bun test x.test.ts; 기대 = 경고 1건');
+    const source = ask('판정 신호: 조건 = 격리 데몬을 bun bin/elanous.mjs --test nexus run 으로 띄운다; 관측 = bun test x.test.ts; 기대 = 경고 1건');
     const r = runCli(source);
 
     expect(inspectUnportedIsolatedDaemonWarnings(source)).toEqual([warning(1)]);
@@ -1752,13 +1752,13 @@ describe('무포트 격리 데몬 — 비차단 경고', () => {
   });
 
   it('조건에만 무포트 기동이 있고 관측은 curl 결과이면 경고 1건이다', () => {
-    const source = ask('판정 신호: 조건 = 격리 데몬을 bun bin/monad.mjs --test nexus run 으로 띄우고 curl 로; 관측 = 그 curl 이 받은 줄; 기대 = 1건');
+    const source = ask('판정 신호: 조건 = 격리 데몬을 bun bin/elanous.mjs --test nexus run 으로 띄우고 curl 로; 관측 = 그 curl 이 받은 줄; 기대 = 1건');
 
     expect(inspectUnportedIsolatedDaemonWarnings(source)).toEqual([warning(1)]);
   });
 
   it.skipIf(!existsSync(join(repositoryRoot, 'docs/goals/ASK-the-slash-harness-path-emits-no-envelope-at-all-2026-09-12.md')))('private docs/goals 실물 두 건을 읽어 각각 경고 1건 이상을 낸다', () => {
-    const phrase = '격리 데몬을 bun bin/monad.mjs --test nexus run';
+    const phrase = '격리 데몬을 bun bin/elanous.mjs --test nexus run';
     const files = [
       'docs/goals/ASK-the-slash-harness-path-emits-no-envelope-at-all-2026-09-12.md',
       'docs/goals/ASK-harness-progress-must-outlive-the-turn-2026-09-12.md',
@@ -1787,7 +1787,7 @@ describe('무포트 격리 데몬 — 비차단 경고', () => {
   });
 
   it('조건 칸에 --http-port 31420 을 넣은 판은 경고 0건이다', () => {
-    const source = ask('판정 신호: 조건 = bun bin/monad.mjs --test nexus run --http-port 31420; 관측 = bun test x.test.ts; 기대 = 무경고');
+    const source = ask('판정 신호: 조건 = bun bin/elanous.mjs --test nexus run --http-port 31420; 관측 = bun test x.test.ts; 기대 = 무경고');
     const r = runCli(source);
 
     expect(inspectUnportedIsolatedDaemonWarnings(source)).toEqual([]);
@@ -1893,9 +1893,9 @@ describe('조건↔관측 짝 — 비차단 경고', () => {
     expect(r.stdout).not.toContain('⚠️ 조건↔관측 짝');
   });
 
-  it('bun <파일> 과 monad 관측은 실행 약속이 있어도 경고하지 않는다', () => {
+  it('bun <파일> 과 elanous 관측은 실행 약속이 있어도 경고하지 않는다', () => {
     expect(inspectConditionObservationPairWarnings(ask('판정 신호: 조건 = 실물에서 돈다; 관측 = bun scripts/ask-marker-check.ts; 기대 = 산출'))).toEqual([]);
-    expect(inspectConditionObservationPairWarnings(ask('판정 신호: 조건 = 실물에서 돈다; 관측 = monad logs --limit 1; 기대 = 줄'))).toEqual([]);
+    expect(inspectConditionObservationPairWarnings(ask('판정 신호: 조건 = 실물에서 돈다; 관측 = elanous logs --limit 1; 기대 = 줄'))).toEqual([]);
   });
 
   it('조건이 배선됐다 이고 관측이 rg -c 이면 경고하지 않는다', () => {

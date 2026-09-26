@@ -31,11 +31,11 @@ export interface CapabilityDescriptor {
 export const CAPABILITY_CATALOG: readonly CapabilityDescriptor[] = [
   { id: 'pty-substrate', owner: 'src/pty-shell/registry.ts', shared: true, entry: 'independent', note: 'L0 spawn·capture·연속포워딩·입력·id/닉네임/accessMode' },
   { id: 'goal-loop', owner: 'src/self-implement + agent-mission brain', shared: false, entry: 'independent', note: 'iterate-until-evidence(단일 모듈로 분리 target)' },
-  { id: 'enhance', owner: 'src/agent-substrate/execution/ingestion-policy + prompt-enhance', shared: true, entry: 'sensitive', note: 'mode-gated(monad-apparatus ON/external-verbatim OFF)·verbatim 보존+가산' },
+  { id: 'enhance', owner: 'src/agent-substrate/execution/ingestion-policy + prompt-enhance', shared: true, entry: 'sensitive', note: 'mode-gated(elanous-apparatus ON/external-verbatim OFF)·verbatim 보존+가산' },
   { id: 'coverage', owner: 'src/prompt-enhance/coverage.ts', shared: true, entry: 'independent', note: '산출이 요구 체크리스트를 담았는지 검증' },
   { id: 'memory', owner: 'src/agent-substrate/execution/memory-context.ts', shared: true, entry: 'independent', note: '항상 ON·가산 grounding·프롬프트 무접촉(mirage 가드)' },
   { id: 'observe', owner: 'logs.db + registry 버스(onPtyEvent)', shared: true, entry: 'independent', note: '항상 ON·공유 버스 버블(제1원칙)' },
-  { id: 'isolation', owner: 'src/autopilot/build/isolated-instance.ts', shared: false, entry: 'independent', note: 'config-dir/worktree/.monad-se·deterministic port·assertIsolationSafe' },
+  { id: 'isolation', owner: 'src/autopilot/build/isolated-instance.ts', shared: false, entry: 'independent', note: 'config-dir/worktree/.elanous-se·deterministic port·assertIsolationSafe' },
   { id: 'budget', owner: 'src/autopilot/mission-budget.ts', shared: false, entry: 'independent', note: 'SE/Walker 사다리·token→turn tighten·stop point' },
   { id: 'arming', owner: 'src/autopilot/arming.ts + mission-arming-gate.ts', shared: false, entry: 'independent', note: 'fail-closed DISARMED·per-phase HITL 카드·materialize-mandate' },
   { id: 'frame-journal', owner: 'src/autopilot/pipeline/frame-* over src/agent-substrate/frames.ts', shared: true, entry: 'independent', note: '불변 append JSONL·replay/rewind/goto/rerun·pending-write' },
@@ -78,7 +78,7 @@ export function capability(id: CapabilityId): CapabilityDescriptor | undefined {
 //
 // P2-seed 는 조합별 capability 를 **선언**만 했다(descriptor). 이 리졸버가 그 선언을 §6e 진입 정책과 합성해
 // **어떤 capability 가 실제 ON 인지**를 낸다 = "선언이 behavior 를 구동"의 SSOT. 첫 소비자=generic-skill-executor.
-//   - enhance = 진입 민감(mode-gated): 선언에 있어도 ingestion 정책(monad-apparatus ON/external-verbatim OFF·
+//   - enhance = 진입 민감(mode-gated): 선언에 있어도 ingestion 정책(elanous-apparatus ON/external-verbatim OFF·
 //     explicit override)이 최종 결정.
 //   - 나머지(memory·observe·coverage·…) = 진입 무관: 선언에 있으면 ON(§6e).
 
@@ -91,7 +91,7 @@ export interface CapabilityActivation {
 }
 
 export interface ResolveActiveOpts {
-  /** 진입 클래스(§6e) — enhance mode-gating 에 사용. 기본 monad-apparatus. */
+  /** 진입 클래스(§6e) — enhance mode-gating 에 사용. 기본 elanous-apparatus. */
   entry?: IngestionEntry;
   /** 호출자 명시 enhance(정책 기본값보다 우선). */
   explicitEnhance?: boolean;
@@ -107,7 +107,7 @@ export function resolveActiveCapabilities(kind: CompositionKind, opts: ResolveAc
   // enhance = 진입 민감: 선언돼 있어도 정책이 OFF 면 비활성(external-verbatim·명시 off).
   if (declared.has('enhance')) {
     const policy = resolveIngestionPolicy({
-      entry: opts.entry ?? 'monad-apparatus',
+      entry: opts.entry ?? 'elanous-apparatus',
       ...(opts.explicitEnhance !== undefined ? { explicitEnhance: opts.explicitEnhance } : {}),
     });
     if (!policy.enhance) declared.delete('enhance');

@@ -177,11 +177,11 @@ describe('queryRunChain batched log observations', () => {
       row(1, 'dev-pipeline', 'plan', { runId: firstRun, goalId: 'first-goal', originSession: 'first-session' }),
       row(2, 'self-implement', 'start', { runId: firstRun, goalSource: 'natural-language-dispatch' }),
       row(3, 'daemon-tools.self-implement', 'dispatch', { sessionId: 'first-session', userText: 'first request' }),
-      row(4, 'daemon-tools.self-implement', 'done', { runId: firstRun, pr: 'https://github.com/acme/monad/pull/1' }),
+      row(4, 'daemon-tools.self-implement', 'done', { runId: firstRun, pr: 'https://github.com/acme/elanous/pull/1' }),
       row(5, 'dev-pipeline', 'plan', { runId: secondRun, goalId: 'second-goal', originSession: 'second-session' }),
       row(6, 'self-implement', 'start', { runId: secondRun, goalSource: 'natural-language-dispatch' }),
       row(7, 'daemon-tools.self-implement', 'dispatch', { sessionId: 'second-session', userText: 'second request' }),
-      row(8, 'daemon-tools.self-implement', 'done', { runId: secondRun, pr: 'https://github.com/acme/monad/pull/2' }),
+      row(8, 'daemon-tools.self-implement', 'done', { runId: secondRun, pr: 'https://github.com/acme/elanous/pull/2' }),
     ];
     const store: RunChainLogStore = {
       query: () => { throw new Error('unbounded query must not run'); },
@@ -1553,11 +1553,11 @@ describe('unfinished run ledger cleanup disposition', () => {
     const liveId = runId('0021');
     const oldPath = writeLedger(ledgerDir, oldId, new Date(Date.now() - 60 * 60_000).toISOString());
     const livePath = writeLedger(ledgerDir, liveId, new Date(Date.now() - 1_000).toISOString());
-    const monad = join(process.cwd(), 'bin', 'monad.mjs');
+    const elanous = join(process.cwd(), 'bin', 'elanous.mjs');
     const invoke = (...args: string[]) => Bun.spawnSync({
-      cmd: [process.execPath, monad, `--test=${stateDir}`, 'self', 'unfinished-runs-cleanup', '--json', ...args],
+      cmd: [process.execPath, elanous, `--test=${stateDir}`, 'self', 'unfinished-runs-cleanup', '--json', ...args],
       cwd: process.cwd(),
-      env: { ...process.env, MONAD_STATE_DIR: stateDir },
+      env: { ...process.env, ELANOUS_STATE_DIR: stateDir },
       stdout: 'pipe', stderr: 'pipe',
     });
     const parse = (result: ReturnType<typeof invoke>) => JSON.parse(new TextDecoder().decode(result.stdout));

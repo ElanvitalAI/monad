@@ -16,7 +16,7 @@
 //   - Observer present → channel-aware snapshot (text/ansi via
 //     `formatChannels`).
 //   - Observer absent  → raw `session.snapshot()` fallback + warning.
-//   - PTY-less session (monad-as-child ACP-only) → rejected with
+//   - PTY-less session (elanous-as-child ACP-only) → rejected with
 //     clear message (matches `AgentReply` behaviour).
 
 import { buildSourceId } from '../source-registry.js';

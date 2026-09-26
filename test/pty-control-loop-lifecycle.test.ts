@@ -7,19 +7,19 @@ import { publishGoalLifecycle } from '../src/goals/loop.js';
 import { ChannelBus } from '../src/terminal-matrix/channel-bus.js';
 
 const original = {
-  runId: process.env.MONAD_RUN_ID,
-  ptyId: process.env.MONAD_PTY_ID,
-  depth: process.env.MONAD_NEST_DEPTH,
+  runId: process.env.ELANOUS_RUN_ID,
+  ptyId: process.env.ELANOUS_PTY_ID,
+  depth: process.env.ELANOUS_NEST_DEPTH,
 };
 
 function identity(): void {
-  process.env.MONAD_RUN_ID = 'run-supervisor';
-  process.env.MONAD_PTY_ID = 'pty-parent';
-  process.env.MONAD_NEST_DEPTH = '2';
+  process.env.ELANOUS_RUN_ID = 'run-supervisor';
+  process.env.ELANOUS_PTY_ID = 'pty-parent';
+  process.env.ELANOUS_NEST_DEPTH = '2';
 }
 
 function restore(): void {
-  for (const [key, value] of Object.entries({ MONAD_RUN_ID: original.runId, MONAD_PTY_ID: original.ptyId, MONAD_NEST_DEPTH: original.depth })) {
+  for (const [key, value] of Object.entries({ ELANOUS_RUN_ID: original.runId, ELANOUS_PTY_ID: original.ptyId, ELANOUS_NEST_DEPTH: original.depth })) {
     if (value === undefined) delete process.env[key];
     else process.env[key] = value;
   }
@@ -128,7 +128,7 @@ describe('PTY ownership-lent lifecycle declaration', () => {
       });
       expect(missingSubject).toEqual({ termination: { kind: 'cancelled' }, steps: 0 });
       expect(snapshotRunLifecycle(missingSubjectBus, 'run-supervisor')).toEqual([]);
-      delete process.env.MONAD_RUN_ID;
+      delete process.env.ELANOUS_RUN_ID;
       const missingIdentityBus = new ChannelBus();
       const missingIdentity = await run(missingIdentityBus, () => 'lost');
       expect(missingIdentity).toEqual({ termination: { kind: 'cancelled' }, steps: 0 });

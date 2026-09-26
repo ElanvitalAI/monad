@@ -13,7 +13,7 @@
 //   - Bucket trim: keep last N days (default 90) — file stays small
 //   - S3 sync (opt-in · isS3Available gate): pull on boot · push on
 //     every write (best-effort · failure logged not thrown). Path:
-//     `s3://<bucket>/monad/<monad_id>/notes-metrics/day-buckets.json`
+//     `s3://<bucket>/monad/<elanous_id>/notes-metrics/day-buckets.json`
 //     (see `src/storage/s3.ts` for the canonical layout).
 //
 // Concurrency: a single daemon process owns the file. The atomic
@@ -31,7 +31,7 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync, renameSync } from '
 import { dirname, join as joinPath } from 'node:path';
 import { nexusRootDir } from '../nexus/paths.js';
 import {
-  s3MonadKey,
+  s3ElanousKey,
   isS3Available,
   uploadFile,
   downloadFile,
@@ -79,7 +79,7 @@ interface FactoryOpts {
   now?: () => number;
   /** Disable S3 sync entirely (tests + offline dogfood). When false,
    *  the store still degrades gracefully if `isS3Available()` returns
-   *  false at runtime (no aws CLI / no creds / MONAD_S3_DISABLED=1).
+   *  false at runtime (no aws CLI / no creds / ELANOUS_S3_DISABLED=1).
    *  Default: false (S3 sync active when CLI + creds present). */
   s3Disabled?: boolean;
   /** Test seam — replace the S3 transport. Production uses the
@@ -147,7 +147,7 @@ export function createDayBucketStore(opts: FactoryOpts = {}): DayBucketStore {
     objectExists,
   };
   const s3Active = !opts.s3Disabled && s3.available();
-  const s3Key = s3MonadKey('notesMetrics', 'day-buckets.json');
+  const s3Key = s3ElanousKey('notesMetrics', 'day-buckets.json');
 
   // Boot-time pull from S3: when the local file is missing but the
   // remote object exists, hydrate the local cache before first read.

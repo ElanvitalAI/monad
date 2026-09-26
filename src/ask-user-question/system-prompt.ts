@@ -7,7 +7,7 @@
 //
 // Ported from claude-code-fork's 7-condition few-shot
 // (src/tools/EnterPlanModeTool/prompt.ts:27-56). That pattern lives
-// in plan mode over there; monad's plan mode already has its own
+// in plan mode over there; elanous's plan mode already has its own
 // askability block, so this one targets normal EXECUTION turns.
 //
 // Design notes:

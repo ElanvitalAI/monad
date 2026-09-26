@@ -4,15 +4,15 @@ import { inferCronSchedule, materializeSchedulerMission, materializeMission, res
 import { openAutopilotMissionsDb, createMission } from './mission-registry.js';
 
 describe('resolveDecomposeEffort — tier 분기(병목 힘빼기 2026-07-21·#4846)', () => {
-  const orig = process.env.MONAD_DECOMPOSE_EFFORT;
-  const origHeavy = process.env.MONAD_DECOMPOSE_HEAVY_EFFORT;
+  const orig = process.env.ELANOUS_DECOMPOSE_EFFORT;
+  const origHeavy = process.env.ELANOUS_DECOMPOSE_HEAVY_EFFORT;
   const restore = () => {
-    if (orig === undefined) delete process.env.MONAD_DECOMPOSE_EFFORT; else process.env.MONAD_DECOMPOSE_EFFORT = orig;
-    if (origHeavy === undefined) delete process.env.MONAD_DECOMPOSE_HEAVY_EFFORT; else process.env.MONAD_DECOMPOSE_HEAVY_EFFORT = origHeavy;
+    if (orig === undefined) delete process.env.ELANOUS_DECOMPOSE_EFFORT; else process.env.ELANOUS_DECOMPOSE_EFFORT = orig;
+    if (origHeavy === undefined) delete process.env.ELANOUS_DECOMPOSE_HEAVY_EFFORT; else process.env.ELANOUS_DECOMPOSE_HEAVY_EFFORT = origHeavy;
   };
   test('heavy → medium(병목 힘빼기·종전 high)·light/미상 → medium', () => {
-    delete process.env.MONAD_DECOMPOSE_EFFORT;
-    delete process.env.MONAD_DECOMPOSE_HEAVY_EFFORT;
+    delete process.env.ELANOUS_DECOMPOSE_EFFORT;
+    delete process.env.ELANOUS_DECOMPOSE_HEAVY_EFFORT;
     try {
       expect(resolveDecomposeEffort('heavy')).toBe('medium');
       expect(resolveDecomposeEffort('light')).toBe('medium');
@@ -20,16 +20,16 @@ describe('resolveDecomposeEffort — tier 분기(병목 힘빼기 2026-07-21·#4
       expect(resolveDecomposeEffort(undefined)).toBe('medium');
     } finally { restore(); }
   });
-  test('MONAD_DECOMPOSE_HEAVY_EFFORT seam 이 heavy 만 되돌린다(라이브 A/B·롤백)', () => {
-    delete process.env.MONAD_DECOMPOSE_EFFORT;
-    process.env.MONAD_DECOMPOSE_HEAVY_EFFORT = 'high';
+  test('ELANOUS_DECOMPOSE_HEAVY_EFFORT seam 이 heavy 만 되돌린다(라이브 A/B·롤백)', () => {
+    delete process.env.ELANOUS_DECOMPOSE_EFFORT;
+    process.env.ELANOUS_DECOMPOSE_HEAVY_EFFORT = 'high';
     try {
       expect(resolveDecomposeEffort('heavy')).toBe('high'); // seam 이 종전 동작 재현
       expect(resolveDecomposeEffort('light')).toBe('medium'); // light 는 seam 무관
     } finally { restore(); }
   });
-  test('env(MONAD_DECOMPOSE_EFFORT) override 가 tier·seam 을 이긴다', () => {
-    process.env.MONAD_DECOMPOSE_EFFORT = 'low';
+  test('env(ELANOUS_DECOMPOSE_EFFORT) override 가 tier·seam 을 이긴다', () => {
+    process.env.ELANOUS_DECOMPOSE_EFFORT = 'low';
     try { expect(resolveDecomposeEffort('heavy')).toBe('low'); } finally { restore(); }
   });
 });
@@ -270,7 +270,7 @@ describe('decomposeMissionToPhases — 멀티페이즈 분해(HITL backlog)', ()
       let captured = '';
       await decomposeMissionToPhases(m.id, { store, callable: async ({ prompt }: { prompt: string }) => { captured = prompt; return { text: MOCK_PROPOSAL, modelId: 'mock' }; } });
       // 도메인팩 이관 후에도 objective 프리앰블·골이 그대로(회귀0).
-      expect(captured).toContain('monad 에 다음 미션을 구현한다');
+      expect(captured).toContain('elanous 에 다음 미션을 구현한다');
       expect(captured).toContain('persistence 마이그레이션 리팩토링');
     } finally { store.close(); }
   });

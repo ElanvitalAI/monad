@@ -11,9 +11,9 @@
 #    🔑 이 저장소의 규율: ***수를 적지 말고 «재는 명령»을 둔다.***
 #
 # ⛔⭐⭐⭐ **1차 시도가 «거짓 초록»이었다 — 그 함정을 이 파일이 «구조로» 막는다**
-#    📏 실측: `MONAD_STATE_DIR` 로 격리한 줄 알았는데 ***스토어 288개가 열렸고***
+#    📏 실측: `ELANOUS_STATE_DIR` 로 격리한 줄 알았는데 ***스토어 288개가 열렸고***
 #       「최신 행」이 «살아 있는 운영 스토어»의 것이었다. 「복원됐다」로 쓸 뻔했다.
-#    🔎 기전: ***`--config-dir` 이 `MONAD_STATE_DIR` 을 «이긴다»*** — 로그 스토어 경로는 config-dir 파생이다.
+#    🔎 기전: ***`--config-dir` 이 `ELANOUS_STATE_DIR` 을 «이긴다»*** — 로그 스토어 경로는 config-dir 파생이다.
 #    ✅ 그래서 이 파일은 복원본을 «반드시» `<config-dir>/logs/logs.db` 에 두고 `--config-dir` 로 연다.
 #
 # ⭐⭐ **판정은 «둘»이다 — 하나만으로는 못 가른다**:
@@ -52,11 +52,11 @@ done
 [ -z "$GCLOUD" ] && { echo "⛔ gcloud 를 «못 찾았다» — 「복원된다」를 잴 수 없다(⛔ 「된다」가 아니다)"; exit 1; }
 
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
-MONAD="$HERE/bin/monad.mjs"
-[ -f "$MONAD" ] || { echo "⛔ monad 진입점을 «못 찾았다»: $MONAD"; exit 1; }
+ELANOUS="$HERE/bin/elanous.mjs"
+[ -f "$ELANOUS" ] || { echo "⛔ elanous 진입점을 «못 찾았다»: $ELANOUS"; exit 1; }
 
 # ⛔⭐⭐ **크론 PATH 에는 `bun` 이 «없다»** — 이 저장소가 `gcloud` 로 «이미» 값을 치른 함정이다.
-#    🚨 `monad-backup.sh` 머리말: *「첫 무인 발화가 200M 을 다 만들어 놓고 마지막 줄에서 죽었다 —
+#    🚨 `elanous-backup.sh` 머리말: *「첫 무인 발화가 200M 을 다 만들어 놓고 마지막 줄에서 죽었다 —
 #       gcloud: command not found」*. ⛔ 크론 기본 PATH 는 `/usr/bin:/bin` 이다.
 #    📏 실측(2026-08-31 · `env -i … PATH=/usr/bin:/bin`): `bun` ***없다***.
 #    🔑 ⇒ 이 파일은 «주 1회 무인»으로 돌 것이므로, PATH 에 기대면 ***영영 초록을 못 낸다.***
@@ -90,16 +90,16 @@ case "$ISO" in
   *) echo "⛔ 회차 이름에서 시각을 «못 읽었다»: $STAMP"; exit 1 ;;
 esac
 
-TMP="$(mktemp -d "${TMPDIR:-/tmp}/monad-restore-verify.XXXXXX")"
+TMP="$(mktemp -d "${TMPDIR:-/tmp}/elanous-restore-verify.XXXXXX")"
 cleanup() { [ "$KEEP" = "1" ] && echo "   📁 복원본을 남겼다: $TMP" || rm -rf "$TMP"; }
 trap cleanup EXIT
 mkdir -p "$TMP/cfg/logs"
 
 echo "   ⬇️  내려받는다…"
-if ! "$GCLOUD" storage cp "${DEST}monad-logs.db.gz" "$TMP/monad-logs.db.gz" >/dev/null 2>&1; then
-  echo "⛔ 내려받기 실패 — ${DEST}monad-logs.db.gz"; exit 1
+if ! "$GCLOUD" storage cp "${DEST}elanous-logs.db.gz" "$TMP/elanous-logs.db.gz" >/dev/null 2>&1; then
+  echo "⛔ 내려받기 실패 — ${DEST}elanous-logs.db.gz"; exit 1
 fi
-if ! gunzip -c "$TMP/monad-logs.db.gz" > "$TMP/cfg/logs/logs.db"; then
+if ! gunzip -c "$TMP/elanous-logs.db.gz" > "$TMP/cfg/logs/logs.db"; then
   echo "⛔ 압축을 «못 풀었다» — 회차가 손상됐다"; exit 1
 fi
 echo "   📦 풀었다 — $(ls -la "$TMP/cfg/logs/logs.db" | awk '{print $5}') bytes"
@@ -108,8 +108,8 @@ echo "   📦 풀었다 — $(ls -la "$TMP/cfg/logs/logs.db" | awk '{print $5}')
 #    ⛔⭐ 첫 판은 `ISO + 5분` 이라는 ***임의 유예***를 뒀다(무인 리뷰 must-fix `#14609`).
 #       회차 이름은 백업이 «시작된» 시각이고, 스냅샷은 그 «뒤»에 뜬다 — 그 사이 행은 정상이다.
 #    ✅ 그래서 경계를 ***그 객체가 GCS 에 올라간 시각***으로 잡는다. 파생값이라 자의적이지 않다.
-CUT="$("$GCLOUD" storage ls -l "${DEST}monad-logs.db.gz" 2>/dev/null \
-        | awk '/monad-logs\.db\.gz$/ {print $2; exit}')"
+CUT="$("$GCLOUD" storage ls -l "${DEST}elanous-logs.db.gz" 2>/dev/null \
+        | awk '/elanous-logs\.db\.gz$/ {print $2; exit}')"
 case "$CUT" in
   *T*:*:*Z) : ;;
   *) echo "⛔ 업로드 시각을 «못 읽었다» — 판정 «불가»(⛔ 「복원된다」가 아니다)"; exit 1 ;;
@@ -129,7 +129,7 @@ print(t.strftime('%Y-%m-%dT%H:%M:%SZ'))" "$CUT" "$1"; }
 LIMIT=2000
 measure() { # $1=since $2=until
   local out rc
-  out="$("$BUN" "$MONAD" logs --config-dir "$TMP/cfg" --limit "$LIMIT" --json \
+  out="$("$BUN" "$ELANOUS" logs --config-dir "$TMP/cfg" --limit "$LIMIT" --json \
            --since "$1" --until "$2" 2>/dev/null)"; rc=$?
   [ "$rc" -ne 0 ] && return 1
   printf '%s' "$out" | python3 -c '
@@ -203,7 +203,7 @@ VERDICT="ok"
 [ "${POS:-0}" -gt 0 ] || VERDICT="empty"
 [ "${NEG:-0}" = "0" ] || VERDICT="contaminated"
 [ "$NEG_TRUNC" = "0" ] || VERDICT="unmeasured"
-LEDGER="${MONAD_STATE_DIR:-$HOME/.monad}/botlab/restore-verifications.jsonl"
+LEDGER="${ELANOUS_STATE_DIR:-$HOME/.elanous}/botlab/restore-verifications.jsonl"
 mkdir -p "$(dirname "$LEDGER")" 2>/dev/null
 # ⛔ `%s` 만 쓴다 — `%` 를 담은 값이 들어오면 `printf` 가 «잘라 먹는다»(`GIT-T75`).
 printf '{"at":"%s","run":"%s","cutoff":"%s","positive":%s,"negative":%s,"truncated":%s,"verdict":"%s","source":"%s"}\n' \

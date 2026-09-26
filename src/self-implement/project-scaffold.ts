@@ -37,7 +37,7 @@ export type ProjectScaffoldResult =
 const PROJECT_METADATA_NAME = 'project.json';
 
 const SCAFFOLD_FILES: readonly [readonly string[], string][] = [
-  [['.monad', PROJECT_METADATA_NAME], '{\n  "kind": "project"\n}\n'],
+  [['.elanous', PROJECT_METADATA_NAME], '{\n  "kind": "project"\n}\n'],
   [['AGENTS.md'], `# Project instructions
 
 ## Project description
@@ -57,13 +57,13 @@ const SCAFFOLD_FILES: readonly [readonly string[], string][] = [
 `],
   // ⛔ 이 목록은 루트 `DESIGN.md` 와 «글자 그대로» 같아야 한다 — `craft-vendor.test.ts` 가
   //   `expect(rootNames).toEqual(scaffoldNames)` 로 순서까지 문다. 한쪽만 고치면 시험이 운다.
-  [['DESIGN.md'], '# Design\n\n## Craft rulebooks\n\nThese rulebooks travel with monad and are not stored in this project; run `monad repo design-check` to locate the `Craft rulebooks directory`.\n\n- anti-ai-slop\n- accessibility-baseline\n- animation-discipline\n- color\n- form-validation\n- laws-of-ux\n- rtl-and-bidi\n- state-coverage\n- typography\n- typography-hierarchy\n- typography-hierarchy-editorial\n'],
+  [['DESIGN.md'], '# Design\n\n## Craft rulebooks\n\nThese rulebooks travel with elanous and are not stored in this project; run `elanous repo design-check` to locate the `Craft rulebooks directory`.\n\n- anti-ai-slop\n- accessibility-baseline\n- animation-discipline\n- color\n- form-validation\n- laws-of-ux\n- rtl-and-bidi\n- state-coverage\n- typography\n- typography-hierarchy\n- typography-hierarchy-editorial\n'],
   [['docs', 'PLAN.md'], '# Plan\n'],
   [['docs', 'SPEC.md'], '# Specification\n'],
 ];
 
 const SCAFFOLD_DIRECTORIES: readonly string[][] = [
-  ['.monad'],
+  ['.elanous'],
   ['docs'],
   ['docs', 'goals'],
   // `docs/pdca` was removed because no producer writes there and empty directories are not committed.

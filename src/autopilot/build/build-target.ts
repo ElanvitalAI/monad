@@ -6,10 +6,10 @@
 // **좁은 BuildTarget 인터페이스**만 소비한다(깨끗한 경계·역결합 방지).
 //
 // 플랜 초안 = 미션 아티팩트. 미션 id 로 키잉된 온-디스크 md(스키마 변경 없음·누구나
-// 미션에서 경로 유도). ~/.monad 관례(monad 상태는 git 밖)·자동 발굴 크론의 git 노이즈 회피.
+// 미션에서 경로 유도). ~/.elanous 관례(elanous 상태는 git 밖)·자동 발굴 크론의 git 노이즈 회피.
 
 import { homedir } from 'node:os';
-import { monadStateRoot } from '../state-paths.js';
+import { elanousStateRoot } from '../state-paths.js';
 import { join } from 'node:path';
 import { slugify } from '../proposal/draft-plan.js';
 import type { MissionRow } from '../mission-registry.js';
@@ -22,10 +22,10 @@ export interface BuildTarget {
   planPath: string;  // 구현 입력 플랜 초안 md 경로(온-디스크 아티팩트)
 }
 
-/** 플랜 초안 아티팩트 경로 — 미션 id 로 결정론적. git 밖(~/.monad).
+/** 플랜 초안 아티팩트 경로 — 미션 id 로 결정론적. git 밖(~/.elanous).
  *  core 미션 fabric = autopilot/ (conatus/ 는 투자 customer 네임스페이스·대표 정정 2026-07-11). */
 export function proposalDraftPath(missionId: string): string {
-  return join(monadStateRoot(), 'autopilot/proposals', `${missionId}.md`);
+  return join(elanousStateRoot(), 'autopilot/proposals', `${missionId}.md`);
 }
 
 /** 미션 → BuildTarget 매핑. slug=goal 슬러그화(브랜치명), planPath=id 유도. */

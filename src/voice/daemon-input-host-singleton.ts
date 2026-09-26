@@ -3,7 +3,7 @@
 // dispatch modes.
 //
 // The daemon and dashboard can run in the same process
-// (`monad start --http-port ...`). In that shape, external surfaces
+// (`elanous start --http-port ...`). In that shape, external surfaces
 // can route final text into the focused dashboard input instead of
 // running an LLM turn directly. This singleton is the narrow seam:
 // callers only see `dictateTranscript(text)`.

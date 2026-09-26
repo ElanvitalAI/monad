@@ -56,7 +56,7 @@ describe('discord question channel (C1)', () => {
     const row = sent[0]!.components[0] as { components: Array<{ custom_id: string; label: string }> };
     expect(row.components).toHaveLength(2);
     const secondId = row.components[1]!.custom_id;
-    expect(secondId).toMatch(/^monad-q:/);
+    expect(secondId).toMatch(/^elanous-q:/);
     expect(await rt.handleComponentInteraction(tap(secondId))).toBe(true);
     const result = await p;
     expect(result).toEqual({ answers: { approach: '전면 재작성' } });
@@ -99,12 +99,12 @@ describe('discord question channel (C1)', () => {
     expect(edits[0]!.text).toContain('질문 종료');
   });
 
-  test('foreign interactions are not consumed; stale monad-q taps are', async () => {
+  test('foreign interactions are not consumed; stale elanous-q taps are', async () => {
     const { bot } = makeBot();
     const rt = createDiscordQuestionRuntime({ getBot: () => bot, __fetchImpl: fakeFetch });
     expect(await rt.handleComponentInteraction({ type: 2, data: { name: 'cc' } })).toBe(false);
     expect(await rt.handleComponentInteraction(tap('other-prefix:x:0'))).toBe(false);
-    expect(await rt.handleComponentInteraction(tap('monad-q:ghost:0'))).toBe(true); // ours, stale — consumed
+    expect(await rt.handleComponentInteraction(tap('elanous-q:ghost:0'))).toBe(true); // ours, stale — consumed
   });
 
   test('no bot → ask returns null (dropped from the race)', async () => {

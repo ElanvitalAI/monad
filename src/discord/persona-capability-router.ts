@@ -1,7 +1,7 @@
 // ── C2 (Phase 3 Bundle 3) — persona 별 capability 차등 ──
 //
 // HANDOFF Phase 3 / ROADMAP §6 C2: "persona 마다 capability 다름". Discord
-// 채널의 webhook persona (alice / bob / monad) 별로 어떤 action 이 가능한지
+// 채널의 webhook persona (alice / bob / elanous) 별로 어떤 action 이 가능한지
 // gate. T6 (capability-grant-store) 위에 persona-aware lookup layer.
 //
 // 사용:

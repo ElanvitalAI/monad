@@ -77,7 +77,7 @@ const VALID_COMMANDS: ReadonlyArray<KrFlowCommand> = [...SYMBOL_COMMANDS, ...MAR
 const DEFAULT_COMMAND: KrFlowCommand = 'investor';
 const DEFAULT_TIMEOUT_MS = 20_000;
 // ★ KRX(date) 명령 기본 타임아웃(2026-07-22) — main.py KRXClient.get 은 timeout=90s(느린 KRX
-//   OpenAPI). 종전 monad 캡 60s 가 그보다 짧아 파생/거래소 명령(krx-*)이 KRX 응답 전 SIGKILL 될
+//   OpenAPI). 종전 elanous 캡 60s 가 그보다 짧아 파생/거래소 명령(krx-*)이 KRX 응답 전 SIGKILL 될
 //   수 있었다(자기 관측성상 "python 죽음"으로만 보임). date 명령엔 KRX 90s + 여유를 준다.
 const KRX_DEFAULT_TIMEOUT_MS = 90_000;
 const MAX_TIMEOUT_MS = 95_000;

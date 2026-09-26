@@ -1,10 +1,10 @@
 /**
  * ☸️ Pod 풀 — 여러 k8s 클러스터(k3d)를 «우선순위 ⊕ 노드별 상한»으로 묶는다 (대표 2026-09-25).
  *
- * 스펙: `MONAD_POD_POOL` 또는 `--pod-pool` = `컨텍스트[@ssh호스트][:상한]` 을 쉼표로, «앞이 우선».
+ * 스펙: `ELANOUS_POD_POOL` 또는 `--pod-pool` = `컨텍스트[@ssh호스트][:상한]` 을 쉼표로, «앞이 우선».
  *   예) `pool-node-b@node-b:8`
  *   ⭐ 운영 권장(대표 2026-09-25): M3 Ultra(node-b) «전용» — Pod 한 개가 6Gi 를 넘겨(OOM) 한도를 12Gi 로 올렸고, node-c(OrbStack VM 16GB)는 그 한 개도 빠듯해 기본 풀에서 뺀다(필요할 때만 명시) ·
- *      이 맥(mbp)은 브라우저·편집 프로그램으로 메모리가 모자라기 쉬워 «기본 풀에서 뺀다»(필요할 때만 `k3d-monad-h1:1` 을 명시).
+ *      이 맥(mbp)은 브라우저·편집 프로그램으로 메모리가 모자라기 쉬워 «기본 풀에서 뺀다»(필요할 때만 `k3d-elanous-h1:1` 을 명시).
  *   - 컨텍스트  kubectl 컨텍스트 이름(이 맥의 kubeconfig)
  *   - @ssh호스트 원격 클러스터면 그 기계 — 이미지 판 대조·반입(`docker load` ⊕ `k3d image import`)에 쓴다
  *   - 상한      이 노드에 동시에 둘 Job 수(기본 2)
@@ -21,7 +21,7 @@ export interface PodPoolMember {
   /** 원격 클러스터가 도는 기계(ssh 호스트). 없으면 이 기계의 docker 에 있다. */
   readonly sshHost?: string;
   readonly capacity: number;
-  /** k3d 클러스터 이름(이미지 반입용). 기본: 컨텍스트가 `k3d-<이름>` 이면 그 이름, 원격이면 `monad-pool`. */
+  /** k3d 클러스터 이름(이미지 반입용). 기본: 컨텍스트가 `k3d-<이름>` 이면 그 이름, 원격이면 `elanous-pool`. */
   readonly k3dCluster: string;
 }
 
@@ -34,7 +34,7 @@ export function parsePodPool(spec: string): PodPoolMember[] {
     const capacity = m[3] === undefined ? 2 : Number(m[3]);
     if (!Number.isInteger(capacity) || capacity < 1) throw new Error(`--pod-pool: 상한은 1 이상 — 「${part}」`);
     const context = m[1]!;
-    const k3dCluster = context.startsWith('k3d-') ? context.slice(4) : 'monad-pool';
+    const k3dCluster = context.startsWith('k3d-') ? context.slice(4) : 'elanous-pool';
     return { context, capacity, k3dCluster, ...(m[2] ? { sshHost: m[2] } : {}) };
   });
   if (members.length === 0) throw new Error('--pod-pool: 노드가 없다');
@@ -42,9 +42,9 @@ export function parsePodPool(spec: string): PodPoolMember[] {
   return members;
 }
 
-/** 스펙 해석 순서: 명시 인자 → `MONAD_POD_POOL` → 없음(null = 현재 컨텍스트 하나). */
+/** 스펙 해석 순서: 명시 인자 → `ELANOUS_POD_POOL` → 없음(null = 현재 컨텍스트 하나). */
 export function resolvePodPoolSpec(explicit: string | undefined, env: NodeJS.ProcessEnv = process.env): string | null {
-  const v = explicit?.trim() || env.MONAD_POD_POOL?.trim();
+  const v = explicit?.trim() || env.ELANOUS_POD_POOL?.trim();
   return v ? v : null;
 }
 
@@ -75,17 +75,17 @@ export function defaultRemoteRun(host: string, script: string): { status: number
   return { status: r.status, stdout: r.stdout ?? '', stderr: (r.stderr ?? '') + (r.error ? String(r.error) : '') };
 }
 
-/** 원격 노드의 이미지 판(라벨 `monad.commit`). 못 읽으면 null. */
+/** 원격 노드의 이미지 판(라벨 `elanous.commit`). 못 읽으면 null. */
 export function remoteImageCommit(member: PodPoolMember, image: string, run: RemoteRun = defaultRemoteRun): string | null {
   if (!member.sshHost) return null;
-  const r = run(member.sshHost, `docker image inspect ${image} --format '{{index .Config.Labels "monad.commit"}}'`);
+  const r = run(member.sshHost, `docker image inspect ${image} --format '{{index .Config.Labels "elanous.commit"}}'`);
   const v = r.status === 0 ? r.stdout.trim() : '';
   return v && v !== '<no value>' ? v : null;
 }
 
 /**
  * 원격 노드에 이 기계의 이미지를 보낸다(판이 다를 때만) — `docker save | ssh docker load` ⊕ `k3d image import`.
- * ⛔ Pod 의 monad 는 이미지 판이다(피드백: Pod 는 main 이 아니라 이미지를 돈다) — 노드마다 판이 다르면 같은 골이 노드마다 다른 코드로 돈다.
+ * ⛔ Pod 의 elanous 는 이미지 판이다(피드백: Pod 는 main 이 아니라 이미지를 돈다) — 노드마다 판이 다르면 같은 골이 노드마다 다른 코드로 돈다.
  */
 export function syncPoolImage(member: PodPoolMember, image: string, localCommit: string | null, run: RemoteRun = defaultRemoteRun): { ok: boolean; action: 'local' | 'fresh' | 'built' | 'shipped' | 'failed'; detail: string } {
   if (!member.sshHost) return { ok: true, action: 'local', detail: 'this machine' };
@@ -104,14 +104,14 @@ export function syncPoolImage(member: PodPoolMember, image: string, localCommit:
 export type PoolKubectl = (args: readonly string[]) => { status: number | null; stdout: string; stderr: string };
 
 /**
- * 발사 전 점검 — 노드마다 «컨텍스트가 닿나 · monad-test 네임스페이스가 있나».
+ * 발사 전 점검 — 노드마다 «컨텍스트가 닿나 · elanous-test 네임스페이스가 있나».
  * ⛔ 안 되는 노드는 «조용히» 빼지 않는다 — 이유를 낸다. 하나도 안 되면 ok=false.
  */
 export function checkPodPool(members: readonly PodPoolMember[], kubectl: PoolKubectl): { ok: boolean; ready: PodPoolMember[]; dropped: { context: string; reason: string }[] } {
   const ready: PodPoolMember[] = [];
   const dropped: { context: string; reason: string }[] = [];
   for (const m of members) {
-    const ns = kubectl(['--context', m.context, '--request-timeout=10s', 'get', 'ns', 'monad-test']);
+    const ns = kubectl(['--context', m.context, '--request-timeout=10s', 'get', 'ns', 'elanous-test']);
     if (ns.status === 0) ready.push(m);
     else dropped.push({ context: m.context, reason: (ns.stderr.trim().split('\n').pop() ?? '').slice(0, 200) || `rc=${ns.status}` });
   }
@@ -133,7 +133,7 @@ type RemoteBuild = (host: string, cluster: string) => Promise<{ ok: boolean; det
 
 function defaultRemoteBuild(script: string): RemoteBuild {
   return (host, cluster) => new Promise((done) => {
-    const child = spawn('bash', [script], { env: { ...process.env, MONAD_BUILD_REMOTE: host, MONAD_L2_CLUSTER: cluster }, stdio: ['ignore', 'pipe', 'pipe'] });
+    const child = spawn('bash', [script], { env: { ...process.env, ELANOUS_BUILD_REMOTE: host, ELANOUS_L2_CLUSTER: cluster }, stdio: ['ignore', 'pipe', 'pipe'] });
     let out = '';
     child.stdout.on('data', (d) => { out += d; }); child.stderr.on('data', (d) => { out += d; });
     const timer = setTimeout(() => child.kill('SIGKILL'), 1_800_000);
@@ -143,7 +143,7 @@ function defaultRemoteBuild(script: string): RemoteBuild {
 
 /**
  * 풀의 원격 노드들을 «동시에» 이 트리의 판으로 맞춘다 (09-25 개선).
- *   1순위 = 노드 «쪽에서» 빌드(build.sh MONAD_BUILD_REMOTE) — 빌드 재료(수십 MB)만 보내고 무거운 층은 그 노드의 캐시가 재사용한다.
+ *   1순위 = 노드 «쪽에서» 빌드(build.sh ELANOUS_BUILD_REMOTE) — 빌드 재료(수십 MB)만 보내고 무거운 층은 그 노드의 캐시가 재사용한다.
  *           📏 커밋이 바뀐 뒤 두 노드를 올리는 데 벽시계 55초(종전: 다시 굽기 1분 40초 ⊕ 4GB 차례 전송 5분 48초).
  *   실패하면 = 종전의 통째 전송(syncPoolImage)으로 떨어진다.
  */

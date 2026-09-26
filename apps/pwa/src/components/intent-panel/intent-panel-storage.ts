@@ -4,15 +4,15 @@
 // Tiny localStorage shim around the boolean "is the IntentPanel
 // collapsed?" preference. Pattern mirrors `lib/showroom/runtime.ts
 // readDmModeFromStorage` (β-1a era) — same key naming convention
-// (`monad.showroom.intentPanel.collapsed`), same opt-out semantics
+// (`elanous.showroom.intentPanel.collapsed`), same opt-out semantics
 // (default = expanded; storing 'true' opts out).
 //
 // Cross-tab sync via the standard `storage` DOM event so a user
 // who collapses on iPhone Safari sees the same state on the
 // desktop Tab.
 
-const STORAGE_KEY = 'monad.showroom.intentPanel.collapsed';
-const DISPLAY_MODE_KEY = 'monad.showroom.intentPanel.displayMode';
+const STORAGE_KEY = 'elanous.showroom.intentPanel.collapsed';
+const DISPLAY_MODE_KEY = 'elanous.showroom.intentPanel.displayMode';
 
 /** Display modes for the IntentPanel surface. Added 2026-05-09 in
  *  response to user feedback that the always-on fixed panel takes

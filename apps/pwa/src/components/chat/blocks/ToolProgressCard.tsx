@@ -44,10 +44,10 @@ export function ToolProgressCard({ block }: { block: Block }) {
         : 'text-rose-300';
   return (
     <div
-      data-monad-block-kind="tool_progress"
-      data-monad-block-id={block.blockId}
-      data-monad-stream={block.stream}
-      data-monad-done={block.done ? 'true' : 'false'}
+      data-elanous-block-kind="tool_progress"
+      data-elanous-block-id={block.blockId}
+      data-elanous-stream={block.stream}
+      data-elanous-done={block.done ? 'true' : 'false'}
       className="rounded border border-border bg-muted/20 px-2 py-1 text-xs font-mono"
     >
       <button

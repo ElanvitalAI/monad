@@ -1,6 +1,6 @@
-// ── 실행 롤 (Docker 메타포 — 같은 monad, env 로 롤 결정) ──
+// ── 실행 롤 (Docker 메타포 — 같은 elanous, env 로 롤 결정) ──
 //
-// PLAN(§1·§L1) — 같은 monad 이미지가 env/config 로 롤을 바꾼다: controller(brain·다른 PTY 구동) /
+// PLAN(§1·§L1) — 같은 elanous 이미지가 env/config 로 롤을 바꾼다: controller(brain·다른 PTY 구동) /
 // executor(일 수행: self·agent·skill) / orchestrator(팬아웃·파이프라인). 자기 자신을 멀티롤·재귀 중첩.
 //
 // P1-seed: **타입 + env 해석 + 기존 harness→롤 매핑 descriptor**(마이그레이션 target). 실제 executor
@@ -31,15 +31,15 @@ export function normalizeExecutorKind(v?: string): ExecutorKind {
 
 /**
  * ★ env 로 롤 해석(Docker 개념 — 같은 이미지·env 만 다름).
- *   MONAD_ROLE(controller|executor|orchestrator·기본 executor) · MONAD_EXECUTOR_KIND(self|agent|skill) ·
- *   MONAD_AGENT_BACKEND(agent kind 일 때 codex 등). 미지정 = executor:self.
+ *   ELANOUS_ROLE(controller|executor|orchestrator·기본 executor) · ELANOUS_EXECUTOR_KIND(self|agent|skill) ·
+ *   ELANOUS_AGENT_BACKEND(agent kind 일 때 codex 등). 미지정 = executor:self.
  */
 export function resolveRoleFromEnv(env: Record<string, string | undefined> = process.env): RoleConfig {
-  const role = normalizeRole(env.MONAD_ROLE);
+  const role = normalizeRole(env.ELANOUS_ROLE);
   if (role !== 'executor') return { role };
-  const executorKind = normalizeExecutorKind(env.MONAD_EXECUTOR_KIND);
+  const executorKind = normalizeExecutorKind(env.ELANOUS_EXECUTOR_KIND);
   const cfg: RoleConfig = { role, executorKind };
-  if (executorKind === 'agent' && env.MONAD_AGENT_BACKEND) cfg.agentBackend = env.MONAD_AGENT_BACKEND;
+  if (executorKind === 'agent' && env.ELANOUS_AGENT_BACKEND) cfg.agentBackend = env.ELANOUS_AGENT_BACKEND;
   return cfg;
 }
 
@@ -61,7 +61,7 @@ export interface HarnessRoleDescriptor {
 export const HARNESS_ROLE_MAP: readonly HarnessRoleDescriptor[] = [
   {
     harness: 'self-implement', role: 'executor', executorKind: 'self',
-    module: 'src/self-implement/orchestrator.ts', note: 'monad 자기 goal-loop(rework·gate·escalate)',
+    module: 'src/self-implement/orchestrator.ts', note: 'elanous 자기 goal-loop(rework·gate·escalate)',
   },
   {
     harness: 'agent-mission', role: 'controller',

@@ -1,5 +1,5 @@
-// Unit tests for the `monad/ask/*` extMethod schema — cross-surface
-// AskUserQuestion wire. Sibling tests to acp-monad-ui-extensions.test.ts.
+// Unit tests for the `elanous/ask/*` extMethod schema — cross-surface
+// AskUserQuestion wire. Sibling tests to acp-elanous-ui-extensions.test.ts.
 //
 // 2026-05-13 정정: extMethod 패턴 채택으로 schema 가 envelope-in-text 에서
 // method-name 상수 + payload validator 로 전환됨.
@@ -7,17 +7,17 @@
 import { describe, expect, test } from 'bun:test';
 
 import {
-  MONAD_ASK_CANCEL_METHOD,
-  MONAD_ASK_DISABLED,
-  MONAD_ASK_FULL,
-  MONAD_ASK_REQUEST_METHOD,
+  ELANOUS_ASK_CANCEL_METHOD,
+  ELANOUS_ASK_DISABLED,
+  ELANOUS_ASK_FULL,
+  ELANOUS_ASK_REQUEST_METHOD,
   coerceAskResult,
-  emitMonadAskCapabilitiesMeta,
-  parseMonadAskCancelPayload,
-  parseMonadAskCapabilities,
-  parseMonadAskRequestPayload,
-  type MonadAskCancelPayload,
-  type MonadAskRequestPayload,
+  emitElanousAskCapabilitiesMeta,
+  parseElanousAskCancelPayload,
+  parseElanousAskCapabilities,
+  parseElanousAskRequestPayload,
+  type ElanousAskCancelPayload,
+  type ElanousAskRequestPayload,
 } from '../src/acp/ask-extensions.js';
 import type { AskUserQuestionRequest } from '../src/ask-user-question/types.js';
 
@@ -39,58 +39,58 @@ const sampleReq: AskUserQuestionRequest = {
 
 describe('method name constants', () => {
   test('method names are stable strings', () => {
-    expect(MONAD_ASK_REQUEST_METHOD).toBe('monad/ask/request');
-    expect(MONAD_ASK_CANCEL_METHOD).toBe('monad/ask/cancel');
+    expect(ELANOUS_ASK_REQUEST_METHOD).toBe('elanous/ask/request');
+    expect(ELANOUS_ASK_CANCEL_METHOD).toBe('elanous/ask/cancel');
   });
 });
 
-describe('parseMonadAskRequestPayload', () => {
+describe('parseElanousAskRequestPayload', () => {
   test('valid request payload survives the round trip', () => {
-    const payload: MonadAskRequestPayload = { id: 'ask-1', request: sampleReq };
-    const parsed = parseMonadAskRequestPayload(payload);
+    const payload: ElanousAskRequestPayload = { id: 'ask-1', request: sampleReq };
+    const parsed = parseElanousAskRequestPayload(payload);
     expect(parsed?.id).toBe('ask-1');
     expect(parsed?.request.questions[0]?.id).toBe('next_step');
     expect(parsed?.request.questions[0]?.options).toHaveLength(3);
   });
 
   test('non-object input returns null', () => {
-    expect(parseMonadAskRequestPayload(null)).toBeNull();
-    expect(parseMonadAskRequestPayload(undefined)).toBeNull();
-    expect(parseMonadAskRequestPayload('hello')).toBeNull();
-    expect(parseMonadAskRequestPayload(42)).toBeNull();
+    expect(parseElanousAskRequestPayload(null)).toBeNull();
+    expect(parseElanousAskRequestPayload(undefined)).toBeNull();
+    expect(parseElanousAskRequestPayload('hello')).toBeNull();
+    expect(parseElanousAskRequestPayload(42)).toBeNull();
   });
 
   test('missing id returns null', () => {
-    expect(parseMonadAskRequestPayload({ request: sampleReq })).toBeNull();
-    expect(parseMonadAskRequestPayload({ id: '', request: sampleReq })).toBeNull();
-    expect(parseMonadAskRequestPayload({ id: 42, request: sampleReq })).toBeNull();
+    expect(parseElanousAskRequestPayload({ request: sampleReq })).toBeNull();
+    expect(parseElanousAskRequestPayload({ id: '', request: sampleReq })).toBeNull();
+    expect(parseElanousAskRequestPayload({ id: 42, request: sampleReq })).toBeNull();
   });
 
   test('missing or malformed request.questions returns null', () => {
-    expect(parseMonadAskRequestPayload({ id: 'x', request: {} })).toBeNull();
-    expect(parseMonadAskRequestPayload({ id: 'x', request: { questions: [] } })).toBeNull();
-    expect(parseMonadAskRequestPayload({ id: 'x', request: { questions: 'not array' } })).toBeNull();
+    expect(parseElanousAskRequestPayload({ id: 'x', request: {} })).toBeNull();
+    expect(parseElanousAskRequestPayload({ id: 'x', request: { questions: [] } })).toBeNull();
+    expect(parseElanousAskRequestPayload({ id: 'x', request: { questions: 'not array' } })).toBeNull();
   });
 });
 
-describe('parseMonadAskCancelPayload', () => {
+describe('parseElanousAskCancelPayload', () => {
   test('cancel payload with reason round-trips', () => {
-    const payload: MonadAskCancelPayload = { id: 'ask-7', reason: 'turn aborted' };
-    const parsed = parseMonadAskCancelPayload(payload);
+    const payload: ElanousAskCancelPayload = { id: 'ask-7', reason: 'turn aborted' };
+    const parsed = parseElanousAskCancelPayload(payload);
     expect(parsed?.id).toBe('ask-7');
     expect(parsed?.reason).toBe('turn aborted');
   });
 
   test('cancel without reason omits the field', () => {
-    const parsed = parseMonadAskCancelPayload({ id: 'ask-9' });
+    const parsed = parseElanousAskCancelPayload({ id: 'ask-9' });
     expect(parsed?.id).toBe('ask-9');
     expect(parsed?.reason).toBeUndefined();
   });
 
   test('missing id returns null', () => {
-    expect(parseMonadAskCancelPayload({})).toBeNull();
-    expect(parseMonadAskCancelPayload({ id: '' })).toBeNull();
-    expect(parseMonadAskCancelPayload(null)).toBeNull();
+    expect(parseElanousAskCancelPayload({})).toBeNull();
+    expect(parseElanousAskCancelPayload({ id: '' })).toBeNull();
+    expect(parseElanousAskCancelPayload(null)).toBeNull();
   });
 });
 
@@ -160,25 +160,25 @@ describe('coerceAskResult', () => {
 });
 
 describe('capabilities', () => {
-  test('parseMonadAskCapabilities returns disabled for missing _meta', () => {
-    expect(parseMonadAskCapabilities(undefined)).toEqual(MONAD_ASK_DISABLED);
-    expect(parseMonadAskCapabilities({})).toEqual(MONAD_ASK_DISABLED);
-    expect(parseMonadAskCapabilities({ monad: {} })).toEqual(MONAD_ASK_DISABLED);
-    expect(parseMonadAskCapabilities({ monad: { ask: {} } })).toEqual(MONAD_ASK_DISABLED);
+  test('parseElanousAskCapabilities returns disabled for missing _meta', () => {
+    expect(parseElanousAskCapabilities(undefined)).toEqual(ELANOUS_ASK_DISABLED);
+    expect(parseElanousAskCapabilities({})).toEqual(ELANOUS_ASK_DISABLED);
+    expect(parseElanousAskCapabilities({ elanous: {} })).toEqual(ELANOUS_ASK_DISABLED);
+    expect(parseElanousAskCapabilities({ elanous: { ask: {} } })).toEqual(ELANOUS_ASK_DISABLED);
   });
 
-  test('parseMonadAskCapabilities honours askUserQuestion=true', () => {
-    const meta = { monad: { ask: { askUserQuestion: true } } };
-    expect(parseMonadAskCapabilities(meta)).toEqual(MONAD_ASK_FULL);
+  test('parseElanousAskCapabilities honours askUserQuestion=true', () => {
+    const meta = { elanous: { ask: { askUserQuestion: true } } };
+    expect(parseElanousAskCapabilities(meta)).toEqual(ELANOUS_ASK_FULL);
   });
 
-  test('emitMonadAskCapabilitiesMeta round-trips', () => {
-    const emitted = emitMonadAskCapabilitiesMeta(MONAD_ASK_FULL);
-    expect(parseMonadAskCapabilities(emitted)).toEqual(MONAD_ASK_FULL);
+  test('emitElanousAskCapabilitiesMeta round-trips', () => {
+    const emitted = emitElanousAskCapabilitiesMeta(ELANOUS_ASK_FULL);
+    expect(parseElanousAskCapabilities(emitted)).toEqual(ELANOUS_ASK_FULL);
   });
 
   test('explicitly disabled capability stays disabled', () => {
-    const meta = { monad: { ask: { askUserQuestion: false } } };
-    expect(parseMonadAskCapabilities(meta)).toEqual(MONAD_ASK_DISABLED);
+    const meta = { elanous: { ask: { askUserQuestion: false } } };
+    expect(parseElanousAskCapabilities(meta)).toEqual(ELANOUS_ASK_DISABLED);
   });
 });

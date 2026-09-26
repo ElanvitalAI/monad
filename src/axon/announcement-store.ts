@@ -3,7 +3,7 @@
 // When the LLM calls AnnounceCompletion, we stash the record here so
 // any consumer (termination-detector factor 7, loop-prompt renderer,
 // session-end banner) can read it without threading props through a
-// half-dozen callers. Process-wide because monad is a single-session
+// half-dozen callers. Process-wide because elanous is a single-session
 // process today; tests reset via the exposed __clear() helper.
 
 export type CompletionOutcome = 'success' | 'partial' | 'failed';

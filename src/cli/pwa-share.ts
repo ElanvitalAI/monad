@@ -1,4 +1,4 @@
-// P.4 — `monad nexus pwa share <enable|disable|status>` mind-change CLI.
+// P.4 — `elanous nexus pwa share <enable|disable|status>` mind-change CLI.
 //
 // Mirror of the first-boot wizard's outcome lever. The wizard (P.3)
 // asks once; this CLI is the always-available knob for users who
@@ -207,12 +207,12 @@ export async function pwaShareEnable(deps: PwaShareDeps = {}): Promise<PwaShareR
   const r = resolveDeps(deps);
   const probe = await r.probeFn();
   if (!probe.installed) {
-    r.out.error('monad nexus pwa share enable: Tailscale not installed.');
+    r.out.error('elanous nexus pwa share enable: Tailscale not installed.');
     r.out.error('  Install: https://tailscale.com/download');
     return { exitCode: 1 };
   }
   if (!probe.alive) {
-    r.out.error(`monad nexus pwa share enable: Tailscale not active (BackendState=${probe.backendState ?? 'unknown'}).`);
+    r.out.error(`elanous nexus pwa share enable: Tailscale not active (BackendState=${probe.backendState ?? 'unknown'}).`);
     r.out.error('  Start Tailscale + retry.');
     return { exitCode: 1 };
   }
@@ -224,7 +224,7 @@ export async function pwaShareEnable(deps: PwaShareDeps = {}): Promise<PwaShareR
   r.saveSwitch('enabled');
   const serveResult = await r.serveFn(probe.binary ?? 'tailscale', r.port);
   if (serveResult.exitCode !== 0) {
-    r.out.error(`monad nexus pwa share enable: tailscale serve failed (exit ${serveResult.exitCode}).`);
+    r.out.error(`elanous nexus pwa share enable: tailscale serve failed (exit ${serveResult.exitCode}).`);
     r.out.error('  Switch saved (shareTailnet=enabled) — next `pwa start` will retry the forward.');
     return { exitCode: serveResult.exitCode };
   }
@@ -235,7 +235,7 @@ export async function pwaShareEnable(deps: PwaShareDeps = {}): Promise<PwaShareR
   // bring nexus up so they don't think the share is broken.
   const nexusUp = await r.nexusAliveFn(r.port);
   if (!nexusUp) {
-    r.out.log(`⚠ nexus is not currently running on :${r.port} — \`monad nexus run\` to bring it up.`);
+    r.out.log(`⚠ nexus is not currently running on :${r.port} — \`elanous nexus run\` to bring it up.`);
   }
   return {
     exitCode: 0,
@@ -260,7 +260,7 @@ export async function pwaShareDisable(deps: PwaShareDeps = {}): Promise<PwaShare
     }
   }
   r.saveSwitch('disabled');
-  r.out.log('✓ local-only. Re-enable: `monad nexus pwa share enable`.');
+  r.out.log('✓ local-only. Re-enable: `elanous nexus pwa share enable`.');
   return {
     exitCode: 0,
     report: buildReport({

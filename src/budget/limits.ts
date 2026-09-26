@@ -6,9 +6,9 @@
 //     starting quotas for Plus/Pro plans (PLAN §5 D3).
 //
 // Key = (brand, model ?? '*', window). Storage:
-//   `~/.config/monad/budget/limits.json` · atomic tmp+rename like
+//   `~/.config/elanous/budget/limits.json` · atomic tmp+rename like
 //   UsageStore's state.json. JSON shape keeps the file diff-friendly
-//   so users can hand-edit outside monad if they prefer.
+//   so users can hand-edit outside elanous if they prefer.
 //
 // `getEffectiveLimit()` is the one API every caller (forecaster ·
 // LLM tool · slash) should use — it resolves user-config → brand-
@@ -22,16 +22,16 @@ import {
   writeFileSync,
 } from 'node:fs';
 import { join } from 'node:path';
-import { monadStateRoot } from '../autopilot/state-paths.js';
+import { elanousStateRoot } from '../autopilot/state-paths.js';
 import { debug } from '../debug/log.js';
-import { migrateLegacyXdgSubdir } from '../storage/legacy-monad-dir-migrate.js';
+import { migrateLegacyXdgSubdir } from '../storage/legacy-elanous-dir-migrate.js';
 import type { Limit, UsageProvider, WindowKind } from './types.js';
 
-// Phase 1 (PLAN-config-unification-monad-root-2026-05-10):
-//   moved from ~/.config/monad/budget → ~/.monad/budget.
+// Phase 1 (PLAN-config-unification-elanous-root-2026-05-10):
+//   moved from ~/.config/elanous/budget → ~/.elanous/budget.
 function defaultStorageDir(): string {
   migrateLegacyXdgSubdir('budget');
-  return join(monadStateRoot(), 'budget');
+  return join(elanousStateRoot(), 'budget');
 }
 const LIMITS_FILENAME = 'limits.json';
 

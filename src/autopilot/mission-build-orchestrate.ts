@@ -104,7 +104,7 @@ function makeRunStage(impls: StageImpls): (stage: BuildStage, bb: Blackboard) =>
   return async (stage, bb) => {
     // ★ 컨텍스트 교환 관측(RFC P6·제1원칙 2026-07-17) — 각 스테이지가 blackboard 에서 무엇을 받았나.
     //   대표 지적("조율자가 신호를 충분히 받아 다시 전달해야 하는데 빠졌다")의 관측 관문. 어느 선행
-    //   산출이 실제로 도달했는지 logs.db 로 조회(monad logs --category mission.build.stage-context).
+    //   산출이 실제로 도달했는지 logs.db 로 조회(elanous logs --category mission.build.stage-context).
     debug.log('mission.build.stage-context', stage, {
       received: (Object.keys(bb.results) as BuildStage[]).filter((k) => bb.results[k]?.output !== undefined),
       decompPhaseCount: (out(bb, 'decompose') as DecomposeOut | undefined)?.decompPhases?.length,

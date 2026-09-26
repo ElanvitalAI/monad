@@ -1,7 +1,7 @@
 import { BotlabPageContent } from '@/components/botlab/BotlabPanel';
 
 export const metadata = {
-  title: 'Botlab · monad',
+  title: 'Botlab · elanous',
 };
 
 export default function BotlabPage() {

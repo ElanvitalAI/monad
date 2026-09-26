@@ -17,24 +17,24 @@ import {
 import { TabRegistry } from '../src/nexus/state/tab-registry.js';
 import { createNexusState } from '../src/nexus/state/state.js';
 import {
-  monadDaemonLockPath,
-  monadDaemonSocketPath,
-  type MonadDaemonLockMeta,
-} from '../src/nexus/../monad-daemon.js';
-import { setMonadConfigDir, resetMonadConfigDir } from '../src/monad-config-dir.js';
+  elanousDaemonLockPath,
+  elanousDaemonSocketPath,
+  type ElanousDaemonLockMeta,
+} from '../src/nexus/../elanous-daemon.js';
+import { setElanousConfigDir, resetElanousConfigDir } from '../src/elanous-config-dir.js';
 
 let tmpRoot: string;
 let prevNexus: string | undefined;
 beforeEach(() => {
-  tmpRoot = mkdtempSync(join(tmpdir(), 'monad-nexus-n2-daemon-'));
-  prevNexus = process.env.MONAD_NEXUS_DIR;
-  process.env.MONAD_NEXUS_DIR = tmpRoot;
-  setMonadConfigDir(tmpRoot);
+  tmpRoot = mkdtempSync(join(tmpdir(), 'elanous-nexus-n2-daemon-'));
+  prevNexus = process.env.ELANOUS_NEXUS_DIR;
+  process.env.ELANOUS_NEXUS_DIR = tmpRoot;
+  setElanousConfigDir(tmpRoot);
 });
 afterEach(() => {
-  if (prevNexus === undefined) delete process.env.MONAD_NEXUS_DIR;
-  else process.env.MONAD_NEXUS_DIR = prevNexus;
-  resetMonadConfigDir();
+  if (prevNexus === undefined) delete process.env.ELANOUS_NEXUS_DIR;
+  else process.env.ELANOUS_NEXUS_DIR = prevNexus;
+  resetElanousConfigDir();
   try { rmSync(tmpRoot, { recursive: true, force: true }); } catch { /* ignore */ }
 });
 
@@ -56,7 +56,7 @@ describe('createDaemonTabSpec · default policy', () => {
       timeoutMs: 1_500,
       staleAfterMs: 30_000,
     });
-    expect((spec.health!.spec as { path: string }).path).toBe(monadDaemonSocketPath());
+    expect((spec.health!.spec as { path: string }).path).toBe(elanousDaemonSocketPath());
   });
 
   test('stable backoff [5s, 15s, 60s] · maxPerHour 5 · grace 2s', () => {
@@ -72,8 +72,8 @@ describe('createDaemonTabSpec · default policy', () => {
   test('meta carries socket + lock paths', () => {
     const spec = createDaemonTabSpec();
     expect(spec.meta).toEqual({
-      socketPath: monadDaemonSocketPath(),
-      lockPath: monadDaemonLockPath(),
+      socketPath: elanousDaemonSocketPath(),
+      lockPath: elanousDaemonLockPath(),
     });
   });
 
@@ -81,16 +81,16 @@ describe('createDaemonTabSpec · default policy', () => {
     const spec = createDaemonTabSpec({
       id: 'd:custom',
       label: 'My Daemon',
-      command: ['/usr/local/bin/monad', 'serve'],
-      cwd: '/srv/monad',
-      env: { MONAD_HISTORY_DIR: '/data' },
+      command: ['/usr/local/bin/elanous', 'serve'],
+      cwd: '/srv/elanous',
+      env: { ELANOUS_HISTORY_DIR: '/data' },
       socketPath: '/tmp/custom.sock',
     });
     expect(spec.id).toBe('d:custom');
     expect(spec.label).toBe('My Daemon');
-    expect(spec.spawn?.command).toEqual(['/usr/local/bin/monad', 'serve']);
-    expect(spec.spawn?.cwd).toBe('/srv/monad');
-    expect(spec.spawn?.env).toEqual({ MONAD_HISTORY_DIR: '/data' });
+    expect(spec.spawn?.command).toEqual(['/usr/local/bin/elanous', 'serve']);
+    expect(spec.spawn?.cwd).toBe('/srv/elanous');
+    expect(spec.spawn?.env).toEqual({ ELANOUS_HISTORY_DIR: '/data' });
     expect((spec.health!.spec as { path: string }).path).toBe('/tmp/custom.sock');
   });
 });
@@ -127,11 +127,11 @@ describe('detectExternalDaemon · no lock', () => {
 describe('detectExternalDaemon · external alive', () => {
   test('alive external pid → status=external + tab.down event', () => {
     const { state, registry } = setup();
-    const meta: MonadDaemonLockMeta = {
+    const meta: ElanousDaemonLockMeta = {
       pid: 88888,
       host: 'remote-host',
       startedAt: new Date().toISOString(),
-      label: 'monad',
+      label: 'elanous',
     };
     const result = detectExternalDaemon({
       state, registry,
@@ -149,11 +149,11 @@ describe('detectExternalDaemon · external alive', () => {
   test('lock pid matches own child pid → outcome=available', () => {
     const { state, registry } = setup();
     registry.patch(DAEMON_DEFAULT_TAB_ID, { pid: 12345 });
-    const meta: MonadDaemonLockMeta = {
+    const meta: ElanousDaemonLockMeta = {
       pid: 12345,
       host: 'host',
       startedAt: new Date().toISOString(),
-      label: 'monad',
+      label: 'elanous',
     };
     const result = detectExternalDaemon({
       state, registry,
@@ -168,11 +168,11 @@ describe('detectExternalDaemon · external alive', () => {
 describe('detectExternalDaemon · stale lock', () => {
   test('dead external pid → outcome=available', () => {
     const { state, registry } = setup();
-    const meta: MonadDaemonLockMeta = {
+    const meta: ElanousDaemonLockMeta = {
       pid: 77777,
       host: 'host',
       startedAt: new Date().toISOString(),
-      label: 'monad',
+      label: 'elanous',
     };
     const result = detectExternalDaemon({
       state, registry,

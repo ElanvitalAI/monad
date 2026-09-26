@@ -7,11 +7,11 @@ import { fileURLToPath } from 'node:url';
 import { dirname, join, resolve } from 'node:path';
 
 /**
- * GIT-T13 회귀 방어 — **배포 엔트리(`bin/monad.mjs`)가 실제로 dispatch 하는가.**
+ * GIT-T13 회귀 방어 — **배포 엔트리(`bin/elanous.mjs`)가 실제로 dispatch 하는가.**
  *
  * `#6701` 이 `src/index.ts` 의 `main()` 을 `if (import.meta.main)` 으로 감쌌다.
- * 배포 엔트리는 `bin/monad.mjs` 이고 그것이 `src/index.ts` 를 **import** 하므로
- * 그 조건은 항상 false → `monad` 의 **모든 명령**이 출력 0바이트 · exit 0 의
+ * 배포 엔트리는 `bin/elanous.mjs` 이고 그것이 `src/index.ts` 를 **import** 하므로
+ * 그 조건은 항상 false → `elanous` 의 **모든 명령**이 출력 0바이트 · exit 0 의
  * 조용한 no-op 이 됐다. 당시 단위 테스트 3개는 `program` 을 직접 import 해서
  * hook 배선만 쟀기 때문에 전부 통과했다 — **아무도 실물을 안 돌렸다.**
  *
@@ -19,7 +19,7 @@ import { dirname, join, resolve } from 'node:path';
  *   프로세스로 떠서 산출을 내는가. 그래서 in-process import 가 아니라 spawn 이다.
  */
 const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
-const BIN = resolve(REPO_ROOT, 'bin/monad.mjs');
+const BIN = resolve(REPO_ROOT, 'bin/elanous.mjs');
 
 /** 버전은 `package.json` 이 SSOT — 여기 박으면 버전 갱신이 무관한 실패를 만든다. */
 const PKG_VERSION = (
@@ -32,7 +32,7 @@ function runBin(args: string[], env: NodeJS.ProcessEnv = {}): { stdout: string; 
     encoding: 'utf8',
     timeout: 60_000,
     // 격리 — 이 테스트는 산출의 **유무**만 재므로 운영 스토어에 닿을 이유가 없다.
-    env: { ...process.env, MONAD_DEBUG_LEVEL: 'off', ...env },
+    env: { ...process.env, ELANOUS_DEBUG_LEVEL: 'off', ...env },
   });
   // ⛔⭐ 타임아웃·spawn 실패는 **stdout 이 비는 방식으로** 나타난다 — 이 테스트가 겨누는
   //   회귀(무출력)와 **정확히 같은 모양**이다. 여기서 갈라 두지 않으면 인프라 문제가
@@ -51,9 +51,9 @@ function runBinWithDelayedStdout(args: string[], env: NodeJS.ProcessEnv = {}): {
   // `sh` preserves the kernel pipe's backpressure; spawning the producer directly would
   // let Bun drain its stdout pipe before this test begins consuming it.
   const consumer = "setTimeout(() => { let text = ''; process.stdin.setEncoding('utf8'); process.stdin.on('data', (chunk) => { text += chunk; }); process.stdin.on('end', () => { let validJson = true; try { JSON.parse(text); } catch { validJson = false; } process.stdout.write(JSON.stringify({ bytes: Buffer.byteLength(text), validJson }) + '\\n'); }); }, 1200);";
-  const result = spawnSync('sh', ['-c', '"$@" | bun -e "$MONAD_DELAYED_STDOUT_CONSUMER"', 'sh', 'bun', BIN, ...args], {
+  const result = spawnSync('sh', ['-c', '"$@" | bun -e "$ELANOUS_DELAYED_STDOUT_CONSUMER"', 'sh', 'bun', BIN, ...args], {
     cwd: REPO_ROOT,
-    env: { ...process.env, MONAD_DEBUG_LEVEL: 'off', MONAD_DELAYED_STDOUT_CONSUMER: consumer, ...env },
+    env: { ...process.env, ELANOUS_DEBUG_LEVEL: 'off', ELANOUS_DELAYED_STDOUT_CONSUMER: consumer, ...env },
     encoding: 'utf8',
     timeout: SPAWN_TIMEOUT_MS,
   });
@@ -65,7 +65,7 @@ function runBinWithDelayedStdout(args: string[], env: NodeJS.ProcessEnv = {}): {
   };
 }
 
-describe('배포 엔트리 bin/monad.mjs', () => {
+describe('배포 엔트리 bin/elanous.mjs', () => {
   test('--version 이 산출을 낸다 (조용한 no-op 이 아니다)', () => {
     const { stdout, stderr, status } = runBin(['--version']);
     // ⛔ exit 0 만으로는 못 가른다 — 죽은 엔트리도 exit 0 였다. 산출을 재야 한다.
@@ -100,7 +100,7 @@ describe('배포 엔트리 bin/monad.mjs', () => {
     const { stdout, stderr, status } = runBin([command, '문장']);
     const output = `${stdout}${stderr}`;
     expect(output).toContain('repro is retired');
-    expect(output).toContain('monad attach --message');
+    expect(output).toContain('elanous attach --message');
     expect(output).toContain('--assert-tool-min');
     expect(output).toContain('--assert-tool-max');
     expect(output).toContain('--assert-text-contains');
@@ -148,9 +148,9 @@ describe('배포 엔트리 bin/monad.mjs', () => {
   }, SPAWN_TIMEOUT_MS);
 
   test('self running-runs --json은 한 줄과 끝 개행을 보존하고 늦은 파이프 소비자에도 같은 바이트를 낸다', () => {
-    const stateDir = mkdtempSync(join(tmpdir(), 'monad-running-runs-small-'));
+    const stateDir = mkdtempSync(join(tmpdir(), 'elanous-running-runs-small-'));
     const args = ['self', 'running-runs', '--json'];
-    const env = { MONAD_STATE_DIR: stateDir };
+    const env = { ELANOUS_STATE_DIR: stateDir };
     try {
       const piped = runBinWithDelayedStdout(args, env);
       const redirected = runBin(args, env);
@@ -181,7 +181,7 @@ describe('배포 엔트리 bin/monad.mjs', () => {
   }, SPAWN_TIMEOUT_MS);
 
   test('self parked는 사람용 행에 갱신 나이를 싣고 JSON parked 계약은 보존한다', () => {
-    const stateDir = mkdtempSync(join(tmpdir(), 'monad-self-parked-'));
+    const stateDir = mkdtempSync(join(tmpdir(), 'elanous-self-parked-'));
     const runsDir = join(stateDir, 'self-dev-runs');
     mkdirSync(runsDir, { recursive: true });
     const updatedAt = Date.now() - 86_400_000;
@@ -196,7 +196,7 @@ describe('배포 엔트리 bin/monad.mjs', () => {
     };
     writeFileSync(join(runsDir, 'parked-run.json'), JSON.stringify(checkpoint));
     try {
-      const env = { MONAD_STATE_DIR: stateDir };
+      const env = { ELANOUS_STATE_DIR: stateDir };
       const human = runBin(['self', 'parked'], env);
       expect(human.status).toBe(0);
       // 🪞 2026-08-26 — 사람 행이 ***[self-dev-run] 접두***를 얻었다(모집단 표시).
@@ -264,7 +264,7 @@ describe('배포 엔트리 bin/monad.mjs', () => {
   }, SPAWN_TIMEOUT_MS);
 
   test('self parked는 숫자가 아닌 updatedAt을 사람용 행에 덧붙이지 않는다', () => {
-    const stateDir = mkdtempSync(join(tmpdir(), 'monad-self-parked-invalid-age-'));
+    const stateDir = mkdtempSync(join(tmpdir(), 'elanous-self-parked-invalid-age-'));
     const runsDir = join(stateDir, 'self-dev-runs');
     mkdirSync(runsDir, { recursive: true });
     writeFileSync(join(runsDir, 'invalid-age.json'), JSON.stringify({
@@ -272,7 +272,7 @@ describe('배포 엔트리 bin/monad.mjs', () => {
       results: [{ taskId: 'invalid-task', feature: 'Invalid timestamp', status: 'cancelled' }],
     }));
     try {
-      const result = runBin(['self', 'parked'], { MONAD_STATE_DIR: stateDir });
+      const result = runBin(['self', 'parked'], { ELANOUS_STATE_DIR: stateDir });
       expect(result.status).toBe(0);
       expect(result.stdout).toContain('⚠️ [self-dev-run] cancelled · Invalid timestamp  [run invalid-age]');
       expect(result.stdout).not.toMatch(/\[run invalid-age\].*ago/);
@@ -282,7 +282,7 @@ describe('배포 엔트리 bin/monad.mjs', () => {
   }, SPAWN_TIMEOUT_MS);
 
   test('self participants는 tracked·empty·legacy·absent run을 서로 다른 stdout 문면으로 조회한다', () => {
-    const stateDir = mkdtempSync(join(tmpdir(), 'monad-self-participants-'));
+    const stateDir = mkdtempSync(join(tmpdir(), 'elanous-self-participants-'));
     const runsDir = join(stateDir, 'self-dev-runs');
     mkdirSync(runsDir, { recursive: true });
     const checkpoint = (runId: string, participants?: unknown) => ({
@@ -298,11 +298,11 @@ describe('배포 엔트리 bin/monad.mjs', () => {
     writeFileSync(join(runsDir, 'empty.json'), JSON.stringify(checkpoint('empty', [])));
     writeFileSync(join(runsDir, 'legacy.json'), JSON.stringify(checkpoint('legacy')));
     try {
-      const env = { MONAD_STATE_DIR: stateDir };
+      const env = { ELANOUS_STATE_DIR: stateDir };
       const tracked = runBin(['self', 'participants', 'tracked'], env);
       expect(tracked.status).toBe(0);
       expect(tracked.stdout).toContain('scope: run-participation');
-      expect(tracked.stdout).toContain('note: 프로세스 조상과 후손은 monad pty lineage가 답합니다.');
+      expect(tracked.stdout).toContain('note: 프로세스 조상과 후손은 elanous pty lineage가 답합니다.');
       expect(tracked.stdout).toContain('id=process:42 kind=process runIdSource=generated');
 
       const empty = runBin(['self', 'participants', 'empty'], env);
@@ -334,19 +334,19 @@ describe('config set llm.provider — provider별 자격증명 동기화', () =>
   ): void {
     const root = mkdtempSync(join(tmpdir(), 'config-set-provider-credential-'));
     const xdgConfigHome = join(root, 'cfg');
-    const configPath = join(xdgConfigHome, 'monad', 'config.json');
+    const configPath = join(xdgConfigHome, 'elanous', 'config.json');
     try {
-      mkdirSync(join(xdgConfigHome, 'monad'), { recursive: true });
+      mkdirSync(join(xdgConfigHome, 'elanous'), { recursive: true });
       writeFileSync(configPath, JSON.stringify({ llm }), 'utf8');
       run(configPath, {
         HOME: root,
         XDG_CONFIG_HOME: xdgConfigHome,
-        MONAD_STATE_DIR: join(root, 'state'),
-        MONAD_SUPPRESS_XDG_WARNING: '1',
-        MONAD_LLM_PROVIDER: '',
-        MONAD_LLM_MODEL: '',
-        MONAD_ESCALATE_PROVIDER: '',
-        MONAD_ESCALATE_MODEL: '',
+        ELANOUS_STATE_DIR: join(root, 'state'),
+        ELANOUS_SUPPRESS_XDG_WARNING: '1',
+        ELANOUS_LLM_PROVIDER: '',
+        ELANOUS_LLM_MODEL: '',
+        ELANOUS_ESCALATE_PROVIDER: '',
+        ELANOUS_ESCALATE_MODEL: '',
         ANTHROPIC_API_KEY: '',
         GROK_API_KEY: '',
         ...env,
@@ -424,7 +424,7 @@ describe('config set llm.provider — provider별 자격증명 동기화', () =>
 
 // ⛔⭐⭐⭐⭐ `provider codex status` — 리뷰 must-fix. 이 명령의 값은 «세 수»에 있고,
 //   그 셋은 전부 «표면이 런타임과 같은 자를 쓰는가」다. 그래서 실물로 문다:
-//   ① 신호 디렉터리가 MONAD_STATE_DIR 을 «따라가는가»(인스턴스 해석과 갈릴 수 있다 — 그 사실도 값으로)
+//   ① 신호 디렉터리가 ELANOUS_STATE_DIR 을 «따라가는가»(인스턴스 해석과 갈릴 수 있다 — 그 사실도 값으로)
 //   ② 임계가 «판정기가 실제로 쓴» 정규화 값인가(raw config 를 찍으면 0·101·NaN 에서 거짓말한다)
 //   ③ 신호 «나이»가 JSON 에 있는가(핵심 진단 항목인데 텍스트에만 있으면 도구가 못 읽는다)
 //   ⛔ 이 셋은 in-process 로 못 문다 — 실제로 그 명령이 떠서 그 값을 내야 한다.
@@ -439,9 +439,9 @@ describe('provider codex status — 실물 산출', () => {
       //   읽어, 사람마다·시점마다 다른 답을 본다(우리가 오늘 그 축을 계속 고쳤다).
       //   authStorePath() 는 XDG_CONFIG_HOME 을 존중하므로 그것으로 가둔다.
       const isoCfg = join(root, 'cfg');
-      mkdirSync(join(isoCfg, 'monad'), { recursive: true });
-      writeFileSync(join(isoCfg, 'monad', 'auth.json'), JSON.stringify({ providers: {} }), 'utf8');
-      const isoEnv = { HOME: root, MONAD_STATE_DIR: join(root, 'unrelated-instance-state'), CODEX_HOME: isoHome, XDG_CONFIG_HOME: isoCfg, MONAD_SUPPRESS_XDG_WARNING: '1' };
+      mkdirSync(join(isoCfg, 'elanous'), { recursive: true });
+      writeFileSync(join(isoCfg, 'elanous', 'auth.json'), JSON.stringify({ providers: {} }), 'utf8');
+      const isoEnv = { HOME: root, ELANOUS_STATE_DIR: join(root, 'unrelated-instance-state'), CODEX_HOME: isoHome, XDG_CONFIG_HOME: isoCfg, ELANOUS_SUPPRESS_XDG_WARNING: '1' };
       const r = runBin(['provider', 'codex', 'status', '--json'], isoEnv);
       if (r.status !== 0) throw new Error(`status 가 실패했다(회귀): ${r.stderr.slice(0, 300)}`);
       const out = JSON.parse(r.stdout) as {
@@ -453,15 +453,15 @@ describe('provider codex status — 실물 산출', () => {
       };
       // ① 🪞 2026-08-26 정정 — 옛 기대는 *"신호는 «공유 자격 뿌리(HOME)»를 따른다"* 였다.
       //   그건 `OBS-T110`(#10211) 판이고, ***`OBS-T114`(#10219) 가 그 위에 한 칸을 더 놓았다***:
-      //   ⓐ MONAD_STATE_DIR_SOURCE='derived' → 파생이니 «무시»(아무도 의도 안 한 격리를 막는다)
-      //   ⓑ MONAD_STATE_DIR 이 «명시»로 서 있으면 → ***존중한다***
-      //   ⓒ 아니면 XDG_CONFIG_HOME/monad · 없으면 homedir()/.monad
-      //   🔑 이 시험은 MONAD_STATE_DIR 을 «명시로» 준다 ⇒ ⓑ 다. 그리고 ***그 규칙이 이 시험을 지킨다*** —
-      //      존중 안 하면 이 시험이 사람의 진짜 ~/.monad/budget 에 쓴다(코드 주석이 그렇게 말한다).
+      //   ⓐ ELANOUS_STATE_DIR_SOURCE='derived' → 파생이니 «무시»(아무도 의도 안 한 격리를 막는다)
+      //   ⓑ ELANOUS_STATE_DIR 이 «명시»로 서 있으면 → ***존중한다***
+      //   ⓒ 아니면 XDG_CONFIG_HOME/elanous · 없으면 homedir()/.elanous
+      //   🔑 이 시험은 ELANOUS_STATE_DIR 을 «명시로» 준다 ⇒ ⓑ 다. 그리고 ***그 규칙이 이 시험을 지킨다*** —
+      //      존중 안 하면 이 시험이 사람의 진짜 ~/.elanous/budget 에 쓴다(코드 주석이 그렇게 말한다).
       //   📌 규칙 «자체»의 정본 물개는 src/budget/credential-root-provenance.test.ts 다.
       //      여기서는 「실물 CLI 가 그 규칙대로 값을 내나」만 문다.
-      expect(out.universe.signalDir).toBe(join(isoEnv.MONAD_STATE_DIR, 'budget'));
-      expect(out.universe.signalDir).not.toStartWith(join(root, '.monad'));
+      expect(out.universe.signalDir).toBe(join(isoEnv.ELANOUS_STATE_DIR, 'budget'));
+      expect(out.universe.signalDir).not.toStartWith(join(root, '.elanous'));
       expect(out.universe.instanceRoot.length).toBeGreaterThan(0);
       // ② 임계는 «수»다 — raw config(unknown)를 그대로 흘리면 여기서 걸린다
       expect(typeof out.rotation.thresholdPercent).toBe('number');
@@ -471,8 +471,8 @@ describe('provider codex status — 실물 산출', () => {
       //   범위 검사만으로는 raw 를 흘려도 통과할 수 있다. 0 은 판정기가 95 로 바꾼다.
       const cfgDir = mkdtempSync(join(tmpdir(), 'codex-status-cfg-'));
       try {
-        mkdirSync(join(cfgDir, 'monad'), { recursive: true });
-        writeFileSync(join(cfgDir, 'monad', 'config.json'),
+        mkdirSync(join(cfgDir, 'elanous'), { recursive: true });
+        writeFileSync(join(cfgDir, 'elanous', 'config.json'),
           JSON.stringify({ llm: { codexAccountRotationThresholdPercent: 0 } }), 'utf8');
         const bad = runBin(['provider', 'codex', 'status', '--json'],
           { ...isoEnv, XDG_CONFIG_HOME: cfgDir });
@@ -485,7 +485,7 @@ describe('provider codex status — 실물 산출', () => {
         //   0 만 주면 배선이 죽어도(0 → undefined → 95) 같은 답이 나와 통과한다.
         //   📏 실측 2026-08-07: `#7579` 가 이 노브를 config 스키마에 «하나도» 안 넣어
         //   ***임계 설정이 통째로 no-op 이었다.*** 이 줄이 그것을 잡는다.
-        writeFileSync(join(cfgDir, 'monad', 'config.json'),
+        writeFileSync(join(cfgDir, 'elanous', 'config.json'),
           JSON.stringify({ llm: { codexAccountRotationThresholdPercent: 42 } }), 'utf8');
         const ok = runBin(['provider', 'codex', 'status', '--json'],
           { ...isoEnv, XDG_CONFIG_HOME: cfgDir });
@@ -506,7 +506,7 @@ describe('provider codex status — 실물 산출', () => {
       {
         const key = createHash('sha256').update(home).digest('hex').slice(0, 12);
         // 🪞 2026-08-26 — 쓰는 자리를 ***도구가 스스로 말한 signalDir*** 로 잡는다.
-        //   ⛔ 종전엔 join(root,'.monad','budget') 으로 «손으로» 박아 뒀는데, `OBS-T114` 로
+        //   ⛔ 종전엔 join(root,'.elanous','budget') 으로 «손으로» 박아 뒀는데, `OBS-T114` 로
         //   읽는 쪽이 옮겨 가면서 ***쓴 신호를 아무도 안 읽어*** signalAgeMinutes 가 null 이 됐다.
         //   ⇒ 위 ① 이 signalDir «값»을 이미 못 박았으니, 여기서는 그 값을 «쓴다» — 다시 안 갈린다.
         const signalDir = out.universe.signalDir;

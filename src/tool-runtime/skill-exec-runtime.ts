@@ -57,7 +57,7 @@ function obtainSkillIndex(): readonly SkillIndexEntry[] {
 export function buildSkillExecTool(): LLMToolSpec {
   return {
     name: 'skill_exec',
-    description: 'Execute one explicitly named allowlisted skill with the supplied task. If you do not know the exact skill name, call monad_skills_list first. Does not infer a skill name.',
+    description: 'Execute one explicitly named allowlisted skill with the supplied task. If you do not know the exact skill name, call elanous_skills_list first. Does not infer a skill name.',
     parameters: {
       type: 'object',
       properties: {

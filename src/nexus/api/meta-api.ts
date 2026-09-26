@@ -6,7 +6,7 @@
 // `src/boot/attachment-store.ts`) are call-site agnostic — both the
 // daemon-public-server and the NEXUS HTTP server can dispatch into
 // the same store. Web Push subscription storage at
-// `~/.monad/push-subs.json` is location-stable so PR d cutover is
+// `~/.elanous/push-subs.json` is location-stable so PR d cutover is
 // zero-migration (decision: VAPID = NEXUS 단독, store = same path).
 //
 // Mount via `NexusHttpServerOpts.metaApi`. Until the supervisor wires
@@ -461,9 +461,9 @@ export async function handleTestPush(req: Request, opts: MetaApiOpts): Promise<R
   if (!checkAuth(req, opts)) return authFailureResponse(req, opts);
   const { sendPushToAll } = await import('../../web-push/sender.js');
   const result = await sendPushToAll({
-    title: 'monad — test notification',
+    title: 'elanous — test notification',
     body: 'Web Push delivery is working.',
-    tag: 'monad-test',
+    tag: 'elanous-test',
   });
   return jsonResponse(result, 200);
 }
@@ -598,7 +598,7 @@ export function handleLastScreenshotGet(req: Request, url: URL, opts: MetaApiOpt
 }
 
 /** T5.C — GET /v1/recordings/<recorderId>.cast. asciicast file 서빙
- *  (~/.monad/timelines/). filename 은 [a-zA-Z0-9_.-]{1,256}.cast 만
+ *  (~/.elanous/timelines/). filename 은 [a-zA-Z0-9_.-]{1,256}.cast 만
  *  허용 (path traversal 방지). */
 export async function handleRecordingGet(
   req: Request,
@@ -801,7 +801,7 @@ export async function handlePromptPost(
     if (inboundOrigin) {
       opts.history.setOrigin(result.sessionId, inboundOrigin);
     }
-    // 응답에 실제 활성 provider+model 태깅 — PWA 가 "어느 LLM 이 답했나"(monad ->
+    // 응답에 실제 활성 provider+model 태깅 — PWA 가 "어느 LLM 이 답했나"(elanous ->
     // claude/opus·grok 등) 를 메시지에 작게 표시. config 기반 활성 provider.
     let provider: string | undefined;
     let model: string | undefined;
@@ -1942,7 +1942,7 @@ export async function handleHitlCallback(
 //
 // REST shim over the ToolRuntime registry (B 트랙 Post-Closure ·
 // 2026-05-13). The MCP transports (`POST /v1/mcp` Streamable HTTP ·
-// stdio `monad mcp serve`) already expose the registry to MCP-aware
+// stdio `elanous mcp serve`) already expose the registry to MCP-aware
 // clients, but non-MCP callers (iOS Shortcuts · shell / Makefile ·
 // n8n / Zapier · webhook receivers) need plain REST.
 //

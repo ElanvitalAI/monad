@@ -1,7 +1,7 @@
 /**
  * autopilot 스토어 격리 — ISO-3 계약 (2026-07-13).
  *
- * 사건 회귀 고정: 격리 테스트 데몬(MONAD_STATE_DIR 설정)이 (1) 운영 미션
+ * 사건 회귀 고정: 격리 테스트 데몬(ELANOUS_STATE_DIR 설정)이 (1) 운영 미션
  * 우주를 보지 못하고 (2) 무장류는 부재 → fail-closed 이며 (3) origin 이
  * 지정한 봇을 보장 못 하면 미션 알림을 발송하지 않는다.
  */
@@ -9,40 +9,40 @@ import { afterEach, beforeEach, describe, expect, it } from 'bun:test';
 import { join } from 'node:path';
 import { homedir } from 'node:os';
 
-import { monadStateRoot } from './state-paths.js';
+import { elanousStateRoot } from './state-paths.js';
 import { autopilotMissionsDbPath } from './mission-registry.js';
 import { autopilotArmingPath, selfHealArmed } from './arming.js';
 import { resolveTelegramBotToken } from './mission-notify.js';
 import { setUserConfigOverlay, type UserConfig } from '../user-config.js';
 import { setTreeDerivedTestForTesting } from '../instance/resolve.js';
 
-const savedStateDir = process.env.MONAD_STATE_DIR;
+const savedStateDir = process.env.ELANOUS_STATE_DIR;
 
 function restoreEnv(): void {
-  if (savedStateDir === undefined) delete process.env.MONAD_STATE_DIR;
-  else process.env.MONAD_STATE_DIR = savedStateDir;
+  if (savedStateDir === undefined) delete process.env.ELANOUS_STATE_DIR;
+  else process.env.ELANOUS_STATE_DIR = savedStateDir;
 }
 
-describe('monadStateRoot — MONAD_STATE_DIR 존중 (lazy)', () => {
+describe('elanousStateRoot — ELANOUS_STATE_DIR 존중 (lazy)', () => {
   // ⚠️ 이 단언은 **1·2층(명시 축)** 을 시험한다. 3층(트리 파생)은 **개발자 머신의
-  //    `~/.monad/config.json`** 을 읽으므로 선언하지 않으면 *"미설정 = ~/.monad"* 가 체크아웃에 따라
-  //    깨진다(비-리더 트리에서는 `<트리>/.monad-test`). 시험 대상 축을 고정한다.
+  //    `~/.elanous/config.json`** 을 읽으므로 선언하지 않으면 *"미설정 = ~/.elanous"* 가 체크아웃에 따라
+  //    깨진다(비-리더 트리에서는 `<트리>/.elanous-test`). 시험 대상 축을 고정한다.
   beforeEach(() => setTreeDerivedTestForTesting(false));
   afterEach(() => { setTreeDerivedTestForTesting(undefined); restoreEnv(); });
 
-  it('미설정 = ~/.monad · 설정 = 그 루트 (미션 DB·무장 경로 동반 이동)', () => {
-    delete process.env.MONAD_STATE_DIR;
-    expect(monadStateRoot()).toBe(join(homedir(), '.monad'));
-    expect(autopilotMissionsDbPath()).toBe(join(homedir(), '.monad', 'autopilot/autopilot_missions.db'));
+  it('미설정 = ~/.elanous · 설정 = 그 루트 (미션 DB·무장 경로 동반 이동)', () => {
+    delete process.env.ELANOUS_STATE_DIR;
+    expect(elanousStateRoot()).toBe(join(homedir(), '.elanous'));
+    expect(autopilotMissionsDbPath()).toBe(join(homedir(), '.elanous', 'autopilot/autopilot_missions.db'));
 
-    process.env.MONAD_STATE_DIR = '/x/repo/.monad-test';
-    expect(monadStateRoot()).toBe('/x/repo/.monad-test');
-    expect(autopilotMissionsDbPath()).toBe('/x/repo/.monad-test/autopilot/autopilot_missions.db');
-    expect(autopilotArmingPath()).toBe('/x/repo/.monad-test/autopilot.json');
+    process.env.ELANOUS_STATE_DIR = '/x/repo/.elanous-test';
+    expect(elanousStateRoot()).toBe('/x/repo/.elanous-test');
+    expect(autopilotMissionsDbPath()).toBe('/x/repo/.elanous-test/autopilot/autopilot_missions.db');
+    expect(autopilotArmingPath()).toBe('/x/repo/.elanous-test/autopilot.json');
   });
 
   it('격리 루트에 무장 파일 부재 → fail-closed(DISARMED)', () => {
-    process.env.MONAD_STATE_DIR = '/nonexistent/isolated-root';
+    process.env.ELANOUS_STATE_DIR = '/nonexistent/isolated-root';
     expect(selfHealArmed()).toBe(false);
   });
 });

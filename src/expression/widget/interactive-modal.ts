@@ -9,7 +9,7 @@
 // The session is host-agnostic: a setup wizard process can drive it
 // via `createNodeReadlineHost()`, and the dashboard widget path
 // (follow-up PR) drives the same session via a routed-key host.
-// Both paths share the same spec, so `monad setup` and
+// Both paths share the same spec, so `elanous setup` and
 // `/setup` host-side render the identical Q&A chain.
 //
 // Validation is per-step. A failed validation transitions the

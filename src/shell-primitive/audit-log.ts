@@ -22,7 +22,7 @@
 // only want to exercise the cache shouldn't have to reset a log sink.
 
 import { appendFileSync, mkdirSync, existsSync } from 'node:fs';
-import { monadStateRoot } from '../autopilot/state-paths.js';
+import { elanousStateRoot } from '../autopilot/state-paths.js';
 import { join } from 'node:path';
 
 export type AuditEvent =
@@ -64,13 +64,13 @@ export function setAuditSinkForTesting(sink: Sink | null): void {
   testSink = sink;
 }
 
-// FU2 Tier 3 (PLAN-config-unification-monad-root-2026-05-10):
-//   moved from ~/.monad-agent/audit/ → ~/.monad/audit/.
-import { migrateLegacyHomeDir } from '../storage/legacy-monad-dir-migrate.js';
+// FU2 Tier 3 (PLAN-config-unification-elanous-root-2026-05-10):
+//   moved from ~/.monad-agent/audit/ → ~/.elanous/audit/.
+import { migrateLegacyHomeDir } from '../storage/legacy-elanous-dir-migrate.js';
 function defaultRoot(): string {
   if (overrideRoot) return overrideRoot;
-  migrateLegacyHomeDir({ legacyHomeRel: join('.monad-agent', 'audit'), monadRel: 'audit' });
-  return join(monadStateRoot(), 'audit');
+  migrateLegacyHomeDir({ legacyHomeRel: join('.monad-agent', 'audit'), elanousRel: 'audit' });
+  return join(elanousStateRoot(), 'audit');
 }
 
 function todayFile(): string {

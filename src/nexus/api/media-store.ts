@@ -22,7 +22,7 @@ import { createHash } from 'node:crypto';
 import { existsSync, mkdirSync, readdirSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { extname, join } from 'node:path';
 
-import { monadStateRoot } from '../../autopilot/state-paths.js';
+import { elanousStateRoot } from '../../autopilot/state-paths.js';
 import { debug } from '../../debug/log.js';
 
 /** 한 파일 상한. ⛔ 영상 한 편이 들어갈 만큼은 되어야 한다(플레이북 실측: 4초 1080p ≈ 수 MB~수십 MB). */
@@ -32,15 +32,15 @@ export const MEDIA_STORE_MAX_TOTAL_BYTES = 2 * 1024 * 1024 * 1024;
 
 /** 보관소 뿌리.
  *
- *  ⛔⭐ 경로를 «손으로» 짓지 않는다 — `join(homedir(), '.monad', …)` 는
+ *  ⛔⭐ 경로를 «손으로» 짓지 않는다 — `join(homedir(), '.elanous', …)` 는
  *  test↔prod 격리를 «조용히» 깨뜨린다. 🩸 실측(2026-09-11): 처음엔 그렇게 썼고 게이트가 착지를 막았다
  *  (*"스토어 경로는 resolver 를 거쳐야 격리가 성립합니다"*). ⇒ 공용 리졸버를 쓴다.
  *  ⭐ 그래야 대본(세션 저장소)과 그 대본이 «가리키는 파일»이 같은 우주에 산다.
  */
 export function mediaStoreRoot(): string {
-  const override = process.env.MONAD_MEDIA_ROOT?.trim();
+  const override = process.env.ELANOUS_MEDIA_ROOT?.trim();
   if (override) return override;
-  return join(monadStateRoot(), 'media');
+  return join(elanousStateRoot(), 'media');
 }
 
 /** 주소에서 확장자를 뽑는다. 못 뽑으면 종류로 기본값을 준다.

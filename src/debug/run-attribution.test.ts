@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, test } from 'bun:test';
 import { debug } from './log.js';
 
-const RUN_ID_ENV = 'MONAD_RUN_ID';
+const RUN_ID_ENV = 'ELANOUS_RUN_ID';
 const originalRunId = process.env[RUN_ID_ENV];
 let originalDebugStatus: ReturnType<typeof debug.status>;
 
@@ -30,7 +30,7 @@ function emitAndRead(data?: unknown) {
 }
 
 describe('DebugLog run attribution', () => {
-  test('ambient MONAD_RUN_ID is recorded at the data.runId query key while preserving data', () => {
+  test('ambient ELANOUS_RUN_ID is recorded at the data.runId query key while preserving data', () => {
     process.env[RUN_ID_ENV] = 'ambient-run';
 
     expect(emitAndRead({ existing: true })?.data).toEqual({ existing: true, runId: 'ambient-run' });
@@ -72,43 +72,43 @@ describe('DebugLog run attribution', () => {
 });
 
 describe('DebugLog host attribution', () => {
-  const originalHostId = process.env.MONAD_HOST_ID;
+  const originalHostId = process.env.ELANOUS_HOST_ID;
   afterEach(() => {
-    if (originalHostId === undefined) delete process.env.MONAD_HOST_ID;
-    else process.env.MONAD_HOST_ID = originalHostId;
+    if (originalHostId === undefined) delete process.env.ELANOUS_HOST_ID;
+    else process.env.ELANOUS_HOST_ID = originalHostId;
   });
   test('inherited host is attached to plain object; caller wins', () => {
-    process.env.MONAD_HOST_ID = '01HOSTTEST';
+    process.env.ELANOUS_HOST_ID = '01HOSTTEST';
     expect(emitAndRead({ value: 1 })?.data).toEqual({ value: 1, hostId: '01HOSTTEST' });
     expect(emitAndRead({ hostId: 'caller' })?.data).toEqual({ hostId: 'caller' });
     expect(emitAndRead([1])?.data).toEqual([1]);
   });
   test('without host env the plain payload is byte-identical', () => {
-    delete process.env.MONAD_HOST_ID;
-    delete process.env.MONAD_RUN_ID;
-    delete process.env.MONAD_SUBSTRATE;
-    delete process.env.MONAD_ARM_ID;
+    delete process.env.ELANOUS_HOST_ID;
+    delete process.env.ELANOUS_RUN_ID;
+    delete process.env.ELANOUS_SUBSTRATE;
+    delete process.env.ELANOUS_ARM_ID;
     expect(JSON.stringify(emitAndRead({ value: 1 })?.data)).toBe('{"value":1}');
   });
 });
 
-// RFC fleet 슈퍼바이저 §A1 — 실행 칸(MONAD_SUBSTRATE)·벤치 팔(MONAD_ARM_ID)도 runId 처럼 data 에 귀속된다.
+// RFC fleet 슈퍼바이저 §A1 — 실행 칸(ELANOUS_SUBSTRATE)·벤치 팔(ELANOUS_ARM_ID)도 runId 처럼 data 에 귀속된다.
 describe('DebugLog substrate · arm attribution', () => {
-  afterEach(() => { delete process.env.MONAD_SUBSTRATE; delete process.env.MONAD_ARM_ID; });
+  afterEach(() => { delete process.env.ELANOUS_SUBSTRATE; delete process.env.ELANOUS_ARM_ID; });
   test('env present → data.substrate and data.armId (llm.usage rows become per-arm)', () => {
-    process.env.MONAD_SUBSTRATE = 'pod';
-    process.env.MONAD_ARM_ID = 'pod/openrouter/kimi-k3';
+    process.env.ELANOUS_SUBSTRATE = 'pod';
+    process.env.ELANOUS_ARM_ID = 'pod/openrouter/kimi-k3';
     const data = emitAndRead({ inputTokens: 10 })?.data as Record<string, unknown>;
     expect(data.substrate).toBe('pod');
     expect(data.armId).toBe('pod/openrouter/kimi-k3');
     expect(data.inputTokens).toBe(10);
   });
   test('env absent → payload unchanged (byte-identical ordinary logs)', () => {
-    delete process.env.MONAD_SUBSTRATE; delete process.env.MONAD_ARM_ID; delete process.env[RUN_ID_ENV];
+    delete process.env.ELANOUS_SUBSTRATE; delete process.env.ELANOUS_ARM_ID; delete process.env[RUN_ID_ENV];
     expect(emitAndRead({ a: 1 })?.data).toEqual({ a: 1 });
   });
   test('caller-provided substrate wins', () => {
-    process.env.MONAD_SUBSTRATE = 'pod';
+    process.env.ELANOUS_SUBSTRATE = 'pod';
     expect((emitAndRead({ substrate: 'local' })?.data as Record<string, unknown>).substrate).toBe('local');
   });
 });

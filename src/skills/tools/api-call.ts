@@ -208,7 +208,7 @@ export async function dispatchApiCall(
   const displayBody = pretty.length > DISPLAY_OUTPUT_CHARS
     ? pretty.slice(0, DISPLAY_OUTPUT_CHARS) + `\n... [truncated; ${pretty.length - DISPLAY_OUTPUT_CHARS} more chars]`
     : pretty;
-  // P15: spill large bodies to /tmp/monad-output so the LLM can
+  // P15: spill large bodies to /tmp/elanous-output so the LLM can
   // re-read via the Read tool without consuming context here. Inline
   // limit of 4 KB matches the prior MODEL_FACING_OUTPUT_CHARS budget.
   const truncated = truncateOutput(pretty, {

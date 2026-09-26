@@ -45,11 +45,11 @@ export interface RunTestsResult {
 export type TestSpawn = (filter: string, cwd: string, timeoutMs: number) => string;
 
 const defaultTestSpawn: TestSpawn = (filter, cwd, timeoutMs) => {
-  // integrity-gate 와 동형 — event-loop-watchdog 를 끄고(MONAD_NO_WATCHDOG) 서브프로세스
+  // integrity-gate 와 동형 — event-loop-watchdog 를 끄고(ELANOUS_NO_WATCHDOG) 서브프로세스
   // stall 로그가 파싱 출력을 오염시키지 않게 한다.
   const r = spawnSync('bun', ['test', filter], {
     cwd, encoding: 'utf-8', timeout: timeoutMs, maxBuffer: 16 * 1024 * 1024,
-    env: { ...process.env, MONAD_NO_WATCHDOG: '1' },
+    env: { ...process.env, ELANOUS_NO_WATCHDOG: '1' },
   });
   return `${r.stdout ?? ''}${r.stderr ?? ''}`;
 };

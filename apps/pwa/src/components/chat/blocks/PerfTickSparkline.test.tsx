@@ -17,7 +17,7 @@ describe('PerfTickSparkline — render contract', () => {
   it('renders the empty-state placeholder when no samples', () => {
     const html = renderToStaticMarkup(<PerfTickSparkline block={block([])} />);
     expect(html).toMatch(/no perf samples yet/);
-    expect(html).toMatch(/data-monad-block-kind="perf_session"/);
+    expect(html).toMatch(/data-elanous-block-kind="perf_session"/);
   });
 
   it('renders one row per distinct metric with latest value', () => {
@@ -30,12 +30,12 @@ describe('PerfTickSparkline — render contract', () => {
         ])}
       />,
     );
-    expect(html).toMatch(/data-monad-perf-metric-count="2"/);
-    expect(html).toMatch(/data-monad-perf-metric="llm\.tokens-per-sec"/);
-    expect(html).toMatch(/data-monad-perf-metric="llm\.cost-usd"/);
+    expect(html).toMatch(/data-elanous-perf-metric-count="2"/);
+    expect(html).toMatch(/data-elanous-perf-metric="llm\.tokens-per-sec"/);
+    expect(html).toMatch(/data-elanous-perf-metric="llm\.cost-usd"/);
     // Latest value shown, not midpoint.
-    expect(html).toMatch(/data-monad-perf-latest="30"/);
-    expect(html).toMatch(/data-monad-perf-latest="0\.04"/);
+    expect(html).toMatch(/data-elanous-perf-latest="30"/);
+    expect(html).toMatch(/data-elanous-perf-latest="0\.04"/);
     // Unit appears alongside value.
     expect(html).toContain('tok/s');
     expect(html).toContain('USD');
@@ -77,7 +77,7 @@ describe('PerfTickSparkline — render contract', () => {
     );
     // The block-id attribute is always there; verify the unit span
     // (only emitted when unit present) doesn't render.
-    expect(html).toMatch(/data-monad-perf-metric="plain"/);
+    expect(html).toMatch(/data-elanous-perf-metric="plain"/);
     // The numeric latest value renders inside a tabular-nums span;
     // no unit suffix span should follow it.
     expect(html).not.toMatch(/text-muted-foreground">tok\/s/);

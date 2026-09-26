@@ -11,7 +11,7 @@
 //   invocation.
 //
 // Persistence:
-//   persist() writes the snapshot to .monad/routes.json via atomic
+//   persist() writes the snapshot to .elanous/routes.json via atomic
 //   rename (tmp file → rename). This cache is advisory — the registry
 //   always lives in-process, but other tools (LLM tool `RouteList`
 //   off-session) can read the file.
@@ -27,7 +27,7 @@ import {
 } from './types.js';
 
 export interface RouteRegistryOpts {
-  /** Root under which .monad/routes.json is written. Defaults to cwd. */
+  /** Root under which .elanous/routes.json is written. Defaults to cwd. */
   compiledRoot?: string;
   /** When true, emit stderr warnings on conflicts. Default true. */
   warnOnConflict?: boolean;
@@ -120,7 +120,7 @@ export class RouteRegistry {
 
   async persist(): Promise<string | null> {
     const root = this.opts.compiledRoot ?? process.cwd();
-    const outPath = join(root, '.monad', 'routes.json');
+    const outPath = join(root, '.elanous', 'routes.json');
     try {
       mkdirSync(dirname(outPath), { recursive: true });
       const tmpPath = `${outPath}.tmp.${Date.now()}`;

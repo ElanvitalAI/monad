@@ -60,7 +60,7 @@ export interface AgentDefinition {
   // ── PFC PX-1 layer tracking (set by loader, read by definition-registry) ──
   /** Which layer this def came from. 'builtin' = src/agents/ (shipped),
    *  'plugin-builtin' = plugins/<name>/agents/, 'user' = ~/.claude/agents/ or
-   *  ~/.monad/agents/, 'project' = <cwd>/.monad/agents/. Kept on the type
+   *  ~/.elanous/agents/, 'project' = <cwd>/.elanous/agents/. Kept on the type
    *  so panes / layered-registry can show provenance. */
   source?: 'builtin' | 'plugin-builtin' | 'user' | 'project';
   /** Absolute path the def was parsed from — debug/trace only. */

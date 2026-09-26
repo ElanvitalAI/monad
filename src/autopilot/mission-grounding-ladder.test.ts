@@ -45,8 +45,8 @@ describe('isImplementationFile', () => {
   it('persistent grounding 확장자의 구현 파일을 인식한다', () => {
     for (const file of [
       'src/service.ts', 'src/view.tsx', 'src/script.js', 'src/module.mjs', 'src/config.cjs',
-      'apps/android/app/src/main/kotlin/com/monad/Main.kt', 'apps/android/build.gradle.kts',
-      'apps/ios/MonadiOSKit/Sources/Monad/App.swift', 'scripts/tool.py',
+      'apps/android/app/src/main/kotlin/com/elanous/Main.kt', 'apps/android/build.gradle.kts',
+      'apps/ios/ElanousiOSKit/Sources/Elanous/App.swift', 'scripts/tool.py',
       'scripts/coord-post.sh', 'scripts/rooted.bash',
     ]) expect(isImplementationFile(file)).toBe(true);
   });
@@ -54,9 +54,9 @@ describe('isImplementationFile', () => {
   it('JavaScript·Kotlin·Swift 시험 파일을 배제한다', () => {
     for (const file of [
       'src/service.test.ts', 'src/service.test.js',
-      'apps/android/app/src/test/kotlin/com/monad/MainTest.kt',
-      'apps/android/app/src/main/kotlin/com/monad/MainTest.kt',
-      'apps/ios/MonadiOSKitTests/AppTests.swift', 'apps/ios/MonadiOSKit/Sources/Monad/AppTests.swift',
+      'apps/android/app/src/test/kotlin/com/elanous/MainTest.kt',
+      'apps/android/app/src/main/kotlin/com/elanous/MainTest.kt',
+      'apps/ios/ElanousiOSKitTests/AppTests.swift', 'apps/ios/ElanousiOSKit/Sources/Elanous/AppTests.swift',
     ]) expect(isImplementationFile(file)).toBe(false);
   });
 });

@@ -3,7 +3,7 @@
 //
 // Three-layer overlay:
 //   1. Defaults     — hard-coded in this module (baseline that ships
-//                     with every monad install).
+//                     with every elanous install).
 //   2. User-config  — TODO Phase 7: loaded from user-config's
 //                     inputBindings field. Overrides defaults.
 //   3. Runtime      — set by LLM via SetInputBinding. Highest priority.

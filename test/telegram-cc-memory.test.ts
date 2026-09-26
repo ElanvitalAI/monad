@@ -1,12 +1,12 @@
 // /cc·/cdx·/gem slash delegation must leave a breadcrumb in THIS chat's
-// telegram session (transcript + self-awareness event) so monad's brain
+// telegram session (transcript + self-awareness event) so elanous's brain
 // — which reads the session transcript on a follow-up NL turn — can
 // actually SEE the delegated job instead of hallucinating about
 // unrelated state. Regression guard for the dogfood bug where a /cc job
 // ran silently in a separate ACP subprocess session, so "진행되나요?"
 // hit the brain with zero record and it answered about autopilot missions.
 //
-// Isolation: the real session store roots at `~/.monad/sessions`
+// Isolation: the real session store roots at `~/.elanous/sessions`
 // (homedir — NOT XDG, and bun's os.homedir() ignores a runtime $HOME
 // change), so we DON'T touch it. Instead we spy the session module's
 // write functions + the self-event recorder and assert on the calls
@@ -94,7 +94,7 @@ beforeEach(() => {
   _resetAcpSessionStoreForTests();
   installPromptCapturingAgent();
   // No chat is pre-bound → the create path runs. All session writes are
-  // intercepted so the real ~/.monad/sessions store is never touched.
+  // intercepted so the real ~/.elanous/sessions store is never touched.
   findSpy = spyOn(sessionMod, 'findSessionByTelegramChat').mockReturnValue(null);
   createSpy = spyOn(sessionMod, 'createSession').mockReturnValue(FAKE_META);
   appendSpy = spyOn(sessionMod, 'appendMessage').mockReturnValue(FAKE_META);

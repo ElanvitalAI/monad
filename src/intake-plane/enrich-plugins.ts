@@ -9,7 +9,7 @@
  *          `extractTitle`, lives inline so we don't need a HTTP
  *          roundtrip back through the daemon's own /v1 path).
  *   Repo → shell `gh repo view <slug>` (and `gh api repos/<slug>`
- *          for structured fields). monad already depends on `gh`
+ *          for structured fields). elanous already depends on `gh`
  *          for HITL flows + workflows; reusing it keeps the
  *          attack surface unchanged.
  *   Keyword → not wired in this PR. The PR deliberately leaves a
@@ -152,7 +152,7 @@ async function productionFetchUrl(
   try {
     const res = await fetch(url, {
       headers: {
-        'user-agent': 'monad-intake-enrich/1.0 (+https://github.com/ElanvitalAI/monad)',
+        'user-agent': 'elanous-intake-enrich/1.0 (+https://github.com/ElanvitalAI/monad)',
         accept: 'text/html, text/plain;q=0.9, */*;q=0.5',
       },
       signal: ctrl.signal,
@@ -222,7 +222,7 @@ export function buildUrlDigestCallable(
 
 // ──────────────────── Repo plugin (gh CLI) ─────────────────────────
 
-/** Production `gh` shell wrapper — mirrors how monad already shells
+/** Production `gh` shell wrapper — mirrors how elanous already shells
  *  out for HITL / workflow gh calls. Failure shape matches Node's
  *  `spawnSync` so callers can probe `status` + `error`. */
 function productionSpawnGh(

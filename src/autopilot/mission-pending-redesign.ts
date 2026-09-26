@@ -7,7 +7,7 @@
 
 import { join, dirname } from 'node:path';
 import { existsSync, mkdirSync, writeFileSync, readFileSync, rmSync } from 'node:fs';
-import { monadStateRoot } from './state-paths.js';
+import { elanousStateRoot } from './state-paths.js';
 
 /** 역제안 대기 슬롯 — comment(골 리디자인 역제안 텍스트·reviseContext 로 재분해). */
 export interface PendingRedesign {
@@ -18,7 +18,7 @@ export interface PendingRedesign {
 /** 미션별 pending redesign 슬롯 경로(pending-redecompose 옆·같은 safe-slug). */
 export function pendingRedesignPath(missionId: string): string {
   const safe = (missionId || 'unknown').replace(/[^\w.-]/g, '_').slice(0, 80);
-  return join(monadStateRoot(), 'conatus/missions', safe, 'pending-redesign.json');
+  return join(elanousStateRoot(), 'conatus/missions', safe, 'pending-redesign.json');
 }
 
 /** 조회 — 없거나 깨졌으면 null. 순수 조회. */

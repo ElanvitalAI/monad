@@ -92,7 +92,7 @@ describe('market.quotes.multi capability provider', () => {
     await access(wrapper, constants.X_OK);
     const source = await readFile(wrapper, 'utf8');
     expect(source).toContain('yahoo_fetch_daily.py');
-    expect(source).toContain('LOGDIR="$HOME/.monad/logs/collect"');
+    expect(source).toContain('LOGDIR="$HOME/.elanous/logs/collect"');
     expect(source).toContain('rc=$?');
     expect(source).toContain('exit "$rc"');
 

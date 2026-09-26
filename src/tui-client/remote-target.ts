@@ -1,14 +1,14 @@
 // MVP M2.4 — remote daemon target resolution.
 //
-// Shared by `monad attach --host ...` (CLI flags) and the
-// `monad-agent` default-dashboard `MONAD_REMOTE` env-var path. Maps
+// Shared by `elanous attach --host ...` (CLI flags) and the
+// `monad-agent` default-dashboard `ELANOUS_REMOTE` env-var path. Maps
 // (CLI opts + env vars + token-file path) → a normalized
 // `{ url, token? }` ready for `connectWebSocketClient(...)`.
 //
 // Resolution rules (first match wins, see resolveRemoteTarget):
-//   url:    --url > --host > MONAD_REMOTE
-//   token:  --token > --token-file > MONAD_TOKEN > (none)
-//   noAuth: --no-auth | MONAD_NO_AUTH=1
+//   url:    --url > --host > ELANOUS_REMOTE
+//   token:  --token > --token-file > ELANOUS_TOKEN > (none)
+//   noAuth: --no-auth | ELANOUS_NO_AUTH=1
 //
 // `--host` accepts either `host:port` or `host` (defaults to no port).
 // Bare strings are coerced to `ws://<value>/v1/acp` — full URLs
@@ -63,9 +63,9 @@ export function expandRemoteUrl(input: string): string {
 export async function resolveRemoteTarget(
   opts: ResolveRemoteOpts,
 ): Promise<RemoteTarget | null> {
-  const envRemote = readDeprecatedEnv('MONAD_REMOTE').value ?? undefined;
-  const envToken = readDeprecatedEnv('MONAD_TOKEN').value ?? undefined;
-  const envNoAuth = process.env.MONAD_NO_AUTH === '1';
+  const envRemote = readDeprecatedEnv('ELANOUS_REMOTE').value ?? undefined;
+  const envToken = readDeprecatedEnv('ELANOUS_TOKEN').value ?? undefined;
+  const envNoAuth = process.env.ELANOUS_NO_AUTH === '1';
 
   const rawTarget = opts.url ?? opts.host ?? envRemote;
   if (!rawTarget || rawTarget.length === 0) return null;
@@ -91,7 +91,7 @@ export async function resolveRemoteTarget(
   };
 }
 
-/** Convenience: default token-file path (`~/.monad/acp-token`). */
+/** Convenience: default token-file path (`~/.elanous/acp-token`). */
 export function defaultTokenFilePath(): string {
-  return joinPath(homedir(), '.monad', 'acp-token');
+  return joinPath(homedir(), '.elanous', 'acp-token');
 }

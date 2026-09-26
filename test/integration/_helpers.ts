@@ -2,12 +2,12 @@
 //
 // This module is the shared harness for `test/integration/acp-tier1-*.test.ts`
 // scenarios. The Tier 1 suite spawns a REAL `codex` binary and drives
-// it through monad's CodexAppServerAgent; it is gated behind
-// `MONAD_CODEX_TIER1_SMOKE=1` so the regular `bun test` run never picks
+// it through elanous's CodexAppServerAgent; it is gated behind
+// `ELANOUS_CODEX_TIER1_SMOKE=1` so the regular `bun test` run never picks
 // it up.
 //
 // Run manually:
-//   MONAD_CODEX_TIER1_SMOKE=1 bun test test/integration/acp-tier1-*.test.ts
+//   ELANOUS_CODEX_TIER1_SMOKE=1 bun test test/integration/acp-tier1-*.test.ts
 //
 // CI integration is intentionally out of scope for this PR — the repo
 // has no `.github/workflows/` today. When CI is wired, a single env
@@ -19,7 +19,7 @@ import { spawnSync } from 'node:child_process';
  *  is "skip" so contributors who don't have a configured codex binary
  *  / API key never see surprise failures from the suite. */
 export function tier1GateEnabled(): boolean {
-  const raw = process.env.MONAD_CODEX_TIER1_SMOKE;
+  const raw = process.env.ELANOUS_CODEX_TIER1_SMOKE;
   if (!raw) return false;
   return raw === '1' || raw.toLowerCase() === 'true';
 }
@@ -46,7 +46,7 @@ export function detectCodexBinary(): string | null {
  *  string explaining why the suite is skipped. */
 export function tier1SkipReason(): string | null {
   if (!tier1GateEnabled()) {
-    return 'MONAD_CODEX_TIER1_SMOKE not set (default: skip)';
+    return 'ELANOUS_CODEX_TIER1_SMOKE not set (default: skip)';
   }
   const binary = detectCodexBinary();
   if (!binary) {

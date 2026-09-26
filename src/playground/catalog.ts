@@ -1129,7 +1129,7 @@ function buildModalEntries(): CatalogEntry[] {
       kind: 'view',
       view: buildDeclarativeCatalogView(buildPermissionPromptCatalogSpec(
         'Approve destructive Bash?',
-        'rm -rf /tmp/monad-session-q',
+        'rm -rf /tmp/elanous-session-q',
         catalogModalDialogChrome('Approval prompt'),
         [
           option('Allow once', 'allow').setShortcut('a').setPositive(),

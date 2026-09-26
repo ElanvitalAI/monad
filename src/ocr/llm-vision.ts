@@ -67,7 +67,7 @@ export const LLM_VISION_CAPABILITIES: OcrCapabilities = {
     'low-quality',
   ],
   // Mid-range cost estimate. Vision pricing varies per model; we tune
-  // for the most common monad config (claude/gpt-5/gemini Pro family).
+  // for the most common elanous config (claude/gpt-5/gemini Pro family).
   // Used only as a tie-breaker in registry.pick().
   costPerPageUsd: 0.02,
   async: false,

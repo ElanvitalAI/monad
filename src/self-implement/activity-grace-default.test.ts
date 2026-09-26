@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'bun:test';
-import { DEFAULT_ACTIVITY_GRACE_SEC, LONGEST_SILENT_GATE_MS } from './headless-monad-driver.js';
+import { DEFAULT_ACTIVITY_GRACE_SEC, LONGEST_SILENT_GATE_MS } from './headless-elanous-driver.js';
 
 // ⛔⛔ **왜 이 테스트가 있나**(실측 2026-07-30): 오늘 위임 4건이 `soft-timeout` 으로 죽었는데
 //    실패가 아니라 **무출력 허용 구간 부족**이었다. `poll.heartbeat.silentFor` 최대값이

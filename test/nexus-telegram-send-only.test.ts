@@ -1,4 +1,4 @@
-// `poll: false` — 배달 싱크만 세우고 getUpdates 는 한 번도 안 부른다(폴링은 넥서스 밖 `monad telegram run` 몫).
+// `poll: false` — 배달 싱크만 세우고 getUpdates 는 한 번도 안 부른다(폴링은 넥서스 밖 `elanous telegram run` 몫).
 import { describe, expect, test } from 'bun:test';
 import { readFileSync } from 'node:fs';
 import { createNexusTelegramTriggerBot } from '../src/nexus/api/telegram-trigger-bot';

@@ -213,7 +213,7 @@ export function listAgentFiles(dir: string): string[] {
  *    1. `builtinDir`    — shipped src/agents/ (existing)
  *    2. `pluginAgents`  — plugins/<name>/agents/ (materialised upstream)
  *    3. `userDir`       — ~/.claude/agents/ + optional extras
- *    4. `projectDir`    — <cwd>/.monad/agents/
+ *    4. `projectDir`    — <cwd>/.elanous/agents/
  *  Higher layers override lower. Every loaded def gets its `source`
  *  field set by the loader so callers (AgentList tool, definition-
  *  registry) can show provenance.
@@ -227,8 +227,8 @@ export function loadAgents(opts: {
   extraUserDirs?: string[];
   pluginAgents?: AgentDefinition[];
   /** PX-2 P3: optional disabled-check override. Defaults to the
-   *  global isAgentDisabled(name) which reads ~/.monad/disabled.json
-   *  + <cwd>/.monad/disabled.json. Tests inject a stub predicate so
+   *  global isAgentDisabled(name) which reads ~/.elanous/disabled.json
+   *  + <cwd>/.elanous/disabled.json. Tests inject a stub predicate so
    *  they don't pollute the user's actual disabled file. */
   isDisabled?: (name: string) => boolean;
 } = {}): Map<string, AgentDefinition> {
@@ -263,7 +263,7 @@ export function loadAgents(opts: {
     }
   }
 
-  // Layer 4: project (<cwd>/.monad/agents/)
+  // Layer 4: project (<cwd>/.elanous/agents/)
   if (opts.projectDir) {
     for (const entry of listAgentFiles(opts.projectDir)) {
       const def = parseAgentFile(join(opts.projectDir, entry), undefined, 'project');
@@ -271,7 +271,7 @@ export function loadAgents(opts: {
     }
   }
 
-  // PX-2 P3: apply ~/.monad/disabled.json + <cwd>/.monad/disabled.json
+  // PX-2 P3: apply ~/.elanous/disabled.json + <cwd>/.elanous/disabled.json
   // toggle. Disabled agents are dropped from the returned map so
   // resolveAgent (and resolveAgentLayered) return undefined for them,
   // which falls back to general-purpose in dispatchAgent. Cached

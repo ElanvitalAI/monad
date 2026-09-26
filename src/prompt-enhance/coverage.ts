@@ -87,7 +87,7 @@ export interface CoverageOpts {
 }
 
 const defaultModel = (): string =>
-  process.env.MONAD_COVERAGE_MODEL || process.env.MONAD_PR_REVIEW_MODEL || tierModel('better');
+  process.env.ELANOUS_COVERAGE_MODEL || process.env.ELANOUS_PR_REVIEW_MODEL || tierModel('better');
 
 /**
  * ★ 커버리지 검증 — 산출물이 체크리스트 각 항목을 담았는지 대조.

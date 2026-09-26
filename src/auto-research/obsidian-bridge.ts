@@ -3,10 +3,10 @@
 // Thin read/write/append/frontmatter helpers so the research-base
 // primitives (budget, ledger, termination, loop-prompt) stay agnostic
 // about where the vault lives. Three-tier discovery:
-//   1. env MONAD_OBSIDIAN_VAULT    — operator override
+//   1. env ELANOUS_OBSIDIAN_VAULT    — operator override
 //   2. ~/Obsidian/ElanvitalAI/10. Agentic/AgenticCommon/AutoResearch  — default
 //   3. ~/Documents/Obsidian/AutoResearch — macOS iCloud fallback
-//   4. simulated fallback: .monad/research/ (works even when Obsidian
+//   4. simulated fallback: .elanous/research/ (works even when Obsidian
 //      is not installed)
 //
 // All writes are atomic (tmp + rename) — follows PX-2 persistence
@@ -35,7 +35,7 @@ export interface ObsidianVault {
   /** Absolute path to the AutoResearch root (not the Obsidian vault
    *  itself — the sub-directory where goals live). */
   root: string;
-  /** true when we fell back to `.monad/research/` because no real
+  /** true when we fell back to `.elanous/research/` because no real
    *  vault was found. Callers can surface this to the operator UI. */
   isSimulated: boolean;
   /** Human-readable label for logs/toasts. */
@@ -56,10 +56,10 @@ export interface DiscoverOpts {
 export function discoverObsidianVault(opts: DiscoverOpts = {}): ObsidianVault {
   const env = opts.env ?? process.env;
   const home = opts.home ?? homedir();
-  const override = env.MONAD_OBSIDIAN_VAULT?.trim();
+  const override = env.ELANOUS_OBSIDIAN_VAULT?.trim();
   if (override) {
     ensureDir(override);
-    return { root: override, isSimulated: false, label: 'env:MONAD_OBSIDIAN_VAULT' };
+    return { root: override, isSimulated: false, label: 'env:ELANOUS_OBSIDIAN_VAULT' };
   }
   const primary = join(
     home,
@@ -78,9 +78,9 @@ export function discoverObsidianVault(opts: DiscoverOpts = {}): ObsidianVault {
     ensureDir(fallback);
     return { root: fallback, isSimulated: false, label: '~/Documents/Obsidian/AutoResearch' };
   }
-  const sim = join(opts.cwd ?? process.cwd(), '.monad', 'research');
+  const sim = join(opts.cwd ?? process.cwd(), '.elanous', 'research');
   ensureDir(sim);
-  return { root: sim, isSimulated: true, label: '.monad/research (simulated)' };
+  return { root: sim, isSimulated: true, label: '.elanous/research (simulated)' };
 }
 
 // ── File helpers ───────────────────────────────────────────────────────

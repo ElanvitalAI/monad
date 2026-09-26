@@ -154,11 +154,11 @@ describe('sendReply · error paths', () => {
     ).rejects.toThrow(/not found/);
   });
 
-  test('target has no PTY transport throws · ACP-only monad-as-child example', async () => {
-    const target = makeSession('monad-1', { withPty: false });
-    const deps = fakeDeps({ sessions: { 'monad-1': target } });
+  test('target has no PTY transport throws · ACP-only elanous-as-child example', async () => {
+    const target = makeSession('elanous-1', { withPty: false });
+    const deps = fakeDeps({ sessions: { 'elanous-1': target } });
     await expect(
-      sendReply({ toSessionId: 'monad-1', message: 'hi' }, deps),
+      sendReply({ toSessionId: 'elanous-1', message: 'hi' }, deps),
     ).rejects.toThrow(/no PTY transport/);
   });
 

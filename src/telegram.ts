@@ -323,7 +323,7 @@ export class TelegramBot {
     this.pollTimeoutSec = opts.pollTimeoutSec ?? DEFAULT_POLL_TIMEOUT;
     this.maxChars = opts.maxMessageChars ?? DEFAULT_MAX_CHARS;
     // LF2(2026-07-13) — 기본 no-op 이던 봇 코어 로거를 debug.log 브릿지로:
-    // env(MONAD_DAEMON_MIRROR_VERBOSE) 없이도 프로덕션 봇 라인이 파일
+    // env(ELANOUS_DAEMON_MIRROR_VERBOSE) 없이도 프로덕션 봇 라인이 파일
     // 트레일 + logs.db 에 남는다(로그 소실 해소). 호출측 log 주입이 우선.
     this.log = opts.log ?? ((m: string) => debug.log('telegram.core', m));
     this.sleepImpl = opts.sleepImpl ?? sleep;
@@ -682,7 +682,7 @@ export class TelegramBot {
   /** Phase 8 (2026-04-30) — send a voice msg (.ogg Opus blob) via
    *  Bot API sendVoice. Uses multipart/form-data so we can upload the
    *  binary inline (Telegram also accepts a previously-uploaded
-   *  file_id string, but for monad-generated TTS we always have
+   *  file_id string, but for elanous-generated TTS we always have
    *  fresh bytes). Bypasses throttledCall — voice msgs are
    *  user-initiated, low frequency, and the multipart body shape
    *  doesn't fit the JSON-based throttle path. Per-chat gap is still
@@ -1078,7 +1078,7 @@ export class TelegramBot {
         });
         // A successful poll clears any conflict state — another
         // instance must have yielded (usually because the user killed
-        // the other `monad telegram run`).
+        // the other `elanous telegram run`).
         if (conflictCount > 0) {
           this.log(`telegram: conflict cleared after ${conflictCount} retries`);
           conflictCount = 0;
@@ -1647,12 +1647,12 @@ export class TelegramBot {
     const dispatchBridge = this.slashContext?.daemonBridge as
       { resolveDaemonSessionForChat?: (chatId: number, threadId: number | undefined) => string | null } | undefined;
     const daemonBoundForFlip = (dispatchBridge?.resolveDaemonSessionForChat?.(ctx.chatId, ctx.threadId) ?? null) != null;
-    // getUserConfig() = 데몬 config-dir(.monad-test/prod)의 authoritative 런타임 config — sink 가
+    // getUserConfig() = 데몬 config-dir(.elanous-test/prod)의 authoritative 런타임 config — sink 가
     // 쓰는 것과 동일(slashContext.userConfig 는 stale snapshot). 게이트는 config-only: 텔레그램
     // 세션은 항상 owner auto-subscribe 되므로 daemonBound 불요(그건 로그 정보용).
     const streamingCfgOn = getUserConfig().sessionFabric?.streaming?.telegram === true;
     const streamingFlip = streamingCfgOn;
-    // §C5 관측 — 발화 경로 결정(제1원칙: 텔레그램 전송을 monad 가 본다). category telegram.deliver.
+    // §C5 관측 — 발화 경로 결정(제1원칙: 텔레그램 전송을 elanous 가 본다). category telegram.deliver.
     debug.log('telegram.deliver', 'route', {
       chatId: ctx.chatId, path: streamingFlip ? 'flip-fanout' : 'legacy', streamingCfgOn, daemonBound: daemonBoundForFlip,
     });
@@ -2151,7 +2151,7 @@ function sleep(ms: number): Promise<void> {
 //
 // Convenience that builds an onMessage handler that maps chat+thread →
 // persistent session and runs a full runTurn() per incoming message.
-// Used by `monad telegram` in Phase 7.
+// Used by `elanous telegram` in Phase 7.
 
 import { createSession, findSessionByTelegramChat, findTelegramSession } from './session/index.js';
 import { makeChunkProducer } from './session/streaming/chunk-producer.js';
@@ -2264,7 +2264,7 @@ export interface BotFromConfigOpts {
   extraSlashCommands?: TgSlashCommand[];
   /** Test seam — forwarded into the TelegramBot constructor. */
   telegramBotOpts?: Partial<TelegramBotOpts>;
-  /** Tier 1 telegram fan-out arc — bridge to the running monad
+  /** Tier 1 telegram fan-out arc — bridge to the running elanous
    *  daemon. When set, the bot handler:
    *    1. Asks `resolveDaemonSessionForChat` BEFORE the legacy TUI
    *       session lookup. A daemon-bound chat (via /resume <id>)
@@ -2371,7 +2371,7 @@ export function botFromConfig(opts: BotFromConfigOpts): TelegramBot {
 
     // Tier 1 telegram fan-out arc — daemon session takes precedence
     // when /resume <id> bound this chat to a daemon-side session.
-    // The bridge returns the daemon sessionId (e.g. monad-session-3)
+    // The bridge returns the daemon sessionId (e.g. elanous-session-3)
     // which the runTurnImpl attaches to directly. Falls through to
     // the legacy TUI session flow when no binding exists.
     const daemonSessionId = opts.daemonBridge?.resolveDaemonSessionForChat(ctx.chatId, ctx.threadId) ?? null;
@@ -2489,7 +2489,7 @@ export function botFromConfig(opts: BotFromConfigOpts): TelegramBot {
       return `${accumulated}${accumulated ? '\n\n' : ''}${tail}`;
     };
     // Register a per-turn abort controller so `/cancel` can interrupt an
-    // in-flight NL `delegate_code_agent` (which blocks monad's brain via
+    // in-flight NL `delegate_code_agent` (which blocks elanous's brain via
     // clientSessionSend, a path `/cancel`'s cancelAcpTurn otherwise can't
     // reach). The signal is forwarded down to the delegate tool's ctx.
     const turnAbort = beginCancelableTurn(ctx.chatId, ctx.threadId);

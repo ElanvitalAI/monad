@@ -4,7 +4,7 @@
 // leverage_playbook 5원칙(항복신호 판단·첫 반등봉 진입 등 자동화 어려운 재량)을
 // 사람이 주입하는 경로. 오버라이드가 active면 자동 국면을 누르거나 오버레이한다.
 //
-// 저장: SQLite `~/.monad/conatus/capstone.db` (append-only 이력 + status 갱신).
+// 저장: SQLite `~/.elanous/conatus/capstone.db` (append-only 이력 + status 갱신).
 //   매매 결정 근거라 "누가 언제 왜 무엇을"의 완전 감사가 필수 → JSON 아닌 DB.
 // 입력: finance_capstone_override 도구(텔레그램 자연어 → 구조화 인자).
 //

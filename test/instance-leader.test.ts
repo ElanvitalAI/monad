@@ -59,7 +59,7 @@ describe('bootstrapLeader — 권위 부재 시 3축 추론 1회 물질화', () 
   test('launchd 를 우선 채택한다 (부팅 시 실제로 운영을 접수하는 축)', () => {
     let written: { tree: string } | undefined;
     const rec = bootstrapLeader('2026-07-26T00:00:00Z', {
-      read: () => null,   // 🩸 주입 안 하면 이 기계의 실제 ~/.monad/leader.json 을 읽어 리더 파일이 있는 기계에서 늘 빨강
+      read: () => null,   // 🩸 주입 안 하면 이 기계의 실제 ~/.elanous/leader.json 을 읽어 리더 파일이 있는 기계에서 늘 빨강
       // 리더 트리 본인에서 부팅 — 무접촉 가드 통과(아래 별도 describe 가 비-리더 케이스 담당)
       axes: observeLeaderAxes({ authority: null, bunLink: B, launchd: A, self: A }),
       write: (r) => { written = r; },
@@ -71,7 +71,7 @@ describe('bootstrapLeader — 권위 부재 시 3축 추론 1회 물질화', () 
 
   test('launchd 가 없으면 bun link 로 폴백', () => {
     const rec = bootstrapLeader('2026-07-26T00:00:00Z', {
-      read: () => null,   // 🩸 주입 안 하면 이 기계의 실제 ~/.monad/leader.json 을 읽어 리더 파일이 있는 기계에서 늘 빨강
+      read: () => null,   // 🩸 주입 안 하면 이 기계의 실제 ~/.elanous/leader.json 을 읽어 리더 파일이 있는 기계에서 늘 빨강
       axes: observeLeaderAxes({ authority: null, bunLink: B, launchd: null, self: B }),
       write: () => {},
     });
@@ -81,7 +81,7 @@ describe('bootstrapLeader — 권위 부재 시 3축 추론 1회 물질화', () 
   test('★3축 전부 해석 불가면 추측하지 않는다 (권위 없이 계속 — 관측만)', () => {
     let wrote = false;
     const rec = bootstrapLeader('2026-07-26T00:00:00Z', {
-      read: () => null,   // 🩸 주입 안 하면 이 기계의 실제 ~/.monad/leader.json 을 읽어 리더 파일이 있는 기계에서 늘 빨강
+      read: () => null,   // 🩸 주입 안 하면 이 기계의 실제 ~/.elanous/leader.json 을 읽어 리더 파일이 있는 기계에서 늘 빨강
       axes: observeLeaderAxes({ authority: null, bunLink: null, launchd: null, self: B }),
       write: () => { wrote = true; },
     });
@@ -107,10 +107,10 @@ describe('renderLeaderStatus — 드리프트가 눈에 보인다', () => {
 });
 
 describe('bootstrapLeader — 운영 무접촉 가드', () => {
-  test('★비-리더 트리에서는 운영 스토어(~/.monad)에 쓰지 않는다 (관측만)', () => {
+  test('★비-리더 트리에서는 운영 스토어(~/.elanous)에 쓰지 않는다 (관측만)', () => {
     let wrote = false;
     const rec = bootstrapLeader('2026-07-26T00:00:00Z', {
-      read: () => null,   // 🩸 주입 안 하면 이 기계의 실제 ~/.monad/leader.json 을 읽어 리더 파일이 있는 기계에서 늘 빨강
+      read: () => null,   // 🩸 주입 안 하면 이 기계의 실제 ~/.elanous/leader.json 을 읽어 리더 파일이 있는 기계에서 늘 빨강
       // 추론=A(pilot) 인데 이 프로세스는 B(axon) → 써서는 안 된다
       axes: observeLeaderAxes({ authority: null, bunLink: A, launchd: A, self: B }),
       write: () => { wrote = true; },
@@ -122,7 +122,7 @@ describe('bootstrapLeader — 운영 무접촉 가드', () => {
   test('리더 트리 본인이면 물질화한다', () => {
     let wrote = false;
     const rec = bootstrapLeader('2026-07-26T00:00:00Z', {
-      read: () => null,   // 🩸 주입 안 하면 이 기계의 실제 ~/.monad/leader.json 을 읽어 리더 파일이 있는 기계에서 늘 빨강
+      read: () => null,   // 🩸 주입 안 하면 이 기계의 실제 ~/.elanous/leader.json 을 읽어 리더 파일이 있는 기계에서 늘 빨강
       axes: observeLeaderAxes({ authority: null, bunLink: A, launchd: A, self: A }),
       write: () => { wrote = true; },
     });
@@ -150,7 +150,7 @@ function runClaim(argv: string[], opts: {
     runBunLink: (t) => { if (opts.linkFails) throw new Error('link boom'); linked = t; },
     write: (r) => { wrote = r; },
   });
-  program.parse(['node', 'monad', 'leader', 'claim', ...argv]);
+  program.parse(['node', 'elanous', 'leader', 'claim', ...argv]);
   return { logs, errs, wrote, linked };
 }
 
@@ -208,18 +208,18 @@ describe('installed copy — 설치본은 운영 코드', () => {
   test('no authority still means undecided, installed or not', () => {
     expect(isLeaderTree(observeLeaderAxes({ authority: null, bunLink: null, launchd: null, self: '/x', selfInstalled: true }))).toBeNull();
   });
-  test('isInstalledCopyScript: node_modules/monadagent without a git tree above → true; inside a git tree → false', () => {
-    const root = mkdtempSync(joinPath(tmpdir(), 'monad-installed-'));
+  test('isInstalledCopyScript: node_modules/elanous without a git tree above → true; inside a git tree → false', () => {
+    const root = mkdtempSync(joinPath(tmpdir(), 'elanous-installed-'));
     try {
-      const installed = joinPath(root, 'versions/1.0.0-abc/node_modules/monadagent/bin');
+      const installed = joinPath(root, 'versions/1.0.0-abc/node_modules/elanous/bin');
       mkdirSync(installed, { recursive: true });
-      writeFileSync(joinPath(installed, 'monad.mjs'), '');
-      expect(isInstalledCopyScript(joinPath(installed, 'monad.mjs'))).toBe(true);
+      writeFileSync(joinPath(installed, 'elanous.mjs'), '');
+      expect(isInstalledCopyScript(joinPath(installed, 'elanous.mjs'))).toBe(true);
       const tree = joinPath(root, 'repo');
       mkdirSync(joinPath(tree, '.git'), { recursive: true });
-      mkdirSync(joinPath(tree, 'node_modules/monadagent/bin'), { recursive: true });
-      writeFileSync(joinPath(tree, 'node_modules/monadagent/bin/monad.mjs'), '');
-      expect(isInstalledCopyScript(joinPath(tree, 'node_modules/monadagent/bin/monad.mjs'))).toBe(false);
+      mkdirSync(joinPath(tree, 'node_modules/elanous/bin'), { recursive: true });
+      writeFileSync(joinPath(tree, 'node_modules/elanous/bin/elanous.mjs'), '');
+      expect(isInstalledCopyScript(joinPath(tree, 'node_modules/elanous/bin/elanous.mjs'))).toBe(false);
       expect(isInstalledCopyScript('')).toBe(false);
       expect(isInstalledCopyScript(joinPath(root, 'missing.mjs'))).toBe(false);
     } finally { rmTmp(root, { recursive: true, force: true }); }
@@ -236,24 +236,24 @@ describe('leader status — installed-copy axes (T6)', () => {
   test('installedCopyRoot names the package root of an installed copy and nothing else', () => {
     const dir = realpathSync(mkdtempSync(joinPath(tmpdir(), 'leader-installed-')));
     try {
-      const script = joinPath(dir, 'versions', '1.0.0-abc', 'node_modules', 'monadagent', 'bin', 'monad.mjs');
+      const script = joinPath(dir, 'versions', '1.0.0-abc', 'node_modules', 'elanous', 'bin', 'elanous.mjs');
       mkdirSync(joinPath(script, '..'), { recursive: true });
       writeFileSync(script, '');
-      expect(installedCopyRoot(script)).toBe(joinPath(dir, 'versions', '1.0.0-abc', 'node_modules', 'monadagent'));
-      expect(installedCopyRoot(joinPath(dir, 'tree', 'bin', 'monad.mjs'))).toBeNull();
+      expect(installedCopyRoot(script)).toBe(joinPath(dir, 'versions', '1.0.0-abc', 'node_modules', 'elanous'));
+      expect(installedCopyRoot(joinPath(dir, 'tree', 'bin', 'elanous.mjs'))).toBeNull();
     } finally { rmTmp(dir, { recursive: true, force: true }); }
   });
 
   test('installed axes are neither unresolved nor drift, and render as 설치본 with a coherent verdict', () => {
     const axes = observeAxesT6({
       authority: '/r/pilot', bunLink: null, launchd: null, running: null, self: '/r/axon',
-      installed: { 'bun-link': '/i/current/node_modules/monadagent', launchd: '/i/current/node_modules/monadagent', running: '/i/current/node_modules/monadagent' },
+      installed: { 'bun-link': '/i/current/node_modules/elanous', launchd: '/i/current/node_modules/elanous', running: '/i/current/node_modules/elanous' },
     });
     expect(axes.unresolved).toEqual([]);
     expect(axes.drift).toEqual([]);
     expect(Object.keys(axes.installed ?? {}).sort()).toEqual(['bun-link', 'launchd', 'running']);
     const text = renderLeaderStatus(axes, null);
-    expect(text).toContain('bun link           : 설치본 (/i/current/node_modules/monadagent)');
+    expect(text).toContain('bun link           : 설치본 (/i/current/node_modules/elanous)');
     expect(text).not.toContain('해석 불가');
     expect(text).toContain('✅ 정합');
   });

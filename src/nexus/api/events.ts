@@ -3,7 +3,7 @@
 // **★ SSoT for `/v1/events` SSE** post NEXUS N-1.5 cutover (2026-05-06):
 // the legacy control-server SSE path (`src/control/server.ts:openSseResponse`)
 // is freeze-deprecated (decision #13/#18) and PWA consumers point at
-// the NEXUS port via `monad.nexus.baseUrl` (PR a · #1743).
+// the NEXUS port via `elanous.nexus.baseUrl` (PR a · #1743).
 //
 // Server-Sent Events stream filtered by topic prefix. Subscribers pass
 // `?topics=p1,p2,p3` and receive `event: <kind>\ndata: <json>\n\n`

@@ -83,16 +83,16 @@ describe('applyEdit', () => {
     await applyRead(p, store);
 
     const out = await applyEdit(
-      { file_path: p, edits: [{ old_string: 'world', new_string: 'monad' }] },
+      { file_path: p, edits: [{ old_string: 'world', new_string: 'elanous' }] },
       store,
     );
     expect(out.ok).toBe(true);
     if (!out.ok) throw new Error();
-    expect(out.newContent).toBe('hello monad\n');
+    expect(out.newContent).toBe('hello elanous\n');
     expect(out.linesAdded).toBe(1);
     expect(out.linesRemoved).toBe(1);
 
-    expect(await fsp.readFile(p, 'utf-8')).toBe('hello monad\n');
+    expect(await fsp.readFile(p, 'utf-8')).toBe('hello elanous\n');
     // Re-record lets a second edit work without another Read.
     const e = store.verifyBeforeEdit(p)!;
     expect(e.contentHash).toBeDefined();

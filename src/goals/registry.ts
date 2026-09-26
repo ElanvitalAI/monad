@@ -1,6 +1,6 @@
 // Goal registry — Plan-Mode UX P1.1.
 //
-// Single source of truth for the *current* goal (monad keeps at most one
+// Single source of truth for the *current* goal (elanous keeps at most one
 // active goal per session — multiplexing is a P3+ follow-up). Exposes a
 // tiny pub/sub so UI consumers (status pill, toast) can react to status
 // transitions without the loop knowing about UI shape.
@@ -17,7 +17,7 @@
 
 import { existsSync, mkdirSync, readFileSync, renameSync, rmSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
-import { monadStateRoot } from '../autopilot/state-paths.js';
+import { elanousStateRoot } from '../autopilot/state-paths.js';
 import { debug } from '../debug/log.js';
 import { appendRunLedgerEntry, type RunLedgerWriter } from '../self-implement/run-ledger.js';
 import {
@@ -38,7 +38,7 @@ type Listener = (goal: Goal | null, prev: Goal | null) => void;
 const listeners = new Set<Listener>();
 
 function snapshotPath(): string {
-  return join(monadStateRoot(), 'goals', 'current-goal.json');
+  return join(elanousStateRoot(), 'goals', 'current-goal.json');
 }
 
 function persistSnapshot(goal: Goal | null): void {

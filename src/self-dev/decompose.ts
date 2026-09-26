@@ -389,7 +389,7 @@ function isRawSubtask(value: unknown): value is RawSubtask {
  * G6 (1c) — 결정론적 hotPaths 추론. 분해된 sub-goal 의 feature 텍스트에서 repo 파일
  * 경로(src/…·docs/…·scripts/… + 확장자)를 뽑는다. LLM 이 hotPaths 를 안 채워도 hot-file
  * 직렬화(S2·병렬 머지충돌 회피)가 작동하게 하는 안전망. 알려진 top-dir 접두 + 확장자만
- * 매칭해 산문 오탐 차단(순수). [[ROADMAP-monad-is-all-pty-unified-autonomy-2026-07-21]] G6.
+ * 매칭해 산문 오탐 차단(순수). [[ROADMAP-elanous-is-all-pty-unified-autonomy-2026-07-21]] G6.
  */
 export function inferHotPaths(text: string): string[] {
   const matches = text.match(/\b(?:src|docs|apps|packages|scripts|tests?|bin)\/[\w./-]+\.[a-z0-9]{1,5}\b/gi) ?? [];
@@ -545,6 +545,6 @@ export async function decomposeSelfDevGoal(
 /** Default LLM seam — lazy `streamLLM` wire (kept out of the test path). */
 async function defaultDecomposeLlm(model?: string): Promise<SelfDevDecomposeLlm> {
   const { streamLLM } = await import('../llm.js');
-  const m = model || process.env.MONAD_PR_REVIEW_MODEL || tierModel('best');
+  const m = model || process.env.ELANOUS_PR_REVIEW_MODEL || tierModel('best');
   return (prompt: string) => streamLLM([{ role: 'user', content: prompt }], () => {}, { model: m, reasoningEffort: 'low' });
 }

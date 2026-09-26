@@ -7,8 +7,8 @@
 // adds the NEXUS-specific lifecycle (env reader + bot start/stop).
 //
 // What this file proves:
-//   1. Env reader parses MONAD_TELEGRAM_HITL_BOT_TOKEN +
-//      MONAD_TELEGRAM_HITL_CHAT_ID; missing/invalid → null.
+//   1. Env reader parses ELANOUS_TELEGRAM_HITL_BOT_TOKEN +
+//      ELANOUS_TELEGRAM_HITL_CHAT_ID; missing/invalid → null.
 //   2. Factory skips when token missing or chatId NaN.
 //   3. Factory with prebuilt bot returns a handle whose channel is
 //      named 'telegram'.
@@ -47,10 +47,10 @@ let prevHome: string | undefined;
 let activeHandle: RunNexusHandle | undefined;
 
 beforeEach(() => {
-  tmpRoot = mkdtempSync(join(tmpdir(), 'monad-nexus-hitl-tg-'));
-  prevNexusDir = process.env.MONAD_NEXUS_DIR;
+  tmpRoot = mkdtempSync(join(tmpdir(), 'elanous-nexus-hitl-tg-'));
+  prevNexusDir = process.env.ELANOUS_NEXUS_DIR;
   prevHome = process.env.HOME;
-  process.env.MONAD_NEXUS_DIR = tmpRoot;
+  process.env.ELANOUS_NEXUS_DIR = tmpRoot;
   process.env.HOME = tmpRoot;
   setIntakeStoreForTest(createIntakeStore({ archiveDir: null, replayOnInit: false }));
   registerDefaultConfirmChannels([]);
@@ -61,8 +61,8 @@ afterEach(async () => {
     try { activeHandle.release(); } catch { /* swallow */ }
     activeHandle = undefined;
   }
-  if (prevNexusDir === undefined) delete process.env.MONAD_NEXUS_DIR;
-  else process.env.MONAD_NEXUS_DIR = prevNexusDir;
+  if (prevNexusDir === undefined) delete process.env.ELANOUS_NEXUS_DIR;
+  else process.env.ELANOUS_NEXUS_DIR = prevNexusDir;
   if (prevHome === undefined) delete process.env.HOME;
   else process.env.HOME = prevHome;
   setIntakeStoreForTest(null);
@@ -114,8 +114,8 @@ describe('readNexusTelegramHitlOptsFromEnv', () => {
   test('returns parsed opts when both env vars set', () => {
     expect(
       readNexusTelegramHitlOptsFromEnv({
-        MONAD_TELEGRAM_HITL_BOT_TOKEN: '999:abc',
-        MONAD_TELEGRAM_HITL_CHAT_ID: '12345',
+        ELANOUS_TELEGRAM_HITL_BOT_TOKEN: '999:abc',
+        ELANOUS_TELEGRAM_HITL_CHAT_ID: '12345',
       }),
     ).toEqual({ token: '999:abc', chatId: 12345 });
   });
@@ -123,29 +123,29 @@ describe('readNexusTelegramHitlOptsFromEnv', () => {
   test('handles negative chatId (groups can have negative ids)', () => {
     expect(
       readNexusTelegramHitlOptsFromEnv({
-        MONAD_TELEGRAM_HITL_BOT_TOKEN: '999:abc',
-        MONAD_TELEGRAM_HITL_CHAT_ID: '-1001234567890',
+        ELANOUS_TELEGRAM_HITL_BOT_TOKEN: '999:abc',
+        ELANOUS_TELEGRAM_HITL_CHAT_ID: '-1001234567890',
       }),
     ).toEqual({ token: '999:abc', chatId: -1001234567890 });
   });
 
   test('returns null when token missing', () => {
     expect(
-      readNexusTelegramHitlOptsFromEnv({ MONAD_TELEGRAM_HITL_CHAT_ID: '1' }),
+      readNexusTelegramHitlOptsFromEnv({ ELANOUS_TELEGRAM_HITL_CHAT_ID: '1' }),
     ).toBeNull();
   });
 
   test('returns null when chatId missing', () => {
     expect(
-      readNexusTelegramHitlOptsFromEnv({ MONAD_TELEGRAM_HITL_BOT_TOKEN: '999:abc' }),
+      readNexusTelegramHitlOptsFromEnv({ ELANOUS_TELEGRAM_HITL_BOT_TOKEN: '999:abc' }),
     ).toBeNull();
   });
 
   test('returns null when chatId not numeric', () => {
     expect(
       readNexusTelegramHitlOptsFromEnv({
-        MONAD_TELEGRAM_HITL_BOT_TOKEN: '999:abc',
-        MONAD_TELEGRAM_HITL_CHAT_ID: 'not-a-number',
+        ELANOUS_TELEGRAM_HITL_BOT_TOKEN: '999:abc',
+        ELANOUS_TELEGRAM_HITL_CHAT_ID: 'not-a-number',
       }),
     ).toBeNull();
   });

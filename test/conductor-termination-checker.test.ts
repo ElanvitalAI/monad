@@ -39,10 +39,10 @@ describe('withIndependentChecker', () => {
         { kind: 'min_sources', n: 3, sourcesPath: 'src.md' },
       ],
     };
-    const rule = withIndependentChecker(base, { command: 'monad review --gate' });
+    const rule = withIndependentChecker(base, { command: 'elanous review --gate' });
     if (rule.kind !== 'and') throw new Error('unreachable');
     expect(rule.rules).toHaveLength(3); // 2 base + checker (no nesting)
-    expect(rule.rules[2]).toMatchObject({ kind: 'custom', command: 'monad review --gate' });
+    expect(rule.rules[2]).toMatchObject({ kind: 'custom', command: 'elanous review --gate' });
   });
 
   test('checker gates completion even when the base is satisfied', async () => {

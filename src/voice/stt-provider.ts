@@ -3,7 +3,7 @@
 //
 // PCM Buffer (PR-S1V.1 의 audio-capture output) → transcript text 의
 // boundary. Cloud (OpenAI Whisper · ElevenLabs Scribe) 와 local
-// (whisper.cpp · 후속) 모두 같은 contract 위에서 plug-in. monad 의
+// (whisper.cpp · 후속) 모두 같은 contract 위에서 plug-in. elanous 의
 // platform-free architecture (PLAN §4.1) 의 STT layer.
 //
 // 본 PR (Path A) 은 batch only 구현 — `transcribeBatch` 는 mandatory,
@@ -12,13 +12,13 @@
 //
 // 차용 ref:
 //   - gemini-cli `packages/core/src/voice/transcriptionProvider.ts:1-30`
-//     — provider interface 의 분리 + EventEmitter pattern (단 monad 는
+//     — provider interface 의 분리 + EventEmitter pattern (단 elanous 는
 //     batch-first 의 다른 shape · gemini 는 streaming-first).
 //   - gemini-cli `packages/core/src/voice/transcriptionFactory.ts`
 //     — runtime provider 선택 패턴.
 //   - hermes `tools/transcription_tools.py` — 5 STT providers
 //     (faster-whisper · Groq · OpenAI · Mistral · xAI) singleton dispatch.
-//     monad 는 OpenAI Whisper 부터 시작 + 후속 PR 로 ElevenLabs · local.
+//     elanous 는 OpenAI Whisper 부터 시작 + 후속 PR 로 ElevenLabs · local.
 
 // ── Common types ────────────────────────────────────────────────────
 

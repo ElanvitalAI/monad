@@ -19,7 +19,7 @@ describe('③ 불변 코어', () => {
     expect(isImmutableCorePath('src/autopilot/arming.ts')).toBe(true);
     expect(isImmutableCorePath('src/autopilot/safety.ts')).toBe(true);
     expect(isImmutableCorePath('src/nexus/reboot-handler.ts')).toBe(true);
-    expect(isImmutableCorePath('/Users/x/.monad/finance-trade-mandate.json')).toBe(true);
+    expect(isImmutableCorePath('/Users/x/.elanous/finance-trade-mandate.json')).toBe(true);
   });
   test('일반 경로는 통과', () => {
     expect(isImmutableCorePath('src/autopilot/triage.ts')).toBe(false);

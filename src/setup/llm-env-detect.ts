@@ -143,7 +143,7 @@ export function detectProviderEnvKeys(
 }
 
 /** Auxiliary (non-LLM) AI env vars the rest of the runtime consumes.
- *  Surfaced in /setup as an info line so the user knows monad already
+ *  Surfaced in /setup as an info line so the user knows elanous already
  *  picks them up — no action / no prompt. */
 export interface AuxiliaryAiEnvVar {
   name: string;

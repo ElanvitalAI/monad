@@ -41,7 +41,7 @@ describe('daemon streaming STT singleton', () => {
     delete process.env.OPENAI_API_KEY;
     delete process.env.STREAMING_STT_PROVIDER;
     // Config isolation (2026-07-12) — the singleton resolver reads
-    // getUserConfig(), and the REAL ~/.monad/config.json carries
+    // getUserConfig(), and the REAL ~/.elanous/config.json carries
     // voice.stt.{provider,apiKey} on dev machines, which silently
     // overrides both the "no API key" and the env-override premises
     // of these tests (config > env). Point the config reader at an
@@ -105,9 +105,9 @@ describe('daemon streaming STT singleton', () => {
 
   test('keeps an explicit config choice even when that id is unusable', () => {
     delete process.env.OPENAI_API_KEY;
-    mkdirSync(join(tmpConfigDir!, 'monad'), { recursive: true });
+    mkdirSync(join(tmpConfigDir!, 'elanous'), { recursive: true });
     writeFileSync(
-      join(tmpConfigDir!, 'monad', 'config.json'),
+      join(tmpConfigDir!, 'elanous', 'config.json'),
       JSON.stringify({ voice: { stt: { provider: 'openai-realtime-stt' } } }),
     );
     expect(resolveDaemonStreamingSttProviderIdForTesting()).toBe('openai-realtime-stt');

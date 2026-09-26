@@ -1,12 +1,12 @@
-// ── monad finance CLI — 네이티브 도메인 로직 CLI 노출 (SSOT·2026-07-22) ──────
+// ── elanous finance CLI — 네이티브 도메인 로직 CLI 노출 (SSOT·2026-07-22) ──────
 //
-// "monad is ALL / SSOT=monad" 북극성: monad 네이티브 로직(sector·verify·score…)을
+// "elanous is ALL / SSOT=elanous" 북극성: elanous 네이티브 로직(sector·verify·score…)을
 // standalone CLI 서브커맨드로 노출 → skill(kr-flow 등)이 자기 python/Conatus 스크립트
-// 대신 `monad finance <x> --json` 을 thin-client 로 호출. ★ 데몬 불필요(one-shot CLI).
+// 대신 `elanous finance <x> --json` 을 thin-client 로 호출. ★ 데몬 불필요(one-shot CLI).
 //
 // 첫 단추 = sector-flow(kr-flow cmd_sector_flow 가 실행하던 Conatus sector_flow.py 대체).
 // 계산 = sector-attractiveness.ts computeSectorScores(rolling·z-score·crude avg 대비 우월).
-// 데이터 = 로컬 screener.db prices(monad 소유·raw 는 skill fetch 계층에서 이미 적재).
+// 데이터 = 로컬 screener.db prices(elanous 소유·raw 는 skill fetch 계층에서 이미 적재).
 
 import { openSectorDb, loadPricesForCodes, SCREENER_DB_PATH } from './sector-store.js';
 import {
@@ -41,7 +41,7 @@ export function computeSectorFlow(opts: {
 
 /** 사람용 텍스트 렌더(순위·모멘텀·폭·종목수). */
 export function renderSectorFlow(r: SectorFlowResult): string {
-  const head = `## KR 섹터 자금흐름 (${r.window}·${r.granularity}·${r.asOf}) [monad SSOT]`;
+  const head = `## KR 섹터 자금흐름 (${r.window}·${r.granularity}·${r.asOf}) [elanous SSOT]`;
   if (!r.sectors.length) return `${head}\n\n  (데이터 부족 — screener.db prices 백필 필요)`;
   const rows = r.sectors.map(s => {
     const arrow = s.mom > 0 ? '🔺' : s.mom < 0 ? '🔻' : '·';

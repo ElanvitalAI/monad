@@ -12,7 +12,7 @@
 //
 // The wrapper lives outside `WizardIO` deliberately — keeps the
 // interface minimal so tests + alternate impls don't grow surface
-// area, and lets `monad setup --non-interactive` skip validation
+// area, and lets `elanous setup --non-interactive` skip validation
 // entirely (CI typically can't reach Telegram's /getMe and would
 // trip the live validator).
 
@@ -107,7 +107,7 @@ export async function askValidated(
     io.print(`  ! ${err}`);
     attempt += 1;
     if (attempt >= max) {
-      io.print('  (max attempts reached — keeping last value; you can re-run `monad setup` later)');
+      io.print('  (max attempts reached — keeping last value; you can re-run `elanous setup` later)');
       return value;
     }
   }

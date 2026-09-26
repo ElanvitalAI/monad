@@ -197,9 +197,9 @@ describe('GoalAskStore', () => {
     const stateRoot = join(mkdtempSync(join(tmpdir(), 'goal-ask-state-root-file-')), 'not-a-directory');
     directories.push(join(stateRoot, '..'));
     writeFileSync(stateRoot, 'not a directory');
-    const previousStateDir = process.env.MONAD_STATE_DIR;
+    const previousStateDir = process.env.ELANOUS_STATE_DIR;
     const log = spyOn(debug, 'log').mockImplementation(() => undefined);
-    process.env.MONAD_STATE_DIR = stateRoot;
+    process.env.ELANOUS_STATE_DIR = stateRoot;
     try {
       expect(recordGoalAsk({ authorRunId: 'author-failed', goalFile: 'docs/goals/failed.md', ask: 'failed ask', document })).toBe(false);
       expect(log).toHaveBeenCalledWith('goal-ledger.read', 'goal-ask-record-failed', {
@@ -208,8 +208,8 @@ describe('GoalAskStore', () => {
       });
       expect(log.mock.calls[0]?.[2]).toMatchObject({ error: expect.stringMatching(/ENOTDIR|not a directory/i) });
     } finally {
-      if (previousStateDir === undefined) delete process.env.MONAD_STATE_DIR;
-      else process.env.MONAD_STATE_DIR = previousStateDir;
+      if (previousStateDir === undefined) delete process.env.ELANOUS_STATE_DIR;
+      else process.env.ELANOUS_STATE_DIR = previousStateDir;
       log.mockRestore();
     }
   });
@@ -227,9 +227,9 @@ describe('GoalAskStore', () => {
     }
 
     const result = Bun.spawnSync({
-      cmd: [process.execPath, 'bin/monad.mjs', 'self', 'goal-asks', '--goal', '0123456789abcdef', '--limit', '1', '--json'],
+      cmd: [process.execPath, 'bin/elanous.mjs', 'self', 'goal-asks', '--goal', '0123456789abcdef', '--limit', '1', '--json'],
       cwd: process.cwd(),
-      env: { ...process.env, MONAD_STATE_DIR: stateDir },
+      env: { ...process.env, ELANOUS_STATE_DIR: stateDir },
       stdout: 'pipe',
       stderr: 'pipe',
     });
@@ -264,9 +264,9 @@ describe('GoalAskStore', () => {
     legacy.close();
 
     const result = Bun.spawnSync({
-      cmd: [process.execPath, 'bin/monad.mjs', 'self', 'goal-asks', '--goal', '0123456789abcdef', '--limit', '1', '--json'],
+      cmd: [process.execPath, 'bin/elanous.mjs', 'self', 'goal-asks', '--goal', '0123456789abcdef', '--limit', '1', '--json'],
       cwd: process.cwd(),
-      env: { ...process.env, MONAD_STATE_DIR: stateDir },
+      env: { ...process.env, ELANOUS_STATE_DIR: stateDir },
       stdout: 'pipe',
       stderr: 'pipe',
     });
@@ -313,9 +313,9 @@ describe('GoalAskStore', () => {
     }
 
     const result = Bun.spawnSync({
-      cmd: [process.execPath, 'bin/monad.mjs', 'self', 'goal-asks', '--goal', '0123456789abcdef', '--limit', '2'],
+      cmd: [process.execPath, 'bin/elanous.mjs', 'self', 'goal-asks', '--goal', '0123456789abcdef', '--limit', '2'],
       cwd: process.cwd(),
-      env: { ...process.env, MONAD_STATE_DIR: stateDir },
+      env: { ...process.env, ELANOUS_STATE_DIR: stateDir },
       stdout: 'pipe',
       stderr: 'pipe',
     });
@@ -331,9 +331,9 @@ describe('GoalAskStore', () => {
     directories.push(stateDir);
     const databasePath = join(stateDir, 'self-implement', 'goal-runs.db');
     const result = Bun.spawnSync({
-      cmd: [process.execPath, 'bin/monad.mjs', 'self', 'goal-asks', '--limit', '1'],
+      cmd: [process.execPath, 'bin/elanous.mjs', 'self', 'goal-asks', '--limit', '1'],
       cwd: process.cwd(),
-      env: { ...process.env, MONAD_STATE_DIR: stateDir },
+      env: { ...process.env, ELANOUS_STATE_DIR: stateDir },
       stdout: 'pipe',
       stderr: 'pipe',
     });

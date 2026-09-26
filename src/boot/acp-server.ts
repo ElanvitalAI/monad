@@ -1,6 +1,6 @@
 // UI-Core arc Phase U4b Step 3 — ACP server boot entry.
 //
-// Handles the `monad --acp-server` CLI flag: parses transport-
+// Handles the `elanous --acp-server` CLI flag: parses transport-
 // selection args and wires the matching listener from
 // `src/acp/transport/*` into `runAcpServer`. Stdio remains the
 // default so the pre-U4b smoke paths keep working; unix-socket
@@ -24,7 +24,7 @@
 // test.
 
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
-import { getMonadConfigDir } from '../monad-config-dir.js';
+import { getElanousConfigDir } from '../elanous-config-dir.js';
 import { dirname, join as joinPath } from 'node:path';
 
 import {
@@ -52,9 +52,9 @@ export interface AcpBootOptions {
   noAuth?: boolean;
 }
 
-/** Default socket path — XDG-ish; `~/.monad/monad.sock`. */
+/** Default socket path — XDG-ish; `~/.elanous/elanous.sock`. */
 export function defaultUnixSocketPath(): string {
-  return joinPath(getMonadConfigDir(), 'monad.sock');
+  return joinPath(getElanousConfigDir(), 'elanous.sock');
 }
 
 /** Default websocket bind port. Mnemonic: π × 10⁴. */
@@ -105,10 +105,10 @@ export function parseAcpBootArgs(argv: readonly string[]): AcpBootOptions {
 }
 
 /** Load or mint a persistent auth token for websocket boot. Stored
- *  at `~/.monad/acp-token` with 0600 perms so the socket-holding
+ *  at `~/.elanous/acp-token` with 0600 perms so the socket-holding
  *  user can bind-mount it into a parent client config. */
 function ensureAuthToken(): { token: string; path: string } {
-  const tokenPath = joinPath(getMonadConfigDir(), 'acp-token');
+  const tokenPath = joinPath(getElanousConfigDir(), 'acp-token');
   mkdirSync(dirname(tokenPath), { recursive: true });
   if (existsSync(tokenPath)) {
     return { token: readFileSync(tokenPath, 'utf-8').trim(), path: tokenPath };
@@ -121,15 +121,15 @@ function ensureAuthToken(): { token: string; path: string } {
 /** Resolved daemon-runtime status surfaced in the startup banner.
  *  Matches the shape returned by `createDaemonRuntime()` so callers
  *  can spread it directly. Lets every transport (stdio / unix-socket
- *  / websocket) print a uniform `[monad-acp] history: ...` +
- *  `[monad-acp] tools: ...` line so the env-var resolution is visible
+ *  / websocket) print a uniform `[elanous-acp] history: ...` +
+ *  `[elanous-acp] tools: ...` line so the env-var resolution is visible
  *  even in stdio mode (where the pre-polish banner was completely
  *  silent). */
 export interface BootRuntimeStatus {
   /** Resolved disk-backed history dir, or undefined for in-memory. */
   historyDir?: string;
   /** Active tool surface kind ('none' | 'readonly'). When omitted or
-   *  'none', the banner says so + hints at MONAD_TOOLS=readonly. */
+   *  'none', the banner says so + hints at ELANOUS_TOOLS=readonly. */
   tools?: string;
   /** Resolved tool cwd when tools !== 'none'. */
   toolCwd?: string;
@@ -148,16 +148,16 @@ function writeRuntimeBanner(
 ): void {
   if (!runtimeStatus) return;
   if (runtimeStatus.historyDir) {
-    stderr.write(`[monad-acp] history: disk-backed at ${runtimeStatus.historyDir}\n`);
+    stderr.write(`[elanous-acp] history: disk-backed at ${runtimeStatus.historyDir}\n`);
   } else {
-    stderr.write(`[monad-acp] history: in-memory (set MONAD_HISTORY_DIR for disk-backed)\n`);
+    stderr.write(`[elanous-acp] history: in-memory (set ELANOUS_HISTORY_DIR for disk-backed)\n`);
   }
   const tools = runtimeStatus.tools;
   if (tools && tools !== 'none') {
     const cwdNote = runtimeStatus.toolCwd ? ` · cwd=${runtimeStatus.toolCwd}` : '';
-    stderr.write(`[monad-acp] tools: ${tools} (Read · Grep · WebSearch${cwdNote})\n`);
+    stderr.write(`[elanous-acp] tools: ${tools} (Read · Grep · WebSearch${cwdNote})\n`);
   } else {
-    stderr.write(`[monad-acp] tools: none (set MONAD_TOOLS=readonly for Read · Grep · WebSearch)\n`);
+    stderr.write(`[elanous-acp] tools: none (set ELANOUS_TOOLS=readonly for Read · Grep · WebSearch)\n`);
   }
 }
 
@@ -185,7 +185,7 @@ export async function bootAcpServer(
     hasSession?: AcpServerOptions['hasSession'];
     /** MT5b polish — daemon-runtime resolution surfaced in the
      *  startup banner. Lets stdio mode visibly confirm
-     *  MONAD_HISTORY_DIR / MONAD_TOOLS env-var resolution (without
+     *  ELANOUS_HISTORY_DIR / ELANOUS_TOOLS env-var resolution (without
      *  this, stdio printed nothing and users couldn't tell whether
      *  their env vars stuck). Pass the values returned by
      *  `createDaemonRuntime()`. */
@@ -201,8 +201,8 @@ export async function bootAcpServer(
   // ⭐ 관측 갭 수리(2026-07-26) — ACP 서버는 nexus 데몬의 StoreSink 를 **상속하지 않는**
   //   별도 프로세스다. 등록 안 하면 이 프로세스의 debug.log(capability.resolve·
   //   daemon-tools.self-implement·tool-hydrated 등)가 파일 트레일에만 남고 logs.db 에 안
-  //   닿아 `monad logs` 로 조회 불가 = **관측 안 한 것**(제1원칙).
-  //   `monad agent` 가 #5441 로 고친 것과 **같은 계열**이며, 여기가 마지막 사각이었다.
+  //   닿아 `elanous logs` 로 조회 불가 = **관측 안 한 것**(제1원칙).
+  //   `elanous agent` 가 #5441 로 고친 것과 **같은 계열**이며, 여기가 마지막 사각이었다.
   //   fail-open: 등록 실패가 서버 부팅을 막지 않는다(파일 트레일이 진실원).
   try {
     const init = deps.initializeLogSink
@@ -254,7 +254,7 @@ export async function bootAcpServer(
       // process is alive and that env-var resolution stuck. Without
       // this, stdio printed 0 bytes and "blinking cursor" was the
       // only signal the server had started.
-      stderr.write(`[monad-acp] starting (transport: stdio)\n`);
+      stderr.write(`[elanous-acp] starting (transport: stdio)\n`);
       writeRuntimeBanner(stderr, runtimeStatus);
       await runAcpServer({
         shutdownSignal: ownSignal,
@@ -268,7 +268,7 @@ export async function bootAcpServer(
     if (opts.transport === 'unix-socket') {
       const socketPath = opts.socketPath ?? defaultUnixSocketPath();
       mkdirSync(dirname(socketPath), { recursive: true });
-      stderr.write(`[monad-acp] listening on unix socket: ${socketPath}\n`);
+      stderr.write(`[elanous-acp] listening on unix socket: ${socketPath}\n`);
       writeRuntimeBanner(stderr, runtimeStatus);
       await runAcpServer({
         transportFactory: (onConnection) =>
@@ -294,8 +294,8 @@ export async function bootAcpServer(
             ]);
             return { authVerifier: verifier, banner: `auth token: ${token} (stored at ${path})` };
           })();
-    stderr.write(`[monad-acp] listening on ws://${host}:${port}/acp\n`);
-    stderr.write(`[monad-acp] ${authPieces.banner}\n`);
+    stderr.write(`[elanous-acp] listening on ws://${host}:${port}/acp\n`);
+    stderr.write(`[elanous-acp] ${authPieces.banner}\n`);
     writeRuntimeBanner(stderr, runtimeStatus);
     await runAcpServer({
       transportFactory: (onConnection) =>

@@ -14,8 +14,8 @@ describe('dashboard TTY guard — 엔터 폭풍 회귀 방어 (2026-09-17)', () 
   test('거부 문면은 «다음에 칠 것»을 댄다 — 스택이 아니라 길을 준다', () => {
     const msg = dashboardTtyRefusalMessage();
     expect(msg).toContain('TTY');
-    expect(msg).toContain('monad ask');
-    expect(msg).toContain('monad repl');
+    expect(msg).toContain('elanous ask');
+    expect(msg).toContain('elanous repl');
     // ⛔ 스택 트레이스를 흉내 내지 않는다(읽히는 실패 계약 · #18720)
     expect(msg).not.toContain('    at ');
   });

@@ -4,7 +4,7 @@ import { adMasterName, adProjectDir, adSubDir } from '../src/ad-pipeline/output-
 const input = { home: '/Users/x', slug: 'umbrella', date: '2026-09-11' };
 
 test('builds the documented project hierarchy from caller-provided home', () => {
-  expect(adProjectDir(input)).toBe('/Users/x/Movies/monad-ad/2026-09-11-umbrella');
+  expect(adProjectDir(input)).toBe('/Users/x/Movies/elanous-ad/2026-09-11-umbrella');
 });
 
 test('builds the documented master filename', () => {
@@ -12,8 +12,8 @@ test('builds the documented master filename', () => {
 });
 
 test('builds clips and frames below the project directory', () => {
-  expect(adSubDir(input, 'clips')).toBe('/Users/x/Movies/monad-ad/2026-09-11-umbrella/clips');
-  expect(adSubDir(input, 'frames')).toBe('/Users/x/Movies/monad-ad/2026-09-11-umbrella/frames');
+  expect(adSubDir(input, 'clips')).toBe('/Users/x/Movies/elanous-ad/2026-09-11-umbrella/clips');
+  expect(adSubDir(input, 'frames')).toBe('/Users/x/Movies/elanous-ad/2026-09-11-umbrella/frames');
 });
 
 test('returns reason-bearing error objects for empty, traversal, and separator slugs without throwing', () => {

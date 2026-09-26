@@ -36,7 +36,7 @@ import { normalizeProviderId } from '../registry/normalize.js';
 import { buildWarnings, type ValidationWarning } from './validation-warnings.js';
 
 /** ⛔ 노드 변종의 SSOT — 도움말·문서가 이 배열에서 «파생»한다.
- *  손으로 목록을 옮겨 적으면 늙는다(2026-09-22 실측: `monad wf --help` 가 13종만 말했고
+ *  손으로 목록을 옮겨 적으면 늙는다(2026-09-22 실측: `elanous wf --help` 가 13종만 말했고
  *  이 배열은 21종을 받고 있었다 — 여덟이 «안내 없이» 살아 있었다). */
 export const WORKFLOW_NODE_VARIANT_KEYS = ['prompt', 'bash', 'skill', 'cft', 'approval', 'if', 'switch', 'iteration', 'classify', 'extract', 'set', 'filter', 'template', 'http', 'showroom', 'scheduleTrigger', 'webhookTrigger', 'discordTrigger', 'telegramTrigger', 'manualTrigger', 'chatTrigger'] as const;
 

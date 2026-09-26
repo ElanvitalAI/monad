@@ -6,17 +6,17 @@ import { join } from 'node:path';
 const repo = process.cwd();
 
 function probe(): { refs: string[]; listing: string; liveRef: boolean; epermRef: boolean; tombstone: boolean; reapedTombstone: boolean; reapedClosedAt: number; rejected: string[]; silent: string; toctou: string; liveSilentReap: string } {
-  const state = mkdtempSync(join(tmpdir(), 'monad-pty-list-liveness-'));
+  const state = mkdtempSync(join(tmpdir(), 'elanous-pty-list-liveness-'));
   const script = `
     import { Database } from 'bun:sqlite';
     import { getPtyManifest, listPtyManifestByRun, markPtyManifestClosed, ptyManifestDbPath, upsertPtyManifest } from ${JSON.stringify(`${repo}/src/pty-shell/pty-manifest.ts`)};
     import { readLivePtyAddressBook, runPtyKey, runPtyList, runPtyResize, runPtyText } from ${JSON.stringify(`${repo}/src/cli/pty-takeover-cli.ts`)};
     const now = Date.now();
     const liveOwner = Bun.spawn(['sleep', '5']);
-    upsertPtyManifest({ id: 'dead-owner', kind: 'tui', cmd: 'monad', startedAt: now, now });
-    upsertPtyManifest({ id: 'live-owner', kind: 'tui', cmd: 'monad', startedAt: now, now });
-    upsertPtyManifest({ id: 'eperm-owner', kind: 'tui', cmd: 'monad', startedAt: now, now });
-    upsertPtyManifest({ id: 'closed-run', kind: 'tui', cmd: 'monad', startedAt: now, now });
+    upsertPtyManifest({ id: 'dead-owner', kind: 'tui', cmd: 'elanous', startedAt: now, now });
+    upsertPtyManifest({ id: 'live-owner', kind: 'tui', cmd: 'elanous', startedAt: now, now });
+    upsertPtyManifest({ id: 'eperm-owner', kind: 'tui', cmd: 'elanous', startedAt: now, now });
+    upsertPtyManifest({ id: 'closed-run', kind: 'tui', cmd: 'elanous', startedAt: now, now });
     markPtyManifestClosed('closed-run', 0, now);
     const db = new Database(ptyManifestDbPath());
     db.run('UPDATE pty_manifest SET owner_pid=?, run_id=? WHERE id=?', [99999999, 'dead-run', 'dead-owner']);
@@ -35,7 +35,7 @@ function probe(): { refs: string[]; listing: string; liveRef: boolean; epermRef:
     const listing = runPtyList().message;
     const refs = listingBook.refs.map((ref) => ref.id);
     const seedDeadOwner = (id: string) => {
-      upsertPtyManifest({ id, kind: 'tui', cmd: 'monad', startedAt: now, now });
+      upsertPtyManifest({ id, kind: 'tui', cmd: 'elanous', startedAt: now, now });
       const seedDb = new Database(ptyManifestDbPath());
       seedDb.run('UPDATE pty_manifest SET owner_pid=? WHERE id=?', [99999999, id]);
       seedDb.close();
@@ -56,7 +56,7 @@ function probe(): { refs: string[]; listing: string; liveRef: boolean; epermRef:
     // ⭐ TOCTOU — owner 는 ref 해석 시점엔 살아 있고(pid 77777777·toctouOwnerDead=false) 요청 도중 죽는다.
     //   해석은 통과 → requestRemote 가 owner-unreachable 반환 → mapResult 가 재-reap → dead-owner 메시지.
     const seedToctou = (id: string) => {
-      upsertPtyManifest({ id, kind: 'tui', cmd: 'monad', startedAt: now, now });
+      upsertPtyManifest({ id, kind: 'tui', cmd: 'elanous', startedAt: now, now });
       const seedDb = new Database(ptyManifestDbPath());
       seedDb.run('UPDATE pty_manifest SET owner_pid=? WHERE id=?', [77777777, id]);
       seedDb.close();
@@ -117,7 +117,7 @@ function probe(): { refs: string[]; listing: string; liveRef: boolean; epermRef:
     }));
   `;
   try {
-    const result = Bun.spawnSync(['bun', '--eval', script], { cwd: repo, env: { ...process.env, MONAD_STATE_DIR: state } });
+    const result = Bun.spawnSync(['bun', '--eval', script], { cwd: repo, env: { ...process.env, ELANOUS_STATE_DIR: state } });
     expect(result.exitCode).toBe(0);
     return JSON.parse(new TextDecoder().decode(result.stdout));
   } finally {
@@ -125,7 +125,7 @@ function probe(): { refs: string[]; listing: string; liveRef: boolean; epermRef:
   }
 }
 
-describe('monad pty list liveness', () => {
+describe('elanous pty list liveness', () => {
   test('reaps dead owners before listing, retains live owners and closed tombstones, and refuses the hidden ref', () => {
     const result = probe();
     expect(result.refs).not.toContain('dead-owner');
@@ -133,7 +133,7 @@ describe('monad pty list liveness', () => {
     expect(result.liveRef).toBe(true);
     expect(result.epermRef).toBe(true);
     expect(result.tombstone).toBe(true);
-    // reap must lay the row down, not remove it: \`monad self run <runId>\` still joins it.
+    // reap must lay the row down, not remove it: \`elanous self run <runId>\` still joins it.
     expect(result.reapedTombstone).toBe(true);
     // closed_at must be stamped, or the grace-TTL purge reads the row as ancient.
     expect(result.reapedClosedAt).toBeGreaterThan(0);

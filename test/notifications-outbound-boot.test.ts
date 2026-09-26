@@ -16,8 +16,8 @@ import type { ApnsTransport } from '../src/showroom/outbound/channels/ios-push.j
 const STUB_CFG: ApnsUserConfig = {
   keyId: 'KID1234567',
   teamId: 'TID1234567',
-  bundleId: 'com.monad.app',
-  keyPath: '~/.monad/apns.p8',
+  bundleId: 'com.elanous.app',
+  keyPath: '~/.elanous/apns.p8',
 };
 
 function stubTransport(): ApnsTransport {
@@ -26,8 +26,8 @@ function stubTransport(): ApnsTransport {
 
 describe('expandHome', () => {
   test('expands leading ~/', () => {
-    const out = expandHome('~/.monad/apns.p8');
-    expect(out.endsWith('/.monad/apns.p8')).toBe(true);
+    const out = expandHome('~/.elanous/apns.p8');
+    expect(out.endsWith('/.elanous/apns.p8')).toBe(true);
     expect(out.startsWith('~')).toBe(false);
   });
 
@@ -145,11 +145,11 @@ describe('buildOutboundSubstrate · with apns config', () => {
       readKeyFile: (p) => { reads.push(p); return '----- PEM CONTENT -----'; },
       createApnsTransportFn: (opts) => { factoryCalls.push(opts); return stubTransport(); },
     });
-    expect(reads).toEqual(['~/.monad/apns.p8']);
+    expect(reads).toEqual(['~/.elanous/apns.p8']);
     expect(factoryCalls.length).toBe(1);
     expect(factoryCalls[0]!.keyId).toBe('KID1234567');
     expect(factoryCalls[0]!.teamId).toBe('TID1234567');
-    expect(factoryCalls[0]!.bundleId).toBe('com.monad.app');
+    expect(factoryCalls[0]!.bundleId).toBe('com.elanous.app');
     expect(factoryCalls[0]!.keyPem).toBe('----- PEM CONTENT -----');
     expect(sub.apnsBootSkippedReason).toBeUndefined();
   });
@@ -231,7 +231,7 @@ describe('OutboundRouter end-to-end via substrate', () => {
       id: 'e1',
       source: 'showroom',
       urgency: 'normal',
-      title: 'monad nudge',
+      title: 'elanous nudge',
       body: 'continue?',
       ts: 2,
     });
@@ -239,6 +239,6 @@ describe('OutboundRouter end-to-end via substrate', () => {
     expect(outcome.delivered[0]!.channel).toBe('ios-push');
     expect(received).not.toBeNull();
     expect(received!.token).toBe('cafebabe');
-    expect(received!.alertTitle).toBe('monad nudge');
+    expect(received!.alertTitle).toBe('elanous nudge');
   });
 });

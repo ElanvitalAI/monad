@@ -1,10 +1,10 @@
-// `monad mcp reload` — 도는 데몬의 MCP 클라이언트만 다시 세운다.
+// `elanous mcp reload` — 도는 데몬의 MCP 클라이언트만 다시 세운다.
 //
 // 대표 2026-09-10: *"그런데 왜 재부팅해야만 리로드 되게끔 구조가 되어 있나요?"*
 //
 // 이 CLI 는 `POST /v1/nexus/admin/mcp-reload` 한 발이다. 데몬이 config 를 다시
 // 읽고(`reloadUserConfig`) 옛 클라이언트를 내린 뒤 새로 등록한다. OAuth 토큰은
-// 저장소(`auth.json`)에서 «호출 때마다» 읽히므로 `monad mcp login` 직후
+// 저장소(`auth.json`)에서 «호출 때마다» 읽히므로 `elanous mcp login` 직후
 // 이 명령 하나로 자격증명까지 살아난다.
 //
 // ⛔ 데몬이 없으면 재장전할 대상이 없다 — 그건 오류가 아니라 «상태»이므로
@@ -13,7 +13,7 @@
 
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { getMonadConfigDir } from '../monad-config-dir.js';
+import { getElanousConfigDir } from '../elanous-config-dir.js';
 
 const DEFAULT_NEXUS_BASE = 'http://127.0.0.1:31415';
 const ADMIN_MCP_RELOAD_PATH = '/v1/nexus/admin/mcp-reload';
@@ -27,7 +27,7 @@ interface ServerRow {
 
 /** Fail-soft read of the loopback ACP token the rest of the CLI already uses. */
 function readAcpToken(): string | null {
-  const tokenPath = join(getMonadConfigDir(), 'acp-token');
+  const tokenPath = join(getElanousConfigDir(), 'acp-token');
   try {
     if (!existsSync(tokenPath)) return null;
     const token = readFileSync(tokenPath, 'utf8').trim();
@@ -83,7 +83,7 @@ export async function runMcpReload(opts: McpReloadCliOpts = {}): Promise<McpRelo
   } catch (err: unknown) {
     out.error(`✗ NEXUS 데몬에 닿지 못했습니다 (${url})`);
     out.error(`  ${err instanceof Error ? err.message : String(err)}`);
-    out.error('  데몬이 없으면 재장전할 대상도 없습니다 — `monad nexus run` 으로 띄우면 기동 경로가 config 를 새로 읽습니다.');
+    out.error('  데몬이 없으면 재장전할 대상도 없습니다 — `elanous nexus run` 으로 띄우면 기동 경로가 config 를 새로 읽습니다.');
     return { exitCode: 1 };
   }
 
@@ -111,7 +111,7 @@ export async function runMcpReload(opts: McpReloadCliOpts = {}): Promise<McpRelo
     //       없애는 코드를 «싣는» 재부팅」이다. 그 뒤로는 다시 필요 없다.
     if (res.status === 404 || res.status === 405) {
       out.error('  이 데몬은 mcp-reload 배선 «없이» 떴습니다 — 한 번만 재부팅하면 그 뒤로는 이 명령이 듭니다:');
-      out.error('    launchctl kickstart -k "gui/$(id -u)/com.monad.nexus"');
+      out.error('    launchctl kickstart -k "gui/$(id -u)/com.elanous.nexus"');
     }
     return { exitCode: 1 };
   }

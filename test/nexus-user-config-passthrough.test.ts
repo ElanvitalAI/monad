@@ -13,16 +13,16 @@ import { describe, test, expect, beforeEach, afterEach } from 'bun:test';
 import { mkdtempSync, rmSync, writeFileSync, readFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { setMonadConfigDir, resetMonadConfigDir } from '../src/monad-config-dir.js';
+import { setElanousConfigDir, resetElanousConfigDir } from '../src/elanous-config-dir.js';
 
 let root: string;
 
 beforeEach(() => {
   root = mkdtempSync(join(tmpdir(), 'nexus-user-config-pt-'));
-  setMonadConfigDir(root);
+  setElanousConfigDir(root);
 });
 afterEach(() => {
-  resetMonadConfigDir();
+  resetElanousConfigDir();
   rmSync(root, { recursive: true, force: true });
 });
 

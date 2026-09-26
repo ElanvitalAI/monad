@@ -1,7 +1,7 @@
 // nexus-dist-endpoints.test.ts — Stage B IPA + manifest OTA endpoints.
 //
 // Validates the manifest.plist generator + the dist.json gating logic
-// without touching disk for the real ~/.monad/dist (the handlers read
+// without touching disk for the real ~/.elanous/dist (the handlers read
 // from there via path-resolved fs calls; we exercise the pure builders
 // + a tmp directory swap via DIST_DIR is intentionally NOT done here —
 // instead we test the building blocks that don't depend on disk and
@@ -18,21 +18,21 @@ import {
 } from '../src/nexus/api/dist';
 
 const SAMPLE: DistMeta = {
-  file: 'MonadiOS.ipa',
-  bundleId: 'com.elanvitalai.monad.ios',
+  file: 'ElanousiOS.ipa',
+  bundleId: 'com.elanvitalai.elanous.ios',
   version: '1.0',
   build: '1',
-  title: 'Monad',
+  title: 'Elanous',
   publishedAt: '2026-05-18T03:00:00.000Z',
 };
 
 describe('buildManifestXml', () => {
   test('embeds bundle-identifier · version · title · IPA URL', () => {
-    const xml = buildManifestXml(SAMPLE, 'https://example.ts.net:31415/v1/dist/MonadiOS.ipa');
-    expect(xml).toContain('<key>bundle-identifier</key><string>com.elanvitalai.monad.ios</string>');
+    const xml = buildManifestXml(SAMPLE, 'https://example.ts.net:31415/v1/dist/ElanousiOS.ipa');
+    expect(xml).toContain('<key>bundle-identifier</key><string>com.elanvitalai.elanous.ios</string>');
     expect(xml).toContain('<key>bundle-version</key><string>1.0</string>');
-    expect(xml).toContain('<key>title</key><string>Monad</string>');
-    expect(xml).toContain('https://example.ts.net:31415/v1/dist/MonadiOS.ipa');
+    expect(xml).toContain('<key>title</key><string>Elanous</string>');
+    expect(xml).toContain('https://example.ts.net:31415/v1/dist/ElanousiOS.ipa');
     expect(xml).toContain('<key>kind</key><string>software-package</string>');
   });
 
@@ -88,7 +88,7 @@ describe('handleDistIpa · path safety', () => {
 });
 
 describe('handlers without published artifact', () => {
-  // These tests intentionally run without a real ~/.monad/dist/dist.json
+  // These tests intentionally run without a real ~/.elanous/dist/dist.json
   // present from the CI workspace (the file is per-user runtime state).
   // We only assert the unhappy-path Response shape — when no IPA has
   // been published the endpoints return 404 / explanatory HTML.

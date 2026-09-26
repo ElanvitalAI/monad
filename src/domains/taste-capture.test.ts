@@ -16,7 +16,7 @@ afterEach(() => setUserConfigOverlay(null));
 describe('parseTasteItems — LLM raw 파싱(순수·fail-soft)', () => {
   test('유효 JSON 배열 파싱', () => {
     const raw = JSON.stringify([
-      { type: 'fact', text: '대표는 monad 오너', confidence: 0.9 },
+      { type: 'fact', text: '대표는 elanous 오너', confidence: 0.9 },
       { type: 'style_pref', text: '간결한 한국어', confidence: 0.7 },
     ]);
     const items = parseTasteItems(raw);

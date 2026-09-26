@@ -2,11 +2,11 @@
 //
 // PLAN: 내부 문서 `PLAN-ios-companion-app-2026-05-08` §2.3 의 Stage A · iOS Companion endpoint
 //       adapt 의 L2 layer (FEATURE doc §1.4 + TEST-SCENARIOS §3.4 의 후속 helper)
-// 형제: apps/ios/MonadiOS/MonadiOS/Shared/NexusEndpoint.swift (L1+L3 land · #2557)
+// 형제: apps/ios/ElanousiOS/ElanousiOS/Shared/NexusEndpoint.swift (L1+L3 land · #2557)
 //
 // L1 = Settings TextField (@AppStorage)
 // L2 = 본 helper · `bun run dev nexus ios-bind` · daemon 현재 host/port 자동 검출 +
-//      `xcrun simctl spawn booted defaults write com.elanvitalai.monad.ios <key> ...`
+//      `xcrun simctl spawn booted defaults write com.elanvitalai.elanous.ios <key> ...`
 //      3 회 (nexusHost · nexusPort · bearerToken)
 // L3 = NexusDiscovery auto-discovery (in-app · 후보 list 순회)
 //
@@ -17,7 +17,7 @@
 // DI seam · test 용:
 //   · spawnSync override (default: node:child_process)
 //   · readRuntime override (default: readNexusRuntime)
-//   · readToken override (default: file read `~/.monad/acp-token`)
+//   · readToken override (default: file read `~/.elanous/acp-token`)
 
 import { spawnSync as defaultSpawnSync } from 'node:child_process';
 import { existsSync, readFileSync } from 'node:fs';
@@ -26,7 +26,7 @@ import { homedir } from 'node:os';
 import { readNexusRuntime, type NexusRuntimeMeta } from '../nexus/runtime.js';
 
 export interface IosBindOpts {
-  /** App bundle id 의 UserDefaults 에 write. default = monad spec. */
+  /** App bundle id 의 UserDefaults 에 write. default = elanous spec. */
   bundleId?: string;
   /** Host 명시 override — runtime sidecar 무시. test/production 동시 실행 또는
    *  stale runtime sidecar 케이스. */
@@ -77,13 +77,13 @@ export interface IosBindResult {
   bundleId: string;
 }
 
-const DEFAULT_BUNDLE_ID = 'com.elanvitalai.monad.ios';
+const DEFAULT_BUNDLE_ID = 'com.elanvitalai.elanous.ios';
 const DEFAULT_HOST_FALLBACK = 'localhost';
 const DEFAULT_PORT_FALLBACK = 31415;
 
-/** `~/.monad/acp-token` 읽기. 부재 시 null. */
+/** `~/.elanous/acp-token` 읽기. 부재 시 null. */
 function defaultReadToken(): string | null {
-  const path = join(homedir(), '.monad', 'acp-token');
+  const path = join(homedir(), '.elanous', 'acp-token');
   if (!existsSync(path)) return null;
   try {
     return readFileSync(path, 'utf-8').trim();
@@ -154,7 +154,7 @@ export function runNexusIosBind(opts: IosBindOpts = {}): IosBindResult {
   } else if (opts.noToken) {
     lines.push(`  token —   (skipped · --no-token)`);
   } else {
-    lines.push(`  token —   (skipped · ~/.monad/acp-token absent)`);
+    lines.push(`  token —   (skipped · ~/.elanous/acp-token absent)`);
   }
 
   let asciiKeyboardOk = true;
@@ -179,8 +179,8 @@ export function runNexusIosBind(opts: IosBindOpts = {}): IosBindResult {
     && (opts.noToken || token.length === 0 || tokenInjected)
     && asciiKeyboardOk && seedPromptOk;
   const header = dryRun
-    ? `monad nexus ios-bind --dry-run · bundle ${bundleId}`
-    : `monad nexus ios-bind · bundle ${bundleId} ${allOk ? '✓' : '✗'}`;
+    ? `elanous nexus ios-bind --dry-run · bundle ${bundleId}`
+    : `elanous nexus ios-bind · bundle ${bundleId} ${allOk ? '✓' : '✗'}`;
   const message = [header, ...lines].join('\n');
 
   return {

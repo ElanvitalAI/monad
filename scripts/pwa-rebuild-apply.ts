@@ -13,7 +13,7 @@ export type PwaRebuildApplyResult =
   | { outcome: 'unavailable'; decision?: Extract<PwaRebuildDecision, { action: 'unavailable' }>; message: string };
 
 async function runNexusBuild(target: string): Promise<void> {
-  const child = Bun.spawn({ cmd: [process.execPath, 'bin/monad.mjs', 'nexus', 'build'], cwd: target, stdout: 'inherit', stderr: 'inherit' });
+  const child = Bun.spawn({ cmd: [process.execPath, 'bin/elanous.mjs', 'nexus', 'build'], cwd: target, stdout: 'inherit', stderr: 'inherit' });
   const exitCode = await child.exited;
   if (exitCode !== 0) throw new Error(`nexus build exited ${exitCode}`);
 }

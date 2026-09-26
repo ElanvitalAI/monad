@@ -1,7 +1,7 @@
 // Archon-port T2.1 (2026-05-08) — workflow runtime types.
 //
 // Mini DAG executor. Source pattern: Archon
-// `packages/workflows/src/{schemas,executor}.ts`. monad subset:
+// `packages/workflows/src/{schemas,executor}.ts`. elanous subset:
 // 5 node types (prompt | bash | skill | cft | approval) and
 // `depends_on` + `when` + `trigger_rule` topology.
 
@@ -338,7 +338,7 @@ export interface ApprovalNode extends DagNodeBase {
 
 /** Surface-unification §B6 (2026-05-11 · n8n ManualTrigger port) —
  *  Manual trigger. Marks a workflow as explicitly run by the user
- *  (dry-run · "▶ Run now" from the editor · CLI `monad wf run <name>`)
+ *  (dry-run · "▶ Run now" from the editor · CLI `elanous wf run <name>`)
  *  rather than fired by an external source. The daemon never auto-
  *  subscribes to it — it exists so the graph has a visible entry
  *  point for the dependent chain. n8n's `maxNodes: 1` convention
@@ -354,7 +354,7 @@ export interface ManualTriggerNode extends DagNodeBase {
 }
 
 /** Surface-unification §B7 (2026-05-11 · n8n ChatTrigger v1 port) —
- *  Chat trigger v1 = webhook mode. monad's `/chat` surface (or any
+ *  Chat trigger v1 = webhook mode. elanous's `/chat` surface (or any
  *  external POST) can fire the workflow via the daemon route
  *  `POST /v1/workflows/<name>/chat`. v1 supports auth = none/bearer,
  *  optional per-session continuity, streaming-response opt-in. v2
@@ -481,7 +481,7 @@ export interface WorkflowDefinition {
 
 /** Source descriptor for a discovered workflow. */
 export interface WorkflowSource {
-  /** 'project' (`<cwd>/.monad/workflows/`), 'global' (`~/.monad/workflows/`),
+  /** 'project' (`<cwd>/.elanous/workflows/`), 'global' (`~/.elanous/workflows/`),
    *  or 'builtin' (`samples/workflows/`). */
   source: 'project' | 'global' | 'builtin';
   /** Absolute path to the YAML file. */
@@ -495,7 +495,7 @@ export interface WorkflowEntry {
 
 /** Inputs to a single node's executor. */
 export interface NodeExecContext {
-  /** User-provided arguments passed to `monad workflow run <name> "<args>"`. */
+  /** User-provided arguments passed to `elanous workflow run <name> "<args>"`. */
   arguments: string;
   /** Run-scoped artifacts directory (auto-created). */
   artifactsDir: string;
@@ -524,12 +524,12 @@ export interface RunWorkflowOpts {
   workflow: WorkflowDefinition;
   arguments: string;
   /** Auto-created if omitted: `<root>/<runId>/artifacts/` where `<root>`
-   *  defaults to `~/.monad/workflows-runs/` but can be overridden via
-   *  the `MONAD_WORKFLOWS_RUNS_DIR` env var (HANDOFF §4.4). */
+   *  defaults to `~/.elanous/workflows-runs/` but can be overridden via
+   *  the `ELANOUS_WORKFLOWS_RUNS_DIR` env var (HANDOFF §4.4). */
   artifactsDir?: string;
   /** Parent directory holding `artifacts/`, `nodes/`, and `run.json`.
    *  Default: `<root>/<runId>/` where `<root>` is
-   *  `MONAD_WORKFLOWS_RUNS_DIR` (when set) or `~/.monad/workflows-runs/`.
+   *  `ELANOUS_WORKFLOWS_RUNS_DIR` (when set) or `~/.elanous/workflows-runs/`.
    *  When set (default or explicit), the executor persists per-node
    *  outputs and a final run summary to disk so the run survives
    *  process restarts and can be inspected post-mortem. Tests that

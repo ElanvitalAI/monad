@@ -110,7 +110,7 @@ describe('agent-loader integration', () => {
   test('loadAgents drops disabled agents (via isDisabled override)', () => {
     // Point the loader at a tmp builtin with 2 agents; disable alpha
     // via the opts.isDisabled hook (so the test doesn't depend on the
-    // real ~/.monad/disabled.json on this machine).
+    // real ~/.elanous/disabled.json on this machine).
     const builtin = mkdtempSync(join(tmpdir(), 'pss-b-'));
     writeFileSync(
       join(builtin, 'alpha.md'),

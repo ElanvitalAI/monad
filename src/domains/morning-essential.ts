@@ -195,6 +195,6 @@ export function buildEssentialMessage(
     parts.push(`\n📄 *상세 리포트*  ·  [HTML](${uploaded.htmlUrl})  ·  [MD](${uploaded.mdUrl})`);
   }
 
-  parts.push('\n_출처: monad finance 종합 (밤사이 자율 루프 종합). 매매는 verify+HITL._');
+  parts.push('\n_출처: elanous finance 종합 (밤사이 자율 루프 종합). 매매는 verify+HITL._');
   return parts.join('\n');
 }

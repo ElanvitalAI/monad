@@ -4,7 +4,7 @@ import { discoverMcpOAuth } from '../src/mcp/mcp-oauth.js';
 // 🔴 이 파일이 무는 실물 (2026-09-10):
 //   Topview 의 protected resource metadata 는 `resource: "https://mcp.topview.ai"` 를 내는데
 //   MCP 엔드포인트는 `https://mcp.topview.ai/mcp` 다. 정확 일치만 보던 옛 검사는
-//   ***그런 서버에 영영 못 붙었다***(`monad mcp login topview` 가 identity-mismatch 로 죽었다).
+//   ***그런 서버에 영영 못 붙었다***(`elanous mcp login topview` 가 identity-mismatch 로 죽었다).
 //
 // ⛔ 그런데 완화가 «보안 성질»을 깨면 안 된다 — 원래 검사가 막던 것은
 //    「악성 서버가 남의 자원 문서를 가리켜 그 자원용 Bearer 를 가로채는 것」이다.

@@ -6,7 +6,7 @@
 # LocalProvider when `user-config.llm.localPresetMode === 'predefined'`
 # (default) and the model id matches a preset's `matches` entry.
 #
-# User override: drop a sibling YAML at `~/.monad/local-llm-presets.yaml`
+# User override: drop a sibling YAML at `~/.elanous/local-llm-presets.yaml`
 # with the same shape — entries with the same `id` win over built-in.
 #
 # Match precedence: registry order. Put more-specific patterns above
@@ -84,7 +84,7 @@ presets:
          → ✅ ***reasoning_tokens = 0*** (3/3) ⊕ 응답이 «결정적»이 된다(세 번 다 동일 산출).
          템플릿이 그 분기를 이미 갖고 있다 — false 면 빈 `<think></think>` 를 미리 닫는다.
          ⛔ 모델 파일이라 재다운로드 시 날아간다. 백업(.bak-<stamp>)을 남기고 적용한다.
-      ⇒ 📌 그래서 monad 쪽 off-switch 는 여전히 `/no_think` 가 «유일한 수단»이고, 완전한 차단은
+      ⇒ 📌 그래서 elanous 쪽 off-switch 는 여전히 `/no_think` 가 «유일한 수단»이고, 완전한 차단은
          모델 템플릿 축이다. 이 둘은 «다른 층»이므로 하나로 대체되지 않는다.
 
   # ── DeepSeek-R1 thinking ──
@@ -143,7 +143,7 @@ presets:
     matches:
       - pattern: ".*"
         regex: true
-    source: "monad legacy LocalProvider defaults"
+    source: "elanous legacy LocalProvider defaults"
     sampling:
       temperature: 0.3
     output:

@@ -8,14 +8,14 @@
 //
 // Why in-process (parallel to V2.2-3 reasoning): the HANDOFF chose
 // subprocess + HTTP IPC assuming the channel-bot kind worked, but
-// `monad telegram` standalone runner was deleted as part of the
+// `elanous telegram` standalone runner was deleted as part of the
 // 2026-05-08 hardlanding cycle. The personal-agent scale doesn't
 // need subprocess isolation. The workflow runtime side only sees
 // `dispatchTelegram(event)` so a future v2 can swap to subprocess +
 // HTTP IPC without touching the workflow side.
 //
 // Distinct from HITL Telegram bot (`hitl-telegram-channel.ts`):
-//   • HITL bot    = MONAD_TELEGRAM_HITL_BOT_TOKEN · interaction-only
+//   • HITL bot    = ELANOUS_TELEGRAM_HITL_BOT_TOKEN · interaction-only
 //   • Trigger bot = cfg.telegram.botToken          · message tap
 // Production typically uses two separate Telegram bots so the
 // allowlists / chat scopes don't bleed.
@@ -40,7 +40,7 @@ import { formatTablesAndRules } from '../../discord-markdown.js';
 export interface NexusTelegramTriggerBotOpts {
   /** Bot token (without `Bot ` prefix). Production reads
    *  `cfg.telegram.botToken` (env-bridge populates from
-   *  `MONAD_TELEGRAM_BOT_TOKEN` when set). */
+   *  `ELANOUS_TELEGRAM_BOT_TOKEN` when set). */
   token: string;
   /** Allowlist of Telegram user ids — empty array refuses everyone
    *  (see `src/telegram.ts` allowedUsers gate). */
@@ -71,7 +71,7 @@ export interface NexusTelegramTriggerBotOpts {
    *  of answering from memory. Only meaningful alongside `userConfig`. */
   runTurnImpl?: typeof runTurn;
   /** `false` 면 폴링(`getUpdates`)을 시작하지 않는다 — 배달 싱크만 등록하는 «보내기 전용» 봇.
-   *  폴링을 넥서스 밖(`monad telegram run`)이 맡을 때, core 에서 시작한 턴이 텔레그램 구독자에게 가는 길이다. */
+   *  폴링을 넥서스 밖(`elanous telegram run`)이 맡을 때, core 에서 시작한 턴이 텔레그램 구독자에게 가는 길이다. */
   poll?: boolean;
 }
 

@@ -238,7 +238,7 @@ export function renderLwcPage(candles: readonly Candlestick[], script: string, o
     + `<div style="font-size:11px;font-weight:400;margin-top:1px;color:#8b949e">`
     + `${escapeHtmlText(v.preset)} · ${escapeHtmlText(v.asOf)} 기준</div>`;
   const overlay = title === '' && legend.length === 0 && v === undefined ? '' :
-    `<div data-monad-overlay style="position:absolute;left:12px;top:10px;z-index:5;pointer-events:none;`
+    `<div data-elanous-overlay style="position:absolute;left:12px;top:10px;z-index:5;pointer-events:none;`
     + `font:600 15px/1.45 -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:#e6edf3">`
     + (title === '' ? '' : `<div>${escapeHtmlText(title)}</div>`)
     + (legend.length === 0 ? '' :
@@ -247,12 +247,12 @@ export function renderLwcPage(candles: readonly Candlestick[], script: string, o
         + `</div>`)
     + verdictHtml
     + `</div>`;
-  return `<!doctype html><html><head><meta charset="utf-8"><title>monad chart</title></head>`
-    + `<body style="margin:0;background:${bg}"><div id="monad-chart" style="position:relative;width:100vw;height:100vh"></div>`
+  return `<!doctype html><html><head><meta charset="utf-8"><title>elanous chart</title></head>`
+    + `<body style="margin:0;background:${bg}"><div id="elanous-chart" style="position:relative;width:100vw;height:100vh"></div>`
     + overlay
     + `<script>${escapeForScriptTag(script)}</script>`
     + `<script>(() => {
-  const el = document.getElementById('monad-chart');
+  const el = document.getElementById('elanous-chart');
   const chart = LightweightCharts.createChart(el, {
     layout: { background: { color: ${jsonForScriptTag(bg)} }, textColor: '#c9d1d9' },
     grid: { vertLines: { color: '#21262d' }, horzLines: { color: '#21262d' } },
@@ -275,7 +275,7 @@ export function renderLwcPage(candles: readonly Candlestick[], script: string, o
   chart.timeScale().fitContent();
   // 🔑⭐ ***좌표를 「차트에게 묻는」 문*** — 이것이 이 갈래의 전부다.
   //    ⛔ 축을 추정하지 않는다. 못 풀면 null 을 그대로 돌려준다(모르는 것을 0 으로 접지 않는다).
-  window.__monadChartProbe = (wanted) => {
+  window.__elanousChartProbe = (wanted) => {
     try {
       const rect = el.getBoundingClientRect();
       return JSON.stringify({
@@ -302,7 +302,7 @@ export function renderLwcPage(candles: readonly Candlestick[], script: string, o
  */
 export function overlayProbeExpression(): string {
   return `(() => { try {
-    const el = document.querySelector('[data-monad-overlay]');
+    const el = document.querySelector('[data-elanous-overlay]');
     if (!el) return JSON.stringify({ ok: false, reason: '오버레이가 DOM 에 «없다»' });
     const r = el.getBoundingClientRect();
     return JSON.stringify({ ok: true, width: Math.round(r.width), height: Math.round(r.height),
@@ -342,7 +342,7 @@ export function interpretOverlayProbe(raw: unknown): OverlayVerdict {
 
 /** 차트에 물을 표현식. 순수 — 시험이 그 문자열을 «직접» 문다. */
 export function probeExpression(wanted: readonly { time: number; price: number }[]): string {
-  return `window.__monadChartProbe ? window.__monadChartProbe(${jsonForScriptTag(wanted)})`
+  return `window.__elanousChartProbe ? window.__elanousChartProbe(${jsonForScriptTag(wanted)})`
     + ` : JSON.stringify({ ok: false, reason: '차트가 «아직» 안 떴다(또는 다른 페이지다)' })`;
 }
 

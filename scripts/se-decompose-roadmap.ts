@@ -1,6 +1,6 @@
 #!/usr/bin/env bun
 // ── Self-Evolution · 로드맵 → 멀티페이즈 플랜 분해 (기존 TOX 재사용·2026-07-11) ──
-// 발굴된 미구현 로드맵을 monad 의 정식 TOX TaskGenerator.decompose() 로 분해한다.
+// 발굴된 미구현 로드맵을 elanous 의 정식 TOX TaskGenerator.decompose() 로 분해한다.
 // 새 분해기 금지 — 기존 엔진(dependsOn 그래프·acceptance 검증·재귀·비용) 재사용.
 // 프롬프트는 4대 에이전트 패턴 보강본(generator-prompt.ts). 사용: bun scripts/se-decompose-roadmap.ts <내부 문서 `ROADMAP-*`>
 
@@ -20,7 +20,7 @@ const openItems = text.split('\n').filter(l => /^\s*[-*]\s*\[ \]/.test(l))
 const title = (text.match(/^#\s*(.+)$/m)?.[1] ?? docArg).trim();
 
 const objective = [
-  `내부 미구현 로드맵 "${title}"(${docArg})을 monad 에 구현한다.`,
+  `내부 미구현 로드맵 "${title}"(${docArg})을 elanous 에 구현한다.`,
   `미완 항목 ${openItems.length}개(발췌):`,
   ...openItems.map((it, i) => `  ${i + 1}. ${it}`),
   '',

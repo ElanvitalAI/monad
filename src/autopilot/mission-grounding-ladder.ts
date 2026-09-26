@@ -230,7 +230,7 @@ export function parseAssess(raw: string, curTierIdx: number): { confidence: Conf
 async function defaultAssess(prompt: string): Promise<string> {
   const { streamLLM } = await import('../llm.js');
   return streamLLM([{ role: 'user', content: prompt }], () => {}, {
-    model: process.env.MONAD_GROUNDING_ASSESS_MODEL || process.env.MONAD_DECOMPOSE_MODEL || tierModel('better'),
+    model: process.env.ELANOUS_GROUNDING_ASSESS_MODEL || process.env.ELANOUS_DECOMPOSE_MODEL || tierModel('better'),
     reasoningEffort: 'low',
   });
 }
@@ -285,8 +285,8 @@ export async function adaptiveGround(
 ): Promise<GroundingResult> {
   const repoRoot = deps.repoRoot ?? process.cwd();
   // 기본 maxTier=5(external 도달 가능·G3). 단 external 은 self-assess 가 명시 지목할 때만(비쌈·정말
-  //   필요시). env MONAD_GROUNDING_MAX_TIER=4 로 외부조사 끄기(내부만). 예산 가드=에스컬레이트 상한 3.
-  const envMax = Number(process.env.MONAD_GROUNDING_MAX_TIER);
+  //   필요시). env ELANOUS_GROUNDING_MAX_TIER=4 로 외부조사 끄기(내부만). 예산 가드=에스컬레이트 상한 3.
+  const envMax = Number(process.env.ELANOUS_GROUNDING_MAX_TIER);
   const maxTierIdx = Math.min(Math.max((deps.maxTier ?? (Number.isFinite(envMax) ? envMax : 5)) - 1, 0), GROUNDING_TIERS.length - 1);
   const symbols = ctx.symbols ?? extractSymbols(`${query}\n${(ctx.acceptance ?? []).join('\n')}\n${(ctx.seedFiles ?? []).join('\n')}`);
   const parts: string[] = [];

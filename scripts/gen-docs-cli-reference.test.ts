@@ -10,14 +10,14 @@ import {
 } from './gen-docs-cli-reference.js';
 
 function storedDocument(names: readonly string[], rest: readonly string[] = []): string {
-  const rows = names.map((name) => `| \`monad ${name}\` | — | desc |`).join('\n');
-  const leftover = rest.map((name) => `- \`monad ${name}\` — leftover`).join('\n');
+  const rows = names.map((name) => `| \`elanous ${name}\` | — | desc |`).join('\n');
+  const leftover = rest.map((name) => `- \`elanous ${name}\` — leftover`).join('\n');
   return `# CLI 레퍼런스\n\n| 명령 | 하위 | 무엇을 하나 |\n|---|---:|---|\n${rows}\n${leftover ? `\n## 아직 절에 못 넣은 것\n${leftover}\n` : ''}`;
 }
 
 function helpFor(names: readonly string[]): string {
   const rows = names.map((name) => `  ${name}  description of ${name}`).join('\n');
-  return `Usage: monad [options] [command]\n\nCommands:\n${rows}\n  help  display help\n`;
+  return `Usage: elanous [options] [command]\n\nCommands:\n${rows}\n  help  display help\n`;
 }
 
 describe('commandListDrift', () => {
@@ -62,11 +62,11 @@ describe('renderReference', () => {
     expect(markdown).toContain('## 하니스 — 골을 쏘고 런을 몬다');
     expect(markdown).toContain('| 명령 | 하위 | 무엇을 하나 |');
     expect(markdown).toContain('|---|---:|---|');
-    expect(markdown).toContain('| `monad harness` | 18 | dev-harness worktree 수명 |');
-    expect(markdown).toContain('| `monad dev` (`drive`) | — | drive alias |');
+    expect(markdown).toContain('| `elanous harness` | 18 | dev-harness worktree 수명 |');
+    expect(markdown).toContain('| `elanous dev` (`drive`) | — | drive alias |');
     expect(markdown).toContain('## 아직 절에 못 넣은 것');
     expect(markdown).toContain('> ⚠️ 이 목록이 비지 않으면 `SECTIONS` 가 실물보다 낡은 것이다 — 절을 늘려라.');
-    expect(markdown).toContain('- `monad questions` — AskUserQuestion 대기');
+    expect(markdown).toContain('- `elanous questions` — AskUserQuestion 대기');
     expect(SECTIONS.map((section) => section.names).flat()).toContain('harness');
     expect(SECTIONS.map((section) => section.names).flat()).not.toContain('questions');
   });
@@ -144,7 +144,7 @@ describe('runGenDocsCliReference --check-names', () => {
     expect(calls).toContainEqual(['questions', '--help']);
     const markdown = chunks.join('');
     expect(markdown.startsWith('# CLI 레퍼런스\n')).toBe(true);
-    expect(markdown).toContain('| `monad harness` | 1 | description of harness |');
-    expect(markdown).toContain('- `monad questions` — description of questions');
+    expect(markdown).toContain('| `elanous harness` | 1 | description of harness |');
+    expect(markdown).toContain('- `elanous questions` — description of questions');
   });
 });

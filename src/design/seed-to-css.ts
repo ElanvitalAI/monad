@@ -1,7 +1,7 @@
 /**
  * seed-to-css.ts — 씨앗(`DESIGN.md`) → ***CSS 토큰***.
  *
- * ⛔⭐ 왜 있나 — 2026-09-10 🅕 실측: `monadweb` 을 다시 지을 때 내가
+ * ⛔⭐ 왜 있나 — 2026-09-10 🅕 실측: `elanousweb` 을 다시 지을 때 내가
  *    `--u: clamp(7px, 0.703vw, 9px)` 을 ***손으로 계산했다***. 그건 드리프트가 나는 자리다
  *    (씨앗을 다시 뽑으면 그 수가 바뀌는데 CSS 는 안 바뀐다).
  *
@@ -194,7 +194,7 @@ export function buildTokensCss(seed: string, meta: { source?: string; measuredAt
   noteUnread('`## Motion`', report.motion);
   const L: string[] = [
     '/* tokens.css — ⛔ 이 파일은 «씨앗에서 생성»된다. 손으로 고치지 마라.',
-    `   생성: monad repo design-css${meta.source ? ` (출처 ${meta.source})` : ''}`,
+    `   생성: elanous repo design-css${meta.source ? ` (출처 ${meta.source})` : ''}`,
     meta.measuredAt ? `   씨앗을 잰 때: ${meta.measuredAt}` : '   ⚪ 씨앗을 «언제» 쟀는지 모른다',
     '   ⭐ 여기 있는 것은 «잰 값»뿐이다 — 이름·의도·컴포넌트 규칙은 사람이 채운다. */',
     ':root {',

@@ -12,7 +12,7 @@ import {
 import type { UserConfig as NexusUserConfig } from '../src/nexus/config/types.js';
 
 function makeMainCfg(): MainUserConfig {
-  const root = mkdtempSync(joinPath(tmpdir(), 'monad-setup-status-'));
+  const root = mkdtempSync(joinPath(tmpdir(), 'elanous-setup-status-'));
   try {
     return buildUserConfig(joinPath(root, 'missing.json'));
   } finally {
@@ -146,14 +146,14 @@ describe('Q.1 · checkSetupStatus', () => {
     });
     const hintFor = (id: string) => [...result.required, ...result.recommended].find((item) => item.id === id)?.hint;
 
-    expect(hintFor('llm')).toContain('monad setup llm');
-    expect(hintFor('llm')).toContain('monad nexus');
+    expect(hintFor('llm')).toContain('elanous setup llm');
+    expect(hintFor('llm')).toContain('elanous nexus');
     expect(hintFor('skill-dirs')).toContain('create the missing skill directories');
     expect(hintFor('skill-dirs')).toContain('choose an already-existing skill directory');
-    expect(hintFor('skill-dirs')).not.toContain('monad setup skills');
-    expect(hintFor('channel-bot')).toContain('monad nexus channel-bot setup telegram|discord');
+    expect(hintFor('skill-dirs')).not.toContain('elanous setup skills');
+    expect(hintFor('channel-bot')).toContain('elanous nexus channel-bot setup telegram|discord');
     for (const id of ['llm', 'skill-dirs', 'channel-bot']) {
-      expect(hintFor(id)).toContain('monad setup --non-interactive --config <ans.json>');
+      expect(hintFor(id)).toContain('elanous setup --non-interactive --config <ans.json>');
     }
   });
 
@@ -179,7 +179,7 @@ describe('Q.1 · checkSetupStatus', () => {
     const renderedItem = (label: string) => out.lines.find((line) => line.includes(label));
 
     for (const label of ['LLM provider', 'Skill dirs', 'Channel bot']) {
-      expect(renderedItem(label)).toContain('monad setup --non-interactive --config <ans.json>');
+      expect(renderedItem(label)).toContain('elanous setup --non-interactive --config <ans.json>');
     }
     for (const label of ['PWA build', 'OS install']) {
       expect(renderedItem(label)).not.toContain('--non-interactive');
@@ -214,7 +214,7 @@ describe('Q.1 · checkSetupStatus', () => {
     expect(skillDirs?.detail).toBe('1 dir · 0 exist · missing: /missing/skills');
     expect(skillDirs?.hint).toContain('create');
     expect(skillDirs?.hint).toContain('choose an already-existing skill directory');
-    expect(skillDirs?.hint).toContain('monad setup --non-interactive --config <ans.json>');
+    expect(skillDirs?.hint).toContain('elanous setup --non-interactive --config <ans.json>');
   });
 
   test('one of two skill dirs exists → skill-dirs passes with missing detail', () => {
@@ -259,11 +259,11 @@ describe('Q.1 · checkSetupStatus', () => {
     const result: SetupCheckResult = {
       ok: false,
       required: [
-        { id: 'llm', label: 'LLM provider', passed: false, hint: 'run `monad setup llm`' },
-        { id: 'pwa-build', label: 'PWA build', passed: true, hint: 'run `monad nexus build`' },
+        { id: 'llm', label: 'LLM provider', passed: false, hint: 'run `elanous setup llm`' },
+        { id: 'pwa-build', label: 'PWA build', passed: true, hint: 'run `elanous nexus build`' },
       ],
       recommended: [
-        { id: 'channel-bot', label: 'Channel bot', passed: false, hint: 'run `monad nexus channel-bot setup telegram|discord`' },
+        { id: 'channel-bot', label: 'Channel bot', passed: false, hint: 'run `elanous nexus channel-bot setup telegram|discord`' },
       ],
     };
     const out = sink();

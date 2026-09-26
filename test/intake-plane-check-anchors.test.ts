@@ -50,7 +50,7 @@ test('document mode derives the ruler once for preprocessing, contrast and compa
   const reads: string[] = [];
   await runIntakeCheckDocument([], {
     ...fixture(reads),
-    preprocess: () => JSON.stringify({ claims: [{ text: `monad 에 \`${cmd}\` 가 있다`, quote: 'q', lens: 'L1 능력' }], discards: [] }),
+    preprocess: () => JSON.stringify({ claims: [{ text: `elanous 에 \`${cmd}\` 가 있다`, quote: 'q', lens: 'L1 능력' }], discards: [] }),
     compare: async () => JSON.stringify({ proposals: [] }),
   }, { document: 'external note' });
   expect(reads.filter((path) => path.endsWith('external-commands.yaml'))).toHaveLength(1);
@@ -63,8 +63,8 @@ test('production preprocess prompt lists existing names and asks for enhancement
     streamLLM: async (messages) => { prompt = messages[0]?.content ?? ''; return emptyPreprocess; },
   });
   await stages.preprocess({ document: '문서', lenses: ['L1 능력'], anchors: [cmd, recipe] });
-  expect(prompt).toContain(`monad 에 이미 있는 명령·능력 이름: ${cmd} · ${recipe}`);
+  expect(prompt).toContain(`elanous 에 이미 있는 명령·능력 이름: ${cmd} · ${recipe}`);
   expect(prompt).toContain('대응이 이미 있어도 버리지 않는다');
   await stages.preprocess({ document: '문서', lenses: ['L1 능력'] });
-  expect(prompt).not.toContain('monad 에 이미 있는 명령·능력 이름');
+  expect(prompt).not.toContain('elanous 에 이미 있는 명령·능력 이름');
 });

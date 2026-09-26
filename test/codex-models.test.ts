@@ -11,7 +11,7 @@ describe('codex model catalog', () => {
   test('has exactly 8 curated entries', () => {
     // #1450 added the gpt-5.5 flagship entry, growing the curated catalog
     // from 5 → 6. 2026-09-09 added gpt-6-astra (2026-09-03 release) and
-    // gpt-5.6-terra (monad's actual default driver): 6 → 8.
+    // gpt-5.6-terra (elanous's actual default driver): 6 → 8.
     // 2026-09-23: ***죽은 둘을 빼고 GPT-6 둘을 넣었다*** — 순증 0 이라 8 그대로다.
     //   뺀 것: `gpt-5-codex-mini` · `codex-mini-latest` — ***API 에도 구독 카탈로그에도 없었다***
     //          (라이브 대조: `bun scripts/check-codex-picker-models.ts`).
@@ -21,12 +21,12 @@ describe('codex model catalog', () => {
     expect(CODEX_MODELS.length).toBe(8);
   });
 
-  test('the recommended entry is the model monad actually defaults to', () => {
+  test('the recommended entry is the model elanous actually defaults to', () => {
     // ⛔ 이 표의 recommended 는 「가장 센 것」이 아니라 「기본으로 골라도 되는 것」이다.
     //    2026-09-09 이전에는 두 세대 전 gpt-5.5 가 앉아 있었다.
     //
     // ⭐⭐ 2026-09-23 — 종전엔 이 줄이 `'gpt-5.6-terra'` 를 «박고» 있었다. ***이름은
-    //   「monad 가 실제로 쓰는 기본값인가」인데 본문은 «그날의 값»을 물었다.*** 그래서
+    //   「elanous 가 실제로 쓰는 기본값인가」인데 본문은 «그날의 값»을 물었다.*** 그래서
     //   기본값이 의도대로 움직이자(대표 → gpt-6-sol) 이름이 맞는데도 빨개졌다.
     //   ⇒ ***이름대로 «파생»시킨다.*** 기본값을 어디로 옮기든 이 줄은 같은 뜻을 유지한다.
     expect(defaultCodexModel().id).toBe(CODEX_DEFAULT_MODEL);

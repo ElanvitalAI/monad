@@ -4,7 +4,7 @@
 // 대표 지적: 세션 대량 정비 후 회고 루프가 전혀 안 돌았다 — M1-M5 기억 생애주기 코드는
 // 있으나 스케줄 배선이 없었다. 이 스크립트가 그 루프를 복구한다(decay→consolidate→
 // archive→prune·전 단계 arm·대표 승인). 새벽 수면창(idle)에 1회.
-//   등록: monad schedule create --cron '0 3 * * *' --command 'scripts/memory-lifecycle-cycle.ts'
+//   등록: elanous schedule create --cron '0 3 * * *' --command 'scripts/memory-lifecycle-cycle.ts'
 
 import { ensureCronNodePath } from '../src/domains/cron-path.js';
 ensureCronNodePath();
@@ -24,7 +24,7 @@ import { runMemoryLifecycle, summarizeLifecycle } from '../src/domains/memory-li
 import { recordAutonomousActionSafe } from '../src/domains/autonomy-log.js';
 import { sendOutbound } from '../src/domains/outbound-alert.js';
 
-const LOG = join(homedir(), '.monad/conatus/memory_lifecycle.log');
+const LOG = join(homedir(), '.elanous/conatus/memory_lifecycle.log');
 function log(s: string): void {
   console.log(s);
   try { if (!existsSync(dirname(LOG))) mkdirSync(dirname(LOG), { recursive: true }); appendFileSync(LOG, `${new Date().toISOString()} ${s}\n`); } catch { /* */ }
@@ -86,7 +86,7 @@ async function main(): Promise<void> {
       } catch (e) { log(`taste sync/제안 오류: ${e instanceof Error ? e.message : String(e)}`); }
     }
 
-    // 제1원칙 — 사이클을 logs.db 로 관측(현재 console.log 만 → `monad logs --category memory.lifecycle`).
+    // 제1원칙 — 사이클을 logs.db 로 관측(현재 console.log 만 → `elanous logs --category memory.lifecycle`).
     try {
       debug.log('memory.lifecycle', 'cycle', {
         summary,

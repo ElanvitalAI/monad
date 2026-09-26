@@ -18,19 +18,19 @@ import {
 import { getPty, resetForTesting } from '../src/pty-shell/registry';
 
 const activeBashPids = new Set<string>();
-const harnessSpace = process.env.MONAD_HARNESS_SPACE;
-const harnessSpaceId = process.env.MONAD_HARNESS_SPACE_ID;
+const harnessSpace = process.env.ELANOUS_HARNESS_SPACE;
+const harnessSpaceId = process.env.ELANOUS_HARNESS_SPACE_ID;
 
 beforeAll(() => {
-  delete process.env.MONAD_HARNESS_SPACE;
-  delete process.env.MONAD_HARNESS_SPACE_ID;
+  delete process.env.ELANOUS_HARNESS_SPACE;
+  delete process.env.ELANOUS_HARNESS_SPACE_ID;
 });
 
 afterAll(() => {
-  if (harnessSpace === undefined) delete process.env.MONAD_HARNESS_SPACE;
-  else process.env.MONAD_HARNESS_SPACE = harnessSpace;
-  if (harnessSpaceId === undefined) delete process.env.MONAD_HARNESS_SPACE_ID;
-  else process.env.MONAD_HARNESS_SPACE_ID = harnessSpaceId;
+  if (harnessSpace === undefined) delete process.env.ELANOUS_HARNESS_SPACE;
+  else process.env.ELANOUS_HARNESS_SPACE = harnessSpace;
+  if (harnessSpaceId === undefined) delete process.env.ELANOUS_HARNESS_SPACE_ID;
+  else process.env.ELANOUS_HARNESS_SPACE_ID = harnessSpaceId;
 });
 
 afterEach(async () => {

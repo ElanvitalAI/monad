@@ -14,7 +14,6 @@ chalk.level = 1;
 
 const inlineToBlock = {
   displayMode: 'inline-to-block' as const,
-  inlineOneLine: true,
   blockMaxLines: 4,
 };
 const richInlineToBlock = {
@@ -270,7 +269,6 @@ describe('tool renderer dispatch', () => {
       },
     }, {
       displayMode: 'inline-to-block',
-      inlineOneLine: true,
       blockMaxLines: 20,
       expandHint: true,
     });
@@ -594,7 +592,6 @@ describe('tool renderer dispatch', () => {
       args: { command: 'pwd' },
     }, {
       displayMode: 'legacy',
-      inlineOneLine: true,
       blockMaxLines: 20,
     });
     expect(rows).toBeNull();

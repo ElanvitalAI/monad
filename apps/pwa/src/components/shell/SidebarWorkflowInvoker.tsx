@@ -4,7 +4,7 @@
 //
 // Sticky compact card at the bottom of the left sidebar so the user
 // can fire a workflow without leaving the current route. Mirrors the
-// `monad wf run <name> [-- args]` CLI dispatch path; the heavy
+// `elanous wf run <name> [-- args]` CLI dispatch path; the heavy
 // compose / graph / runs UI stays in /workflows. After Run fires,
 // shows a tiny inline status with a deep link to the runs panel.
 //

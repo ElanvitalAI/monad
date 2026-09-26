@@ -30,7 +30,7 @@ function setupFromInput() {
 test('assembles documented paths, names, and measured contracts without filling unknown axes', () => {
   const setup = setupFromInput();
 
-  expect(setup.workDir).toBe('/Users/example/Movies/monad-ad/2026-09-11-umbrella');
+  expect(setup.workDir).toBe('/Users/example/Movies/elanous-ad/2026-09-11-umbrella');
   expect(setup.outputName).toBe('umbrella_v4_9x16.mp4');
   expect(setup.durationRules.seedance_2_0).toEqual({ minimumSeconds: 4 });
   expect(setup.creditsPerSecond.seedance_2_0).toBe(4.5);
@@ -99,7 +99,7 @@ test('assembles production dependencies with one injected runner while preservin
     creditsPerSecond: setup.creditsPerSecond,
     referenceDelivery: setup.referenceDelivery,
   }).toEqual({
-    workDir: '/Users/example/Movies/monad-ad/2026-09-11-umbrella',
+    workDir: '/Users/example/Movies/elanous-ad/2026-09-11-umbrella',
     outputName: 'umbrella_v4_9x16.mp4',
     durationRules: contracts.durationRules,
     creditsPerSecond: contracts.creditsPerSecond,
@@ -227,7 +227,7 @@ test('routes dashboard /ad invocations through closed, explicit-spend, then clos
   expect(calls).toEqual([['higgsfield', 'generate', 'create', 'seedance_2_0', '--prompt', 'product shot', '--duration', '4']]);
   expect(reports.filter((line) => line.includes('spending is closed for this run'))).toHaveLength(2);
   expect(bindings.production?.assemblyMaterials).toEqual({ options: {
-    workDir: expect.stringMatching(/^\/Users\/example\/Movies\/monad-ad\/2026-09-11-dashboard-ad-\d{6}-\d+$/),
+    workDir: expect.stringMatching(/^\/Users\/example\/Movies\/elanous-ad\/2026-09-11-dashboard-ad-\d{6}-\d+$/),
     outputName: expect.stringMatching(/^dashboard-ad-\d{6}-\d+_v1_9x16\.mp4$/),
   } });
 });
@@ -278,7 +278,7 @@ test('keeps the version-three master-name rule', () => {
   const result = buildAdRunSetup({ ...input, version: 3 });
 
   expect(result).toMatchObject({
-    workDir: '/Users/example/Movies/monad-ad/2026-09-11-umbrella',
+    workDir: '/Users/example/Movies/elanous-ad/2026-09-11-umbrella',
     outputName: 'umbrella_v3_9x16.mp4',
   });
 });

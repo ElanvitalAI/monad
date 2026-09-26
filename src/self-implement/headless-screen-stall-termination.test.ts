@@ -4,7 +4,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { startChildLivenessHeartbeat } from '../core-turn/child-liveness-heartbeat.js';
 import { debug } from '../debug/log.js';
-import { runHeadlessGoalLoopPty } from './headless-monad-driver.js';
+import { runHeadlessGoalLoopPty } from './headless-elanous-driver.js';
 
 function stalledSpawn() {
   return (() => ({
@@ -197,7 +197,7 @@ describe('headless screen-stall termination', () => {
   test('a production liveness heartbeat cannot reset output-only screen silence', async () => {
     const cwd = mkdtempSync(join(tmpdir(), 'screen-stall-liveness-'));
     let now = 0;
-    const stopHeartbeat = startChildLivenessHeartbeat({ path: join(cwd, '.monad-child-liveness.hb'), intervalMs: 1, nowMs: () => ++now });
+    const stopHeartbeat = startChildLivenessHeartbeat({ path: join(cwd, '.elanous-child-liveness.hb'), intervalMs: 1, nowMs: () => ++now });
     const shadows: Record<string, unknown>[] = [];
     const log = spyOn(debug, 'log').mockImplementation(((_category: string, event: string, data?: Record<string, unknown>) => {
       if (event === 'screen-stall-termination.shadow') shadows.push(data ?? {});
@@ -222,7 +222,7 @@ describe('headless screen-stall termination', () => {
 
   test('counts finite output silence from the final delta even when heartbeat refreshes then stops', async () => {
     const cwd = mkdtempSync(join(tmpdir(), 'screen-stall-finite-output-'));
-    const heartbeatPath = join(cwd, '.monad-child-liveness.hb');
+    const heartbeatPath = join(cwd, '.elanous-child-liveness.hb');
     const shadows: Record<string, unknown>[] = [];
     const log = spyOn(debug, 'log').mockImplementation(((_category: string, event: string, data?: Record<string, unknown>) => {
       if (event === 'screen-stall-termination.shadow') shadows.push(data ?? {});
@@ -257,7 +257,7 @@ describe('headless screen-stall termination', () => {
   test('continuously changing output remains protected even while a heartbeat is present', async () => {
     const cwd = mkdtempSync(join(tmpdir(), 'screen-stall-output-'));
     let now = 0;
-    const stopHeartbeat = startChildLivenessHeartbeat({ path: join(cwd, '.monad-child-liveness.hb'), intervalMs: 1, nowMs: () => ++now });
+    const stopHeartbeat = startChildLivenessHeartbeat({ path: join(cwd, '.elanous-child-liveness.hb'), intervalMs: 1, nowMs: () => ++now });
     try {
       const result = await runHeadlessGoalLoopPty({
         binRoot: '/tmp/repo', cwd, featurePrompt: 'x', maxWaitSec: 2, maxHardWaitSec: 2, pollMs: 2,

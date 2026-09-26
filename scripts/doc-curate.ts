@@ -2,7 +2,7 @@
 // ── DocOps P1 · 문서 큐레이션 CLI (2026-07-13) ───────────────────────────────
 // 감지(제안 생성)와 적용(HITL 후)을 분리한 2단 CLI.
 //
-//   bun scripts/doc-curate.ts                      # 감지 → 제안 md+json (~/.monad/doc-curation/)
+//   bun scripts/doc-curate.ts                      # 감지 → 제안 md+json (~/.elanous/doc-curation/)
 //   bun scripts/doc-curate.ts --apply <json> [--only archive|supersede-mark]
 //                                                  # 검토 끝난 제안 실행 (워킹트리 변경만·커밋 없음)
 //
@@ -45,7 +45,7 @@ const entries = scanDocs(join(repoRoot, 'docs'));
 const indexPath = join(repoRoot, 'docs', '_index.md');
 const indexLinks = parseIndexLinks(require('node:fs').readFileSync(indexPath, 'utf-8'));
 const proposal = buildCurationProposal(entries, { repoRoot, indexLinks });
-const outDir = join(homedir(), '.monad', 'doc-curation');
+const outDir = join(homedir(), '.elanous', 'doc-curation');
 mkdirSync(outDir, { recursive: true });
 const stamp = new Date().toLocaleDateString('sv-SE');
 const jsonPath = join(outDir, `PROPOSAL-${stamp}.json`);

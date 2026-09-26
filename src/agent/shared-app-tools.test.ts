@@ -16,7 +16,7 @@ describe('buildSharedAppTools — core + finance(gated) + skill execution 단일
     const s = buildSharedAppTools();
     expect(s.names.has('schedule_manage')).toBe(true);   // L2 core
     expect(s.names.has('finance_quote')).toBe(false);
-    expect(s.names.has('monad_skills_list')).toBe(true);
+    expect(s.names.has('elanous_skills_list')).toBe(true);
     expect(s.names.has('skill_exec')).toBe(true);
   });
 
@@ -37,7 +37,7 @@ describe('buildSharedAppTools — core + finance(gated) + skill execution 단일
     const s = buildSharedAppTools(cfg(true));
     const coreIdx = s.specs.findIndex((t) => t.name === 'schedule_manage');
     const finIdx = s.specs.findIndex((t) => t.name === 'finance_quote');
-    const skillsListIdx = s.specs.findIndex((t) => t.name === 'monad_skills_list');
+    const skillsListIdx = s.specs.findIndex((t) => t.name === 'elanous_skills_list');
     const skillIdx = s.specs.findIndex((t) => t.name === 'skill_exec');
     expect(coreIdx).toBeGreaterThanOrEqual(0);
     expect(finIdx).toBeGreaterThan(coreIdx);
@@ -45,19 +45,19 @@ describe('buildSharedAppTools — core + finance(gated) + skill execution 단일
     expect(skillIdx).toBeGreaterThan(skillsListIdx);
   });
 
-  test('dispatch 라우팅 — monad_skills_list → 재사용 목록 runtime', async () => {
+  test('dispatch 라우팅 — elanous_skills_list → 재사용 목록 runtime', async () => {
     const savedXdg = process.env.XDG_CONFIG_HOME;
     const workdir = mkdtempSync(join(tmpdir(), 'shared-app-skills-'));
     const skillsDir = join(workdir, 'skills');
     try {
       mkdirSync(join(skillsDir, 'fixture-skill'), { recursive: true });
       writeFileSync(join(skillsDir, 'fixture-skill', 'SKILL.md'), 'fixture description\n');
-      mkdirSync(join(workdir, 'monad'));
-      writeFileSync(join(workdir, 'monad', 'config.json'), JSON.stringify({ skills: { activeSet: 'custom', dirs: [skillsDir] } }));
+      mkdirSync(join(workdir, 'elanous'));
+      writeFileSync(join(workdir, 'elanous', 'config.json'), JSON.stringify({ skills: { activeSet: 'custom', dirs: [skillsDir] } }));
       process.env.XDG_CONFIG_HOME = workdir;
       resetUserConfig();
 
-      const result = await buildSharedAppTools().dispatch('monad_skills_list', {});
+      const result = await buildSharedAppTools().dispatch('elanous_skills_list', {});
       expect(result).toMatchObject({ entries: [{ name: 'fixture-skill', description: 'fixture description' }] });
     } finally {
       if (savedXdg === undefined) delete process.env.XDG_CONFIG_HOME;
@@ -67,13 +67,13 @@ describe('buildSharedAppTools — core + finance(gated) + skill execution 단일
     }
   });
 
-  test('skill_exec runtime and catalog direct unknown names to the shared monad_skills_list spec', () => {
+  test('skill_exec runtime and catalog direct unknown names to the shared elanous_skills_list spec', () => {
     const description = buildSkillExecTool().description;
     const skillExec = findNativeTool('skill_exec');
-    const skillsListSpec = buildSharedAppTools().specs.find(({ name }) => name === 'monad_skills_list');
-    expect(description).toContain('monad_skills_list');
+    const skillsListSpec = buildSharedAppTools().specs.find(({ name }) => name === 'elanous_skills_list');
+    expect(description).toContain('elanous_skills_list');
     expect(skillExec?.description).toBe(description);
-    expect(skillExec?.promptSummary).toContain('monad_skills_list');
+    expect(skillExec?.promptSummary).toContain('elanous_skills_list');
     expect(skillsListSpec?.description).toContain('Read-only');
   });
 

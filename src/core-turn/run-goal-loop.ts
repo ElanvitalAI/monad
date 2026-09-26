@@ -244,7 +244,7 @@ export interface GoalLoopOptions {
    *  로 종료해 caller 가 compact 후 재개하게 한다(ref ext/goal anti-spin: overflow 재주입 금지).
    *  0/미지정 = bail 비활성(윈도우 미상). bridge 가 resolveModelContextWindow 로 주입. */
   contextTokenLimit?: number;
-  /** context-pressure 임계 비율. 기본 0.85(monad chat.autoCompact triggerRatio 정합). */
+  /** context-pressure 임계 비율. 기본 0.85(elanous chat.autoCompact triggerRatio 정합). */
   contextPressureRatio?: number;
   /** 테스트 seam — runCoreTurn 주입(모듈 mock 오염 회피). 기본 = 실제 runCoreTurn. */
   runTurn?: (ctx: CoreTurnContext) => Promise<CoreTurnResult>;

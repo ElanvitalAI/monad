@@ -20,7 +20,7 @@ describe('retryingAcquire — a refused bot is retried until the lock frees', ()
 });
 
 describe('installTelegramService', () => {
-  const file = renderTelegramServiceFile({ platform: 'darwin', home: '/h', logDir: '/h/.monad/logs', command: ['/b/bun', '/m/monad.mjs', 'telegram', 'run'], uid: 501 })!;
+  const file = renderTelegramServiceFile({ platform: 'darwin', home: '/h', logDir: '/h/.elanous/logs', command: ['/b/bun', '/m/elanous.mjs', 'telegram', 'run'], uid: 501 })!;
   const fakeFs = (initial: Record<string, string> = {}) => {
     const files = { ...initial }; const ran: string[] = [];
     return { files, ran, deps: {
@@ -42,7 +42,7 @@ describe('installTelegramService', () => {
     const r = installTelegramService(file, 'standalone', 501, f.deps);
     expect(r.ok).toBe(true);
     expect(f.files[file.path]).toBe(file.content);
-    expect(f.ran).toEqual([`launchctl bootout gui/501/com.monad.telegram`, `launchctl bootstrap gui/501 ${file.path}`]);
+    expect(f.ran).toEqual([`launchctl bootout gui/501/com.elanous.telegram`, `launchctl bootstrap gui/501 ${file.path}`]);
   });
   test('a different existing file is backed up, not overwritten in place', () => {
     const f = fakeFs({ [file.path]: 'old' });
@@ -69,7 +69,7 @@ describe('updateTelegramRunner (self-update)', () => {
     ran.length = 0;
     const r = updateTelegramRunner(decision, true, { telegramRunnerInstalled: () => true, os: 'darwin', uid: 501 }, run, '/c');
     expect(r.verdict).toBe('restarted');
-    expect(ran).toEqual(['launchctl kickstart -k gui/501/com.monad.telegram']);
+    expect(ran).toEqual(['launchctl kickstart -k gui/501/com.elanous.telegram']);
   });
   test('unknown daemon commit → no restart', () => {
     expect(updateTelegramRunner({ exitCode: 2 } as never, true, { telegramRunnerInstalled: () => true, os: 'linux' }, run, '/c').verdict).toBe('unknown');

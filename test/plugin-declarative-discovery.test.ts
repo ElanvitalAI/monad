@@ -13,11 +13,11 @@ import {
 function scratch(): string { return mkdtempSync(join(tmpdir(), 'pd-disc-')); }
 
 describe('PX-7 P1 — resolveDeclarativeSources', () => {
-  test('env MONAD_HOME overrides default', () => {
+  test('env ELANOUS_HOME overrides default', () => {
     const dir = scratch();
     const custom = join(dir, 'custom-home');
     const r = resolveDeclarativeSources({
-      env: { MONAD_HOME: custom },
+      env: { ELANOUS_HOME: custom },
       cwd: dir,
       home: dir,
     });
@@ -27,15 +27,15 @@ describe('PX-7 P1 — resolveDeclarativeSources', () => {
     }
   });
 
-  test('project source appears when <cwd>/.monad exists', () => {
+  test('project source appears when <cwd>/.elanous exists', () => {
     const dir = scratch();
     const fakeHome = join(dir, 'home');
-    mkdirSync(join(dir, '.monad'), { recursive: true });
+    mkdirSync(join(dir, '.elanous'), { recursive: true });
     const r = resolveDeclarativeSources({ env: {}, cwd: dir, home: fakeHome });
-    expect(r.project).toBe(join(dir, '.monad'));
+    expect(r.project).toBe(join(dir, '.elanous'));
   });
 
-  test('project source undefined when <cwd>/.monad missing', () => {
+  test('project source undefined when <cwd>/.elanous missing', () => {
     const dir = scratch();
     const fakeHome = join(dir, 'home');
     const r = resolveDeclarativeSources({ env: {}, cwd: dir, home: fakeHome });
@@ -44,7 +44,7 @@ describe('PX-7 P1 — resolveDeclarativeSources', () => {
 
   test('auto-creates 6 kind sub-directories under user root', () => {
     const dir = scratch();
-    const r = resolveDeclarativeSources({ env: { MONAD_HOME: join(dir, 'h') }, cwd: dir, home: dir });
+    const r = resolveDeclarativeSources({ env: { ELANOUS_HOME: join(dir, 'h') }, cwd: dir, home: dir });
     for (const k of DECLARATIVE_KINDS) {
       expect(existsSync(join(r.user, k))).toBe(true);
     }

@@ -291,7 +291,7 @@ function SelectedProviderPanel({
         <p className="rounded bg-yellow-500/10 px-3 py-2 text-xs text-yellow-700 dark:text-yellow-400">
           {provider.flow === 'codex' ? 'OAuth' : 'Local runtime probe'} 흐름은
           PWA 에서 직접 처리할 수 없어요. 터미널에서{' '}
-          <span className="font-mono">monad setup llm</span> 을 실행해주세요.
+          <span className="font-mono">elanous setup llm</span> 을 실행해주세요.
         </p>
       ) : null}
 

@@ -9,7 +9,7 @@
 //   /showroom [--focus <idx>]                          # codex + claude showroom
 //
 // Brand tokens:
-//   codex | claude | gemini | monad                   # literal
+//   codex | claude | gemini | elanous                   # literal
 //   cas | clc | gem | mac                             # aliases
 //   lll:<model>                                        # local-llm (H6 P2 future)
 //   auto                                               # PolicyDecide (role by pane index)
@@ -435,7 +435,7 @@ function helpOutput(): AgentRoomSlashResult {
       '  /agent-room close <roomId>               dispose all agents + VW',
       '  /agent-room help                         this text',
       '',
-      '  Brands: codex · claude · gemini · monad',
+      '  Brands: codex · claude · gemini · elanous',
       '  Aliases: cas · clc · gem · mac',
       '  Local LLM: lll:<model> (H6 P2 future · adapter required)',
       '  Auto: auto (pane-index role) · auto:plan · auto:exec · auto:review · auto:reflect',
@@ -469,7 +469,7 @@ function showroomHelpOutput(): AgentRoomSlashResult {
       '    auto[:role]                          policy-routed',
       '',
       '  Roles:     plan · build · exec · review · reflect',
-      '  Providers: codex · claude · gemini · monad · lll:<model>',
+      '  Providers: codex · claude · gemini · elanous · lll:<model>',
       '  Aliases:   cas · clc · gem · mac',
       '  Transport: pty · acp · auto (default)',
       '',

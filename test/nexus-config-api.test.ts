@@ -18,7 +18,7 @@ import {
   writeSwitchValue,
   readSwitchValue,
 } from '../src/nexus/config/user-config.js';
-import { setMonadConfigDir, resetMonadConfigDir } from '../src/monad-config-dir.js';
+import { setElanousConfigDir, resetElanousConfigDir } from '../src/elanous-config-dir.js';
 
 let tmpRoot: string;
 let prevHome: string | undefined;
@@ -30,17 +30,17 @@ let baseUrl: string;
 let hotApplyCalls: { id: string; v: unknown }[];
 
 beforeEach(async () => {
-  tmpRoot = mkdtempSync(join(tmpdir(), 'monad-nexus-n3-cfgapi-'));
+  tmpRoot = mkdtempSync(join(tmpdir(), 'elanous-nexus-n3-cfgapi-'));
   prevHome = process.env.HOME;
-  prevTg = process.env.MONAD_TELEGRAM_BOT_TOKEN;
-  prevDc = process.env.MONAD_DISCORD_BOT_TOKEN;
-  prevTools = process.env.MONAD_TOOLS;
-  setMonadConfigDir(tmpRoot);
+  prevTg = process.env.ELANOUS_TELEGRAM_BOT_TOKEN;
+  prevDc = process.env.ELANOUS_DISCORD_BOT_TOKEN;
+  prevTools = process.env.ELANOUS_TOOLS;
+  setElanousConfigDir(tmpRoot);
   process.env.HOME = tmpRoot;
-  process.env.MONAD_NEXUS_DIR = tmpRoot;
-  delete process.env.MONAD_TELEGRAM_BOT_TOKEN;
-  delete process.env.MONAD_DISCORD_BOT_TOKEN;
-  delete process.env.MONAD_TOOLS;
+  process.env.ELANOUS_NEXUS_DIR = tmpRoot;
+  delete process.env.ELANOUS_TELEGRAM_BOT_TOKEN;
+  delete process.env.ELANOUS_DISCORD_BOT_TOKEN;
+  delete process.env.ELANOUS_TOOLS;
   clearSwitchRegistry();
   reloadAllBuiltins();
   hotApplyCalls = [];
@@ -69,16 +69,16 @@ beforeEach(async () => {
 afterEach(() => {
   handle?.release();
   handle = undefined;
-  resetMonadConfigDir();
+  resetElanousConfigDir();
   if (prevHome === undefined) delete process.env.HOME;
   else process.env.HOME = prevHome;
-  if (prevTg === undefined) delete process.env.MONAD_TELEGRAM_BOT_TOKEN;
-  else process.env.MONAD_TELEGRAM_BOT_TOKEN = prevTg;
-  if (prevDc === undefined) delete process.env.MONAD_DISCORD_BOT_TOKEN;
-  else process.env.MONAD_DISCORD_BOT_TOKEN = prevDc;
-  if (prevTools === undefined) delete process.env.MONAD_TOOLS;
-  else process.env.MONAD_TOOLS = prevTools;
-  delete process.env.MONAD_NEXUS_DIR;
+  if (prevTg === undefined) delete process.env.ELANOUS_TELEGRAM_BOT_TOKEN;
+  else process.env.ELANOUS_TELEGRAM_BOT_TOKEN = prevTg;
+  if (prevDc === undefined) delete process.env.ELANOUS_DISCORD_BOT_TOKEN;
+  else process.env.ELANOUS_DISCORD_BOT_TOKEN = prevDc;
+  if (prevTools === undefined) delete process.env.ELANOUS_TOOLS;
+  else process.env.ELANOUS_TOOLS = prevTools;
+  delete process.env.ELANOUS_NEXUS_DIR;
   try { rmSync(tmpRoot, { recursive: true, force: true }); } catch { /* ignore */ }
   clearSwitchRegistry();
 });
@@ -146,12 +146,12 @@ describe('GET /v1/config/switches', () => {
     const res = await call('/v1/config/switches');
     const tools = res.body.switches.find((s: { id: string }) => s.id === 'global.tools');
     expect(tools.hotApplicable).toBe(false);
-    expect(tools.envName).toBe('MONAD_TOOLS');
+    expect(tools.envName).toBe('ELANOUS_TOOLS');
     expect(tools.value).toBeUndefined(); // unset
 
     const tgToken = res.body.switches.find((s: { id: string }) => s.id === 'tabs.telegram:1.tokenRef');
     expect(tgToken.redactInLogs).toBe(true);
-    expect(tgToken.envName).toBe('MONAD_TELEGRAM_BOT_TOKEN');
+    expect(tgToken.envName).toBe('ELANOUS_TELEGRAM_BOT_TOKEN');
   });
 });
 
@@ -319,9 +319,9 @@ describe('Secrets API', () => {
 });
 
 describe('runNexus boot · env auto-migrate (D-13)', () => {
-  test('MONAD_TOOLS env at boot → migrated to UserConfig', async () => {
+  test('ELANOUS_TOOLS env at boot → migrated to UserConfig', async () => {
     handle?.release();
-    process.env.MONAD_TOOLS = 'all';
+    process.env.ELANOUS_TOOLS = 'all';
     handle = await runNexus({
       detachForTesting: true,
       skipHttpServer: false,
@@ -337,9 +337,9 @@ describe('runNexus boot · env auto-migrate (D-13)', () => {
     )).toBe(true);
   });
 
-  test('MONAD_TELEGRAM_BOT_TOKEN env → secret + ref (with telegram tab registered)', async () => {
+  test('ELANOUS_TELEGRAM_BOT_TOKEN env → secret + ref (with telegram tab registered)', async () => {
     handle?.release();
-    process.env.MONAD_TELEGRAM_BOT_TOKEN = 'BOT-FROM-ENV';
+    process.env.ELANOUS_TELEGRAM_BOT_TOKEN = 'BOT-FROM-ENV';
     handle = await runNexus({
       detachForTesting: true,
       skipHttpServer: false,
@@ -356,7 +356,7 @@ describe('runNexus boot · env auto-migrate (D-13)', () => {
 
   test('skipEnvMigration=true preserves raw env behavior', async () => {
     handle?.release();
-    process.env.MONAD_TOOLS = 'readonly';
+    process.env.ELANOUS_TOOLS = 'readonly';
     handle = await runNexus({
       detachForTesting: true,
       skipHttpServer: false,

@@ -439,7 +439,7 @@ export function layoutGraph(input: {
 
 /** ROADMAP Tier 1 W3 (2026-05-11) — read layout-overrides out of the
  *  yaml's `_meta.layout` map. Per-node `{x, y}` pairs are honored;
- *  missing nodes fall back to dagre. `_meta` is a monad-specific
+ *  missing nodes fall back to dagre. `_meta` is a elanous-specific
  *  YAML extension the daemon validator quietly ignores (workflow
  *  authoring is the only place that reads it). */
 function extractLayoutOverrides(

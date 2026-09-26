@@ -8,7 +8,7 @@ that contains the `.obsidian/` marker). Used by:
   · the Obsidian-write tool surface
 
 If you don't use Obsidian, point this at any directory you want
-to use as a notes root — monad treats it as a generic markdown
+to use as a notes root — elanous treats it as a generic markdown
 vault. Path doesn't have to exist when you set it; we'll warn
 but keep going.
 

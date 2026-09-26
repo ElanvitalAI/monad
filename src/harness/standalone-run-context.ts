@@ -1,13 +1,13 @@
 // 독립 하니스 런 컨텍스트 진입 — 액션레벨 셋업 공유 substrate (U4b·2026-07-25)
 //
 // self implement CLI 액션이 인라인으로 하던 3단 셋업(index.ts §self implement)을 재사용 헬퍼로 추출한다.
-// 목적: runDevPipeline 재라우팅 시 이 셋업을 잃지 않고(무손실) 여러 진입점(self implement·monad dev·향후 chat)이
+// 목적: runDevPipeline 재라우팅 시 이 셋업을 잃지 않고(무손실) 여러 진입점(self implement·elanous dev·향후 chat)이
 // 한 곳에서 같은 셋업을 공유하게 한다. 3단:
-//   1. harness-space 마커 env — "나는 self-dev 격리 하니스 공간의 monad"임을 self-recognize(+상속 자식). 이미
+//   1. harness-space 마커 env — "나는 self-dev 격리 하니스 공간의 elanous"임을 self-recognize(+상속 자식). 이미
 //      심겼으면(오케스트레이터 자식) 존중(덮어쓰기 금지·N잡 충돌 방지).
-//   2. run-identity mint-once(ensureRunId) — 최외곽 coordinator per-run join anchor(MONAD_RUN_ID). 자식 상속.
+//   2. run-identity mint-once(ensureRunId) — 최외곽 coordinator per-run join anchor(ELANOUS_RUN_ID). 자식 상속.
 //   3. standalone log-sink 등록 — 독립 프로세스는 nexus StoreSink 미상속 → 이 sink 없으면 debug.log 가 logs.db 에
-//      안 닿아 `monad logs` 조회 불가(= 관측 안 한 것·제1원칙 위반). 공간 surface(harness:<kind>)로 등록. fail-open.
+//      안 닿아 `elanous logs` 조회 불가(= 관측 안 한 것·제1원칙 위반). 공간 surface(harness:<kind>)로 등록. fail-open.
 //
 // 계약: [[PLAN-unified-selfdev-cli-runDevPipeline-2026-07-25]] §7 U4b · [[harness-space]](SSOT).
 
@@ -54,7 +54,7 @@ export interface EnterStandaloneRunDeps {
 }
 
 /**
- * 독립 하니스 런에 진입 — env 셋업(순수) + 관측 배선(fail-open). self implement CLI·monad dev·향후 chat 이
+ * 독립 하니스 런에 진입 — env 셋업(순수) + 관측 배선(fail-open). self implement CLI·elanous dev·향후 chat 이
  * 공유하는 액션레벨 셋업 substrate. 관측 배선 실패는 삼킨다(파일 트레일이 진실원). 반환 = 확정된 runId/space.
  */
 export async function enterStandaloneHarnessRun(

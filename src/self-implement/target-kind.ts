@@ -1,6 +1,6 @@
 // ── 하니스 개발 대상(target) 종류 감지 (#25 P2 · 2026-07-21) ──────────────────────────
 //
-// dev-harness 는 monad 자신만이 아니라 임의 디렉토리·config·dotfile 까지 작업 대상으로 삼는다
+// dev-harness 는 elanous 자신만이 아니라 임의 디렉토리·config·dotfile 까지 작업 대상으로 삼는다
 // (DESIGN-harness-target-generalization-2026-07-21 §2). 종류별로 스테이징/gate/적용 전략이 달라
 // 먼저 target 을 분류한다. 이 함수는 순수-ish(fs stat 만)라 테스트 가능.
 //
@@ -14,7 +14,7 @@ import { resolve, sep } from 'node:path';
 import { resolveMainRepoRoot } from '../git-fs/worktree.js';
 
 export type TargetKind =
-  | 'git-repo'      // .git 안(monad·~/source/repo) — worktree+PR (현행 P1)
+  | 'git-repo'      // .git 안(elanous·~/source/repo) — worktree+PR (현행 P1)
   | 'non-git-dir'   // 비-git 디렉토리(~/temp) — git-init 그림자 스테이징 (P2)
   | 'file'          // 단일 파일(config/dotfile ~/.zshrc) — syntax gate+백업 (P3)
   | 'outside-home'  // homedir 밖 시스템경로(/etc 등) — 안전벽 (P3·거부/추가확인)
@@ -23,7 +23,7 @@ export type TargetKind =
 /** target 경로를 종류별로 분류. 순서=안전 우선(홈 경계 최우선) → 존재 → git → dir/file.
  *  절대경로로 정규화 후 판정한다(상대경로·`.`/`..` 안전).
  *  @param home 홈 경계(테스트 주입용). 기본 `homedir()`.
- *  ⚠️ 'self'/생략(monad 자신)은 이 함수 호출 전에 처리된다(여기 대상 아님). */
+ *  ⚠️ 'self'/생략(elanous 자신)은 이 함수 호출 전에 처리된다(여기 대상 아님). */
 export function resolveTargetKind(target: string, home: string = homedir()): TargetKind {
   const abs = resolve(target);
   const homeAbs = resolve(home);

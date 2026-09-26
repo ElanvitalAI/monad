@@ -23,10 +23,10 @@ body = '\n'.join(l[3:] if l.startswith('   ') else l for l in body.split('\n'))
 open(sys.argv[2], 'w').write(body)
 PY
 
-# `monad`·`bun`·`jq` 는 스텁으로 둔다 — 재는 것은 **정의-호출 순서**이지 데이터가 아니다.
+# `elanous`·`bun`·`jq` 는 스텁으로 둔다 — 재는 것은 **정의-호출 순서**이지 데이터가 아니다.
 mkdir -p "$WORK/stub"
 # ⛔ 스텁은 **stdin 을 읽지 않는다** — `cat` 을 쓰면 파이프에서 입력을 기다려 **검사가 멈춘다**(실측).
-for c in monad bun jq; do printf '#!/bin/sh\nexit 0\n' > "$WORK/stub/$c"; chmod +x "$WORK/stub/$c"; done
+for c in elanous bun jq; do printf '#!/bin/sh\nexit 0\n' > "$WORK/stub/$c"; chmod +x "$WORK/stub/$c"; done
 
 run_recipe() {
   # ⛔ 시간 상한 — 레시피가 무언가를 기다리면 검사가 영영 안 끝난다(멈춤도 결함이다).

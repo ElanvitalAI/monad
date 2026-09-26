@@ -36,7 +36,7 @@ describe('runAgentMissionCliCommand — 성공경로(주입·무실행)', () => 
     expect(Object.hasOwn(spec!, 'enhance')).toBe(false);
     expect(Object.hasOwn(spec!.mission!, 'deliverableHint')).toBe(false);
     expect(Object.hasOwn(spec!.mission!, 'screensDir')).toBe(false);
-    expect(spec!.mission).toMatchObject({ evidence: { kind: 'tsc' }, maxRounds: 16, commit: true, entry: 'monad-apparatus' });
+    expect(spec!.mission).toMatchObject({ evidence: { kind: 'tsc' }, maxRounds: 16, commit: true, entry: 'elanous-apparatus' });
     expect(passed!.resolveBackend!()).toBe(BACKEND); // 검증된 backend 주입(재resolve 없음)
   });
 
@@ -69,7 +69,7 @@ describe('runAgentMissionCliCommand — 성공경로(주입·무실행)', () => 
     expect(spec!.executor).toEqual({ kind: 'external', backend: 'claude' });
     expect(spec!.base).toBe('main');
     expect(spec!.enhance).toBe(false);
-    expect(spec!.mission).toMatchObject({ maxRounds: 9, commit: false, deliverableHint: 'PPT', screensDir: '/s', entry: 'monad-apparatus' });
+    expect(spec!.mission).toMatchObject({ maxRounds: 9, commit: false, deliverableHint: 'PPT', screensDir: '/s', entry: 'elanous-apparatus' });
     expect((spec!.mission!.evidence as { kind: string; dirRel: string }).kind).toBe('doc');
     expect((spec!.mission!.evidence as { dirRel: string }).dirRel).toBe('docs/x');
   });

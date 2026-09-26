@@ -1,6 +1,6 @@
 // ── PFC-S1 P3: Team mailbox ──
 //
-// Append-only JSONL message store under ~/.monad/team-mailbox/<team>/
+// Append-only JSONL message store under ~/.elanous/team-mailbox/<team>/
 // <recipient>.mbox. Each line is one serialized MailboxMessage. A team
 // additionally has a .roster.json that names its members so SendMessage
 // (P4) can validate recipient membership + future roster panes can
@@ -12,7 +12,7 @@
 //    small lines on local POSIX filesystems, and it's a single syscall
 //    so a mid-write kill doesn't leave half-encoded UTF-8.
 //  • Inter-line contention between agents is acceptable: this file set
-//    is single-process within one monad session; multi-process locking
+//    is single-process within one elanous session; multi-process locking
 //    is a PX-6 concern.
 //
 // Read semantics ──
@@ -23,7 +23,7 @@
 //    operation, correctness > latency.
 //
 // Persistence layout ──
-//  .monad/team-mailbox/
+//  .elanous/team-mailbox/
 //    <team>/
 //      .roster.json         ← { name, createdAt, members[] }
 //      <recipient-1>.mbox   ← JSONL
@@ -34,7 +34,7 @@ import {
   existsSync, mkdirSync, readFileSync, readdirSync, rmSync,
   writeFileSync, renameSync, statSync,
 } from 'node:fs';
-import { monadStateRoot } from '../autopilot/state-paths.js';
+import { elanousStateRoot } from '../autopilot/state-paths.js';
 import { join } from 'node:path';
 import { randomUUID } from 'node:crypto';
 import { debug } from '../debug/log.js';
@@ -81,7 +81,7 @@ export interface ListOpts {
 // ── Path helpers ────────────────────────────────────────────────────
 
 function defaultRoot(): string {
-  return join(monadStateRoot(), 'team-mailbox');
+  return join(elanousStateRoot(), 'team-mailbox');
 }
 
 function sanitizeTeam(name: string): string {
@@ -294,7 +294,7 @@ export class TeamMailbox {
   }
 
   /** Test helper — drop everything under root (does NOT touch other
-   *  monad state dirs). Not exposed as a public API to LLM tools. */
+   *  elanous state dirs). Not exposed as a public API to LLM tools. */
   _resetForTests(): void {
     if (!existsSync(this.root)) return;
     try {
@@ -307,6 +307,6 @@ export class TeamMailbox {
   }
 }
 
-/** Process-wide singleton using ~/.monad/team-mailbox. Use this unless
+/** Process-wide singleton using ~/.elanous/team-mailbox. Use this unless
  *  you're testing (in which case instantiate your own with a temp root). */
 export const globalTeamMailbox = new TeamMailbox();

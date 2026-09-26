@@ -4,7 +4,7 @@
 // instance for now to avoid retrofitting; the singleton coexists.
 //
 // Lazy initialization:
-//   - First access layers `~/.monad/personas/` (or env override)
+//   - First access layers `~/.elanous/personas/` (or env override)
 //     beneath the repository `personas/` directory.
 //   - Callers can `setGlobalPersonaRegistryDir(dir)` before first
 //     access to override the state-layer directory.
@@ -15,7 +15,7 @@
 // in multi-llm-bridge.
 
 import { access, stat } from 'node:fs/promises';
-import { monadStateRoot } from '../autopilot/state-paths.js';
+import { elanousStateRoot } from '../autopilot/state-paths.js';
 import { join } from 'node:path';
 import { debug } from '../debug/log.js';
 import { PersonaRegistry, type PersonaLoadResult } from './registry.js';
@@ -47,22 +47,22 @@ export function setGlobalPersonaRegistryDir(dir: string): void {
 }
 
 /** Resolve the state dir we'd use for first init: explicit set > env >
- *  default `~/.monad/personas/`. */
+ *  default `~/.elanous/personas/`. */
 function resolveDefaultDir(): string {
   if (_registryDir) return _registryDir;
-  const env = process.env.MONAD_PERSONAS_DIR;
+  const env = process.env.ELANOUS_PERSONAS_DIR;
   if (env && env.length > 0) return env;
-  // ⛔⭐ `homedir()/.monad` 를 «직접» 쓰면 --test 우주가 «운영» 페르소나를 읽는다.
+  // ⛔⭐ `homedir()/.elanous` 를 «직접» 쓰면 --test 우주가 «운영» 페르소나를 읽는다.
   //    격리는 4우주라 뿌리를 리졸버로 «한 번» 해석해야 한다.
-  return join(monadStateRoot(), 'personas');
+  return join(elanousStateRoot(), 'personas');
 }
 
 /** 상태 층의 페르소나 디렉터리. ⛔ 소비자가 «자기 손으로» 계산하면 전역과 갈리고
  *  --test 우주가 운영 페르소나를 읽는다 — 그래서 여기 하나로 둔다. */
 export function resolveStatePersonaDir(): string {
-  const env = process.env.MONAD_PERSONAS_DIR;
+  const env = process.env.ELANOUS_PERSONAS_DIR;
   if (env && env.length > 0) return env;
-  return join(monadStateRoot(), 'personas');
+  return join(elanousStateRoot(), 'personas');
 }
 
 export function resolveRepositoryPersonaDir(): string {

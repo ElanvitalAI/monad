@@ -77,17 +77,17 @@ beforeEach(() => {
 
 describe('DualRoleManager — server sessions', () => {
   it('registers + resolves server sessions by backend id', () => {
-    const rec = manager.serverSessionRegister('monad-session-1', '/tmp');
+    const rec = manager.serverSessionRegister('elanous-session-1', '/tmp');
     expect(rec.kind).toBe('server');
-    expect(rec.id).toBe(`${SERVER_NAMESPACE}monad-session-1`);
-    expect(manager.get('monad-session-1')?.id).toBe(rec.id);
-    expect(manager.serverSessionById(rec.id)?.backendSessionId).toBe('monad-session-1');
+    expect(rec.id).toBe(`${SERVER_NAMESPACE}elanous-session-1`);
+    expect(manager.get('elanous-session-1')?.id).toBe(rec.id);
+    expect(manager.serverSessionById(rec.id)?.backendSessionId).toBe('elanous-session-1');
   });
 
   it('unregister is idempotent + returns false for unknown ids', () => {
-    manager.serverSessionRegister('monad-session-2', '/tmp');
-    expect(manager.serverSessionUnregister('monad-session-2')).toBe(true);
-    expect(manager.serverSessionUnregister('monad-session-2')).toBe(false);
+    manager.serverSessionRegister('elanous-session-2', '/tmp');
+    expect(manager.serverSessionUnregister('elanous-session-2')).toBe(true);
+    expect(manager.serverSessionUnregister('elanous-session-2')).toBe(false);
     expect(manager.serverSessionUnregister('never-existed')).toBe(false);
   });
 

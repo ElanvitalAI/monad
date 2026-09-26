@@ -7,9 +7,9 @@ import {
 } from '../../src/mission-templates/devices-json-source';
 
 describe('defaultDevicesJsonPath', () => {
-  test('lives under ~/.monad', () => {
+  test('lives under ~/.elanous', () => {
     const p = defaultDevicesJsonPath();
-    expect(p).toMatch(/\.monad\/devices\.json$/);
+    expect(p).toMatch(/\.elanous\/devices\.json$/);
   });
 });
 

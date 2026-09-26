@@ -24,15 +24,15 @@ function request(secret = 'shared-secret'): Request {
 
 describe('tryHandleOpenAiRelay', () => {
   test('shared-secret accessor defaults absent and trims a configured secret', () => {
-    const original = process.env.MONAD_OPENAI_RELAY_SHARED_SECRET;
+    const original = process.env.ELANOUS_OPENAI_RELAY_SHARED_SECRET;
     try {
-      delete process.env.MONAD_OPENAI_RELAY_SHARED_SECRET;
+      delete process.env.ELANOUS_OPENAI_RELAY_SHARED_SECRET;
       expect(getOpenAiRelaySharedSecret()).toBeUndefined();
-      process.env.MONAD_OPENAI_RELAY_SHARED_SECRET = ' shared-secret ';
+      process.env.ELANOUS_OPENAI_RELAY_SHARED_SECRET = ' shared-secret ';
       expect(getOpenAiRelaySharedSecret()).toBe('shared-secret');
     } finally {
-      if (original === undefined) delete process.env.MONAD_OPENAI_RELAY_SHARED_SECRET;
-      else process.env.MONAD_OPENAI_RELAY_SHARED_SECRET = original;
+      if (original === undefined) delete process.env.ELANOUS_OPENAI_RELAY_SHARED_SECRET;
+      else process.env.ELANOUS_OPENAI_RELAY_SHARED_SECRET = original;
     }
   });
 

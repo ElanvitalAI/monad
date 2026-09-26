@@ -10,7 +10,7 @@
 //   5. `buildSoxInstallHint` returns a stable, recognizable string.
 //   6. `detectPackageManager` returns null or a well-formed PackageManager
 //      depending on the actual environment.
-//   7. `checkRecordingAvailability` honors `MONAD_REMOTE` (no local mic)
+//   7. `checkRecordingAvailability` honors `ELANOUS_REMOTE` (no local mic)
 //      and `process.platform === 'win32'` (not supported).
 //   8. `stopRecording` is safe to call when no recorder is active.
 //   9. `_getActiveRecorderForTesting` reflects internal state correctly.
@@ -59,7 +59,7 @@ async function awaitBounded(p: Promise<void>, ms: number, what: string): Promise
   }
 }
 
-const ENV_KEYS = ['MONAD_REMOTE'] as const;
+const ENV_KEYS = ['ELANOUS_REMOTE'] as const;
 const savedEnv: Record<string, string | undefined> = {};
 
 function captureEnv(): void {
@@ -110,7 +110,7 @@ describe('PR-S1V.1 · hasCommand', () => {
   });
 
   test('returns false for a binary that cannot exist', () => {
-    expect(hasCommand('monad-voice-test-cmd-that-does-not-exist-89412')).toBe(false);
+    expect(hasCommand('elanous-voice-test-cmd-that-does-not-exist-89412')).toBe(false);
   });
 });
 
@@ -203,16 +203,16 @@ describe('PR-S1V.1 · linuxHasAlsaCards', () => {
 // ── checkRecordingAvailability ──────────────────────────────────────
 
 describe('PR-S1V.1 · checkRecordingAvailability', () => {
-  test('MONAD_REMOTE → unavailable with dual-attach hint', async () => {
-    process.env.MONAD_REMOTE = 'mbp.tailnet:31415';
+  test('ELANOUS_REMOTE → unavailable with dual-attach hint', async () => {
+    process.env.ELANOUS_REMOTE = 'mbp.tailnet:31415';
     const result = await checkRecordingAvailability();
     expect(result.available).toBe(false);
     expect(result.reason).toContain('Remote attach');
     expect(result.reason?.toLowerCase()).toContain('dual-attach');
   });
 
-  test('without MONAD_REMOTE — depends on environment, but reason-when-unavailable is non-empty', async () => {
-    delete process.env.MONAD_REMOTE;
+  test('without ELANOUS_REMOTE — depends on environment, but reason-when-unavailable is non-empty', async () => {
+    delete process.env.ELANOUS_REMOTE;
     const result = await checkRecordingAvailability();
     if (result.available) {
       expect(result.reason).toBe(null);
@@ -260,7 +260,7 @@ describe('PR-S1V · startWavInjectionRecording', () => {
       resolveEnd();
     };
     const ok = startWavInjectionRecording(
-      '/tmp/monad-voice-test-does-not-exist.wav',
+      '/tmp/elanous-voice-test-does-not-exist.wav',
       onData,
       onEnd,
     );
@@ -275,7 +275,7 @@ describe('PR-S1V · startWavInjectionRecording', () => {
   test('streams PCM chunks and fires onEnd for a real WAV', async () => {
     if (!hasCommand('sox')) return;
     // Build a 0.5 sec WAV via sox's synth so we don't depend on a fixture.
-    const tmpWav = `/tmp/monad-voice-test-${Date.now()}.wav`;
+    const tmpWav = `/tmp/elanous-voice-test-${Date.now()}.wav`;
     const { spawnSync } = await import('node:child_process');
     spawnSync('sox', [
       '-n', tmpWav,

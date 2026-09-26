@@ -1,8 +1,8 @@
 // ── 최소 PATH 보강 (2026-07-25) ───────────────────────────────────────────
-// cron/launchd 는 최소 PATH(/usr/bin:/bin)로 프로세스를 띄운다. monad 내부 subprocess 호출
+// cron/launchd 는 최소 PATH(/usr/bin:/bin)로 프로세스를 띄운다. elanous 내부 subprocess 호출
 // (execFileSync('gh', …)·git 등)은 bare 커맨드라, homebrew/local 바이너리가 PATH 에 없으면 ENOENT 로
 // **무음실패**한다 — 예: review-watch 크론이 `gh`(/opt/homebrew/bin/gh)를 못 찾아 fetchLabeledOpenPrs 가
-// catch→[] → 라벨 PR 이 항상 prs:0·triggered:0 → 무인 리뷰 파이프라인 통째 사문화. B1(#5342)은 monad/bun
+// catch→[] → 라벨 PR 이 항상 prs:0·triggered:0 → 무인 리뷰 파이프라인 통째 사문화. B1(#5342)은 elanous/bun
 // 진입점 절대경로만 고쳤고 내부 gh/기타 subprocess 는 여전히 PATH 의존이었다.
 //
 // 여기서 표준 bin 디렉토리를 process.env.PATH 에 **없을 때만 append**(기존 우선순위 무접촉·이미 있으면
@@ -30,7 +30,7 @@ export const CANDIDATE_BIN_DIRS: readonly string[] = [
   '/usr/local/bin',    // macOS Intel homebrew / 수동 설치
   `${homedir()}/.bun/bin`,
   // 🆕 사용자 설치 CLI — claude(install.sh) · codex(npm prefix=~/.local) · grok(심링크).
-  //    ⚠️ Linux VM(모나드봇)에서도 같은 자리다: claude·codex = ~/.local/bin.
+  //    ⚠️ Linux VM(엘라누스봇)에서도 같은 자리다: claude·codex = ~/.local/bin.
   `${homedir()}/.local/bin`,
   // 🆕 grok 은 xAI install.sh 가 «자기 디렉토리»에 둔다 — Linux 에서는 ~/.local/bin 심링크가 «없을 수» 있다.
   `${homedir()}/.grok/bin`,

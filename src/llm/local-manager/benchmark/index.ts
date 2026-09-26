@@ -2,7 +2,7 @@
 //
 // node-b/본머신 로컬 모델을 100점 루브릭(코딩50·추론30·RAG10·형식10)으로 공정 재테스트. 대표 방식 이식:
 // temperature 0·같은 문항 같은 순서·코딩은 실제 Python 실행 채점. 다운로드(installer)→벤치→preset 역제안
-// 루프의 채점 코어. CLI = `monad local bench`, 미션 배선 = local-model-bench-mission.
+// 루프의 채점 코어. CLI = `elanous local bench`, 미션 배선 = local-model-bench-mission.
 
 export { runPython, extractCodeBlock, tallyMarkers, type PyRunResult, type PyRunOpts } from './code-exec.js';
 export {

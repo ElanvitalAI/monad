@@ -82,7 +82,7 @@ export type GoalAuthorSelfResolution =
   | { answer?: undefined; evidence?: undefined };
 
 export interface GoalAuthorClarificationResolutionDeps {
-  /** Monadic authoring seam; it must return no answer when the available evidence is insufficient. */
+  /** Elanousic authoring seam; it must return no answer when the available evidence is insufficient. */
   selfResolve?: (context: GoalAuthorSelfResolutionContext) => Promise<GoalAuthorSelfResolution>;
   /** Bounded repository grounding forwarded to the self-resolver, never delegated to a child agent. */
   evidence?: readonly string[];
@@ -103,7 +103,7 @@ export interface GoalAuthorSelfResolveDeps {
  * 종전 30초는 「모델이 답을 못 낸 것」과 「시간이 모자란 것」을 갈랐어야 했는데,
  * ***그 둘이 같은 `catch` 로 접혀 있어 어느 쪽인지 볼 수 없었다***(같은 날 `self-resolve-timeout` 신설로 갈림).
  * ⇒ 이제 갈리므로 상한을 늘려도 «늘어서 나아졌는지»를 잴 수 있다 —
- *   `monad logs --category goal-author --event self-resolve-timeout` 의 수가 그 자다.
+ *   `elanous logs --category goal-author --event self-resolve-timeout` 의 수가 그 자다.
  * ⚠️ 대가: 자동 해소가 막히면 저작이 최대 10분 늦어진다. 그 비용이 「미결로 런이 죽는 것」보다 싸다는 판단.
  */
 const DEFAULT_SELF_RESOLUTION_TIMEOUT_MS = 600_000;
@@ -202,7 +202,7 @@ export async function defaultGoalAuthorSelfResolve(
     const result = await (deps.stream ?? (async (input, signal, reportUsage) => {
       const { streamLLM } = await import('../llm.js');
       return streamLLM([{ role: 'user', content: input }], () => {}, {
-        model: process.env.MONAD_GOAL_AUTHOR_MODEL || tierModel('better'),
+        model: process.env.ELANOUS_GOAL_AUTHOR_MODEL || tierModel('better'),
         reasoningEffort: 'high',
         signal,
         onUsage: reportUsage,

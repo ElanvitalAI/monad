@@ -1,16 +1,16 @@
-// MVP M2.1 — Telegram bot ↔ Monad ACP bridge.
+// MVP M2.1 — Telegram bot ↔ Elanous ACP bridge.
 //
 // Renamed from `telegram-daemon-bridge.ts` in C-1a (cleanup ROADMAP
 // 2026-05-08): with NEXUS N-1.5 v6 hard landing, the "daemon" the bot
-// attaches to is no longer a separate `monad serve` process — it's the
-// daemon-runtime hosted in-process inside `monad nexus` over the same
-// unix socket. (`monad serve` was deleted in C-4a; only NEXUS hosts the daemon-runtime now.)
+// attaches to is no longer a separate `elanous serve` process — it's the
+// daemon-runtime hosted in-process inside `elanous nexus` over the same
+// unix socket. (`elanous serve` was deleted in C-4a; only NEXUS hosts the daemon-runtime now.)
 // Hence the rename: this file is an **ACP bridge** that happens to use
 // the daemon socket protocol; "daemon" in the name was misleading.
 //
 // Returns a `runTurnImpl` compatible with `botFromConfig`'s
 // `runTurnImpl` slot but routes the LLM dispatch through the ACP server
-// (NEXUS in-process · grace `monad serve` · or auto-spawned) over a
+// (NEXUS in-process · grace `elanous serve` · or auto-spawned) over a
 // Unix socket instead of calling `streamLLM` in-process.
 //
 // Why: with this wired in, a single ACP server owns the LLM / tool /
@@ -28,9 +28,9 @@
 //     The daemon owns conversation context now; the legacy CLI `runTurn`
 //     stays for non-daemon mode.
 //
-// Auto-spawn: when `MONAD_TELEGRAM_AUTO_SPAWN_DAEMON=1` is set, a
-// missing socket triggers a `monad serve --background` fork. Default
-// is OFF — the operator usually keeps a long-running `monad serve` up
+// Auto-spawn: when `ELANOUS_TELEGRAM_AUTO_SPAWN_DAEMON=1` is set, a
+// missing socket triggers a `elanous serve --background` fork. Default
+// is OFF — the operator usually keeps a long-running `elanous serve` up
 // and the bot just attaches.
 //
 // Failure modes:
@@ -57,10 +57,10 @@ import {
   runDaemonSessionTurnSubmit,
 } from './tui-client/daemon-session-submit-runtime.js';
 import {
-  monadDaemonSocketPath,
-  monadDaemonLogPath,
-  ensureMonadDaemonDir,
-} from './monad-daemon.js';
+  elanousDaemonSocketPath,
+  elanousDaemonLogPath,
+  ensureElanousDaemonDir,
+} from './elanous-daemon.js';
 import type { RunTurnOpts, RunTurnResult } from './session/chat.js';
 import type { SessionMeta } from './session/index.js';
 import {
@@ -77,9 +77,9 @@ import { debug } from './debug/log.js';
 
 export interface TelegramAcpBridgeOpts {
   /** Override the daemon socket path. Defaults to
-   *  `monadDaemonSocketPath()` (= `~/.monad/monad.sock`). */
+   *  `elanousDaemonSocketPath()` (= `~/.elanous/elanous.sock`). */
   socketPath?: string;
-  /** Auto-spawn `monad serve --background` when the socket is not
+  /** Auto-spawn `elanous serve --background` when the socket is not
    *  alive. Default false. */
   autoSpawn?: boolean;
   /** How long to wait for the socket to come up after auto-spawn. */
@@ -104,7 +104,7 @@ export interface TelegramAcpBridgeOpts {
   ambientIdleMs?: number;
   /** Tier 1 telegram fan-out arc — test seam. Override the
    *  bindings store path (defaults to
-   *  `<MONAD_DAEMON_DIR>/telegram-daemon-bindings.json`). Tests
+   *  `<ELANOUS_DAEMON_DIR>/telegram-daemon-bindings.json`). Tests
    *  point at a tmp file so mutations don't pollute the real
    *  daemon dir. */
   bindingsStorePath?: string;
@@ -170,10 +170,10 @@ export interface TelegramAcpBridge {
 }
 
 async function spawnDaemonInBackground(): Promise<void> {
-  ensureMonadDaemonDir();
+  ensureElanousDaemonDir();
   const fs = await import('node:fs');
-  const out = fs.openSync(monadDaemonLogPath(), 'a');
-  const err = fs.openSync(monadDaemonLogPath(), 'a');
+  const out = fs.openSync(elanousDaemonLogPath(), 'a');
+  const err = fs.openSync(elanousDaemonLogPath(), 'a');
   const args = [process.argv[1]!, 'serve'];
   const child = childSpawn(process.execPath, args, {
     detached: true,
@@ -199,7 +199,7 @@ async function waitForSocket(path: string, maxMs: number): Promise<boolean> {
 export function createTelegramAcpBridge(
   opts: TelegramAcpBridgeOpts = {},
 ): TelegramAcpBridge {
-  const sockPath = opts.socketPath ?? monadDaemonSocketPath();
+  const sockPath = opts.socketPath ?? elanousDaemonSocketPath();
   // LF2 — 폴백을 콘솔+debug.log 이중으로: 무prefix stdout 로만 새던 브릿지
   // 라인이 파일 트레일/logs.db 에도 남는다.
   const log = opts.log ?? ((m: string): void => { console.log(m); debug.log('telegram.bridge', m); });
@@ -228,7 +228,7 @@ export function createTelegramAcpBridge(
       }
     } else {
       throw new Error(
-        `daemon-bridge: no monad daemon at ${sockPath}. Start one with \`monad serve --background\`, or set MONAD_TELEGRAM_AUTO_SPAWN_DAEMON=1 to auto-spawn.`,
+        `daemon-bridge: no elanous daemon at ${sockPath}. Start one with \`elanous serve --background\`, or set ELANOUS_TELEGRAM_AUTO_SPAWN_DAEMON=1 to auto-spawn.`,
       );
     }
   }
@@ -252,7 +252,7 @@ export function createTelegramAcpBridge(
   function buildAmbientHandler(sessionId: string): (update: unknown) => void {
     // Extract text from `agent_message_chunk` and (Tier 1 Phase 3)
     // `user_message_chunk` notifications and forward to the per-
-    // session buffer. user_message_chunk is the monad-extension
+    // session buffer. user_message_chunk is the elanous-extension
     // broadcast that fires when ANOTHER surface (PWA / TUI / different
     // chat) sent a user prompt to the same sessionId — we prefix the
     // text so the user can tell their own messages from other
@@ -292,8 +292,8 @@ export function createTelegramAcpBridge(
   function fakeMeta(sessionId: string): SessionMeta {
     return {
       id: sessionId,
-      provider: 'monad-daemon',
-      model: 'monad-daemon',
+      provider: 'elanous-daemon',
+      model: 'elanous-daemon',
       title: '',
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
@@ -311,8 +311,8 @@ export function createTelegramAcpBridge(
         meta: fakeMeta(turnOpts.sessionId),
         usedTokens: 0,
         droppedMessages: 0,
-        provider: 'monad-daemon',
-        model: 'monad-daemon',
+        provider: 'elanous-daemon',
+        model: 'elanous-daemon',
         memoryIds: [],
       };
     }
@@ -374,8 +374,8 @@ export function createTelegramAcpBridge(
         meta: fakeMeta(turnOpts.sessionId),
         usedTokens: 0,
         droppedMessages: 0,
-        provider: 'monad-daemon',
-        model: 'monad-daemon',
+        provider: 'elanous-daemon',
+        model: 'elanous-daemon',
         memoryIds: [],
       };
     } finally {

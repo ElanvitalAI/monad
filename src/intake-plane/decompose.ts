@@ -9,7 +9,7 @@
  * The actual LLM call is injected via `DecomposeMemoCallable` — same
  * DI shape as `task-orchestrator/generator.ts`. Tests pass a stub
  * callable; production wires the same `streamLLM*` path the rest of
- * monad uses. This module does **not** mutate TOX; I8 register_all is
+ * elanous uses. This module does **not** mutate TOX; I8 register_all is
  * the only place that creates Mission / Task rows from a decomposition.
  *
  * Output format: JSON (vs. RESEARCH §6.1's YAML sketch). The prompt
@@ -165,8 +165,8 @@ export function buildDecomposeMemoPrompt(input: DecomposeMemoInput): string {
   return [
     'SYSTEM:',
     refinement
-      ? '당신은 monad intake refiner 입니다. 사용자가 이전 분해 결과에 대해 수정 요청을 합니다 — 원본 memo 는 유지하면서 hint 를 반영하여 새 분해를 제시하세요.'
-      : '당신은 monad intake decomposer 입니다. 사용자의 raw memo dump 를 mission/task 단위로 분해하세요.',
+      ? '당신은 elanous intake refiner 입니다. 사용자가 이전 분해 결과에 대해 수정 요청을 합니다 — 원본 memo 는 유지하면서 hint 를 반영하여 새 분해를 제시하세요.'
+      : '당신은 elanous intake decomposer 입니다. 사용자의 raw memo dump 를 mission/task 단위로 분해하세요.',
     '',
     '규칙:',
     '- 구분자 detect: ===, ---, 빈 줄, indent, bullet point',

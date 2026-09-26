@@ -28,7 +28,7 @@ describe('ACP server terminal id issuer', () => {
 });
 
 describe('ACP server turn performer resolver', () => {
-  test('identifies monad itself distinctly from unknown and external performers', () => {
+  test('identifies elanous itself distinctly from unknown and external performers', () => {
     const external = 'literal-external-agent';
     const self = resolveAcpServerTurnPerformer();
 

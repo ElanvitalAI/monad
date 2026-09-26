@@ -30,7 +30,7 @@
 import { debug } from '../../debug/log.js';
 import type { ContextKeyService } from '../../input-core/context-keys.js';
 import type { ViewMode } from '../../input-core/view-mode.js';
-import type { MonadState, Store } from '../types.js';
+import type { ElanousState, Store } from '../types.js';
 
 /** Attach one-way sync from `store.ui.viewMode` → `CKS.viewModeKind`.
  *
@@ -41,7 +41,7 @@ import type { MonadState, Store } from '../types.js';
  *
  *  Returns a disposer — idempotent. */
 export function bridgeViewModeToContextKeys(
-  store: Store<MonadState>,
+  store: Store<ElanousState>,
   contextKeys: ContextKeyService,
 ): () => void {
   // ── Initial sync ────────────────────────────────────────────────
@@ -100,7 +100,7 @@ export function bridgeViewModeToContextKeys(
  *  from firing. Use `deriveAndDiffViewMode` at the call site when you
  *  want to short-circuit even earlier. */
 export function publishViewMode(
-  store: Store<MonadState>,
+  store: Store<ElanousState>,
   next: ViewMode,
 ): void {
   const prev = readViewMode(store);
@@ -110,7 +110,7 @@ export function publishViewMode(
   }));
 }
 
-function readViewMode(store: Store<MonadState>): ViewMode | undefined {
+function readViewMode(store: Store<ElanousState>): ViewMode | undefined {
   return (store.getState().ui as { viewMode?: ViewMode }).viewMode;
 }
 

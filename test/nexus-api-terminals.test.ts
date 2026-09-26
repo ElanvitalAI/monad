@@ -21,14 +21,14 @@ import { join } from 'node:path';
 
 // ⭐P2 — isolate the pty-manifest SQLite (frame endpoint reads it) into a
 // throwaway state dir BEFORE any manifest access, so frame tests never
-// touch ~/.monad. Must be set at module load (env is read lazily on first
-// manifest op). MONAD_STATE_DIR 규율 = logsDbPath 동형.
+// touch ~/.elanous. Must be set at module load (env is read lazily on first
+// manifest op). ELANOUS_STATE_DIR 규율 = logsDbPath 동형.
 // beforeAll 로 세우기는 못 씀 — 모듈 로드 시점에 이미 읽힌다. 세우기 전 값은
 // 기억해 두고 afterAll 에서 복원(없었으면 삭제)한다. 안 하면 같은 프로세스의
 // 뒤 시험이 이 임시 디렉터리를 본다.
-const prevEnv = process.env.MONAD_STATE_DIR;
-const terminalsTestStateDir = mkdtempSync(join(tmpdir(), 'monad-terminals-test-'));
-process.env.MONAD_STATE_DIR = terminalsTestStateDir;
+const prevEnv = process.env.ELANOUS_STATE_DIR;
+const terminalsTestStateDir = mkdtempSync(join(tmpdir(), 'elanous-terminals-test-'));
+process.env.ELANOUS_STATE_DIR = terminalsTestStateDir;
 
 import {
   handleTerminalScrollback,
@@ -171,8 +171,8 @@ afterAll(() => {
   resetPtyControlIpcForTesting();
   setPtyManifestDbPathForTesting(null);
   resetPtyEventLogForTesting();
-  if (prevEnv === undefined) delete process.env.MONAD_STATE_DIR;
-  else process.env.MONAD_STATE_DIR = prevEnv;
+  if (prevEnv === undefined) delete process.env.ELANOUS_STATE_DIR;
+  else process.env.ELANOUS_STATE_DIR = prevEnv;
   rmSync(terminalsTestStateDir, { recursive: true, force: true });
 });
 
@@ -197,7 +197,7 @@ describe('parseScrollbackPath', () => {
 });
 
 describe('terminal run participants', () => {
-  const runDir = selfDevRunsDir(process.env.MONAD_STATE_DIR);
+  const runDir = selfDevRunsDir(process.env.ELANOUS_STATE_DIR);
 
   test('matches only a run participant collection path', () => {
     expect(parseTerminalRunParticipantsPath('/v1/terminals/runs/run-1/participants')).toBe('run-1');
@@ -250,7 +250,7 @@ describe('terminal run participants', () => {
 
 describe('terminal run original goal', () => {
   test('reads the start feature lazily by run ID and distinguishes missing goal states', async () => {
-    const ledgerDir = runLedgerDir(process.env.MONAD_STATE_DIR);
+    const ledgerDir = runLedgerDir(process.env.ELANOUS_STATE_DIR);
     appendRunLedgerEntry({ timestamp: '2026-08-05T00:00:00.000Z', runId: 'run-goal', event: 'start', goalId: 'goal-123', data: { feature: 'src/nexus/api/terminals.ts의 한국어 원래 골 <tag>' } }, ledgerDir);
     appendRunLedgerEntry({ timestamp: '2026-08-05T00:00:00.000Z', runId: 'run-no-feature', event: 'start', data: {} }, ledgerDir);
     appendRunLedgerEntry({ timestamp: '2026-08-05T00:00:00.000Z', runId: 'run-no-start', event: 'progress', data: { feature: 'not the original goal' } }, ledgerDir);
@@ -316,7 +316,7 @@ describe('terminal run original goal', () => {
   });
 
   test('reports the actual ledger directory for a missing ledger', async () => {
-    const ledgerDir = runLedgerDir(process.env.MONAD_STATE_DIR);
+    const ledgerDir = runLedgerDir(process.env.ELANOUS_STATE_DIR);
     const missingLedger = await handleTerminalRunGoal(bareReq(), opts, 'run-ledger-not-found').json() as { runId: string; status: string; ledgerDirectory: string };
 
     expect(missingLedger).toEqual({ runId: 'run-ledger-not-found', status: 'ledger-not-found', ledgerDirectory: ledgerDir });
@@ -341,8 +341,8 @@ describe('terminal observatory metadata', () => {
       ['/Users/example/source/elan/monad-agent', { treeName: 'elan', worktreeName: '' }, 'elan'],
       ['/Users/example/source/elan/monad-agent.worktrees/fresh', { treeName: 'elan', worktreeName: 'fresh' }, 'elan/fresh'],
       ['/Users/example/source/demo/monad-agent', { treeName: 'demo', worktreeName: '' }, 'demo'],
-      ['/Users/example/.monad/worktrees/axon-a477b47f/monad-agent.worktrees/self-impl', { treeName: 'axon-a477b47f', worktreeName: 'self-impl' }, 'axon-a477b47f/self-impl'],
-      ['/Users/example/.monad/worktrees/pilot-b8dc9b5c/monad-agent.worktrees/self-impl', { treeName: 'pilot-b8dc9b5c', worktreeName: 'self-impl' }, 'pilot-b8dc9b5c/self-impl'],
+      ['/Users/example/.elanous/worktrees/axon-a477b47f/monad-agent.worktrees/self-impl', { treeName: 'axon-a477b47f', worktreeName: 'self-impl' }, 'axon-a477b47f/self-impl'],
+      ['/Users/example/.elanous/worktrees/pilot-b8dc9b5c/monad-agent.worktrees/self-impl', { treeName: 'pilot-b8dc9b5c', worktreeName: 'self-impl' }, 'pilot-b8dc9b5c/self-impl'],
       ['/tmp/monad-agent.worktrees/fresh', { treeName: '', worktreeName: 'fresh' }, 'fresh'],
       ['/tmp/source/elan', { treeName: 'elan', worktreeName: '' }, 'elan'],
       ['/tmp/somewhere', { treeName: '', worktreeName: '' }, ''],
@@ -1316,20 +1316,20 @@ describe('handleTerminalsList', () => {
     });
     const localManifest = row(local.id, local.startedAt, { terminalOriginCategory: 'direct-human', terminalOriginReason: 'interactive-cli', controller: '' });
     const external = row('external', 2, { terminalOriginCategory: 'external-tool', terminalOriginReason: 'external-launcher', externalToolName: 'codex', controller: 'self-dev' });
-    const monad = row('monad-reason-equals-category', 1, { terminalOriginCategory: 'monad', terminalOriginReason: 'monad' });
+    const elanous = row('elanous-reason-equals-category', 1, { terminalOriginCategory: 'elanous', terminalOriginReason: 'elanous' });
     const absentController = row('controller-absent', 0, { terminalOriginCategory: 'unknown', terminalOriginReason: 'unattributed' });
     const body = await handleTerminalsList(bareReq('http://localhost/v1/terminals?all=true'), opts, {
       listPty: () => [local],
       ptyManifestTargets: () => [{ name: 'remote', dbPath: '/roots/remote/manifest.db' }],
       listPtyManifestRows: () => [localManifest],
-      listPtyManifestRowsAt: () => [external, monad, absentController],
+      listPtyManifestRowsAt: () => [external, elanous, absentController],
       isProcessAlive: () => true,
     }).json() as { terminals: Array<Record<string, unknown> & { id: string }>; scope: Record<string, unknown> };
     const byId = (id: string) => body.terminals.find((terminal) => terminal.id === id)!;
 
     expect(byId(local.id)).toMatchObject({ terminalOriginCategory: 'direct-human', terminalOriginReason: 'interactive-cli', controller: '', cmd: local.cmd, startedAt: local.startedAt });
     expect(byId(external.id)).toMatchObject({ terminalOriginCategory: 'external-tool', terminalOriginReason: 'external-launcher', externalToolName: 'codex', controller: 'self-dev' });
-    expect(byId(monad.id)).toMatchObject({ terminalOriginCategory: 'monad', terminalOriginReason: 'monad', origin: 'unknown' });
+    expect(byId(elanous.id)).toMatchObject({ terminalOriginCategory: 'elanous', terminalOriginReason: 'elanous', origin: 'unknown' });
     expect(byId(absentController.id)).toMatchObject({ terminalOriginCategory: 'unknown', terminalOriginReason: 'unattributed' });
     expect(byId(absentController.id)).not.toHaveProperty('controller');
     expect(body.scope).toMatchObject({ federated: true, roots: 2 });
@@ -1344,10 +1344,10 @@ describe('handleTerminalsList', () => {
         terminalOriginCategory: 'external-tool', terminalOriginReason: 'external-launcher', externalToolName: 'codex', controller: '',
       },
       {
-        id: 'cli-monad-reason-equals-category', kind: 'agent', cmd: 'monad', ownerPid: 1, ptyPid: 12, instance: 'remote', startedAt: 1, alive: true,
+        id: 'cli-elanous-reason-equals-category', kind: 'agent', cmd: 'elanous', ownerPid: 1, ptyPid: 12, instance: 'remote', startedAt: 1, alive: true,
         exitCode: null, snapshot: '', snapshotAt: 0, updatedAt: 1, frame: '', frameAt: 0, outputBytesTotal: 0,
         runId: '', runIdSource: '', spaceId: '', sessionId: '', parentPtyId: '', parentPid: 0, parentKind: '', closedAt: 0, codeSha: '',
-        terminalOriginCategory: 'monad', terminalOriginReason: 'monad',
+        terminalOriginCategory: 'elanous', terminalOriginReason: 'elanous',
       },
       {
         id: 'cli-unknown', kind: 'agent', cmd: 'unknown', ownerPid: 1, ptyPid: 13, instance: 'remote', startedAt: 1, alive: true,
@@ -1476,13 +1476,13 @@ describe('handleTerminalsList', () => {
   });
 
   test('merges local PTY lineage metadata from its matching manifest row', async () => {
-    const previousParent = process.env.MONAD_PARENT_PTY_ID;
-    const previousRunId = process.env.MONAD_RUN_ID;
-    process.env.MONAD_PARENT_PTY_ID = 'parent-pty';
-    process.env.MONAD_RUN_ID = 'run-local-lineage';
+    const previousParent = process.env.ELANOUS_PARENT_PTY_ID;
+    const previousRunId = process.env.ELANOUS_RUN_ID;
+    process.env.ELANOUS_PARENT_PTY_ID = 'parent-pty';
+    process.env.ELANOUS_RUN_ID = 'run-local-lineage';
     try {
       const workdir = join(
-        mkdtempSync(join(tmpdir(), 'monad-terminal-lineage-')),
+        mkdtempSync(join(tmpdir(), 'elanous-terminal-lineage-')),
         'source',
         'elan',
         'monad-agent.worktrees',
@@ -1516,10 +1516,10 @@ describe('handleTerminalsList', () => {
       });
       expect(body.terminals[0]!.parentPid).toBe(process.ppid);
     } finally {
-      if (previousParent === undefined) delete process.env.MONAD_PARENT_PTY_ID;
-      else process.env.MONAD_PARENT_PTY_ID = previousParent;
-      if (previousRunId === undefined) delete process.env.MONAD_RUN_ID;
-      else process.env.MONAD_RUN_ID = previousRunId;
+      if (previousParent === undefined) delete process.env.ELANOUS_PARENT_PTY_ID;
+      else process.env.ELANOUS_PARENT_PTY_ID = previousParent;
+      if (previousRunId === undefined) delete process.env.ELANOUS_RUN_ID;
+      else process.env.ELANOUS_RUN_ID = previousRunId;
     }
   });
 
@@ -2140,7 +2140,7 @@ describe('parseFramePath', () => {
 describe('handleTerminalFrame', () => {
   // Frames only exist in the shared manifest (a surface self-reports the
   // renderScreen() grid), NOT in the in-process registry. Drive the
-  // manifest directly to exercise the endpoint (isolated MONAD_STATE_DIR).
+  // manifest directly to exercise the endpoint (isolated ELANOUS_STATE_DIR).
   function frameReq(): Request {
     return new Request('http://localhost/v1/terminals/x/frame');
   }
@@ -2151,8 +2151,8 @@ describe('handleTerminalFrame', () => {
   test('returns the self-reported rendered frame without requesting a live snapshot', async () => {
     const id = `tui:${1000 + Math.floor(performance.now())}`;
     const now = Date.now();
-    upsertPtyManifest({ id, kind: 'tui', cmd: 'monad', startedAt: now, now });
-    const screen = '┌ monad ┐\n│ /help  slash picker │\n└───────┘';
+    upsertPtyManifest({ id, kind: 'tui', cmd: 'elanous', startedAt: now, now });
+    const screen = '┌ elanous ┐\n│ /help  slash picker │\n└───────┘';
     updatePtyManifestFrame(id, () => screen, now);
     let requests = 0;
     const res = await handleTerminalFrame(frameReq(), opts, id, frameUrl(), {
@@ -2172,7 +2172,7 @@ describe('handleTerminalFrame', () => {
   test('requests the owner snapshot when the stored frame is absent and returns its live screen', async () => {
     const id = `tui:${2000 + Math.floor(performance.now())}`;
     const now = Date.now();
-    upsertPtyManifest({ id, kind: 'tui', cmd: 'monad', startedAt: now, now });
+    upsertPtyManifest({ id, kind: 'tui', cmd: 'elanous', startedAt: now, now });
     const calls: Array<[string, string, number]> = [];
     const res = await handleTerminalFrame(frameReq(), opts, id, frameUrl(), {
       async requestRemotePtyControl(requestId, action, timeoutMs) {
@@ -2215,7 +2215,7 @@ describe('handleTerminalFrame', () => {
   test('uses the resolved remote manifest DB to request the selected duplicate owner and return its live frame', async () => {
     const id = 'duplicate-pty-remote-owner';
     const sourceRoot = 'owner-b';
-    const remoteDir = mkdtempSync(join(tmpdir(), 'monad-remote-owner-'));
+    const remoteDir = mkdtempSync(join(tmpdir(), 'elanous-remote-owner-'));
     const remoteManifestDbPath = join(remoteDir, 'pty', 'manifest.db');
     mkdirSync(join(remoteDir, 'pty'), { recursive: true });
     const remoteDb = new Database(remoteManifestDbPath);
@@ -2254,7 +2254,7 @@ describe('handleTerminalFrame', () => {
     for (const [index, outcome] of outcomes.entries()) {
       const id = `tui:${3000 + index}:${Math.floor(performance.now())}`;
       const now = Date.now();
-      upsertPtyManifest({ id, kind: 'tui', cmd: 'monad', startedAt: now, now });
+      upsertPtyManifest({ id, kind: 'tui', cmd: 'elanous', startedAt: now, now });
       const res = await handleTerminalFrame(frameReq(), opts, id, frameUrl(), {
         async requestRemotePtyControl() { return outcome; },
       });
@@ -2269,7 +2269,7 @@ describe('handleTerminalFrame', () => {
   test('returns an unavailable frame value when the snapshot request rejects after its timeout', async () => {
     const id = `tui:timeout:${Math.floor(performance.now())}`;
     const now = Date.now();
-    upsertPtyManifest({ id, kind: 'tui', cmd: 'monad', startedAt: now, now });
+    upsertPtyManifest({ id, kind: 'tui', cmd: 'elanous', startedAt: now, now });
     const res = await handleTerminalFrame(frameReq(), opts, id, frameUrl(), {
       async requestRemotePtyControl() { throw new Error('screen-render-timeout'); },
     });
@@ -2315,7 +2315,7 @@ describe('handleTerminalFrame', () => {
   test('?ansi=strip removes escape sequences from the frame', async () => {
     const id = `tui:${4000 + Math.floor(performance.now())}`;
     const now = Date.now();
-    upsertPtyManifest({ id, kind: 'tui', cmd: 'monad', startedAt: now, now });
+    upsertPtyManifest({ id, kind: 'tui', cmd: 'elanous', startedAt: now, now });
     updatePtyManifestFrame(id, () => '\x1b[32mgreen\x1b[0m status', now);
     const res = await handleTerminalFrame(frameReq(), opts, id, frameUrl('?ansi=strip'));
     const body = (await res.json()) as { frame: string; ansiStripped?: boolean };
@@ -2490,8 +2490,8 @@ describe('handleTerminalPng (⭐P4 §4-1 on-demand PNG)', () => {
   test('renders the manifest frame to a real PNG with non-trivial IHDR dims', async () => {
     const id = `tui:${5000 + Math.floor(performance.now())}`;
     const now = Date.now();
-    upsertPtyManifest({ id, kind: 'tui', cmd: 'monad', startedAt: now, now });
-    updatePtyManifestFrame(id, () => '┌ monad ┐\n│ hi   │\n└───────┘', now);
+    upsertPtyManifest({ id, kind: 'tui', cmd: 'elanous', startedAt: now, now });
+    updatePtyManifestFrame(id, () => '┌ elanous ┐\n│ hi   │\n└───────┘', now);
     const res = await handleTerminalPng(pngReq(), opts, id);
     expect(res.status).toBe(200);
     expect(res.headers.get('content-type')).toBe('image/png');
@@ -2521,7 +2521,7 @@ describe('handleTerminalPng (⭐P4 §4-1 on-demand PNG)', () => {
   test('known id with no frame → 404 no-frame', async () => {
     const id = `tui:${6000 + Math.floor(performance.now())}`;
     const now = Date.now();
-    upsertPtyManifest({ id, kind: 'tui', cmd: 'monad', startedAt: now, now });
+    upsertPtyManifest({ id, kind: 'tui', cmd: 'elanous', startedAt: now, now });
     const res = await handleTerminalPng(pngReq(), opts, id);
     expect(res.status).toBe(404);
     expect(((await res.json()) as { error: string }).error).toBe('no-frame');

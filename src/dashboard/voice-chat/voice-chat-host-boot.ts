@@ -66,20 +66,20 @@ export interface BootDashboardVoiceChatOpts {
   language?: string;
   /** Model override (provider-specific). */
   model?: string;
-  /** Phase 5 — VAD mode override. Defaults to `MONAD_VOICE_VAD` env,
+  /** Phase 5 — VAD mode override. Defaults to `ELANOUS_VOICE_VAD` env,
    *  fallback `'server'`. `'server'` lets upstream provider's VAD
    *  detect turn boundary; `'local'` runs the energy-based VAD inside
    *  the pipeline; `'manual'` requires explicit ESC to finalize. */
   vadMode?: VadMode;
   /** VAD tuning override (threshold / silenceMs / minSpeechMs). When
    *  the dashboard passes user-config values here, they win over env
-   *  (`MONAD_VOICE_VAD_*`). */
+   *  (`ELANOUS_VOICE_VAD_*`). */
   vadOpts?: VadOpts;
   /** Optional speaking-phase VAD tuning for barge-in detection. */
   bargeInVadOpts?: VadOpts;
   /** Phase 5 multi-turn — when true, `notifyResponseDone()` auto-
    *  restarts listening (controller `speaking → listening`) instead
-   *  of dropping to `inactive`. Defaults to `MONAD_VOICE_CHAT_MULTI_TURN`
+   *  of dropping to `inactive`. Defaults to `ELANOUS_VOICE_CHAT_MULTI_TURN`
    *  env (1/true/on/yes) or false. */
   multiTurn?: boolean;
   /** Override STT provider id. Highest precedence; when omitted,
@@ -123,7 +123,7 @@ export function bootDashboardVoiceChat(
   const vadMode: VadMode = resolveVadModeFromEnv(undefined, {
     ...(opts.vadMode ? { configOverride: opts.vadMode } : {}),
   });
-  const multiTurn = opts.multiTurn ?? readEnvFlag('MONAD_VOICE_CHAT_MULTI_TURN');
+  const multiTurn = opts.multiTurn ?? readEnvFlag('ELANOUS_VOICE_CHAT_MULTI_TURN');
   // Local VAD runs only when explicitly requested. server/manual leave
   // the pipeline's `vadOpts` undefined → no auto-finalize. opts.vadOpts
   // (from user-config) wins over env tuning.

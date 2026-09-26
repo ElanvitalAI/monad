@@ -23,7 +23,7 @@ import {
 let tmp: string;
 
 beforeEach(() => {
-  tmp = mkdtempSync(joinPath(tmpdir(), 'monad-history-onappend-'));
+  tmp = mkdtempSync(joinPath(tmpdir(), 'elanous-history-onappend-'));
 });
 
 afterEach(() => {

@@ -28,7 +28,7 @@ import {
 let tmp: string;
 
 beforeEach(() => {
-  tmp = mkdtempSync(joinPath(tmpdir(), 'monad-history-disk-test-'));
+  tmp = mkdtempSync(joinPath(tmpdir(), 'elanous-history-disk-test-'));
 });
 
 afterEach(() => {
@@ -114,7 +114,7 @@ describe('DaemonSessionHistory (diskDir)', () => {
 
   test('rejects path-traversal session ids (no file written)', () => {
     const h = new DaemonSessionHistory({ diskDir: tmp });
-    // Defensive guard — ACP server only mints `monad-session-N` style
+    // Defensive guard — ACP server only mints `elanous-session-N` style
     // ids today, but verify the safety net for future changes.
     appendUserAndBuildMessages(h, '../escape', 'q');
     // In-memory still holds the value (the guard rejects ONLY the
@@ -145,11 +145,11 @@ describe('DaemonSessionHistory (diskDir)', () => {
   });
 });
 
-describe('createDaemonRuntime + MONAD_HISTORY_DIR env', () => {
+describe('createDaemonRuntime + ELANOUS_HISTORY_DIR env', () => {
   let toolCwd: string;
 
   beforeEach(() => {
-    toolCwd = mkdtempSync(joinPath(tmpdir(), 'monad-history-tool-cwd-'));
+    toolCwd = mkdtempSync(joinPath(tmpdir(), 'elanous-history-tool-cwd-'));
   });
 
   afterEach(() => {
@@ -157,8 +157,8 @@ describe('createDaemonRuntime + MONAD_HISTORY_DIR env', () => {
   });
 
   test('env var seeds diskDir when no opt provided', async () => {
-    const original = process.env.MONAD_HISTORY_DIR;
-    process.env.MONAD_HISTORY_DIR = tmp;
+    const original = process.env.ELANOUS_HISTORY_DIR;
+    process.env.ELANOUS_HISTORY_DIR = tmp;
     try {
       const { createDaemonRuntime } = await import('../src/boot/daemon-runtime.js');
       const { history } = createDaemonRuntime(withPtyCleanup({ toolCwd }));
@@ -167,15 +167,15 @@ describe('createDaemonRuntime + MONAD_HISTORY_DIR env', () => {
       expect(existsSync(joinPath(tmp, 'env-history.jsonl'))).toBe(true);
       expect(existsSync(joinPath(toolCwd, 'env-history.jsonl'))).toBe(false);
     } finally {
-      if (original === undefined) delete process.env.MONAD_HISTORY_DIR;
-      else process.env.MONAD_HISTORY_DIR = original;
+      if (original === undefined) delete process.env.ELANOUS_HISTORY_DIR;
+      else process.env.ELANOUS_HISTORY_DIR = original;
     }
   });
 
   test('explicit diskDir opt wins over env var', async () => {
-    const original = process.env.MONAD_HISTORY_DIR;
-    const envDiskDir = mkdtempSync(joinPath(tmpdir(), 'monad-history-env-disk-'));
-    process.env.MONAD_HISTORY_DIR = envDiskDir;
+    const original = process.env.ELANOUS_HISTORY_DIR;
+    const envDiskDir = mkdtempSync(joinPath(tmpdir(), 'elanous-history-env-disk-'));
+    process.env.ELANOUS_HISTORY_DIR = envDiskDir;
     try {
       const { createDaemonRuntime } = await import('../src/boot/daemon-runtime.js');
       const { history } = createDaemonRuntime(withPtyCleanup({ diskDir: tmp, toolCwd }));
@@ -184,15 +184,15 @@ describe('createDaemonRuntime + MONAD_HISTORY_DIR env', () => {
       expect(existsSync(joinPath(tmp, 'explicit-history.jsonl'))).toBe(true);
       expect(existsSync(joinPath(envDiskDir, 'explicit-history.jsonl'))).toBe(false);
     } finally {
-      if (original === undefined) delete process.env.MONAD_HISTORY_DIR;
-      else process.env.MONAD_HISTORY_DIR = original;
+      if (original === undefined) delete process.env.ELANOUS_HISTORY_DIR;
+      else process.env.ELANOUS_HISTORY_DIR = original;
       rmSync(envDiskDir, { recursive: true, force: true });
     }
   });
 
   test('no env, no opt → in-memory mode (persistencePath undefined)', async () => {
-    const original = process.env.MONAD_HISTORY_DIR;
-    delete process.env.MONAD_HISTORY_DIR;
+    const original = process.env.ELANOUS_HISTORY_DIR;
+    delete process.env.ELANOUS_HISTORY_DIR;
     try {
       const { createDaemonRuntime } = await import('../src/boot/daemon-runtime.js');
       const { history } = createDaemonRuntime(withPtyCleanup({ toolCwd }));
@@ -201,7 +201,7 @@ describe('createDaemonRuntime + MONAD_HISTORY_DIR env', () => {
       expect(existsSync(joinPath(tmp, 'memory-history.jsonl'))).toBe(false);
       expect(existsSync(joinPath(toolCwd, 'memory-history.jsonl'))).toBe(false);
     } finally {
-      if (original !== undefined) process.env.MONAD_HISTORY_DIR = original;
+      if (original !== undefined) process.env.ELANOUS_HISTORY_DIR = original;
     }
   });
 });

@@ -27,7 +27,7 @@ import {
   TARGET_RAW_BYTES,
 } from '../src/image/utils';
 
-const tmpDir = mkdtempSync(join(tmpdir(), 'monad-img-'));
+const tmpDir = mkdtempSync(join(tmpdir(), 'elanous-img-'));
 const created: string[] = [];
 
 function tmpPath(name: string): string {

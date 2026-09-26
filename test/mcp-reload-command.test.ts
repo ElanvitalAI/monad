@@ -17,7 +17,7 @@ async function run(args: string[]): Promise<{ code: number; output: string }> {
   return { code, output: stdout + stderr };
 }
 
-describe('monad mcp reload Commander wiring', () => {
+describe('elanous mcp reload Commander wiring', () => {
   test('reload action posts to the supplied NEXUS endpoint and preserves the reload output', async () => {
     let method: string | undefined;
     let body: string | undefined;

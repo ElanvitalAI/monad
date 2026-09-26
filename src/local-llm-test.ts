@@ -4,7 +4,7 @@
 // Studio, llama.cpp server, ollama `/v1`, vLLM, etc.) and returns
 // structured PASS/FAIL/SKIP per capability. Used by:
 //
-//   - `monad local test` CLI subcommand (one-shot matrix print)
+//   - `elanous local test` CLI subcommand (one-shot matrix print)
 //   - `/local test` dashboard slash
 //   - integration tests that point at a mocked fetch
 //
@@ -441,7 +441,7 @@ async function probeJsonMode(
       const body = await res.text();
       // Servers that don't support response_format often 400 here —
       // treat that as a SKIP rather than FAIL since the feature is
-      // optional for most monad flows.
+      // optional for most elanous flows.
       if (res.status === 400 || res.status === 422) {
         return { id: 'json_mode', label: 'response_format json', status: 'skip',
           ms: Date.now() - t0, detail: `rejected (HTTP ${res.status})` };

@@ -12,7 +12,7 @@ import { describe, test, expect, beforeEach, afterEach } from 'bun:test';
 import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { setMonadConfigDir, resetMonadConfigDir } from '../src/monad-config-dir';
+import { setElanousConfigDir, resetElanousConfigDir } from '../src/elanous-config-dir';
 import { buildUserConfig } from '../src/user-config';
 
 let root: string;
@@ -29,12 +29,12 @@ function setEnv(vars: Record<string, string | undefined>): void {
 
 beforeEach(() => {
   root = mkdtempSync(join(tmpdir(), 'escalate-cred-'));
-  setMonadConfigDir(root);
+  setElanousConfigDir(root);
   // ⚠️ 이 테스트가 보는 키들을 **먼저 전부 비운다** — 머신에 ANTHROPIC_API_KEY 가 있으면
   //    "상속 안 함"을 검증하려는 케이스가 env 폴백으로 조용히 통과해버린다(Goodhart).
   setEnv({
-    MONAD_ESCALATE_PROVIDER: undefined,
-    MONAD_ESCALATE_MODEL: undefined,
+    ELANOUS_ESCALATE_PROVIDER: undefined,
+    ELANOUS_ESCALATE_MODEL: undefined,
     ANTHROPIC_API_KEY: undefined,
     GROK_API_KEY: undefined,
     OPENAI_API_KEY: undefined,
@@ -44,7 +44,7 @@ beforeEach(() => {
 afterEach(() => {
   for (const [k, v] of SAVED) { if (v === undefined) delete process.env[k]; else process.env[k] = v; }
   SAVED.clear();
-  resetMonadConfigDir();
+  resetElanousConfigDir();
   rmSync(root, { recursive: true, force: true });
 });
 
@@ -57,7 +57,7 @@ describe('escalate 실배선 — provider 전환 시 키도 함께 해석된다'
     // 실측 그대로: base=openai-codex(키 보유) → escalate 로 anthropic.
     // 종전 배선(`apiKey: str(llm.apiKey)`)은 여기서 openai 키를 실어 anthropic 에 붙였다 → 401.
     writeConfig({ provider: 'openai-codex', apiKey: 'sk-proj-openai-key', model: 'gpt-5.6-terra' });
-    setEnv({ MONAD_ESCALATE_PROVIDER: 'anthropic', MONAD_ESCALATE_MODEL: 'claude-opus-4-8' });
+    setEnv({ ELANOUS_ESCALATE_PROVIDER: 'anthropic', ELANOUS_ESCALATE_MODEL: 'claude-opus-4-8' });
 
     const cfg = buildUserConfig();
     expect(cfg.llm.provider).toBe('anthropic');       // provider 는 전환된다(종전과 동일)
@@ -71,7 +71,7 @@ describe('escalate 실배선 — provider 전환 시 키도 함께 해석된다'
       apiKey: 'sk-proj-openai-key',
       rotation: [{ provider: 'anthropic', apiKey: 'sk-ant-from-rotation' }],
     });
-    setEnv({ MONAD_ESCALATE_PROVIDER: 'anthropic', ANTHROPIC_API_KEY: 'sk-ant-from-env' });
+    setEnv({ ELANOUS_ESCALATE_PROVIDER: 'anthropic', ANTHROPIC_API_KEY: 'sk-ant-from-env' });
 
     const cfg = buildUserConfig();
     expect(cfg.llm.apiKey).toBe('sk-ant-from-rotation');   // env 가 있어도 config 우선
@@ -79,7 +79,7 @@ describe('escalate 실배선 — provider 전환 시 키도 함께 해석된다'
 
   test('rotation 에 없으면 provider 별 env 로 폴백', () => {
     writeConfig({ provider: 'openai-codex', apiKey: 'sk-proj-openai-key' });
-    setEnv({ MONAD_ESCALATE_PROVIDER: 'anthropic', ANTHROPIC_API_KEY: 'sk-ant-from-env' });
+    setEnv({ ELANOUS_ESCALATE_PROVIDER: 'anthropic', ANTHROPIC_API_KEY: 'sk-ant-from-env' });
 
     const cfg = buildUserConfig();
     expect(cfg.llm.apiKey).toBe('sk-ant-from-env');
@@ -87,7 +87,7 @@ describe('escalate 실배선 — provider 전환 시 키도 함께 해석된다'
 
   test('전 provider 정합 — grok 으로 전환해도 anthropic 키가 새지 않는다(국소 수리 아님·결정 (b))', () => {
     writeConfig({ provider: 'anthropic', apiKey: 'sk-ant-base' });
-    setEnv({ MONAD_ESCALATE_PROVIDER: 'grok' });
+    setEnv({ ELANOUS_ESCALATE_PROVIDER: 'grok' });
     expect(buildUserConfig().llm.apiKey).toBeUndefined();
 
     setEnv({ GROK_API_KEY: 'xai-live' });
@@ -98,7 +98,7 @@ describe('escalate 실배선 — provider 전환 시 키도 함께 해석된다'
   //    **떠나는**) 전환에서 기존 키가 제거되고 목표 키가 선택되는지는 미검증이었다.
   test('★ 역방향 전환 — anthropic → openai: 기존 anthropic 키가 제거되고 목표 키가 선택된다', () => {
     writeConfig({ provider: 'anthropic', apiKey: 'sk-ant-base' });
-    setEnv({ MONAD_ESCALATE_PROVIDER: 'openai' });
+    setEnv({ ELANOUS_ESCALATE_PROVIDER: 'openai' });
     expect(buildUserConfig().llm.apiKey).toBeUndefined();          // anthropic 키가 openai 로 안 샌다
 
     setEnv({ OPENAI_API_KEY: 'sk-openai-live' });
@@ -110,7 +110,7 @@ describe('escalate 실배선 — provider 전환 시 키도 함께 해석된다'
   test('★ 역방향 전환 — anthropic → openai-codex: catalog 파생이 null 인 provider 도 오버레이로 해석된다', () => {
     // openai-codex 는 catalog 에 envKey 가 없어(OAuth 구독) 오버레이가 없으면 여기서 키를 못 찾는다.
     writeConfig({ provider: 'anthropic', apiKey: 'sk-ant-base' });
-    setEnv({ MONAD_ESCALATE_PROVIDER: 'openai-codex', OPENAI_API_KEY: 'sk-openai-live' });
+    setEnv({ ELANOUS_ESCALATE_PROVIDER: 'openai-codex', OPENAI_API_KEY: 'sk-openai-live' });
 
     const cfg = buildUserConfig();
     expect(cfg.llm.provider).toBe('openai-codex');
@@ -151,7 +151,7 @@ describe('escalate 실배선 — provider 전환 시 키도 함께 해석된다'
       apiKey: 'sk-ant-from-config',
       rotation: [{ provider: 'anthropic', apiKey: 'sk-ant-from-rotation' }],
     });
-    setEnv({ MONAD_ESCALATE_PROVIDER: 'anthropic', ANTHROPIC_API_KEY: 'sk-ant-from-machine-env' });
+    setEnv({ ELANOUS_ESCALATE_PROVIDER: 'anthropic', ANTHROPIC_API_KEY: 'sk-ant-from-machine-env' });
 
     // 전환이 아니라 **모델만 승격**하는 경로 — 키 해석은 종전 그대로여야 한다.
     expect(buildUserConfig().llm.apiKey).toBe('sk-ant-from-config');
@@ -159,7 +159,7 @@ describe('escalate 실배선 — provider 전환 시 키도 함께 해석된다'
 
   test('무회귀 — escalate 가 같은 provider 를 지정하면 base 키를 상속한다(모델만 승격하는 경로)', () => {
     writeConfig({ provider: 'anthropic', apiKey: 'sk-ant-base', model: 'claude-sonnet-5' });
-    setEnv({ MONAD_ESCALATE_PROVIDER: 'anthropic', MONAD_ESCALATE_MODEL: 'claude-opus-4-8' });
+    setEnv({ ELANOUS_ESCALATE_PROVIDER: 'anthropic', ELANOUS_ESCALATE_MODEL: 'claude-opus-4-8' });
 
     const cfg = buildUserConfig();
     expect(cfg.llm.apiKey).toBe('sk-ant-base');
@@ -170,7 +170,7 @@ describe('escalate 실배선 — provider 전환 시 키도 함께 해석된다'
   //    이전 주소로 보낸다(401 과 같은 계열의 실패).
   test('★ 전환 시 옛 baseUrl 을 물려주지 않는다(커스텀 엔드포인트 오배송 차단)', () => {
     writeConfig({ provider: 'anthropic', apiKey: 'sk-ant-base', baseUrl: 'https://anthropic.internal/v1' });
-    setEnv({ MONAD_ESCALATE_PROVIDER: 'grok', GROK_API_KEY: 'xai-live' });
+    setEnv({ ELANOUS_ESCALATE_PROVIDER: 'grok', GROK_API_KEY: 'xai-live' });
 
     const cfg = buildUserConfig();
     expect(cfg.llm.apiKey).toBe('xai-live');
@@ -184,7 +184,7 @@ describe('escalate 실배선 — provider 전환 시 키도 함께 해석된다'
       baseUrl: 'https://anthropic.internal/v1',
       rotation: [{ provider: 'grok', apiKey: 'xai-rot', baseUrl: 'https://grok.internal/v1' }],
     });
-    setEnv({ MONAD_ESCALATE_PROVIDER: 'grok' });
+    setEnv({ ELANOUS_ESCALATE_PROVIDER: 'grok' });
 
     const cfg = buildUserConfig();
     expect(cfg.llm.apiKey).toBe('xai-rot');
@@ -195,7 +195,7 @@ describe('escalate 실배선 — provider 전환 시 키도 함께 해석된다'
     writeConfig({ provider: 'anthropic', apiKey: 'sk-ant-base', baseUrl: 'https://anthropic.internal/v1' });
     expect(buildUserConfig().llm.baseUrl).toBe('https://anthropic.internal/v1');
 
-    setEnv({ MONAD_ESCALATE_PROVIDER: 'anthropic', MONAD_ESCALATE_MODEL: 'claude-opus-4-8' });
+    setEnv({ ELANOUS_ESCALATE_PROVIDER: 'anthropic', ELANOUS_ESCALATE_MODEL: 'claude-opus-4-8' });
     expect(buildUserConfig().llm.baseUrl).toBe('https://anthropic.internal/v1');   // 모델만 승격
   });
 
@@ -204,7 +204,7 @@ describe('escalate 실배선 — provider 전환 시 키도 함께 해석된다'
       provider: 'openai-codex',
       rotation: [{ provider: 'anthropic', apiKey: 'sk-ant-rot' }, { provider: 'grok', apiKey: 'xai-rot' }],
     });
-    setEnv({ MONAD_ESCALATE_PROVIDER: 'anthropic' });
+    setEnv({ ELANOUS_ESCALATE_PROVIDER: 'anthropic' });
 
     const cfg = buildUserConfig();
     expect(cfg.llm.rotation?.map((r) => r.provider)).toEqual(['anthropic', 'grok']);

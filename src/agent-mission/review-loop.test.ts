@@ -22,8 +22,8 @@ function captureFilterObservation(fn: () => unknown): Record<string, unknown> {
   } finally { log.mockRestore(); }
 }
 
-const reinforcementHeadline = '✅ 리뷰 보강 자동 반영(codex-in-monad·제1원칙 렌즈):';
-const identityHeader = '<!-- monad-pr-comment v1 role=author -->';
+const reinforcementHeadline = '✅ 리뷰 보강 자동 반영(codex-in-elanous·제1원칙 렌즈):';
+const identityHeader = '<!-- elanous-pr-comment v1 role=author -->';
 
 const reviewLoopFiles = JSON.stringify({ files: [{ path: 'src/example.ts', additions: 1, deletions: 0 }] });
 

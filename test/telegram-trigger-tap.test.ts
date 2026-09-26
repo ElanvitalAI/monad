@@ -46,7 +46,7 @@ describe('classifyTelegramText (FU-2)', () => {
     });
   });
   test('/cmd@bot strips bot mention', () => {
-    expect(classifyTelegramText('/start@MonadBot')).toEqual({
+    expect(classifyTelegramText('/start@ElanousBot')).toEqual({
       kind: 'command',
       command: 'start',
       body: '',

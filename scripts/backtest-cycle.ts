@@ -6,7 +6,7 @@
 // dry(페이퍼) 기본 · 실집행은 mandate funds.aggressive.armed 게이트로만(B4).
 //
 // 크론 등록은 대표 확인 후(schedule_manage·장중 rate-limit). 지금은 수동/온디맨드.
-// 로그: ~/.monad/conatus/backtest_cycle.log. [[ROADMAP-...]] B5.
+// 로그: ~/.elanous/conatus/backtest_cycle.log. [[ROADMAP-...]] B5.
 
 import { existsSync, appendFileSync } from 'node:fs';
 import { homedir } from 'node:os';
@@ -24,7 +24,7 @@ import { openSectorDb, loadPricesForCodes, loadUsPrices, readSectorScores, US_PU
 import { openPulseDb, detectNotables, loadUniverse, US_PULSE_DB } from '../src/domains/us-pulse.js';
 import { KR_CHAINS } from '../src/domains/sector-attractiveness.js';
 
-const LOG = join(homedir(), '.monad/conatus/backtest_cycle.log');
+const LOG = join(homedir(), '.elanous/conatus/backtest_cycle.log');
 const log = (m: string): void => { try { appendFileSync(LOG, `${new Date().toISOString()} ${m}\n`); } catch { /* */ } };
 
 const today = new Date().toISOString().slice(0, 10);

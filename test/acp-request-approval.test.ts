@@ -3,7 +3,7 @@
 // Covers three contracts:
 //   1. `AcpTurnContext.requestApproval` maps the 4 possible ACP
 //      outcomes (selected allow_once / allow_always / reject_once /
-//      cancelled) plus timeout to monad's `AcpApprovalDecision`
+//      cancelled) plus timeout to elanous's `AcpApprovalDecision`
 //      enum (`allow-once` / `allow-always` / `deny-once` /
 //      `deny-always` / `cancelled` / `timeout`). Matches hermes
 //      `_KIND_TO_HERMES` mapping (research §4.1).

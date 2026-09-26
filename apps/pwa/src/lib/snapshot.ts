@@ -8,7 +8,7 @@
  * 재 mount 시 사용자 가시 컨텍스트 (입력 중 텍스트 · 스크롤 위치 ·
  * 터미널 스크롤백) 를 복원한다.
  *
- * Key 형식: `monad.pwa.snapshot.<surface>.<id>` — `surface` 는
+ * Key 형식: `elanous.pwa.snapshot.<surface>.<id>` — `surface` 는
  * `chatInput` | `chatScroll` | `xtermScrollback`, `id` 는 tabId 또는
  * terminalId. tabId 미지정 시 'singleton'.
  *
@@ -20,7 +20,7 @@
  *   문제는 dogfood 후 follow-up.
  */
 
-const KEY_PREFIX = 'monad.pwa.snapshot.';
+const KEY_PREFIX = 'elanous.pwa.snapshot.';
 const MAX_ENTRY_BYTES = 256 * 1024;
 
 export type SnapshotSurface = 'chatInput' | 'chatScroll' | 'xtermScrollback';

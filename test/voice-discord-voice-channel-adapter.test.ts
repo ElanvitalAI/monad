@@ -33,8 +33,8 @@ afterEach(() => {
 });
 
 function writeConfig(raw: unknown): void {
-  tempConfigRoot = mkdtempSync(join(tmpdir(), 'monad-dc-voice-'));
-  const dir = join(tempConfigRoot, 'monad');
+  tempConfigRoot = mkdtempSync(join(tmpdir(), 'elanous-dc-voice-'));
+  const dir = join(tempConfigRoot, 'elanous');
   mkdirSync(dir, { recursive: true });
   writeFileSync(join(dir, 'config.json'), JSON.stringify(raw, null, 2));
   process.env.XDG_CONFIG_HOME = tempConfigRoot;
@@ -140,24 +140,24 @@ describe('createDiscordVoiceChannelAdapter', () => {
 // ── Env gate ───────────────────────────────────────────────────────
 
 describe('isDiscordVoiceChannelEnabled', () => {
-  it('false when MONAD_DISCORD_VOICE_CHANNEL unset', () => {
-    delete process.env.MONAD_DISCORD_VOICE_CHANNEL;
+  it('false when ELANOUS_DISCORD_VOICE_CHANNEL unset', () => {
+    delete process.env.ELANOUS_DISCORD_VOICE_CHANNEL;
     expect(isDiscordVoiceChannelEnabled()).toBe(false);
   });
   it('prefers user-config enabled=true over missing env', () => {
-    delete process.env.MONAD_DISCORD_VOICE_CHANNEL;
+    delete process.env.ELANOUS_DISCORD_VOICE_CHANNEL;
     writeConfig({ voice: { discord: { voiceChannel: { enabled: true } } } });
     expect(isDiscordVoiceChannelEnabled()).toBe(true);
   });
   it('true for 1/true/on/yes (case-insensitive)', () => {
     for (const v of ['1', 'true', 'TRUE', 'on', 'On', 'YES']) {
-      process.env.MONAD_DISCORD_VOICE_CHANNEL = v;
+      process.env.ELANOUS_DISCORD_VOICE_CHANNEL = v;
       expect(isDiscordVoiceChannelEnabled()).toBe(true);
     }
   });
   it('false for 0/false/off', () => {
     for (const v of ['0', 'false', 'off', 'no', '']) {
-      process.env.MONAD_DISCORD_VOICE_CHANNEL = v;
+      process.env.ELANOUS_DISCORD_VOICE_CHANNEL = v;
       expect(isDiscordVoiceChannelEnabled()).toBe(false);
     }
   });
@@ -167,7 +167,7 @@ describe('isDiscordVoiceChannelEnabled', () => {
 
 describe('createDiscordVoiceChannelDispatcher', () => {
   it('returns null for non-voice messages (fall through)', async () => {
-    process.env.MONAD_DISCORD_VOICE_CHANNEL = '1';
+    process.env.ELANOUS_DISCORD_VOICE_CHANNEL = '1';
     const adapter = createStubDiscordVoiceChannelAdapter();
     const dispatcher = createDiscordVoiceChannelDispatcher({ adapter });
     const reply = await dispatcher.handle({ body: 'hello there', guildId: 'g1' });
@@ -175,7 +175,7 @@ describe('createDiscordVoiceChannelDispatcher', () => {
   });
 
   it('reports disabled when env unset', async () => {
-    delete process.env.MONAD_DISCORD_VOICE_CHANNEL;
+    delete process.env.ELANOUS_DISCORD_VOICE_CHANNEL;
     const adapter = createStubDiscordVoiceChannelAdapter();
     const dispatcher = createDiscordVoiceChannelDispatcher({ adapter });
     const reply = await dispatcher.handle({ body: '/voice-join 1234', guildId: 'g1' });
@@ -183,7 +183,7 @@ describe('createDiscordVoiceChannelDispatcher', () => {
   });
 
   it('reports unavailable when adapter has reason', async () => {
-    process.env.MONAD_DISCORD_VOICE_CHANNEL = '1';
+    process.env.ELANOUS_DISCORD_VOICE_CHANNEL = '1';
     const adapter = createStubDiscordVoiceChannelAdapter({ failWith: 'no deps' });
     const dispatcher = createDiscordVoiceChannelDispatcher({ adapter });
     const reply = await dispatcher.handle({ body: '/voice-join 1234', guildId: 'g1' });
@@ -192,7 +192,7 @@ describe('createDiscordVoiceChannelDispatcher', () => {
   });
 
   it('joins on /voice-join + channel id', async () => {
-    process.env.MONAD_DISCORD_VOICE_CHANNEL = '1';
+    process.env.ELANOUS_DISCORD_VOICE_CHANNEL = '1';
     const adapter = createStubDiscordVoiceChannelAdapter();
     const dispatcher = createDiscordVoiceChannelDispatcher({ adapter });
     const reply = await dispatcher.handle({
@@ -206,7 +206,7 @@ describe('createDiscordVoiceChannelDispatcher', () => {
   });
 
   it('defaults to caller-only filter when the command omits a suffix', async () => {
-    process.env.MONAD_DISCORD_VOICE_CHANNEL = '1';
+    process.env.ELANOUS_DISCORD_VOICE_CHANNEL = '1';
     const adapter = createStubDiscordVoiceChannelAdapter();
     let captured: { listenFilterUserId?: string | null } | null = null;
     const dispatcher = createDiscordVoiceChannelDispatcher({
@@ -223,7 +223,7 @@ describe('createDiscordVoiceChannelDispatcher', () => {
   });
 
   it('allows explicit all-speaker override even when default is caller', async () => {
-    process.env.MONAD_DISCORD_VOICE_CHANNEL = '1';
+    process.env.ELANOUS_DISCORD_VOICE_CHANNEL = '1';
     const adapter = createStubDiscordVoiceChannelAdapter();
     let captured: { listenFilterUserId?: string | null } | null = null;
     const dispatcher = createDiscordVoiceChannelDispatcher({
@@ -240,7 +240,7 @@ describe('createDiscordVoiceChannelDispatcher', () => {
   });
 
   it('uses defaultChannelId when /voice-join has no arg', async () => {
-    process.env.MONAD_DISCORD_VOICE_CHANNEL = '1';
+    process.env.ELANOUS_DISCORD_VOICE_CHANNEL = '1';
     const adapter = createStubDiscordVoiceChannelAdapter();
     const dispatcher = createDiscordVoiceChannelDispatcher({ adapter });
     const reply = await dispatcher.handle({
@@ -252,7 +252,7 @@ describe('createDiscordVoiceChannelDispatcher', () => {
   });
 
   it('caller filter sets listenFilterUserId', async () => {
-    process.env.MONAD_DISCORD_VOICE_CHANNEL = '1';
+    process.env.ELANOUS_DISCORD_VOICE_CHANNEL = '1';
     const adapter = createStubDiscordVoiceChannelAdapter();
     let captured: { listenFilterUserId?: string | null } | null = null;
     const dispatcher = createDiscordVoiceChannelDispatcher({
@@ -269,7 +269,7 @@ describe('createDiscordVoiceChannelDispatcher', () => {
   });
 
   it('captures command channel as textChannelId for transcript mirror fan-out', async () => {
-    process.env.MONAD_DISCORD_VOICE_CHANNEL = '1';
+    process.env.ELANOUS_DISCORD_VOICE_CHANNEL = '1';
     const adapter = createStubDiscordVoiceChannelAdapter();
     let captured: { textChannelId?: string } | null = null;
     const dispatcher = createDiscordVoiceChannelDispatcher({
@@ -285,7 +285,7 @@ describe('createDiscordVoiceChannelDispatcher', () => {
   });
 
   it('rejects /voice-join when missing guildId', async () => {
-    process.env.MONAD_DISCORD_VOICE_CHANNEL = '1';
+    process.env.ELANOUS_DISCORD_VOICE_CHANNEL = '1';
     const adapter = createStubDiscordVoiceChannelAdapter();
     const dispatcher = createDiscordVoiceChannelDispatcher({ adapter });
     const reply = await dispatcher.handle({ body: '/voice-join 1234' });
@@ -293,7 +293,7 @@ describe('createDiscordVoiceChannelDispatcher', () => {
   });
 
   it('/voice-leave tears down session', async () => {
-    process.env.MONAD_DISCORD_VOICE_CHANNEL = '1';
+    process.env.ELANOUS_DISCORD_VOICE_CHANNEL = '1';
     const adapter = createStubDiscordVoiceChannelAdapter();
     const dispatcher = createDiscordVoiceChannelDispatcher({ adapter });
     await dispatcher.handle({ body: '/voice-join 1111', guildId: 'g1' });
@@ -304,7 +304,7 @@ describe('createDiscordVoiceChannelDispatcher', () => {
   });
 
   it('/voice-status reports current state', async () => {
-    process.env.MONAD_DISCORD_VOICE_CHANNEL = '1';
+    process.env.ELANOUS_DISCORD_VOICE_CHANNEL = '1';
     const adapter = createStubDiscordVoiceChannelAdapter();
     const dispatcher = createDiscordVoiceChannelDispatcher({ adapter });
     expect(await dispatcher.handle({ body: '/voice-status' })).toContain('not connected');
@@ -318,7 +318,7 @@ describe('createDiscordVoiceChannelDispatcher', () => {
 
 describe('bootDiscordVoiceChannel', () => {
   it('reports disabled when env unset', () => {
-    delete process.env.MONAD_DISCORD_VOICE_CHANNEL;
+    delete process.env.ELANOUS_DISCORD_VOICE_CHANNEL;
     const result = bootDiscordVoiceChannel();
     expect(result.enabled).toBe(false);
     expect(result.adapter.available).toBe(false);
@@ -326,7 +326,7 @@ describe('bootDiscordVoiceChannel', () => {
   });
 
   it('reports missing coordinator when env enabled but no gateway wire', () => {
-    process.env.MONAD_DISCORD_VOICE_CHANNEL = '1';
+    process.env.ELANOUS_DISCORD_VOICE_CHANNEL = '1';
     const result = bootDiscordVoiceChannel();
     expect(result.enabled).toBe(true);
     expect(result.adapter.available).toBe(false);
@@ -334,7 +334,7 @@ describe('bootDiscordVoiceChannel', () => {
   });
 
   it('passes through dispatcher.handle as dispatchVoiceCommand', async () => {
-    process.env.MONAD_DISCORD_VOICE_CHANNEL = '1';
+    process.env.ELANOUS_DISCORD_VOICE_CHANNEL = '1';
     const stubAdapter = createStubDiscordVoiceChannelAdapter();
     const result = bootDiscordVoiceChannel({ adapter: stubAdapter });
     const reply = await result.dispatchVoiceCommand({
@@ -345,7 +345,7 @@ describe('bootDiscordVoiceChannel', () => {
   });
 
   it('shutdown tears down adapter', async () => {
-    process.env.MONAD_DISCORD_VOICE_CHANNEL = '1';
+    process.env.ELANOUS_DISCORD_VOICE_CHANNEL = '1';
     const stubAdapter = createStubDiscordVoiceChannelAdapter();
     const result = bootDiscordVoiceChannel({ adapter: stubAdapter });
     await result.dispatchVoiceCommand({ body: '/voice-join 1', guildId: 'g1' });

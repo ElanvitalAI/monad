@@ -7,18 +7,18 @@
 //
 // ⛔ **막지 않는다** — 마커 규칙을 조이면 «진짜 완료를 놓치는» 반대 손해가 더 크고
 //   (`completion-marker.ts` 머리말이 이미 경고한다), 써 넣는 것 자체는 정상 조작이다
-//   (`CLAUDE.md` 가 `monad pty text` 를 처방한다). ⇒ 제1원칙대로 **관측을 먼저** 세운다.
+//   (`CLAUDE.md` 가 `elanous pty text` 를 처방한다). ⇒ 제1원칙대로 **관측을 먼저** 세운다.
 //
 // ⭐⭐ **「외부」의 뜻** — ***자식이 «낸» 것이 아니라 «받은» 것***이다.
 //   자식은 이 함수를 부르지 않는다(자식 출력은 adapter `onData` 로 들어온다).
 //   그러므로 `handle.write` 를 지나는 모든 바이트가 여기 세어진다:
-//     ⓐ 크로스-프로세스 `monad pty text`(IPC → `handle.write`)
+//     ⓐ 크로스-프로세스 `elanous pty text`(IPC → `handle.write`)
 //     ⓑ **같은 프로세스의 감독 autoAssist** ⓒ `PtyShellSend` 툴
 //   ⛔⭐ ⓑ 가 결정적이다 — `[S]` 리뷰가 잡았다. 종전 판은 계기가 **IPC 층에만** 있어
 //     ***정작 「위조 채널을 여는 당사자」가 될 감독이 계기 밖***이었다.
 //
 // ⚠️ **프로세스 수명 한정**이다. 재시작하면 0 이고, 그것이 「써 넣은 적 없다」를 뜻하지 «않는다».
-//   내구 기록은 `monad logs --category pty.arbiter` 가 갖는다.
+//   내구 기록은 `elanous logs --category pty.arbiter` 가 갖는다.
 
 /** ⛔⭐ 상한 — 수명 훅이 못 닿는 경우(이벤트 유실·비정상 종료)의 **최종 방어**.
  *  장수 owner(데몬)는 PTY 를 계속 만든다. 훅만 믿으면 «한 번 새면 영영» 샌다. */
@@ -43,7 +43,7 @@ export function noteExternalWrite(ptyId: string, actor: string, now = Date.now()
  * 이 PTY 가 «받은» 쓰기 이력. 없으면 `undefined` — 호출자가 그 절을 생략할 수 있게.
  *
  * ⚠️⭐ **`externalWrites` 는 「쓰기 «호출» 수」이지 「조작 수」가 아니다**(`[S]` 실측 2026-08-07):
- *   `monad pty text <ref> "…" --enter` **한 번**도 본문과 `\r` 을 따로 써서 **2** 가 된다.
+ *   `elanous pty text <ref> "…" --enter` **한 번**도 본문과 `\r` 을 따로 써서 **2** 가 된다.
  *   ⛔ 이 수로 *"사람이 몇 번 개입했나"* 를 읽으면 틀린다 — 세는 것은 ***자식이 몇 번 받았나***다.
  *   ⭐ 그리고 그것이 이 관측의 목적에 맞다: 에코는 **쓰기마다** 일어나므로 위조 표면은 호출 수를 따른다.
  */

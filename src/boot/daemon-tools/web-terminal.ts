@@ -1,11 +1,11 @@
 // Daemon-tool surface for web-terminal LLM tools.
 //
-// PWA-only `monad serve` mode bypasses the dashboard's
+// PWA-only `elanous serve` mode bypasses the dashboard's
 // `tool-runtime/registry`, so the WT-L-1 runtimes (List · Snapshot ·
 // Input) wired by `registerWebTerminalRuntimes()` aren't reachable
 // from a daemon-only LLM turn. This module re-exposes the same three
 // tool specs through the daemon-tool surface, gated behind the new
-// `'webterm'` kind, so an operator running just `monad serve --tools
+// `'webterm'` kind, so an operator running just `elanous serve --tools
 // webterm` gets the same agent-driving capability the dashboard ships
 // by default.
 //

@@ -1,7 +1,7 @@
 // ── MSS feature flags — single source of truth (PLAN §9.6 · DD-MSS-36) ──
 //
 // Defaults honour DD-MSS-33 (default-everything) and DD-MSS-38 (MVS first):
-//   - MSS_ENABLED       = true   → trace_id/monad_id enrichment live
+//   - MSS_ENABLED       = true   → trace_id/elanous_id enrichment live
 //   - MSS_LLM_JUDGE     = false  → no paid LLM on the hot path
 //   - MSS_SLEEP_LLM_SUMMARY = false → same
 //

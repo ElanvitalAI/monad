@@ -21,7 +21,7 @@ import { registerDefaultLocalLlmPtyAdapter } from './adapters/local-llm-pty.js';
 import { registerDefaultLocalLlmSshPtyAdapter } from './adapters/local-llm-ssh-pty.js';
 import { registerDefaultLocalLlmOllamaPtyAdapter } from './adapters/local-llm-ollama-pty.js';
 import { registerDefaultLocalLlmOllamaSshPtyAdapter } from './adapters/local-llm-ollama-ssh-pty.js';
-import { registerDefaultMonadAsChildAdapter } from './adapters/monad-as-child.js';
+import { registerDefaultElanousAsChildAdapter } from './adapters/elanous-as-child.js';
 import { attachTransports } from './attach-transport.js';
 import type { WindowRegistry } from '../virtual-windows/window-registry.js';
 import {
@@ -84,11 +84,11 @@ export function initSpawnEmbodiedAgentInVW(
     // ollama-remote' / 'llo-remote') · spawns `ssh -t <node> ollama run
     // <model>` as a PTY. Remote counterpart to the above.
     _adapterDisposers.push(registerDefaultLocalLlmOllamaSshPtyAdapter(defaultAdapterRegistry));
-    // H5 P3 · monad-as-child adapter (brand 'monad' / 'monad-child').
-    // NOT a PTY adapter — spawns sub-monad with --acp-server and wraps
+    // H5 P3 · elanous-as-child adapter (brand 'elanous' / 'elanous-child').
+    // NOT a PTY adapter — spawns sub-elanous with --acp-server and wraps
     // as ACP transport. Lives in the same registry because the handoff
     // tool treats all embodied launches uniformly.
-    _adapterDisposers.push(registerDefaultMonadAsChildAdapter(defaultAdapterRegistry));
+    _adapterDisposers.push(registerDefaultElanousAsChildAdapter(defaultAdapterRegistry));
   }
 }
 

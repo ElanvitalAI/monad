@@ -1,10 +1,10 @@
 // ── logs_query — 크로스서피스 로그 조회 도구 (통합 로그 패브릭 LF3 · 2026-07-13) ──
 //
-// monad 자신(봇 턴·자율 루프·TUI 챗)이 자기/전체 서피스의 로그를 조회한다 —
+// elanous 자신(봇 턴·자율 루프·TUI 챗)이 자기/전체 서피스의 로그를 조회한다 —
 // "방금 왜 에러났나", "PWA 에서 지금 무슨 일이", "보이스 timeout 있었나".
 // adb logcat 의 도구 반쪽. logs.db(LF0) 직독 — 데몬 프로세스 밖(TUI 등)에서도
 // 같은 스토어를 읽는다(READ-ONLY·fail-soft). 레벨 "변경"은 의도적으로 미노출
-// (CLI `monad logs level`/REST POST 소관 — 상태 변경은 HITL 있는 창구로).
+// (CLI `elanous logs level`/REST POST 소관 — 상태 변경은 HITL 있는 창구로).
 //
 // 설계: 내부 문서 `PLAN-unified-log-fabric-2026-07-13` §LF3.
 
@@ -71,7 +71,7 @@ export function analyzeLogsZeroResult(input: {
 
 export const LOGS_QUERY_SPEC: LLMToolSpec = {
   name: 'logs_query',
-  description: "크로스서피스 로그 조회 (코어·READ-ONLY) — 전 서피스(nexus 데몬·PWA·telegram·discord·TUI·voice)의 디버그 로그를 한 스토어(logs.db)에서 조회. **'방금 왜 에러났나' '아까 PWA/텔레그램에서 무슨 일 있었나' '타임아웃/실패 있었나' 같은 자기 진단 질문은 이 도구 먼저.** level(이 레벨 이상)·surface·category prefix·grep·시간창 필터. 반환은 최근순. (운영 상태 스냅샷=ops_status · 발송/대화 기억=memory_recall 과 구분: 여긴 저수준 디버그 이벤트의 원장.) 레벨 변경은 불가 — CLI 'monad logs level' 안내.",
+  description: "크로스서피스 로그 조회 (코어·READ-ONLY) — 전 서피스(nexus 데몬·PWA·telegram·discord·TUI·voice)의 디버그 로그를 한 스토어(logs.db)에서 조회. **'방금 왜 에러났나' '아까 PWA/텔레그램에서 무슨 일 있었나' '타임아웃/실패 있었나' 같은 자기 진단 질문은 이 도구 먼저.** level(이 레벨 이상)·surface·category prefix·grep·시간창 필터. 반환은 최근순. (운영 상태 스냅샷=ops_status · 발송/대화 기억=memory_recall 과 구분: 여긴 저수준 디버그 이벤트의 원장.) 레벨 변경은 불가 — CLI 'elanous logs level' 안내.",
   parameters: {
     type: 'object',
     properties: {
@@ -137,7 +137,7 @@ export async function dispatchLogsQuery(args: Record<string, unknown>): Promise<
       count: rows.length,
       window: `최근 ${sinceMin}분`,
       thisProcessLevel: debug.level(),
-      note: '크로스서피스 디버그 로그(최근순·READ-ONLY). 레벨 변경은 CLI `monad logs level <lvl>` 또는 PWA 대시보드에서.',
+      note: '크로스서피스 디버그 로그(최근순·READ-ONLY). 레벨 변경은 CLI `elanous logs level <lvl>` 또는 PWA 대시보드에서.',
     };
     if (rows.length !== 0) return response;
 

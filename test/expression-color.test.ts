@@ -55,7 +55,7 @@ describe('expression/color · rgbToAnsi16', () => {
   });
 
   test('a pastel hex picks a sensible 16-color neighbour', () => {
-    // monad-pastel lavender #a093e8 — closest of the 16 standard colors
+    // elanous-pastel lavender #a093e8 — closest of the 16 standard colors
     // is bright magenta (#ff00ff = 13) or bright black (8) depending on
     // distance metric. Either is acceptable; assert it's in the
     // bright family since the input is high-luminance.

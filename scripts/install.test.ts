@@ -13,7 +13,7 @@ const fixtures: string[] = [];
 afterEach(() => { for (const fixture of fixtures.splice(0)) rmSync(fixture, { recursive: true, force: true }); }, 120_000);
 
 function fixture(): string {
-  const dir = mkdtempSync(join(tmpdir(), 'monad-install-test-'));
+  const dir = mkdtempSync(join(tmpdir(), 'elanous-install-test-'));
   fixtures.push(dir);
   return dir;
 }
@@ -31,7 +31,7 @@ function run(args: string[], env: ReturnType<typeof setup> = setup(), path = pro
   const result = spawnSync('/bin/bash', [installer, ...args], {
     cwd,
     encoding: 'utf8',
-    env: { ...process.env, HOME: env.home, XDG_CONFIG_HOME: join(env.home, '.config'), XDG_CACHE_HOME: join(env.home, '.cache'), MONAD_INSTALL_PREFIX: env.prefix, MONAD_SHELL_STARTUP: env.startup, PATH: path, ...extra },
+    env: { ...process.env, HOME: env.home, XDG_CONFIG_HOME: join(env.home, '.config'), XDG_CACHE_HOME: join(env.home, '.cache'), ELANOUS_INSTALL_PREFIX: env.prefix, ELANOUS_SHELL_STARTUP: env.startup, PATH: path, ...extra },
   });
   return { ...env, result };
 }
@@ -83,13 +83,13 @@ describe('scripts/install.sh', () => {
     for (const argument of ['--prefix', '--source', '--no-modify-path', '--no-bootstrap-bun', '--help']) expect(result.stdout).toContain(argument);
   });
 
-  test('installs a working monad and records nonempty metadata without leaving its isolated home', () => {
+  test('installs a working elanous and records nonempty metadata without leaving its isolated home', () => {
     const env = setup();
     const { prefix, result } = run(['--no-modify-path'], env);
     expect(result.status, result.stderr).toBe(0);
-    const monad = join(prefix, 'bin', 'monad');
-    expect(existsSync(monad)).toBe(true);
-    const version = spawnSync(monad, ['--version'], { encoding: 'utf8', env: { ...process.env, HOME: env.home, XDG_CONFIG_HOME: join(env.home, '.config'), XDG_CACHE_HOME: join(env.home, '.cache') } });
+    const elanous = join(prefix, 'bin', 'elanous');
+    expect(existsSync(elanous)).toBe(true);
+    const version = spawnSync(elanous, ['--version'], { encoding: 'utf8', env: { ...process.env, HOME: env.home, XDG_CONFIG_HOME: join(env.home, '.config'), XDG_CACHE_HOME: join(env.home, '.cache') } });
     expect(version.status).toBe(0);
     expect(version.stdout).toContain(packageJson.version);
     const metadata = JSON.parse(readFileSync(join(prefix, 'install.json'), 'utf8')) as Record<string, string>;
@@ -99,21 +99,21 @@ describe('scripts/install.sh', () => {
     expect(metadata.commit).toMatch(/^[0-9a-f]{40}$/);
   }, 120_000);
 
-  // 🩸 2026-09-25 빈 debian:12: ~/.bashrc 는 비대화형이면 맨 앞에서 return 한다 ⇒ `bash -lc monad`(ssh 원격 명령)가 못 찾았다.
+  // 🩸 2026-09-25 빈 debian:12: ~/.bashrc 는 비대화형이면 맨 앞에서 return 한다 ⇒ `bash -lc elanous`(ssh 원격 명령)가 못 찾았다.
   test('a bash user without an override gets the PATH block in ~/.profile too (login shells)', () => {
-    const { home, result } = run([], setup(), process.env.PATH ?? '', repoRoot, { MONAD_SHELL_STARTUP: '', SHELL: '/bin/bash' });
+    const { home, result } = run([], setup(), process.env.PATH ?? '', repoRoot, { ELANOUS_SHELL_STARTUP: '', SHELL: '/bin/bash' });
     expect(result.status, result.stderr).toBe(0);
-    expect(readFileSync(join(home, '.bashrc'), 'utf8')).toContain('# >>> monad installer PATH >>>');
-    expect(readFileSync(join(home, '.profile'), 'utf8')).toContain('# >>> monad installer PATH >>>');
+    expect(readFileSync(join(home, '.bashrc'), 'utf8')).toContain('# >>> elanous installer PATH >>>');
+    expect(readFileSync(join(home, '.profile'), 'utf8')).toContain('# >>> elanous installer PATH >>>');
   }, 120_000);
 
-  // 🩸 2026-09-25 빈 debian:12: monad 는 PATH 에 있었지만 `#!/usr/bin/env bun` 의 bun 이 로그인 셸 PATH 에 없었다.
-  test('the PATH directory also carries bun, so the monad shebang resolves with that one entry', () => {
+  // 🩸 2026-09-25 빈 debian:12: elanous 는 PATH 에 있었지만 `#!/usr/bin/env bun` 의 bun 이 로그인 셸 PATH 에 없었다.
+  test('the PATH directory also carries bun, so the elanous shebang resolves with that one entry', () => {
     const { prefix, result } = run(['--no-modify-path']);
     expect(result.status, result.stderr).toBe(0);
     const bun = join(prefix, 'bin', 'bun');
     expect(existsSync(bun)).toBe(true);
-    const version = spawnSync(join(prefix, 'bin', 'monad'), ['--version'], { encoding: 'utf8', env: { HOME: process.env.HOME ?? '', PATH: `${join(prefix, 'bin')}:/usr/bin:/bin` } });
+    const version = spawnSync(join(prefix, 'bin', 'elanous'), ['--version'], { encoding: 'utf8', env: { HOME: process.env.HOME ?? '', PATH: `${join(prefix, 'bin')}:/usr/bin:/bin` } });
     expect(version.status, version.stderr).toBe(0);
   }, 120_000);
 
@@ -124,8 +124,8 @@ describe('scripts/install.sh', () => {
     expect(first.result.status).toBe(0);
     expect(second.result.status).toBe(0);
     const startup = readFileSync(env.startup, 'utf8');
-    expect(startup.match(/^# >>> monad installer PATH >>>$/gm)).toHaveLength(1);
-    expect(startup.match(/^# <<< monad installer PATH <<<$/gm)).toHaveLength(1);
+    expect(startup.match(/^# >>> elanous installer PATH >>>$/gm)).toHaveLength(1);
+    expect(startup.match(/^# <<< elanous installer PATH <<<$/gm)).toHaveLength(1);
     expect(startup).toContain('export KEEP=1');
   }, 120_000);
 
@@ -139,11 +139,11 @@ describe('scripts/install.sh', () => {
     expect(second.result.status).not.toBe(0);
     expect(`${second.result.stdout}${second.result.stderr}`).toContain('different installation prefix');
     expect(readFileSync(env.startup, 'utf8')).toBe(before);
-    const loaded = spawnSync('/bin/bash', ['--noprofile', '--rcfile', env.startup, '-i', '-c', 'command -v monad'], {
+    const loaded = spawnSync('/bin/bash', ['--noprofile', '--rcfile', env.startup, '-i', '-c', 'command -v elanous'], {
       encoding: 'utf8', env: { ...process.env, HOME: env.home, PATH: process.env.PATH ?? '' },
     });
     expect(loaded.status).toBe(0);
-    expect(loaded.stdout.trim()).toBe(join(realpathSync(env.prefix), 'bin', 'monad'));
+    expect(loaded.stdout.trim()).toBe(join(realpathSync(env.prefix), 'bin', 'elanous'));
   }, 120_000);
 
   test('--no-modify-path preserves the startup file byte-for-byte', () => {
@@ -193,7 +193,7 @@ describe('scripts/install.sh', () => {
         chmodSync(file, 0o755);
       }
       const { result } = run(['--no-modify-path', '--no-bootstrap-bun'], env, path, repoRoot,
-        { BUN_INSTALL: join(env.home, '.bun'), MONAD_INSTALL_OS_RELEASE_FILE: osRelease });
+        { BUN_INSTALL: join(env.home, '.bun'), ELANOUS_INSTALL_OS_RELEASE_FILE: osRelease });
       expect(result.status, `${missing}: ${result.stderr}`).toBe(127);
       expect(result.stderr).toContain(`required command missing: ${missing}`);
       expect(result.stderr).toContain(expected);
@@ -220,7 +220,7 @@ describe('scripts/install.sh', () => {
       }
       // bun·curl·unzip·git 이 전부 없다 — bun 은 설치기가 깔 것이므로 세지 않고, 그 설치에 드는 curl·unzip 을 센다.
       const { result } = run(['--no-modify-path'], env, path, repoRoot,
-        { BUN_INSTALL: join(env.home, '.bun'), MONAD_INSTALL_OS_RELEASE_FILE: osRelease });
+        { BUN_INSTALL: join(env.home, '.bun'), ELANOUS_INSTALL_OS_RELEASE_FILE: osRelease });
       expect(result.status, result.stderr).toBe(127);
       expect(result.stderr).toContain('required command missing: curl unzip git');
       expect(result.stderr).toContain(`   ${root ? '' : 'sudo '}apt-get install -y curl unzip git`);
@@ -231,7 +231,7 @@ describe('scripts/install.sh', () => {
 
   test('bun bootstrap is pinned to the repository bun version (.bun-version)', () => {
     const pin = readFileSync(join(repoRoot, '.bun-version'), 'utf8').trim();
-    expect(readFileSync(installer, 'utf8')).toContain(`BUN_PIN="\${MONAD_BUN_VERSION:-${pin}}"`);
+    expect(readFileSync(installer, 'utf8')).toContain(`BUN_PIN="\${ELANOUS_BUN_VERSION:-${pin}}"`);
     // Pod 이미지 — build.sh 가 .bun-version 을 넘기지만, 인자 없이 빌드해도 같은 판이게 기본값도 맞춘다.
     // docker/ 는 공개본에 안 실린다 — 있을 때만 대조한다(공개 저장소에서 «없는 파일»로 깨지지 않게).
     const podDir = ['docker', 'harness'].join('/');
@@ -242,7 +242,7 @@ describe('scripts/install.sh', () => {
   });
 
   // 🩸 09-25 GCP debian-12: 로그인 셸은 $PREFIX/bin 이 PATH 맨 앞 — 재설치 때 `command -v bun` 이 우리 링크 자신을 집어
-  //    `bin/bun -> bin/bun` 고리를 만들었다(설치 rc 127 · 이후 monad 전부 죽음). 업데이트 경로 전부가 여기를 지난다.
+  //    `bin/bun -> bin/bun` 고리를 만들었다(설치 rc 127 · 이후 elanous 전부 죽음). 업데이트 경로 전부가 여기를 지난다.
   test('reinstalling with $PREFIX/bin first on PATH links bun to the real executable, and heals an existing loop', () => {
     const packed = pack(fixture());
     const env = setup();
@@ -267,7 +267,7 @@ describe('scripts/install.sh', () => {
   test('portable mktemp ratchet catches a violating fixture and permits the installer', () => {
     const portable = (source: string) => !source.includes('mktemp -t');
     expect(portable(readFileSync(installer, 'utf8'))).toBe(true);
-    expect(portable('#!/bin/sh\nmktemp -t monad\n')).toBe(false);
+    expect(portable('#!/bin/sh\nmktemp -t elanous\n')).toBe(false);
   });
 
   test('the required command set exactly matches the catalog and remains two entries', () => {
@@ -288,16 +288,16 @@ describe('scripts/install.sh', () => {
     const quotedSegment = 'quoted "source" \\ path';
     const sourceDir = join(sourceRoot, quotedSegment);
     mkdirSync(sourceDir, { recursive: true });
-    const source = join(sourceDir, 'monadagent.tgz');
+    const source = join(sourceDir, 'elanous.tgz');
     copyFileSync(packed, source);
-    const expectedSource = join(realpathSync(sourceRoot), quotedSegment, 'monadagent.tgz');
+    const expectedSource = join(realpathSync(sourceRoot), quotedSegment, 'elanous.tgz');
     const env = setup();
     const installed = run(['--source', source, '--no-modify-path'], env);
     expect(installed.result.status, installed.result.stderr).toBe(0);
     const metadata = JSON.parse(readFileSync(join(env.prefix, 'install.json'), 'utf8')) as Record<string, string>;
     expect(metadata.source).toBe(expectedSource);
     expect(metadata.version).toBe(packageJson.version);
-    expect(installed.result.stdout).toContain(`Installed monad ${metadata.version}`);
+    expect(installed.result.stdout).toContain(`Installed elanous ${metadata.version}`);
   }, 120_000);
 
   test('normalizes and safely quotes a special-character relative prefix in PATH startup code', () => {
@@ -318,16 +318,16 @@ describe('scripts/install.sh', () => {
   test('install.sh handles spawn-helper and a real isolated install leaves it executable', () => {
     const source = readFileSync(installer, 'utf8');
     expect(source).toContain('spawn-helper');
-    expect(source.indexOf('ln -sfn ../current/node_modules/.bin/monad')).toBeLessThan(source.indexOf('spawn-helper'));
+    expect(source.indexOf('ln -sfn ../current/node_modules/.bin/elanous')).toBeLessThan(source.indexOf('spawn-helper'));
     expect(source.indexOf('> "$PREFIX/install.json"')).toBeLessThan(source.indexOf('spawn-helper'));
     const env = setup();
     const installed = run(['--no-modify-path'], env);
     expect(installed.result.status, installed.result.stderr).toBe(0);
-    expect(installed.result.stdout).toContain('Installed monad');
+    expect(installed.result.stdout).toContain('Installed elanous');
     const helper = plantSpawnHelper(env.prefix, 0o666);
     const again = run(['--no-modify-path'], env);
     expect(again.result.status, again.result.stderr).toBe(0);
-    expect(again.result.stdout).toContain('Installed monad');
+    expect(again.result.stdout).toContain('Installed elanous');
     expect((statSync(helper).mode & 0o111) !== 0).toBe(process.platform === 'darwin');
   }, 120_000);
 
@@ -337,14 +337,14 @@ describe('scripts/install.sh', () => {
     const fresh = run(['--no-modify-path'], env);
     expect(fresh.result.status, fresh.result.stderr).toBe(0);
     const next = fresh.result.stdout.slice(fresh.result.stdout.indexOf('Next:'));
-    expect(next).toContain('monad login openai-codex');
-    expect(next).toContain('monad harness say');
+    expect(next).toContain('elanous login openai-codex');
+    expect(next).toContain('elanous harness say');
     expect(next).not.toContain('llm.provider');   // auto 는 로그인만 있으면 런타임이 codex 로 고른다(#19950)
-    mkdirSync(join(env.home, '.monad'), { recursive: true });
-    writeFileSync(join(env.home, '.monad', 'auth.json'), JSON.stringify({ version: 1, providers: { 'openai-codex': { tokens: {} } } }));
+    mkdirSync(join(env.home, '.elanous'), { recursive: true });
+    writeFileSync(join(env.home, '.elanous', 'auth.json'), JSON.stringify({ version: 1, providers: { 'openai-codex': { tokens: {} } } }));
     const again = run(['--no-modify-path'], env);
     expect(again.result.status, again.result.stderr).toBe(0);
-    expect(again.result.stdout.slice(again.result.stdout.indexOf('Next:'))).not.toContain('monad login');
+    expect(again.result.stdout.slice(again.result.stdout.indexOf('Next:'))).not.toContain('elanous login');
   }, 180_000);
 
   test('non-Darwin skips the spawn-helper step', () => {
@@ -360,22 +360,22 @@ describe('scripts/install.sh', () => {
     if (process.platform !== 'darwin') expect((statSync(helper).mode & 0o111) !== 0).toBe(false);
   }, 120_000);
 
-  test('a forced chmod failure still yields rc=0 and the Installed monad line', () => {
+  test('a forced chmod failure still yields rc=0 and the Installed elanous line', () => {
     const env = setup();
     const failing = join(env.dir, 'failing-chmod');
     writeFileSync(failing, '#!/bin/sh\nexit 1\n');
     chmodSync(failing, 0o755);
-    const installed = run(['--no-modify-path'], env, process.env.PATH ?? '', repoRoot, { MONAD_INSTALL_SPAWN_HELPER_CHMOD: failing });
+    const installed = run(['--no-modify-path'], env, process.env.PATH ?? '', repoRoot, { ELANOUS_INSTALL_SPAWN_HELPER_CHMOD: failing });
     expect(installed.result.status, installed.result.stderr).toBe(0);
-    expect(installed.result.stdout).toContain('Installed monad');
+    expect(installed.result.stdout).toContain('Installed elanous');
   }, 120_000);
 
-  test('--source omits commit while keeping version, source, installedAt, and the Installed monad line', () => {
+  test('--source omits commit while keeping version, source, installedAt, and the Installed elanous line', () => {
     const packed = pack(fixture());
     const env = setup();
     const installed = run(['--source', packed, '--no-modify-path'], env);
     expect(installed.result.status, installed.result.stderr).toBe(0);
-    expect(installed.result.stdout).toContain('Installed monad');
+    expect(installed.result.stdout).toContain('Installed elanous');
     const metadata = JSON.parse(readFileSync(join(env.prefix, 'install.json'), 'utf8')) as Record<string, string>;
     expect(Object.prototype.hasOwnProperty.call(metadata, 'commit')).toBe(false);
     expect(metadata.version).toBe(packageJson.version);
@@ -406,7 +406,7 @@ describe('scripts/install.sh', () => {
     chmodSync(git, 0o755);
     const installed = run(['--no-modify-path'], env, `${stubPath}:${process.env.PATH ?? ''}`);
     expect(installed.result.status, installed.result.stderr).toBe(0);
-    expect(installed.result.stdout).toContain('Installed monad');
+    expect(installed.result.stdout).toContain('Installed elanous');
     const metadata = JSON.parse(readFileSync(join(env.prefix, 'install.json'), 'utf8')) as Record<string, string>;
     expect(Object.prototype.hasOwnProperty.call(metadata, 'commit')).toBe(false);
     expect(metadata.version).toBe(packageJson.version);
@@ -418,15 +418,15 @@ describe('scripts/install.sh', () => {
     const env = setup();
     const installed = run(['--no-modify-path'], env);
     expect(installed.result.status, installed.result.stderr).toBe(0);
-    expect(installed.result.stdout).toContain('Installed monad');
+    expect(installed.result.stdout).toContain('Installed elanous');
     const helper = spawnHelper(env.prefix);
     if (existsSync(helper)) rmSync(helper);
     const again = run(['--no-modify-path'], env);
     expect(again.result.status, again.result.stderr).toBe(0);
-    expect(again.result.stdout).toContain('Installed monad');
+    expect(again.result.stdout).toContain('Installed elanous');
   }, 120_000);
 
-  // 🆕 2026-09-24 — claude·grok 네이티브 설치기와 같은 모양: versions/<v> · current · bin/monad
+  // 🆕 2026-09-24 — claude·grok 네이티브 설치기와 같은 모양: versions/<v> · current · bin/elanous
   test('installs into versions/<version> behind a current symlink, and a second version keeps the first for rollback', () => {
     const env = setup();
     const first = run(['--no-modify-path'], env);
@@ -434,8 +434,8 @@ describe('scripts/install.sh', () => {
     const prefix = realpathSync(env.prefix);
     const firstDir = checkoutVersionName();
     expect(readlinkSync(join(prefix, 'current'))).toBe(`versions/${firstDir}`);
-    expect(readlinkSync(join(prefix, 'bin', 'monad'))).toBe('../current/node_modules/.bin/monad');
-    expect(existsSync(join(prefix, 'versions', firstDir, 'node_modules', 'monadagent', 'package.json'))).toBe(true);
+    expect(readlinkSync(join(prefix, 'bin', 'elanous'))).toBe('../current/node_modules/.bin/elanous');
+    expect(existsSync(join(prefix, 'versions', firstDir, 'node_modules', 'elanous', 'package.json'))).toBe(true);
     // 둘째 버전: 같은 소스를 다른 버전 번호로 다시 싸서 깐다
     const work = fixture();
     const unpacked = join(work, 'pkg');
@@ -451,7 +451,7 @@ describe('scripts/install.sh', () => {
     const upgraded = run(['--no-modify-path', '--source', second], env);
     expect(upgraded.result.status, upgraded.result.stderr).toBe(0);
     expect(readlinkSync(join(prefix, 'current'))).toBe(`versions/${packageJson.version}-rollbacktest`);
-    expect(existsSync(join(prefix, 'versions', firstDir, 'node_modules', 'monadagent'))).toBe(true);   // 옛 버전은 남는다
+    expect(existsSync(join(prefix, 'versions', firstDir, 'node_modules', 'elanous'))).toBe(true);   // 옛 버전은 남는다
   }, 240_000);
 
   // 🆕 2026-09-24 (RFC 설치본 전환 0a) — 체크아웃 설치는 package.json 버전이 늘 같다.
@@ -468,7 +468,7 @@ describe('scripts/install.sh', () => {
     const dirA = `${packageJson.version}-${shaA.slice(0, 12)}`;
     const dirB = `${packageJson.version}-${shaB.slice(0, 12)}`;
     expect(readlinkSync(join(prefix, 'current'))).toBe(`versions/${dirB}`);
-    expect(existsSync(join(prefix, 'versions', dirA, 'node_modules', 'monadagent', 'package.json'))).toBe(true);   // 앞 판이 남는다
+    expect(existsSync(join(prefix, 'versions', dirA, 'node_modules', 'elanous', 'package.json'))).toBe(true);   // 앞 판이 남는다
     const metadata = JSON.parse(readFileSync(join(prefix, 'install.json'), 'utf8')) as Record<string, string>;
     expect(metadata.commit).toBe(shaB);
     expect(metadata.versionDir).toBe(`versions/${dirB}`);
@@ -516,7 +516,7 @@ describe('scripts/install.sh', () => {
     const env = setup();
     const result = spawnSync('/bin/bash', [copied, '--no-modify-path'], {
       cwd: lonely, encoding: 'utf8',
-      env: { ...process.env, HOME: env.home, MONAD_INSTALL_PREFIX: env.prefix, MONAD_SHELL_STARTUP: env.startup, MONAD_INSTALL_SOURCE: '', MONAD_RELEASE_BASE: `file://${release}`, MONAD_VERSION: '', ...extra },
+      env: { ...process.env, HOME: env.home, ELANOUS_INSTALL_PREFIX: env.prefix, ELANOUS_SHELL_STARTUP: env.startup, ELANOUS_INSTALL_SOURCE: '', ELANOUS_RELEASE_BASE: `file://${release}`, ELANOUS_VERSION: '', ...extra },
     });
     return { ...env, result };
   }
@@ -525,13 +525,13 @@ describe('scripts/install.sh', () => {
     const release = fixture();
     const assets = join(release, 'latest', 'download');
     mkdirSync(assets, { recursive: true });
-    const tarball = join(assets, 'monadagent.tgz');
+    const tarball = join(assets, 'elanous.tgz');
     copyFileSync(pack(fixture()), tarball);
     const hash = createHash('sha256').update(readFileSync(tarball)).digest('hex');
-    writeFileSync(join(assets, 'SHA256SUMS'), `${hash}  monadagent.tgz\n`);
+    writeFileSync(join(assets, 'SHA256SUMS'), `${hash}  elanous.tgz\n`);
     const installed = standalone(release);
     expect(installed.result.status, installed.result.stderr).toBe(0);
-    expect(JSON.parse(readFileSync(join(installed.prefix, 'install.json'), 'utf8')).source).toBe(`file://${release}/latest/download/monadagent.tgz`);
+    expect(JSON.parse(readFileSync(join(installed.prefix, 'install.json'), 'utf8')).source).toBe(`file://${release}/latest/download/elanous.tgz`);
     expect(readlinkSync(join(installed.prefix, 'current'))).toBe(`versions/${packageJson.version}`);
   }, 120_000);
 
@@ -539,11 +539,11 @@ describe('scripts/install.sh', () => {
     const release = fixture();
     const assets = join(release, 'latest', 'download');
     mkdirSync(assets, { recursive: true });
-    const tarball = join(assets, 'monadagent.tgz');
+    const tarball = join(assets, 'elanous.tgz');
     copyFileSync(pack(fixture()), tarball);
     const actual = createHash('sha256').update(readFileSync(tarball)).digest('hex');
     const expected = `${actual[0] === 'a' ? 'b' : 'a'}${actual.slice(1)}`;
-    writeFileSync(join(assets, 'SHA256SUMS'), `${expected}  monadagent.tgz\n`);
+    writeFileSync(join(assets, 'SHA256SUMS'), `${expected}  elanous.tgz\n`);
     const installed = standalone(release);
     expect(installed.result.status).toBe(1);
     expect(existsSync(join(installed.prefix, 'current'))).toBe(false);
@@ -553,15 +553,15 @@ describe('scripts/install.sh', () => {
 
   test('standalone versioned release download failure names the attempted tarball URL', () => {
     const release = fixture();
-    const installed = standalone(release, { MONAD_VERSION: '9.9.9' });
+    const installed = standalone(release, { ELANOUS_VERSION: '9.9.9' });
     expect(installed.result.status).not.toBe(0);
-    expect(installed.result.stderr).toContain(`file://${release}/download/v9.9.9/monadagent.tgz`);
+    expect(installed.result.stderr).toContain(`file://${release}/download/v9.9.9/elanous.tgz`);
   });
 
-  test('default prefix is the XDG data dir, not the ~/.monad state dir', () => {
+  test('default prefix is the XDG data dir, not the ~/.elanous state dir', () => {
     const source = readFileSync(installer, 'utf8');
-    expect(source).toContain('PREFIX="${MONAD_INSTALL_PREFIX:-${XDG_DATA_HOME:-${HOME:?HOME is required}/.local/share}/monad}"');
-    expect(source).not.toMatch(/PREFIX="\$\{MONAD_INSTALL_PREFIX:-\$\{HOME[^}]*\}\/\.monad\}"/);
+    expect(source).toContain('PREFIX="${ELANOUS_INSTALL_PREFIX:-${XDG_DATA_HOME:-${HOME:?HOME is required}/.local/share}/elanous}"');
+    expect(source).not.toMatch(/PREFIX="\$\{ELANOUS_INSTALL_PREFIX:-\$\{HOME[^}]*\}\/\.elanous\}"/);
   });
 });
 
@@ -569,7 +569,7 @@ describe('scripts/install.sh', () => {
 
 // 🆕 2026-09-24 — 비대화 셸에서 표준 위치의 bun 을 재사용한다(빈 VM 에서 bun 을 두 번 깔던 것).
 test('reuses bun from ${BUN_INSTALL}/bin when bun is not on PATH', () => {
-  const home = mkdtempSync(join(tmpdir(), 'monad-install-bunreuse-'));
+  const home = mkdtempSync(join(tmpdir(), 'elanous-install-bunreuse-'));
   try {
     const bunDir = join(home, '.bun', 'bin');
     mkdirSync(bunDir, { recursive: true });

@@ -1,6 +1,6 @@
 // ── 텔레그램 멀티 채널 해석 (정적 · 2026-07-09) ──────────────────────────
 //
-// 대표 지시: user-config 를 멀티 봇(N채널)으로 일반화. 채널 = 봇 토큰(monad 전용) +
+// 대표 지시: user-config 를 멀티 봇(N채널)으로 일반화. 채널 = 봇 토큰(elanous 전용) +
 // chat + 역할 + interactive(Q&A 폴러 여부). 명시 channels[] 가 있으면 그걸 쓰고,
 // 없으면 legacy(botToken/homeChannel/reportChannel)에서 자동 파생(하위호환).
 //

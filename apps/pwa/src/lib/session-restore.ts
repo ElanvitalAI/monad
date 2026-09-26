@@ -6,7 +6,7 @@ import { mcpResultImages } from './chat-runtime';
  *
  *  ## 왜 이 파일이 있나
  *
- *  📏 2026-08-22 실측(16차 `[F]` · 세션 `monad-session-4kfnjj`):
+ *  📏 2026-08-22 실측(16차 `[F]` · 세션 `elanous-session-4kfnjj`):
  *  ```
  *  복원 대상(user+assistant)  472
  *    ├ "[tool_use]" / "[tool_result]"  327  (69%)   ⛔ 이것이 화면을 덮고 있었다

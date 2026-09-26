@@ -1,7 +1,7 @@
-// nexus-dist.ts — `monad nexus dist publish|link` CLI handlers.
+// nexus-dist.ts — `elanous nexus dist publish|link` CLI handlers.
 //
-// `publish <ipa>` ingests an ad-hoc IPA into ~/.monad/dist and writes
-// ~/.monad/dist/dist.json so the daemon's /v1/dist/* endpoints can
+// `publish <ipa>` ingests an ad-hoc IPA into ~/.elanous/dist and writes
+// ~/.elanous/dist/dist.json so the daemon's /v1/dist/* endpoints can
 // serve it over Tailscale (manifest.plist + IPA stream). `link` prints
 // the itms-services:// install URL for the currently-published artifact
 // so the user can paste it into iPad Safari from anywhere on the tailnet.
@@ -28,7 +28,7 @@ interface PublishResult {
 /** Extract `Payload/<app>.app/Info.plist` from the IPA into tmp,
  *  convert to JSON with `plutil`, and return parsed plist values. */
 async function extractIpaInfoPlist(ipaPath: string): Promise<Record<string, unknown> | null> {
-  const tmpDir = join(homedir(), '.monad', 'dist', '.tmp-extract');
+  const tmpDir = join(homedir(), '.elanous', 'dist', '.tmp-extract');
   await rm(tmpDir, { recursive: true, force: true });
   await mkdir(tmpDir, { recursive: true });
   try {
@@ -55,11 +55,11 @@ export async function runDistPublish(opts: PublishOpts): Promise<PublishResult> 
   try {
     const stat = await readFile(ipaAbs);
     if (stat.byteLength === 0) {
-      console.error(`monad nexus dist publish: empty file: ${ipaAbs}`);
+      console.error(`elanous nexus dist publish: empty file: ${ipaAbs}`);
       return { exitCode: 1 };
     }
   } catch (err) {
-    console.error(`monad nexus dist publish: cannot read ${ipaAbs}: ${(err as Error).message}`);
+    console.error(`elanous nexus dist publish: cannot read ${ipaAbs}: ${(err as Error).message}`);
     return { exitCode: 1 };
   }
 
@@ -77,12 +77,12 @@ export async function runDistPublish(opts: PublishOpts): Promise<PublishResult> 
     basename(ipaAbs, '.ipa');
 
   if (!bundleId) {
-    console.error('monad nexus dist publish: failed to read CFBundleIdentifier from IPA Info.plist.');
+    console.error('elanous nexus dist publish: failed to read CFBundleIdentifier from IPA Info.plist.');
     console.error('  Verify the IPA is a valid iOS Ad Hoc / Development archive.');
     return { exitCode: 1 };
   }
   if (!version) {
-    console.error('monad nexus dist publish: failed to read CFBundleShortVersionString from IPA Info.plist.');
+    console.error('elanous nexus dist publish: failed to read CFBundleShortVersionString from IPA Info.plist.');
     return { exitCode: 1 };
   }
 
@@ -145,7 +145,7 @@ async function printInstallLinks(): Promise<void> {
     lines.push(`  Manifest:        ${manifestUrl}`);
     lines.push(`  IPA stream:      ${origin}${IPA_PATH_PREFIX}${encodeURIComponent(meta.file)}`);
   } else {
-    lines.push('  ⚠ Tailscale share not detected — run: monad nexus pwa share enable');
+    lines.push('  ⚠ Tailscale share not detected — run: elanous nexus pwa share enable');
     lines.push(`  Local manifest:  ${loopback}${MANIFEST_PATH}`);
   }
   for (const line of lines) console.log(line);
@@ -154,7 +154,7 @@ async function printInstallLinks(): Promise<void> {
 export async function runDistLink(): Promise<LinkResult> {
   const meta = await readDistMeta();
   if (!meta) {
-    console.error('monad nexus dist link: no IPA published yet. Run: monad nexus dist publish <path>');
+    console.error('elanous nexus dist link: no IPA published yet. Run: elanous nexus dist publish <path>');
     return { exitCode: 1 };
   }
   console.log(`Published: ${meta.title} ${meta.version}${meta.build ? ` (build ${meta.build})` : ''} · ${meta.bundleId}`);
@@ -181,7 +181,7 @@ async function resolveTailnetHost(): Promise<string | null> {
 }
 
 /** Optional: locate the most recent IPA in DerivedData (xcodebuild
- *  archive output). Lets the user run `monad nexus dist publish`
+ *  archive output). Lets the user run `elanous nexus dist publish`
  *  without an explicit path. */
 export async function findLatestIpa(searchRoot: string): Promise<string | null> {
   try {

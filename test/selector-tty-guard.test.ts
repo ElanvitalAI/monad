@@ -87,7 +87,7 @@ describe('showSyncSelector TTY guard', () => {
     }
 
     expect(message).toContain('stdin TTY가 있는 자리에서만');
-    expect(message).toContain('monad ask');
+    expect(message).toContain('elanous ask');
     expect(message).not.toContain('    at ');
     expect(rawModeCalls).toEqual([]);
     expect(listeners).toEqual([]);

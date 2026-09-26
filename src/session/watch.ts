@@ -1,4 +1,4 @@
-// Live session tail — `monad session watch`. Renders a session's
+// Live session tail — `elanous session watch`. Renders a session's
 // messages as they are appended, in real time, from a SEPARATE process
 // than the daemon/agent doing the writing. That cross-process constraint
 // is why we watch the on-disk jsonl (fs.watch + a poll backstop) rather

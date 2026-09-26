@@ -2,7 +2,7 @@
 //
 // ★ I-22(2026-07-31) — **행(hang)을 실패로 세는 자리.**
 //
-// `OBS-T3` 는 `monad self log` 가 **17분 32초** 멈춰 있던 사건이다. ⛔ 그것이 며칠을 살아남았어도
+// `OBS-T3` 는 `elanous self log` 가 **17분 32초** 멈춰 있던 사건이다. ⛔ 그것이 며칠을 살아남았어도
 // **어느 지표에도 안 나타났을 것**이다 — 실패는 세어지지만(`abandoned`·`gate-failed`) **행은
 // *"아직 도는 중"* 과 구분되지 않기 때문**이다.
 //
@@ -36,7 +36,7 @@ export interface LifecyclePair {
 }
 
 /**
- * ⭐ **실측으로 검증된 짝만 여기 있다**(2026-07-31 · `monad logs --exact-category … --since 3d`).
+ * ⭐ **실측으로 검증된 짝만 여기 있다**(2026-07-31 · `elanous logs --exact-category … --since 3d`).
  *
  * ⛔ **비어 보이는 카테고리를 추측으로 채우지 마라.** `self-implement` 의 `headless.spawn` 과
  * `headless.done` 은 둘 다 `ptyId` 를 담아 그 키로 닫힘을 실측했다. `runId` 는 한 런에 여러
@@ -204,14 +204,14 @@ export interface LogsUnclosedOpts {
   json?: boolean;
 }
 
-/** `monad logs unclosed` — 시작만 있고 종료가 없는 작업을 나이순으로 낸다. */
+/** `elanous logs unclosed` — 시작만 있고 종료가 없는 작업을 나이순으로 낸다. */
 export function runLogsUnclosed(opts: LogsUnclosedOpts): number {
   const resolved = resolveLogTargets({ test: opts.test, instance: opts.instance });
-  if (resolved.error) { console.error(`monad logs unclosed: ${resolved.error}`); return 1; }
+  if (resolved.error) { console.error(`elanous logs unclosed: ${resolved.error}`); return 1; }
   const sinceMs = parseDuration(opts.since ?? '24h');
-  if (sinceMs === null) { console.error(`monad logs unclosed: --since 파싱 불가 '${opts.since}' (30s|15m|2h|7d)`); return 1; }
+  if (sinceMs === null) { console.error(`elanous logs unclosed: --since 파싱 불가 '${opts.since}' (30s|15m|2h|7d)`); return 1; }
   const olderThanMs = opts.olderThan ? parseDuration(opts.olderThan) : 0;
-  if (olderThanMs === null) { console.error(`monad logs unclosed: --older-than 파싱 불가 '${opts.olderThan}'`); return 1; }
+  if (olderThanMs === null) { console.error(`elanous logs unclosed: --older-than 파싱 불가 '${opts.olderThan}'`); return 1; }
 
   const now = Date.now();
   const found: UnclosedOperation[] = [];
@@ -224,7 +224,7 @@ export function runLogsUnclosed(opts: LogsUnclosedOpts): number {
       // ⛔⭐ 절단되면 **수를 내지 않고 멈춘다.** 잘린 쪽에 종료가 있으면 정상 완주가 미종료로
       //    둔갑하는데, 그 거짓 양성은 진짜 행을 묻는다. ⇒ *"틀린 수"* 보다 *"수 없음"* 이 낫다.
       if (scan.truncated) {
-        console.error(`monad logs unclosed: ${target.name} 스캔이 상한에서 잘렸다 — 창을 좁혀라(--since).`);
+        console.error(`elanous logs unclosed: ${target.name} 스캔이 상한에서 잘렸다 — 창을 좁혀라(--since).`);
         console.error('⛔ 잘린 쪽이 최신 구간이라 종료 이벤트가 빠질 수 있고, 그러면 정상 완주가 미종료로 잡힌다.');
         return 1;
       }

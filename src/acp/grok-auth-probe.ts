@@ -38,7 +38,7 @@ export function grokApiKeyEnvName(env: NodeJS.ProcessEnv = process.env): string 
  *
  *  ⭐⭐ **구독(OAuth)이 API 키보다 «먼저»다** (대표 지시 2026-08-13).
  *
- *  ⛔ 이 순서는 취향이 아니라 **실제 동작과의 정합**이다. monad 는 grok 자식을
+ *  ⛔ 이 순서는 취향이 아니라 **실제 동작과의 정합**이다. elanous 는 grok 자식을
  *  띄울 때 API 키 env 를 **스크럽하고** 구독을 강제한다:
  *    · `grokBackend.scrubEnv = ['XAI_API_KEY','GROK_API_KEY','GROK_CODE_XAI_API_KEY']`
  *      (`src/agent-mission/driver.ts`)

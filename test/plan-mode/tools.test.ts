@@ -35,7 +35,7 @@ describe('dispatchEnterPlanMode', () => {
   test('first call flips plan mode active + seeds the artifact', async () => {
     const r = await dispatchEnterPlanMode({ initialTitle: 'Fix bug' });
     expect(r.sessionId).toBeTruthy();
-    expect(r.planFilePath).toContain('.monad/plans/');
+    expect(r.planFilePath).toContain('.elanous/plans/');
     expect(r.output).toContain('EnterPlanMode');
     const s = getPlanModeState();
     expect(s.active).toBe(true);

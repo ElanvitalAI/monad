@@ -105,8 +105,8 @@ export function buildWizardSpec(
 ): InteractiveModalSpec {
   return {
     kind: 'interactive-modal',
-    id: 'monad-setup-wizard',
-    title: 'monad — setup wizard',
+    id: 'elanous-setup-wizard',
+    title: 'elanous — setup wizard',
     excerpt: 'Configure provider · skills · vault · bots',
     steps: steps.map((s) => ({
       kind: 'text',

@@ -25,7 +25,7 @@ import type { FeedbackEnvelope } from '../src/feedback/envelope.js';
 let cwd: string;
 
 beforeEach(() => {
-  cwd = mkdtempSync(joinPath(tmpdir(), 'monad-grep-fb-'));
+  cwd = mkdtempSync(joinPath(tmpdir(), 'elanous-grep-fb-'));
 });
 
 afterEach(() => {

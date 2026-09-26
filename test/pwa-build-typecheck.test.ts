@@ -15,7 +15,7 @@ import { resolve } from 'node:path';
  *  ⛔⭐⭐ **왜 어떤 게이트도 못 잡았나** — 이 부류의 기전이 여기 있다:
  *  범인 PR(`#10942`)은 `orchestrator.ts` 의 union 을 넓혔고, **깨진 파일은 `seams.ts`** 였다.
  *  ⇒ 깨진 파일이 「그 PR 이 바꾼 파일」이 «아니»므로 ***변경-파일-스코프 게이트 둘 다 원리상 못 본다***
- *    (하니스 게이트 `monad self gate` · push 전 `scripts/ci-typecheck-changed.ts`).
+ *    (하니스 게이트 `elanous self gate` · push 전 `scripts/ci-typecheck-changed.ts`).
  *  🔑 ***계약을 넓히면 깨지는 것은 「그 계약을 «쓰는» 파일」이고, 그 파일은 내 변경 목록에 없다.***
  *  ⊕ 그 사이 데몬은 **옛 번들을 계속 서빙한다** — 소스를 고쳐도 화면이 안 바뀐다.
  *

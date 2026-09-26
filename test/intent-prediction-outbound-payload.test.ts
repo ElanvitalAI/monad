@@ -36,7 +36,7 @@ describe('buildOutboundEventFromRanking · headline + body', () => {
       ],
     });
     const ev = buildOutboundEventFromRanking(r);
-    expect(ev.title).toBe('monad · 오토파일럿');
+    expect(ev.title).toBe('elanous · 오토파일럿');
     expect(ev.body).toBe('또는 추가 보완?');
   });
 
@@ -45,14 +45,14 @@ describe('buildOutboundEventFromRanking · headline + body', () => {
       candidates: [{ label: '계속 진행', confidence: 0.9, reason: '' }],
     });
     const ev = buildOutboundEventFromRanking(r);
-    expect(ev.title).toBe('monad · 계속 진행');
+    expect(ev.title).toBe('elanous · 계속 진행');
     expect(ev.body).toBeUndefined();
   });
 
   test('empty candidates → no-op event with placeholder title', () => {
     const r = ranking({ candidates: [] });
     const ev = buildOutboundEventFromRanking(r);
-    expect(ev.title).toBe('monad');
+    expect(ev.title).toBe('elanous');
     expect(ev.body).toBeUndefined();
     const payload = ev.payload as { candidates: unknown[] };
     expect(payload.candidates).toEqual([]);
@@ -121,14 +121,14 @@ describe('buildOutboundEventFromRanking · opts overrides', () => {
   });
 
   test('title override replaces the headline', () => {
-    const ev = buildOutboundEventFromRanking(ranking(), { title: 'monad nudge' });
-    expect(ev.title).toBe('monad nudge');
+    const ev = buildOutboundEventFromRanking(ranking(), { title: 'elanous nudge' });
+    expect(ev.title).toBe('elanous nudge');
   });
 
   test('link present only when opts.link given', () => {
     expect(buildOutboundEventFromRanking(ranking()).link).toBeUndefined();
-    expect(buildOutboundEventFromRanking(ranking(), { link: 'monad://s/123' }).link)
-      .toBe('monad://s/123');
+    expect(buildOutboundEventFromRanking(ranking(), { link: 'elanous://s/123' }).link)
+      .toBe('elanous://s/123');
   });
 });
 

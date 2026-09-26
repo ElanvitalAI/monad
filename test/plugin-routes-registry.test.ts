@@ -114,14 +114,14 @@ describe('PX-5 P1 — match + resolveExplicit', () => {
 });
 
 describe('PX-5 P1 — persist snapshot', () => {
-  test('persist writes .monad/routes.json with schemaVersion 1', async () => {
+  test('persist writes .elanous/routes.json with schemaVersion 1', async () => {
     const dir = scratchDir();
     const reg = new RouteRegistry({ compiledRoot: dir, warnOnConflict: false });
     reg.register('p1', { id: 'r', target: { kind: 'agent', id: 'a' } });
     const outPath = await reg.persist();
     expect(outPath).toBeTruthy();
-    expect(existsSync(join(dir, '.monad', 'routes.json'))).toBe(true);
-    const raw = readFileSync(join(dir, '.monad', 'routes.json'), 'utf-8');
+    expect(existsSync(join(dir, '.elanous', 'routes.json'))).toBe(true);
+    const raw = readFileSync(join(dir, '.elanous', 'routes.json'), 'utf-8');
     const parsed = JSON.parse(raw);
     expect(parsed.schemaVersion).toBe(1);
     expect(parsed.routes.length).toBe(1);

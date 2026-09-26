@@ -11,11 +11,11 @@ import { discoverChromeBinary } from '../../../../../src/browser-cdp/client';
 import { TailscaleSecurityBanner } from './TailscaleSecurityBanner';
 import type { SecureContextStatus } from '@/lib/secure-context-guard';
 
-const DISMISS_SESSION_KEY = 'monad.webterm.voiceBanner.dismissed';
+const DISMISS_SESSION_KEY = 'elanous.webterm.voiceBanner.dismissed';
 const require = createRequire(import.meta.url);
 const REACT_ENTRY = require.resolve('react');
 const REACT_DOM_CLIENT_ENTRY = require.resolve('react-dom/client');
-const temp = mkdtempSync(join(tmpdir(), 'monad-voice-banner-hydration-'));
+const temp = mkdtempSync(join(tmpdir(), 'elanous-voice-banner-hydration-'));
 afterAll(() => rmSync(temp, { recursive: true, force: true }));
 
 const CHROME = discoverChromeBinary();
@@ -101,7 +101,7 @@ type BrowserResult = {
 };
 
 async function visit(config: Record<string, unknown>, element: React.ReactElement): Promise<BrowserResult> {
-  if (!CHROME) throw new Error('Browser hydration test requires MONAD_CHROME_BIN or Chrome/Chromium');
+  if (!CHROME) throw new Error('Browser hydration test requires ELANOUS_CHROME_BIN or Chrome/Chromium');
   const html = `<!doctype html><html><body data-config="${encodeURIComponent(JSON.stringify(config))}"><div id="root">${renderToString(element)}</div><script>document.body.dataset.config=decodeURIComponent(document.body.dataset.config)</script><script src="/client.js"></script></body></html>`;
   const server = Bun.serve({
     port: 0,
@@ -142,7 +142,7 @@ async function visit(config: Record<string, unknown>, element: React.ReactElemen
 
 function browserTest(name: string, fn: () => Promise<void>): void {
   test(name, async () => {
-    if (!CHROME) throw new Error('Browser hydration test requires MONAD_CHROME_BIN or Chrome/Chromium');
+    if (!CHROME) throw new Error('Browser hydration test requires ELANOUS_CHROME_BIN or Chrome/Chromium');
     await fn();
   }, { timeout: 15_000 });
 }

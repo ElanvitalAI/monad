@@ -1,6 +1,6 @@
 // ── Self-Evolution SE2 · 플랜 초안 생성기 (2026-07-09) ─────────────────────
 //
-// 대표: "큰 기능 단위로 알아서 생각하고, monad 우선순위를 보며 신규 피처 플랜을 제안하라.
+// 대표: "큰 기능 단위로 알아서 생각하고, elanous 우선순위를 보며 신규 피처 플랜을 제안하라.
 // 승인받으면 별도로 구현." 발굴(SE1 내부 미구현 / 외부 흡수 후보)을 신규 피처 PLAN 문서
 // 초안으로. 대표가 읽고 승인/기각(SE2 큐). 승인 시 SE4 야간 러너 입력.
 //
@@ -10,7 +10,7 @@ export interface ProposalSeed {
   slug: string;              // kebab (파일명·id)
   title: string;
   source: 'internal-roadmap' | 'external-repo' | 'preexisting-red';
-  rationale: string;         // 왜 지금 이 기능인가(monad 우선순위 관점)
+  rationale: string;         // 왜 지금 이 기능인가(elanous 우선순위 관점)
   evidence: string[];        // 근거 refs(doc 경로·repo 영역·커밋 메시지)
   tier: 'light' | 'heavy';
   /** 큰 기능 단위 범위 스케치(있으면). */

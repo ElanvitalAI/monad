@@ -91,7 +91,7 @@ export async function askWithHelp(
     io.print(`  ! ${err}`);
     attempt += 1;
     if (attempt >= max) {
-      io.print('  (max attempts reached — keeping last value; you can re-run `monad setup` later)');
+      io.print('  (max attempts reached — keeping last value; you can re-run `elanous setup` later)');
       return lastValue;
     }
   }

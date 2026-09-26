@@ -6,11 +6,11 @@
 
 import { describe, expect, test } from 'bun:test';
 
-import { asModalUri, mintModalUri, newMonadUri } from '../../../src/mss/uri/builder.ts';
-import { parseMonadUri } from '../../../src/mss/uri/parser.ts';
+import { asModalUri, mintModalUri, newElanousUri } from '../../../src/mss/uri/builder.ts';
+import { parseElanousUri } from '../../../src/mss/uri/parser.ts';
 
 describe('mintModalUri', () => {
-  test('returns a Tier 2 `modal/<ULID>` MonadUri', () => {
+  test('returns a Tier 2 `modal/<ULID>` ElanousUri', () => {
     const uri = mintModalUri();
     expect(uri).toMatch(/^modal\/[0-9A-HJKMNP-TV-Z]{26}$/);
   });
@@ -28,14 +28,14 @@ describe('mintModalUri', () => {
 });
 
 describe('asModalUri', () => {
-  test('accepts a fresh `modal/<ULID>` MonadUri', () => {
-    const uri = newMonadUri('modal');
+  test('accepts a fresh `modal/<ULID>` ElanousUri', () => {
+    const uri = newElanousUri('modal');
     expect(() => asModalUri(uri)).not.toThrow();
   });
 
-  test('accepts a nested MonadUri whose path includes a modal segment', () => {
-    const session = newMonadUri('session');
-    const withModal = newMonadUri('modal', session);
+  test('accepts a nested ElanousUri whose path includes a modal segment', () => {
+    const session = newElanousUri('session');
+    const withModal = newElanousUri('modal', session);
     expect(() => asModalUri(withModal)).not.toThrow();
   });
 
@@ -43,14 +43,14 @@ describe('asModalUri', () => {
     expect(() => asModalUri('not-a-uri')).toThrow(/Invalid ModalUri/);
   });
 
-  test('rejects MonadUri without any modal segment', () => {
-    const session = newMonadUri('session');
+  test('rejects ElanousUri without any modal segment', () => {
+    const session = newElanousUri('session');
     expect(() => asModalUri(session)).toThrow(/Invalid ModalUri/);
   });
 
   test('parsed URI surfaces the modal segment', () => {
     const uri = mintModalUri();
-    const parsed = parseMonadUri(uri);
+    const parsed = parseElanousUri(uri);
     expect(parsed?.segments[0]?.kind).toBe('modal');
   });
 });

@@ -9,7 +9,7 @@ const retainPlan: RetainPlan = {
     beatIndex,
     download: ['curl', `https://vendor.example/beat-${beatIndex}.mp4`],
     localPath: `/retained/beat-${beatIndex}.mp4`,
-    s3Key: `monad/ad-assets/beat-${beatIndex}.mp4`,
+    s3Key: `elanous/ad-assets/beat-${beatIndex}.mp4`,
   })),
   estimatedExpiry: [], expiredEstimatedExpiry: [], unknownExpiry: [], blocked: [], s3Skipped: false,
 };

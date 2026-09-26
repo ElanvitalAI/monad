@@ -126,7 +126,7 @@ export function widgetCallTranscriptMessages(
 /** 운영 배선이 쓰는 저장소 write-through.
  *
  *  ⛔⭐ 이것을 라우트의 «기본값»으로 두지 «않는다** — 그러면 이 라우트를 태우는 모든 시험이
- *  사람의 진짜 `~/.monad/sessions` 에 쓴다(이 파일의 시험만 12곳이다). ⇒ 운영 배선
+ *  사람의 진짜 `~/.elanous/sessions` 에 쓴다(이 파일의 시험만 12곳이다). ⇒ 운영 배선
  *  (`http-server.ts`)이 «명시»로 넘기고, 그 배선 자체를 시험이 잡는다.
  *  ⚠️ 그래서 「부품은 있고 스위치가 없다」가 되지 않도록 배선 시험이 «짝»으로 있어야 한다. */
 export function persistWidgetTurnToSessionStore(

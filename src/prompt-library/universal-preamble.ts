@@ -35,11 +35,11 @@ import { getHarnessSpace } from '../harness/harness-space.js';
 export const PROJECT_ANCHOR_MAX_CHARS = 32 * 1024;
 /** «lean» 예산(BACKLOG L2 · 2026-09-25) — 로컬 모델 구현 자식은 매 턴 이것을 prefill 한다.
  *  📏 09-25 node-b 기록 프록시: 시스템 50,068자 중 AGENTS.md 앵커 ~32K · 트리 ~8K 가 상위 둘이었다.
- *  ⭐ 켜는 법: env `MONAD_PROMPT_BUDGET=lean` — 하니스 구현 자식 spawn 이 child provider 가 local 일 때 준다.
+ *  ⭐ 켜는 법: env `ELANOUS_PROMPT_BUDGET=lean` — 하니스 구현 자식 spawn 이 child provider 가 local 일 때 준다.
  *  ⛔ API 모델 경로의 기본(32K·8K)은 그대로다 — 잘 도는 것을 바꾸지 않는다. */
 export const PROJECT_ANCHOR_LEAN_MAX_CHARS = 8 * 1024;
 export const PROJECT_TREE_LEAN_MAX_CHARS = 2 * 1024;
-function promptBudgetLean(): boolean { return process.env.MONAD_PROMPT_BUDGET?.trim() === 'lean'; }
+function promptBudgetLean(): boolean { return process.env.ELANOUS_PROMPT_BUDGET?.trim() === 'lean'; }
 export function projectAnchorMaxChars(): number { return promptBudgetLean() ? PROJECT_ANCHOR_LEAN_MAX_CHARS : PROJECT_ANCHOR_MAX_CHARS; }
 export function projectTreeMaxChars(): number { return promptBudgetLean() ? PROJECT_TREE_LEAN_MAX_CHARS : PROJECT_TREE_MAX_CHARS; }
 
@@ -141,7 +141,7 @@ export function buildCodingLifecycleAddendum(): LLMMessage[] {
 }
 
 /** ★ 자기인지 하니스 공간 addendum(2026-07-21 대표 co-design) — 이 프로세스가 격리 self-dev-harness 공간
- *  안이면(ENV 마커·getHarnessSpace) monad 이 "나는 격리 빌드 샌드박스의 monad"임을 **자기인지**하고 그에 따라
+ *  안이면(ENV 마커·getHarnessSpace) elanous 이 "나는 격리 빌드 샌드박스의 elanous"임을 **자기인지**하고 그에 따라
  *  판단하게 하는 system 메시지. 공간 밖(운영/일반)이면 [](무주입=기존 동작). harness-space 장치의 첫 소비자.
  *  Docker 컨테이너가 자기가 격리됐음을 알고 행동하는 것과 동형. */
 export function buildHarnessSpaceAddendum(): LLMMessage[] {
@@ -150,7 +150,7 @@ export function buildHarnessSpaceAddendum(): LLMMessage[] {
   return [{
     role: 'system',
     content:
-      `## 실행 맥락 — 너는 격리 self-dev-harness 공간의 monad 다 (자기인지)\n` +
+      `## 실행 맥락 — 너는 격리 self-dev-harness 공간의 elanous 다 (자기인지)\n` +
       `- 공간: kind=\`${space.kind}\`${space.id ? ` · id=\`${space.id}\`` : ''}. 이건 **새 git worktree = 격리 빌드 샌드박스**이지 운영 레포가 아니다.\n` +
       `- 목표: 요청된 변경을 **끝까지 구현**하고 **컴파일(tsc)·게이트를 통과**시켜라. "고쳤다"만 하고 검증 안 하면 미완이다.\n` +
       `- ⚠️ 테스트 검증은 **네가 바꾼/추가한 테스트 파일 경로만** 돌려라(\`run_tests\` 툴 또는 \`bun test <경로>\`). **경로 없는 전체 \`bun test\` 스위트는 금지** — 통합/네트워크 테스트를 포함해 격리 worktree 에서 매우 느려 시간초과로 미완 처리된다(게이트도 변경 파일만 스코프한다).\n` +
@@ -688,7 +688,7 @@ export function loadProjectAnchor(cwd: string): ProjectAnchorResult {
 export function buildUniversalPreamble(ctx: UniversalPreambleContext): LLMMessage[] {
   const out: LLMMessage[] = [];
   // ★ 자기인지 공간 프레임(2026-07-21) — 격리 하니스 공간 안이면 최상단에 실행-맥락 자기인지를 심는다
-  //   (프로젝트 앵커보다 먼저 = "너는 격리 샌드박스의 monad"라는 정체성이 나머지를 프레이밍). 공간 밖=무주입.
+  //   (프로젝트 앵커보다 먼저 = "너는 격리 샌드박스의 elanous"라는 정체성이 나머지를 프레이밍). 공간 밖=무주입.
   out.push(...buildHarnessSpaceAddendum());
   // Keep the runtime path cached while loadProjectAnchorWithMeta remains the test/debug reader.
   const result = loadProjectAnchor(ctx.cwd);
@@ -758,13 +758,13 @@ export function buildUniversalPreamble(ctx: UniversalPreambleContext): LLMMessag
     out.push(...buildGeminiFamilyAddendum());
   }
   // Wave 3 (2026-05-04) — claude family is already aligned on
-  // monad's analysis benchmark (15-17 calls / 9-10K chars baseline);
+  // elanous's analysis benchmark (15-17 calls / 9-10K chars baseline);
   // addendum codifies engineering standards (read-first, no gold-
   // plating, faithful reporting, verification) so behavior matches
   // the model's full capability rather than a quality push. Pattern
   // source: ref/claude-code-fork `getSimpleDoingTasksSection` +
   // related sections; conciseness directives intentionally NOT
-  // brought over (collide with monad's analysis depth requirement).
+  // brought over (collide with elanous's analysis depth requirement).
   if (ctx.modelFamily === 'claude') {
     out.push(...buildAnthropicFamilyAddendum());
   }

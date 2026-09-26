@@ -3,14 +3,14 @@
 // 결함: `if (!process.stdin.isTTY) { for await (const c of process.stdin) … }` 이 세 CLI 에 복사돼
 // 있었다(`memory add` · `self log` · `self utterance`). 비-TTY 는 *"파이프다"* 를 뜻하지 않는다 —
 // 하니스·에이전트·백그라운드 실행에서 stdin 은 **닫히지 않는 unix 소켓**이라 EOF 가 영원히 안 온다.
-// ⇒ 실측: `monad self log` 가 **17분 넘게 행**(주 스레드 kevent64 · CPU 0.0 · 네트워크 0), 같은 명령이
+// ⇒ 실측: `elanous self log` 가 **17분 넘게 행**(주 스레드 kevent64 · CPU 0.0 · 네트워크 0), 같은 명령이
 // `< /dev/null` 에서는 **0.43초** 완주. ⛔ 에러가 아니라 **행**이라 자기인지 기록이 조용히 유실됐다.
 //
 // ⚠️ 하필 `self log` 는 *"변경 후 항상 self-log"*(상시지시) 의 그 명령이고, 행이 나는 곳은 **자동화
 // 맥락뿐**이다 — 사람이 터미널에서 치면 `isTTY` 라 안 난다. **자동화에서만 조용히 죽는 형태.**
 //
 // 두 겹으로 막는다:
-//   ① FIFO 게이트 — 진짜 파이프(`echo x | monad …`)만 읽는다. 소켓·tty·`< /dev/null` 은 건너뛴다.
+//   ① FIFO 게이트 — 진짜 파이프(`echo x | elanous …`)만 읽는다. 소켓·tty·`< /dev/null` 은 건너뛴다.
 //   ② 유휴 타임아웃 — FIFO 인데 쓰는 쪽이 침묵하면 끊는다. ⭐ **청크가 오면 리셋**하므로 느리지만
 //      진행 중인 생산자는 절대 잘리지 않는다(총 시간 상한이 아니라 **침묵 상한**이다).
 import { fstatSync } from 'node:fs';

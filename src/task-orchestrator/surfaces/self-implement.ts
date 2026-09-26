@@ -1,10 +1,10 @@
 /**
  * `surface.kind === 'self-implement'` adapter — parallel self-dev.
  *
- * Each task = one `monad self implement <feature>` **subprocess**. Why a
+ * Each task = one `elanous self implement <feature>` **subprocess**. Why a
  * subprocess and not an in-process `runSelfImplement` call: the child
  * goal-loop derives its harness-space from `process.env`
- * (`MONAD_HARNESS_SPACE_ID`), so N in-process jobs would clobber each
+ * (`ELANOUS_HARNESS_SPACE_ID`), so N in-process jobs would clobber each
  * other's space marker. A subprocess gets its own env → its own space →
  * its own screen/log buffer, letting the dispatcher fan out safely.
  * The full worktree→gate→review→merge pipeline runs inside the child
@@ -42,7 +42,7 @@ export interface SelfImplementJobDone {
   disposition?: SelfImplementDisposition;
 }
 
-/** Parsed `monad self implement --json` result (subset consumed here). */
+/** Parsed `elanous self implement --json` result (subset consumed here). */
 export interface SelfImplementDisposition {
   stage?: string;
   ok?: boolean;
@@ -81,7 +81,7 @@ export interface SelfImplementDisposition {
 }
 
 /**
- * Launch seam. Production wires a `bun bin/monad.mjs self implement`
+ * Launch seam. Production wires a `bun bin/elanous.mjs self implement`
  * subprocess (see `defaultSelfImplementSpawn`); tests inject a fake.
  * Returns immediately with an `address` + a `done` promise that
  * resolves when the child exits.
@@ -102,7 +102,7 @@ export interface SelfImplementJobSpawn {
     spaceId: string;
     signal?: AbortSignal;
   }): {
-    /** `self-impl:<spaceId>` — keyed so `monad logs --space` / metrics
+    /** `self-impl:<spaceId>` — keyed so `elanous logs --space` / metrics
      *  can attribute without re-parsing. */
     address: string;
     done: Promise<SelfImplementJobDone>;
@@ -117,11 +117,11 @@ export interface SelfImplementAdapterOptions {
 /** Output tail cap — matches the other surface adapters. */
 const OUTPUT_TAIL_BYTES = 4096;
 
-export type SpawnMonadBinSource = 'cwd-repository' | 'source-tree-fallback';
+export type SpawnElanousBinSource = 'cwd-repository' | 'source-tree-fallback';
 
-export interface SpawnMonadBin {
+export interface SpawnElanousBin {
   bin: string;
-  source: SpawnMonadBinSource;
+  source: SpawnElanousBinSource;
 }
 
 function isRegularFile(path: string): boolean {
@@ -132,20 +132,20 @@ function isRegularFile(path: string): boolean {
   }
 }
 
-/** Resolve a runnable monad entrypoint without treating every git repository as monad. */
-export function resolveSpawnMonadBin(cwd = process.cwd(), sourceRoot = resolve(import.meta.dir, '../../..')): SpawnMonadBin {
+/** Resolve a runnable elanous entrypoint without treating every git repository as elanous. */
+export function resolveSpawnElanousBin(cwd = process.cwd(), sourceRoot = resolve(import.meta.dir, '../../..')): SpawnElanousBin {
   const repositoryRoot = findGitDir(cwd)?.root;
-  const repositoryBin = repositoryRoot ? join(repositoryRoot, 'bin', 'monad.mjs') : undefined;
+  const repositoryBin = repositoryRoot ? join(repositoryRoot, 'bin', 'elanous.mjs') : undefined;
   if (repositoryBin && isRegularFile(repositoryBin)) {
     return { bin: repositoryBin, source: 'cwd-repository' };
   }
 
-  const sourceBin = join(sourceRoot, 'bin', 'monad.mjs');
+  const sourceBin = join(sourceRoot, 'bin', 'elanous.mjs');
   if (isRegularFile(sourceBin)) {
     return { bin: sourceBin, source: 'source-tree-fallback' };
   }
 
-  throw new Error(`Unable to locate runnable monad entrypoint; tried ${repositoryBin ?? 'no git repository'} and ${sourceBin}`);
+  throw new Error(`Unable to locate runnable elanous entrypoint; tried ${repositoryBin ?? 'no git repository'} and ${sourceBin}`);
 }
 
 /** Keep the final UTF-8 bytes without splitting a Unicode code point. */
@@ -295,20 +295,20 @@ export function createSelfImplementAdapter(opts: SelfImplementAdapterOptions) {
 }
 
 /**
- * Production launch seam — spawns `bun bin/monad.mjs self implement`.
- * Each child gets its own `MONAD_HARNESS_SPACE_ID` (distinct space →
+ * Production launch seam — spawns `bun bin/elanous.mjs self implement`.
+ * Each child gets its own `ELANOUS_HARNESS_SPACE_ID` (distinct space →
  * own screen/log buffer) plus `childNestEnv()` (fork-bomb depth guard).
  * Kept out of the adapter so tests never touch a real subprocess.
  */
 export function defaultSelfImplementSpawn(): SelfImplementJobSpawn {
   return (input) => {
-    // Lazy requires — heavy node/monad deps only loaded in production.
+    // Lazy requires — heavy node/elanous deps only loaded in production.
     const { spawn } = require('node:child_process') as typeof import('node:child_process');
     const { harnessSpaceEnv, executorRoleEnv } = require('../../harness/harness-space.js') as typeof import('../../harness/harness-space.js');
     const { childNestEnv, getNestDepth, getMaxNestDepth } = require('../../agent/nest-depth.js') as typeof import('../../agent/nest-depth.js');
     const { debug } = require('../../debug/log.js') as typeof import('../../debug/log.js');
 
-    const { bin, source: binSource } = resolveSpawnMonadBin();
+    const { bin, source: binSource } = resolveSpawnElanousBin();
     // `--json` so the child prints its SelfImplementResult on the last
     // line → we parse the real disposition (stage / prUrl / merged).
     const args = [bin, 'self', 'implement', input.feature, '--json'];
@@ -333,7 +333,7 @@ export function defaultSelfImplementSpawn(): SelfImplementJobSpawn {
         child = spawn('bun', args, {
           cwd: process.cwd(),
           // Distinct harness-space per job (own screen/log) + nest guard.
-          // The CLI honours a pre-set MONAD_HARNESS_SPACE_ID (index.ts).
+          // The CLI honours a pre-set ELANOUS_HARNESS_SPACE_ID (index.ts).
           env: {
             ...process.env,
             ...childNestEnv(),
@@ -426,7 +426,7 @@ function failureClassificationFromJson(o: Record<string, unknown>): AbandonedCla
   return undefined;
 }
 
-/** Parse the last JSON object line of `monad self implement --json`
+/** Parse the last JSON object line of `elanous self implement --json`
  *  stdout into a disposition. Tolerant — returns null if no JSON found
  *  (e.g. the child crashed before printing). Pure. */
 export function parseSelfImplementJson(stdout: string): SelfImplementDisposition | null {

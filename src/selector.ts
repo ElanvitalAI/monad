@@ -41,7 +41,7 @@ export interface SyncFlowResult {
 export async function showSyncSelector(fromDashboard = false): Promise<SyncFlowResult> {
   if (!dashboardCanUseTty()) {
     throw new Error([
-      'monad sync 선택기는 stdin TTY가 있는 자리에서만 시작할 수 있다.',
+      'elanous sync 선택기는 stdin TTY가 있는 자리에서만 시작할 수 있다.',
       dashboardTtyRefusalMessage(),
     ].join('\n'));
   }

@@ -4,7 +4,7 @@
 // preference (via `/showroom <role>:<provider>:<transport>` or via the
 // LLM tool schema). At room-build time we cross-check it against the
 // resolved brand. Combinations that are guaranteed to fail (e.g. asking
-// `pty` for `monad` when monad-as-child is ACP-only) are silently
+// `pty` for `elanous` when elanous-as-child is ACP-only) are silently
 // **dropped** — the spawn proceeds with the brand's natural adapter so
 // the user's room still comes up — and a warning is surfaced via
 // `BuildRoomResult.warnings` so the slash output explains the override.
@@ -31,9 +31,9 @@ export interface TransportCompatResult {
 
 /** Brands with no PTY adapter — `transportPref: 'pty'` is impossible.
  *  Brand strings here are post-`resolveBrand` canonical forms (aliases
- *  already collapsed: 'mac' → 'monad'). */
+ *  already collapsed: 'mac' → 'elanous'). */
 const ACP_ONLY_BRANDS: ReadonlySet<string> = new Set([
-  'monad',
+  'elanous',
 ]);
 
 /** Brands with no ACP-embodied adapter (yet) — `transportPref: 'acp'`
@@ -72,7 +72,7 @@ export function checkTransportCompat(
   if (ACP_ONLY_BRANDS.has(lower)) {
     if (requested === 'pty') {
       return dropWithWarning(brand, requested,
-        `'${brand}' has no PTY adapter (monad-as-child is ACP only)`);
+        `'${brand}' has no PTY adapter (elanous-as-child is ACP only)`);
     }
     return { effective: requested }; // 'acp' is the natural fit
   }
@@ -119,7 +119,7 @@ export interface LaneMatrixEntry {
 }
 
 /** Brand → lane matrix. Brand keys are post-`resolveBrand` canonical
- *  forms ('codex' / 'claude' / 'gemini' / 'monad' / 'local-llm'). The
+ *  forms ('codex' / 'claude' / 'gemini' / 'elanous' / 'local-llm'). The
  *  table is the single source of truth — when a new adapter lands for
  *  an existing brand, update the entry here and the warning text in
  *  `checkTransportCompat` stays correlated.
@@ -143,7 +143,7 @@ export const LANE_MATRIX_BY_BRAND: Readonly<Record<string, LaneMatrixEntry>> = {
     defaultLane: 'pty',
     supported: ['pty'],
   },
-  monad: {
+  elanous: {
     defaultLane: 'acp',
     supported: ['acp'],
   },

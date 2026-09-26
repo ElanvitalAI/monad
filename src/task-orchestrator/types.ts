@@ -186,13 +186,13 @@ export interface ChatPromptSpec {
 }
 
 /** AXON P6 — known ACP agent brands. Adding a brand requires a
- *  backend-registry entry + sidebar AgentKind mapping. `monad-self`
- *  represents the server-side path (parent IDE drives our monad);
+ *  backend-registry entry + sidebar AgentKind mapping. `elanous-self`
+ *  represents the server-side path (parent IDE drives our elanous);
  *  the three client brands are the external agents we drive. */
-export type AcxAgentBrand = 'claude-code' | 'codex' | 'gemini-cli' | 'monad-self';
+export type AcxAgentBrand = 'claude-code' | 'codex' | 'gemini-cli' | 'elanous-self';
 
 export const ACX_AGENT_BRANDS: readonly AcxAgentBrand[] = [
-  'claude-code', 'codex', 'gemini-cli', 'monad-self',
+  'claude-code', 'codex', 'gemini-cli', 'elanous-self',
 ];
 
 export function isAcxAgentBrand(v: unknown): v is AcxAgentBrand {
@@ -207,7 +207,7 @@ export function isAcxAgentBrand(v: unknown): v is AcxAgentBrand {
  * AXON P6 (2026-04-20) — `acx-session` added as the 8th variant for
  * running tasks inside an ACP (AgentClientProtocol) session, either
  * an external agent we drive (claude-code / codex / gemini-cli) or
- * our own server session an external IDE has spawned ('monad-self').
+ * our own server session an external IDE has spawned ('elanous-self').
  */
 export type TaskSurface =
   | { kind: 'terminal-pane'; spec: TerminalSpawnLite }
@@ -221,7 +221,7 @@ export type TaskSurface =
       /** AXON P6 — external / server ACP session. */
       kind: 'acx-session';
       /** DualRoleManager-resolvable id — either the namespaced form
-       *  (`acp-cli:claude:sess-42` / `acp-srv:monad-session-7`) or the
+       *  (`acp-cli:claude:sess-42` / `acp-srv:elanous-session-7`) or the
        *  raw backend session id (manager's secondary index handles
        *  both). */
       sessionId: string;
@@ -259,14 +259,14 @@ export type TaskSurface =
       /** Preamble injected as systemPrompt for every lane. */
       preamble?: string;
     }
-  // Parallel self-dev (2026-07-21) — one job = a `monad self implement`
+  // Parallel self-dev (2026-07-21) — one job = a `elanous self implement`
   // subprocess (its own process.env → its own harness-space, so N jobs
   // fan out without clobbering each other). The adapter spawns the
   // existing CLI; the full worktree→gate→review→merge pipeline runs
   // inside the child. Cf. PLAN-parallel-self-dev-orchestrator-2026-07-21.
   | {
       kind: 'self-implement';
-      /** Feature/goal text passed to `monad self implement <feature>`. */
+      /** Feature/goal text passed to `elanous self implement <feature>`. */
       feature: string;
       /** Optional base ref (branch/tag) — maps to `--base`. */
       base?: string;
@@ -281,7 +281,7 @@ export type TaskSurface =
       /** Draft PR (default true; emits `--no-draft` when explicitly false). */
       draft?: boolean;
     }
-  // Parallel execution line (2026-07-22) — one job = a `monad harness
+  // Parallel execution line (2026-07-22) — one job = a `elanous harness
   // run-detached` subprocess (dev-harness P→E→R→D, or a --domain executor:
   // web publish / invest research). Reuses dispatchRunDevHarnessDetached's
   // proven subprocess+space-isolation infra; each job gets its own

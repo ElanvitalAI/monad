@@ -13,7 +13,7 @@
 // on disk IO. Matches control-audit-log's contract.
 
 import { appendFileSync, mkdirSync, existsSync } from 'node:fs';
-import { monadStateRoot } from '../autopilot/state-paths.js';
+import { elanousStateRoot } from '../autopilot/state-paths.js';
 import { join } from 'node:path';
 
 export interface GuardianAuditEvent {
@@ -42,15 +42,15 @@ export function setGuardianAuditSinkForTesting(sink: Sink | null): void {
   testSink = sink;
 }
 
-// FU2 Tier 3 (PLAN-config-unification-monad-root-2026-05-10):
-//   moved from ~/.monad-agent/audit/ → ~/.monad/audit/. control-audit-log
+// FU2 Tier 3 (PLAN-config-unification-elanous-root-2026-05-10):
+//   moved from ~/.monad-agent/audit/ → ~/.elanous/audit/. control-audit-log
 //   shares this dir · migrate is idempotent so any of the audit modules
 //   can fire it on first call.
-import { migrateLegacyHomeDir } from '../storage/legacy-monad-dir-migrate.js';
+import { migrateLegacyHomeDir } from '../storage/legacy-elanous-dir-migrate.js';
 function defaultRoot(): string {
   if (overrideRoot) return overrideRoot;
-  migrateLegacyHomeDir({ legacyHomeRel: join('.monad-agent', 'audit'), monadRel: 'audit' });
-  return join(monadStateRoot(), 'audit');
+  migrateLegacyHomeDir({ legacyHomeRel: join('.monad-agent', 'audit'), elanousRel: 'audit' });
+  return join(elanousStateRoot(), 'audit');
 }
 
 function todayFile(): string {

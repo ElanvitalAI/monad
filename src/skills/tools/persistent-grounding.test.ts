@@ -15,14 +15,14 @@ import {
 } from './persistent-grounding.js';
 
 function worktree(): string {
-  const root = mkdtempSync(join(tmpdir(), 'monad-grounding-'));
+  const root = mkdtempSync(join(tmpdir(), 'elanous-grounding-'));
   mkdirSync(join(root, 'src'), { recursive: true });
   writeFileSync(join(root, 'src', 'candidate.ts'), 'export const candidate = true;\n');
   return root;
 }
 
 function worktreeWithRoots(roots: readonly string[]): string {
-  const root = mkdtempSync(join(tmpdir(), 'monad-grounding-'));
+  const root = mkdtempSync(join(tmpdir(), 'elanous-grounding-'));
   for (const dir of roots) {
     mkdirSync(join(root, dir), { recursive: true });
     writeFileSync(join(root, dir, 'candidate.ts'), 'export const candidate = true;\n');
@@ -393,7 +393,7 @@ describe('persistent grounding', () => {
 
   test('주입 dispatcher도 read-only와 realpath worktree 격리를 우회할 수 없다', async () => {
     const root = worktree();
-    const outside = mkdtempSync(join(tmpdir(), 'monad-grounding-outside-'));
+    const outside = mkdtempSync(join(tmpdir(), 'elanous-grounding-outside-'));
     const calls: string[] = [];
     try {
       symlinkSync(join(outside), join(root, 'escape'));

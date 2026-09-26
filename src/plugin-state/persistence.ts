@@ -47,9 +47,9 @@ export type SchemaLookup = (
 } | null | undefined;
 
 export interface FsPersistenceOpts {
-  /** Override for ~/.monad/state. */
+  /** Override for ~/.elanous/state. */
   userRoot?: string;
-  /** Project root (…/.monad/state/…) for project-scope writes. When
+  /** Project root (…/.elanous/state/…) for project-scope writes. When
    *  omitted, project-scope operations throw — callers that don't set
    *  a projectRoot must avoid scope='project'. */
   projectRoot?: string;

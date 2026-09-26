@@ -2,17 +2,17 @@ import { describe, expect, test } from 'bun:test';
 import { detectLocale, isLocale, LOCALES } from '../src/expression/index.js';
 
 describe('expression/locale · detectLocale', () => {
-  test('MONAD_LANG=ko wins over LANG', () => {
-    expect(detectLocale({ MONAD_LANG: 'ko', LANG: 'en_US.UTF-8' } as NodeJS.ProcessEnv)).toBe('ko');
+  test('ELANOUS_LANG=ko wins over LANG', () => {
+    expect(detectLocale({ ELANOUS_LANG: 'ko', LANG: 'en_US.UTF-8' } as NodeJS.ProcessEnv)).toBe('ko');
   });
 
-  test('MONAD_LANG=en wins over Korean LANG', () => {
-    expect(detectLocale({ MONAD_LANG: 'en', LANG: 'ko_KR.UTF-8' } as NodeJS.ProcessEnv)).toBe('en');
+  test('ELANOUS_LANG=en wins over Korean LANG', () => {
+    expect(detectLocale({ ELANOUS_LANG: 'en', LANG: 'ko_KR.UTF-8' } as NodeJS.ProcessEnv)).toBe('en');
   });
 
-  test('unsupported MONAD_LANG falls through to env chain', () => {
-    expect(detectLocale({ MONAD_LANG: 'fr', LANG: 'ko_KR.UTF-8' } as NodeJS.ProcessEnv)).toBe('ko');
-    expect(detectLocale({ MONAD_LANG: 'fr', LANG: 'en_US.UTF-8' } as NodeJS.ProcessEnv)).toBe('en');
+  test('unsupported ELANOUS_LANG falls through to env chain', () => {
+    expect(detectLocale({ ELANOUS_LANG: 'fr', LANG: 'ko_KR.UTF-8' } as NodeJS.ProcessEnv)).toBe('ko');
+    expect(detectLocale({ ELANOUS_LANG: 'fr', LANG: 'en_US.UTF-8' } as NodeJS.ProcessEnv)).toBe('en');
   });
 
   test('LC_ALL beats LC_MESSAGES beats LANG', () => {
@@ -29,21 +29,21 @@ describe('expression/locale · detectLocale', () => {
     expect(detectLocale({ LANG: 'ko' } as NodeJS.ProcessEnv)).toBe('ko');
   });
 
-  test('case-insensitive MONAD_LANG match', () => {
-    expect(detectLocale({ MONAD_LANG: 'KO' } as NodeJS.ProcessEnv)).toBe('ko');
-    expect(detectLocale({ MONAD_LANG: 'En' } as NodeJS.ProcessEnv)).toBe('en');
-    expect(detectLocale({ MONAD_LANG: 'JA' } as NodeJS.ProcessEnv)).toBe('ja');
-    expect(detectLocale({ MONAD_LANG: 'ZH' } as NodeJS.ProcessEnv)).toBe('zh');
+  test('case-insensitive ELANOUS_LANG match', () => {
+    expect(detectLocale({ ELANOUS_LANG: 'KO' } as NodeJS.ProcessEnv)).toBe('ko');
+    expect(detectLocale({ ELANOUS_LANG: 'En' } as NodeJS.ProcessEnv)).toBe('en');
+    expect(detectLocale({ ELANOUS_LANG: 'JA' } as NodeJS.ProcessEnv)).toBe('ja');
+    expect(detectLocale({ ELANOUS_LANG: 'ZH' } as NodeJS.ProcessEnv)).toBe('zh');
   });
 
-  test('whitespace-padded MONAD_LANG normalizes', () => {
-    expect(detectLocale({ MONAD_LANG: '  ko  ' } as NodeJS.ProcessEnv)).toBe('ko');
+  test('whitespace-padded ELANOUS_LANG normalizes', () => {
+    expect(detectLocale({ ELANOUS_LANG: '  ko  ' } as NodeJS.ProcessEnv)).toBe('ko');
   });
 
   test('Japanese LANG variants resolve to ja', () => {
     expect(detectLocale({ LANG: 'ja_JP.UTF-8' } as NodeJS.ProcessEnv)).toBe('ja');
     expect(detectLocale({ LANG: 'ja' } as NodeJS.ProcessEnv)).toBe('ja');
-    expect(detectLocale({ MONAD_LANG: 'ja' } as NodeJS.ProcessEnv)).toBe('ja');
+    expect(detectLocale({ ELANOUS_LANG: 'ja' } as NodeJS.ProcessEnv)).toBe('ja');
   });
 
   test('Chinese LANG variants resolve to zh (Simplified Chinese)', () => {
@@ -52,11 +52,11 @@ describe('expression/locale · detectLocale', () => {
     expect(detectLocale({ LANG: 'zh' } as NodeJS.ProcessEnv)).toBe('zh');
   });
 
-  test('MONAD_LANG variant forms (zh-CN, zh_TW, ja-JP) collapse to base locale', () => {
-    expect(detectLocale({ MONAD_LANG: 'zh-CN' } as NodeJS.ProcessEnv)).toBe('zh');
-    expect(detectLocale({ MONAD_LANG: 'zh_TW' } as NodeJS.ProcessEnv)).toBe('zh');
-    expect(detectLocale({ MONAD_LANG: 'ja-JP' } as NodeJS.ProcessEnv)).toBe('ja');
-    expect(detectLocale({ MONAD_LANG: 'en-US' } as NodeJS.ProcessEnv)).toBe('en');
+  test('ELANOUS_LANG variant forms (zh-CN, zh_TW, ja-JP) collapse to base locale', () => {
+    expect(detectLocale({ ELANOUS_LANG: 'zh-CN' } as NodeJS.ProcessEnv)).toBe('zh');
+    expect(detectLocale({ ELANOUS_LANG: 'zh_TW' } as NodeJS.ProcessEnv)).toBe('zh');
+    expect(detectLocale({ ELANOUS_LANG: 'ja-JP' } as NodeJS.ProcessEnv)).toBe('ja');
+    expect(detectLocale({ ELANOUS_LANG: 'en-US' } as NodeJS.ProcessEnv)).toBe('en');
   });
 
   test('LC_ALL precedence honoured for ja/zh too', () => {

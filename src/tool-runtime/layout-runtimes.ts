@@ -31,7 +31,7 @@ let registered = false;
 export interface RegisterLayoutRuntimesOpts {
   /** Bundle B-5 (P6-4) — when provided, SaveLayout output goes
    *  through unified `ArtifactStore.put('layout', ...)` under
-   *  `~/.monad/artifacts/layout/`. Legacy `~/.monad/layouts/` path is
+   *  `~/.elanous/artifacts/layout/`. Legacy `~/.elanous/layouts/` path is
    *  the fallback for callers without store DI. */
   readonly artifactStore?: ArtifactStore;
 }

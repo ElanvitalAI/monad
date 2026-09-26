@@ -1,10 +1,10 @@
 // ── P4 거부 게이트 (2026-07-26) — DESIGN §6 ─────────────────────────────────
 //
-// **비-리더 트리가 운영 싱글턴(`~/.monad`)을 접수하려 할 때만** `nexus run` 을 거부하고
-// `monad leader claim` 을 안내한다. **그 외 어떤 명령·어떤 깊이도 거부하지 않는다** — 안 그러면
+// **비-리더 트리가 운영 싱글턴(`~/.elanous`)을 접수하려 할 때만** `nexus run` 을 거부하고
+// `elanous leader claim` 을 안내한다. **그 외 어떤 명령·어떤 깊이도 거부하지 않는다** — 안 그러면
 // 워크트리 PTY 자식이 전부 죽는다.
 //
-// ⚠️ **오판의 비대칭이 여기서는 거부 쪽이 위험하다.** launchd `com.monad.nexus` 는 KeepAlive 로
+// ⚠️ **오판의 비대칭이 여기서는 거부 쪽이 위험하다.** launchd `com.elanous.nexus` 는 KeepAlive 로
 // 재기동하므로, 잘못 거부하면 운영 데몬이 **크래시 루프로 내려앉는다.** 그래서 모호하면 전부
 // 통과시킨다(fail-open): 권위 없음·판정 불가·예외 → 거부 안 함. 포트 31415 바인딩이 여전히 실질적
 // 상호배제이므로 "오늘보다 나빠지지 않는다"(degrade to current behavior).
@@ -28,7 +28,7 @@ export interface NexusRunRefusalInput {
   root: string;
   homeRoot: string;
   depth: number;
-  /** 설치본(`…/node_modules/monadagent/…` · 위로 git 트리 없음)으로 도는가 — 설치본은 트리가 없어 selfTree 가 cwd 로 떨어진다. */
+  /** 설치본(`…/node_modules/elanous/…` · 위로 git 트리 없음)으로 도는가 — 설치본은 트리가 없어 selfTree 가 cwd 로 떨어진다. */
   installedCopy?: boolean;
 }
 
@@ -50,7 +50,7 @@ export interface NexusRunRefusalDecision {
  */
 export function decideNexusRunRefusal(input: NexusRunRefusalInput): NexusRunRefusalDecision {
   // ⓪ 뿌리가 운영이 아니면 **여기서 끝** — `--test` 등 격리 실행은 어떤 깊이·어떤 트리든 통과.
-  //    (전역 `--test` 는 Commander parse 전에 적용돼 이 시점 root 가 이미 `.monad-test` 다 — 실측 고정됨)
+  //    (전역 `--test` 는 Commander parse 전에 적용돼 이 시점 root 가 이미 `.elanous-test` 다 — 실측 고정됨)
   if (normRoot(input.root) !== normRoot(input.homeRoot)) {
     return {
       refuse: false,
@@ -92,11 +92,11 @@ export function renderNexusRunRefusal(input: NexusRunRefusalInput, decision: Nex
     L.push('  중첩(액자 안)에서는 운영 스코프 데몬을 띄우지 않습니다.');
     L.push("  격리로 띄우려면 '--test' 를 붙이세요.");
   } else {
-    L.push("  이 트리를 운영으로 올리려면 : 'monad leader claim --yes'");
-    L.push("  launchd 는 별도               : 리더 트리에서 'monad nexus install' (데몬 재기동)");
+    L.push("  이 트리를 운영으로 올리려면 : 'elanous leader claim --yes'");
+    L.push("  launchd 는 별도               : 리더 트리에서 'elanous nexus install' (데몬 재기동)");
     L.push("  격리로 띄우려면               : '--test'");
   }
-  L.push(`  사유 기록 : ${leaderRefusalFilePath()}  ('monad leader status' 로 확인)`);
+  L.push(`  사유 기록 : ${leaderRefusalFilePath()}  ('elanous leader status' 로 확인)`);
   return L.join('\n');
 }
 
@@ -131,7 +131,7 @@ export function evaluateNexusRunRefusal(deps: NexusRunGateDeps = {}): string | n
         ? deps.leaderTree
         : (() => { const r = readLeader(); return r ? normalizeTree(r.tree) : null; })(),
       root: deps.root ?? effectiveInstanceRoot(),
-      homeRoot: deps.homeRoot ?? join(homedir(), '.monad'),
+      homeRoot: deps.homeRoot ?? join(homedir(), '.elanous'),
       depth: deps.depth ?? getNestDepth(),
     };
     const decision = decideNexusRunRefusal(input);

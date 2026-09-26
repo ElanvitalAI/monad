@@ -41,10 +41,10 @@ export interface AutoTtsControllerDeps {
   /** Lazy-create an AudioPlayer. Same rationale — the player only
    *  spawns sox `play` once a sentence is ready to render. */
   createAudioPlayer: () => AudioPlayer;
-  /** Initial enabled state — driven by `MONAD_AUTO_TTS=1` env at boot. */
+  /** Initial enabled state — driven by `ELANOUS_AUTO_TTS=1` env at boot. */
   initiallyEnabled?: boolean;
   /** Hard cap on the segmenter buffer. Default 2000 — set via
-   *  `MONAD_AUTO_TTS_MAX_LENGTH` at boot. */
+   *  `ELANOUS_AUTO_TTS_MAX_LENGTH` at boot. */
   maxSentenceChars?: number;
   /** Optional hook fired whenever enabled-state changes. UI uses this
    *  to update the status indicator. */

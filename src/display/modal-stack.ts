@@ -253,7 +253,7 @@ export function renderModalStack(input: {
    *  Test-only hook (and an instrumentation seam if a future Phase 5
    *  HUD wants to surface hit-rate stats). */
   onPaintCache?: (ev: { id: SurfaceId; hit: boolean }) => void;
-  /** Phase 5 F8 shadow mode (2026-05-03 · MONAD_F8_SHADOW=1) — when
+  /** Phase 5 F8 shadow mode (2026-05-03 · ELANOUS_F8_SHADOW=1) — when
    *  true, every paint cache HIT also re-runs `s.paint()` and compares
    *  the fresh string against the cached `prior.ansi`. A divergence
    *  means the surface mutated state without bumping `generation` —

@@ -1,6 +1,6 @@
 // ── executor 화면 → SelfReportFrame (G9 P3b · 2026-07-25) ──────────────────────
 //
-// PTY-spawn executor(monad-chat headless goal-loop 등)의 렌더 화면을 TUI 와 **같은 프레임 버스**로
+// PTY-spawn executor(elanous-chat headless goal-loop 등)의 렌더 화면을 TUI 와 **같은 프레임 버스**로
 // 발행하기 위한 순수 빌더. surfaceId = execSurfaceId(ptyId)(P3a·Q1 규약 = P3a execSurfaceId 의 첫 실소비자),
 // runId = K4 run-identity(부재 시 생략·round-trip 정합). executor 화면이 fleet/observatory/G5 구독자에게
 // 관측되고 run 단위로 join 된다(관측→검증 접합). cols/rows 는 렌더 텍스트에서 파생(pty 핸들이 dims 미노출).

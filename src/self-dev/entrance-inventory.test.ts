@@ -9,7 +9,7 @@ import { collectCommandEntrances, renderCommandEntrances } from './entrance-inve
 import { program } from '../index.js';
 
 const repositoryRoot = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
-const bin = resolve(repositoryRoot, 'bin/monad.mjs');
+const bin = resolve(repositoryRoot, 'bin/elanous.mjs');
 
 describe('collectCommandEntrances', () => {
   test('recursively derives primary paths, aliases, direct options, and lexical ordering from a Commander tree', () => {
@@ -49,13 +49,13 @@ describe('collectCommandEntrances', () => {
   });
 
   test('the CLI consumer reports the registered root-command count and the same inventory', () => {
-    const stateDir = mkdtempSync(join(tmpdir(), 'monad-entrances-'));
+    const stateDir = mkdtempSync(join(tmpdir(), 'elanous-entrances-'));
     try {
       const result = spawnSync('bun', [bin, 'self', 'entrances', '--json'], {
         cwd: repositoryRoot,
         encoding: 'utf8',
         timeout: 60_000,
-        env: { ...process.env, MONAD_DEBUG_LEVEL: 'off', MONAD_STATE_DIR: stateDir },
+        env: { ...process.env, ELANOUS_DEBUG_LEVEL: 'off', ELANOUS_STATE_DIR: stateDir },
       });
       if (result.error) throw result.error;
       expect(result.signal).toBeNull();

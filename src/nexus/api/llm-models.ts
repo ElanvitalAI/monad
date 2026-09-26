@@ -1,7 +1,7 @@
 // micro.3 (2026-05-09) — LLM model list proxy.
 // FU.A1 (2026-05-09 night) — Multi-host resolver (LM Studio · vLLM ·
-// Ollama). Configure via `MONAD_LLM_HOSTS` JSON. Backward-compat:
-// `MONAD_LLM_MODELS_ENDPOINT` still works as the single-host default.
+// Ollama). Configure via `ELANOUS_LLM_HOSTS` JSON. Backward-compat:
+// `ELANOUS_LLM_MODELS_ENDPOINT` still works as the single-host default.
 //
 // `GET /v1/llm/models` — fans out to all configured hosts in
 // parallel and surfaces aggregated models + per-host status. The
@@ -21,7 +21,7 @@ export interface LlmModelsRouteOpts {
   /** Optional auth gate — production caller. */
   checkAuth?: (req: Request) => boolean;
   /** Override the LM Studio base URL (single-host shortcut for
-   *  legacy callers / tests). When `MONAD_LLM_HOSTS` is set the env
+   *  legacy callers / tests). When `ELANOUS_LLM_HOSTS` is set the env
    *  config takes precedence. */
   endpoint?: string;
   /** Override the host config directly (test convenience — bypasses
@@ -59,13 +59,13 @@ function corsPreflight(): Response {
 /** Legacy single-host endpoint resolver. Kept exported for tests
  *  that pre-date the multi-host fan-out. */
 export function resolveLlmModelsEndpoint(opts: LlmModelsRouteOpts): string {
-  const env = process.env.MONAD_LLM_MODELS_ENDPOINT;
+  const env = process.env.ELANOUS_LLM_MODELS_ENDPOINT;
   if (env && env.length > 0) return env.replace(/\/+$/, '');
   return (opts.endpoint ?? 'http://localhost:1234/v1').replace(/\/+$/, '');
 }
 
 /** Pick the host config: explicit opts.hosts > in-memory override >
- *  MONAD_LLM_HOSTS env > legacy single-host. The override layer
+ *  ELANOUS_LLM_HOSTS env > legacy single-host. The override layer
  *  (FU.A3) lets the runtime hot-swap the config without restart. */
 function resolveHosts(opts: LlmModelsRouteOpts): {
   hosts: LlmHostConfig[];

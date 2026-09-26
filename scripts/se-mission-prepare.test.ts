@@ -6,8 +6,8 @@ const source = await Bun.file(new URL('./se-mission-prepare.ts', import.meta.url
 test('mission RFC preparation reuses the canonical RFC resolver', () => {
   expect(source).toContain("const { authorMissionRfc, createRfcResolver } = await import('../src/autopilot/mission-rfc-author.js');");
   expect(source).toContain('const resolve = createRfcResolver(missionId);');
-  expect(source).not.toContain('MONAD_RFC_MODEL');
-  expect(source).not.toContain('MONAD_RFC_FALLBACK_MODEL');
+  expect(source).not.toContain('ELANOUS_RFC_MODEL');
+  expect(source).not.toContain('ELANOUS_RFC_FALLBACK_MODEL');
   expect(source).not.toContain("'author-fallback'");
 });
 

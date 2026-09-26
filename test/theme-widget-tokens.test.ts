@@ -115,15 +115,15 @@ describe('IDX-6 Phase 1 hierarchical widget tokens', () => {
 });
 
 describe('IDX-6 Phase 1 icon resolution', () => {
-  const origEnv = process.env.MONAD_ASCII_ICONS;
+  const origEnv = process.env.ELANOUS_ASCII_ICONS;
 
   beforeEach(() => {
-    delete process.env.MONAD_ASCII_ICONS;
+    delete process.env.ELANOUS_ASCII_ICONS;
   });
 
   afterEach(() => {
-    if (origEnv === undefined) delete process.env.MONAD_ASCII_ICONS;
-    else process.env.MONAD_ASCII_ICONS = origEnv;
+    if (origEnv === undefined) delete process.env.ELANOUS_ASCII_ICONS;
+    else process.env.ELANOUS_ASCII_ICONS = origEnv;
   });
 
   test('resolveIcon returns the themed glyph by default', () => {
@@ -131,8 +131,8 @@ describe('IDX-6 Phase 1 icon resolution', () => {
     expect(resolveIcon(DEFAULT_THEME_TOKENS, 'agent')).toBe('🤖');
   });
 
-  test('MONAD_ASCII_ICONS=1 forces ASCII-safe fallback for every icon', () => {
-    process.env.MONAD_ASCII_ICONS = '1';
+  test('ELANOUS_ASCII_ICONS=1 forces ASCII-safe fallback for every icon', () => {
+    process.env.ELANOUS_ASCII_ICONS = '1';
     expect(resolveIcon(DEFAULT_THEME_TOKENS, 'terminal')).toBe(ASCII_SAFE_ICONS.terminal);
     expect(resolveIcon(DEFAULT_THEME_TOKENS, 'agent')).toBe(ASCII_SAFE_ICONS.agent);
     expect(resolveIcon(DEFAULT_THEME_TOKENS, 'task')).toBe(ASCII_SAFE_ICONS.task);

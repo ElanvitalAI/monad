@@ -7,15 +7,15 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
 // ⭐P3 — isolate pty-manifest SQLite BEFORE any manifest access (frame
-// convergence test reads it). MONAD_STATE_DIR 규율 = logsDbPath 동형.
+// convergence test reads it). ELANOUS_STATE_DIR 규율 = logsDbPath 동형.
 // beforeAll 로 세우기는 못 씀 — 모듈 로드 시점에 이미 읽힌다. 세우기 전 값은
 // 기억해 두고 afterAll 에서 복원(없었으면 삭제)한다. 안 하면 같은 프로세스의
 // 뒤 시험이 이 임시 디렉터리를 본다.
-const prevEnv = process.env.MONAD_STATE_DIR;
-const p3DriverTestStateDir = mkdtempSync(join(tmpdir(), 'monad-p3-driver-test-'));
-process.env.MONAD_STATE_DIR = p3DriverTestStateDir;
+const prevEnv = process.env.ELANOUS_STATE_DIR;
+const p3DriverTestStateDir = mkdtempSync(join(tmpdir(), 'elanous-p3-driver-test-'));
+process.env.ELANOUS_STATE_DIR = p3DriverTestStateDir;
 
-import { runHeadlessGoalLoopPty, shSingleQuote } from '../src/self-implement/headless-monad-driver.js';
+import { runHeadlessGoalLoopPty, shSingleQuote } from '../src/self-implement/headless-elanous-driver.js';
 import { upsertPtyManifest, getPtyManifest, setPtyManifestDbPathForTesting } from '../src/pty-shell/pty-manifest.js';
 import { resetPtyEventLogForTesting } from '../src/pty-shell/pty-event-log.js';
 import { debug as debugLog } from '../src/debug/log.js';
@@ -23,8 +23,8 @@ import { debug as debugLog } from '../src/debug/log.js';
 afterAll(() => {
   setPtyManifestDbPathForTesting(null);
   resetPtyEventLogForTesting();
-  if (prevEnv === undefined) delete process.env.MONAD_STATE_DIR;
-  else process.env.MONAD_STATE_DIR = prevEnv;
+  if (prevEnv === undefined) delete process.env.ELANOUS_STATE_DIR;
+  else process.env.ELANOUS_STATE_DIR = prevEnv;
   rmSync(p3DriverTestStateDir, { recursive: true, force: true });
 });
 
@@ -275,7 +275,7 @@ describe('runHeadlessGoalLoopPty — 완료 감지', () => {
 
   it('★P3 — 렌더 프레임이 manifest frame 컬럼으로 수렴(사람이 보는 화면 크로스-프로세스)', async () => {
     const id = 'pty_p3converge';
-    const frame = '┌ monad 자식 goal-loop ┐\n│ ⏺ Edit(foo.ts) │\n└────────────────┘';
+    const frame = '┌ elanous 자식 goal-loop ┐\n│ ⏺ Edit(foo.ts) │\n└────────────────┘';
     const { spawn } = makeFrameFake({ id, frame });
     await runHeadlessGoalLoopPty({
       binRoot: '/r', cwd: '/w', featurePrompt: 'x', pollMs: 5, maxWaitSec: 20,
@@ -366,10 +366,10 @@ describe('runHeadlessGoalLoopPty — 완료 감지', () => {
 
 // ── K run-identity 공백 방어 (2026-07-26 실측 갭) ────────────────────────────────
 //   라이브 관측에서 `run-identity propagate {"runId":""}` 가 찍혔다 — 관측 계약은 있는데 값이 안 실려
-//   `monad self run <runId>` 사후 join 이 그 run 에는 불가능했다. 근본 = space 합성/조회가 env 를 그대로
+//   `elanous self run <runId>` 사후 join 이 그 run 에는 불가능했다. 근본 = space 합성/조회가 env 를 그대로
 //   읽어(harness-space:92) 상속이 없으면 ''. 계약: 호출자 지정 > 상속 > canonical mint — **항상 비어있지 않다**.
 describe('runHeadlessGoalLoopPty — run-identity 는 비어 있을 수 없다', () => {
-  const RUN_ID_ENV = 'MONAD_RUN_ID';
+  const RUN_ID_ENV = 'ELANOUS_RUN_ID';
   const withRunIdEnv = async <T>(value: string | undefined, fn: () => Promise<T>): Promise<T> => {
     const prev = process.env[RUN_ID_ENV];
     if (value === undefined) delete process.env[RUN_ID_ENV];
@@ -848,12 +848,12 @@ describe('lifecycle screen scoreboard observation — shadow only', () => {
     try {
       const { spawn, captured } = makeFake({ aliveForPolls: 1, exitCode: 0, snapshot: 'done' });
       const readLifecycleForChild: Parameters<typeof runHeadlessGoalLoopPty>[0]['readLifecycle'] = (stateDir, runId) =>
-        readLifecycle?.((captured.opts as { env: Record<string, string> }).env.MONAD_PTY_ID) ?? [];
+        readLifecycle?.((captured.opts as { env: Record<string, string> }).env.ELANOUS_PTY_ID) ?? [];
       const result = await runHeadlessGoalLoopPty({
         binRoot: '/r', cwd: '/w', featurePrompt: 'x', runId: 'run-scoreboard', stateDir: tmpdir(),
         pollMs: 1, maxWaitSec: 30, spawn, ptyAvailable: () => true, readLifecycle: readLifecycleForChild, readPublisherStateDir,
       });
-      const childPtyId = (captured.opts as { env: Record<string, string> }).env.MONAD_PTY_ID;
+      const childPtyId = (captured.opts as { env: Record<string, string> }).env.ELANOUS_PTY_ID;
       return { result, seen, childPtyId };
     } finally { spy.mockRestore(); }
   }

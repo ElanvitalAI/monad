@@ -12,7 +12,7 @@
 // scaffold small. See plugins/sync/ for the full example.
 
 import type {
-  MonadPlugin,
+  ElanousPlugin,
   PluginContext,
   SlashCommand,
   LLMToolDef,
@@ -23,7 +23,7 @@ interface HelloState {
   waves: number;
 }
 
-const hello: MonadPlugin<HelloState> = {
+const hello: ElanousPlugin<HelloState> = {
   name: 'hello',
   version: '0.1.0',
   description: 'Scaffold plugin demonstrating the minimum plugin shape.',

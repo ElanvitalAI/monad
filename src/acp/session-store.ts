@@ -1,7 +1,7 @@
 // ACP session store — maps (chatId, backendId) → ACP sessionId so
 // a messenger chat keeps its conversation across multiple turns.
 //
-// Persistence: a single JSON file at ~/.config/monad/acp-sessions.json.
+// Persistence: a single JSON file at ~/.config/elanous/acp-sessions.json.
 // The file is a flat array of records; load is a single read + parse
 // on startup, save rewrites the whole file (atomic via tmp+rename).
 // For the session counts we expect (a few dozen chats × a few
@@ -17,8 +17,8 @@
 
 import { existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from 'node:fs';
 import { dirname, join as joinPath } from 'node:path';
-import { monadStateRoot } from '../autopilot/state-paths.js';
-import { migrateLegacyXdgFile } from '../storage/legacy-monad-dir-migrate.js';
+import { elanousStateRoot } from '../autopilot/state-paths.js';
+import { migrateLegacyXdgFile } from '../storage/legacy-elanous-dir-migrate.js';
 import { canonicalizeBackendId } from './backend-registry.js';
 
 /** Discord snowflakes are 17-19 digits — outside JS Number's safe
@@ -62,19 +62,19 @@ interface AcpSessionRecord {
   turnCount?: number;
 }
 
-/** Default path: ~/.monad/acp-sessions.json (canonical · 2026-05-10).
- *  XDG_CONFIG_HOME explicit honors legacy ~/.config/monad/acp-sessions.json.
+/** Default path: ~/.elanous/acp-sessions.json (canonical · 2026-05-10).
+ *  XDG_CONFIG_HOME explicit honors legacy ~/.config/elanous/acp-sessions.json.
  *  FU2 (PLAN closing follow-up): first call migrates legacy file. */
 function defaultStorePath(): string {
-  // MONAD_STATE_DIR — unified isolated-state knob (see sessionRoot). Wins
+  // ELANOUS_STATE_DIR — unified isolated-state knob (see sessionRoot). Wins
   // over XDG so an isolated process's chat→ACP-session map stays separate.
-  const stateDir = process.env.MONAD_STATE_DIR?.trim();
+  const stateDir = process.env.ELANOUS_STATE_DIR?.trim();
   if (stateDir) return joinPath(stateDir, 'acp-sessions.json');
   const xdg = process.env.XDG_CONFIG_HOME?.trim();
-  if (xdg) return joinPath(xdg, 'monad', 'acp-sessions.json');
+  if (xdg) return joinPath(xdg, 'elanous', 'acp-sessions.json');
   migrateLegacyXdgFile('acp-sessions.json', 0o600);
-  // MONAD_STATE_DIR 부재 확정(위 early-return) → monadStateRoot()=~/.monad (prod 동치).
-  return joinPath(monadStateRoot(), 'acp-sessions.json');
+  // ELANOUS_STATE_DIR 부재 확정(위 early-return) → elanousStateRoot()=~/.elanous (prod 동치).
+  return joinPath(elanousStateRoot(), 'acp-sessions.json');
 }
 
 function readRecords(path: string): AcpSessionRecord[] {

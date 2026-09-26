@@ -15,7 +15,7 @@ export interface ProviderCapabilities {
   mcp: boolean;
   /** Lifecycle hooks (pre/post-tool, pre/post-message). */
   hooks: boolean;
-  /** monad's `/skill/` system invokable from within a provider call. */
+  /** elanous's `/skill/` system invokable from within a provider call. */
   skills: boolean;
   /** Inline sub-agent definitions (Claude SDK `options.agents`). */
   agents: boolean;
@@ -137,7 +137,7 @@ export interface ProviderRegistration {
   toolCallingFormat: ToolCallingFormat;
   /** Provider-level capability defaults · models can override per RFC §5.2.1. */
   capabilities: ProviderCapabilities;
-  /** Maintained by monad core (true) vs community/local-only (false). */
+  /** Maintained by elanous core (true) vs community/local-only (false). */
   builtIn: boolean;
   /** 대표 2026-09-23 «카탈로그를 파생한다» — true 면 이 provider 의 모델은 YAML 이 아니라 발견
    *  스냅숏(`discovery-snapshot.json`)에서 카탈로그로 «접힌다»(`openrouter/<id>` 네임스페이스 ·
@@ -209,7 +209,7 @@ export interface Catalog {
   /** Source-of-record manifest for debugging / dev reload. */
   manifest: {
     builtinSource: string;     // 'monad-agent/catalog/'
-    globalSource: string;      // '~/.monad/catalog/' (or the test override)
+    globalSource: string;      // '~/.elanous/catalog/' (or the test override)
     /** Number of files contributing to this snapshot. */
     fileCount: number;
     /** When the loader built this snapshot. */

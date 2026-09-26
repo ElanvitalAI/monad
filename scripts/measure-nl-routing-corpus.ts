@@ -20,7 +20,7 @@ function formatPercent(value: number): string {
 function promptForItem(item: Pick<CorpusItem, 'prompt' | 'context_dependent' | 'context'>): string {
   return item.context_dependent && item.context ? `${item.context}\n\n${item.prompt}` : item.prompt;
 }
-export const NL_ROUTING_UNSAFE_RUN_ENV = 'MONAD_NL_ROUTING_ALLOW_UNSAFE_RUN';
+export const NL_ROUTING_UNSAFE_RUN_ENV = 'ELANOUS_NL_ROUTING_ALLOW_UNSAFE_RUN';
 const CORPUS_ALWAYS_MUTATING_TOOL_NAMES = ['Bash', 'Edit', 'Write'] as const;
 const CORPUS_MUTATING_TOOL_NAMES = ['SelfImplement', ...CORPUS_ALWAYS_MUTATING_TOOL_NAMES] as const;
 

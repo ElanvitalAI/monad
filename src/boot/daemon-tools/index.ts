@@ -4,7 +4,7 @@
 // returns the active tool catalog + a name-routing dispatcher.
 // 'none' → empty (current default behavior). 'readonly' → Read +
 // Grep + WebSearch. 'webterm' → readonly + WT-L-1 web-terminal tools
-// (List · Snapshot · Input) so a PWA-only `monad serve` agent can
+// (List · Snapshot · Input) so a PWA-only `elanous serve` agent can
 // drive web terminals without booting the dashboard TUI.
 
 import type { LLMToolSpec } from '../../llm.js';
@@ -61,7 +61,7 @@ import {
 // run with.
 import { buildBashTool, dispatchBash } from '../../skills/tools/index.js';
 import { buildDelegateAgentTool, dispatchDelegateAgent } from './delegate-agent.js';
-// self-build(2026-07-20) — ACP/데몬 서피스에 SelfImplement 노출(acpx·codex 등 외부 에이전트가 monad
+// self-build(2026-07-20) — ACP/데몬 서피스에 SelfImplement 노출(acpx·codex 등 외부 에이전트가 elanous
 // self-implement 를 goal-loop+앵커+gate 로 구동). CLI/내부 툴과 같은 코어. PR-open 은 fail-closed.
 import {
   SELF_IMPLEMENT_TOOL_NAMES,
@@ -510,7 +510,7 @@ export function toolSurface(kind: DaemonToolSurfaceKind, cfg?: import('../../use
           return { error: `nest-cap: 재귀 상한(${nestInfo().max}중) 도달 — RunDevHarness 비활성(액자 폭주 방지)` };
         }
         // ★ #24 A — subprocess 위임(auto_drive on·데몬 이벤트루프 격리)은 dispatchRunDevHarness 내부에서
-        //   판정한다(두 caller: 여기 + monad-agent-turn 직접호출 모두 커버·재귀 가드 MONAD_HARNESS_DETACHED).
+        //   판정한다(두 caller: 여기 + monad-agent-turn 직접호출 모두 커버·재귀 가드 ELANOUS_HARNESS_DETACHED).
         return dispatchRunDevHarness(args, ctx);
       }
       if (name === 'SolveMission') {

@@ -7,13 +7,13 @@
 //   2단계(SE):     구현·테스트저작 페이즈 → 격리 worktree 자율 구현(runNocturnalOne) →
 //                  IMMUTABLE_CORE 게이트 → 무결성 게이트(bun test) → PR 초안(merge HITL).
 //
-// build.armed(=~/.monad/autopilot.json) 게이트는 그대로 유지 — disarmed(기본)면 격리 worktree
+// build.armed(=~/.elanous/autopilot.json) 게이트는 그대로 유지 — disarmed(기본)면 격리 worktree
 // 를 만들지 않고 "arming 대기" 로 정직 보고(막다른 walker 턴보다 나음). classifyPhaseKind 는
 // 순수함수(단위테스트·실 미션 7페이즈 픽스처로 회귀 가드). runImplementationPhaseViaSE 는
 // buildArmed/runNocturnalOne/makeDeps/writePlan 을 주입받아(기본 실배선) 테스트 가능.
 
 import { homedir } from 'node:os';
-import { monadStateRoot } from './state-paths.js';
+import { elanousStateRoot } from './state-paths.js';
 import { join, dirname } from 'node:path';
 import { mkdirSync, writeFileSync, appendFileSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
@@ -68,10 +68,10 @@ const READONLY = /수정하지\s*않는다|편집하지\s*않는다|건드리지
 //   STRONG_IMPL 과 무관하게 최우선 operational 확정(walker·조사 예산 32k~128k 토큰).
 const EXPLICIT_READONLY = /조사\s*전용|변경\s*파일(은|이)?\s*없|편집\s*없이|코드\s*수정\s*없이|검증\s*전용|스파이크|spike/i;
 // ★ 운영 액션(대표 2026-07-13·dogfood 버그 수정) — 크론/스케줄 등록·기존 스크립트 실행은 코드 변경이
-//   아니라 런타임 액션(monad schedule·schedules.db). SE 격리(코드 diff 기대)로 가면 만들 코드가 없어
+//   아니라 런타임 액션(elanous schedule·schedules.db). SE 격리(코드 diff 기대)로 가면 만들 코드가 없어
 //   no-change→실패(price-guard 페이즈4 "장중 5분 크론 등록"이 implementation 오분류돼 opus 도 no-op).
-//   walker(운영)가 monad schedule 로 처리한다. 단 STRONG_IMPL(크론 매니저 '구현') 이 있으면 코드라 제외.
-const OPERATIONAL_ACTION = /크론.*(등록|추가|생성)|cron.*(등록|register)|주기.*크론|monad\s*schedule/i;
+//   walker(운영)가 elanous schedule 로 처리한다. 단 STRONG_IMPL(크론 매니저 '구현') 이 있으면 코드라 제외.
+const OPERATIONAL_ACTION = /크론.*(등록|추가|생성)|cron.*(등록|register)|주기.*크론|elanous\s*schedule/i;
 // ★ 조사/파악 동사(대표 2026-07-13·split 서브페이즈 회귀) — 제목이 "조사하라/파악하라/분석하라"
 //   면 조사 페이즈(walker). split 이 만든 조사 서브("기존 주입 경계를 조사하라")가 "조사 전용"
 //   명시가 없어 grounding(src 경로)로 implementation 오분류→SE격리 no-op 실패. 제목 기준 +
@@ -115,7 +115,7 @@ async function defaultClassifyLLM(prompt: string): Promise<string> {
   //   하드코딩(claude-haiku-4-5)했다. codex-only 환경에서 cross-family override → anthropic 401 →
   //   정규식 폴백 → "수집" 페이즈를 implementation 으로 오분류 → se-isolated 코드작성 라우팅 → scope
   //   creep → 페이즈 실패. 공용 provider-aware budget tier로 통일한다.
-  const model = process.env.MONAD_CLASSIFY_MODEL || budgetModel();
+  const model = process.env.ELANOUS_CLASSIFY_MODEL || budgetModel();
   const provider = resolveDefaultProvider(model);
   return streamLLM([{ role: 'user', content: prompt }], () => {}, { model, maxTokens: 16, ...(provider ? { provider } : {}) });
 }
@@ -195,7 +195,7 @@ export async function classifyPhaseKindDetailed(
   // ★ 재료 신호 digest(대표 2026-07-20·"부적절한 컨텍스트 유입" 진단 계측) — 종전 로그는 diverged("틀림")만
   //   보여주고 "왜(어떤 재료가 오판시켰나)"는 안 남겨 DB 직접읽기 없이는 진단 불가(자기인지 갭)였다. 입력의
   //   read-only 신호 수·코드파일 참조 수·LLM 원답을 남겨, "읽기전용 명시인데 코드참조 많아 LLM 이 impl 오판"
-  //   을 `monad logs --category mission.phase.classify` 로만 추적한다.
+  //   을 `elanous logs --category mission.phase.classify` 로만 추적한다.
   const readOnlyHits = (hay.match(/읽기만|읽기\s?전용|조사|파악|기록한|기록하|식별|작성하지\s?않|설계\s?결론|구현\s?제안/g) ?? []).length;
   const codeRefs = (hay.match(/\b(?:src|apps|test|scripts)\//g) ?? []).length + (hay.match(/\.ts\b/g) ?? []).length;
   const llmDiverged = source === 'llm' && kind !== regexKind; // 가드 전 원 divergence(관측)
@@ -239,11 +239,11 @@ export function phaseSlug(missionId: string, task: Task): string {
   return `${slugify(missionId).slice(0, 22)}-${titlePart}${phaseKey}`.replace(/-+/g, '-').replace(/^-+|-+$/g, '');
 }
 
-/** 구현 페이즈 → 플랜 초안 md 경로. 미션 fabric core 네임스페이스(autopilot/·git 밖 ~/.monad).
+/** 구현 페이즈 → 플랜 초안 md 경로. 미션 fabric core 네임스페이스(autopilot/·git 밖 ~/.elanous).
  *  ★ task.id hex 로 서브키잉(한글 title slugify 폴백 충돌 방지 — slug 버그와 동일 근본). */
 export function phasePlanPath(missionId: string, task: Task): string {
   const phaseKey = task.id.replace(/^task:/, '').slice(0, 8);
-  return join(monadStateRoot(), 'autopilot/proposals', `${missionId}__phase-${phaseKey}.md`);
+  return join(elanousStateRoot(), 'autopilot/proposals', `${missionId}__phase-${phaseKey}.md`);
 }
 
 /** 페이즈(제목·설명·프롬프트·acceptance)를 SE 구현 입력 PLAN md 로 직렬화. 반환=경로. */
@@ -277,7 +277,7 @@ export function writePhasePlan(missionId: string, task: Task): string {
   } catch { return ''; } })();
   // ★ 관측 장치(대표 2026-07-19·제1원칙) — 빌드 조사문맥(provenance:build seed)이 이 실행 페이즈
   //   프롬프트에 실제로 주입됐는지 관측. hasBuildContext=false 면 "재조사 방지" 이관이 끊긴 것(A1 예산소진
-  //   실패 재발 신호). `monad logs --category mission.exec.context` 로 실시간 와칭. fail-soft.
+  //   실패 재발 신호). `elanous logs --category mission.exec.context` 로 실시간 와칭. fail-soft.
   try {
     const buildSeed = wmEntries.find((e) => e.provenance === 'build');
     debug.log('mission.exec.context', 'wm-inject', {
@@ -357,7 +357,7 @@ export function seResultToPhaseResult(r: NocturnalResult): PhaseResult {
 
 export interface SEBridgeDeps {
   repoRoot?: string;
-  /** build arming(기본 buildArmed() — ~/.monad/autopilot.json). 테스트 주입. */
+  /** build arming(기본 buildArmed() — ~/.elanous/autopilot.json). 테스트 주입. */
   armed?: boolean;
   /** 코딩 백엔드(기본 arming.build.backend). */
   backend?: string;
@@ -408,7 +408,7 @@ export interface SEBridgeDeps {
  *  간단 페이즈는 일찍 끝나 손해 없음. 검증-우선 프롬프트(makeNocturnalDeps)와 짝. 계단 소진 시
  *  최종 방어=opus 폴백(SE_OPUS_FALLBACK_BACKEND).
  *  ★ 오버라이드(대표 2026-07-14): 이 값은 이제 **기본값**일 뿐 — 실행은 resolveSeBudgetLadder()
- *  가 user-config(autopilot.budget.se)→env(MONAD_SE_BUDGET)→이 기본 순으로 정한다(mission-budget.ts). */
+ *  가 user-config(autopilot.budget.se)→env(ELANOUS_SE_BUDGET)→이 기본 순으로 정한다(mission-budget.ts). */
 export const SE_BUDGET_LADDER = SE_BUDGET_LADDER_DEFAULT;
 
 /** ★ 구조적 실패(대표 2026-07-13) — 예산/모델을 더 줘도 소용없는 실패. dead-code(만들었지만
@@ -422,8 +422,8 @@ export function isStructuralFailure(text: string): boolean {
 
 /** ★ 최종 방어 폴백 백엔드(대표 2026-07-12) — terra 예산 계단이 다 실패하면 마지막으로 opus 4.8
  *  (최신·최강)로 1회 더 시도. 유료지만 성공 확률이 높다(대표). anthropic provider 로 전환됨
- *  (se-monad-self-impl: claude* → anthropic). deps.maxTurns 커스텀 지정 시엔 폴백 안 함. */
-export const SE_OPUS_FALLBACK_BACKEND = 'monad-self:claude-opus-4-8';
+ *  (se-elanous-self-impl: claude* → anthropic). deps.maxTurns 커스텀 지정 시엔 폴백 안 함. */
+export const SE_OPUS_FALLBACK_BACKEND = 'elanous-self:claude-opus-4-8';
 
 /** Execution-attempt ladder, kept pure so the paid-model boundary is
  * independently testable.  `evidence-hitl` never silently turns a failed
@@ -463,12 +463,12 @@ export function buildGroundedRecoveryDirective(missing: string): string {
   ].join('\n');
 }
 
-/** ★ R1 LLM 비평 실주입(대표 2026-07-12) — streamLLM(monad 표준·미션 분해 decompose 와 동일
+/** ★ R1 LLM 비평 실주입(대표 2026-07-12) — streamLLM(elanous 표준·미션 분해 decompose 와 동일
  *  헬퍼)으로 diff 심층 비평. lazy import(순환/부팅 회피). 실패 시 critiquePhaseWithLLM 이 결정론
  *  (R0)으로 폴백. 비평 모델=분해와 동일 gpt-5.6-sol(리즈닝)·maxTokens 1500(비평은 짧게). */
 async function llmReviewCritique(prompt: string): Promise<string> {
   const { streamLLM, resolveDefaultProvider } = await import('../llm.js');
-  const model = process.env.MONAD_CRITIQUE_MODEL || tierModel('better');
+  const model = process.env.ELANOUS_CRITIQUE_MODEL || tierModel('better');
   const provider = resolveDefaultProvider(model);
   return streamLLM([{ role: 'user', content: prompt }], () => {}, {
     model, maxTokens: 1500, ...(provider ? { provider } : {}),
@@ -478,7 +478,7 @@ async function llmReviewCritique(prompt: string): Promise<string> {
 /** ★ SE 재시도 triage classify 기본(대표 2026-07-14) — 갈림길 분류 LLM(비평·진단과 동일 sol 리즈닝). */
 async function seTriageClassifyDefault(prompt: string): Promise<string> {
   const { streamLLM, resolveDefaultProvider } = await import('../llm.js');
-  const model = process.env.MONAD_RETRY_TRIAGE_MODEL || process.env.MONAD_DECOMPOSE_MODEL || tierModel('better');
+  const model = process.env.ELANOUS_RETRY_TRIAGE_MODEL || process.env.ELANOUS_DECOMPOSE_MODEL || tierModel('better');
   const provider = resolveDefaultProvider(model);
   return streamLLM([{ role: 'user', content: prompt }], () => {}, { model, reasoningEffort: 'medium', ...(provider ? { provider } : {}) });
 }
@@ -510,7 +510,7 @@ export async function runImplementationPhaseViaSE(
   deps: SEBridgeDeps = {},
 ): Promise<PhaseResult> {
   const log = deps.log ?? ((s: string) => console.log(s));
-  // ★ 자기인지 관측 관문(RFC 3박자·P1·2026-07-14) — 셀프힐 의사결정을 logs.db(monad logs)+self-memory
+  // ★ 자기인지 관측 관문(RFC 3박자·P1·2026-07-14) — 셀프힐 의사결정을 logs.db(elanous logs)+self-memory
   //   +ops_events 에 흘려 "시스템이 자기 셀프힐을 관측"하게 한다. log()(사람용 run.log 서사)와 겸용.
   //   fail-soft(팬아웃 실패는 삼킴). 컨텍스트(missionId·phaseId·phaseTitle) 바인딩.
   const observe = makeMissionObserver({ missionId, phaseId: task.id, phaseTitle: task.title });
@@ -614,7 +614,7 @@ export async function runImplementationPhaseViaSE(
   //   impl 오류·disarmed 는 재시도 무의미(즉시 반환). ★최종 방어: terra 계단 소진 시 opus 4.8 로
   //   1회 더(대표 2026-07-12·유료지만 성공확률↑). deps.maxTurns 커스텀 지정 시엔 그 값 1회.
   // ★ config-first 예산 계단(대표 2026-07-14) — user-config(autopilot.budget.se) →
-  //   env(MONAD_SE_BUDGET) → 기본[150·400·1000]. 상수 직참조를 은퇴해 코드 변경 없이·
+  //   env(ELANOUS_SE_BUDGET) → 기본[150·400·1000]. 상수 직참조를 은퇴해 코드 변경 없이·
   //   인스턴스별(테스트 config 만 상향) 조정 가능.
   const ladder = resolveSeBudgetLadder();
   const attempts = resolveSeImplementationAttempts({

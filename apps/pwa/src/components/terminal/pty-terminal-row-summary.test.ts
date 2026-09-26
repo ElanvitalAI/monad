@@ -466,26 +466,26 @@ describe('ptyTerminalRowSummary — 장문 값 축약', () => {
 });
 
 describe('ptyTerminalRowSummary — terminal origin', () => {
-  test('distinguishes human, monad, external-tool name, and unknown reason without guessing missing metadata as human', () => {
+  test('distinguishes human, elanous, external-tool name, and unknown reason without guessing missing metadata as human', () => {
     const human = ptyTerminalRowSummary(row('human-origin', { terminalOriginCategory: 'direct-human' }));
-    const monad = ptyTerminalRowSummary(row('monad-origin', { terminalOriginCategory: 'monad' }));
+    const elanous = ptyTerminalRowSummary(row('elanous-origin', { terminalOriginCategory: 'elanous' }));
     const external = ptyTerminalRowSummary(row('external-origin', { terminalOriginCategory: 'external-tool', externalToolName: 'codex' }));
     const unknown = ptyTerminalRowSummary(row('unknown-origin', { terminalOriginCategory: 'unknown', terminalOriginReason: 'legacy daemon' }));
     const missing = ptyTerminalRowSummary(row('missing-origin'));
 
     expect(human.details).toContain('출처: 사람');
-    expect(monad.details).toContain('출처: monad');
+    expect(elanous.details).toContain('출처: elanous');
     expect(external.details).toContain('출처: 외부 도구 · codex');
     expect(unknown.details).toContain('출처: 이 행에서는 알 수 없음 · legacy daemon');
     expect(missing.details).toContain('출처: 이 행에서는 알 수 없음');
     expect(missing.details.join(' ')).not.toContain('출처: 사람');
-    expect(new Set([human.details.join(' '), monad.details.join(' '), external.details.join(' '), unknown.details.join(' ')])).toHaveLength(4);
+    expect(new Set([human.details.join(' '), elanous.details.join(' '), external.details.join(' '), unknown.details.join(' ')])).toHaveLength(4);
   });
 
   test('keeps controller conditional when origin metadata is present', () => {
-    expect(ptyTerminalRowSummary(row('controlled-origin', { terminalOriginCategory: 'monad', controller: 'codex-agent' })).details)
+    expect(ptyTerminalRowSummary(row('controlled-origin', { terminalOriginCategory: 'elanous', controller: 'codex-agent' })).details)
       .toContain('통제: codex-agent');
-    expect(ptyTerminalRowSummary(row('uncontrolled-origin', { terminalOriginCategory: 'monad' })).details.join(' '))
+    expect(ptyTerminalRowSummary(row('uncontrolled-origin', { terminalOriginCategory: 'elanous' })).details.join(' '))
       .not.toContain('통제:');
   });
 });

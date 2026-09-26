@@ -1,3 +1,63 @@
+import { existsSync, mkdirSync, readFileSync, renameSync, rmSync, writeFileSync } from 'node:fs';
+import { randomUUID } from 'node:crypto';
+import { dirname } from 'node:path';
+import { controlInboxPath, type ControlMemoPayload } from './control-inbox.js';
+import { sendPodControl } from './pod-control-send.js';
+import type { Kubectl } from '../task-orchestrator/surfaces/self-implement-pod.js';
+
+export interface PodFragmentRecord {
+  spaceId: string;
+  context: string;
+  namespace: string;
+  job: string;
+  inboxDir: string;
+}
+
+function podRecordPath(spaceId: string, env?: NodeJS.ProcessEnv): string {
+  return `${controlInboxPath(spaceId, env)}.pod.json`;
+}
+
+export function readPodFragment(spaceId: string, env?: NodeJS.ProcessEnv): PodFragmentRecord | null {
+  try {
+    const record = JSON.parse(readFileSync(podRecordPath(spaceId, env), 'utf8')) as PodFragmentRecord;
+    return record.spaceId === spaceId && typeof record.context === 'string' && typeof record.namespace === 'string'
+      && typeof record.job === 'string' && typeof record.inboxDir === 'string' ? record : null;
+  } catch { return null; }
+}
+
+export function podFragmentFinished(spaceId: string, env?: NodeJS.ProcessEnv): boolean {
+  return existsSync(`${podRecordPath(spaceId, env)}.finished`);
+}
+
+export function writePodFragment(record: PodFragmentRecord, env?: NodeJS.ProcessEnv): void {
+  const path = podRecordPath(record.spaceId, env);
+  mkdirSync(dirname(path), { recursive: true });
+  const temp = `${path}.${process.pid}.${randomUUID()}.tmp`;
+  try {
+    writeFileSync(temp, JSON.stringify(record), { flag: 'wx' });
+    renameSync(temp, path);
+    rmSync(`${path}.finished`, { force: true });
+  } finally { rmSync(temp, { force: true }); }
+}
+
+export function finishPodFragment(spaceId: string, env?: NodeJS.ProcessEnv): void {
+  const path = podRecordPath(spaceId, env);
+  if (existsSync(path)) {
+    writeFileSync(`${path}.finished`, spaceId);
+    rmSync(path);
+  }
+}
+
+export function dispatchPodSelfSend(spaceId: string, message: { stop: true } | { memo: ControlMemoPayload }, kubectl?: Kubectl, env?: NodeJS.ProcessEnv): { job: string } | null {
+  const record = readPodFragment(spaceId, env);
+  if (!record) {
+    if (podFragmentFinished(spaceId, env)) throw new Error(`self send 대상 조각이 이미 끝났다: ${spaceId}`);
+    return null;
+  }
+  sendPodControl(record, message, kubectl);
+  return { job: record.job };
+}
+
 export type SelfSendTargetResolution =
   | { kind: 'space'; spaceId: string }
   | { kind: 'space'; spaceId: string; via: 'pty'; ptyId: string }

@@ -225,10 +225,10 @@ describe('mcp proxy bootstrap — invariants', () => {
     expect(runtime.surfaces).toEqual(['mcp', 'tui']);
   });
 
-  test('default MCP runtimes still include self_implement and monad_skills_list', () => {
+  test('default MCP runtimes still include self_implement and elanous_skills_list', () => {
     registerAllDefaultToolRuntimes();
     const ids = listToolRuntimes('mcp').map((rt) => rt.id);
     expect(ids).toContain('self_implement');
-    expect(ids).toContain('monad_skills_list');
+    expect(ids).toContain('elanous_skills_list');
   });
 });

@@ -5,7 +5,7 @@
 //
 // `~/.claude/plugins` overlaps Claude's own package-management directory
 // (cache/, data/, marketplaces/, installed_plugins.json, …). PluginHost
-// only searches that directory's immediate children for the Monad
+// only searches that directory's immediate children for the Elanous
 // `<name>/plugin.ts` convention and currently finds no Claude-managed
 // packages there. Claude package metadata is read by
 // `src/plugins/adapters/claude-package.ts` (`readClaudePackageLedger`);
@@ -18,7 +18,7 @@ import { existsSync, readFileSync, readdirSync, statSync, writeFileSync } from '
 import { join, resolve } from 'path';
 import { homedir } from 'os';
 import type {
-  MonadPlugin, PluginContext, SlashCommand, PaneSlot, KeyEvent, Action, LLMToolDef,
+  ElanousPlugin, PluginContext, SlashCommand, PaneSlot, KeyEvent, Action, LLMToolDef,
   DashboardPaneState,
   PluginLayoutCtx,
 } from './types.js';
@@ -67,7 +67,7 @@ function previewResult(r: unknown): unknown {
 }
 
 export interface PluginEntry {
-  plugin: MonadPlugin;
+  plugin: ElanousPlugin;
   manifest: PluginManifest;
   manifestPath: string | null;
   manifestInferred: boolean;
@@ -94,7 +94,7 @@ export interface ActiveThemeContribution {
 
 export interface ActivePlugin {
   name: string;
-  plugin: MonadPlugin;
+  plugin: ElanousPlugin;
   state: unknown;
   ownedSlots: Set<PaneSlot>;
   /** Layout produced by plugin.buildLayout, if any. Consumed by the
@@ -311,7 +311,7 @@ export class PluginHost {
 
   /** PX-5 P2: register all manifest-declared routes into
    *  globalRouteRegistry. Disposers clean up on deactivate. Persists
-   *  the compiled snapshot to .monad/routes.json after each batch so
+   *  the compiled snapshot to .elanous/routes.json after each batch so
    *  external tooling (LLM tools, editors) can read it. */
   private registerManifestRoutes(entry: PluginEntry): void {
     if (!this.activeEntry) return;
@@ -402,7 +402,7 @@ export class PluginHost {
   /** PX-2 P4: drop every session-state entry for one plugin +
    *  disposed API handle. Called from deactivate() so a reactivation
    *  of the same plugin gets a fresh session map scope (persistent
-   *  state in ~/.monad/state survives deactivation — that's the point). */
+   *  state in ~/.elanous/state survives deactivation — that's the point). */
   private clearPluginStateScope(pluginId: string): void {
     this.pluginStateApi.delete(pluginId);
     const prefix = `${pluginId}:`;
@@ -536,7 +536,7 @@ export class PluginHost {
       try {
         // Cache-bust via query string so /plugin reload works.
         const mod = await import(`${entry}?t=${Date.now()}`);
-        const loaded: Partial<MonadPlugin> | undefined = mod.default ?? mod.plugin;
+        const loaded: Partial<ElanousPlugin> | undefined = mod.default ?? mod.plugin;
         const plugin = loaded ? normalizePluginExport(loaded, manifestLoad.manifest) : undefined;
         if (!plugin || !plugin.name) {
           const reason = 'no default export';
@@ -801,7 +801,7 @@ export class PluginHost {
     }
     for (const type of this.activeEntry.ownedWidgetTypes) this.widgetHost?.unregisterType(type);
     // PX-2 P4: drop session-state entries + cached api handle for
-    // this plugin. Persistent state in ~/.monad/state survives.
+    // this plugin. Persistent state in ~/.elanous/state survives.
     this.clearPluginStateScope(this.activeEntry.name);
     reg.unregister('plugin', this.activeEntry.name);
     publishElementEvent('plugin', this.activeEntry.name, 'delete');
@@ -1190,7 +1190,7 @@ export class PluginHost {
       // PC-INTRO (Bundle 3) — undefined when no widget-host is wired
       // so older host shells keep working untouched. Returns the live
       // registry snapshot, including builtins, user-installed, and
-      // plugin-contributed (MonadPlugin.widgets) types.
+      // plugin-contributed (ElanousPlugin.widgets) types.
       ...(host.widgetHost ? {
         listWidgetTypes: () => host.widgetHost!.listTypes(),
       } : {}),
@@ -1632,7 +1632,7 @@ function namespacePluginView(
   return out as PluginViewContribution;
 }
 
-function normalizePluginExport(plugin: Partial<MonadPlugin>, manifest: PluginManifest): MonadPlugin {
+function normalizePluginExport(plugin: Partial<ElanousPlugin>, manifest: PluginManifest): ElanousPlugin {
   return {
     name: plugin.name ?? manifest.name,
     version: plugin.version ?? manifest.version,

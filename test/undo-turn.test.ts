@@ -301,7 +301,7 @@ describe('turn-scoped capture helpers', () => {
     gitInit(repo);
     writeFileSync(join(repo, 'a'), '1');
     gitCommit(repo, 'c1');
-    delete process.env.MONAD_UNDO;
+    delete process.env.ELANOUS_UNDO;
   });
   afterEach(() => {
     __resetSnapshotStore();
@@ -337,14 +337,14 @@ describe('turn-scoped capture helpers', () => {
     expect(listSnapshots().map(s => s.description)).toEqual(['A', 'B']);
   });
 
-  test('MONAD_UNDO=off disables', () => {
-    process.env.MONAD_UNDO = 'off';
+  test('ELANOUS_UNDO=off disables', () => {
+    process.env.ELANOUS_UNDO = 'off';
     expect(isUndoDisabled()).toBe(true);
     startTurn();
     const s = captureIfFirstMutationOfTurn(repo);
     expect(s).toBeNull();
     expect(listSnapshots()).toEqual([]);
-    delete process.env.MONAD_UNDO;
+    delete process.env.ELANOUS_UNDO;
   });
 
   test('setUndoDisabled respected regardless of env', () => {

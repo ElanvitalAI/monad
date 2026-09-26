@@ -13,7 +13,7 @@ import { openAutopilotMissionsDb, getMission, listMissions } from './mission-reg
 // ★ LG0 — 상태전이는 생애주기 게이트 단일 관문(updateMissionStatus 직접 호출 금지·grep 가드).
 import { missionLifecycleGate } from './mission-lifecycle-gate.js';
 import { stopMissionExecutor } from './mission-executor-control.js';
-import { monadStateRoot } from './state-paths.js';
+import { elanousStateRoot } from './state-paths.js';
 import { defaultSpawnRunMission } from './mission-engine.js';
 import { openSchedulesDb, listSchedules, readCrontab, applyCrontab } from '../domains/schedule-registry.js';
 import { recordCapabilitySync } from '../domains/self-awareness.js';
@@ -76,11 +76,11 @@ export function workflowNameOf(scheduleId: string): string | null {
   return m ? m[1]! : null;
 }
 
-/** workflow 정의 YAML 삭제(프로젝트-로컬 <cwd>/.monad/workflows + 유저-글로벌 ~/.monad/workflows).
+/** workflow 정의 YAML 삭제(프로젝트-로컬 <cwd>/.elanous/workflows + 유저-글로벌 ~/.elanous/workflows).
  *  registry 만 지우면 workflow-runtime 이 재스캔해 되살리므로 정의 자체를 제거. 삭제 수 반환. fail-soft. */
 function deleteWorkflowYaml(name: string): number {
   let n = 0;
-  for (const dir of [join(process.cwd(), '.monad', 'workflows'), join(monadStateRoot(), 'workflows')]) {
+  for (const dir of [join(process.cwd(), '.elanous', 'workflows'), join(elanousStateRoot(), 'workflows')]) {
     const p = join(dir, `${name}.yaml`);
     try { if (existsSync(p)) { rmSync(p); n += 1; } } catch { /* fail-soft */ }
   }

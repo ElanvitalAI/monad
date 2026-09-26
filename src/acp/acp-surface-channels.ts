@@ -2,7 +2,7 @@
 //
 // DESIGN-cross-surface-autonomy-membrane §10 P0b. ACP 코어 데몬 턴(createDaemonRunTurn → toolSurface dispatch·
 // SelfImplement 가 도는 경로)엔 ConfirmChannel/QuestionChannel 이 없었다(ACP HITL 은 permission approver·
-// monad/ask 브릿지라는 다른 추상화). 이 어댑터가 `pushAskRequest`(monad/ask → iPhone/PWA 시트)를 감싸
+// elanous/ask 브릿지라는 다른 추상화). 이 어댑터가 `pushAskRequest`(elanous/ask → iPhone/PWA 시트)를 감싸
 // SurfaceUx 가 소비하는 ConfirmChannel/QuestionChannel 로 만든다 → 막(SurfaceUx)이 ACP 서피스도 얻는다.
 //
 // ★ additive·fail-soft: pusher 가 null(붙은 peer 없음/미지원) 반환 → 채널이 null 반환 → requestConfirmation
@@ -12,11 +12,11 @@
 import type { ConfirmChannel, ConfirmRequest, HitlAnswer } from '../hitl/confirm.js';
 import type { QuestionChannel } from '../hitl/question.js';
 import type { AskUserQuestionRequest, AskUserQuestionResult } from '../ask-user-question/types.js';
-import type { MonadAskRequestPayload } from './ask-extensions.js';
+import type { ElanousAskRequestPayload } from './ask-extensions.js';
 import { debug } from '../debug/log.js';
 
-/** ACP ask pusher — sessionId 로 붙은 cap-able peer 에 monad/ask 를 보내고 답을 await. null=peer 없음/미지원. */
-export type AcpAskPusher = (sessionId: string, payload: MonadAskRequestPayload) => Promise<AskUserQuestionResult | null>;
+/** ACP ask pusher — sessionId 로 붙은 cap-able peer 에 elanous/ask 를 보내고 답을 await. null=peer 없음/미지원. */
+export type AcpAskPusher = (sessionId: string, payload: ElanousAskRequestPayload) => Promise<AskUserQuestionResult | null>;
 
 let askSeq = 0;
 function nextAskId(sessionId: string, requestId?: string): string {
@@ -31,7 +31,7 @@ export function createAcpConfirmChannel(sessionId: string, pusher: AcpAskPusher)
       const yes = req.yesLabel ?? 'Yes';
       const no = req.noLabel ?? 'No';
       const question = req.detail ? `${req.prompt}\n${req.detail}` : req.prompt;
-      const payload: MonadAskRequestPayload = {
+      const payload: ElanousAskRequestPayload = {
         id: nextAskId(sessionId, req.requestId),
         request: {
           questions: [{

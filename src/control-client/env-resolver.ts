@@ -26,24 +26,24 @@ interface DeprecatedEnvKey {
 }
 
 const DEPRECATED_ENV_KEYS: Record<string, DeprecatedEnvKey> = {
-  MONAD_REMOTE: {
-    key: 'MONAD_REMOTE',
-    replacement: 'monad attach (SDK auto-discovers remote daemons via control plane)',
+  ELANOUS_REMOTE: {
+    key: 'ELANOUS_REMOTE',
+    replacement: 'elanous attach (SDK auto-discovers remote daemons via control plane)',
   },
-  MONAD_RESUME_SESSION: {
-    key: 'MONAD_RESUME_SESSION',
-    replacement: 'monad attach --session <id> or rely on the SDK\'s active-session resolver',
+  ELANOUS_RESUME_SESSION: {
+    key: 'ELANOUS_RESUME_SESSION',
+    replacement: 'elanous attach --session <id> or rely on the SDK\'s active-session resolver',
   },
-  MONAD_TOKEN: {
-    key: 'MONAD_TOKEN',
-    replacement: '~/.monad/acp-token (raw or envelope) — SDK reads it automatically',
+  ELANOUS_TOKEN: {
+    key: 'ELANOUS_TOKEN',
+    replacement: '~/.elanous/acp-token (raw or envelope) — SDK reads it automatically',
   },
-  MONAD_TELEGRAM_VIA_DAEMON: {
-    key: 'MONAD_TELEGRAM_VIA_DAEMON',
+  ELANOUS_TELEGRAM_VIA_DAEMON: {
+    key: 'ELANOUS_TELEGRAM_VIA_DAEMON',
     replacement: 'control plane registry — daemons + bots auto-discover each other',
   },
-  MONAD_DISCORD_VIA_DAEMON: {
-    key: 'MONAD_DISCORD_VIA_DAEMON',
+  ELANOUS_DISCORD_VIA_DAEMON: {
+    key: 'ELANOUS_DISCORD_VIA_DAEMON',
     replacement: 'control plane registry — daemons + bots auto-discover each other',
   },
 };
@@ -58,11 +58,11 @@ export function warnDeprecatedEnv(key: string): void {
   const meta = DEPRECATED_ENV_KEYS[key];
   if (!meta) return;
 
-  // stderr so a captured stdout (scripts piping monad output) stays
+  // stderr so a captured stdout (scripts piping elanous output) stays
   // clean. The warning is informational — never cause an exit.
-  // Format mirrors `MONAD_TOOLS=readonly` style hints elsewhere.
+  // Format mirrors `ELANOUS_TOOLS=readonly` style hints elsewhere.
   process.stderr.write(
-    `[monad] notice: ${meta.key} is deprecated since Step 5 SDK landed. ` +
+    `[elanous] notice: ${meta.key} is deprecated since Step 5 SDK landed. ` +
     `${meta.replacement}. The env override still works for now.\n`,
   );
   if (debug.enabled) debug.log('control-client.env.deprecated', meta.key);

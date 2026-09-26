@@ -41,7 +41,7 @@ export function buildLookbackPrompt(input: {
   sourceExcerpts: { file: string; content: string }[];
 }): string {
   const lines = [
-    'You are a system-fault diagnostician for the monad mission fabric. READ-ONLY: 코드를 수정하지 말고 진단만 하라.',
+    'You are a system-fault diagnostician for the elanous mission fabric. READ-ONLY: 코드를 수정하지 말고 진단만 하라.',
     '',
     `실패 페이즈: ${input.phaseTitle}`,
     '',

@@ -1,5 +1,5 @@
 // AskQuestionSheet.tsx — PWA native modal for inbound
-// `monad/ask/request` extMethod (M4 of PLAN-ask-user-question-cross-
+// `elanous/ask/request` extMethod (M4 of PLAN-ask-user-question-cross-
 // surface-2026-05-13).
 //
 // shadcn `<Dialog>` 위에 single/multi-select option list + "Other" free-
@@ -21,7 +21,7 @@ import {
   type AskUserQuestionRequest,
   type AskUserQuestionResult,
   type AnswerValue,
-} from '@/lib/monad-ask-extensions';
+} from '@/lib/elanous-ask-extensions';
 
 export interface AskQuestionSheetProps {
   /** Server-pushed request. null while idle (nothing to show). */

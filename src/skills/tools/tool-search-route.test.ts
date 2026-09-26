@@ -1,4 +1,4 @@
-// ── 소환기 라우팅 불변식 · 소비자 전수 가드 (monad review #5460 should-fix) ──
+// ── 소환기 라우팅 불변식 · 소비자 전수 가드 (elanous review #5460 should-fix) ──
 //
 // tier-flip 은 라우터 지원 여부와 **무관하게** ToolSearch 를 주입한다(그게 맞다 —
 // 소환기 없이 defer 하는 편이 더 나쁘다). 대신 위험은 반대편으로 옮겨간다:
@@ -172,7 +172,7 @@ describe('하이드레이션 hand-off (gap④)', () => {
     expect(takeHydratedTools('text')).toEqual([]);
   });
 
-  // must-fix(monad review #5461): 값이 배열이 아니어도 **키는 반드시 지운다**.
+  // must-fix(elanous review #5461): 값이 배열이 아니어도 **키는 반드시 지운다**.
   // 안 그러면 malformed 예약키가 그대로 대화로 새어나간다(모델-비대상 배관).
   test('malformed 값이어도 예약키는 무조건 제거된다(누출 차단)', () => {
     for (const bad of ['not-an-array', 42, null, { nested: true }]) {
@@ -182,7 +182,7 @@ describe('하이드레이션 hand-off (gap④)', () => {
     }
   });
 
-  // must-fix(monad review #5461): name 문자열만 보면 빈 이름·parameters 없는
+  // must-fix(elanous review #5461): name 문자열만 보면 빈 이름·parameters 없는
   // 객체가 프로바이더 선언에 주입된다 — 선언 가능한 shape 전체를 검증한다.
   test('선언 불가능한 항목은 걸러낸다(프로바이더에 쓰레기 선언 금지)', () => {
     const junk = {

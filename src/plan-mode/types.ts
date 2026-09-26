@@ -1,6 +1,6 @@
 // Plan-mode types — Phase WF3.
 //
-// Plan mode flips Monad into a read-only planning posture: the LLM
+// Plan mode flips Elanous into a read-only planning posture: the LLM
 // can Read / Grep / AskUserQuestion but cannot touch any file except
 // the session's plan artifact. Adapted from Claude Code's plan-mode
 // model (Apache 2.0-ish — algorithmic reference only).
@@ -34,7 +34,7 @@ export interface PlanArtifact {
   updated: number;
   phase: PlanPhase;
   /** Markdown body. Freeform — the model writes it via Edit against
-   *  planFilePath; Monad reads it on ExitPlanMode for the preview
+   *  planFilePath; Elanous reads it on ExitPlanMode for the preview
    *  and the handoff path. */
   body: string;
 }

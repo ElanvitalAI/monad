@@ -6,7 +6,7 @@
  *
  *  Schema:
  *  ```
- *  localStorage['monad.showroom.layouts'] = JSON.stringify({
+ *  localStorage['elanous.showroom.layouts'] = JSON.stringify({
  *    [name]: SavedShowroomLayout
  *  })
  *  ```
@@ -17,7 +17,7 @@
 
 import type { SavedShowroomLayout, ShowroomPanel } from './types';
 
-const STORAGE_KEY = 'monad.showroom.layouts';
+const STORAGE_KEY = 'elanous.showroom.layouts';
 const MAX_BYTES = 100 * 1024; // 100 KB cap
 
 interface StorageBackend {

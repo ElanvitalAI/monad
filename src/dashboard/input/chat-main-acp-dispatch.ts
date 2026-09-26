@@ -47,7 +47,7 @@ export interface DashboardChatMainAcpDispatchDeps {
    *  of whether auto-TTS is wired. Voice-chat continuous mode wires
    *  this to `controller.notifyResponseDone()` so the speaking phase
    *  drops to inactive (or restarts listening, in multi-turn mode)
-   *  even when MONAD_AUTO_TTS is off. Without this hook the
+   *  even when ELANOUS_AUTO_TTS is off. Without this hook the
    *  controller stayed in `speaking` indefinitely on turn-end and
    *  the user had to ESC out — which then closed the STT WebSocket
    *  with code 1000, surfaced as a false-alarm error.

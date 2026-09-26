@@ -2,9 +2,9 @@
 //
 // PLAN-review-reactive-completion-loop §4 L2 + 최종심판.
 // review-loop 의 rework + 객관 게이트(tsc/test) 통과 위에, **독립적인 Claude Code(Opus)** 를
-// ACP 로 호출해 최종 머지 판정을 받는다. 구현(codex)·드라이브(monad 브레인)·심판(Claude/ACP)이
+// ACP 로 호출해 최종 머지 판정을 받는다. 구현(codex)·드라이브(elanous 브레인)·심판(Claude/ACP)이
 // 서로 다른 주체라 단일모델 러버스탬프가 원천 불가.
-// 재사용: AcpAgent(`monad acp test` 와 동일 경로) · 순수 파서.
+// 재사용: AcpAgent(`elanous acp test` 와 동일 경로) · 순수 파서.
 import { type AcpAgent } from '../acp/client.js';
 import { globalAcpAgentManager } from '../acp/agent-manager.js';
 import { canonicalizeBackendId, getAcpBackend } from '../acp/backend-registry.js';

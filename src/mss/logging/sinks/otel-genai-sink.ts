@@ -2,8 +2,8 @@
 //
 // Opt-in sink that exports `llm.*` LogRecords as OTLP/HTTP spans
 // using the OpenTelemetry GenAI semantic conventions. The collector
-// then renders monad turns alongside spans from other GenAI tools
-// (LangSmith, Langfuse, Datadog APM) without requiring monad's TUI.
+// then renders elanous turns alongside spans from other GenAI tools
+// (LangSmith, Langfuse, Datadog APM) without requiring elanous's TUI.
 //
 // Activation: `MSS_OTEL_ENDPOINT=http://localhost:4318/v1/traces` env
 // at boot. When unset, the factory returns null and the sink is
@@ -112,7 +112,7 @@ function attr(key: string, value: unknown): OtlpAttribute | null {
 
 /** Build the OTel GenAI semconv attributes from a `llm.*` record's
  *  `data` payload. Best-effort — unknown shapes degrade to a single
- *  `monad.payload` JSON attribute so the span is never empty. */
+ *  `elanous.payload` JSON attribute so the span is never empty. */
 function genAiAttributes(rec: LogRecord): OtlpAttribute[] {
   const out: OtlpAttribute[] = [];
   const push = (a: OtlpAttribute | null) => { if (a) out.push(a); };
@@ -130,8 +130,8 @@ function genAiAttributes(rec: LogRecord): OtlpAttribute[] {
   push(attr('gen_ai.usage.output_tokens',
     typeof usage.output_tokens === 'number' ? usage.output_tokens
       : (typeof usage.completion_tokens === 'number' ? usage.completion_tokens : undefined)));
-  push(attr('monad.category', rec.category));
-  if (rec.monad_id) push(attr('monad.id', rec.monad_id));
+  push(attr('elanous.category', rec.category));
+  if (rec.elanous_id) push(attr('elanous.id', rec.elanous_id));
   return out;
 }
 
@@ -201,7 +201,7 @@ export class OtelGenAISink implements LogSink {
           ],
         },
         scopeSpans: [{
-          scope: { name: 'monad.gen_ai', version: this.serviceVersion },
+          scope: { name: 'elanous.gen_ai', version: this.serviceVersion },
           spans,
         }],
       }],

@@ -155,7 +155,7 @@ describe('runPwaVerify', () => {
   });
 
   test('registered nexus pwa command exposes verify with and without an optional marker', () => {
-    const help = execFileSync('bun', ['bin/monad.mjs', 'nexus', 'pwa', 'verify', '--help'], { encoding: 'utf8' });
+    const help = execFileSync('bun', ['bin/elanous.mjs', 'nexus', 'pwa', 'verify', '--help'], { encoding: 'utf8' });
     expect(help).toContain('nexus pwa verify [options] [marker]');
     expect(help).toContain('Read-only verification');
   });

@@ -24,7 +24,7 @@ export function buildBuzzDigPrompt(): string {
     '- 커뮤니티 반응은 신호의 시작일 뿐이다. 반드시 파생(선물 미결제·풋콜)·현물 수급·뉴스로 교차 검증한다.',
     '- 현물 외국인 수급만 믿지 마라. 급락이 선물발 프로그램 매도일 수 있다(finance_kr_flow 로 파생을 봐라).',
     '- lead vs lag: fact_check 로 이미 뉴스에 있나(lagging) 아니면 SNS 선행(leading)인가 판정한다.',
-    '- 과거 이 종목/이슈에 대해 monad 가 무엇을 알렸나 memory_recall 로 회상한다.',
+    '- 과거 이 종목/이슈에 대해 elanous 가 무엇을 알렸나 memory_recall 로 회상한다.',
     '- 반드시 도구를 실제로 호출해 데이터를 당긴 뒤 판단한다. 지식으로 단정하지 마라.',
     '- READ-ONLY. 매매 지시·주문·집행 금지. 분석과 verdict 만 낸다.',
     '',

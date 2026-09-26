@@ -4,7 +4,7 @@ import { debug } from '../debug/log.js';
 import { getUserConfig, type UserConfig } from '../user-config.js';
 
 /** Why `resolveGoalDocumentsDir` picked the directory it returned. */
-export type GoalDocumentsDirReason = 'config' | 'existing-docs-goals' | 'default-dot-monad';
+export type GoalDocumentsDirReason = 'config' | 'existing-docs-goals' | 'default-dot-elanous';
 
 export interface ResolvedGoalDocumentsDir {
   /** Absolute directory that holds authored goal documents for this repository. */
@@ -28,8 +28,8 @@ const DOCS_GOALS = ['docs', 'goals'] as const;
  *
  * Precedence:
  * 1. `harness.goalsDir` — a repository-root-relative path in user config.
- * 2. `<repoRoot>/docs/goals` when that directory already exists (monad and existing users).
- * 3. `<repoRoot>/.monad/goals` otherwise. `.monad/` is already gitignored by repo-provision.
+ * 2. `<repoRoot>/docs/goals` when that directory already exists (elanous and existing users).
+ * 3. `<repoRoot>/.elanous/goals` otherwise. `.elanous/` is already gitignored by repo-provision.
  */
 export function resolveGoalDocumentsDir(
   repoRoot: string,
@@ -44,7 +44,7 @@ export function resolveGoalDocumentsDir(
   const resolved = configured
     ?? (exists(join(root, ...DOCS_GOALS))
       ? { directory: join(root, ...DOCS_GOALS), reason: 'existing-docs-goals' as const }
-      : { directory: join(root, '.monad', 'goals'), reason: 'default-dot-monad' as const });
+      : { directory: join(root, '.elanous', 'goals'), reason: 'default-dot-elanous' as const });
 
   log('harness.goals-dir', 'resolved', { repoRoot: root, directory: resolved.directory, reason: resolved.reason });
   return resolved;

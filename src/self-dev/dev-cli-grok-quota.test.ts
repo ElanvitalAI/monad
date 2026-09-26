@@ -4,7 +4,7 @@ import { grokQuotaFromUsageJson, readGrokQuotaForLaunch } from './dev-cli.js';
 const usage = (rows: unknown[]) => JSON.stringify({ rows, accountCounts: {} });
 
 describe('grok quota at launch', () => {
-  test('reads the live `monad usage --json` grok credit row', () => {
+  test('reads the live `elanous usage --json` grok credit row', () => {
     expect(grokQuotaFromUsageJson(usage([{ provider: 'grok', credits: { status: 'ok', usedPercent: 100 } }]))).toBe('exhausted');
     expect(grokQuotaFromUsageJson(usage([{ provider: 'grok', credits: { status: 'ok', usedPercent: 42 } }, { provider: 'grok', credits: { status: 'ok', usedPercent: 100 } }]))).toBe('usable');
     expect(grokQuotaFromUsageJson(usage([{ provider: 'codex', credits: { status: 'ok', usedPercent: 100 } }]))).toBe('unknown');

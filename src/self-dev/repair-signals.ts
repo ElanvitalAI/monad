@@ -6,7 +6,7 @@
  * 도그푸드에서 사람이 수동으로 한 진단(worktree 락-레이스=SELF_IMPL_FAILED 다발·gate
  * 취약=gate-failed 다발)을 자동 surface → 1d 는 raw 실패가 아니라 **수리 신호**를 본다.
  *
- * 순수 — parked 목록만 입력. Cf. [[ROADMAP-monad-is-all-pty-unified-autonomy-2026-07-21]] G7.
+ * 순수 — parked 목록만 입력. Cf. [[ROADMAP-elanous-is-all-pty-unified-autonomy-2026-07-21]] G7.
  */
 import type { ParkedGoal } from './run-store.js';
 
@@ -59,7 +59,7 @@ const SYSTEM_HYPOTHESES: Record<string, string> = {
   'gate-failed': 'gate 다발 실패 — gate 병렬부하 강건성·scoped-test 폴백 점검.',
   'SELF_IMPL_FAILED': 'self-implement 조기실패 다발 — 인프라(worktree add 레이스·spawn·nest-cap) 점검.',
   'review-blocked': '리뷰 must-fix 다발 — goal 스펙 모호 or 리뷰 기준 과엄격 점검.',
-  'timed-out': '자율 단계 wall-clock 초과 다발(hang) — `monad logs --category self-implement --grep step-timeout` 로 어느 step(gate/review/merge/pr)이 끊기는지 특정 → 해당 seam 근본 hang(LLM/subprocess/network) 점검·타임아웃 조정(stepTimeouts).',
+  'timed-out': '자율 단계 wall-clock 초과 다발(hang) — `elanous logs --category self-implement --grep step-timeout` 로 어느 step(gate/review/merge/pr)이 끊기는지 특정 → 해당 seam 근본 hang(LLM/subprocess/network) 점검·타임아웃 조정(stepTimeouts).',
   interrupted: '다수 중단 — 오케스트레이터 안정성·타임아웃·리소스 점검.',
 };
 
@@ -202,7 +202,7 @@ export function analyzeRepairSignals(parked: ParkedGoal[]): RepairSignal[] {
       runCount: new Set(falseFailed.map((goal) => goal.runId)).size,
       kind: new Set(falseFailed.map((goal) => goal.runId)).size >= 2 ? 'system' : 'goal',
       affectedFeatures: falseFailed.map((g) => g.feature.slice(0, 60)),
-      hypothesis: `스폰 신호 단절(goal-loop 성공·exit=fail) — 성공 산출이 worktree(screenSpace)에 보존됨. **재빌드 금지·salvage**(보존 worktree 를 gate/review 통과시켜 승격). 화면 전사=\`monad self screen --space <screenSpace>\`.`,
+      hypothesis: `스폰 신호 단절(goal-loop 성공·exit=fail) — 성공 산출이 worktree(screenSpace)에 보존됨. **재빌드 금지·salvage**(보존 worktree 를 gate/review 통과시켜 승격). 화면 전사=\`elanous self screen --space <screenSpace>\`.`,
     });
   }
   // system 신호 먼저(가장 actionable) → 그 안에서 count 내림차순. false-failure 는 unshift 로 최상단(salvage 우선).

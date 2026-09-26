@@ -1,6 +1,6 @@
 // Input-core tunable settings — R6.
 //
-// User-config ~/.monad/input-bindings.json may carry a `settings`
+// User-config ~/.elanous/input-bindings.json may carry a `settings`
 // object with scalar knobs. Today only `chordWindowMs` is honored;
 // future knobs (e.g. repeat delay, modifier remap) land here.
 //

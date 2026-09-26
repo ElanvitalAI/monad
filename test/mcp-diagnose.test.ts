@@ -61,8 +61,8 @@ describe('runMcpDiagnose (PR3 D)', () => {
     expect(r.exitCode).toBe(0);
     expect(r.perServer['fast']!.status).toBe('ready');
     expect(r.perServer['fast']!.toolCount).toBe(2);
-    expect(out.logs.some((l) => l.includes('monad mcp diagnose'))).toBe(true);
-    expect(out.logs.some((l) => l.includes('monad nexus mcp diagnose'))).toBe(false);
+    expect(out.logs.some((l) => l.includes('elanous mcp diagnose'))).toBe(true);
+    expect(out.logs.some((l) => l.includes('elanous nexus mcp diagnose'))).toBe(false);
     expect(out.logs.some((l) => l.includes('▸ fast'))).toBe(true);
     expect(out.logs.some((l) => l.includes('start  ✓'))).toBe(true);
     expect(out.logs.some((l) => l.includes('list   ✓') && l.includes('2 tools'))).toBe(true);
@@ -332,7 +332,7 @@ describe('runMcpDiagnose HTTP loopback', () => {
   });
 
   test('configured static bearer environment token reaches loopback without printing it', async () => {
-    const envName = 'MONAD_MCP_DIAGNOSE_STATIC_BEARER';
+    const envName = 'ELANOUS_MCP_DIAGNOSE_STATIC_BEARER';
     const previous = process.env[envName];
     const token = 'diagnose-static-token';
     process.env[envName] = token;
@@ -610,8 +610,8 @@ describe('mcp diagnose CLI path', () => {
     expect(cli.status).toBe(0);
     expect(logic.perServer['fast']!.status).toBe('ready');
     expect(logic.perServer['fast']!.toolCount).toBe(2);
-    expect(cli.combined).toContain('monad mcp diagnose');
-    expect(cli.combined).not.toContain('monad nexus mcp diagnose');
+    expect(cli.combined).toContain('elanous mcp diagnose');
+    expect(cli.combined).not.toContain('elanous nexus mcp diagnose');
     expect(cli.combined).toContain('▸ fast');
     expect(cli.combined).toMatch(/list\s+✓.*2 tools/);
     expect(cli.combined).toContain('all servers responded');

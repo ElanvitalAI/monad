@@ -28,7 +28,7 @@ function walk(dir: string, out: string[]): void {
     //   📏 실측 2026-09-22: 가짜 워크트리에 위반 하나를 심으니 이 자가 그것을 고발했다
     //   (scanned 65 → 66 · `.claude/worktrees/__probe__/src/fake.ts: 0 → 1`).
     //   ⇒ 게이트가 «이 저장소의 부채»가 아닌 것으로 착지를 막는다. 형제 게이트(mock-module-restore)도 같다.
-    if (name === 'node_modules' || name === '.git' || name === '.monad-test' || name === '.claude') continue;
+    if (name === 'node_modules' || name === '.git' || name === '.elanous-test' || name === '.claude') continue;
     const path = join(dir, name);
     const stat = statSync(path);
     if (stat.isDirectory()) walk(path, out);

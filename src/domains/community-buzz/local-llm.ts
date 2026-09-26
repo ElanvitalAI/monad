@@ -4,7 +4,7 @@
 // OpenAI 호환 /v1/chat/completions. 라운드로빈 + 페일오버(한 대 다운→다른 대). 둘 다
 // 다운이면 throw(호출측 fail-soft). MoE(qwen3.5-35b-a3b) 라 빠름·구독/클라우드 토큰 0.
 //
-// 엔드포인트 기본 = 본머신 ⊕ ~/.monad/ssh-hosts.json 에서 `roles: ["llm"]` 인 호스트의 :1234.
+// 엔드포인트 기본 = 본머신 ⊕ ~/.elanous/ssh-hosts.json 에서 `roles: ["llm"]` 인 호스트의 :1234.
 
 import { sshHostsWithRole } from '../../ssh/ssh-hosts.js';
 

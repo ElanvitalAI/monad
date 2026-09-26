@@ -8,9 +8,9 @@
  *  byte stream — the ACP SDK's `ndJsonStream()` wraps it into the
  *  JSON-RPC layer. */
 export interface AcpTransportConnection {
-  /** Bytes from the client to monad. */
+  /** Bytes from the client to elanous. */
   readable: ReadableStream<Uint8Array>;
-  /** Bytes monad writes back to the client. */
+  /** Bytes elanous writes back to the client. */
   writable: WritableStream<Uint8Array>;
   /** Best-effort identity string — used for debug logs + per-peer
    *  metric tagging. Socket transports fill in a peer address, stdio

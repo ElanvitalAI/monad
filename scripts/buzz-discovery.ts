@@ -2,7 +2,7 @@
 // ── 버즈 종목 발굴 (P4) · 장중 주기 크론 · 2026-07-09 ─────────────────────────
 //
 // emergence → dig_queue 적재(기존 dig-runner 심층분석) + 매력도 조회 → 발굴 리포트.
-// 매매 격리(read-only). 등록: monad schedule create --cron '0 10,14 * * 1-5'
+// 매매 격리(read-only). 등록: elanous schedule create --cron '0 10,14 * * 1-5'
 //   --command 'scripts/buzz-discovery.ts'
 
 import { ensureCronNodePath } from '../src/domains/cron-path.js';
@@ -24,7 +24,7 @@ import { ensureDigTables } from '../src/domains/dig-engine.js';
 import { openSignalsDb } from '../src/domains/breaking-signals.js';
 import { sendOutbound } from '../src/domains/outbound-alert.js';
 
-const LOG = join(homedir(), '.monad/conatus/buzz_discovery.log');
+const LOG = join(homedir(), '.elanous/conatus/buzz_discovery.log');
 // ★ B5 신규 버전: --to-pool 이면 발굴 종목을 signal pool 로(발송 대신·게이트가 알림 독점).
 const TO_POOL = process.argv.includes('--to-pool');
 function log(s: string): void {

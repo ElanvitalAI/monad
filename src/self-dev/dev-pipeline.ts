@@ -4,10 +4,10 @@
 // agent-mission[codex] mission …)를 단일 spec 축으로 수렴한다. 본 페이즈(U4)는 골격:
 //   • planDevPipeline(spec) — 순수 정규화/검증/디스패치 선택(전 축 모델링·전수 테스트). = 계약 SSOT.
 //   • runDevPipeline(spec, deps) — 얇은 디스패처. 성숙한 단일-미션 경로 2종만 실배선(재발명 0):
-//       self+mission        → runSelfImplement(monad-chat 자체구현·(c) 자체개발)
+//       self+mission        → runSelfImplement(elanous-chat 자체구현·(c) 자체개발)
 //       external+pty+mission → runAgentMission(codex/claude/gemini/grok PTY·(b) 외부 에이전트)
 //     나머지(parallel·interactive·acp)는 계약엔 모델링하되 명시 NotYetUnified(후속 페이즈 배선).
-//   • `monad dev` 실험 CLI 로 노출(도그푸드 창구·관측 dev-pipeline) — 기존 명령(chat/self implement/
+//   • `elanous dev` 실험 CLI 로 노출(도그푸드 창구·관측 dev-pipeline) — 기존 명령(chat/self implement/
 //     orchestrate/agent-mission)은 무접촉. 기존 명령을 runDevPipeline 로 재라우팅(각 명령의 evidence/
 //     screens 등 옵션을 spec 이 전부 모델링해야 무회귀)하는 통합은 U4b 별도 페이즈(고위험·mature 4명령 touch).
 //
@@ -61,7 +61,7 @@ export interface DevMissionOpts {
   nickname?: string;
 }
 
-/** self(monad-chat 자체구현) 실행 옵션 — 통일 축(executor/context/completion/autoReview/enhance/base) 밖의
+/** self(elanous-chat 자체구현) 실행 옵션 — 통일 축(executor/context/completion/autoReview/enhance/base) 밖의
  *  self-특정 미션 실행 파라미터(무손실 재라우팅용). self-mission dispatch 에만 유효(그 외 지정 시 planDevPipeline
  *  이 거부·수락 후 무시 금지). autoMerge 는 completion:'auto-merge'·autoReview 는 spec.autoReview 로 표현(중복 축 아님). */
 export interface DevSelfOpts {
@@ -99,10 +99,10 @@ export interface DevSelfOpts {
 /** chat(interactive·단일 턴) 실행 옵션 — 통일 축 밖의 chat-특정 대화 파라미터(무손실 재라우팅용). interactive
  *  dispatch 에만 유효. ⚠️ chat 엔진(runChatTurnCli)은 CLI 레이어(index.ts) 소유라 dev-pipeline 이 직접 import
  *  불가(순환) → interactive dispatch 는 deps.runChatTurn 주입 필수(자체 default 없음·설계상 CLI-레이어 소유). */
-export interface DevMonadTuiOpts {
+export interface DevElanousTuiOpts {
   /** child TUI에 제출할 목표(hold에서는 지정 불가). */
   goal?: string;
-  /** brain 없이 child TUI를 띄워 외부 `monad pty` 제어면에 넘긴다. */
+  /** brain 없이 child TUI를 띄워 외부 `elanous pty` 제어면에 넘긴다. */
   hold?: boolean;
   /** hold PTY readiness 대기 상한(ms). 생략 시 PTY drive의 30초 기본값. */
   readyTimeoutMs?: number;
@@ -151,7 +151,7 @@ export interface DevChatOpts {
   forceNew?: boolean;
   /** 단일 JSON 라인 출력. */
   json?: boolean;
-  /** tool-loop(Read/Grep/…/Bash) 활성(monad agent 가 켬). */
+  /** tool-loop(Read/Grep/…/Bash) 활성(elanous agent 가 켬). */
   enableTools?: boolean;
   /** across-turn goal-loop 아밍(enableTools 필요). */
   goalLoop?: boolean;
@@ -213,12 +213,12 @@ export interface DevPipelineSpec {
   relaunch?: boolean;
   /** external+pty(agent-mission) 실행 옵션(무손실 재라우팅용·agent-mission-pty dispatch 에만 유효). */
   mission?: DevMissionOpts;
-  /** self(monad-chat 자체구현) 실행 옵션(무손실 재라우팅용·self-mission dispatch 에만 유효). */
+  /** self(elanous-chat 자체구현) 실행 옵션(무손실 재라우팅용·self-mission dispatch 에만 유효). */
   self?: DevSelfOpts;
-  /** self-mission이 개발할 대상. 생략하면 현재 monad 기본 대상 동작을 보존한다. */
+  /** self-mission이 개발할 대상. 생략하면 현재 elanous 기본 대상 동작을 보존한다. */
   target?: string;
-  /** 격리 bare monad TUI child 실행 옵션(self+mission 전용). */
-  monad?: DevMonadTuiOpts;
+  /** 격리 bare elanous TUI child 실행 옵션(self+mission 전용). */
+  elanous?: DevElanousTuiOpts;
   /** 셸 PTY 제어 루프 실행 옵션. */
   drive?: DevShellDriveOpts;
   /** chat(interactive 단일 턴) 실행 옵션(무손실 재라우팅용·interactive dispatch 에만 유효). */
@@ -248,7 +248,7 @@ export interface DevPipelineSpec {
 }
 
 /** 디스패치 갈래 — wired=현재 실행배선, 그 외=NotYetUnified(후속). */
-export type DevDispatch = 'self-mission' | 'monad-tui' | 'shell-drive' | 'agent-mission-pty' | 'parallel' | 'interactive' | 'acp' | 'plan-staged';
+export type DevDispatch = 'self-mission' | 'elanous-tui' | 'shell-drive' | 'agent-mission-pty' | 'parallel' | 'interactive' | 'acp' | 'plan-staged';
 
 /** 실행 축을 결정한 입력의 출처 — runtime decomposer 관측과 같은 request/config/default 어휘를 쓴다. */
 export type DevSelectionSource = 'request' | 'config' | 'default';
@@ -276,10 +276,10 @@ export interface ResolvedDevPlan {
   mission: DevMissionOpts | undefined;
   /** self 실행 옵션(정규화·self-mission 만). */
   self: DevSelfOpts | undefined;
-  /** 요청 대상을 기존 resolver가 정규화한 결과. 생략하면 기본 monad 대상이다. */
+  /** 요청 대상을 기존 resolver가 정규화한 결과. 생략하면 기본 elanous 대상이다. */
   target: HarnessTargetResolution | undefined;
-  /** 격리 bare monad TUI child 실행 옵션(정규화·monad-tui 만). */
-  monad: DevMonadTuiOpts | undefined;
+  /** 격리 bare elanous TUI child 실행 옵션(정규화·elanous-tui 만). */
+  elanous: DevElanousTuiOpts | undefined;
   /** 셸 PTY 제어 루프 실행 옵션(정규화·shell-drive 만). */
   drive: DevShellDriveOpts | undefined;
   /** chat 실행 옵션(정규화·interactive 만). */
@@ -318,7 +318,7 @@ export function formatDevNonDefaultBaseWarning(plan: Pick<ResolvedDevPlan, 'base
 
 /** 실행배선된 디스패치 — U4b 로 5종 + T1 plan-staged(self implement --plan→dispatchRunDevHarness). interactive 는
  *  chat 엔진(CLI 레이어 소유)이라 deps.runChatTurn 주입 필수(자체 default 없음). */
-export const WIRED_DISPATCHES: readonly DevDispatch[] = ['self-mission', 'monad-tui', 'shell-drive', 'agent-mission-pty', 'acp', 'parallel', 'interactive', 'plan-staged'] as const;
+export const WIRED_DISPATCHES: readonly DevDispatch[] = ['self-mission', 'elanous-tui', 'shell-drive', 'agent-mission-pty', 'acp', 'parallel', 'interactive', 'plan-staged'] as const;
 
 // ── 순수 계약: spec → 정규화/검증된 실행 계획 ──
 export function planDevPipeline(spec: DevPipelineSpec): ResolvedDevPlan {
@@ -341,10 +341,10 @@ export function planDevPipeline(spec: DevPipelineSpec): ResolvedDevPlan {
   //   ⛔ 종전엔 이 네 줄이 결정 «그 자체»였고, 같은 규칙이 다른 입구에도 «따로» 살아 있었다.
   //     그러면 고칠 때 한 곳만 고치게 되고, 그 형태로 2026-08-20 하루에 사고가 셋 났다.
   //   ⛔ 산출은 «바이트 동일»이다 — 아래는 옮긴 것이지 바꾼 것이 아니다.
-  // `monad dev`, natural-language, and goal-file self-implement launches retain the
+  // `elanous dev`, natural-language, and goal-file self-implement launches retain the
   // no-flag autonomous policy. Other self-implement and declared-only entrances stay
   // fail-closed unless their caller supplies a capability explicitly.
-  const isAutonomousMissionEntrance = executor.kind === 'self' && context === 'mission' && !parallel && !spec.monad
+  const isAutonomousMissionEntrance = executor.kind === 'self' && context === 'mission' && !parallel && !spec.elanous
     && (spec.entrance === 'cli-dev-ask'
       || spec.entrance === 'nl-self-implement'
       // ⭐⭐ 대표 결정 2026-08-22 — 「a 로 해도 큰 문제 없을 것 같은데요. ***기본적으로 자율 주행을 원합니다***」
@@ -397,7 +397,7 @@ export function planDevPipeline(spec: DevPipelineSpec): ResolvedDevPlan {
   // ★ T1 — plan(staged 플래너)은 self+mission 에서 별도 파이프라인(dispatchRunDevHarness). external/parallel/
   //   interactive + plan 은 plan-staged 조건 미충족 → 각자 dispatch 로 가고 assertDispatchHonorsOptions 가 거부.
   else if (spec.plan && executor.kind === 'self') dispatch = 'plan-staged';
-  else if (spec.monad && executor.kind === 'self' && context === 'mission') dispatch = 'monad-tui';
+  else if (spec.elanous && executor.kind === 'self' && context === 'mission') dispatch = 'elanous-tui';
   else if (spec.drive && executor.kind === 'self' && context === 'mission') dispatch = 'shell-drive';
   else if (executor.kind === 'self') dispatch = 'self-mission';
   else if (executor.transport === 'acp') dispatch = 'acp';
@@ -421,22 +421,22 @@ export function planDevPipeline(spec: DevPipelineSpec): ResolvedDevPlan {
   if (hasSelfOpts && dispatch !== 'self-mission') {
     throw new DevPipelineError(`self 실행 옵션은 self-mission dispatch 에만 유효(현재 ${dispatch})`);
   }
-  // monad TUI 실행 옵션은 monad-tui 에만 유효 — 그 외 dispatch 에 지정 시 거부(수락 후 무시 금지).
-  const hasMonadOpts = !!spec.monad && Object.values(spec.monad).some((v) => v !== undefined);
-  if (hasMonadOpts && dispatch !== 'monad-tui') {
-    throw new DevPipelineError(`monad TUI 실행 옵션은 monad-tui dispatch 에만 유효(현재 ${dispatch})`);
+  // elanous TUI 실행 옵션은 elanous-tui 에만 유효 — 그 외 dispatch 에 지정 시 거부(수락 후 무시 금지).
+  const hasElanousOpts = !!spec.elanous && Object.values(spec.elanous).some((v) => v !== undefined);
+  if (hasElanousOpts && dispatch !== 'elanous-tui') {
+    throw new DevPipelineError(`elanous TUI 실행 옵션은 elanous-tui dispatch 에만 유효(현재 ${dispatch})`);
   }
   // ⛔ 하위 계층(pty-drive-cli)과 같은 계약 — goal 의 **존재 자체**를 거부한다(리뷰 must-fix).
   // ⛔ hold 는 brain 을 만들지 않으므로 brain 전용 옵션을 받으면 거부한다(수락 후 무시 금지).
-  if (dispatch === 'monad-tui' && spec.monad?.hold) {
-    const brainOnly = (['maxSteps', 'pollMs', 'model'] as const).filter((k) => spec.monad?.[k] !== undefined);
+  if (dispatch === 'elanous-tui' && spec.elanous?.hold) {
+    const brainOnly = (['maxSteps', 'pollMs', 'model'] as const).filter((k) => spec.elanous?.[k] !== undefined);
     if (brainOnly.length) throw new DevPipelineError(`hold 는 brain 전용 옵션과 동시 사용 불가: ${brainOnly.join(', ')}`);
   }
-  if (dispatch === 'monad-tui' && spec.monad?.hold && spec.monad.goal !== undefined) {
-    throw new DevPipelineError('monad TUI hold 는 goal과 동시 사용 불가');
+  if (dispatch === 'elanous-tui' && spec.elanous?.hold && spec.elanous.goal !== undefined) {
+    throw new DevPipelineError('elanous TUI hold 는 goal과 동시 사용 불가');
   }
-  if (dispatch === 'monad-tui' && !spec.monad?.hold && (typeof spec.monad?.goal !== 'string' || !spec.monad.goal.trim())) {
-    throw new DevPipelineError('monad TUI dispatch 는 비어 있지 않은 goal 필요');
+  if (dispatch === 'elanous-tui' && !spec.elanous?.hold && (typeof spec.elanous?.goal !== 'string' || !spec.elanous.goal.trim())) {
+    throw new DevPipelineError('elanous TUI dispatch 는 비어 있지 않은 goal 필요');
   }
   const hasDriveOpts = !!spec.drive && Object.values(spec.drive).some((v) => v !== undefined);
   if (hasDriveOpts && dispatch !== 'shell-drive') {
@@ -457,7 +457,7 @@ export function planDevPipeline(spec: DevPipelineSpec): ResolvedDevPlan {
   }
 
   // target 은 self-mission seam에만 배선된다. 다른 dispatch에서 수락하면 사용자가 고른
-  // 대상을 조용히 버리고 기본 monad 대상으로 수렴하므로 계획 단계에서 거부한다.
+  // 대상을 조용히 버리고 기본 elanous 대상으로 수렴하므로 계획 단계에서 거부한다.
   if (spec.target !== undefined && dispatch !== 'self-mission') {
     throw new DevPipelineError(`target은 self-mission dispatch 에만 유효(현재 ${dispatch})`);
   }
@@ -495,7 +495,7 @@ export function planDevPipeline(spec: DevPipelineSpec): ResolvedDevPlan {
     mission: spec.mission,
     self: spec.self,
     target,
-    monad: spec.monad,
+    elanous: spec.elanous,
     drive: spec.drive,
     chat: spec.chat,
     harness: spec.harness,
@@ -554,7 +554,7 @@ export async function defaultDispatchAcp(
 }
 
 // ── 순수 어댑터: 계획 → 기존 성숙 함수 옵션(재발명 0) ──
-/** self-mission → SelfImplementOptions(monad-chat 자체구현). seams=DI 배선(defaultSeams 재사용·주입).
+/** self-mission → SelfImplementOptions(elanous-chat 자체구현). seams=DI 배선(defaultSeams 재사용·주입).
  *  self implement CLI 무손실 재라우팅: autoMerge=completion:'auto-merge'·autoReview=spec.autoReview·draft/entry/
  *  기타=plan.self. maxWaitSec 는 seams(implementMaxWaitSec) 몫이라 여기서 제외(buildDefaultSelfImplementSeams). */
 export function toSelfImplementOptions(text: string, plan: ResolvedDevPlan, seams: SelfImplementSeams): SelfImplementOptions {
@@ -571,7 +571,7 @@ export function toSelfImplementOptions(text: string, plan: ResolvedDevPlan, seam
     } : {}),
     ...('file' in plan.input ? { goalFile: plan.input.file } : s.goalFile ? { goalFile: s.goalFile } : {}),
     ...(goalId ? { goalId } : {}),
-    ...(process.env.MONAD_REWORK_SALVAGE_ATTEMPT ? { salvageAttempt: Number.parseInt(process.env.MONAD_REWORK_SALVAGE_ATTEMPT, 10) || 0 } : {}),
+    ...(process.env.ELANOUS_REWORK_SALVAGE_ATTEMPT ? { salvageAttempt: Number.parseInt(process.env.ELANOUS_REWORK_SALVAGE_ATTEMPT, 10) || 0 } : {}),
     ...(s.entry ? { entry: s.entry } : {}),
     ...(s.draft !== undefined ? { draft: s.draft } : {}),
     completion: plan.completion,
@@ -620,7 +620,7 @@ export function toAgentMissionSpec(
 //   CLI 액션이 이 두 함수를 쓰므로 단위 테스트가 "모든 옵션 전달 + runDevPipeline 호출 + exit-code 등가"를
 //   실검증한다(source-grep Goodhart 회피). 기존 명령 → spec 어댑터의 실배선 실현.
 
-/** agent-mission mission CLI 인자 → DevPipelineSpec(external+pty+mission·entry=monad-apparatus). */
+/** agent-mission mission CLI 인자 → DevPipelineSpec(external+pty+mission·entry=elanous-apparatus). */
 export function buildAgentMissionDevSpec(o: {
   mission: string;
   backend: DevBackend;
@@ -644,7 +644,7 @@ export function buildAgentMissionDevSpec(o: {
       evidence: o.evidence,
       maxRounds: o.maxRounds,
       commit: o.commit,
-      entry: 'monad-apparatus',
+      entry: 'elanous-apparatus',
       ...(o.deliverableHint ? { deliverableHint: o.deliverableHint } : {}),
       ...(o.screensDir ? { screensDir: o.screensDir } : {}),
     },
@@ -677,7 +677,7 @@ export async function executeAgentMissionReroute(
 export function buildSelfImplementDevSpec(o: {
   feature: string;
   base?: string;
-  /** monad 내부 인핸싱(--enhance). 미지정 → orchestrator entry 정책(external-verbatim=OFF). */
+  /** elanous 내부 인핸싱(--enhance). 미지정 → orchestrator entry 정책(external-verbatim=OFF). */
   enhance?: boolean;
   /** codebase-only grounding(--ground). 미지정/false=off. */
   ground?: boolean;
@@ -905,7 +905,7 @@ export interface DevPipelineDeps {
   approver?: SelfImplementSeams['approvePr'];
   /** In-place repository promotion after target revalidation and before child execution. */
   provisionRepository?: (target: HarnessTargetResolution) => RepoProvisionResult;
-  /** monad 도구 소스의 git 최상위(시험 seam). null = 체크아웃 아님(npm 설치). 미지정이면 실제로 잰다. */
+  /** elanous 도구 소스의 git 최상위(시험 seam). null = 체크아웃 아님(npm 설치). 미지정이면 실제로 잰다. */
   toolRepositoryRoot?: string | null;
   /** ACP 위임 실행(테스트 주입). signal 을 함께 받아 기본 경로와 취소 동작 일치(DI 계약 정합). */
   dispatchAcpAgent?: (args: { backend: string; task: string; cwd: string }, signal: AbortSignal) => Promise<unknown>;
@@ -934,7 +934,7 @@ export interface DevPipelineDeps {
   runChatTurn?: (text: string, chat: DevChatOpts) => Promise<void>;
   /** plan-staged dispatch — staged 하니스(Clarify→Plan→Execute→Review→Deploy). 기본 dispatchRunDevHarness(재발명 0). */
   dispatchRunDevHarness?: (args: DevHarnessDispatchArgs) => Promise<{ output: string }>;
-  /** monad-tui dispatch — 기존 PTY 제어 루프. 기본 runPtyDrive(재발명 0). */
+  /** elanous-tui dispatch — 기존 PTY 제어 루프. 기본 runPtyDrive(재발명 0). */
   runPtyDrive?: typeof import('../cli/pty-drive-cli.js').runPtyDrive;
 }
 
@@ -975,7 +975,7 @@ export function selectUnmannedToolReviewer(rate: number, sample: number): Unmann
 
 /**
  * 📌 노브 = `llm.toolReviewerRate` (0..1 · 기본 `DEFAULT_UNMANNED_TOOL_REVIEWER_RATE`).
- * 환경변수 `MONAD_TOOL_REVIEWER_RATE` 가 그 다음. 읽기 실패는 기본값(fail-soft).
+ * 환경변수 `ELANOUS_TOOL_REVIEWER_RATE` 가 그 다음. 읽기 실패는 기본값(fail-soft).
  */
 export function unmannedToolReviewerRateFromConfig(
   readConfig: () => { llm?: { toolReviewerRate?: unknown } } = () => getUserConfig() as { llm?: { toolReviewerRate?: unknown } },
@@ -984,7 +984,7 @@ export function unmannedToolReviewerRateFromConfig(
     const parsed = parseUnmannedToolReviewerRate(readConfig().llm?.toolReviewerRate);
     if (parsed !== undefined) return parsed;
   } catch { /* fail-soft */ }
-  const envRaw = process.env.MONAD_TOOL_REVIEWER_RATE;
+  const envRaw = process.env.ELANOUS_TOOL_REVIEWER_RATE;
   if (envRaw !== undefined && envRaw !== '') {
     const parsed = parseUnmannedToolReviewerRate(Number(envRaw));
     if (parsed !== undefined) return parsed;
@@ -1096,7 +1096,7 @@ export async function buildDefaultSelfImplementSeams(
   if (target && target.status !== 'git-repo' && target.status !== 'non-git-dir' && target.status !== 'file') {
     throw new DevPipelineError(`target 거부: ${target.reason ?? target.status}`);
   }
-  const targetOptions = target ? harnessTargetOptions(target, childScope.monadBinRoot) : undefined;
+  const targetOptions = target ? harnessTargetOptions(target, childScope.elanousBinRoot) : undefined;
   if (target && !targetOptions) throw new DevPipelineError(`target 거부: seam 옵션을 만들 수 없음 (${target.target})`);
   return defaultSeams({
     ...childScope,
@@ -1118,7 +1118,7 @@ export type DevPipelineRunResult =
   | { plan: ResolvedDevPlan; kind: 'self'; result: SelfImplementResult }
   // ⛔ `exitCode: null` = 자식이 종료했으나 코드를 알 수 없음. 0 으로 접지 마라 —
   //    접는 순간 실패가 '정상 완료' 가 된다(이 PR 이 없애려는 그 거짓말).
-  | { plan: ResolvedDevPlan; kind: 'monad-tui'; result: { exitCode: number | null } }
+  | { plan: ResolvedDevPlan; kind: 'elanous-tui'; result: { exitCode: number | null } }
   | { plan: ResolvedDevPlan; kind: 'shell-drive'; result: { exitCode: number | null } }
   | { plan: ResolvedDevPlan; kind: 'agent-mission'; result: AgentMissionResult }
   | { plan: ResolvedDevPlan; kind: 'acp'; result: AcpRunResult } // 정규화된 ACP 결과({ok}·실패/취소 전파)
@@ -1131,7 +1131,7 @@ export type DevPipelineRunResult =
 export function devResultOk(r: DevPipelineRunResult): boolean {
   switch (r.kind) {
     case 'self': return r.result.ok === true;
-    case 'monad-tui': return r.result.exitCode === 0;
+    case 'elanous-tui': return r.result.exitCode === 0;
     case 'shell-drive': return r.result.exitCode === 0;
     case 'agent-mission': return r.result.ok === true;
     case 'acp': return r.result.ok === true;
@@ -1148,7 +1148,7 @@ export function resolveDevInputText(input: DevInput, readFile: (p: string) => st
 }
 
 /**
- * Hand-authored goal files bypass `monad self author`, so attach its evidence-location
+ * Hand-authored goal files bypass `elanous self author`, so attach its evidence-location
  * contract at the execution boundary without rewriting the source document. A quoted
  * occurrence in the ask is not itself an attached requirement; only a standalone
  * requirement line prevents appending the shared contract.
@@ -1422,7 +1422,7 @@ function writeGoalFileTypeDispatch(file: string, text: string, dispatch: DevDisp
   debug.log('dev-pipeline', 'goal-file-type-dispatch', { file, goalType: goalType ?? 'unreadable', dispatch });
 }
 
-/** Run the same six-axis goal-file lint used by MonadAutopilotLaunch before dispatch. */
+/** Run the same six-axis goal-file lint used by ElanousAutopilotLaunch before dispatch. */
 function preflightGoalFileLint(
   input: DevInput,
   text: string,
@@ -1621,8 +1621,8 @@ export function assertDispatchHonorsOptions(plan: ResolvedDevPlan): void {
   if (plan.dispatch === 'agent-mission-pty' && plan.completion !== 'worktree-only') {
     unsupported.push(`completion:${plan.completion}(agent-mission-pty 는 worktree-only 만 · PR 완결 미배선)`);
   }
-  if (plan.dispatch === 'monad-tui' && plan.completion !== 'worktree-only') {
-    unsupported.push(`completion:${plan.completion}(monad-tui 는 worktree-only 만 · 격리 child TUI 실행)`);
+  if (plan.dispatch === 'elanous-tui' && plan.completion !== 'worktree-only') {
+    unsupported.push(`completion:${plan.completion}(elanous-tui 는 worktree-only 만 · 격리 child TUI 실행)`);
   }
   if (plan.dispatch === 'shell-drive' && plan.completion !== 'worktree-only') {
     unsupported.push(`completion:${plan.completion}(shell-drive 는 worktree-only 만 · 셸 PTY 제어 루프 실행)`);
@@ -1753,7 +1753,7 @@ async function runDevPipelineDispatch(
       `배선됨=${WIRED_DISPATCHES.join('/')} · 후속: interactive→chat·parallel→orchestrateSelfDev.`,
     );
   }
-  const entryRoute = plan.self?.entry ?? plan.mission?.entry ?? 'monad-apparatus';
+  const entryRoute = plan.self?.entry ?? plan.mission?.entry ?? 'elanous-apparatus';
   observeDevSelection('completion', plan.completion, plan.completionSource, plan.completionSource === 'request' ? spec.completion : undefined, entryRoute, spec.runId, plan.entrance, plan.entranceUnstamped);
   observeDevSelection('autoReview', plan.autoReview, plan.autoReviewSource, plan.autoReviewSource === 'request' ? spec.autoReview : undefined, entryRoute, spec.runId, plan.entrance, plan.entranceUnstamped);
   assertDispatchHonorsOptions(plan); // 미이행 옵션 거부(수락 후 무시 금지)
@@ -1809,7 +1809,7 @@ async function runDevPipelineDispatch(
     return { plan, kind: 'interactive', result: null };
   }
 
-  if (!text.trim() && !(plan.dispatch === 'monad-tui' && plan.monad?.hold)) {
+  if (!text.trim() && !(plan.dispatch === 'elanous-tui' && plan.elanous?.hold)) {
     throw new DevPipelineError('input 텍스트가 비었다'); // build dispatch(self/acp/agent-mission) 만
   }
 
@@ -1844,9 +1844,9 @@ async function runDevPipelineDispatch(
     return { plan, kind: 'plan-staged', result: { output: res.output } };
   }
 
-  if (plan.dispatch === 'monad-tui') {
+  if (plan.dispatch === 'elanous-tui') {
     const run = deps.runPtyDrive ?? (await import('../cli/pty-drive-cli.js')).runPtyDrive;
-    return { plan, kind: 'monad-tui', result: await run({ monad: true, ...plan.monad! }) };
+    return { plan, kind: 'elanous-tui', result: await run({ elanous: true, ...plan.elanous! }) };
   }
   if (plan.dispatch === 'shell-drive') {
     const run = deps.runPtyDrive ?? (await import('../cli/pty-drive-cli.js')).runPtyDrive;
@@ -1859,7 +1859,7 @@ async function runDevPipelineDispatch(
     };
     const cwdTop = topLevel(cwd);
     if (!cwdTop) return;
-    // 도구 뿌리 = monad 소스의 git 최상위(npm 설치면 null ⇒ 작업 디렉토리는 늘 남의 저장소).
+    // 도구 뿌리 = elanous 소스의 git 최상위(npm 설치면 null ⇒ 작업 디렉토리는 늘 남의 저장소).
     const toolTop = deps.toolRepositoryRoot !== undefined ? deps.toolRepositoryRoot : topLevel(import.meta.dir);
     if (toolTop !== null && toolTop === cwdTop) return;
     try {
@@ -1908,12 +1908,12 @@ async function runDevPipelineDispatch(
       // ⛔ 2026-09-23 (Phase 4 실측) — 사용자는 `--target` 없이 «자기 프로젝트 안에서» 친다. 종전엔 원격 판정이
       //   `--target` 블록에만 있어, 원격 없는 로컬 프로젝트가 `auto-merge` 로 떠서 끝에서야 PR 을 못 열고 멎었다
       //   (`gh pr list` 가 「no git remotes found」). 같은 판정을 작업 디렉토리 저장소에도 건다.
-      //   원격이 있거나 못 읽으면 종전과 «동일»(monad 자기 개발 경로 무영향).
+      //   원격이 있거나 못 읽으면 종전과 «동일»(elanous 자기 개발 경로 무영향).
       applyRemoteLessCompletion(deps.cwd ?? process.cwd());
-      // ⛔ 2026-09-23 (벤더 A/B 실측) — 대상 저장소 준비(.gitignore 에 monad 실행 산출물)가 `--target` 에만 걸려 있어,
-      //   사용자 경로(`cd <프로젝트> && monad harness say`)에선 `.monad/debug/*.log`·`latest` 링크·liveness 하트비트가
+      // ⛔ 2026-09-23 (벤더 A/B 실측) — 대상 저장소 준비(.gitignore 에 elanous 실행 산출물)가 `--target` 에만 걸려 있어,
+      //   사용자 경로(`cd <프로젝트> && elanous harness say`)에선 `.elanous/debug/*.log`·`latest` 링크·liveness 하트비트가
       //   사용자 저장소 커밋에 섞였다 ⇒ 리뷰 must-fix(범위 이탈·diff 가 로그에 끊김·역방향 검증 실패) 로 kimi·glm 이 abandoned.
-      //   ⇒ 작업 디렉토리가 «monad 도구 자신의 저장소가 아닐 때만» 같은 준비를 건다(monad 자기 개발 경로 무영향).
+      //   ⇒ 작업 디렉토리가 «elanous 도구 자신의 저장소가 아닐 때만» 같은 준비를 건다(elanous 자기 개발 경로 무영향).
       provisionForeignWorkingRepository(deps.cwd ?? process.cwd());
     }
     const run = deps.runSelfImplement ?? (await import('../self-implement/orchestrator.js')).runSelfImplement;

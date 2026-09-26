@@ -324,8 +324,8 @@ function resolveRemoteWorktreesEndpoint(opts: HarnessWorktreesRemoteOpts):
       ok: false,
       classification: 'remote-error',
       message: named
-        ? `--remote ${named}: unknown bookmark. Run \`monad nexus list\` to see available remotes.`
-        : 'no default remote bookmark. Run `monad nexus connect <host> --default` to set one.',
+        ? `--remote ${named}: unknown bookmark. Run \`elanous nexus list\` to see available remotes.`
+        : 'no default remote bookmark. Run `elanous nexus connect <host> --default` to set one.',
     };
   }
 
@@ -480,7 +480,7 @@ function isTimeoutError(err: unknown): boolean {
 
 function resolveTimeoutMs(value: number | undefined): number {
   if (typeof value === 'number' && Number.isFinite(value) && value > 0) return value;
-  const fromEnv = Number.parseInt(process.env.MONAD_HARNESS_WORKTREES_REMOTE_TIMEOUT_MS ?? '', 10);
+  const fromEnv = Number.parseInt(process.env.ELANOUS_HARNESS_WORKTREES_REMOTE_TIMEOUT_MS ?? '', 10);
   if (Number.isFinite(fromEnv) && fromEnv > 0) return fromEnv;
   return DEFAULT_REMOTE_WORKTREES_TIMEOUT_MS;
 }

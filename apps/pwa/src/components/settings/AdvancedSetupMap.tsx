@@ -21,9 +21,9 @@ const ROWS: ReadonlyArray<SetupRow> = [
   { area: 'Chat 백엔드', status: '✓ NEXUS native', location: 'PWA Quick Setup card' },
   { area: 'Telegram bot token', status: '✓ NEXUS native', location: 'PWA Secret modal' },
   { area: 'Discord bot token', status: '✓ NEXUS native', location: 'PWA Secret modal' },
-  { area: 'Telegram allowlist', status: '◯ Wizard 전용', location: 'desktop', cmd: 'monad legacy → /setup' },
-  { area: 'Discord guild · voice', status: '◯ Wizard 전용', location: 'desktop', cmd: 'monad legacy → /setup' },
-  { area: 'OS 자동 부팅', status: '◯ NEXUS subcommand', location: 'desktop', cmd: 'monad nexus install --launchd' },
+  { area: 'Telegram allowlist', status: '◯ Wizard 전용', location: 'desktop', cmd: 'elanous legacy → /setup' },
+  { area: 'Discord guild · voice', status: '◯ Wizard 전용', location: 'desktop', cmd: 'elanous legacy → /setup' },
+  { area: 'OS 자동 부팅', status: '◯ NEXUS subcommand', location: 'desktop', cmd: 'elanous nexus install --launchd' },
 ];
 
 export function AdvancedSetupMap() {

@@ -85,7 +85,7 @@ describe('intent-panel-storage', () => {
     setIntentPanelCollapsed(false);
     expect(getIntentPanelCollapsed()).toBe(false);
     if (typeof window !== 'undefined') {
-      expect(window.localStorage.getItem('monad.showroom.intentPanel.collapsed')).toBeNull();
+      expect(window.localStorage.getItem('elanous.showroom.intentPanel.collapsed')).toBeNull();
     }
   });
 
@@ -152,13 +152,13 @@ describe('intent-panel-storage · displayMode', () => {
     setIntentPanelDisplayMode('fixed');
     expect(getIntentPanelDisplayMode()).toBe('fixed');
     if (typeof window !== 'undefined') {
-      expect(window.localStorage.getItem('monad.showroom.intentPanel.displayMode')).toBeNull();
+      expect(window.localStorage.getItem('elanous.showroom.intentPanel.displayMode')).toBeNull();
     }
   });
 
   test('unknown stored value falls back to fixed', () => {
     if (typeof window === 'undefined') return;
-    window.localStorage.setItem('monad.showroom.intentPanel.displayMode', 'whatever');
+    window.localStorage.setItem('elanous.showroom.intentPanel.displayMode', 'whatever');
     expect(getIntentPanelDisplayMode()).toBe('fixed');
   });
 
@@ -178,7 +178,7 @@ describe('intent-panel-storage · displayMode', () => {
     const events: IntentPanelDisplayMode[] = [];
     const off = subscribeIntentPanelDisplayMode((m) => events.push(m));
     window.dispatchEvent(new StorageEvent('storage', {
-      key: 'monad.showroom.intentPanel.collapsed',
+      key: 'elanous.showroom.intentPanel.collapsed',
       newValue: 'true',
     }));
     expect(events).toHaveLength(0);

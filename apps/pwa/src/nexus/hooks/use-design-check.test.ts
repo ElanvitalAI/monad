@@ -1,7 +1,7 @@
 // ── B4 — the panel's projection is where the third state is born ──
 //
 // The daemon sends three lists; the panel shows three states. The interesting
-// one is `available` — a rulebook monad ships that the DESIGN.md has NOT
+// one is `available` — a rulebook elanous ships that the DESIGN.md has NOT
 // declared. The CLI cannot show it (it prints only declared + unavailable),
 // so this projection is the surface's own contribution, not a re-render.
 //
@@ -77,8 +77,8 @@ describe('describeBlocked', () => {
   });
 
   test('the two read failures each name their own path', () => {
-    expect(describeBlocked('craft-directory', '/monad/docs/design/craft'))
-      .toContain('/monad/docs/design/craft');
+    expect(describeBlocked('craft-directory', '/elanous/docs/design/craft'))
+      .toContain('/elanous/docs/design/craft');
     expect(describeBlocked('design-document', '/work/project/DESIGN.md'))
       .toContain('/work/project/DESIGN.md');
   });

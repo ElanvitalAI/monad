@@ -34,7 +34,7 @@ import type { CaretContextStore } from './caret-context-store.js';
 export interface PfcMouseActionRuntimeDeps {
   /** Buffer-line lookup keyed by surfaceId. Returns null when the
    *  surface is unknown / has no buffer (e.g. external-terminal where
-   *  monad doesn't own the rendered text). */
+   *  elanous doesn't own the rendered text). */
   resolveBuffer: (surfaceId: string) => readonly string[] | null;
   /** Clipboard write (typically `clipboardActions.copyText`). Returns
    *  true on success, false on failure. */

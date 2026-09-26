@@ -18,7 +18,7 @@
 //      channel's answer.
 //
 // callback_data layout:
-//   monad-hitl:<requestId>:yes|no
+//   elanous-hitl:<requestId>:yes|no
 //
 // Telegram caps callback_data at 64 bytes so requestIds should
 // stay under ~50 chars. The HITL callback server mints
@@ -31,7 +31,7 @@ import type {
   TelegramConfirmDeps,
 } from './confirm.js';
 
-const CALLBACK_PREFIX = 'monad-hitl';
+const CALLBACK_PREFIX = 'elanous-hitl';
 
 interface Pending {
   requestId: string;

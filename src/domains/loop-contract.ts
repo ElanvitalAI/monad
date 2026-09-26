@@ -11,7 +11,7 @@
 //
 // ★ 롤아웃 안전(2단계): mode='advisory'는 판정을 기록만 하고 흐름을 바꾸지
 //   않는다(회귀 0). 검증이 무르익으면 mode='enforce'로 승격 → 미승인 제안
-//   차단. (monad 자체 패턴: loop-prompt termination advisory → hard-gate §5-②.)
+//   차단. (elanous 자체 패턴: loop-prompt termination advisory → hard-gate §5-②.)
 //
 // 근거: 내부 문서 `PLAN-loop-engineering-finance-reconnect-2026-07-08` §3·§4.
 

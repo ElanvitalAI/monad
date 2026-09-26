@@ -2,7 +2,7 @@
 
 // Autopilot 자율행동 로그 서브탭 (Phase B2) — "회상 없는 자율은 표류".
 // 자율루프(dig·backtest·trade·retro·replay·delegate·autopilot)가 무엇을 왜 했나.
-// surface_events(domain=monad·kind=autonomy)에서 최근순. loop 필터.
+// surface_events(domain=elanous·kind=autonomy)에서 최근순. loop 필터.
 
 import { useCallback, useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';

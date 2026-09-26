@@ -1,5 +1,5 @@
 // M2-4 v2 (PLAN-friction-free-model-selection-ux-2026-05-12 · Phase 3)
-// — `monad voice suggest [--llm]` CLI.
+// — `elanous voice suggest [--llm]` CLI.
 //
 // Heuristic mode (default) — pure keyword matcher, no network. Reads
 // the active provider/model from user-config so the `--llm` mode hits
@@ -53,7 +53,7 @@ export async function runVoiceSuggestCommand(
   if (text.length === 0) {
     return {
       suggestion: { ...suggestPresetForText(''), source: 'heuristic' },
-      output: ['Usage: monad voice suggest <text...> [--llm]'],
+      output: ['Usage: elanous voice suggest <text...> [--llm]'],
       exitCode: 2,
     };
   }
@@ -72,7 +72,7 @@ export async function runVoiceSuggestCommand(
         suggestion: { ...suggestPresetForText(text), source: 'heuristic' },
         output: [
           '⚠ --llm requires --model <id> (or wire a custom runner).',
-          '  Hint: monad voice suggest --llm --model google/gemma-4-e4b "doctor visit prep"',
+          '  Hint: elanous voice suggest --llm --model google/gemma-4-e4b "doctor visit prep"',
         ],
         exitCode: 2,
       };
@@ -97,6 +97,6 @@ export async function runVoiceSuggestCommand(
     output.push('  (no keyword matches · default fallback)');
   }
   output.push('');
-  output.push(`  Apply: monad config set modelTier.preset ${suggestion.preset}`);
+  output.push(`  Apply: elanous config set modelTier.preset ${suggestion.preset}`);
   return { suggestion, output, exitCode: 0 };
 }

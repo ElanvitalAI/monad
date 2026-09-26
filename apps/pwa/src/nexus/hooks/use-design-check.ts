@@ -1,7 +1,7 @@
 // PWA · B4 — craft-rulebook verdict hook.
 //
 // Wraps GET /v1/design-check. State changes when someone edits the active
-// repository's DESIGN.md or when monad's vendored `docs/design/craft/`
+// repository's DESIGN.md or when elanous's vendored `docs/design/craft/`
 // directory gains or loses a rulebook — both are human-paced edits, not
 // machine churn, so this polls far more slowly than `useWorktrees` (5s).
 // A 30s interval keeps the panel honest after an edit without spending a
@@ -27,7 +27,7 @@ export function useDesignCheck(opts: { enabled?: boolean } = {}) {
 /** One rulebook row as the panel renders it.
  *
  *  ⭐ Three states, not two. "Declared and present" vs "declared but missing"
- *  is the CLI's verdict; `available` (shipped by monad but NOT declared) is
+ *  is the CLI's verdict; `available` (shipped by elanous but NOT declared) is
  *  the state only this surface can show, and it is the actionable one — it
  *  answers "what could I turn on?" rather than "what did I break?". */
 export type RulebookRowStatus = 'declared' | 'missing' | 'available';
@@ -72,7 +72,7 @@ export function describeBlocked(blockedOn: string, path: string | null): string 
     case 'no-repository':
       return 'The daemon is not running inside a git checkout, so there is no DESIGN.md to check.';
     case 'craft-directory':
-      return `monad's craft rulebook directory could not be read: ${path ?? '(unknown path)'}`;
+      return `elanous's craft rulebook directory could not be read: ${path ?? '(unknown path)'}`;
     case 'design-document':
       return `This repository has no readable DESIGN.md: ${path ?? '(unknown path)'}`;
     default:

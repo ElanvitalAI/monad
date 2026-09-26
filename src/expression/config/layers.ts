@@ -6,7 +6,7 @@
 // arrays + primitives replace.
 //
 // This module is the kernel for the answer-file / non-interactive
-// path used by `monad setup --config <file>` and CI / dotfile
+// path used by `elanous setup --config <file>` and CI / dotfile
 // scripted setups (PLAN §1.2 Principle #2 — "layered defaults +
 // opt-in override"). The priority direction is intentional: a user's
 // dotfile beats the theme preset, and an environment variable beats
@@ -45,7 +45,7 @@ export function mergeLayers<T extends object>(
 }
 
 /** Track per-field source — `{ field: layerSource }`. Useful for
- *  debug output (`monad setup --explain`) so the user can see which
+ *  debug output (`elanous setup --explain`) so the user can see which
  *  layer set each value. Recurses into nested objects; for nested
  *  values the path becomes a dotted string in the result map. */
 export function explainLayers<T extends object>(

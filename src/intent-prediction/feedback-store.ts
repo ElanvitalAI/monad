@@ -8,7 +8,7 @@
 //
 // Storage model (Phase 0.5):
 //   • In-memory ring buffer per session, capped at 100 records.
-//   • Optional JSON-line append to `~/.monad/intent-feedback.jsonl`
+//   • Optional JSON-line append to `~/.elanous/intent-feedback.jsonl`
 //     when `persistencePath` is supplied — the daemon wires this
 //     so the store survives restarts.
 //   • Reads are O(1) for "last N labels" queries; writes are

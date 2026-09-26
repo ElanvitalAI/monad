@@ -83,7 +83,7 @@ if (CONFIG_FLAG && !existsSync(CONFIG_FLAG)) {
   process.exit(2);
 }
 // ⛔⭐⭐ 15차 리뷰 ④ — 설정을 «모든 서브커맨드보다 먼저» 실었다.
-//   ⇒ 환경의 깨진 `$MONAD_VIDEO_TOOLS` 하나가 ***설정을 쓰지도 않는 `drift`·`spine` 까지 막았다***.
+//   ⇒ 환경의 깨진 `$ELANOUS_VIDEO_TOOLS` 하나가 ***설정을 쓰지도 않는 `drift`·`spine` 까지 막았다***.
 //   🔑 ***관문은 자기가 쓰는 것만 막아야 한다.*** 안 쓰는 것을 막으면 그 관문이 «고장의 원인»이 된다.
 //   ⇒ 설정을 «소비하는» 서브커맨드에서만 실패시킨다(읽기는 그대로 — 산출에 출처를 적어야 하므로).
 const CONFIG_CONSUMERS = new Set(['probe', 'plan', 'config']);
@@ -256,20 +256,20 @@ for (const m of MACHINE?.missing ?? []) MISSING.add(m);
 //   📏 실측 2026-09-22: higgsfield-bridge 는 붙었는데(170도구) Blender 호스트는 `not connected` 였다
 //      (플러그인 ai.higgsfield.cep 가 ***Adobe 전용*** CEP 규격이라 Blender 를 안 덮는다).
 //   ⇒ 「호스트가 실제로 붙었나」는 «다른 축»이고, 이 도구는 그걸 대신하지 않는다:
-//        monad --config-dir ~/.monad mcp diagnose <id>       서버가 사나
+//        elanous --config-dir ~/.elanous mcp diagnose <id>       서버가 사나
 //        (bridge) get_host_status                            ***어느 앱이 붙었나***
 //   ⛔ 그래서 app-control 계열은 계획을 세우기 «전에» 호스트 상태를 따로 물어야 한다.
 /**
  * ⛔⭐⭐ ***「앱이 지금 붙었나」를 «도구가» 묻는다*** — 2026-09-22.
  *
  * 🩸 종전: 산출이 13곳에서 *"get_host_status 로 물어라"* 라고 ***사람에게 시켰다.***
- *   그런데 그 물음은 도구가 할 수 있다 — `monad mcp call <서버>.get_host_status` 가
+ *   그런데 그 물음은 도구가 할 수 있다 — `elanous mcp call <서버>.get_host_status` 가
  *   `{"structured":{"aeft":true,"ppro":true,"blr":true,"3d_bs":false}}` 를 돌려준다(실측).
  *   🔑 ***「처방을 사람에게 시키는 것」과 「도구가 스스로 답하는 것」은 다른 값이다.***
  *
  * ⛔ 기본은 «안 묻는다» — 망을 타고 수 초가 든다. `--verify-hosts` 로만 켠다.
  * ⛔ 실패는 ***「없다」가 아니라 「못 쟀다」***다 — `null` 을 돌려주고 호출부가 그렇게 «말한다».
- * ⛔ 전역 `monad` 는 pilot(운영) 링크다 — ***이 트리의 진입점***으로 부른다.
+ * ⛔ 전역 `elanous` 는 pilot(운영) 링크다 — ***이 트리의 진입점***으로 부른다.
  */
 const HERE = dirname(fileURLToPath(import.meta.url));
 const HOST_STATUS_TOOL = 'get_host_status';
@@ -278,7 +278,7 @@ function hostStatus(server: string): Record<string, boolean> | null {
   if (HOST_CACHE.has(server)) return HOST_CACHE.get(server)!;
   let out: Record<string, boolean> | null = null;
   try {
-    const raw = execFileSync('bun', [join(HERE, '..', 'bin', 'monad.mjs'), 'mcp', 'call',
+    const raw = execFileSync('bun', [join(HERE, '..', 'bin', 'elanous.mjs'), 'mcp', 'call',
       `${server}.${HOST_STATUS_TOOL}`], { encoding: 'utf8', timeout: 45_000 });
     const parsed = JSON.parse(raw) as { structured?: Record<string, unknown> };
     if (parsed.structured && typeof parsed.structured === 'object') {
@@ -296,7 +296,7 @@ function mcpServerEnabled(id: string): boolean {
   if (!MCP_IDS) {
     MCP_IDS = new Set();
     try {
-      const raw = readFileSync(join(homedir(), '.monad', 'config.json'), 'utf8');
+      const raw = readFileSync(join(homedir(), '.elanous', 'config.json'), 'utf8');
       for (const srv of (JSON.parse(raw)?.mcp?.servers ?? [])) {
         if (srv?.id && srv.enabled !== false) MCP_IDS.add(String(srv.id));
       }
@@ -333,7 +333,7 @@ const sq = (s: string) => `'${s.replace(/'/g, "'\\''")}'`;
 /**
  * ⛔⭐⭐ ***원격 probe 는 「한 번만」 묻는다*** — 2026-09-22 실측으로 붙인 칸.
  *
- * 🩸 계기: `monad self gate --pr 19644` 가 ***시험 11개를 「시간 초과」***로 냈다.
+ * 🩸 계기: `elanous self gate --pr 19644` 가 ***시험 11개를 「시간 초과」***로 냈다.
  *   재보니 `scripts/video-pipeline.test.ts` 가 73초였고, 원인은 «시험»이 아니라 ***내 코드***였다:
  * ```
  *   plan 한 번 = 5,090ms   (ssh probe 7개 «순차» + curl 1개)
@@ -407,7 +407,7 @@ function sshBatchFor(host: string): Map<string, boolean> | null {
 }
 
 /** ⛔ 원격을 아예 «안 묻는» 길 — 시험·오프라인용. 그때는 「없다」가 아니라 «못 쟀다»로 답한다. */
-const SKIP_REMOTE = process.env.MONAD_VIDEO_SKIP_REMOTE_PROBE === '1';
+const SKIP_REMOTE = process.env.ELANOUS_VIDEO_SKIP_REMOTE_PROBE === '1';
 
 const sshProbe = (value: string): boolean | null => {
   const i = value.indexOf(':');
@@ -573,7 +573,7 @@ function available(impl: Impl): boolean {
   }
   if (MACHINE && MACHINE.detect === false) return HAVE.has(impl.id);
   if (impl.probe.kind === 'mcp') return mcpServerEnabled(impl.probe.value);
-  // ⭐ 스킬은 «디렉토리가 있나»로 잰다 — monad 의 스킬 색인과 같은 뿌리(`~/.claude/skills`).
+  // ⭐ 스킬은 «디렉토리가 있나»로 잰다 — elanous 의 스킬 색인과 같은 뿌리(`~/.claude/skills`).
   //   ⛔ 「있다」가 「지금 렌더된다」는 아니다. 그 사실은 선언의 note 가 갖는다.
   if (impl.probe.kind === 'skill') return existsSync(join(homedir(), '.claude', 'skills', impl.probe.value));
   if (impl.probe.kind === 'path') {
@@ -586,7 +586,7 @@ function available(impl: Impl): boolean {
   }
   // ⛔ 원격을 건너뛸 때도 ***「없다」로 접지 않는다*** — 「안 물어봤다」로 «남긴다».
   if (SKIP_REMOTE && (impl.probe.kind === 'ssh' || impl.probe.kind === 'http')) {
-    UNPROBED.push({ id: impl.id, why: 'MONAD_VIDEO_SKIP_REMOTE_PROBE=1 — 원격을 «안 물어봤다»' });
+    UNPROBED.push({ id: impl.id, why: 'ELANOUS_VIDEO_SKIP_REMOTE_PROBE=1 — 원격을 «안 물어봤다»' });
     return false;
   }
   if (impl.probe.kind === 'http') {
@@ -604,7 +604,7 @@ function available(impl: Impl): boolean {
     const r = batch !== null ? (batch.get(impl.id) ?? null) : sshProbe(impl.probe.value);
     if (r === null) {
       UNPROBED.push({ id: impl.id, why: host === UNSET_MEDIA_HOST
-        ? 'ssh 로 못 물어봤다 — media 호스트가 설정에 없다(~/.monad/ssh-hosts.json 에 `roles: ["media"]` 또는 MONAD_MEDIA_HOST)'
+        ? 'ssh 로 못 물어봤다 — media 호스트가 설정에 없다(~/.elanous/ssh-hosts.json 에 `roles: ["media"]` 또는 ELANOUS_MEDIA_HOST)'
         : `ssh 로 못 물어봤다 — ${host} 가 꺼졌거나 못 붙는다` });
       return false;                               // ⛔ 고르지는 않되, «왜»를 남긴다
     }
@@ -826,7 +826,7 @@ async function probe() {
     if (!ok) { console.log(`     ⛔ 구현 ${r.all}개 «전부» 없다 — 이 능력을 요구하는 노드는 못 돈다`); continue; }
     for (const i of r.found) {
       // ⛔⭐ 2026-09-22 — 이 한 줄이 «두 번» 과하게 말하고 있었다.
-      //   ⓐ 「서버만 «확인»」 — ***확인한 적이 없다.*** `mcpServerEnabled()` 는 `~/.monad/config.json` 을
+      //   ⓐ 「서버만 «확인»」 — ***확인한 적이 없다.*** `mcpServerEnabled()` 는 `~/.elanous/config.json` 을
       //      읽어 「설정에 있고 enabled 인가」만 본다. 서버를 «찌르지 않는다».
       //   ⓑ 「호스트 미확인」 — 호스트 축이 «있는» 구현에만 해당한다. 실측: mcp 탐침 14개 중
       //      호스트가 있는 것은 `drive === 'app-attached'` 셋뿐이고, 나머지 11개(topview·epidemic)는
@@ -1444,11 +1444,11 @@ function showConfig() {
     for (const x of sh) console.log(`      ${x.capability} — 잃은 구현: ${x.lostImpls.join(', ')}`);
     console.log('      ⇒ 내장에 «더하려면» capabilities 가 아니라 impls 로 추가하라');
   }
-  console.log('\n   📌 찾는 순서: --config → $MONAD_VIDEO_TOOLS → ./video-tools.json → ~/.monad/video-tools.json');
+  console.log('\n   📌 찾는 순서: --config → $ELANOUS_VIDEO_TOOLS → ./video-tools.json → ~/.elanous/video-tools.json');
 }
 
 function initConfig() {
-  const out = opt('out', join(homedir(), '.monad', 'video-tools.json'));
+  const out = opt('out', join(homedir(), '.elanous', 'video-tools.json'));
   if (existsSync(out) && !flag('force')) {
     console.error(`⛔ 이미 있다: ${out}  (덮으려면 --force)`); process.exit(2);
   }

@@ -225,7 +225,7 @@ describe('AgentGraph · edges + queries', () => {
     g.addSession(makeSession('r1', 'codex'));
     g.addSession(makeSession('r2', 'claude'));
     g.addSession(makeSession('c1', 'gemini'), { parentId: 'r1' });
-    g.addSession(makeSession('orphan', 'monad'), { parentId: 'ghost-parent' });
+    g.addSession(makeSession('orphan', 'elanous'), { parentId: 'ghost-parent' });
     const roots = g.listRoots().map((n) => n.sessionId).sort();
     expect(roots).toEqual(['orphan', 'r1', 'r2']);
   });

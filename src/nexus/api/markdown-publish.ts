@@ -12,7 +12,7 @@ import { createGlobalRequestLimiter, type GlobalRequestLimiter } from './request
 import { isS3Available, uploadText, s3PublicUrl, s3Config } from '../../storage/s3.js';
 import { isValidPublishId } from '../../publishing/artifact-store.js';
 import { execFileSync } from 'node:child_process';
-import { monadStateRoot } from '../../autopilot/state-paths.js';
+import { elanousStateRoot } from '../../autopilot/state-paths.js';
 
 /** publish 능력(테스트 주입 seam) — MarkdownPublisher 축소 계약. */
 export interface PublishCapable {
@@ -110,22 +110,22 @@ export function archivePublicationToS3Cold(id: string): void {
 }
 
 /** ★ 게시물 라이프사이클 GC 실행(프로덕션 배선·#5194 리뷰 — 종전 dead 였던 prune/archive 를 실 호출로).
- *  실 store 열어 pruneExpiredPublications(archiveToS3Cold=archivePublicationToS3Cold) 집행. monad schedule
- *  크론 또는 CLI(`monad publish gc`)가 호출. 만료→S3 콜드 백업(삭제 아님)·permanent 자동보존. */
+ *  실 store 열어 pruneExpiredPublications(archiveToS3Cold=archivePublicationToS3Cold) 집행. elanous schedule
+ *  크론 또는 CLI(`elanous publish gc`)가 호출. 만료→S3 콜드 백업(삭제 아님)·permanent 자동보존. */
 export async function runPublishGc(opts: { root?: string; now?: () => number } = {}): Promise<{ archived: string[]; kept: number; errors: Array<{ id: string; error: string }> }> {
   const { createPublishArtifactStore } = await import('../../publishing/artifact-store.js');
   const { pruneExpiredPublications } = await import('../../publishing/publish-lifecycle.js');
-  const root = opts.root || process.env.MONAD_PUBLISH_ROOT || `${monadStateRoot()}/publishing`;
+  const root = opts.root || process.env.ELANOUS_PUBLISH_ROOT || `${elanousStateRoot()}/publishing`;
   const store = createPublishArtifactStore({ root });
   return pruneExpiredPublications({ store, archiveToS3Cold: archivePublicationToS3Cold, ...(opts.now ? { now: opts.now } : {}) });
 }
 
 /** 공개 콘텐츠 카탈로그(피드 보드 데이터 소스)를 빌드 — 전 게시물 매니페스트를 newest-first 공개 레코드로
- *  프로젝션(만료·타깃없음 제외). `monad publish catalog` CLI 와 피드 렌더러가 소비하는 프로덕션 읽기 경로. */
+ *  프로젝션(만료·타깃없음 제외). `elanous publish catalog` CLI 와 피드 렌더러가 소비하는 프로덕션 읽기 경로. */
 export async function buildPublishCatalog(opts: { root?: string; now?: () => number } = {}): Promise<import('../../publishing/catalog.js').CatalogRecord[]> {
   const { createPublishArtifactStore } = await import('../../publishing/artifact-store.js');
   const { buildCatalog } = await import('../../publishing/catalog.js');
-  const root = opts.root || process.env.MONAD_PUBLISH_ROOT || `${monadStateRoot()}/publishing`;
+  const root = opts.root || process.env.ELANOUS_PUBLISH_ROOT || `${elanousStateRoot()}/publishing`;
   const store = createPublishArtifactStore({ root });
   return buildCatalog(store.list(), opts.now ? opts.now() : Date.now());
 }
@@ -149,12 +149,12 @@ export function createMarkdownPublishService(opts: MarkdownPublishServiceOptions
 let _defaultService: MarkdownPublishDeps | null = null;
 
 /** ★ http-server 라우트용 lazy 싱글턴 — 서비스를 1회만 구성(store/limiter 재사용). root/origin 은
- *  user-config(env override) — MONAD_PUBLISH_ROOT(기본 ~/.monad/publishing)·MONAD_PUBLISH_ORIGIN
+ *  user-config(env override) — ELANOUS_PUBLISH_ROOT(기본 ~/.elanous/publishing)·ELANOUS_PUBLISH_ORIGIN
  *  (기본 localhost·tailscale serve 시 그 URL 로 설정). */
 export function getDefaultMarkdownPublishService(): MarkdownPublishDeps {
   if (!_defaultService) {
-    const root = process.env.MONAD_PUBLISH_ROOT || `${monadStateRoot()}/publishing`;
-    const origin = process.env.MONAD_PUBLISH_ORIGIN || 'http://localhost:8787';
+    const root = process.env.ELANOUS_PUBLISH_ROOT || `${elanousStateRoot()}/publishing`;
+    const origin = process.env.ELANOUS_PUBLISH_ORIGIN || 'http://localhost:8787';
     _defaultService = createMarkdownPublishService({ root, origin });
   }
   return _defaultService;

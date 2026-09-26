@@ -206,7 +206,7 @@ export async function handleIntakePipelinePreviewPost(
     }
   }
 
-  // I10 — emit one row to ~/.monad/intake/pipeline-runs.jsonl. Fire-
+  // I10 — emit one row to ~/.elanous/intake/pipeline-runs.jsonl. Fire-
   // and-forget; the writer swallows errors so the response shape is
   // never gated on disk-side hiccups.
   const enrichmentDiag = enriched.missions.reduce(

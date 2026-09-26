@@ -15,7 +15,7 @@ import {
   loadSessionId,
 } from './daemon-session';
 
-const STORAGE_KEY = 'monad.daemon.sessionId';
+const STORAGE_KEY = 'elanous.daemon.sessionId';
 
 // Fake the bare minimum of `window` + `localStorage` + `crypto` that
 // the helpers touch. Bun ships a global `crypto.randomUUID`, so we

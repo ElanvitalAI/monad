@@ -4,7 +4,7 @@ import * as llm from '../llm.js';
 import { debug } from '../debug/log.js';
 
 // 발표덱 드리프트 사건의 원문 축약본 — 구체 항목/장수 지시 포함.
-const MISSION = `모나드는 무엇인가
+const MISSION = `엘라누스는 무엇인가
  - claude code 누출 이후 시작 (2026.4)
  - PFC(전전두엽) 모방
  - 기억 시스템, 미엘린 시스템, 헤마
@@ -12,7 +12,7 @@ const MISSION = `모나드는 무엇인가
 자원들 (HW)
  - 맥북 M5 MAX 128GB(메인 서버), 맥스튜디오 M3 Ultra 512GB
 
-모나드 셀프 하니스 시스템 설명 (3장 )
+엘라누스 셀프 하니스 시스템 설명 (3장 )
   - 2장의 mermaid 차트 => 기본 구조와 자동 리뷰 시스템
   - PTY 가 무엇인지
   => 이미지로 PTY 잘 설명 필요함`;

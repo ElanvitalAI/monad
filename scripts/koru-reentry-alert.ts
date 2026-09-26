@@ -19,7 +19,7 @@ import { dirname, join } from 'node:path';
 import { ensureCronNodePath } from '../src/domains/cron-path.js';
 ensureCronNodePath();
 
-const STATE = join(homedir(), '.monad/conatus/koru_reentry.json');
+const STATE = join(homedir(), '.elanous/conatus/koru_reentry.json');
 
 function loadZone(): string { try { return existsSync(STATE) ? String(JSON.parse(readFileSync(STATE, 'utf-8')).lastZone ?? '') : ''; } catch { return ''; } }
 function saveZone(zone: string): void { if (!existsSync(dirname(STATE))) mkdirSync(dirname(STATE), { recursive: true }); writeFileSync(STATE, JSON.stringify({ lastZone: zone, updatedAt: new Date().toISOString() }, null, 2)); }

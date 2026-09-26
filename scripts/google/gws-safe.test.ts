@@ -30,7 +30,7 @@ echo '{"ran":true}'
 }
 
 const run = (bin: string, args: string[], env: Record<string, string> = {}) =>
-  spawnSync('bash', [script, ...args], { encoding: 'utf8', env: { ...process.env, MONAD_GWS_BIN: bin, ...env } });
+  spawnSync('bash', [script, ...args], { encoding: 'utf8', env: { ...process.env, ELANOUS_GWS_BIN: bin, ...env } });
 
 describe('gws 쓰기 관문', () => {
   const bin = fakeGws({
@@ -60,14 +60,14 @@ describe('gws 쓰기 관문', () => {
   });
 
   test('사람이 «명시로» 열면 통과한다 — 그리고 그때만', () => {
-    const r = run(bin, ['calendar', 'events', 'insert', '--json', '{}'], { MONAD_GWS_ALLOW_WRITE: '1' });
+    const r = run(bin, ['calendar', 'events', 'insert', '--json', '{}'], { ELANOUS_GWS_ALLOW_WRITE: '1' });
     expect(r.status).toBe(0);
     expect(r.stdout).toContain('"ran"');
   });
 
   test('⛔ 「1」이 «아닌» 값으로는 안 열린다 — 참 같은 문자열에 속지 않는다', () => {
     for (const v of ['0', 'true', 'yes', '']) {
-      expect(run(bin, ['gmail', 'users', 'messages', 'send'], { MONAD_GWS_ALLOW_WRITE: v }).status).toBe(4);
+      expect(run(bin, ['gmail', 'users', 'messages', 'send'], { ELANOUS_GWS_ALLOW_WRITE: v }).status).toBe(4);
     }
   });
 

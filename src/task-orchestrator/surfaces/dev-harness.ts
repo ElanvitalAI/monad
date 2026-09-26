@@ -1,14 +1,14 @@
 /**
  * `surface.kind === 'dev-harness'` adapter — parallel execution line.
  *
- * Each task = one `monad harness run-detached <payload>` **subprocess**
+ * Each task = one `elanous harness run-detached <payload>` **subprocess**
  * (staged dev-harness P→E→R→D, or a `--domain` executor: web publish /
  * invest research). Mirrors surfaces/self-implement.ts exactly — the only
  * differences are the spawn target (`harness run-detached` vs `self
  * implement`) and the surface fields (objective/domain/target/autoDrive).
  *
  * Why a subprocess: the child derives its harness-space from process.env
- * (`MONAD_HARNESS_SPACE_ID`), so N in-process jobs would clobber each
+ * (`ELANOUS_HARNESS_SPACE_ID`), so N in-process jobs would clobber each
  * other's space marker. A subprocess gets its own env → own space → own
  * screen/log buffer, letting the dispatcher fan out safely.
  *
@@ -18,7 +18,7 @@
  *
  * Cf. MANUAL-execution-harness-usage-2026-07-22 · dispatch-detached.ts (#24).
  */
-import { resolveSpawnMonadBin } from './self-implement.js';
+import { resolveSpawnElanousBin } from './self-implement.js';
 import { createExecution, type Task, type TaskExecution } from '../types.js';
 import type { DispatchContext, DispatchResult } from '../surface-registry.js';
 
@@ -47,7 +47,7 @@ export interface DevHarnessJobSpawn {
     spaceId: string;
     signal?: AbortSignal;
   }): {
-    /** `dev-harness:<spaceId>` — keyed for `monad logs --space` / metrics. */
+    /** `dev-harness:<spaceId>` — keyed for `elanous logs --space` / metrics. */
     address: string;
     done: Promise<DevHarnessJobDone>;
   };
@@ -174,11 +174,11 @@ export function createDevHarnessAdapter(opts: DevHarnessAdapterOptions) {
 }
 
 /**
- * Production launch seam — spawns `bun bin/monad.mjs harness run-detached
+ * Production launch seam — spawns `bun bin/elanous.mjs harness run-detached
  * <payload>`. Reuses `encodeDetachedPayload` (dispatch-detached.ts) so the
  * child runs the exact same detached path the daemon uses. Each child gets
- * its own `MONAD_HARNESS_SPACE_ID` (distinct space → own screen/log) +
- * `childNestEnv()` (fork-bomb guard) + `MONAD_HARNESS_DETACHED=1` (recursion
+ * its own `ELANOUS_HARNESS_SPACE_ID` (distinct space → own screen/log) +
+ * `childNestEnv()` (fork-bomb guard) + `ELANOUS_HARNESS_DETACHED=1` (recursion
  * guard → the child runs in-process, not re-delegating). Kept out of the
  * adapter so tests never touch a real subprocess.
  *
@@ -194,7 +194,7 @@ export function defaultDevHarnessSpawn(): DevHarnessJobSpawn {
     const { encodeDetachedPayload } = require('../../harness/dispatch-detached.js') as typeof import('../../harness/dispatch-detached.js');
     const { debug } = require('../../debug/log.js') as typeof import('../../debug/log.js');
 
-    const { bin, source: binSource } = resolveSpawnMonadBin();
+    const { bin, source: binSource } = resolveSpawnElanousBin();
     // rawArgs for dev-harness front door (run-detached decodes this).
     const rawArgs: Record<string, unknown> = {
       objective: input.objective,
@@ -222,7 +222,7 @@ export function defaultDevHarnessSpawn(): DevHarnessJobSpawn {
           cwd: process.cwd(),
           env: {
             ...process.env,
-            MONAD_HARNESS_DETACHED: '1',   // recursion guard — child runs in-process
+            ELANOUS_HARNESS_DETACHED: '1',   // recursion guard — child runs in-process
             ...childNestEnv(),
             ...harnessSpaceEnv('dev-harness', input.spaceId),   // distinct space per job
             ...executorRoleEnv(),

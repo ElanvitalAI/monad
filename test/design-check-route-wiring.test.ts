@@ -44,7 +44,7 @@ describe('GET /v1/design-check — wiring', () => {
       expect(response.status).toBe(200);
 
       const body = await response.json() as Record<string, unknown>;
-      // Shape, not values: this suite runs both inside the monad checkout
+      // Shape, not values: this suite runs both inside the elanous checkout
       // (where a verdict resolves) and potentially outside it, so asserting
       // a specific rulebook list would pin the environment rather than the
       // wiring. What must hold either way is that the discriminant arrived.

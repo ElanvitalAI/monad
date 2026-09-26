@@ -8,7 +8,7 @@
 //
 // The endpoint is read-only — it never writes back. Selecting a template
 // in the iPad Toolbar Today menu reads the template content via the
-// existing `monad/fs/read` path then chains a `notes-save` with that
+// existing `elanous/fs/read` path then chains a `notes-save` with that
 // markdown, so this helper stays focused on enumeration.
 
 import { readdir } from 'node:fs/promises';

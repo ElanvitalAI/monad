@@ -13,7 +13,7 @@
 //      presentation layer out of this module.
 //
 // Design mirrors claude-code's LocalShellTask stall watchdog (5s tick,
-// growth-check against the persisted-output file) but fits monad's
+// growth-check against the persisted-output file) but fits elanous's
 // event-driven registry — no file, just timestamps.
 //
 // Reference: DESIGN-background-terminal-port.md §5 V5.

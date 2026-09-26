@@ -8,96 +8,96 @@ import {
   getParentPtyId,
   withChildPtyIdentity,
 } from '../src/agent/pty-identity.js';
-import { runHeadlessGoalLoopPty } from '../src/self-implement/headless-monad-driver.js';
+import { runHeadlessGoalLoopPty } from '../src/self-implement/headless-elanous-driver.js';
 import { codexBackend, runAgentMission } from '../src/agent-mission/driver.js';
 
 const saved = {
-  pty: process.env.MONAD_PTY_ID,
-  parent: process.env.MONAD_PARENT_PTY_ID,
-  chainOrigin: process.env.MONAD_PTY_CHAIN_ORIGIN,
-  chainDepth: process.env.MONAD_PTY_CHAIN_DEPTH,
-  nestDepth: process.env.MONAD_NEST_DEPTH,
+  pty: process.env.ELANOUS_PTY_ID,
+  parent: process.env.ELANOUS_PARENT_PTY_ID,
+  chainOrigin: process.env.ELANOUS_PTY_CHAIN_ORIGIN,
+  chainDepth: process.env.ELANOUS_PTY_CHAIN_DEPTH,
+  nestDepth: process.env.ELANOUS_NEST_DEPTH,
 };
 
 afterEach(() => {
-  if (saved.pty === undefined) delete process.env.MONAD_PTY_ID;
-  else process.env.MONAD_PTY_ID = saved.pty;
-  if (saved.parent === undefined) delete process.env.MONAD_PARENT_PTY_ID;
-  else process.env.MONAD_PARENT_PTY_ID = saved.parent;
-  if (saved.chainOrigin === undefined) delete process.env.MONAD_PTY_CHAIN_ORIGIN;
-  else process.env.MONAD_PTY_CHAIN_ORIGIN = saved.chainOrigin;
-  if (saved.chainDepth === undefined) delete process.env.MONAD_PTY_CHAIN_DEPTH;
-  else process.env.MONAD_PTY_CHAIN_DEPTH = saved.chainDepth;
-  if (saved.nestDepth === undefined) delete process.env.MONAD_NEST_DEPTH;
-  else process.env.MONAD_NEST_DEPTH = saved.nestDepth;
+  if (saved.pty === undefined) delete process.env.ELANOUS_PTY_ID;
+  else process.env.ELANOUS_PTY_ID = saved.pty;
+  if (saved.parent === undefined) delete process.env.ELANOUS_PARENT_PTY_ID;
+  else process.env.ELANOUS_PARENT_PTY_ID = saved.parent;
+  if (saved.chainOrigin === undefined) delete process.env.ELANOUS_PTY_CHAIN_ORIGIN;
+  else process.env.ELANOUS_PTY_CHAIN_ORIGIN = saved.chainOrigin;
+  if (saved.chainDepth === undefined) delete process.env.ELANOUS_PTY_CHAIN_DEPTH;
+  else process.env.ELANOUS_PTY_CHAIN_DEPTH = saved.chainDepth;
+  if (saved.nestDepth === undefined) delete process.env.ELANOUS_NEST_DEPTH;
+  else process.env.ELANOUS_NEST_DEPTH = saved.nestDepth;
 });
 
 describe('PTY identity propagation', () => {
   test('reads unset and set process PTY identity', () => {
-    delete process.env.MONAD_PTY_ID;
-    delete process.env.MONAD_PARENT_PTY_ID;
+    delete process.env.ELANOUS_PTY_ID;
+    delete process.env.ELANOUS_PARENT_PTY_ID;
     expect(getCurrentPtyId()).toBeUndefined();
     expect(getParentPtyId()).toBeUndefined();
 
-    process.env.MONAD_PTY_ID = 'self_deadbeef';
-    process.env.MONAD_PARENT_PTY_ID = 'shell_cafebabe';
+    process.env.ELANOUS_PTY_ID = 'self_deadbeef';
+    process.env.ELANOUS_PARENT_PTY_ID = 'shell_cafebabe';
     expect(getCurrentPtyId()).toBe('self_deadbeef');
     expect(getParentPtyId()).toBe('shell_cafebabe');
   });
 
   test('child env always contains its PTY, execution-chain identity, and parent only when known', () => {
-    delete process.env.MONAD_PTY_ID;
-    delete process.env.MONAD_PTY_CHAIN_ORIGIN;
-    delete process.env.MONAD_PTY_CHAIN_DEPTH;
+    delete process.env.ELANOUS_PTY_ID;
+    delete process.env.ELANOUS_PTY_CHAIN_ORIGIN;
+    delete process.env.ELANOUS_PTY_CHAIN_DEPTH;
     expect(childPtyIdentityEnv('self_deadbeef')).toEqual({
-      MONAD_PTY_ID: 'self_deadbeef',
-      MONAD_PTY_CHAIN_ORIGIN: process.cwd().split('/').at(-1) ?? process.cwd(),
+      ELANOUS_PTY_ID: 'self_deadbeef',
+      ELANOUS_PTY_CHAIN_ORIGIN: process.cwd().split('/').at(-1) ?? process.cwd(),
     });
 
-    process.env.MONAD_PTY_ID = 'self_parent01';
-    process.env.MONAD_PTY_CHAIN_ORIGIN = 'headless-root';
-    process.env.MONAD_PTY_CHAIN_DEPTH = '2';
+    process.env.ELANOUS_PTY_ID = 'self_parent01';
+    process.env.ELANOUS_PTY_CHAIN_ORIGIN = 'headless-root';
+    process.env.ELANOUS_PTY_CHAIN_DEPTH = '2';
     expect(childPtyIdentityEnv('self_deadbeef')).toEqual({
-      MONAD_PTY_ID: 'self_deadbeef',
-      MONAD_PARENT_PTY_ID: 'self_parent01',
-      MONAD_PTY_CHAIN_ORIGIN: 'headless-root',
+      ELANOUS_PTY_ID: 'self_deadbeef',
+      ELANOUS_PARENT_PTY_ID: 'self_parent01',
+      ELANOUS_PTY_CHAIN_ORIGIN: 'headless-root',
     });
   });
 
   test('withChildPtyIdentity strips stale parent and legacy duplicate-depth keys when the current process has no PTY', () => {
-    delete process.env.MONAD_PTY_ID;
-    process.env.MONAD_NEST_DEPTH = '2';
+    delete process.env.ELANOUS_PTY_ID;
+    process.env.ELANOUS_NEST_DEPTH = '2';
     const merged = withChildPtyIdentity(
       {
         KEEP: 'me',
-        MONAD_PARENT_PTY_ID: 'stale_00000000',
-        MONAD_PTY_ID: 'stale_pty00000',
-        MONAD_PTY_CHAIN_DEPTH: '99',
-        MONAD_NEST_DEPTH: '2',
+        ELANOUS_PARENT_PTY_ID: 'stale_00000000',
+        ELANOUS_PTY_ID: 'stale_pty00000',
+        ELANOUS_PTY_CHAIN_DEPTH: '99',
+        ELANOUS_NEST_DEPTH: '2',
       },
       'codex_deadbeef',
     );
     expect(merged.KEEP).toBe('me');
-    expect(merged.MONAD_PTY_ID).toBe('codex_deadbeef');
-    expect(merged.MONAD_NEST_DEPTH).toBe('2');
-    expect('MONAD_PARENT_PTY_ID' in merged).toBe(false);
-    expect('MONAD_PTY_CHAIN_DEPTH' in merged).toBe(false);
+    expect(merged.ELANOUS_PTY_ID).toBe('codex_deadbeef');
+    expect(merged.ELANOUS_NEST_DEPTH).toBe('2');
+    expect('ELANOUS_PARENT_PTY_ID' in merged).toBe(false);
+    expect('ELANOUS_PTY_CHAIN_DEPTH' in merged).toBe(false);
   });
 
   test('withChildPtyIdentity overwrites a stale parent with the current PTY as the new parent', () => {
-    process.env.MONAD_PTY_ID = 'self_parent01';
+    process.env.ELANOUS_PTY_ID = 'self_parent01';
     const merged = withChildPtyIdentity(
-      { KEEP: 'me', MONAD_PARENT_PTY_ID: 'stale_00000000' },
+      { KEEP: 'me', ELANOUS_PARENT_PTY_ID: 'stale_00000000' },
       'codex_deadbeef',
     );
     expect(merged.KEEP).toBe('me');
-    expect(merged.MONAD_PTY_ID).toBe('codex_deadbeef');
-    expect(merged.MONAD_PARENT_PTY_ID).toBe('self_parent01');
+    expect(merged.ELANOUS_PTY_ID).toBe('codex_deadbeef');
+    expect(merged.ELANOUS_PARENT_PTY_ID).toBe('self_parent01');
   });
 
   test('runAgentMission does not leak a stale parent PTY id when the current process has no PTY', async () => {
-    delete process.env.MONAD_PTY_ID;
-    process.env.MONAD_PARENT_PTY_ID = 'stale_00000000';
+    delete process.env.ELANOUS_PTY_ID;
+    process.env.ELANOUS_PARENT_PTY_ID = 'stale_00000000';
     const worktree = mkdtempSync(join(tmpdir(), 'mission-pty-stale-'));
     const evidence = join(worktree, 'evidence.md');
     writeFileSync(evidence, 'ready');
@@ -132,13 +132,13 @@ describe('PTY identity propagation', () => {
     }
 
     expect(captured?.id).toMatch(/^codex_[0-9a-f]{8}$/);
-    expect(captured?.env?.MONAD_PTY_ID).toBe(captured?.id);
-    expect(captured?.env && 'MONAD_PARENT_PTY_ID' in captured.env).toBe(false);
+    expect(captured?.env?.ELANOUS_PTY_ID).toBe(captured?.id);
+    expect(captured?.env && 'ELANOUS_PARENT_PTY_ID' in captured.env).toBe(false);
     expect(recordedProvenance).toEqual({ path: worktree, owner: 'agent:test-mission' });
   });
 
   test('runAgentMission binds its actual preallocated PTY id and parent identity at the injected startPty seam', async () => {
-    process.env.MONAD_PTY_ID = 'shell_cafebabe';
+    process.env.ELANOUS_PTY_ID = 'shell_cafebabe';
     const worktree = mkdtempSync(join(tmpdir(), 'mission-pty-identity-'));
     const evidence = join(worktree, 'evidence.md');
     writeFileSync(evidence, 'ready');
@@ -173,13 +173,13 @@ describe('PTY identity propagation', () => {
     }
 
     expect(captured?.id).toMatch(/^codex_[0-9a-f]{8}$/);
-    expect(captured?.env?.MONAD_PTY_ID).toBe(captured?.id);
-    expect(captured?.env?.MONAD_PARENT_PTY_ID).toBe('shell_cafebabe');
+    expect(captured?.env?.ELANOUS_PTY_ID).toBe(captured?.id);
+    expect(captured?.env?.ELANOUS_PARENT_PTY_ID).toBe('shell_cafebabe');
     expect(recordedProvenance).toEqual({ path: worktree, owner: 'agent:test-mission' });
   });
 
   test('headless goal-loop captures an id that exactly matches its child env identity', async () => {
-    process.env.MONAD_PTY_ID = 'shell_cafebabe';
+    process.env.ELANOUS_PTY_ID = 'shell_cafebabe';
     let captured: { id?: string; env?: Record<string, string> } | undefined;
     const handle = {
       id: 'self_fake000', cmd: 'bun', workdir: '/work', startedAt: 0, lastActivityAt: 0, detach: false,
@@ -199,7 +199,7 @@ describe('PTY identity propagation', () => {
     });
 
     expect(captured?.id).toMatch(/^self_[0-9a-f]{8}$/);
-    expect(captured?.env?.MONAD_PTY_ID).toBe(captured?.id);
-    expect(captured?.env?.MONAD_PARENT_PTY_ID).toBe('shell_cafebabe');
+    expect(captured?.env?.ELANOUS_PTY_ID).toBe(captured?.id);
+    expect(captured?.env?.ELANOUS_PARENT_PTY_ID).toBe('shell_cafebabe');
   });
 });

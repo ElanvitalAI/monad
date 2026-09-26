@@ -272,10 +272,10 @@ export async function recommendRevise(
 }
 
 /** 프로덕션 LLM classify(대표 2026-07-14) — 분해/triage 와 동일 sol 리즈닝. 테스트에선 미사용(DI).
- *  MONAD_REVISE_RECOMMEND_MODEL > MONAD_DECOMPOSE_MODEL > gpt-5.6-sol. */
+ *  ELANOUS_REVISE_RECOMMEND_MODEL > ELANOUS_DECOMPOSE_MODEL > gpt-5.6-sol. */
 export async function reviseClassifyDefault(prompt: string): Promise<string> {
   const { streamLLM, resolveDefaultProvider } = await import('../llm.js');
-  const model = process.env.MONAD_REVISE_RECOMMEND_MODEL || process.env.MONAD_DECOMPOSE_MODEL || tierModel('better');
+  const model = process.env.ELANOUS_REVISE_RECOMMEND_MODEL || process.env.ELANOUS_DECOMPOSE_MODEL || tierModel('better');
   const provider = resolveDefaultProvider(model);
   return streamLLM([{ role: 'user', content: prompt }], () => {}, { model, reasoningEffort: 'medium', ...(provider ? { provider } : {}) });
 }

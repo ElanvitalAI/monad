@@ -171,7 +171,7 @@ describe('createPushcutCaptureSink', () => {
       return new Response('', { status: 200 });
     };
     const sink = createPushcutCaptureSink({
-      pushcutUrl: 'https://api.pushcut.io/abc/notifications/MonadCapture',
+      pushcutUrl: 'https://api.pushcut.io/abc/notifications/ElanousCapture',
       fetchImpl: fakeFetch as typeof fetch,
       deviceLabel: 'ipad-11',
     });

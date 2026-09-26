@@ -20,7 +20,7 @@
 //      axis as a foreground one.
 //
 // ⛔ Note what these tests deliberately do NOT claim: that the CLI entrance
-//    (`monad agent dispatch`) reaches this code. That is a live question and
+//    (`elanous agent dispatch`) reaches this code. That is a live question and
 //    is answered by running the binary, not by an in-process import.
 
 import { describe, test, expect, beforeEach, afterEach, spyOn } from 'bun:test';

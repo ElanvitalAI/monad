@@ -21,12 +21,12 @@ import { dirname, join as joinPath } from 'node:path';
 import { randomBytes } from 'node:crypto';
 
 import { getSessionCwd } from '../session/working-dir.js';
-import { migrateLegacyHomeFile } from '../storage/legacy-monad-dir-migrate.js';
+import { migrateLegacyHomeFile } from '../storage/legacy-elanous-dir-migrate.js';
 import type { Hint, HintKind, HintScope, HintsFileV1 } from './types.js';
 
 // ─── Storage ─────────────────────────────────────────────────────
 
-/** Default path: ~/.monad/hints.json (canonical · 2026-05-10 unification).
+/** Default path: ~/.elanous/hints.json (canonical · 2026-05-10 unification).
  *  XDG_CONFIG_HOME explicit honors legacy ~/.config/monad-agent/hints.json.
  *  FU2 Tier 2 (PLAN closing follow-up): first call migrates legacy file. */
 function defaultConfigPath(): string {
@@ -34,9 +34,9 @@ function defaultConfigPath(): string {
   if (xdg) return joinPath(xdg, 'monad-agent', 'hints.json');
   migrateLegacyHomeFile({
     legacyHomeRel: joinPath('.config', 'monad-agent', 'hints.json'),
-    monadRel: 'hints.json',
+    elanousRel: 'hints.json',
   });
-  return joinPath(homedir(), '.monad', 'hints.json');
+  return joinPath(homedir(), '.elanous', 'hints.json');
 }
 
 let configPathOverride: string | null = null;

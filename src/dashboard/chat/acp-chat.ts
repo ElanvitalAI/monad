@@ -162,7 +162,7 @@ export interface DashboardAcpChatOpts {
   };
   permissionApprover?: AcpPermissionApprover;
   /** AU5 — optional. Wired from dashboard with an adapter that
-   *  converts the subprocess's AcpQuestionRequest into the monad
+   *  converts the subprocess's AcpQuestionRequest into the elanous
    *  AskUserQuestionRequest + surfaces the modal. When omitted,
    *  ACP subprocesses that emit question-shaped permission calls
    *  fall back to the yes/no permission approver. */
@@ -343,7 +343,7 @@ export class DashboardAcpChat {
       } catch (err) {
         // Persisted sessionId may be stale — e.g. the backend stores
         // sessions in-process only (CodexAppServerAgent synths a
-        // monad-side id) and restarts leave the id in the on-disk
+        // elanous-side id) and restarts leave the id in the on-disk
         // session-store pointing at nothing. Recover once: drop the
         // persisted id, mint a fresh session, retry the same prompt.
         // Predicate is shared with the messenger path (turn-runner.ts)

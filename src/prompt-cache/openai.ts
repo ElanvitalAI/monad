@@ -45,7 +45,7 @@ export function parseOpenAIUsage(event: unknown): LLMUsage | null {
     cost?: number;
   };
   const out: LLMUsage = { provider: 'openai' };
-  // ⛔⭐ monad 의 `inputTokens` 는 «새 입력만»이다(Anthropic 규약 · metrics 적중률 분모 = input + cacheRead + cacheCreation).
+  // ⛔⭐ elanous 의 `inputTokens` 는 «새 입력만»이다(Anthropic 규약 · metrics 적중률 분모 = input + cacheRead + cacheCreation).
   //   OpenAI 계열 `prompt_tokens` 는 캐시 적중분을 «포함»하므로 뺀다. 빼지 않으면 캐시분이 입력 단가로 한 번,
   //   캐시 단가로 또 한 번 매겨진다(BACKLOG C4 · opencode openai-chat.ts · hermes normalize_usage 와 같은 처리).
   const cached = [r.prompt_tokens_details?.cached_tokens, r.cached_tokens, r.prompt_cache_hit_tokens]

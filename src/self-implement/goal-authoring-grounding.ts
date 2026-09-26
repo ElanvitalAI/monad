@@ -97,7 +97,7 @@ function requestedRepositoryPaths(ask: string): string[] {
 }
 
 function isSelfRepositoryImplementationRequest(ask: string): boolean {
-  return isImplementationGoal(ask) && /(?:\bmonad\b|이 저장소|this repo|this repository|(?:src|scripts|docs)\/)/i.test(ask);
+  return isImplementationGoal(ask) && /(?:\belanous\b|이 저장소|this repo|this repository|(?:src|scripts|docs)\/)/i.test(ask);
 }
 
 export function createGoalAuthoringWebResearch(

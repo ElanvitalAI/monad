@@ -12,7 +12,7 @@
 //   · **adjusted_close 병행 노출**: raw close 는 분할/배당일 가짜 급락·상한가 유발 → 수익률/윈도는 adjClose 사용
 //     (분석층=screen/backtest 에서 선택). 패널 자체는 raw OHLCV 충실 보존(prices 테이블=raw 시장데이터).
 //
-// 데이터 루트 = `CONATUS_DATA_DIR`(monad 소유·기본 ~/.monad/conatus) — data.py 동형. 캐시 = <root>/cache.
+// 데이터 루트 = `CONATUS_DATA_DIR`(elanous 소유·기본 ~/.elanous/conatus) — data.py 동형. 캐시 = <root>/cache.
 // ⚠️ 파리티/테스트는 CONATUS_DATA_DIR 을 격리 사본으로 지정(live screener.db 무접촉).
 
 import { execFileSync } from 'node:child_process';
@@ -27,7 +27,7 @@ const OMNI_MAIN = join(OMNI_SKILL, 'scripts/main.ts');
 export const EXCHANGES = ['KO', 'KQ'] as const;
 export type Exchange = (typeof EXCHANGES)[number];
 
-/** monad 소유 데이터 루트. 2026-07-24 — 단일 해석기로 위임(중복 구현 제거).
+/** elanous 소유 데이터 루트. 2026-07-24 — 단일 해석기로 위임(중복 구현 제거).
  *  종전엔 여기만 CONATUS_DATA_DIR 노브를 알았고 나머지 68지점은 경로를 하드코딩했다. */
 export { conatusDataDir };
 function cacheDir(): string {

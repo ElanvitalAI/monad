@@ -93,7 +93,7 @@ export function WelcomeHome() {
     <main data-testid="welcome-home" className="min-h-screen bg-gradient-to-b from-background via-background to-muted/40 px-6 py-12 sm:px-10">
       <div className="mx-auto flex w-full max-w-5xl flex-col gap-10">
         <header className="flex flex-col gap-3">
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">monad PWA</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">elanous PWA</p>
           <h1 className="text-3xl font-bold leading-tight sm:text-4xl">웰컴 — 어디부터 시작할까요?</h1>
           <p className="max-w-2xl text-sm text-muted-foreground sm:text-base">
             지금 갈 수 있는 곳과 참고 주소를 모두 안내합니다. 참고 주소는 기록된 사유 때문에 일반 목적지 링크로 만들지 않습니다.

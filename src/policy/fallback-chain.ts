@@ -12,7 +12,7 @@
 //   opus → sonnet → gpt-5 → gpt-5-mini → gemini pro → gemini flash
 //   → local-llm (H6 P2 이후)
 //
-// User override via `~/.config/monad/policy/fallback.json` · same
+// User override via `~/.config/elanous/policy/fallback.json` · same
 // atomic tmp+rename pattern as limits.json.
 
 import {
@@ -23,18 +23,18 @@ import {
   writeFileSync,
 } from 'node:fs';
 import { join } from 'node:path';
-import { monadStateRoot } from '../autopilot/state-paths.js';
+import { elanousStateRoot } from '../autopilot/state-paths.js';
 import { debug } from '../debug/log.js';
-import { migrateLegacyXdgSubdir } from '../storage/legacy-monad-dir-migrate.js';
+import { migrateLegacyXdgSubdir } from '../storage/legacy-elanous-dir-migrate.js';
 import type { RouteCandidate } from './types.js';
 import type { UsageProvider } from '../budget/types.js';
 import type { BudgetRecommendation } from '../budget/forecaster.js';
 
-// Phase 1 (PLAN-config-unification-monad-root-2026-05-10):
-//   moved from ~/.config/monad/policy → ~/.monad/policy.
+// Phase 1 (PLAN-config-unification-elanous-root-2026-05-10):
+//   moved from ~/.config/elanous/policy → ~/.elanous/policy.
 function defaultStorageDir(): string {
   migrateLegacyXdgSubdir('policy');
-  return join(monadStateRoot(), 'policy');
+  return join(elanousStateRoot(), 'policy');
 }
 const FALLBACK_FILENAME = 'fallback.json';
 

@@ -2,7 +2,7 @@ import { describe, expect, spyOn, test } from 'bun:test';
 import { debug } from '../src/debug/log.js';
 import { judgeWithAcp } from '../src/agent-mission/acp-judge.js';
 import { makeAcpReviewLLM } from '../src/agent-substrate/acp-reviewer.js';
-import { spawnMonadAutopilotAgent } from '../src/tool-runtime/monad-autopilot-launch-runtime.js';
+import { spawnElanousAutopilotAgent } from '../src/tool-runtime/elanous-autopilot-launch-runtime.js';
 import type { AcpAgentOpts } from '../src/acp/client.js';
 
 type DebugEvent = { category: string; event: string; data?: Record<string, unknown> };
@@ -75,7 +75,7 @@ describe('ACP agent log wiring', () => {
   test('autopilot launcher persists an ACP agent lifecycle message with its queryable category and payload', async () => {
     const { events, restore } = recordDebugEvents();
     try {
-      await spawnMonadAutopilotAgent(
+      await spawnElanousAutopilotAgent(
         'launch-backend',
         process.cwd(),
         (opts) => agentThatLogs('launch-agent-message', opts),
@@ -83,6 +83,6 @@ describe('ACP agent log wiring', () => {
     } finally {
       restore();
     }
-    expectAgentLog(events, 'monad-autopilot-launch', 'launch-backend', 'launch-agent-message');
+    expectAgentLog(events, 'elanous-autopilot-launch', 'launch-backend', 'launch-agent-message');
   });
 });

@@ -6,11 +6,11 @@ import { refreshCodexQuotaSignals } from '../../src/budget/codex-quota-refresh.j
 import { readQuotaSignalObservedAt, writeQuotaSignal } from '../../src/budget/codex-reset-credit-state.js';
 
 const madeDirs: string[] = [];
-const originalStateDir = process.env.MONAD_STATE_DIR;
+const originalStateDir = process.env.ELANOUS_STATE_DIR;
 
 afterEach(() => {
-  if (originalStateDir === undefined) delete process.env.MONAD_STATE_DIR;
-  else process.env.MONAD_STATE_DIR = originalStateDir;
+  if (originalStateDir === undefined) delete process.env.ELANOUS_STATE_DIR;
+  else process.env.ELANOUS_STATE_DIR = originalStateDir;
   for (const dir of madeDirs.splice(0)) rmSync(dir, { recursive: true, force: true });
 });
 
@@ -168,7 +168,7 @@ describe('refreshCodexQuotaSignals', () => {
   test('real account-home signals drive fresh versus refreshed results and preserve process.env', async () => {
     const stateDir = mkdtempSync(join(tmpdir(), 'codex-quota-refresh-'));
     madeDirs.push(stateDir);
-    process.env.MONAD_STATE_DIR = stateDir;
+    process.env.ELANOUS_STATE_DIR = stateDir;
     const freshHome = join(stateDir, 'fresh-home');
     const missingHome = join(stateDir, 'missing-home');
     writeQuotaSignal(undefined, 12, freshHome);

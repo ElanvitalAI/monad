@@ -13,7 +13,7 @@ let workdir: string;
 let configPath: string;
 
 beforeEach(() => {
-  workdir = mkdtempSync(join(tmpdir(), 'monad-codex-migrate-test-'));
+  workdir = mkdtempSync(join(tmpdir(), 'elanous-codex-migrate-test-'));
   configPath = join(workdir, 'config.toml');
 });
 
@@ -30,7 +30,7 @@ describe('migrateCodexConfig · first write', () => {
     expect(res.backupPath).toBeUndefined();
     const written = readFileSync(configPath, 'utf8');
     expect(written).toContain(MARKER_START);
-    expect(written).toContain('[mcp_servers.monad-tools]');
+    expect(written).toContain('[mcp_servers.elanous-tools]');
     expect(written).toContain(MARKER_END);
   });
 
@@ -76,11 +76,11 @@ describe('migrateCodexConfig · subsequent runs', () => {
     const r2 = await migrateCodexConfig({
       configPath,
       now: STABLE_CLOCK,
-      entry: { command: '/custom/monad' },
+      entry: { command: '/custom/elanous' },
     });
     expect(r2.action).toBe('replaced');
     const written = readFileSync(configPath, 'utf8');
-    expect(written).toContain('command = "/custom/monad"');
+    expect(written).toContain('command = "/custom/elanous"');
   });
 });
 
@@ -96,7 +96,7 @@ describe('migrateCodexConfig · remove', () => {
     expect(r.backupPath).toBeDefined();
     const written = readFileSync(configPath, 'utf8');
     expect(written).not.toContain(MARKER_START);
-    expect(written).not.toContain('[mcp_servers.monad-tools]');
+    expect(written).not.toContain('[mcp_servers.elanous-tools]');
   });
 
   test('--remove on file without markers → no-op', async () => {

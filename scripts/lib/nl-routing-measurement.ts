@@ -18,7 +18,7 @@ export interface WilsonInterval {
   upper: number;
 }
 
-/** ⛔⭐⭐ **`id` 는 전역 유일이 아니다** — `monad logs` 자신이 경고한다:
+/** ⛔⭐⭐ **`id` 는 전역 유일이 아니다** — `elanous logs` 자신이 경고한다:
  *  *"연합(`--all`) 조회는 **행 id 가 인스턴스마다 독립**이라 `--before` 를 쓸 수 없다"*.
  *  연합 조회로 여러 저장소를 합치면 **같은 숫자 id 가 여러 인스턴스에** 존재한다.
  *  ⇒ 턴 경계·바이트 조회는 반드시 **`instance` + `id` 복합 키**로 묶는다. 안 그러면
@@ -46,7 +46,7 @@ export interface ClosedTurnBoundary extends TurnBoundary {
   completedAt: string;
 }
 
-/** ⛔⭐⭐ **로그 한 행 안에서 표기가 갈린다** — 실측(2026-08-01 `monad logs --json`):
+/** ⛔⭐⭐ **로그 한 행 안에서 표기가 갈린다** — 실측(2026-08-01 `elanous logs --json`):
  *  최상위는 **snake_case**(`ts` · `session_id`) 인데 **중첩 `data` 는 camelCase**(`sessionId`) 다.
  *  ```
  *  {"ts":"…","session_id":"a4292021-…","data":"{\"sessionId\":\"a4292021-…\",\"tool\":\"Edit\"}"}
@@ -358,7 +358,7 @@ export function logIds(raw: string): Set<string> {
  * 코퍼스를 티어 ⊕ 문항 id 로 좁힌다. **순수**.
  *
  * ⭐ 왜 필요한가 — `MEAS-T8`: ***문항 단위 판단은 집중 프로브(N≥10)로만*** 한다. 그런데 종전 러너는
- * **티어 필터만** 있어서, 한 문항을 10번 재려면 `monad repro` 같은 **다른 자**를 써야 했다.
+ * **티어 필터만** 있어서, 한 문항을 10번 재려면 `elanous repro` 같은 **다른 자**를 써야 했다.
  * ⛔ 다른 자로 잰 수는 기준선과 비교할 수 없다(형태 `F3`) ⇒ **같은 러너에서** 좁힌다.
  *
  * ⛔ 없는 id 를 조용히 무시하지 않는다 — 오타 하나가 **빈 표본을 "측정했다" 로 만든다**.

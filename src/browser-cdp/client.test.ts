@@ -33,11 +33,11 @@ function headersThenHangingBodyFetch(): typeof fetch {
 }
 
 describe('discoverChromeBinary', () => {
-  test('prefers an existing MONAD_CHROME_BIN over platform candidates', () => {
+  test('prefers an existing ELANOUS_CHROME_BIN over platform candidates', () => {
     const checked: string[] = [];
 
     const binary = discoverChromeBinary({
-      env: { MONAD_CHROME_BIN: '/custom/chrome' },
+      env: { ELANOUS_CHROME_BIN: '/custom/chrome' },
       platform: 'linux',
       existsSync: (path) => {
         checked.push(path);

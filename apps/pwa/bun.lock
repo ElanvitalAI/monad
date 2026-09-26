@@ -3,7 +3,7 @@
   "configVersion": 0,
   "workspaces": {
     "": {
-      "name": "@monad/pwa",
+      "name": "@elanous/pwa",
       "dependencies": {
         "@base-ui/react": "^1.4.1",
         "@dagrejs/dagre": "^3.0.0",

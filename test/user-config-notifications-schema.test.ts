@@ -62,16 +62,16 @@ describe('UserConfig.notifications sparse parse', () => {
         apns: {
           keyId: 'KID1234567',
           teamId: 'TID1234567',
-          bundleId: 'com.monad.app',
-          keyPath: '~/.monad/apns.p8',
+          bundleId: 'com.elanous.app',
+          keyPath: '~/.elanous/apns.p8',
         },
       },
     });
     const cfg = buildUserConfig(cfgPath);
     expect(cfg.notifications?.apns?.keyId).toBe('KID1234567');
     expect(cfg.notifications?.apns?.teamId).toBe('TID1234567');
-    expect(cfg.notifications?.apns?.bundleId).toBe('com.monad.app');
-    expect(cfg.notifications?.apns?.keyPath).toBe('~/.monad/apns.p8');
+    expect(cfg.notifications?.apns?.bundleId).toBe('com.elanous.app');
+    expect(cfg.notifications?.apns?.keyPath).toBe('~/.elanous/apns.p8');
     expect(cfg.notifications?.apns?.environment).toBeUndefined();
   });
 

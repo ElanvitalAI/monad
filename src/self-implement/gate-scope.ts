@@ -74,7 +74,7 @@ function isDocPath(f: string): boolean {
   return DOC_RE.test(f);
 }
 
-/** monad 가 «대상 저장소»에 남기는 런타임 상태 경로 — ***하나의 출처***.
+/** elanous 가 «대상 저장소»에 남기는 런타임 상태 경로 — ***하나의 출처***.
  *
  *  ⛔ 이 목록을 «다른 곳에 다시» 나열하지 마라. 2026-09-21 실측으로 그 나열이 세 군데로 갈렸고
  *  그때마다 «다른 부분집합»이었다:
@@ -83,19 +83,19 @@ function isDocPath(f: string): boolean {
  *    ③ `repo-provision` 의 .gitignore  ***다섯 중 둘***만 썼다 → 나머지 셋은 여전히 untracked
  *  ⇒ 그래서 목록을 여기 한 군데 두고, 쓰는 쪽은 전부 이것을 임포트한다.
  */
-export const MONAD_RUNTIME_ARTIFACT_PATHS = ['.monad-child-liveness.hb'] as const;
+export const ELANOUS_RUNTIME_ARTIFACT_PATHS = ['.elanous-child-liveness.hb'] as const;
 /** 끝에 슬래시를 두어 «디렉토리»임을 분명히 한다 — gitignore 문면과 그대로 맞춘다. */
-export const MONAD_RUNTIME_ARTIFACT_DIRS = [
-  '.monad/',
-  '.monad-se/',
-  '.monad-goal-grounding-build/',
-  '.monad-session/',
+export const ELANOUS_RUNTIME_ARTIFACT_DIRS = [
+  '.elanous/',
+  '.elanous-se/',
+  '.elanous-goal-grounding-build/',
+  '.elanous-session/',
 ] as const;
 
-/** monad가 대상 저장소에 남기는 런타임 상태 경로인가. 사용자 경로와 혼동하지 않도록 알려진 상태 루트만 허용한다. */
-export function isMonadRuntimeArtifactPath(path: string): boolean {
-  return (MONAD_RUNTIME_ARTIFACT_PATHS as readonly string[]).includes(path)
-    || MONAD_RUNTIME_ARTIFACT_DIRS.some((dir) => path.startsWith(dir));
+/** elanous가 대상 저장소에 남기는 런타임 상태 경로인가. 사용자 경로와 혼동하지 않도록 알려진 상태 루트만 허용한다. */
+export function isElanousRuntimeArtifactPath(path: string): boolean {
+  return (ELANOUS_RUNTIME_ARTIFACT_PATHS as readonly string[]).includes(path)
+    || ELANOUS_RUNTIME_ARTIFACT_DIRS.some((dir) => path.startsWith(dir));
 }
 
 /** ⭐ 유도 접미사 — `TEST_RE` **탐지**와 **완전 대칭**이어야 한다(리뷰 must-fix 2R·3R).
@@ -243,8 +243,8 @@ interface GateScopeDecision {
   /** ⭐ **동작 검증을 못 한 비문서 파일**들(`package.json`·설정·스크립트 포함). **분기 무관**으로 계산돼
    *  `derived`/`changed-tests` 로 테스트가 **돌더라도** 커버되지 않은 파일이 여기 남는다(은폐 방지). */
   readonly unverified: readonly string[];
-  /** monad 자체가 남긴 런타임 산출물. 미검증 사용자 변경에서 제외하되 경로를 보존한다. */
-  readonly monadRuntimeArtifacts: readonly string[];
+  /** elanous 자체가 남긴 런타임 산출물. 미검증 사용자 변경에서 제외하되 경로를 보존한다. */
+  readonly elanousRuntimeArtifacts: readonly string[];
   /** ⭐ **편집되지 않았는데 함께 끌어와 돌린** 연관 테스트(`changed-tests` 분기 전용).
    *  ⚠️ 직전 판본은 이 자리에 `unrunRelatedTests`(=실행집합에 없는 연관 테스트)를 뒀는데,
    *  실행집합이 연관 테스트를 **전부 포함**하도록 바뀌었으므로 그 값은 **정의상 항상 빈 배열**이었다.
@@ -280,8 +280,8 @@ export function resolveGateScope(
   //   **삭제·rename 前 경로도 포함**한다. 그걸 그대로 `testArgs` 로 넘기면 필터가 아무것도 매치하지
   //   못해 integrity-gate 가 "0 files ran … 거짓통과 차단"으로 **부당하게 FAIL** 한다(테스트를 지우는
   //   정당한 변경이 게이트에 막힌다). ⇒ 실존하는 것만 쓴다.
-  const monadRuntimeArtifacts = changed.filter(isMonadRuntimeArtifactPath);
-  const userChanged = changed.filter((f) => !isMonadRuntimeArtifactPath(f));
+  const elanousRuntimeArtifacts = changed.filter(isElanousRuntimeArtifactPath);
+  const userChanged = changed.filter((f) => !isElanousRuntimeArtifactPath(f));
   const changedTests = userChanged.filter(isTestFile);
   const testFiles = changedTests.filter((f) => exists(f));
   const missingTestFiles = changedTests.length - testFiles.length;
@@ -322,7 +322,7 @@ export function resolveGateScope(
   const observationFor = (runSet: readonly string[]) => importerTestIndex
     ? importerTestsNotInRunSet(importerTestIndex, userChanged, runSet)
     : null;
-  const base = { sourceFiles, documentPaths, ignoredOutsideSrc, missingTestFiles, monadRuntimeArtifacts,
+  const base = { sourceFiles, documentPaths, ignoredOutsideSrc, missingTestFiles, elanousRuntimeArtifacts,
     unverified: [] as readonly string[], derived: [] as readonly string[], pulledInRelatedTests: [] as readonly string[] };
   const withDocumentNonContribution = (runSet: readonly string[]) => ({
     documentsWithoutDerivedTests: documentsWithoutDerivedTestsFor(runSet),

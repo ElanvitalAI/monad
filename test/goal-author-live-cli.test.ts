@@ -5,7 +5,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
 const directories: string[] = [];
-const liveAuthoringAvailable = process.env.MONAD_GOAL_AUTHOR_LIVE_TEST === '1';
+const liveAuthoringAvailable = process.env.ELANOUS_GOAL_AUTHOR_LIVE_TEST === '1';
 const liveTest = liveAuthoringAvailable ? test : test.skip;
 
 const canonicalGoal = (): string => `## PROBLEM
@@ -57,9 +57,9 @@ afterEach(() => {
 describe('self author output inspection', () => {
   liveTest('reports all inspection values for a first authoring without --supersedes', () => {
     const { root } = fixture(canonicalGoal());
-    const result = spawnSync(process.execPath, ['bin/monad.mjs', '--test', 'self', 'author', '--cwd', root, 'Implement src/example.ts inspection.', '판정 신호: 조건 = first authoring; 관측 = standard output and error; 기대 = inspection values are printed'], {
+    const result = spawnSync(process.execPath, ['bin/elanous.mjs', '--test', 'self', 'author', '--cwd', root, 'Implement src/example.ts inspection.', '판정 신호: 조건 = first authoring; 관측 = standard output and error; 기대 = inspection values are printed'], {
       cwd: process.cwd(),
-      env: { ...process.env, MONAD_STATE_DIR: join(tmpdir(), `goal-author-output-state-${crypto.randomUUID()}`) },
+      env: { ...process.env, ELANOUS_STATE_DIR: join(tmpdir(), `goal-author-output-state-${crypto.randomUUID()}`) },
       encoding: 'utf8',
     });
     const output = `${result.stdout}${result.stderr}`;

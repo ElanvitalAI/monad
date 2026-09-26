@@ -5,7 +5,6 @@ import type { ToolRenderConfig } from './types.js';
 
 const baseConfig: ToolRenderConfig = {
   displayMode: 'inline-to-block',
-  inlineOneLine: true,
   blockMaxLines: 4,
 };
 

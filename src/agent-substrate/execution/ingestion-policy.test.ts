@@ -3,8 +3,8 @@ import { resolveIngestionPolicy } from './ingestion-policy.js';
 import { formatMemoryContext } from './memory-context.js';
 
 describe('resolveIngestionPolicy — mode-gated 인핸싱 + entry-independent 기억·관측', () => {
-  it('monad-apparatus → 인핸싱 기본 ON', () => {
-    const p = resolveIngestionPolicy({ entry: 'monad-apparatus' });
+  it('elanous-apparatus → 인핸싱 기본 ON', () => {
+    const p = resolveIngestionPolicy({ entry: 'elanous-apparatus' });
     expect(p.enhance).toBe(true);
   });
 
@@ -14,12 +14,12 @@ describe('resolveIngestionPolicy — mode-gated 인핸싱 + entry-independent �
   });
 
   it('명시 explicitEnhance 가 mode 기본값보다 우선', () => {
-    expect(resolveIngestionPolicy({ entry: 'monad-apparatus', explicitEnhance: false }).enhance).toBe(false);
+    expect(resolveIngestionPolicy({ entry: 'elanous-apparatus', explicitEnhance: false }).enhance).toBe(false);
     expect(resolveIngestionPolicy({ entry: 'external-verbatim', explicitEnhance: true }).enhance).toBe(true);
   });
 
   it('기억·관측은 어떤 진입이든 항상 ON(entry-independent)', () => {
-    for (const entry of ['monad-apparatus', 'external-verbatim'] as const) {
+    for (const entry of ['elanous-apparatus', 'external-verbatim'] as const) {
       const p = resolveIngestionPolicy({ entry });
       expect(p.memory).toBe(true);
       expect(p.observe).toBe(true);
@@ -30,7 +30,7 @@ describe('resolveIngestionPolicy — mode-gated 인핸싱 + entry-independent �
 describe('formatMemoryContext — 가산 블록(프롬프트 무접촉)', () => {
   it('회상 항목을 [memory:...] 블록으로', () => {
     const s = formatMemoryContext(['P0a 라이브 포워딩 수리', 'agent-agnostic 리네임']);
-    expect(s).toContain('[monad 기억');
+    expect(s).toContain('[elanous 기억');
     expect(s).toContain('- [memory: P0a 라이브 포워딩 수리]');
     expect(s).toContain('- [memory: agent-agnostic 리네임]');
   });

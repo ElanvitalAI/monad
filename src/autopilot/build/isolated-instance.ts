@@ -1,11 +1,11 @@
 // ── Self-Evolution SE3 · 격리 데몬 인스턴스 (2026-07-09) ───────────────────
 //
-// 대표: "global monad link 외에 worktree로 디렉토리를 만들고 신규 피처를 만들어라. 포트도
+// 대표: "global elanous link 외에 worktree로 디렉토리를 만들고 신규 피처를 만들어라. 포트도
 // 정식과 별도로, 테스트용 config·디렉토리도 지정. 테스트 버전으로 무결하게 완성하는 법도
 // 확립하라." → 격리 인스턴스 = worktree(별 브랜치) + 별 config-dir + 별 포트. 정식 서비스
-// (:31415·main·pilot link·~/.monad) 절대 무오염.
+// (:31415·main·pilot link·~/.elanous) 절대 무오염.
 //
-// 안전 assertion(치명): 포트 != 정식(31415) · config-dir 이 worktree 하위(홈 ~/.monad 아님)
+// 안전 assertion(치명): 포트 != 정식(31415) · config-dir 이 worktree 하위(홈 ~/.elanous 아님)
 // · 테스트 config 는 매매/발송 disarmed. worktree 생성/제거는 기존 git-fs/worktree 재사용.
 
 import { writeFileSync, mkdirSync, readFileSync } from 'node:fs';
@@ -34,8 +34,8 @@ export interface IsolatedPlan {
   slug: string;
   branch: string;          // se/<slug>
   worktreePath: string;    // <repo>.worktrees/se-<slug>
-  configDir: string;       // <worktree>/.monad-se  (홈 ~/.monad 아님)
-  testStateDir: string;    // <worktree>/.monad-se/nexus
+  configDir: string;       // <worktree>/.elanous-se  (홈 ~/.elanous 아님)
+  testStateDir: string;    // <worktree>/.elanous-se/nexus
   port: number;
 }
 
@@ -48,7 +48,7 @@ export function planIsolatedInstance(repoRoot: string, slug: string, worktreeRoo
   const branch = `se/${slug}`;
   const root = worktreeRoot ?? configuredWorktreeRoot();
   const worktreePath = join(worktreeParentDir(repoRoot, root), worktreeDirName(branch));
-  const configDir = join(worktreePath, '.monad-se');
+  const configDir = join(worktreePath, '.elanous-se');
   return {
     slug, branch, worktreePath, configDir,
     testStateDir: join(configDir, 'nexus'),
@@ -60,9 +60,9 @@ export function planIsolatedInstance(repoRoot: string, slug: string, worktreeRoo
 export function assertIsolationSafe(plan: IsolatedPlan): void {
   if (plan.port === PRODUCTION_PORT) throw new Error(`격리 위반: 정식 포트(${PRODUCTION_PORT}) 사용 금지`);
   if (!plan.configDir.startsWith(`${plan.worktreePath}/`)) throw new Error('격리 위반: config-dir 이 worktree 하위 아님');
-  const productionConfigRoot = join(homedir(), '.monad');
+  const productionConfigRoot = join(homedir(), '.elanous');
   if (plan.worktreePath === productionConfigRoot || dirname(plan.configDir) === productionConfigRoot) {
-    throw new Error('격리 위반: 홈 ~/.monad 운영 config 오염');
+    throw new Error('격리 위반: 홈 ~/.elanous 운영 config 오염');
   }
   if (!plan.branch.startsWith('se/')) throw new Error('격리 위반: 브랜치가 se/ 접두 아님');
 }
@@ -74,7 +74,7 @@ export function assertIsolationSafe(plan: IsolatedPlan): void {
 export const BOOT_INHERIT_KEYS = ['llm', 'mcp', 'skills', 'acp', 'lsp'] as const;
 
 /** 정식 config.json 에서 부팅 필수 키만 추출(fail-soft·없으면 {}). */
-export function readInheritedConfig(prodConfigPath: string = join(homedir(), '.monad/config.json')): Record<string, unknown> {
+export function readInheritedConfig(prodConfigPath: string = join(homedir(), '.elanous/config.json')): Record<string, unknown> {
   try {
     const full = JSON.parse(readFileSync(prodConfigPath, 'utf-8')) as Record<string, unknown>;
     const out: Record<string, unknown> = {};
@@ -122,11 +122,11 @@ export interface CreateIsolatedDeps {
   createWorktree?: typeof createWorktree;
   /** node_modules/pwa 심링크 스킵(테스트). */
   skipDeps?: boolean;
-  /** 정식 config 상속 override(테스트). 미지정 시 ~/.monad/config.json 에서 부팅 필수 키. */
+  /** 정식 config 상속 override(테스트). 미지정 시 ~/.elanous/config.json 에서 부팅 필수 키. */
   inherit?: Record<string, unknown>;
   /** ★ se 스택 base 위에 origin/main 반영 seam(테스트 주입). 기본=실제 git fetch+merge. */
   mergeMain?: (worktreePath: string) => 'merged' | 'up-to-date' | 'conflict-abort' | 'error';
-  /** ⛔⭐ worktree 뿌리 override. 미지정 시 `tools.selfImplement.worktreeRoot`(기본 `~/.monad/worktrees`).
+  /** ⛔⭐ worktree 뿌리 override. 미지정 시 `tools.selfImplement.worktreeRoot`(기본 `~/.elanous/worktrees`).
    *  ***테스트는 이것을 반드시 주입한다*** — 안 주면 실제 홈 디렉터리 아래에 worktree·config 이 만들어지고
    *  `rmSync(tmp)` 로는 안 지워져 사용자 디렉터리에 잔존물이 남는다(리뷰 must-fix ①). */
   worktreeRoot?: string;

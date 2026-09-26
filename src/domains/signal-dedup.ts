@@ -122,7 +122,7 @@ export async function llmOnce(prompt: string): Promise<string | null> {
   try {
     let base = 'http://localhost:1234/v1';
     try {
-      const cfg = JSON.parse(readFileSync(join(homedir(), '.monad/config.json'), 'utf-8')) as { llm?: { rotation?: Array<{ provider?: string; baseUrl?: string }> } };
+      const cfg = JSON.parse(readFileSync(join(homedir(), '.elanous/config.json'), 'utf-8')) as { llm?: { rotation?: Array<{ provider?: string; baseUrl?: string }> } };
       const local = (cfg?.llm?.rotation ?? []).find(r => r?.provider === 'local');
       if (local?.baseUrl) base = String(local.baseUrl).replace(/\/$/, '');
     } catch { /* 기본값 */ }

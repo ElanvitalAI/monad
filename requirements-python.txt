@@ -1,6 +1,6 @@
-# monad 가 부르는 파이썬 스크립트·스킬의 «필수» 의존성 (2026-09-24 · 저장소 .py 전수 import 스캔 · 추측 금지)
+# elanous 가 부르는 파이썬 스크립트·스킬의 «필수» 의존성 (2026-09-24 · 저장소 .py 전수 import 스캔 · 추측 금지)
 # 형식: <pip 이름>  # import: <모듈>  · 쓰는 곳
-# 설치: monad python setup --yes   (venv = ~/.local/share/monad/python/venv · --system-site-packages)
+# 설치: elanous python setup --yes   (venv = ~/.local/share/elanous/python/venv · --system-site-packages)
 requests        # import: requests   · skills/kr-flow
 python-dotenv   # import: dotenv     · skills/kr-flow
 pykrx           # import: pykrx      · scripts/backfill-kr-pykrx.py

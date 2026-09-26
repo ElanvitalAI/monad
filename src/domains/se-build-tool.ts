@@ -1,6 +1,6 @@
 // ── se_build tool — SE 격리 빌드 관측(대표 2026-07-13·PLAN B2) ────────────────
 //
-// monad 자신(과 외부 CLI)이 "지금 SE 격리 빌드 뭐 도나 · 그 빌드 안에서 뭘 하나"를 인지하는
+// elanous 자신(과 외부 CLI)이 "지금 SE 격리 빌드 뭐 도나 · 그 빌드 안에서 뭘 하나"를 인지하는
 // READ-ONLY 도구. 레지스트리(se_builds.db) + per-build 로그 tail + worktree diff 스냅샷.
 // tool 은 req/resp 라 스트림 불가 → 최근 상태 + 로그 tail. 라이브 스트림은 CLI --follow / SSE.
 // PLAN: 내부 문서 `PLAN-se-build-observability-stream-2026-07-13`
@@ -112,7 +112,7 @@ export function buildSnapshot(buildId: string, opts: { tail?: number } = {}): Bu
 
 export const SE_BUILD_SPEC: LLMToolSpec = {
   name: 'se_build',
-  description: "⭐ SE 격리 빌드 관측+컨트롤 (코어) — monad 가 **자기 미션 페이즈가 별도 worktree 에서 자율 구현하는 SE 빌드**를 인지·제어. 'SE 빌드 뭐 도나' '그 빌드 안에서 뭘 하는 중' '어느 파일 고치나' 관측 + **'이 빌드 멈춰/중단해' 컨트롤**. action: list(활성/최근 빌드·READ)·status(buildId 상세 + worktree diff + 로그 tail·READ)·**stop(buildId 지정 실행중 빌드 중단·WRITE — 미션 프로세스 SIGTERM, 재개는 재구현/재실행)**. 라이브 스트림은 CLI `monad ops build <id> --follow` 또는 SSE /v1/builds/<id>/stream. (미션/페이즈 상태·힐=ops_status/autopilot_missions · 여긴 그 아래 '빌드 안'.)",
+  description: "⭐ SE 격리 빌드 관측+컨트롤 (코어) — elanous 가 **자기 미션 페이즈가 별도 worktree 에서 자율 구현하는 SE 빌드**를 인지·제어. 'SE 빌드 뭐 도나' '그 빌드 안에서 뭘 하는 중' '어느 파일 고치나' 관측 + **'이 빌드 멈춰/중단해' 컨트롤**. action: list(활성/최근 빌드·READ)·status(buildId 상세 + worktree diff + 로그 tail·READ)·**stop(buildId 지정 실행중 빌드 중단·WRITE — 미션 프로세스 SIGTERM, 재개는 재구현/재실행)**. 라이브 스트림은 CLI `elanous ops build <id> --follow` 또는 SSE /v1/builds/<id>/stream. (미션/페이즈 상태·힐=ops_status/autopilot_missions · 여긴 그 아래 '빌드 안'.)",
   parameters: {
     type: 'object',
     properties: {
@@ -138,7 +138,7 @@ export async function dispatchSeBuild(args: Record<string, unknown>): Promise<un
     if (!buildId) return { error: 'buildId 필요(action=stop).' };
     const r = stopBuild(buildId);
     return r.ok
-      ? { ...r, note: `빌드 중단됨(미션 프로세스 SIGTERM). 재개는 재구현/재실행으로. 관측: monad ops build ${buildId}` }
+      ? { ...r, note: `빌드 중단됨(미션 프로세스 SIGTERM). 재개는 재구현/재실행으로. 관측: elanous ops build ${buildId}` }
       : r;
   }
   // list

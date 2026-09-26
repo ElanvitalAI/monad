@@ -18,7 +18,7 @@ const sampleMeta: AttachmentMeta = {
   mediaType: 'image/jpeg',
   size: 12345,
   downloadUrl: 'http://daemon/v1/attachments/att-42',
-  path: '/Users/example/.monad/attachments/att-42-photo.jpg',
+  path: '/Users/example/.elanous/attachments/att-42-photo.jpg',
   createdAt: 1_700_000_000_000,
 };
 
@@ -55,7 +55,7 @@ describe('buildIntakeBodyForPhoto', () => {
     expect(ctx.attachmentId).toBe('att-42');
     expect(ctx.attachmentFilename).toBe('photo.jpg');
     expect(ctx.attachmentMediaType).toBe('image/jpeg');
-    expect(ctx.attachmentPath).toBe('/Users/example/.monad/attachments/att-42-photo.jpg');
+    expect(ctx.attachmentPath).toBe('/Users/example/.elanous/attachments/att-42-photo.jpg');
     expect(ctx.attachmentUrl).toBe('http://daemon/v1/attachments/att-42');
   });
 

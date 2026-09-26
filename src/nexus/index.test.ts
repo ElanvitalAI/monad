@@ -8,7 +8,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
 import { buildNexusWsBridgeAuth, readAcpToken, runNexus } from './index.js';
-import { resetMonadConfigDir, setMonadConfigDir } from '../monad-config-dir.js';
+import { resetElanousConfigDir, setElanousConfigDir } from '../elanous-config-dir.js';
 import { setTestStateRoot } from './paths.js';
 import type { PwaShareDeps, PwaShareResult } from '../cli/pwa-share.js';
 import type { ShareMountResult } from '../cli/share-auto-mount.js';
@@ -47,7 +47,7 @@ describe('Nexus wsBridgeOpts auth wiring', () => {
 describe('readAcpToken instance root', () => {
   const tempDirs: string[] = [];
   afterEach(() => {
-    resetMonadConfigDir();
+    resetElanousConfigDir();
   });
   afterAll(() => {
     for (const dir of tempDirs) rmSync(dir, { recursive: true, force: true });
@@ -57,7 +57,7 @@ describe('readAcpToken instance root', () => {
     const isolated = mkdtempSync(join(tmpdir(), 'nexus-acp-isolated-'));
     tempDirs.push(isolated);
     writeFileSync(join(isolated, 'acp-token'), 'isolated-token-obs-t413\n');
-    setMonadConfigDir(isolated);
+    setElanousConfigDir(isolated);
     expect(readAcpToken()).toBe('isolated-token-obs-t413');
   });
 
@@ -65,27 +65,27 @@ describe('readAcpToken instance root', () => {
     const isolated = mkdtempSync(join(tmpdir(), 'nexus-acp-unreadable-'));
     tempDirs.push(isolated);
     mkdirSync(join(isolated, 'acp-token'));
-    setMonadConfigDir(isolated);
+    setElanousConfigDir(isolated);
     expect(readAcpToken()).toBeUndefined();
   });
 
   test('returns undefined when the isolated token file is absent', () => {
     const isolated = mkdtempSync(join(tmpdir(), 'nexus-acp-absent-'));
     tempDirs.push(isolated);
-    setMonadConfigDir(isolated);
+    setElanousConfigDir(isolated);
     expect(readAcpToken()).toBeUndefined();
   });
 
-  test('does not read HOME/.monad/acp-token when config-dir is isolated', () => {
+  test('does not read HOME/.elanous/acp-token when config-dir is isolated', () => {
     const isolated = mkdtempSync(join(tmpdir(), 'nexus-acp-no-home-'));
     const decoyHome = mkdtempSync(join(tmpdir(), 'nexus-acp-decoy-home-'));
     tempDirs.push(isolated, decoyHome);
-    mkdirSync(join(decoyHome, '.monad'));
-    writeFileSync(join(decoyHome, '.monad', 'acp-token'), 'prod-decoy-token');
+    mkdirSync(join(decoyHome, '.elanous'));
+    writeFileSync(join(decoyHome, '.elanous', 'acp-token'), 'prod-decoy-token');
     writeFileSync(join(isolated, 'acp-token'), 'isolated-token-obs-t413');
     const prevHome = process.env.HOME;
     process.env.HOME = decoyHome;
-    setMonadConfigDir(isolated);
+    setElanousConfigDir(isolated);
     try {
       expect(readAcpToken()).toBe('isolated-token-obs-t413');
     } finally {
@@ -98,11 +98,11 @@ describe('readAcpToken instance root', () => {
     const isolated = mkdtempSync(join(tmpdir(), 'nexus-acp-empty-iso-'));
     const decoyHome = mkdtempSync(join(tmpdir(), 'nexus-acp-decoy-empty-'));
     tempDirs.push(isolated, decoyHome);
-    mkdirSync(join(decoyHome, '.monad'));
-    writeFileSync(join(decoyHome, '.monad', 'acp-token'), 'prod-decoy-token');
+    mkdirSync(join(decoyHome, '.elanous'));
+    writeFileSync(join(decoyHome, '.elanous', 'acp-token'), 'prod-decoy-token');
     const prevHome = process.env.HOME;
     process.env.HOME = decoyHome;
-    setMonadConfigDir(isolated);
+    setElanousConfigDir(isolated);
     try {
       expect(readAcpToken()).toBeUndefined();
     } finally {
@@ -116,7 +116,7 @@ describe('runNexus · headless auto-mount share unmount on exit', () => {
   let stateRoot: string;
 
   beforeEach(() => {
-    stateRoot = mkdtempSync(join(tmpdir(), 'monad-nexus-share-unmount-'));
+    stateRoot = mkdtempSync(join(tmpdir(), 'elanous-nexus-share-unmount-'));
     setTestStateRoot(stateRoot);
   });
 
@@ -208,7 +208,7 @@ describe('runNexus · fallback signal share unmount', () => {
   let previousIsTty: PropertyDescriptor | undefined;
 
   beforeEach(() => {
-    stateRoot = mkdtempSync(join(tmpdir(), 'monad-nexus-fallback-unmount-'));
+    stateRoot = mkdtempSync(join(tmpdir(), 'elanous-nexus-fallback-unmount-'));
     setTestStateRoot(stateRoot);
     previousExit = process.exit;
     previousSigterm = process.listeners('SIGTERM').slice() as Array<(...args: unknown[]) => void>;
@@ -371,7 +371,7 @@ describe('runNexus · MCP handshake timeout wiring', () => {
   let stateRoot: string;
 
   beforeEach(() => {
-    stateRoot = mkdtempSync(join(tmpdir(), 'monad-nexus-mcp-timeout-'));
+    stateRoot = mkdtempSync(join(tmpdir(), 'elanous-nexus-mcp-timeout-'));
     setTestStateRoot(stateRoot);
   });
 
@@ -449,7 +449,7 @@ describe('runNexus · MCP widget server binding', () => {
   let stateRoot: string;
 
   beforeEach(() => {
-    stateRoot = mkdtempSync(join(tmpdir(), 'monad-nexus-widget-bind-'));
+    stateRoot = mkdtempSync(join(tmpdir(), 'elanous-nexus-widget-bind-'));
     setTestStateRoot(stateRoot);
   });
 

@@ -1,4 +1,4 @@
-// `monad nexus restart-needed` — R0 of 내부 문서 `RFC-nexus-restart-minimization-2026-09-24`.
+// `elanous nexus restart-needed` — R0 of 내부 문서 `RFC-nexus-restart-minimization-2026-09-24`.
 // Read-only: classifies the path diff between the running daemon's commit and
 // the commit about to be installed. Never restarts the daemon and never builds.
 
@@ -146,7 +146,7 @@ export async function decideRestartNeeded(opts: RestartNeededOpts = {}): Promise
     if (format === 'json') {
       out.log(JSON.stringify(body, null, 2));
     } else {
-      out.error(`monad nexus restart-needed — unknown: ${reason}`);
+      out.error(`elanous nexus restart-needed — unknown: ${reason}`);
       out.error(`from      ${known.from ?? 'null'}`);
       out.error(`to        ${known.to ?? 'null'}`);
       out.error(`paths     ${known.pathCount ?? 'null'}`);

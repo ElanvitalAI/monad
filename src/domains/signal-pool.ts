@@ -3,7 +3,7 @@
 // 흩어진 수집기(커뮤니티·뉴스·SNS·시장·국면·공시)가 신호별로 직접 알림을 쏘던 구조(=스팸)를
 // 끝내고, 원신호를 **공유 pool 에 적재만** 한다. 알림 판단은 게이트가 독점(1차 A1·2차 A2).
 //
-// 스키마 = 모나드 자율설계 산출(EXPERIMENT-monad-autonomous-design)을 실화:
+// 스키마 = 엘라누스 자율설계 산출(EXPERIMENT-elanous-autonomous-design)을 실화:
 //   event_id·자산·발생/수집시각·출처·근거·신뢰도(trust ρ)·심각도(S0~S4·1차가 채움)·TTL·
 //   중복군(dedup)·제안행동·원문. 관찰→판단→주문→체결 lineage 추적의 뿌리.
 //

@@ -24,20 +24,20 @@ import { makeTestSpawnBackend } from '../src/nexus/supervisor/spawn.js';
 import { clearSwitchRegistry } from '../src/nexus/config/switch-registry.js';
 import { reloadAllBuiltins } from '../src/nexus/config/builtins/index.js';
 import { patchUserConfig, writeSwitchValue } from '../src/nexus/config/user-config.js';
-import { setMonadConfigDir, resetMonadConfigDir } from '../src/monad-config-dir.js';
+import { setElanousConfigDir, resetElanousConfigDir } from '../src/elanous-config-dir.js';
 
 let tmpRoot: string;
 beforeEach(() => {
-  tmpRoot = mkdtempSync(join(tmpdir(), 'monad-nexus-n35-cloud-'));
-  setMonadConfigDir(tmpRoot);
-  process.env.MONAD_NEXUS_DIR = tmpRoot;
+  tmpRoot = mkdtempSync(join(tmpdir(), 'elanous-nexus-n35-cloud-'));
+  setElanousConfigDir(tmpRoot);
+  process.env.ELANOUS_NEXUS_DIR = tmpRoot;
   resetBackendRegistry();
   clearSwitchRegistry();
   reloadAllBuiltins();
 });
 afterEach(() => {
-  resetMonadConfigDir();
-  delete process.env.MONAD_NEXUS_DIR;
+  resetElanousConfigDir();
+  delete process.env.ELANOUS_NEXUS_DIR;
   try { rmSync(tmpRoot, { recursive: true, force: true }); } catch { /* ignore */ }
   resetBackendRegistry();
   clearSwitchRegistry();
@@ -237,12 +237,12 @@ describe('AwsBackend (stubbed SDK client)', () => {
     const fake = makeFakeClient();
     fake.send = async () => ({
       SecretList: [
-        { Name: 'monad/keep-1' },
-        { Name: 'monad/keep-2' },
+        { Name: 'elanous/keep-1' },
+        { Name: 'elanous/keep-2' },
         { Name: 'unrelated/skip' },
       ],
     });
-    const back = createAwsBackend({ region: 'us-east-1', secretPrefix: 'monad/', clientFactory: () => fake });
+    const back = createAwsBackend({ region: 'us-east-1', secretPrefix: 'elanous/', clientFactory: () => fake });
     expect((await back.list()).sort()).toEqual(['keep-1', 'keep-2']);
   });
 

@@ -38,8 +38,8 @@ describe('verifyPhaseAlreadySatisfied', () => {
 
   test('Kotlin과 Swift 구현 파일은 injected grounding에서 실제 근거로 인정한다', async () => {
     for (const file of [
-      'apps/android/app/src/main/kotlin/com/monad/Main.kt',
-      'apps/ios/MonadiOSKit/Sources/Monad/App.swift',
+      'apps/android/app/src/main/kotlin/com/elanous/Main.kt',
+      'apps/ios/ElanousiOSKit/Sources/Elanous/App.swift',
     ]) {
       const v = await verifyPhaseAlreadySatisfied('구현 확인', [], {
         ground: async () => ({ grounded: true, context: file, files: [file] }),
@@ -52,9 +52,9 @@ describe('verifyPhaseAlreadySatisfied', () => {
 
   test('Kotlin과 Swift 시험 경로는 injected grounding의 실제 근거에서 배제한다', async () => {
     for (const file of [
-      'apps/android/app/src/test/kotlin/com/monad/MainTest.kt',
-      'apps/android/app/src/main/kotlin/com/monad/MainTest.kt',
-      'apps/ios/MonadiOSKitTests/AppTests.swift',
+      'apps/android/app/src/test/kotlin/com/elanous/MainTest.kt',
+      'apps/android/app/src/main/kotlin/com/elanous/MainTest.kt',
+      'apps/ios/ElanousiOSKitTests/AppTests.swift',
     ]) {
       const v = await verifyPhaseAlreadySatisfied('시험 파일 제외', [], {
         ground: async () => ({ grounded: true, context: file, files: [file] }),

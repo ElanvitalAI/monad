@@ -32,16 +32,16 @@ describe('AXON F1 — acpServerRegisterSession', () => {
     const rec = acpServerRegisterSession(sessions, manager, () => String(++seq), '/workdir/alpha');
 
     // Local session map gets the record
-    expect(rec.id).toBe('monad-session-1');
+    expect(rec.id).toBe('elanous-session-1');
     expect(rec.cwd).toBe('/workdir/alpha');
     expect(rec.aborted).toBe(false);
-    expect(sessions.get('monad-session-1')).toBe(rec);
+    expect(sessions.get('elanous-session-1')).toBe(rec);
 
     // DualRoleManager sees it under the namespaced id
-    const fromManager = manager.serverSessionById('monad-session-1');
+    const fromManager = manager.serverSessionById('elanous-session-1');
     expect(fromManager).toBeDefined();
-    expect(fromManager!.id).toBe(`${SERVER_NAMESPACE}monad-session-1`);
-    expect(fromManager!.backendSessionId).toBe('monad-session-1');
+    expect(fromManager!.id).toBe(`${SERVER_NAMESPACE}elanous-session-1`);
+    expect(fromManager!.backendSessionId).toBe('elanous-session-1');
     expect(fromManager!.cwd).toBe('/workdir/alpha');
   });
 
@@ -54,8 +54,8 @@ describe('AXON F1 — acpServerRegisterSession', () => {
     const a = acpServerRegisterSession(sessions, manager, next, '/a');
     const b = acpServerRegisterSession(sessions, manager, next, '/b');
 
-    expect(a.id).toBe('monad-session-1');
-    expect(b.id).toBe('monad-session-2');
+    expect(a.id).toBe('elanous-session-1');
+    expect(b.id).toBe('elanous-session-2');
     expect(manager.list('server')).toHaveLength(2);
   });
 
@@ -71,8 +71,8 @@ describe('AXON F1 — acpServerRegisterSession', () => {
     const rec = acpServerRegisterSession(sessions, throwingManager, () => '1', '/cwd');
 
     // Local map still has the session even though registry blew up.
-    expect(rec.id).toBe('monad-session-1');
-    expect(sessions.get('monad-session-1')).toBe(rec);
+    expect(rec.id).toBe('elanous-session-1');
+    expect(sessions.get('elanous-session-1')).toBe(rec);
   });
 });
 
@@ -81,24 +81,24 @@ describe('AXON F1 — acpServerBeginPrompt', () => {
     const manager = new DualRoleManager();
     const sessions = new Map<string, AcpServerSession>();
     const rec = acpServerRegisterSession(sessions, manager, () => '1', '/w');
-    const firstSeen = manager.serverSessionById('monad-session-1')!.lastSeenAt;
+    const firstSeen = manager.serverSessionById('elanous-session-1')!.lastSeenAt;
 
     // Manually mark aborted, then begin a prompt — both fields should update.
     rec.aborted = true;
     await new Promise((r) => setTimeout(r, 2));
-    const returned = acpServerBeginPrompt(sessions, manager, 'monad-session-1');
+    const returned = acpServerBeginPrompt(sessions, manager, 'elanous-session-1');
 
     expect(returned).toBe(rec);
     expect(rec.aborted).toBe(false);
-    const secondSeen = manager.serverSessionById('monad-session-1')!.lastSeenAt;
+    const secondSeen = manager.serverSessionById('elanous-session-1')!.lastSeenAt;
     expect(secondSeen).toBeGreaterThanOrEqual(firstSeen);
   });
 
   test('throws on unknown session id', () => {
     const manager = new DualRoleManager();
     const sessions = new Map<string, AcpServerSession>();
-    expect(() => acpServerBeginPrompt(sessions, manager, 'monad-session-42'))
-      .toThrow(/unknown session: monad-session-42/);
+    expect(() => acpServerBeginPrompt(sessions, manager, 'elanous-session-42'))
+      .toThrow(/unknown session: elanous-session-42/);
   });
 });
 
@@ -116,7 +116,7 @@ describe('AXON F1 — acpServerDisposeSessions', () => {
 
     const cleaned = acpServerDisposeSessions(sessions, manager);
 
-    expect(cleaned).toEqual(['monad-session-1', 'monad-session-2', 'monad-session-3']);
+    expect(cleaned).toEqual(['elanous-session-1', 'elanous-session-2', 'elanous-session-3']);
     expect(sessions.size).toBe(0);
     expect(manager.list('server')).toHaveLength(0);
   });

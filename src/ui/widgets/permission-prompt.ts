@@ -6,7 +6,7 @@
 // wires the defaults (shortcut letters, feedbackPrompt with
 // optionalFor, footer hint). Wrapper stays under 80 LOC.
 //
-// Motivation: monad's `approval-modal.ts` is the canonical use —
+// Motivation: elanous's `approval-modal.ts` is the canonical use —
 // when the agent proposes an edit, the user picks Allow / Deny /
 // Always, and on Deny we collect a one-line reason to feed back
 // to the LLM. SelectView's feedbackPrompt already handles that;

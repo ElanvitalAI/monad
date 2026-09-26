@@ -74,7 +74,7 @@ describe('coding 팩 — 빌트인 기본 등록(D2)', () => {
     expect(p.domain).toBe('coding');
     expect(p.decompose.goalKind).toBe('coding');
     // 회귀0 — 기존 mission-engine 프리앰블 문자열 그대로.
-    expect(p.decompose.objectivePreamble('X 구현')).toBe('monad 에 다음 미션을 구현한다: "X 구현"');
+    expect(p.decompose.objectivePreamble('X 구현')).toBe('elanous 에 다음 미션을 구현한다: "X 구현"');
   });
 });
 

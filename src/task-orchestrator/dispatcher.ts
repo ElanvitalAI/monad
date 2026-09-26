@@ -53,7 +53,7 @@ export const DEFAULT_CONCURRENCY_CAPS: Record<TaskSurfaceKind, number> = {
   // E7 (§7.4 follow-up · 2026-05-17) — showroom surface (role-judge
   // batches, perf/eval flows). Match subagent cap.
   showroom:        3,
-  // Parallel self-dev (2026-07-21) — each job is a `monad self implement`
+  // Parallel self-dev (2026-07-21) — each job is a `elanous self implement`
   // subprocess that itself spawns a goal-loop child (heavyweight: 2 nested
   // processes + model calls + worktree). Three matches comparable agent
   // surfaces while leaving measured saturation available for later tuning.

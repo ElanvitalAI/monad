@@ -2,7 +2,7 @@
 // daemon-side N-backend fanout helper. `globalAcpAgentManager()` is
 // already capable of spawning + reusing agents per (backendId, cwd);
 // this module wraps that into a single-call broadcast so the codex
-// MCP tool (`monad_showroom_broadcast`) can fan a prompt out to
+// MCP tool (`elanous_showroom_broadcast`) can fan a prompt out to
 // claude / gemini / grok in parallel and synthesise the responses.
 //
 // PWA Showroom (apps/pwa/src/lib/showroom/runtime.ts) does the same
@@ -19,7 +19,7 @@ import { globalAcpAgentManager, type AcpAgentManager } from '../acp/agent-manage
 import type { AcpAgent } from '../acp/client.js';
 
 export interface BroadcastTargetResult {
-  /** Backend id (claude / gemini / grok / codex-app-server / monad-builtin). */
+  /** Backend id (claude / gemini / grok / codex-app-server / elanous-builtin). */
   backend: string;
   ok: boolean;
   /** Accumulated assistant text when the turn finishes successfully. */

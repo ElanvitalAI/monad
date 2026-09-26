@@ -146,7 +146,7 @@ export function renderCritique(r: CritiqueResult): string {
 //
 // PR 리뷰어 계약/함수(reviewPullRequest·buildReviewPrompt·parseReviewResult·renderReview·diff 예산
 // 절단 일가·ReviewResult/ReviewInput/ReviewVerdict)는 src/agent-substrate/pr-reviewer.ts 로 승격됐다
-// (C 작전 다음 컷·DESIGN-cross-surface-autonomy-membrane §14). 미션·하니스·CLI(monad self review)·
+// (C 작전 다음 컷·DESIGN-cross-surface-autonomy-membrane §14). 미션·하니스·CLI(elanous self review)·
 // self-implementation 이 하나의 리뷰어를 공용 소비 → drift 방지. 여기선 기존 import 처 무접촉을 위한
 // re-export(C1 동형·회귀0) + PhaseResult 브릿지(reviewToPhaseFields·미션 결합이라 잔류)만 둔다.
 export {

@@ -1,6 +1,6 @@
 {
-  "name": "monadagent",
-  "version": "0.1.2",
+  "name": "elanous",
+  "version": "0.2.0",
   "description": "Self-healing coding harness where eyes, hands, and memory all turn on one sentence — it authors its own goals, implements them in isolated worktrees, and reviews its own work.",
   "license": "Apache-2.0",
   "repository": {
@@ -9,8 +9,8 @@
   },
   "type": "module",
   "bin": {
-    "monad": "./bin/monad.mjs",
-    "mda": "./bin/monad.mjs"
+    "elanous": "./bin/elanous.mjs",
+    "mda": "./bin/elanous.mjs"
   },
   "engines": {
     "bun": ">=1.3.5"

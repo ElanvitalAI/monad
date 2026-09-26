@@ -1,7 +1,7 @@
 // SSH host config — T4-E1.
 //
 // The fleet is «configuration», not code: the list lives in
-// ~/.monad/ssh-hosts.json (or $MONAD_SSH_HOSTS_PATH). With no file the
+// ~/.elanous/ssh-hosts.json (or $ELANOUS_SSH_HOSTS_PATH). With no file the
 // fleet is empty — a new install must not try to reach someone else's
 // machines. (2026-09-25 public-release cleanup: the five hosts that used
 // to be hard-coded here moved into the owner's own ssh-hosts.json.)
@@ -28,7 +28,7 @@ import { existsSync, readFileSync } from 'node:fs';
 import { homedir } from 'node:os';
 import { join as joinPath } from 'node:path';
 import { normalizeInputQuery } from '../input/query-match.js';
-import { migrateLegacyHomeFile } from '../storage/legacy-monad-dir-migrate.js';
+import { migrateLegacyHomeFile } from '../storage/legacy-elanous-dir-migrate.js';
 
 export interface SshHost {
   name: string;
@@ -51,17 +51,17 @@ const lastUsedAt = new Map<string, number>();
 let cachedList: SshHost[] | null = null;
 let testHosts: SshHost[] | null = null;
 
-// FU2 Tier 2: ~/.config/monad-agent/ssh-hosts.json → ~/.monad/ssh-hosts.json.
+// FU2 Tier 2: ~/.config/monad-agent/ssh-hosts.json → ~/.elanous/ssh-hosts.json.
 function defaultConfigPath(): string {
-  const explicit = process.env['MONAD_SSH_HOSTS_PATH']?.trim();
+  const explicit = process.env['ELANOUS_SSH_HOSTS_PATH']?.trim();
   if (explicit) return explicit;
   const xdg = process.env['XDG_CONFIG_HOME']?.trim();
   if (xdg) return joinPath(xdg, 'monad-agent', 'ssh-hosts.json');
   migrateLegacyHomeFile({
     legacyHomeRel: joinPath('.config', 'monad-agent', 'ssh-hosts.json'),
-    monadRel: 'ssh-hosts.json',
+    elanousRel: 'ssh-hosts.json',
   });
-  return joinPath(homedir(), '.monad', 'ssh-hosts.json');
+  return joinPath(homedir(), '.elanous', 'ssh-hosts.json');
 }
 
 function configPath(): string {
@@ -111,8 +111,8 @@ function fallbackHosts(): SshHost[] {
   return (testHosts ?? DEFAULT_HOSTS).map((h) => ({ ...h }));
 }
 
-/** List configured SSH hosts. Reads ~/.monad/ssh-hosts.json (or
- *  $MONAD_SSH_HOSTS_PATH) if present; otherwise returns DEFAULT_HOSTS (empty). Results are memoized
+/** List configured SSH hosts. Reads ~/.elanous/ssh-hosts.json (or
+ *  $ELANOUS_SSH_HOSTS_PATH) if present; otherwise returns DEFAULT_HOSTS (empty). Results are memoized
  *  in-process. Call `_resetSshHostsForTesting()` between cases. */
 export function listSshHosts(): SshHost[] {
   if (cachedList) return cachedList.slice();
@@ -139,9 +139,9 @@ export function sshHostsWithRole(role: string): SshHost[] {
 }
 
 /** The ssh host the video pipeline sends MLX media jobs to:
- *  $MONAD_MEDIA_HOST, else the first host with role `media`, else null. */
+ *  $ELANOUS_MEDIA_HOST, else the first host with role `media`, else null. */
 export function mediaSshHost(): string | null {
-  const env = process.env['MONAD_MEDIA_HOST']?.trim();
+  const env = process.env['ELANOUS_MEDIA_HOST']?.trim();
   if (env) return env;
   const h = sshHostsWithRole('media')[0];
   return h ? h.host : null;

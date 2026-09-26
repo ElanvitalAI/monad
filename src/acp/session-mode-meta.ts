@@ -10,7 +10,7 @@
 // behavior (execute), preserving forward-compat.
 //
 // Reference key: `session_mode` (no canonical Zed/ACP key exists today;
-// monad introduces it under its own namespace; ACP spec push-back can
+// elanous introduces it under its own namespace; ACP spec push-back can
 // adopt or remap later).
 //
 // PLAN: 내부 문서 `PLAN-acp-plan-execute-bridge` (P1 phase).

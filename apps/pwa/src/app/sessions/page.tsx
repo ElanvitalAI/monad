@@ -6,7 +6,7 @@
 import { SessionsListPanel } from '@/components/sessions/SessionsListPanel';
 
 export const metadata = {
-  title: 'Sessions · monad',
+  title: 'Sessions · elanous',
 };
 
 export default function SessionsPage() {

@@ -88,7 +88,7 @@ export function WelcomeCard() {
       className="rounded border border-primary/30 bg-primary/5 p-4 shadow-sm"
     >
       <header className="mb-2 flex items-start justify-between gap-2">
-        <h3 className="text-sm font-semibold">✦ Welcome to monad NEXUS</h3>
+        <h3 className="text-sm font-semibold">✦ Welcome to elanous NEXUS</h3>
         <Button
           data-testid="welcome-card-dismiss"
           variant="ghost"
@@ -112,7 +112,7 @@ export function WelcomeCard() {
         <p>
           Telegram · Discord allowlist · 자동 부팅 (launchd / systemd) 등{' '}
           <em>advanced 셋업</em>은 데스크탑에서{' '}
-          <span className="font-mono">monad legacy</span> →{' '}
+          <span className="font-mono">elanous legacy</span> →{' '}
           <span className="font-mono">/setup</span> wizard 에서 셋업
           (NEXUS 미mirror 영역).
         </p>

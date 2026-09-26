@@ -317,20 +317,20 @@ describe('buildSelfProvision 배선(DI behavior)', () => {
   it('repoRoot → cwd·self 정책 배선·installRegistry 전달', async () => {
     let gotDeps: ProvisionDeps | null = null;
     const cb = buildSelfProvision({
-      repoRoot: '/monad/repo',
+      repoRoot: '/elanous/repo',
       resolve: makeAllowlistResolver([{ layer: 'skill', name: 'x', sourcePath: '/s/x' }]),
       provisioner: async (_req, deps) => { gotDeps = deps; return { ok: true, layer: 'skill', spec: 'x', action: 'installed', detail: 'ok' }; },
       installRegistry: async () => ({ ok: true, detail: 'ok' }),
     });
     await cb({ layer: 'skill', spec: 'x' });
     expect(gotDeps).not.toBeNull();
-    expect(gotDeps!.cwd).toBe('/monad/repo');           // repoRoot 가 cwd 로 배선
+    expect(gotDeps!.cwd).toBe('/elanous/repo');           // repoRoot 가 cwd 로 배선
     expect(gotDeps!.policy).toBeDefined();               // self 정책 배선
     expect(gotDeps!.installRegistry).toBeDefined();      // install seam 전달
   });
 
   it('resolve 미주입 → deny-all(skill/subagent 자율설치 전면차단·안전기본값)', async () => {
-    const cb = buildSelfProvision({ repoRoot: '/monad/repo' }); // resolve 없음
+    const cb = buildSelfProvision({ repoRoot: '/elanous/repo' }); // resolve 없음
     const res = await cb({ layer: 'skill', spec: 'anything' });
     expect(res.action).toBe('denied');
   });

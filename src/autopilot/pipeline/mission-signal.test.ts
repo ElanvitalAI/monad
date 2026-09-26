@@ -1,4 +1,4 @@
-// mission-signal 누수 차단 계약(대표 2026-07-23·모나드 리뷰 2라운드 반영) —
+// mission-signal 누수 차단 계약(대표 2026-07-23·엘라누스 리뷰 2라운드 반영) —
 // TTL(+at없음) · phaseId 스코프 · 1회성 abort(CAS-clear) · pause sustained · respawn global-only · peek 순수.
 import { describe, it, expect } from 'bun:test';
 import {

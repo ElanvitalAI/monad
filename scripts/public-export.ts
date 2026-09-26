@@ -46,9 +46,9 @@ export interface LeakHit { readonly marker: string; readonly file: string; reado
 /**
  * `absolute-home-path` — «내보내는 사람»의 홈 경로만 문다(`/Users/<나>/` · `/home/<나>/`).
  * 🩸 2026-09-24: 종전 패턴(`/(Users|home)/<아무 이름>/`)은 539건 중 244건이 시험 픽스처(`~/` · `~/` …)였다 —
- *    가짜 경로는 유출이 아니다. 계정 이름은 `MONAD_LEAK_HOME_USER` 로 바꿀 수 있고, 모르면 종전처럼 넓게 문다(«모른다»를 «깨끗하다»로 안 읽는다).
+ *    가짜 경로는 유출이 아니다. 계정 이름은 `ELANOUS_LEAK_HOME_USER` 로 바꿀 수 있고, 모르면 종전처럼 넓게 문다(«모른다»를 «깨끗하다»로 안 읽는다).
  */
-export function homeUserPattern(user: string | undefined = process.env.MONAD_LEAK_HOME_USER ?? currentUserName()): RegExp {
+export function homeUserPattern(user: string | undefined = process.env.ELANOUS_LEAK_HOME_USER ?? currentUserName()): RegExp {
   const name = (user ?? '').trim();
   if (!name) return /\/(?:Users|home)\/[A-Za-z0-9._-]+\//u;
   return new RegExp(`/(?:Users|home)/${name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}/`, 'u');
@@ -73,12 +73,12 @@ export const LEAK_MARKERS: ReadonlyArray<{ readonly marker: string; readonly pat
   { marker: 'xcode-author-header', pattern: /^\s*\/\/\s+Created by \S/u },
 ];
 
-/** 개인 치환표 — 저장소 «밖»(기본 `~/.monad/export-redactions.tsv` · env `MONAD_EXPORT_REDACTIONS`).
+/** 개인 치환표 — 저장소 «밖»(기본 `~/.elanous/export-redactions.tsv` · env `ELANOUS_EXPORT_REDACTIONS`).
  *  한 줄 = `실제값<TAB>자리표`(# 주석 · 빈 줄 무시). 내보낼 때 모든 텍스트 파일에서 치환하고, 치환 «뒤»에 실제값이 남으면 유출로 센다.
  *  ⛔ 표가 없으면 «깨끗하다»가 아니라 «못 봤다» — `null` 을 돌려주고 run() 이 rc=1 로 막는다(`--no-private-list` 로만 넘어간다). */
 export interface PrivateRedaction { readonly from: string; readonly to: string }
 export function privateRedactionsPath(): string {
-  return process.env.MONAD_EXPORT_REDACTIONS?.trim() || join(homedir(), '.monad', 'export-redactions.tsv');
+  return process.env.ELANOUS_EXPORT_REDACTIONS?.trim() || join(homedir(), '.elanous', 'export-redactions.tsv');
 }
 export function loadPrivateRedactions(path = privateRedactionsPath()): PrivateRedaction[] | null {
   if (!existsSync(path)) return null;

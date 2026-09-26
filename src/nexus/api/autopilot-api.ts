@@ -5,7 +5,7 @@
 //
 //   POST /v1/autopilot/triage-preview  — 골 → 실행모델 분류(휴리스틱·결정론·무LLM)
 //   GET  /v1/autopilot/repo-watch      — repo watching 상태(hermes/openclaw/codex)
-//   GET  /v1/autopilot/autonomy        — 자율행동 로그(surface_events domain=monad)
+//   GET  /v1/autopilot/autonomy        — 자율행동 로그(surface_events domain=elanous)
 //   GET  /v1/autopilot/arming          — 자율 경계 게이트 상태(booleans·READ-ONLY)
 //
 // 전부 read/preview — 실제 자율집행(merge/재부팅)은 없음(P2/P3 게이트·disarmed).
@@ -122,7 +122,7 @@ export function handleRepoWatchGet(): Response {
   } finally { db.close(); }
 }
 
-/** GET /v1/autopilot/autonomy?limit=&loop= — 자율행동 로그(domain=monad·kind=autonomy). */
+/** GET /v1/autopilot/autonomy?limit=&loop= — 자율행동 로그(domain=elanous·kind=autonomy). */
 export function handleAutonomyGet(req: Request): Response {
   const url = new URL(req.url);
   const limit = Math.min(200, Math.max(1, Number(url.searchParams.get('limit') ?? '50') || 50));

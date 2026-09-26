@@ -5,7 +5,7 @@
 // PLAN §3.6 deliberately avoids over-engineering: no altscreen
 // trickery, no per-frame redraw, no SGR fade — just a one-line hint
 // + tiny pause. Defaults at 60ms total (visible, not annoying);
-// configurable via MONAD_SETUP_TRANSITION_MS env or opts.fadeMs.
+// configurable via ELANOUS_SETUP_TRANSITION_MS env or opts.fadeMs.
 //
 // Auto-disabled when:
 //   - profile is `'mono'`  (no color → animation defeats the point;
@@ -73,7 +73,7 @@ function clampFade(ms: number): number {
 }
 
 function envFadeMs(): number | undefined {
-  const raw = process.env.MONAD_SETUP_TRANSITION_MS;
+  const raw = process.env.ELANOUS_SETUP_TRANSITION_MS;
   if (!raw) return undefined;
   const n = parseInt(raw, 10);
   return Number.isFinite(n) ? n : undefined;

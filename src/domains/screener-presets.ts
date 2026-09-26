@@ -1,6 +1,6 @@
 // ── finance_screener 프리셋 + 포맷 (2026-07-08 · A3) ──────────────────────
 //
-// EODHD /screener(omni-market) 래핑용 순수 헬퍼. US 종목 스크리닝을 monad/텔레그램
+// EODHD /screener(omni-market) 래핑용 순수 헬퍼. US 종목 스크리닝을 elanous/텔레그램
 // 에서 호출. 프리셋 = 즉시 쓸 수 있는 EODHD 필터 JSON + TS 정렬키(스크리너 CLI 가
 // sort 미노출 → 결과를 TS 에서 정렬). 매매는 verify+HITL(스크리닝=관찰).
 //

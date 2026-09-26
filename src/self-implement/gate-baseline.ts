@@ -290,9 +290,9 @@ interface GatePreconditionRule extends GateFailurePrecondition {
 
 const GATE_PRECONDITION_RULES: readonly GatePreconditionRule[] = [
   {
-    pattern: /requires an explicit tool cwd[\s\S]{0,120}?MONAD_TOOL_CWD/i,
-    name: 'MONAD_TOOL_CWD 미설정',
-    remediation: 'MONAD_TOOL_CWD를 대상 작업 디렉터리로 설정한 뒤 게이트를 다시 실행하세요.',
+    pattern: /requires an explicit tool cwd[\s\S]{0,120}?ELANOUS_TOOL_CWD/i,
+    name: 'ELANOUS_TOOL_CWD 미설정',
+    remediation: 'ELANOUS_TOOL_CWD를 대상 작업 디렉터리로 설정한 뒤 게이트를 다시 실행하세요.',
   },
 ];
 
@@ -645,7 +645,7 @@ export function rerunBunTimeoutFailures(
 function runIsolatedBunTest(cwd: string, args: string[], timeout: number): ProcessResult {
   let isolated: ReturnType<typeof prepareDeterministicChildEnvironment>;
   try {
-    isolated = prepareDeterministicChildEnvironment('monad-gate-test-env-');
+    isolated = prepareDeterministicChildEnvironment('elanous-gate-test-env-');
   } catch (error) {
     const message = `deterministic environment setup failed: ${String(error)}`;
     return { status: null, stdout: '', stderr: message, error: error instanceof Error ? error : new Error(message) };
@@ -658,13 +658,13 @@ function runIsolatedBunTest(cwd: string, args: string[], timeout: number): Proce
 }
 
 function junitReportTemporaryDirectory(): string {
-  return process.env.MONAD_GATE_JUNIT_TMPDIR || tmpdir();
+  return process.env.ELANOUS_GATE_JUNIT_TMPDIR || tmpdir();
 }
 
 function runBaselineBunTest(cwd: string, args: string[], timeout: number): ProcessResult & { passedTestEvidence: GatePassedTestEvidence } {
   let reportDir: string;
   try {
-    reportDir = mkdtempSync(join(junitReportTemporaryDirectory(), 'monad-gate-junit-'));
+    reportDir = mkdtempSync(join(junitReportTemporaryDirectory(), 'elanous-gate-junit-'));
   } catch (error) {
     const process = runIsolatedBunTest(cwd, args, timeout);
     return { ...process, passedTestEvidence: { status: 'unavailable', reason: `JUnit passed-test evidence unavailable: could not create reporter directory: ${String(error)}` } };
@@ -732,7 +732,7 @@ export function classifyBaselineProcess(result: ProcessResult, budget?: { timeou
 }
 
 function withBaselineWorktree<T>(cwd: string, baseRef: string, run: (baselineDir: string) => T): T | BaselineProcessResult {
-  const baselineDir = mkdtempSync(join(tmpdir(), 'monad-gate-baseline-'));
+  const baselineDir = mkdtempSync(join(tmpdir(), 'elanous-gate-baseline-'));
   let attached = false;
   try {
     const add = runGitCommand(cwd, ['worktree', 'add', '--detach', baselineDir, baseRef], { encoding: 'utf8', timeout: 60_000 });
@@ -762,7 +762,7 @@ function withVerifyWorktree<T>(cwd: string, baseRef: string, run: (dir: string) 
   let dir = '';
   let attached = false;
   try {
-    dir = mkdtempSync(join(tmpdir(), 'monad-gate-baseline-'));
+    dir = mkdtempSync(join(tmpdir(), 'elanous-gate-baseline-'));
     const add = runGitCommand(cwd, ['worktree', 'add', '--detach', dir, baseRef], { encoding: 'utf8', timeout: 60_000 });
     if (add.status !== 0) return classifyBaselineProcess({ status: add.status, stdout: add.stdout, stderr: add.stderr });
     attached = true;

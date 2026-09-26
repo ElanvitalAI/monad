@@ -48,8 +48,8 @@ interface Harness {
 }
 
 function makeHarness(): Harness {
-  const tmp1 = mkdtempSync(joinPath(tmpdir(), 'monad-session-store-test-'));
-  const tmp2 = mkdtempSync(joinPath(tmpdir(), 'monad-session-persist-test-'));
+  const tmp1 = mkdtempSync(joinPath(tmpdir(), 'elanous-session-store-test-'));
+  const tmp2 = mkdtempSync(joinPath(tmpdir(), 'elanous-session-persist-test-'));
   const chat = new AcpSessionStore(joinPath(tmp1, 'chats.json'));
   const persistence = createAcpSessionPersistence({ basePath: tmp2 });
   const drm = new DualRoleManager();

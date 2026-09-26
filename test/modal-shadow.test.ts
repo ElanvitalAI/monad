@@ -11,7 +11,7 @@ import { SelectView } from '../src/ui/widgets/select-view.js';
 import {
   CATPPUCCIN_MOCHA,
   CATPPUCCIN_LATTE,
-  MONAD_PASTEL_DEFAULT,
+  ELANOUS_PASTEL_DEFAULT,
 } from '../src/themes/index.js';
 import type { ThemeTokens } from '../src/theme/tokens.js';
 
@@ -42,16 +42,16 @@ describe('resolveShadowAnsi', () => {
     expect(res!.glyph).toBe('▓');
   });
 
-  test('honors MONAD_ASCII_ICONS=1 by falling back to # glyph', () => {
-    const orig = process.env.MONAD_ASCII_ICONS;
-    process.env.MONAD_ASCII_ICONS = '1';
+  test('honors ELANOUS_ASCII_ICONS=1 by falling back to # glyph', () => {
+    const orig = process.env.ELANOUS_ASCII_ICONS;
+    process.env.ELANOUS_ASCII_ICONS = '1';
     try {
       const res = resolveShadowAnsi({ theme: CATPPUCCIN_MOCHA });
       expect(res).not.toBeNull();
       expect(res!.glyph).toBe('#');
     } finally {
-      if (orig === undefined) delete process.env.MONAD_ASCII_ICONS;
-      else process.env.MONAD_ASCII_ICONS = orig;
+      if (orig === undefined) delete process.env.ELANOUS_ASCII_ICONS;
+      else process.env.ELANOUS_ASCII_ICONS = orig;
     }
   });
 
@@ -158,7 +158,7 @@ describe('mountViewAsModalSurface shadow emission', () => {
       id: 'glyph',
       bounds: { row: 3, col: 10, width: 20, height: 6 },
       view: stubView(),
-      shadow: { theme: MONAD_PASTEL_DEFAULT, glyph: '░' },
+      shadow: { theme: ELANOUS_PASTEL_DEFAULT, glyph: '░' },
     });
     const out = handle.surface.paint();
     expect(out).toContain('░');

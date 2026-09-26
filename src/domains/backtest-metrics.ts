@@ -1,7 +1,7 @@
 // ── 백테스팅 학술 메트릭 (B0 · backtest-metrics · 2026-07-08) ─────────────
 //
 // 과최적화 차단 통계(López de Prado AFML 계승·순수 함수). factor-backtest 스킬은
-// git 미관리라 monad TS 로 구현 — 버전관리·단위테스트·B5 직접 호출(subprocess 0).
+// git 미관리라 elanous TS 로 구현 — 버전관리·단위테스트·B5 직접 호출(subprocess 0).
 //  - annualizedSharpe: 일수익률 → 연율 Sharpe(√252)
 //  - deflatedSharpe(DSR): 다중검정 보정 — nTrials(그날 가설 수) 반영
 //  - probabilisticSharpe(PSR): SR>기준 확률(skew/kurt 보정)

@@ -4,9 +4,9 @@
 // (inbound PCM → STT final → self turn → TTS → session outbound), the
 // `!voice-*` alias, and teardown on /voice-leave.
 //
-// Session-store discipline: MONAD_STATE_DIR points at a tmp dir for
+// Session-store discipline: ELANOUS_STATE_DIR points at a tmp dir for
 // the whole file (the wire's onSessionStart calls createSession —
-// never let test turns land in the real ~/.monad store).
+// never let test turns land in the real ~/.elanous store).
 
 import { describe, it, expect, beforeAll, afterAll, beforeEach } from 'bun:test';
 import { mkdtempSync, rmSync } from 'node:fs';
@@ -32,11 +32,11 @@ const envBackup: Record<string, string | undefined> = {};
 
 beforeAll(() => {
   stateDir = mkdtempSync(join(tmpdir(), 'dc-voice-wire-'));
-  envBackup.MONAD_STATE_DIR = process.env.MONAD_STATE_DIR;
-  envBackup.MONAD_DISCORD_VOICE_CHANNEL = process.env.MONAD_DISCORD_VOICE_CHANNEL;
-  envBackup.MONAD_DISCORD_VOICE_LEAVE_ON_EMPTY = process.env.MONAD_DISCORD_VOICE_LEAVE_ON_EMPTY;
+  envBackup.ELANOUS_STATE_DIR = process.env.ELANOUS_STATE_DIR;
+  envBackup.ELANOUS_DISCORD_VOICE_CHANNEL = process.env.ELANOUS_DISCORD_VOICE_CHANNEL;
+  envBackup.ELANOUS_DISCORD_VOICE_LEAVE_ON_EMPTY = process.env.ELANOUS_DISCORD_VOICE_LEAVE_ON_EMPTY;
   envBackup.XDG_CONFIG_HOME = process.env.XDG_CONFIG_HOME;
-  process.env.MONAD_STATE_DIR = stateDir;
+  process.env.ELANOUS_STATE_DIR = stateDir;
   // Config isolation (2026-07-12) — isDiscordVoiceChannelEnabled() 는
   // getUserConfig() 를 읽고 config 가 env 보다 우선한다. 개발 머신의
   // 실제 config 에 voice.discord.voiceChannel.enabled=true 가 있으면
@@ -53,9 +53,9 @@ afterAll(() => {
 });
 
 beforeEach(() => {
-  process.env.MONAD_DISCORD_VOICE_CHANNEL = '1';
+  process.env.ELANOUS_DISCORD_VOICE_CHANNEL = '1';
   // Auto-leave subscribes gateway voice state — irrelevant here.
-  process.env.MONAD_DISCORD_VOICE_LEAVE_ON_EMPTY = '0';
+  process.env.ELANOUS_DISCORD_VOICE_LEAVE_ON_EMPTY = '0';
 });
 
 const fakeCfg = {
@@ -176,7 +176,7 @@ describe('buildDiscordVoiceWire', () => {
   });
 
   it('gate off ⇒ voiceTap null + /voice-* replies explain the gate', async () => {
-    delete process.env.MONAD_DISCORD_VOICE_CHANNEL;
+    delete process.env.ELANOUS_DISCORD_VOICE_CHANNEL;
     const wire = buildDiscordVoiceWire({
       userConfig: fakeCfg,
       runTurnImpl: (async () => ({ text: 'x' })) as unknown as typeof runTurn,

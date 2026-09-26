@@ -146,7 +146,7 @@ export function executeGoalSlash(input: GoalSlashInput): GoalSlashOutcome {
   if (input.config && !input.config.judgeModel.trim()) {
     lines.push(
       `  ⓘ  Tip: judge uses primary provider's default model. Set goals.judgeModel`,
-      `      in ~/.config/monad/config.json (or run /goal config to inspect)`,
+      `      in ~/.config/elanous/config.json (or run /goal config to inspect)`,
       `      for a cheaper option (e.g. grok-4-fast / haiku-4-5 / gpt-4o-mini).`,
     );
   }
@@ -191,7 +191,7 @@ function handleConfig(cfg: GoalSlashInput['config']): GoalSlashOutcome {
       `    resumeOnPlanModeExit: ${cfg.resumeOnPlanModeExit}`,
       `    modeDefault:          ${cfg.modeDefault}`,
       '',
-      '  Edit ~/.config/monad/config.json under "goals" to override.',
+      '  Edit ~/.config/elanous/config.json under "goals" to override.',
     ],
   };
 }

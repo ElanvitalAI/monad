@@ -88,7 +88,7 @@ export function buildDecomposePrompt(
     '- terminal-pane: { kind: "terminal-pane", spec: { command?, cwd?, title?, env? } }',
     '- cron:          { kind: "cron", scheduleText: string }',
     '- vw-slot:       { kind: "vw-slot", windowId: string, slotId: string }',
-    '- acx-session:   { kind: "acx-session", sessionId: string, agentBrand: "claude-code" | "codex" | "gemini-cli" | "monad-self", prompt: string, model?: string, permissionMode?: "plan" | "auto" | "default", turn?: number, inheritEnv?: boolean }',
+    '- acx-session:   { kind: "acx-session", sessionId: string, agentBrand: "claude-code" | "codex" | "gemini-cli" | "elanous-self", prompt: string, model?: string, permissionMode?: "plan" | "auto" | "default", turn?: number, inheritEnv?: boolean }',
     '',
     `## Constraints`,
     `- maxTasks: ${opts.maxTasks}`,
@@ -107,7 +107,7 @@ export function buildDecomposePrompt(
   );
 
   // ── 분해 품질 원칙 (4대 에이전트 교차 반영·RESEARCH-multiphase-decomposition-4agents) ──
-  // monad 골격(dependsOn 그래프·acceptance 검증·재귀·비용)은 이미 강함. 여기서 프롬프트
+  // elanous 골격(dependsOn 그래프·acceptance 검증·재귀·비용)은 이미 강함. 여기서 프롬프트
   // 품질만 claude-code/gemini/codex/grok 패턴으로 보강: 복잡도비례·파일경로/재사용·LOC·few-shot.
   lines.push(
     '',
@@ -177,7 +177,7 @@ export function buildDecomposePrompt(
       '## Recommended surface for coding/refactor goals',
       'When a task within this objective involves code editing, build / test execution, or',
       'agent-driven exploration, prefer surface kind "acx-session" with an appropriate',
-      '`agentBrand` ("claude-code", "codex", "gemini-cli", or "monad-self"). The orchestrator drives',
+      '`agentBrand` ("claude-code", "codex", "gemini-cli", or "elanous-self"). The orchestrator drives',
       'the agent through the DualRoleManager which handles streaming, permissions, and',
       'reentrancy. Use "subagent" only when no live ACP session is suitable, and',
       '"terminal-pane" only for pure shell commands without LLM assistance.',

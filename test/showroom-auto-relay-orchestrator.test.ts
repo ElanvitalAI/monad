@@ -186,7 +186,7 @@ describe('orchestrator · start/stop preconditions', () => {
     const reg = new AgentRoomRegistry();
     fakeRoom(reg, [
       { sessionId: 's0', brand: 'codex' },
-      { sessionId: 's1', brand: 'monad' }, // ACP-only · no observer
+      { sessionId: 's1', brand: 'elanous' }, // ACP-only · no observer
     ]);
     const observers: Record<string, TransportObserver> = {
       s0: fakeObserver(0),

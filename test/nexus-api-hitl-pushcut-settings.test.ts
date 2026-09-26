@@ -114,16 +114,16 @@ describe('POST /v1/hitl/test-pushcut', () => {
   it('fires a default-prompt notification when configured', async () => {
     const client = fakeClient();
     const req = new Request('http://x/v1/hitl/test-pushcut', { method: 'POST' });
-    const res = await handleHitlTestPushcut(req, { client, notificationName: 'monad-test-notif' });
+    const res = await handleHitlTestPushcut(req, { client, notificationName: 'elanous-test-notif' });
     expect(res.status).toBe(200);
     const body = await res.json();
     expect(body.ok).toBe(true);
-    expect(body.notificationName).toBe('monad-test-notif');
+    expect(body.notificationName).toBe('elanous-test-notif');
     expect(body.prompt).toContain('β-3 test');
     expect(typeof body.sentAt).toBe('number');
     const calls = (client as PushcutClient & { __calls: { name: string; payload: PushcutNotification }[] }).__calls;
     expect(calls).toHaveLength(1);
-    expect(calls[0].name).toBe('monad-test-notif');
+    expect(calls[0].name).toBe('elanous-test-notif');
     expect(calls[0].payload.title).toContain('β-3 test');
   });
 

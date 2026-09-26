@@ -26,21 +26,21 @@ let prevNexus: string | undefined;
 let prevTg: string | undefined;
 let prevDc: string | undefined;
 beforeEach(() => {
-  tmpRoot = mkdtempSync(join(tmpdir(), 'monad-nexus-n2-bot-'));
-  prevNexus = process.env.MONAD_NEXUS_DIR;
-  prevTg = process.env.MONAD_TELEGRAM_BOT_TOKEN;
-  prevDc = process.env.MONAD_DISCORD_BOT_TOKEN;
-  process.env.MONAD_NEXUS_DIR = tmpRoot;
-  delete process.env.MONAD_TELEGRAM_BOT_TOKEN;
-  delete process.env.MONAD_DISCORD_BOT_TOKEN;
+  tmpRoot = mkdtempSync(join(tmpdir(), 'elanous-nexus-n2-bot-'));
+  prevNexus = process.env.ELANOUS_NEXUS_DIR;
+  prevTg = process.env.ELANOUS_TELEGRAM_BOT_TOKEN;
+  prevDc = process.env.ELANOUS_DISCORD_BOT_TOKEN;
+  process.env.ELANOUS_NEXUS_DIR = tmpRoot;
+  delete process.env.ELANOUS_TELEGRAM_BOT_TOKEN;
+  delete process.env.ELANOUS_DISCORD_BOT_TOKEN;
 });
 afterEach(() => {
-  if (prevNexus === undefined) delete process.env.MONAD_NEXUS_DIR;
-  else process.env.MONAD_NEXUS_DIR = prevNexus;
-  if (prevTg === undefined) delete process.env.MONAD_TELEGRAM_BOT_TOKEN;
-  else process.env.MONAD_TELEGRAM_BOT_TOKEN = prevTg;
-  if (prevDc === undefined) delete process.env.MONAD_DISCORD_BOT_TOKEN;
-  else process.env.MONAD_DISCORD_BOT_TOKEN = prevDc;
+  if (prevNexus === undefined) delete process.env.ELANOUS_NEXUS_DIR;
+  else process.env.ELANOUS_NEXUS_DIR = prevNexus;
+  if (prevTg === undefined) delete process.env.ELANOUS_TELEGRAM_BOT_TOKEN;
+  else process.env.ELANOUS_TELEGRAM_BOT_TOKEN = prevTg;
+  if (prevDc === undefined) delete process.env.ELANOUS_DISCORD_BOT_TOKEN;
+  else process.env.ELANOUS_DISCORD_BOT_TOKEN = prevDc;
   try { rmSync(tmpRoot, { recursive: true, force: true }); } catch { /* ignore */ }
 });
 
@@ -53,30 +53,30 @@ describe('createChannelBotTabSpec · token detection', () => {
     const spec = createChannelBotTabSpec({ platform: 'telegram' });
     const meta = metaOf(spec);
     expect(meta.platform).toBe('telegram');
-    expect(meta.tokenEnvName).toBe('MONAD_TELEGRAM_BOT_TOKEN');
+    expect(meta.tokenEnvName).toBe('ELANOUS_TELEGRAM_BOT_TOKEN');
     expect(meta.disabled).toBe(true);
-    expect(meta.disabledReason).toContain('MONAD_TELEGRAM_BOT_TOKEN');
+    expect(meta.disabledReason).toContain('ELANOUS_TELEGRAM_BOT_TOKEN');
   });
 
   test('telegram token present → disabled=false + token forwarded in env', () => {
-    process.env.MONAD_TELEGRAM_BOT_TOKEN = 'TG-SECRET';
+    process.env.ELANOUS_TELEGRAM_BOT_TOKEN = 'TG-SECRET';
     const spec = createChannelBotTabSpec({ platform: 'telegram' });
     expect(metaOf(spec).disabled).toBe(false);
-    expect(spec.spawn?.env).toEqual({ MONAD_TELEGRAM_BOT_TOKEN: 'TG-SECRET' });
+    expect(spec.spawn?.env).toEqual({ ELANOUS_TELEGRAM_BOT_TOKEN: 'TG-SECRET' });
   });
 
   test('discord token name + env forwarding', () => {
-    process.env.MONAD_DISCORD_BOT_TOKEN = 'DC-SECRET';
+    process.env.ELANOUS_DISCORD_BOT_TOKEN = 'DC-SECRET';
     const spec = createChannelBotTabSpec({ platform: 'discord' });
     const meta = metaOf(spec);
     expect(meta.platform).toBe('discord');
-    expect(meta.tokenEnvName).toBe('MONAD_DISCORD_BOT_TOKEN');
+    expect(meta.tokenEnvName).toBe('ELANOUS_DISCORD_BOT_TOKEN');
     expect(meta.disabled).toBe(false);
-    expect(spec.spawn?.env).toEqual({ MONAD_DISCORD_BOT_TOKEN: 'DC-SECRET' });
+    expect(spec.spawn?.env).toEqual({ ELANOUS_DISCORD_BOT_TOKEN: 'DC-SECRET' });
   });
 
   test('whitespace-only token treated as missing', () => {
-    process.env.MONAD_TELEGRAM_BOT_TOKEN = '   ';
+    process.env.ELANOUS_TELEGRAM_BOT_TOKEN = '   ';
     const spec = createChannelBotTabSpec({ platform: 'telegram' });
     expect(metaOf(spec).disabled).toBe(true);
   });
@@ -124,7 +124,7 @@ describe('createChannelBotTabSpec · default policy', () => {
       platform: 'telegram',
       id: 'tg:custom',
       label: 'My Bot',
-      command: ['/usr/bin/monad', 'telegram', '--gateway-mode', '--verbose'],
+      command: ['/usr/bin/elanous', 'telegram', '--gateway-mode', '--verbose'],
       cwd: '/srv/bot',
       lockPath: '/tmp/custom-tg.lock',
     });
@@ -138,7 +138,7 @@ describe('createChannelBotTabSpec · default policy', () => {
 
 describe('halt-pattern integration via maybeScheduleRestart', () => {
   test('401 stderr triggers halt outcome', () => {
-    process.env.MONAD_TELEGRAM_BOT_TOKEN = 'tok';
+    process.env.ELANOUS_TELEGRAM_BOT_TOKEN = 'tok';
     const state = createNexusState({ nexusVersion: '0.8.0', phase: 'test' });
     const registry = new TabRegistry(state);
     const spec = createChannelBotTabSpec({ platform: 'telegram' });
@@ -154,7 +154,7 @@ describe('halt-pattern integration via maybeScheduleRestart', () => {
   });
 
   test('Invalid token halt', () => {
-    process.env.MONAD_DISCORD_BOT_TOKEN = 'tok';
+    process.env.ELANOUS_DISCORD_BOT_TOKEN = 'tok';
     const state = createNexusState({ nexusVersion: '0.8.0', phase: 'test' });
     const registry = new TabRegistry(state);
     const spec = createChannelBotTabSpec({ platform: 'discord' });
@@ -169,7 +169,7 @@ describe('halt-pattern integration via maybeScheduleRestart', () => {
   });
 
   test('non-auth crash goes through backoff (10s)', () => {
-    process.env.MONAD_TELEGRAM_BOT_TOKEN = 'tok';
+    process.env.ELANOUS_TELEGRAM_BOT_TOKEN = 'tok';
     const state = createNexusState({ nexusVersion: '0.8.0', phase: 'test' });
     const registry = new TabRegistry(state);
     const spec = createChannelBotTabSpec({ platform: 'telegram' });
@@ -190,7 +190,7 @@ describe('detectExternalLock + detectExternalChannelBot', () => {
   test('generic helper · alive external pid → status=external', () => {
     const state = createNexusState({ nexusVersion: '0.8.0', phase: 'test' });
     const registry = new TabRegistry(state);
-    process.env.MONAD_TELEGRAM_BOT_TOKEN = 'tok';
+    process.env.ELANOUS_TELEGRAM_BOT_TOKEN = 'tok';
     const spec = createChannelBotTabSpec({ platform: 'telegram' });
     registry.register(spec);
     const meta: LockMeta = {
@@ -212,7 +212,7 @@ describe('detectExternalLock + detectExternalChannelBot', () => {
   test('detectExternalChannelBot wraps the helper using spec meta', () => {
     const state = createNexusState({ nexusVersion: '0.8.0', phase: 'test' });
     const registry = new TabRegistry(state);
-    process.env.MONAD_DISCORD_BOT_TOKEN = 'tok';
+    process.env.ELANOUS_DISCORD_BOT_TOKEN = 'tok';
     const spec = createChannelBotTabSpec({ platform: 'discord' });
     registry.register(spec);
     const meta: LockMeta = { pid: 44444, host: 'h', startedAt: new Date().toISOString(), label: 'dc' };
@@ -228,7 +228,7 @@ describe('detectExternalLock + detectExternalChannelBot', () => {
   test('no lock → outcome=available', () => {
     const state = createNexusState({ nexusVersion: '0.8.0', phase: 'test' });
     const registry = new TabRegistry(state);
-    process.env.MONAD_TELEGRAM_BOT_TOKEN = 'tok';
+    process.env.ELANOUS_TELEGRAM_BOT_TOKEN = 'tok';
     const spec = createChannelBotTabSpec({ platform: 'telegram' });
     registry.register(spec);
     const result = detectExternalChannelBot({
@@ -241,7 +241,7 @@ describe('detectExternalLock + detectExternalChannelBot', () => {
   test('previously-external cleared when lock dies', () => {
     const state = createNexusState({ nexusVersion: '0.8.0', phase: 'test' });
     const registry = new TabRegistry(state);
-    process.env.MONAD_TELEGRAM_BOT_TOKEN = 'tok';
+    process.env.ELANOUS_TELEGRAM_BOT_TOKEN = 'tok';
     const spec = createChannelBotTabSpec({ platform: 'telegram' });
     registry.register(spec);
     registry.patch(spec.id, { status: 'external', pid: 99999 });

@@ -1,4 +1,4 @@
-// 크로스-프로세스 PTY 매니페스트 store 계약 테스트. 격리 tmp MONAD_STATE_DIR 로 실제 데이터 무접촉.
+// 크로스-프로세스 PTY 매니페스트 store 계약 테스트. 격리 tmp ELANOUS_STATE_DIR 로 실제 데이터 무접촉.
 //   upsert/list·snapshot throttle(now 주입)·close(alive=0)·remove. reap 은 owner=process.pid 라 유닛 불가(스킵).
 import { afterAll, beforeEach, test, expect, describe } from 'bun:test';
 import { Database } from 'bun:sqlite';
@@ -8,9 +8,9 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { setGitCommandRunnerForTesting } from '../git-fs/runner.js';
 
-const previousStateDir = process.env.MONAD_STATE_DIR;
+const previousStateDir = process.env.ELANOUS_STATE_DIR;
 const stateDir = mkdtempSync(join(tmpdir(), 'pty-manifest-'));
-process.env.MONAD_STATE_DIR = stateDir;
+process.env.ELANOUS_STATE_DIR = stateDir;
 let manifestDbPath = '';
 
 const {
@@ -36,14 +36,14 @@ beforeEach(() => {
 afterAll(() => {
   setPtyManifestDbPathForTesting(null);
   resetPtyEventLogForTesting();
-  if (previousStateDir === undefined) delete process.env.MONAD_STATE_DIR;
-  else process.env.MONAD_STATE_DIR = previousStateDir;
+  if (previousStateDir === undefined) delete process.env.ELANOUS_STATE_DIR;
+  else process.env.ELANOUS_STATE_DIR = previousStateDir;
 });
 
 describe('terminal origin decisions', () => {
-  test('distinguishes human, monad, external tool, and unknown without conflating missing evidence with human', () => {
+  test('distinguishes human, elanous, external tool, and unknown without conflating missing evidence with human', () => {
     expect(classifyTerminalOrigin({ originRoot: 'human-cli' })).toEqual({ category: 'direct-human', reason: 'inherited-human-cli-marker' });
-    expect(classifyTerminalOrigin({ originRoot: 'monad-internal' })).toEqual({ category: 'monad', reason: 'inherited-monad-marker' });
+    expect(classifyTerminalOrigin({ originRoot: 'elanous-internal' })).toEqual({ category: 'elanous', reason: 'inherited-elanous-marker' });
     expect(classifyTerminalOrigin({ originRoot: 'external-agent', originAgent: 'codex' })).toEqual({ category: 'external-tool', reason: 'inherited-external-agent-marker', externalToolName: 'codex' });
     expect(classifyTerminalOrigin({})).toEqual({ category: 'unknown', reason: 'origin-marker-absent' });
   });
@@ -51,7 +51,7 @@ describe('terminal origin decisions', () => {
   test('treats malformed and conflicting inherited markers as unknown', () => {
     expect(classifyTerminalOrigin({ originRoot: 'external-agent', originAgent: 'bad tool name' })).toEqual({ category: 'unknown', reason: 'invalid-external-tool-marker' });
     expect(classifyTerminalOrigin({ originRoot: 'human-cli', originAgent: 'codex' })).toEqual({ category: 'unknown', reason: 'conflicting-human-agent-marker' });
-    expect(classifyTerminalOrigin({ originRoot: 'monad-internal', originSession: 'run-1' })).toEqual({ category: 'unknown', reason: 'conflicting-monad-agent-marker' });
+    expect(classifyTerminalOrigin({ originRoot: 'elanous-internal', originSession: 'run-1' })).toEqual({ category: 'unknown', reason: 'conflicting-monad-agent-marker' });
   });
 });
 
@@ -100,7 +100,7 @@ describe('pty-manifest store (크로스-프로세스 관측)', () => {
   });
 
   test('fresh WAL registration is visible to a separate readonly process before checkpoint', () => {
-    upsertPtyManifest({ id: 'fresh-wal', kind: 'tui', cmd: 'monad', startedAt: 1, now: 1 });
+    upsertPtyManifest({ id: 'fresh-wal', kind: 'tui', cmd: 'elanous', startedAt: 1, now: 1 });
     expect(listPtyManifestRowsAt(manifestDbPath).map((row) => row.id)).toContain('fresh-wal');
     const script = `const { Database } = require('bun:sqlite'); const d = new Database(process.argv.at(-1), { readonly: true }); console.log(d.query('SELECT id FROM pty_manifest WHERE id=?').get('fresh-wal').id); d.close();`;
     const output = execFileSync(process.execPath, ['-e', script, manifestDbPath], { encoding: 'utf8' }).trim();
@@ -108,7 +108,7 @@ describe('pty-manifest store (크로스-프로세스 관측)', () => {
   });
 
   test('upsert → list 에 등록(owner_pid=현재 프로세스·alive)', () => {
-    upsertPtyManifest({ id: 'self_a1', kind: 'self', cmd: 'bun monad.mjs', workdir: '/wt', startedAt: 100, now: 1000 });
+    upsertPtyManifest({ id: 'self_a1', kind: 'self', cmd: 'bun elanous.mjs', workdir: '/wt', startedAt: 100, now: 1000 });
     const rows = listPtyManifest();
     const r = rows.find((x) => x.id === 'self_a1')!;
     expect(r).toBeTruthy();
@@ -333,7 +333,7 @@ describe('pty-manifest store (크로스-프로세스 관측)', () => {
       const manifestModule = join(process.cwd(), 'src', 'pty-shell', 'pty-manifest.ts');
       const debugModule = join(process.cwd(), 'src', 'debug', 'log.ts');
       const script = `
-        process.env.MONAD_STATE_DIR = process.argv.at(-2);
+        process.env.ELANOUS_STATE_DIR = process.argv.at(-2);
         const manifestPath = process.argv.at(-1);
         const { debug } = await import(${JSON.stringify(debugModule)});
         debug.enable();
@@ -380,7 +380,7 @@ describe('pty-manifest store (크로스-프로세스 관측)', () => {
   });
 
   test('updatePtyManifestFrame → frame/frameAt write (snapshot 과 독립 컬럼)', () => {
-    upsertPtyManifest({ id: 'fr_a', kind: 'tui', cmd: 'monad', startedAt: 0, now: 60_000_000 });
+    upsertPtyManifest({ id: 'fr_a', kind: 'tui', cmd: 'elanous', startedAt: 0, now: 60_000_000 });
     updatePtyManifestSnapshot('fr_a', () => 'RAW-ANSI', 60_000_000);
     updatePtyManifestFrame('fr_a', () => '\u276f /command\n status', 60_000_000);
     const r = getPtyManifest('fr_a')!;
@@ -390,7 +390,7 @@ describe('pty-manifest store (크로스-프로세스 관측)', () => {
   });
 
   test('readPtyManifestFrame returns a stamped frame only', () => {
-    upsertPtyManifest({ id: 'fr_read', kind: 'tui', cmd: 'monad', startedAt: 0, now: 60_500_000 });
+    upsertPtyManifest({ id: 'fr_read', kind: 'tui', cmd: 'elanous', startedAt: 0, now: 60_500_000 });
     expect(readPtyManifestFrame('fr_read')).toBeNull();
     updatePtyManifestFrame('fr_read', () => 'reported screen', 60_500_000);
     expect(readPtyManifestFrame('fr_read')).toEqual({ frame: 'reported screen', frameAt: 60_500_000 });
@@ -498,7 +498,7 @@ describe('listLongLivedLivePtyManifest — 살아 있는 장기 실행 화면 (�
   test('미탐: 소유가 살아 있고 하트비트도 최근인데 시작한 지 오래된 화면을 센다', () => {
     const now = 90_000_000;
     const startedAt = now - 3 * 24 * HOUR;
-    upsertPtyManifest({ id: 'forgotten-live', kind: 'tui', cmd: 'monad tui', startedAt, now });
+    upsertPtyManifest({ id: 'forgotten-live', kind: 'tui', cmd: 'elanous tui', startedAt, now });
     expect(reapStalePtyManifest(now)).toBe(0);
     expect(reapDeadPtyManifest()).toBe(0);
     const found = listLongLivedLivePtyManifest(now, 24 * HOUR);
@@ -508,7 +508,7 @@ describe('listLongLivedLivePtyManifest — 살아 있는 장기 실행 화면 (�
   test('미탐: 세어진 값으로 그 화면의 나이를 알 수 있다', () => {
     const now = 91_000_000;
     const startedAt = now - 2 * 24 * HOUR - 3_500;
-    upsertPtyManifest({ id: 'forgotten-age', kind: 'tui', cmd: 'monad tui', startedAt, now });
+    upsertPtyManifest({ id: 'forgotten-age', kind: 'tui', cmd: 'elanous tui', startedAt, now });
     const found = listLongLivedLivePtyManifest(now, 24 * HOUR);
     expect(found).toHaveLength(1);
     expect(found[0]!.ageMs).toBe(now - startedAt);

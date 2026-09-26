@@ -7,7 +7,7 @@
 // Conatus python `trend.py` 의 daily_trends + trend_section 을 그대로 옮김.
 // backfill(쓰기경로)은 포함하지 않음(읽기경로만).
 //
-// 데이터 I/O = bun:sqlite(monad 표준·sector-store.ts 패턴). DB = <CONATUS_DATA_DIR>/screener.db.
+// 데이터 I/O = bun:sqlite(elanous 표준·sector-store.ts 패턴). DB = <CONATUS_DATA_DIR>/screener.db.
 // ⚠️ 파리티/테스트는 CONATUS_DATA_DIR 을 격리 사본으로 지정(live screener.db 무접촉).
 //
 // ★ 렌더 순서 주의 — trend.py 는 신규/이탈을 python `set` 순회 순서로, 연속와칭 tie 를

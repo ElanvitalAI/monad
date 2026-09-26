@@ -106,7 +106,7 @@ describe('streamLLMWithTools — 하이드레이션 흡수 (gap④)', () => {
     expect(dispatched).toEqual(['ToolSearch', 'Battleship']);
   });
 
-  // should-fix(monad review #5461): 표식 문자열이 아니라 **실제 routeToolSearch 결과**로
+  // should-fix(elanous review #5461): 표식 문자열이 아니라 **실제 routeToolSearch 결과**로
   // 찍는다 — 예약키 부재 + 구조화 스키마가 대화에 중복 직렬화되지 않음을 정직하게 본다.
   test('⭐ 프로바이더 history 에 예약키가 없고 스키마가 중복 직렬화되지 않는다', async () => {
     const seen: string[][] = [];
@@ -139,7 +139,7 @@ describe('streamLLMWithTools — 하이드레이션 흡수 (gap④)', () => {
     expect(seen[1]).toEqual(['ToolSearch', 'Battleship']);
   });
 
-  // should-fix(monad review #5461): 가드 기준을 opts.tools→activeTools 로 바꿨으니
+  // should-fix(elanous review #5461): 가드 기준을 opts.tools→activeTools 로 바꿨으니
   // 기존 오타-복구(대소문자)가 **양쪽 툴 모두에서** 유지되는지 못박는다.
   test('대소문자 오타복구가 기존 툴과 하이드레이션 툴 모두에서 유지된다', async () => {
     const seen: string[][] = [];

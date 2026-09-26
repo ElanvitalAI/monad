@@ -8,7 +8,7 @@
 // 키 = content-hash → 동일 내용 dedupe(같은 링크 재사용). public-read 버킷이라 링크 즉시 열림.
 
 import { createHash } from 'node:crypto';
-import { s3MonadKey, s3PublicUrl, uploadText, isS3Available } from './s3.js';
+import { s3ElanousKey, s3PublicUrl, uploadText, isS3Available } from './s3.js';
 
 export interface SpillOptions {
   /** 이 길이 초과 시 spill(기본 3500 — telegram 4096 안전 여유). */
@@ -52,7 +52,7 @@ export function spillLongContent(content: string, opts: SpillOptions = {}): Spil
   const upload = opts.upload ?? defaultSpillUpload;
 
   const hash = createHash('sha1').update(content).digest('hex').slice(0, 16);
-  const key = s3MonadKey('spill', `${hash}.${ext}`);
+  const key = s3ElanousKey('spill', `${hash}.${ext}`);
   const url = upload(content, key, ext);
   if (!url) return { text: content, spilled: false }; // fail-soft — 원문 유지
 

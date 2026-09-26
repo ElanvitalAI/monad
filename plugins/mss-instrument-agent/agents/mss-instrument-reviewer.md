@@ -106,5 +106,5 @@ If you find **zero** missing sites, say so explicitly in the summary — silence
 
 - Don't propose a log inside a library file with zero observable outcome (e.g. a pure formatter) — no triage value.
 - Don't propose a log that would fire every frame (render paths) unless gated behind `debug.enabled`.
-- Don't synthesise `trace_id` / `monad_id` — those are appended automatically by `enrichLogRecord` in MSS M2.1+. Only propose user-visible structured fields.
+- Don't synthesise `trace_id` / `elanous_id` — those are appended automatically by `enrichLogRecord` in MSS M2.1+. Only propose user-visible structured fields.
 - Don't propose more than ~8 sites per review — cluster the highest-value ones and note the long tail as "see also".

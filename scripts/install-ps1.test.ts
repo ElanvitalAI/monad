@@ -25,7 +25,7 @@ function findPowerShell(): string | undefined {
 afterEach(() => { for (const fixture of fixtures.splice(0)) rmSync(fixture, { recursive: true, force: true }); });
 
 function fixture(): string {
-  const directory = mkdtempSync(join(tmpdir(), 'monad-install-ps1-test-'));
+  const directory = mkdtempSync(join(tmpdir(), 'elanous-install-ps1-test-'));
   fixtures.push(directory);
   return directory;
 }
@@ -46,7 +46,7 @@ function run(args: string[], options: { home?: string; cwd?: string; path?: stri
   const result = spawnSync(shell!, ['-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', installer, ...args], {
     cwd: options.cwd ?? repoRoot,
     encoding: 'utf8',
-    env: { ...process.env, HOME: home, USERPROFILE: home, MONAD_INSTALL_PREFIX: prefix, MONAD_POWERSHELL_PROFILE: profile, ...(options.path ? { PATH: options.path } : {}) },
+    env: { ...process.env, HOME: home, USERPROFILE: home, ELANOUS_INSTALL_PREFIX: prefix, ELANOUS_POWERSHELL_PROFILE: profile, ...(options.path ? { PATH: options.path } : {}) },
   });
   return { home, prefix, profile, result };
 }
@@ -74,16 +74,16 @@ describe('scripts/install.ps1', () => {
   test('declares the four named installer parameters and append-only marker PATH contract', () => {
     const source = readFileSync(installer, 'utf8');
     for (const parameter of ['$Prefix', '$Source', '$NoModifyPath', '$Help']) expect(source).toContain(parameter);
-    expect(source).toContain("$markerStart = '# >>> monad installer PATH >>>'");
-    expect(source).toContain("$markerEnd = '# <<< monad installer PATH <<<'");
+    expect(source).toContain("$markerStart = '# >>> elanous installer PATH >>>'");
+    expect(source).toContain("$markerEnd = '# <<< elanous installer PATH <<<'");
     expect(source).toContain('Add-Content -LiteralPath $profilePath');
     expect(source).toContain('if (-not $NoModifyPath)');
-    expect(source).toContain('MONAD_INSTALL_PREFIX');
+    expect(source).toContain('ELANOUS_INSTALL_PREFIX');
     expect(source).toContain('Push-Location $repoRoot');
     expect(source).toContain(".Replace(\"'\", \"''\")");
-    expect(source).toContain("node_modules\\monadagent\\bin\\monad.mjs");
-    expect(source).not.toContain('node_modules\\.bin\\monad.cmd');
-    expect(source).toContain('installed monad entrypoint missing');
+    expect(source).toContain("node_modules\\elanous\\bin\\elanous.mjs");
+    expect(source).not.toContain('node_modules\\.bin\\elanous.cmd');
+    expect(source).toContain('installed elanous entrypoint missing');
   });
 
   // T7 — install.sh 와 같은 판 구조 · Windows PowerShell 5.1 함정 둘 (09-25 실물 Windows 11 · 5.1.26100 ⊕ 7.6.6 에서 잰 것).
@@ -91,9 +91,9 @@ describe('scripts/install.ps1', () => {
     const source = readFileSync(installer, 'utf8');
     expect(source).toContain('Join-Path $Prefix "versions\\$versionName"');
     expect(source).toContain('New-Item -ItemType Junction');
-    expect(source).toContain('current\\node_modules\\monadagent\\bin\\monad.mjs');
+    expect(source).toContain('current\\node_modules\\elanous\\bin\\elanous.mjs');
     expect(source).toContain('$env:LOCALAPPDATA');
-    expect(source).not.toMatch(/Join-Path \$HOME '\.monad'/);
+    expect(source).not.toMatch(/Join-Path \$HOME '\.elanous'/);
     expect(source).toContain('versionDir = "versions/$versionName"');
     // cache-first then registry — a fresh machine has an empty bun cache.
     expect(source).toContain('bun add --no-save --offline $installTarball');
@@ -104,11 +104,11 @@ describe('scripts/install.ps1', () => {
   // UTF-8 bytes of a non-ASCII sign include 0x94, a cp1252 closing quote, and the whole script failed to parse.
   test('standalone release download uses the selected URL and verifies SHA256SUMS before installing', () => {
     const source = readFileSync(installer, 'utf8');
-    expect(source).toContain('$env:MONAD_RELEASE_BASE');
-    expect(source).toContain('$env:MONAD_VERSION');
+    expect(source).toContain('$env:ELANOUS_RELEASE_BASE');
+    expect(source).toContain('$env:ELANOUS_VERSION');
     expect(source).toContain("'/latest/download/'");
     expect(source).toContain("'/download/v'");
-    expect(source).toContain("$packageUrl = $releaseDirectory + 'monadagent.tgz'");
+    expect(source).toContain("$packageUrl = $releaseDirectory + 'elanous.tgz'");
     expect(source).toContain("$checksumUrl = $releaseDirectory + 'SHA256SUMS'");
     expect(source).toContain('Get-FileHash -LiteralPath $installTarball -Algorithm SHA256');
     expect(source).toContain('checksum mismatch');
@@ -151,7 +151,7 @@ describe('scripts/install.ps1', () => {
     }
   });
 
-  windowsExecutionTest('Windows PowerShell execution: default packaging from outside the repository installs a callable monad.cmd and appends a PATH block without replacing existing profile content', () => {
+  windowsExecutionTest('Windows PowerShell execution: default packaging from outside the repository installs a callable elanous.cmd and appends a PATH block without replacing existing profile content', () => {
     const home = fixture();
     const profile = join(home, 'profiles', 'profile.ps1');
     const prefix = join(home, "prefix $safe 'quoted'");
@@ -160,23 +160,23 @@ describe('scripts/install.ps1', () => {
     writeFileSync(profile, '$env:KEEP = 1\r\n');
     const installed = run(['-Prefix', prefix], { home, profile, cwd: outside });
     expect(installed.result.status, installed.result.stderr).toBe(0);
-    const monad = join(prefix, 'bin', 'monad.cmd');
-    expect(existsSync(monad)).toBe(true);
-    expect(readFileSync(monad, 'utf8')).toContain('node_modules\\monadagent\\bin\\monad.mjs');
-    const help = spawnSync(monad, ['--help'], { cwd: outside, encoding: 'utf8', env: { ...process.env, HOME: home, USERPROFILE: home } });
+    const elanous = join(prefix, 'bin', 'elanous.cmd');
+    expect(existsSync(elanous)).toBe(true);
+    expect(readFileSync(elanous, 'utf8')).toContain('node_modules\\elanous\\bin\\elanous.mjs');
+    const help = spawnSync(elanous, ['--help'], { cwd: outside, encoding: 'utf8', env: { ...process.env, HOME: home, USERPROFILE: home } });
     expect(help.status, help.stderr).toBe(0);
-    expect(help.stdout).toContain('monad');
+    expect(help.stdout).toContain('elanous');
     const metadata = JSON.parse(readFileSync(join(prefix, 'install.json'), 'utf8')) as Record<string, string>;
     expect(metadata.version).toBe(packageJson.version);
     expect(metadata.source).toBe(realpathSync(repoRoot));
     expect(metadata.installedAt).toBeTruthy();
     const startup = readFileSync(profile, 'utf8');
     expect(startup).toContain('$env:KEEP = 1');
-    expect(startup).toContain('# >>> monad installer PATH >>>');
-    expect(startup).toContain('# <<< monad installer PATH <<<');
+    expect(startup).toContain('# >>> elanous installer PATH >>>');
+    expect(startup).toContain('# <<< elanous installer PATH <<<');
     expect(startup).toContain("''quoted''");
     expect(startup).toContain('$safe');
-    expect(startup.match(/^# >>> monad installer PATH >>>$/gm)).toHaveLength(1);
+    expect(startup.match(/^# >>> elanous installer PATH >>>$/gm)).toHaveLength(1);
   }, 120_000);
 
   executionTest('PowerShell execution: empty profile is created for a normal install, while -NoModifyPath leaves a new profile absent', () => {
@@ -186,8 +186,8 @@ describe('scripts/install.ps1', () => {
     expect(normal.result.status, normal.result.stderr).toBe(0);
     expect(existsSync(profile)).toBe(true);
     const startup = readFileSync(profile, 'utf8');
-    expect(startup).toContain('# >>> monad installer PATH >>>');
-    expect(startup).toContain('# <<< monad installer PATH <<<');
+    expect(startup).toContain('# >>> elanous installer PATH >>>');
+    expect(startup).toContain('# <<< elanous installer PATH <<<');
 
     const noModifyProfile = join(home, 'no-modify', 'profile.ps1');
     const noModify = run(['-NoModifyPath'], { home, profile: noModifyProfile, prefix: join(home, 'no-modify-prefix') });

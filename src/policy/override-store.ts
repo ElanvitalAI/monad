@@ -8,7 +8,7 @@
 //                            · persisted · auto-pruned on load + on
 //                              getView() when expiresAt passed
 //
-// Storage shape (`~/.config/monad/policy/overrides.json`):
+// Storage shape (`~/.config/elanous/policy/overrides.json`):
 //   {
 //     "v": 1,
 //     "persistentDefault": { "brand": "...", "model": "..." }?,
@@ -28,21 +28,21 @@ import {
   writeFileSync,
 } from 'node:fs';
 import { join } from 'node:path';
-import { monadStateRoot } from '../autopilot/state-paths.js';
+import { elanousStateRoot } from '../autopilot/state-paths.js';
 import { debug } from '../debug/log.js';
-import { migrateLegacyXdgSubdir } from '../storage/legacy-monad-dir-migrate.js';
+import { migrateLegacyXdgSubdir } from '../storage/legacy-elanous-dir-migrate.js';
 import type {
   OverrideView,
   ThrottleBypass,
 } from './types.js';
 import type { UsageProvider, WindowKind } from '../budget/types.js';
 
-// Phase 1 (PLAN-config-unification-monad-root-2026-05-10):
-//   moved from ~/.config/monad/policy → ~/.monad/policy ·
+// Phase 1 (PLAN-config-unification-elanous-root-2026-05-10):
+//   moved from ~/.config/elanous/policy → ~/.elanous/policy ·
 //   first construction migrates legacy XDG dir if present.
 function defaultStorageDir(): string {
   migrateLegacyXdgSubdir('policy');
-  return join(monadStateRoot(), 'policy');
+  return join(elanousStateRoot(), 'policy');
 }
 const OVERRIDES_FILENAME = 'overrides.json';
 

@@ -1,9 +1,9 @@
-// P5 (2026-05-10) — `monad nexus pwa global` commands.
+// P5 (2026-05-10) — `elanous nexus pwa global` commands.
 //
 // Two subcommands operating on the P4 registry:
 //
 //   status — list every PWA daemon currently registered on this host
-//            (across folders / projects / `nexus` vs `monad-test`).
+//            (across folders / projects / `nexus` vs `elanous-test`).
 //            JSON or human-readable output. Auto-prunes stale entries
 //            (dead pids).
 //
@@ -14,8 +14,8 @@
 //            drops dead-pid entries.
 //
 // Why a separate orchestrator (not just `pwa stop`)? `pwa stop` only
-// touches THIS folder's daemon (the lock at `~/.monad/nexus/.lock` or
-// `<repo>/.monad-test/.lock`). The registry sees instances from
+// touches THIS folder's daemon (the lock at `~/.elanous/nexus/.lock` or
+// `<repo>/.elanous-test/.lock`). The registry sees instances from
 // elsewhere too — global cleanup needs the unified view.
 
 import { execFile } from 'node:child_process';
@@ -180,7 +180,7 @@ export async function runPwaGlobalStatus(
     out.log(`No PWA daemons registered on this host (registry ${diagnostics.readState}; this does not establish service absence).`);
     renderDiagnostics();
     renderOrphanMounts();
-    out.log('Bring one up: `monad nexus run --hmr`');
+    out.log('Bring one up: `elanous nexus run --hmr`');
     return result;
   }
 
@@ -200,7 +200,7 @@ export async function runPwaGlobalStatus(
     out.log('');
   }
   renderOrphanMounts();
-  out.log('Cleanup all: `monad nexus pwa global clean`');
+  out.log('Cleanup all: `elanous nexus pwa global clean`');
   return result;
 }
 
@@ -385,4 +385,4 @@ export async function runPwaGlobalClean(
 }
 
 // Suppress unused-import lint when this file is re-exported.
-export const PWA_GLOBAL_INTERNAL_DAEMON_DIR_HINT = join(homedir(), '.monad', 'pwa-registry.json');
+export const PWA_GLOBAL_INTERNAL_DAEMON_DIR_HINT = join(homedir(), '.elanous', 'pwa-registry.json');

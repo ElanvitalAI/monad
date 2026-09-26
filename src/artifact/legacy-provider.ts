@@ -2,7 +2,7 @@
 //
 // Pluggable read-only scanner interface · lets the unified
 // ArtifactStore expose artifacts that were saved BEFORE the B-2 /
-// B-3 migration (e.g. `~/.monad/timelines/rec-*.cast` from Bundle 8T
+// B-3 migration (e.g. `~/.elanous/timelines/rec-*.cast` from Bundle 8T
 // pre-migration runs · `widget-timeline-*.cast` from widget-team 8W)
 // without rewriting or copying files.
 //

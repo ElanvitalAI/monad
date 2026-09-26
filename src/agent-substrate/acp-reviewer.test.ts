@@ -5,7 +5,7 @@ import { AcpAgent, type AcpAgentOpts } from '../acp/client.js';
 import { AcpAgentManager } from '../acp/agent-manager.js';
 import { CODEX_APP_SERVER_CAPS } from '../acp/codex-app-server-agent.js';
 import type { ReviewImage } from './pr-reviewer.js';
-import type { MonadCapabilities } from '../acp/capabilities.js';
+import type { ElanousCapabilities } from '../acp/capabilities.js';
 
 // ⛔⭐⭐ 기본 백엔드 회귀 가드 (2026-08-01 · JDG-S9).
 //   이 계약은 **아무 테스트도 안 걸고 있었다** — 기본값을 바꿔도 게이트가 초록이었다.
@@ -74,9 +74,9 @@ const unsupportedCapabilities = {
   protocolVersion: 1,
   prompt: { image: false, audio: false },
   loadSession: false,
-} as MonadCapabilities;
+} as ElanousCapabilities;
 
-function reviewAgent(opts: AcpAgentOpts, capabilities?: MonadCapabilities): AcpAgent {
+function reviewAgent(opts: AcpAgentOpts, capabilities?: ElanousCapabilities): AcpAgent {
   return {
     start: async () => { if (capabilities) opts.onCapabilities?.(capabilities); },
     newSession: async () => 'session-1',
@@ -255,7 +255,7 @@ describe('ACP review capability observation', () => {
 // ⛔ `#7486` 리뷰 must-fix: "ACP prompt 의 image ContentBlock 전송을 전혀 단정하지 않는다".
 //   옳다 — 이 축은 「보냈나」가 전부이므로 그것을 안 물면 아무것도 안 문 것이다.
 describe('ACP reviewer — 이미지 ContentBlock 전송(P4b)', () => {
-  function capturingAgent(caps: MonadCapabilities | undefined, sink: { blocks?: unknown[] }): AcpAgent {
+  function capturingAgent(caps: ElanousCapabilities | undefined, sink: { blocks?: unknown[] }): AcpAgent {
     return {
       start: async () => { if (caps) { /* codex 계열은 광고를 getCapabilities 로만 낸다 */ } },
       getCapabilities: () => caps ?? null,

@@ -1,4 +1,4 @@
-// Stale-record pruning for `~/.config/monad/acp-sessions.json`.
+// Stale-record pruning for `~/.config/elanous/acp-sessions.json`.
 //
 // Companion to L2 (capability-aware persistence) — even after we
 // stop *writing* records for ephemeral backends, existing files

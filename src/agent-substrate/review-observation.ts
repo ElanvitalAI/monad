@@ -1,9 +1,9 @@
 // ── 수동 PR 리뷰 관측 payload (순수 · 2026-07-27) ─────────────────────────────────────
 //
-// ⭐ 왜 이 모듈이 있나 — **수동 `monad self review` 의 verdict 가 어디에도 보존되지 않았다.**
+// ⭐ 왜 이 모듈이 있나 — **수동 `elanous self review` 의 verdict 가 어디에도 보존되지 않았다.**
 //
 // 실측(2026-07-27 · [[MANUAL-review-operations-2026-07-27]] §7b 로 기록됐던 갭):
-//   · `monad logs --category self-review` → **0건**
+//   · `elanous logs --category self-review` → **0건**
 //   · `pr-reviewer.ts` 에 `debug.log` 없음 · CLI 액션에도 없음
 //   · `registerStandaloneLogSink('self-review')` 는 있었으나 **`--acp` 분기 안에만** 있어
 //     기본 경로(API 리뷰어)에서는 sink 조차 등록되지 않았다

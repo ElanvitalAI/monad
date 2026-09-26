@@ -133,7 +133,7 @@ export function buildNoBackendGuidanceLines(): string[] {
   return [
     '  No chat backend configured — set up one of the 3:',
     '',
-    '    • OpenAI Codex   — `monad login codex` (OAuth · 추천)',
+    '    • OpenAI Codex   — `elanous login codex` (OAuth · 추천)',
     '                       또는 set OPENAI_API_KEY env',
     '    • Anthropic Claude — set ANTHROPIC_API_KEY env',
     '                         (claude-code CLI 가 자체 인증)',

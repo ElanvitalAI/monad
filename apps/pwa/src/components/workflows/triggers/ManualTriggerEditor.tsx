@@ -85,7 +85,7 @@ export function ManualTriggerEditor({ definition, nodeId, onChange }: ManualTrig
       <TriggerField label="behaviour" full>
         <p className="rounded-md border border-border bg-surface px-2 py-1.5 text-[11px] leading-snug text-text-tertiary">
           The daemon never auto-subscribes to a Manual trigger. Run it via
-          <code className="mx-1 rounded bg-surface-elevated px-1 font-mono">monad wf run &lt;name&gt;</code>
+          <code className="mx-1 rounded bg-surface-elevated px-1 font-mono">elanous wf run &lt;name&gt;</code>
           or the PWA <span className="font-semibold">▶ Run now</span> button (Group D dry-run).
         </p>
       </TriggerField>

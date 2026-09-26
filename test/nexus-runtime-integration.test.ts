@@ -28,12 +28,12 @@ let prevHome: string | undefined;
 let activeHandle: RunNexusHandle | undefined;
 
 beforeEach(() => {
-  tmpRoot = mkdtempSync(join(tmpdir(), 'monad-nexus-runtime-int-'));
-  prevNexusDir = process.env.MONAD_NEXUS_DIR;
+  tmpRoot = mkdtempSync(join(tmpdir(), 'elanous-nexus-runtime-int-'));
+  prevNexusDir = process.env.ELANOUS_NEXUS_DIR;
   prevHome = process.env.HOME;
-  process.env.MONAD_NEXUS_DIR = tmpRoot;
+  process.env.ELANOUS_NEXUS_DIR = tmpRoot;
   // Override HOME so the acp-token loader + intake archive default
-  // never touch the developer's real ~/.monad. Intake archive uses
+  // never touch the developer's real ~/.elanous. Intake archive uses
   // os.homedir() at module-load; we additionally swap the singleton
   // so the test sees an isolated in-memory store.
   process.env.HOME = tmpRoot;
@@ -45,8 +45,8 @@ afterEach(async () => {
     try { activeHandle.release(); } catch { /* swallow */ }
     activeHandle = undefined;
   }
-  if (prevNexusDir === undefined) delete process.env.MONAD_NEXUS_DIR;
-  else process.env.MONAD_NEXUS_DIR = prevNexusDir;
+  if (prevNexusDir === undefined) delete process.env.ELANOUS_NEXUS_DIR;
+  else process.env.ELANOUS_NEXUS_DIR = prevNexusDir;
   if (prevHome === undefined) delete process.env.HOME;
   else process.env.HOME = prevHome;
   setIntakeStoreForTest(null);

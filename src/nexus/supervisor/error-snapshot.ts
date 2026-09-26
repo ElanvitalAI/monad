@@ -249,8 +249,8 @@ function deriveSuggestedActions(
       return [
         {
           id: 'shell-stop-daemon',
-          label: 'Stop the external `monad serve`',
-          action: { type: 'shell-hint', command: 'monad serve --stop', description: 'Run from any shell — the lock file holder receives SIGTERM.' },
+          label: 'Stop the external `elanous serve`',
+          action: { type: 'shell-hint', command: 'elanous serve --stop', description: 'Run from any shell — the lock file holder receives SIGTERM.' },
         },
         restart,
       ];
@@ -276,7 +276,7 @@ function deriveSuggestedActions(
       {
         id: 'wait-and-retry',
         label: 'Wait for the rolling window to reset',
-        action: { type: 'docs', url: '/docs/feature/FEATURE-monad-nexus.md#supervisor' },
+        action: { type: 'docs', url: '/docs/feature/FEATURE-elanous-nexus.md#supervisor' },
       },
       restart,
     ];

@@ -36,7 +36,7 @@ describe('handleConversationStats', () => {
   });
 
   test('empty store → all zero', async () => {
-    process.env.MONAD_CONVERSATION_STORE_MODE = 'memory';
+    process.env.ELANOUS_CONVERSATION_STORE_MODE = 'memory';
     __resetAgentCliConversationStoreForTest();
     const resp = await handleConversationStats(makeReq('?chatId=empty'));
     expect(resp.status).toBe(200);
@@ -50,7 +50,7 @@ describe('handleConversationStats', () => {
   });
 
   test('group by backend (agent role only)', async () => {
-    process.env.MONAD_CONVERSATION_STORE_MODE = 'memory';
+    process.env.ELANOUS_CONVERSATION_STORE_MODE = 'memory';
     __resetAgentCliConversationStoreForTest();
     const store = globalAgentCliConversationStore();
     // 5 turn pattern: user (counts ignored) + agent (counted)
@@ -72,7 +72,7 @@ describe('handleConversationStats', () => {
   });
 
   test('chat isolation', async () => {
-    process.env.MONAD_CONVERSATION_STORE_MODE = 'memory';
+    process.env.ELANOUS_CONVERSATION_STORE_MODE = 'memory';
     __resetAgentCliConversationStoreForTest();
     const store = globalAgentCliConversationStore();
     store.append('a', { role: 'agent', backendId: 'claude', text: 'A', at: 1 });

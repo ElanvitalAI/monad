@@ -22,8 +22,8 @@ let sockPath: string;
 let mediaDir: string;
 
 beforeEach(() => {
-  tmp = mkdtempSync(joinPath(tmpdir(), 'monad-tg-bridge-attach-'));
-  sockPath = joinPath(tmp, 'monad.sock');
+  tmp = mkdtempSync(joinPath(tmpdir(), 'elanous-tg-bridge-attach-'));
+  sockPath = joinPath(tmp, 'elanous.sock');
   mediaDir = joinPath(tmp, 'media');
   mkdirSync(mediaDir, { recursive: true });
 });

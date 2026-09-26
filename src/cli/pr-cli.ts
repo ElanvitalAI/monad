@@ -16,7 +16,7 @@ import { iosFilesIn, runIosUnitTestGate } from '../../scripts/ci-ios-unit-tests.
 import { runMockModuleRestoreGate } from '../../scripts/ci-mock-module-restore-gate.js';
 import { runModelHardcodeGate } from '../../scripts/ci-model-hardcode-gate.js';
 import { runPublicLeakGate } from '../../scripts/ci-public-leak-gate.js';
-import { checkCommands, extractMonadCommands, type Finding as DocsCliFinding } from '../../scripts/docs-cli-check.js';
+import { checkCommands, extractElanousCommands, type Finding as DocsCliFinding } from '../../scripts/docs-cli-check.js';
 import { runTestInterferenceGate } from '../../scripts/ci-test-interference-gate.js';
 import { isGoalDocumentFileName } from '../self-implement/goal-document.js';
 import { queryFederatedUnfinishedRunLedgers, type FederatedUnfinishedRunLedgerEntry, type FederatedUnfinishedRunLedgerQuery } from '../self-implement/run-ledger.js';
@@ -99,7 +99,7 @@ export interface PrLandDeps {
   runModelHardcodeGate?: (out: { log: (message: string) => void; error: (message: string) => void }) => boolean;
   /** 공개 유출 래칫(경고 전용) — 반환 0 통과 · 1 늘었다 · 2 못 쟀다. */
   runPublicLeakGate?: (changedFiles: readonly string[], out: { log: (message: string) => void; error: (message: string) => void }) => number;
-  /** 공개 문서의 `monad …` 호출 ↔ 실제 `--help` 대조(경고 전용) — 바뀐 공개 문서 경로를 받아 어긋남 목록을 돌려준다. */
+  /** 공개 문서의 `elanous …` 호출 ↔ 실제 `--help` 대조(경고 전용) — 바뀐 공개 문서 경로를 받아 어긋남 목록을 돌려준다. */
   runDocsCliCheck?: (docFiles: readonly string[]) => DocsCliFinding[];
   /** 변경 시험 파일 간 간섭 검사 심(시험 주입용). */
   runTestInterferenceGate?: (out: { log: (message: string) => void; error: (message: string) => void }, changedFiles: readonly string[]) => Promise<number>;
@@ -231,7 +231,7 @@ function runPrLandTypecheckGate(out: { log: (message: string) => void; error: (m
 }
 
 // ⛔⭐⭐ `args: []` 가 «필수»다 — 기본값이 `process.argv.slice(2)` 라, 그냥 부르면
-//   이 게이트가 ***`monad pr land` 의 인자를 자기 인자로 읽는다***.
+//   이 게이트가 ***`elanous pr land` 의 인자를 자기 인자로 읽는다***.
 //   🚨 그 자리에 `--update` 가 있으면 게이트가 «막는 대신 baseline 을 다시 쓴다»
 //      (= 위반을 정당한 잔류로 삼키고 조용히 통과). 그래서 인자를 «끊어» 넘긴다.
 // ⭐ 몽키패치가 «없다» — 이 스크립트는 형제(ci-typecheck-changed)와 같은 관례로
@@ -247,7 +247,7 @@ function runPrLandTypecheckGate(out: { log: (message: string) => void; error: (m
 //      그러면 이 게이트는 «있어도 없는» 것이 된다.
 /**
  * 격리 하드코딩 게이트를 «착지하는 트리»에서 돌린다.
- * 🩸 2026-09-25: 종전엔 `cwd` 없이 불러 게이트가 «자기 스크립트가 있는 트리»(= `bun <pilot>/bin/monad.mjs pr land` 면 pilot)를
+ * 🩸 2026-09-25: 종전엔 `cwd` 없이 불러 게이트가 «자기 스크립트가 있는 트리»(= `bun <pilot>/bin/elanous.mjs pr land` 면 pilot)를
  *   검사했다 — 워크트리에서 착지하는 PR 은 «PR 이 아니라 pilot» 이 판정됐다. #20413 의 새 하드코딩이 통과했고,
  *   그 뒤 pilot 이 그것을 받자 «고치는» PR(#20417)까지 막혔다.
  */
@@ -297,7 +297,7 @@ export function publicDocPaths(changedFiles: readonly string[] | undefined, exis
   return [...new Set(changedFiles ?? [])].filter((f) => (f === 'README.md' || /^release\/public\/docs\/.+\.md$/.test(f)) && exists(f));
 }
 
-/** ⭐ 2026-09-26 — 공개 문서의 `monad …` 호출이 실제 CLI(`--help`)에 있나를 «경고만» 낸다(착지는 막지 않는다).
+/** ⭐ 2026-09-26 — 공개 문서의 `elanous …` 호출이 실제 CLI(`--help`)에 있나를 «경고만» 낸다(착지는 막지 않는다).
  *  계기: 09-25 README·install.md 가 거짓이 된 원인이 전부 «CLI 가 바뀌었는데 문서가 모름»이었다(RFC 공개 매뉴얼 M3).
  *  ⛔ 범위는 «바뀐 공개 문서»뿐 — 전 문서 대조는 38초라 착지마다 돌리지 않는다(문서 배포 때 `bun scripts/docs-cli-check.ts` 전수). */
 export function docsCliWarning(
@@ -315,14 +315,14 @@ export function docsCliWarning(
   const mismatches = findings.filter((f) => f.kind !== 'unmeasured');
   const unmeasured = findings.length - mismatches.length;
   record('docs-cli-check', true, { warnOnly: true, measured: true, files: docFiles.length, mismatches: mismatches.length, unmeasured });
-  if (findings.length === 0) { out.log(`✓ docs-cli-check(경고 전용): 바뀐 공개 문서 ${docFiles.length}개의 monad 호출이 실제 CLI 와 맞는다.`); return; }
+  if (findings.length === 0) { out.log(`✓ docs-cli-check(경고 전용): 바뀐 공개 문서 ${docFiles.length}개의 elanous 호출이 실제 CLI 와 맞는다.`); return; }
   out.log(`⚠ docs-cli-check(경고 전용 · 착지는 막지 않는다): 바뀐 공개 문서 ${docFiles.length}개 — 어긋남 ${mismatches.length} · 못 잰 것 ${unmeasured}`);
   for (const f of findings) out.log(`   ${f.kind}  ${f.ref.file}:${f.ref.line}  ${f.detail}`);
   out.log('   확인: bun scripts/docs-cli-check.ts <파일>');
 }
 
 function runPrLandDocsCliCheck(root: string): (docFiles: readonly string[]) => DocsCliFinding[] {
-  return (docFiles) => checkCommands(docFiles.flatMap((f) => extractMonadCommands(f, readFileSync(join(root, f), 'utf8'))));
+  return (docFiles) => checkCommands(docFiles.flatMap((f) => extractElanousCommands(f, readFileSync(join(root, f), 'utf8'))));
 }
 
 function runPrLandMockModuleRestoreGate(out: { log: (message: string) => void; error: (message: string) => void }): boolean {
@@ -1242,11 +1242,11 @@ export async function runPrLand(opts: PrLandOpts = {}, deps: PrLandDeps = {}): P
   // ⭐ 관측에 «잰 것»과 «못 잰 것»을 다른 값으로 남긴다 — 둘이 같은 모양이면 그 자는 거짓을 낸다.
   record('isolation-gate', isolation.ok, { measured: isolation.measured });
   if (!isolation.ok) {
-    out.error('✗ isolation-gate: scripts/ci-isolation-hardcode-gate.ts blocked pr land because changed files introduce new homedir+.monad hardcoding.');
+    out.error('✗ isolation-gate: scripts/ci-isolation-hardcode-gate.ts blocked pr land because changed files introduce new homedir+.elanous hardcoding.');
     return 1;
   }
   if (isolation.measured) {
-    out.log('✓ isolation-gate: scripts/ci-isolation-hardcode-gate.ts PASS — no new homedir+.monad hardcoding.');
+    out.log('✓ isolation-gate: scripts/ci-isolation-hardcode-gate.ts PASS — no new homedir+.elanous hardcoding.');
   }
 
   const mockModuleRestore = gateVerdict('mock-module-restore-gate', deps.runMockModuleRestoreGate ?? runPrLandMockModuleRestoreGate, out);
@@ -1496,7 +1496,7 @@ export async function runPrLand(opts: PrLandOpts = {}, deps: PrLandDeps = {}): P
     });
     out.error(`✗ merge: ${detail}`);
     if (mergeable === 'CONFLICTING') {
-      out.error('  ↳ 충돌 — 이 브랜치가 기준 브랜치의 최근 착지와 같은 줄을 고쳤다. `bun bin/monad.mjs git fetch origin` → `bun bin/monad.mjs git rebase origin/<기준>` 로 풀고 다시 pr land.');
+      out.error('  ↳ 충돌 — 이 브랜치가 기준 브랜치의 최근 착지와 같은 줄을 고쳤다. `bun bin/elanous.mjs git fetch origin` → `bun bin/elanous.mjs git rebase origin/<기준>` 로 풀고 다시 pr land.');
     }
     return 1;
   }
@@ -1541,7 +1541,7 @@ export function registerPrCommands(program: Command, deps: PrLandDeps = {}): voi
     .action(async (opts: PrLandOpts) => {
       // ⛔⭐⭐⭐ **관측 sink 를 먼저 건다** — 라이브 도그푸드가 잡은 결함(2026-08-03).
       //   단위 테스트는 `debug.log` 가 **불렸다**를 단언하지만, standalone CLI 는 sink 를 등록하지
-      //   않으면 그 로그가 **`logs.db` 에 안 닿는다** ⇒ `monad logs --category pr.land` 가 0건이었다.
+      //   않으면 그 로그가 **`logs.db` 에 안 닿는다** ⇒ `elanous logs --category pr.land` 가 0건이었다.
       //   ⇒ 수용기준 「단계별 관측」이 테스트는 통과하고 실물에서는 성립하지 않았다.
       //   ***호출을 재는 것과 도착을 재는 것은 다른 축이다*** (`#6701`·`I-T8` 과 같은 계열).
       //   fail-open — 관측 배선 실패가 착지를 막지 않는다.

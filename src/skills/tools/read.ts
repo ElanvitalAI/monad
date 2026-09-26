@@ -1,7 +1,7 @@
 // ── Read tool (Claude Code-compatible file reader) ──
 //
 // Ports claude-code-fork/src/tools/FileReadTool with a scope trimmed
-// for monad's skill runner. Matches the LLM-facing schema exactly
+// for elanous's skill runner. Matches the LLM-facing schema exactly
 // (`file_path` + `offset` + `limit` + `pages`) so community skills
 // that say "use the Read tool to load X" work out of the box.
 //
@@ -11,7 +11,7 @@
 //     N when it builds a subsequent Edit call.
 //   - Binary / image / PDF: MVP returns a descriptive metadata
 //     string ("image: ..., 124KB, png"). Claude Code routes these
-//     as ContentBlock tool_results; monad's streamLLMWithTools
+//     as ContentBlock tool_results; elanous's streamLLMWithTools
 //     currently pipes a string through `dispatchTool`, so base64
 //     / DocumentBlockParam wiring lands in a separate phase.
 //   - Notebook (.ipynb) cells: out of scope for MVP — skill can

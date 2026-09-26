@@ -22,7 +22,7 @@ describe('harness dogfood adapter', () => {
     const result = await runHarnessDogfood({
       target: THROWAWAY,
       objective: 'update the isolated target',
-      configDir: join(tmpdir(), 'isolated-monad'),
+      configDir: join(tmpdir(), 'isolated-elanous'),
       dispatch: async (args, ctx) => {
         receivedArgs = args;
         receivedCtx = ctx as typeof receivedCtx;
@@ -83,7 +83,7 @@ describe('assertThrowawayTarget — C 안전 가드(auto-approve 우회 방지)'
 
 describe('harness dogfood CLI entrance — refuse, do not dispatch', () => {
   test('names the existing replacement and ends non-zero without calling the adapter', () => {
-    expect(HARNESS_DOGFOOD_REPLACEMENT).toBe('monad harness ask <골문서>');
+    expect(HARNESS_DOGFOOD_REPLACEMENT).toBe('elanous harness ask <골문서>');
     const notices: string[] = [];
     const outcome = refuseHarnessDogfoodCli({ onDeprecationNotice: (notice) => notices.push(notice) });
     expect(outcome).toEqual({ ok: false, message: HARNESS_DOGFOOD_DEPRECATION_NOTICE, exitCode: 1 });
@@ -120,10 +120,10 @@ describe('harness dogfood CLI entrance — refuse, do not dispatch', () => {
     };
     try {
       process.exitCode = 0;
-      await program.parseAsync(['node', 'monad', 'harness', 'dogfood', '/tmp/throwaway', 'objective']);
+      await program.parseAsync(['node', 'elanous', 'harness', 'dogfood', '/tmp/throwaway', 'objective']);
       const emitted = output.join('');
       const observedExitCode: string | number | null | undefined = process.exitCode;
-      expect(emitted).toContain('monad harness ask <골문서>');
+      expect(emitted).toContain('elanous harness ask <골문서>');
       expect(observedExitCode).toBe(1);
       expect(observedExitCode).not.toBe(0);
     } finally {

@@ -85,7 +85,7 @@ export interface HandleDiscoveryRunOpts {
 }
 
 /** ⚠️ `cachePath` 는 **시험 씨앗**이다(운영 라우트는 «주지 않는다» ⇒ 기본 캐시 경로).
- *  ⛔ 지우지 마라 — 이것이 없으면 이 핸들러를 시험하려면 ***개발자의 진짜 `~/.monad`
+ *  ⛔ 지우지 마라 — 이것이 없으면 이 핸들러를 시험하려면 ***개발자의 진짜 `~/.elanous`
  *  캐시에 써야 한다.*** 그것은 `scripts/ci-isolation-hardcode-gate.ts` 가 막는 바로 그 형태다.
  *  `readDiscoveryCache` 는 원래 이 옵션을 받는다(runner.ts:185) — 여기는 «전달» 한 줄이다. */
 export function handleDiscoveryGet(opts: { cachePath?: string } = {}): Response {

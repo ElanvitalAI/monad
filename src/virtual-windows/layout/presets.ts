@@ -3,7 +3,7 @@
 // Three canonical starting layouts. Embedded as code rather than JSON
 // files so tests don't depend on disk I/O to verify their shape.
 // Consumers that want the presets on disk (shareable, user-editable)
-// can write the result of `buildPreset(...)` to `~/.monad/layouts/`
+// can write the result of `buildPreset(...)` to `~/.elanous/layouts/`
 // via `saveLayoutSpec`.
 //
 // Naming: presets reserve `preset-` as a label prefix so a user saving
@@ -11,7 +11,7 @@
 // stamps label + createdAt + windowId on each call so the same preset
 // can be applied to multiple windows.
 //
-// See: 내부 문서 `PLAN-session-vw-term-infra-p3-p5` §3.5 · ~/.monad/layouts/presets/
+// See: 내부 문서 `PLAN-session-vw-term-infra-p3-p5` §3.5 · ~/.elanous/layouts/presets/
 
 import { LAYOUT_SPEC_VERSION, type LayoutSpec, type LayoutSpecNode } from './types.js';
 

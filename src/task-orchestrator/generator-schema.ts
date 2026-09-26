@@ -2,7 +2,7 @@
  * LLM output schema for `TaskGenerator.decompose()`.
  *
  * We keep validation lightweight — a plain TS guard (not zod) that
- * matches monad's current dependency footprint. The shape mirrors
+ * matches elanous's current dependency footprint. The shape mirrors
  * `TaskInit` from `types.ts` but represents a *proposed* task (no
  * id / status / attempt yet; dependencies reference sibling index
  * positions rather than real task ids — resolver turns them into

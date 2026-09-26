@@ -1,4 +1,4 @@
-// `monad usage` — one query, account rows × credit axis × subscription axis.
+// `elanous usage` — one query, account rows × credit axis × subscription axis.
 //
 // Existing `provider codex usage` and `acp usage grok` stay on their own
 // trees. This command only assembles the shared report.

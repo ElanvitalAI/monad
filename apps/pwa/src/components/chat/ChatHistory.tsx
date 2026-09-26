@@ -260,7 +260,7 @@ export function ChatHistory({ messages, pending, tabId }: Props) {
         <button
           type="button"
           onClick={jumpToBottom}
-          data-monad-jump-to-bottom="true"
+          data-elanous-jump-to-bottom="true"
           className="absolute bottom-3 left-1/2 -translate-x-1/2 rounded-full border border-border bg-card/95 px-3 py-1.5 text-xs shadow-lg backdrop-blur transition-colors hover:bg-accent"
         >
           맨 아래로 ↓

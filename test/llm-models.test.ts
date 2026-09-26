@@ -20,8 +20,8 @@ type FetchFn = typeof globalThis.fetch;
 const realFetch = globalThis.fetch;
 afterEach(() => {
   globalThis.fetch = realFetch;
-  delete process.env.MONAD_LLM_MODELS_ENDPOINT;
-  delete process.env.MONAD_LLM_HOSTS;
+  delete process.env.ELANOUS_LLM_MODELS_ENDPOINT;
+  delete process.env.ELANOUS_LLM_HOSTS;
   delete process.env.ANTHROPIC_API_KEY;
 });
 
@@ -34,7 +34,7 @@ describe('resolveLlmModelsEndpoint (legacy single-host)', () => {
       .toBe('http://192.168.0.10:1234/v1');
   });
   test('env override > opts', () => {
-    process.env.MONAD_LLM_MODELS_ENDPOINT = 'http://lan-host:1234/v1/';
+    process.env.ELANOUS_LLM_MODELS_ENDPOINT = 'http://lan-host:1234/v1/';
     expect(resolveLlmModelsEndpoint({ endpoint: 'http://other:1234/v1' }))
       .toBe('http://lan-host:1234/v1');
   });
@@ -396,8 +396,8 @@ describe('handleLlmModels · multi-host fan-out', () => {
     ]);
   });
 
-  test('MONAD_LLM_HOSTS env → drives host config', async () => {
-    process.env.MONAD_LLM_HOSTS = JSON.stringify([
+  test('ELANOUS_LLM_HOSTS env → drives host config', async () => {
+    process.env.ELANOUS_LLM_HOSTS = JSON.stringify([
       { name: 'env-host', kind: 'lm-studio', endpoint: 'http://envhost' },
     ]);
     const stub = (async () =>
@@ -414,8 +414,8 @@ describe('handleLlmModels · multi-host fan-out', () => {
     expect(json.models[0]?.host).toBe('env-host');
   });
 
-  test('malformed MONAD_LLM_HOSTS → fallback + configWarning', async () => {
-    process.env.MONAD_LLM_HOSTS = '{not json';
+  test('malformed ELANOUS_LLM_HOSTS → fallback + configWarning', async () => {
+    process.env.ELANOUS_LLM_HOSTS = '{not json';
     const stub = (async () =>
       new Response(JSON.stringify({ data: [{ id: 'fallback-model' }] }), { status: 200 })) as unknown as FetchFn;
     globalThis.fetch = stub;

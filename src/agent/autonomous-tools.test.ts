@@ -1,6 +1,6 @@
 // turn 조립기 통일 Phase 1 — 자율tool 조립기 골든룰 스냅샷 가드.
 //
-// 골든룰: 추출(makeMonadAgentRunTurn 인라인 → autonomous-tools 헬퍼) 전후 spec 이름배열 diff=0.
+// 골든룰: 추출(makeElanousAgentRunTurn 인라인 → autonomous-tools 헬퍼) 전후 spec 이름배열 diff=0.
 // 종전 telegram 인라인 조립은 `[delegateSpec, …(nest? []: [SelfImplement, RunDevHarness, SolveMission])]`
 // 였다 — 여기서 그 이름배열을 못박아 회귀를 막는다(nest-cap off = 테스트 기본 프로세스).
 

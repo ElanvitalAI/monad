@@ -47,8 +47,8 @@ describe('pwa registration lifecycle', () => {
     const events: string[] = [];
     const entries: PwaRegistryEntry[] = [];
     const nexusDir = mkdtempSync(join(tmpdir(), 'nexus-pwa-registration-'));
-    const previousNexusDir = process.env.MONAD_NEXUS_DIR;
-    process.env.MONAD_NEXUS_DIR = nexusDir;
+    const previousNexusDir = process.env.ELANOUS_NEXUS_DIR;
+    process.env.ELANOUS_NEXUS_DIR = nexusDir;
     const handle = await runNexus({
       detachForTesting: true,
       skipHttpServer: false,
@@ -83,8 +83,8 @@ describe('pwa registration lifecycle', () => {
       expect(events).toEqual(['register', 'runtime-http']);
     } finally {
       handle?.release();
-      if (previousNexusDir === undefined) delete process.env.MONAD_NEXUS_DIR;
-      else process.env.MONAD_NEXUS_DIR = previousNexusDir;
+      if (previousNexusDir === undefined) delete process.env.ELANOUS_NEXUS_DIR;
+      else process.env.ELANOUS_NEXUS_DIR = previousNexusDir;
       rmSync(nexusDir, { recursive: true, force: true });
     }
     expect(events).toEqual(['register', 'runtime-http', 'unregister']);

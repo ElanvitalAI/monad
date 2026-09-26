@@ -7,7 +7,7 @@ import { reloadUserConfig, saveUserConfig } from '../user-config.js';
 
 // 🔴 이 파일이 무는 사고 (2026-09-10 실물):
 //
-//   `monad mcp login krea` 가 `✓ credentials saved for 'krea' (https://www.krea.ai)`
+//   `elanous mcp login krea` 가 `✓ credentials saved for 'krea' (https://www.krea.ai)`
 //   를 «찍고 exit 0» 했는데, 데몬의 krea 도구 수는 0 이었다. 자격증명 저장소는
 //   issuer 를 키로 쓰지만 데몬은 그 issuer 를 오직 config 의
 //   `mcp.servers[].oauthIssuer` 에서만 얻고, 로그인은 그 칸을 «안 적었다».

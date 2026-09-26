@@ -78,7 +78,7 @@ export const AUTOPILOT_MISSION_SPEC: LLMToolSpec = {
   parameters: {
     type: 'object',
     properties: {
-      action: { type: 'string', description: 'list(기본·미션 목록)|trace(id의 계보 트리)|phases(id의 멀티페이즈 플랜 목록)|approve(승인·backlog 페이즈 집행)|trim(페이즈 제거)|defer(페이즈 보류)|edit(페이즈 교정)|rerun(처음부터 재실행·세대+1·이전 PR close)|rebuild(특정 페이즈부터 재구현·후속 리셋)|split(★실패 페이즈를 단일책임 서브페이즈로 국소 재분해·과대 페이즈용)|skip(★페이즈 건너뛰기=기능 제외·후속 언블록·부분 완주)|revise(★골 정정·재분해 — comment 필수·실패 컨텍스트 자동 포함)|revise-suggest(★미션 자율 revise 추천 — 관측+맥락(context)으로 정정 comment 를 LLM 이 자동 생성·READ-ONLY·트리거 안 함. 원탭 승인 또는 revise 로 집행)|rereflect(비평 지적 페이즈만 자동 재구현·머지는 HITL)|log(★미션 실행 로그 run.log tail — 진단 근거의 실체·재부팅에도 영속)|memory(★미션 워킹 메모리 — 지금까지 각 페이즈가 무엇을 조사·결정·재사용·산출했나. 미션 셀프 인지)|reconcile(★self-perception — 각 페이즈의 기록 상태·PR vs 현실(git/PR/main)을 미션이 스스로 관측해 drift 감지·자기 형상 재인지. 외부가 PR을 머지/닫아도 미션이 현실에 스스로 도달. self-memory 에 provenance=reconcile 로 self-write)|inject(★외부 가이드/수습 주입 — 외부 도구/대표가 재사용맵·교정·페이즈 상태(done)·머지PR을 미션에 정식 주입. provenance=external 태그·self-memory 안 해침. ❔ 페이즈 체크·외부 머지 인지)|check(★HITL 확인 패스 — 카나리 등 사람이 도착/결과를 눈으로 확인해야 하는 페이즈를 done 처리. 에이전트 검증 불가 항목의 사람 확인)|escalate(★시스템 셀프힐링 — 진단이 escalate 권장한 실패 페이즈(R2 시스템 결함 의심)를 R3 Opus 룩백 후 system-repair 권한 수리 미션으로 스폰. 예산/분할로 안 풀리는 monad 자기 코드/설정 결함을 자율 수리로 잇는다. 보안 경계는 사람 판단 통지만. merge+데몬 재시작은 HITL)|materialize(즉시 구체화)|arm(승인·spec 저장)|briefing(★실집행 전 최종 브리핑 — 골 진화(최초/중간/최종)+여정+산출물 grounded 점검+정착 종합. send=true 면 텔레그램 카드[승인/재조치/보류])|landing(★랜딩 빠른 스캔 — 기록 PR merge 상태만 1회 gh 배치(수초). 완주/arming 전 "미머지 있나?" 즉답. blocking=open PR=확정 미머지)|cancel(미션 종료·파생 잡 release). ★힐: 실패 페이즈의 권장 힐(ops_status action:mission 의 diagnosis.heal)에 따라 rebuild/split/revise/skip 선택 — 3층 탈출구(재구현→분할→골정정/건너뛰기). ★HITL 조정: 플랜 검토 시 과한 페이즈를 trim/defer 하거나 edit 로 교정 후 approve.' },
+      action: { type: 'string', description: 'list(기본·미션 목록)|trace(id의 계보 트리)|phases(id의 멀티페이즈 플랜 목록)|approve(승인·backlog 페이즈 집행)|trim(페이즈 제거)|defer(페이즈 보류)|edit(페이즈 교정)|rerun(처음부터 재실행·세대+1·이전 PR close)|rebuild(특정 페이즈부터 재구현·후속 리셋)|split(★실패 페이즈를 단일책임 서브페이즈로 국소 재분해·과대 페이즈용)|skip(★페이즈 건너뛰기=기능 제외·후속 언블록·부분 완주)|revise(★골 정정·재분해 — comment 필수·실패 컨텍스트 자동 포함)|revise-suggest(★미션 자율 revise 추천 — 관측+맥락(context)으로 정정 comment 를 LLM 이 자동 생성·READ-ONLY·트리거 안 함. 원탭 승인 또는 revise 로 집행)|rereflect(비평 지적 페이즈만 자동 재구현·머지는 HITL)|log(★미션 실행 로그 run.log tail — 진단 근거의 실체·재부팅에도 영속)|memory(★미션 워킹 메모리 — 지금까지 각 페이즈가 무엇을 조사·결정·재사용·산출했나. 미션 셀프 인지)|reconcile(★self-perception — 각 페이즈의 기록 상태·PR vs 현실(git/PR/main)을 미션이 스스로 관측해 drift 감지·자기 형상 재인지. 외부가 PR을 머지/닫아도 미션이 현실에 스스로 도달. self-memory 에 provenance=reconcile 로 self-write)|inject(★외부 가이드/수습 주입 — 외부 도구/대표가 재사용맵·교정·페이즈 상태(done)·머지PR을 미션에 정식 주입. provenance=external 태그·self-memory 안 해침. ❔ 페이즈 체크·외부 머지 인지)|check(★HITL 확인 패스 — 카나리 등 사람이 도착/결과를 눈으로 확인해야 하는 페이즈를 done 처리. 에이전트 검증 불가 항목의 사람 확인)|escalate(★시스템 셀프힐링 — 진단이 escalate 권장한 실패 페이즈(R2 시스템 결함 의심)를 R3 Opus 룩백 후 system-repair 권한 수리 미션으로 스폰. 예산/분할로 안 풀리는 elanous 자기 코드/설정 결함을 자율 수리로 잇는다. 보안 경계는 사람 판단 통지만. merge+데몬 재시작은 HITL)|materialize(즉시 구체화)|arm(승인·spec 저장)|briefing(★실집행 전 최종 브리핑 — 골 진화(최초/중간/최종)+여정+산출물 grounded 점검+정착 종합. send=true 면 텔레그램 카드[승인/재조치/보류])|landing(★랜딩 빠른 스캔 — 기록 PR merge 상태만 1회 gh 배치(수초). 완주/arming 전 "미머지 있나?" 즉답. blocking=open PR=확정 미머지)|cancel(미션 종료·파생 잡 release). ★힐: 실패 페이즈의 권장 힐(ops_status action:mission 의 diagnosis.heal)에 따라 rebuild/split/revise/skip 선택 — 3층 탈출구(재구현→분할→골정정/건너뛰기). ★HITL 조정: 플랜 검토 시 과한 페이즈를 trim/defer 하거나 edit 로 교정 후 approve.' },
       id: { type: 'string', description: 'trace/phases/approve/trim/defer/edit/rerun/rebuild/split/skip/revise/materialize/arm/cancel 대상 미션 id(apm_...·list에서 확인).' },
       phase: { type: 'string', description: 'trim/defer/edit/rebuild/split/skip 대상 페이즈 — index(0-based·"3") 또는 task id. phases 로 확인.' },
       comment: { type: 'string', description: 'revise 용(필수) — 골 정정 지시(예: "범위축소: X 기능 제외하고 재분해"). 실행 컨텍스트(실패 페이즈+사유)는 자동 첨부.' },
@@ -119,7 +119,7 @@ export async function dispatchAutopilotMissions(args: Record<string, unknown>): 
   const action = String(args.action ?? 'list').trim() || 'list';
   // 크로스서피스 싱크 표기 — 어느 서피스에서 해소됐는지(기본 pwa · TUI 는 'tui' 전달·C-b-2 PR①).
   const via = args.via === 'tui' ? 'tui' as const : 'pwa' as const;
-  // ★ 스토어 스코프 가드(2026-07-14) — MONAD_STATE_DIR 이 config-dir 와 어긋나면 mutating
+  // ★ 스토어 스코프 가드(2026-07-14) — ELANOUS_STATE_DIR 이 config-dir 와 어긋나면 mutating
   //   미션 명령이 운영 스토어에 조용히 작동하는 사고를 fail-closed 로 막는다.
   if (MISSION_MUTATING_ACTIONS.has(action)) {
     const scopeErr = missionCliScopeError();
@@ -486,7 +486,7 @@ export async function dispatchAutopilotMissions(args: Record<string, unknown>): 
       if (sub === 'exec-rewind' || sub === 'exec-goto') {
         // ★ P5 리플레이 컨트롤 — 실행 프레임 되감기(exec goto/rewind·C5 수복). build rewind/goto 의 exec
         //   미러. 타겟 이후 프레임 supersededBy 마킹 + 되감기 기록 append(역사 보존). 재실행은 executor.
-        //   frame 저널(monadStateRoot)만 쓰고 tasks.db 무접촉 → scope-guard 대상 아님. 셀프힐 관측(observe).
+        //   frame 저널(elanousStateRoot)만 쓰고 tasks.db 무접촉 → scope-guard 대상 아님. 셀프힐 관측(observe).
         const { readExecFrames, appendExecFrame } = await import('./pipeline/exec-frame-journal.js');
         const { rewindExec, gotoExecPhase } = await import('./pipeline/exec-frame-rewind.js');
         const nowIso = new Date().toISOString();
@@ -638,7 +638,7 @@ export async function dispatchAutopilotMissions(args: Record<string, unknown>): 
       }
       if (sub === 'rewind' || sub === 'goto') {
         // ★ 되감기(P3·셀프힐·저널 append) — 그 지점 blackboard(인자) 복원 + 이후 프레임 supersede(MESI I).
-        //   프레임 저널(monadStateRoot 스코프)만 쓰고 tasks.db 무접촉 → scope-guard 대상 아님. 재실행(LLM)은
+        //   프레임 저널(elanousStateRoot 스코프)만 쓰고 tasks.db 무접촉 → scope-guard 대상 아님. 재실행(LLM)은
         //   rerun(P4). 셀프힐 조작이므로 observe 관문(recordMissionObservation)에 기록(제1원칙).
         const nowIso = new Date().toISOString();
         const { rewind, gotoStage } = await import('./pipeline/frame-rewind.js');

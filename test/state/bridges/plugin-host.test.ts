@@ -12,7 +12,7 @@
 
 import { describe, test, expect } from 'bun:test';
 import { createStore } from '../../../src/state/store.js';
-import { defaultMonadState, type MonadState } from '../../../src/state/types.js';
+import { defaultElanousState, type ElanousState } from '../../../src/state/types.js';
 import { bridgePluginHostToStore } from '../../../src/state/bridges/plugin-host.js';
 import type { PluginHost } from '../../../src/plugins/core/host.js';
 import type { ActivePlugin } from '../../../src/plugins/core/host.js';
@@ -52,7 +52,7 @@ class FakeHost {
 }
 
 function mkStore() {
-  return createStore<MonadState>(defaultMonadState());
+  return createStore<ElanousState>(defaultElanousState());
 }
 
 function asHost(host: FakeHost): PluginHost {

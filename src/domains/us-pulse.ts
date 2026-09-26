@@ -8,7 +8,7 @@
 //
 // 데이터: omni-market `bulk US --symbols <유니버스>` 1콜/일 → us_pulse.db 누적
 // (스트릭/신고가/거래량 z 는 누적 히스토리에서 계산 · 백필 = --from 과거일 반복).
-// 유니버스: ~/.monad/conatus/us_universe.json (텔레그램 자연어 관리 가능).
+// 유니버스: ~/.elanous/conatus/us_universe.json (텔레그램 자연어 관리 가능).
 // READ-ONLY 관찰 — 매매는 verify+HITL.
 
 import { Database } from 'bun:sqlite';

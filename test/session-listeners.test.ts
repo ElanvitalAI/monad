@@ -18,7 +18,7 @@ import {
 let root: string;
 
 beforeEach(() => {
-  root = mkdtempSync(joinPath(tmpdir(), 'monad-session-listeners-'));
+  root = mkdtempSync(joinPath(tmpdir(), 'elanous-session-listeners-'));
   _clearSessionListenersForTest();
 });
 

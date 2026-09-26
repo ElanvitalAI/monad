@@ -4,7 +4,7 @@
 //
 // pwa-start owns the TTY path (banner + bg-launch parent prints the URL
 // line after the child detaches). This module covers the !TTY path so
-// `monad nexus run` restarts in any context bring share back up without
+// `elanous nexus run` restarts in any context bring share back up without
 // extra user steps.
 //
 // FU2 (2026-05-13) — sudo behavior in fork+detach:
@@ -24,7 +24,7 @@
 //   Recovery paths surfaced to the user (in the daemon's `share ERR`
 //   line + this module's keytrace events):
 //     1. `sudo -v` once in any TTY · re-run nexus → cache hits
-//     2. `monad nexus pwa share enable` (parent-side mount with the
+//     2. `elanous nexus pwa share enable` (parent-side mount with the
 //        user's terminal sudo) — independent of bg-launch lifecycle
 //     3. macOS NOPASSWD entry for `tailscale serve` (long-term daemon
 //        operators)
@@ -116,7 +116,7 @@ export async function mountShareIfEnabled(opts: MountShareOpts): Promise<ShareMo
       reason: 'serve-error',
       serveExitCode: serve.exitCode,
       likelyCause: 'sudo-cache-empty-in-fork-detach',
-      recoveryHint: 'run `sudo -v` once in a TTY then restart, or `monad nexus pwa share enable`',
+      recoveryHint: 'run `sudo -v` once in a TTY then restart, or `elanous nexus pwa share enable`',
     });
     return { outcome: 'failed', reason: 'serve-error', serveExitCode: serve.exitCode };
   }

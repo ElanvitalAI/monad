@@ -1,5 +1,5 @@
 import { createHash } from 'node:crypto';
-import { s3MonadKey } from '../storage/s3.js';
+import { s3ElanousKey } from '../storage/s3.js';
 
 export type AssetVendor = 'higgsfield' | 'topview';
 
@@ -160,7 +160,7 @@ export function buildRetainPlan(
       beatIndex: asset.beatIndex,
       download: ['curl', '-fsSL', '--globoff', '--create-dirs', '-o', localPath, '--', url.href],
       localPath,
-      s3Key: s3MonadKey('adAssets', asset.vendor, `beat-${asset.beatIndex}-${identity}${extension}`),
+      s3Key: s3ElanousKey('adAssets', asset.vendor, `beat-${asset.beatIndex}-${identity}${extension}`),
     });
   }
 

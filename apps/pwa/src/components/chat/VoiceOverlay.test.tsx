@@ -7,7 +7,7 @@
 //   - opacity / pointer-events classes flip with `active`
 //   - phase headline / hint / dot color render
 //   - errorMsg text appears when present, omitted when null
-//   - mic toggle button is present + carries the data-monad-action hook
+//   - mic toggle button is present + carries the data-elanous-action hook
 
 import { describe, expect, it } from 'bun:test';
 import { renderToStaticMarkup } from 'react-dom/server';
@@ -66,11 +66,11 @@ describe('VoiceOverlay — render contract (Phase 3 · C2)', () => {
     expect(html).not.toMatch(/text-rose-500"[^>]*>[^<]+<\/p>/);
   });
 
-  it('exposes the mic toggle button via data-monad-action="voice-overlay-toggle"', () => {
+  it('exposes the mic toggle button via data-elanous-action="voice-overlay-toggle"', () => {
     const html = renderToStaticMarkup(
       <VoiceOverlay active phase="listening" errorMsg={null} onToggle={() => {}} />,
     );
-    expect(html).toContain('data-monad-action="voice-overlay-toggle"');
+    expect(html).toContain('data-elanous-action="voice-overlay-toggle"');
   });
 
   it('connecting phase — sky dot + spinner icon', () => {
@@ -94,7 +94,7 @@ describe('VoiceOverlay — render contract (Phase 3 · C2)', () => {
         onTtsToggle={() => {}}
       />,
     );
-    expect(html).toContain('data-monad-action="voice-overlay-tts-toggle"');
+    expect(html).toContain('data-elanous-action="voice-overlay-tts-toggle"');
     expect(html).toContain('음성 응답 ON');
     // aria-pressed=true (= 음소거 OFF · 발화 켜짐).
     expect(html).toMatch(/aria-pressed="true"/);

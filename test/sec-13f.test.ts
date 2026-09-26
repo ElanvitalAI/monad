@@ -54,6 +54,6 @@ describe('secUserAgent — 연락처는 config 에서 온다', () => {
     expect(secUserAgent('ops@example.com')).toBe('monad-agent research (ops@example.com)');
   });
   test('연락처가 없으면 설정 방법을 말하며 멈춘다', () => {
-    expect(() => secUserAgent('')).toThrow('monad config set finance.secContactEmail');
+    expect(() => secUserAgent('')).toThrow('elanous config set finance.secContactEmail');
   });
 });

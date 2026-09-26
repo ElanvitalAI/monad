@@ -133,7 +133,7 @@ describe('intake check verdicts', () => {
     writeFileSync(join(root, 'src/index.ts'), '');
     mkdirSync(join(root, 'docs'), { recursive: true });
     writeFileSync(join(root, 'docs/FAQ.md'), '# faq\n');
-    writeFileSync(join(root, 'docs/PRFAQ-monad-docs-working-backwards-2026-09-22.md'), '# pr\n');
+    writeFileSync(join(root, 'docs/PRFAQ-elanous-docs-working-backwards-2026-09-22.md'), '# pr\n');
     const ruler = deriveRuler({
       root,
       readFile: (abs) => readFileSync(abs, 'utf8'),
@@ -304,7 +304,7 @@ describe('intake check — promise axis (🅢 review on #20059)', () => {
   ].join('\n');
   const FAQ = `# FAQ\n문서만 약속한다 — ${PROMISE_ONLY} 를 지원한다고 적었다\n`;
   const fixtureDeps = () => repoDeps({
-    readFile: (abs: string) => abs.endsWith('PRFAQ-monad-docs-working-backwards-2026-09-22.md')
+    readFile: (abs: string) => abs.endsWith('PRFAQ-elanous-docs-working-backwards-2026-09-22.md')
       ? PRFAQ
       : abs.endsWith('docs/FAQ.md')
         ? FAQ

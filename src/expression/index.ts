@@ -99,7 +99,7 @@ export {
   notificationLevelLabel,
 } from './a11y.js';
 
-// Picker adapters — bridge expression PickerSpec ↔ monad search-modal
+// Picker adapters — bridge expression PickerSpec ↔ elanous search-modal
 // SearchItem records (one-direction-each pure converters).
 export {
   type PickerSearchItem,

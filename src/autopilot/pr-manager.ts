@@ -12,7 +12,7 @@ import { spawnSync } from 'node:child_process';
 import { debug } from '../debug/log.js';
 import { runGitWithRetry } from '../git-fs/retry.js';
 import { DEFAULT_BRANCH_WORKTREE_BASE } from '../git-fs/worktree.js';
-import { isMonadRuntimeArtifactPath } from '../self-implement/gate-scope.js';
+import { isElanousRuntimeArtifactPath } from '../self-implement/gate-scope.js';
 import { isTransientExecutionFailure } from '../self-dev/execution-transient.js';
 
 /** ★ stderr 캡처(대표 2026-07-21·관측 갭) — 종전엔 stdout 만 담아 git/gh 실패 사유가 소실됐다
@@ -262,7 +262,7 @@ function isTransientPushFailure(detail: string): boolean {
 export function makePrManager(run: CmdRunner = defaultCmdRunner): PrManager {
   const findPrForBranchOutcome = (branch: string, cwd?: string): FindPrForBranchOutcome => {
     // ⛔ 표식은 base 를 「생략했다」는 뜻이지 브랜치 이름이 아니다. 그대로 `gh --head` 로 넘기면
-    //    gh 가 `no pull requests found for branch "monad:default-branch"` 를 stderr 로 뱉는다.
+    //    gh 가 `no pull requests found for branch "elanous:default-branch"` 를 stderr 로 뱉는다.
     //    ⚠️ 그 줄은 **실패처럼 읽히는데 실패가 아니고**, 실제 PR 개설 실패 바로 윗줄에 앉는다
     //    ⇒ 2026-08-02 에 사람이 진짜 실패(`#6604`)를 그 옆에서 잡음으로 읽었다.
     if (branch === DEFAULT_BRANCH_WORKTREE_BASE) {
@@ -328,9 +328,9 @@ export function makePrManager(run: CmdRunner = defaultCmdRunner): PrManager {
         ? prBaseFromComparison(prBaseRef)
         : undefined;
       const nonIgnored = (input.excludePaths ?? []).filter((p) => !run('git', ['-C', cwd, 'check-ignore', '-q', p], opts).ok);
-      // ⛔ monad 가 «대상 저장소»에 남기는 자기 런타임 산출물은 호출부가 지정하지 않아도 뺀다.
+      // ⛔ elanous 가 «대상 저장소»에 남기는 자기 런타임 산출물은 호출부가 지정하지 않아도 뺀다.
       //    📏 2026-09-21: monad-agent 는 .gitignore 가 그 이름들을 가려서 이 경로가 «원리상» 안 보였고,
-      //       남의 빈 저장소에서 돌리니 `.monad-child-liveness.hb` 가 PR diff 에 들어갔다.
+      //       남의 빈 저장소에서 돌리니 `.elanous-child-liveness.hb` 가 PR diff 에 들어갔다.
       //       그리고 리뷰어가 그것을 「실행 부산물」로 정당하게 지적했고, 자식은 그 파일을 «원리상» 못 지워
       //       런이 UNCONVERGEABLE 로 버려졌다(`#19300` 의 고리).
       //    ⛔ 호출부마다 기억하게 하지 않는다 — 그것이 `#19300` 이 한 자리만 고치게 된 이유다.
@@ -338,20 +338,20 @@ export function makePrManager(run: CmdRunner = defaultCmdRunner): PrManager {
       const untrackedRuntimeArtifacts = (run('git', ['-C', cwd, 'ls-files', '--others', '--exclude-standard', '-z'], opts).out ?? '')
         .split('\0')
         .filter((path) => path.length > 0)
-        .filter(isMonadRuntimeArtifactPath);
+        .filter(isElanousRuntimeArtifactPath);
       const exclude = [
         ...nonIgnored.map((p) => `:(exclude)${p}`),
         ...untrackedRuntimeArtifacts.map((p) => `:(exclude,literal)${p}`),
       ];
       const addR = runGitWrite(['-C', cwd, 'add', '-A', '--', ...exclude]);
       if (!addR.ok) return { ok: false, reason: 'add', detail: detailOf(addR) };
-      // ⛔ 위 목록은 «스냅샷»이라 경합에 진다 — `.monad-child-liveness.hb` 는 ***5초마다*** 쓰이므로
+      // ⛔ 위 목록은 «스냅샷»이라 경합에 진다 — `.elanous-child-liveness.hb` 는 ***5초마다*** 쓰이므로
       //    `ls-files` 와 `add -A` «사이»에 생기면 그대로 담힌다.
       //    ⇒ 사후 조건으로 한 번 더 내린다. `--diff-filter=A` 라 «새로 들어온 것»만 문다.
       const stagedRuntimeArtifacts = (run('git', ['-C', cwd, 'diff', '--cached', '--name-only', '--diff-filter=A', '-z'], opts).out ?? '')
         .split('\0')
         .filter((path) => path.length > 0)
-        .filter(isMonadRuntimeArtifactPath);
+        .filter(isElanousRuntimeArtifactPath);
       if (stagedRuntimeArtifacts.length > 0) runGitWrite(['-C', cwd, 'reset', '-q', '--', ...stagedRuntimeArtifacts]);
       const commitR = runGitWrite(['-C', cwd, 'commit', '-m', input.commitMessage]);
       if (!commitR.ok) {
@@ -411,7 +411,7 @@ export function makePrManager(run: CmdRunner = defaultCmdRunner): PrManager {
         // ahead > 0 + 내용차 존재 → 이미 커밋된 산출. commit 스킵하고 아래 push + PR 로 fall-through.
       }
       // force-push — 재구현이 이전 구현을 교체(기존 브랜치 갱신 or 신규). 안정 브랜치명이라 기존 PR 이
-      //   있으면 GitHub 이 그 PR 을 자동 업데이트(닫고 새로 안 만듦). monad 자체 SE 브랜치라 force 안전.
+      //   있으면 GitHub 이 그 PR 을 자동 업데이트(닫고 새로 안 만듦). elanous 자체 SE 브랜치라 force 안전.
       //   일시 원격 실패(5xx·연결 끊김 등)만 최대 3회. 영구 거부는 한 번에 끝낸다.
       const waitForPushRetry = input.waitForPushRetry ?? defaultWaitForPushRetry;
       const pushArgs = ['-C', cwd, 'push', '--force', '-u', 'origin', input.branch];

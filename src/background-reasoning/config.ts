@@ -1,4 +1,4 @@
-// Y2 background-reasoning config loader · `~/.monad/background-reasoning/budget.yaml`.
+// Y2 background-reasoning config loader · `~/.elanous/background-reasoning/budget.yaml`.
 // Cf. ROADMAP-background-reasoning-patcher-thinker-2026-05-12.md §5.4 + §6 Y2.
 // Hierarchy: yaml file > env > default. Absent/malformed → defaults.
 
@@ -35,7 +35,7 @@ export const DEFAULT_BACKGROUND_REASONING_CONFIG: BackgroundReasoningConfig = {
 };
 
 export function defaultConfigPath(): string {
-  return join(homedir(), '.monad', 'background-reasoning', 'budget.yaml');
+  return join(homedir(), '.elanous', 'background-reasoning', 'budget.yaml');
 }
 
 function pickNumber(v: unknown, fallback: number): number {
@@ -81,14 +81,14 @@ export function loadBackgroundReasoningConfig(opts: LoadOpts = {}): BackgroundRe
     }
   }
 
-  if (env.MONAD_BG_MONTHLY_CLOUD_MAX_USD) {
-    cfg.monthlyCloudMaxUsd = pickNumber(Number(env.MONAD_BG_MONTHLY_CLOUD_MAX_USD), cfg.monthlyCloudMaxUsd);
+  if (env.ELANOUS_BG_MONTHLY_CLOUD_MAX_USD) {
+    cfg.monthlyCloudMaxUsd = pickNumber(Number(env.ELANOUS_BG_MONTHLY_CLOUD_MAX_USD), cfg.monthlyCloudMaxUsd);
   }
-  if (env.MONAD_BG_PATCHER_CLOUD_ALLOWED) {
-    cfg.patcherCloudAllowed = env.MONAD_BG_PATCHER_CLOUD_ALLOWED === 'true';
+  if (env.ELANOUS_BG_PATCHER_CLOUD_ALLOWED) {
+    cfg.patcherCloudAllowed = env.ELANOUS_BG_PATCHER_CLOUD_ALLOWED === 'true';
   }
-  if (env.MONAD_BG_THINKER_CLOUD_ALLOWED) {
-    cfg.thinkerCloudAllowed = env.MONAD_BG_THINKER_CLOUD_ALLOWED === 'true';
+  if (env.ELANOUS_BG_THINKER_CLOUD_ALLOWED) {
+    cfg.thinkerCloudAllowed = env.ELANOUS_BG_THINKER_CLOUD_ALLOWED === 'true';
   }
 
   return cfg;

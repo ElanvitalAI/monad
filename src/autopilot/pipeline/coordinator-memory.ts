@@ -49,7 +49,7 @@ export function coordinatorRecordMemory(
     // 반환 = 현 유효 엔트리 수(cheap·jsonl 1회 read). State 재조립 없음(U2.5 — persisted wm 채널은 어디서도 read 안 됨).
     const { compacted, entries } = compactWorkingMemoryIfNeeded(missionId);
     // ★ 제1원칙 관측(자기인지) — "언제·무엇을 기록했고·통합 뷰가 몇 엔트리를·어느 리비전에 보관했나"를 남긴다.
-    //   `monad logs --category mission.coordinator` 로 회상. totalEntries=통합 뷰 총수·gen=리비전·compacted=성장 bound.
+    //   `elanous logs --category mission.coordinator` 로 회상. totalEntries=통합 뷰 총수·gen=리비전·compacted=성장 bound.
     try {
       debug.log('mission.coordinator', 'memory-record', {
         missionId, phaseId: entry.phaseId, kind: entry.kind,

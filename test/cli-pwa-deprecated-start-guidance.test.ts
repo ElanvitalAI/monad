@@ -14,15 +14,15 @@ import { runPwaShow } from '../src/cli/pwa-show';
 import { runPwaTest } from '../src/cli/pwa-test';
 
 const DEPRECATED_PWA_GUIDANCE = [
-  'monad nexus pwa start',
-  'monad nexus pwa build',
+  'elanous nexus pwa start',
+  'elanous nexus pwa build',
 ] as const;
 const GUIDANCE_SOURCE_FILES = [
   'src/cli/pwa-build.ts',
   'src/nexus/setup-status.ts',
 ] as const;
-const PWA_TEST_GUIDANCE = 'monad nexus run --test';
-const PWA_BUILD_GUIDANCE = 'monad nexus build';
+const PWA_TEST_GUIDANCE = 'elanous nexus run --test';
+const PWA_BUILD_GUIDANCE = 'elanous nexus build';
 
 function makeOut() {
   const logs: string[] = [];
@@ -54,9 +54,9 @@ function expectSourceGuidanceCurrent(): void {
 }
 
 function makeRepoWithoutStaticBuild(): string {
-  const repoRoot = mkdtempSync(joinPath(tmpdir(), 'monad-pwa-guidance-'));
+  const repoRoot = mkdtempSync(joinPath(tmpdir(), 'elanous-pwa-guidance-'));
   mkdirSync(joinPath(repoRoot, 'bin'), { recursive: true });
-  writeFileSync(joinPath(repoRoot, 'bin', 'monad.mjs'), '#!/usr/bin/env bun\n');
+  writeFileSync(joinPath(repoRoot, 'bin', 'elanous.mjs'), '#!/usr/bin/env bun\n');
   mkdirSync(joinPath(repoRoot, 'apps', 'pwa'), { recursive: true });
   return repoRoot;
 }
@@ -67,7 +67,7 @@ describe('PWA daemon guidance uses the live nexus run command', () => {
 
     await runPwaShow({ cwd: '/project-without-pwa', listFn: () => [], out });
 
-    expectCurrentGuidance(out.logs, 'monad nexus run --hmr');
+    expectCurrentGuidance(out.logs, 'elanous nexus run --hmr');
   });
 
   test('pwa global status recommends HMR nexus run when its registry is empty', async () => {
@@ -88,7 +88,7 @@ describe('PWA daemon guidance uses the live nexus run command', () => {
       out,
     });
 
-    expectCurrentGuidance(out.logs, 'monad nexus run --hmr');
+    expectCurrentGuidance(out.logs, 'elanous nexus run --hmr');
   });
 
   test('pwa dev recommends nexus run when there is no live lock', async () => {
@@ -103,7 +103,7 @@ describe('PWA daemon guidance uses the live nexus run command', () => {
       out,
     });
 
-    expectCurrentGuidance(out.logs, 'monad nexus run');
+    expectCurrentGuidance(out.logs, 'elanous nexus run');
   });
 
   test('pwa share preserves its requested port while recommending nexus run', async () => {
@@ -119,7 +119,7 @@ describe('PWA daemon guidance uses the live nexus run command', () => {
       out,
     });
 
-    expectCurrentGuidance(out.logs, 'nexus is not currently running on :4310 — `monad nexus run`');
+    expectCurrentGuidance(out.logs, 'nexus is not currently running on :4310 — `elanous nexus run`');
   });
 
   test('pwa test recommends nexus run --test when its static build is missing', async () => {
@@ -151,7 +151,7 @@ describe('PWA daemon guidance uses the live nexus run command', () => {
   test('pwa test recommends nexus run --test when it cannot resolve its repository root', async () => {
     const out = makeOut();
 
-    await runPwaTest({ argvBin: '/not-a-monad-checkout/bin/monad.mjs', out });
+    await runPwaTest({ argvBin: '/not-a-elanous-checkout/bin/elanous.mjs', out });
 
     expectCurrentGuidance(out.logs, PWA_TEST_GUIDANCE);
   });
@@ -159,13 +159,13 @@ describe('PWA daemon guidance uses the live nexus run command', () => {
   test('PWA build and setup-status guidance use the canonical build command', async () => {
     const unresolvedOut = makeOut();
     const unresolved = await runPwaBuild({
-      argvBin: '/not-a-monad-checkout/bin/monad.mjs',
+      argvBin: '/not-a-elanous-checkout/bin/elanous.mjs',
       out: unresolvedOut,
     });
     expect(unresolved.exitCode).toBe(1);
     expectCurrentGuidance(unresolvedOut.logs, PWA_BUILD_GUIDANCE);
 
-    const pwaDir = mkdtempSync(joinPath(tmpdir(), 'monad-pwa-build-guidance-'));
+    const pwaDir = mkdtempSync(joinPath(tmpdir(), 'elanous-pwa-build-guidance-'));
     const missingDepsOut = makeOut();
     try {
       const missingDeps = await runPwaBuild({ cwd: pwaDir, out: missingDepsOut });
@@ -176,7 +176,7 @@ describe('PWA daemon guidance uses the live nexus run command', () => {
       rmSync(pwaDir, { recursive: true, force: true });
     }
 
-    const builtDir = mkdtempSync(joinPath(tmpdir(), 'monad-pwa-built-'));
+    const builtDir = mkdtempSync(joinPath(tmpdir(), 'elanous-pwa-built-'));
     const buildOut = makeOut();
     try {
       writeFileSync(joinPath(builtDir, 'package.json'), '{"dependencies":{}}');
@@ -196,7 +196,7 @@ describe('PWA daemon guidance uses the live nexus run command', () => {
       rmSync(builtDir, { recursive: true, force: true });
     }
 
-    const configRoot = mkdtempSync(joinPath(tmpdir(), 'monad-setup-guidance-'));
+    const configRoot = mkdtempSync(joinPath(tmpdir(), 'elanous-setup-guidance-'));
     try {
       const setup = checkSetupStatus({
         cfg: buildUserConfig(joinPath(configRoot, 'missing.json')),

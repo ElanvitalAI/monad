@@ -28,18 +28,18 @@ let tmp: string;
 
 beforeEach(() => {
   tmp = mkdtempSync(join(tmpdir(), 'tg-attach-'));
-  // The session store roots at ~/.monad/sessions (homedir, NOT XDG), so
+  // The session store roots at ~/.elanous/sessions (homedir, NOT XDG), so
   // the stale XDG_DATA_HOME redirect no longer isolates it — these
   // commands run through the dispatcher (default root) and would
-  // otherwise read/write the REAL store. MONAD_SESSION_ROOT points the
+  // otherwise read/write the REAL store. ELANOUS_SESSION_ROOT points the
   // whole store at the temp dir. State (active-session) still honors
   // XDG_STATE_HOME.
-  process.env.MONAD_SESSION_ROOT = join(tmp, 'sessions');
+  process.env.ELANOUS_SESSION_ROOT = join(tmp, 'sessions');
   process.env.XDG_STATE_HOME = join(tmp, 'state');
 });
 afterEach(() => {
   rmSync(tmp, { recursive: true, force: true });
-  delete process.env.MONAD_SESSION_ROOT;
+  delete process.env.ELANOUS_SESSION_ROOT;
   delete process.env.XDG_STATE_HOME;
 });
 

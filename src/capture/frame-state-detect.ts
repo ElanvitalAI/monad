@@ -6,10 +6,10 @@
 //
 // ⭐ 왜 P1 에 필요한가: 기존 P1(`frame-log-diagnosis`)의 frame-side 신호는 "화면이 변했나"뿐이라
 // 약하다. 이 모듈이 화면을 **상태로 분류**하면 drift = *분류된 화면-상태* ⊕ *로그-상태* 로 강해진다
-// (herdr 화면 렌즈 + monad 로그 렌즈 = §4 두-렌즈 대조). 분류 결과는 #5 이벤트로그에도 기록돼
+// (herdr 화면 렌즈 + elanous 로그 렌즈 = §4 두-렌즈 대조). 분류 결과는 #5 이벤트로그에도 기록돼
 // `waitForSurfaceState` 의 생산자가 된다(#1=생산자, #5=전송로).
 //
-// 규칙셋은 herdr claude/codex 규칙 + 범용 chrome. monad 대시보드·codex 자식 공통 신호를 커버하되
+// 규칙셋은 herdr claude/codex 규칙 + 범용 chrome. elanous 대시보드·codex 자식 공통 신호를 커버하되
 // **주입 가능**(per-agent 규칙은 후속). region DSL·matcher 게이트는 herdr 와 동형.
 
 /** 상태 어휘 — `pty-event-log` `SurfaceState` 와 정합(화면-측 기본은 idle/working/blocked/unknown 분류·
@@ -122,8 +122,8 @@ export function detectAgentFromCmd(cmd: string | undefined, kind?: string): stri
   if (/\bclaude\b/.test(c)) return 'claude';
   if (/\bgemini\b/.test(c)) return 'gemini';
   if (/\bgrok\b/.test(c)) return 'grok';
-  // monad 자신(대시보드 TUI·self-implement 자식) — bin/monad.mjs / monad chat.
-  if (/monad(\.mjs)?\b/.test(c) || kind === 'tui' || kind === 'self') return 'monad';
+  // elanous 자신(대시보드 TUI·self-implement 자식) — bin/elanous.mjs / elanous chat.
+  if (/elanous(\.mjs)?\b/.test(c) || kind === 'tui' || kind === 'self') return 'elanous';
   return undefined;
 }
 
@@ -210,7 +210,7 @@ export const DEFAULT_STATE_RULES: readonly StateRule[] = [
     ] },
   },
   {
-    state: 'working', priority: 90, visible: true, label: 'monad-tui-turn-in-progress',
+    state: 'working', priority: 90, visible: true, label: 'elanous-tui-turn-in-progress',
     region: { kind: 'bottomLines', n: 10 },
     match: { kind: 'lineRegex', re: /\(\s*\d+(?:\.\d+)?(?:ms|h|m|s)(?:\s+\d+(?:\.\d+)?(?:ms|h|m|s))*\b[^)]*·\s*esc 중단\s*\)/ },
   },
@@ -224,7 +224,7 @@ export const DEFAULT_STATE_RULES: readonly StateRule[] = [
   },
 ];
 
-/** self-implement 자식 `monad chat --tools --goal-loop` viewport 전용 주입 규칙.
+/** self-implement 자식 `elanous chat --tools --goal-loop` viewport 전용 주입 규칙.
  * `GOAL-COMPLETE`는 산문 부정문에도 등장하므로 contains가 아닌 단독 정리 라인만 완료로 본다.
  * 완료 화면에도 tool 행은 남아 working이 매치하므로 done(110)은 working(90)·blocked(100)보다 높다.
  * tool 행은 작업과 결과 사이에서 사라지지 않는 안정 신호로 유지해 working/unknown 플래핑과 과도한

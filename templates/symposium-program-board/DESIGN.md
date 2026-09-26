@@ -3,11 +3,11 @@
 > 🧪 **이 템플릿은 「시험」이다.** 대표 지시(2026-09-08): *"자산화 된 것을 바탕으로 «다른 컨셉»으로 구현까지 테스트"*.
 > 물음은 ***「추출본이 «디자인 시스템»으로 쓰이나, 아니면 그 페이지 «한 장»의 사본일 뿐인가」***다.
 > 씨앗은 [`../event-landing-editorial/DESIGN.md`](../event-landing-editorial/DESIGN.md) — 웹 레퍼런스에서
-> `monad repo design-extract` 로 뽑은 것이다.
+> `elanous repo design-extract` 로 뽑은 것이다.
 
 ## Design direction
 
-- monad-pastel-default
+- elanous-pastel-default
 
 > ⚠️ 이 칸의 한계는 씨앗 문서와 같다 — 고를 수 있는 여섯이 전부 터미널 색 구성표다.
 > ✅ 다만 이제 **문서가 «자기 방향»을 선언할 수 있다**(`directionFromDesignMd` · `#16229`).

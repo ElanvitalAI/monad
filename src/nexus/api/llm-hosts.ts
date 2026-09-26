@@ -11,11 +11,11 @@
 // parallel — LM Studio (default), vLLM (OpenAI-compat), Ollama,
 // Anthropic — and the host config can be hot-swapped at runtime.
 //
-// Configure via `MONAD_LLM_HOSTS` (JSON array). Backward-compat: when
+// Configure via `ELANOUS_LLM_HOSTS` (JSON array). Backward-compat: when
 // unset, fall back to a single `lm-studio` host using the legacy
-// `MONAD_LLM_MODELS_ENDPOINT` (or `http://localhost:1234/v1`).
+// `ELANOUS_LLM_MODELS_ENDPOINT` (or `http://localhost:1234/v1`).
 //
-//   MONAD_LLM_HOSTS='[
+//   ELANOUS_LLM_HOSTS='[
 //     {"name":"local","kind":"lm-studio","endpoint":"http://localhost:1234"},
 //     {"name":"macmini","kind":"lm-studio","endpoint":"http://100.109.189.62:1234"},
 //     {"name":"ollama","kind":"ollama","endpoint":"http://localhost:11434"},
@@ -94,9 +94,9 @@ function stripTrailingSlash(url: string): string {
 }
 
 /** Resolve the legacy single-host endpoint (back-compat for the
- *  pre-multi-host wire). Used only when `MONAD_LLM_HOSTS` is absent. */
+ *  pre-multi-host wire). Used only when `ELANOUS_LLM_HOSTS` is absent. */
 export function resolveLegacyEndpoint(): string {
-  const env = process.env.MONAD_LLM_MODELS_ENDPOINT;
+  const env = process.env.ELANOUS_LLM_MODELS_ENDPOINT;
   if (env && env.length > 0) return stripTrailingSlash(env);
   return `${DEFAULT_LM_STUDIO_BASE}/v1`;
 }
@@ -109,7 +109,7 @@ function normaliseBaseUrl(url: string): string {
   return stripped.endsWith('/v1') ? stripped.slice(0, -3) : stripped;
 }
 
-/** Parse the JSON array from `MONAD_LLM_HOSTS`. Bad input falls back
+/** Parse the JSON array from `ELANOUS_LLM_HOSTS`. Bad input falls back
  *  to the legacy single-host config so existing dogfood envs keep
  *  working — but the parse error is surfaced via the return shape so
  *  the caller (and tests) can detect malformed input.
@@ -134,13 +134,13 @@ export function parseLlmHostsEnv(raw: string | undefined): {
   } catch (e) {
     return {
       hosts: defaultHosts(),
-      parseError: `MONAD_LLM_HOSTS JSON parse failed: ${e instanceof Error ? e.message : String(e)}`,
+      parseError: `ELANOUS_LLM_HOSTS JSON parse failed: ${e instanceof Error ? e.message : String(e)}`,
     };
   }
   if (!Array.isArray(parsed)) {
     return {
       hosts: defaultHosts(),
-      parseError: 'MONAD_LLM_HOSTS must be a JSON array',
+      parseError: 'ELANOUS_LLM_HOSTS must be a JSON array',
     };
   }
   const hosts: LlmHostConfig[] = [];
@@ -185,8 +185,8 @@ export function parseLlmHostsEnv(raw: string | undefined): {
     return {
       hosts: defaultHosts(),
       parseError: errors.length > 0
-        ? `MONAD_LLM_HOSTS has no valid hosts: ${errors.join('; ')}`
-        : 'MONAD_LLM_HOSTS is empty',
+        ? `ELANOUS_LLM_HOSTS has no valid hosts: ${errors.join('; ')}`
+        : 'ELANOUS_LLM_HOSTS is empty',
     };
   }
   const out: {
@@ -209,7 +209,7 @@ export function defaultHosts(): LlmHostConfig[] {
 }
 
 // FU.A3 — In-memory override store. When set, takes priority over
-// `MONAD_LLM_HOSTS` env + legacy single-host. Cleared on
+// `ELANOUS_LLM_HOSTS` env + legacy single-host. Cleared on
 // `setHostsOverride(null)` so callers can revert without a restart.
 let hostsOverride: LlmHostConfig[] | null = null;
 
@@ -242,7 +242,7 @@ export function getEffectiveHosts(): {
   if (hostsOverride !== null) {
     return { hosts: [...hostsOverride], source: 'override' };
   }
-  const envRaw = process.env.MONAD_LLM_HOSTS;
+  const envRaw = process.env.ELANOUS_LLM_HOSTS;
   if (envRaw && envRaw.trim().length > 0) {
     const out = parseLlmHostsEnv(envRaw);
     const result: {

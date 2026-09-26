@@ -11,20 +11,20 @@ export const LOCAL_SKILLS_DIR = join(REMOTE_HOME, '.claude/skills');
 export const LOCAL_AGENTS_DIR = join(REMOTE_HOME, '.claude/agents');
 /**
  * 가변 상태(`plugin-trust.json` · `market-posture.json` · `execution-history.json` · `sync.db` …)의 폴더.
- * 🩸 2026-09-24: 종전엔 늘 «코드 옆» `<코드>/data` 였다. 운영이 설치본(`~/.local/share/monad/versions/<판>`)으로 옮기자
+ * 🩸 2026-09-24: 종전엔 늘 «코드 옆» `<코드>/data` 였다. 운영이 설치본(`~/.local/share/elanous/versions/<판>`)으로 옮기자
  *    판마다 빈 `data/` 가 새로 생기고 야간 정리가 옛 판을 지우며 같이 지워졌다(플러그인 신뢰 승인·시장 자세 last-good).
- *    ⇒ 운영 코드(설치본 · 리더 트리)는 상태 폴더 `~/.monad/data` 를 쓴다. 다른 워크트리는 종전대로 자기 `data/`.
- *    `MONAD_DATA_DIR` 가 있으면 그것이 이긴다.
+ *    ⇒ 운영 코드(설치본 · 리더 트리)는 상태 폴더 `~/.elanous/data` 를 쓴다. 다른 워크트리는 종전대로 자기 `data/`.
+ *    `ELANOUS_DATA_DIR` 가 있으면 그것이 이긴다.
  */
 export function resolveDataDir(
   codeRoot: string = resolve(import.meta.dir, '..'),
   deps: { env?: NodeJS.ProcessEnv; home?: string; leaderTree?: () => string | null; hasGit?: (dir: string) => boolean } = {},
 ): string {
   const env = deps.env ?? process.env;
-  const override = env.MONAD_DATA_DIR?.trim();
+  const override = env.ELANOUS_DATA_DIR?.trim();
   if (override) return override;
   const home = deps.home ?? homedir();
-  const stateData = join(home, '.monad', 'data');
+  const stateData = join(home, '.elanous', 'data');
   const real = (p: string) => { try { return realpathSync(p); } catch { return resolve(p); } };
   const root = real(codeRoot);
   const hasGit = deps.hasGit ?? ((dir: string) => {
@@ -39,7 +39,7 @@ export function resolveDataDir(
   if (isInstalledPackagePath(root) && !hasGit(root)) return stateData;   // 설치본(설치기 · npm)
   const leaderTree = deps.leaderTree ?? (() => {
     try {
-      const raw = JSON.parse(readFileSync(join(home, '.monad', 'leader.json'), 'utf-8')) as { tree?: unknown };
+      const raw = JSON.parse(readFileSync(join(home, '.elanous', 'leader.json'), 'utf-8')) as { tree?: unknown };
       return typeof raw.tree === 'string' ? raw.tree : null;
     } catch { return null; }
   });
@@ -62,7 +62,7 @@ export const OBSIDIAN_VAULT =
 // `local` is a first-class target for syncing between local agent runtimes
 // without requiring SSH back into the same machine.
 export const LOCAL_SYNC_SERVER = 'local';
-/** Sync targets = `local` ⊕ the ssh fleet from ~/.monad/ssh-hosts.json.
+/** Sync targets = `local` ⊕ the ssh fleet from ~/.elanous/ssh-hosts.json.
  *  (2026-09-25: was a hard-coded list of one person's machines.) */
 export function syncServers(): string[] {
   return [LOCAL_SYNC_SERVER, ...listSshHosts().map((h) => h.name)];
@@ -107,7 +107,7 @@ export const RSYNC_EXCLUDES = [
   '.ruff_cache/',
   'skillpad.sh',
   'sync-to-*.sh',
-  'monadagent/',  // exclude this project itself
+  'elanous/',  // exclude this project itself
 ];
 
 // ── Env-sensitive file patterns ──
@@ -133,7 +133,7 @@ export const ENV_FILE_PATTERNS = [
 //
 // ⛔ 셸 파일과 **같은 규약**을 쓴다(둘이 갈리면 어느 쪽이 이겼는지 아무도 모른다):
 //   ⓐ 캐시가 없거나 **비어 있으면** env 를 쓴다(살아 있는 키를 지우지 않는다)
-//   ⓑ `MONAD_KEEP_ENV_KEYS=1` 이면 캐시를 무시한다(임시로 다른 키를 쓰는 탈출구)
+//   ⓑ `ELANOUS_KEEP_ENV_KEYS=1` 이면 캐시를 무시한다(임시로 다른 키를 쓰는 탈출구)
 //
 // ⚠️ 캐시는 **매 호출 읽지 않는다** — 프로세스 수명 동안 1회만 읽고 기억한다(파일 I/O 억제).
 //    ⇒ 회전 직후 살아 있는 프로세스를 즉시 고치려면 `resetKeyCacheForTests()` 가 아니라
@@ -142,15 +142,15 @@ const keyCache = new Map<string, string | null>();
 
 /** 캐시 파일 1개를 읽는다. 파일명 규약 = 환경변수명 **소문자**(`XAI_API_KEY` → `xai_api_key`). */
 function readKeyCacheFile(envName: string): string | null {
-  if (process.env.MONAD_KEEP_ENV_KEYS) return null;
+  if (process.env.ELANOUS_KEEP_ENV_KEYS) return null;
   try {
     const { readFileSync } = require('node:fs') as typeof import('node:fs');
     const { homedir } = require('node:os') as typeof import('node:os');
     const { resolve } = require('node:path') as typeof import('node:path');
-    // ⭐ 테스트 seam — `MONAD_KEY_CACHE_DIR` 로 캐시 디렉토리를 바꿀 수 있다.
+    // ⭐ 테스트 seam — `ELANOUS_KEY_CACHE_DIR` 로 캐시 디렉토리를 바꿀 수 있다.
     //   ⛔ `HOME` 을 흔드는 방식은 **안 통한다**(2026-08-06 실측: `os.homedir()` 가 바뀐 `HOME` 을
     //     안 따라와 회귀가 조용히 통과할 뻔했다) — 그래서 경로를 «명시 입력»으로 뺀다.
-    const dir = process.env.MONAD_KEY_CACHE_DIR?.trim() || resolve(homedir(), '.cache');
+    const dir = process.env.ELANOUS_KEY_CACHE_DIR?.trim() || resolve(homedir(), '.cache');
     const v = readFileSync(resolve(dir, envName.toLowerCase()), 'utf-8')
       .trim().replace(/^["']|["']$/g, '');
     return v || null;
@@ -161,7 +161,7 @@ function readKeyCacheFile(envName: string): string | null {
  *
  *  ⛔⭐ 왜 필요한가: 「이 기계엔 자격증명이 «없다»」를 세우려는 시험이 ***env 만 지우면 «안 된다»***.
  *  `keyFromCacheOrEnv` 는 ***캐시 파일을 «먼저»*** 보고, 그 결과를 프로세스 내내 기억한다.
- *  ⇒ `MONAD_KEY_CACHE_DIR` 을 나중에 바꿔도 ***이미 기억한 값이 이긴다***.
+ *  ⇒ `ELANOUS_KEY_CACHE_DIR` 을 나중에 바꿔도 ***이미 기억한 값이 이긴다***.
  *
  *  📏 2026-08-25 실측(`D2`): `test/web-search.test.ts` 가 env 넷을 지우고도 빨갰다 —
  *  「맨 상자」 전제는 ***의도였고 선언도 돼 있었는데***, 지운 문이 넷이고 해석기가 보는 문이 더 많았다.
@@ -197,7 +197,7 @@ export function refreshKeyFromCache(envName: string): boolean {
  */
 export const DAEMON_KEY_ENV_NAMES = [
   'ANTHROPIC_API_KEY', 'GEMINI_API_KEY', 'OPENAI_API_KEY', 'XAI_API_KEY', 'OPENROUTER_API_KEY',
-  'MONAD_OPENAI_RELAY_SHARED_SECRET',
+  'ELANOUS_OPENAI_RELAY_SHARED_SECRET',
 ] as const;
 
 export function hydrateEnvFromKeyCache(names: readonly string[] = DAEMON_KEY_ENV_NAMES, env: NodeJS.ProcessEnv = process.env): string[] {
@@ -225,7 +225,7 @@ export const GROK_API_URL = 'https://api.x.ai/v1/chat/completions';
 
 /** Shared secret enabling the OpenAI-compatible Grok subscription relay. */
 export function getOpenAiRelaySharedSecret(): string | undefined {
-  return keyFromCacheOrEnv('MONAD_OPENAI_RELAY_SHARED_SECRET')?.trim() || undefined;
+  return keyFromCacheOrEnv('ELANOUS_OPENAI_RELAY_SHARED_SECRET')?.trim() || undefined;
 }
 
 // ── Multi-LLM provider config ──
@@ -252,7 +252,7 @@ export function getLocalLLMUrl(): string | undefined {
 export const OPENAI_MODEL = process.env.OPENAI_MODEL || lookupLlmTierSpec('openai', 'balanced').model;
 // ⭐ 2026-09-25 (대표 B7) — 기본은 사다리 `best`(최신 Opus · 현재 claude-opus-5-5)에서 «파생»한다. 이름을 박지 않는다.
 //   대표: 「밸런스가 코딩 구현에도 쓰인다면 opus 5.5 로」 — 이 값은 `defaultModelForProvider('anthropic')` 를 거쳐
-//   `MONAD_LLM_PROVIDER=anthropic` 만 준 런의 «주 모델» = 구현 자식 goal-loop 의 모델이 된다(역할 `implement` 는 배선 전 · BACKLOG B14).
+//   `ELANOUS_LLM_PROVIDER=anthropic` 만 준 런의 «주 모델» = 구현 자식 goal-loop 의 모델이 된다(역할 `implement` 는 배선 전 · BACKLOG B14).
 //   종전 `claude-haiku-4-5-20251001` 은 첫 멀티 provider 커밋(04-14)의 옛 상수였다. haiku·sonnet 이 필요하면 `ANTHROPIC_MODEL` env.
 export const ANTHROPIC_MODEL = process.env.ANTHROPIC_MODEL || lookupLlmTierSpec('anthropic', 'best').model;
 export const LOCAL_LLM_MODEL = process.env.LOCAL_LLM_MODEL || 'llama3';
@@ -307,12 +307,12 @@ export const GLM_API_URL = process.env.GLM_API_BASE_URL
 export const GEMINI_NATIVE_API_URL = 'https://generativelanguage.googleapis.com/v1beta';
 
 // ── Prompt-cache defaults ──
-/** Normalize the MONAD_PROMPT_CACHE_TTL env var into a valid TTL
+/** Normalize the ELANOUS_PROMPT_CACHE_TTL env var into a valid TTL
  *  literal. Unknown / missing values fall back to '5m' (ephemeral).
  *  Exposed as a function so tests can re-query after monkey-patching
  *  process.env. */
 export function getDefaultCacheTTL(): '5m' | '1h' {
-  const raw = (process.env.MONAD_PROMPT_CACHE_TTL || '').trim().toLowerCase();
+  const raw = (process.env.ELANOUS_PROMPT_CACHE_TTL || '').trim().toLowerCase();
   if (raw === '1h' || raw === '1hour' || raw === '3600') return '1h';
   return '5m';
 }

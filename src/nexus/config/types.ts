@@ -56,7 +56,7 @@ export interface SwitchSpec {
   /** Child-env name to inject at spawn time. Switches without envName
    *  are state-only (e.g., debug.enabled toggles in-process). */
   envName?: string;
-  /** Optional `MONAD_*` env to migrate from on boot (deprecation A path). */
+  /** Optional `ELANOUS_*` env to migrate from on boot (deprecation A path). */
   legacyEnvName?: string;
 }
 
@@ -79,9 +79,9 @@ export interface GlobalConfig {
    *                    PWA workflow: chat reads WebTerminalSnapshot of
    *                    an open PTY pane)
    *    - `all`      → legacy alias for `webterm`
-   *  Override via `monad config set global.tools <kind>` or pass
-   *  `--tools <kind>` to a single `monad nexus run` invocation. The
-   *  `MONAD_TOOLS` env var was removed 2026-05-13 — user-config is the
+   *  Override via `elanous config set global.tools <kind>` or pass
+   *  `--tools <kind>` to a single `elanous nexus run` invocation. The
+   *  `ELANOUS_TOOLS` env var was removed 2026-05-13 — user-config is the
    *  single persistent surface. */
   tools?: 'none' | 'readonly' | 'chat' | 'webterm' | 'all';
   historyDir?: string;
@@ -101,11 +101,11 @@ export interface GlobalConfig {
     // welcome card. Subsequent boots skip the card.
     firstBootGuideShown?: boolean;
   };
-  // (`entry.defaultMode` — the `monad` no-arg entry-mode switch — was
+  // (`entry.defaultMode` — the `elanous` no-arg entry-mode switch — was
   // removed 2026-07-24 along with its type. It was never materialized
   // to any config on disk: 'auto' was the default, so unset == default,
-  // and no config/backup ever carried the key. Bare `monad` now always
-  // launches the dashboard; the daemon's entry is `monad nexus run`.
+  // and no config/backup ever carried the key. Bare `elanous` now always
+  // launches the dashboard; the daemon's entry is `elanous nexus run`.
   // See 내부 문서 `REPORT-tui-observation-methodology-2026-07-24` §12.)
 }
 
@@ -118,11 +118,11 @@ export interface UserConfig {
   version: typeof USER_CONFIG_VERSION;
   global: GlobalConfig;
   tabs: Record<string, TabUserConfig>;
-  // PLAN-config-unification-monad-root §3-A "top-level merge" — Path A
+  // PLAN-config-unification-elanous-root §3-A "top-level merge" — Path A
   // (`src/user-config.ts`) writes 16 additional top-level keys
   // (acp · chat · controlPlane · dashboard · debug · discord · llm ·
   // lsp · obsidian · onboarding · shell · skillRouter · skills ·
-  // telegram · voice · vw) into the same `~/.monad/config.json`. NEXUS
+  // telegram · voice · vw) into the same `~/.elanous/config.json`. NEXUS
   // doesn't type-check those keys — that's Path A's job — but it MUST
   // preserve them through every read → patch → write round, otherwise
   // patchUserConfig() wipes the user's LLM / Obsidian / Discord / …

@@ -14,7 +14,7 @@ describe('buildHarnessContextCapsule — W1 shared outcome contract', () => {
       riskBoundaries: ['디스크와 네트워크에 접근하지 않는다'],
       groundingRefs: [
         { ref: 'src/self-implement/orchestrator.ts', provenance: 'code' },
-        { ref: 'monad-self-build', provenance: 'skill' },
+        { ref: 'elanous-self-build', provenance: 'skill' },
         { ref: 'self-harness prior run', provenance: 'memory' },
         { ref: 'PLAN-waza-borrowings-for-self-harness-2026-07-23', provenance: 'doc' },
       ],

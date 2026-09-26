@@ -1,4 +1,4 @@
-// U2 명명 중립화 — `monad agent-mission`(canonical) + `codex`(deprecated alias) 하위호환·관측 판정 검증.
+// U2 명명 중립화 — `elanous agent-mission`(canonical) + `codex`(deprecated alias) 하위호환·관측 판정 검증.
 //
 // (a) isLegacyCodexInvocation 순수 판정 — argv[2] 브리틀함 대신 첫 positional 토큰 스캔의 강건성.
 // (b) CLI surface(subprocess) — canonical 과 alias 가 같은 명령으로 resolve 되는지(cron 하위호환 acceptance).
@@ -40,7 +40,7 @@ describe('isLegacyCodexInvocation — 첫 positional 토큰 판정(robust)', () 
   });
 });
 
-describe('monad agent-mission — codex alias 하위호환(subprocess)', () => {
+describe('elanous agent-mission — codex alias 하위호환(subprocess)', () => {
   it('`agent-mission --help` 는 canonical 명령으로 resolve', () => {
     const r = run(['agent-mission', '--help']);
     expect(r.code).toBe(0);
@@ -77,8 +77,8 @@ describe('monad agent-mission — codex alias 하위호환(subprocess)', () => {
 });
 
 describe('preAction 관측 배선 — 레거시 alias 브레드크럼이 logs.db 도달(E2E)', () => {
-  // 격리 MONAD_STATE_DIR 에 실제 CLI 를 구동 → preAction 훅이 sink 등록+브레드크럼 → 같은 스토어를
-  // `monad logs --category` 로 조회(관측 경로 end-to-end). `models` 는 비대화·무네트워크로 안전·빠름.
+  // 격리 ELANOUS_STATE_DIR 에 실제 CLI 를 구동 → preAction 훅이 sink 등록+브레드크럼 → 같은 스토어를
+  // `elanous logs --category` 로 조회(관측 경로 end-to-end). `models` 는 비대화·무네트워크로 안전·빠름.
   // ⚠️ NODE_ENV='development' — bun test 러너가 NODE_ENV=test 를 주입하는데 그 값이면 로그 스토어가
   //   skip 되어(테스트 격리 동작) db 미생성. 프로덕션 cron(NODE_ENV 미설정)을 반영하려 비-test 로 오버라이드.
   const PROD_ENV = { NODE_ENV: 'development' };
@@ -89,7 +89,7 @@ describe('preAction 관측 배선 — 레거시 alias 브레드크럼이 logs.db
 
   it('codex(legacy) 진입 → agent-cli.alias/legacy-codex-invoked 가 logs.db 에 기록', () => {
     withTmpState((stateDir) => {
-      const env = { ...PROD_ENV, MONAD_STATE_DIR: stateDir };
+      const env = { ...PROD_ENV, ELANOUS_STATE_DIR: stateDir };
       const cmd = run(['codex', 'models'], env);
       expect(cmd.code).toBe(0); // 명령 성공을 먼저 보장(vacuous pass 방지)
       const logs = run(['logs', '--category', 'agent-cli.alias'], env);
@@ -102,10 +102,10 @@ describe('preAction 관측 배선 — 레거시 alias 브레드크럼이 logs.db
 
   it('canonical agent-mission 진입 → 브레드크럼 미기록(alias 만 남긴다·오탐 없음)', () => {
     withTmpState((stateDir) => {
-      const env = { ...PROD_ENV, MONAD_STATE_DIR: stateDir };
+      const env = { ...PROD_ENV, ELANOUS_STATE_DIR: stateDir };
       const cmd = run(['agent-mission', 'models'], env);
       expect(cmd.code).toBe(0); // 명령·싱크 실패 시 not.toContain 가 헛통과하지 않도록 성공 보장
-      // ⛔⭐ **`--instance` 로 내 우주만 본다**(2026-07-30 실측) — `monad logs` 의 기본 타겟은
+      // ⛔⭐ **`--instance` 로 내 우주만 본다**(2026-07-30 실측) — `elanous logs` 의 기본 타겟은
       //   *"내 우주 ⊕ 운영"* 이다(설계 · logs-cli.ts P5: 격리에서 조회하다 운영 로그를 통째로
       //   못 찾는 사고를 막으려고 그렇게 정했다). 그래서 **부재 단언**을 기본 타겟으로 하면
       //   운영의 `review-watch` 크론 브레드크럼 수십 줄에 걸려 **항상 실패**한다.
@@ -121,7 +121,7 @@ describe('preAction 관측 배선 — 레거시 alias 브레드크럼이 logs.db
     withTmpState((stateDir) => {
       const cfgDir = mkdtempSync(join(tmpdir(), 'u2-cfg-'));
       try {
-        const env = { ...PROD_ENV, MONAD_STATE_DIR: stateDir };
+        const env = { ...PROD_ENV, ELANOUS_STATE_DIR: stateDir };
         const cmd = run(['--config-dir', cfgDir, 'codex', 'models'], env);
         expect(cmd.code).toBe(0);
         const logs = run(['--config-dir', cfgDir, 'logs', '--category', 'agent-cli.alias'], env);

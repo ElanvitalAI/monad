@@ -1,20 +1,20 @@
 // NEXUS · launchd install (Phase N-5 PR ψ)
 //
-// `monad nexus install --launchd`:
+// `elanous nexus install --launchd`:
 //   1. Render plist (XML) with KeepAlive{SuccessfulExit=false} + ThrottleInterval=10
 //      so launchd respawns on exit ≠ 0 (which includes the 75 graceful-restart code
-//      from PR χ) but stays put after `monad nexus --stop` (exit 0).
-//   2. Write to ~/Library/LaunchAgents/com.monad.nexus.plist (mode 0o600 —
+//      from PR χ) but stays put after `elanous nexus --stop` (exit 0).
+//   2. Write to ~/Library/LaunchAgents/com.elanous.nexus.plist (mode 0o600 —
 //      EnvironmentVariables 가 provider API 키를 담으므로 소유자 전용).
 //   3. (default) `launchctl bootstrap gui/<uid> <plist>` — load + start.
 //      `--no-start` skips the bootstrap call.
 //
-// `monad nexus uninstall --launchd`:
+// `elanous nexus uninstall --launchd`:
 //   1. `launchctl bootout gui/<uid>/<label>` (idempotent — bootout failure on
 //       missing unit is treated as success).
 //   2. Remove the plist file.
 //
-// `monad nexus status --launchd` / statusLaunchd():
+// `elanous nexus status --launchd` / statusLaunchd():
 //   - `launchctl print gui/<uid>/<label>` → parse 'state = ' for running/loaded.
 //
 // Cross-platform guard: `installLaunchd({ platformOverride: 'linux' })` returns
@@ -29,7 +29,7 @@ import { runCli as defaultRunCli, type RunCli } from '../config/secrets/cli-help
 import { debug } from '../../debug/log.js';
 import { PROVIDER_ENV_SPEC, summarizeAuxiliaryAiEnv, type AuxiliaryAiEnvVar } from '../../setup/llm-env-detect.js';
 
-export const LAUNCHD_LABEL = 'com.monad.nexus';
+export const LAUNCHD_LABEL = 'com.elanous.nexus';
 export const LAUNCHD_DEFAULT_THROTTLE_SECONDS = 10;
 
 export interface RenderLaunchdPlistOpts {
@@ -162,7 +162,7 @@ export function defaultServiceWorkingDirectory(
   cwd: string = process.cwd(),
   home: string = homedir(),
 ): string {
-  const installed = !!script && script.includes('/node_modules/monadagent/') && /\/(versions\/[^/]+|current)\/node_modules\//.test(script);
+  const installed = !!script && script.includes('/node_modules/elanous/') && /\/(versions\/[^/]+|current)\/node_modules\//.test(script);
   return installed ? home : cwd;
 }
 
@@ -172,11 +172,11 @@ function defaultCommand(): string[] {
 
 /**
  * 서비스 파일(launchd · systemd)에 박을 `nexus run` 명령.
- * launchd·systemd 는 최소 PATH 로 띄운다 — bare `monad` 를 못 찾아 exec 가 실패한다(launchd status 78 ·
+ * launchd·systemd 는 최소 PATH 로 띄운다 — bare `elanous` 를 못 찾아 exec 가 실패한다(launchd status 78 ·
  * systemd 는 `/usr/bin` 등 고정 경로에서만 찾는다). 그래서 인터프리터(process.execPath) ⊕ 스크립트 절대경로.
- * 🩸 2026-09-24: bun 은 argv[1] 을 «실경로»로 준다 — 설치본이면 `…/versions/<판>/node_modules/monadagent/bin/monad.mjs`.
+ * 🩸 2026-09-24: bun 은 argv[1] 을 «실경로»로 준다 — 설치본이면 `…/versions/<판>/node_modules/elanous/bin/elanous.mjs`.
  *    그 경로를 박으면 야간 설치가 새 판을 깔아도 데몬은 영영 옛 판으로 뜨고, 그 판이 정리되면 못 뜬다.
- *    ⇒ 설치본이면 고정 경로 `…/current/node_modules/monadagent/…` 로 바꾼다.
+ *    ⇒ 설치본이면 고정 경로 `…/current/node_modules/elanous/…` 로 바꾼다.
  */
 export function nexusRunCommand(
   execPath: string = process.execPath,
@@ -184,12 +184,12 @@ export function nexusRunCommand(
   exists: (p: string) => boolean = existsSync,
 ): string[] {
   if (execPath && script) return [execPath, stableInstalledScriptPath(script, exists), 'nexus', 'run'];
-  return ['monad', 'nexus', 'run']; // fallback (테스트/비정상 argv)
+  return ['elanous', 'nexus', 'run']; // fallback (테스트/비정상 argv)
 }
 
-/** `…/versions/<판>/node_modules/monadagent/<rest>` → `…/current/node_modules/monadagent/<rest>` (current 가 있을 때만). */
+/** `…/versions/<판>/node_modules/elanous/<rest>` → `…/current/node_modules/elanous/<rest>` (current 가 있을 때만). */
 export function stableInstalledScriptPath(script: string, exists: (p: string) => boolean = existsSync): string {
-  const m = /^(.*)\/versions\/[^/]+\/(node_modules\/monadagent\/.*)$/.exec(script);
+  const m = /^(.*)\/versions\/[^/]+\/(node_modules\/elanous\/.*)$/.exec(script);
   if (!m) return script;
   const stable = `${m[1]}/current/${m[2]}`;
   return exists(stable) ? stable : script;
@@ -231,7 +231,7 @@ export interface KeyCachePersistResult {
 /** install 시점 셸 env 의 provider 키를 키 캐시(`~/.cache/<소문자 이름>` · 600)로 — 값은 반환·로그하지 않는다. */
 export function persistProviderKeysToCache(
   env: NodeJS.ProcessEnv = process.env,
-  dir: string = env.MONAD_KEY_CACHE_DIR?.trim() || joinPath(homedir(), '.cache'),
+  dir: string = env.ELANOUS_KEY_CACHE_DIR?.trim() || joinPath(homedir(), '.cache'),
 ): KeyCachePersistResult {
   const written: string[] = [];
   const differs: string[] = [];

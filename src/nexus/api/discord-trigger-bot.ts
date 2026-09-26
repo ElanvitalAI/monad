@@ -6,7 +6,7 @@
 // from real Discord traffic.
 //
 // Why in-process (and not the channel-bot subprocess + HTTP IPC the
-// HANDOFF originally chose): `monad discord` CLI was deleted in
+// HANDOFF originally chose): `elanous discord` CLI was deleted in
 // #1951 (2026-05-08), leaving `channel-bot.ts` as a stub. Restoring
 // the CLI subprocess + adding HTTP IPC is ~700 LOC of work that
 // duplicates what we can wire in-process with one DiscordBot
@@ -17,7 +17,7 @@
 // `dispatchDiscord(event)`).
 //
 // Distinct from the HITL Discord bot (`hitl-discord-channel.ts`):
-//   • HITL bot   = MONAD_DISCORD_HITL_BOT_TOKEN  · interaction-only
+//   • HITL bot   = ELANOUS_DISCORD_HITL_BOT_TOKEN  · interaction-only
 //   • Trigger bot = cfg.discord.botToken           · message tap
 // Production typically uses two separate Discord applications so the
 // allowlists / channel scopes don't bleed.
@@ -40,7 +40,7 @@ import { formatForDiscord } from '../../discord-markdown.js';
 export interface NexusDiscordTriggerBotOpts {
   /** Bot token (without `Bot ` prefix). Production reads
    *  `cfg.discord.botToken` (which env-bridge already populates from
-   *  `MONAD_DISCORD_BOT_TOKEN` when set). */
+   *  `ELANOUS_DISCORD_BOT_TOKEN` when set). */
   token: string;
   /** Allowlist of Discord user ids — empty array refuses everyone (see
    *  `src/discord.ts:626`). The DM gate still applies first, so non-DM
@@ -50,13 +50,13 @@ export interface NexusDiscordTriggerBotOpts {
    *  reaction the bot accepts is forwarded here. */
   dispatch: (event: DiscordEvent) => Promise<unknown>;
   /** M4b (2026-07-12) — optional chat handler. When provided (the
-   *  nexus wire passes buildDiscordSelfOnMessage: monad self turn +
+   *  nexus wire passes buildDiscordSelfOnMessage: elanous self turn +
    *  /cc·/cdx·/gem interweaving), inbound DMs get answered like the
    *  telegram bot. Absent ⇒ trigger-only (legacy no-op reply). */
   onMessage?: DcMessageHandler;
   /** M4c (2026-07-12) — optional voice gateway tap. When provided (the
    *  nexus wire passes buildDiscordVoiceWire's tap, present only when
-   *  MONAD_DISCORD_VOICE_CHANNEL is on), the bot adds the
+   *  ELANOUS_DISCORD_VOICE_CHANNEL is on), the bot adds the
    *  GUILD_VOICE_STATES intent and forwards READY / VOICE_STATE_UPDATE
    *  / VOICE_SERVER_UPDATE so `/voice-join` can drive a live
    *  @discordjs/voice connection. Absent ⇒ intents unchanged. */

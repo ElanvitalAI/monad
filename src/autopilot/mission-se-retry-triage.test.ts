@@ -6,7 +6,7 @@ import {
 } from './mission-se-retry-triage.js';
 
 const att = (o: Partial<SEAttemptEvidence> = {}): SEAttemptEvidence => ({
-  attempt: 1, backend: 'monad-self:gpt-5.6-terra', maxTurns: 150,
+  attempt: 1, backend: 'elanous-self:gpt-5.6-terra', maxTurns: 150,
   gateStatus: 'gate-failed', gateText: '무결성 테스트 미완', critiqueFindings: [], structural: false, ...o,
 });
 const input = (o: Partial<SERetryTriageInput> = {}): SERetryTriageInput => ({

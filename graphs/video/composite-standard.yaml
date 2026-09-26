@@ -17,10 +17,10 @@ entry_node: plan
 #   그 칸이 없으면 「파이프라인을 만들었지만 한 번도 안 돌려 봤다」가 보이지 않는다.
 terminal_nodes: [delivered, landed-unrun, blocked, unobserved]
 
-# 🆕⭐ 주기를 «그래프가 선언한다» — 지금 monad 의 스케줄러는 「명령」을 등록하지 걷는 「그래프」를 모른다.
+# 🆕⭐ 주기를 «그래프가 선언한다» — 지금 elanous 의 스케줄러는 「명령」을 등록하지 걷는 「그래프」를 모른다.
 #   ⛔ 이 필드는 «아직 아무도 안 읽는다»(2026-09-10 실측). 선언을 «먼저» 두고 소비자는 뒤에 온다 —
 #     그 순서가 이 저장소의 규율이고, 그래서 이 줄은 「돈다」가 아니라 「선언됐다」로만 읽어야 한다.
-#   ⇒ 지금은 사람이 이 값을 보고 `monad schedule create --cron <이 값> --command <걷는 명령>` 을 친다.
+#   ⇒ 지금은 사람이 이 값을 보고 `elanous schedule create --cron <이 값> --command <걷는 명령>` 을 친다.
 schedule:
   cron: "0 8 * * *"
   # ⛔ 「등록됐나」와 「발화했나」는 다른 값이다 — 등록은 crontab, 발화는 로그가 답한다.

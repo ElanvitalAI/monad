@@ -85,9 +85,9 @@ describe('shell-primitive: runShell (no approval)', () => {
 
   test('custom env merges with process.env', async () => {
     const res = await runShell({
-      command: ['sh', '-c', 'echo $MONAD_TEST_VAR'],
+      command: ['sh', '-c', 'echo $ELANOUS_TEST_VAR'],
       cwd,
-      env: { MONAD_TEST_VAR: 'ok-42' },
+      env: { ELANOUS_TEST_VAR: 'ok-42' },
     });
     expect(res.stdout).toContain('ok-42');
   });

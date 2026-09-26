@@ -39,8 +39,8 @@ export type AssessNeed = (goal: string) => Promise<{ needed: boolean; reason: st
 /** 조사 결과 → 보강/교정 추출 seam(기본=LLM sol/high). */
 export type ExtractEnrichment = (goal: string, research: string) => Promise<{ enrichments: string[]; corrections: string[] }>;
 
-const DMODEL = () => process.env.MONAD_DECOMPOSE_MODEL || tierModel('better');
-const DEFFORT = () => (process.env.MONAD_DECOMPOSE_EFFORT || 'high') as 'minimal'|'low'|'medium'|'high'|'xhigh'|'max';
+const DMODEL = () => process.env.ELANOUS_DECOMPOSE_MODEL || tierModel('better');
+const DEFFORT = () => (process.env.ELANOUS_DECOMPOSE_EFFORT || 'high') as 'minimal'|'low'|'medium'|'high'|'xhigh'|'max';
 
 async function llmJson(prompt: string): Promise<string> {
   const { streamLLM, resolveDefaultProvider } = await import('../llm.js');

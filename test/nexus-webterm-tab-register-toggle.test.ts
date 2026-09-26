@@ -20,32 +20,32 @@ import {
 } from '../src/nexus/config/switch-registry.js';
 import { reloadAllBuiltins } from '../src/nexus/config/builtins/index.js';
 import { USER_CONFIG_VERSION } from '../src/nexus/config/types.js';
-import { setMonadConfigDir, resetMonadConfigDir } from '../src/monad-config-dir.js';
+import { setElanousConfigDir, resetElanousConfigDir } from '../src/elanous-config-dir.js';
 
 let tmpRoot: string;
 let prevNexus: string | undefined;
 let prevReg: string | undefined;
 
 beforeEach(() => {
-  tmpRoot = mkdtempSync(join(tmpdir(), 'monad-nexus-webterm-toggle-'));
-  prevNexus = process.env.MONAD_NEXUS_DIR;
-  prevReg = process.env.MONAD_REGISTER_WEBTERM;
-  // Isolate both UserConfig (via setMonadConfigDir) and NEXUS root
-  // (MONAD_NEXUS_DIR · lock + runtime.json) so the host's live nexus
+  tmpRoot = mkdtempSync(join(tmpdir(), 'elanous-nexus-webterm-toggle-'));
+  prevNexus = process.env.ELANOUS_NEXUS_DIR;
+  prevReg = process.env.ELANOUS_REGISTER_WEBTERM;
+  // Isolate both UserConfig (via setElanousConfigDir) and NEXUS root
+  // (ELANOUS_NEXUS_DIR · lock + runtime.json) so the host's live nexus
   // process can't collide with the test boot.
-  setMonadConfigDir(tmpRoot);
-  process.env.MONAD_NEXUS_DIR = join(tmpRoot, 'nexus');
-  delete process.env.MONAD_REGISTER_WEBTERM;
+  setElanousConfigDir(tmpRoot);
+  process.env.ELANOUS_NEXUS_DIR = join(tmpRoot, 'nexus');
+  delete process.env.ELANOUS_REGISTER_WEBTERM;
   clearSwitchRegistry();
   reloadAllBuiltins();
 });
 
 afterEach(() => {
-  resetMonadConfigDir();
-  if (prevNexus === undefined) delete process.env.MONAD_NEXUS_DIR;
-  else process.env.MONAD_NEXUS_DIR = prevNexus;
-  if (prevReg === undefined) delete process.env.MONAD_REGISTER_WEBTERM;
-  else process.env.MONAD_REGISTER_WEBTERM = prevReg;
+  resetElanousConfigDir();
+  if (prevNexus === undefined) delete process.env.ELANOUS_NEXUS_DIR;
+  else process.env.ELANOUS_NEXUS_DIR = prevNexus;
+  if (prevReg === undefined) delete process.env.ELANOUS_REGISTER_WEBTERM;
+  else process.env.ELANOUS_REGISTER_WEBTERM = prevReg;
   try { rmSync(tmpRoot, { recursive: true, force: true }); } catch { /* ignore */ }
   clearSwitchRegistry();
 });
@@ -82,24 +82,24 @@ describe('webterm tab default-OFF', () => {
     handle!.release();
   });
 
-  test('MONAD_REGISTER_WEBTERM=1 → webterm:1 registered', async () => {
-    process.env.MONAD_REGISTER_WEBTERM = '1';
+  test('ELANOUS_REGISTER_WEBTERM=1 → webterm:1 registered', async () => {
+    process.env.ELANOUS_REGISTER_WEBTERM = '1';
     const handle = await bootDetached();
     const ids = handle!.registry.list().map((t) => t.spec.id);
     expect(ids).toContain('webterm:1');
     handle!.release();
   });
 
-  test('MONAD_REGISTER_WEBTERM=true → webterm:1 registered', async () => {
-    process.env.MONAD_REGISTER_WEBTERM = 'true';
+  test('ELANOUS_REGISTER_WEBTERM=true → webterm:1 registered', async () => {
+    process.env.ELANOUS_REGISTER_WEBTERM = 'true';
     const handle = await bootDetached();
     const ids = handle!.registry.list().map((t) => t.spec.id);
     expect(ids).toContain('webterm:1');
     handle!.release();
   });
 
-  test('MONAD_REGISTER_WEBTERM=0 (or any falsy non-truthy) → NOT registered', async () => {
-    process.env.MONAD_REGISTER_WEBTERM = '0';
+  test('ELANOUS_REGISTER_WEBTERM=0 (or any falsy non-truthy) → NOT registered', async () => {
+    process.env.ELANOUS_REGISTER_WEBTERM = '0';
     const handle = await bootDetached();
     const ids = handle!.registry.list().map((t) => t.spec.id);
     expect(ids).not.toContain('webterm:1');
@@ -116,7 +116,7 @@ describe('webterm tab default-OFF', () => {
 
   test('switch false → NOT registered (overrides env truthy)', async () => {
     writeSwitchValue(false);
-    process.env.MONAD_REGISTER_WEBTERM = '1';
+    process.env.ELANOUS_REGISTER_WEBTERM = '1';
     const handle = await bootDetached();
     const ids = handle!.registry.list().map((t) => t.spec.id);
     // Switch wins over env per resolution order (switch is the SSoT).

@@ -44,11 +44,11 @@ function harnessWithTTY(tty: boolean) {
 }
 
 describe('DECSET 2026 — synchronized output wrap', () => {
-  const prevEnv = process.env.MONAD_SYNC_OUTPUT;
-  beforeEach(() => { delete process.env.MONAD_SYNC_OUTPUT; });
+  const prevEnv = process.env.ELANOUS_SYNC_OUTPUT;
+  beforeEach(() => { delete process.env.ELANOUS_SYNC_OUTPUT; });
   afterEach(() => {
-    if (prevEnv === undefined) delete process.env.MONAD_SYNC_OUTPUT;
-    else process.env.MONAD_SYNC_OUTPUT = prevEnv;
+    if (prevEnv === undefined) delete process.env.ELANOUS_SYNC_OUTPUT;
+    else process.env.ELANOUS_SYNC_OUTPUT = prevEnv;
   });
 
   test('TTY on — flush emits BSU before the frame and ESU after', () => {
@@ -77,8 +77,8 @@ describe('DECSET 2026 — synchronized output wrap', () => {
     }
   });
 
-  test('MONAD_SYNC_OUTPUT=off — opt-out even on a real TTY', () => {
-    process.env.MONAD_SYNC_OUTPUT = 'off';
+  test('ELANOUS_SYNC_OUTPUT=off — opt-out even on a real TTY', () => {
+    process.env.ELANOUS_SYNC_OUTPUT = 'off';
     const h = harnessWithTTY(true);
     try {
       h.c.pushModal(modal('m', 'PAYLOAD'));

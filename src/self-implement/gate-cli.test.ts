@@ -29,7 +29,7 @@ const importerLookup = (stdout = ''): [string, string[], CommandResult] => ['git
 const lsFiles = (stdout = ''): [string, string[], CommandResult] => ['git', ['ls-files'], ok(stdout)];
 
 function fixtureRepository(files: Record<string, string>): { cwd: string; dispose: () => void } {
-  const cwd = mkdtempSync(join(tmpdir(), 'monad-gate-cli-'));
+  const cwd = mkdtempSync(join(tmpdir(), 'elanous-gate-cli-'));
   for (const [path, content] of Object.entries(files)) {
     const file = join(cwd, path);
     mkdirSync(join(file, '..'), { recursive: true });
@@ -89,7 +89,7 @@ function scriptedCommand(entries: Array<[string, string[], CommandResult]>): (co
 describe('runSelfGateCli', () => {
   test('default bun test command uses an isolated deterministic environment and cleans it', () => {
     process.env.ANTHROPIC_API_KEY = 'parent-secret';
-    process.env.MONAD_CONFIG_DIR = '/parent/config';
+    process.env.ELANOUS_CONFIG_DIR = '/parent/config';
     const fixture = fixtureRepository({
       'src/a.ts': 'export const value = 1;\n',
       'src/a.test.ts': [
@@ -100,8 +100,8 @@ describe('runSelfGateCli', () => {
         "    secret: process.env.ANTHROPIC_API_KEY ?? null,",
         "    home: process.env.HOME,",
         "    xdg: process.env.XDG_CONFIG_HOME,",
-        "    state: process.env.MONAD_STATE_DIR,",
-        "    config: process.env.MONAD_CONFIG_DIR,",
+        "    state: process.env.ELANOUS_STATE_DIR,",
+        "    config: process.env.ELANOUS_CONFIG_DIR,",
         "  }));",
         "  expect(true).toBe(true);",
         "});",
@@ -117,7 +117,7 @@ describe('runSelfGateCli', () => {
       const captured = JSON.parse(readFileSync(join(fixture.cwd, 'env.json'), 'utf8')) as Record<string, string | null>;
       expect(captured.secret).toBeNull();
       const root = captured.home;
-      expect(root).toContain('monad-gate-cli-test-env-');
+      expect(root).toContain('elanous-gate-cli-test-env-');
       expect(captured.xdg).toBe(`${root}/.config`);
       expect(captured.state).toBe(`${root}/state`);
       expect(captured.config).toBe(`${root}/config`);
@@ -259,12 +259,12 @@ describe('runSelfGateCli', () => {
     expect(commands).toEqual([]);
   });
 
-  test('separately reports unverified user files and monad runtime artifacts when a related test is run', () => {
+  test('separately reports unverified user files and elanous runtime artifacts when a related test is run', () => {
     const result = runSelfGateCli('/repo', {}, {
-      changedFiles: () => ({ files: ['src/a.ts', 'package.json', '.monad/debug/debug-x.log', '.monad-child-liveness.hb'], baseRef: 'HEAD' }), exists: (path) => path === 'src/a.test.ts', runCommand: () => ok(), runTests: () => ok(),
+      changedFiles: () => ({ files: ['src/a.ts', 'package.json', '.elanous/debug/debug-x.log', '.elanous-child-liveness.hb'], baseRef: 'HEAD' }), exists: (path) => path === 'src/a.test.ts', runCommand: () => ok(), runTests: () => ok(),
     });
     expect(result.lines).toContain('unverified: 1 (package.json)');
-    expect(result.lines).toContain('monad runtime artifacts: 2 (.monad/debug/debug-x.log, .monad-child-liveness.hb)');
+    expect(result.lines).toContain('elanous runtime artifacts: 2 (.elanous/debug/debug-x.log, .elanous-child-liveness.hb)');
   });
 
   test('reports mixed document changes that contribute no derived tests without changing execution', () => {
@@ -556,8 +556,8 @@ describe('runSelfGateCli', () => {
 
   test('uses original gates to block changed violations while ignoring violations outside the changed scope', () => {
     const isolationScan = new Map([
-      ['src/changed.ts', { count: 1, candidates: [{ lineNumber: 1, line: "join(homedir(), '.monad')" }] }],
-      ['src/outside.ts', { count: 1, candidates: [{ lineNumber: 1, line: "join(homedir(), '.monad')" }] }],
+      ['src/changed.ts', { count: 1, candidates: [{ lineNumber: 1, line: "join(homedir(), '.elanous')" }] }],
+      ['src/outside.ts', { count: 1, candidates: [{ lineNumber: 1, line: "join(homedir(), '.elanous')" }] }],
     ]);
     const mockScan = new Map([
       ['test/changed.test.ts', { count: 1, modules: ['node:fs'] }],
@@ -588,7 +588,7 @@ describe('runSelfGateCli', () => {
 
   test('scans actual changed-worktree violations instead of the gate source checkout', () => {
     const fixture = fixtureRepository({
-      'src/worktree-only.ts': "const state = join(homedir(), '.monad');\nexport { state };\n",
+      'src/worktree-only.ts': "const state = join(homedir(), '.elanous');\nexport { state };\n",
       'test/worktree-only.test.ts': "import { mock } from 'bun:test';\nmock.module('node:fs', () => ({}));\n",
       'scripts/isolation-hardcode-baseline.txt': '# empty baseline\n',
       'scripts/mock-module-restore-baseline.txt': '# empty baseline\n',
@@ -727,7 +727,7 @@ describe('runSelfGateCli', () => {
   describe('formatUnrunnableChangeKinds — ⛔ 「통과」가 아니라 「안 쟀다」를 «말한다»', () => {
     test('러너 밖 확장자를 «확장자별 수»로 이름 댄다', () => {
       const line = formatUnrunnableChangeKinds([
-        'apps/ios/MonadiOS/A.swift', 'apps/ios/MonadiOS/B.swift', 'docs/x.md', 'src/a.ts',
+        'apps/ios/ElanousiOS/A.swift', 'apps/ios/ElanousiOS/B.swift', 'docs/x.md', 'src/a.ts',
       ]);
       expect(line).toContain('3');
       expect(line).toContain('.swift×2');
@@ -754,7 +754,7 @@ describe('runSelfGateCli', () => {
 
     test('⭐ 이 줄이 «게이트 산출에 실제로 실린다» — 만들어 놓고 안 내보내면 없는 것과 같다', () => {
       const result = runSelfGateCli('/repo', {}, {
-        changedFiles: () => ({ files: ['apps/ios/MonadiOS/A.swift'], baseRef: 'HEAD' }),
+        changedFiles: () => ({ files: ['apps/ios/ElanousiOS/A.swift'], baseRef: 'HEAD' }),
         runTests: () => { throw new Error('must not run'); },
         runAndroidGate: () => 0,
       });
@@ -770,19 +770,19 @@ describe('runSelfGateCli', () => {
     test('⭐ Swift 만 바뀌어 테스트 단계를 건너뛸 때에도 «iOS 게이트는 돈다»', () => {
       const seen: string[][] = [];
       const result = runSelfGateCli('/repo', {}, {
-        changedFiles: () => ({ files: ['apps/ios/MonadiOS/A.swift'], baseRef: 'HEAD' }),
+        changedFiles: () => ({ files: ['apps/ios/ElanousiOS/A.swift'], baseRef: 'HEAD' }),
         runTests: () => { throw new Error('bun tests must not run for a Swift-only change'); },
         runAndroidGate: () => 0,
         runIosGate: (out) => { seen.push([...(out.args ?? [])]); return 0; },
       });
       expect(seen).toHaveLength(1);
-      expect(seen[0]).toContain('apps/ios/MonadiOS/A.swift');
+      expect(seen[0]).toContain('apps/ios/ElanousiOS/A.swift');
       expect(result.exitCode).toBe(0);
     });
 
     test('⛔ iOS 게이트가 막으면 exit 1 — 조기 리턴이 그것을 덮지 않는다', () => {
       const result = runSelfGateCli('/repo', {}, {
-        changedFiles: () => ({ files: ['apps/ios/MonadiOS/A.swift'], baseRef: 'HEAD' }),
+        changedFiles: () => ({ files: ['apps/ios/ElanousiOS/A.swift'], baseRef: 'HEAD' }),
         runTests: () => { throw new Error('must not run'); },
         runAndroidGate: () => 0,
         runIosGate: (out) => { out.error('[ios-gate] ⛔ FAIL — 돈 시험이 «0개»다.'); return 1; },
@@ -1328,7 +1328,7 @@ describe('runSelfGateCli', () => {
 
 
   test('real git overlap observes only commits after the PR base OID', () => {
-    const cwd = mkdtempSync(join(tmpdir(), 'monad-gate-overlap-'));
+    const cwd = mkdtempSync(join(tmpdir(), 'elanous-gate-overlap-'));
     const git = (args: string[]) => {
       const result = spawnSync('git', args, { cwd, encoding: 'utf8' });
       expect(result.status).toBe(0);

@@ -228,12 +228,12 @@ export const nativeToolCatalog: NativeToolCatalogEntry[] = [
     intentScope: 'coding',
   },
   {
-    id: 'monad_hold',
+    id: 'elanous_hold',
     kind: 'execute',
-    aliases: ['MonadHold', 'monad_hold'],
-    displayName: 'MonadHold',
-    description: 'Spawn a detached bare Monad TUI held open for human control.',
-    promptSummary: '`MonadHold` (spawn a detached held Monad TUI)',
+    aliases: ['ElanousHold', 'elanous_hold'],
+    displayName: 'ElanousHold',
+    description: 'Spawn a detached bare Elanous TUI held open for human control.',
+    promptSummary: '`ElanousHold` (spawn a detached held Elanous TUI)',
     host: ['skill', 'tui', 'mcp'],
     safety: ['process'],
     supportsParallel: false,
@@ -292,8 +292,8 @@ export const nativeToolCatalog: NativeToolCatalogEntry[] = [
     kind: 'other',
     aliases: ['SaveLayout', 'layout_save'],
     displayName: 'SaveLayout',
-    description: 'Save current VW layout to ~/.monad/layouts/<slug>.layout.json (atomic).',
-    promptSummary: '`SaveLayout` (persist current VW layout to ~/.monad/layouts/)',
+    description: 'Save current VW layout to ~/.elanous/layouts/<slug>.layout.json (atomic).',
+    promptSummary: '`SaveLayout` (persist current VW layout to ~/.elanous/layouts/)',
     host: ['skill', 'tui', 'mcp'],
     safety: ['mutating'],  // writes to disk
     supportsParallel: false,
@@ -384,13 +384,13 @@ export const nativeToolCatalog: NativeToolCatalogEntry[] = [
     intentScope: 'ops-fleet',
   },
   // PFC-S1 P4: team-mailbox LLM tools. Group subagent spawns and
-  // exchange messages between them via ~/.monad/team-mailbox/.
+  // exchange messages between them via ~/.elanous/team-mailbox/.
   {
     id: 'team_create',
     kind: 'other',
     aliases: ['TeamCreate', 'team_create'],
     displayName: 'TeamCreate',
-    description: 'Create a team directory under ~/.monad/team-mailbox so subsequent SendMessage calls can group related Agent spawns. Idempotent — re-creating an existing team extends the member list.',
+    description: 'Create a team directory under ~/.elanous/team-mailbox so subsequent SendMessage calls can group related Agent spawns. Idempotent — re-creating an existing team extends the member list.',
     promptSummary: '`TeamCreate(name, members?)` (group subagent spawns so they can exchange SendMessage)',
     host: ['skill', 'tui', 'mcp'],
     safety: ['mutating'],
@@ -573,7 +573,7 @@ export const nativeToolCatalog: NativeToolCatalogEntry[] = [
   // Surface-unification v2.2 V2.2-5 (2026-05-11) — `context_jobs_list`
   // catalog entry retired together with the dashboard scheduler view.
   // LLMs read scheduled work from the workflows surface
-  // (`scheduleTrigger` nodes · `~/.monad/workflows-runs/`) instead.
+  // (`scheduleTrigger` nodes · `~/.elanous/workflows-runs/`) instead.
   {
     id: 'context_widgets_list',
     kind: 'other',
@@ -614,17 +614,17 @@ export const nativeToolCatalog: NativeToolCatalogEntry[] = [
     intentScope: 'ops-ui',
   },
   // PLAN-codex-app-server-hermes-parity §5 Phase H1·5a (2026-05-16) —
-  // codex app-server callback surface. `monad_*` tools are exposed
-  // ONLY to the 'mcp' surface so they don't clutter the monad TUI /
-  // dashboard tool lists. The codex client spawns the monad-tools MCP
+  // codex app-server callback surface. `elanous_*` tools are exposed
+  // ONLY to the 'mcp' surface so they don't clutter the elanous TUI /
+  // dashboard tool lists. The codex client spawns the elanous-tools MCP
   // server and discovers them via tools/list.
   {
     id: 'skill_exec',
     kind: 'execute',
     aliases: ['SkillExec', 'skill_exec'],
     displayName: 'SkillExec',
-    description: 'Execute one explicitly named allowlisted skill with the supplied task. If you do not know the exact skill name, call monad_skills_list first. Does not infer a skill name.',
-    promptSummary: '`SkillExec(skill, task)` (execute an explicitly named allowlisted skill; call monad_skills_list first when its exact name is unknown)',
+    description: 'Execute one explicitly named allowlisted skill with the supplied task. If you do not know the exact skill name, call elanous_skills_list first. Does not infer a skill name.',
+    promptSummary: '`SkillExec(skill, task)` (execute an explicitly named allowlisted skill; call elanous_skills_list first when its exact name is unknown)',
     host: ['skill', 'tui', 'mcp'],
     safety: ['process'],
     supportsParallel: false,
@@ -632,12 +632,12 @@ export const nativeToolCatalog: NativeToolCatalogEntry[] = [
     intentScope: 'coding',
   },
   {
-    id: 'monad_skills_list',
+    id: 'elanous_skills_list',
     kind: 'other',
-    aliases: ['MonadSkillsList'],
-    displayName: 'MonadSkillsList',
-    description: 'Enumerate installed monad skills (~/.monad/skills/* + SKILL.md first line). Read-only.',
-    promptSummary: '`monad_skills_list` (list installed skill names before skill_exec when the exact name is unknown)',
+    aliases: ['ElanousSkillsList'],
+    displayName: 'ElanousSkillsList',
+    description: 'Enumerate installed elanous skills (~/.elanous/skills/* + SKILL.md first line). Read-only.',
+    promptSummary: '`elanous_skills_list` (list installed skill names before skill_exec when the exact name is unknown)',
     host: ['skill', 'tui', 'mcp'],
     safety: ['read-only'],
     supportsParallel: true,
@@ -645,12 +645,12 @@ export const nativeToolCatalog: NativeToolCatalogEntry[] = [
     intentScope: 'ops-ui',
   },
   {
-    id: 'monad_obsidian_search',
+    id: 'elanous_obsidian_search',
     kind: 'search',
-    aliases: ['MonadObsidianSearch'],
-    displayName: 'MonadObsidianSearch',
+    aliases: ['ElanousObsidianSearch'],
+    displayName: 'ElanousObsidianSearch',
     description: 'Ripgrep search over the Obsidian vault (markdown files). Returns {path, snippet, lineNumber}. Read-only · MCP callback only.',
-    promptSummary: '`monad_obsidian_search` (codex MCP callback · rg over Obsidian vault)',
+    promptSummary: '`elanous_obsidian_search` (codex MCP callback · rg over Obsidian vault)',
     host: ['mcp'],
     safety: ['read-only'],
     supportsParallel: true,
@@ -658,12 +658,12 @@ export const nativeToolCatalog: NativeToolCatalogEntry[] = [
     intentScope: 'coding',
   },
   {
-    id: 'monad_obsidian_info',
+    id: 'elanous_obsidian_info',
     kind: 'other',
-    aliases: ['MonadObsidianInfo'],
-    displayName: 'MonadObsidianInfo',
+    aliases: ['ElanousObsidianInfo'],
+    displayName: 'ElanousObsidianInfo',
     description: 'Report Obsidian vault availability + absolute path + resolution source. Read-only · MCP callback only.',
-    promptSummary: '`monad_obsidian_info` (codex MCP callback · vault discovery)',
+    promptSummary: '`elanous_obsidian_info` (codex MCP callback · vault discovery)',
     host: ['mcp'],
     safety: ['read-only'],
     supportsParallel: true,
@@ -671,12 +671,12 @@ export const nativeToolCatalog: NativeToolCatalogEntry[] = [
     intentScope: 'ops-ui',
   },
   {
-    id: 'monad_fs_list',
+    id: 'elanous_fs_list',
     kind: 'list-dir',
-    aliases: ['MonadFsList'],
-    displayName: 'MonadFsList',
+    aliases: ['ElanousFsList'],
+    displayName: 'ElanousFsList',
     description: 'List entries under a directory clamped to either the daemon cwd or the Obsidian vault. Read-only · MCP callback only.',
-    promptSummary: '`monad_fs_list` (codex MCP callback · cwd/obsidian directory enumeration)',
+    promptSummary: '`elanous_fs_list` (codex MCP callback · cwd/obsidian directory enumeration)',
     host: ['mcp'],
     safety: ['read-only'],
     supportsParallel: true,
@@ -684,12 +684,12 @@ export const nativeToolCatalog: NativeToolCatalogEntry[] = [
     intentScope: 'coding',
   },
   {
-    id: 'monad_fs_read',
+    id: 'elanous_fs_read',
     kind: 'read',
-    aliases: ['MonadFsRead'],
-    displayName: 'MonadFsRead',
+    aliases: ['ElanousFsRead'],
+    displayName: 'ElanousFsRead',
     description: 'Read a single file clamped to either the daemon cwd or the Obsidian vault. Text mimes → content (utf8); binary → bytes (base64). 256KB cap · 8MB ceiling. Read-only · MCP callback only.',
-    promptSummary: '`monad_fs_read` (codex MCP callback · single-file read · text/binary branch)',
+    promptSummary: '`elanous_fs_read` (codex MCP callback · single-file read · text/binary branch)',
     host: ['mcp'],
     safety: ['read-only'],
     supportsParallel: true,
@@ -697,12 +697,12 @@ export const nativeToolCatalog: NativeToolCatalogEntry[] = [
     intentScope: 'coding',
   },
   {
-    id: 'monad_showroom_broadcast',
+    id: 'elanous_showroom_broadcast',
     kind: 'other',
-    aliases: ['MonadShowroomBroadcast'],
-    displayName: 'MonadShowroomBroadcast',
+    aliases: ['ElanousShowroomBroadcast'],
+    displayName: 'ElanousShowroomBroadcast',
     description: 'Fan one prompt out to multiple LLM backends (claude · gemini · grok default) in parallel and return per-backend responses. Multi-LLM second-opinion inside a codex turn. MCP callback only.',
-    promptSummary: '`monad_showroom_broadcast` (codex MCP callback · multi-LLM fanout · synthesis)',
+    promptSummary: '`elanous_showroom_broadcast` (codex MCP callback · multi-LLM fanout · synthesis)',
     host: ['mcp'],
     safety: ['process'],
     // Spawns N ACP subprocess agents — serial-by-name within a single
@@ -713,12 +713,12 @@ export const nativeToolCatalog: NativeToolCatalogEntry[] = [
     intentScope: 'coding',
   },
   {
-    id: 'monad_autopilot_launch',
+    id: 'elanous_autopilot_launch',
     kind: 'other',
-    aliases: ['MonadAutopilotLaunch'],
-    displayName: 'MonadAutopilotLaunch',
-    description: 'Run a monad autopilot mission to completion (sync MVP · strict caps: 1 iter / 120s default). Spawns an ACP agent, drives the loop, returns aggregated text + termination. MCP callback only.',
-    promptSummary: '`monad_autopilot_launch` (codex MCP callback · autopilot loop · sync)',
+    aliases: ['ElanousAutopilotLaunch'],
+    displayName: 'ElanousAutopilotLaunch',
+    description: 'Run a elanous autopilot mission to completion (sync MVP · strict caps: 1 iter / 120s default). Spawns an ACP agent, drives the loop, returns aggregated text + termination. MCP callback only.',
+    promptSummary: '`elanous_autopilot_launch` (codex MCP callback · autopilot loop · sync)',
     host: ['mcp'],
     safety: ['process', 'mutating'],
     // Spawns ACP agent + may execute tool calls (file edits, shell
@@ -982,15 +982,15 @@ export const nativeToolCatalog: NativeToolCatalogEntry[] = [
     intentScope: 'coding',
   },
   {
-    // self-implement P2 (2026-07-19) — monad 가 자연어를 인식해 자율 구현→draft PR 하는
+    // self-implement P2 (2026-07-19) — elanous 가 자연어를 인식해 자율 구현→draft PR 하는
     // 네이티브 툴. 첫 턴부터 전체 스키마를 노출한다.
     // 상시 가용(defaultEnabled·별도 아밍 없음). PR open 은 fail-closed HITL(approver 미주입 시
-    // 절대 안 열림). agent(자식 monad spawn)+process+mutating+permission.
+    // 절대 안 열림). agent(자식 elanous spawn)+process+mutating+permission.
     id: 'self_implement',
     kind: 'delegate',
     aliases: ['SelfImplement', 'self_implement'],
     displayName: 'SelfImplement',
-    description: 'Autonomously implement a single requested feature, fix, or small coding task end-to-end. Forks the session, creates an isolated git worktree, drives a headless monad coding agent to write code + tests, and runs the integrity gate (bun test/build). Choose this whenever the user asks monad itself to build, implement, or fix one thing — a PR request is NOT required (e.g. "이 기능 구현해줘", "이 버그 고쳐줘", "이 작은 수정 해줘"). After coding and the gate, a DRAFT pull request may be pushed and opened only after HITL approval; PR-open is a fail-closed human gate. Long-running (minutes).',
+    description: 'Autonomously implement a single requested feature, fix, or small coding task end-to-end. Forks the session, creates an isolated git worktree, drives a headless elanous coding agent to write code + tests, and runs the integrity gate (bun test/build). Choose this whenever the user asks elanous itself to build, implement, or fix one thing — a PR request is NOT required (e.g. "이 기능 구현해줘", "이 버그 고쳐줘", "이 작은 수정 해줘"). After coding and the gate, a DRAFT pull request may be pushed and opened only after HITL approval; PR-open is a fail-closed human gate. Long-running (minutes).',
     promptSummary: '`SelfImplement` (autonomous feature→worktree→gate→draft-PR; PR-open HITL-gated; minutes-long)',
     // 🆕 'chat' (2026-09-07 · 대표) — PWA·안드로이드·iOS 챗에서도 부를 수 있다.
     //   ⭐ 이 툴은 «헤드리스 자식»을 띄운다 — ***부르는 쪽에 PTY 가 필요 없다.***
@@ -1040,7 +1040,7 @@ export const nativeToolCatalog: NativeToolCatalogEntry[] = [
     kind: 'other',
     aliases: ['RunDevHarness', 'run_dev_harness'],
     displayName: 'RunDevHarness',
-    description: 'Develop a requested feature, fix, or small coding task end-to-end through the FULL staged harness — Planner → Executor → Reviewer → Deployer — in an isolated git worktree. Unlike SelfImplement (single implement+gate pass), this runs the explicit P→E→R→D pipeline with review rounds and a divergence cap. Choose it whenever the user asks for the harness or its planner/executor/reviewer stages — a PR request is NOT required (e.g. "하니스로 이 버그 고쳐줘", "P→E→R→D로 이 작은 수정 해줘", "플래너부터 리뷰기까지 돌려서 구현해줘"). Currently targets monad itself. auto_drive: safe (default) / off / on. After coding and the gate, a DRAFT pull request may be pushed and opened only after HITL approval; PR-open is a fail-closed human gate. Long-running (minutes).',
+    description: 'Develop a requested feature, fix, or small coding task end-to-end through the FULL staged harness — Planner → Executor → Reviewer → Deployer — in an isolated git worktree. Unlike SelfImplement (single implement+gate pass), this runs the explicit P→E→R→D pipeline with review rounds and a divergence cap. Choose it whenever the user asks for the harness or its planner/executor/reviewer stages — a PR request is NOT required (e.g. "하니스로 이 버그 고쳐줘", "P→E→R→D로 이 작은 수정 해줘", "플래너부터 리뷰기까지 돌려서 구현해줘"). Currently targets elanous itself. auto_drive: safe (default) / off / on. After coding and the gate, a DRAFT pull request may be pushed and opened only after HITL approval; PR-open is a fail-closed human gate. Long-running (minutes).',
     promptSummary: '`RunDevHarness` (하니스/harness 로 개발·구현·수정 — full P→E→R→D staged pipeline: planner→executor→reviewer→deployer → worktree → gate → draft-PR. Prefer over SelfImplement whenever the user names the harness or any of its stages, even for a small fix; PR-open HITL-gated; minutes-long)',
     host: ['skill', 'tui'],
     safety: ['agent', 'process', 'mutating', 'permission'],
@@ -1472,7 +1472,7 @@ export const nativeToolCatalog: NativeToolCatalogEntry[] = [
     kind: 'web',
     aliases: ['BrowserScreenshot', 'browser_screenshot'],
     displayName: 'BrowserScreenshot',
-    description: 'Capture PNG screenshot of a browser session; saves to /tmp/monad-screenshot-*.',
+    description: 'Capture PNG screenshot of a browser session; saves to /tmp/elanous-screenshot-*.',
     promptSummary: '`BrowserScreenshot` (PNG capture of CDP session)',
     host: ['skill'],
     safety: ['read-only'],
@@ -2610,7 +2610,7 @@ export const nativeToolCatalog: NativeToolCatalogEntry[] = [
     shouldDefer: true,
     aliases: ['AcpSessionList', 'acp_session_list'],
     displayName: 'AcpSessionList',
-    description: 'List ACP client sessions persisted to disk (~/.config/monad/acp-sessions/). Optional brand filter. Returns [{ sessionId, backendSessionId, backendId, cwd, createdAt, lastSeenAt, origin? }].',
+    description: 'List ACP client sessions persisted to disk (~/.config/elanous/acp-sessions/). Optional brand filter. Returns [{ sessionId, backendSessionId, backendId, cwd, createdAt, lastSeenAt, origin? }].',
     promptSummary: '`AcpSessionList` (brand? — list persisted ACP sessions for resume)',
     host: ['skill', 'tui'],
     safety: ['read-only'],
@@ -2790,7 +2790,7 @@ export const nativeToolCatalog: NativeToolCatalogEntry[] = [
 
   // BCO Phase D4 — Browser Context Organ entry points. Both are
   // shouldDefer=true so their schemas surface only via ToolSearch.
-  // Provide Chrome via MONAD_CHROME_BIN or ensure Google Chrome /
+  // Provide Chrome via ELANOUS_CHROME_BIN or ensure Google Chrome /
   // Chromium is installed; otherwise the runtime returns a polite
   // "Chrome unavailable" message and does not crash.
   {
@@ -2799,7 +2799,7 @@ export const nativeToolCatalog: NativeToolCatalogEntry[] = [
     alwaysLoad: false,
     aliases: ['BrowserNavigate', 'browser_navigate'],
     displayName: 'BrowserNavigate',
-    description: 'Navigate the Monad Browser Context Organ (persistent headless Chrome) to a URL. Returns final URL, title, load time. Pair with BrowserRead.',
+    description: 'Navigate the Elanous Browser Context Organ (persistent headless Chrome) to a URL. Returns final URL, title, load time. Pair with BrowserRead.',
     promptSummary: '`BrowserNavigate` (open URL in persistent headless Chrome · waitForLoad)',
     host: ['skill', 'tui'],
     safety: ['network', 'read-only'],
@@ -2849,7 +2849,7 @@ export const nativeToolCatalog: NativeToolCatalogEntry[] = [
     alwaysLoad: false,
     aliases: ['SyncRepo', 'sync_repo'],
     displayName: 'SyncRepo',
-    description: 'Clone or fetch a host-allowlisted repo into ~/.cache/monad-refs. Shallow, partial, sparse by default. 24h stale window; mode="update" forces refresh.',
+    description: 'Clone or fetch a host-allowlisted repo into ~/.cache/elanous-refs. Shallow, partial, sparse by default. 24h stale window; mode="update" forces refresh.',
     promptSummary: '`SyncRepo` (cache a GitHub/GitLab/Bitbucket repo locally · shallow/partial/sparse · 24h stale)',
     host: ['skill', 'tui'],
     safety: ['network', 'mutating'],
@@ -2864,7 +2864,7 @@ export const nativeToolCatalog: NativeToolCatalogEntry[] = [
     alwaysLoad: false,
     aliases: ['RefConsult', 'ref_consult'],
     displayName: 'RefConsult',
-    description: 'Grep or read inside a repo previously SyncRepo-cloned into ~/.cache/monad-refs. Fast; reuses cache.',
+    description: 'Grep or read inside a repo previously SyncRepo-cloned into ~/.cache/elanous-refs. Fast; reuses cache.',
     promptSummary: '`RefConsult` (grep/read inside a cached ref repo · fast · no network)',
     host: ['skill', 'tui'],
     safety: ['read-only'],
@@ -2875,15 +2875,15 @@ export const nativeToolCatalog: NativeToolCatalogEntry[] = [
   },
 
   // Coding Pipeline P5 hygiene (followup H) — RefsGC. Garbage-collect
-  // ~/.cache/monad-refs by TTL + size cap. Deferred — rarely needed
+  // ~/.cache/elanous-refs by TTL + size cap. Deferred — rarely needed
   // mid-coding; user invokes when disk pressure shows up.
   {
     id: 'refs_gc',
     kind: 'other',
     aliases: ['RefsGC', 'refs_gc'],
     displayName: 'RefsGC',
-    description: 'Garbage-collect the SyncRepo cache at ~/.cache/monad-refs. TTL pass (default 30 days) + size-cap pass (default 5GB, LRU). Pass dryRun:true to preview. Returns scanned/retained/evicted counts and bytes freed.',
-    promptSummary: '`RefsGC` (prune ~/.cache/monad-refs · TTL + LRU size cap · dryRun preview)',
+    description: 'Garbage-collect the SyncRepo cache at ~/.cache/elanous-refs. TTL pass (default 30 days) + size-cap pass (default 5GB, LRU). Pass dryRun:true to preview. Returns scanned/retained/evicted counts and bytes freed.',
+    promptSummary: '`RefsGC` (prune ~/.cache/elanous-refs · TTL + LRU size cap · dryRun preview)',
     host: ['skill', 'tui'],
     safety: ['mutating'],
     supportsParallel: false,
@@ -2936,7 +2936,7 @@ export const nativeToolCatalog: NativeToolCatalogEntry[] = [
     kind: 'other',
     aliases: ['MergePullRequest', 'merge_pull_request'],
     displayName: 'MergePullRequest',
-    description: 'Merge a PR via `gh pr merge`. Strategy is required (squash | merge | rebase). Optional deleteBranch, auto (--auto, wait for checks), admin (--admin, double-gated by MONAD_GH_ALLOW_ADMIN=1).',
+    description: 'Merge a PR via `gh pr merge`. Strategy is required (squash | merge | rebase). Optional deleteBranch, auto (--auto, wait for checks), admin (--admin, double-gated by ELANOUS_GH_ALLOW_ADMIN=1).',
     promptSummary: '`MergePullRequest` (gh pr merge wrapper · explicit strategy · admin double-gated)',
     host: ['skill', 'tui'],
     safety: ['network', 'mutating'],
@@ -3102,7 +3102,7 @@ export const nativeToolCatalog: NativeToolCatalogEntry[] = [
     shouldDefer: true,
     aliases: ['BudgetStatus', 'budget_status'],
     displayName: 'BudgetStatus',
-    description: 'Current per-brand/per-window usage snapshot from the local monad budget tracker. Cheap read (in-process store); pass `refresh: true` to force a fresh fetch across registered providers (~1-3s).',
+    description: 'Current per-brand/per-window usage snapshot from the local elanous budget tracker. Cheap read (in-process store); pass `refresh: true` to force a fresh fetch across registered providers (~1-3s).',
     promptSummary: '`BudgetStatus` (local cumulative usage per brand × window; refresh=true for live fetch)',
     host: ['skill', 'tui'],
     safety: ['read-only'],
@@ -3189,7 +3189,7 @@ export const nativeToolCatalog: NativeToolCatalogEntry[] = [
     shouldDefer: true,
     aliases: ['BudgetSetLimit', 'budget_set_limit'],
     displayName: 'BudgetSetLimit',
-    description: 'Write a user-config limit for (brand, window, model?). Quota in percent (0-100) or Infinity for unlimited. Persists to ~/.config/monad/budget/limits.json; effective limit resolution = user-config → brand-default.',
+    description: 'Write a user-config limit for (brand, window, model?). Quota in percent (0-100) or Infinity for unlimited. Persists to ~/.config/elanous/budget/limits.json; effective limit resolution = user-config → brand-default.',
     promptSummary: '`BudgetSetLimit` (persist a user quota override for brand × window × model)',
     host: ['skill', 'tui'],
     safety: ['mutating'],
@@ -3211,7 +3211,7 @@ export const nativeToolCatalog: NativeToolCatalogEntry[] = [
     shouldDefer: true,
     aliases: ['AgentRoomCompose', 'agent_room_compose'],
     displayName: 'AgentRoomCompose',
-    description: 'Create a VW agent room with N panes (preset = two-split/three-split/four-quad), each running a different brand agent. Members[i].brandRef: literal brand (codex/claude/gemini/monad), alias (cxn/cas/clc/gem/mac), "lll:<model>" (H6 P2 local-llm), or "auto" (policy router). Output metadata includes `budgetAdvisory` — surface `warning` via AskUserQuestion when present (session usage ≥70% and N-agent turn cost ~Nx).',
+    description: 'Create a VW agent room with N panes (preset = two-split/three-split/four-quad), each running a different brand agent. Members[i].brandRef: literal brand (codex/claude/gemini/elanous), alias (cxn/cas/clc/gem/mac), "lll:<model>" (H6 P2 local-llm), or "auto" (policy router). Output metadata includes `budgetAdvisory` — surface `warning` via AskUserQuestion when present (session usage ≥70% and N-agent turn cost ~Nx).',
     promptSummary: '`AgentRoomCompose` (multi-agent VW room · N-pane layout · auto-routing)',
     host: ['skill', 'tui'],
     safety: ['mutating'],
@@ -3320,7 +3320,7 @@ export const nativeToolCatalog: NativeToolCatalogEntry[] = [
     shouldDefer: true,
     aliases: ['LlmListNodes', 'llm_list_nodes'],
     displayName: 'LlmListNodes',
-    description: 'Enumerate local-LLM nodes in the Tailscale fleet (monad host + ssh-configured peers) with per-node reachability + installed runtimes (Bundle 1 = LM Studio only). Read-only · 5 min staleness cache · pass `refresh:true` to force a probe. Use FIRST before LlmListAvailableModels or local-llm:<node>:<model> routing.',
+    description: 'Enumerate local-LLM nodes in the Tailscale fleet (elanous host + ssh-configured peers) with per-node reachability + installed runtimes (Bundle 1 = LM Studio only). Read-only · 5 min staleness cache · pass `refresh:true` to force a probe. Use FIRST before LlmListAvailableModels or local-llm:<node>:<model> routing.',
     promptSummary: '`LlmListNodes` (Tailscale fleet · LM Studio reachability)',
     host: ['skill', 'tui'],
     safety: ['read-only'],
@@ -3336,7 +3336,7 @@ export const nativeToolCatalog: NativeToolCatalogEntry[] = [
     shouldDefer: true,
     aliases: ['LlmListAvailableModels', 'llm_list_available_models'],
     displayName: 'LlmListAvailableModels',
-    description: 'List model weights discoverable on local-LLM nodes (Bundle 1 = LM Studio · Bundle 2 C1 = + Ollama). Returns `{id, nodeId, runtime, label, sizeBytes?, format?, loaded?}`. Pass `{id}` as the model spec `local-llm:<nodeId>:<id>` to streamLLM / monad outer LLM. Optional `node` filter. Read-only · 5 min cache.',
+    description: 'List model weights discoverable on local-LLM nodes (Bundle 1 = LM Studio · Bundle 2 C1 = + Ollama). Returns `{id, nodeId, runtime, label, sizeBytes?, format?, loaded?}`. Pass `{id}` as the model spec `local-llm:<nodeId>:<id>` to streamLLM / elanous outer LLM. Optional `node` filter. Read-only · 5 min cache.',
     promptSummary: '`LlmListAvailableModels` (discover model weights per node)',
     host: ['skill', 'tui'],
     safety: ['read-only'],
@@ -3400,7 +3400,7 @@ export const nativeToolCatalog: NativeToolCatalogEntry[] = [
     shouldDefer: true,
     aliases: ['LaneHandoff', 'lane_handoff'],
     displayName: 'LaneHandoff',
-    description: 'Handoff context from one showroom lane to another (cross-LLM relay). Targets the most recently-spawned `/showroom` room; pass `roomId` to override. `fromLane` / `toLane` accept pane index (0-based int), role hint (plan/build/exec/review/reflect), or brand name (claude/codex/gemini/monad/local-llm/alias). HITL binary approver gates every call · denial/timeout returns ok=false WITHOUT `isError`. System errors (no live room, target-dead) DO set `isError`. `reason` recorded in audit detail.',
+    description: 'Handoff context from one showroom lane to another (cross-LLM relay). Targets the most recently-spawned `/showroom` room; pass `roomId` to override. `fromLane` / `toLane` accept pane index (0-based int), role hint (plan/build/exec/review/reflect), or brand name (claude/codex/gemini/elanous/local-llm/alias). HITL binary approver gates every call · denial/timeout returns ok=false WITHOUT `isError`. System errors (no live room, target-dead) DO set `isError`. `reason` recorded in audit detail.',
     promptSummary: '`LaneHandoff` (HITL-gated · cross-lane context relay inside /showroom rooms)',
     host: ['skill', 'tui'],
     safety: ['mutating'],

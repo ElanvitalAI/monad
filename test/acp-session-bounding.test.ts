@@ -17,7 +17,7 @@
 // inverted. Commit a962da5c made the S5 criterion explicit: a known claude
 // session with turnCount ≤ ACP_CROSS_RESTART_RESUME_MAX_TURNS (40) resumes
 // after restart; large or unknown sessions recycle. The apparent inversion
-// came from this test seeding XDG_CONFIG_HOME while MONAD_STATE_DIR (which
+// came from this test seeding XDG_CONFIG_HOME while ELANOUS_STATE_DIR (which
 // session-store.ts gives priority since a5c5a1a5dc) still selected another
 // store. Clear that higher-priority test environment so runAcpTurn →
 // resolveSessionId reads the seeded persisted record; assertions stay intact.
@@ -41,7 +41,7 @@ import { _resetAcpAgentManagerForTests } from '../src/acp/agent-manager.js';
 
 let dir: string;
 const ORIG_XDG = process.env.XDG_CONFIG_HOME;
-const ORIG_STATE_DIR = process.env.MONAD_STATE_DIR;
+const ORIG_STATE_DIR = process.env.ELANOUS_STATE_DIR;
 
 interface StubCalls { newSession: number; loadSession: number; loadSessionIds: string[]; }
 
@@ -70,8 +70,8 @@ function installStubAgent(loadSessionImpl?: (req: { sessionId: string }) => Prom
 }
 
 function seedStore(record: Record<string, unknown>): void {
-  mkdirSync(join(dir, 'monad'), { recursive: true });
-  writeFileSync(join(dir, 'monad', 'acp-sessions.json'), JSON.stringify([record], null, 2), 'utf-8');
+  mkdirSync(join(dir, 'elanous'), { recursive: true });
+  writeFileSync(join(dir, 'elanous', 'acp-sessions.json'), JSON.stringify([record], null, 2), 'utf-8');
   _resetAcpSessionStoreForTests();
 }
 
@@ -83,7 +83,7 @@ const RUN = { backendId: 'claude', promptText: 'hi', chatId: 999 };
 
 beforeEach(() => {
   dir = mkdtempSync(join(tmpdir(), 'acp-sess-bound-'));
-  delete process.env.MONAD_STATE_DIR;
+  delete process.env.ELANOUS_STATE_DIR;
   process.env.XDG_CONFIG_HOME = dir;
   _resetTurnRunnerCachesForTests();
   _resetAcpSessionStoreForTests();
@@ -94,8 +94,8 @@ afterEach(() => {
   rmSync(dir, { recursive: true, force: true });
   if (ORIG_XDG === undefined) delete process.env.XDG_CONFIG_HOME;
   else process.env.XDG_CONFIG_HOME = ORIG_XDG;
-  if (ORIG_STATE_DIR === undefined) delete process.env.MONAD_STATE_DIR;
-  else process.env.MONAD_STATE_DIR = ORIG_STATE_DIR;
+  if (ORIG_STATE_DIR === undefined) delete process.env.ELANOUS_STATE_DIR;
+  else process.env.ELANOUS_STATE_DIR = ORIG_STATE_DIR;
 });
 
 describe('withResumeTimeout', () => {

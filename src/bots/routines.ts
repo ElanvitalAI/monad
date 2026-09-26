@@ -50,7 +50,7 @@ const KNOWN: readonly { readonly script: string; readonly label: string; readonl
   // 📬🆕 2026-09-01 — ***`D2` 가 `/botsay` 를 끊었고 이것이 그것을 잇는다.*** 멎으면 사람 말이
   //    «다시» 조용히 사라진다 ⇒ 「무엇이 도나」에 «반드시» 보여야 한다(카나리아 `carried` 와 짝).
   { script: 'carry-bot-mailboxes.ts', label: '우편함 나르기', kind: 'watch' },
-  { script: 'monad-backup.sh', label: '백업', kind: 'backup' },
+  { script: 'elanous-backup.sh', label: '백업', kind: 'backup' },
   { script: 'verify-restore.sh', label: '복원 검증', kind: 'backup' },
 ];
 

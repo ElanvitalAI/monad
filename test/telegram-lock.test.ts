@@ -6,14 +6,14 @@ import { join } from 'node:path';
 import { acquireTelegramLock, TelegramLockError, safeReadLock, isAliveLock, defaultLockPath } from '../src/telegram-lock.js';
 
 function tmpLock(): string {
-  const dir = mkdtempSync(join(tmpdir(), 'monad-tglock-'));
+  const dir = mkdtempSync(join(tmpdir(), 'elanous-tglock-'));
   return join(dir, 'telegram.lock');
 }
 
 describe('telegram-lock', () => {
   test('defaultLockPath joins config dir with telegram.lock', () => {
-    expect(defaultLockPath('/tmp/monad')).toBe('/tmp/monad/telegram.lock');
-    expect(defaultLockPath('/tmp/monad/')).toBe('/tmp/monad/telegram.lock');
+    expect(defaultLockPath('/tmp/elanous')).toBe('/tmp/elanous/telegram.lock');
+    expect(defaultLockPath('/tmp/elanous/')).toBe('/tmp/elanous/telegram.lock');
   });
 
   test('acquireTelegramLock writes { pid, host, startedAt, label }', () => {

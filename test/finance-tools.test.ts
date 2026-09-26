@@ -6,7 +6,7 @@
 // the messenger-turn assembly merges the finance tools only via the finance pack.
 //
 // ⭐ 배선 주어 — 실측으로 갈랐다(후보 둘이 있었고 하나는 «닿지 않는다»):
-//   telegram-agent.ts:18  makeTelegramAgentRunTurn → makeMonadAgentRunTurn(cfg,'telegram')
+//   telegram-agent.ts:18  makeTelegramAgentRunTurn → makeElanousAgentRunTurn(cfg,'telegram')
 //   monad-agent-turn.ts:71  const fin = finance ? buildFinanceTools() : null   ← 여기가 주인
 //   ⛔ src/agent/shared-app-tools.ts 는 «다른 소비자»다 — daemon toolSurface(index.ts:312)와
 //      CLI(index.ts:8576)만 그것을 부르고, ***텔레그램 경로는 그 파일에 닿지 않는다***.
@@ -15,7 +15,7 @@
 //      여전히 자기 손으로 조립한다 — 통일은 «반쪽»이다. 이 시험은 그 현재 상태를 문다.
 //
 // ⭐ 13F 가드 — DB 가 «있어야» 입력 검증에 닿는다. 그 DB 를 진짜 state-dir 에 만들지 «않는다»:
-//   임시 MONAD_STATE_DIR 로 갈라 세우고 env 를 되돌린다(운영 ~/.monad 를 시험이 만지면
+//   임시 ELANOUS_STATE_DIR 로 갈라 세우고 env 를 되돌린다(운영 ~/.elanous 를 시험이 만지면
 //   프로세스가 중간에 죽었을 때 «빈 DB»가 남아 진짜 조회가 조용히 빈손이 된다).
 
 import { describe, test, expect } from 'bun:test';
@@ -75,15 +75,15 @@ describe('finance tool surface', () => {
     // 임시 state-dir 로 갈라 빈 13F DB 를 세운다 — 핸들러가 DB 부재로 먼저 되돌아가면
     // safeToken 가드에 «닿지 못해» 이 시험이 가드를 안 무는 상태가 된다.
     const stateDir = mkdtempSync(join(tmpdir(), 'finance-tools-'));
-    const previousStateDir = process.env.MONAD_STATE_DIR;
+    const previousStateDir = process.env.ELANOUS_STATE_DIR;
     try {
-      process.env.MONAD_STATE_DIR = stateDir;
+      process.env.ELANOUS_STATE_DIR = stateDir;
       writeFileSync(join(stateDir, 'knowledge_13f.db'), '');
       const bad = await dispatch('finance_13f_sectors', { sector: "x'; DROP TABLE dim_security;--" }) as { error?: string };
       expect(bad.error).toMatch(/^invalid sector:/);
     } finally {
-      if (previousStateDir === undefined) delete process.env.MONAD_STATE_DIR;
-      else process.env.MONAD_STATE_DIR = previousStateDir;
+      if (previousStateDir === undefined) delete process.env.ELANOUS_STATE_DIR;
+      else process.env.ELANOUS_STATE_DIR = previousStateDir;
       rmSync(stateDir, { recursive: true, force: true });
     }
   });
@@ -262,7 +262,7 @@ describe('finance-tools wire (messenger-turn assembly)', () => {
   const telegramSrc = readFileSync(join(import.meta.dir, '..', 'src/telegram-agent.ts'), 'utf-8');
   const assemblySrc = readFileSync(join(import.meta.dir, '..', 'src/agent/monad-agent-turn.ts'), 'utf-8');
   test('telegram delegates to the assembly that merges the enabled finance pack', () => {
-    expect(telegramSrc).toMatch(/makeTelegramAgentRunTurn[\s\S]*makeMonadAgentRunTurn\(cfg,\s*['"]telegram['"]\)/);
+    expect(telegramSrc).toMatch(/makeTelegramAgentRunTurn[\s\S]*makeElanousAgentRunTurn\(cfg,\s*['"]telegram['"]\)/);
     expect(assemblySrc).toMatch(/import\s*\{\s*buildFinanceTools\s*\}\s*from\s*['"][^'"]*finance-tools/);
     expect(assemblySrc).toMatch(/const fin = finance \? buildFinanceTools\(\) : null/);
     expect(assemblySrc).toMatch(/fin\.names\.has\(name\)/);

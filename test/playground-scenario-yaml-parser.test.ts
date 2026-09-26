@@ -98,10 +98,10 @@ steps:
       key: focusMode
       value: input
   - action: theme
-    name: monad-dark
+    name: elanous-dark
   - action: set-context-key
     key: themeName
-    value: monad-dark
+    value: elanous-dark
   - action: dismiss
   - action: wait
     ms: 100

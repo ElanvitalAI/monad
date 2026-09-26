@@ -234,37 +234,37 @@ describe('CodexAppServerClient · M6 · idle observability', () => {
 
 describe('CodexAppServerAgent · M6 · idle config', () => {
   test('default idleTimeoutMs is 300_000', () => {
-    const prev = process.env.MONAD_CODEX_APP_SERVER_IDLE_MS;
-    delete process.env.MONAD_CODEX_APP_SERVER_IDLE_MS;
+    const prev = process.env.ELANOUS_CODEX_APP_SERVER_IDLE_MS;
+    delete process.env.ELANOUS_CODEX_APP_SERVER_IDLE_MS;
     try {
       const h = makeFactoryHarness();
       expect(h.agent.getIdleTimeoutMs()).toBe(300_000);
     } finally {
-      if (prev !== undefined) process.env.MONAD_CODEX_APP_SERVER_IDLE_MS = prev;
+      if (prev !== undefined) process.env.ELANOUS_CODEX_APP_SERVER_IDLE_MS = prev;
     }
   });
 
   test('opts.idleTimeoutMs wins over env', () => {
-    const prev = process.env.MONAD_CODEX_APP_SERVER_IDLE_MS;
-    process.env.MONAD_CODEX_APP_SERVER_IDLE_MS = '60000';
+    const prev = process.env.ELANOUS_CODEX_APP_SERVER_IDLE_MS;
+    process.env.ELANOUS_CODEX_APP_SERVER_IDLE_MS = '60000';
     try {
       const h = makeFactoryHarness({ idleTimeoutMs: 12345 });
       expect(h.agent.getIdleTimeoutMs()).toBe(12345);
     } finally {
-      if (prev === undefined) delete process.env.MONAD_CODEX_APP_SERVER_IDLE_MS;
-      else process.env.MONAD_CODEX_APP_SERVER_IDLE_MS = prev;
+      if (prev === undefined) delete process.env.ELANOUS_CODEX_APP_SERVER_IDLE_MS;
+      else process.env.ELANOUS_CODEX_APP_SERVER_IDLE_MS = prev;
     }
   });
 
   test('env override applies when opts unset', () => {
-    const prev = process.env.MONAD_CODEX_APP_SERVER_IDLE_MS;
-    process.env.MONAD_CODEX_APP_SERVER_IDLE_MS = '12345';
+    const prev = process.env.ELANOUS_CODEX_APP_SERVER_IDLE_MS;
+    process.env.ELANOUS_CODEX_APP_SERVER_IDLE_MS = '12345';
     try {
       const h = makeFactoryHarness();
       expect(h.agent.getIdleTimeoutMs()).toBe(12345);
     } finally {
-      if (prev === undefined) delete process.env.MONAD_CODEX_APP_SERVER_IDLE_MS;
-      else process.env.MONAD_CODEX_APP_SERVER_IDLE_MS = prev;
+      if (prev === undefined) delete process.env.ELANOUS_CODEX_APP_SERVER_IDLE_MS;
+      else process.env.ELANOUS_CODEX_APP_SERVER_IDLE_MS = prev;
     }
   });
 

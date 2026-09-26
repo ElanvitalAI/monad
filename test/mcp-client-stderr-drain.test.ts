@@ -1,7 +1,7 @@
 // FU3 (2026-05-13) — `McpClient` must drain `child.stderr` so a chatty
 // external server (banner / warning / progress lines) cannot fill the
 // 64KiB OS pipe buffer and stall its main loop. Pre-FU3, this happened
-// silently: monad daemon awaited `client.start()` forever because the
+// silently: elanous daemon awaited `client.start()` forever because the
 // child stopped servicing stdin once its stderr.write() blocked. PR
 // #2527's timeout bounded the wait; this test guarantees the listener
 // stays attached so PR #2527 stops being the only safety net.

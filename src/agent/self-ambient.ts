@@ -1,6 +1,6 @@
-// ── monad 자기접근 규율 + 자기인지 ambient — 단일 출처 leaf (P3 · 2026-07-13) ──
+// ── elanous 자기접근 규율 + 자기인지 ambient — 단일 출처 leaf (P3 · 2026-07-13) ──
 //
-// 텔레그램/디스코드(makeMonadAgentRunTurn)와 TUI 채팅(buildDashboardTurnPreamble)이
+// 텔레그램/디스코드(makeElanousAgentRunTurn)와 TUI 채팅(buildDashboardTurnPreamble)이
 // 같은 규율·ambient 를 주입하도록 추출. 그간 TUI 채팅은 3박자(툴·기억·규율) 전부 0 이라
 // "P2 왜 실패?" 같은 자기 상황판단이 표면에 따라 됐다 안 됐다 했다(표면 패리티 갭).
 // 이 모듈은 순수 문자열 조립 + read-only 스토어 조회(fail-soft)만 — 실행엔진 없음.
@@ -15,7 +15,7 @@ import { openOpsEventsDb, queryOpsEvents } from '../domains/ops-log.js';
 import { buildMissionIncidentContext, formatIncidentContextCompact, type MissionIncidentContext } from '../autopilot/mission-incident-context.js';
 
 /** session ID 를 system prompt 에 그대로(verbatim) 넣어도 되는 안전 형식인지 검증한다.
- *  실제 session ID(buildPromptSessionId 의 http-<ts>-<rand>·ACP base36·monad-session-N)는
+ *  실제 session ID(buildPromptSessionId 의 http-<ts>-<rand>·ACP base36·elanous-session-N)는
  *  영숫자 시작 + 영숫자/하이픈/언더스코어(최대 64자) 형식이다. 이 형식을 만족하면 **원문 그대로**
  *  쓴다(mangle 하면 session_manage 조회가 실제 ID 와 어긋나 실패하므로 절대 변형하지 않는다).
  *  만족하지 못하면(개행·공백·콜론·점·지시문 문자 포함 등) 호출부가 session ID 라인을 통째로 생략한다
@@ -26,23 +26,23 @@ export function isSafeSessionId(sessionId: string): boolean {
   return /^[A-Za-z0-9][A-Za-z0-9_-]{0,63}$/.test(sessionId);
 }
 
-/** monad 자기접근 규율 — 에이전트가 이미 가진 내부 도구(소스 분석·수정·ACP 위임·세션·
+/** elanous 자기접근 규율 — 에이전트가 이미 가진 내부 도구(소스 분석·수정·ACP 위임·세션·
  *  자기인지·웹검증·미션 진단)를 지식/기억으로 단정하지 말고 실제로 호출하게 하는 규율.
  *  codex 엔진은 도구 호출을 건너뛰고 텍스트로 서술하는 경향이 있어(동물 종명을 검색 없이
  *  "없다"고 오답한 사례) 명시적 규율이 필요. 코어·finance 무관 상시. */
-export function monadSelfAccessPrompt(sessionId?: string): string {
+export function elanousSelfAccessPrompt(sessionId?: string): string {
   const safeSessionId = sessionId && isSafeSessionId(sessionId) ? sessionId : '';
   return [
-    '[monad 북극성 · 정체성 (manifesto)]',
-    '너는 monad 다 — 전전두엽(PFC)처럼 팔다리·감각기관(도구·로그·기억·PTY·서브-monad)을 써서 스스로',
+    '[elanous 북극성 · 정체성 (manifesto)]',
+    '너는 elanous 다 — 전전두엽(PFC)처럼 팔다리·감각기관(도구·로그·기억·PTY·서브-elanous)을 써서 스스로',
     '계획하고 스스로 진화하는 에이전트. 존재 이유이자 최우선 기준은 **자기 관측성 → 자기 인지 → 셀프',
     '힐링**이다: 사람이 매 단계를 판단하는 게 아니라 시스템이 스스로 수렴한다. 관측 없이는 인지가 없고,',
     '인지 없이는 힐링이 없다. 그러므로 지식·기억으로 단정하지 말고 도구로 관측하고, 관측 위에서 맥락을',
     '파악하며, 스스로 판단·수복하되 안 되면 충분한 정보와 함께 사람에게 올린다(HITL). 모든 자율 행동은',
     '관측(로그·기억·문서 3박자)을 남긴다 — 남기지 않은 행동은 관측하지 않은 것이다.',
     '',
-    '[monad 자기접근 규율]',
-    '너는 monad 자신이다. 너의 소스코드·로직·세션·기억에 접근하는 도구를 이미 갖고 있다. 지식이나',
+    '[elanous 자기접근 규율]',
+    '너는 elanous 자신이다. 너의 소스코드·로직·세션·기억에 접근하는 도구를 이미 갖고 있다. 지식이나',
     '기억으로 단정하지 말고 아래 도구로 확인하고 행동하라. codex 엔진은 도구 호출을 건너뛰고 텍스트로',
     '서술하는 경향이 있으니, 필요하면 반드시 실제로 도구를 호출하라(서술로 대체하지 마라).',
     '- 네 코드/로직/기능 질문("네 코드가 어떻게", "이 기능 왜", "어디서 처리하나"): Read/Grep/Glob 로',
@@ -64,10 +64,10 @@ export function monadSelfAccessPrompt(sessionId?: string): string {
     '  지식으로 단정 말고 WebSearch 로 먼저 검증하고 출처를 밝혀라.',
     '- 과거 대화/세션("아까 무슨 얘기", "그 세션", "전에 말한"): session_manage 로 실제 세션을 조회하라.',
     '- 네 구현 이력·자기 인지: self_recall / memory_recall 로 회상하라.',
-    '- 방금 일어난 일·오류·표면 동작은 logs_query(= monad logs, logs.db)로 최근 이벤트를 실제 조회하라.',
+    '- 방금 일어난 일·오류·표면 동작은 logs_query(= elanous logs, logs.db)로 최근 이벤트를 실제 조회하라.',
     '  관측이 부족하면 네가 수정하는 코드 경로에 debug.log(category, event, data)를 추가해 logs.db에 남겨라.',
     '- 자기 수정(기능 구현·수정·리팩토링을 격리 self-build 로)이 필요하면 SelfImplement 또는 RunDevHarness',
-    '  **툴을 직접 호출**하라. 셸(Bash/PtyShell)로 `monad self implement`·`monad dev`·`harness run` 같은',
+    '  **툴을 직접 호출**하라. 셸(Bash/PtyShell)로 `elanous self implement`·`elanous dev`·`harness run` 같은',
     '  CLI 를 실행하는 것은 같은 파이프라인을 우회 진입하는 것이라 서피스 승인막(HITL)·진행 push·격리',
     '  컨텍스트가 전달되지 않는다. **툴이 있으면 툴로, 셸아웃은 금지.**',
     '  auto-review 는 opt-in auto-review 라벨이 붙은 PR의 무인 리뷰·검증·자율머지 파이프라인이므로,',
@@ -135,15 +135,15 @@ export function missionIncidentAmbient(
 
 // ── 축B 조사문맥 자동 회상 (2026-07-19) ──────────────────────────────────────
 //
-// 갭: monadSelfAccessPrompt 의 "★ 선제 회상" 규율은 판단 전 self_recall 을 프롬프트로
+// 갭: elanousSelfAccessPrompt 의 "★ 선제 회상" 규율은 판단 전 self_recall 을 프롬프트로
 // 지시하지만, codex/terra 엔진이 툴 호출을 건너뛰어 실제로는 회상 안 하는 경우가 잦다
 // (같은 confabulation 계열). recentSelfChangesContext 는 최근성만 주입(query 무관).
 // → 프롬프트가 **내부 조사** 문맥일 때, task 에 **관련된** 과거 자기변경/사건을 결정론으로
-// query-recall 해 주입한다(최근성의 자매=relevance). Claude Code 자동회상 훅(축A)의 monad
+// query-recall 해 주입한다(최근성의 자매=relevance). Claude Code 자동회상 훅(축A)의 elanous
 // 이식. 명시룰(트리거·랭킹 결정론)·READ-ONLY(bump 안 함)·조사문맥 아니면 무주입(무노이즈).
 
 /** 내부 조사 신호(한/영) — 자기 코드·실패·원인·검증 문맥. */
-const MONAD_INVESTIGATION_SIGNALS = [
+const ELANOUS_INVESTIGATION_SIGNALS = [
   '왜', '원인', '근본', '이유', '실패', '에러', '오류', '버그', '안돼', '안 돼', '안됨',
   '조사', '확인', '검증', '점검', '디버', '어디서', '어떻게', '무슨', '이상', '이력', '과거',
   '네 코드', '이 기능', '회상',
@@ -155,7 +155,7 @@ const MONAD_INVESTIGATION_SIGNALS = [
 export function isInvestigationContext(text: string): boolean {
   if (!text || !text.trim()) return false;
   const lower = text.toLowerCase();
-  return MONAD_INVESTIGATION_SIGNALS.some((s) => lower.includes(s));
+  return ELANOUS_INVESTIGATION_SIGNALS.some((s) => lower.includes(s));
 }
 
 /** 축B 테스트 코어(db 주입) — 조사문맥이면 task 관련 과거 자기사건 top-K 요약.
@@ -183,7 +183,7 @@ export function investigationRecallAmbient(taskText: string): string {
 
 /** 자기인지 ambient — 최근 자기 구현/변경 + 최근 자율행동 + 자율 시스템 이상 + 미션 사건 사실
  *  (+ taskText 주면 조사문맥 관련 회상·축B). 매 턴 fresh · 각각 fail-soft(없음이면 빈 문자열). */
-export function monadSelfAmbientParts(taskText?: string): string[] {
+export function elanousSelfAmbientParts(taskText?: string): string[] {
   const parts: string[] = [];
   try { parts.push(recentSelfChangesContext()); } catch { /* fail-soft */ }
   try { parts.push(recentAutonomyContext()); } catch { /* fail-soft */ }

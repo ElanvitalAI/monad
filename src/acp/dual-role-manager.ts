@@ -1,12 +1,12 @@
 // AXON P1 — ACP Dual-Role Manager.
 //
-// Unified registry for monad's two-way ACP sessions:
+// Unified registry for elanous's two-way ACP sessions:
 //
-//   - SERVER sessions — monad is the agent, parent IDE / orchestrator drives.
+//   - SERVER sessions — elanous is the agent, parent IDE / orchestrator drives.
 //     Ids live in the `acp-srv:` namespace and are registered by
 //     `src/acp/server.ts` when a client calls newSession().
 //
-//   - CLIENT sessions — monad drives an external ACP agent (claude-code-acp,
+//   - CLIENT sessions — elanous drives an external ACP agent (claude-code-acp,
 //     codex-acp, gemini ACP). Ids live in the `acp-cli:` namespace and are
 //     created through `clientSessionCreate()` below, which spawns / reuses
 //     an AcpAgent via the existing agent-manager.
@@ -18,7 +18,7 @@
 // tools only learn one lookup.
 //
 // Out of MVP scope (future): persistent store, audit log, distributed
-// lock. Process-wide singleton is enough for the single-monad-per-tty
+// lock. Process-wide singleton is enough for the single-elanous-per-tty
 // topology we target.
 
 import { basename } from 'node:path';
@@ -47,7 +47,7 @@ export { CLIENT_NAMESPACE, SERVER_NAMESPACE };
  *  MSS M1.1 Phase B3 — `sessionId` / `parentSessionId` narrowed to the
  *  `SessionUri` brand. DRM records still hold these as `string`
  *  (namespaced `acp-cli:<brand>:<raw>` / `acp-srv:<raw>` ids are not
- *  themselves MonadUri-shaped), so the emit path brands via
+ *  themselves ElanousUri-shaped), so the emit path brands via
  *  `unsafeBrandSessionUri` at each call site — phantom cast, zero
  *  runtime cost. */
 export type DualRoleChangeEvent =
@@ -65,13 +65,13 @@ export type DualRoleChangeEvent =
  *  from the inherited environment. */
 export const AXON_CHILD_ENV_BLOCKLIST: readonly string[] = [
   'CLAUDECODE',
-  'MONAD_SESSION_ID',
-  'MONAD_UNDO_REF',
-  'MONAD_GUARDIAN',
-  'MONAD_UNDO',
-  'MONAD_HITL_CALLBACK_PORT',
-  'MONAD_HITL_PORT',
-  'MONAD_HITL_PORT_SCAN_RANGE',
+  'ELANOUS_SESSION_ID',
+  'ELANOUS_UNDO_REF',
+  'ELANOUS_GUARDIAN',
+  'ELANOUS_UNDO',
+  'ELANOUS_HITL_CALLBACK_PORT',
+  'ELANOUS_HITL_PORT',
+  'ELANOUS_HITL_PORT_SCAN_RANGE',
 ];
 
 export const AXON_CHILD_ENV_BLOCK_PREFIXES: readonly string[] = [
@@ -203,7 +203,7 @@ export interface ServerSessionRecord {
   kind: 'server';
   /** Namespaced id — `acp-srv:<backendSessionId>`. */
   id: string;
-  /** ACP session id as assigned by monad's own server (`monad-session-N`). */
+  /** ACP session id as assigned by elanous's own server (`elanous-session-N`). */
   backendSessionId: string;
   cwd: string;
   createdAt: number;

@@ -54,7 +54,7 @@ describe('findTags · live rg over tmpdir vault', () => {
   let vault: string;
 
   beforeEach(() => {
-    vault = mkdtempSync(join(tmpdir(), 'monad-tags-test-'));
+    vault = mkdtempSync(join(tmpdir(), 'elanous-tags-test-'));
   });
 
   afterEach(() => {

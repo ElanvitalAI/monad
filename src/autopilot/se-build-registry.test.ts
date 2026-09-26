@@ -8,7 +8,7 @@ const NOW = '2026-07-13T09:00:00.000Z';
 function base(over: Record<string, unknown> = {}) {
   return {
     buildId: 'bld_0808d01f_1', missionId: 'apm_x', phaseId: 'task:0808d01f', phaseTitle: 'P4 실행기',
-    index: 4, total: 7, attemptSeq: 1, backend: 'monad-self:gpt-5.6-terra',
+    index: 4, total: 7, attemptSeq: 1, backend: 'elanous-self:gpt-5.6-terra',
     status: 'running' as const, now: () => NOW, ...over,
   };
 }

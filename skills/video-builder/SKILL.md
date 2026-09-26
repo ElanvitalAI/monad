@@ -11,7 +11,7 @@ description: |
   NOT for: 단발 이미지·영상 생성(higgsfield-generate) · 이미 정해진 한 갈래를 그냥 돌리기.
 minTier: T1
 category: visual
-# ⛔ 아래 둘이 없으면 monad 가 fail-safe 로 막는다 (실측 2026-09-22: 둘 다 undefined 였다)
+# ⛔ 아래 둘이 없으면 elanous 가 fail-safe 로 막는다 (실측 2026-09-22: 둘 다 undefined 였다)
 # ⛔⭐ 인라인 주석을 «달지 마라» — 파서가 안 벗기고 값에 그대로 붙는다.
 #     `sideEffects: write  # 설명` ⇒ 값이 "write  # 설명" 이 되어 조용히 undefined 로 떨어진다.
 # sideEffects: probe·plan 은 읽기만 하고, config --init 이 파일을 쓴다
@@ -316,11 +316,11 @@ bun scripts/video-pipeline.ts plan ... --surface tui
 ```
 📏 대조: 기본 `cli` 는 같은 계획이 2,077자 · 최장 138자다.
 
-✅ **이 스킬은 monad 도 읽는다** — 📏 실측 2026-09-22:
+✅ **이 스킬은 elanous 도 읽는다** — 📏 실측 2026-09-22:
 ```
-monad config get skills   ⇒ activeSet=claudecode · dirs=["~/.claude/skills"]
-monad 스킬 색인 72개 중 video-builder «잡힘» · rootDir=~/.claude/skills
-하니스 자식도 접근한다 — scripts/se-monad-self-prompts.ts 가 그 경로의 SKILL.md 를
+elanous config get skills   ⇒ activeSet=claudecode · dirs=["~/.claude/skills"]
+elanous 스킬 색인 72개 중 video-builder «잡힘» · rootDir=~/.claude/skills
+하니스 자식도 접근한다 — scripts/se-elanous-self-prompts.ts 가 그 경로의 SKILL.md 를
 «읽으라»고 명시한다("read it even though it lives outside the worktree")
 ```
 ⚠️ 남은 것은 «닿음»이 아니라 **«어느 서피스인지 핸들러가 아나»**다 —

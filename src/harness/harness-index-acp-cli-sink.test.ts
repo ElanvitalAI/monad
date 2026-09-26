@@ -78,7 +78,7 @@ describe('production ACP CLI sink wiring', () => {
     const output: string[] = [];
     const log = spyOn(console, 'log').mockImplementation((line: string) => output.push(line));
     try {
-      await program.parseAsync(['node', 'monad', 'acp', 'list']);
+      await program.parseAsync(['node', 'elanous', 'acp', 'list']);
     } finally {
       log.mockRestore();
     }
@@ -94,20 +94,20 @@ describe('production ACP CLI sink wiring', () => {
   test('the actual index ACP list action continues when sink registration fails', async () => {
     sinkShouldFail = true;
 
-    await program.parseAsync(['node', 'monad', 'acp', 'list']);
+    await program.parseAsync(['node', 'elanous', 'acp', 'list']);
 
     expect(calls).toEqual(['sink:acp']);
   });
 
   test('the actual index ACP test action leaves permission approval unset by default', async () => {
-    await program.parseAsync(['node', 'monad', 'acp', 'test']);
+    await program.parseAsync(['node', 'elanous', 'acp', 'test']);
 
     expect(agentOpts).toHaveLength(1);
     expect(agentOpts[0]?.permissionApprover).toBeUndefined();
   });
 
   test('the actual index ACP test action opts into an approving permission handler', async () => {
-    await program.parseAsync(['node', 'monad', 'acp', 'test', '--auto-approve-permissions']);
+    await program.parseAsync(['node', 'elanous', 'acp', 'test', '--auto-approve-permissions']);
 
     expect(agentOpts).toHaveLength(1);
     const approver = agentOpts[0]?.permissionApprover;
@@ -119,7 +119,7 @@ describe('production ACP CLI sink wiring', () => {
   test('the actual index ACP test action sends an image block for an image file', async () => {
     const file = tempFile('image.png', Uint8Array.of(0x89, 0x50, 0x4e, 0x47));
     try {
-      await program.parseAsync(['node', 'monad', 'acp', 'test', '--file', file.path]);
+      await program.parseAsync(['node', 'elanous', 'acp', 'test', '--file', file.path]);
       expect(promptCalls[0]?.[1]).toEqual([
         { type: 'text', text: 'Say hi in one short sentence.' },
         { type: 'image', data: 'iVBORw==', mimeType: 'image/png' },
@@ -134,7 +134,7 @@ describe('production ACP CLI sink wiring', () => {
   test('the actual index ACP test action sends a resource link for a non-image file', async () => {
     const file = tempFile('notes.txt', 'notes');
     try {
-      await program.parseAsync(['node', 'monad', 'acp', 'test', '--file', file.path]);
+      await program.parseAsync(['node', 'elanous', 'acp', 'test', '--file', file.path]);
       expect(promptCalls[0]?.[1]).toEqual([
         { type: 'text', text: 'Say hi in one short sentence.' },
         { type: 'resource_link', uri: `file://${file.path}`, name: 'notes.txt' },
@@ -149,7 +149,7 @@ describe('production ACP CLI sink wiring', () => {
     const warning = spyOn(console, 'warn').mockImplementation(() => {});
     const file = tempFile('image.png', Uint8Array.of(0x89, 0x50, 0x4e, 0x47));
     try {
-      await program.parseAsync(['node', 'monad', 'acp', 'test', '--file', file.path]);
+      await program.parseAsync(['node', 'elanous', 'acp', 'test', '--file', file.path]);
       expect(promptCalls[0]?.[1]).toEqual([{ type: 'text', text: 'Say hi in one short sentence.' }]);
       expect(warning).toHaveBeenCalledWith(`attachment skipped: ${file.path} (image unsupported by peer)`);
     } finally {
@@ -159,7 +159,7 @@ describe('production ACP CLI sink wiring', () => {
   });
 
   test('the actual index ACP test action preserves a single text block without file options', async () => {
-    await program.parseAsync(['node', 'monad', 'acp', 'test']);
+    await program.parseAsync(['node', 'elanous', 'acp', 'test']);
 
     expect(promptCalls[0]?.[1]).toEqual([{ type: 'text', text: 'Say hi in one short sentence.' }]);
     expectSinglePromptStart();

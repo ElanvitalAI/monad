@@ -1,7 +1,7 @@
 // auto-review 기본 발동 (2026-07-27 · 대표 지시)
 //
 // 배경: 툴 설명은 *"Symmetric with the dev line"* 이라 적혀 있는데 **기본값이 비대칭**이었다.
-// `monad dev` 는 auto-review 가 기본 on 인데 `RunDevHarness` 는 `auto_review` 를 명시해야만
+// `elanous dev` 는 auto-review 가 기본 on 인데 `RunDevHarness` 는 `auto_review` 를 명시해야만
 // 켜져서, L2 자연어로 부르면 사실상 영영 안 켜졌다 — 실측: L2 가 RunDevHarness 를 호출했으나
 // auto_review 미지정이라 PR 도 무인 리뷰도 안 붙고 `[deploy]` 에서 멈췄다.
 //

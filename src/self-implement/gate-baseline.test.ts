@@ -263,7 +263,7 @@ describe('gate baseline case attribution', () => {
   test('precondition-unmet remains ahead of a base-passed timeout', () => {
     const head = [
       'a.test.ts:',
-      'error: Isolated instance requires an explicit tool cwd; pass --tool-cwd <path> or set MONAD_TOOL_CWD.',
+      'error: Isolated instance requires an explicit tool cwd; pass --tool-cwd <path> or set ELANOUS_TOOL_CWD.',
       '(fail) t1',
       '^ this test timed out after 5000ms.',
       '',
@@ -428,7 +428,7 @@ describe('gate baseline case attribution', () => {
   //    앵커한 뒤로는 **여기서 걸리지 않는 것이 옳다.** ⇒ 통과 테스트를 **반례**로 바꾼다.
   //    ⭐ 이것이 앵커가 실제로 좁다는 증거다 — 문구가 아무 데나 있으면 분류하지 않는다.
   test('⛔ 전제 문구가 error: 진단행이 아니라 테스트 이름에만 있으면 분류하지 않는다', () => {
-    const nameOnly = failLog('test/tool.test.ts', 'Isolated instance requires an explicit tool cwd; pass --tool-cwd <path> or set MONAD_TOOL_CWD.');
+    const nameOnly = failLog('test/tool.test.ts', 'Isolated instance requires an explicit tool cwd; pass --tool-cwd <path> or set ELANOUS_TOOL_CWD.');
     const report = buildGateBaselineReport(nameOnly, { status: 'test-fail', output: nameOnly, log: 'base reproduced' });
     expect(report).toMatchObject({ preconditionUnmet: 0, preexisting: 1 });
     expect(report.failures[0]?.precondition).toBeUndefined();
@@ -678,7 +678,7 @@ describe('gate baseline case attribution', () => {
     const excerptOnly = [
       'test/tool-cwd.test.ts:',
       '',
-      "56 |     throw new Error('Isolated instance requires an explicit tool cwd; pass --tool-cwd <path> or set MONAD_TOOL_CWD.');",
+      "56 |     throw new Error('Isolated instance requires an explicit tool cwd; pass --tool-cwd <path> or set ELANOUS_TOOL_CWD.');",
       '',
       'error: expect(received).toThrow(expected)',
       '',
@@ -696,9 +696,9 @@ describe('gate baseline case attribution', () => {
   const REAL_TOOL_CWD_LOG = [
     "test/daemon-tools-runtime.test.ts:",
     '',
-    "56 |     throw new Error('Isolated instance requires an explicit tool cwd; pass --tool-cwd <path> or set MONAD_TOOL_CWD.');",
+    "56 |     throw new Error('Isolated instance requires an explicit tool cwd; pass --tool-cwd <path> or set ELANOUS_TOOL_CWD.');",
     '',
-    'error: Isolated instance requires an explicit tool cwd; pass --tool-cwd <path> or set MONAD_TOOL_CWD.',
+    'error: Isolated instance requires an explicit tool cwd; pass --tool-cwd <path> or set ELANOUS_TOOL_CWD.',
     '',
     "✗ toolSurface(kind) > 'chat' exposes readonly + Edit + Bash, no WebTerminal* tools [27.51ms]",
     '',
@@ -708,22 +708,22 @@ describe('gate baseline case attribution', () => {
   test('⭐ 실측 모양 — 전제 메시지가 테스트 이름이 아니라 진단문에 있어도 분류된다', () => {
     const failures = extractGateTestFailures(REAL_TOOL_CWD_LOG);
     // ① 진단문이 실제로 실려 온다(이것이 없으면 판별할 재료가 없다).
-    expect(failures[0]?.diagnostic ?? '').toContain('MONAD_TOOL_CWD');
+    expect(failures[0]?.diagnostic ?? '').toContain('ELANOUS_TOOL_CWD');
     // ② 그리고 이름에는 없다 — 이 테스트가 검사하는 조건 자체다.
-    expect(failures[0]?.name ?? '').not.toContain('MONAD_TOOL_CWD');
+    expect(failures[0]?.name ?? '').not.toContain('ELANOUS_TOOL_CWD');
 
     const report = buildGateBaselineReport(
       REAL_TOOL_CWD_LOG,
       { status: 'test-fail', output: REAL_TOOL_CWD_LOG, log: 'base reproduced' },
     );
     expect(report).toMatchObject({ introduced: 0, preexisting: 0, unknown: 0, preconditionUnmet: 1 });
-    expect(report.failures[0]?.precondition?.name).toBe('MONAD_TOOL_CWD 미설정');
+    expect(report.failures[0]?.precondition?.name).toBe('ELANOUS_TOOL_CWD 미설정');
     // ③ 그래도 게이트는 통과하지 않는다 — 이것은 면책이 아니다.
     expect(allowsBaselineOnlyFailure(report)).toBe(false);
   });
 
   // ⛔⛔ **이 골의 최대 위험을 고정한다**: 패턴을 넉넉하게 잡으면 **실제 회귀가 전제 미충족으로
-  //    조용히 넘어간다.** 실측(뮤테이션 M3): 패턴을 `/MONAD_TOOL_CWD/i` 로 넓혀도 28개가 전부
+  //    조용히 넘어간다.** 실측(뮤테이션 M3): 패턴을 `/ELANOUS_TOOL_CWD/i` 로 넓혀도 28개가 전부
   //    통과했다 — 즉 그 위험에 가드가 **없었다**.
   //    ⇒ 그 환경변수를 **본문에서 언급**하지만 **다른 이유로** 실패하는 케이스를 넣는다.
   // ⛔ 리뷰 must-fix(#6064 R3): 수용 기준 6 의 *"이유·충족방법"* 이 미검증이었다 —
@@ -733,20 +733,20 @@ describe('gate baseline case attribution', () => {
   test('전제 미충족은 충족 방법을 값으로도, 게이트 노트 문장으로도 낸다', () => {
     const report = buildGateBaselineReport(REAL_TOOL_CWD_LOG, { status: 'test-fail', output: REAL_TOOL_CWD_LOG, log: 'base reproduced' });
     expect(report.failures[0]?.precondition).toEqual({
-      name: 'MONAD_TOOL_CWD 미설정',
-      remediation: 'MONAD_TOOL_CWD를 대상 작업 디렉터리로 설정한 뒤 게이트를 다시 실행하세요.',
+      name: 'ELANOUS_TOOL_CWD 미설정',
+      remediation: 'ELANOUS_TOOL_CWD를 대상 작업 디렉터리로 설정한 뒤 게이트를 다시 실행하세요.',
     });
     const note = formatGateBaselineNote(report, 0);
     expect(note).toContain('precondition-unmet=1');
     expect(note).toContain('- precondition-unmet: ');
-    expect(note).toContain('(MONAD_TOOL_CWD 미설정; MONAD_TOOL_CWD를 대상 작업 디렉터리로 설정한 뒤 게이트를 다시 실행하세요.)');
+    expect(note).toContain('(ELANOUS_TOOL_CWD 미설정; ELANOUS_TOOL_CWD를 대상 작업 디렉터리로 설정한 뒤 게이트를 다시 실행하세요.)');
   });
 
   test('⭐ 전제가 아닌 실패의 노트에는 충족 방법 괄호가 붙지 않는다 (과잉 출력 금지)', () => {
     const plain = buildGateBaselineReport(failLog('test/a.test.ts', 'x'), { status: 'pass', output: '0 fail', log: 'base clean' });
     const note = formatGateBaselineNote(plain, 0);
     expect(note).toContain('precondition-unmet=0');
-    expect(note).not.toContain('MONAD_TOOL_CWD');
+    expect(note).not.toContain('ELANOUS_TOOL_CWD');
   });
 
   // ⛔ 리뷰 must-fix(#6064 R2): 종전 판은 `seams.ts` 를 **문자열로 읽어 토큰만** 확인하는
@@ -784,7 +784,7 @@ describe('gate baseline case attribution', () => {
       '',
       'error: expect(received).toBe(expected)',
       '',
-      '✗ reads MONAD_TOOL_CWD from user config [3ms]',
+      '✗ reads ELANOUS_TOOL_CWD from user config [3ms]',
       '',
       '1 fail',
     ].join('\n');
@@ -1026,7 +1026,7 @@ describe('gate baseline — 시험 타임아웃은 introduced 회귀가 아니�
   test('전제 미충족 timeout은 baseline 통과보다 먼저 precondition-unmet으로 귀속한다', () => {
     const worktree = [
       'test/daemon-tools-runtime.test.ts:',
-      'error: Isolated instance requires an explicit tool cwd; pass --tool-cwd <path> or set MONAD_TOOL_CWD.',
+      'error: Isolated instance requires an explicit tool cwd; pass --tool-cwd <path> or set ELANOUS_TOOL_CWD.',
       '(fail) tool surface',
       '^ this test timed out after 10000ms',
       '',
@@ -1113,7 +1113,7 @@ describe('gate baseline — 시험 타임아웃은 introduced 회귀가 아니�
     git(cwd, 'commit', '-m', 'base timeout pass without junit directory');
     const unavailableParent = join(cwd, 'not-a-directory');
     writeFileSync(unavailableParent, 'file\n');
-    process.env.MONAD_GATE_JUNIT_TMPDIR = unavailableParent;
+    process.env.ELANOUS_GATE_JUNIT_TMPDIR = unavailableParent;
 
     const baseline = runGateBaseline(cwd, ['test/timeout.test.js']);
     expect(baseline).toMatchObject({
@@ -1126,7 +1126,7 @@ describe('gate baseline — 시험 타임아웃은 introduced 회귀가 아니�
   });
 
   test('real Bun base pass then head timeout is introduced and passed-at-base while retaining console timeout parsing', () => {
-    const junitReportsBefore = readdirSync(tmpdir()).filter((name) => name.startsWith('monad-gate-junit-')).sort();
+    const junitReportsBefore = readdirSync(tmpdir()).filter((name) => name.startsWith('elanous-gate-junit-')).sort();
     const cwd = repo();
     writeFileSync(join(cwd, 'package.json'), '{"type":"module"}\n');
     mkdirSync(join(cwd, 'test'), { recursive: true });
@@ -1149,7 +1149,7 @@ describe('gate baseline — 시험 타임아웃은 introduced 회귀가 아니�
     const report = buildGateBaselineReport(`${head.stdout}\n${head.stderr}`, baseline);
     expect(report).toMatchObject({ introduced: 1, timeoutPassedAtBase: 1 });
     expect(report.failures).toMatchObject([{ attribution: 'introduced', timeoutRegression: 'passed-at-base' }]);
-    expect(readdirSync(tmpdir()).filter((name) => name.startsWith('monad-gate-junit-')).sort()).toEqual(junitReportsBefore);
+    expect(readdirSync(tmpdir()).filter((name) => name.startsWith('elanous-gate-junit-')).sort()).toEqual(junitReportsBefore);
   });
 
   test('baseline에서 통과한 같은 파일·시험의 timeout은 introduced로 요약하고 passed-at-base를 붙인다', () => {
@@ -1465,7 +1465,7 @@ describe('gate baseline — 시험 타임아웃은 introduced 회귀가 아니�
   test('timeout 문구와 전제 문구가 함께 있으면 precondition-unmet 이 이긴다 (remediation 을 잃지 않는다)', () => {
     const mixed = [
       'test/a.test.ts:',
-      'error: Isolated instance requires an explicit tool cwd; pass --tool-cwd <path> or set MONAD_TOOL_CWD.',
+      'error: Isolated instance requires an explicit tool cwd; pass --tool-cwd <path> or set ELANOUS_TOOL_CWD.',
       '(fail) mixed timeout and cwd',
       '^ this test timed out after 10000ms',
       '',
@@ -1674,7 +1674,7 @@ describe('defaultSeams gate blocking', () => {
   test('runGateBaseline gives bun test an isolated deterministic environment and cleans it', () => {
     const cwd = repo();
     process.env.ANTHROPIC_API_KEY = 'parent-secret';
-    process.env.MONAD_STATE_DIR = '/parent/state';
+    process.env.ELANOUS_STATE_DIR = '/parent/state';
     mkdirSync(join(cwd, 'test'), { recursive: true });
     writeFileSync(join(cwd, 'test/env.test.js'), [
       "import { test, expect } from 'bun:test';",
@@ -1683,8 +1683,8 @@ describe('defaultSeams gate blocking', () => {
       "    secret: process.env.ANTHROPIC_API_KEY ?? null,",
       "    home: process.env.HOME,",
       "    xdg: process.env.XDG_CONFIG_HOME,",
-      "    state: process.env.MONAD_STATE_DIR,",
-      "    config: process.env.MONAD_CONFIG_DIR,",
+      "    state: process.env.ELANOUS_STATE_DIR,",
+      "    config: process.env.ELANOUS_CONFIG_DIR,",
       "  }).toEqual({ expected: true });",
       "});",
     ].join('\n'));
@@ -1696,7 +1696,7 @@ describe('defaultSeams gate blocking', () => {
     const output = baseline.output ?? '';
     expect(output).not.toContain('parent-secret');
     expect(output).toContain('"secret": null');
-    const root = output.match(/"home": "([^"]*monad-gate-test-env-[^"]*)"/)?.[1];
+    const root = output.match(/"home": "([^"]*elanous-gate-test-env-[^"]*)"/)?.[1];
     expect(root).toBeDefined();
     expect(output).toContain(`"xdg": "${root}/.config"`);
     expect(output).toContain(`"state": "${root}/state"`);
@@ -2196,7 +2196,7 @@ describe('verify by breaking', () => {
     expect(result.files[0]?.base.log).toContain('refusing to copy outside baseline worktree');
     // ⛔ 바깥 파일이 **그대로** 있어야 한다(삭제·덮어쓰기 0).
     expect(readFileSync(join(outside, 'victim.txt'), 'utf8')).toBe('do not touch\n');
-    expect(spawnSync('git', ['worktree', 'list', '--porcelain'], { cwd, encoding: 'utf8' }).stdout.includes('monad-gate-baseline-')).toBe(false);
+    expect(spawnSync('git', ['worktree', 'list', '--porcelain'], { cwd, encoding: 'utf8' }).stdout.includes('elanous-gate-baseline-')).toBe(false);
   });
 
   // ⛔⭐⭐ **실제 base-pass 경로**(리뷰 11R) — 종전 `does-not-distinguish` 검사는 seam 에 **완성된
@@ -2287,7 +2287,7 @@ describe('verify by breaking', () => {
     expect(entry?.classification).toBe('unknown');
     expect(result.baseStatuses).toEqual({ pass: 0, 'test-fail': 0, unknown: 1 });
     // ⛔ 워크트리를 남기지 않는다.
-    expect(spawnSync('git', ['worktree', 'list', '--porcelain'], { cwd, encoding: 'utf8' }).stdout.includes('monad-gate-baseline-')).toBe(false);
+    expect(spawnSync('git', ['worktree', 'list', '--porcelain'], { cwd, encoding: 'utf8' }).stdout.includes('elanous-gate-baseline-')).toBe(false);
   });
 
   test('base에 없는 테스트는 missing-at-base로 따로 세고 test-fail 및 distinguishes에서 제외한다', () => {
@@ -2420,7 +2420,7 @@ describe('verify by breaking', () => {
     expect(note).toContain('Verify-by-breaking: distinguishes=0, does-not-distinguish=0, unknown=0, missing-at-base=1; baseline-default-branch=ancestor;');
     expect(note).toContain('test/value.test.js > new contract [TIME]: error: expect(received).toBe(expected)');
     expect(note).toContain('error: expect(received).toBe(expected) ⏎  ⏎ Expected: true ⏎ Received: false');
-    expect(spawnSync('git', ['worktree', 'list', '--porcelain'], { cwd, encoding: 'utf8' }).stdout.includes('monad-gate-baseline-')).toBe(false);
+    expect(spawnSync('git', ['worktree', 'list', '--porcelain'], { cwd, encoding: 'utf8' }).stdout.includes('elanous-gate-baseline-')).toBe(false);
   });
 
   test('test-only 변경에서 base 테스트를 «격리 워크트리의» 현재 소스에 돌려 실패를 관측한다', () => {
@@ -2482,7 +2482,7 @@ describe('verify by breaking', () => {
     expect(git(cwd, 'status', '--porcelain')).toBe(beforeStatus);
     expect(git(cwd, 'diff', '--summary')).not.toContain('mode change');
     // ⊕ 임시 워크트리를 남기지 않는다.
-    expect(spawnSync('git', ['worktree', 'list', '--porcelain'], { cwd, encoding: 'utf8' }).stdout).not.toContain('monad-gate-baseline-');
+    expect(spawnSync('git', ['worktree', 'list', '--porcelain'], { cwd, encoding: 'utf8' }).stdout).not.toContain('elanous-gate-baseline-');
   });
 
   // ⛔⭐⭐ **혼합 변경 — 「현 소스」가 실제로 얹히는지 잰다**(리뷰 R3·R4). 바뀐 소스를 넘기면

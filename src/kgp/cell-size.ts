@@ -32,8 +32,8 @@ let cached: CellSize | undefined;
 
 function readOverride(): Partial<CellSize> {
   const out: Partial<CellSize> = {};
-  const w = Number(process.env.MONAD_KGP_CELL_W);
-  const h = Number(process.env.MONAD_KGP_CELL_H);
+  const w = Number(process.env.ELANOUS_KGP_CELL_W);
+  const h = Number(process.env.ELANOUS_KGP_CELL_H);
   if (Number.isFinite(w) && w > 0) out.cellW = Math.floor(w);
   if (Number.isFinite(h) && h > 0) out.cellH = Math.floor(h);
   return out;

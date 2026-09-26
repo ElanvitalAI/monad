@@ -26,7 +26,7 @@ import { spawnSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { WORKTREE_BRANCH_PREFIX } from '../src/harness/worktree-branch-prefix.js';
-import { isMonadHarnessWorktreeCommand, worktreeParentDir } from '../src/git-fs/worktree.js';
+import { isElanousHarnessWorktreeCommand, worktreeParentDir } from '../src/git-fs/worktree.js';
 import {
   markPtyManifestClosed,
   setPtyManifestDbPathForTesting,
@@ -44,7 +44,7 @@ const planHarnessClean = (input: LegacyPlanInput) => planHarnessCleanImpl({
   unmergedCommitCounts: input.unmergedCommitCounts ?? new Map([...new Set([...input.branches, ...input.worktrees.map((worktree) => worktree.branch)])].map((branch) => [branch, 0])),
   uncommittedChanges: input.uncommittedChanges ?? new Map([...new Set([...input.branches, ...input.worktrees.map((worktree) => worktree.branch)])].map((branch) => [branch, false])),
   changedFileCounts: new Map([...new Set([...input.branches, ...input.worktrees.map((worktree) => worktree.branch)])].map((branch) => [branch, 0])),
-  readWorktreeProvenance: () => ({ owner: 'dev:test-harness', command: 'monad dev', createdAt: '2026-08-05T00:00:00.000Z' }),
+  readWorktreeProvenance: () => ({ owner: 'dev:test-harness', command: 'elanous dev', createdAt: '2026-08-05T00:00:00.000Z' }),
 });
 
 describe('listHarnessWorktrees — git() transient Git retry', () => {
@@ -125,11 +125,11 @@ describe('planHarnessClean — assessment and harness ownership domain', () => {
       worktrees: [wt('self-impl/needs-human')], branches: ['self-impl/needs-human'], openPr: new Set(), mergedPr: new Set(), mode: 'all',
       unmergedCommitCounts: new Map([['self-impl/needs-human', 0]]), uncommittedChanges: new Map([['self-impl/needs-human', false]]), changedFileCounts: new Map([['self-impl/needs-human', 0]]),
       assessWorktree: (input) => ({ ...input, disposition: 'needs-human', reason: 'no-pr-with-output', hasOutput: true }),
-      readWorktreeProvenance: () => ({ owner: 'dev:run', command: 'monad dev', createdAt: '2026-08-05T00:00:00.000Z' }),
+      readWorktreeProvenance: () => ({ owner: 'dev:run', command: 'elanous dev', createdAt: '2026-08-05T00:00:00.000Z' }),
     });
     expect(plan.remove).toEqual([]);
     expect(plan.preserve[0]?.reason).toContain('assessment=needs-human:no-pr-with-output');
-    expect(plan.preserve[0]?.reason).toContain('ownership=recorded:owner=dev:run;command=monad dev;createdAt=2026-08-05T00:00:00.000Z');
+    expect(plan.preserve[0]?.reason).toContain('ownership=recorded:owner=dev:run;command=elanous dev;createdAt=2026-08-05T00:00:00.000Z');
   });
 
   it('reclaim-safe여도 harness 소유가 없으면 사다리 reason과 함께 보존한다', () => {
@@ -145,19 +145,19 @@ describe('planHarnessClean — assessment and harness ownership domain', () => {
   });
 
   it.each([
-    ['임의 owner', { owner: 'someone-else', command: 'monad dev', createdAt: '2026-08-05T00:00:00.000Z' }],
-    ['빈 owner', { owner: '', command: 'monad dev', createdAt: '2026-08-05T00:00:00.000Z' }],
+    ['임의 owner', { owner: 'someone-else', command: 'elanous dev', createdAt: '2026-08-05T00:00:00.000Z' }],
+    ['빈 owner', { owner: '', command: 'elanous dev', createdAt: '2026-08-05T00:00:00.000Z' }],
     ['명령 누락', { owner: 'dev:run', command: 'not-recorded', createdAt: '2026-08-05T00:00:00.000Z' }],
     ['빈 명령', { owner: 'dev:run', command: '', createdAt: '2026-08-05T00:00:00.000Z' }],
     ['비정상 명령', { owner: 'dev:run', command: 'test', createdAt: '2026-08-05T00:00:00.000Z' }],
-    ['생성 시각 누락', { owner: 'dev:run', command: 'monad dev', createdAt: 'not-recorded' }],
-    ['빈 생성 시각', { owner: 'dev:run', command: 'monad dev', createdAt: '' }],
-    ['비정상 생성 시각', { owner: 'dev:run', command: 'monad dev', createdAt: 'not-a-date' }],
-    ['존재하지 않는 날짜', { owner: 'dev:run', command: 'monad dev', createdAt: '2026-02-30T00:00:00.000Z' }],
-    ['시간대 없는 생성 시각', { owner: 'dev:run', command: 'monad dev', createdAt: '2026-08-05T00:00:00.000' }],
-    ['오프셋 생성 시각', { owner: 'dev:run', command: 'monad dev', createdAt: '2026-08-05T09:00:00.000+09:00' }],
-    ['밀리초 없는 생성 시각', { owner: 'dev:run', command: 'monad dev', createdAt: '2026-08-05T00:00:00Z' }],
-    ['조회 오류', { owner: 'read-error: config unavailable', command: 'monad dev', createdAt: '2026-08-05T00:00:00.000Z' }],
+    ['생성 시각 누락', { owner: 'dev:run', command: 'elanous dev', createdAt: 'not-recorded' }],
+    ['빈 생성 시각', { owner: 'dev:run', command: 'elanous dev', createdAt: '' }],
+    ['비정상 생성 시각', { owner: 'dev:run', command: 'elanous dev', createdAt: 'not-a-date' }],
+    ['존재하지 않는 날짜', { owner: 'dev:run', command: 'elanous dev', createdAt: '2026-02-30T00:00:00.000Z' }],
+    ['시간대 없는 생성 시각', { owner: 'dev:run', command: 'elanous dev', createdAt: '2026-08-05T00:00:00.000' }],
+    ['오프셋 생성 시각', { owner: 'dev:run', command: 'elanous dev', createdAt: '2026-08-05T09:00:00.000+09:00' }],
+    ['밀리초 없는 생성 시각', { owner: 'dev:run', command: 'elanous dev', createdAt: '2026-08-05T00:00:00Z' }],
+    ['조회 오류', { owner: 'read-error: config unavailable', command: 'elanous dev', createdAt: '2026-08-05T00:00:00.000Z' }],
   ])('%s provenance는 reclaim-safe여도 fail-closed 보존하고 세 필드를 산출한다', (_label, provenance) => {
     const plan = planHarnessCleanImpl({ activeDirectories: [],
       worktrees: [wt('self-impl/invalid-provenance')], branches: ['self-impl/invalid-provenance'], openPr: new Set(), mergedPr: new Set(), mode: 'all',
@@ -177,7 +177,7 @@ describe('planHarnessClean — assessment and harness ownership domain', () => {
       worktrees: [wt('self-impl/reclaim')], branches: ['self-impl/reclaim'], openPr: new Set(), mergedPr: new Set(), mode: 'all',
       unmergedCommitCounts: new Map([['self-impl/reclaim', 0]]), uncommittedChanges: new Map([['self-impl/reclaim', false]]), changedFileCounts: new Map([['self-impl/reclaim', 0]]),
       assessWorktree: safeAssessment,
-      readWorktreeProvenance: () => ({ owner: 'dev:run', command: 'monad dev', createdAt: '2026-08-05T00:00:00.000Z' }),
+      readWorktreeProvenance: () => ({ owner: 'dev:run', command: 'elanous dev', createdAt: '2026-08-05T00:00:00.000Z' }),
     });
     expect(plan.remove.map((item) => item.branch)).toEqual(['self-impl/reclaim']);
   });
@@ -185,10 +185,10 @@ describe('planHarnessClean — assessment and harness ownership domain', () => {
   it.each([
     ['writer dev short form', { owner: 'dev:run', command: 'dev', createdAt: '2026-08-05T00:00:00.000Z' }],
     ['writer drive short form', { owner: 'dev:run', command: 'drive', createdAt: '2026-08-05T00:00:00.000Z' }],
-    ['enter_worktree 런타임 문면', { owner: 'agent:40302', command: 'monad enter_worktree', createdAt: '2026-08-05T00:00:00.000Z' }],
+    ['enter_worktree 런타임 문면', { owner: 'agent:40302', command: 'elanous enter_worktree', createdAt: '2026-08-05T00:00:00.000Z' }],
     ['기존 unattributed/add 문면', { owner: 'harness:unattributed', command: 'harness worktree add', createdAt: '2026-08-05T00:00:00.000Z' }],
-    ['기존 dev/monad dev 문면', { owner: 'dev:run', command: 'monad dev', createdAt: '2026-08-05T00:00:00.000Z' }],
-    ['기존 agent-mission 문면', { owner: 'agent:40302', command: 'monad agent-mission', createdAt: '2026-08-05T00:00:00.000Z' }],
+    ['기존 dev/elanous dev 문면', { owner: 'dev:run', command: 'elanous dev', createdAt: '2026-08-05T00:00:00.000Z' }],
+    ['기존 agent-mission 문면', { owner: 'agent:40302', command: 'elanous agent-mission', createdAt: '2026-08-05T00:00:00.000Z' }],
   ])('%s은 reclaim-safe이면 recorded 소유로 제거 후보가 된다', (_label, provenance) => {
     const plan = planHarnessCleanImpl({ activeDirectories: [],
       worktrees: [wt('self-impl/recorded')], branches: ['self-impl/recorded'], openPr: new Set(), mergedPr: new Set(), mode: 'all',
@@ -201,10 +201,10 @@ describe('planHarnessClean — assessment and harness ownership domain', () => {
   });
 
   it('canonical command predicate accepts writer short forms and every preserved long form only', () => {
-    for (const command of ['dev', 'drive', 'harness worktree add', 'monad dev', 'monad enter_worktree', 'monad agent-mission']) {
-      expect(isMonadHarnessWorktreeCommand(command)).toBe(true);
+    for (const command of ['dev', 'drive', 'harness worktree add', 'elanous dev', 'elanous enter_worktree', 'elanous agent-mission']) {
+      expect(isElanousHarnessWorktreeCommand(command)).toBe(true);
     }
-    expect(isMonadHarnessWorktreeCommand('foreign command')).toBe(false);
+    expect(isElanousHarnessWorktreeCommand('foreign command')).toBe(false);
   });
 
   it.each([
@@ -217,10 +217,10 @@ describe('planHarnessClean — assessment and harness ownership domain', () => {
       worktrees: [wt('self-impl/invalid-agent')], branches: ['self-impl/invalid-agent'], openPr: new Set(), mergedPr: new Set(), mode: 'all',
       unmergedCommitCounts: new Map([['self-impl/invalid-agent', 0]]), uncommittedChanges: new Map([['self-impl/invalid-agent', false]]), changedFileCounts: new Map([['self-impl/invalid-agent', 0]]),
       assessWorktree: safeAssessment,
-      readWorktreeProvenance: () => ({ owner, command: 'monad enter_worktree', createdAt: '2026-08-05T00:00:00.000Z' }),
+      readWorktreeProvenance: () => ({ owner, command: 'elanous enter_worktree', createdAt: '2026-08-05T00:00:00.000Z' }),
     });
     expect(plan.remove).toEqual([]);
-    expect(plan.preserve[0]?.reason).toContain(`ownership=invalid:owner=${owner};command=monad enter_worktree;createdAt=2026-08-05T00:00:00.000Z`);
+    expect(plan.preserve[0]?.reason).toContain(`ownership=invalid:owner=${owner};command=elanous enter_worktree;createdAt=2026-08-05T00:00:00.000Z`);
   });
 
   it('사다리와 소유 조회가 실패하면 각각 측정 불가 사유를 남기고 후보에서 뺀다', () => {
@@ -237,7 +237,7 @@ describe('planHarnessClean — assessment and harness ownership domain', () => {
       },
       readWorktreeProvenance: (path: string) => {
         if (path.endsWith('ownership-fail')) throw new Error('ownership unavailable');
-        return { owner: 'dev:run', command: 'monad dev', createdAt: '2026-08-05T00:00:00.000Z' };
+        return { owner: 'dev:run', command: 'elanous dev', createdAt: '2026-08-05T00:00:00.000Z' };
       },
     };
     const plan = planHarnessCleanImpl(base);
@@ -250,7 +250,7 @@ describe('planHarnessClean — assessment and harness ownership domain', () => {
     const plan = planHarnessCleanImpl({ activeDirectories: [],
       worktrees: [wt('self-impl/missing')], branches: ['self-impl/missing'], openPr: new Set(), mergedPr: new Set(), mode: 'all',
       unmergedCommitCounts: new Map([['self-impl/missing', 0]]), uncommittedChanges: new Map([['self-impl/missing', false]]),
-      readWorktreeProvenance: () => ({ owner: 'dev:run', command: 'monad dev', createdAt: '2026-08-05T00:00:00.000Z' }),
+      readWorktreeProvenance: () => ({ owner: 'dev:run', command: 'elanous dev', createdAt: '2026-08-05T00:00:00.000Z' }),
     });
     expect(plan.remove).toEqual([]);
     expect(plan.preserve[0]?.reason).toContain('assessment=unjudgeable:measurement-unavailable');
@@ -403,7 +403,7 @@ describe('planHarnessClean — currently in use worktree preservation', () => {
       unmergedCommitCounts: new Map([['dev/unknown-use', 0]]),
       uncommittedChanges: new Map([['dev/unknown-use', false]]),
       changedFileCounts: new Map([['dev/unknown-use', 0]]),
-      readWorktreeProvenance: () => ({ owner: 'dev:test-harness', command: 'monad dev', createdAt: '2026-08-05T00:00:00.000Z' }),
+      readWorktreeProvenance: () => ({ owner: 'dev:test-harness', command: 'elanous dev', createdAt: '2026-08-05T00:00:00.000Z' }),
     });
     expect(plan.remove).toEqual([]);
     expect(plan.unavailable).toBe(true);
@@ -674,7 +674,7 @@ describe('planHarnessClean — 미머지 커밋·미커밋 변경 보존', () =>
     expect(lines).toContain('assessment=do-not-touch:dirty-worktree');
     expect(lines).toContain('assessment=unjudgeable:measurement-unavailable');
     expect(lines).toContain('assessment=do-not-touch:open-pr');
-    expect(lines).toContain('ownership=recorded:owner=dev:test-harness;command=monad dev;createdAt=2026-08-05T00:00:00.000Z');
+    expect(lines).toContain('ownership=recorded:owner=dev:test-harness;command=elanous dev;createdAt=2026-08-05T00:00:00.000Z');
   });
 });
 
@@ -1078,7 +1078,7 @@ describe('harness clean — 스코프를 산출에 싣는다 (0건과 「안 봤
     //   «import 줄»에만 있어도 통과한다(무인 리뷰가 짚었다). 도움말을 별도 상수로 바꾸고
     //   import 를 미사용으로 남기면 그대로 빠져나간다.
     //   ⇒ ***렌더된 help 를 «실물»로 본다.*** 이건 포맷·이름과 무관하게 «결과»를 잰다.
-    const help = spawnSync('bun', [join(root, 'bin', 'monad.mjs'), 'harness', 'clean', '--help'],
+    const help = spawnSync('bun', [join(root, 'bin', 'elanous.mjs'), 'harness', 'clean', '--help'],
       { cwd: root, encoding: 'utf8', timeout: 60_000 });
     const prefixLine = (help.stdout ?? '').split('\n').find((l) => l.includes('--prefix')) ?? '';
     expect(prefixLine).toContain(WORKTREE_BRANCH_PREFIX);
@@ -1650,7 +1650,7 @@ describe('harness clean — 측정 배선 (exec → measurement → planner)', (
     // ⭐ `gh` 도 주입한다 — 안 하면 실제 조회 실패 시 `query-failed` 가 먼저 걸려
     //   새 보존 이유를 한 번도 안 재고 통과한다(무인 리뷰 must-fix).
     const runGh = () => ({ status: 0, stdout: '' });
-    const res = execHarnessClean({ mode: 'abandoned', dryRun: true, branchPrefix: 'self-impl/', run, runGh, readWorktreeProvenance: () => ({ owner: 'dev:run', command: 'monad dev', createdAt: '2026-08-05T00:00:00.000Z' }) });
+    const res = execHarnessClean({ mode: 'abandoned', dryRun: true, branchPrefix: 'self-impl/', run, runGh, readWorktreeProvenance: () => ({ owner: 'dev:run', command: 'elanous dev', createdAt: '2026-08-05T00:00:00.000Z' }) });
     // ⭐ 우리가 준 7 이 planner 를 통과해 이 이유로 나왔다면 배선이 살아 있다.
     // ⛔ 조회 주입이 **둘 다** 걸렸는지 문다 — worktree 쪽을 안 물면 실제 저장소가 답해도 통과한다
     //   (초판 반증이 안 물었던 이유다).
@@ -1686,7 +1686,7 @@ describe('harness clean — 주입한 실행기가 삭제까지 간다', () => {
     const res = execHarnessClean({
       mode: 'abandoned', dryRun: false, branchPrefix: 'self-impl/',
       run, runGh: () => ({ status: 0, stdout: '' }),
-      readWorktreeProvenance: () => ({ owner: 'dev:run', command: 'monad dev', createdAt: '2026-08-05T00:00:00.000Z' }),
+      readWorktreeProvenance: () => ({ owner: 'dev:run', command: 'elanous dev', createdAt: '2026-08-05T00:00:00.000Z' }),
     });
     // ⭐ 삭제가 실제로 일어났고, 그 명령이 **우리 실행기**를 통과했다.
     expect(res.removed.length).toBeGreaterThan(0);

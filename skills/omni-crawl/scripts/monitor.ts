@@ -2,7 +2,7 @@
 // omni-crawl monitor — Firecrawl Monitors 관리 CLI (specs/firecrawl/monitor-*.md 기준)
 //
 // 페이지 변경감지 모니터(뉴스룸/IR/공시 등)를 생성·조회·삭제한다.
-// 알림 경로: 웹훅은 public URL 필요 → 우리는 **폴링** — monad 크론
+// 알림 경로: 웹훅은 public URL 필요 → 우리는 **폴링** — elanous 크론
 // (scripts/firecrawl-monitor-alert.ts)이 checks를 주기 조회해 변경분을
 // /v1/outbound(텔레그램)로 발송한다. 여기는 셋업/디버그 표면.
 //

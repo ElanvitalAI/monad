@@ -30,7 +30,7 @@ import { useShellActivity } from './use-shell-activity';
 import { InstallBanner } from '@/components/install-banner';
 import { WorkspaceProvider } from '@/components/workspace/WorkspaceProvider';
 
-const SIDEBAR_KEY = 'monad.pwa.sidebarOpen';
+const SIDEBAR_KEY = 'elanous.pwa.sidebarOpen';
 
 export function AppShell({
   children,

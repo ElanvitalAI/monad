@@ -274,13 +274,13 @@ describe('inventoryCrontab', () => {
     expect(listSchedules(d).length).toBe(6);
   });
 
-  test('adopt(setRunVia monad) 은 registry 유지 — delete 와 구분', () => {
+  test('adopt(setRunVia elanous) 은 registry 유지 — delete 와 구분', () => {
     const d = db();
     inventoryCrontab(d, { crontab: SAMPLE, now: '2026-07-07T10:00:00Z' });
     const target = listSchedules(d).find(x => x.name === 'capstone-alert')!;
-    setRunVia(d, target.id, 'monad');   // adopt = crontab 제거하되 registry 유지(데몬 실행)
+    setRunVia(d, target.id, 'elanous');   // adopt = crontab 제거하되 registry 유지(데몬 실행)
     const after = listSchedules(d).find(x => x.id === target.id);
-    expect(after?.run_via).toBe('monad');
+    expect(after?.run_via).toBe('elanous');
     expect(listSchedules(d).length).toBe(7);   // 삭제 아님 — 유지
   });
 
@@ -312,7 +312,7 @@ describe('inventoryInternalSchedules — 내부 스케줄 통합 뷰 (B2)', () =
     inventoryInternalSchedules(d, { reflectionHour: 21, now: '2026-07-07T10:00:00Z' });
     const dr = listSchedules(d, { source: 'daily-reflection' })[0]!;
     expect(dr.cron).toBe('0 21 * * *');
-    expect(dr.run_via).toBe('daemon'); // 내 러너(run_via='monad')와 구분
+    expect(dr.run_via).toBe('daemon'); // 내 러너(run_via='elanous')와 구분
     expect(dr.category).toBe('report');
   });
   test('discovery는 interval 설정 시에만', () => {
@@ -348,7 +348,7 @@ describe('inventoryInternalSchedules — 내부 스케줄 통합 뷰 (B2)', () =
 });
 
 describe('crontab 쓰기 순수 변환 (S1)', () => {
-  test('buildCronLine — monad .ts는 cd+bun+로그 강제', () => {
+  test('buildCronLine — elanous .ts는 cd+bun+로그 강제', () => {
     const line = buildCronLine('0 7 * * *', 'scripts/foo-report.ts --x', { repo: '/r', bun: '/b/bun' });
     expect(line).toBe('0 7 * * * cd /r && /b/bun scripts/foo-report.ts --x >> /tmp/foo-report.log 2>&1');
   });
@@ -390,34 +390,34 @@ describe('crontab 쓰기 순수 변환 (S1)', () => {
     const line = buildCronLine('50 4 * * *', 'cd /x && zsh scripts/foo.sh', { repo: '/r', bun: '/b/bun' });
     expect(line).toBe('50 4 * * * cd /x && zsh scripts/foo.sh >> /tmp/foo.log 2>&1');
   });
-  test('buildCronLine — 전역 monad CLI도 cd 강제(무음실패 근본수정·bun 프리픽스 없음)', () => {
-    const line = buildCronLine('*/15 * * * *', 'monad codex review-watch --once --auto-merge', { repo: '/r', bun: '/b/bun' });
-    expect(line).toBe('*/15 * * * * cd /r && /b/bun bin/monad.mjs codex review-watch --once --auto-merge >> /tmp/monad.log 2>&1');
-    expect(line).not.toMatch(/&& monad(?:\s|$)/);
+  test('buildCronLine — 전역 elanous CLI도 cd 강제(무음실패 근본수정·bun 프리픽스 없음)', () => {
+    const line = buildCronLine('*/15 * * * *', 'elanous codex review-watch --once --auto-merge', { repo: '/r', bun: '/b/bun' });
+    expect(line).toBe('*/15 * * * * cd /r && /b/bun bin/elanous.mjs codex review-watch --once --auto-merge >> /tmp/elanous.log 2>&1');
+    expect(line).not.toMatch(/&& elanous(?:\s|$)/);
   });
-  test('buildCronLine — bun bin/monad.mjs도 cd 강제(이미 bun 있으면 그대로)', () => {
-    const line = buildCronLine('0 3 * * *', 'bun bin/monad.mjs autopilot list', { repo: '/r', bun: '/b/bun' });
-    expect(line).toBe('0 3 * * * cd /r && /b/bun bin/monad.mjs autopilot list >> /tmp/monad.mjs.log 2>&1');
+  test('buildCronLine — bun bin/elanous.mjs도 cd 강제(이미 bun 있으면 그대로)', () => {
+    const line = buildCronLine('0 3 * * *', 'bun bin/elanous.mjs autopilot list', { repo: '/r', bun: '/b/bun' });
+    expect(line).toBe('0 3 * * * cd /r && /b/bun bin/elanous.mjs autopilot list >> /tmp/elanous.mjs.log 2>&1');
   });
-  test('buildCronLine — 이미 cd 로 시작해도 후속 monad를 절대 Bun 진입점으로 변환', () => {
-    const line = buildCronLine('0 3 * * *', 'cd /r && monad codex review-watch --once', { repo: '/other', bun: '/b/bun' });
-    expect(line).toBe('0 3 * * * cd /r && /b/bun bin/monad.mjs codex review-watch --once >> /tmp/monad.log 2>&1');
+  test('buildCronLine — 이미 cd 로 시작해도 후속 elanous를 절대 Bun 진입점으로 변환', () => {
+    const line = buildCronLine('0 3 * * *', 'cd /r && elanous codex review-watch --once', { repo: '/other', bun: '/b/bun' });
+    expect(line).toBe('0 3 * * * cd /r && /b/bun bin/elanous.mjs codex review-watch --once >> /tmp/elanous.log 2>&1');
     expect(line).not.toContain('cd /other');
-    expect(line).not.toMatch(/(^|[;&]\s*)monad(?=\s|$)/);
+    expect(line).not.toMatch(/(^|[;&]\s*)elanous(?=\s|$)/);
   });
   // 리뷰 블로커 반영 — 임의 절대 bun 경로(/usr/local/bin/bun 등)도 대상 Bun 진입점으로 정규화한다
   //   (종전 정규식은 bare `bun`·`*.bun/bin/bun` 만 인식해 다른 bun 설치 경로를 놓쳤다).
   test('buildCronLine — 임의 절대 bun 경로도 대상 Bun 으로 정규화(edge-case)', () => {
-    const line = buildCronLine('*/15 * * * *', '/usr/local/bin/bun bin/monad.mjs codex review-watch --once', { repo: '/r', bun: '/b/bun' });
-    expect(line).toBe('*/15 * * * * cd /r && /b/bun bin/monad.mjs codex review-watch --once >> /tmp/monad.mjs.log 2>&1');
+    const line = buildCronLine('*/15 * * * *', '/usr/local/bin/bun bin/elanous.mjs codex review-watch --once', { repo: '/r', bun: '/b/bun' });
+    expect(line).toBe('*/15 * * * * cd /r && /b/bun bin/elanous.mjs codex review-watch --once >> /tmp/elanous.mjs.log 2>&1');
     expect(line).not.toContain('/usr/local/bin/bun');
   });
-  // 리뷰 #5342 실버그 반영 — 인용 문자열 내부의 `; monad`/`&& monad` 는 셸 경계가 아니므로 변조 금지
-  //   (선두 진입점에만 앵커). 후속 인자의 monad 부분문자열도 무접촉.
-  test('buildCronLine — 인용 문자열 내부 "; monad" 는 변조하지 않는다(선두 앵커)', () => {
-    const line = buildCronLine('0 5 * * *', 'scripts/foo.ts --msg "step; monad done"', { repo: '/r', bun: '/b/bun' });
-    expect(line).toContain('"step; monad done"');   // 인용 내부 그대로
-    expect(line).toBe('0 5 * * * cd /r && /b/bun scripts/foo.ts --msg "step; monad done" >> /tmp/foo.log 2>&1');
+  // 리뷰 #5342 실버그 반영 — 인용 문자열 내부의 `; elanous`/`&& elanous` 는 셸 경계가 아니므로 변조 금지
+  //   (선두 진입점에만 앵커). 후속 인자의 elanous 부분문자열도 무접촉.
+  test('buildCronLine — 인용 문자열 내부 "; elanous" 는 변조하지 않는다(선두 앵커)', () => {
+    const line = buildCronLine('0 5 * * *', 'scripts/foo.ts --msg "step; elanous done"', { repo: '/r', bun: '/b/bun' });
+    expect(line).toContain('"step; elanous done"');   // 인용 내부 그대로
+    expect(line).toBe('0 5 * * * cd /r && /b/bun scripts/foo.ts --msg "step; elanous done" >> /tmp/foo.log 2>&1');
   });
   test('addLineToCrontab — 추가 + 정확중복 방지', () => {
     const c0 = '0 4 * * * a\n';
@@ -445,25 +445,25 @@ describe('실 crontab 스모크', () => {
 });
 
 describe('scheduleHealth(P2) — 밀린/실패 판정', () => {
-  function seedMonad(cronLine: string) {
+  function seedElanous(cronLine: string) {
     const d = openSchedulesDb(':memory:');
     inventoryCrontab(d, { crontab: cronLine, now: '2026-07-07T00:00:00Z' });
-    for (const r of listSchedules(d)) setRunVia(d, r.id, 'monad');
+    for (const r of listSchedules(d)) setRunVia(d, r.id, 'elanous');
     return d;
   }
   const now = new Date(2026, 6, 9, 10, 0, 0); // 목 10:00 로컬
 
   test('일간 잡 미실행 → stale', () => {
-    const d = seedMonad('45 7 * * * cd /r && bun scripts/morning.ts >> /tmp/x.log 2>&1');
+    const d = seedElanous('45 7 * * * cd /r && bun scripts/morning.ts >> /tmp/x.log 2>&1');
     const h = scheduleHealth(listSchedules(d), { now });
-    expect(h.monadTotal).toBe(1);
+    expect(h.elanousTotal).toBe(1);
     expect(h.stale.length).toBe(1);
     expect(h.stale[0]!.name).toBe('morning');
     expect(h.stale[0]!.overdueMs).toBeGreaterThan(0);
   });
 
   test('직전 예정 이후 실행됨 → stale 아님', () => {
-    const d = seedMonad('45 7 * * * cd /r && bun scripts/morning.ts >> /tmp/x.log 2>&1');
+    const d = seedElanous('45 7 * * * cd /r && bun scripts/morning.ts >> /tmp/x.log 2>&1');
     const id = listSchedules(d)[0]!.id;
     markResult(d, id, { at: '2026-07-09T08:00:00Z', status: 'ok', via: 'tick' }); // 07:45 KST 이후
     const h = scheduleHealth(listSchedules(d), { now });
@@ -471,7 +471,7 @@ describe('scheduleHealth(P2) — 밀린/실패 판정', () => {
   });
 
   test('last_status=error → errored', () => {
-    const d = seedMonad('45 7 * * * cd /r && bun scripts/morning.ts >> /tmp/x.log 2>&1');
+    const d = seedElanous('45 7 * * * cd /r && bun scripts/morning.ts >> /tmp/x.log 2>&1');
     const id = listSchedules(d)[0]!.id;
     markResult(d, id, { at: '2026-07-09T08:00:00Z', status: 'error', exit: 1, via: 'tick' });
     const h = scheduleHealth(listSchedules(d), { now });
@@ -483,7 +483,7 @@ describe('scheduleHealth(P2) — 밀린/실패 판정', () => {
     const d = openSchedulesDb(':memory:');
     inventoryCrontab(d, { crontab: '45 7 * * * cd /r && bun scripts/cron-run.ts scripts/never-run.ts', now: '2026-07-07T00:00:00Z' });
     const h = scheduleHealth(listSchedules(d), { now });
-    expect(h.monadTotal).toBe(1);
+    expect(h.elanousTotal).toBe(1);
     expect(h.excludedUnwrappedCrontab).toBe(0);
     expect(h.stale.map(job => job.name)).toEqual(['never-run']);
   });
@@ -494,7 +494,7 @@ describe('scheduleHealth(P2) — 밀린/실패 판정', () => {
     const [row] = listSchedules(d);
     markResult(d, row!.id, { at: '2026-07-09T08:00:00Z', status: 'error', exit: 1, via: 'crontab' });
     const h = scheduleHealth(listSchedules(d), { now });
-    expect(h.monadTotal).toBe(1);
+    expect(h.elanousTotal).toBe(1);
     expect(h.stale).toEqual([]);
     expect(h.errored.map(job => job.name)).toEqual(['wrapped']);
   });
@@ -507,7 +507,7 @@ describe('scheduleHealth(P2) — 밀린/실패 판정', () => {
     const canonical = buildCronLine(cron, redirected, { repo, bun });
     const absoluteZsh = 'zsh /Users/example/source/demo/monad-agent/scripts/collect-market-backbone.sh >> /tmp/collect-market-backbone.log 2>&1';
     const relativeZsh = 'zsh scripts/collect-market-daily.sh >> /tmp/collect-market-daily.log 2>&1';
-    const d = seedMonad([
+    const d = seedElanous([
       `${cron} ${redirected}`,
       canonical,
       `${cron} ${absoluteZsh}`,
@@ -518,7 +518,7 @@ describe('scheduleHealth(P2) — 밀린/실패 판정', () => {
     expect(h.unmeasured).toEqual([]);
 
     const nestedCanonical = buildCronLine(cron, 'scripts/botlab/heartbeat-emit.ts probe --print', { repo, bun });
-    const nested = seedMonad(nestedCanonical);
+    const nested = seedElanous(nestedCanonical);
     expect(scheduleHealth(listSchedules(nested), { now, repo, bun }).noncanonical).toEqual([]);
 
     const withoutInputs = scheduleHealth(listSchedules(d), { now });
@@ -527,7 +527,7 @@ describe('scheduleHealth(P2) — 밀린/실패 판정', () => {
   });
 
   test('제외 사유별 계수는 모집단을 바꾸지 않고 상호배타적으로 구별한다', () => {
-    const d = seedMonad('0 * * * * cd /r && bun scripts/managed.ts');
+    const d = seedElanous('0 * * * * cd /r && bun scripts/managed.ts');
     const [managed] = listSchedules(d);
     const rows = [
       managed!,
@@ -539,7 +539,7 @@ describe('scheduleHealth(P2) — 밀린/실패 판정', () => {
       { ...managed!, id: 'other-run-via', run_via: 'daemon' },
     ];
     const h = scheduleHealth(rows, { now });
-    expect(h.monadTotal).toBe(1);
+    expect(h.elanousTotal).toBe(1);
     expect(h.excludedRunVia).toBe(1);
     expect(h.excludedUnwrappedCrontab).toBe(3);
     expect(h.excludedDisabled).toBe(1);
@@ -550,15 +550,15 @@ describe('scheduleHealth(P2) — 밀린/실패 판정', () => {
 
   test('빈 레지스트리와 래퍼 없는 crontab만 있는 0-모집단은 제외 계수로 구별된다', () => {
     const empty = scheduleHealth([], { now });
-    const d = seedMonad('0 * * * * cd /r && bun scripts/managed.ts');
+    const d = seedElanous('0 * * * * cd /r && bun scripts/managed.ts');
     const [managed] = listSchedules(d);
     const crontabOnly = scheduleHealth([{ ...managed!, run_via: 'crontab' }], { now });
-    expect(empty.monadTotal).toBe(0);
+    expect(empty.elanousTotal).toBe(0);
     expect(empty.excludedRunVia).toBe(0);
     expect(empty.excludedUnwrappedCrontab).toBe(0);
     expect(empty.excludedDisabled).toBe(0);
     expect(empty.excludedMissingCron).toBe(0);
-    expect(crontabOnly.monadTotal).toBe(0);
+    expect(crontabOnly.elanousTotal).toBe(0);
     expect(crontabOnly.excludedRunVia).toBe(0);
     expect(crontabOnly.excludedUnwrappedCrontab).toBe(1);
     expect(crontabOnly.excludedDisabled).toBe(0);
@@ -571,7 +571,7 @@ describe('scheduleHealth(P2) — 밀린/실패 판정', () => {
     const bun = '/bun';
     const command = 'zsh /repo/scripts/collect-market-backbone.sh >> /tmp/collect-market-backbone.log 2>&1';
     const canonical = buildCronLine(cron, command, { repo, bun });
-    const d = seedMonad(canonical);
+    const d = seedElanous(canonical);
     const [row] = listSchedules(d);
     const h = scheduleHealth([{ ...row!, raw: ` ${row!.raw}` }], { now, repo, bun });
     expect(h.noncanonical.map(j => j.name)).toEqual(['collect-market-backbone']);
@@ -807,8 +807,8 @@ describe('지워진 crontab 줄 — enabled 를 내리는 경로', () => {
         env: {
           ...process.env,
           HOME: homeDir,
-          MONAD_STATE_DIR: stateDir,
-          MONAD_CONFIG_DIR: stateDir,
+          ELANOUS_STATE_DIR: stateDir,
+          ELANOUS_CONFIG_DIR: stateDir,
           PATH: `${binDir}:${process.env.PATH ?? ''}`,
         },
         stdout: 'pipe',
@@ -844,18 +844,18 @@ describe('지워진 crontab 줄 — enabled 를 내리는 경로', () => {
 // 🆕 2026-09-24 — 설치본에서 만든 크론이 곧 지워질 판 폴더로 cd 하지 않는다.
 import { cronRepoRoot } from './schedule-registry.js';
 describe('cronRepoRoot', () => {
-  const installed = '/home/u/.local/share/monad/versions/1.0.0-abc/node_modules/monadagent';
+  const installed = '/home/u/.local/share/elanous/versions/1.0.0-abc/node_modules/elanous';
   const noGit = (p: string) => !p.endsWith('.git') || false;
   test('installed copy with a leader tree → the leader tree (where crons always cd-ed)', () => {
     expect(cronRepoRoot(installed, { exists: (p) => p === '/src/pilot', readLeader: () => '/src/pilot' })).toBe('/src/pilot');
   });
   test('installed copy without a leader → the stable current path, never the version dir', () => {
-    expect(cronRepoRoot(installed, { exists: () => false, readLeader: () => null })).toBe('/home/u/.local/share/monad/current/node_modules/monadagent');
-    expect(cronRepoRoot(installed, { exists: () => false, readLeader: () => '/gone' })).toBe('/home/u/.local/share/monad/current/node_modules/monadagent');
+    expect(cronRepoRoot(installed, { exists: () => false, readLeader: () => null })).toBe('/home/u/.local/share/elanous/current/node_modules/elanous');
+    expect(cronRepoRoot(installed, { exists: () => false, readLeader: () => '/gone' })).toBe('/home/u/.local/share/elanous/current/node_modules/elanous');
   });
   test('a checkout is returned unchanged', () => {
     expect(cronRepoRoot('/src/pilot', { exists: noGit, readLeader: () => '/elsewhere' })).toBe('/src/pilot');
-    expect(cronRepoRoot('/src/app/versions/x/node_modules/monadagent', { exists: (p) => p === '/src/app/.git', readLeader: () => null })).toBe('/src/app/versions/x/node_modules/monadagent');
+    expect(cronRepoRoot('/src/app/versions/x/node_modules/elanous', { exists: (p) => p === '/src/app/.git', readLeader: () => null })).toBe('/src/app/versions/x/node_modules/elanous');
   });
 });
 
@@ -863,16 +863,16 @@ describe('cronRepoRoot', () => {
 import { installedCronRoot, scheduleHealth as scheduleHealthR3, buildCronLine as buildCronLineR3 } from './schedule-registry.js';
 describe('schedule health — installed current path is canonical too', () => {
   const now = new Date('2026-09-24T08:00:00Z');
-  const row = (raw: string) => ({ id: 'a', name: 'a', cron: '*/5 * * * *', command: 'scripts/x.ts', raw, run_via: 'monad', enabled: 1, last_run: now.toISOString(), last_status: 'ok' }) as never;
-  const inst = '/home/u/.local/share/monad/current/node_modules/monadagent';
+  const row = (raw: string) => ({ id: 'a', name: 'a', cron: '*/5 * * * *', command: 'scripts/x.ts', raw, run_via: 'elanous', enabled: 1, last_run: now.toISOString(), last_status: 'ok' }) as never;
+  const inst = '/home/u/.local/share/elanous/current/node_modules/elanous';
   test('a line cd-ing to the installed root is canonical only when that root is passed', () => {
     const raw = buildCronLineR3('*/5 * * * *', 'scripts/x.ts', { repo: inst, bun: '/b/bun' });
     expect(scheduleHealthR3([row(raw)], { now, repo: '/src/pilot', bun: '/b/bun' }).noncanonical.length).toBe(1);
     expect(scheduleHealthR3([row(raw)], { now, repo: '/src/pilot', bun: '/b/bun', alsoCanonicalRepos: [inst] }).noncanonical.length).toBe(0);
   });
-  test('installedCronRoot honors MONAD_INSTALL_PREFIX, XDG_DATA_HOME, and existence', () => {
-    expect(installedCronRoot({ MONAD_INSTALL_PREFIX: '/p' }, () => true, '/home/u')).toBe('/p/current/node_modules/monadagent');
-    expect(installedCronRoot({ XDG_DATA_HOME: '/x' }, () => true, '/home/u')).toBe('/x/monad/current/node_modules/monadagent');
+  test('installedCronRoot honors ELANOUS_INSTALL_PREFIX, XDG_DATA_HOME, and existence', () => {
+    expect(installedCronRoot({ ELANOUS_INSTALL_PREFIX: '/p' }, () => true, '/home/u')).toBe('/p/current/node_modules/elanous');
+    expect(installedCronRoot({ XDG_DATA_HOME: '/x' }, () => true, '/home/u')).toBe('/x/elanous/current/node_modules/elanous');
     expect(installedCronRoot({}, () => true, '/home/u')).toBe(inst);
     expect(installedCronRoot({}, () => false, '/home/u')).toBeNull();
   });

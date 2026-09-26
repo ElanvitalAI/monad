@@ -90,7 +90,7 @@ describe('session-runtime dynamic host tool exposure', () => {
   // Pin XDG_CONFIG_HOME to an empty temp dir for the lifetime of this
   // describe block so getUserConfig() (called transitively by the
   // session-runtime tool resolver) reads built-in defaults instead of
-  // the real ~/.config/monad/config.json. Without this, a user with
+  // the real ~/.config/elanous/config.json. Without this, a user with
   // debug.exposeFullLlmTools=false on disk would see runtime-debug
   // family tools dropped here and the explicit-wording assertions
   // below would fail.
@@ -98,7 +98,7 @@ describe('session-runtime dynamic host tool exposure', () => {
   let _xdgDir: string | undefined;
   beforeEach(() => {
     _prevXdg = process.env.XDG_CONFIG_HOME;
-    _xdgDir = mkdtempSync(join(tmpdir(), 'monad-srtools-host-'));
+    _xdgDir = mkdtempSync(join(tmpdir(), 'elanous-srtools-host-'));
     process.env.XDG_CONFIG_HOME = _xdgDir;
     require('../src/user-config.js').resetUserConfig();
   });
@@ -475,10 +475,10 @@ describe('session-runtime dynamic host tool exposure', () => {
       { name: 'view_getConfig', description: '', parameters: { type: 'object' }, handler: async () => ({}) },
     ];
     // Pin XDG so getUserConfig() (no path arg) finds our minimal-mode fixture.
-    const dir = mkdtempSync(join(tmpdir(), 'monad-srtools-'));
-    const monadDir = join(dir, 'monad');
-    require('node:fs').mkdirSync(monadDir, { recursive: true });
-    writeFileSync(join(monadDir, 'config.json'), JSON.stringify({ debug: { exposeFullLlmTools: false } }));
+    const dir = mkdtempSync(join(tmpdir(), 'elanous-srtools-'));
+    const elanousDir = join(dir, 'elanous');
+    require('node:fs').mkdirSync(elanousDir, { recursive: true });
+    writeFileSync(join(elanousDir, 'config.json'), JSON.stringify({ debug: { exposeFullLlmTools: false } }));
     const prevXdg = process.env.XDG_CONFIG_HOME;
     process.env.XDG_CONFIG_HOME = dir;
     try {
@@ -719,9 +719,9 @@ describe('session-runtime surface profiles', () => {
       '## Surface families (2)',
       'These families define the operator posture for the current surface before any extra intent-based tools are opened.',
       '',
-      '- **ui-inspect** [host] — Read-only Monad UI and pane/view inspection.',
+      '- **ui-inspect** [host] — Read-only Elanous UI and pane/view inspection.',
       '  Tools: `view_getConfig`, `pane_getState`',
-      '- **self-ops** [host] — Monad self-awareness and autonomous-system observability (missions, ops, memory, sessions, schedules).',
+      '- **self-ops** [host] — Elanous self-awareness and autonomous-system observability (missions, ops, memory, sessions, schedules).',
       '  Tools: `ops_status`, `autopilot_missions`, `self_recall`, `memory_recall`, `session_manage`, `schedule_manage`, `fact_check`, `se_build`',
     ].join('\n'));
     expect(sections).toContain('## Conditional families (3)');
@@ -1000,16 +1000,16 @@ describe('dashboard control manual', () => {
       catalog: [],
     });
     expect(manual).toContain('## Surface posture');
-    expect(manual).toContain('Operator posture for monad runtime control.');
+    expect(manual).toContain('Operator posture for elanous runtime control.');
     expect(manual).toContain('- selection mode: fixed');
     expect(manual).toContain('- preferred surface: `control/agent`');
     expect(manual).toContain([
       '## Surface families (2)',
       'These families define the operator posture for the current surface before any extra intent-based tools are opened.',
       '',
-      '- **ui-inspect** [host] — Read-only Monad UI and pane/view inspection.',
+      '- **ui-inspect** [host] — Read-only Elanous UI and pane/view inspection.',
       '  Tools: `view_getConfig`, `pane_getState`',
-      '- **self-ops** [host] — Monad self-awareness and autonomous-system observability (missions, ops, memory, sessions, schedules).',
+      '- **self-ops** [host] — Elanous self-awareness and autonomous-system observability (missions, ops, memory, sessions, schedules).',
       '  Tools: `ops_status`, `autopilot_missions`, `self_recall`, `memory_recall`, `session_manage`, `schedule_manage`, `fact_check`, `se_build`',
     ].join('\n'));
     expect(manual).toContain('## Conditional families (3)');
@@ -1040,9 +1040,9 @@ describe('dashboard control manual', () => {
       '## Surface families (2)',
       'These families define the operator posture for the current surface before any extra intent-based tools are opened.',
       '',
-      '- **ui-inspect** [host] — Read-only Monad UI and pane/view inspection.',
+      '- **ui-inspect** [host] — Read-only Elanous UI and pane/view inspection.',
       '  Tools: `view_getConfig`, `pane_getState`',
-      '- **self-ops** [host] — Monad self-awareness and autonomous-system observability (missions, ops, memory, sessions, schedules).',
+      '- **self-ops** [host] — Elanous self-awareness and autonomous-system observability (missions, ops, memory, sessions, schedules).',
       '  Tools: `ops_status`, `autopilot_missions`, `self_recall`, `memory_recall`, `session_manage`, `schedule_manage`, `fact_check`, `se_build`',
     ].join('\n'));
     expect(manual).toContain('## Conditional families (3)');

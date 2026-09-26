@@ -6,7 +6,7 @@ describe('ACP channel browser copy catalog', () => {
     expect(ACP_CHANNEL_BROWSER_COPY.noBackgroundPreview).toBe('(no output yet)');
     expect(ACP_CHANNEL_BROWSER_COPY.noPersistedExcerpt).toBe('(no persisted transcript excerpt)');
     expect(ACP_CHANNEL_BROWSER_COPY.liveClientNotes).toContain('client session');
-    expect(ACP_CHANNEL_BROWSER_COPY.liveServerNotes).toContain('monad is the agent side');
+    expect(ACP_CHANNEL_BROWSER_COPY.liveServerNotes).toContain('elanous is the agent side');
     expect(ACP_CHANNEL_BROWSER_COPY.backgroundNotes).toContain('async ACP work');
     expect(ACP_CHANNEL_BROWSER_COPY.historyNotes).toContain('prior conversations');
     expect(ACP_CHANNEL_BROWSER_COPY.previewSectionTitle).toBe('Preview');

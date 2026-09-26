@@ -8,7 +8,7 @@
 // Label format:
 //
 //   ⮡  mba     ssh → ~/Downloads/
-//   📱 iPhone  iphone → pushcut(monad-file-received)
+//   📱 iPhone  iphone → pushcut(elanous-file-received)
 //   ⮡  backup  ssh → ~/Transfers/
 //
 // Kind glyph: ⮡ for SSH (arrow-into), 📱 for iPhone. Destination

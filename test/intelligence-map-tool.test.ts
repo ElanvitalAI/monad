@@ -87,7 +87,7 @@ describe('PFC-S5 P5 — IntelligenceMap tool', () => {
     const home = scratchHome();
     const vaultHome = mkdtempSync(join(tmpdir(), 'im-vault-'));
     const vault = discoverObsidianVault({
-      env: { MONAD_OBSIDIAN_VAULT: join(vaultHome, 'vault') },
+      env: { ELANOUS_OBSIDIAN_VAULT: join(vaultHome, 'vault') },
       cwd: vaultHome,
     });
     await dispatchResearchPlan(
@@ -111,7 +111,7 @@ describe('PFC-S5 P5 — IntelligenceMap tool', () => {
     const home = scratchHome();
     const vaultHome = mkdtempSync(join(tmpdir(), 'im-cost-vault-'));
     const vault = discoverObsidianVault({
-      env: { MONAD_OBSIDIAN_VAULT: join(vaultHome, 'vault') },
+      env: { ELANOUS_OBSIDIAN_VAULT: join(vaultHome, 'vault') },
       cwd: vaultHome,
     });
     await dispatchResearchPlan(
@@ -143,7 +143,7 @@ describe('PFC-S5 P5 — loop-prompt integration', () => {
   test('renderLoopPromptInjection omits Intelligence Map section when not provided', async () => {
     const vaultHome = mkdtempSync(join(tmpdir(), 'lp-vault-1-'));
     const vault = discoverObsidianVault({
-      env: { MONAD_OBSIDIAN_VAULT: join(vaultHome, 'vault') },
+      env: { ELANOUS_OBSIDIAN_VAULT: join(vaultHome, 'vault') },
       cwd: vaultHome,
     });
     const paths = resolveGoalPaths(vault, 'lp1');
@@ -163,7 +163,7 @@ describe('PFC-S5 P5 — loop-prompt integration', () => {
   test('renderLoopPromptInjection appends Intelligence Map when ctx provides text', async () => {
     const vaultHome = mkdtempSync(join(tmpdir(), 'lp-vault-2-'));
     const vault = discoverObsidianVault({
-      env: { MONAD_OBSIDIAN_VAULT: join(vaultHome, 'vault') },
+      env: { ELANOUS_OBSIDIAN_VAULT: join(vaultHome, 'vault') },
       cwd: vaultHome,
     });
     const paths = resolveGoalPaths(vault, 'lp2');

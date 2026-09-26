@@ -502,7 +502,7 @@ export interface NexusHttpServerOpts {
    *  When omitted the endpoint returns 503 (vault-not-wired).
    *  runNexus wires `vault` from `discoverObsidianVault()` so the
    *  PWA review-modal Confirm action persists into Obsidian (or the
-   *  simulated `.monad/research` fallback when no Obsidian is
+   *  simulated `.elanous/research` fallback when no Obsidian is
    *  installed). Bundled with notesFromImage as the R-OCR.2/3
    *  dogfood unit. */
   notesSave?: NotesSaveOpts;
@@ -539,7 +539,7 @@ export interface NexusHttpServerOpts {
   missionShowroom?: MissionShowroomRouteOpts;
   /** W9c Z13-d (#2445) — `GET /v1/devices` + `POST /v1/templates/
    *  capability-preview` deps. Wires the device fleet source
-   *  (`~/.monad/devices.json` reader); when omitted both endpoints
+   *  (`~/.elanous/devices.json` reader); when omitted both endpoints
    *  return 503. */
   devices?: DevicesRouteOpts;
   /** cascade-zyu W8-A 옵션 A (2026-05-14) — `POST /v1/missions/test`
@@ -610,7 +610,7 @@ export interface NexusHttpServerOpts {
       body: Record<string, unknown>;
       stream?: AsyncIterable<{ event: string; data: string }>;
     } | null>;
-    /** 넥서스 밖 텔레그램 폴러(`monad telegram run`)가 받은 업데이트를 워크플로 트리거로 넘긴다
+    /** 넥서스 밖 텔레그램 폴러(`elanous telegram run`)가 받은 업데이트를 워크플로 트리거로 넘긴다
      *  — `POST /v1/workflows/telegram-dispatch` (bearer 필수). 폴러가 core 밖으로 나가도 트리거가 산다. */
     dispatchTelegram?: (event: TelegramEvent) => Promise<Array<{ workflowName: string; nodeId: string; ok: boolean; error?: string }>>;
     /** V2.2-2 (2026-05-12) — hosted chat config lookup. The PWA
@@ -1161,7 +1161,7 @@ async function routeRequest(
       }
     }
     // Stage B debug bundle (2026-05-18) — POST symptom + iOS app log;
-    // daemon stitches in its own ~/.monad/log/debug-*.log tail, uploads
+    // daemon stitches in its own ~/.elanous/log/debug-*.log tail, uploads
     // markdown bundle to S3 under `debug-bundle/`, returns public URL
     // + paste-ready prompt. Placed inside the `method !== 'GET'` block
     // per memory `feedback_post_route_must_be_in_method_block`.
@@ -1170,10 +1170,10 @@ async function routeRequest(
       return handleDebugBundlePost(req);
     }
     // B 트랙 closure piece (RFC #2474) — MCP Streamable HTTP transport.
-    // External MCP clients (Claude Code · Cursor · Codex) register monad
-    // via `claude mcp add --transport http monad http://localhost:31415/v1/mcp`
+    // External MCP clients (Claude Code · Cursor · Codex) register elanous
+    // via `claude mcp add --transport http elanous http://localhost:31415/v1/mcp`
     // and reach the NEXUS daemon's ToolRuntime registry directly — no
-    // child process spawn (cf. `monad mcp serve` stdio · #2485), every
+    // child process spawn (cf. `elanous mcp serve` stdio · #2485), every
     // call flows through the PFC capture seam. Placed inside the
     // `method !== 'GET'` block per memory
     // `feedback_post_route_must_be_in_method_block`.
@@ -1467,7 +1467,7 @@ async function routeRequest(
     }
     // PR D-2 (2026-05-15 iOS cascade) — POST /v1/debug-logs/batch.
     // iOS DebugLogForwarder 의 50 ms coalesce flush 대상 · LogRecord JSONL
-    // 을 `~/.monad/debug-tap/<date>.jsonl` 에 append.
+    // 을 `~/.elanous/debug-tap/<date>.jsonl` 에 append.
     if (pathname === '/v1/debug-logs/batch' && (method === 'POST' || method === 'OPTIONS')) {
       return handleDebugLogsBatch(req);
     }
@@ -1573,8 +1573,8 @@ async function routeRequest(
       return handleIntakePipelinePreviewPost(req, opts.metaApi);
     }
     // FU-I7c (2026-05-12) — sibling of pipeline-preview that writes to
-    // the user's real TaskStore (`~/.monad/tasks/tasks.db`) + persists
-    // workflow YAMLs to `~/.monad/workflows/`. PWA register flow flips
+    // the user's real TaskStore (`~/.elanous/tasks/tasks.db`) + persists
+    // workflow YAMLs to `~/.elanous/workflows/`. PWA register flow flips
     // to this path once the user has confirmed the preview cards.
     if (pathname === '/v1/intake/pipeline-commit' && method === 'POST') {
       if (!opts.metaApi) return jsonResponse({ error: 'meta-api-runtime-not-wired' }, 503);
@@ -1773,7 +1773,7 @@ async function routeRequest(
     }
     // B outbound — unified send: openclaw reports + Conatus alerts POST here
     // instead of hitting Telegram directly, so all outbound fans out through
-    // monad's report channel.
+    // elanous's report channel.
     if (pathname === '/v1/outbound' && method === 'POST') {
       if (!opts.metaApi) return jsonResponse({ error: 'meta-api-runtime-not-wired' }, 503);
       return handleOutboundReport(req, opts.metaApi);
@@ -1790,7 +1790,7 @@ async function routeRequest(
       }
     }
     // CV-3 FP-B — Showroom layout daemon-side store (cross-device sync ·
-    // ~/.monad/showroom-layouts.json).
+    // ~/.elanous/showroom-layouts.json).
     {
       const layoutName = parseShowroomLayoutPath(pathname);
       if (layoutName !== null) {
@@ -2107,7 +2107,7 @@ async function routeRequest(
     return handleIntakeListGet(req, url, opts.metaApi);
   }
   // I10 (2026-05-12) — dogfood retrospective. Reads recent rows from
-  // ~/.monad/intake/pipeline-runs.jsonl + aggregates across the full
+  // ~/.elanous/intake/pipeline-runs.jsonl + aggregates across the full
   // file. Sibling to the POST emitters (pipeline-preview / commit ·
   // dispatched in the method!=='GET' block above). Must dispatch
   // before the `/v1/intake/` catch-all so it doesn't get swallowed
@@ -2117,7 +2117,7 @@ async function routeRequest(
     return handleIntakeRunsList(req, opts.metaApi);
   }
   // M4-3 (2026-05-12) — Mission ↔ workflow folder surface. Reads
-  // ~/.monad/tasks/tasks.db (TOX_SCHEMA_VERSION=2 · tox_missions
+  // ~/.elanous/tasks/tasks.db (TOX_SCHEMA_VERSION=2 · tox_missions
   // table) + joins per-mission task summaries. Sibling to /v1/tasks.
   if (pathname === '/v1/missions') {
     if (!opts.metaApi) return jsonResponse({ error: 'meta-api-runtime-not-wired' }, 503);
@@ -2130,7 +2130,7 @@ async function routeRequest(
     return handleMissionDetail(req, missionId, opts.metaApi);
   }
   // D8 (2026-05-12) — Phase 2 dispatch dogfood retrospective. Sibling
-  // to /v1/intake/runs (I10). Reads ~/.monad/dispatch/runs.jsonl +
+  // to /v1/intake/runs (I10). Reads ~/.elanous/dispatch/runs.jsonl +
   // aggregates per-axis success rates / top reject reasons.
   if (pathname === '/v1/dispatch/runs') {
     if (!opts.metaApi) return jsonResponse({ error: 'meta-api-runtime-not-wired' }, 503);
@@ -2182,7 +2182,7 @@ async function routeRequest(
   }
   // Surface-unification v2.2 V2.2-6 v2 (2026-05-11) — `/v1/scheduler` +
   // `/v1/scheduler/:taskId` routes retired (scheduler view 폐기). Workflows
-  // surface (`/v1/workflows` · `~/.monad/workflows-runs/`) covers the same
+  // surface (`/v1/workflows` · `~/.elanous/workflows-runs/`) covers the same
   // user need.
 
   // Archon-port T2.3 (2026-05-08) — workflow GET surface.
@@ -2273,7 +2273,7 @@ async function routeRequest(
   if (pathname === '/v1/nexus/chat-backend-detection') {
     return handleChatBackendDetection();
   }
-  // T4.A — connect-info metadata endpoint. `monad nexus connect <host>`
+  // T4.A — connect-info metadata endpoint. `elanous nexus connect <host>`
   // (T4.B) 가 처음 fetch · PWA Generate Token card (T4.D) 가 함께 사용.
   if (pathname === '/v1/nexus/connect-info') {
     const ci = opts.connectInfo;
@@ -2361,12 +2361,12 @@ async function routeRequest(
   // No remaining production consumers — endpoint removed in PR for
   // PR #2198 FU.
   // BACKLOG #5 — active worktree visualization. Aggregates `git
-  // worktree list` + `~/.monad/worktrees/*.json` session records.
+  // worktree list` + `~/.elanous/worktrees/*.json` session records.
   if (pathname === '/v1/worktrees') return handleWorktrees();
   // Read-only bot command catalog. Returns `botCommandCatalog()` as-is
   // (no execution, no extra fields). Same auth posture as `/v1/worktrees`.
   if (pathname === '/v1/bots/commands') return handleBotCommands();
-  // B4 — the `monad repo design-check` verdict over the wire, so the PWA
+  // B4 — the `elanous repo design-check` verdict over the wire, so the PWA
   // renders the SAME resolution the CLI prints instead of re-deriving it.
   if (pathname === '/v1/design-check') return handleDesignCheck();
   // RFC #2161 Phase 3 — Layer A static catalog snapshot. Read-only ·
@@ -2452,7 +2452,7 @@ export function jsonResponse(body: unknown, status = 200): Response {
       // CORS allow-origin wildcard so PWA dev (cross-port) + future
       // remote dogfood (Tailscale URL) reach the daemon without
       // per-endpoint patching. Production same-origin is unaffected
-      // (browsers ignore the header on same-origin requests). monad
+      // (browsers ignore the header on same-origin requests). elanous
       // daemon uses bearer-token auth only (no cookies), so the
       // wildcard does not conflict with `credentials: include`.
       'access-control-allow-origin': '*',

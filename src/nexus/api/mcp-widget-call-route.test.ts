@@ -8,7 +8,7 @@ import {
   registerToolRuntime,
 } from '../../tool-runtime/registry.js';
 import { debug } from '../../debug/log.js';
-import { resetMonadConfigDir, setMonadConfigDir } from '../../monad-config-dir.js';
+import { resetElanousConfigDir, setElanousConfigDir } from '../../elanous-config-dir.js';
 import { runNexus } from '../index.js';
 import { setTestStateRoot } from '../paths.js';
 import { startNexusHttpServer, type NexusHttpServerOpts } from './http-server.js';
@@ -616,18 +616,18 @@ describe('MCP widget call route · runNexus boot options', () => {
   let configDir: string;
 
   beforeEach(() => {
-    stateRoot = mkdtempSync(join(tmpdir(), 'monad-nexus-widget-call-'));
-    configDir = mkdtempSync(join(tmpdir(), 'monad-nexus-widget-config-'));
+    stateRoot = mkdtempSync(join(tmpdir(), 'elanous-nexus-widget-call-'));
+    configDir = mkdtempSync(join(tmpdir(), 'elanous-nexus-widget-config-'));
     writeFileSync(join(configDir, 'user.json'), JSON.stringify({
       mcp: { enabled: false },
       autopilot: { threadRegistry: false, coordinatorGovern: false, coordinatorPush: false },
     }));
     setTestStateRoot(stateRoot);
-    setMonadConfigDir(configDir);
+    setElanousConfigDir(configDir);
   });
 
   afterEach(() => {
-    resetMonadConfigDir();
+    resetElanousConfigDir();
     setTestStateRoot(null);
     rmSync(stateRoot, { recursive: true, force: true });
     rmSync(configDir, { recursive: true, force: true });

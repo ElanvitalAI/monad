@@ -58,7 +58,7 @@ export class MacosSayProvider implements TTSProvider {
       throw new Error('MacosSayProvider.synthesizeBatch: text is empty');
     }
     const voice = opts.voice ?? this.defaultVoice;
-    const dir = await mkdtemp(join(tmpdir(), 'monad-tts-say-'));
+    const dir = await mkdtemp(join(tmpdir(), 'elanous-tts-say-'));
     const wavPath = join(dir, 'out.wav');
     try {
       const t0 = Date.now();

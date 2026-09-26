@@ -1,7 +1,7 @@
 // ── OAuth token storage ──
 //
 // Tokens for every OAuth-capable provider live in a single keyed file:
-//   ~/.config/monad/auth.json
+//   ~/.config/elanous/auth.json
 //     {
 //       "version": 1,
 //       "providers": {
@@ -11,9 +11,9 @@
 //     }
 //
 // File permissions are clamped to 0o600 on every write. We keep
-// tokens separate from the main config.json so `monad setup`
+// tokens separate from the main config.json so `elanous setup`
 // re-runs don't accidentally rewrite credentials — and because
-// auth.json's lifecycle (written by `monad login`, read on every API
+// auth.json's lifecycle (written by `elanous login`, read on every API
 // call) has different churn than settings.
 //
 // For OpenAI Codex specifically, refresh tokens are SINGLE-USE — the
@@ -34,7 +34,7 @@ import { join, dirname, basename, resolve } from 'node:path';
 import { extractChatGPTClaims, decodeJWTPayload, type ChatGPTClaims } from './jwt.js';
 import { debug } from '../debug/log.js';
 import { isCodexStoreKey } from './codex-account.js';
-import { migrateLegacyXdgFile } from '../storage/legacy-monad-dir-migrate.js';
+import { migrateLegacyXdgFile } from '../storage/legacy-elanous-dir-migrate.js';
 
 export interface OAuthTokens {
   accessToken: string;
@@ -91,15 +91,15 @@ export interface AuthStore {
 
 const STORE_VERSION = 1;
 
-// FU2 (PLAN-config-unification-monad-root-2026-05-10 closing follow-up):
-//   moved from ~/.config/monad/auth.json → ~/.monad/auth.json. First
+// FU2 (PLAN-config-unification-elanous-root-2026-05-10 closing follow-up):
+//   moved from ~/.config/elanous/auth.json → ~/.elanous/auth.json. First
 //   call migrates legacy XDG file with `.bak` rename · 0o600 preserved.
 //   XDG_CONFIG_HOME explicit honors legacy path (Phase 6 deprecation).
 export function authStorePath(): string {
   const xdg = process.env.XDG_CONFIG_HOME?.trim();
-  if (xdg) return join(xdg, 'monad', 'auth.json');
+  if (xdg) return join(xdg, 'elanous', 'auth.json');
   migrateLegacyXdgFile('auth.json', 0o600);
-  return join(homedir(), '.monad', 'auth.json');
+  return join(homedir(), '.elanous', 'auth.json');
 }
 
 /** 기본 계정의 홈 — 종전 규칙 그대로. ⛔ 이름 계정은 «자기 기록»의 codexHome 을 쓴다. */
@@ -151,32 +151,32 @@ function jwtExpMs(token: string): number | null {
 }
 
 /**
- * Reconcile monad's canonical Codex tokens with the ~/.codex/auth.json
+ * Reconcile elanous's canonical Codex tokens with the ~/.codex/auth.json
  * mirror, adopting whichever store holds the FRESHER access token.
  *
- * Codex OAuth tokens live in TWO files: monad's canonical store
- * (~/.monad/auth.json) AND ~/.codex/auth.json (shared with the official
- * `codex` CLI; monad mirrors rotating tokens there via mirrorCodexAuth).
+ * Codex OAuth tokens live in TWO files: elanous's canonical store
+ * (~/.elanous/auth.json) AND ~/.codex/auth.json (shared with the official
+ * `codex` CLI; elanous mirrors rotating tokens there via mirrorCodexAuth).
  * OpenAI rotates the refresh token on every use and REVOKES the prior one.
  * So when the official CLI refreshes — updating ONLY ~/.codex/auth.json —
- * monad's canonical copy goes stale and its stored refresh token gets
- * revoked server-side. Every later monad refresh then 401s, hard-failing
+ * elanous's canonical copy goes stale and its stored refresh token gets
+ * revoked server-side. Every later elanous refresh then 401s, hard-failing
  * Codex turns with an opaque "Internal error".
  *
- * Observed 2026-06-08: monad store frozen at 2026-05-03 (access token
+ * Observed 2026-06-08: elanous store frozen at 2026-05-03 (access token
  * expired 2026-05-13) while ~/.codex held a valid token refreshed
  * 2026-06-04 → `codex refresh failed: status=401` on every iPad chat turn.
  *
  * This compares the two access tokens' JWT `exp` and, when the mirror is
- * STRICTLY fresher (or monad has no usable token), adopts the mirror's
- * access+refresh pair and persists it back to monad's store (saveTokens
- * re-decodes ChatGPT claims + re-mirrors). Idempotent: when monad's own
- * copy is fresher (the normal case right after a monad-driven refresh) the
+ * STRICTLY fresher (or elanous has no usable token), adopts the mirror's
+ * access+refresh pair and persists it back to elanous's store (saveTokens
+ * re-decodes ChatGPT claims + re-mirrors). Idempotent: when elanous's own
+ * copy is fresher (the normal case right after a elanous-driven refresh) the
  * input state is returned unchanged, so the two never ping-pong.
  */
 export function reconcileCodexTokensFromMirror(
   state: ProviderAuthState | null,
-  monadPath: string = authStorePath(),
+  elanousPath: string = authStorePath(),
   mirrorPath: string = codexAuthPath(),
   /** ⛔⭐⭐⭐ 채택 결과를 «어느 계정»에 영속하나 (3R must-fix).
    *  호출자는 계정별 미러 경로를 넘기는데 영속 키가 `openai-codex` 로 못 박혀 있었다
@@ -202,14 +202,14 @@ export function reconcileCodexTokensFromMirror(
 
   const mirrorExp = jwtExpMs(mirrorAccess);
   if (mirrorExp == null) return state;
-  // monad's freshness = its access-token exp (fall back to stored
+  // elanous's freshness = its access-token exp (fall back to stored
   // expiresAt, then -∞ when there is no usable token at all).
-  const monadExp = state
+  const elanousExp = state
     ? (jwtExpMs(state.tokens.accessToken) ?? state.tokens.expiresAt ?? Number.NEGATIVE_INFINITY)
     : Number.NEGATIVE_INFINITY;
   // Mirror only wins when STRICTLY fresher — avoids ping-pong when both
-  // hold the same token (monad just mirrored to it).
-  if (mirrorExp <= monadExp) return state;
+  // hold the same token (elanous just mirrored to it).
+  if (mirrorExp <= elanousExp) return state;
 
   const tokens: OAuthTokens = {
     accessToken: mirrorAccess,
@@ -227,7 +227,7 @@ export function reconcileCodexTokensFromMirror(
   return saveTokens(storeKey, tokens, {
     authMode: state?.authMode ?? 'chatgpt',
     ...(state?.codexHome ? { codexHome: state.codexHome } : {}),
-  }, monadPath);
+  }, elanousPath);
 }
 
 export interface WriteTokensOpts {
@@ -347,7 +347,7 @@ function sameRealFile(a: string, b: string): boolean {
 /** ⛔ 테스트 러너 판정 — 이 값이 «거짓»이면 가드는 영영 안 도는 장식이 된다.
  *  그래서 테스트가 이 함수의 반환을 직접 문다(가드 테스트 참조). */
 export function isUnderTestRunner(env: NodeJS.ProcessEnv = process.env): boolean {
-  return Boolean(env.BUN_TEST || env.MONAD_TEST_RUNNER) || env.NODE_ENV === 'test';
+  return Boolean(env.BUN_TEST || env.ELANOUS_TEST_RUNNER) || env.NODE_ENV === 'test';
 }
 
 /** ⛔ 테스트 심 — 가드를 «실물에 쓰지 않고» 검증할 수 있게 내보낸다.
@@ -369,7 +369,7 @@ export function assertMirrorTargetIsSafeUnderTest(mirrorPath: string): void {
  *  in sync with rotating refresh tokens. Merges with the existing
  *  file content if present so we don't clobber keys Codex CLI may
  *  have added (e.g. account info). Errors never propagate — the main
- *  monad store is canonical; the mirror is a UX nicety — but they are no
+ *  elanous store is canonical; the mirror is a UX nicety — but they are no
  *  longer SILENT: every attempt (success or failure) leaves an observation
  *  under `oauth.codex-mirror`. ⛔ The 2026-08-05 incident had to be traced by
  *  guessing from the file's `last_refresh` FORMAT, which is deduction, not

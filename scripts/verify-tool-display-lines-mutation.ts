@@ -45,7 +45,7 @@ async function main(): Promise<void> {
   summary('baseline', baseline);
   if (baseline.exitCode !== 0) process.exitCode = 1;
 
-  const sandbox = await mkdtemp(join(tmpdir(), 'monad-tool-display-mutation-'));
+  const sandbox = await mkdtemp(join(tmpdir(), 'elanous-tool-display-mutation-'));
   try {
     const scriptCopy = join(sandbox, 'scripts/measure-tool-display-lines.ts');
     const testCopy = join(sandbox, 'test/tool-display-lines.test.ts');

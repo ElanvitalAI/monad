@@ -58,7 +58,7 @@ function accessModeDetail(accessMode: DaemonTerminalSummary['accessMode']): stri
 
 function terminalOriginDetail(terminal: DaemonTerminalSummary): string {
   if (terminal.terminalOriginCategory === 'direct-human') return '출처: 사람';
-  if (terminal.terminalOriginCategory === 'monad') return '출처: monad';
+  if (terminal.terminalOriginCategory === 'elanous') return '출처: elanous';
   if (terminal.terminalOriginCategory === 'external-tool') {
     return terminal.externalToolName
       ? `출처: 외부 도구 · ${compactDetailValue(terminal.externalToolName)}`

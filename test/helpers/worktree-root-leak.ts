@@ -4,8 +4,8 @@ import { configuredWorktreeRoot } from '../../src/user-config.js';
 
 /** ⭐ 시험이 «인스턴스 뿌리»를 남기는 것을 막는다.
  *
- *  🩸 실측 2026-09-08: `~/.monad/worktrees/` 에 시험이 만든 인스턴스 뿌리가 **434개** 쌓여 있었다
- *    (`seam-integration-base-*` 328 · `monad-dev-behind-*` 36 · `dev-auto-worktree-*` 25 …).
+ *  🩸 실측 2026-09-08: `~/.elanous/worktrees/` 에 시험이 만든 인스턴스 뿌리가 **434개** 쌓여 있었다
+ *    (`seam-integration-base-*` 328 · `elanous-dev-behind-*` 36 · `dev-auto-worktree-*` 25 …).
  *    ⛔ 전부 «빈 껍데기(0B)»라 디스크가 아니라 «디렉토리 수»가 자랐다.
  *    ⛔ `harness clean` 은 접두 `self-impl/` ⊕ 한 인스턴스만 보므로 ***원리상 이것을 못 본다***.
  *

@@ -12,7 +12,7 @@ const dirs: string[] = [];
 function tmpEnv(): NodeJS.ProcessEnv {
   const d = mkdtempSync(join(tmpdir(), 'hscreen-'));
   dirs.push(d);
-  return { MONAD_STATE_DIR: d } as NodeJS.ProcessEnv;
+  return { ELANOUS_STATE_DIR: d } as NodeJS.ProcessEnv;
 }
 afterEach(() => { for (const d of dirs.splice(0)) { try { rmSync(d, { recursive: true, force: true }); } catch { /* noop */ } } });
 
@@ -33,7 +33,7 @@ describe('harness-screen — 화면 키 해석', () => {
 describe('harness-screen — canonical key wiring', () => {
   test('writer와 harvest reader는 canonical resolver를 부르고 로컬 basename key 계산을 되살리지 않는다', () => {
     const root = join(import.meta.dir, '..');
-    const driver = readFileSync(join(root, 'self-implement', 'headless-monad-driver.ts'), 'utf8');
+    const driver = readFileSync(join(root, 'self-implement', 'headless-elanous-driver.ts'), 'utf8');
     const orchestrate = readFileSync(join(root, 'self-dev', 'orchestrate.ts'), 'utf8');
 
     expect((driver.match(/resolveHarnessScreenKey\(space\.id, opts\.cwd\)/g) ?? []).length).toBe(2);
@@ -58,9 +58,9 @@ describe('harness-screen — 화면 버퍼', () => {
     expect(readHarnessScreen('nope', tmpEnv())).toBeNull();
   });
 
-  test('MONAD_STATE_DIR 스코프(격리) — 경로가 state-dir 하위', () => {
+  test('ELANOUS_STATE_DIR 스코프(격리) — 경로가 state-dir 하위', () => {
     const env = tmpEnv();
-    expect(harnessScreenPath('x', env)).toContain(env.MONAD_STATE_DIR!);
+    expect(harnessScreenPath('x', env)).toContain(env.ELANOUS_STATE_DIR!);
     expect(harnessScreenDir(env)).toContain('harness-screens');
   });
 
@@ -121,7 +121,7 @@ describe('harness-screen — "docker logs" 관측(2026-07-21 대표 co-design)',
     const raw = '\x1b[38;2;1;2;3m색상 프레임\x1b[0m\r\nGOAL-COMPLETE';
     writeHarnessScreen('cli-ansi', raw, env);
 
-    const result = spawnSync(process.execPath, ['bin/monad.mjs', 'self', 'screen', '--space', 'cli-ansi'], {
+    const result = spawnSync(process.execPath, ['bin/elanous.mjs', 'self', 'screen', '--space', 'cli-ansi'], {
       cwd: join(import.meta.dir, '../..'),
       encoding: 'utf8',
       // Keep child stderr byte-exact for the self screen CLI contract.
@@ -157,7 +157,7 @@ describe('harness-screen — "docker logs" 관측(2026-07-21 대표 co-design)',
     expect(tail!.text.split('\n').length).toBeLessThanOrEqual(10);   // 마지막 N줄만
     expect(tail!.text).toContain('GOAL-COMPLETE');
     expect(tail!.text).not.toContain('\x1b');                        // ANSI 제거됨
-    expect(tail!.path).toContain(env.MONAD_STATE_DIR!);
+    expect(tail!.path).toContain(env.ELANOUS_STATE_DIR!);
   });
 
   test('readHarnessScreenTail — 없는 공간 → null', () => {

@@ -6,11 +6,11 @@ import { dirname, join, relative, resolve, sep } from 'node:path';
 
 const root = resolve(import.meta.dir, '../..');
 const capabilitiesDir = join(root, 'src/mission-capabilities');
-const stateDir = mkdtempSync(join(tmpdir(), 'monad-probe-readonly-'));
+const stateDir = mkdtempSync(join(tmpdir(), 'elanous-probe-readonly-'));
 const providers: Array<{ path: string; provider: { id: string; probe(): Promise<{ ok: boolean; repairHint?: unknown }> } }> = [];
-const previousStateDir = process.env.MONAD_STATE_DIR;
+const previousStateDir = process.env.ELANOUS_STATE_DIR;
 const previousConatusDataDir = process.env.CONATUS_DATA_DIR;
-process.env.MONAD_STATE_DIR = stateDir;
+process.env.ELANOUS_STATE_DIR = stateDir;
 process.env.CONATUS_DATA_DIR = join(stateDir, 'conatus');
 const { capabilityProviders } = await import('../../src/mission-capabilities/registry.js');
 
@@ -57,8 +57,8 @@ beforeAll(async () => {
 });
 
 afterAll(() => {
-  if (previousStateDir === undefined) delete process.env.MONAD_STATE_DIR;
-  else process.env.MONAD_STATE_DIR = previousStateDir;
+  if (previousStateDir === undefined) delete process.env.ELANOUS_STATE_DIR;
+  else process.env.ELANOUS_STATE_DIR = previousStateDir;
   if (previousConatusDataDir === undefined) delete process.env.CONATUS_DATA_DIR;
   else process.env.CONATUS_DATA_DIR = previousConatusDataDir;
   rmSync(stateDir, { recursive: true, force: true });

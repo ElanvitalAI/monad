@@ -114,7 +114,7 @@ describe('M1-2b · fetchDaemonModelTier', () => {
 describe('M1-2b · hydrateFromDaemon', () => {
   test('merges daemon stt + local audioMinPerDay', async () => {
     localStorage.setItem(
-      'monad.model-tier.prefs',
+      'elanous.model-tier.prefs',
       JSON.stringify({ stt: 'balanced', audioMinPerDay: 10 }),
     );
     installFetch(() => ({ body: { modelTier: { voice: { stt: 'best' } } } }));
@@ -125,7 +125,7 @@ describe('M1-2b · hydrateFromDaemon', () => {
 
   test('daemon empty · local tier preserved', async () => {
     localStorage.setItem(
-      'monad.model-tier.prefs',
+      'elanous.model-tier.prefs',
       JSON.stringify({ stt: 'better', audioMinPerDay: 3 }),
     );
     installFetch(() => ({ body: {} }));
@@ -148,12 +148,12 @@ describe('M1-2b · pushSttTierToDaemon', () => {
     expect(calls[0]?.method).toBe('PUT');
     expect(calls[0]?.body).toEqual({ modelTier: { voice: { stt: 'best' } } });
     // localStorage written first (optimistic).
-    expect(JSON.parse(localStorage.getItem('monad.model-tier.prefs')!).stt).toBe('best');
+    expect(JSON.parse(localStorage.getItem('elanous.model-tier.prefs')!).stt).toBe('best');
   });
 
   test('null tier clears modelTier · localStorage cleared too', async () => {
     localStorage.setItem(
-      'monad.model-tier.prefs',
+      'elanous.model-tier.prefs',
       JSON.stringify({ stt: 'best', audioMinPerDay: 0 }),
     );
     installFetch(() => ({ body: {} }));
@@ -161,7 +161,7 @@ describe('M1-2b · pushSttTierToDaemon', () => {
     expect(status).toBe('synced');
     expect(calls[0]?.body).toEqual({ modelTier: null });
     // resetModelTierPrefs clears the localStorage entry entirely.
-    expect(localStorage.getItem('monad.model-tier.prefs')).toBeNull();
+    expect(localStorage.getItem('elanous.model-tier.prefs')).toBeNull();
   });
 
   test('offline → "offline" status · localStorage still has user intent', async () => {
@@ -169,7 +169,7 @@ describe('M1-2b · pushSttTierToDaemon', () => {
     const status = await pushSttTierToDaemon(CFG, 'loaded');
     expect(status).toBe('offline');
     // Optimistic local write still landed.
-    expect(JSON.parse(localStorage.getItem('monad.model-tier.prefs')!).stt).toBe('loaded');
+    expect(JSON.parse(localStorage.getItem('elanous.model-tier.prefs')!).stt).toBe('loaded');
   });
 
   test('5xx → "error" status', async () => {

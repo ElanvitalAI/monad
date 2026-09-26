@@ -21,7 +21,7 @@ import {
   type HudSegmentPayload,
 } from './feedback-block-accumulator';
 import type { FeedbackEnvelopeWire } from './feedback-envelope';
-import { parseMonadFeedbackEnvelope } from './monad-feedback-envelope';
+import { parseElanousFeedbackEnvelope } from './elanous-feedback-envelope';
 import { forkSession } from './daemon-session';
 import { debugLog } from './debug';
 import { isMcpAppHtmlMime } from '../../../../src/tool-runtime/mcp-app-mime';
@@ -139,16 +139,16 @@ export interface McpAppPayload {
  */
 /** ⛔⭐⭐ FeedbackEnvelope 이 `agent_thought_chunk` 「위에」 실려 올 때의 «머리 줄».
  *
- *  📏 형식의 canonical 은 `src/acp/monad-extensions.ts` 의 `formatMonadFeedbackEnvelope` 이다:
+ *  📏 형식의 canonical 은 `src/acp/elanous-extensions.ts` 의 `formatElanousFeedbackEnvelope` 이다:
  *  ```
- *  [monad/feedback/emit] <blockId>
+ *  [elanous/feedback/emit] <blockId>
  *  <FeedbackEnvelope JSON>
- *  <<monad-feedback-end <blockId>>>
+ *  <<elanous-feedback-end <blockId>>>
  *  ```
- *  이 모듈은 PWA-local `parseMonadFeedbackEnvelope`로 세 줄 전체를 검증한 뒤,
+ *  이 모듈은 PWA-local `parseElanousFeedbackEnvelope`로 세 줄 전체를 검증한 뒤,
  *  유효한 payload만 기존 블록 누산기로 보낸다. 봉투 모양이지만 깨진 입력은 생각 렌더러에
  *  전달하지 않아 원시 마커가 새지 않는다. */
-const FEEDBACK_ENVELOPE_HEAD = /^\[monad\/feedback\/[a-zA-Z]+\] /;
+const FEEDBACK_ENVELOPE_HEAD = /^\[elanous\/feedback\/[a-zA-Z]+\] /;
 
 export function parseMcpAppPayload(rawOutput: unknown, screenUrl: string): McpAppPayload | undefined {
   if (!rawOutput || typeof rawOutput !== 'object' || Array.isArray(rawOutput)) return undefined;
@@ -549,7 +549,7 @@ export async function runChatTurnStreaming(
    *
    *  📏 2026-08-22 실측(19차 `[F]` · 라이브): 데몬을 재시작한 뒤 탭의 WebSocket 이 죽어 있었고,
    *  턴을 보내니 화면엔 `error: socket closed: 1006` 이 떴는데 ***로그엔 `…stream.start` 만 남고
-   *  끝이 «한 줄도» 없었다.*** ⇒ `monad logs` 로는 「그 턴이 어떻게 됐나」를 물을 자리가 없다.
+   *  끝이 «한 줄도» 없었다.*** ⇒ `elanous logs` 로는 「그 턴이 어떻게 됐나」를 물을 자리가 없다.
    *  🔑 ***시작만 내고 실패한 끝을 안 내면, 관측에는 「영원히 도는 턴」으로 남는다.***
    *  ⛔ 그래서 실패 갈래에도 같은 이벤트를 낸다 — 이름을 갈면 조회가 갈린다. */
   const emitEnd = (outcome: {
@@ -1100,12 +1100,12 @@ export async function runChatTurnAcp(
       const content = update.content;
       if (content?.type === 'text' && typeof content.text === 'string' && content.text.length > 0) {
         // ⛔⭐⭐⭐ **이 채널에는 「생각」만 오는 게 아니다** — 📏 라이브 실측(2026-08-22):
-        //   `src/acp/monad-extensions.ts` 가 ***FeedbackEnvelope 을 `agent_thought_chunk` text
+        //   `src/acp/elanous-extensions.ts` 가 ***FeedbackEnvelope 을 `agent_thought_chunk` text
         //   「위에」 싣는다***(ACP SDK 가 커스텀 sessionUpdate 를 거부해서 그렇게 했다).
-        //   ⇒ 그래서 이 배선을 켠 «첫 라이브»에서 화면에 ***`<<monad-feedback-end …>>` 원시 마커가
+        //   ⇒ 그래서 이 배선을 켠 «첫 라이브»에서 화면에 ***`<<elanous-feedback-end …>>` 원시 마커가
         //     그대로 샜다*** — 내가 낸 회귀다(켜기 전엔 이 채널을 통째로 무시했으니 안 보였다).
         //   🔑 ⇒ 봉투는 «생각이 아니다». 여기서 그리지 않는다.
-        const feedbackEnvelope = parseMonadFeedbackEnvelope(content.text);
+        const feedbackEnvelope = parseElanousFeedbackEnvelope(content.text);
         if (feedbackEnvelope) {
           if (!maybeDispatchHudEnvelope(feedbackEnvelope.payload)) {
             const result = applyFeedbackEnvelope(blocks, feedbackEnvelope.payload);

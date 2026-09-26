@@ -1,6 +1,6 @@
 LLM provider — Step 1 / 5
 
-Pick the LLM monad uses for chat / agent loops. Each provider needs
+Pick the LLM elanous uses for chat / agent loops. Each provider needs
 something different:
 
   · OpenAI Codex — sign in via ChatGPT OAuth (browser device-code
@@ -17,6 +17,6 @@ something different:
                    first env var it finds at boot.
 
 Cost-conscious: Local is free (your hardware), then Grok / Gemini
-free tiers, then OpenAI / Anthropic pay-per-token. monad doesn't
+free tiers, then OpenAI / Anthropic pay-per-token. elanous doesn't
 pin you to one provider — you can switch any time via
-`monad setup llm`.
+`elanous setup llm`.

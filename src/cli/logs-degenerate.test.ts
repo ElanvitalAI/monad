@@ -307,7 +307,7 @@ describe('runLogsDegenerate — read-only storage path', () => {
 
     expect(runLogsDegenerate({ minSamples: '2' }, deps)).toBe(1);
     expect(output).toEqual([]);
-    expect(errors).toEqual(['monad logs degenerate: run-ledger 스캔이 저장소 안전 상한에서 잘렸다 — 창을 좁혀라(--since).']);
+    expect(errors).toEqual(['elanous logs degenerate: run-ledger 스캔이 저장소 안전 상한에서 잘렸다 — 창을 좁혀라(--since).']);
   });
 
   test('표본 부족 동일 boolean과 string 제외 고유 필드 수를 로그 NDJSON으로 함께 보고한다', () => {

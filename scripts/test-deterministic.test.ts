@@ -33,7 +33,7 @@ function trackRoot(root: string): string {
   return root;
 }
 
-function makeRoot(prefix = 'monad-deterministic-unit-'): string {
+function makeRoot(prefix = 'elanous-deterministic-unit-'): string {
   return trackRoot(mkdtempSync(join(tmpdir(), prefix)));
 }
 
@@ -200,8 +200,8 @@ test('deterministic runner probe', async () => {
       ppid: process.ppid,
       HOME: process.env.HOME,
       XDG_CONFIG_HOME: process.env.XDG_CONFIG_HOME,
-      MONAD_STATE_DIR: process.env.MONAD_STATE_DIR,
-      MONAD_CONFIG_DIR: process.env.MONAD_CONFIG_DIR,
+      ELANOUS_STATE_DIR: process.env.ELANOUS_STATE_DIR,
+      ELANOUS_CONFIG_DIR: process.env.ELANOUS_CONFIG_DIR,
       ANTHROPIC_API_KEY: process.env.ANTHROPIC_API_KEY ?? null,
       APIFY_TOKEN: process.env.APIFY_TOKEN ?? null,
     }));
@@ -232,8 +232,8 @@ async function waitForProbe(path: string): Promise<{
   ppid: number;
   HOME: string;
   XDG_CONFIG_HOME?: string;
-  MONAD_STATE_DIR?: string;
-  MONAD_CONFIG_DIR?: string;
+  ELANOUS_STATE_DIR?: string;
+  ELANOUS_CONFIG_DIR?: string;
   ANTHROPIC_API_KEY?: string | null;
   APIFY_TOKEN?: string | null;
   grandchildPid?: number;
@@ -272,12 +272,12 @@ async function collect(child: ChildProcess): Promise<{ code: number | null; sign
 describe('scripts/test-deterministic.ts preservation', () => {
   test('keeps the human deterministic entrypoint wired to the credential filter and redirected roots', () => {
     expect(source).toContain("import { isCredentialKey } from './lib/deterministic-env.js';");
-    expect(source).toContain("'MONAD_HARNESS_SPACE'");
+    expect(source).toContain("'ELANOUS_HARNESS_SPACE'");
     expect(source).toContain('!isCredentialKey(key) && !HARNESS_TEST_ENV_KEYS.includes');
     expect(source).toContain('env.HOME = testRoot;');
     expect(source).toContain("env.XDG_CONFIG_HOME = join(testRoot, '.config');");
-    expect(source).toContain("env.MONAD_STATE_DIR = join(testRoot, 'state');");
-    expect(source).toContain("env.MONAD_CONFIG_DIR = join(testRoot, 'config');");
+    expect(source).toContain("env.ELANOUS_STATE_DIR = join(testRoot, 'state');");
+    expect(source).toContain("env.ELANOUS_CONFIG_DIR = join(testRoot, 'config');");
     expect(source).toContain('env,');
     expect(source).toContain("stdin: 'inherit'");
     expect(source).toContain("stdout: 'inherit'");
@@ -287,7 +287,7 @@ describe('scripts/test-deterministic.ts preservation', () => {
     //   2026-09-24: CDP 레인 분리로 그 앞에 ...ignoreArgs 가 붙었다 — argv 통과는 그대로다.
     expect(source).toContain("cmd: ['bun', 'test', ...ignoreArgs, ...argv]");
     expect(source).toContain("join(tempBase(), TEMP_ROOT_PREFIX)");
-    expect(source).toContain("export const TEMP_ROOT_PREFIX = 'monad-deterministic-test-';");
+    expect(source).toContain("export const TEMP_ROOT_PREFIX = 'elanous-deterministic-test-';");
     expect(source).toContain('if (import.meta.main)');
     expect(source).toContain('await runDeterministicTests()');
     expect(source).toContain('const defaultSpawn: SpawnDirectChild = (opts) => Bun.spawn({');
@@ -325,21 +325,21 @@ describe('scripts/test-deterministic.ts preservation', () => {
 });
 
 describe('prepareIsolatedTestEnv', () => {
-  test('strips credential-shaped keys while pinning HOME, XDG, and monad roots', () => {
-    const testRoot = '/isolated/monad-deterministic-test-root';
+  test('strips credential-shaped keys while pinning HOME, XDG, and elanous roots', () => {
+    const testRoot = '/isolated/elanous-deterministic-test-root';
     const env = prepareIsolatedTestEnv({
       ANTHROPIC_API_KEY: 'live-secret',
       APIFY_TOKEN: 'live-token',
       OPENAI_BASE_URL: 'https://example.invalid',
       HOME: '/real/home',
-      MONAD_STATE_DIR: '/real/state',
-      MONAD_CONFIG_DIR: '/real/config',
-      MONAD_HARNESS_SPACE: 'self-implement',
-      MONAD_HARNESS_SPACE_ID: 'test-space',
-      MONAD_HARNESS_BOUNDARY: '/real/boundary',
-      MONAD_HARNESS_ROLE: 'executor',
-      MONAD_HARNESS_DETACHED: '1',
-      MONAD_RUN_ID: 'run-parent',
+      ELANOUS_STATE_DIR: '/real/state',
+      ELANOUS_CONFIG_DIR: '/real/config',
+      ELANOUS_HARNESS_SPACE: 'self-implement',
+      ELANOUS_HARNESS_SPACE_ID: 'test-space',
+      ELANOUS_HARNESS_BOUNDARY: '/real/boundary',
+      ELANOUS_HARNESS_ROLE: 'executor',
+      ELANOUS_HARNESS_DETACHED: '1',
+      ELANOUS_RUN_ID: 'run-parent',
       PATH: '/usr/bin',
     }, testRoot);
     expect(env.ANTHROPIC_API_KEY).toBeUndefined();
@@ -347,21 +347,21 @@ describe('prepareIsolatedTestEnv', () => {
     expect(env.OPENAI_BASE_URL).toBe('https://example.invalid');
     expect(env.HOME).toBe(testRoot);
     expect(env.XDG_CONFIG_HOME).toBe(`${testRoot}/.config`);
-    expect(env.MONAD_STATE_DIR).toBe(`${testRoot}/state`);
-    expect(env.MONAD_CONFIG_DIR).toBe(`${testRoot}/config`);
-    expect(env.MONAD_HARNESS_SPACE).toBeUndefined();
-    expect(env.MONAD_HARNESS_SPACE_ID).toBeUndefined();
-    expect(env.MONAD_HARNESS_BOUNDARY).toBeUndefined();
-    expect(env.MONAD_HARNESS_ROLE).toBeUndefined();
-    expect(env.MONAD_HARNESS_DETACHED).toBeUndefined();
-    expect(env.MONAD_RUN_ID).toBeUndefined();
+    expect(env.ELANOUS_STATE_DIR).toBe(`${testRoot}/state`);
+    expect(env.ELANOUS_CONFIG_DIR).toBe(`${testRoot}/config`);
+    expect(env.ELANOUS_HARNESS_SPACE).toBeUndefined();
+    expect(env.ELANOUS_HARNESS_SPACE_ID).toBeUndefined();
+    expect(env.ELANOUS_HARNESS_BOUNDARY).toBeUndefined();
+    expect(env.ELANOUS_HARNESS_ROLE).toBeUndefined();
+    expect(env.ELANOUS_HARNESS_DETACHED).toBeUndefined();
+    expect(env.ELANOUS_RUN_ID).toBeUndefined();
     expect(env.PATH).toBe('/usr/bin');
   });
 });
 
 describe('cleanupTemporaryRoot', () => {
   test('reports a forced removal failure with the affected path', () => {
-    const testRoot = '/tmp/monad-deterministic-test-forced-fail';
+    const testRoot = '/tmp/elanous-deterministic-test-forced-fail';
     const messages: string[] = [];
     cleanupTemporaryRoot(testRoot, {
       rmSync: () => { throw new Error('EACCES: permission denied'); },
@@ -536,7 +536,7 @@ describe('runDeterministicTests lifecycle', () => {
     expect(spawned?.detached).toBe(true);
     expect(spawned?.env.ANTHROPIC_API_KEY).toBeUndefined();
     expect(spawned?.env.HOME).toBe(testRoot);
-    expect(spawned?.env.MONAD_STATE_DIR).toBe(join(testRoot, 'state'));
+    expect(spawned?.env.ELANOUS_STATE_DIR).toBe(join(testRoot, 'state'));
   });
 
   test('SIGTERM kills the process group, removes the root, and re-signals SIGTERM', async () => {
@@ -782,7 +782,7 @@ describe('runDeterministicTests lifecycle', () => {
 
 describe('runtime entrypoint', () => {
   test('SIGTERM from the live entrypoint ends the direct child and removes the temporary root', async () => {
-    const directory = makeRoot('monad-deterministic-live-');
+    const directory = makeRoot('elanous-deterministic-live-');
     const probePath = join(directory, 'probe.json');
     const probeFile = writeProbeTest(directory);
     const leftover = makeRoot(TEMP_ROOT_PREFIX);
@@ -797,8 +797,8 @@ describe('runtime entrypoint', () => {
       const probe = await waitForProbe(probePath);
       expect(probe.HOME.includes(TEMP_ROOT_PREFIX)).toBe(true);
       expect(probe.XDG_CONFIG_HOME).toBe(`${probe.HOME}/.config`);
-      expect(probe.MONAD_STATE_DIR).toBe(`${probe.HOME}/state`);
-      expect(probe.MONAD_CONFIG_DIR).toBe(`${probe.HOME}/config`);
+      expect(probe.ELANOUS_STATE_DIR).toBe(`${probe.HOME}/state`);
+      expect(probe.ELANOUS_CONFIG_DIR).toBe(`${probe.HOME}/config`);
       expect(probe.ANTHROPIC_API_KEY).toBeNull();
       expect(probe.APIFY_TOKEN).toBeNull();
       expect(existsSync(probe.HOME)).toBe(true);
@@ -819,7 +819,7 @@ describe('runtime entrypoint', () => {
   }, 15_000);
 
   test('SIGINT from the live entrypoint ends the direct child and removes the temporary root', async () => {
-    const directory = makeRoot('monad-deterministic-live-');
+    const directory = makeRoot('elanous-deterministic-live-');
     const probePath = join(directory, 'probe.json');
     const probeFile = writeProbeTest(directory);
     const child = startRunner({
@@ -844,7 +844,7 @@ describe('runtime entrypoint', () => {
   }, 15_000);
 
   test('normal child completion propagates the exit code and removes the temporary root', async () => {
-    const directory = makeRoot('monad-deterministic-live-');
+    const directory = makeRoot('elanous-deterministic-live-');
     const probePath = join(directory, 'probe.json');
     const probeFile = writeProbeTest(directory);
     const child = startRunner({
@@ -861,7 +861,7 @@ describe('runtime entrypoint', () => {
   }, 15_000);
 
   test('SIGTERM from the live entrypoint ends a grandchild spawned by the child', async () => {
-    const directory = makeRoot('monad-deterministic-live-');
+    const directory = makeRoot('elanous-deterministic-live-');
     const probePath = join(directory, 'probe.json');
     const probeFile = writeProbeTest(directory);
     const child = startRunner({
@@ -887,7 +887,7 @@ describe('runtime entrypoint', () => {
   }, 15_000);
 
   test('inherited stdout from a detached child still reaches this process', async () => {
-    const directory = makeRoot('monad-deterministic-live-');
+    const directory = makeRoot('elanous-deterministic-live-');
     const probePath = join(directory, 'probe.json');
     const probeFile = writeProbeTest(directory);
     const child = startRunner({

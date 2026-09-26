@@ -1,9 +1,9 @@
 // Step 5 PR δ — launchd plist install (macOS only).
 //
 // PLAN-step5-sdk-zero-env.md §1 D-Phase3-A-2: opt-in supervisor
-// wire. `monad ctl install-launchd` resolves the user's monad
+// wire. `elanous ctl install-launchd` resolves the user's elanous
 // binary, generates a plist at
-// `~/Library/LaunchAgents/com.monad.control.plist`, and prints the
+// `~/Library/LaunchAgents/com.elanous.control.plist`, and prints the
 // `launchctl load` command for the user to run. Auto-load is
 // avoided so the user always confirms the supervised lifecycle.
 //
@@ -14,24 +14,24 @@
 import { existsSync, mkdirSync, writeFileSync } from 'node:fs';
 import { homedir, platform } from 'node:os';
 import { join as joinPath } from 'node:path';
-import { monadStateRoot } from '../autopilot/state-paths.js';
+import { elanousStateRoot } from '../autopilot/state-paths.js';
 
 import { debug } from '../debug/log.js';
 
-export const LAUNCHD_PLIST_LABEL = 'com.monad.control';
+export const LAUNCHD_PLIST_LABEL = 'com.elanous.control';
 const LAUNCHD_BASENAME = `${LAUNCHD_PLIST_LABEL}.plist`;
 
 export interface LaunchdInstallOpts {
-  /** Override the resolved monad binary path. Production resolves
-   *  via `which monad`; tests pin this. */
-  monadBinaryPath?: string;
+  /** Override the resolved elanous binary path. Production resolves
+   *  via `which elanous`; tests pin this. */
+  elanousBinaryPath?: string;
   /** Override `~/Library/LaunchAgents/` for tests. */
   launchAgentsDirOverride?: string;
   /** Bind port for the control plane (default 31413). */
   port?: number;
   /** Bind hostname (default 127.0.0.1). */
   hostname?: string;
-  /** Stdout/stderr log path (default `~/.monad/control.log`). */
+  /** Stdout/stderr log path (default `~/.elanous/control.log`). */
   logPath?: string;
 }
 
@@ -43,31 +43,31 @@ export interface LaunchdInstallResult {
   plistBody: string;
 }
 
-function resolveMonadBinary(): string {
-  // `which monad` is the user's PATH-resolved binary. If not on
+function resolveElanousBinary(): string {
+  // `which elanous` is the user's PATH-resolved binary. If not on
   // PATH, fall back to a sensible dev-checkout marker so the user
   // sees the failure mode instantly.
   try {
     const { spawnSync } = require('node:child_process') as typeof import('node:child_process');
-    const r = spawnSync('which', ['monad'], { encoding: 'utf-8' });
+    const r = spawnSync('which', ['elanous'], { encoding: 'utf-8' });
     if (r.status === 0) {
       const out = r.stdout.trim();
       if (out.length > 0) return out;
     }
   } catch { /* ignore */ }
-  return '/usr/local/bin/monad'; // Homebrew default — works for most users
+  return '/usr/local/bin/elanous'; // Homebrew default — works for most users
 }
 
 function defaultLogPath(): string {
-  // control.log 은 state-family 로그(#5312 control-audit-log 선례) → monadStateRoot()
-  // 로 스코프. prod(MONAD_STATE_DIR 부재)=~/.monad 동치·test 인스턴스는 자기 루트로 격리.
-  return joinPath(monadStateRoot(), 'control.log');
+  // control.log 은 state-family 로그(#5312 control-audit-log 선례) → elanousStateRoot()
+  // 로 스코프. prod(ELANOUS_STATE_DIR 부재)=~/.elanous 동치·test 인스턴스는 자기 루트로 격리.
+  return joinPath(elanousStateRoot(), 'control.log');
 }
 
 /** Generate the plist body. Pure — tests can verify the content
  *  without writing to disk. */
 export function generateLaunchdPlist(opts: LaunchdInstallOpts = {}): string {
-  const monad = opts.monadBinaryPath ?? resolveMonadBinary();
+  const elanous = opts.elanousBinaryPath ?? resolveElanousBinary();
   const port = opts.port ?? 31413;
   const hostname = opts.hostname ?? '127.0.0.1';
   const logPath = opts.logPath ?? defaultLogPath();
@@ -80,7 +80,7 @@ export function generateLaunchdPlist(opts: LaunchdInstallOpts = {}): string {
   <string>${LAUNCHD_PLIST_LABEL}</string>
   <key>ProgramArguments</key>
   <array>
-    <string>${monad}</string>
+    <string>${elanous}</string>
     <string>ctl</string>
     <string>serve</string>
     <string>--port</string>

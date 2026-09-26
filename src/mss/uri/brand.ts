@@ -1,13 +1,13 @@
 // ── Branded URI types — compile-only tags over plain strings ──
 //
-// PLAN §7.4 · DD-MSS-24 — a `MonadUri` is a `string`, but one that survived
+// PLAN §7.4 · DD-MSS-24 — a `ElanousUri` is a `string`, but one that survived
 // a runtime validation step. The brand is a `unique symbol` phantom field
-// so a raw `string` can't be passed where a `MonadUri` is expected without
-// going through `asMonadUri()` (or one of the `asX` helpers in builder.ts).
+// so a raw `string` can't be passed where a `ElanousUri` is expected without
+// going through `asElanousUri()` (or one of the `asX` helpers in builder.ts).
 //
 // No zod dependency — the brand is pure TypeScript.
 
-declare const MonadUriBrand: unique symbol;
+declare const ElanousUriBrand: unique symbol;
 declare const SessionUriBrand: unique symbol;
 declare const AgentUriBrand: unique symbol;
 declare const MemoryUriBrand: unique symbol;
@@ -20,46 +20,46 @@ declare const ModalUriBrand: unique symbol;
 declare const TraceIdBrand: unique symbol;
 declare const SpanIdBrand: unique symbol;
 
-/** Full `monad://` URI (any Tier). Every `X Uri` subtype is assignable to
- *  `MonadUri`, so generic helpers accept the broadest type. */
-export type MonadUri = string & { readonly [MonadUriBrand]: true };
+/** Full `elanous://` URI (any Tier). Every `X Uri` subtype is assignable to
+ *  `ElanousUri`, so generic helpers accept the broadest type. */
+export type ElanousUri = string & { readonly [ElanousUriBrand]: true };
 
-export type SessionUri = MonadUri & { readonly [SessionUriBrand]: true };
-export type AgentUri = MonadUri & { readonly [AgentUriBrand]: true };
-export type MemoryUri = MonadUri & { readonly [MemoryUriBrand]: true };
-export type SignalUri = MonadUri & { readonly [SignalUriBrand]: true };
+export type SessionUri = ElanousUri & { readonly [SessionUriBrand]: true };
+export type AgentUri = ElanousUri & { readonly [AgentUriBrand]: true };
+export type MemoryUri = ElanousUri & { readonly [MemoryUriBrand]: true };
+export type SignalUri = ElanousUri & { readonly [SignalUriBrand]: true };
 
 /** Per-turn stable identifier (M1.2). A `TurnUri` is a `string` brand, not a
- *  `MonadUri` subtype, because SAM S0 persists the bare 26-char ULID form
+ *  `ElanousUri` subtype, because SAM S0 persists the bare 26-char ULID form
  *  (`<ULID>`) rather than the Tier 2 `turn/<ULID>` path. `asTurnUri()` is
- *  lenient — it accepts either the bare ULID or a `turn/<ULID>` MonadUri
+ *  lenient — it accepts either the bare ULID or a `turn/<ULID>` ElanousUri
  *  segment — while `mintTurnUri()` emits the bare form to preserve the
  *  existing JSONL wire format. */
 export type TurnUri = string & { readonly [TurnUriBrand]: true };
 
 /** TOX run lifecycle identifier (M1.2 · agentic-flow P0-A). A `RunUri` IS a
- *  `MonadUri` — runs are fresh-from-scratch entities with no legacy wire
+ *  `ElanousUri` — runs are fresh-from-scratch entities with no legacy wire
  *  format to preserve, so the canonical Tier 2 `run/<ULID>` shape applies. */
-export type RunUri = MonadUri & { readonly [RunUriBrand]: true };
+export type RunUri = ElanousUri & { readonly [RunUriBrand]: true };
 
-/** Plugin activation identifier (M1.2). A `PluginUri` is a `MonadUri` —
+/** Plugin activation identifier (M1.2). A `PluginUri` is a `ElanousUri` —
  *  it identifies a *specific activation* of a plugin (since plugins can
  *  be reactivated within a session). The plugin manifest's slug `id`
  *  stays a plain string at the wire boundary (DD-MSS-38). */
-export type PluginUri = MonadUri & { readonly [PluginUriBrand]: true };
+export type PluginUri = ElanousUri & { readonly [PluginUriBrand]: true };
 
-/** Widget instance identifier (M1.2). A `WidgetUri` is a `MonadUri` —
+/** Widget instance identifier (M1.2). A `WidgetUri` is a `ElanousUri` —
  *  it identifies a single live `WidgetInstance` rather than the
  *  `WidgetDef` it spawned from. The `WidgetInstance.id` slug
  *  ("skills-1", "chart-px") stays a plain string for layout-host
  *  bookkeeping. */
-export type WidgetUri = MonadUri & { readonly [WidgetUriBrand]: true };
+export type WidgetUri = ElanousUri & { readonly [WidgetUriBrand]: true };
 
-/** Modal handle identifier (M1.2). A `ModalUri` is a `MonadUri` — it
+/** Modal handle identifier (M1.2). A `ModalUri` is a `ElanousUri` — it
  *  identifies a single live `ModalHandle` (one push). The legacy
  *  `<typeName>#g<generation>` surface id stays the coordinator's key;
  *  `modalUri` is the typed handle MSS bridges reference. */
-export type ModalUri = MonadUri & { readonly [ModalUriBrand]: true };
+export type ModalUri = ElanousUri & { readonly [ModalUriBrand]: true };
 
 /** 26-char ULID that identifies a trace (turn-level root span). PLAN §9.6.5. */
 export type TraceId = string & { readonly [TraceIdBrand]: true };

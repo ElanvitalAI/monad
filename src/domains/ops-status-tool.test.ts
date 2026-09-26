@@ -4,7 +4,7 @@ import { projectScheduleHealth } from './ops-status-tool.js';
 describe('projectScheduleHealth', () => {
   test('scheduleHealth 모집단과 distinct unwrapped-crontab 제외 계수를 JSON에 보존한다', () => {
     expect(projectScheduleHealth({
-      monadTotal: 3,
+      elanousTotal: 3,
       stale: [{ id: 'never-run', name: 'never-run', cron: '45 7 * * *', lastRun: null, lastStatus: null, overdueMs: 1 }],
       errored: [],
       noncanonical: [],
@@ -15,7 +15,7 @@ describe('projectScheduleHealth', () => {
       excludedMissingCron: 6,
       generatedAt: '2026-09-02T00:00:00.000Z',
     })).toEqual({
-      monadTotal: 3,
+      elanousTotal: 3,
       staleCount: 1,
       erroredCount: 0,
       // ⛔ 이 둘은 «다른 착지»(#15411)가 더한 값이다 — 이 시험은 그 «앞» base 에서 쓰여 빠져 있었고,

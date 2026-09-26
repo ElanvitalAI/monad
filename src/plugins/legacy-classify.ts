@@ -351,7 +351,7 @@ function classifyUndiscoveredDirectory(pluginDir: string, name: string): LegacyP
   }
   const hasLegacyEntry = existsSync(join(path, 'plugin.ts'));
   const hasManifest = existsSync(join(path, 'plugin.json'))
-    || existsSync(join(path, '.monad-plugin', 'plugin.json'));
+    || existsSync(join(path, '.elanous-plugin', 'plugin.json'));
   const reason = !hasLegacyEntry && !hasManifest
     ? 'undiscoverable: no plugin.ts and no plugin.json (host skips library/category dirs)'
     : 'undiscoverable: host scan skipped this directory';

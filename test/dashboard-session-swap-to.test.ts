@@ -45,8 +45,8 @@ async function bootSwapHarness(): Promise<SwapHarness> {
 
   // Capture session ids the server mints/loads so `hasSession` can
   // accept any id the test names. The DashboardSession's newSession
-  // creates id 'monad-session-1'; bridge[1] is reserved for seeding
-  // an alternate "swap target" id ('monad-session-2').
+  // creates id 'elanous-session-1'; bridge[1] is reserved for seeding
+  // an alternate "swap target" id ('elanous-session-2').
   const transportFactory = async (
     onConnection: AcpConnectionHandler,
   ): Promise<AcpTransportServer> => {
@@ -98,7 +98,7 @@ async function bootSwapHarness(): Promise<SwapHarness> {
     peerId: 'seed',
     close: async () => { try { await bridges[1]!.b.writable.close(); } catch { /* */ } },
   };
-  // newSession seeds 'monad-session-1' (server seq starts at 1 — but
+  // newSession seeds 'elanous-session-1' (server seq starts at 1 — but
   // DashboardSession.attach below also calls newSession, taking the
   // next id). Order of concurrent connections is non-deterministic
   // for the SDK, so we capture the id rather than predict it.

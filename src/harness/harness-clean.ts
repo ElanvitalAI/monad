@@ -11,7 +11,7 @@ import { listPtyManifest, type PtyManifestRow } from '../pty-shell/pty-manifest.
 import { debug } from '../debug/log.js';
 import { configuredWorktreeRoot } from '../user-config.js';
 import { runGitWithRetry, type GitRunner } from '../git-fs/retry.js';
-import { isMonadHarnessWorktreeCommand, worktreeDirName, worktreeParentDir } from '../git-fs/worktree.js';
+import { isElanousHarnessWorktreeCommand, worktreeDirName, worktreeParentDir } from '../git-fs/worktree.js';
 import {
   assessWorktree,
   readWorktreeProvenance,
@@ -158,7 +158,7 @@ function assessHarnessOwnership(provenance: WorktreeProvenance): OwnershipAssess
     return { status: `not-recorded:owner=${owner};command=${command};createdAt=${createdAt}`, recorded: false };
   }
   const ownerRecorded = owner === 'harness:unattributed' || /^(?:dev|agent):[^\s:]+$(?![\s\S])/.test(owner);
-  const commandRecorded = isMonadHarnessWorktreeCommand(command);
+  const commandRecorded = isElanousHarnessWorktreeCommand(command);
   const createdAtRecorded = isRecordedCreatedAt(createdAt);
   if (!ownerRecorded || !commandRecorded || !createdAtRecorded) {
     return { status: `invalid:owner=${owner};command=${command};createdAt=${createdAt}`, recorded: false };
@@ -1102,7 +1102,7 @@ export function renderHarnessCleanReport(
       L.push(`⚠️ 등록 워크트리 ${registered}(primary 포함) 중 ${unseen} 은 이 prefix 「밖」이라 이 실행이 안 봤다.`);
     }
     if (branchless > 0) {
-      L.push(`   그중 ${branchless} 은 branch 가 없어(detached·bare) 「어떤 --prefix 로도」 이 명령이 못 본다 — monad harness worktrees 로 본다.`);
+      L.push(`   그중 ${branchless} 은 branch 가 없어(detached·bare) 「어떤 --prefix 로도」 이 명령이 못 본다 — elanous harness worktrees 로 본다.`);
     }
     if (prunable > 0) {
       L.push(`   그중 ${prunable} 은 gitdir 이 사라져(끊어진 등록) 「어떤 --prefix 로도」 이 명령이 못 본다 — git worktree prune 으로 걷는다.`);
@@ -1116,7 +1116,7 @@ export function renderHarnessCleanReport(
     //   ⚠️ 못 쟀을 때(`reachable === undefined`)는 종전 안내가 그대로 최선이다.
     const reachableHint = reachable === undefined ? zeroScope : reachable > 0;
     if (reachableHint) {
-      L.push('   그것들을 보려면: monad harness clean --prefix <p>   (예: --prefix self-impl/ · 브랜치명은 monad harness worktrees)');
+      L.push('   그것들을 보려면: elanous harness clean --prefix <p>   (예: --prefix self-impl/ · 브랜치명은 elanous harness worktrees)');
     }
   }
   // ⛔ 질의가 하나라도 실패했으면 계획은 **부분집합**이다 — 조용히 「없다」로 읽히지 않게 한다.

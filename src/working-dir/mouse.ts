@@ -23,7 +23,7 @@
 //
 // Payload shape (multi-format · PLAN §1.1 · Qt QMimeData precedent)
 // ──────────────────────────────────────────────────────────────────
-//   'file-path[]'        — monad-native array of absolute paths
+//   'file-path[]'        — elanous-native array of absolute paths
 //   'text/uri-list'      — RFC 2483 `file://` URIs, one per line
 //   'llm-context-slice'  — structured hint for LLM context dump
 //                          (DS-4c target · DS-3a registers but no

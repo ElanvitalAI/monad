@@ -103,7 +103,7 @@ describe('PFC-S4 follow-up — executeResearchSlash', () => {
 
   test('start chain succeeds + summarises research_plan', async () => {
     const { home, vaultEnv } = makeVault();
-    process.env.MONAD_OBSIDIAN_VAULT = vaultEnv;
+    process.env.ELANOUS_OBSIDIAN_VAULT = vaultEnv;
     try {
       const res = await executeResearchSlash(
         {
@@ -120,13 +120,13 @@ describe('PFC-S4 follow-up — executeResearchSlash', () => {
       expect(res.lines[0]).toContain('/research start');
       expect(res.lines.some(l => l.includes('research_plan'))).toBe(true);
     } finally {
-      delete process.env.MONAD_OBSIDIAN_VAULT;
+      delete process.env.ELANOUS_OBSIDIAN_VAULT;
     }
   });
 
   test('tail dispatches research_plan read + produces lines', async () => {
     const { vaultEnv } = makeVault();
-    process.env.MONAD_OBSIDIAN_VAULT = vaultEnv;
+    process.env.ELANOUS_OBSIDIAN_VAULT = vaultEnv;
     try {
       // init first
       await executeResearchSlash(
@@ -141,7 +141,7 @@ describe('PFC-S4 follow-up — executeResearchSlash', () => {
       expect(res.success).toBe(true);
       expect(res.lines.some(l => l.includes('mission'))).toBe(true);
     } finally {
-      delete process.env.MONAD_OBSIDIAN_VAULT;
+      delete process.env.ELANOUS_OBSIDIAN_VAULT;
     }
   });
 

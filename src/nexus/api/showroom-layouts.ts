@@ -1,6 +1,6 @@
 // CV-3 FP-B — daemon-side Showroom layout store (cross-device sync).
 //
-// Storage: ~/.monad/showroom-layouts.json (mirrors the push-subs.json
+// Storage: ~/.elanous/showroom-layouts.json (mirrors the push-subs.json
 // pattern). Single JSON file holding all named layouts so atomic
 // writes are trivial. No DB dependency.
 //
@@ -23,7 +23,7 @@ import { jsonResponse } from './http-server.js';
 import { checkAuth, type MetaApiOpts } from './meta-api.js';
 import { SSE_HEARTBEAT_MS } from './sse-heartbeat.js';
 
-const STORE_BASE = join(homedir(), '.monad');
+const STORE_BASE = join(homedir(), '.elanous');
 const STORE_FILE = join(STORE_BASE, 'showroom-layouts.json');
 
 /** Cap total store size to keep accidental floods bounded. */

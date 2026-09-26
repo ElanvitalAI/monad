@@ -25,7 +25,7 @@ const fakeEmbed: EmbedFn = async (text: string) => {
 
 const cap = (sd: ReturnType<typeof sdb>, type: string, text: string, importance = 5, now?: Date) =>
   recordEvent(sd, {
-    surface: 'cli', direction: 'inbound', kind: 'taste', category: 'taste.capture', domain: 'monad', text, importance,
+    surface: 'cli', direction: 'inbound', kind: 'taste', category: 'taste.capture', domain: 'elanous', text, importance,
     tags: `taste:${type},conf:0.7`,
     ...(now ? { ts: now.toISOString() } : {}),
   });
@@ -97,7 +97,7 @@ describe('proposeMissions — gate (미션 생성 없음)', () => {
     const sd = sdb(), kd = kdb();
     cap(sd, 'recurring_topic', '반도체 A'); cap(sd, 'recurring_topic', '반도체 B');
     await seed(sd, kd);
-    recordEvent(sd, { surface: 'cli', direction: 'inbound', kind: 'taste', category: 'taste.sentiment', domain: 'monad', text: '답답', importance: 6, tags: 'sentiment:frustration,reward:-0.80' });
+    recordEvent(sd, { surface: 'cli', direction: 'inbound', kind: 'taste', category: 'taste.sentiment', domain: 'elanous', text: '답답', importance: 6, tags: 'sentiment:frustration,reward:-0.80' });
     expect(proposeMissions({ knowledgeDb: kd, surfaceDb: sd, threshold: 0.5 })).toEqual([]);
   });
 

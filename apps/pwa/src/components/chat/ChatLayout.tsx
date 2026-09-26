@@ -264,9 +264,9 @@ export function ChatLayout(props: ChatLayoutProps = {}) {
   useEffect(() => {
     if (typeof window === 'undefined') return;
     try {
-      const raw = window.sessionStorage.getItem('monad.pwa.shareAttachments');
+      const raw = window.sessionStorage.getItem('elanous.pwa.shareAttachments');
       if (!raw) return;
-      window.sessionStorage.removeItem('monad.pwa.shareAttachments');
+      window.sessionStorage.removeItem('elanous.pwa.shareAttachments');
       const parsed = JSON.parse(raw) as AttachmentMeta[];
       if (!Array.isArray(parsed) || parsed.length === 0) return;
       setPendingAttachments((prev) => [...prev, ...parsed]);
@@ -288,7 +288,7 @@ export function ChatLayout(props: ChatLayoutProps = {}) {
   // (S4 "진짜 이어감 ≠ 복사" 계약).
 
   // 세션 복원(R4 · 2026-07-09) — 마운트/세션 전환 시 on-disk 저장소에서 대화를
-  // 다시 불러와 seed. PWA 챗은 이제 ~/.monad/sessions 로 write-through(R3) 되므로
+  // 다시 불러와 seed. PWA 챗은 이제 ~/.elanous/sessions 로 write-through(R3) 되므로
   // 탭 이동 후 돌아와도 리셋되지 않는다. 진행 중 메시지는 덮지 않음.
   const restoredRef = useRef<string>('');
   useEffect(() => {
@@ -547,7 +547,7 @@ export function ChatLayout(props: ChatLayoutProps = {}) {
         toast.error(`chat failed: ${msg}`);
         // ⛔⭐⭐⭐ **사용자가 보는 실패를 «관측에도» 남긴다.**
         //   📏 2026-08-22 실측(19차 `[F]` 라이브): 화면엔 `error: socket closed: 1006` 이 떴는데
-        //   ***`monad logs` 에는 이 갈래의 흔적이 «하나도» 없었다*** — 바로 위 중단 갈래는 내는데
+        //   ***`elanous logs` 에는 이 갈래의 흔적이 «하나도» 없었다*** — 바로 위 중단 갈래는 내는데
         //   ***「진짜 실패」만 조용했다.*** 🔑 사람은 겪고 있는데 관측은 「아무 일 없다」고 말한다.
         //   ⭐ 접미사 `error` 가 서버 severity 를 error 로 올린다(`deriveForwardLevel`).
         debugLog('webterm.chat.runturn.error', { reason: msg, useAcpPath });
@@ -760,7 +760,7 @@ export function ChatLayout(props: ChatLayoutProps = {}) {
     const acpForFallback = acp;
     setDebugForwardFallback(async (body) => {
       const parsed = JSON.parse(body) as { records: unknown[] };
-      await acpForFallback.send('monad/debug-logs/ingest', { records: parsed.records });
+      await acpForFallback.send('elanous/debug-logs/ingest', { records: parsed.records });
       return true;
     });
     const dispose = runAcpForeignTurnObserver(acp, sessionId, {
@@ -818,7 +818,7 @@ export function ChatLayout(props: ChatLayoutProps = {}) {
 
   // M4 of PLAN-ask-user-question-cross-surface-2026-05-13 — wire the
   // inbound AskUserQuestion handler. When the daemon's bridge pushes a
-  // `monad/ask/request` extMethod, this hook stashes it as
+  // `elanous/ask/request` extMethod, this hook stashes it as
   // `askPending`; AskQuestionSheet below renders the modal. "Chat about
   // this" calls onComposerPrefill — TODO PR: pipe the prefill text into
   // ChatInput (composer 측 prop · 별 PR 로 분리).
@@ -836,7 +836,7 @@ export function ChatLayout(props: ChatLayoutProps = {}) {
       // ChatInput follow-up).
       try {
         if (typeof window !== 'undefined') {
-          window.sessionStorage.setItem('monad.chat.share-prefill', prefill);
+          window.sessionStorage.setItem('elanous.chat.share-prefill', prefill);
           // ChatInput 의 useEffect 가 mount 시점에만 sessionStorage 를 보므로,
           // 새로 띄울 때 효과. 본 release 는 사용자에게 안내 + 후속 PR 에서
           // ChatInput controlled-value prop 으로 즉시 적용.
@@ -883,7 +883,7 @@ export function ChatLayout(props: ChatLayoutProps = {}) {
                 ? 'daemon URL 미설정 — Settings 에서 Base URL 입력'
                 : voice.errorMsg ?? VOICE_PHASE_LABEL[voice.phase]
             }
-            data-monad-action="chat-voice-toggle"
+            data-elanous-action="chat-voice-toggle"
             className={cn(
               'inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-medium transition-colors',
               voice.active
@@ -918,7 +918,7 @@ export function ChatLayout(props: ChatLayoutProps = {}) {
           <div
             role="alert"
             className="mx-4 mb-3 flex shrink-0 items-start justify-between gap-3 rounded-md border border-amber-500/40 bg-amber-500/10 px-3 py-2 text-sm text-foreground"
-            data-monad-turn-busy-banner=""
+            data-elanous-turn-busy-banner=""
           >
             <div>
               <p className="font-medium">This session is busy</p>
@@ -964,7 +964,7 @@ export function ChatLayout(props: ChatLayoutProps = {}) {
             type="button"
             onClick={handleStop}
             className="rounded border border-border bg-background px-2 py-0.5 font-mono hover:bg-muted"
-            data-monad-action="chat-stop"
+            data-elanous-action="chat-stop"
             title="Stop the running turn (Esc)"
           >
             Stop ⎋
@@ -988,8 +988,8 @@ export function ChatLayout(props: ChatLayoutProps = {}) {
         {...(props.tabId ? { tabId: props.tabId } : {})}
         onListFiles={acpForAsk && sessionId
           ? async (query) => {
-              // PWA Phase 2·A — daemon ACP `monad/fs/list` 호출.
-              const result = await acpForAsk.send('monad/fs/list', {
+              // PWA Phase 2·A — daemon ACP `elanous/fs/list` 호출.
+              const result = await acpForAsk.send('elanous/fs/list', {
                 sessionId,
                 query,
                 limit: 50,
@@ -1003,7 +1003,7 @@ export function ChatLayout(props: ChatLayoutProps = {}) {
           : undefined}
         onListSkills={acpForAsk && sessionId
           ? async (query) => {
-              const result = await acpForAsk.send('monad/skills/list', {
+              const result = await acpForAsk.send('elanous/skills/list', {
                 sessionId,
                 query,
               }) as { entries?: Array<{ name?: string; description?: string }> };
@@ -1020,7 +1020,7 @@ export function ChatLayout(props: ChatLayoutProps = {}) {
               // (2026-05-16) — codex CLI plugin list. Daemon caches 5
               // min so calling on every BackendPickerChip mount /
               // backend-change is fine.
-              const result = await acpForAsk.send('monad/codex/plugins', {
+              const result = await acpForAsk.send('elanous/codex/plugins', {
                 sessionId,
               }) as { plugins?: Array<{ name?: string; marketplace?: string; enabled?: boolean }> };
               return (result.plugins ?? [])
@@ -1048,7 +1048,7 @@ export function ChatLayout(props: ChatLayoutProps = {}) {
             <button
               type="button"
               onClick={() => setDrawerOpen(true)}
-              data-monad-debug-tap-reopen=""
+              data-elanous-debug-tap-reopen=""
               className={cn(
                 'fixed bottom-3 right-3 z-40 rounded-full border border-border bg-card px-3 py-1.5',
                 'text-[11px] font-mono text-muted-foreground shadow hover:bg-muted hover:text-foreground',
@@ -1062,7 +1062,7 @@ export function ChatLayout(props: ChatLayoutProps = {}) {
         </>
       )}
       {/* M4 of PLAN-ask-user-question-cross-surface-2026-05-13 — modal
-          for inbound `monad/ask/request`. `pendingRequest` 가 non-null
+          for inbound `elanous/ask/request`. `pendingRequest` 가 non-null
           일 때만 Dialog open · close 는 cancel/submit 시 자동. */}
       <AskQuestionSheet
         request={askQuestion.pendingRequest}

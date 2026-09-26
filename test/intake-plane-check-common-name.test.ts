@@ -34,7 +34,7 @@ test('a common name that exhausts the budget does not sink a claim whose other n
   const deps = fixture();
   makeCommon(deps.root);
   writeFileSync(join(deps.root, 'src/specific.ts'), `export const value = '${specific}';\n`);
-  const item = runIntakeCheck([{ text: `monad 에 \`${common}\` 와 \`${specific}\` 가 있다` }], deps).items[0]!;
+  const item = runIntakeCheck([{ text: `elanous 에 \`${common}\` 와 \`${specific}\` 가 있다` }], deps).items[0]!;
   expect(item.verdict).toBe('판단 필요');
   expect(item.failures).toEqual([]);
   expect(item.evidence.some((row) => row.axis === 'repo' && row.repoKind === 'behavior' && row.path === 'src/specific.ts')).toBe(true);
@@ -44,7 +44,7 @@ test('a common name that exhausts the budget does not sink a claim whose other n
 test('a common name left unmeasured cannot let an absent other name produce 없음', () => {
   const deps = fixture();
   makeCommon(deps.root);
-  const report = runIntakeCheck([{ text: `monad 에 \`${common}\` 와 \`${absent}\` 가 있다` }], deps);
+  const report = runIntakeCheck([{ text: `elanous 에 \`${common}\` 와 \`${absent}\` 가 있다` }], deps);
   expect(report.items[0]?.verdict).toBe('판단 필요');
   expect(report.goalDraftPaths).toEqual([]);
 }, 60_000);
@@ -52,7 +52,7 @@ test('a common name left unmeasured cannot let an absent other name produce 없�
 test('a claim whose only name exhausts the budget is still 못 쟀다', () => {
   const deps = fixture();
   makeCommon(deps.root);
-  const report = runIntakeCheck([{ text: `monad 에 \`${common}\` 가 있다` }], deps);
+  const report = runIntakeCheck([{ text: `elanous 에 \`${common}\` 가 있다` }], deps);
   expect(report.items[0]?.verdict).toBe('못 쟀다');
   expect(report.items[0]?.failures.join(' ')).toContain('탐색 예산 소진');
   expect(report.goalDraftPaths).toEqual([]);

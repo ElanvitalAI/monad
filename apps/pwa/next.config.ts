@@ -24,7 +24,7 @@ const BUILD_SHA = gitShortSha();
  * `output: 'export'` produces a self-contained static SPA in `out/`.
  * All pages are pre-rendered at build time and use client-side fetch to
  * reach the daemon REST/WS endpoints — no runtime Node server needed
- * inside `monad serve`.
+ * inside `elanous serve`.
  *
  * `basePath: '/app'` + `assetPrefix: '/app'` — daemon-public-server mounts
  * the export at `/app/*`, so generated <link>/<script> hrefs need the same

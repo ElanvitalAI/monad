@@ -14,11 +14,11 @@ import { mkdirSync } from 'node:fs';
 import { randomUUID } from 'node:crypto';
 import { dirname } from 'node:path';
 import { memoryDbPath, migrateLegacyMemoryDb } from './memory-db-path.js';
-import { provenanceRefs, provenanceTags, monadSelfProvenance } from './provenance.js';
+import { provenanceRefs, provenanceTags, elanousSelfProvenance } from './provenance.js';
 import { within } from '../time/db-window.js';
 
 /** Cross-surface memory DB path — managed memory 네임스페이스(memory-db-path). scoped:
- *  MONAD_STATE_DIR 격리 인스턴스는 각자 ambient-recall store(운영 무오염). 종전 `~/.monad/conatus/`
+ *  ELANOUS_STATE_DIR 격리 인스턴스는 각자 ambient-recall store(운영 무오염). 종전 `~/.elanous/conatus/`
  *  legacy 는 open 시 `migrateLegacyMemoryDb` 가 자가치유 이전. (2026-07-19 일반화) */
 export function surfaceEventsDbPath(): string {
   return memoryDbPath('surface_events.db');
@@ -57,7 +57,7 @@ export interface SurfaceEventRow {
 
 /** 도메인 미지정 시 기본값 — 코어는 도메인 무관(멀티 도메인)이라 finance 를 가정하지
  *  않는다(대표 지시 2026-07-08: Conatus/finance 는 퍼스트 고객이지 코어 아님). 발송/기록
- *  주체가 domain 을 명시해야 하며(finance·monad·ops …), 미지정만 이 중립 도메인으로. */
+ *  주체가 domain 을 명시해야 하며(finance·elanous·ops …), 미지정만 이 중립 도메인으로. */
 export const DEFAULT_MEMORY_DOMAIN = 'general';
 
 /** kind별 기본 현저성 (P0 룰 — P2에서 LLM/RPE로 정교화). */
@@ -150,9 +150,9 @@ export function recordInboundTurn(
   const ownDb = !opts.db;
   try {
     const a = (opts.responseText ?? '').trim();
-    // provenance(2026-07-19) — monad 자기 처리 턴에 origin:monad-self + git/branch/cwd 태그.
+    // provenance(2026-07-19) — elanous 자기 처리 턴에 origin:elanous-self + git/branch/cwd 태그.
     // 외부 도구 발화(injectUtterance origin:claude-code 등)와 같은 스키마 → 회상이 주체 구분.
-    const prov = { ...monadSelfProvenance(), ...(opts.origin ? { origin: opts.origin } : {}), ...(opts.sessionId ? { sessionId: opts.sessionId } : {}) };
+    const prov = { ...elanousSelfProvenance(), ...(opts.origin ? { origin: opts.origin } : {}), ...(opts.sessionId ? { sessionId: opts.sessionId } : {}) };
     return recordEvent(db, {
       surface: opts.surface,
       direction: 'inbound',

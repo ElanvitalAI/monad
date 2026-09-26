@@ -21,7 +21,7 @@ const PREV_XDG = process.env.XDG_CONFIG_HOME;
 beforeEach(() => {
   tmpDir = mkdtempSync(join(tmpdir(), 'm1-2b-'));
   process.env.XDG_CONFIG_HOME = tmpDir;
-  process.env.MONAD_SUPPRESS_XDG_WARNING = '1';
+  process.env.ELANOUS_SUPPRESS_XDG_WARNING = '1';
   __resetXdgDeprecationWarningForTests();
   // Force buildUserConfig cache to drop the previous test's state.
   reloadUserConfig();

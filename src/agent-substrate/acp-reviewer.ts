@@ -6,7 +6,7 @@
 // renderReview 를 그대로 재사용한다 — API 리뷰어(gpt-5.6-sol)와 완전 동형 출력.
 //
 // ★ 왜 ACP 인가: 미션 구현·게이트와 다른 **독립 주체(Claude Code Opus)** 가 리뷰 → 단일모델 러버스탬프
-//   불가. `monad self review --acp` 창구가 이걸 대표 손에 쥐어준다.
+//   불가. `elanous self review --acp` 창구가 이걸 대표 손에 쥐어준다.
 // ★ tool-enabled(2026-07-23) — 종전 no-tools 우회를 걷어냈다. 근본 재진단: SDK 버전 skew 아님(우리·백엔드
 //   둘 다 @agentclientprotocol/sdk 0.14.1). tool_call 세션 업데이트의 검증 실패는 **노이즈**(notification 은
 //   응답 불필요·SDK 가 로그 후 계속). 종전 hang 의 진짜 원인 = approver 부재 시 퍼미션 **자동 취소**로 Read
@@ -91,7 +91,7 @@ export function makeAcpReviewLLM(opts: AcpReviewerOpts): (prompt: string, images
     //   «안 걸린다**. 그래서 `--acp-backend claude-code`(미등록) 같은 오타를 주면 레지스트리가
     //   ***`Unknown ACP backend "claude-code". Known: …"`*** 라는 «완벽한» 오류를 던지는데도
     //   `acp-review` 카테고리에 «아무것도 안 남았다**(2026-08-07 실측).
-    //   ⛔ 더 나쁜 것: CLI 는 `reviewed=false` 일 때 *"관측: monad logs --category acp-review"* 라
+    //   ⛔ 더 나쁜 것: CLI 는 `reviewed=false` 일 때 *"관측: elanous logs --category acp-review"* 라
     //      «안내»한다 — ***도구가 「여기를 보라」고 말한 자리에 답이 없었다.***
     //   ⇒ 이 한 줄만 자기 catch 로 감싼다(전체 try 를 앞당기면 `start` 관측이 그 안으로 들어간다).
     let transport: string | null;

@@ -2,7 +2,7 @@
 //
 // PLAN: 내부 문서 `PLAN-discord-rich-light-persona-2026-05-01` §3.3 (M3.2)
 //
-// Returns a quick monad status summary in this channel — uptime,
+// Returns a quick elanous status summary in this channel — uptime,
 // active personas, lane count, optional cost. Caller injects the
 // snapshot via ctx.
 
@@ -13,11 +13,11 @@ import {
 
 export const STATUS_SCHEMA: SlashCommandSchema = {
   name: 'status',
-  description: 'Show monad runtime status (uptime, personas, lanes)',
+  description: 'Show elanous runtime status (uptime, personas, lanes)',
   dmPermission: true,
 };
 
-export interface MonadStatusSnapshot {
+export interface ElanousStatusSnapshot {
   readonly uptimeSeconds: number;
   readonly personaCount: number;
   readonly activeLaneCount: number;
@@ -30,7 +30,7 @@ export interface MonadStatusSnapshot {
 }
 
 export interface StatusCtx {
-  readonly snapshot: () => Promise<MonadStatusSnapshot> | MonadStatusSnapshot;
+  readonly snapshot: () => Promise<ElanousStatusSnapshot> | ElanousStatusSnapshot;
 }
 
 export const statusHandler: SlashHandler<StatusCtx> = async (_interaction, ctx) => {
@@ -50,7 +50,7 @@ export const statusHandler: SlashHandler<StatusCtx> = async (_interaction, ctx) 
   }
   return {
     type: RESPONSE_CHANNEL_MESSAGE_WITH_SOURCE,
-    content: `📊 monad status\n${lines.join('\n')}`,
+    content: `📊 elanous status\n${lines.join('\n')}`,
     ephemeral: true,
   };
 };

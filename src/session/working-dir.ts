@@ -2,7 +2,7 @@
 //
 // Single source of truth for "the project the user is actually
 // working on". Distinct from:
-//   • process.cwd() — the shell cwd Monad was launched from. Only the
+//   • process.cwd() — the shell cwd Elanous was launched from. Only the
 //     boot default; never mutated (process.chdir never called).
 //   • WorkingDirState.cwd — the browser pane's navigation cursor.
 //     Purely UI; does not affect shell/edit/gate.
@@ -30,7 +30,7 @@ import { existsSync, realpathSync, statSync } from 'node:fs';
 import { homedir, tmpdir } from 'node:os';
 import { dirname, join, resolve, sep } from 'node:path';
 
-const PROJECT_MARKERS = ['.monad', '.git', 'package.json', 'pyproject.toml', 'go.mod', 'Cargo.toml'] as const;
+const PROJECT_MARKERS = ['.elanous', '.git', 'package.json', 'pyproject.toml', 'go.mod', 'Cargo.toml'] as const;
 
 function canonicalPath(path: string): string {
   const resolvedPath = resolve(path);

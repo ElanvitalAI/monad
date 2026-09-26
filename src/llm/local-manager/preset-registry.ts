@@ -2,7 +2,7 @@
 //
 // Reads the bundled `src/llm/local-manager/presets.yaml` file (built-in
 // vendor-recommended sampling/output/behaviour for each model family)
-// and merges in any user override at `~/.monad/local-llm-presets.yaml`.
+// and merges in any user override at `~/.elanous/local-llm-presets.yaml`.
 // Exposes `findPresetForModel(modelId)` for runtime lookup +
 // `listPresets()` for UI/inspection.
 //
@@ -10,7 +10,7 @@
 //   - Built-in presets ship with the binary; YAML is the source of
 //     truth so vendor-recipe changes are a doc-only edit (no recompile).
 //   - User override file is optional; entries with the same `id` win
-//     over built-in (same precedence rule as monad's other registries).
+//     over built-in (same precedence rule as elanous's other registries).
 //   - Match precedence is REGISTRY ORDER — first match wins. The
 //     catch-all `openai-default` belongs last in the YAML.
 //   - The `null` preset shape (`NULL_PRESET`) lets callers express
@@ -101,7 +101,7 @@ function builtinPath(): string {
 }
 
 function userOverridePath(): string {
-  return join(homedir(), '.monad', 'local-llm-presets.yaml');
+  return join(homedir(), '.elanous', 'local-llm-presets.yaml');
 }
 
 function loadFile(path: string): LlmParamPreset[] {

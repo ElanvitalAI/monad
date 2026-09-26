@@ -1,4 +1,4 @@
-// NEXUS / monad serve — multi-LLM runTurn wire smoke.
+// NEXUS / elanous serve — multi-LLM runTurn wire smoke.
 //
 // Regression guard for the bug class fixed by PR #2079: NEXUS daemon
 // (`src/nexus/index.ts`) was wiring its ACP runTurn from the legacy
@@ -6,9 +6,9 @@
 // multi-LLM-aware composer (`createDaemonMultiLlmRunTurn`). Result:
 // DM-1 / DM-2 / DM-3 / DM3 FU 4-track stack (~6,000 LOC across
 // #1928 #1932 #1940 #2072) was dead-code in production — Showroom
-// `_meta.monad.multiLlm` hint dispatched the prompt but the legacy
+// `_meta.elanous.multiLlm` hint dispatched the prompt but the legacy
 // bridge ignored it, the response was broadcast without
-// `_meta.monad.modelId`, and the client filtered every chunk.
+// `_meta.elanous.modelId`, and the client filtered every chunk.
 //
 // The composer is a strict superset — it falls through to the legacy
 // single-LLM bridge when no hint is present, so vanilla ACP clients
@@ -17,7 +17,7 @@
 // is silent multi-LLM dispatch failure.
 //
 // This test pins the entry-point wire so any new daemon process
-// (NEXUS, `monad serve`-style legacy runtime, future fork) needs to
+// (NEXUS, `elanous serve`-style legacy runtime, future fork) needs to
 // keep using the composer. Source-level grep is intentionally simple
 // and brittle — that brittleness is the point: anyone touching the
 // wire will trip this test before the production bug ships.
@@ -49,7 +49,7 @@ describe('NEXUS daemon · multi-LLM-aware runTurn composer wire (regression for 
     const src = readSource('src/nexus/index.ts');
     // The composer call must exist in the runtime block. The legacy
     // single-LLM `createDaemonRunTurn` would silently drop
-    // `_meta.monad.multiLlm` hints and break Showroom dispatch.
+    // `_meta.elanous.multiLlm` hints and break Showroom dispatch.
     //
     // R1 IntentContext extension (2026-05-09) wraps the composer's
     // output in an outer `runTurn` that captures errors / tool_use
@@ -75,11 +75,11 @@ describe('NEXUS daemon · multi-LLM-aware runTurn composer wire (regression for 
   });
 });
 
-describe('legacy `monad serve` runtime · multi-LLM composer wire', () => {
+describe('legacy `elanous serve` runtime · multi-LLM composer wire', () => {
   test('src/boot/daemon-runtime.ts createDaemonRuntime uses createDaemonMultiLlmRunTurn', () => {
     const src = readSource('src/boot/daemon-runtime.ts');
     // The wrapper at line ~556 (require'd lazy to break the import
-    // cycle) is the single point where `monad serve` boots its
+    // cycle) is the single point where `elanous serve` boots its
     // runTurn handler. It must compose, not call the legacy directly.
     expect(src).toMatch(/createDaemonMultiLlmRunTurn/);
     // And the resulting `runTurn` should be the composer's return.

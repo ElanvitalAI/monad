@@ -23,8 +23,8 @@ describe('Telegram inline-keyboard + callback_query (T2-P6)', () => {
     });
     const r = await bot.sendInlineKeyboard(111, 'Approve?', [
       [
-        { text: 'Yes', data: 'monad-hitl:req:yes' },
-        { text: 'No',  data: 'monad-hitl:req:no'  },
+        { text: 'Yes', data: 'elanous-hitl:req:yes' },
+        { text: 'No',  data: 'elanous-hitl:req:no'  },
       ],
     ]);
     expect(r?.messageId).toBe(42);
@@ -34,7 +34,7 @@ describe('Telegram inline-keyboard + callback_query (T2-P6)', () => {
     expect(rm.inline_keyboard.length).toBe(1);
     expect(rm.inline_keyboard[0]!.length).toBe(2);
     expect(rm.inline_keyboard[0]![0]!.text).toBe('Yes');
-    expect(rm.inline_keyboard[0]![0]!.callback_data).toBe('monad-hitl:req:yes');
+    expect(rm.inline_keyboard[0]![0]!.callback_data).toBe('elanous-hitl:req:yes');
   });
 
   test('callback_data is truncated to 64 bytes', async () => {
@@ -84,7 +84,7 @@ describe('Telegram inline-keyboard + callback_query (T2-P6)', () => {
         id: 'cq-1',
         from: { id: 99, first_name: 'Alice' },
         message: { message_id: 10, chat: { id: 111, type: 'private' as const } },
-        data: 'monad-hitl:req:yes',
+        data: 'elanous-hitl:req:yes',
       },
     } as never;
     // callback_query has no `message`, so parseUpdate (which only

@@ -21,7 +21,7 @@ afterEach(() => {
 });
 
 const tokens = (a: string) => ({ accessToken: a, refreshToken: `${a}-r`, expiresAt: null });
-const store = () => join(root, 'monad-auth.json');
+const store = () => join(root, 'elanous-auth.json');
 const homeOf = (n: string) => join(root, n);
 const authOf = (n: string) => join(homeOf(n), 'auth.json');
 
@@ -128,7 +128,7 @@ describe('reconcile(읽기) 방향도 «그 계정의 홈»만 본다 (2R must-f
   test('⛔ 홈을 모르는 이름 계정은 «어느 미러도» 안 읽는다', async () => {
     const { resolveCodexAccount } = await import('../../src/oauth/codex-account');
     // 홈 없이 이름만 주면 기본으로 떨어진다 ⇒ 이름 계정으로 «미러를 고를 일 자체가» 안 생긴다
-    expect(resolveCodexAccount({ MONAD_CODEX_ACCOUNT: 'ghost' }).storeKey).toBe('openai-codex');
+    expect(resolveCodexAccount({ ELANOUS_CODEX_ACCOUNT: 'ghost' }).storeKey).toBe('openai-codex');
   });
 });
 
@@ -160,7 +160,7 @@ describe('정본 스토어가 아는 계정 — 이름 계정을 «전부» 말�
 describe('실효 홈은 «한 자»가 낸다 — 표면과 런타임이 같은 값을 본다', () => {
   test('⛔ env 가 다른 홈을 말해도 «정본 기록»이 이기고, 표면은 그 불일치를 «값으로» 말한다', async () => {
     const { effectiveCodexHome, resolveCodexAccount } = await import('../../src/oauth/codex-account');
-    const account = resolveCodexAccount({ MONAD_CODEX_ACCOUNT: 'team', MONAD_CODEX_ACCOUNT_HOME: homeOf('declared') });
+    const account = resolveCodexAccount({ ELANOUS_CODEX_ACCOUNT: 'team', ELANOUS_CODEX_ACCOUNT_HOME: homeOf('declared') });
     expect(account.home).toBe(homeOf('declared'));    // 선언은 env 것
 
     const eff = effectiveCodexHome(account, { codexHome: homeOf('teamhome') });
@@ -171,7 +171,7 @@ describe('실효 홈은 «한 자»가 낸다 — 표면과 런타임이 같은 
 
   test('둘이 같으면 «불일치 표기»가 없다 — 없는 경고를 만들지 않는다', async () => {
     const { effectiveCodexHome, resolveCodexAccount } = await import('../../src/oauth/codex-account');
-    const account = resolveCodexAccount({ MONAD_CODEX_ACCOUNT: 'team', MONAD_CODEX_ACCOUNT_HOME: homeOf('teamhome') });
+    const account = resolveCodexAccount({ ELANOUS_CODEX_ACCOUNT: 'team', ELANOUS_CODEX_ACCOUNT_HOME: homeOf('teamhome') });
     const eff = effectiveCodexHome(account, { codexHome: homeOf('teamhome') });
     expect(eff.declaredHome).toBeUndefined();
   });
@@ -179,7 +179,7 @@ describe('실효 홈은 «한 자»가 낸다 — 표면과 런타임이 같은 
   test('⛔ 정본이 이름 계정의 홈을 모르면 실효 홈은 «없다» — 어디에도 안 쓴다', async () => {
     const { effectiveCodexHome, resolveCodexAccount } = await import('../../src/oauth/codex-account');
     // 이름만 주고 홈을 안 주면 resolve 가 기본으로 떨어뜨린다 ⇒ 이름 계정 해석을 직접 만든다
-    const named = { ...resolveCodexAccount({ MONAD_CODEX_ACCOUNT: 'team', MONAD_CODEX_ACCOUNT_HOME: homeOf('x') }), storeKey: 'openai-codex:team' };
+    const named = { ...resolveCodexAccount({ ELANOUS_CODEX_ACCOUNT: 'team', ELANOUS_CODEX_ACCOUNT_HOME: homeOf('x') }), storeKey: 'openai-codex:team' };
     const eff = effectiveCodexHome(named, null);
     expect(eff.home).toBeUndefined();
     expect(eff.source).toBe('none');
@@ -194,7 +194,7 @@ describe('실효 홈은 «한 자»가 낸다 — 표면과 런타임이 같은 
 
     // 그런데 env 는 «다른» 홈을 선언한다
     const view = activeCodexAccountView(
-      { MONAD_CODEX_ACCOUNT: 'team', MONAD_CODEX_ACCOUNT_HOME: homeOf('declared') },
+      { ELANOUS_CODEX_ACCOUNT: 'team', ELANOUS_CODEX_ACCOUNT_HOME: homeOf('declared') },
       store(),
     );
     expect(view.name).toBe('team');

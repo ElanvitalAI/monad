@@ -2,7 +2,7 @@
 //
 // SIGTERM handler that lets the OS supervisor (launchd / systemd) restart
 // nexus while preserving the previous incarnation's tab roster:
-//   1. Snapshot active tab ids → ~/.monad/nexus/restart-state.json (0o600)
+//   1. Snapshot active tab ids → ~/.elanous/nexus/restart-state.json (0o600)
 //   2. Drain supervisor (stop children with grace window)
 //   3. Run the caller-supplied release (lock · runtime sidecar · http)
 //   4. Exit with code 75 (hermes pattern — OS supervisor respawns on 75,
@@ -153,7 +153,7 @@ export async function gracefulExit(opts: GracefulExitOpts): Promise<void> {
   exit(code);
 }
 
-/** Counterpart to gracefulExit — explicit user stop (Ctrl-C / monad nexus
+/** Counterpart to gracefulExit — explicit user stop (Ctrl-C / elanous nexus
  *  --stop). Clears any restart-state to keep the OS supervisor from
  *  respawning, drains supervisor, runs release, exits 0. */
 export async function cleanExit(

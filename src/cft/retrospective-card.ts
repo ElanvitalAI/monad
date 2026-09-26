@@ -15,7 +15,7 @@ export type RootCauseCategory =
 export interface RetrospectiveAction {
   /** 1-line action description. */
   action: string;
-  /** Owner — '@self' for monad to retry, otherwise user/team handle. */
+  /** Owner — '@self' for elanous to retry, otherwise user/team handle. */
   owner: string;
   /** Optional deadline ISO. */
   due?: string;

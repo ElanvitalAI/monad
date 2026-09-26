@@ -1,9 +1,9 @@
 // ACP 세션 id 유니크화 회귀 잠금 (2026-07-24)
 //
-// 고친 버그: 세션 id 접미가 프로세스 로컬 카운터(`monad-session-1`, `-2`, …)라
+// 고친 버그: 세션 id 접미가 프로세스 로컬 카운터(`elanous-session-1`, `-2`, …)라
 // **데몬을 재시작할 때마다 1로 리셋**됐다. 그래서 서로 무관한 대화가 같은 id 를
 // 공유했고 — 실측으로 2026-07-09 대화와 2026-07-23 대화가 둘 다
-// `monad-session-1` 이었다 — on-disk 미러(`~/.monad/sessions/<id>.jsonl`)가
+// `elanous-session-1` 이었다 — on-disk 미러(`~/.elanous/sessions/<id>.jsonl`)가
 // 두 대화를 한 파일로 합쳤을 것이다. 그 결과 사고 대화를 사후 조회할 수 없었다.
 //
 // 설계: 내부 문서 `PLAN-self-cognition-observability-surgery-2026-07-24` §3
@@ -61,13 +61,13 @@ describe('mintAcpSessionToken', () => {
 });
 
 describe('acpServerRegisterSession — id 발급', () => {
-  test('monad-session- 접두를 유지한다 (접두 판정 소비자 무영향)', () => {
+  test('elanous-session- 접두를 유지한다 (접두 판정 소비자 무영향)', () => {
     const sessions = new Map<string, AcpServerSession>();
     const rec = acpServerRegisterSession(
       sessions, new DualRoleManager(), () => 'abc123', '/w',
     );
-    expect(rec.id).toBe('monad-session-abc123');
-    expect(rec.id.startsWith('monad-session')).toBe(true);
+    expect(rec.id).toBe('elanous-session-abc123');
+    expect(rec.id.startsWith('elanous-session')).toBe(true);
   });
 
   test('살아있는 세션과 충돌하면 재발급한다 (두 대화가 한 스트림을 공유하지 않게)', () => {
@@ -78,11 +78,11 @@ describe('acpServerRegisterSession — id 발급', () => {
     const next = () => tokens[Math.min(i++, tokens.length - 1)]!;
 
     const first = acpServerRegisterSession(sessions, manager, next, '/a');
-    expect(first.id).toBe('monad-session-dup000');
+    expect(first.id).toBe('elanous-session-dup000');
 
     // 두 번째는 같은 토큰을 먼저 뱉지만 이미 점유돼 있으므로 재발급되어야 한다.
     const second = acpServerRegisterSession(sessions, manager, next, '/b');
-    expect(second.id).toBe('monad-session-fresh1');
+    expect(second.id).toBe('elanous-session-fresh1');
     expect(second.id).not.toBe(first.id);
     expect(sessions.size).toBe(2);
   });
@@ -94,14 +94,14 @@ describe('acpServerRegisterSession — id 발급', () => {
     const stuck = () => 'stuck0';
 
     const first = acpServerRegisterSession(sessions, manager, stuck, '/a');
-    expect(first.id).toBe('monad-session-stuck0');
+    expect(first.id).toBe('elanous-session-stuck0');
 
     // 예산 소진 후에도 throw/hang 하지 않고, **다른 id** 로 착지해야 한다.
     // 같은 키로 덮어쓰면 살아있는 대화의 레코드가 소실된다 — 이 변경이
     // 막으려는 사고와 정확히 같은 종류다.
     const second = acpServerRegisterSession(sessions, manager, stuck, '/b');
     expect(second.id).not.toBe(first.id);
-    expect(second.id.startsWith('monad-session-stuck0-')).toBe(true);
+    expect(second.id.startsWith('elanous-session-stuck0-')).toBe(true);
     expect(sessions.size).toBe(2);
     // 첫 세션 레코드가 그대로 살아 있어야 한다.
     expect(sessions.get(first.id)?.cwd).toBe('/a');

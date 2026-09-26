@@ -93,7 +93,7 @@ export type BotCommandDispatchOptions =
  *
  * 🚨 계기 — `/chart` 가 폰에서 «무응답»인데 ***이유를 아무 데서도 못 봤다***:
  * ```
- * 📏 monad logs --since 5m --limit 400 --json --json-data | (chart|slash) 일치  ⇒ ***0건***
+ * 📏 elanous logs --since 5m --limit 400 --json --json-data | (chart|slash) 일치  ⇒ ***0건***
  * 📏 telegram 카테고리는 ***lifecycle 만*** 찍는다(bot starting · published)
  * ```
  * ⛔ 그래서 45분을 «가설과 반증»으로만 좁혔고 원인에 못 닿았다.
@@ -104,7 +104,7 @@ export type BotCommandDispatchOptions =
  *
  * 🩸🆕⭐⭐ **그런데 42차가 그것을 `botCommandsToTelegram` «안»에 심었다** (2026-09-02 · 43차 실측):
  * ```
- * 📏 디스코드는 «살아 있다» — @monad_agent · gateway READY 9회 · 길드 등록 11개 × 7회
+ * 📏 디스코드는 «살아 있다» — @elanous_agent · gateway READY 9회 · 길드 등록 11개 × 7회
  * 📏 그 11 = 봇 명령 «여섯»(bots·bot·screen·chart·routines·botsay) ⊕ 다른 다섯
  * ⛔ 그런데 botCommandsToDiscord 는 command.handler 를 «직접» 불렀다
  *    ⇒ 사람이 디스코드에서 /screen 이나 /chart 를 부르면 ***그 사건이 어디에도 안 남는다***

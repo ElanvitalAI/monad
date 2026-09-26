@@ -1,6 +1,6 @@
 // ── 2계층 리뷰 무게 판정 — light(1차 충분) / heavy(2차 Opus 심판 머스트) (2026-07-23) ──
 //
-// ROADMAP-monad-is-all §2b(무인레벨 삼각). 대표 co-design: 리뷰어를 계층화한다.
+// ROADMAP-elanous-is-all §2b(무인레벨 삼각). 대표 co-design: 리뷰어를 계층화한다.
 //   1차 리뷰어(reviewPullRequest·LGTM/approve) · 2차 리뷰어(ACP Opus 최종심판·acp-judge).
 // 작업 무게로 경계를 가른다:
 //   - **소작업(light)**: 1차 리뷰어 + tsc 게이트로 충분 → clean 이면 approve+자동머지(2차 생략).

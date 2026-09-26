@@ -7,11 +7,11 @@ import { effectiveInstanceRoot, prodInstanceRoot, treeDerivedRootFor } from './r
 interface ChildInstanceScope {
   configDir?: string;
   stateDir?: string;
-  monadBinRoot: string;
+  elanousBinRoot: string;
   /**
    * ⛔⭐⭐⭐ **이 `stateDir` 이 «파생»인가 — 자식이 그것을 알아야 한다**(2026-08-19 · `OBS-T121`).
    *
-   * 🚨 왜 필요한가 — 자식은 `MONAD_STATE_DIR` «문자열 하나»만 받는다. 그래서
+   * 🚨 왜 필요한가 — 자식은 `ELANOUS_STATE_DIR` «문자열 하나»만 받는다. 그래서
    *   ***「사람이 격리를 말했다」와 「부모가 트리에서 «파생»해 줬다」를 구분할 수 없다.***
    *   ⇒ 그 결과 「바깥 계정의 상태」(쿼터 신호)까지 그 우주에서 읽고, 아무도 갱신하지 않는
    *     사본이 낡아 ***회전이 이미 100% 인 계정을 골랐다*** — 같은 골이 «네 번» 429 로 죽었다.
@@ -24,7 +24,7 @@ interface ChildInstanceScope {
 
 /**
  * ⛔⭐⭐ **자식 우주의 config 는 «운영의 사본»이고, 한 번 뜬 뒤로 운영을 따라오지 않는다**
- *   (`monad config sync-test` 가 물질화한 사본 — `src/cli/config-test-sync.ts`).
+ *   (`elanous config sync-test` 가 물질화한 사본 — `src/cli/config-test-sync.ts`).
  *
  * 🚨 2026-09-23 실물 과금 인시던트: 한 트리의 격리 사본이 **2026-09-10 부터 `openai-codex` 로 얼어**
  *   있었고, 운영은 그 뒤 grok 으로 옮겨졌다. ***그 우주의 런들은 계속 codex 로 쐈고 아무도 몰랐다.***
@@ -71,7 +71,7 @@ function instanceScopeLog(event: string, data: Record<string, unknown>, warn = f
 
 /** Resolve the current universe once; operational parents derive an isolated child universe by default. */
 export function childInstanceScope(deps: ChildInstanceScopeDeps = {}): ChildInstanceScope {
-  const monadBinRoot = resolve(import.meta.dir, '../..');
+  const elanousBinRoot = resolve(import.meta.dir, '../..');
   const root = (deps.effectiveRoot ?? effectiveInstanceRoot)();
   const prodRoot = (deps.prodRoot ?? prodInstanceRoot)();
   const parentIsProduction = root === prodRoot;
@@ -95,13 +95,13 @@ export function childInstanceScope(deps: ChildInstanceScopeDeps = {}): ChildInst
   };
 
   if (!parentIsProduction) {
-    const scope = { configDir: root, stateDir: root, monadBinRoot };
+    const scope = { configDir: root, stateDir: root, elanousBinRoot };
     log('child-scope', { parentIsProduction, mode, scope, why: 'parent is already non-production; preserve its universe' });
     observeProviderDrift(root, 'parent universe preserved; its config copy may predate the operational one');
     return scope;
   }
   if (mode === 'inherit') {
-    const scope = { monadBinRoot };
+    const scope = { elanousBinRoot };
     log('child-scope', { parentIsProduction, mode, scope, why: 'operator selected parent-universe inheritance' });
     return scope;
   }
@@ -109,7 +109,7 @@ export function childInstanceScope(deps: ChildInstanceScopeDeps = {}): ChildInst
   try {
     const childRoot = (deps.derivedRoot ?? treeDerivedRootFor)((deps.cwd ?? process.cwd)());
     if (!childRoot) throw new Error('derived child root is unavailable');
-    const scope = { configDir: childRoot, stateDir: childRoot, monadBinRoot, stateDirSource: 'derived' as const };
+    const scope = { configDir: childRoot, stateDir: childRoot, elanousBinRoot, stateDirSource: 'derived' as const };
     log('child-scope', { parentIsProduction, mode, scope, why: 'operational parent defaults to a resolver-derived isolated child universe' });
     observeProviderDrift(childRoot, 'derived child universe carries a materialized copy that does not follow production');
     return scope;

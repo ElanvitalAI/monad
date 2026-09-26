@@ -229,8 +229,8 @@ describe('TTS provider availability and unpaid default', () => {
     tmpConfigDir = mkdtempSync(join(tmpdir(), 'tts-singleton-cfg-'));
     process.env.XDG_CONFIG_HOME = tmpConfigDir;
     if (body !== undefined) {
-      mkdirSync(join(tmpConfigDir, 'monad'), { recursive: true });
-      writeFileSync(join(tmpConfigDir, 'monad', 'config.json'), body);
+      mkdirSync(join(tmpConfigDir, 'elanous'), { recursive: true });
+      writeFileSync(join(tmpConfigDir, 'elanous', 'config.json'), body);
     }
   }
 

@@ -2,7 +2,7 @@
 // connected/not-configured shape per integration channel.
 //
 // We isolate the test from the user's actual UserConfig + secret
-// store by pointing MONAD_NEXUS_DIR at a tmp dir, loading the
+// store by pointing ELANOUS_NEXUS_DIR at a tmp dir, loading the
 // SwitchRegistry built-ins, and writing fixture switches /
 // secrets via the public APIs.
 
@@ -20,19 +20,19 @@ import {
 } from '../src/nexus/config/user-config.js';
 import { setSecret, deleteSecret } from '../src/nexus/config/secrets/index.js';
 import { loadAllBuiltins } from '../src/nexus/config/builtins/index.js';
-import { setMonadConfigDir, resetMonadConfigDir } from '../src/monad-config-dir.js';
+import { setElanousConfigDir, resetElanousConfigDir } from '../src/elanous-config-dir.js';
 
 let tmpDir: string;
 
 beforeEach(() => {
   tmpDir = mkdtempSync(join(tmpdir(), 'platforms-test-'));
-  setMonadConfigDir(tmpDir);
+  setElanousConfigDir(tmpDir);
   mkdirSync(tmpDir, { recursive: true });
   loadAllBuiltins();
 });
 
 afterEach(() => {
-  resetMonadConfigDir();
+  resetElanousConfigDir();
   try { rmSync(tmpDir, { recursive: true, force: true }); } catch { /* ignore */ }
 });
 

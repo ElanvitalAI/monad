@@ -48,7 +48,7 @@ function mkPushcut(configured: boolean, captureNotify?: (name: string, payload: 
 }
 
 function mkFile(body: string): { localPath: string; size: number } {
-  const dir = mkdtempSync(joinPath(tmpdir(), 'monad-iphone-xfer-'));
+  const dir = mkdtempSync(joinPath(tmpdir(), 'elanous-iphone-xfer-'));
   const path = joinPath(dir, 'sample.bin');
   writeFileSync(path, body, 'utf-8');
   return { localPath: path, size: Buffer.byteLength(body) };
@@ -60,7 +60,7 @@ describe('iphoneTransfer — tailscale path', () => {
       kind: 'iphone',
       name: 'My iPhone',
       tailscaleHost: 'iphone.ts.net',
-      pushcutName: 'monad-file-received',
+      pushcutName: 'elanous-file-received',
     };
     const file = mkFile('hello');
     const r = await iphoneTransfer({
@@ -82,7 +82,7 @@ describe('iphoneTransfer — tailscale path', () => {
       kind: 'iphone',
       name: 'x',
       tailscaleHost: 'iphone.ts.net',
-      pushcutName: 'monad-file-received',
+      pushcutName: 'elanous-file-received',
     };
     const file = mkFile('hello');
     const pushcut = mkPushcut(true);
@@ -121,7 +121,7 @@ describe('iphoneTransfer — tailscale path', () => {
 describe('iphoneTransfer — pushcut path', () => {
   test('pushcut when no tailscaleHost configured', async () => {
     const target: TransferTarget = {
-      kind: 'iphone', name: 'x', pushcutName: 'monad-file-received',
+      kind: 'iphone', name: 'x', pushcutName: 'elanous-file-received',
     };
     const file = mkFile('abc');
     const pushcut = mkPushcut(true);
@@ -151,7 +151,7 @@ describe('iphoneTransfer — pushcut path', () => {
 
   test('config-missing when pushcut not configured', async () => {
     const target: TransferTarget = {
-      kind: 'iphone', name: 'x', pushcutName: 'monad-file-received',
+      kind: 'iphone', name: 'x', pushcutName: 'elanous-file-received',
     };
     const file = mkFile('x');
     const pushcut = mkPushcut(false);

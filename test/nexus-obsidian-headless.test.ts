@@ -12,7 +12,7 @@ import { ObsidianHeadlessRunner } from '../src/nexus/sync/obsidian-headless';
 let stagingDir = '';
 
 beforeEach(() => {
-  stagingDir = mkdtempSync(join(tmpdir(), 'monad-ob-test-'));
+  stagingDir = mkdtempSync(join(tmpdir(), 'elanous-ob-test-'));
 });
 
 afterEach(() => {

@@ -114,7 +114,7 @@ export interface ViewSurfaceSpec {
    *  pipeline fills the modal's rect with the backdrop's fg/bg before
    *  drawing the view, producing a visible pastel surface behind
    *  modal contents. Opt out via `backdrop: false` or
-   *  `MONAD_MODAL_BACKDROP=off`. `vw` and `execution` tiers skip the
+   *  `ELANOUS_MODAL_BACKDROP=off`. `vw` and `execution` tiers skip the
    *  fill automatically — those are host/overlay surfaces that shouldn't
    *  paint an opaque block over the base frame. */
   theme?: import('../theme/tokens.js').ThemeTokens;
@@ -175,7 +175,7 @@ export interface ModalShadowSpec {
    *  ASCII-only terminals). */
   enabled?: boolean;
   /** Glyph painted in shadow cells. Default `'▓'` — a solid block.
-   *  Honors the MONAD_ASCII_ICONS env var by falling back to `'#'`
+   *  Honors the ELANOUS_ASCII_ICONS env var by falling back to `'#'`
    *  when ASCII mode is active (still visible in dumb terminals). */
   glyph?: string;
 }
@@ -286,7 +286,7 @@ export function resolveBackdropAnsi(opts: {
   tier?: ModalTier;
   backdrop?: boolean;
 }): string {
-  if (process.env.MONAD_MODAL_BACKDROP === 'off') return '';
+  if (process.env.ELANOUS_MODAL_BACKDROP === 'off') return '';
   // Theme precedence: explicit spec.theme > shadow.theme > ambient
   // (dashboard-configured fallback). The ambient getter lets the
   // dashboard thread a theme once at boot so individual modal callers
@@ -318,7 +318,7 @@ export function resolveShadowAnsi(
     if (!prefix) return null;
     return {
       ansi: prefix,
-      glyph: spec.glyph ?? (process.env.MONAD_ASCII_ICONS === '1' ? '#' : '▓'),
+      glyph: spec.glyph ?? (process.env.ELANOUS_ASCII_ICONS === '1' ? '#' : '▓'),
     };
   }
   const flat = theme.modal.shadow;
@@ -327,7 +327,7 @@ export function resolveShadowAnsi(
   if (!prefix) return null;
   return {
     ansi: prefix,
-    glyph: spec.glyph ?? (process.env.MONAD_ASCII_ICONS === '1' ? '#' : '▓'),
+    glyph: spec.glyph ?? (process.env.ELANOUS_ASCII_ICONS === '1' ? '#' : '▓'),
   };
 }
 

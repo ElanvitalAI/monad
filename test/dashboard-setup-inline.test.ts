@@ -10,7 +10,7 @@ import { buildUserConfig } from '../src/user-config.js';
 
 describe('dashboard setup inline helpers', () => {
   test('provider setup updates active provider and preserves a rotation entry', () => {
-    const cfg = buildUserConfig('/tmp/monad-dashboard-setup-inline-provider.json');
+    const cfg = buildUserConfig('/tmp/elanous-dashboard-setup-inline-provider.json');
     const option = findProviderSetupOption('anthropic');
     expect(option).not.toBeNull();
     const next = applyDashboardProviderSetup(cfg, option!, 'sk-ant-1234567890123456');
@@ -60,7 +60,7 @@ describe('dashboard setup inline helpers', () => {
   });
 
   test('discord setup persists token, allowlist, and home channel', () => {
-    const cfg = buildUserConfig('/tmp/monad-dashboard-setup-inline-discord.json');
+    const cfg = buildUserConfig('/tmp/elanous-dashboard-setup-inline-discord.json');
     const next = applyDashboardDiscordSetup(cfg, {
       token: 'discord-token-value',
       allowedUsers: ['123456789012345678'],

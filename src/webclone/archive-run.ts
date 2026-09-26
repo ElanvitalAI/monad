@@ -645,7 +645,7 @@ export async function runArchive(options: ArchiveOptions): Promise<ArchiveRecord
     writeFileSync(join(out, 'NOTICE.md'), notice);
     derived.push({ name: 'NOTICE.md', body: notice, type: 'text/markdown' });
 
-    const dbPath = options.dbPath ?? join(process.env.HOME ?? '.', '.monad', 'webclone.db');
+    const dbPath = options.dbPath ?? join(process.env.HOME ?? '.', '.elanous', 'webclone.db');
     const db = openWebCloneDb(dbPath);
     const capturedAt = new Date().toISOString();
     upsertClone(db, {

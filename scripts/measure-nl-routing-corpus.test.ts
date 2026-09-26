@@ -44,7 +44,7 @@ describe('measure-nl-routing-corpus runner cwd safety', () => {
     const safetyInputs: string[][] = [];
     try {
       await withRunnerEnv({
-        MONAD_SELF_IMPLEMENT_OBSERVE_ONLY: '1',
+        ELANOUS_SELF_IMPLEMENT_OBSERVE_ONLY: '1',
         CORPUS_CWD: outDir,
         CORPUS_OUT: out,
         CORPUS_REPEATS: '1',
@@ -85,7 +85,7 @@ describe('measure-nl-routing-corpus runner cwd safety', () => {
     try {
       console.log = ((line: string) => logs.push(line)) as typeof console.log;
       await withRunnerEnv({
-        MONAD_SELF_IMPLEMENT_OBSERVE_ONLY: '1',
+        ELANOUS_SELF_IMPLEMENT_OBSERVE_ONLY: '1',
         CORPUS_CWD: toolCwd,
         CORPUS_OUT: out,
         CORPUS_REPEATS: '1',

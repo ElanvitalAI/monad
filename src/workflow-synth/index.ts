@@ -3,7 +3,7 @@
 // Pure-ish orchestrator: takes a natural-language `intent`, calls the
 // injected LLM with the system prompt, validates the YAML output,
 // optionally retries once on validation failure (self-repair), and
-// (when `preview=false`) saves the result to `~/.monad/workflows/`.
+// (when `preview=false`) saves the result to `~/.elanous/workflows/`.
 //
 // The LLM is injected so tests can use a deterministic stub.
 //

@@ -148,7 +148,7 @@ describe('defaultFailedTestBaseline', () => {
     const savedFile = process.env.ANDROID_FAILED_TEST_BASELINE_FILE;
     try {
       delete process.env.ANDROID_FAILED_TEST_BASELINE;
-      process.env.ANDROID_FAILED_TEST_BASELINE_FILE = '/tmp/monad-missing-android-baseline.txt';
+      process.env.ANDROID_FAILED_TEST_BASELINE_FILE = '/tmp/elanous-missing-android-baseline.txt';
       expect(defaultFailedTestBaseline()).toBeUndefined();
     } finally {
       if (saved === undefined) delete process.env.ANDROID_FAILED_TEST_BASELINE;
@@ -520,7 +520,7 @@ describe('runAndroidUnitTestGate', () => {
     const c = capture();
     try {
       delete process.env.ANDROID_FAILED_TEST_BASELINE;
-      process.env.ANDROID_FAILED_TEST_BASELINE_FILE = '/tmp/monad-missing-android-baseline.txt';
+      process.env.ANDROID_FAILED_TEST_BASELINE_FILE = '/tmp/elanous-missing-android-baseline.txt';
       const code = runAndroidUnitTestGate({
         args: [], cwd: rootWithGradlew(), log: c.log, error: c.error,
         runGradle: () => ({ status: 1, output: 'BUILD FAILED' }),

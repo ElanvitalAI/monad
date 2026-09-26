@@ -2,7 +2,7 @@
 //
 // [[RFC-pr-as-review-conversation-medium-2026-07-27]] §2B.
 //
-// Git 계정 하나로 남긴 monad 코멘트의 생성자·검토자·심판·안전봉투를 HTML 주석 메타로 구분한다.
+// Git 계정 하나로 남긴 elanous 코멘트의 생성자·검토자·심판·안전봉투를 HTML 주석 메타로 구분한다.
 // 이 규약은 사람 신분 판정을 개선하지 않는다. 사람이 헤더를 직접 쓰지 않을 때의 분류는 계속
 // `pr-review-watch`의 author.login + isBotSignal 폴백이 담당하며, 이 모듈은 파일·네트워크·git을
 // 건드리지 않는 순수 규약만 제공한다. 게시 seam과 소비자 배선은 다음 착지의 몫이다.
@@ -47,14 +47,14 @@ export function format(meta: PrCommentMeta): string {
     const value = meta[key];
     if (value !== undefined) fields.push([key, String(value)]);
   }
-  return `<!-- monad-pr-comment v1 ${fields.map(([key, value]) => `${key}=${encodeValue(value)}`).join(' ')} -->`;
+  return `<!-- elanous-pr-comment v1 ${fields.map(([key, value]) => `${key}=${encodeValue(value)}`).join(' ')} -->`;
 }
 
 /** 본문의 정확한 첫 줄 RFC §2B 메타를 읽는다. 헤더가 없거나 모호·미지원이면 null이다. */
 export function parse(body: string): PrCommentMeta | null {
   const firstLineEnd = body.indexOf('\n');
   const firstLine = firstLineEnd === -1 ? body : body.slice(0, firstLineEnd);
-  const match = /^<!-- monad-pr-comment (\S+)(?: (.*))? -->$/.exec(firstLine);
+  const match = /^<!-- elanous-pr-comment (\S+)(?: (.*))? -->$/.exec(firstLine);
   if (!match || match[1] !== 'v1' || !match[2]) return null;
 
   const fields = new Map<string, string>();

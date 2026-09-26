@@ -30,7 +30,7 @@ export function buildDashboardOptionalToolSpecs(
   // is explicitly false, return ZERO dashboard-scoped optional tools.
   // Stabilization mode (2026-05-03 PM++): TUI tool exposure
   // (DashboardState always-on + TerminalModal always-added)
-  // diverges from JSON-test (`monad repro`) tool exposure and
+  // diverges from JSON-test (`elanous repro`) tool exposure and
   // confounds codex behavior measurement. Flipping this off makes
   // TUI use ONLY host tools — same set the JSON path uses.
   if (deps.userConfig.shell.allowDashboardOptionalTools === false) {

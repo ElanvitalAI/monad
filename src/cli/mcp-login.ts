@@ -112,7 +112,7 @@ export async function runMcpLogin(opts: McpLoginOpts): Promise<McpLoginResult> {
     } else if (persist.written) {
       out.log(`✓ config 갱신 — '${opts.serverId}'.oauthIssuer = ${authorization.metadata.issuer}`);
     }
-    out.log(`  도는 데몬에 반영하려면: monad mcp reload`);
+    out.log(`  도는 데몬에 반영하려면: elanous mcp reload`);
     return { exitCode: 0 };
   } catch (error) {
     out.error(`✗ MCP login failed: ${error instanceof Error ? error.message : String(error)}`);
@@ -126,7 +126,7 @@ async function requestChallenge(url: string, fetchFn?: McpOAuthFetch): Promise<{
   const response = await (fetchFn ?? ((target, init) => fetch(target, init)))(url, {
     method: 'POST',
     headers: { accept: 'application/json', 'content-type': 'application/json' },
-    body: JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'initialize', params: { protocolVersion: '2025-03-26', capabilities: {}, clientInfo: { name: 'monad', version: '1' } } }),
+    body: JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'initialize', params: { protocolVersion: '2025-03-26', capabilities: {}, clientInfo: { name: 'elanous', version: '1' } } }),
   });
   if (response.status !== 401) throw new Error(`initial MCP request returned HTTP ${response.status}; expected 401 authorization challenge`);
   return parseWwwAuthenticate(response.headers.get('www-authenticate') ?? '');

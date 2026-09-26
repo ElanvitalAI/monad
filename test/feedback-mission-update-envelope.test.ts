@@ -7,7 +7,7 @@
 //   4. Optional fields (progress · etaIso · emoji) omit 시 valid
 //   5. op discriminator (start/update/end) 가 envelope.phase 와 독립
 //
-// iOS-side mirror = apps/ios/MonadiOS/MonadiOS/Shared/Feedback/FeedbackEnvelope.swift
+// iOS-side mirror = apps/ios/ElanousiOS/ElanousiOS/Shared/Feedback/FeedbackEnvelope.swift
 
 import { describe, expect, test } from 'bun:test';
 import {

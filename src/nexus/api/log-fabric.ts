@@ -104,7 +104,7 @@ function resolveStoreParam(
   // prod 는 CLI 와 동형으로 암묵 타겟 — prod 데몬이 레지스트리에 아직 없어도
   // (LF7-b 이전 부팅) 홈 스토어 경로는 항상 알 수 있다.
   if (!hit && name === 'prod') {
-    const prodRoot = (deps.prodStateRoot ?? (() => join(homedir(), '.monad')))(); // prod 는 config-dir==state-dir(단일 뿌리)
+    const prodRoot = (deps.prodStateRoot ?? (() => join(homedir(), '.elanous')))(); // prod 는 config-dir==state-dir(단일 뿌리)
     const dbPath = join(prodRoot, 'logs', 'logs.db');
     // ⭐ 이 합성은 «단일 뿌리 하나»를 만든 것이므로 그 수를 «안다» — 지어낸 값이 아니다.
     //   그리고 「걸쳤나」는 그 수에서 나온다(등록부가 쓰는 관계와 같다) — 두 값을 따로 두면 어긋난다.
@@ -459,9 +459,9 @@ export function handleLogsInstances(req: Request, opts: MetaApiOpts, deps: LogFa
   }
   // prod 도 암묵 타겟(리졸버 동형) — 미등록이면 홈 스토어 존재 시 합성.
   if (!instances.some((i) => i.name === 'prod')) {
-    const prodDb = join(homedir(), '.monad', 'logs', 'logs.db');
+    const prodDb = join(homedir(), '.elanous', 'logs', 'logs.db');
     if (existsSync(prodDb)) {
-      instances.push({ name: 'prod', alive: false, dbExists: true, stateDir: join(homedir(), '.monad'), current: false });
+      instances.push({ name: 'prod', alive: false, dbExists: true, stateDir: join(homedir(), '.elanous'), current: false });
     }
   }
   return jsonResponse({ ok: true, self, instances }, 200);
@@ -529,7 +529,7 @@ export async function handleLogsLevelPost(
   const hasLevel = rawLevel !== undefined && rawLevel !== null;
   const hasRender = rawRender !== undefined && rawRender !== null;
   // OH9 — level·render 는 직교 축이라 body 에 둘 중 하나만 와도 된다
-  // (`monad logs level --render on` 은 level 없이 render 만).
+  // (`elanous logs level --render on` 은 level 없이 render 만).
   if (!hasLevel && !hasRender) {
     return jsonResponse({ ok: false, error: 'no_level_or_render', valid: VALID_DEBUG_LEVELS }, 400);
   }

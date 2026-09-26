@@ -1,6 +1,6 @@
 // ── KORU 550주 스윙 운영안 로직 (익절 래더 + 트레일링 손절, 2026-07-06) ──
 //
-// 별도계좌 KORU 550주 스윙(KORU_swing_report §1·§4)을 monad 로직화. 양면:
+// 별도계좌 KORU 550주 스윙(KORU_swing_report §1·§4)을 elanous 로직화. 양면:
 //
 //  상방 — 익절 래더(§1, 시나리오C): 레벨별 매도 물량. 오를수록 계단 실현.
 //    $655(25주)/$680(35)/$700(40)→450 유지 / $750(50)/$800(150)→250 코어.
@@ -10,7 +10,7 @@
 //    손절선도 따라 올린다(고정 $485 아님). 고가 −5%/−8%/−11.5% 3단, 단 전량선은
 //    **본전($539.5) 아래로 절대 안 내림**. 검산: 고가 $610→$580/$561/$540 · $700→$665/$644/$620.
 //
-// state는 ~/.monad/conatus/koru_trailing.json (highwater + 발동 래더). READ-ONLY
+// state는 ~/.elanous/conatus/koru_trailing.json (highwater + 발동 래더). READ-ONLY
 // 판단 — 실제 매도/청산은 verify+HITL. 이 모듈은 트리거 판정·손절선 계산만.
 
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
@@ -183,7 +183,7 @@ export function evaluateKoruSwing(current: number, now: string, path = STATE_PAT
 // ── 예약주문 세팅 가이드 + 스톱 조정 알림 (수동계좌·삼성증권) ──────────
 /** 스윙 평가 → 삼성증권 예약주문 세팅 가이드. 익절 래더(미체결분 지정가 매도) +
  *  손절 스톱로스(트레일링) + 신규 이벤트(익절 도달·손절·스톱 상향). 실시간 체결은
- *  증권사 예약주문/스톱로스가, monad는 세팅 가이드·조정 안내만(10분 체크로 충분). */
+ *  증권사 예약주문/스톱로스가, elanous는 세팅 가이드·조정 안내만(10분 체크로 충분). */
 export function formatOrderPlan(e: KoruSwingEval): string {
   const st = e.state;
   const lines: string[] = ['📋 KORU 550주 삼성증권 세팅 안내', ''];

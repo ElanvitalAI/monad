@@ -1,14 +1,14 @@
-// ── 인스턴스 정체성 — 격리 상태 루트(MONAD_STATE_DIR) → 표시 이름 (2026-07-16) ──
+// ── 인스턴스 정체성 — 격리 상태 루트(ELANOUS_STATE_DIR) → 표시 이름 (2026-07-16) ──
 //
 // LF7(통합 로그 패브릭)이 "쓰기는 물리 격리·읽기는 read-only 연합" 을 세우며 로그 행에
 // `instance` 컬럼(prod · test:<repo>)을 스탬프했다. 세션 저장소도 같은 격리 경계
-// (MONAD_STATE_DIR) 위에 있으므로 **동일한 인스턴스명 유도**를 공유한다 — 로그와 세션이
+// (ELANOUS_STATE_DIR) 위에 있으므로 **동일한 인스턴스명 유도**를 공유한다 — 로그와 세션이
 // 같은 인스턴스를 같은 이름으로 부른다(연합 뷰 정합·제1원칙 자기인지).
 //
 // ⚠️ 인스턴스 정체성 = **리졸브된 state 루트**이지 raw env 가 아니다 (2026-07-27 정정).
-//   - 운영 루트(`~/.monad`) → 'prod' (글로벌 데몬·크론 등 모두 같은 인스턴스)
-//   - `<repo>/.monad-test` → `test:<repo>`
-//   - 그 외 루트(예: ~/.monad/telegram-test) → `test:<dir 이름>`
+//   - 운영 루트(`~/.elanous`) → 'prod' (글로벌 데몬·크론 등 모두 같은 인스턴스)
+//   - `<repo>/.elanous-test` → `test:<repo>`
+//   - 그 외 루트(예: ~/.elanous/telegram-test) → `test:<dir 이름>`
 //
 // 이름 유도(우선순위): setInstanceName() 오버라이드 → effectiveInstanceRoot() → env 폴백.
 // 오버라이드는 데몬/러너 부팅이 config(logs.instanceName)에서 1회 주입(user-config 순환
@@ -17,10 +17,10 @@
 // ⚠️ 왜 env 가 아니라 리졸버인가 — 실측된 마스킹 사건(2026-07-27):
 //   3층(트리 파생 test) 스위치를 켠 뒤, 이름은 env 로·경로는 리졸버로 갈라져 **한 프로세스가
 //   test 스토어에 쓰면서 자기를 'prod' 라 스탬프**했다. 결과가 둘이었다 —
-//     ① `monad logs` 기본 연합(P5)에서 내 우주와 운영이 **둘 다 `⟨prod⟩`** 로 찍혀 출처 구분 불가.
+//     ① `elanous logs` 기본 연합(P5)에서 내 우주와 운영이 **둘 다 `⟨prod⟩`** 로 찍혀 출처 구분 불가.
 //        태그의 존재 이유(어느 우주의 로그인가)가 통째로 무력화됐다.
 //     ② 행의 `instance` 컬럼이 거짓 — 격리 스토어의 행이 운영 것으로 박제됐다.
-//   근본은 "정체성의 축이 둘"이라는 것이었다. `logsDbPath()`(→`monadStateRoot()`)가 이미
+//   근본은 "정체성의 축이 둘"이라는 것이었다. `logsDbPath()`(→`elanousStateRoot()`)가 이미
 //   리졸버를 타므로, **이름도 같은 리졸버를 타야** 경로와 이름이 영원히 같은 우주를 가리킨다.
 //   env(2층)는 리졸버 안에 이미 층으로 들어있어 종전 동작(명시 stateDir)은 그대로 보존된다.
 
@@ -39,10 +39,10 @@ export function setInstanceName(name: string | undefined): void {
 }
 
 /** ⛔⭐⭐ 이름 문자 집합(영숫자·하이픈)으로 **단사** 인코딩한다. 손실 치환(`[^A-Za-z0-9-]` → `-`)은
- *  `monad-drive-A_B` 와 `monad-drive-A-B` 를 **같은 이름으로 충돌**시켜, 가르려던 목적 자체를
+ *  `elanous-drive-A_B` 와 `elanous-drive-A-B` 를 **같은 이름으로 충돌**시켜, 가르려던 목적 자체를
  *  무너뜨린다(무인 리뷰 must-fix · 2026-08-02).
  *  ⇒ 두 갈래로 나눈다:
- *     ⓐ 이미 안전하고 `-` 로 시작하지 않으면 **그대로**(흔한 경우 · `monad-drive-PGfXzo`).
+ *     ⓐ 이미 안전하고 `-` 로 시작하지 않으면 **그대로**(흔한 경우 · `elanous-drive-PGfXzo`).
  *     ⓑ 아니면 선행 `-` 를 붙이고 이스케이프(`-`→`--` · 그 밖은 `-`+**6자리** hex).
  *  ⚠️ 폭은 6이다 — 4자리면 비-BMP 에서 단사가 깨진다(`U+10000` 과 `U+1000` 뒤의 `0` 이 둘 다
  *     `-10000`). 코드포인트 최대가 `0x10FFFF` 라 6자리면 **고정폭**이 보장된다(무인 리뷰 must-fix).
@@ -58,15 +58,15 @@ export function encodeInstanceNameSegment(raw: string): string {
   return out;
 }
 
-/** 명시 stateDir → 인스턴스 이름(순수). `<repo>/.monad-test` → `test:<repo>`. */
+/** 명시 stateDir → 인스턴스 이름(순수). `<repo>/.elanous-test` → `test:<repo>`. */
 export function instanceNameForStateDir(stateDir: string): string {
   const base = basename(stateDir);
-  if (base === '.monad-test') return `test:${basename(dirname(stateDir))}`;
-  // ⛔ 일회용 자식 뿌리는 관례상 `/monad-drive-*/state` 로 끝난다. 그 basename 을 쓰면
+  if (base === '.elanous-test') return `test:${basename(dirname(stateDir))}`;
+  // ⛔ 일회용 자식 뿌리는 관례상 `/elanous-drive-*/state` 로 끝난다. 그 basename 을 쓰면
   //    **그런 스토어가 전부 `test:state` 하나로 접힌다**(2026-08-02 실측 — 70개 넘음).
   //    ⇒ 변별력 없는 basename 이면 부모 디렉토리 이름으로 가른다.
   const parentBase = basename(dirname(stateDir));
-  const discriminatingBase = base === 'state' && parentBase.startsWith('monad-drive-')
+  const discriminatingBase = base === 'state' && parentBase.startsWith('elanous-drive-')
     ? encodeInstanceNameSegment(parentBase)
     : base;
   return `test:${discriminatingBase}`;
@@ -85,7 +85,7 @@ function instanceNameForRoot(root: string, prodRoot: string): string {
 export function resolveInstanceName(): string {
   if (instanceNameOverride) return instanceNameOverride;
   // 경로와 같은 리졸버를 탄다(정체성 축 일원화). 리졸버는 명시 --config-dir(1층) →
-  // MONAD_STATE_DIR(2층) → 트리 파생(3층) → 운영(4층) 순으로 이미 층을 갖고 있다.
+  // ELANOUS_STATE_DIR(2층) → 트리 파생(3층) → 운영(4층) 순으로 이미 층을 갖고 있다.
   try {
     const { effectiveInstanceRoot, prodInstanceRoot } =
       require('./instance/resolve.js') as typeof import('./instance/resolve.js');
@@ -109,12 +109,12 @@ export function resolveInstanceName(): string {
         const { debug } = require('./debug/log.js') as typeof import('./debug/log.js');
         debug.log('instance.identity', 'name-resolver-failed', {
           error: e instanceof Error ? e.message : String(e),
-          envStateDir: process.env.MONAD_STATE_DIR?.trim() ?? null,
+          envStateDir: process.env.ELANOUS_STATE_DIR?.trim() ?? null,
           why: '리졸버 실패 — env 유도로 폴백. 경로(리졸버)와 이름(env)이 갈릴 수 있으니 조사 필요',
         }, { level: 'warn' });
       } catch { /* 관측조차 불가한 부팅 초기 — 이름 유도는 계속한다 */ }
     }
-    const stateDir = process.env.MONAD_STATE_DIR?.trim();
+    const stateDir = process.env.ELANOUS_STATE_DIR?.trim();
     return stateDir ? instanceNameForStateDir(stateDir) : 'prod';
   }
 }

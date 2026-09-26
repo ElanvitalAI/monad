@@ -1,13 +1,13 @@
 // NEXUS · single-instance lock (Phase N-1 PR α)
 //
-// One `monad nexus` process per host at a time. Reuses the
+// One `elanous nexus` process per host at a time. Reuses the
 // telegram-lock primitive (LockMeta · acquire / safeRead / isAlive)
-// so all monad locks (telegram / scheduler / daemon / nexus) share
-// the same shape. The lock lives at `~/.monad/nexus/.lock` (dotfile
+// so all elanous locks (telegram / scheduler / daemon / nexus) share
+// the same shape. The lock lives at `~/.elanous/nexus/.lock` (dotfile
 // per N1-3 decision · convention: file in dir, not sibling).
 //
 // Why dotfile: `find` / `ls` of the directory shows `.lock` clearly
-// as a hidden file vs runtime.json; sibling `~/.monad/nexus.lock`
+// as a hidden file vs runtime.json; sibling `~/.elanous/nexus.lock`
 // would conflict with the future `nexus/` directory entry.
 
 import {

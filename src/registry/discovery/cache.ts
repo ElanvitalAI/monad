@@ -7,7 +7,7 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { homedir } from 'node:os';
 import { join } from 'node:path';
-import { getMonadConfigDir } from '../../monad-config-dir.js';
+import { getElanousConfigDir } from '../../elanous-config-dir.js';
 import type { DiscoveredModel, DiscoverySourceId } from './types.js';
 
 export interface DiscoverySnapshot {
@@ -27,11 +27,11 @@ export interface DiscoverySnapshot {
 
 export function defaultDiscoveryCachePath(): string {
   // Same priority chain as the catalog / live-store helpers — see
-  // src/monad-config-dir.ts for the central resolver.
-  const central = getMonadConfigDir();
-  if (central === join(homedir(), '.monad')) {
-    const testHome = process.env.MONAD_TEST_HOME?.trim();
-    if (testHome) return join(testHome, '.monad', 'discovery-snapshot.json');
+  // src/elanous-config-dir.ts for the central resolver.
+  const central = getElanousConfigDir();
+  if (central === join(homedir(), '.elanous')) {
+    const testHome = process.env.ELANOUS_TEST_HOME?.trim();
+    if (testHome) return join(testHome, '.elanous', 'discovery-snapshot.json');
   }
   return join(central, 'discovery-snapshot.json');
 }

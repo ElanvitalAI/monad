@@ -20,11 +20,11 @@ export function dashboardCanUseTty(stdin: { isTTY?: boolean } = process.stdin): 
 /** 거부 문면 — 스택 없이 사람이 읽고 «다음에 칠 것»을 안다. */
 export function dashboardTtyRefusalMessage(): string {
   return [
-    'monad 대시보드는 stdin TTY가 있는 자리에서만 뜰 수 있다.',
+    'elanous 대시보드는 stdin TTY가 있는 자리에서만 뜰 수 있다.',
     '  지금 stdin 이 TTY 가 아니다(파이프·리다이렉트·비대화형 실행).',
     '  ⛔ 그대로 띄우면 키를 못 읽고 화면만 초당 수백 번 다시 그린다.',
-    '  ✅ 한 줄 물어보기 :  monad ask "<질문>"',
-    '  ✅ 이어서 대화하기:  monad repl',
-    '  ✅ 터미널에서 직접 :  monad        (파이프 없이)',
+    '  ✅ 한 줄 물어보기 :  elanous ask "<질문>"',
+    '  ✅ 이어서 대화하기:  elanous repl',
+    '  ✅ 터미널에서 직접 :  elanous        (파이프 없이)',
   ].join('\n');
 }

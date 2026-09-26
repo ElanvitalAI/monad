@@ -201,7 +201,7 @@ describe('OtelGenAISink — resource attributes', () => {
     const sent: SentBatch[] = [];
     const sink = new OtelGenAISink({
       endpoint: 'x',
-      serviceName: 'monad-test',
+      serviceName: 'elanous-test',
       serviceVersion: '1.2.3',
       batchSize: 1,
       batchIntervalMs: 999_999,
@@ -215,7 +215,7 @@ describe('OtelGenAISink — resource attributes', () => {
         (a: { key: string; value: { stringValue?: string } }) => [a.key, a.value.stringValue],
       ),
     );
-    expect(resAttrs['service.name']).toBe('monad-test');
+    expect(resAttrs['service.name']).toBe('elanous-test');
     expect(resAttrs['service.version']).toBe('1.2.3');
   });
 });

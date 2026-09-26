@@ -17,14 +17,14 @@ const ALL_KEYS = ['ANTHROPIC_API_KEY', 'OPENAI_API_KEY', 'XAI_API_KEY', 'GEMINI_
 
 beforeEach(() => {
   tmpHome = mkdtempSync(join(tmpdir(), 'rrv-'));
-  process.env.MONAD_TEST_HOME = tmpHome;
+  process.env.ELANOUS_TEST_HOME = tmpHome;
   for (const k of ALL_KEYS) delete process.env[k];
   __resetLiveStoreForTests();
 });
 
 afterEach(() => {
   rmSync(tmpHome, { recursive: true, force: true });
-  delete process.env.MONAD_TEST_HOME;
+  delete process.env.ELANOUS_TEST_HOME;
   for (const k of ALL_KEYS) delete process.env[k];
 });
 

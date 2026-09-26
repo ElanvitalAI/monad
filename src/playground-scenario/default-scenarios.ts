@@ -84,8 +84,8 @@ export const THEME_SWITCH_CONTEXT_KEYS: Scenario = {
   description: 'Switch to a pastel theme + verify ContextKeys.themeName update. Smoke test for IDX-6 Phase 3 theme service.',
   tags: ['theme', 'smoke'],
   steps: [
-    { action: 'set-context-key', key: 'themeName' as never, value: 'monad-pastel-default' },
-    { action: 'expect', target: { kind: 'context-key', key: 'themeName' as never, value: 'monad-pastel-default' } },
+    { action: 'set-context-key', key: 'themeName' as never, value: 'elanous-pastel-default' },
+    { action: 'expect', target: { kind: 'context-key', key: 'themeName' as never, value: 'elanous-pastel-default' } },
   ],
 };
 

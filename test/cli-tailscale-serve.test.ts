@@ -55,7 +55,7 @@ let tmp: string;
 let statePath: string;
 
 beforeEach(() => {
-  tmp = mkdtempSync(joinPath(tmpdir(), 'monad-tailscale-serve-'));
+  tmp = mkdtempSync(joinPath(tmpdir(), 'elanous-tailscale-serve-'));
   statePath = joinPath(tmp, 'state.json');
 });
 

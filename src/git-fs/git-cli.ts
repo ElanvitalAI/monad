@@ -6,7 +6,7 @@ import { runGitWithRetry, type GitRunner } from './retry.js';
 
 const LF = 0x0a;
 const HELP_ARGUMENTS = new Set(['--help', '-h']);
-const HELP_GUIDANCE = "[monad git] Wraps git and automatically retries transient lock failures. A final result line such as '[git] status ok rc=0' is written to stderr. Git's own help follows.\n";
+const HELP_GUIDANCE = "[elanous git] Wraps git and automatically retries transient lock failures. A final result line such as '[git] status ok rc=0' is written to stderr. Git's own help follows.\n";
 
 const GLOBAL_OPTIONS_WITH_OPERANDS = new Set([
   '-C',
@@ -158,8 +158,8 @@ export function runGitCli(args: string[]): void {
 
   // ⛔⭐⭐⭐⭐⭐ **상태 줄은 `stderr` 로 나간다** — 2026-08-09 정정(라이브에서 «둘이» 밟았다).
   //   초판은 stdout 에 썼다. 그러면 ***산출을 값으로 쓰는 모든 소비자가 깨진다***:
-  //     `$(monad git rev-parse HEAD)` → SHA ⊕ 상태 줄 «두 줄» (실측)
-  //     `monad gh … --json | jq`      → `jq: parse error` (실측 · `[S]` 가 밟았다)
+  //     `$(elanous git rev-parse HEAD)` → SHA ⊕ 상태 줄 «두 줄» (실측)
+  //     `elanous gh … --json | jq`      → `jq: parse error` (실측 · `[S]` 가 밟았다)
   //   ⭐ 그리고 stderr 가 «파이프 생존»을 더 잘 준다 — 파이프는 stdout «만» 나르므로
   //     `… | jq` 를 해도 상태 줄은 ***사람 화면에 그대로 남는다***. 목적이 더 잘 달성된다.
   //   ⛔ 대신 `2>/dev/null` 이면 안 보인다 — 그건 「stderr 를 버리겠다」는 «명시적 선택»이고

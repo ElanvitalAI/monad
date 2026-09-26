@@ -25,19 +25,19 @@ let prevIntake: string | undefined;
 beforeEach(() => {
   tmpRoot = mkdtempSync(join(tmpdir(), 'i10-runs-nexus-'));
   tmpIntake = mkdtempSync(join(tmpdir(), 'i10-runs-intake-'));
-  prevNexus = process.env.MONAD_NEXUS_DIR;
-  prevIntake = process.env.MONAD_INTAKE_DIR;
-  process.env.MONAD_NEXUS_DIR = tmpRoot;
+  prevNexus = process.env.ELANOUS_NEXUS_DIR;
+  prevIntake = process.env.ELANOUS_INTAKE_DIR;
+  process.env.ELANOUS_NEXUS_DIR = tmpRoot;
   // Point the metrics writer at a tmpdir so the test never appends to
-  // the dev's real ~/.monad/intake/pipeline-runs.jsonl.
-  process.env.MONAD_INTAKE_DIR = tmpIntake;
+  // the dev's real ~/.elanous/intake/pipeline-runs.jsonl.
+  process.env.ELANOUS_INTAKE_DIR = tmpIntake;
 });
 
 afterEach(() => {
-  if (prevNexus === undefined) delete process.env.MONAD_NEXUS_DIR;
-  else process.env.MONAD_NEXUS_DIR = prevNexus;
-  if (prevIntake === undefined) delete process.env.MONAD_INTAKE_DIR;
-  else process.env.MONAD_INTAKE_DIR = prevIntake;
+  if (prevNexus === undefined) delete process.env.ELANOUS_NEXUS_DIR;
+  else process.env.ELANOUS_NEXUS_DIR = prevNexus;
+  if (prevIntake === undefined) delete process.env.ELANOUS_INTAKE_DIR;
+  else process.env.ELANOUS_INTAKE_DIR = prevIntake;
   try { rmSync(tmpRoot, { recursive: true, force: true }); } catch { /* ignore */ }
   try { rmSync(tmpIntake, { recursive: true, force: true }); } catch { /* ignore */ }
 });

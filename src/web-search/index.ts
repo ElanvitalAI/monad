@@ -29,7 +29,7 @@ function registerBuiltins(): void {
   // 순서 = 선호도. ⛔⭐ **tavily 는 config 게이트 뒤에 있다**(대표 2026-08-06 · 기본 OFF) —
   //   상시 유료 검색이 고정비였다. 종전 근거(basic 1cr·~1s 로 grok 대비 30배 저렴·20배 빠름)는
   //   여전히 참이지만 ***「싸다」와 「늘 켜 둔다」는 다른 축***이고, 지시는 후자를 껐다.
-  //   ⇒ 켜면 종전과 «똑같이» 1순위로 복귀한다: `monad config set webSearch.tavily.enabled true`.
+  //   ⇒ 켜면 종전과 «똑같이» 1순위로 복귀한다: `elanous config set webSearch.tavily.enabled true`.
   //   ⚠️ 등록 시점이라 config 변경은 **다음 기동부터** 먹는다(이미 뜬 프로세스엔 안 먹는다).
   if (isTavilySearchEnabled()) providers.push(buildTavilyWebSearchProvider());
   providers.push(buildGrokWebSearchProvider());

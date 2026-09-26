@@ -34,7 +34,7 @@ const imageAttachment: AttachmentMeta = {
   mediaType: 'image/png',
   size: 1024,
   downloadUrl: '/v1/attachments/img-1',
-  path: '/Users/me/.monad/attachments/img-1-photo.png',
+  path: '/Users/me/.elanous/attachments/img-1-photo.png',
 };
 
 const docAttachment: AttachmentMeta = {
@@ -43,7 +43,7 @@ const docAttachment: AttachmentMeta = {
   mediaType: 'application/pdf',
   size: 8192,
   downloadUrl: '/v1/attachments/doc-1',
-  path: '/Users/me/.monad/attachments/doc-1-spec.pdf',
+  path: '/Users/me/.elanous/attachments/doc-1-spec.pdf',
 };
 
 describe('isImageAttachment', () => {

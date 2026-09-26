@@ -68,7 +68,7 @@ async function renderThemeProvider(settle = true) {
   if (settle) await harness.settle();
   return harness.find((element) => 'value' in element.props && 'themes' in (element.props.value as Record<string, unknown>)).props.value as {
     theme: string;
-    setTheme: (theme: 'catppuccin-mocha' | 'mocha-pastel-accent' | 'catppuccin-latte' | 'rose-pine-dawn' | 'nord-light' | 'monad-pastel-default') => void;
+    setTheme: (theme: 'catppuccin-mocha' | 'mocha-pastel-accent' | 'catppuccin-latte' | 'rose-pine-dawn' | 'nord-light' | 'elanous-pastel-default') => void;
   };
 }
 
@@ -80,7 +80,7 @@ function deferred<T>() {
 
 describe('ThemeProvider daemon theme switch', () => {
   test('prefers a valid daemon theme over localStorage after mount', async () => {
-    storage.set('monad.pwa.theme', 'catppuccin-latte');
+    storage.set('elanous.pwa.theme', 'catppuccin-latte');
     client = {
       getSwitch: async () => ({ switch: themeSwitch('nord-light') }),
       putSwitch: async () => hotSwitchWrite(),
@@ -90,7 +90,7 @@ describe('ThemeProvider daemon theme switch', () => {
 
     expect(value.theme).toBe('nord-light');
     expect(documentElement.dataset.theme).toBe('nord-light');
-    expect(storage.get('monad.pwa.theme')).toBe('nord-light');
+    expect(storage.get('elanous.pwa.theme')).toBe('nord-light');
   });
 
   test('keeps a user theme change when a prior daemon lookup resolves late', async () => {
@@ -106,7 +106,7 @@ describe('ThemeProvider daemon theme switch', () => {
     await harness.settle();
 
     expect(documentElement.dataset.theme).toBe('rose-pine-dawn');
-    expect(storage.get('monad.pwa.theme')).toBe('rose-pine-dawn');
+    expect(storage.get('elanous.pwa.theme')).toBe('rose-pine-dawn');
   });
 
   test('writes a user theme change to the daemon switch and localStorage', async () => {
@@ -125,7 +125,7 @@ describe('ThemeProvider daemon theme switch', () => {
 
     expect(putCalls).toEqual([['dashboard.theme.active', { value: 'rose-pine-dawn' }]]);
     expect(documentElement.dataset.theme).toBe('rose-pine-dawn');
-    expect(storage.get('monad.pwa.theme')).toBe('rose-pine-dawn');
+    expect(storage.get('elanous.pwa.theme')).toBe('rose-pine-dawn');
   });
 
   test('keeps local theme changes when the daemon lookup fails', async () => {
@@ -139,6 +139,6 @@ describe('ThemeProvider daemon theme switch', () => {
     await harness.settle();
 
     expect(documentElement.dataset.theme).toBe('nord-light');
-    expect(storage.get('monad.pwa.theme')).toBe('nord-light');
+    expect(storage.get('elanous.pwa.theme')).toBe('nord-light');
   });
 });

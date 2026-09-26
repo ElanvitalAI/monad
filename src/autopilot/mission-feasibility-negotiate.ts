@@ -108,9 +108,9 @@ async function defaultJudge(prompt: string): Promise<string> {
   // ★ 모델 기반 provider 라우팅(2026-07-14) — 협상은 강한 추론이 핵심이라 기본 opus 4.8(대표 셋업).
   //   getProvider(model)로 모델 계열 라우팅(claude-* → anthropic·env/config 키)해 활성 provider(codex 등)
   //   무관하게 지목 모델이 닿는다. resolveDefaultProvider(활성 반환)면 opus 를 codex 로 보내 400→fail-soft.
-  //   env(MONAD_NEGOTIATE_MODEL·MONAD_DECOMPOSE_MODEL)로 override 가능.
+  //   env(ELANOUS_NEGOTIATE_MODEL·ELANOUS_DECOMPOSE_MODEL)로 override 가능.
   const { streamLLM, getProvider } = await import('../llm.js');
-  const model = process.env.MONAD_NEGOTIATE_MODEL || process.env.MONAD_DECOMPOSE_MODEL || 'claude-opus-4-8';
+  const model = process.env.ELANOUS_NEGOTIATE_MODEL || process.env.ELANOUS_DECOMPOSE_MODEL || 'claude-opus-4-8';
   const provider = getProvider(model);
   return streamLLM([{ role: 'user', content: prompt }], () => {}, {
     model, reasoningEffort: 'medium', ...(provider ? { provider } : {}),

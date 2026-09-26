@@ -2,7 +2,7 @@
 // delegate to the FocusManager primitive · primitive is source of
 // truth for focus writes · coord.focus updated via inverse-mirror
 // listener. Legacy behavior preserved under env flag
-// `MONAD_LEGACY_FOCUS=1`.
+// `ELANOUS_LEGACY_FOCUS=1`.
 
 import { afterEach, beforeEach, describe, expect, test } from 'bun:test';
 import { DisplayCoordinator } from '../src/display/index.js';
@@ -21,7 +21,7 @@ function harness() {
   return { coordinator, scheduled, focusChanges };
 }
 
-// Q5 (Phase 3, 2026-05-03) — MONAD_LEGACY_FOCUS env flag removed.
+// Q5 (Phase 3, 2026-05-03) — ELANOUS_LEGACY_FOCUS env flag removed.
 // Cleanup hooks no longer needed.
 
 describe('F-3a — default mode · primitive is source of truth', () => {
@@ -138,9 +138,9 @@ describe('F-3a — cycleFocus uses primitive write path', () => {
 });
 
 // Q5 (Phase 3, 2026-05-03) — Legacy-mode describe blocks removed.
-// MONAD_LEGACY_FOCUS env flag dropped; primitive is the only path.
+// ELANOUS_LEGACY_FOCUS env flag dropped; primitive is the only path.
 // Pre-removal coverage:
-//   • `legacy mode (MONAD_LEGACY_FOCUS=1) · writes go via old path`
+//   • `legacy mode (ELANOUS_LEGACY_FOCUS=1) · writes go via old path`
 //     — 3 tests asserting parity between legacy and default modes.
 //   • `env flag toggled per-call` — 1 test asserting mid-session
 //     mode switching preserved state.

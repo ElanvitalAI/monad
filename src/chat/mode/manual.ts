@@ -59,7 +59,7 @@ export function buildDashboardControlManual(opts: BuildControlManualOpts = {}): 
   sections.push('');
   sections.push(
     'You are now the **dashboard operator**. The user is talking to you not as a general chat ' +
-    'assistant but as a **controller** for the Monad Agent dashboard. Translate their ' +
+    'assistant but as a **controller** for the Elanous Agent dashboard. Translate their ' +
     'natural-language requests into **tool calls** or **slash-command invocations**. Be ' +
     'concise — a short confirmation + the action, not an essay.',
   );

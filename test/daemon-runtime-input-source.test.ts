@@ -105,10 +105,10 @@ describe('daemon runtime input source helpers', () => {
     );
     for (const prompt of [first, second]) {
       expect(prompt).toContain('Input source kind: discord (entry=text)');
-      expect(prompt).toContain('[monad 자기접근 규율]');
+      expect(prompt).toContain('[elanous 자기접근 규율]');
       expect(prompt).toContain('logs_query');
       expect(prompt).toContain('debug.log');
-      expect(prompt).toContain('monad self implement');
+      expect(prompt).toContain('elanous self implement');
       expect(prompt).toContain('harness run');
       expect(prompt).toContain('auto-review');
     }
@@ -144,7 +144,7 @@ describe('createDaemonRunTurn — prompt meta awareness', () => {
     expect(String(system!.content)).toContain('Input source kind: discord (entry=text)');
     expect(String(system!.content)).toContain('현재 요청의 session ID: sess-meta');
     expect(String(system!.content)).toContain('logs_query');
-    expect(String(system!.content)).toContain('monad self implement');
+    expect(String(system!.content)).toContain('elanous self implement');
   });
 });
 
@@ -179,7 +179,7 @@ describe('createDaemonRunTurn — dispatch context userText', () => {
 
     expect(dispatchCtx).toMatchObject({
       cwd: '/tool-cwd',
-      entry: 'monad-apparatus',
+      entry: 'elanous-apparatus',
       sessionId: 'sess-user-text',
       userText,
     });
@@ -190,26 +190,26 @@ describe('createDaemonRunTurn — dispatch context userText', () => {
     const dispatchCtx = await dispatchFromTurn(makeTurnCtx({ userText: '' }));
 
     expect('userText' in dispatchCtx).toBe(false);
-    expect(dispatchCtx).toMatchObject({ cwd: '/tool-cwd', entry: 'monad-apparatus', sessionId: 'sess-1' });
+    expect(dispatchCtx).toMatchObject({ cwd: '/tool-cwd', entry: 'elanous-apparatus', sessionId: 'sess-1' });
   });
 
   test('captures the environment tool cwd during runtime construction before dispatch', async () => {
-    const prior = process.env.MONAD_TOOL_CWD;
+    const prior = process.env.ELANOUS_TOOL_CWD;
     try {
-      process.env.MONAD_TOOL_CWD = '/configured-tool-cwd';
+      process.env.ELANOUS_TOOL_CWD = '/configured-tool-cwd';
       streamImpl = async ({ handlers }) => {
         await handlers.dispatchTool('CaptureCtx', {}, { callId: 'call-1' });
         return '';
       };
       const runTurn = createDaemonRunTurn(new DaemonSessionHistory(), { tools: 'readonly' });
-      process.env.MONAD_TOOL_CWD = '/changed-after-construction';
+      process.env.ELANOUS_TOOL_CWD = '/changed-after-construction';
 
       await runTurn(makeTurnCtx());
 
       expect(dispatchContexts.at(-1)!.cwd).toBe('/configured-tool-cwd');
     } finally {
-      if (prior === undefined) delete process.env.MONAD_TOOL_CWD;
-      else process.env.MONAD_TOOL_CWD = prior;
+      if (prior === undefined) delete process.env.ELANOUS_TOOL_CWD;
+      else process.env.ELANOUS_TOOL_CWD = prior;
     }
   });
 
@@ -250,7 +250,7 @@ describe('createDaemonRunTurn — dispatch context userText', () => {
     await runtime.runTurn(makeTurnCtx({
       sessionId: 'sess-nexus-preload',
       promptMeta: {
-        monad: {
+        elanous: {
           multiLlm: {
             targets: [
               { id: 'panel-one', provider: 'codex' },
@@ -269,8 +269,8 @@ describe('createDaemonRunTurn — dispatch context userText', () => {
       { role: 'user', content: 'hello' },
     ]);
     expect(targetMeta).toEqual(expect.arrayContaining([
-      { monad: { modelId: 'panel-one', provider: 'openai', stopReason: 'end_turn' } },
-      { monad: { modelId: 'panel-two', provider: 'grok', stopReason: 'end_turn' } },
+      { elanous: { modelId: 'panel-one', provider: 'openai', stopReason: 'end_turn' } },
+      { elanous: { modelId: 'panel-two', provider: 'grok', stopReason: 'end_turn' } },
     ]));
   });
 

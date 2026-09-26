@@ -1,11 +1,11 @@
-// monad dev CLI 글루 seam — 옵션 → DevPipelineSpec 매핑(T7·2026-07-25).
+// elanous dev CLI 글루 seam — 옵션 → DevPipelineSpec 매핑(T7·2026-07-25).
 //
-// `monad dev` 를 "통합 도그푸드 진입점"으로 — 재라우팅된 각 경로(self/plan-staged/agent-mission-pty/acp)의 핵심
+// `elanous dev` 를 "통합 도그푸드 진입점"으로 — 재라우팅된 각 경로(self/plan-staged/agent-mission-pty/acp)의 핵심
 // 옵션을 노출한다. 이 seam 은 CLI 옵션을 executor(+plan)에 따라 올바른 축(plan·completion·autoReview·self?·mission?)
 // 으로 라우팅한다(잘못된 조합은 planDevPipeline 이 NotYetUnified 거부·정직). 순수·테스트 가능.
 //
 // ⚠️ interactive(chat)·parallel(orchestrate)은 dev 미지원 — chat 은 cfg-바인딩 runChatTurn 주입 필요(index.ts
-//    소유)·parallel 은 coordinator 해석(decompose/board) 필요. 각자 `monad chat` / `monad self orchestrate` CLI.
+//    소유)·parallel 은 coordinator 해석(decompose/board) 필요. 각자 `elanous chat` / `elanous self orchestrate` CLI.
 //
 // 계약: [[PLAN-u4-completion-remaining-tasks-2026-07-25]] T7 · self-implement-cli/mission-cli 대칭.
 
@@ -59,7 +59,7 @@ import { resolveModelAlias } from '../intelligence-map/model-alias.js';
 import { BUILTIN_CATALOG } from '../intelligence-map/model-catalog.js';
 
 /** `dev --plan` 도움말이 가리키는 대응 문. ⛔ 도움말에 이 문자열을 리터럴로 다시 적지 마라. */
-export const DEV_PLAN_REPLACEMENT = 'monad harness say';
+export const DEV_PLAN_REPLACEMENT = 'elanous harness say';
 
 /** `dev --plan` 옵션 도움말. 목적지는 인자(기본=상수)에서만 온다. */
 export function formatDevPlanOptionHelp(replacement: string = DEV_PLAN_REPLACEMENT): string {
@@ -68,8 +68,8 @@ export function formatDevPlanOptionHelp(replacement: string = DEV_PLAN_REPLACEME
 
 /** dev CLI 옵션(commander) — `--no-*` 는 false 로 도착. input/executor 는 액션이 빌드해 별도 전달. */
 /** `src/index.ts` dev command wrapper must not append a second JSON document after hold emits its result. */
-export function shouldSuppressDevJsonWrapper(opts: Pick<DevCliOpts, 'monad' | 'hold' | 'json'>): boolean {
-  return opts.monad === true && opts.hold === true && opts.json === true;
+export function shouldSuppressDevJsonWrapper(opts: Pick<DevCliOpts, 'elanous' | 'hold' | 'json'>): boolean {
+  return opts.elanous === true && opts.hold === true && opts.json === true;
 }
 
 export interface DevCliOpts {
@@ -83,7 +83,7 @@ export interface DevCliOpts {
   target?: string;
   plan?: boolean;
   implement?: boolean;
-  monad?: boolean;
+  elanous?: boolean;
   hold?: boolean;
   readyTimeoutMs?: string;
   json?: boolean;
@@ -362,7 +362,7 @@ export function hydrateDevGoalCauseObserved(
 }
 
 function pressParentGoalSignals(goalFile: string): DecisionSignalPressResult {
-  const tree = mkdtempSync(join(tmpdir(), 'monad-parent-signals-'));
+  const tree = mkdtempSync(join(tmpdir(), 'elanous-parent-signals-'));
   let attached = false;
   try {
     const fetch = runGitCommand(process.cwd(), ['fetch', 'origin', 'main'], { encoding: 'utf8', timeout: 60_000 });
@@ -1346,7 +1346,7 @@ export function formatChildLlmInterpretationLine(
   return `[dev] child-llm: entered=${resolution.entered} · resolved=${resolution.resolvedId} · tier=${resolution.tier} · thinking=${resolution.supportsThinking}${tail}`;
 }
 
-/** `monad usage --json` 의 grok 행 → 잔량 판정. 한 행이라도 100% 미만이면 usable, 모두 100% 이상이면 exhausted. */
+/** `elanous usage --json` 의 grok 행 → 잔량 판정. 한 행이라도 100% 미만이면 usable, 모두 100% 이상이면 exhausted. */
 export function grokQuotaFromUsageJson(stdout: string): 'usable' | 'exhausted' | 'unknown' {
   try {
     const parsed = JSON.parse(stdout) as { rows?: Array<{ provider?: string; credits?: { status?: string; usedPercent?: number | null } }> };
@@ -1362,11 +1362,11 @@ export function grokQuotaFromUsageJson(stdout: string): 'usable' | 'exhausted' |
 
 /**
  * 발사 때 쓰는 grok 잔량. 🩸 2026-09-24: 캐시(`readCachedGrokQuota` · `budget/state.json`)는 이 기계의 어느 우주에도
- * 파일이 없어 «늘» unknown 이었다 — 그래서 경고가 실물에서 한 번도 안 떴다. 캐시가 모르면 `monad usage --json`
+ * 파일이 없어 «늘» unknown 이었다 — 그래서 경고가 실물에서 한 번도 안 떴다. 캐시가 모르면 `elanous usage --json`
  * (실시간 조회 · 약 3초)을 한 번 불러 판정한다. grok 자식일 때만 불린다.
  */
 let launchGrokQuotaReaderForTesting: (() => 'usable' | 'exhausted' | 'unknown') | undefined;
-/** 시험 전용 — 발사 시험이 실시간 `monad usage` 를 부르지 않게 한다. `undefined` 로 되돌린다. */
+/** 시험 전용 — 발사 시험이 실시간 `elanous usage` 를 부르지 않게 한다. `undefined` 로 되돌린다. */
 export function setLaunchGrokQuotaReaderForTesting(reader: (() => 'usable' | 'exhausted' | 'unknown') | undefined): void {
   launchGrokQuotaReaderForTesting = reader;
 }
@@ -1378,7 +1378,7 @@ export function readGrokQuotaForLaunch(
   const cached = (deps.readCached ?? readCachedGrokQuota)();
   if (cached !== 'unknown') return cached;
   const runUsage = deps.runUsage ?? (() => {
-    const cli = new URL('../../bin/monad.mjs', import.meta.url).pathname;
+    const cli = new URL('../../bin/elanous.mjs', import.meta.url).pathname;
     const r = spawnSync(process.execPath, [cli, 'usage', '--json'], { encoding: 'utf8', timeout: 20_000 });
     return r.status === 0 ? r.stdout : null;
   });
@@ -1399,7 +1399,7 @@ export function warnParentLlmQuota(
 ): boolean {
   if (parentProvider !== 'grok') return false;
   if (readGrokQuota() !== 'exhausted') return false;
-  write('[dev] ⚠️ 부모 LLM(리뷰·판정) = config llm.provider grok · 주간 한도 소진(monad usage) — 리뷰가 판정 없이 시간 초과할 수 있다 · 바꾸려면 llm.provider 또는 roleLlm(review=openai-codex)\n');
+  write('[dev] ⚠️ 부모 LLM(리뷰·판정) = config llm.provider grok · 주간 한도 소진(elanous usage) — 리뷰가 판정 없이 시간 초과할 수 있다 · 바꾸려면 llm.provider 또는 roleLlm(review=openai-codex)\n');
   debug.log('self-dev', 'parent-llm-quota-exhausted', { provider: parentProvider });
   return true;
 }
@@ -1427,7 +1427,7 @@ function announceChildLlmInterpretation(
   });
   process.stderr.write(`${formatChildLlmInterpretationLine(resolution, effort)}\n`);
   if (selection.provider === 'grok' && readGrokQuota() === 'exhausted') {
-    process.stderr.write('[dev] ⚠️ child-llm grok 주간 한도 소진(monad usage) — 자식이 응답을 못 받아 도구 0회로 끝날 수 있다 · 바꾸려면 --child-llm-provider openai-codex --child-llm-model <모델>\n');
+    process.stderr.write('[dev] ⚠️ child-llm grok 주간 한도 소진(elanous usage) — 자식이 응답을 못 받아 도구 0회로 끝날 수 있다 · 바꾸려면 --child-llm-provider openai-codex --child-llm-model <모델>\n');
     debug.log('self-dev', 'child-llm-quota-exhausted', {
       provider: selection.provider, model: selection.model, selection: selection.source,
     });
@@ -1551,16 +1551,16 @@ export function parseActivityGraceSec(raw: string): number {
   return n;
 }
 
-type DevPath = 'plan-staged' | 'interactive' | 'monad-tui' | 'shell-drive' | 'self-mission' | 'agent-mission-pty' | 'acp';
-function resolveDevPath(executor: DevCliExecutor, plan: boolean, implement: boolean, monad: boolean, shellDrive: boolean): DevPath {
-  if (executor.kind === 'self') return implement ? 'interactive' : plan ? 'plan-staged' : monad ? 'monad-tui' : shellDrive ? 'shell-drive' : 'self-mission';
+type DevPath = 'plan-staged' | 'interactive' | 'elanous-tui' | 'shell-drive' | 'self-mission' | 'agent-mission-pty' | 'acp';
+function resolveDevPath(executor: DevCliExecutor, plan: boolean, implement: boolean, elanous: boolean, shellDrive: boolean): DevPath {
+  if (executor.kind === 'self') return implement ? 'interactive' : plan ? 'plan-staged' : elanous ? 'elanous-tui' : shellDrive ? 'shell-drive' : 'self-mission';
   return executor.transport === 'acp' ? 'acp' : 'agent-mission-pty';
 }
 
 const DEV_PATH_ALLOWED: Record<DevPath, readonly string[]> = {
   'plan-staged': ['openPr', 'autoMerge', 'roleLlm', 'allowNoEvidence', 'allowSupersededGoal', 'allowGoalLintErrors'],
   'interactive': ['implement', 'roleLlm'],
-  'monad-tui': ['hold', 'readyTimeoutMs', 'goal', 'maxSteps', 'pollMs', 'model', 'observeOnly', 'isolatedRoot', 'cwd', 'worktree', 'roleLlm', 'allowNoEvidence', 'allowSupersededGoal', 'allowGoalLintErrors'],
+  'elanous-tui': ['hold', 'readyTimeoutMs', 'goal', 'maxSteps', 'pollMs', 'model', 'observeOnly', 'isolatedRoot', 'cwd', 'worktree', 'roleLlm', 'allowNoEvidence', 'allowSupersededGoal', 'allowGoalLintErrors'],
   'shell-drive': ['goal', 'maxSteps', 'pollMs', 'model', 'cwd', 'worktree', 'roleLlm', 'allowNoEvidence', 'allowSupersededGoal', 'allowGoalLintErrors'],
   'self-mission': ['openPr', 'autoMerge', 'autoReview', 'draft', 'maxWait', 'activityGrace', 'supervise', 'superviseRounds', 'childLlmProvider', 'childLlmModel', 'childLlmEffort', 'correlation', 'graph', 'ground', 'target', 'context', 'contextText', 'allowNoEvidence', 'allowSupersededGoal', 'allowGoalLintErrors'],
   'agent-mission-pty': ['branch', 'evidence', 'docDir', 'docGlob', 'testPath', 'maxRounds', 'commit', 'deliverable', 'screens', 'roleLlm', 'allowNoEvidence', 'allowSupersededGoal', 'allowGoalLintErrors'],
@@ -1570,7 +1570,7 @@ const SELF_MISSION_ROLE_LLM_ALTERNATIVE = '--child-llm-provider 및 --child-llm-
 
 const DEV_PATH_NEUTRAL_OPTIONS = new Set([
   'file', 'ask', 'say', 'forcePreflight', 'launchDecomposition', 'liveRunWindow', 'recentChangeWindow',
-  'backend', 'transport', 'plan', 'implement', 'monad', 'json', 'cols', 'rows',
+  'backend', 'transport', 'plan', 'implement', 'elanous', 'json', 'cols', 'rows',
 ]);
 
 function isProgrammaticOptionProvided(name: string, value: unknown): boolean {
@@ -1617,7 +1617,7 @@ export function assertDevCliPathOptions(
   opts: DevCliOpts,
   explicitOptionNames?: readonly string[],
 ): void {
-  const path = resolveDevPath(executor, opts.plan === true, opts.implement === true, opts.monad === true, opts.goal !== undefined && opts.monad !== true);
+  const path = resolveDevPath(executor, opts.plan === true, opts.implement === true, opts.elanous === true, opts.goal !== undefined && opts.elanous !== true);
   const allowed = new Set<string>([...DEV_PATH_ALLOWED[path], 'base', 'enhance']);
   const providedOptions = explicitOptionNames ?? Object.entries(opts)
     .filter(([name, value]) => isProgrammaticOptionProvided(name, value))
@@ -1636,7 +1636,7 @@ export function assertDriveAliasOptions(explicitOptionNames: readonly string[]):
     throw new DevPipelineError(
       `drive: 지원하지 않는 옵션: ${flags}\n`
       + `  drive 가 받는 옵션은 ${DRIVE_ALIAS_OPTIONS.size}개뿐이다: ${DRIVE_ALIAS_ALLOWED_FLAGS}\n`
-      + `  ⇒ 그 밖의 옵션은 \`monad dev\` 에서 쓴다 (예: monad dev --monad --hold).\n`
+      + `  ⇒ 그 밖의 옵션은 \`elanous dev\` 에서 쓴다 (예: elanous dev --elanous --hold).\n`
       + '  ⚠️ dev 와 drive 는 한 명령이라 도움말을 공유한다 — `drive --help` 에 보이는 dev 전용 옵션을 계약으로 읽지 마라.',
     );
   }
@@ -1679,8 +1679,8 @@ export function buildDriveAliasDevSpec(
   opts: DevCliOpts,
   explicitOptionNames?: readonly string[],
 ): DevPipelineSpec {
-  if (opts.monad === true) {
-    throw new DevPipelineError('drive: --monad 는 지원하지 않음 — TUI target은 monad dev --monad 를 사용');
+  if (opts.elanous === true) {
+    throw new DevPipelineError('drive: --elanous 는 지원하지 않음 — TUI target은 elanous dev --elanous 를 사용');
   }
   if (!command?.trim()) {
     throw new DevPipelineError('drive: command 필요');
@@ -1703,7 +1703,7 @@ export function buildDevCliSpec(
   if (opts.plan === true) {
     throw new DevPipelineError(`--plan 은 은퇴했고 명시적으로 거부됨 · 대응 문: ${DEV_PLAN_REPLACEMENT}`);
   }
-  const path = resolveDevPath(executor, false, opts.implement === true, opts.monad === true, opts.goal !== undefined && opts.monad !== true);
+  const path = resolveDevPath(executor, false, opts.implement === true, opts.elanous === true, opts.goal !== undefined && opts.elanous !== true);
   const launchEntrance = lookupEntrance(entrance);
   const notice = recommendedEntranceNotice(
     launchEntrance,
@@ -1712,14 +1712,14 @@ export function buildDevCliSpec(
   if (opts.implement === true && executor.kind !== 'self') {
     throw new DevPipelineError('--implement 는 self backend 만(headless interactive chat)');
   }
-  if (opts.implement === true && opts.monad === true) {
-    throw new DevPipelineError('--implement 와 --monad 는 동시 사용 불가');
+  if (opts.implement === true && opts.elanous === true) {
+    throw new DevPipelineError('--implement 와 --elanous 는 동시 사용 불가');
   }
-  if (opts.monad === true && executor.kind !== 'self') {
-    throw new DevPipelineError('--monad 는 self backend 만(격리 bare monad TUI child)');
+  if (opts.elanous === true && executor.kind !== 'self') {
+    throw new DevPipelineError('--elanous 는 self backend 만(격리 bare elanous TUI child)');
   }
-  if (opts.hold === true && opts.monad !== true) {
-    throw new DevPipelineError('--hold 는 --monad 와 함께만 유효');
+  if (opts.hold === true && opts.elanous !== true) {
+    throw new DevPipelineError('--hold 는 --elanous 와 함께만 유효');
   }
   if (opts.hold === true) {
     const brainOnly = (['maxSteps', 'pollMs', 'model'] as const).filter((k) => opts[k] !== undefined);
@@ -1731,8 +1731,8 @@ export function buildDevCliSpec(
   if (opts.worktree === true && opts.cwd !== undefined) {
     throw new DevPipelineError('--worktree 와 --cwd 는 동시 사용 불가');
   }
-  if (opts.monad === true && !opts.hold && !opts.goal?.trim()) {
-    throw new DevPipelineError('--monad 는 --goal 필요(--hold 제외)');
+  if (opts.elanous === true && !opts.hold && !opts.goal?.trim()) {
+    throw new DevPipelineError('--elanous 는 --goal 필요(--hold 제외)');
   }
   if (path === 'shell-drive' && 'file' in input) {
     throw new DevPipelineError('shell drive 는 <command> 위치 인자만 지원하며 --file 은 사용할 수 없음');
@@ -1787,10 +1787,10 @@ export function buildDevCliSpec(
     spec.completionSource = 'request';
   }
   if (path === 'plan-staged') return { ...spec, plan: true };
-  if (path === 'monad-tui') {
+  if (path === 'elanous-tui') {
     return {
       ...spec,
-      monad: {
+      elanous: {
         ...(opts.hold ? { hold: true } : {}),
         ...(opts.readyTimeoutMs !== undefined ? { readyTimeoutMs: parsePositiveInt(opts.readyTimeoutMs, '--ready-timeout-ms') } : {}),
         ...(opts.json ? { json: true } : {}),

@@ -2,7 +2,7 @@
 //
 // Unified put/get/list/subscribe for artifact output kinds
 // (timeline / layout / capture / block / attachment). Backed by the
-// real filesystem under `~/.monad/artifacts/<kind>/` with a JSON meta
+// real filesystem under `~/.elanous/artifacts/<kind>/` with a JSON meta
 // sidecar per body.
 //
 // Key properties:
@@ -72,7 +72,7 @@ export interface ArtifactStoreDeps {
   readonly fs?: ArtifactFs;
   readonly now?: () => number;
   /** Bundle B-4 · P6-3 — legacy directory scanners. Each provider
-   *  surfaces pre-migration artifacts (e.g. `~/.monad/timelines/rec-
+   *  surfaces pre-migration artifacts (e.g. `~/.elanous/timelines/rec-
    *  *.cast` from Bundle 8T pre-migration) via `list()` without ever
    *  writing into their directory. Merged with main-store listings ·
    *  main-store wins on path collision. */

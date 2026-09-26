@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'bun:test';
 import { cronSelfUpdateLines, renderUpdatePlist, renderUpdateUnits, runAutoUpdate, updateCommand, type AutoUpdateDeps } from './update-auto.js';
 
-const CMD = ['/Users/u/.bun/bin/bun', '/Users/u/.local/share/monad/current/node_modules/monadagent/bin/monad.mjs', 'self-update', '--restart', '--alert'];
+const CMD = ['/Users/u/.bun/bin/bun', '/Users/u/.local/share/elanous/current/node_modules/elanous/bin/elanous.mjs', 'self-update', '--restart', '--alert'];
 
 function rig(platform: NodeJS.Platform, crontab: string | null = '') {
   const files = new Map<string, string>();
@@ -19,21 +19,21 @@ function rig(platform: NodeJS.Platform, crontab: string | null = '') {
   return { deps, files, calls, lines };
 }
 
-describe('monad update --auto (09-26 request)', () => {
-  test('the scheduled command is bun + this monad + self-update --restart --alert', () => {
+describe('elanous update --auto (09-26 request)', () => {
+  test('the scheduled command is bun + this elanous + self-update --restart --alert', () => {
     const c = updateCommand();
     expect(c.slice(-3)).toEqual(['self-update', '--restart', '--alert']);
     expect(c).not.toContain('nexus');
   });
 
   test('plist runs daily 04:17 from home; systemd timer is persistent with a random delay', () => {
-    const plist = renderUpdatePlist(CMD, '/Users/u', '/Users/u/.monad/logs/self-update-auto.log');
-    expect(plist).toContain('<string>com.monad.update</string>');
+    const plist = renderUpdatePlist(CMD, '/Users/u', '/Users/u/.elanous/logs/self-update-auto.log');
+    expect(plist).toContain('<string>com.elanous.update</string>');
     expect(plist).toContain('<key>Hour</key>\n    <integer>4</integer>');
     expect(plist).toContain('<string>self-update</string>');
     expect(plist).toContain('<key>WorkingDirectory</key>\n  <string>/Users/u</string>');
-    const units = renderUpdateUnits(['/home/u/.bun/bin/bun', '/home/u/a b/monad.mjs', 'self-update'], '/home/u');
-    expect(units.service).toContain('ExecStart=/home/u/.bun/bin/bun "/home/u/a b/monad.mjs" self-update');
+    const units = renderUpdateUnits(['/home/u/.bun/bin/bun', '/home/u/a b/elanous.mjs', 'self-update'], '/home/u');
+    expect(units.service).toContain('ExecStart=/home/u/.bun/bin/bun "/home/u/a b/elanous.mjs" self-update');
     expect(units.timer).toContain('OnCalendar=*-*-* 04:17:00');
     expect(units.timer).toContain('Persistent=true');
   });
@@ -41,9 +41,9 @@ describe('monad update --auto (09-26 request)', () => {
   test('on: macOS writes the agent and bootstraps it; off removes it', async () => {
     const r = rig('darwin');
     expect((await runAutoUpdate('on', r.deps)).exitCode).toBe(0);
-    expect([...r.files.keys()]).toEqual(['/Users/u/Library/LaunchAgents/com.monad.update.plist']);
-    expect(r.calls).toContain('launchctl bootstrap gui/501 /Users/u/Library/LaunchAgents/com.monad.update.plist');
-    expect((await runAutoUpdate('status', r.deps)).schedulers).toEqual(['launchd /Users/u/Library/LaunchAgents/com.monad.update.plist']);
+    expect([...r.files.keys()]).toEqual(['/Users/u/Library/LaunchAgents/com.elanous.update.plist']);
+    expect(r.calls).toContain('launchctl bootstrap gui/501 /Users/u/Library/LaunchAgents/com.elanous.update.plist');
+    expect((await runAutoUpdate('status', r.deps)).schedulers).toEqual(['launchd /Users/u/Library/LaunchAgents/com.elanous.update.plist']);
     expect((await runAutoUpdate('off', r.deps)).exitCode).toBe(0);
     expect(r.files.size).toBe(0);
   });
@@ -52,15 +52,15 @@ describe('monad update --auto (09-26 request)', () => {
     const r = rig('linux');
     r.deps.home = '/home/u';
     expect((await runAutoUpdate('on', r.deps)).exitCode).toBe(0);
-    expect([...r.files.keys()].sort()).toEqual(['/home/u/.config/systemd/user/monad-update.service', '/home/u/.config/systemd/user/monad-update.timer']);
-    expect(r.calls).toContain('systemctl --user enable --now monad-update.timer');
+    expect([...r.files.keys()].sort()).toEqual(['/home/u/.config/systemd/user/elanous-update.service', '/home/u/.config/systemd/user/elanous-update.timer']);
+    expect(r.calls).toContain('systemctl --user enable --now elanous-update.timer');
     await runAutoUpdate('off', r.deps);
     expect(r.files.size).toBe(0);
-    expect(r.calls).toContain('systemctl --user disable --now monad-update.timer');
+    expect(r.calls).toContain('systemctl --user disable --now elanous-update.timer');
   });
 
   test('on refuses when cron already runs self-update (the operating mac) and names the line; status shows it', async () => {
-    const cron = '# 33 4 * * * old\n33 4 * * * cd /ops && bun bin/monad.mjs self-update --restart --alert >> /tmp/x.log 2>&1\n';
+    const cron = '# 33 4 * * * old\n33 4 * * * cd /ops && bun bin/elanous.mjs self-update --restart --alert >> /tmp/x.log 2>&1\n';
     expect(cronSelfUpdateLines(cron)).toHaveLength(1);
     const r = rig('darwin', cron);
     expect((await runAutoUpdate('on', r.deps)).exitCode).toBe(1);

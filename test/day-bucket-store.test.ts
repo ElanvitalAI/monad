@@ -17,12 +17,12 @@ const activeBucketNow = () => new Date('2026-05-09T12:00:00Z').getTime();
 
 // Diagnosis: this is neither a persistence failure nor a wrong storage root.
 // createDayBucketStore selects explicit opts.dir before the nexusRootDir()
-// chain (test-state root, config-dir override, MONAD_NEXUS_DIR, config dir),
+// chain (test-state root, config-dir override, ELANOUS_NEXUS_DIR, config dir),
 // so tmp is the actual file location. The failures came from default trimming:
 // fixed 2026-05 dates were older than its current-clock 90-day window.
 
 beforeEach(() => {
-  tmp = mkdtempSync(join(tmpdir(), 'monad-day-bucket-'));
+  tmp = mkdtempSync(join(tmpdir(), 'elanous-day-bucket-'));
 });
 afterEach(() => {
   rmSync(tmp, { recursive: true, force: true });
@@ -157,7 +157,7 @@ describe('createDayBucketStore · S3 sync', () => {
     store.bumpOcr('2026-05-09', true);
     expect(fake.state.uploads.length).toBe(1);
     expect(fake.state.uploads[0]!.localPath).toContain('day-buckets.json');
-    // S3 key includes the canonical layout (notes-metrics + monad_id).
+    // S3 key includes the canonical layout (notes-metrics + elanous_id).
     expect(fake.state.uploads[0]!.key).toContain('notes-metrics/day-buckets.json');
   });
 
@@ -190,7 +190,7 @@ describe('createDayBucketStore · S3 sync', () => {
     );
     const fake = makeFakeS3();
     // Pretend remote object exists; download returns the staged file.
-    const remoteKey = 'monad/X/notes-metrics/day-buckets.json';
+    const remoteKey = 'elanous/X/notes-metrics/day-buckets.json';
     void remoteKey;
     fake.state.exists.add(''); // any key matches because we only check
     fake.transport.objectExists = () => true;

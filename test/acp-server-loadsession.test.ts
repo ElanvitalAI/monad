@@ -32,10 +32,10 @@ describe('acpServerLoadSession()', () => {
   test('registers an existing session id on this connection', () => {
     const sessions = new Map<string, AcpServerSession>();
     const dualRole = globalDualRoleManager();
-    const record = acpServerLoadSession(sessions, dualRole, 'monad-session-7', '/tmp');
-    expect(record.id).toBe('monad-session-7');
-    expect(sessions.has('monad-session-7')).toBe(true);
-    expect(sessions.get('monad-session-7')!.cwd).toBe('/tmp');
+    const record = acpServerLoadSession(sessions, dualRole, 'elanous-session-7', '/tmp');
+    expect(record.id).toBe('elanous-session-7');
+    expect(sessions.has('elanous-session-7')).toBe(true);
+    expect(sessions.get('elanous-session-7')!.cwd).toBe('/tmp');
   });
 
   test('rejects double-load on the same connection', () => {
@@ -57,7 +57,7 @@ describe('acpServerLoadSession()', () => {
       sessions, dualRole, 'external-id-42', '/cwd-b',
     ).id;
     expect(sessions.size).toBe(2);
-    expect(newId).toBe('monad-session-1');
+    expect(newId).toBe('elanous-session-1');
     expect(loaded).toBe('external-id-42');
   });
 

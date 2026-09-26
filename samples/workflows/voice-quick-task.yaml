@@ -3,7 +3,7 @@ description: |
   Use when: User speaks a short intent (Siri / Watch / mobile mic) and
             wants automatic routing — no need to think which skill to
             invoke.
-  Triggers: "voice quick task", "voice memo", "monad capture",
+  Triggers: "voice quick task", "voice memo", "elanous capture",
             "음성 받아 적어", "remember this voice".
   Does: Detects audio file vs pre-transcribed text, runs voice-stt
         when needed (cv-3 phase 1 reuse), then asks an LLM picker to
@@ -76,9 +76,9 @@ nodes:
 
   - id: dispatch
     bash: |
-      OBSIDIAN_DIR="${MONAD_OBSIDIAN_DIR:-$HOME/Documents/Obsidian}"
+      OBSIDIAN_DIR="${ELANOUS_OBSIDIAN_DIR:-$HOME/Documents/Obsidian}"
       mkdir -p "$OBSIDIAN_DIR" 2>/dev/null || {
-        echo "ERROR: cannot create $OBSIDIAN_DIR — set MONAD_OBSIDIAN_DIR to a writable path"
+        echo "ERROR: cannot create $OBSIDIAN_DIR — set ELANOUS_OBSIDIAN_DIR to a writable path"
         exit 1
       }
       DATE=$(date '+%Y-%m-%d %H:%M')

@@ -1,16 +1,16 @@
-// ── monad logs — adb logcat 동형 CLI (통합 로그 패브릭 LF3 · 2026-07-13) ────
+// ── elanous logs — adb logcat 동형 CLI (통합 로그 패브릭 LF3 · 2026-07-13) ────
 //
 // 전 서피스 로그(logs.db)를 조회/실시간 tail 하고 데몬 레벨을 런타임 제어한다.
 //
-//   monad logs                                  # 최근 100
-//   monad logs -f                               # 실시간 follow (tail -f)
-//   monad logs -f --surface pwa,telegram --level warn
-//   monad logs --category voice --grep timeout --since 30m
-//   monad logs level                            # 데몬 현재 레벨/게이트
-//   monad logs level diag                       # 런타임 변경 (+config 영속)
+//   elanous logs                                  # 최근 100
+//   elanous logs -f                               # 실시간 follow (tail -f)
+//   elanous logs -f --surface pwa,telegram --level warn
+//   elanous logs --category voice --grep timeout --since 30m
+//   elanous logs level                            # 데몬 현재 레벨/게이트
+//   elanous logs level diag                       # 런타임 변경 (+config 영속)
 //
 // 설계 결정 — 조회/follow 는 logs.db **직독**(데몬 다운이어도 동작·토큰 불요·
-// MONAD_STATE_DIR 자동 존중), follow 는 afterId 증분 폴(500ms — REST SSE 와
+// ELANOUS_STATE_DIR 자동 존중), follow 는 afterId 증분 폴(500ms — REST SSE 와
 // 같은 케이던스). 레벨 제어만 데몬 REST(/v1/logs/level — 런타임 상태라 프로세스
 // 경유 필수). 설계: 내부 문서 `PLAN-unified-log-fabric-2026-07-13` §LF3.
 
@@ -38,7 +38,7 @@ import { formatClock } from '../time/format.js';
 import { HARNESS_SPACE_KINDS } from '../harness/harness-space.js';
 import { LogCursorNotFoundError, STORE_SAFETY_MAX } from '../mss/logging/log-store.js';
 import { readNexusRuntime } from '../nexus/runtime.js';
-import { getMonadConfigDir } from '../monad-config-dir.js';
+import { getElanousConfigDir } from '../elanous-config-dir.js';
 import { debug } from '../debug/log.js';
 import { tokenizeGrepPhrase } from '../domains/logs-tool.js';
 import { LOG_AXIS_CATEGORIES, knownLogAxes, resolveLogAxis } from '../mss/logging/log-axis.js';
@@ -85,7 +85,7 @@ export interface LogsCliOpts {
   json?: boolean;
   /** --json 출력에서 JSON data 문자열을 파싱된 값으로 내보낸다. */
   jsonData?: boolean;
-  /** cwd 레포의 `.monad-test/` 스토어를 본다 (LF7-b). */
+  /** cwd 레포의 `.elanous-test/` 스토어를 본다 (LF7-b). */
   test?: boolean;
   /** 레지스트리에 등록된 인스턴스 이름으로 타겟 (LF7-b). */
   instance?: string;
@@ -112,15 +112,15 @@ export interface ResolveTargetDeps {
    *  주입 seam 인 이유: 기본 동선이 "내 우주 ⊕ 운영"으로 바뀌었고, 그 분기를 검증하려면
    *  **현재 우주가 prod 인 경우와 아닌 경우**를 둘 다 만들 수 있어야 한다(env 조작보다 정확). */
   self?: LogTarget;
-  /** 운영 타겟. 미주입 시 `~/.monad`. */
+  /** 운영 타겟. 미주입 시 `~/.elanous`. */
   prod?: LogTarget;
 }
 
-/** cwd 에서 위로 걸어 올라가며 `.monad-test/` 를 가진 레포 루트를 찾는다. */
+/** cwd 에서 위로 걸어 올라가며 `.elanous-test/` 를 가진 레포 루트를 찾는다. */
 export function findTestStateDirUp(cwd: string): string | null {
   let dir = cwd;
   for (let i = 0; i < 30; i++) {
-    const candidate = join(dir, '.monad-test');
+    const candidate = join(dir, '.elanous-test');
     if (existsSync(candidate)) return candidate;
     const parent = dirname(dir);
     if (parent === dir) return null;
@@ -130,7 +130,7 @@ export function findTestStateDirUp(cwd: string): string | null {
 }
 
 function prodTarget(): LogTarget {
-  return { name: 'prod', dbPath: join(homedir(), '.monad', 'logs', 'logs.db') };
+  return { name: 'prod', dbPath: join(homedir(), '.elanous', 'logs', 'logs.db') };
 }
 
 export function resolveLogTargets(
@@ -145,7 +145,7 @@ export function resolveLogTargets(
 
   if (opts.test) {
     const stateDir = findTestStateDirUp(deps.cwd ?? process.cwd());
-    if (!stateDir) return { targets: [], error: 'cwd 상위에 .monad-test/ 없음 — 레포 안에서 실행하거나 --instance 를 쓰세요' };
+    if (!stateDir) return { targets: [], error: 'cwd 상위에 .elanous-test/ 없음 — 레포 안에서 실행하거나 --instance 를 쓰세요' };
     return { targets: [{ name: `test:${basename(dirname(stateDir))}`, dbPath: join(stateDir, 'logs', 'logs.db') }] };
   }
 
@@ -192,7 +192,7 @@ export function resolveLogTargets(
   // 기본 — **내 우주 ⊕ 운영**(P5 · 2026-07-27).
   //
   // ⚠️ 실측 사건: 3층 스위치(`instance.treeDerivedTest`)를 켜자 비-리더 트리에서의 조회가 **자기도
-  //   test 로 파생**돼, 방금 전까지 보이던 운영 로그가 `monad logs` 에서 통째로 사라졌다. 관측 도구가
+  //   test 로 파생**돼, 방금 전까지 보이던 운영 로그가 `elanous logs` 에서 통째로 사라졌다. 관측 도구가
   //   우주를 바꿔 **자기 로그를 못 찾는** 상태 — `--all --include-test` 로만 `⟨prod⟩` 태그로 보였다.
   //   격리는 실행에 필요한 것이지 **조회를 좁힐 이유가 아니다**(제1원칙: 안 보이면 자기인지가 없다).
   //
@@ -265,7 +265,7 @@ export function runCoverageHint(rows: readonly Pick<LogStoreRow, 'data'>[]): str
   return `안내: 반환된 ${rows.length}행은 식별 가능한 런 ${runIds.size}개에서 왔습니다 (서로 다른 런이 섞임).`;
 }
 
-const JSONL_SANITIZED_MARKER = '_monadJsonlSanitized';
+const JSONL_SANITIZED_MARKER = '_elanousJsonlSanitized';
 
 function replaceUnpairedSurrogates(value: string): { value: string; changed: boolean } {
   let result = '';
@@ -293,10 +293,10 @@ function replaceUnpairedSurrogates(value: string): { value: string; changed: boo
 
 function availableSanitizedObjectKey(key: string, reserved: Set<string>, used: Set<string>): string {
   let suffix = 1;
-  let candidate = `${key}__monadJsonlSanitizedKey${suffix}`;
+  let candidate = `${key}__elanousJsonlSanitizedKey${suffix}`;
   while (reserved.has(candidate) || used.has(candidate)) {
     suffix += 1;
-    candidate = `${key}__monadJsonlSanitizedKey${suffix}`;
+    candidate = `${key}__elanousJsonlSanitizedKey${suffix}`;
   }
   return candidate;
 }
@@ -477,18 +477,18 @@ export function renderGatedHint(
   if (nonCurrentScopeTargetNames.length > 0) {
     if (!catGated && !surfGated) return null;
     // ⛔⭐⭐⭐ 단일 대상에도 «명령을 주지 않는다** — 종전엔
-    //   `monad logs --instance '<이름>' level` 을 안내했는데 ***`logs level` 은 `--instance` 를 안 받는다***
+    //   `elanous logs --instance '<이름>' level` 을 안내했는데 ***`logs level` 은 `--instance` 를 안 받는다***
     //   (`logs level --help` 옵션은 `--json`·`--render` 뿐). 그래서 그 명령은 «돌긴 하는데 호출자 자신의
     //   레벨»을 보여 준다(실측: 남의 우주를 지목해도 `…/axon/monad-agent/log/…` 가 떴다).
     //   ⇒ ***안 도는 명령보다 「돌지만 다른 것을 보는」 명령이 더 나쁘다*** — 이 넛지의 존재 이유가
     //      「빈 결과를 오진하지 않게」인데, 그 안내가 «다른 우주의 상태»를 답으로 준다.
-    //   근거: `#7480` monad self review must-fix(codex-app-server 백엔드).
+    //   근거: `#7480` elanous self review must-fix(codex-app-server 백엔드).
     if (nonCurrentScopeTargetNames.length === 1) {
       const instance = nonCurrentScopeTargetNames[0]!;
       return `  ↳ 대상 인스턴스 ${quoteShellArg(instance)}의 렌더 억제 상태는 확인하지 못했다 — 빈 결과를 실제 이벤트 부재로 단언할 수 없다.`;
     }
     // ⛔⭐ 여러 대상일 때 **명령 템플릿을 만들지 않는다**(리뷰 must-fix · #7475 3라운드 반복 지적).
-    //   종전엔 `monad logs --instance <실제 인스턴스 이름> level` 을 냈는데, 그건 그대로 복사하면
+    //   종전엔 `elanous logs --instance <실제 인스턴스 이름> level` 을 냈는데, 그건 그대로 복사하면
     //   **안 돌아가는 문자열**이다 — 넛지가 「도움」인 척하며 사용자에게 숙제를 넘긴 것이다.
     //   ⇒ 실제 이름을 **값으로** 준다. 그러면 사용자가 채울 자리가 없고, 한 대상만 좁히고 싶으면
     //      위 단일 대상 갈래(`--instance <그 이름>`)가 실행 가능한 명령을 그대로 낸다.
@@ -509,7 +509,7 @@ export function renderGatedHint(
     return readRender() === false
       ? '  ↳ ⚠️ 이 인스턴스는 렌더 로그 억제 ON 이다 — 카테고리를 안 걸어도'
         + ` **${RENDER_ORIENTED_PREFIXES.join('/')}.\*** 는 이 결과에 없다.\n`
-        + '    켜기=`monad logs level --render on`.'
+        + '    켜기=`elanous logs level --render on`.'
       : null;
   }
   const egs = RENDER_ORIENTED_PREFIXES.join('/');
@@ -518,12 +518,12 @@ export function renderGatedHint(
   const scoped = readRender();
   const head = scoped === false
     ? `  ↳ 렌더 로그(${egs}.*·surface tui)는 현재 억제 ON(무음) 상태다 — 빈 결과가 정상이다.\n`
-    + '    켜기=`monad logs level --render on`.'
+    + '    켜기=`elanous logs level --render on`.'
     : scoped === true
       ? `  ↳ 렌더 로그(${egs}.*·surface tui)는 현재 발화 ON — 빈 결과라면 실제로 이벤트가 없는 것이다.`
       : `  ↳ 렌더 로그(${egs}.*·surface tui)는 기본 OFF 게이트일 수 있어 빈 결과가 정상일 수 있다.\n`
-      + '    켜기=`monad logs level --render on` · 상태=`monad logs level`.';
-  return head + '\n    화면 관측=tmux `capture-pane` · 판단=`monad logs --level info`. (REPORT §9-3)';
+      + '    켜기=`elanous logs level --render on` · 상태=`elanous logs level`.';
+  return head + '\n    화면 관측=tmux `capture-pane` · 판단=`elanous logs --level info`. (REPORT §9-3)';
 }
 
 // ⭐ CLI 는 **로컬 직독**이라 HTTP 상한(1000)을 물려받을 이유가 없다(2026-07-29 재배치).
@@ -559,7 +559,7 @@ export function limitReachedJsonMeta(
 
 /** JSON stdout에서 `_meta`를 제거하는 소비자도 stderr와 함께 상한 도달을 판정할 수 있는 안정된 신호. */
 export function limitReachedStderrSignal(limitMeta: ReturnType<typeof limitReachedJsonMeta>): string | null {
-  return limitMeta ? 'monad logs: result may be truncated (limitReached=true)' : null;
+  return limitMeta ? 'elanous logs: result may be truncated (limitReached=true)' : null;
 }
 
 interface MultiSurfaceDuplicateGroup {
@@ -649,7 +649,7 @@ export function limitReachedHint(
   const next = federated
     ? '⚠️ 연합(--all) 조회는 행 id 가 인스턴스마다 독립이라 --before 를 쓸 수 없다 — --instance 로 하나를 골라 페이지를 넘긴다.'
     : oldestId !== undefined
-      ? `↳ 다음 쪽(더 오래된 것):  monad logs … --before ${oldestId}`
+      ? `↳ 다음 쪽(더 오래된 것):  elanous logs … --before ${oldestId}`
       : '↳ 과거로 가려면 --before <id> 로 페이지를 넘긴다(--json 의 id).';
   // ⚠️ *"있다"* 가 아니라 **"있을 수 있다"** — 상한에 정확히 걸린 것이 더 있다는 증거는 아니다.
   //   (초판 문구가 옳았고 내가 강화했다가 기존 테스트에 잡혔다)
@@ -962,7 +962,7 @@ export function otherInstanceHint(matches: readonly { name: string; count: numbe
   if (matches.length === 0) return null;
   const found = matches.map((match) => `${match.name} ${match.count}건`).join(' · ');
   const filters = requeryFilterArgs(opts);
-  return `  ↳ 다른 인스턴스에는 있다 — ${found}\n    전체를 보려면: monad logs --all --include-test${filters ? ` ${filters}` : ''}`;
+  return `  ↳ 다른 인스턴스에는 있다 — ${found}\n    전체를 보려면: elanous logs --all --include-test${filters ? ` ${filters}` : ''}`;
 }
 
 export function buildQuery(opts: LogsCliOpts): { query: LogQuery; error?: string } {
@@ -1041,7 +1041,7 @@ export function renderLogAxisDiscovery(): string {
       const categories = resolveLogAxis(axis)!;
       return `${axis} (${categories.length}개): ${categories.join(', ')}`;
     }),
-    '축을 고른 뒤: monad logs --axis <name> --explain',
+    '축을 고른 뒤: elanous logs --axis <name> --explain',
   ].join('\n');
 }
 
@@ -1102,12 +1102,12 @@ export function resolveLogsRemoteFlag(opts: LogsCliOpts): string | boolean | und
 
 function logsRemoteHttpOrigin(host: string): string {
   const raw = host.trim();
-  if (!raw) throw new Error('monad logs: remote bookmark host is empty');
+  if (!raw) throw new Error('elanous logs: remote bookmark host is empty');
   const parsed = new URL(/^[a-zA-Z][a-zA-Z0-9+.-]*:\/\//.test(raw) ? raw : `http://${raw}`);
   if (parsed.protocol === 'ws:') parsed.protocol = 'http:';
   else if (parsed.protocol === 'wss:') parsed.protocol = 'https:';
   else if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') {
-    throw new Error(`monad logs: remote bookmark host has unsupported protocol ${parsed.protocol}`);
+    throw new Error(`elanous logs: remote bookmark host has unsupported protocol ${parsed.protocol}`);
   }
   return parsed.origin;
 }
@@ -1152,10 +1152,10 @@ function parseRemoteLogsBody(body: unknown): readonly Record<string, unknown>[] 
     : (body !== null && typeof body === 'object' && Array.isArray((body as { logs?: unknown }).logs))
       ? (body as { logs: unknown[] }).logs
       : null;
-  if (!items) throw new Error('monad logs: remote /v1/logs response is not a log list');
+  if (!items) throw new Error('elanous logs: remote /v1/logs response is not a log list');
   return items.map((value, index) => {
     if (value === null || typeof value !== 'object' || Array.isArray(value)) {
-      throw new Error(`monad logs: remote /v1/logs item ${index} is malformed`);
+      throw new Error(`elanous logs: remote /v1/logs item ${index} is malformed`);
     }
     return value as Record<string, unknown>;
   });
@@ -1210,8 +1210,8 @@ function resolveLogsBookmark(
 
 function logsBookmarkError(named: string | undefined): number {
   console.error(named
-    ? `--remote ${named}: unknown bookmark. Run \`monad nexus list\` to see available remotes.`
-    : 'no default remote bookmark. Run `monad nexus connect <host> --default` to set one.');
+    ? `--remote ${named}: unknown bookmark. Run \`elanous nexus list\` to see available remotes.`
+    : 'no default remote bookmark. Run `elanous nexus connect <host> --default` to set one.');
   return 1;
 }
 
@@ -1287,23 +1287,23 @@ async function runLogsCliRemote(
     ...(opts.instance ? ['--instance'] : []),
   ];
   if (localScopeFlags.length > 0) {
-    console.error(`monad logs: ${localScopeFlags.join(' / ')} is a local store scope and has no meaning with --remote; drop it (the remote daemon decides its own scope).`);
+    console.error(`elanous logs: ${localScopeFlags.join(' / ')} is a local store scope and has no meaning with --remote; drop it (the remote daemon decides its own scope).`);
     return 1;
   }
   if (opts.follow === true) {
-    console.error(`monad logs: --follow is not supported with remote bookmark ${label}; drop --follow (this landing is one-shot GET /v1/logs).`);
+    console.error(`elanous logs: --follow is not supported with remote bookmark ${label}; drop --follow (this landing is one-shot GET /v1/logs).`);
     return 1;
   }
 
   const { query, error } = buildQuery(opts);
-  if (error) { console.error(`monad logs: ${error}`); return 1; }
+  if (error) { console.error(`elanous logs: ${error}`); return 1; }
   // ⛔⭐ **`--before` 는 원격에서 «통째로» 거절한다.**
   //   🩸 앞 판은 「숫자면 보낸다」였다. 그런데 그 숫자는 ***이쪽 스토어의 row id*** 이고
   //      저쪽 스토어에서 «같은 줄»을 가리킨다는 보장이 없다 — 연속성도 없다.
   //      ⇒ 그러면 사람은 「그 지점부터 봤다」고 믿는데 실제로는 «다른 곳»부터 본다.
   //      리뷰 must-fix 로 잡혔고, 내 PR 본문은 이미 「거절한다」고 «말하고 있었다»(말과 코드가 어긋남).
   if (opts.before !== undefined) {
-    console.error(`monad logs: remote bookmark ${label}: --before is local-only (row ids are per-store and do not address the same row remotely); drop --before.`);
+    console.error(`elanous logs: remote bookmark ${label}: --before is local-only (row ids are per-store and do not address the same row remotely); drop --before.`);
     return 1;
   }
 
@@ -1311,19 +1311,19 @@ async function runLogsCliRemote(
   try {
     defaults = bookmarkAttachDefaults(entry);
   } catch (err) {
-    console.error(`monad logs: remote bookmark ${label}: ${(err as Error).message}`);
+    console.error(`elanous logs: remote bookmark ${label}: ${(err as Error).message}`);
     return 1;
   }
   const token = store.readToken(entry)?.trim();
   if (!token) {
-    console.error(`monad logs: remote bookmark ${label} (${entry.host}): token file is missing or empty (${defaults.tokenFile})`);
+    console.error(`elanous logs: remote bookmark ${label} (${entry.host}): token file is missing or empty (${defaults.tokenFile})`);
     return 1;
   }
   let url: string;
   try {
     url = remoteLogsUrl(defaults.host, query, opts);
   } catch (err) {
-    console.error(`monad logs: remote bookmark ${label}: ${(err as Error).message}`);
+    console.error(`elanous logs: remote bookmark ${label}: ${(err as Error).message}`);
     return 1;
   }
   const fetchRemote = deps.fetchRemoteLogs ?? liveFetchRemoteLogs;
@@ -1331,11 +1331,11 @@ async function runLogsCliRemote(
   try {
     fetched = await fetchRemote(url, token);
   } catch (err) {
-    console.error(`monad logs: remote bookmark ${label}: lookup failed for ${url}: ${(err as Error).message}`);
+    console.error(`elanous logs: remote bookmark ${label}: lookup failed for ${url}: ${(err as Error).message}`);
     return 1;
   }
   if (!fetched.ok) {
-    console.error(`monad logs: remote bookmark ${label}: lookup failed for ${url}: ${fetched.reason}`);
+    console.error(`elanous logs: remote bookmark ${label}: lookup failed for ${url}: ${fetched.reason}`);
     return 1;
   }
 
@@ -1436,14 +1436,14 @@ export async function runLogsCli(opts: LogsCliOpts, deps: RunLogsCliDeps = {}): 
   if (remoteFlag !== undefined) return runLogsCliRemote(opts, remoteFlag, deps);
 
   const { query, error } = buildQuery(opts);
-  if (error) { console.error(`monad logs: ${error}`); return 1; }
+  if (error) { console.error(`elanous logs: ${error}`); return 1; }
   const recurrenceDisagreementFilter = parseBooleanFilter(
     opts.reworkRecurrenceDisagreement,
     '--rework-recurrence-disagreement',
   );
-  if (recurrenceDisagreementFilter.error) { console.error(`monad logs: ${recurrenceDisagreementFilter.error}`); return 1; }
+  if (recurrenceDisagreementFilter.error) { console.error(`elanous logs: ${recurrenceDisagreementFilter.error}`); return 1; }
   const resolved = deps.resolveTargets?.(opts) ?? resolveLogTargets(opts);
-  if (resolved.error) { console.error(`monad logs: ${resolved.error}`); return 1; }
+  if (resolved.error) { console.error(`elanous logs: ${resolved.error}`); return 1; }
 
   // read-only open — 타겟이 어느 인스턴스든 CLI 조회는 write 0 (연합 불변식).
   const opened: Array<{ name: string; store: LogStore }> = [];
@@ -1468,11 +1468,11 @@ export async function runLogsCli(opts: LogsCliOpts, deps: RunLogsCliDeps = {}): 
   const queryStatus = registryScope.queryStatus;
   const unopenedStoreBanner = unopenedStores === undefined ? '안 본 스토어 수 미측정' : `안 본 스토어 ${unopenedStores}개`;
   if (opened.length === 0) {
-    console.error(`monad logs: 열 수 있는 로그 스토어 없음 — ${missing.join(' · ') || '타겟 0'} · scope=${JSON.stringify(scope)} · queryStatus=${JSON.stringify(queryStatus)}`);
+    console.error(`elanous logs: 열 수 있는 로그 스토어 없음 — ${missing.join(' · ') || '타겟 0'} · scope=${JSON.stringify(scope)} · queryStatus=${JSON.stringify(queryStatus)}`);
     console.error('  스토어는 해당 인스턴스 데몬(LF0 이후)이 한 번은 떠야 생성됩니다.');
     return 1;
   }
-  if (missing.length > 0) console.error(`monad logs: 스킵 — ${missing.join(' · ')}`);
+  if (missing.length > 0) console.error(`elanous logs: 스킵 — ${missing.join(' · ')}`);
   if (opts.json) {
     const meta = `${JSON.stringify({ _meta: { type: 'log-query-opened-stores', stores: openedStores, scope, queryStatus } })}\n`;
     await new Promise<void>((resolve, reject) => process.stdout.write(meta, (error) => error ? reject(error) : resolve()));
@@ -1517,7 +1517,7 @@ export async function runLogsCli(opts: LogsCliOpts, deps: RunLogsCliDeps = {}): 
   if (opts.listEvents === true) {
     const { events, truncated, unreadable } = aggregateListEvents(opened, query);
     for (const { name, message } of unreadable) {
-      console.error(`monad logs: ${name} 조회 실패 — ${message}`);
+      console.error(`elanous logs: ${name} 조회 실패 — ${message}`);
     }
     if (opts.json) {
       console.log(JSON.stringify({
@@ -1529,7 +1529,7 @@ export async function runLogsCli(opts: LogsCliOpts, deps: RunLogsCliDeps = {}): 
       console.error(`이벤트 ${events.length}개 · 스토어 ${openedStores.length}개`);
       for (const { event, count } of events) console.log(`${String(count).padStart(8)}  ${event}`);
     }
-    if (truncated) console.error('monad logs: result may be truncated (limitReached=true)');
+    if (truncated) console.error('elanous logs: result may be truncated (limitReached=true)');
     closeAll();
     return unreadable.length > 0 ? 2 : 0;
   }
@@ -1552,11 +1552,11 @@ export async function runLogsCli(opts: LogsCliOpts, deps: RunLogsCliDeps = {}): 
   if (!opts.follow) {
     const federatedCursors = opts.before === undefined ? null : parseFederatedLogCursors(opts.before);
     if (query.beforeId !== undefined && opened.length > 1) {
-      console.error('monad logs: 숫자 --before 는 연합 조회와 함께 쓸 수 없다 — --json 메타의 nextCursors JSON 객체를 그대로 쓰세요.');
+      console.error('elanous logs: 숫자 --before 는 연합 조회와 함께 쓸 수 없다 — --json 메타의 nextCursors JSON 객체를 그대로 쓰세요.');
       return 2;
     }
     if (federatedCursors && opened.length === 1) {
-      console.error('monad logs: 인스턴스별 nextCursors 는 연합 조회에서만 쓸 수 있다.');
+      console.error('elanous logs: 인스턴스별 nextCursors 는 연합 조회에서만 쓸 수 있다.');
       return 2;
     }
     const limit = effectiveLogLimit(query.limit);
@@ -1595,12 +1595,12 @@ export async function runLogsCli(opts: LogsCliOpts, deps: RunLogsCliDeps = {}): 
         // ⛔⭐ 커서가 가리키는 행이 없으면 **빈 쪽을 조용히 내주지 않는다** — 그 0 은
         //   "더 없다" 와 구별되지 않아 페이징을 여기서 멈추게 만든다(거짓 완주).
         if (e instanceof LogCursorNotFoundError) {
-          console.error(`monad logs: --before ${e.beforeId} 행이 ${name} 에 없다 — 커서가 딴 인스턴스이거나 보존 정리로 사라진 행이다.`);
+          console.error(`elanous logs: --before ${e.beforeId} 행이 ${name} 에 없다 — 커서가 딴 인스턴스이거나 보존 정리로 사라진 행이다.`);
           console.error('  ⇒ 이 결과는 "더 없다" 가 아니다. --instance 를 맞추거나 마지막 쪽의 --json id 를 다시 확인한다.');
           return 2;
         }
         unreadableInstances.push(name);
-        console.error(`monad logs: ${name} 조회 실패 — ${e instanceof Error ? e.message : String(e)}`);
+        console.error(`elanous logs: ${name} 조회 실패 — ${e instanceof Error ? e.message : String(e)}`);
       }
     }
     const filtered = merged;
@@ -1734,7 +1734,7 @@ export async function runLogsCli(opts: LogsCliOpts, deps: RunLogsCliDeps = {}): 
   }
 }
 
-// ── monad logs instances — 레지스트리 조회 (LF7-b) ────────────────────
+// ── elanous logs instances — 레지스트리 조회 (LF7-b) ────────────────────
 
 export function formatLogInstance(view: LogInstanceView): string {
   const live = view.pid > 0 ? (view.alive ? `alive pid=${view.pid}` : `dead pid=${view.pid}`) : 'unregistered';
@@ -1745,7 +1745,7 @@ export function formatLogInstance(view: LogInstanceView): string {
 
 export function runLogsInstances(opts: { json?: boolean }): number {
   const views = readLogInstances();
-  const prodRoot = join(homedir(), '.monad'); // prod 는 config-dir==state-dir(단일 뿌리)
+  const prodRoot = join(homedir(), '.elanous'); // prod 는 config-dir==state-dir(단일 뿌리)
   const prodDb = join(prodRoot, 'logs', 'logs.db');
   // prod 는 레지스트리 미등록이어도 항상 표시(암묵 타겟).
   const hasProd = views.some((v) => v.dbPath === prodDb);
@@ -1765,7 +1765,7 @@ export function runLogsInstances(opts: { json?: boolean }): number {
   return 0;
 }
 
-// ── monad logs level [lvl] — 데몬 REST 경유 (런타임 상태) ────────────────
+// ── elanous logs level [lvl] — 데몬 REST 경유 (런타임 상태) ────────────────
 
 function daemonBase(): string {
   const rt = readNexusRuntime();
@@ -1775,7 +1775,7 @@ function daemonBase(): string {
 }
 
 function readToken(): string | null {
-  const p = join(getMonadConfigDir(), 'acp-token');
+  const p = join(getElanousConfigDir(), 'acp-token');
   try { return existsSync(p) ? readFileSync(p, 'utf-8').trim() : null; } catch { return null; }
 }
 
@@ -1790,7 +1790,7 @@ export async function runLogsLevel(level: string | undefined, opts: { json?: boo
     const r = String(opts.render).trim().toLowerCase();
     if (r === 'on' || r === 'true') render = true;
     else if (r === 'off' || r === 'false') render = false;
-    else { console.error(`monad logs level: --render 은 on|off (받은 값: '${opts.render}')`); return 1; }
+    else { console.error(`elanous logs level: --render 은 on|off (받은 값: '${opts.render}')`); return 1; }
   }
   const isMutation = level !== undefined || render !== undefined;
   try {
@@ -1810,7 +1810,7 @@ export async function runLogsLevel(level: string | undefined, opts: { json?: boo
     };
     if (opts.json) { console.log(JSON.stringify(body, null, 2)); return res.ok ? 0 : 1; }
     if (!res.ok || body.ok === false) {
-      console.error(`monad logs level: ${body.error ?? res.status}${body.valid ? ` (유효: ${body.valid.join('|')})` : ''}`);
+      console.error(`elanous logs level: ${body.error ?? res.status}${body.valid ? ` (유효: ${body.valid.join('|')})` : ''}`);
       if (res.status === 404) {
         console.error('  데몬이 /v1/logs/level 을 모릅니다 — LF1 이전 구버전일 수 있습니다(재기동/발효 필요).');
       }
@@ -1832,8 +1832,8 @@ export async function runLogsLevel(level: string | undefined, opts: { json?: boo
     }
     return 0;
   } catch (e) {
-    console.error(`monad logs level: 데몬(${base}) 연결 실패 — ${e instanceof Error ? e.message : String(e)}`);
-    console.error(`  레벨은 데몬 런타임 상태입니다. 데몬이 없으면 기본값을 config 로 지정하세요: monad config set debug.level <lvl>`);
+    console.error(`elanous logs level: 데몬(${base}) 연결 실패 — ${e instanceof Error ? e.message : String(e)}`);
+    console.error(`  레벨은 데몬 런타임 상태입니다. 데몬이 없으면 기본값을 config 로 지정하세요: elanous config set debug.level <lvl>`);
     console.error(`  (인스턴스별 영속은 <stateDir>/logs/level.json — 데몬이 있을 때 이 명령이 관리)`);
     return 1;
   }

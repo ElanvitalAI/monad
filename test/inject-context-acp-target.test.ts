@@ -25,7 +25,7 @@ function makeSession(
 ): EmbodiedAgentSession {
   return {
     id,
-    launchSpec: { brand: 'monad' },
+    launchSpec: { brand: 'elanous' },
     // Cast through unknown — the EmbodiedAgentSession.transports type
     // only allows known kinds; the cast is intentional so we can test
     // the rejection path for unknown transport kinds.

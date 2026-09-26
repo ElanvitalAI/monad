@@ -21,7 +21,7 @@ describe('tool profile = base ⊕ extra groups (BACKLOG L1)', () => {
   });
   test('child profile: default coding, parent chooses full or groups; unknown group falls back to coding', () => {
     expect(childToolProfile({})).toBe('coding');
-    expect(childToolProfile({ MONAD_CHILD_TOOL_PROFILE: 'full' })).toBe('full');
+    expect(childToolProfile({ ELANOUS_CHILD_TOOL_PROFILE: 'full' })).toBe('full');
     expect(parseToolProfile('nope')!.name).toBe('coding');
   });
 });
@@ -33,8 +33,8 @@ describe('situational tool groups', () => {
     expect(situationalToolGroups('삼성전자 종목 13F 포지션을 조회해 리포트')).toEqual(['finance']);
     expect(childToolProfile({}, '포트폴리오 백테스트 후 스케줄 등록')).toBe('finance,ops');
     expect(childToolProfile({}, '대상 경로: src/foo.ts · 파서 버그 수정')).toBe('coding');
-    expect(childToolProfile({ MONAD_CHILD_TOOL_PROFILE: 'coding' }, '종목 매매')).toBe('coding');
-    expect(childToolProfile({ MONAD_CHILD_TOOL_PROFILE: 'full' }, '파서 수정')).toBe('full');
+    expect(childToolProfile({ ELANOUS_CHILD_TOOL_PROFILE: 'coding' }, '종목 매매')).toBe('coding');
+    expect(childToolProfile({ ELANOUS_CHILD_TOOL_PROFILE: 'full' }, '파서 수정')).toBe('full');
   });
   test('omitted groups are announced in one line (names only, no schemas)', () => {
     const note = omittedToolGroupsNote(['finance_quote', 'finance_13f', 'ops_status']);

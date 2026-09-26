@@ -281,7 +281,7 @@ describe('getAttachment', () => {
 
 // Canonicalize the temp dir (macOS /var/folders → /private/var/folders) so
 // fixture paths match what tokenizeInput stores after its realpathSync pass.
-const tokDir = realpathSync(mkdtempSync(join(tmpdir(), 'monad-tok-')));
+const tokDir = realpathSync(mkdtempSync(join(tmpdir(), 'elanous-tok-')));
 
 function fixture(name: string, body = 'hi'): string {
   const p = join(tokDir, name);
@@ -328,9 +328,9 @@ describe('tokenizeInput', () => {
   });
 
   test('supports ~/ home-relative paths', () => {
-    // Use ~/.monad-tok-fixture.txt — create in real homedir then clean.
+    // Use ~/.elanous-tok-fixture.txt — create in real homedir then clean.
     const home = homedir();
-    const name = `.monad-tok-fixture-${Date.now()}.txt`;
+    const name = `.elanous-tok-fixture-${Date.now()}.txt`;
     const abs = join(home, name);
     writeFileSync(abs, 'x');
     try {

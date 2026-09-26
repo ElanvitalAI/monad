@@ -19,7 +19,7 @@ describe('downloadDashboardMediaPreviewToTempFile', () => {
         fetchImpl: (async () => new Response(Buffer.from('png-bytes'), { status: 200 })) as typeof fetch,
       },
     );
-    expect(path).toBe('/tmp/monad-media-preview-123.png');
+    expect(path).toBe('/tmp/elanous-media-preview-123.png');
   });
 
   test('keeps svg extension for data-url image previews', async () => {
@@ -34,7 +34,7 @@ describe('downloadDashboardMediaPreviewToTempFile', () => {
         now: () => 456,
       },
     );
-    expect(path).toBe('/tmp/monad-media-preview-456.svg');
+    expect(path).toBe('/tmp/elanous-media-preview-456.svg');
   });
 });
 

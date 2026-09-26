@@ -4,7 +4,7 @@
 // 기존 changePct 는 전일종가(previousClose) 기준이라 장중 급락/급등을 못 잡는다(대표 지적).
 // 무포지션 종목도 감시 대상 — 움직임 신호는 보유 여부와 무관(매도 아님·정보성 알림).
 //
-// 저장: ~/.monad/conatus/price_history.db · (symbol, ts, price). 바운디드(오래된 행 prune).
+// 저장: ~/.elanous/conatus/price_history.db · (symbol, ts, price). 바운디드(오래된 행 prune).
 
 import { Database } from 'bun:sqlite';
 import { homedir } from 'node:os';

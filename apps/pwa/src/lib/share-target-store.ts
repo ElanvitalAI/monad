@@ -7,7 +7,7 @@
 // the existing `uploadAttachment` helper can hand to the daemon.
 //
 // Design contract (mirror of sw.js):
-//   - SHARE_CACHE name must match `monad-pwa-share-target-<version>`
+//   - SHARE_CACHE name must match `elanous-pwa-share-target-<version>`
 //   - Manifest is at `/__share/<id>/manifest.json`
 //   - Each file is at `/__share/<id>/<index>/<encoded-filename>`
 //
@@ -19,7 +19,7 @@
 
 import { debugLog } from './debug';
 
-const SHARE_CACHE_PREFIX = 'monad-pwa-share-target-';
+const SHARE_CACHE_PREFIX = 'elanous-pwa-share-target-';
 
 interface ShareManifestFile {
   index: number;

@@ -38,11 +38,11 @@ const harnessGoalDependencies: HarnessGoalDependencies = {
 };
 
 export function createHarnessGoal(goal: HarnessGoal, dependencies: HarnessGoalDependencies = harnessGoalDependencies): void {
-  const configuredCommand = process.env.MONAD_MISSION_REQUEST_HARNESS_COMMAND;
+  const configuredCommand = process.env.ELANOUS_MISSION_REQUEST_HARNESS_COMMAND;
   const prefix = configuredCommand
     ? configuredCommand.split(' ').filter(part => part.length > 0)
-    : ['bun', resolve(dirname(new URL(import.meta.url).pathname), '..', 'bin', 'monad.mjs'), 'harness', 'ask'];
-  if (prefix.length === 0) throw new Error('MONAD_MISSION_REQUEST_HARNESS_COMMAND 가 비어 있다 — 「설정 없음」이 아니라 «잘못된 설정»이다. 지우거나 명령 접두를 주라.');
+    : ['bun', resolve(dirname(new URL(import.meta.url).pathname), '..', 'bin', 'elanous.mjs'), 'harness', 'ask'];
+  if (prefix.length === 0) throw new Error('ELANOUS_MISSION_REQUEST_HARNESS_COMMAND 가 비어 있다 — 「설정 없음」이 아니라 «잘못된 설정»이다. 지우거나 명령 접두를 주라.');
 
   const askDirectory = dependencies.mkdtempSync(join(tmpdir(), 'mission-request-ask-'));
   const askFile = join(askDirectory, 'ask.md');

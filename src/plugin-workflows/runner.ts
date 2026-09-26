@@ -4,7 +4,7 @@
 // runner is host-agnostic: in production P5 wires the agent / tool /
 // skill / askUser dispatchers to their real implementations; tests
 // pass fakes. Output from each step (stringified if needed) is
-// written to `.monad/workflows/<workflowId>-<runId>/step-<N>.md` so
+// written to `.elanous/workflows/<workflowId>-<runId>/step-<N>.md` so
 // the run artefacts survive restart + are diffable for debugging.
 //
 // Failure handling (WorkflowStepOnError):
@@ -45,7 +45,7 @@ export interface WorkflowStepRunCtx {
 }
 
 export interface WorkflowRunnerOpts {
-  /** Directory under which `.monad/workflows/<wf>-<run>/` sub-dirs
+  /** Directory under which `.elanous/workflows/<wf>-<run>/` sub-dirs
    *  are created. Defaults to `cwd`. Tests pass a tmp dir. */
   workflowsRoot: string;
   dispatchers: Record<WorkflowStepKind, WorkflowStepDispatcher>;
@@ -126,7 +126,7 @@ export class WorkflowRunner {
     this.runs.set(runId, { state, abortCtl, def });
     this.emit({ type: 'run-start', state: structuredClone(state) });
 
-    const runDir = join(this.opts.workflowsRoot, '.monad', 'workflows', `${def.id}-${runId}`);
+    const runDir = join(this.opts.workflowsRoot, '.elanous', 'workflows', `${def.id}-${runId}`);
     ensureDir(runDir);
 
     const accumulatedArgs: Record<string, unknown> = { ...(startOpts.args ?? {}) };

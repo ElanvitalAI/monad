@@ -94,7 +94,7 @@ function sqliteJson(db: string, query: string): unknown[] {
  *  DB is missing or the lenses don't intersect (fail-soft). Sorted:
  *  divergent first, then by |netB| descending (biggest institutional moves). */
 export function computeSectorFusion(): SectorFusion[] {
-  const KNOWLEDGE_DB = knowledge13fDbPath(); // M0.1: 13F DB(구 ~/.monad/knowledge.db) 분리 · state-dir lazy
+  const KNOWLEDGE_DB = knowledge13fDbPath(); // M0.1: 13F DB(구 ~/.elanous/knowledge.db) 분리 · state-dir lazy
   if (!existsSync(SCORES_DB) || !existsSync(KNOWLEDGE_DB)) return [];
 
   // Price lens — latest sector-global board. asset_class='technology' is a

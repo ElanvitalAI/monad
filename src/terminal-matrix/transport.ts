@@ -84,7 +84,7 @@ function resolveTailscale(
   return {
     shell: 'tailscale',
     args: ['ssh', userHost, '--', ...remoteShell],
-    env: { MONAD_REMOTE_HOST: t.host, MONAD_REMOTE_TRANSPORT: 'tailscale' },
+    env: { ELANOUS_REMOTE_HOST: t.host, ELANOUS_REMOTE_TRANSPORT: 'tailscale' },
   };
 }
 
@@ -101,7 +101,7 @@ function resolveSsh(
     // Without it remote programs get "Pseudo-terminal not allocated" +
     // line-buffered behaviour.
     args: ['-t', ...portArgs, userHost, '--', ...remoteShell],
-    env: { MONAD_REMOTE_HOST: t.host, MONAD_REMOTE_TRANSPORT: 'ssh' },
+    env: { ELANOUS_REMOTE_HOST: t.host, ELANOUS_REMOTE_TRANSPORT: 'ssh' },
   };
 }
 

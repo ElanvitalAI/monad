@@ -1,8 +1,8 @@
 node_modules/
 dist/
 data/
-!apps/android/app/src/test/kotlin/com/elanvitalai/monad/android/data/
-!apps/android/app/src/test/kotlin/com/elanvitalai/monad/android/data/RemoteImageLoaderTest.kt
+!apps/android/app/src/test/kotlin/com/elanvitalai/elanous/android/data/
+!apps/android/app/src/test/kotlin/com/elanvitalai/elanous/android/data/RemoteImageLoaderTest.kt
 log/
 # ⛔ `log/` 는 앵커가 없어 «모든» log 폴더를 먹는다 — 소스 폴더 하나를 되살린다(2026-09-25: 공개본을 커밋하면 이 위젯이 조용히 사라졌다).
 !widgets/log/
@@ -15,14 +15,17 @@ bun.lockb
 
 # Runtime workflow artifacts — created per-session by the workflow
 # subsystem, not source.
+.elanous/
+# 개명 이행기(2026-09-26): 옛 판이 아직 옛 이름으로 쓴다(.gitignore 는 줄 끝 주석을 모른다 — 주석은 따로 한 줄)
 .monad/
 # 샘플 설정은 소스다 — 공개본 커밋에서 사라지지 않게(2026-09-25 · export-gitignored 관문).
-!samples/.monad/
+!samples/.elanous/
 
 # Mission phase outputs (walker 조사 산출물) — 런타임 상태, 소스 아님
 .artifacts/
 
-# Project-local test mode state (monad nexus pwa test)
+# Project-local test mode state (elanous nexus pwa test)
+/.elanous-test/
 /.monad-test/
 
 # loop-runner bootstrap state
@@ -33,7 +36,7 @@ bun.lockb
 reports/loop-engineering/*/webtoon/
 
 # Self-Evolution 격리 인스턴스 config(정식 secret 상속·절대 커밋 금지)
-.monad-se/
+.elanous-se/
 
 # DocOps 큐레이션 적용 전 스냅샷(로컬 되돌림용)
 .docops-history/
@@ -42,7 +45,7 @@ node_modules
 # 골 접지 측정(2026-08-05 `scripts/measure-goal-grounding-corpus.ts`)이 남기는 bun 번들 산출물.
 # ⛔ 저장소가 이 경로를 만들지도 읽지도 않는다(전수 참조 0건) — 그런데 사흘간 `??` 로 떠 있다가
 #    문서 PR(#7622)의 스테이징에 쓸려 5.9MB 가 히스토리에 «영구»로 들어갔다(2026-08-08 `[T]` 제보).
-.monad-goal-grounding-build/
+.elanous-goal-grounding-build/
 
 # Claude Code 런타임 잠금 — 같은 커밋에 같이 딸려 들어갔다.
 .claude/scheduled_tasks.lock
@@ -52,7 +55,7 @@ node_modules
 reports/ops/
 
 # 자식 실행 하트비트 — 런타임 상태, 소스 아님
-.monad-child-liveness.hb
+.elanous-child-liveness.hb
 
 # ⛔⭐ agent-mission 제어 파일 — 자식의 «입력»이지 산출이 아니다 (2026-08-12 [T] 76차)
 #   driver.ts 가 워크트리 «안»에 쓰고(`join(wt.path,'.mission-prompt.md')`) 자식에게 상대경로로 읽힌다.
@@ -117,7 +120,7 @@ apps/android/.kotlin/
 apps/android/**/build/
 
 # 🅕 세션 감시자 앵커 (세션 스코프 상태 — 저장소에 담지 않는다)
-.monad-session/
+.elanous-session/
 
 # remotion 산출·의존
 tools/remotion-shorts/node_modules/

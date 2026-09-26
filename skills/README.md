@@ -2,7 +2,7 @@
 
 ## ⛔ 왜 이 디렉터리가 있나
 
-스킬은 `monad config get skills.dirs` 가 가리키는 곳(**`~/.claude/skills`**)에서만 읽힌다.
+스킬은 `elanous config get skills.dirs` 가 가리키는 곳(**`~/.claude/skills`**)에서만 읽힌다.
 ⇒ 거기에만 쓰면 ***저장소에 없어서 착지도 리뷰도 인계도 안 된다***.
 📏 2026-08-28 실측: 이 저장소에 `SKILL.md` 가 **0건**이었다(스킬을 여럿 써 왔는데도).
 
@@ -164,10 +164,10 @@ find skills -name '*.plist'
 
 ## 🚀 새 기계에서 받는 법
 ```bash
-bun bin/monad.mjs self provision skill <이름> --source <이 저장소>/skills/<이름> --apply
+bun bin/elanous.mjs self provision skill <이름> --source <이 저장소>/skills/<이름> --apply
 ```
 ⚠️ **키는 따로** — 이 사본엔 `.env` 가 없다.
-⛔ **그리고 「`monad config` 로 넣으면 된다」는 «스킬마다 다르다»** — 스킬이 그 경로를 «읽어야» 먹는다.
+⛔ **그리고 「`elanous config` 로 넣으면 된다」는 «스킬마다 다르다»** — 스킬이 그 경로를 «읽어야» 먹는다.
    📏 실측: `apify-x-asset-sentiment/scripts/daily_dense_run.py` 는 `APIFY_TOKEN` 을 ***환경변수에서만*** 읽는다.
    ⇒ 그 스킬은 **환경변수로** 줘야 한다. ***「config 로 넣어라」를 전 스킬에 일반화하지 마라.***
    📏 재는 법: `rg -n "os.environ|getenv|process.env" skills/<이름>/` 로 «그 스킬이 무엇을 읽나»를 본다.

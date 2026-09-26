@@ -296,14 +296,14 @@ describe('runCompositeCycle', () => {
   });
 
   describe('제품 하니스 호출이 repository 밖 ask 파일을 받는다', () => {
-    test('기본 명령은 bun monad harness ask에 repository 밖 ask 파일을 위치 인자로 전달하고 지운다', () => {
-      const previous = process.env.MONAD_MISSION_REQUEST_HARNESS_COMMAND;
+    test('기본 명령은 bun elanous harness ask에 repository 밖 ask 파일을 위치 인자로 전달하고 지운다', () => {
+      const previous = process.env.ELANOUS_MISSION_REQUEST_HARNESS_COMMAND;
       const askDirectory = join(tmpdir(), 'mission-request-default-argv');
       const askFile = join(askDirectory, 'ask.md');
       const calls: Array<{ command: string; args: readonly string[] }> = [];
       let written = '';
       const removed: string[] = [];
-      delete process.env.MONAD_MISSION_REQUEST_HARNESS_COMMAND;
+      delete process.env.ELANOUS_MISSION_REQUEST_HARNESS_COMMAND;
       try {
         createHarnessGoal({ requestId: id, paths: ['src/example.ts'], situation: 'bad', ask: '대상 경로: src/example.ts\n\n불변식: preserved\n\n판정 신호: 조건 = x; 관측 = y; 기대 = z' }, {
           mkdtempSync: prefix => { expect(prefix).toStartWith(join(tmpdir(), 'mission-request-ask-')); return askDirectory; },
@@ -314,7 +314,7 @@ describe('runCompositeCycle', () => {
         expect(calls).toHaveLength(1);
         const [{ command, args }] = calls;
         expect(command).toBe('bun');
-        expect(args).toEqual([join(import.meta.dir, '../../bin/monad.mjs'), 'harness', 'ask', askFile]);
+        expect(args).toEqual([join(import.meta.dir, '../../bin/elanous.mjs'), 'harness', 'ask', askFile]);
         expect(args).not.toContain('--ask');
         expect(args).not.toContain('--test');
         expect(args).not.toContain('--implement');
@@ -323,18 +323,18 @@ describe('runCompositeCycle', () => {
         expect(written).toContain('판정 신호: 조건 = x; 관측 = y; 기대 = z');
         expect(removed).toEqual([askDirectory]);
       } finally {
-        if (previous === undefined) delete process.env.MONAD_MISSION_REQUEST_HARNESS_COMMAND;
-        else process.env.MONAD_MISSION_REQUEST_HARNESS_COMMAND = previous;
+        if (previous === undefined) delete process.env.ELANOUS_MISSION_REQUEST_HARNESS_COMMAND;
+        else process.env.ELANOUS_MISSION_REQUEST_HARNESS_COMMAND = previous;
       }
     });
 
-    test('MONAD_MISSION_REQUEST_HARNESS_COMMAND 접두 덮어쓰기도 harness ask 위치 인자와 ask 내용을 받고 발사 뒤 파일을 지운다', async () => {
+    test('ELANOUS_MISSION_REQUEST_HARNESS_COMMAND 접두 덮어쓰기도 harness ask 위치 인자와 ask 내용을 받고 발사 뒤 파일을 지운다', async () => {
       const authorityRoot = root(); const requestId = canonicalRequestId(); request(authorityRoot, 'alpha.beta', requestId);
       const recorder = join(authorityRoot, 'record-argv.mjs');
       const sink = join(authorityRoot, 'argv.txt');
       writeFileSync(recorder, `import { readFileSync, writeFileSync } from 'node:fs';\nconst args = process.argv.slice(2);\nconst ask = args.at(-1);\nwriteFileSync(${JSON.stringify(sink)}, JSON.stringify({ args, ask, content: readFileSync(ask, 'utf8') }));\n`);
-      const previous = process.env.MONAD_MISSION_REQUEST_HARNESS_COMMAND;
-      process.env.MONAD_MISSION_REQUEST_HARNESS_COMMAND = `bun ${recorder}`;
+      const previous = process.env.ELANOUS_MISSION_REQUEST_HARNESS_COMMAND;
+      process.env.ELANOUS_MISSION_REQUEST_HARNESS_COMMAND = `bun ${recorder}`;
       try {
         const lines = await runMissionRequestJudge(['--root', authorityRoot, '--tick']);
         expect(lines.at(-1)).toContain('goal-created');
@@ -348,8 +348,8 @@ describe('runCompositeCycle', () => {
         expect(received.content).toContain(requestId);
         expect(existsSync(received.ask)).toBe(false);
       } finally {
-        if (previous === undefined) delete process.env.MONAD_MISSION_REQUEST_HARNESS_COMMAND;
-        else process.env.MONAD_MISSION_REQUEST_HARNESS_COMMAND = previous;
+        if (previous === undefined) delete process.env.ELANOUS_MISSION_REQUEST_HARNESS_COMMAND;
+        else process.env.ELANOUS_MISSION_REQUEST_HARNESS_COMMAND = previous;
       }
     });
 
@@ -358,14 +358,14 @@ describe('runCompositeCycle', () => {
       const recorder = join(authorityRoot, 'fail-argv.mjs');
       const sink = join(authorityRoot, 'failed-ask.txt');
       writeFileSync(recorder, `import { writeFileSync } from 'node:fs';\nconst args = process.argv.slice(2);\nwriteFileSync(${JSON.stringify(sink)}, args.at(-1));\nprocess.exitCode = 23;\n`);
-      const previous = process.env.MONAD_MISSION_REQUEST_HARNESS_COMMAND;
-      process.env.MONAD_MISSION_REQUEST_HARNESS_COMMAND = `bun ${recorder}`;
+      const previous = process.env.ELANOUS_MISSION_REQUEST_HARNESS_COMMAND;
+      process.env.ELANOUS_MISSION_REQUEST_HARNESS_COMMAND = `bun ${recorder}`;
       try {
         await expect(runMissionRequestJudge(['--root', authorityRoot, '--tick'])).rejects.toThrow('status 23');
         expect(existsSync(readFileSync(sink, 'utf8'))).toBe(false);
       } finally {
-        if (previous === undefined) delete process.env.MONAD_MISSION_REQUEST_HARNESS_COMMAND;
-        else process.env.MONAD_MISSION_REQUEST_HARNESS_COMMAND = previous;
+        if (previous === undefined) delete process.env.ELANOUS_MISSION_REQUEST_HARNESS_COMMAND;
+        else process.env.ELANOUS_MISSION_REQUEST_HARNESS_COMMAND = previous;
       }
     });
   });
@@ -386,8 +386,8 @@ describe('runCompositeCycle', () => {
   });
 
   test('하니스 명령 설정이 «비어 있으면» 임시 디렉터리 없이 읽을 수 있는 오류를 낸다', () => {
-    const previous = process.env.MONAD_MISSION_REQUEST_HARNESS_COMMAND;
-    process.env.MONAD_MISSION_REQUEST_HARNESS_COMMAND = '   ';
+    const previous = process.env.ELANOUS_MISSION_REQUEST_HARNESS_COMMAND;
+    process.env.ELANOUS_MISSION_REQUEST_HARNESS_COMMAND = '   ';
     let directoriesCreated = 0;
     try {
       expect(() => createHarnessGoal({ requestId: id, paths: [], situation: 'bad', ask: 'ask' }, {
@@ -398,8 +398,8 @@ describe('runCompositeCycle', () => {
       })).toThrow('비어 있다');
       expect(directoriesCreated).toBe(0);
     } finally {
-      if (previous === undefined) delete process.env.MONAD_MISSION_REQUEST_HARNESS_COMMAND;
-      else process.env.MONAD_MISSION_REQUEST_HARNESS_COMMAND = previous;
+      if (previous === undefined) delete process.env.ELANOUS_MISSION_REQUEST_HARNESS_COMMAND;
+      else process.env.ELANOUS_MISSION_REQUEST_HARNESS_COMMAND = previous;
     }
   });
 

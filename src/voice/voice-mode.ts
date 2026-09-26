@@ -1,7 +1,7 @@
 // PR-S1V.4 (sprint 21-Parallel-Voice · 2026-04-29) — Voice mode state
 // machine + kitty-keyboard level toggle.
 //
-// 일반 monad 의 textInput Space (char input) 와 conflict 없이 Space hold
+// 일반 elanous 의 textInput Space (char input) 와 conflict 없이 Space hold
 // push-to-talk 을 가능하게 하기 위해 별도 voice mode 분리. Mode 진입
 // 시만 kitty `>3u` 활성 (release events 받음) · exit 시 `>1u` 복원.
 //

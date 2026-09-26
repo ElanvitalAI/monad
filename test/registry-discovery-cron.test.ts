@@ -15,11 +15,11 @@ const EMPTY_SNAPSHOT: DiscoverySnapshot = {
 };
 
 beforeEach(() => {
-  delete process.env.MONAD_DISCOVERY_CRON_INTERVAL_MS;
+  delete process.env.ELANOUS_DISCOVERY_CRON_INTERVAL_MS;
 });
 
 afterEach(() => {
-  delete process.env.MONAD_DISCOVERY_CRON_INTERVAL_MS;
+  delete process.env.ELANOUS_DISCOVERY_CRON_INTERVAL_MS;
 });
 
 describe('readCronIntervalMsFromEnv', () => {
@@ -28,24 +28,24 @@ describe('readCronIntervalMsFromEnv', () => {
   });
 
   test('non-integer → 0', () => {
-    expect(readCronIntervalMsFromEnv({ MONAD_DISCOVERY_CRON_INTERVAL_MS: 'abc' })).toBe(0);
+    expect(readCronIntervalMsFromEnv({ ELANOUS_DISCOVERY_CRON_INTERVAL_MS: 'abc' })).toBe(0);
   });
 
   test('negative / zero → 0', () => {
-    expect(readCronIntervalMsFromEnv({ MONAD_DISCOVERY_CRON_INTERVAL_MS: '0' })).toBe(0);
-    expect(readCronIntervalMsFromEnv({ MONAD_DISCOVERY_CRON_INTERVAL_MS: '-5000' })).toBe(0);
+    expect(readCronIntervalMsFromEnv({ ELANOUS_DISCOVERY_CRON_INTERVAL_MS: '0' })).toBe(0);
+    expect(readCronIntervalMsFromEnv({ ELANOUS_DISCOVERY_CRON_INTERVAL_MS: '-5000' })).toBe(0);
   });
 
   test('below MIN clamps up to 60s', () => {
-    expect(readCronIntervalMsFromEnv({ MONAD_DISCOVERY_CRON_INTERVAL_MS: '500' })).toBe(60_000);
+    expect(readCronIntervalMsFromEnv({ ELANOUS_DISCOVERY_CRON_INTERVAL_MS: '500' })).toBe(60_000);
   });
 
   test('above MAX clamps down to 24h', () => {
-    expect(readCronIntervalMsFromEnv({ MONAD_DISCOVERY_CRON_INTERVAL_MS: String(999 * 86_400_000) })).toBe(86_400_000);
+    expect(readCronIntervalMsFromEnv({ ELANOUS_DISCOVERY_CRON_INTERVAL_MS: String(999 * 86_400_000) })).toBe(86_400_000);
   });
 
   test('in-range value passes through', () => {
-    expect(readCronIntervalMsFromEnv({ MONAD_DISCOVERY_CRON_INTERVAL_MS: '3600000' })).toBe(3_600_000);
+    expect(readCronIntervalMsFromEnv({ ELANOUS_DISCOVERY_CRON_INTERVAL_MS: '3600000' })).toBe(3_600_000);
   });
 });
 
@@ -86,7 +86,7 @@ describe('startDiscoveryCron', () => {
   });
 
   test('intervalMs override beats env', () => {
-    process.env.MONAD_DISCOVERY_CRON_INTERVAL_MS = '120000';
+    process.env.ELANOUS_DISCOVERY_CRON_INTERVAL_MS = '120000';
     const handle = startDiscoveryCron({
       intervalMs: 300_000,
       runFn: async () => ({ snapshot: EMPTY_SNAPSHOT }),

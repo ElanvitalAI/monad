@@ -22,7 +22,7 @@ import { lookupLlmTierSpec } from '../../model-tier/index.js';
 
 export interface NocturnalDepsOptions {
   repoRoot: string;
-  /** 코딩 백엔드(arming.build.backend): 'codex' | 'monad-self[:model]' | 'claude'. */
+  /** 코딩 백엔드(arming.build.backend): 'codex' | 'elanous-self[:model]' | 'claude'. */
   backend: string;
   /** 게이트 테스트 스코프(기본 'src/autopilot/' curated·고속). 'full' 이면 전체 bun test. */
   gateScope?: string;
@@ -47,7 +47,7 @@ export interface NocturnalDepsOptions {
   /** PR 매니저 주입(대표 2026-07-12·테스트) — 기본 makePrManager()(실 gh/git). upsertPr 로 기존
    *  PR 재활용(force-push 자동 업데이트). */
   prManager?: PrManager;
-  /** ★ SE 격리 구현 예산(대표 2026-07-12) — monad-self 최대 턴 수(기본 40). "지정 가능한
+  /** ★ SE 격리 구현 예산(대표 2026-07-12) — elanous-self 최대 턴 수(기본 40). "지정 가능한
    *  인터페이스"(seam) — 지금은 자기 에스컬레이션(mission-se-bridge)이 실패 시 상향해 주입.
    *  향후 미션/페이즈 커스텀 지정 배선 지점(사용자 노출은 나중). 복잡한 구현이 검증까지 완주하도록. */
   maxTurns?: number;
@@ -56,8 +56,8 @@ export interface NocturnalDepsOptions {
   buildLogPath?: string;
 }
 
-/** 격리 worktree 자율 구현 delegate — 세 백엔드(codex/monad-self/claude). se-nocturnal-run 에서
- *  이관(단일 출처). monad-self 튜닝 config(terra·medium·40턴·검증-주도 폐루프) 동일. */
+/** 격리 worktree 자율 구현 delegate — 세 백엔드(codex/elanous-self/claude). se-nocturnal-run 에서
+ *  이관(단일 출처). elanous-self 튜닝 config(terra·medium·40턴·검증-주도 폐루프) 동일. */
 function runDelegate(repoRoot: string, cwd: string, prompt: string, backend: string, gateScope: string, maxTurns = 40, buildLogPath?: string): void {
   // ★ per-build 스트림(PLAN B1) — buildLogPath 지정 시 delegate 턴을 그 파일로(빌드 격리·라이브).
   //   미지정=기존 'inherit'(부모 stdout→미션 로그). fd 실패 시 inherit 폴백(fail-soft).
@@ -70,26 +70,26 @@ function runDelegate(repoRoot: string, cwd: string, prompt: string, backend: str
   try {
     if (backend === 'codex-app-server' || backend === 'codex') {
       execFileSync('codex', ['exec', '--skip-git-repo-check', prompt], { cwd, stdio, timeout: 900_000 });
-    } else if (backend === 'monad-self' || backend.startsWith('monad-self:')) {
-      // 모델 기본 = codex 사다리 balanced 칸(옛 gpt-5.6-terra 자리 · GPT-6 에는 terra 가 없다). 'monad-self:opus' 등으로 override.
+    } else if (backend === 'elanous-self' || backend.startsWith('elanous-self:')) {
+      // 모델 기본 = codex 사다리 balanced 칸(옛 gpt-5.6-terra 자리 · GPT-6 에는 terra 가 없다). 'elanous-self:opus' 등으로 override.
       const model = backend.includes(':') ? backend.slice(backend.indexOf(':') + 1) : lookupLlmTierSpec('openai-codex', 'balanced').model;
       const verifyCmd = `bun test ${gateScope === 'full' ? '' : gateScope}`.trim();
       // ★ 이식 #2 배선(2026-07-22) — canonical `llm.goalLoop.enabled`(기존 플래그·chat/session 과 동일 출처)
       //   가 켜지면 se build delegate 도 canonical goal-loop 엔진(증거게이트·goal.loop 관측·anti-spin)으로
       //   구동. 별도 플래그 신설 금지(대표 지적 — 과설계). 서브프로세스는 config-dir 미상속이라 부모가
-      //   여기서 config 를 읽어 env(MONAD_SELF_*) 로 전파(기존 model/effort 패턴 동일). 미설정=커스텀 루프(무회귀).
+      //   여기서 config 를 읽어 env(ELANOUS_SELF_*) 로 전파(기존 model/effort 패턴 동일). 미설정=커스텀 루프(무회귀).
       const goalLoopOn = (() => { try { return getUserConfig().llm.goalLoop?.enabled === true; } catch { return false; } })();
       const env: NodeJS.ProcessEnv = {
         ...process.env,
-        MONAD_SELF_MODEL: model,
-        MONAD_SELF_EFFORT: 'medium',
-        MONAD_SELF_MAX_TURNS: String(maxTurns),
-        MONAD_SELF_SYSTEM: 'optimized',
-        MONAD_SELF_ADAPTIVE: '1',
-        MONAD_SELF_VERIFY_CMD: verifyCmd,
-        ...(goalLoopOn ? { MONAD_SELF_GOALLOOP: '1' } : {}),
+        ELANOUS_SELF_MODEL: model,
+        ELANOUS_SELF_EFFORT: 'medium',
+        ELANOUS_SELF_MAX_TURNS: String(maxTurns),
+        ELANOUS_SELF_SYSTEM: 'optimized',
+        ELANOUS_SELF_ADAPTIVE: '1',
+        ELANOUS_SELF_VERIFY_CMD: verifyCmd,
+        ...(goalLoopOn ? { ELANOUS_SELF_GOALLOOP: '1' } : {}),
       };
-      execFileSync('bun', [join(repoRoot, 'scripts/se-monad-self-impl.ts'), prompt], { cwd, stdio, timeout: 1_800_000, env });
+      execFileSync('bun', [join(repoRoot, 'scripts/se-elanous-self-impl.ts'), prompt], { cwd, stdio, timeout: 1_800_000, env });
     } else {
       execFileSync('claude', ['-p', prompt, '--dangerously-skip-permissions'], { cwd, stdio, timeout: 900_000 });
     }
@@ -156,7 +156,7 @@ export function extractFailingTests(log: string): string[] {
 }
 
 /** ★ delegate 실패 "왜" 추출(순수·관측 보강·2026-07-22 dogfood) — 종전 delegate 실패는 execFileSync 의
- *  "Command failed: bun se-monad-self-impl.ts" 만 미션에 도달하고, goal-loop 의 실제 stopReason·에이전트가
+ *  "Command failed: bun se-elanous-self-impl.ts" 만 미션에 도달하고, goal-loop 의 실제 stopReason·에이전트가
  *  기록한 blocked 사유·내부 verify 결과는 buildLog 에만 남아 유실됐다(실증: no_progress·contract 충돌
  *  blocked 인데 미션엔 "missing-capability" 로만 표기). buildLog tail 에서 진짜 사유를 뽑아 진단/logs 에
  *  실어 조회 가능하게(분류 무변경·순수 관측). tail 없으면 ''. */
@@ -169,7 +169,7 @@ export function extractDelegateFailureReason(logTail: string): string {
   if (verify) parts.push(`verify=${/pass/i.test(verify[0]) ? 'PASS' : 'FAIL'}`);
   if (/blocked|승인.{0,6}(대기|필요|전)|IMPLEMENTATION_STATUS:\s*SKIPPED_BLOCKED|CONTRACT_STATUS:\s*BLOCKED/i.test(logTail)) parts.push('blocked(HITL 승인 필요 추정)');
   const lastNarrative = logTail.split('\n').map((l) => l.trim())
-    .filter((l) => l && !/^\[tool #|^\[monad-self\]|^\[\?/.test(l))
+    .filter((l) => l && !/^\[tool #|^\[elanous-self\]|^\[\?/.test(l))
     .slice(-1)[0];
   if (lastNarrative) parts.push(`마지막: ${lastNarrative.slice(0, 200)}`);
   return parts.join(' · ');
@@ -264,8 +264,8 @@ export function makeNocturnalDeps(opts: NocturnalDepsOptions): NocturnalDeps {
       ].join('\n');
       log(`  [implement] ${backend} 격리 구현 시작 (cwd=worktree · maxTurns=${opts.maxTurns ?? 40})...`);
       // ★ 계측(제1원칙·2026-07-22 대표 지적) — SE delegate 실행 경계를 미션 logs.db 로. 종전 delegate
-      //   결과(에러/산출0)가 run.log(console)+record 에만 가 `monad logs` 조회 불가 = 관측 안 한 것.
-      //   `monad logs --category mission.se.build` 로 walker 실패 근본(에러메시지·산출수)을 즉시 조회.
+      //   결과(에러/산출0)가 run.log(console)+record 에만 가 `elanous logs` 조회 불가 = 관측 안 한 것.
+      //   `elanous logs --category mission.se.build` 로 walker 실패 근본(에러메시지·산출수)을 즉시 조회.
       const seDbg = async (event: string, data: Record<string, unknown>) => {
         try { const { debug } = await import('../../debug/log.js'); debug.log('mission.se.build', event, { slug: target.slug, backend, maxTurns: opts.maxTurns ?? 40, ...data }); } catch { /* fail-soft */ }
       };
@@ -324,7 +324,7 @@ export function makeNocturnalDeps(opts: NocturnalDepsOptions): NocturnalDeps {
         const baseFails = extractFailCount(baseline.log);
         // ★ failClass 관측(근본·2026-07-22·핸드오프 3근본 #3) — 종전 baseline 제외는 "PASS 로 뒤집기"만
         //   하고 이 판정(base 기존실패 vs 회귀) 신호를 버렸다(failClass=unknown 근원). 여기서 각인:
-        //   base-preexisting(회귀 아님) 이면 실패 test 목록까지 남겨 사람이 대조·재현. ★조회: monad logs
+        //   base-preexisting(회귀 아님) 이면 실패 test 목록까지 남겨 사람이 대조·재현. ★조회: elanous logs
         //   --category mission.exec.gate.
         const worktreeFailing = extractFailingTests(result.log);
         const baseFailing = new Set(extractFailingTests(baseline.log));
@@ -355,7 +355,7 @@ export function makeNocturnalDeps(opts: NocturnalDepsOptions): NocturnalDeps {
       //   자동 업데이트(닫고 새로 안 만듦·리뷰 히스토리 보존). 없으면 새로 생성. node_modules·
       //   apps/pwa/out 심링크 노이즈 add 제외. 비평 findings 는 R4 코멘트(재사용/신규 공통).
       const critiqueBlock = critique ? `\n\n## 🤖 자동 비평(R0)\n${renderCritique(critique)}` : '';
-      const body = `Self-Evolution SE6 자율 구현 초안 · monad 가 격리 worktree 에서 자율 구현 · 대표 리뷰 후 merge(HITL).${critiqueBlock}\n\n${renderGateEvidence(evidence)}\n\n🤖 Self-Evolution nocturnal runner`;
+      const body = `Self-Evolution SE6 자율 구현 초안 · elanous 가 격리 worktree 에서 자율 구현 · 대표 리뷰 후 merge(HITL).${critiqueBlock}\n\n${renderGateEvidence(evidence)}\n\n🤖 Self-Evolution nocturnal runner`;
       const pm = opts.prManager ?? makePrManager();
       const outcome = pm.upsertPr({
         branch: plan.branch, worktreePath: plan.worktreePath,

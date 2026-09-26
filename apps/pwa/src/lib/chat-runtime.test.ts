@@ -13,7 +13,7 @@ import { tmpdir } from 'node:os';
 
 import type { AcpConnection, AcpFrame, AcpFrameHandler } from './daemon-client';
 import { DaemonClient } from './daemon-client';
-import { parseMonadFeedbackEnvelope } from './monad-feedback-envelope';
+import { parseElanousFeedbackEnvelope } from './elanous-feedback-envelope';
 import { FEEDBACK_KINDS } from './feedback-envelope';
 import * as feedbackBlockAccumulator from './feedback-block-accumulator';
 import {
@@ -44,9 +44,9 @@ interface FeedbackEnvelopeVectors {
   vectors: FeedbackEnvelopeVector[];
 }
 
-const feedbackEnvelopeVectorsPath = join(import.meta.dir, '..', '..', '..', '..', 'monad-feedback-envelope-vectors.json');
+const feedbackEnvelopeVectorsPath = join(import.meta.dir, '..', '..', '..', '..', 'elanous-feedback-envelope-vectors.json');
 const canonicalFeedbackEnvelopeVectorsPath = realpathSync(
-  join(import.meta.dir, '..', '..', '..', '..', 'monad-feedback-envelope-vectors.json'),
+  join(import.meta.dir, '..', '..', '..', '..', 'elanous-feedback-envelope-vectors.json'),
 );
 const feedbackEnvelopeVectors = JSON.parse(
   readFileSync(feedbackEnvelopeVectorsPath, 'utf8'),
@@ -1171,13 +1171,13 @@ describe('runChatTurnAcp — 턴이 죽어도 「생각」은 닫힌다', () => 
 /** ⛔⭐⭐⭐ 「생각 채널」로 오는 것이 «전부 생각은 아니다» — 17차 `[F]` 라이브 회귀.
  *
  *  📏 2026-08-22: `agent_thought_chunk` 배선을 켠 «첫 라이브»에서 화면에
- *  ***`<<monad-feedback-end …>>` 원시 마커가 그대로 샜다.***
- *  ⇒ `src/acp/monad-extensions.ts` 가 ***FeedbackEnvelope 을 그 채널 「위에」 싣기*** 때문이다
+ *  ***`<<elanous-feedback-end …>>` 원시 마커가 그대로 샜다.***
+ *  ⇒ `src/acp/elanous-extensions.ts` 가 ***FeedbackEnvelope 을 그 채널 「위에」 싣기*** 때문이다
  *    (ACP SDK 가 커스텀 sessionUpdate 를 거부해서 그렇게 했다).
  *  🔑 ***내가 켠 배선이 남의 봉투를 화면에 끌어냈다*** — 켜기 전엔 이 채널을 통째로 무시했으니 안 보였다. */
 describe('runChatTurnAcp — 봉투는 「생각」이 아니다', () => {
   const validEnvelope = (blockId: string, msg: string, phase: 'start' | 'update' = 'start') => [
-    `[monad/feedback/emit] ${blockId}`,
+    `[elanous/feedback/emit] ${blockId}`,
     JSON.stringify({
       envelopeVersion: 1,
       sessionId: 'sess-E',
@@ -1189,12 +1189,12 @@ describe('runChatTurnAcp — 봉투는 「생각」이 아니다', () => {
       payload: { msg },
       asciiFallback: ['⌁ thinking'],
     }),
-    `<<monad-feedback-end ${blockId}>>`,
+    `<<elanous-feedback-end ${blockId}>>`,
   ].join('\n');
   const envelope = [
-    '[monad/feedback/emit] blk-1',
+    '[elanous/feedback/emit] blk-1',
     JSON.stringify({ kind: 'agent.thinking', blockId: 'blk-1', phase: 'start' }),
-    '<<monad-feedback-end blk-1>>',
+    '<<elanous-feedback-end blk-1>>',
   ].join('\n');
 
   it('loads every vector from the repository-root canonical source', () => {
@@ -1202,8 +1202,8 @@ describe('runChatTurnAcp — 봉투는 「생각」이 아니다', () => {
   });
 
   it('rejects a same-content vector-file copy, so a divergent PWA loader fails', () => {
-    const directory = mkdtempSync(join(tmpdir(), 'monad-feedback-envelope-vectors-'));
-    const copiedPath = join(directory, 'monad-feedback-envelope-vectors.json');
+    const directory = mkdtempSync(join(tmpdir(), 'elanous-feedback-envelope-vectors-'));
+    const copiedPath = join(directory, 'elanous-feedback-envelope-vectors.json');
     try {
       writeFileSync(copiedPath, readFileSync(feedbackEnvelopeVectorsPath, 'utf8'));
       expect(() => assertCanonicalFeedbackEnvelopeVectorsPath(copiedPath)).toThrow();
@@ -1220,21 +1220,21 @@ describe('runChatTurnAcp — 봉투는 「생각」이 아니다', () => {
   });
 
   it.each(feedbackEnvelopeVectors.vectors)('$name follows the shared feedback envelope contract', (vector) => {
-    const parsed = parseMonadFeedbackEnvelope(vector.wire);
+    const parsed = parseElanousFeedbackEnvelope(vector.wire);
     expect(parsed).toEqual(
-      (vector.expect.accepted ? vector.expect.result : null) as ReturnType<typeof parseMonadFeedbackEnvelope>,
+      (vector.expect.accepted ? vector.expect.result : null) as ReturnType<typeof parseElanousFeedbackEnvelope>,
     );
   });
 
   it('parses the daemon compatibility wire sample and rejects malformed bodies', () => {
     const text = validEnvelope('blk-1', 'reading source');
-    expect(parseMonadFeedbackEnvelope(text)).toMatchObject({
+    expect(parseElanousFeedbackEnvelope(text)).toMatchObject({
       method: 'emit',
       payload: { blockId: 'blk-1', kind: 'agent.thinking', payload: { msg: 'reading source' } },
     });
-    expect(parseMonadFeedbackEnvelope('[monad/feedback/emit] blk-1\n{not json}\n<<monad-feedback-end blk-1>>')).toBeNull();
-    expect(parseMonadFeedbackEnvelope(`${text}\nextra`)).toMatchObject({ payload: { blockId: 'blk-1' } });
-    expect(parseMonadFeedbackEnvelope(text.replace('<<monad-feedback-end blk-1>>', '<<monad-feedback-end other>>'))).toMatchObject({
+    expect(parseElanousFeedbackEnvelope('[elanous/feedback/emit] blk-1\n{not json}\n<<elanous-feedback-end blk-1>>')).toBeNull();
+    expect(parseElanousFeedbackEnvelope(`${text}\nextra`)).toMatchObject({ payload: { blockId: 'blk-1' } });
+    expect(parseElanousFeedbackEnvelope(text.replace('<<elanous-feedback-end blk-1>>', '<<elanous-feedback-end other>>'))).toMatchObject({
       payload: { blockId: 'blk-1' },
     });
   });
@@ -1255,7 +1255,7 @@ describe('runChatTurnAcp — 봉투는 「생각」이 아니다', () => {
   it('passes the shared mission.update wire sample to the accumulator as unhandled without growing rendered blocks', async () => {
     const vector = feedbackEnvelopeVectors.vectors.find(({ name }) => name === 'mission-update-unhandled');
     expect(vector).toBeDefined();
-    const parsed = parseMonadFeedbackEnvelope(vector!.wire);
+    const parsed = parseElanousFeedbackEnvelope(vector!.wire);
     expect(parsed).not.toBeNull();
     const accumulatorSpy = spyOn(feedbackBlockAccumulator, 'applyFeedbackEnvelope');
     const handle = makeProgrammableAcp();
@@ -1286,8 +1286,8 @@ describe('runChatTurnAcp — 봉투는 「생각」이 아니다', () => {
     const blocks = message.blocks ?? [];
     expect(blocks.some((b) => b.kind === 'agent_thinking')).toBe(false);
     // ⭐ 그리고 «어디에도» 그 마커가 없어야 한다 — 텍스트로도 새면 안 된다.
-    expect(JSON.stringify(blocks)).not.toContain('monad-feedback-end');
-    expect(message.text ?? '').not.toContain('monad-feedback-end');
+    expect(JSON.stringify(blocks)).not.toContain('elanous-feedback-end');
+    expect(message.text ?? '').not.toContain('elanous-feedback-end');
   });
 
   it('⭐ 그러나 «진짜 생각»은 그대로 보여준다 — 봉투만 거른다', async () => {
@@ -1309,7 +1309,7 @@ describe('runChatTurnAcp — 봉투는 「생각」이 아니다', () => {
  *  ⇒ 그래서 «정확히» `console.debug` 를 잡는다. */
 describe('runChatTurnAcp — 끝 관측 payload (런타임)', () => {
   const validEnvelope = (blockId: string, msg: string, phase: 'start' | 'update' = 'start') => [
-    `[monad/feedback/emit] ${blockId}`,
+    `[elanous/feedback/emit] ${blockId}`,
     JSON.stringify({
       envelopeVersion: 1,
       sessionId: 'sess-P',
@@ -1321,7 +1321,7 @@ describe('runChatTurnAcp — 끝 관측 payload (런타임)', () => {
       payload: { msg },
       asciiFallback: ['⌁ thinking'],
     }),
-    `<<monad-feedback-end ${blockId}>>`,
+    `<<elanous-feedback-end ${blockId}>>`,
   ].join('\n');
 
   it('⭐ valid envelopes accumulate into one stable block and leave the suppressed-envelope count at zero', async () => {
@@ -1378,7 +1378,7 @@ describe('runChatTurnAcp — 끝 관측 payload (런타임)', () => {
       handle.programNext('session/prompt', [
         chunkUpdate('sess-P', {
           sessionUpdate: 'agent_thought_chunk',
-          content: { type: 'text', text: '[monad/feedback/emit] b1\n{"kind":"x"}\n<<monad-feedback-end b1>>' },
+          content: { type: 'text', text: '[elanous/feedback/emit] b1\n{"kind":"x"}\n<<elanous-feedback-end b1>>' },
         }),
         chunkUpdate('sess-P', { sessionUpdate: 'agent_thought_chunk', content: { type: 'text', text: '진짜' } }),
       ], { stopReason: 'end_turn' });
@@ -1387,7 +1387,7 @@ describe('runChatTurnAcp — 끝 관측 payload (런타임)', () => {
       console.debug = original;
     }
 
-    expect(JSON.stringify(message!.blocks ?? [])).not.toContain('monad-feedback-end');
+    expect(JSON.stringify(message!.blocks ?? [])).not.toContain('elanous-feedback-end');
     expect(seen).toHaveLength(1);
     expect(seen[0]).toMatchObject({ feedbackEnvelopes: 1, thoughts: 1 });
   });
@@ -1399,7 +1399,7 @@ describe('runChatTurnAcp — 끝 관측 payload (런타임)', () => {
  *
  *  📏 2026-08-22 라이브 실측: 데몬을 재시작한 뒤 브라우저 탭의 WebSocket 이 죽어 있었다.
  *  그 위로 턴을 보내니 ***화면엔 `error: socket closed: 1006` 이 떴는데***,
- *  `monad logs` 에는 **`webterm.chat.runturn.acp.start` 만 있고 끝이 «한 줄도» 없었다.**
+ *  `elanous logs` 에는 **`webterm.chat.runturn.acp.start` 만 있고 끝이 «한 줄도» 없었다.**
  *
  *  🔑 ***그래서 관측만 보면 그 턴은 「아직 도는 중」과 구별되지 않는다.***
  *  ⛔ 그리고 그것은 조용하다 — 사람은 실패를 «겪고» 있는데 관측은 아무 말도 하지 않는다.

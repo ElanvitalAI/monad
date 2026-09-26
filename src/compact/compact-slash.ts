@@ -24,7 +24,7 @@ export function buildCompactSlashCommand(): CompactSlashCommandDescriptor {
     name: 'compact',
     aliases: ['compress', 'squeeze'],
     description:
-      'Trim huge tool outputs (Layer 1) + clear old tool results (Layer 2). No LLM call. Archive saved to ~/.monad/compact-archive/.',
+      'Trim huge tool outputs (Layer 1) + clear old tool results (Layer 2). No LLM call. Archive saved to ~/.elanous/compact-archive/.',
   };
 }
 
@@ -64,7 +64,7 @@ export async function runCompactSlash(
     lines.push(`Layer 3 (LLM summarize):      ${pipeline.diagnostics.layer3SummaryModel || '(active model)'} produced ${formatChars(pipeline.diagnostics.layer3SummaryChars)} char summary`);
   }
   if (pipeline.diagnostics.archived > 0) {
-    lines.push(`Archived ${pipeline.diagnostics.archived} chunk(s) to ~/.monad/compact-archive/${args.sessionId ?? 'default'}.jsonl`);
+    lines.push(`Archived ${pipeline.diagnostics.archived} chunk(s) to ~/.elanous/compact-archive/${args.sessionId ?? 'default'}.jsonl`);
   }
   lines.push('');
   lines.push(`Tokens: ${formatTokenNumber(beforeTokens)} → ${formatTokenNumber(afterTokens)}  (saved ${formatTokenNumber(savedTokens)})`);

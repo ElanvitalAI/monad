@@ -13,7 +13,7 @@
 //
 // codex #1 (compact.rs:284 `remove_first_item`) is ported here as a
 // drop-oldest retry loop: when the summarizer itself overflows on a
-// huge transcript, monad's provider returns null and the pipeline
+// huge transcript, elanous's provider returns null and the pipeline
 // no-ops. Rather than give up (fatal for an unattended run), we shed
 // the oldest non-preserved message and retry so the summarizer input
 // shrinks until it fits.
@@ -40,7 +40,7 @@ export interface CompactSessionOpts {
   maxOverflowRetries?: number;
   root?: string;
   /** Force compaction unconditionally — bypass the shouldAutoCompact token-
-   *  ratio gate. For the external `monad session compact --force` trigger:
+   *  ratio gate. For the external `elanous session compact --force` trigger:
    *  run the full pipeline (incl. Layer 3 summarize) regardless of how full
    *  the context is. Below-threshold histories may still no-op if there is
    *  nothing to summarize. */
@@ -131,7 +131,7 @@ export async function compactSessionHistory(
 
   const llm = loaded.messages.map(toLLMMessage);
   const decision = shouldAutoCompact(llm, opts.modelId, opts.config);
-  // Force bypasses the token-ratio gate (external `monad session compact
+  // Force bypasses the token-ratio gate (external `elanous session compact
   // --force`); otherwise the auto path no-ops below threshold.
   if (!decision.fire && !opts.force) {
     return ZERO(before, decision.reason, decision.usedTokens, decision.ratio);

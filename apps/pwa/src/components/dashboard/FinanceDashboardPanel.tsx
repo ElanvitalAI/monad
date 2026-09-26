@@ -410,7 +410,7 @@ export function FinanceDashboardPanel() {
 
           {/* 스케줄러 (prospective memory · B1) — 예약 작업 인지·상태 */}
           {schedules ? (
-            <Card title="🗓 스케줄러" sub={`${schedules.total}잡 · monad실행 ${schedules.adopted} · ${Object.entries(schedules.byCategory).map(([k, v]) => `${k} ${v}`).join(' · ')}`}>
+            <Card title="🗓 스케줄러" sub={`${schedules.total}잡 · elanous실행 ${schedules.adopted} · ${Object.entries(schedules.byCategory).map(([k, v]) => `${k} ${v}`).join(' · ')}`}>
               <ul className="flex flex-col gap-1">
                 {schedules.jobs.slice(0, 40).map(j => (
                   <li key={j.id} className="flex items-center justify-between gap-2 border-b border-border/40 py-1 text-xs last:border-0">
@@ -419,7 +419,7 @@ export function FinanceDashboardPanel() {
                       <p className="truncate text-[10px] text-muted-foreground">{j.cron ?? (j.intervalMs ? `${Math.round(j.intervalMs / 60000)}분` : '?')} · {j.category}{j.source !== 'crontab' ? ` · ${j.source}` : ''}</p>
                     </div>
                     <div className="flex shrink-0 items-center gap-1.5">
-                      {j.runVia === 'monad' ? <span className="rounded bg-primary/20 px-1 text-[10px] text-primary">monad</span> : j.runVia === 'daemon' ? <span className="rounded bg-secondary px-1 text-[10px] text-muted-foreground">daemon</span> : null}
+                      {j.runVia === 'elanous' ? <span className="rounded bg-primary/20 px-1 text-[10px] text-primary">elanous</span> : j.runVia === 'daemon' ? <span className="rounded bg-secondary px-1 text-[10px] text-muted-foreground">daemon</span> : null}
                       {j.lastRun ? <span className="text-[10px] tabular-nums text-muted-foreground">{hhmm(j.lastRun)}</span> : null}
                     </div>
                   </li>

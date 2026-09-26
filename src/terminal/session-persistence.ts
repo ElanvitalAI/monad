@@ -13,9 +13,9 @@
 // session I lost" case.
 
 import { existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from 'node:fs';
-import { monadStateRoot } from '../autopilot/state-paths.js';
+import { elanousStateRoot } from '../autopilot/state-paths.js';
 import { dirname, join as joinPath } from 'node:path';
-import { migrateLegacyHomeFile } from '../storage/legacy-monad-dir-migrate.js';
+import { migrateLegacyHomeFile } from '../storage/legacy-elanous-dir-migrate.js';
 import type {
   CodingAgentBrand,
   SessionKind,
@@ -36,13 +36,13 @@ export interface PersistedSession {
 
 const DEFAULT_DEBOUNCE_MS = 250;
 
-// FU2 Tier 2: ~/.config/monad-agent/terminal-sessions.json → ~/.monad/terminal-sessions.json.
+// FU2 Tier 2: ~/.config/monad-agent/terminal-sessions.json → ~/.elanous/terminal-sessions.json.
 export function defaultSessionsPath(): string {
   migrateLegacyHomeFile({
     legacyHomeRel: joinPath('.config', 'monad-agent', 'terminal-sessions.json'),
-    monadRel: 'terminal-sessions.json',
+    elanousRel: 'terminal-sessions.json',
   });
-  return joinPath(monadStateRoot(), 'terminal-sessions.json');
+  return joinPath(elanousStateRoot(), 'terminal-sessions.json');
 }
 
 export function loadPersistedSessions(

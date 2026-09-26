@@ -3,22 +3,22 @@
 // 대표 지시: goal-loop 자식은 진짜 PTY이므로 그 화면을 프로세스 경계 넘어 릴레이해 터미널에서 보게 한다
 // (X11 forwarding 동형). PtyShell 레지스트리는 **프로세스-로컬**(in-memory)이라 self-implement CLI(별도
 // 스폰 프로세스)의 PTY 는 데몬 PWA `/v1/terminals` 로 안 보인다. → **file-based per-space 화면 버퍼**가
-// 현실적 안: 드라이버가 매 poll 마다 full snapshot 을 공간 id 키 파일에 쓰고(프레임버퍼), 뷰어(`monad self
+// 현실적 안: 드라이버가 매 poll 마다 full snapshot 을 공간 id 키 파일에 쓰고(프레임버퍼), 뷰어(`elanous self
 // screen --space <id>`)가 그 파일을 읽어 렌더(라이브 follow). 텔레그램 불필요·터미널 직행.
 //
-// 격리: 파일 위치는 MONAD_STATE_DIR 스코프(테스트=.monad-test/harness-screens·운영=~/.monad/harness-screens)
+// 격리: 파일 위치는 ELANOUS_STATE_DIR 스코프(테스트=.elanous-test/harness-screens·운영=~/.elanous/harness-screens)
 // → self-dev 런과 뷰어가 같은 state-dir 를 봐야 함(logs --test 규율과 동형). fail-soft(화면 릴레이 실패가
 // 구현을 막지 않는다). 병렬 self-dev 는 공간 id 로 분리(각 worktree 화면 별도 파일).
 
-import { monadStateRoot } from '../autopilot/state-paths.js';
+import { elanousStateRoot } from '../autopilot/state-paths.js';
 import { basename, join } from 'node:path';
 import { mkdirSync, writeFileSync, readFileSync, readdirSync, statSync, rmSync } from 'node:fs';
 import { normalizeSpaceId } from './harness-space.js';
 
-/** 화면 버퍼 디렉터리 — MONAD_STATE_DIR 스코프(격리)·기본 ~/.monad. */
+/** 화면 버퍼 디렉터리 — ELANOUS_STATE_DIR 스코프(격리)·기본 ~/.elanous. */
 export function harnessScreenDir(env: NodeJS.ProcessEnv = process.env): string {
-  const stateDir = env.MONAD_STATE_DIR?.trim();
-  return join(stateDir && stateDir.length > 0 ? stateDir : monadStateRoot(), 'harness-screens');
+  const stateDir = env.ELANOUS_STATE_DIR?.trim();
+  return join(stateDir && stateDir.length > 0 ? stateDir : elanousStateRoot(), 'harness-screens');
 }
 
 /** 화면 키의 단일 해석원: 전달된 현재 공간 id 우선, 없으면 작업 디렉터리 마지막 조각, 둘 다 없으면 기존 `unknown` 계약. */
@@ -47,7 +47,7 @@ export function harnessScreenPath(spaceId: string, env: NodeJS.ProcessEnv = proc
 //     가장 나쁜 부류다. 비어 있으면 사람이 의심이라도 하는데, 섞이면 그대로 믿는다.
 //
 // 📏 왜 지금 안전한가(그리고 왜 «가정»인가)
-//   `headless-monad-driver.ts` 는 현재 자식 공간 후보와 cwd를 canonical resolver에 넘긴다.
+//   `headless-elanous-driver.ts` 는 현재 자식 공간 후보와 cwd를 canonical resolver에 넘긴다.
 //   ⇒ 조각마다 워크트리가 다르면 키가 갈린다. ***그러나 그건 「cwd 가 다르다」는 «가정»이다.***
 //   ⛔ 가정은 언젠가 깨진다 — 그때 «조용히» 깨진다. 그래서 계약으로 바꾼다.
 //
@@ -158,7 +158,7 @@ export function readHarnessScreen(spaceId: string, env: NodeJS.ProcessEnv = proc
 
 /** ★ 하니스 poll-루프 heartbeat(INC-1 근본특정·2026-07-21) — 동기 writeFileSync 라 이벤트루프가 얼려도
  *  마지막 상태가 디스크에 남는다(버퍼드 debug.log 는 freeze 시 flush 못 함). hang 재발 시 `.hb` 를 읽어
- *  **루프가 iterate 중이었나(i 증가) vs frozen(i 고정)** + 완료감지 상태를 결정적으로 판정. 뷰=`monad self screen --hb`. */
+ *  **루프가 iterate 중이었나(i 증가) vs frozen(i 고정)** + 완료감지 상태를 결정적으로 판정. 뷰=`elanous self screen --hb`. */
 export function writeHarnessHeartbeat(spaceId: string, state: Record<string, unknown>, env: NodeJS.ProcessEnv = process.env): void {
   try {
     const dir = harnessScreenDir(env);

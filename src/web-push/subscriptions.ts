@@ -2,9 +2,9 @@
 //
 // Each PWA install that opts into notifications POSTs its
 // `PushSubscription` JSON to the daemon. We persist the lot under
-// `~/.monad/push-subs.json` (0o600) so subscriptions survive daemon
+// `~/.elanous/push-subs.json` (0o600) so subscriptions survive daemon
 // restarts. Storing inline JSON (vs sqlite) follows the same
-// pragmatic choice as `~/.monad/pushcut/bindings.json` — small N,
+// pragmatic choice as `~/.elanous/pushcut/bindings.json` — small N,
 // easy to inspect, no migration framework needed.
 //
 // Why a per-subscription `id` (not just the endpoint URL): keeps
@@ -15,7 +15,7 @@
 import { existsSync, mkdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
 import { dirname } from 'node:path';
 import { debug } from '../debug/log.js';
-import { getMonadConfigDir } from '../monad-config-dir.js';
+import { getElanousConfigDir } from '../elanous-config-dir.js';
 
 export interface PushSubscriptionRecord {
   id: string;
@@ -44,9 +44,9 @@ interface SubscriptionsFile {
 const FILE_VERSION = 1;
 
 function defaultPath(): string {
-  // Mirror `monadDaemonDir()` — keep all per-host state under one
+  // Mirror `elanousDaemonDir()` — keep all per-host state under one
   // dir so existing backup tooling sweeps it together.
-  return `${getMonadConfigDir()}/push-subs.json`;
+  return `${getElanousConfigDir()}/push-subs.json`;
 }
 
 function defaultFile(): SubscriptionsFile {
@@ -114,7 +114,7 @@ export function addSubscription(input: AddSubscriptionInput): PushSubscriptionRe
   const file = readFile(path());
   // Dedup by endpoint — re-subscription from the same browser tab
   // arrives with a fresh id but the same endpoint. Replace in place
-  // so `~/.monad/push-subs.json` doesn't grow on every reload.
+  // so `~/.elanous/push-subs.json` doesn't grow on every reload.
   const existing = file.subscriptions.findIndex(
     (s) => s.subscription.endpoint === input.subscription.endpoint,
   );

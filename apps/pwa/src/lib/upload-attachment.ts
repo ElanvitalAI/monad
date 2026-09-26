@@ -18,7 +18,7 @@ export interface AttachmentMeta {
   size: number;
   downloadUrl: string;
   createdAt?: number;
-  /** Absolute path on the daemon host (e.g. `~/.monad/attachments/<id>-<name>`).
+  /** Absolute path on the daemon host (e.g. `~/.elanous/attachments/<id>-<name>`).
    *  Surfaced so PWA callers can inject it into the active web terminal
    *  the way `ctr.sh` pipes a path through the host clipboard — except
    *  daemon and PTY share the same fs, so no extra SCP hop. */

@@ -8,9 +8,9 @@ describe('createPersonaCapabilityRouter — role-based grants', () => {
   test('admin → all actions allowed', () => {
     const store = createCapabilityGrantStore();
     const router = createPersonaCapabilityRouter({ grantStore: store });
-    router.setPersona({ persona: 'monad-admin', role: 'admin' });
+    router.setPersona({ persona: 'elanous-admin', role: 'admin' });
     for (const action of ['read', 'spawn', 'write', 'interrupt', 'inspect', 'close'] as const) {
-      const d = router.decide({ persona: 'monad-admin', action });
+      const d = router.decide({ persona: 'elanous-admin', action });
       expect(d.allowed).toBe(true);
       expect(d.via).toBe('role');
     }

@@ -2,7 +2,7 @@
 //
 // EMIT-side(#5402·makeMissionObserveStep)가 ReAct 제어루프의 매 스텝 화면을 SelfReportFrame 으로 프레임
 // 버스에 발행한다. 이 어댑터는 그 프레임 스트림을 **구조화 진행 다이제스트**(state + 요약 1줄)로 압축해
-// observe 서피스(로그 패브릭·TUI 관찰창·텔레그램 out)에 노출한다 — raw 화면(이미 `monad self screen`/manifest
+// observe 서피스(로그 패브릭·TUI 관찰창·텔레그램 out)에 노출한다 — raw 화면(이미 `elanous self screen`/manifest
 // bridge 가 담당)이 아니라 "지금 무엇을 하고 있나"의 소화된 서사.
 //
 // ── 재발명 0 · 얇은 어댑터 (PLAN §7-2 P3b-2) ────────────────────────────────────────

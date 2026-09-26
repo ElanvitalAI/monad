@@ -15,21 +15,21 @@ fi
 command -v docker >/dev/null 2>&1 || { echo "⛔ docker not on PATH (macOS: start OrbStack or Docker Desktop)" >&2; exit 127; }
 docker info >/dev/null 2>&1 || { echo "⛔ docker engine is not running" >&2; exit 1; }
 
-OUT="${MONAD_DOCKER_VERIFY_OUT:-$(mktemp -d "${TMPDIR:-/tmp}/monad-docker-verify.XXXXXX")}"
+OUT="${ELANOUS_DOCKER_VERIFY_OUT:-$(mktemp -d "${TMPDIR:-/tmp}/elanous-docker-verify.XXXXXX")}"
 CTX="$OUT/ctx"
 mkdir -p "$CTX"
 echo "▶ packing this checkout → $CTX" >&2
 (cd "$ROOT" && bun pm pack --destination "$CTX" >/dev/null 2>&1) || { echo "⛔ bun pm pack failed" >&2; exit 1; }
 TGZ="$(ls "$CTX"/*.tgz 2>/dev/null | head -1)"
 [ -n "$TGZ" ] || { echo "⛔ no tarball produced in $CTX" >&2; exit 1; }
-mv "$TGZ" "$CTX/monadagent.tgz"
+mv "$TGZ" "$CTX/elanous.tgz"
 cp "$ROOT/scripts/install.sh" "$ROOT/docker/verify/Dockerfile" "$CTX/"
 
 for base in "$@"; do
   tag="$(printf '%s' "$base" | tr ':/' '--')"
   (
-    if docker build -t "monad-verify:$tag" --build-arg BASE="$base" "$CTX" > "$OUT/build-$tag.log" 2>&1; then
-      docker run --rm "monad-verify:$tag" > "$OUT/run-$tag.log" 2>&1
+    if docker build -t "elanous-verify:$tag" --build-arg BASE="$base" "$CTX" > "$OUT/build-$tag.log" 2>&1; then
+      docker run --rm "elanous-verify:$tag" > "$OUT/run-$tag.log" 2>&1
       verdict="$(grep '^\[verify\]' "$OUT/run-$tag.log" | tail -1)"
       # 마지막 doctor(수정 «뒤»)의 「준비 상태:」 블록에서 manual 로 남은 항목만.
       left="$(awk '/^준비 상태:/{blk=""; on=1; next} on && /^[^ ]/{on=0} on{blk=blk $0 "\n"} END{printf "%s", blk}' "$OUT/run-$tag.log" | grep -E '^  [a-z-]+: manual' | sed -E 's/^  ([a-z-]+):.*/\1/' | sort -u | tr '\n' ' ')"

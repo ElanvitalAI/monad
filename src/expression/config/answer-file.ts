@@ -1,8 +1,8 @@
 // Answer-file load / save for the setup wizard. JSON-encoded for
 // zero new deps; the file is small + flat enough that the human-
 // readability gap vs TOML is minor. Default location:
-// `~/.config/monad/setup-answers.json`. Users typically edit this
-// once per machine, then run `monad setup --config <path>` for
+// `~/.config/elanous/setup-answers.json`. Users typically edit this
+// once per machine, then run `elanous setup --config <path>` for
 // non-interactive deploys (CI, dotfile bootstrap).
 //
 // Schema is open: we don't try to validate against `UserConfig`
@@ -14,7 +14,7 @@
 import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { homedir } from 'node:os';
-import { migrateLegacyXdgFile } from '../../storage/legacy-monad-dir-migrate.js';
+import { migrateLegacyXdgFile } from '../../storage/legacy-elanous-dir-migrate.js';
 
 export interface AnswerFile {
   /** Schema version. Bump on breaking shape changes; old files keep
@@ -26,16 +26,16 @@ export interface AnswerFile {
 
 /** Default answer-file location, overridable via env.
  *
- *  FU2 (PLAN-config-unification-monad-root-2026-05-10 closing follow-up):
- *  moved from ~/.config/monad/setup-answers.json → ~/.monad/setup-answers.json.
+ *  FU2 (PLAN-config-unification-elanous-root-2026-05-10 closing follow-up):
+ *  moved from ~/.config/elanous/setup-answers.json → ~/.elanous/setup-answers.json.
  *  XDG_CONFIG_HOME explicit honors legacy path (Phase 6 deprecation). */
 export function defaultAnswerFilePath(): string {
-  const env = process.env.MONAD_SETUP_ANSWERS;
+  const env = process.env.ELANOUS_SETUP_ANSWERS;
   if (env && env.trim().length > 0) return env;
   const xdg = process.env.XDG_CONFIG_HOME;
-  if (xdg && xdg.trim().length > 0) return join(xdg, 'monad', 'setup-answers.json');
+  if (xdg && xdg.trim().length > 0) return join(xdg, 'elanous', 'setup-answers.json');
   migrateLegacyXdgFile('setup-answers.json', 0o600);
-  return join(homedir(), '.monad', 'setup-answers.json');
+  return join(homedir(), '.elanous', 'setup-answers.json');
 }
 
 /** Load an answer file. An absent implicit default returns `{}` so the

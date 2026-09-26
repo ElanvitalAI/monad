@@ -8,13 +8,13 @@
 //
 // Reference: PLAN-voice-input-bridge-s1v4-2026-04-29.md §7.
 
-export type VoiceBrand = 'codex' | 'claude' | 'gemini' | 'monad';
+export type VoiceBrand = 'codex' | 'claude' | 'gemini' | 'elanous';
 
 export const VOICE_BRANDS: readonly VoiceBrand[] = [
   'codex',
   'claude',
   'gemini',
-  'monad',
+  'elanous',
 ] as const;
 
 export interface VoicePrefixRouteResult {
@@ -63,7 +63,7 @@ const PREFIX_TABLE = [
   brandPrefixes('codex',  ['코덱스', '코덱'],            ['codex']),
   brandPrefixes('claude', ['클로드', '클라우드'],         ['claude']),
   brandPrefixes('gemini', ['제미니', '지미니', '제미나이'], ['gemini']),
-  brandPrefixes('monad',  ['모나드'],                    ['monad']),
+  brandPrefixes('elanous',  ['엘라누스'],                    ['elanous']),
 ] as const;
 
 // ── routeVoiceTranscript ────────────────────────────────────────────

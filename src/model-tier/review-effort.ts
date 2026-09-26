@@ -13,7 +13,7 @@ import { lookupLlmTierSpec, type LlmTierProvider } from './llm-tier-map.js';
  * - 티어가 `off` 면 «안 보낸다»(추론 안 하는 칸에 억지로 싣지 않는다).
  * - ⛔ 티어 없이 «모델이 핀»된 경우(env/config 로 모델명만 준 경우)는 대표 결정대로 `high`.
  *
- * ⭐ 공용 모듈인 이유 — 리뷰 LLM 을 짓는 자리가 «둘»이다(`dev-pipeline` 의 무인 리뷰 · `monad self review`).
+ * ⭐ 공용 모듈인 이유 — 리뷰 LLM 을 짓는 자리가 «둘»이다(`dev-pipeline` 의 무인 리뷰 · `elanous self review`).
  *   둘 다 `'medium'` 을 박고 있었다. 한쪽만 고치면 다른 쪽이 조용히 남는다.
  */
 export function reviewReasoningEffort(

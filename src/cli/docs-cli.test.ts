@@ -260,7 +260,7 @@ test('문서를 못 찾으면 exit 1 이고 산출이 아니라 오류로 낸다
   const { deps, printed, errors } = harness({ assessOne: () => ({ outcome: 'missing' as const }) });
   expect(await runDocsStale('docs/missing.md', {}, '/repo', deps)).toBe(1);
   expect(printed).toEqual([]);
-  expect(errors[0]).toBe('monad docs stale: 문서를 찾을 수 없음 (docs/missing.md)');
+  expect(errors[0]).toBe('elanous docs stale: 문서를 찾을 수 없음 (docs/missing.md)');
 });
 
 test('실재하나 사정거리 밖이면 찾을 수 없음과 다른 오류 문면을 낸다', async () => {
@@ -268,8 +268,8 @@ test('실재하나 사정거리 밖이면 찾을 수 없음과 다른 오류 문
   const outOfScope = harness({ assessOne: () => ({ outcome: 'out-of-scope' as const }) });
   expect(await runDocsStale('NOPE-NOT-EXIST.md', {}, '/repo', missing.deps)).toBe(1);
   expect(await runDocsStale('src/index.ts', {}, '/repo', outOfScope.deps)).toBe(1);
-  expect(missing.errors[0]).toBe('monad docs stale: 문서를 찾을 수 없음 (NOPE-NOT-EXIST.md)');
-  expect(outOfScope.errors[0]).toBe('monad docs stale: 파일이 실재하지만 판정 사정거리 밖 (src/index.ts)');
+  expect(missing.errors[0]).toBe('elanous docs stale: 문서를 찾을 수 없음 (NOPE-NOT-EXIST.md)');
+  expect(outOfScope.errors[0]).toBe('elanous docs stale: 파일이 실재하지만 판정 사정거리 밖 (src/index.ts)');
   expect(outOfScope.errors[0]).not.toBe(missing.errors[0]);
   expect(outOfScope.errors[0]).toContain('사정거리');
 });
@@ -674,7 +674,7 @@ test('실물 assessOne 경로는 루트 상시주입 문서를 판정하고 사�
     const missing = errors[0]!;
     expect(outOfScope).not.toBe(missing);
     expect(outOfScope).toContain('사정거리');
-    expect(missing).toBe('monad docs stale: 문서를 찾을 수 없음 (NOPE-NOT-EXIST.md)');
+    expect(missing).toBe('elanous docs stale: 문서를 찾을 수 없음 (NOPE-NOT-EXIST.md)');
   } finally {
     rmSync(repo, { recursive: true, force: true });
   }

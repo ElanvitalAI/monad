@@ -8,7 +8,7 @@ import { handleLlmHostsConfig } from '../src/nexus/api/llm-hosts-config.js';
 
 afterEach(() => {
   setHostsOverride(null);
-  delete process.env.MONAD_LLM_HOSTS;
+  delete process.env.ELANOUS_LLM_HOSTS;
 });
 
 describe("parseLlmHostsEnv · legacy 'anthropic' kind alias", () => {
@@ -82,7 +82,7 @@ describe('PUT /v1/llm/hosts · legacy alias surfaces deprecations field', () => 
   });
 
   test('GET /v1/llm/hosts surfaces deprecations from env', async () => {
-    process.env.MONAD_LLM_HOSTS = JSON.stringify([
+    process.env.ELANOUS_LLM_HOSTS = JSON.stringify([
       { name: 'cloud', kind: 'anthropic', endpoint: 'https://api.anthropic.com' },
     ]);
     const res = await handleLlmHostsConfig(new Request('http://x/v1/llm/hosts'));

@@ -93,7 +93,7 @@ describe('named browser action trajectories', () => {
     }, root);
     const child = Bun.spawn(['bun', 'scripts/ux-sim.ts', '--computer-use', 'normal', '--trajectory', 'cli-replay'], {
       cwd: import.meta.dir + '/../..',
-      env: { ...process.env, MONAD_STATE_DIR: root },
+      env: { ...process.env, ELANOUS_STATE_DIR: root },
       stdout: 'pipe',
       stderr: 'pipe',
     });

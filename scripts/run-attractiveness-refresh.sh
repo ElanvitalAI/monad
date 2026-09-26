@@ -1,12 +1,12 @@
 #!/bin/zsh
-# [pilot · P2 2026-07-05] 매력도 refresh (monad-owned).
+# [pilot · P2 2026-07-05] 매력도 refresh (elanous-owned).
 # openclaw run_attractiveness_refresh.sh 대체.
 #
 # scores.db 의 전 preset·symbol 을 재점수하고, cross-rank 3 preset
 # (cross-asset-global 자산군 / country-global 국가 / sector-global 섹터)을
 # 오늘자로 갱신한다. finance_attractiveness·finance_trend(rotation/country/
 # sector)·finance_monitor 가 이 scores.db 를 읽는다. 점수 로직은 skill
-# (asset-attractiveness) 에 있고, 이 래퍼가 monad 소유 스케줄 진입점.
+# (asset-attractiveness) 에 있고, 이 래퍼가 elanous 소유 스케줄 진입점.
 export PATH="/opt/homebrew/bin:/usr/local/bin:$HOME/.bun/bin:/usr/bin:/bin:/usr/sbin:/sbin:$PATH"
 # npx 는 nvm 설치라 크론 최소 PATH 에 없음 (2026-07-06~ 매일 '0 symbol' 침묵 실패
 # — 크립토 스코어 07-05 동결의 근본원인). 최신 nvm node bin 동적 추가(버전 내성).
@@ -14,7 +14,7 @@ NVM_NODE_BIN=$(ls -d "$HOME"/.nvm/versions/node/*/bin 2>/dev/null | sort -V | ta
 [ -n "$NVM_NODE_BIN" ] && export PATH="$NVM_NODE_BIN:$PATH"
 SK="$HOME/.claude/skills/asset-attractiveness"
 DB="$HOME/.cache/asset-attractiveness/scores.db"
-LOGDIR="$HOME/.monad/logs/collect"; mkdir -p "$LOGDIR"
+LOGDIR="$HOME/.elanous/logs/collect"; mkdir -p "$LOGDIR"
 D=$(TZ=Asia/Seoul date +%Y%m%d); LOG="$LOGDIR/attractiveness-$D.log"
 cd "$SK" || exit 1
 echo "[$(date '+%F %T')] attractiveness refresh start" >> "$LOG"

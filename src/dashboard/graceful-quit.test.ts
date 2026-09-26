@@ -68,15 +68,15 @@ describe('buildResumeGuidance — ⛔ «셸에서 칠 수 있는» 명령으로'
   test('⭐ 종전 문면(`/session load`)은 TUI 안 명령이라 셸에서 못 친다 — 셸 명령을 준다', () => {
     const g = buildResumeGuidance('sess-123');
     expect(g).toContain('sess-123');
-    expect(g).toContain('monad');
+    expect(g).toContain('elanous');
     expect(g).toContain('/resume sess-123');
-    expect(g).toContain('monad chat --session sess-123');
-    expect(g).toContain('monad session list');
+    expect(g).toContain('elanous chat --session sess-123');
+    expect(g).toContain('elanous session list');
   });
   test('id 를 «모르면» 모른다고 하고 찾는 길을 준다 — 꾸미지 않는다', () => {
     const g = buildResumeGuidance(undefined);
     expect(g).toContain('기록하지 못했습니다');
-    expect(g).toContain('monad session list');
+    expect(g).toContain('elanous session list');
   });
 });
 

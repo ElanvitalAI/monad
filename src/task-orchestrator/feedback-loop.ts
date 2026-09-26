@@ -17,7 +17,7 @@
  * All external checks are **injected** (terminationCheck / budgetCheck
  * / hasPendingCritical). The loop itself has zero IO; this keeps the
  * module pure, unit-testable, and decoupled from the surrounding
- * monad trackers (auto-research / cost-meter / cft).
+ * elanous trackers (auto-research / cost-meter / cft).
  */
 import type { TaskGraph } from './graph.js';
 import type { TaskDispatcher } from './dispatcher.js';

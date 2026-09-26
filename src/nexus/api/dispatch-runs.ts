@@ -2,7 +2,7 @@
  * `GET /v1/dispatch/runs` — Phase 2 dispatch retrospective surface (D8).
  *
  * Sibling to `/v1/intake/runs` (I10) — reads
- * `~/.monad/dispatch/runs.jsonl` and returns recent rows + aggregates
+ * `~/.elanous/dispatch/runs.jsonl` and returns recent rows + aggregates
  * across the full file. The 7-day dispatch dogfood gate
  * (RESEARCH §11.3 · success rate per axis · top reject reasons)
  * consumes this surface.

@@ -115,7 +115,7 @@ export async function handleMcpResourceGet(req: Request, opts: McpResourceRouteO
   // ⛔⭐⭐⭐ 2026-08-21 라이브: 이 경로에 계측이 «0» 이었다. 그래서 위젯이 안 뜰 때
   //   ⓐ 요청이 나갔나 ⓑ 상대가 느린가 ⓒ 우리가 멈췄나 를 «아무도 못 갈랐다».
   //   📏 실측이 그것을 증명했다 — 같은 조회가 한 번은 18초, 다음엔 10분 넘게 안 돌아왔는데
-  //     `monad logs` 에 25분간 «한 줄도» 없었다. ⇒ 나가는 자리와 돌아오는 자리를 «둘 다» 남긴다.
+  //     `elanous logs` 에 25분간 «한 줄도» 없었다. ⇒ 나가는 자리와 돌아오는 자리를 «둘 다» 남긴다.
   const startedAt = Date.now();
   debug.log('mcp.resource.read', 'start', { server: serverId, uri });
   try {

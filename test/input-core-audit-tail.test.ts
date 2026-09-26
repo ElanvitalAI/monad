@@ -13,7 +13,7 @@ import {
 let tmpRoot: string;
 
 beforeEach(() => {
-  tmpRoot = join(tmpdir(), `monad-audit-${Date.now()}-${Math.random().toString(36).slice(2)}`);
+  tmpRoot = join(tmpdir(), `elanous-audit-${Date.now()}-${Math.random().toString(36).slice(2)}`);
   mkdirSync(tmpRoot, { recursive: true });
 });
 afterEach(() => {

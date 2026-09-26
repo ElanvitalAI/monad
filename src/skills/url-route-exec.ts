@@ -141,7 +141,7 @@ function deriveShareTitle(obsidianPath: string): string {
 let _shareService: MarkdownPublishDeps | null = null;
 function shareService(): MarkdownPublishDeps {
   if (!_shareService) {
-    const root = process.env.MONAD_PUBLISH_ROOT || `${homedir()}/.monad/publishing`;
+    const root = process.env.ELANOUS_PUBLISH_ROOT || `${homedir()}/.elanous/publishing`;
     _shareService = createMarkdownPublishService({ root, origin: s3PublicBase() });
   }
   return _shareService;

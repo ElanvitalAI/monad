@@ -9,24 +9,24 @@ import {
   normalizeProviderId, inferProviderFromModel, resolveFamilyShortcut,
   effectiveCapabilities,
 } from '../src/registry/normalize';
-import { setMonadConfigDir, resetMonadConfigDir } from '../src/monad-config-dir.js';
+import { setElanousConfigDir, resetElanousConfigDir } from '../src/elanous-config-dir.js';
 
-const prevTestHome = process.env.MONAD_TEST_HOME;
+const prevTestHome = process.env.ELANOUS_TEST_HOME;
 
 let tmpHome: string;
 
 beforeEach(() => {
   tmpHome = mkdtempSync(join(tmpdir(), 'reg-norm-'));
-  process.env.MONAD_TEST_HOME = tmpHome;
-  setMonadConfigDir(join(tmpHome, '.monad'));
+  process.env.ELANOUS_TEST_HOME = tmpHome;
+  setElanousConfigDir(join(tmpHome, '.elanous'));
   __resetCatalogForTests();
 });
 
 afterEach(() => {
   rmSync(tmpHome, { recursive: true, force: true });
-  resetMonadConfigDir();
-  if (prevTestHome === undefined) delete process.env.MONAD_TEST_HOME;
-  else process.env.MONAD_TEST_HOME = prevTestHome;
+  resetElanousConfigDir();
+  if (prevTestHome === undefined) delete process.env.ELANOUS_TEST_HOME;
+  else process.env.ELANOUS_TEST_HOME = prevTestHome;
   __resetCatalogForTests();
 });
 

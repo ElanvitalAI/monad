@@ -285,7 +285,7 @@ describe('resolveAgentLayered', () => {
 
   test('project layer overrides builtin', async () => {
     const builtin = join(tmpRoot, 'builtin');
-    const projectAgents = join(tmpRoot, 'project', '.monad', 'agents');
+    const projectAgents = join(tmpRoot, 'project', '.elanous', 'agents');
     mkdirSync(builtin, { recursive: true });
     mkdirSync(projectAgents, { recursive: true });
     const { writeFileSync } = await import('node:fs');

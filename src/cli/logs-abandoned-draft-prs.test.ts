@@ -254,7 +254,7 @@ describe('extractAbandonedDraftPrGoalId', () => {
       .toBe('5245a3ea5a684476');
     expect(extractAbandonedDraftPrGoalId('self-impl/plugin-rich-goalid-5245a3ea5a684476-root-92346dea'))
       .toBe('5245a3ea5a684476');
-    expect(extractAbandonedDraftPrGoalId('self-impl/claude-plugin-package-monad-goalid-b629a-a13b091f'))
+    expect(extractAbandonedDraftPrGoalId('self-impl/claude-plugin-package-elanous-goalid-b629a-a13b091f'))
       .toBe('b629a');
     expect(extractAbandonedDraftPrGoalId('self-impl/goalid-0af1dc4d84d1615d-rootintent-scrip-f3b1782a'))
       .toBe('0af1dc4d84d1615d');
@@ -295,7 +295,7 @@ describe('findAbandonedDraftPrs — goal grouping', () => {
         number: 101, url: 'https://pr/101', stage: 'review-blocked', verdict: 'UNCONVERGEABLE', runId: null,
       }, 1),
       row('rework-blocked-draft-pr', {
-        branch: 'self-impl/claude-plugin-package-monad-goalid-b629a-a13b091f',
+        branch: 'self-impl/claude-plugin-package-elanous-goalid-b629a-a13b091f',
         number: 102, url: 'https://pr/102', stage: 'review-blocked', verdict: 'UNCONVERGEABLE', runId: null,
       }, 2),
     ];
@@ -1293,7 +1293,7 @@ describe('runLogsAbandonedDraftPrs — lookup-merged', () => {
       {
         event: 'rework-blocked-draft-pr',
         data: {
-          branch: 'self-impl/claude-plugin-package-monad-goalid-b629a-a13b091f',
+          branch: 'self-impl/claude-plugin-package-elanous-goalid-b629a-a13b091f',
           number: 201, url: 'https://pr/201', stage: 'review-blocked', verdict: 'UNCONVERGEABLE', runId: null,
         },
         ts: '2026-09-04T08:00:00.000Z',
@@ -1309,7 +1309,7 @@ describe('runLogsAbandonedDraftPrs — lookup-merged', () => {
         spawned.push([...args]);
         const search = args[args.indexOf('--search') + 1];
         const heads = search === 'merged:>=2026-09-04T08:00:00Z'
-          ? [{ number: 201, headRefName: 'self-impl/claude-plugin-package-monad-goalid-b629a-a13b091f' }]
+          ? [{ number: 201, headRefName: 'self-impl/claude-plugin-package-elanous-goalid-b629a-a13b091f' }]
           : [];
         return { status: 0, stdout: JSON.stringify(heads) };
       },
@@ -1858,7 +1858,7 @@ describe('runLogsAbandonedDraftPrs — count-domain-gap', () => {
 
 describe('repoSlugFromPrUrl — 저장소는 PR 자신의 url 에서 온다', () => {
   test('url 에서 owner/repo 를 뽑는다', () => {
-    expect(repoSlugFromPrUrl('https://github.com/ElanvitalAI/monad-harness-e2e/pull/3')).toBe('ElanvitalAI/monad-harness-e2e');
+    expect(repoSlugFromPrUrl('https://github.com/ElanvitalAI/elanous-harness-e2e/pull/3')).toBe('ElanvitalAI/elanous-harness-e2e');
     expect(repoSlugFromPrUrl('https://github.com/ElanvitalAI/monad/pull/19323')).toBe('ElanvitalAI/monad');
   });
   test('없거나 모양이 아니면 null 이다 — ⛔ 「기본 저장소」로 접지 않는다', () => {
@@ -1875,12 +1875,12 @@ describe('repoSlugFromPrUrl — 저장소는 PR 자신의 url 에서 온다', ()
       return { status: 0, stdout: JSON.stringify({ state: 'OPEN', mergedAt: null }), stderr: '' } as never;
     };
     const candidates = [
-      { number: 3, url: 'https://github.com/ElanvitalAI/monad-harness-e2e/pull/3' },
+      { number: 3, url: 'https://github.com/ElanvitalAI/elanous-harness-e2e/pull/3' },
       { number: 19323, url: 'https://github.com/ElanvitalAI/monad/pull/19323' },
     ] as Parameters<LookupCurrentDraftPrStatus>[0][];
     for (const candidate of candidates) expect(lookupCurrentPrStatus(candidate, spawnGh)).toBe('open');
     expect(seen).toEqual([
-      ['pr', 'view', '3', '--repo', 'ElanvitalAI/monad-harness-e2e', '--json', 'state,mergedAt'],
+      ['pr', 'view', '3', '--repo', 'ElanvitalAI/elanous-harness-e2e', '--json', 'state,mergedAt'],
       ['pr', 'view', '19323', '--repo', 'ElanvitalAI/monad', '--json', 'state,mergedAt'],
     ]);
   });
@@ -1908,13 +1908,13 @@ describe('repoSlugFromPrUrl — 저장소는 PR 자신의 url 에서 온다', ()
   test('applyCurrentStatus 는 후보 전체를 lookup 에 넘기고 caller repository 인자가 남지 않는다', () => {
     const calls: Array<Pick<AbandonedDraftPr, 'number' | 'url'>> = [];
     const prs = [
-      { number: 3, url: 'https://github.com/ElanvitalAI/monad-harness-e2e/pull/3' },
+      { number: 3, url: 'https://github.com/ElanvitalAI/elanous-harness-e2e/pull/3' },
       { number: 19323, url: 'https://github.com/ElanvitalAI/monad/pull/19323' },
       { number: 7, url: null },
     ] as never as Parameters<typeof applyCurrentStatus>[0];
     applyCurrentStatus(prs, (candidate) => { calls.push({ number: candidate.number, url: candidate.url }); return 'open'; });
     expect(calls).toEqual([
-      { number: 3, url: 'https://github.com/ElanvitalAI/monad-harness-e2e/pull/3' },
+      { number: 3, url: 'https://github.com/ElanvitalAI/elanous-harness-e2e/pull/3' },
       { number: 19323, url: 'https://github.com/ElanvitalAI/monad/pull/19323' },
       { number: 7, url: null },
     ]);

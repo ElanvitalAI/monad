@@ -1,11 +1,11 @@
-// Step 1 of platform-evolution arc · PR b — Discord bot ↔ Monad
+// Step 1 of platform-evolution arc · PR b — Discord bot ↔ Elanous
 // ACP bridge.
 //
 // Renamed from `discord-daemon-bridge.ts` in C-1b (cleanup ROADMAP
 // 2026-05-08): with NEXUS N-1.5 v6 hard landing, the "daemon" the bot
-// attaches to is no longer a separate `monad serve` process — it's the
-// daemon-runtime hosted in-process inside `monad nexus` over the same
-// unix socket. (`monad serve` was deleted in C-4a; only NEXUS hosts the daemon-runtime now.)
+// attaches to is no longer a separate `elanous serve` process — it's the
+// daemon-runtime hosted in-process inside `elanous nexus` over the same
+// unix socket. (`elanous serve` was deleted in C-4a; only NEXUS hosts the daemon-runtime now.)
 // Hence the rename: this file is an **ACP bridge** that happens to use
 // the daemon socket protocol.
 //
@@ -55,10 +55,10 @@ import {
   runDaemonSessionTurnSubmit,
 } from './tui-client/daemon-session-submit-runtime.js';
 import {
-  monadDaemonSocketPath,
-  monadDaemonLogPath,
-  ensureMonadDaemonDir,
-} from './monad-daemon.js';
+  elanousDaemonSocketPath,
+  elanousDaemonLogPath,
+  ensureElanousDaemonDir,
+} from './elanous-daemon.js';
 import {
   createAmbientBufferRegistry,
   extractAgentMessageChunkText,
@@ -75,7 +75,7 @@ import { debug } from './debug/log.js';
 export interface DiscordAcpBridgeOpts {
   /** Override the daemon socket path. */
   socketPath?: string;
-  /** Auto-spawn `monad serve --background` when the socket is not
+  /** Auto-spawn `elanous serve --background` when the socket is not
    *  alive. Default false. */
   autoSpawn?: boolean;
   /** How long to wait for the socket after auto-spawn (ms). */
@@ -143,10 +143,10 @@ export interface DiscordAcpBridge {
 }
 
 async function spawnDaemonInBackground(): Promise<void> {
-  ensureMonadDaemonDir();
+  ensureElanousDaemonDir();
   const fs = await import('node:fs');
-  const out = fs.openSync(monadDaemonLogPath(), 'a');
-  const err = fs.openSync(monadDaemonLogPath(), 'a');
+  const out = fs.openSync(elanousDaemonLogPath(), 'a');
+  const err = fs.openSync(elanousDaemonLogPath(), 'a');
   const args = [process.argv[1]!, 'serve'];
   const child = childSpawn(process.execPath, args, {
     detached: true,
@@ -169,7 +169,7 @@ async function waitForSocket(path: string, maxMs: number): Promise<boolean> {
 export function createDiscordAcpBridge(
   opts: DiscordAcpBridgeOpts = {},
 ): DiscordAcpBridge {
-  const sockPath = opts.socketPath ?? monadDaemonSocketPath();
+  const sockPath = opts.socketPath ?? elanousDaemonSocketPath();
   // LF2 — 폴백을 콘솔+debug.log 이중으로(telegram-acp-bridge 동형).
   const log = opts.log ?? ((m: string): void => { console.log(m); debug.log('discord.bridge', m); });
   const cache = new Map<string, CachedAttach>();
@@ -192,7 +192,7 @@ export function createDiscordAcpBridge(
       }
     } else {
       throw new Error(
-        `discord-acp-bridge: no monad daemon at ${sockPath}. Start one with \`monad serve --background\`, or set MONAD_DISCORD_AUTO_SPAWN_DAEMON=1 to auto-spawn.`,
+        `discord-acp-bridge: no elanous daemon at ${sockPath}. Start one with \`elanous serve --background\`, or set ELANOUS_DISCORD_AUTO_SPAWN_DAEMON=1 to auto-spawn.`,
       );
     }
   }

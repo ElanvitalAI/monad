@@ -26,8 +26,8 @@ function vscodeLink(hit: Hit): string {
 function HitRow({ hit }: { hit: Hit }) {
   return (
     <li
-      data-monad-search-hit-file={hit.filePath}
-      data-monad-search-hit-line={hit.line}
+      data-elanous-search-hit-file={hit.filePath}
+      data-elanous-search-hit-line={hit.line}
       className="rounded px-2 py-1 hover:bg-muted/30"
     >
       <a
@@ -70,10 +70,10 @@ export function SearchHitList({ block }: { block: Block }) {
   const moreCount = hitsCount - visible.length;
   return (
     <div
-      data-monad-block-kind="tool_search_hits"
-      data-monad-block-id={block.blockId}
-      data-monad-search-query={block.query}
-      data-monad-accum-count={block.accumCount}
+      data-elanous-block-kind="tool_search_hits"
+      data-elanous-block-id={block.blockId}
+      data-elanous-search-query={block.query}
+      data-elanous-accum-count={block.accumCount}
       className={cn(
         'rounded border border-border bg-muted/20 px-2 py-1 text-xs font-mono',
       )}

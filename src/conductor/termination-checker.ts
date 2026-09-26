@@ -22,7 +22,7 @@ import { terminationPresetFor } from './termination-presets.js';
 export interface CheckerOptions {
   /** Shell command that INDEPENDENTLY verifies completion — runs in the
    *  goalRoot, exit 0 = approved. Distinct from the writer agent that
-   *  produced the artifacts. Wire an LLM judge (e.g. `monad review
+   *  produced the artifacts. Wire an LLM judge (e.g. `elanous review
    *  --gate`) or a scoring script here. */
   command: string;
   /** Checker timeout (default 120s — an LLM judge needs headroom). */

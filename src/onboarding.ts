@@ -1,7 +1,7 @@
 // ── Onboarding wizard ──
 //
 // Six-step interactive setup, plain-TTY (not altscreen), runs once on
-// first launch or any time the user types `monad setup`. The flow:
+// first launch or any time the user types `elanous setup`. The flow:
 //
 //   1. LLM provider     — pick one, enter API key + optional model + optional baseUrl
 //   2. Skill dirs       — preset picker (claudecode | opencode | codex | hermes | openclaw)
@@ -9,7 +9,7 @@
 //   3. Obsidian         — absolute vault path (defaults to current $OBSIDIAN_VAULT)
 //   4. Telegram         — optional: bot token + home channel + allowed user IDs
 //   5. Discord          — optional: bot token + home channel + allowed user IDs
-//   6. Control plane    — optional: monad-control supervisor + launchd plist
+//   6. Control plane    — optional: elanous-control supervisor + launchd plist
 //                          (Step 5 follow-up · 2026-04-28 · double-check D ⭐⭐ closed)
 //
 // Design choice: we keep this as a plain prompt loop against process.stdin
@@ -117,7 +117,7 @@ export class WizardBackError extends Error {
  *  main picker when the caller should be allowed to rewind. The
  *  `value` is a Symbol-tagged unique sentinel so the step function
  *  can detect it cleanly without name collision with real values. */
-const WIZARD_BACK_VALUE = Symbol.for('monad-wizard-back');
+const WIZARD_BACK_VALUE = Symbol.for('elanous-wizard-back');
 type WizardBackValue = typeof WIZARD_BACK_VALUE;
 function buildBackOption<T>(): ChoiceOption<T | WizardBackValue> {
   return {
@@ -453,7 +453,7 @@ async function askLLM(
   }
 
   // Codex: delegate to the shared 1-point flow (auth mode → model pick).
-  // Keeps onboarding and `monad codex setup` in sync — one picker, one
+  // Keeps onboarding and `elanous codex setup` in sync — one picker, one
   // curated model catalog, one source of truth for provider defaults.
   if (choice.key === 'openai-codex') {
     const mode = await pickCodexAuthMode(io);
@@ -475,7 +475,7 @@ async function askLLM(
       } catch (err: any) {
         io.print(`  ! OAuth failed: ${err?.message ?? err}`);
         io.print(`    Navigate to ${CODEX_DEVICE_LOGIN_URL} manually,`);
-        io.print(`    or re-run \`monad login openai-codex\` / \`monad codex setup\` later.`);
+        io.print(`    or re-run \`elanous login openai-codex\` / \`elanous codex setup\` later.`);
       }
     } else if (mode === 'apikey') {
       // PR-Δ14 — askValidated catches blank/short/whitespace before
@@ -494,7 +494,7 @@ async function askLLM(
       if (key.trim()) out.apiKey = key.trim();
       else if (current.apiKey) out.apiKey = current.apiKey;
     } else {
-      io.print('  → skipped. Run `monad codex setup` or `monad login openai-codex` later.');
+      io.print('  → skipped. Run `elanous codex setup` or `elanous login openai-codex` later.');
     }
     out.model = await pickCodexModel(io, current.model);
     return out;
@@ -541,7 +541,7 @@ async function askLLM(
     // 0 found → fall through to legacy manual-entry prompts below.
     io.print('  No local LLM detected. Configure manually below — start');
     io.print('  Ollama (`ollama serve` + `ollama pull <model>`) or LM Studio,');
-    io.print('  then re-run `monad setup` for auto-detect.');
+    io.print('  then re-run `elanous setup` for auto-detect.');
   }
 
   if (choice.needsApiKey) {
@@ -617,7 +617,7 @@ async function askLLM(
 
   // BACKLOG #7 (2026-05-05) — answerPriority sub-step. Picks the
   // tool-loop budget tier so users don't have to hand-edit
-  // ~/.config/monad/config.json after onboarding. Default = balanced
+  // ~/.config/elanous/config.json after onboarding. Default = balanced
   // (preserves prior behaviour for existing configs that omit the
   // field). Current value (if any) becomes the picker's defaultIndex
   // so re-running the wizard is a no-op for users who already chose.
@@ -816,7 +816,7 @@ async function askTelegram(
   io.print('│    2) DM @userinfobot → copy your numeric user id');
   io.print('│    3) Optional: DM @BotFather → /setprivacy → Disable (group chat)');
   io.print('│');
-  io.print('│  Skip now by answering n; re-run `monad setup` any time.');
+  io.print('│  Skip now by answering n; re-run `elanous setup` any time.');
   if (subBack) io.print('│  (type "back" at any sub-prompt to revise the previous one)');
   io.print('└───');
   const enable = await askYesNo(
@@ -837,7 +837,7 @@ async function askTelegram(
   // moved INTO the same askValidated validator — bad token now retries
   // silently up to 3 times (shape error + API error share one budget)
   // instead of the prior single-shot probe that left a typo'd token
-  // saved on disk and forced a re-run of `monad setup telegram`.
+  // saved on disk and forced a re-run of `elanous setup telegram`.
   //
   // PR-Δ22 (Sprint 16 · 2026-04-30 · F2-sub) · sub-prompt Back state
   // machine. The 3 sub-prompts (token / users / home) run as a small
@@ -895,7 +895,7 @@ async function askTelegram(
       if (validate && validatedUsername) {
         io.print(`  ✓ Connected as @${validatedUsername}`);
       } else if (validate && token && !validatedUsername) {
-        io.print('  (continuing — re-run `monad setup telegram` to retry token validation)');
+        io.print('  (continuing — re-run `elanous setup telegram` to retry token validation)');
       }
     },
     async () => {
@@ -910,7 +910,7 @@ async function askTelegram(
         .filter(n => Number.isFinite(n));
       if (allowedUsers.length === 0) {
         io.print('  ↳ Skipped — public access mode. Anyone who DMs @<bot> can chat.');
-        io.print('     To restrict later: re-run `monad setup telegram` with allowed IDs.');
+        io.print('     To restrict later: re-run `elanous setup telegram` with allowed IDs.');
       }
     },
     async () => {
@@ -947,7 +947,7 @@ async function askTelegram(
     allowedUsers,
     homeChannel: Number.isFinite(homeChannel as number) ? homeChannel : undefined,
   };
-  if (validatedUsername) io.print(`  → Start the bot with \`monad telegram\`. Say hi to @${validatedUsername}!`);
+  if (validatedUsername) io.print(`  → Start the bot with \`elanous telegram\`. Say hi to @${validatedUsername}!`);
   return next;
 }
 
@@ -997,7 +997,7 @@ async function askDiscord(
   io.print('│       Message Content Intent (required for DM replies)');
   io.print('│    4) OAuth2 → URL Generator → bot scope → invite to server');
   io.print('│');
-  io.print('│  Skip now by answering n; re-run `monad setup` any time.');
+  io.print('│  Skip now by answering n; re-run `elanous setup` any time.');
   if (subBack) io.print('│  (type "back" at any sub-prompt to revise the previous one)');
   io.print('└───');
   const enable = await askYesNo(
@@ -1081,7 +1081,7 @@ async function askDiscord(
       if (validate && validatedTag) {
         io.print(`  ✓ Connected as ${validatedTag} (id ${validatedId})`);
       } else if (validate && token && !validatedTag) {
-        io.print('  (continuing — re-run `monad setup discord` to retry token validation)');
+        io.print('  (continuing — re-run `elanous setup discord` to retry token validation)');
       }
     },
     async () => {
@@ -1139,7 +1139,7 @@ async function askDiscord(
     allowedUsers,
     homeChannel,
   };
-  if (validatedUsername) io.print(`  → Start the bot with \`monad discord\`. Say hi to ${validatedUsername}!`);
+  if (validatedUsername) io.print(`  → Start the bot with \`elanous discord\`. Say hi to ${validatedUsername}!`);
   return next;
 }
 
@@ -1210,12 +1210,12 @@ function refuseInteractiveOnboardingIfNeeded(opts: RunWizardOpts, path: string):
   if (nonTTY) {
     throw new Error(
       '대화형 온보딩은 stdin TTY가 있는 자리에서만 실행할 수 있다. '
-      + '무인 설정은 `monad setup --non-interactive --config <path>`를 사용하라.',
+      + '무인 설정은 `elanous setup --non-interactive --config <path>`를 사용하라.',
     );
   }
   throw new Error(
     `온보딩 마법사는 자율 컨텍스트(${ctx})에서 뜰 수 없다 — config 가 비어 있다(${path}). `
-    + '자식 우주가 물질화되지 않았다는 뜻이다: `monad config sync-test --state-dir <그 우주>` '
+    + '자식 우주가 물질화되지 않았다는 뜻이다: `elanous config sync-test --state-dir <그 우주>` '
     + '로 깔거나, 스포너가 provisionDerivedUniverse 를 부르는지 확인하라.',
   );
 }
@@ -1264,7 +1264,7 @@ export async function runOnboarding(opts: RunWizardOpts = {}): Promise<UserConfi
       async (back) => { next.discord = await askDiscord(io, next.discord, opts.discordDeps ?? {}, { allowBack: back, allowSubBack: true }); },
       // M1-5 (PLAN-friction-free-model-selection-ux-2026-05-12 §4a.2)
       // Voice & AI behavior. Default path is "Smart defaults" — the
-      // user picks one option and monad runs Balanced tier on every
+      // user picks one option and elanous runs Balanced tier on every
       // surface. Power users can pick a per-surface tier or set a
       // monthly USD cap. Sparse: when the user picks Smart defaults
       // the modelTier sub-tree stays absent from UserConfig.
@@ -1320,9 +1320,9 @@ export async function runOnboarding(opts: RunWizardOpts = {}): Promise<UserConfi
     // Review & Save" header instead of the recap clinging to the end of
     // Step 6 (Control plane). Steps 1-6 advertise total=7 above so the
     // progress dots account for this final review step.
-    if (opts.io === undefined && !process.env.MONAD_SETUP_NO_RECAP) {
+    if (opts.io === undefined && !process.env.ELANOUS_SETUP_NO_RECAP) {
       // Lazy import keeps the help / summary modules out of the cold
-      // path for `monad setup --non-interactive`.
+      // path for `elanous setup --non-interactive`.
       const { showSummaryRecap } = await import('./onboarding/summary.js');
       showStepOr(io, {
         index: 7, total: 7,
@@ -1358,7 +1358,7 @@ export async function runOnboarding(opts: RunWizardOpts = {}): Promise<UserConfi
     io.print(`  Obsidian : ${marked.obsidian.vault}`);
     io.print(`  Telegram : ${marked.telegram.enabled ? 'enabled' : 'disabled'}`);
     io.print(`  Discord  : ${marked.discord.enabled ? 'enabled' : 'disabled'}`);
-    io.print(`  ${i18nFormat(m.setupRerunHint, { cmd: 'monad setup' })}`);
+    io.print(`  ${i18nFormat(m.setupRerunHint, { cmd: 'elanous setup' })}`);
     io.print('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
     if (!opts.deferComplete) io.complete?.();
     return marked;
@@ -1375,7 +1375,7 @@ export function needsOnboarding(cfg: UserConfig): boolean {
 /** γ (2026-04-28) · per-step wizard. Runs ONE of the 5 steps,
  *  preserving every other field. Used by:
  *
- *    - `monad setup llm` / `skills` / `obsidian` / `telegram` / `discord`
+ *    - `elanous setup llm` / `skills` / `obsidian` / `telegram` / `discord`
  *    - the dashboard `/setup <step>` slash
  *    - dotfile re-deploy when only one provider key has rotated
  *
@@ -1394,7 +1394,7 @@ export async function runOnboardingStep(
   opts: RunWizardOpts = {},
 ): Promise<UserConfig> {
   const path = opts.path ?? userConfigPath();
-  // `monad setup <step>` must apply the same pre-readline refusal as the
+  // `elanous setup <step>` must apply the same pre-readline refusal as the
   // full wizard; otherwise piped invocations can print a prompt and exit 0.
   refuseInteractiveOnboardingIfNeeded(opts, path);
   const ownIo = opts.io === undefined;
@@ -1442,7 +1442,7 @@ export async function runOnboardingStep(
 export async function runOnboardingNonInteractive(
   opts: RunWizardOpts & {
     /** Path to the answer file. Defaults to
-     *  `defaultAnswerFilePath()` (~/.config/monad/setup-answers.json). */
+     *  `defaultAnswerFilePath()` (~/.config/elanous/setup-answers.json). */
     answerFilePath?: string;
     /** Override the resolved env when reading env-bridge layer. */
     env?: NodeJS.ProcessEnv;
@@ -1460,7 +1460,7 @@ export async function runOnboardingNonInteractive(
 }
 
 /** Bundle 4' (2026-04-27) · flip the on-disk `onboarding.completed`
- *  marker back to false so the next `monad` boot re-launches the
+ *  marker back to false so the next `elanous` boot re-launches the
  *  wizard. Used by the `/setup reset` dashboard slash. Does not touch
  *  any other field — provider keys, telegram/discord tokens, skill
  *  paths, vault path all stay intact. The wizard's existing prompts

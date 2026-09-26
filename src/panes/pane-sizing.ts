@@ -1,7 +1,7 @@
 // ── Shared ratio-row width helpers ──
 //
 // Yazi keeps pane sizing as a ratio tuple and derives widths from the
-// tuple sum. Monad's dashboard view config already models rows the same
+// tuple sum. Elanous's dashboard view config already models rows the same
 // way (`[{ pane, ratio }]`), so preview width estimates should consume
 // that structure directly instead of re-encoding a separate browser /
 // scratch formula with ad-hoc caps.

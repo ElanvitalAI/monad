@@ -290,7 +290,7 @@ export async function pushTtsVoiceMappingToDaemon(
 ): Promise<SyncStatus> {
   if (!cfg.baseUrl) return 'offline';
 
-  const STORAGE_KEY = 'monad.tts-voice-map';
+  const STORAGE_KEY = 'elanous.tts-voice-map';
   let current: TtsVoiceMappingWire = {};
   if (typeof localStorage !== 'undefined') {
     try {
@@ -369,7 +369,7 @@ export async function pushPresetToDaemon(
   // Voice id storage is in a separate localStorage key.
   if (preset.ttsVoice && typeof localStorage !== 'undefined') {
     try {
-      localStorage.setItem('monad.tts-voice-map', JSON.stringify(preset.ttsVoice));
+      localStorage.setItem('elanous.tts-voice-map', JSON.stringify(preset.ttsVoice));
     } catch { /* quota */ }
   }
 

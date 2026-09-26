@@ -11,7 +11,7 @@ import { findNotes } from '../src/acp/obsidian-notes';
 let vault = '';
 
 beforeEach(() => {
-  vault = mkdtempSync(join(tmpdir(), 'monad-notes-test-'));
+  vault = mkdtempSync(join(tmpdir(), 'elanous-notes-test-'));
 });
 
 afterEach(() => {
@@ -39,12 +39,12 @@ describe('findNotes', () => {
     mkdirSync(join(vault, 'Daily'));
     mkdirSync(join(vault, 'Projects'));
     writeFileSync(join(vault, 'Daily', '2026-05-17.md'), '');
-    writeFileSync(join(vault, 'Projects', 'Monad.md'), '');
+    writeFileSync(join(vault, 'Projects', 'Elanous.md'), '');
     writeFileSync(join(vault, 'README.md'), '');
     const result = await findNotes({ vaultRoot: vault });
     expect(result.notes.map((n) => n.relPath).sort()).toEqual([
       'Daily/2026-05-17.md',
-      'Projects/Monad.md',
+      'Projects/Elanous.md',
       'README.md',
     ]);
   });

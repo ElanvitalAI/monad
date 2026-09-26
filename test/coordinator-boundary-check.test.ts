@@ -1,4 +1,4 @@
-// IDX-F4 — `MONAD_BOUNDARY_CHECK=1` env-gated dev assertion in
+// IDX-F4 — `ELANOUS_BOUNDARY_CHECK=1` env-gated dev assertion in
 // `coordinator.pushModal`. Verifies that:
 //   • without the env var the check is silent (no perf impact)
 //   • with the env var, missing-tier modals get logged
@@ -39,15 +39,15 @@ let originalEnv: string | undefined;
 let originalDebugEnabled: boolean;
 
 beforeEach(() => {
-  originalEnv = process.env.MONAD_BOUNDARY_CHECK;
+  originalEnv = process.env.ELANOUS_BOUNDARY_CHECK;
   originalDebugEnabled = debug.enabled;
   debug.enable();
   debug.clear();
 });
 
 afterEach(() => {
-  if (originalEnv === undefined) delete process.env.MONAD_BOUNDARY_CHECK;
-  else process.env.MONAD_BOUNDARY_CHECK = originalEnv;
+  if (originalEnv === undefined) delete process.env.ELANOUS_BOUNDARY_CHECK;
+  else process.env.ELANOUS_BOUNDARY_CHECK = originalEnv;
   if (!originalDebugEnabled) debug.disable();
 });
 
@@ -55,16 +55,16 @@ function tailContains(needle: string): boolean {
   return debug.tail(200).some(line => line.includes(needle));
 }
 
-describe('coordinator.pushModal — MONAD_BOUNDARY_CHECK=0/unset', () => {
+describe('coordinator.pushModal — ELANOUS_BOUNDARY_CHECK=0/unset', () => {
   test('missing tier does not emit boundary-check logs (env unset)', () => {
-    delete process.env.MONAD_BOUNDARY_CHECK;
+    delete process.env.ELANOUS_BOUNDARY_CHECK;
     const { coordinator } = harness();
     coordinator.pushModal(modalSurface('untagged', undefined));
     expect(tailContains('window.boundaryCheck.missingTier')).toBe(false);
   });
 
   test('tier-violation does not emit logs (env unset)', () => {
-    delete process.env.MONAD_BOUNDARY_CHECK;
+    delete process.env.ELANOUS_BOUNDARY_CHECK;
     const { coordinator } = harness();
     coordinator.pushModal(modalSurface('top-dialog', 'dialog'));
     coordinator.pushModal(modalSurface('below-vw', 'vw'));   // would violate if checked
@@ -72,8 +72,8 @@ describe('coordinator.pushModal — MONAD_BOUNDARY_CHECK=0/unset', () => {
   });
 });
 
-describe('coordinator.pushModal — MONAD_BOUNDARY_CHECK=1', () => {
-  beforeEach(() => { process.env.MONAD_BOUNDARY_CHECK = '1'; });
+describe('coordinator.pushModal — ELANOUS_BOUNDARY_CHECK=1', () => {
+  beforeEach(() => { process.env.ELANOUS_BOUNDARY_CHECK = '1'; });
 
   test('logs missingTier for an untagged modal', () => {
     const { coordinator } = harness();

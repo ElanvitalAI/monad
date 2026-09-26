@@ -28,9 +28,9 @@ const STEP_TONE: Record<StepStatus, string> = {
 export function PlanBlock({ block }: { block: Block }) {
   return (
     <div
-      data-monad-block-kind="agent_plan"
-      data-monad-block-id={block.blockId}
-      data-monad-plan-ref={block.ref}
+      data-elanous-block-kind="agent_plan"
+      data-elanous-block-id={block.blockId}
+      data-elanous-plan-ref={block.ref}
       className="rounded border border-border bg-muted/20 px-2 py-1.5 text-xs font-mono"
     >
       <div className="mb-1 flex items-center justify-between text-[10px] uppercase tracking-wide text-muted-foreground">
@@ -47,8 +47,8 @@ export function PlanBlock({ block }: { block: Block }) {
           return (
             <li
               key={idx}
-              data-monad-step-index={idx}
-              data-monad-step-status={step.status}
+              data-elanous-step-index={idx}
+              data-elanous-step-status={step.status}
               className={cn(
                 'flex items-start gap-2 leading-snug',
                 STEP_TONE[step.status],

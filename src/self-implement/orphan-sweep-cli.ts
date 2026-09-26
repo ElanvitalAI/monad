@@ -2,7 +2,7 @@ import { execFileSync } from 'node:child_process';
 import { loadavg } from 'node:os';
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
-import { monadStateRoot } from '../autopilot/state-paths.js';
+import { elanousStateRoot } from '../autopilot/state-paths.js';
 import { debug } from '../debug/log.js';
 import { runGitCommand } from '../git-fs/runner.js';
 import { deriveRelatedTests } from './gate-scope.js';
@@ -71,7 +71,7 @@ function defaultLoadAverage(): number | undefined {
   catch { return undefined; }
 }
 
-function snapshotPath(): string { return join(monadStateRoot(), 'self-implement', 'orphan-sweep.json'); }
+function snapshotPath(): string { return join(elanousStateRoot(), 'self-implement', 'orphan-sweep.json'); }
 
 function defaultReadSnapshot(): PreviousSweep {
   const path = snapshotPath();
@@ -144,7 +144,7 @@ export function runOrphanSweepCli(cwd: string, options: OrphanSweepOptions = {},
   // ⛔⭐ 🅣 계약은 「산출이 «목록»이 아니라 «수 ⊕ 어제 값»」이다 — 그건 ***사람이 읽는 줄***의 계약이다.
   //   ⚠️ 그런데 이름을 «아무 데도» 안 남기면 그 수가 ***행동으로 안 이어진다***(「18」을 보고 무엇을 할까).
   //   ⇒ 줄은 수로 두고, ***이름은 관측으로*** 꺼낸다 — 이 저장소의 1급 관측 CLI 가 그 관이다.
-  //      monad logs --category gate.orphan-sweep --event swept --json --json-data
+  //      elanous logs --category gate.orphan-sweep --event swept --json --json-data
   debug.log('gate.orphan-sweep', 'swept', {
     ...counts, dark: snapshot.dark,
     previousRed: previous.kind === 'present' ? previous.snapshot.counts.red : null,

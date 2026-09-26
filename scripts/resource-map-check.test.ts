@@ -31,7 +31,7 @@ function runCli(root: string, resourceMapPath?: string): { output: string[]; exi
 describe('resource-map-check', () => {
   test('groups fallback aliases, reads all resource env names, and explains exclusions', () => {
     const root = fixture(
-      'const z = process.env.ZHIPU_API_KEY || process.env.GLM_API_KEY || process.env.BIGMODEL_API_KEY;\nconst t = process.env.TAVILY_API_KEY;\nconst c = process.env.MONAD_KEY_CACHE_DIR;',
+      'const z = process.env.ZHIPU_API_KEY || process.env.GLM_API_KEY || process.env.BIGMODEL_API_KEY;\nconst t = process.env.TAVILY_API_KEY;\nconst c = process.env.ELANOUS_KEY_CACHE_DIR;',
       'resources:\n  - env: [ZHIPU_API_KEY, GLM_API_KEY]\n  - env: [BIGMODEL_API_KEY, TAVILY_API_KEY]\n',
     );
     try {
@@ -41,7 +41,7 @@ describe('resource-map-check', () => {
         { id: 'ZHIPU_API_KEY', envNames: ['ZHIPU_API_KEY', 'GLM_API_KEY', 'BIGMODEL_API_KEY'] },
       ]);
       expect(result.uncovered).toEqual([]);
-      expect(result.excluded).toEqual([{ envName: 'MONAD_KEY_CACHE_DIR', reason: expect.any(String) }]);
+      expect(result.excluded).toEqual([{ envName: 'ELANOUS_KEY_CACHE_DIR', reason: expect.any(String) }]);
       expect(result.unreadable).toEqual([]);
     } finally { rmSync(root, { recursive: true, force: true }); }
   });
@@ -194,12 +194,12 @@ describe('resource-map-check', () => {
 
   test('classifies injected environment reads, non-environment objects, and unproven env accesses', () => {
     const root = fixture(
-      "const moduleEnv = process.env; const moduleAlias = moduleEnv; function aws(env = process.env) { { const env = { UNIQUE_NON_ENV_SECRET: 'x' }; env.UNIQUE_NON_ENV_SECRET; } for (const env of [{}]) env.LOOP_NON_ENV_SECRET; return env.AWS_SECRET_ACCESS_KEY; } const grok = (env: Record<string, string | undefined> = process.env) => env['GROK_CODE_XAI_API_KEY']; const discord = (opts: { env?: Record<string, string | undefined> }) => { const env = opts.env ?? process.env; return [env.MONAD_DISCORD_BOT_TOKEN, env.MONAD_LLM_API_KEY, env.MONAD_TELEGRAM_BOT_TOKEN]; }; const fromClosure = () => moduleAlias.CLOSURE_API_KEY; let reassigned = process.env; reassigned = { UNIQUE_REASSIGNED_SECRET: 'x' }; reassigned.UNIQUE_REASSIGNED_SECRET; const settings = { UNIQUE_OBJECT_SECRET: 'not an environment read' }; const ignored = settings.UNIQUE_OBJECT_SECRET; function uncertain(config: Record<string, string>) { return config.CONFIG_API_KEY; } const loose = env.POSSIBLY_SECRET; const parenthesized = (process.env); parenthesized.PARENTHESIZED_API_KEY; const impossibleFallback = { IMPOSSIBLE_FALLBACK_SECRET: 'x' } ?? process.env; impossibleFallback.IMPOSSIBLE_FALLBACK_SECRET;",
-      'resources:\n  - env: [AWS_SECRET_ACCESS_KEY, GROK_CODE_XAI_API_KEY, MONAD_DISCORD_BOT_TOKEN, MONAD_LLM_API_KEY, MONAD_TELEGRAM_BOT_TOKEN, CLOSURE_API_KEY, PARENTHESIZED_API_KEY]\n',
+      "const moduleEnv = process.env; const moduleAlias = moduleEnv; function aws(env = process.env) { { const env = { UNIQUE_NON_ENV_SECRET: 'x' }; env.UNIQUE_NON_ENV_SECRET; } for (const env of [{}]) env.LOOP_NON_ENV_SECRET; return env.AWS_SECRET_ACCESS_KEY; } const grok = (env: Record<string, string | undefined> = process.env) => env['GROK_CODE_XAI_API_KEY']; const discord = (opts: { env?: Record<string, string | undefined> }) => { const env = opts.env ?? process.env; return [env.ELANOUS_DISCORD_BOT_TOKEN, env.ELANOUS_LLM_API_KEY, env.ELANOUS_TELEGRAM_BOT_TOKEN]; }; const fromClosure = () => moduleAlias.CLOSURE_API_KEY; let reassigned = process.env; reassigned = { UNIQUE_REASSIGNED_SECRET: 'x' }; reassigned.UNIQUE_REASSIGNED_SECRET; const settings = { UNIQUE_OBJECT_SECRET: 'not an environment read' }; const ignored = settings.UNIQUE_OBJECT_SECRET; function uncertain(config: Record<string, string>) { return config.CONFIG_API_KEY; } const loose = env.POSSIBLY_SECRET; const parenthesized = (process.env); parenthesized.PARENTHESIZED_API_KEY; const impossibleFallback = { IMPOSSIBLE_FALLBACK_SECRET: 'x' } ?? process.env; impossibleFallback.IMPOSSIBLE_FALLBACK_SECRET;",
+      'resources:\n  - env: [AWS_SECRET_ACCESS_KEY, GROK_CODE_XAI_API_KEY, ELANOUS_DISCORD_BOT_TOKEN, ELANOUS_LLM_API_KEY, ELANOUS_TELEGRAM_BOT_TOKEN, CLOSURE_API_KEY, PARENTHESIZED_API_KEY]\n',
     );
     try {
       const result = checkResourceMap({ root });
-      const injectedNames = ['AWS_SECRET_ACCESS_KEY', 'CLOSURE_API_KEY', 'GROK_CODE_XAI_API_KEY', 'MONAD_DISCORD_BOT_TOKEN', 'MONAD_LLM_API_KEY', 'MONAD_TELEGRAM_BOT_TOKEN', 'PARENTHESIZED_API_KEY'];
+      const injectedNames = ['AWS_SECRET_ACCESS_KEY', 'CLOSURE_API_KEY', 'ELANOUS_DISCORD_BOT_TOKEN', 'ELANOUS_LLM_API_KEY', 'ELANOUS_TELEGRAM_BOT_TOKEN', 'GROK_CODE_XAI_API_KEY', 'PARENTHESIZED_API_KEY'];
       expect(result.covered.flatMap(({ envNames }) => envNames).sort()).toEqual(injectedNames);
       expect(result.credentials.flatMap(({ envNames }) => envNames).sort()).toEqual(injectedNames);
       for (const ignoredName of ['IMPOSSIBLE_FALLBACK_SECRET', 'LOOP_NON_ENV_SECRET', 'UNIQUE_NON_ENV_SECRET', 'UNIQUE_OBJECT_SECRET']) expect(result.credentials.flatMap(({ envNames }) => envNames)).not.toContain(ignoredName);
@@ -239,8 +239,8 @@ describe('resource-map-check', () => {
       { id: 'elevenlabs', auth: 'api-key', free_fallback: '' },
       { id: 'github', auth: 'cli-login', free_fallback: '   ' },
       { id: 'tavily', auth: 'api-key', free_fallback: 'ddg + jina' },
-      { id: 'monad-hitl-secret', auth: 'none' },
-      { id: 'monad-control-token', auth: 'none', free_fallback: '' },
+      { id: 'elanous-hitl-secret', auth: 'none' },
+      { id: 'elanous-control-token', auth: 'none', free_fallback: '' },
       { id: '  ', auth: 'api-key' },
       { auth: 'api-key' },
       { id: 'oauth-browser', auth: 'oauth-browser' },

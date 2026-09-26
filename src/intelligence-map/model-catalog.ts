@@ -1,9 +1,9 @@
 // ── PFC-S5 P1: model catalog ──
 //
-// Single JSON file at ~/.monad/models.json. Loader uses a three-step
+// Single JSON file at ~/.elanous/models.json. Loader uses a three-step
 // cascade:
-//   1. MONAD_MODELS_JSON env override
-//   2. <home>/.monad/models.json
+//   1. ELANOUS_MODELS_JSON env override
+//   2. <home>/.elanous/models.json
 //   3. BUILTIN_CATALOG (always safe fallback)
 //
 // Discovery filters builtin by env vars so an operator missing an API
@@ -152,7 +152,7 @@ export const BUILTIN_CATALOG: ModelCatalog = {
       reasoningEffortCeiling: 'max',
       releasedAt: '2026-09-03',
       classification: { source: 'builtin', at: '2026-09-09' },
-      notes: 'effort low/medium/high/xhigh/max · 1.05M ctx(입력 상한 922K · 출력 128K) · 컷오프 2026-04-30. monad 기본 effort=medium(비용) — 올리려면 llm.codexReasoning.effort.',
+      notes: 'effort low/medium/high/xhigh/max · 1.05M ctx(입력 상한 922K · 출력 128K) · 컷오프 2026-04-30. elanous 기본 effort=medium(비용) — 올리려면 llm.codexReasoning.effort.',
     },
     // ⭐⭐ GPT-6 Sol / Luna (2026-09-22 출시) — 🔑 ***중간 등급이 «접혔다»***.
     // ✅⭐⭐ 2026-09-23 — ***구독(ChatGPT 계정) 경로가 «열렸다». 막고 있던 것은 CLI 판이었다.***
@@ -203,7 +203,7 @@ export const BUILTIN_CATALOG: ModelCatalog = {
       notes: '가장 싼 칸 — 5.6 Luna 대비 input 1/10 · output 1/12 인데 추론은 «High». effort none..max(기본 medium) · 컷오프 2026-05-18.',
     },
     // GPT-5.6 계열(2026-07-09 출시) — effort-ceiling 축의 3 변형(luna→terra→sol).
-    // monad-self 튜닝 매트릭스(2026-07-11) 실측 tier 매핑: luna=budget · terra=balanced/better
+    // elanous-self 튜닝 매트릭스(2026-07-11) 실측 tier 매핑: luna=budget · terra=balanced/better
     // (코딩 sweet spot) · sol=best/loaded(장기추론). ChatGPT/Codex 구독 엔드포인트.
     {
       id: 'gpt-5.6-terra',
@@ -230,7 +230,7 @@ export const BUILTIN_CATALOG: ModelCatalog = {
       reasoningEffortCeiling: 'max',
       releasedAt: '2026-07-09',
       classification: { source: 'builtin', at: '2026-07-11' },
-      notes: 'codex 계열 코딩 최적(3 effort 전부 성공·최속·안정) — monad-self 자율구현 기본',
+      notes: 'codex 계열 코딩 최적(3 effort 전부 성공·최속·안정) — elanous-self 자율구현 기본',
     },
     {
       id: 'gpt-5.6-sol',
@@ -834,7 +834,7 @@ export function reasoningEffortCeiling(modelId: string | undefined): ReasoningEf
 // ── Paths ──────────────────────────────────────────────────────────────
 
 export function getCatalogPath(home: string = homedir()): string {
-  return join(home, '.monad', 'models.json');
+  return join(home, '.elanous', 'models.json');
 }
 
 export interface CatalogIoOpts {
@@ -846,7 +846,7 @@ export interface CatalogIoOpts {
 function resolveCatalogPath(opts: CatalogIoOpts = {}): string {
   const env = opts.env ?? process.env;
   if (opts.path) return opts.path;
-  const override = env.MONAD_MODELS_JSON?.trim();
+  const override = env.ELANOUS_MODELS_JSON?.trim();
   if (override) return override;
   return getCatalogPath(opts.home);
 }
@@ -878,7 +878,7 @@ export function loadCatalog(opts: CatalogIoOpts = {}): LoadResult {
         updated: typeof raw.updated === 'number' ? raw.updated : Date.now(),
         models: raw.models.map(normaliseEntry),
       },
-      source: opts.env?.MONAD_MODELS_JSON ? 'env' : 'file',
+      source: opts.env?.ELANOUS_MODELS_JSON ? 'env' : 'file',
       notices,
       path,
     };

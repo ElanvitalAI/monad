@@ -32,7 +32,7 @@ describe('buildMissionIncidentContext (결정론·재사용)', () => {
     const attemptCalls: string[] = [];
     const attempts = (id: string): PhaseAttemptFact[] => {
       attemptCalls.push(id);
-      return [{ backend: 'monad-self:gpt-5.6-terra', gateResult: 'gate-failed', gateOutputExcerpt: '순환 자기테스트' }, { backend: 'monad-self:claude-opus-4-8', gateResult: 'no-change' }];
+      return [{ backend: 'elanous-self:gpt-5.6-terra', gateResult: 'gate-failed', gateOutputExcerpt: '순환 자기테스트' }, { backend: 'elanous-self:claude-opus-4-8', gateResult: 'no-change' }];
     };
     const ctx = buildMissionIncidentContext('m1', {
       detail: () => detail({ phases: [
@@ -68,7 +68,7 @@ describe('formatIncidentContext (anti-confabulation)', () => {
       detail: () => detail({ phases: [
         { index: 1, id: 'p1', title: '회귀테스트', status: 'failed', failClass: 'gate-failed-critique', diagnosis: { narrative: '', rootCause: '자기테스트 검증', heal: 'revise', confidence: 'high' } },
       ] }),
-      attempts: () => [{ backend: 'monad-self:gpt-5.6-terra', gateResult: 'gate-failed' }], now,
+      attempts: () => [{ backend: 'elanous-self:gpt-5.6-terra', gateResult: 'gate-failed' }], now,
     });
     const s = formatIncidentContext(ctx);
     expect(s).toContain('이 팩의 사실로만 답하라');

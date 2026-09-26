@@ -115,7 +115,7 @@ export class ProgressBar implements View {
 
   /** Resolve the fill color as a hex string for `renderProgress`'s
    *  `themeAccent` option. Legacy (no theme) maps the status token to
-   *  monad's stock pastel palette; theme-aware path goes through
+   *  elanous's stock pastel palette; theme-aware path goes through
    *  `resolveSemantic` and reads the resolved fg. */
   private fillAccentHex(): string {
     const { theme, status } = this.spec;

@@ -33,7 +33,7 @@ import {
 const personaDirs: string[] = [];
 
 function setPersonaRegistry(files: Record<string, string>): void {
-  const dir = mkdtempSync(joinPath(tmpdir(), 'monad-browser-personas-'));
+  const dir = mkdtempSync(joinPath(tmpdir(), 'elanous-browser-personas-'));
   personaDirs.push(dir);
   for (const [name, content] of Object.entries(files)) writeFileSync(joinPath(dir, name), content);
   setGlobalPersonaRegistryDir(dir);
@@ -101,7 +101,7 @@ describe('browser_* lifecycle', () => {
     expect(nav.output).toContain('https://other.com');
     expect(fake.navigates).toContain('https://other.com');
 
-    const dir = mkdtempSync(joinPath(tmpdir(), 'monad-shot-'));
+    const dir = mkdtempSync(joinPath(tmpdir(), 'elanous-shot-'));
     const shot = await dispatchBrowserScreenshot(
       { session_id: sid },
       { outputDir: dir },
@@ -119,21 +119,21 @@ describe('browser_* lifecycle', () => {
     fake.evaluateResult = 'secret page body';
     const observations: Array<{ event: string; data: Record<string, unknown> }> = [];
     const observe = (event: string, data: Record<string, unknown>) => observations.push({ event, data });
-    const previousRunId = process.env.MONAD_RUN_ID;
-    process.env.MONAD_RUN_ID = 'browser-tool-run';
+    const previousRunId = process.env.ELANOUS_RUN_ID;
+    process.env.ELANOUS_RUN_ID = 'browser-tool-run';
     try {
       const open = await dispatchBrowserOpen({ url: 'https://example.com' }, { createClient: async () => fake, observe });
       const sessionId = open.output.match(/session_id=(\S+)/)?.[1]!;
       expect(open.output).toContain(`session_id=${sessionId}`);
       expect((await dispatchBrowserNavigate({ session_id: sessionId, url: 'https://other.com' }, { observe })).output).toContain('https://other.com');
-      const shot = await dispatchBrowserScreenshot({ session_id: sessionId }, { outputDir: mkdtempSync(joinPath(tmpdir(), 'monad-observed-shot-')), observe });
+      const shot = await dispatchBrowserScreenshot({ session_id: sessionId }, { outputDir: mkdtempSync(joinPath(tmpdir(), 'elanous-observed-shot-')), observe });
       expect(shot.output).toContain('BrowserScreenshot saved=');
       const read = await dispatchBrowserRead({ session_id: sessionId }, { observe });
       expect(read.text).toBe('secret page body');
       expect((await dispatchBrowserClose({ session_id: sessionId }, { observe })).output).toContain(sessionId);
     } finally {
-      if (previousRunId === undefined) delete process.env.MONAD_RUN_ID;
-      else process.env.MONAD_RUN_ID = previousRunId;
+      if (previousRunId === undefined) delete process.env.ELANOUS_RUN_ID;
+      else process.env.ELANOUS_RUN_ID = previousRunId;
     }
 
     expect(observations.map(({ event, data }) => [event, data.action])).toEqual([
@@ -179,17 +179,17 @@ describe('browser_* lifecycle', () => {
 
   test('default debug.log wiring emits the harness run id without an injected observer', async () => {
     const events: Array<{ category: string; event: string; data?: Record<string, unknown> }> = [];
-    const previousRunId = process.env.MONAD_RUN_ID;
+    const previousRunId = process.env.ELANOUS_RUN_ID;
     const logSpy = spyOn(debug, 'log').mockImplementation(((category: string, event: string, data?: Record<string, unknown>) => {
       events.push({ category, event, data });
     }) as never);
-    process.env.MONAD_RUN_ID = 'browser-production-run';
+    process.env.ELANOUS_RUN_ID = 'browser-production-run';
     try {
       await dispatchBrowserOpen({ url: 'https://example.com' }, { createClient: async () => fakeCdpClient() });
     } finally {
       logSpy.mockRestore();
-      if (previousRunId === undefined) delete process.env.MONAD_RUN_ID;
-      else process.env.MONAD_RUN_ID = previousRunId;
+      if (previousRunId === undefined) delete process.env.ELANOUS_RUN_ID;
+      else process.env.ELANOUS_RUN_ID = previousRunId;
     }
     expect(events).toEqual([expect.objectContaining({
       category: 'harness.browser-action', event: 'executed',
@@ -221,7 +221,7 @@ describe('browser_* lifecycle', () => {
     await expect(dispatchBrowserOpen(
       { attach: true, personaId: 'missing' },
       { createClientFromEndpoint: async () => { attachCalls++; return fakeCdpClient(); } },
-    )).rejects.toThrow(/persona not found: missing.*scanned: .*monad-browser-personas-.*found personaIds: .*known/);
+    )).rejects.toThrow(/persona not found: missing.*scanned: .*elanous-browser-personas-.*found personaIds: .*known/);
 
     expect(attachCalls).toBe(0);
   });
@@ -260,7 +260,7 @@ describe('browser_* lifecycle', () => {
     expect(open.output).toContain('pid=-1');
 
     await dispatchBrowserNavigate({ session_id: sid, url: 'https://attached.example' });
-    const dir = mkdtempSync(joinPath(tmpdir(), 'monad-attached-shot-'));
+    const dir = mkdtempSync(joinPath(tmpdir(), 'elanous-attached-shot-'));
     await dispatchBrowserScreenshot({ session_id: sid }, { outputDir: dir });
     await dispatchBrowserClose({ session_id: sid });
     expect(attached.navigates).toEqual(['https://attached.example']);

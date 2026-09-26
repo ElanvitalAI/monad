@@ -8,7 +8,7 @@
 // the same multi-channel race that `requestConfirmation()` already
 // uses — Telegram wins if you're on your phone, Discord wins if
 // you're on your laptop, terminal modal wins if you're staring at
-// monad, whichever answers first.
+// elanous, whichever answers first.
 //
 // 2026-05-13 (M5 of AskUserQuestion cross-surface) — Phase β: the
 // yes/no question collapse (pick first option · cancel on reject) is

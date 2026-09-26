@@ -88,7 +88,7 @@ export function matchTextInputGlobalAction(
           (key.shift && (key.name === 'z' || key.name === 'Z'))
           // 'ㅋ' has no shifted form in 2-bul — accept ctrl-only. The
           // trade-off is Ctrl+'ㅋ' (= Ctrl+Z in 한글 IME) also fires this
-          // chord, but monad doesn't bind Ctrl+Z anywhere in chat input
+          // chord, but elanous doesn't bind Ctrl+Z anywhere in chat input
           // so the conflict is moot.
           || key.name === KOREAN_SHIFTED_Z
         ))

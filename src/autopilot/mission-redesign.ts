@@ -127,7 +127,7 @@ export function parseGoalShapeVerdict(raw: string): GoalShapeVerdict {
 async function defaultJudge(prompt: string): Promise<string> {
   const { streamLLM } = await import('../llm.js');
   return streamLLM([{ role: 'user', content: prompt }], () => {}, {
-    model: process.env.MONAD_REDESIGN_MODEL || process.env.MONAD_DECOMPOSE_MODEL || tierModel('better'),
+    model: process.env.ELANOUS_REDESIGN_MODEL || process.env.ELANOUS_DECOMPOSE_MODEL || tierModel('better'),
     reasoningEffort: 'medium',
   });
 }

@@ -7,7 +7,7 @@ import { buildUserConfig } from '../src/user-config.js';
 import { createWorktree, worktreeDirName, worktreeParentDir } from '../src/git-fs/worktree.js';
 
 function configWith(worktreeRoot: unknown) {
-  const dir = mkdtempSync(join(tmpdir(), 'monad-worktree-config-'));
+  const dir = mkdtempSync(join(tmpdir(), 'elanous-worktree-config-'));
   const path = join(dir, 'config.json');
   writeFileSync(path, JSON.stringify({ tools: { selfImplement: { worktreeRoot } } }));
   try {
@@ -24,7 +24,7 @@ function git(cwd: string, ...args: string[]) {
 
 describe('configured child worktree root', () => {
   test('defaults, rejects blank and non-string values, expands tilde, and preserves absolute roots', () => {
-    const defaultRoot = join(homedir(), '.monad', 'worktrees');
+    const defaultRoot = join(homedir(), '.elanous', 'worktrees');
     expect(configWith(undefined)).toBe(defaultRoot);
     expect(configWith('')).toBe(defaultRoot);
     expect(configWith('  ')).toBe(defaultRoot);
@@ -35,7 +35,7 @@ describe('configured child worktree root', () => {
   });
 
   test('parent derivation is pure and a created child lives below configured root/repository.worktrees/branch', () => {
-    const tmp = mkdtempSync(join(tmpdir(), 'monad-worktree-root-'));
+    const tmp = mkdtempSync(join(tmpdir(), 'elanous-worktree-root-'));
     const repo = join(tmp, 'repo');
     const root = join(tmp, 'configured-root');
     try {
@@ -121,7 +121,7 @@ describe('the configured worktree root has exactly one producer (source-level)',
 describe('configuredWorktreeRoot() — runtime', () => {
   test('reflects the configured value and falls back to an absolute default', async () => {
     const { configuredWorktreeRoot, setUserConfigOverlay } = await import('../src/user-config.js');
-    const injected = mkdtempSync(join(tmpdir(), 'monad-wtroot-runtime-'));
+    const injected = mkdtempSync(join(tmpdir(), 'elanous-wtroot-runtime-'));
     try {
       setUserConfigOverlay((c) => ({
         ...c,
@@ -140,8 +140,8 @@ describe('configuredWorktreeRoot() — runtime', () => {
 
   test('a created worktree actually lands under the configured root', () => {
     // ⭐ 「함수가 값을 낸다」와 「그 값이 실제 배치에 쓰인다」는 다른 주장이다 — 후자를 여기서 잰다.
-    const injected = mkdtempSync(join(tmpdir(), 'monad-wtroot-live-'));
-    const repo = mkdtempSync(join(tmpdir(), 'monad-wtroot-repo-'));
+    const injected = mkdtempSync(join(tmpdir(), 'elanous-wtroot-live-'));
+    const repo = mkdtempSync(join(tmpdir(), 'elanous-wtroot-repo-'));
     try {
       git(repo, 'init', '-q', '-b', 'main');
       writeFileSync(join(repo, 'a.txt'), 'hi');
@@ -175,9 +175,9 @@ describe('configuredWorktreeRoot() — runtime', () => {
 //    지적했다 — 그것도 맞다. 그래서 이 검사는 **일부러 같은 basename** 을 쓴다.
 describe('same-basename repositories do not share a worktree parent', () => {
   test('two repositories named alike under one root get different parents', () => {
-    const root = mkdtempSync(join(tmpdir(), 'monad-wtroot-collide-'));
-    const a = mkdtempSync(join(tmpdir(), 'monad-collide-a-'));
-    const b = mkdtempSync(join(tmpdir(), 'monad-collide-b-'));
+    const root = mkdtempSync(join(tmpdir(), 'elanous-wtroot-collide-'));
+    const a = mkdtempSync(join(tmpdir(), 'elanous-collide-a-'));
+    const b = mkdtempSync(join(tmpdir(), 'elanous-collide-b-'));
     try {
       // ⭐ 두 저장소의 basename 을 «같게» 만든다 — 이것이 이 검사의 요점이다.
       const repoA = join(a, 'monad-agent');

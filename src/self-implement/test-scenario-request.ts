@@ -98,7 +98,7 @@ function scenarioSection(deliverableType: string, acceptanceCriteria: readonly s
   const criteria = acceptanceCriteria.map((criterion) => criterion.trim()).filter((criterion) => criterion !== '');
   const unit = criteria.length === 0
     ? ['- (수용 기준이 없다 — 이 골은 U 층에서 확인할 것을 선언하지 않았다)']
-    : criteria.map((criterion) => `- ${criterion} — 변경 파일 범위 게이트가 판정한다(\`monad self gate --changed\`)`);
+    : criteria.map((criterion) => `- ${criterion} — 변경 파일 범위 게이트가 판정한다(\`elanous self gate --changed\`)`);
   return [
     '## 검증 시나리오',
     '',
@@ -129,7 +129,7 @@ function measuredLiveSection(methodology: string, commandSource: string, launch:
     `- 명령 출처: \`${commandSource}\``,
     // ⛔ 명령 인자는 «골 문서 경로»다 — 저작 시점엔 파일명이 아직 없다(제목 파생).
     //   ⇒ 자리를 이름으로 남기고, 무엇을 넣어야 하는지 «문서가 스스로» 말하게 한다.
-    '- 기동: `monad harness deliverable-verify <이 골 문서의 경로> --launch`',
+    '- 기동: `elanous harness deliverable-verify <이 골 문서의 경로> --launch`',
     '- 눈: 그 명령이 산출물을 켜서 보고 «반드시» 끈다 — 판정은 하니스가 한다',
     `- 기대: ${target} · 관측이 결함을 내지 않는다`,
     '',

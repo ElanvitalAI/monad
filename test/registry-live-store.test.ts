@@ -2,14 +2,14 @@
 //
 // Verifies apiKey-availability computation, manual-disable persistence,
 // subscriber notification, and snapshot round-trip — all without
-// touching the real `~/.monad/registry.json`.
+// touching the real `~/.elanous/registry.json`.
 
 import { getCatalog } from '../src/registry/loader';
 import { describe, expect, test, beforeEach, afterEach } from 'bun:test';
 import { existsSync, mkdtempSync, rmSync, writeFileSync, readFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { resetMonadConfigDir, setMonadConfigDir } from '../src/monad-config-dir.js';
+import { resetElanousConfigDir, setElanousConfigDir } from '../src/elanous-config-dir.js';
 import {
   getLiveStore,
   __resetLiveStoreForTests,
@@ -25,15 +25,15 @@ const ALL_KEYS = [ANTHROPIC_KEY, OPENAI_KEY, GROK_KEY, GEMINI_KEY];
 
 beforeEach(() => {
   tmpHome = mkdtempSync(join(tmpdir(), 'live-store-'));
-  process.env.MONAD_TEST_HOME = tmpHome;
+  process.env.ELANOUS_TEST_HOME = tmpHome;
   for (const k of ALL_KEYS) delete process.env[k];
   __resetLiveStoreForTests();
 });
 
 afterEach(() => {
-  resetMonadConfigDir();
+  resetElanousConfigDir();
   rmSync(tmpHome, { recursive: true, force: true });
-  delete process.env.MONAD_TEST_HOME;
+  delete process.env.ELANOUS_TEST_HOME;
   for (const k of ALL_KEYS) delete process.env[k];
 });
 
@@ -96,7 +96,7 @@ describe('LiveStore · manual disable', () => {
 
   test('no-op when state already matches', () => {
     const configDir = mkdtempSync(join(tmpdir(), 'live-store-noop-config-'));
-    setMonadConfigDir(configDir);
+    setElanousConfigDir(configDir);
     __resetLiveStoreForTests();
     const store = getLiveStore();
     const events: LiveStoreEvent[] = [];
@@ -104,7 +104,7 @@ describe('LiveStore · manual disable', () => {
     store.setManualDisabled('anthropic', false); // already false
     expect(events.length).toBe(0);
     expect(existsSync(join(configDir, 'registry.json'))).toBe(false);
-    expect(existsSync(join(tmpHome, '.monad', 'registry.json'))).toBe(false);
+    expect(existsSync(join(tmpHome, '.elanous', 'registry.json'))).toBe(false);
     rmSync(configDir, { recursive: true, force: true });
   });
 });
@@ -179,9 +179,9 @@ describe('LiveStore · refreshFromEnv', () => {
 });
 
 describe('LiveStore · snapshot persistence', () => {
-  test('writes ~/.monad/registry.json on mutation', () => {
+  test('writes ~/.elanous/registry.json on mutation', () => {
     getLiveStore().setManualDisabled('anthropic', true);
-    const path = join(tmpHome, '.monad', 'registry.json');
+    const path = join(tmpHome, '.elanous', 'registry.json');
     const raw = readFileSync(path, 'utf-8');
     const snap = JSON.parse(raw) as {
       version: number;
@@ -191,21 +191,21 @@ describe('LiveStore · snapshot persistence', () => {
     expect(snap.providers.find((p) => p.id === 'anthropic')?.manualDisabled).toBe(true);
   });
 
-  test('explicit config-dir takes precedence over MONAD_TEST_HOME', () => {
+  test('explicit config-dir takes precedence over ELANOUS_TEST_HOME', () => {
     const configDir = mkdtempSync(join(tmpdir(), 'live-store-config-'));
-    setMonadConfigDir(configDir);
+    setElanousConfigDir(configDir);
     __resetLiveStoreForTests();
     getLiveStore().setManualDisabled('anthropic', true);
     expect(existsSync(join(configDir, 'registry.json'))).toBe(true);
-    expect(existsSync(join(tmpHome, '.monad', 'registry.json'))).toBe(false);
+    expect(existsSync(join(tmpHome, '.elanous', 'registry.json'))).toBe(false);
     rmSync(configDir, { recursive: true, force: true });
   });
 
   test('reads pre-existing snapshot on init', () => {
-    const path = join(tmpHome, '.monad', 'registry.json');
+    const path = join(tmpHome, '.elanous', 'registry.json');
     // Pre-populate a snapshot before the store boots.
     const fs = require('node:fs') as { mkdirSync: typeof import('node:fs').mkdirSync };
-    fs.mkdirSync(join(tmpHome, '.monad'), { recursive: true });
+    fs.mkdirSync(join(tmpHome, '.elanous'), { recursive: true });
     writeFileSync(path, JSON.stringify({
       version: 1,
       savedAt: Date.now(),
@@ -217,9 +217,9 @@ describe('LiveStore · snapshot persistence', () => {
   });
 
   test('corrupted snapshot is silently ignored', () => {
-    const path = join(tmpHome, '.monad', 'registry.json');
+    const path = join(tmpHome, '.elanous', 'registry.json');
     const fs = require('node:fs') as { mkdirSync: typeof import('node:fs').mkdirSync };
-    fs.mkdirSync(join(tmpHome, '.monad'), { recursive: true });
+    fs.mkdirSync(join(tmpHome, '.elanous'), { recursive: true });
     writeFileSync(path, '{broken json', 'utf-8');
     __resetLiveStoreForTests();
     // No throw — defaults to no manual override.

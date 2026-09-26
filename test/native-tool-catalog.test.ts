@@ -177,9 +177,9 @@ describe('nativeToolCatalog — metadata invariants', () => {
     expect(findNativeTool('list_dir')?.kind).toBe('list-dir');
     expect(findNativeTool('grep')?.kind).toBe('search');
     expect(findNativeTool('glob')?.kind).toBe('search');
-    expect(findNativeTool('monad_obsidian_search')?.kind).toBe('search');
-    expect(findNativeTool('monad_fs_list')?.kind).toBe('list-dir');
-    expect(findNativeTool('monad_fs_read')?.kind).toBe('read');
+    expect(findNativeTool('elanous_obsidian_search')?.kind).toBe('search');
+    expect(findNativeTool('elanous_fs_list')?.kind).toBe('list-dir');
+    expect(findNativeTool('elanous_fs_read')?.kind).toBe('read');
   });
 
   // ⛔ 이름을 「전수 분류를 검증한다」로 읽지 마라 — 이 테스트가 무는 것은
@@ -188,11 +188,11 @@ describe('nativeToolCatalog — metadata invariants', () => {
   test('exposes every non-other kind bucket with its representative tools', () => {
     const namesByKind = listNativeToolDisplayNamesByKind(nativeToolCatalog);
 
-    expect(namesByKind.read).toEqual(expect.arrayContaining(['Read', 'MonadFsRead']));
+    expect(namesByKind.read).toEqual(expect.arrayContaining(['Read', 'ElanousFsRead']));
     expect(namesByKind.edit).toContain('Edit');
     expect(namesByKind.write).toContain('Write');
-    expect(namesByKind['list-dir']).toEqual(expect.arrayContaining(['ListDir', 'MonadFsList']));
-    expect(namesByKind.search).toEqual(expect.arrayContaining(['Grep', 'Glob', 'MonadObsidianSearch']));
+    expect(namesByKind['list-dir']).toEqual(expect.arrayContaining(['ListDir', 'ElanousFsList']));
+    expect(namesByKind.search).toEqual(expect.arrayContaining(['Grep', 'Glob', 'ElanousObsidianSearch']));
     expect(namesByKind.execute).toEqual(expect.arrayContaining(['Bash', 'RunShell']));
     expect(namesByKind.web).toEqual(expect.arrayContaining(['WebFetch', 'BrowserNavigate', 'BrowserRead', 'BrowserScreenshot', 'BrowserClose']));
     expect(namesByKind.delegate).toEqual(expect.arrayContaining(['Agent', 'AgentHandoff']));

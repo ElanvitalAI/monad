@@ -82,7 +82,7 @@ describe('createFeedbackStore · persistence', () => {
   let path: string;
 
   beforeEach(() => {
-    tmpDir = mkdtempSync(join(tmpdir(), 'monad-intent-feedback-'));
+    tmpDir = mkdtempSync(join(tmpdir(), 'elanous-intent-feedback-'));
     path = join(tmpDir, 'intent-feedback.jsonl');
   });
 

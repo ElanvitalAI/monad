@@ -7,7 +7,7 @@
 // (intake 와 "두 개의 문" 겹침 해소). 포착의 리뷰 우선 경로는 Intake 가 담당.
 //   Missions    모든 미션(사람 intake + 자율)의 계보·상태 + 인라인 골 던지기
 //   Repo Watch  참조 에이전트 repo 흡수 후보(hermes/openclaw/codex)
-//   자율행동    자율루프가 무엇을 왜 했나(surface_events domain=monad)
+//   자율행동    자율루프가 무엇을 왜 했나(surface_events domain=elanous)
 //   루프 오케스트라  5 자율루프 순환 그래프(기존 LoopsPanel 결합)
 
 import { useEffect, useMemo, useState } from 'react';

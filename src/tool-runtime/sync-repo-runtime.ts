@@ -1,7 +1,7 @@
 // ── SyncRepo ToolRuntime (Coding Pipeline P5) ──
 //
 // Clone or fetch a repository into the agent-managed cache at
-// ~/.cache/monad-refs/<host>/<owner>/<repo>. This directory is
+// ~/.cache/elanous-refs/<host>/<owner>/<repo>. This directory is
 // distinct from the user's manually-maintained source/ref/ tree —
 // the cache is scratch space the agent can purge, the user tree
 // is authoritative.
@@ -32,7 +32,7 @@ import { runGitCommand } from '../git-fs/runner.js';
 import type { LLMToolSpec } from '../llm.js';
 import type { ToolRuntime, ToolRuntimeContext } from './types.js';
 
-const CACHE_ROOT_DEFAULT = join(homedir(), '.cache', 'monad-refs');
+const CACHE_ROOT_DEFAULT = join(homedir(), '.cache', 'elanous-refs');
 const STALE_WINDOW_MS_DEFAULT = 24 * 60 * 60 * 1000;  // 24h
 const ALLOWED_HOSTS = new Set(['github.com', 'gitlab.com', 'bitbucket.org']);
 
@@ -70,7 +70,7 @@ export function buildSyncRepoTool(): LLMToolSpec {
     name: 'SyncRepo',
     description:
       'Clone or fetch a github.com / gitlab.com / bitbucket.org repository into ' +
-      '~/.cache/monad-refs/<host>/<owner>/<repo>. Shallow + partial by default; sparse- ' +
+      '~/.cache/elanous-refs/<host>/<owner>/<repo>. Shallow + partial by default; sparse- ' +
       'checkout patterns let you narrow further. Within 24h of last fetch the network is ' +
       'skipped (use mode="update" to force). Second step of the discovery cycle: FindRepo ' +
       '→ SyncRepo → RefConsult. Returns the local path.',

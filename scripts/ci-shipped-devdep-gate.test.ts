@@ -93,18 +93,18 @@ describe('checkShippedDevDependencies', () => {
     withFixture({
       'package.json': JSON.stringify({
         devDependencies: { typescript: '^5.7.0' },
-        files: ['src/', 'bin/monad.mjs', 'tools/*.ts', '!src/excluded.ts'],
+        files: ['src/', 'bin/elanous.mjs', 'tools/*.ts', '!src/excluded.ts'],
       }),
       'src/kept.test.ts': "import ts from 'typescript';\n",
       'src/excluded.ts': "import ts from 'typescript';\n",
-      'bin/monad.mjs': "import ts from 'typescript';\n",
+      'bin/elanous.mjs': "import ts from 'typescript';\n",
       'tools/entry.ts': "import ts from 'typescript';\n",
     }, cwd => {
       const result = checkShippedDevDependencies({ cwd });
       expect(result.measurementFailure).toBeNull();
       expect(result.scannedFileCount).toBe(3);
       expect(result.violations.map(violation => violation.file)).toEqual([
-        'bin/monad.mjs', 'src/kept.test.ts', 'tools/entry.ts',
+        'bin/elanous.mjs', 'src/kept.test.ts', 'tools/entry.ts',
       ]);
     });
   });

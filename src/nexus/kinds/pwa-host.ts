@@ -13,7 +13,7 @@
 //   - graceMs:        8000 (next dev needs ~8s for graceful shutdown)
 //
 // Default OFF (per OQ1: daemon only auto-enabled). User opts in via
-// `monad nexus run --pwa` or `runNexus({ enablePwaHostTab: true })`.
+// `elanous nexus run --pwa` or `runNexus({ enablePwaHostTab: true })`.
 
 import type { TabKind, TabSpec } from './types.js';
 import { join as joinPath } from 'node:path';

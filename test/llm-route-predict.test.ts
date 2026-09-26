@@ -154,7 +154,7 @@ describe('http-server.ts wiring · source-level grep guard', () => {
 
   test('boot wire in nexus/index.ts passes a configProvider thunk', () => {
     // P1-FU1 (2026-05-14): boot must pass a thunk so user-config edits
-    // (`monad config mission set …`) take effect without daemon restart.
+    // (`elanous config mission set …`) take effect without daemon restart.
     // The static `globalMissionRouter()` form would silently cache the
     // boot-time config and ignore later edits.
     const src = readFileSync(

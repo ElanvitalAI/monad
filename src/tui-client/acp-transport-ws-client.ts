@@ -18,8 +18,8 @@
 // time, so this matches one-to-one.
 //
 // Used by:
-//   - `monad attach --host <tailnet>:<port>` (R2)
-//   - `monad-agent` default dashboard, when MONAD_REMOTE is set (R3)
+//   - `elanous attach --host <tailnet>:<port>` (R2)
+//   - `monad-agent` default dashboard, when ELANOUS_REMOTE is set (R3)
 
 import {
   AcpTransportError,
@@ -47,7 +47,7 @@ export interface ConnectWebSocketClientOpts {
 /** ⏱️ 기본 연결 상한. 테일넷 왕복은 보통 수백 ms 라 넉넉하다. */
 export const DEFAULT_WS_CONNECT_TIMEOUT_MS = 10_000;
 
-/** Connect to a Monad daemon over its public WebSocket endpoint.
+/** Connect to a Elanous daemon over its public WebSocket endpoint.
  *  Resolves with the bidirectional stream pair once the (optional)
  *  auth handshake has completed; rejects with `AcpTransportError` on
  *  any failure (network, auth-rejected, abort). */

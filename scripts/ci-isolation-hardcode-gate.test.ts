@@ -9,21 +9,21 @@ import {
 } from './ci-isolation-hardcode-gate.js';
 
 describe('ci-isolation-hardcode-gate violation reporting', () => {
-  test('scan retains every line matching the unchanged homedir()+.monad criterion', () => {
+  test('scan retains every line matching the unchanged homedir()+.elanous criterion', () => {
     const source = [
-      "const unrelated = '.monad';",
-      "const root = join(homedir(), '.monad', 'logs');",
+      "const unrelated = '.elanous';",
+      "const root = join(homedir(), '.elanous', 'logs');",
       "const homeOnly = homedir();",
-      "const nested = join(homedir(), '.monad-test', 'state');",
+      "const nested = join(homedir(), '.elanous-test', 'state');",
     ].join('\n');
 
-    expect(isHardcodeLine("join(homedir(), '.monad')")).toBe(true);
-    expect(isHardcodeLine("const unrelated = '.monad';")).toBe(false);
-    // `com.monad.nexus.plist` 의 `.monad` 는 경로 조각이 아니다(2026-09-24 오탐).
-    expect(isHardcodeLine("plistPath = join(homedir(), 'Library', 'LaunchAgents', 'com.monad.nexus.plist'),")).toBe(false);
+    expect(isHardcodeLine("join(homedir(), '.elanous')")).toBe(true);
+    expect(isHardcodeLine("const unrelated = '.elanous';")).toBe(false);
+    // `com.elanous.nexus.plist` 의 `.elanous` 는 경로 조각이 아니다(2026-09-24 오탐).
+    expect(isHardcodeLine("plistPath = join(homedir(), 'Library', 'LaunchAgents', 'com.elanous.nexus.plist'),")).toBe(false);
     expect(scanHardcodeCandidates(source)).toEqual([
-      { lineNumber: 2, line: "const root = join(homedir(), '.monad', 'logs');" },
-      { lineNumber: 4, line: "const nested = join(homedir(), '.monad-test', 'state');" },
+      { lineNumber: 2, line: "const root = join(homedir(), '.elanous', 'logs');" },
+      { lineNumber: 4, line: "const nested = join(homedir(), '.elanous-test', 'state');" },
     ]);
   });
 
@@ -35,9 +35,9 @@ describe('ci-isolation-hardcode-gate violation reporting', () => {
   test('violation report prints candidate line numbers and the baseline-exceeding count', () => {
     const candidates = scanHardcodeCandidates([
       "import { homedir } from 'node:os';",
-      "const first = join(homedir(), '.monad', 'one');",
-      "const second = join(homedir(), '.monad', 'two');",
-      "const third = join(homedir(), '.monad', 'three');",
+      "const first = join(homedir(), '.elanous', 'one');",
+      "const second = join(homedir(), '.elanous', 'two');",
+      "const third = join(homedir(), '.elanous', 'three');",
     ].join('\n'));
 
     const report = renderViolation('src/cli/logs-cli.ts', 2, { count: candidates.length, candidates });
@@ -51,7 +51,7 @@ describe('ci-isolation-hardcode-gate violation reporting', () => {
   test('main execution path prints scanned observation before PASS, FAIL, and --update decisions', () => {
     const emptyScan = new Map();
     const violatingScan = new Map([
-      ['src/cli/logs-cli.ts', { count: 1, candidates: [{ lineNumber: 1, line: "join(homedir(), '.monad')" }] }],
+      ['src/cli/logs-cli.ts', { count: 1, candidates: [{ lineNumber: 1, line: "join(homedir(), '.elanous')" }] }],
     ]);
 
     const passOut: string[] = [];
@@ -110,7 +110,7 @@ describe('ci-isolation-hardcode-gate violation reporting', () => {
 //   🔑 이 게이트의 계약은 「수」가 아니라 «방향»이다:
 //     ⓐ 늘면 막는다   ⓑ 줄면 막지 않고 «--update 를 권한다»   ⓒ --update 는 그 «줄어든» 값을 쓴다
 describe('changed-files 안전성', () => {
-  const entry = (count: number) => ({ count, candidates: [{ lineNumber: 1, line: "join(homedir(), '.monad')" }] });
+  const entry = (count: number) => ({ count, candidates: [{ lineNumber: 1, line: "join(homedir(), '.elanous')" }] });
 
   test('범위 밖 baseline을 수복으로 출력하지 않고 부분 --update를 거부한다', () => {
     const logs: string[] = [];
@@ -139,7 +139,7 @@ describe('changed-files 안전성', () => {
 describe('격리 래칫 — 「방향」 계약', () => {
   const entry = (count: number) => ({
     count,
-    candidates: Array.from({ length: count }, (_, i) => ({ lineNumber: i + 1, line: `join(homedir(), '.monad', 'x${i}')` })),
+    candidates: Array.from({ length: count }, (_, i) => ({ lineNumber: i + 1, line: `join(homedir(), '.elanous', 'x${i}')` })),
   });
 
   test('반증 ⓐ — 수복된 자리가 «되돌아오면» 그 파일 이름과 수를 대고 막는다', () => {
@@ -193,17 +193,17 @@ describe('격리 래칫 — 「방향」 계약', () => {
 //   ⛔ 그런데 «코드 뒤에 붙은» 주석은 계속 물어야 한다 — 그 줄은 실제로 도는 코드다.
 describe('isHardcodeLine — 주석과 코드를 가른다 (OBS-T527)', () => {
   test('⛔ 온전히 주석인 줄은 «안 문다» — 블록·라인 주석 셋', () => {
-    expect(isHardcodeLine("  *  경로를 손으로 짓지 않는다 — `join(homedir(), '.monad', …)` 는 위험하다")).toBe(false);
-    expect(isHardcodeLine("// join(homedir(), '.monad', 'x') 를 쓰지 마라")).toBe(false);
-    expect(isHardcodeLine("/* join(homedir(), '.monad') */")).toBe(false);
+    expect(isHardcodeLine("  *  경로를 손으로 짓지 않는다 — `join(homedir(), '.elanous', …)` 는 위험하다")).toBe(false);
+    expect(isHardcodeLine("// join(homedir(), '.elanous', 'x') 를 쓰지 마라")).toBe(false);
+    expect(isHardcodeLine("/* join(homedir(), '.elanous') */")).toBe(false);
   });
 
   test('⭐ 코드는 «그대로» 문다', () => {
-    expect(isHardcodeLine("  return join(homedir(), '.monad', 'media');")).toBe(true);
+    expect(isHardcodeLine("  return join(homedir(), '.elanous', 'media');")).toBe(true);
   });
 
   test('⛔⭐ 코드 «뒤»에 주석이 붙은 줄은 계속 문다 — 그 줄은 실제로 돈다', () => {
-    expect(isHardcodeLine("  return join(homedir(), '.monad'); // 임시")).toBe(true);
+    expect(isHardcodeLine("  return join(homedir(), '.elanous'); // 임시")).toBe(true);
   });
 
   test('무관한 줄은 안 문다', () => {
@@ -213,17 +213,17 @@ describe('isHardcodeLine — 주석과 코드를 가른다 (OBS-T527)', () => {
 });
 
 describe('ci-isolation-hardcode-gate — two-line homedir alias (2026-09-24 · T3)', () => {
-  test('catches join(<homedir alias>, ".monad") split across lines, as in resolveDataDir and cronRepoRoot', () => {
+  test('catches join(<homedir alias>, ".elanous") split across lines, as in resolveDataDir and cronRepoRoot', () => {
     const resolveDataDirLike = [
       'export function resolveDataDir(deps: { home?: string } = {}): string {',
       '  const home = deps.home ?? homedir();',
-      "  const stateData = join(home, '.monad', 'data');",
+      "  const stateData = join(home, '.elanous', 'data');",
       '  return stateData;',
       '}',
     ].join('\n');
     const cronRepoRootLike = [
       'export function cronRepoRoot(codeRoot: string, home: string = homedir()): string {',
-      "  const raw = readFileSync(join(home, '.monad', 'leader.json'), 'utf-8');",
+      "  const raw = readFileSync(join(home, '.elanous', 'leader.json'), 'utf-8');",
       '  return raw;',
       '}',
     ].join('\n');
@@ -232,13 +232,13 @@ describe('ci-isolation-hardcode-gate — two-line homedir alias (2026-09-24 · T
     expect(scanHardcodeCandidates(cronRepoRootLike).map((c) => c.lineNumber)).toEqual([2]);
   });
 
-  test('does not flag an alias used without .monad, a comment-only mention, or an unrelated name', () => {
+  test('does not flag an alias used without .elanous, a comment-only mention, or an unrelated name', () => {
     const source = [
       'const home = homedir();',
       "const cache = join(home, '.cache');",
-      "// join(home, '.monad') is the trap this gate names",
-      "const other = join(root, '.monad');",
-      "const plist = join(home, 'Library', 'LaunchAgents', 'com.monad.nexus.plist');",
+      "// join(home, '.elanous') is the trap this gate names",
+      "const other = join(root, '.elanous');",
+      "const plist = join(home, 'Library', 'LaunchAgents', 'com.elanous.nexus.plist');",
     ].join('\n');
     expect(scanHardcodeCandidates(source)).toEqual([]);
   });

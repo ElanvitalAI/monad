@@ -8,9 +8,9 @@ import {
   extractCapMatrixSection,
   replaceCapMatrixSection,
 } from '../scripts/gen-acp-capability-matrix.ts';
-import type { MonadCapabilities } from '../src/acp/capabilities.js';
+import type { ElanousCapabilities } from '../src/acp/capabilities.js';
 
-const minimalCaps = (overrides: Partial<MonadCapabilities> = {}): MonadCapabilities => ({
+const minimalCaps = (overrides: Partial<ElanousCapabilities> = {}): ElanousCapabilities => ({
   protocolVersion: 1,
   prompt: { text: true, resourceLink: true, image: false, audio: false, embeddedContext: false },
   loadSession: false,

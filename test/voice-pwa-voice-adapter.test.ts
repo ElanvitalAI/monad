@@ -413,18 +413,18 @@ describe('createPwaVoiceAdapter (sttProvider wired — Phase 7 frontend)', () =>
 // ── Env gate ───────────────────────────────────────────────────────
 
 describe('isPwaVoiceEnabled', () => {
-  it('true when MONAD_PWA_VOICE unset (default-on)', () => {
-    delete process.env.MONAD_PWA_VOICE;
+  it('true when ELANOUS_PWA_VOICE unset (default-on)', () => {
+    delete process.env.ELANOUS_PWA_VOICE;
     expect(isPwaVoiceEnabled()).toBe(true);
   });
 
-  it('false only for explicit opt-out MONAD_PWA_VOICE values', () => {
+  it('false only for explicit opt-out ELANOUS_PWA_VOICE values', () => {
     for (const v of ['0', 'false', 'off', 'no', ' FALSE ', 'Off', ' NO ']) {
-      process.env.MONAD_PWA_VOICE = v;
+      process.env.ELANOUS_PWA_VOICE = v;
       expect(isPwaVoiceEnabled()).toBe(false);
     }
     for (const v of ['1', 'true', 'on', 'YES', 'On']) {
-      process.env.MONAD_PWA_VOICE = v;
+      process.env.ELANOUS_PWA_VOICE = v;
       expect(isPwaVoiceEnabled()).toBe(true);
     }
   });

@@ -6,7 +6,7 @@
 // [[RESEARCH-pty-multiplexer-frontier-herdr-orca-2026-07-24]] §5 #5.
 //
 // ⚠️ ChannelBus 는 프로세스-로컬이라 크로스-프로세스 wait 불가 → pty-manifest 와 동형으로 **공유 SQLite**
-// (`MONAD_STATE_DIR` 스코프). AUTOINCREMENT seq = 전역 단조 커서(herdr `current_sequence()`).
+// (`ELANOUS_STATE_DIR` 스코프). AUTOINCREMENT seq = 전역 단조 커서(herdr `current_sequence()`).
 //
 // 이 모듈 = 라우팅 플레인의 *토대*(이벤트 append + seq 후 read + 상태전이 dedup + wait). 실제 상태
 // *분류*(frame→idle/working/blocked)는 #1(region-rule 감지·후속)이 이 로그에 append 한다. 즉 #5=전송로,
@@ -17,11 +17,11 @@
 import { Database, type SQLQueryBindings } from 'bun:sqlite';
 import { dirname, join } from 'node:path';
 import { existsSync, mkdirSync } from 'node:fs';
-import { monadStateRoot } from '../autopilot/state-paths';
+import { elanousStateRoot } from '../autopilot/state-paths';
 
-/** 이벤트 로그 db 경로 — `MONAD_STATE_DIR` 존중(격리·resolver 경유), 기본 `~/.monad/pty/events.db`. manifest.db 동형. */
+/** 이벤트 로그 db 경로 — `ELANOUS_STATE_DIR` 존중(격리·resolver 경유), 기본 `~/.elanous/pty/events.db`. manifest.db 동형. */
 export function ptyEventLogDbPath(): string {
-  return join(monadStateRoot(), 'pty', 'events.db');
+  return join(elanousStateRoot(), 'pty', 'events.db');
 }
 
 /** 상태 어휘 — herdr/orca 합집합(orca `AgentStatusState` + herdr idle/unknown). */
@@ -35,7 +35,7 @@ export interface PtyEventRow {
   /** 'state'(상태전이) | 'message'(자식↔자식 메일·후속 F4) | 확장. */
   readonly kind: string;
   readonly state: SurfaceState | null;
-  /** 감지된 에이전트 이름(monad|codex|…) — identity 핀닝용(#1 감지가 채움). */
+  /** 감지된 에이전트 이름(elanous|codex|…) — identity 핀닝용(#1 감지가 채움). */
   readonly agent: string | null;
   /** JSON payload(상태 증거·메시지 본문). */
   readonly payload: string | null;
@@ -44,7 +44,7 @@ export interface PtyEventRow {
 let _db: Database | null = null;
 let _dbFailed = false;
 
-/** Close the cached events db so a later same-process file can open MONAD_STATE_DIR afresh.
+/** Close the cached events db so a later same-process file can open ELANOUS_STATE_DIR afresh.
  *  Same seam as setPtyManifestDbPathForTesting — env restore alone leaves this handle on a deleted path. */
 export function resetPtyEventLogForTesting(): void {
   _db?.close();

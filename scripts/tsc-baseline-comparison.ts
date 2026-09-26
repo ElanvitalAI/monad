@@ -255,7 +255,7 @@ export async function runComparison(repo: string, argv: readonly string[] = proc
     const commit = resolved.stdout.trim();
     if (!/^[0-9a-f]{40}$/i.test(commit)) throw new Error(`resolved baseline ref is not a commit: ${commit}`);
     debug.log('typecheck.baseline', 'baseline-resolved', { branch, remoteRef, commit });
-    const workspace = fs.makeTemp(join(tmpdir(), 'monad-tsc-baseline-'));
+    const workspace = fs.makeTemp(join(tmpdir(), 'elanous-tsc-baseline-'));
     const worktree = join(workspace, 'baseline');
     cleanup = new WorktreeCleanup(repo, workspace, worktree, run, fs);
     activeCleanup = cleanup;

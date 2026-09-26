@@ -323,7 +323,6 @@ describe('createTurnStreamFormatter — supported renderer regression', () => {
   test('all 14 supported tools preserve dispatch variants and never invoke generic rendering', () => {
     const toolRendering = {
       displayMode: 'inline-to-block' as const,
-      inlineOneLine: true,
       blockMaxLines: 4,
     };
     const supportedTools = [

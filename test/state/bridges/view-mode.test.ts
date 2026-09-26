@@ -6,7 +6,7 @@
 
 import { describe, test, expect } from 'bun:test';
 import { createStore } from '../../../src/state/store.js';
-import { defaultMonadState, type MonadState } from '../../../src/state/types.js';
+import { defaultElanousState, type ElanousState } from '../../../src/state/types.js';
 import {
   bridgeViewModeToContextKeys,
   publishViewMode,
@@ -15,7 +15,7 @@ import { createContextKeyService } from '../../../src/input-core/context-keys.js
 import type { ViewMode } from '../../../src/input-core/view-mode.js';
 
 function mkStore() {
-  return createStore<MonadState>(defaultMonadState());
+  return createStore<ElanousState>(defaultElanousState());
 }
 
 describe('bridgeViewModeToContextKeys · init sync', () => {

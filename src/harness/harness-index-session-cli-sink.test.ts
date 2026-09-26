@@ -7,7 +7,7 @@ import * as ui from '../ui.js';
 import { appendMessage, createSession, listSessions } from '../session/index.js';
 
 const calls: string[] = [];
-const sessionRoot = mkdtempSync(join(tmpdir(), 'monad-session-list-json-'));
+const sessionRoot = mkdtempSync(join(tmpdir(), 'elanous-session-list-json-'));
 let sinkShouldFail = false;
 let federationArgs: Record<string, unknown> | undefined;
 
@@ -33,8 +33,8 @@ let program: Command;
 let infoSpy: ReturnType<typeof spyOn>;
 
 beforeAll(async () => {
-  process.env.MONAD_SESSION_ROOT = sessionRoot;
-  process.env.MONAD_STATE_DIR = sessionRoot;
+  process.env.ELANOUS_SESSION_ROOT = sessionRoot;
+  process.env.ELANOUS_STATE_DIR = sessionRoot;
   ({ program } = await import('../index.js'));
   program.exitOverride();
 });
@@ -50,15 +50,15 @@ beforeEach(() => {
 
 afterEach(() => infoSpy.mockRestore());
 afterAll(() => {
-  delete process.env.MONAD_SESSION_ROOT;
-  delete process.env.MONAD_STATE_DIR;
+  delete process.env.ELANOUS_SESSION_ROOT;
+  delete process.env.ELANOUS_STATE_DIR;
   rmSync(sessionRoot, { recursive: true, force: true });
 });
 
 describe('production session CLI sink wiring', () => {
   test('the actual index session actions continue after a failed first registration and register once', async () => {
-    await program.parseAsync(['node', 'monad', 'session', 'list']);
-    await program.parseAsync(['node', 'monad', 'session', 'list']);
+    await program.parseAsync(['node', 'elanous', 'session', 'list']);
+    await program.parseAsync(['node', 'elanous', 'session', 'list']);
 
     expect(calls[0]).toBe('sink:session-cli');
     expect(calls.filter((call) => call === 'sink:session-cli')).toHaveLength(1);
@@ -79,7 +79,7 @@ describe('production session CLI sink wiring', () => {
       return true;
     }) as never);
     try {
-      await program.parseAsync(['node', 'monad', 'session', 'list', '--json', '--limit', '1', '--source', 'cli', '--min-msg', '2', '--instance', cli.originInstance!]);
+      await program.parseAsync(['node', 'elanous', 'session', 'list', '--json', '--limit', '1', '--source', 'cli', '--min-msg', '2', '--instance', cli.originInstance!]);
       const rows = JSON.parse(output.join(''));
       expect(rows).toEqual([listSessions({ source: 'cli', minMessages: 2, originInstance: cli.originInstance, excludeSourceKinds: ['scheduled'] }, sessionRoot)[0]]);
       expect(rows[0]).toEqual(expect.objectContaining({ id: cli.id, createdAt: expect.any(String), updatedAt: expect.any(String), messageCount: 2 }));
@@ -87,7 +87,7 @@ describe('production session CLI sink wiring', () => {
       expect(output.join('')).not.toContain('Sessions (');
 
       output.length = 0;
-      await program.parseAsync(['node', 'monad', 'session', 'list', '--json', '--exclude-source', 'telegram', '--all']);
+      await program.parseAsync(['node', 'elanous', 'session', 'list', '--json', '--exclude-source', 'telegram', '--all']);
       const excluded = JSON.parse(output.join(''));
       expect(excluded.map((row: { id: string }) => row.id)).toContain(empty.id);
       expect(excluded.map((row: { id: string }) => row.id)).not.toContain(telegram.id);
@@ -104,7 +104,7 @@ describe('production session CLI sink wiring', () => {
       return true;
     }) as never);
     try {
-      await program.parseAsync(['node', 'monad', 'session', 'list', '--all-instances', '--json', '--source', 'cli', '--min-msg', '2', '--all', '--include-test', '--limit', '4', '--exclude-source', 'telegram', '--instance', 'prod']);
+      await program.parseAsync(['node', 'elanous', 'session', 'list', '--all-instances', '--json', '--source', 'cli', '--min-msg', '2', '--all', '--include-test', '--limit', '4', '--exclude-source', 'telegram', '--instance', 'prod']);
       const rows = JSON.parse(output.join(''));
       expect(rows).toEqual([{ id: 'federated-session', createdAt: '2026-08-13T00:00:00.000Z', updatedAt: '2026-08-13T00:01:00.000Z', messageCount: 3, title: 'federated', instance: 'other' }]);
       expect(output.join('')).toBe(`${JSON.stringify(rows, null, 2)}\n`);
@@ -123,7 +123,7 @@ describe('production session CLI sink wiring', () => {
       return false;
     }) as never);
     try {
-      await program.parseAsync(['node', 'monad', 'session', 'list', '--json']);
+      await program.parseAsync(['node', 'elanous', 'session', 'list', '--json']);
       expect(completed).toBe(true);
     } finally {
       write.mockRestore();
@@ -137,7 +137,7 @@ describe('production session CLI sink wiring', () => {
       return false;
     }) as never);
     try {
-      await program.parseAsync(['node', 'monad', 'session', 'list', '--all-instances', '--json']);
+      await program.parseAsync(['node', 'elanous', 'session', 'list', '--all-instances', '--json']);
       expect(completed).toBe(true);
     } finally {
       write.mockRestore();
@@ -148,7 +148,7 @@ describe('production session CLI sink wiring', () => {
     const output: string[] = [];
     const header = spyOn(ui, 'header').mockImplementation((line: string) => output.push(line));
     try {
-      await program.parseAsync(['node', 'monad', 'session', 'list', '--limit', '1']);
+      await program.parseAsync(['node', 'elanous', 'session', 'list', '--limit', '1']);
       expect(output.some((line) => line.startsWith('Sessions ('))).toBe(true);
     } finally {
       header.mockRestore();

@@ -19,7 +19,7 @@ import {
 // Why it exists
 //   Cross-surface drag & drop (browser pane → attachment popup /
 //   scratch pane / LLM context dump) is the last major GUI-parity
-//   affordance monad's TUI has not landed. Current drag handling is
+//   affordance elanous's TUI has not landed. Current drag handling is
 //   widget-internal only — every consumer that needs cross-surface
 //   DnD today would re-implement pointer capture + threshold + target
 //   resolution separately, multiplying bugs. Promoting to a primitive
@@ -52,7 +52,7 @@ import { hitMatchesSurfaceId } from '../../surface/hit-projection.js';
 // ───── Payload ──────────────────────────────────────────────────
 
 /** A payload "kind" string. Convention: either a MIME-like tag
- *  (e.g. 'text/uri-list', 'text/plain') or a monad-app tag
+ *  (e.g. 'text/uri-list', 'text/plain') or a elanous-app tag
  *  (e.g. 'file-path[]', 'chat-msg-ref', 'llm-context-slice'). */
 export type DragKind = string;
 

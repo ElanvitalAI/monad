@@ -29,7 +29,7 @@ import {
 import { buildExecutionAskSystemMessages } from '../ask-user-question/index.js';
 import { buildApprovalPolicySystemMessages } from '../code-edit/index.js';
 import { buildSandboxEscalationSystemMessages } from '../shell-primitive/index.js';
-import { monadSelfAccessPrompt, monadSelfAmbientParts } from '../agent/self-ambient.js';
+import { elanousSelfAccessPrompt, elanousSelfAmbientParts } from '../agent/self-ambient.js';
 import { localRefGroundingAmbient } from '../agent/ref-grounding.js';
 import {
   globalTaskNotificationQueue,
@@ -74,7 +74,7 @@ export interface DashboardTurnPreambleContext {
 export function buildControllerSystemMessage(controller: string, channels?: string): LLMMessage {
   return {
     role: 'system',
-    content: `[제어 표면] 이 모나드 세션은 밖의 제어자 ${controller} 가 몰고 있다. 열린 관: ${channels || 'pty'}. 감독 메모로 들어온 지시는 이 제어자의 지시다. PTY 로 들어오는 입력도 사람이 아니라 이 제어자가 넣은 것일 수 있다.`,
+    content: `[제어 표면] 이 엘라누스 세션은 밖의 제어자 ${controller} 가 몰고 있다. 열린 관: ${channels || 'pty'}. 감독 메모로 들어온 지시는 이 제어자의 지시다. PTY 로 들어오는 입력도 사람이 아니라 이 제어자가 넣은 것일 수 있다.`,
   };
 }
 
@@ -131,19 +131,19 @@ export function buildDashboardTurnPreamble(
   const concisenessSystemMsgs = buildConcisenessSystemMessages(
     ctx.userConfig.chat.conciseness,
   ) as LLMMessage[];
-  // ★ monad 자기접근 규율 + 자기인지 ambient(P3 · 2026-07-13) — 텔레그램/디스코드
-  //   (makeMonadAgentRunTurn)와 단일 출처(agent/self-ambient.ts). TUI 채팅에서도 미션
+  // ★ elanous 자기접근 규율 + 자기인지 ambient(P3 · 2026-07-13) — 텔레그램/디스코드
+  //   (makeElanousAgentRunTurn)와 단일 출처(agent/self-ambient.ts). TUI 채팅에서도 미션
   //   진단("P2 왜 실패?")·자율 시스템 관측·회상이 규율+ambient+툴(self-ops family) 3박자로
   //   성립한다. fail-soft: ambient 조회 실패가 턴을 막지 않는다.
   let selfOpsSystemMsgs: LLMMessage[] = [];
   try {
-    selfOpsSystemMsgs = [monadSelfAccessPrompt(ctx.sessionId), ...monadSelfAmbientParts(ctx.userText), localRefGroundingAmbient(ctx.userText)]
+    selfOpsSystemMsgs = [elanousSelfAccessPrompt(ctx.sessionId), ...elanousSelfAmbientParts(ctx.userText), localRefGroundingAmbient(ctx.userText)]
       .filter(Boolean)
       .map((content): LLMMessage => ({ role: 'system', content }));
   } catch { /* fail-soft */ }
   const controlEnv = ctx.controlEnv ?? {
-    controller: process.env.MONAD_CONTROLLER,
-    channels: process.env.MONAD_CONTROL_CHANNELS,
+    controller: process.env.ELANOUS_CONTROLLER,
+    channels: process.env.ELANOUS_CONTROL_CHANNELS,
   };
   const controllerSystemMsgs = controlEnv.controller
     ? [buildControllerSystemMessage(controlEnv.controller, controlEnv.channels)]

@@ -75,12 +75,12 @@ function documentationCorpus(root: string): string {
 
 function escapeRegex(value: string): string { return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
 /** ⛔⭐⭐⭐ **「호출로 쓰인 것」만 센다** — 맨 경로를 세면 산문이 언급으로 «오인»된다(무인 리뷰 5R).
- *  📏 이 저장소의 문서는 명령을 «부르는 형태»로 적는다 — `monad <경로>` 또는 `bun bin/monad.mjs <경로>`.
+ *  📏 이 저장소의 문서는 명령을 «부르는 형태»로 적는다 — `elanous <경로>` 또는 `bun bin/elanous.mjs <경로>`.
  *  그것이 `CLAUDE.md` 의 「밟지 마라」가 못 박은 규율이기도 하다(자를 «부르는 이름»으로 적지 마라).
  *  ⇒ 접두를 요구하면 「publish file」·「session export」 같은 «일상 낱말 조합»이 언급으로 세어지지 않는다.
  *  ⚠️ 대가: 접두 없이 적힌 «진짜» 언급은 0 으로 센다. 그쪽 오차는 ***과소가 아니라 과대 보고***라
  *  (결손이 «더» 많이 뜬다) 관측으로서 안전한 방향이고, 후보 목록을 열면 사람이 바로 가른다. */
-const INVOCATION_PREFIX = '(?<![\\w-])(?:(?:bun\\s+)?(?:\\./)?(?:bin/)?monad(?:\\.mjs)?)\\s+';
+const INVOCATION_PREFIX = '(?<![\\w-])(?:(?:bun\\s+)?(?:\\./)?(?:bin/)?elanous(?:\\.mjs)?)\\s+';
 function countCommandMentions(corpus: string, path: string): { invocations: number; prose: number } {
   const body = `${path.split(' ').map(escapeRegex).join('\\s+')}(?![\\w-])`;
   const invocations = [...corpus.matchAll(new RegExp(`${INVOCATION_PREFIX}${body}`, 'g'))].length;
@@ -293,7 +293,7 @@ function rejectUnknownArguments(argv: readonly string[]): string | undefined {
 
 if (import.meta.main) {
   // ⛔⭐⭐ **관측 sink 를 «먼저» 건다** — `debug.log` 만으로는 `logs.db` 에 «안 닿는다».
-  //   📏 실측(2026-08-09): 이 줄이 없을 때 `monad logs --category cli.doc-coverage` 가 «0건»이었다.
+  //   📏 실측(2026-08-09): 이 줄이 없을 때 `elanous logs --category cli.doc-coverage` 가 «0건»이었다.
   //   ⇒ 「관측을 남겼다」와 「관측이 도착했다」는 다른 축이다(`#6701` · `I-T8` · `pr-cli.ts` 선례).
   //   fail-open — 관측 배선 실패가 «측정 자체»를 막지 않는다.
   try {

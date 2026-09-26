@@ -3,7 +3,7 @@
 // **Why**: Until now every HUD segment writer lived inside the
 // dashboard process — `src/dashboard/index.ts` ran the 1Hz
 // `chatHudTicker`, the SSH/agent-activity setSegment sites, the
-// reasoning refresher. When a user boots only `monad nexus run`
+// reasoning refresher. When a user boots only `elanous nexus run`
 // (daemon + PWA static export, no TUI), the daemon's HudStore
 // stayed empty and PWA `<ChatHud>` rendered nothing — the entire
 // strip silently absent.

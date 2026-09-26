@@ -9,7 +9,7 @@
 
 import { join, dirname } from 'node:path';
 import { existsSync, mkdirSync, writeFileSync, readFileSync, rmSync } from 'node:fs';
-import { monadStateRoot } from './state-paths.js';
+import { elanousStateRoot } from './state-paths.js';
 
 /** 최근 언급 유효창(기본 30분) — 너무 오래된 언급은 "지금 논의 중"이 아니므로 무시. */
 const MENTION_WINDOW_MS = 30 * 60 * 1000;
@@ -18,7 +18,7 @@ const PENDING_CTX_WINDOW_MS = 10 * 60 * 1000;
 
 function chatCtxPath(chatId: number | string, kind: 'mention' | 'pending-revise-ctx'): string {
   const safe = String(chatId).replace(/[^\w-]/g, '_').slice(0, 40);
-  return join(monadStateRoot(), 'autopilot', 'chat-context', `${safe}.${kind}.json`);
+  return join(elanousStateRoot(), 'autopilot', 'chat-context', `${safe}.${kind}.json`);
 }
 
 /** 텍스트에서 apm_ 미션 id 추출(순수·중복제거·등장순). */

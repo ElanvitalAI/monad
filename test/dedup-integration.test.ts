@@ -18,7 +18,7 @@ import type { LLMProvider } from '../src/llm';
 import type { AgentDefinition } from '../src/agent/types';
 
 function tmp(): string {
-  return mkdtempSync(join(tmpdir(), 'monad-dedup-'));
+  return mkdtempSync(join(tmpdir(), 'elanous-dedup-'));
 }
 
 describe('dispatchRead + SessionCache', () => {

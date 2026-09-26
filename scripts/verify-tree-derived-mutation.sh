@@ -7,8 +7,8 @@
 #   스위치 ON/OFF **양쪽에서 동일한 수의 테스트가 실패**해야 한다.
 #
 # ⚠️ 이 스크립트가 조심하는 것 (실제로 내가 밟은 함정들):
-#   1. 3층이 켜진 비-리더 트리에서 그냥 `monad config set` 하면 `.monad-test` 로 파생돼
-#      **실효 스위치(~/.monad/config.json)가 안 바뀐다.** → `--config-dir` 을 항상 명시한다.
+#   1. 3층이 켜진 비-리더 트리에서 그냥 `elanous config set` 하면 `.elanous-test` 로 파생돼
+#      **실효 스위치(~/.elanous/config.json)가 안 바뀐다.** → `--config-dir` 을 항상 명시한다.
 #   2. 중단(Ctrl-C·실패)되면 소스가 변조된 채 남고 사용자 설정이 덮어씌워진다.
 #      → 복원을 **멱등**으로 만들고 INT/TERM 은 복원 후 **즉시 종료**한다.
 #   3. 복원이 실제로 됐는지 **검증**한다 — 안 보고 "복원 완료"를 찍으면 그게 더 위험하다.
@@ -22,16 +22,16 @@ cd "$(git rev-parse --show-toplevel)"
 EXPECT="${1:-}"                     # 비면 유연 모드
 T=test/instance-resolve.test.ts
 R=src/instance/resolve.ts
-PROD_CFG="$HOME/.monad"
+PROD_CFG="$HOME/.elanous"
 BAK="$(mktemp "${TMPDIR:-/tmp}/resolve-ts.XXXXXX")"
-MONAD=(bun bin/monad.mjs)
+ELANOUS=(bun bin/elanous.mjs)
 RESTORED=0
 RESTORE_FAILED=0
 
 fails() { bun test "$T" 2>&1 | grep -Eo '^ *[0-9]+ fail' | grep -Eo '[0-9]+' | head -1; }
 switch_now() { python3 -c "import json;print(json.load(open('$PROD_CFG/config.json')).get('instance',{}).get('treeDerivedTest'))" 2>/dev/null || echo None; }
-set_switch() { "${MONAD[@]}" --config-dir "$PROD_CFG" config set instance.treeDerivedTest "$1" >/dev/null 2>&1; }
-unset_switch() { "${MONAD[@]}" --config-dir "$PROD_CFG" config unset instance.treeDerivedTest >/dev/null 2>&1; }
+set_switch() { "${ELANOUS[@]}" --config-dir "$PROD_CFG" config set instance.treeDerivedTest "$1" >/dev/null 2>&1; }
+unset_switch() { "${ELANOUS[@]}" --config-dir "$PROD_CFG" config unset instance.treeDerivedTest >/dev/null 2>&1; }
 
 # ⚠️ 전환은 **실효값으로 확인**한다(리뷰 must-fix 8R) — set 이 조용히 실패하면 ON/OFF 가 둘 다
 #    안 바뀌어 "ON=OFF" 가 성립해버려 **거짓 성공**이 난다. 실제로 3층 파생 때문에 겪은 사고다.
@@ -71,7 +71,7 @@ restore() {
   else
     RESTORE_FAILED=1                        # ← 최종 exit code 에 **반영**된다
     echo "❌ 복원 불완전 — 소스 또는 스위치 불일치(현재=$now · 원래=$ORIG). 수동 확인 필요:"
-    echo "   git diff -- $R ; ${MONAD[*]} --config-dir $PROD_CFG config get instance.treeDerivedTest"
+    echo "   git diff -- $R ; ${ELANOUS[*]} --config-dir $PROD_CFG config get instance.treeDerivedTest"
   fi
 }
 

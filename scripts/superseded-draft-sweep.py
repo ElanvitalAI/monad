@@ -222,7 +222,7 @@ def source_symbol_lookup(symbol: str, root: Path | None = None) -> bool | None:
     read_failed = False
     for pattern in ("*.ts", "*.tsx"):
         for path in source_root.rglob(pattern):
-            if any(part in {".git", "node_modules", ".monad-test"} for part in path.parts) or is_test_file(str(path.relative_to(source_root))):
+            if any(part in {".git", "node_modules", ".elanous-test"} for part in path.parts) or is_test_file(str(path.relative_to(source_root))):
                 continue
             try:
                 contents = path.read_text(encoding="utf-8")
@@ -249,7 +249,7 @@ def _load_test_corpus(source_root: Path) -> tuple[str, bool]:
     read_failed = False
     for pattern in ("*.ts", "*.tsx"):
         for path in source_root.rglob(pattern):
-            if any(part in {".git", "node_modules", ".monad-test"} for part in path.parts):
+            if any(part in {".git", "node_modules", ".elanous-test"} for part in path.parts):
                 continue
             if not is_test_file(str(path.relative_to(source_root))):
                 continue

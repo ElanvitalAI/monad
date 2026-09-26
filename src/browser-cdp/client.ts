@@ -186,7 +186,7 @@ export function discoverChromeBinary(opts: DiscoverChromeOpts = {}): string | nu
   const platform = opts.platform ?? process.platform;
   const env = opts.env ?? (process.env as Record<string, string>);
   const readFile = opts.readFile ?? readProcVersion;
-  if (env.MONAD_CHROME_BIN && fsCheck(env.MONAD_CHROME_BIN)) return env.MONAD_CHROME_BIN;
+  if (env.ELANOUS_CHROME_BIN && fsCheck(env.ELANOUS_CHROME_BIN)) return env.ELANOUS_CHROME_BIN;
   const isWsl = platform === 'linux'
     && (isWindowsInterop(readFile('/proc/version')) || fsCheck('/proc/sys/fs/binfmt_misc/WSLInterop'));
   const list = platform === 'darwin'
@@ -375,7 +375,7 @@ export async function createCdpClient(
   const headless = opts.headless ?? false;
 
   // Use a unique profile dir so multiple CDP clients don't collide.
-  const profileDir = mkdtempSync(joinPath(tmpdir(), 'monad-cdp-'));
+  const profileDir = mkdtempSync(joinPath(tmpdir(), 'elanous-cdp-'));
 
   const args = [
     `--remote-debugging-port=${port}`,

@@ -4,7 +4,7 @@ import { randomUUID } from 'node:crypto';
 import { acquireLockAsync, type AsyncLockHandle } from '../storage/file-lock.js';
 
 import { debug } from '../debug/log.js';
-import { monadStateRoot } from '../autopilot/state-paths.js';
+import { elanousStateRoot } from '../autopilot/state-paths.js';
 import { createRepositoryReferencedFileReader } from '../self-implement/goal-file-reader.js';
 import type { AutoModeState } from '../auto-research/auto-mode/types.js';
 import type { TerminationRule } from '../auto-research/termination-dsl.js';
@@ -75,15 +75,15 @@ export function isAuthoredGoalTerminalOutcome(outcome: ContinuationOutcome): boo
   return AUTHORED_GOAL_TERMINAL_OUTCOMES.has(outcome);
 }
 
-export function authoredGoalQueuePath(stateRoot = monadStateRoot()): string {
+export function authoredGoalQueuePath(stateRoot = elanousStateRoot()): string {
   return join(stateRoot, 'dispatch', 'authored-goal-queue.json');
 }
 
-export function authoredGoalQueueLockPath(stateRoot = monadStateRoot()): string {
+export function authoredGoalQueueLockPath(stateRoot = elanousStateRoot()): string {
   return `${authoredGoalQueuePath(stateRoot)}.lock`;
 }
 
-export function authoredGoalQueueQuarantinePath(stateRoot = monadStateRoot()): string {
+export function authoredGoalQueueQuarantinePath(stateRoot = elanousStateRoot()): string {
   return join(stateRoot, 'dispatch', 'authored-goal-queue.quarantine.jsonl');
 }
 

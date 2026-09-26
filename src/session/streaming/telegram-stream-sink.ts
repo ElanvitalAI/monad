@@ -4,7 +4,7 @@
 // 얹는다(hermes-agent·openclaw 조사 채택). 라이브 스트림 핸들(placeholder message_id·throttle)을
 // endpoint 별로 소유. 현 makeStreamer 흡수 + 강화:
 //
-//  1. plain-while-streaming · MarkdownV2-only-at-finalize + plain fallback — ⚠️ 현 monad 는
+//  1. plain-while-streaming · MarkdownV2-only-at-finalize + plain fallback — ⚠️ 현 elanous 는
 //     mid-stream markdown 편집이라 미완 코드펜스/엔티티가 parse 에러. 스트리밍 중엔 plain,
 //     finalize 에만 서식(실패 시 plain 재시도). **실질 개선.**
 //  2. saturated dedup + retry_after suspend + minInitialChars — 공통 코어(draft-stream-loop)가 처리.

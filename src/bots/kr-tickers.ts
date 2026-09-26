@@ -96,7 +96,7 @@ interface CacheEnvelope {
 
 /** DART 원본과 우리 캐시의 자리. ⛔ 경로를 «두 곳»에 적지 않는다. */
 export function corpCodePath(home = homedir()): string { return join(home, '.cache', 'dart', 'CORPCODE.xml'); }
-export function cachePath(home = homedir()): string { return join(home, '.cache', 'monad', 'kr-tickers.json'); }
+export function cachePath(home = homedir()): string { return join(home, '.cache', 'elanous', 'kr-tickers.json'); }
 
 /**
  * 표를 얻는다. 캐시가 «원본보다 새로우면» 캐시를, 아니면 다시 훑어 캐시를 갱신한다.

@@ -31,7 +31,7 @@ function strip(s: string): string {
 
 describe('workingDirSegment', () => {
   test('basename only, folder icon', () => {
-    expect(strip(workingDirSegment('/Users/me/projects/monad'))).toContain('📁 monad');
+    expect(strip(workingDirSegment('/Users/me/projects/elanous'))).toContain('📁 elanous');
   });
 
   test('home directory collapses to ~', () => {

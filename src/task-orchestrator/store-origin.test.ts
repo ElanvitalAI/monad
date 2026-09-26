@@ -6,12 +6,12 @@ import { join } from 'node:path';
 import { TaskStore, TOX_SCHEMA_VERSION } from './store.js';
 import { createTask, type TaskExecution } from './types.js';
 
-const originalHostId = process.env.MONAD_HOST_ID;
+const originalHostId = process.env.ELANOUS_HOST_ID;
 const tempDirs: string[] = [];
 
 afterEach(() => {
-  if (originalHostId === undefined) delete process.env.MONAD_HOST_ID;
-  else process.env.MONAD_HOST_ID = originalHostId;
+  if (originalHostId === undefined) delete process.env.ELANOUS_HOST_ID;
+  else process.env.ELANOUS_HOST_ID = originalHostId;
   for (const dir of tempDirs.splice(0)) rmSync(dir, { recursive: true, force: true });
 });
 
@@ -25,7 +25,7 @@ function execution(taskId: string, id: string, overrides: Partial<TaskExecution>
 
 describe('TaskStore execution origin', () => {
   test('defaults to the installed host identity and hostname but preserves explicit origin', () => {
-    process.env.MONAD_HOST_ID = '01THISHOST';
+    process.env.ELANOUS_HOST_ID = '01THISHOST';
     const store = new TaskStore({ path: ':memory:' });
     try {
       const task = createTask({ title: 'origin', surface: { kind: 'llm-direct', prompt: 'origin test' } });

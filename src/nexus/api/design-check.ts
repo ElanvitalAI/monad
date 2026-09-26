@@ -1,6 +1,6 @@
 // NEXUS · GET /v1/design-check — the craft-rulebook verdict, over the wire
 //
-// `monad repo design-check` already answers "which craft rulebooks does this
+// `elanous repo design-check` already answers "which craft rulebooks does this
 // repository's DESIGN.md declare, and which of them cannot be found?" — but
 // only into a terminal. This route carries the SAME verdict (resolved by
 // `resolveDesignCheck`, not re-derived here) to the PWA, so the browser panel
@@ -12,10 +12,10 @@
 //                     finds it (`git rev-parse --show-toplevel` from the
 //                     daemon's cwd). The daemon watches one checkout; that
 //                     checkout's design document is the subject.
-//   craft/          ← MONAD'S INSTALLATION directory. `#11793` established
-//                     that the rulebooks travel with monad, not with the
+//   craft/          ← ELANOUS'S INSTALLATION directory. `#11793` established
+//                     that the rulebooks travel with elanous, not with the
 //                     project under inspection, so a project outside the
-//                     monad tree still resolves them.
+//                     elanous tree still resolves them.
 //
 // Reading either root from the other would reintroduce exactly the
 // `process.cwd()` coupling `#11793` removed.
@@ -48,12 +48,12 @@ export interface DesignCheckRouteDeps extends DesignCheckDeps {
   /** Active repository root, or null outside a checkout. Injected so the
    *  route can be tested without spawning git. */
   repoRoot: () => string | null;
-  /** Absolute path of monad's vendored craft rulebook directory. */
+  /** Absolute path of elanous's vendored craft rulebook directory. */
   craftDirectory: () => string;
 }
 
-/** Craft rulebooks ship with monad. Resolved from THIS file's location so a
- *  daemon serving a project outside the monad tree still finds them —
+/** Craft rulebooks ship with elanous. Resolved from THIS file's location so a
+ *  daemon serving a project outside the elanous tree still finds them —
  *  `src/nexus/api/` → repo root → `docs/design/craft`. */
 function installedCraftDirectory(): string {
   return resolve(import.meta.dir, '..', '..', '..', 'docs', 'design', 'craft');

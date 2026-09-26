@@ -35,7 +35,7 @@ export interface LaneSpec {
    *  passed only `provider`. */
   readonly role?: LaneRole;
   /** Provider brandRef as given (`codex` / `claude` / `gemini` /
-   *  `monad` / `auto` / `lll:<model>` / alias). Validation is
+   *  `elanous` / `auto` / `lll:<model>` / alias). Validation is
    *  delegated to brand-resolver — we only sanity-check non-empty. */
   readonly brandRef: string;
   /** Transport preference. Undefined = `'auto'`. */

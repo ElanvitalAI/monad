@@ -13,7 +13,7 @@
 //   2. ID 텍스트 자체가 button — click 시 navigator.clipboard.writeText
 //      → ✓ 피드백 1.2s (icon swap · emerald color)
 //   3. Tooltip 에 full ID + 단축 표시 안내
-//   4. data-monad-session-id attribute 로 dia CDP smoke 가능
+//   4. data-elanous-session-id attribute 로 dia CDP smoke 가능
 
 import { useEffect, useRef, useState } from 'react';
 import { Copy, Check } from 'lucide-react';
@@ -96,8 +96,8 @@ export function SessionIdChip({
       onKeyDown={disabled ? undefined : onKeyDown}
       title={tooltip}
       aria-label={sessionId ? `세션 ID ${sessionId} 복사` : '세션 미설정'}
-      data-monad-session-id={sessionId ?? ''}
-      data-monad-action="session-id-copy"
+      data-elanous-session-id={sessionId ?? ''}
+      data-elanous-action="session-id-copy"
       className={cn(
         'inline-flex items-center gap-1 rounded font-mono transition-colors select-none focus:outline-none focus:ring-1 focus:ring-ring',
         variant === 'default'

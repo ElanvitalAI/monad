@@ -4,9 +4,9 @@ import { describe, test, expect } from 'bun:test';
 import { discoverNexusUrl } from './runtime-discovery';
 
 describe('discoverNexusUrl', () => {
-  test('env MONAD_NEXUS_URL beats everything', () => {
+  test('env ELANOUS_NEXUS_URL beats everything', () => {
     const r = discoverNexusUrl({
-      envSource: { MONAD_NEXUS_URL: 'http://my-nexus:5000/' },
+      envSource: { ELANOUS_NEXUS_URL: 'http://my-nexus:5000/' },
       readRuntimeFile: () => ({
         pid: 1, startedAt: '', nexusVersion: '0', phase: '', httpPort: 9999,
       }),
@@ -67,7 +67,7 @@ describe('discoverNexusUrl', () => {
 
   test('trailing slash on env URL is stripped', () => {
     const r = discoverNexusUrl({
-      envSource: { MONAD_NEXUS_URL: 'http://x/' },
+      envSource: { ELANOUS_NEXUS_URL: 'http://x/' },
       readRuntimeFile: () => null,
     });
     expect(r.url).toBe('http://x');

@@ -1,6 +1,6 @@
 // NEXUS · UserConfig read/write (Phase N-3 PR μ)
 //
-// Single JSON file at `~/.monad/config.json`. Loaded at boot; mutations
+// Single JSON file at `~/.elanous/config.json`. Loaded at boot; mutations
 // go through writeUserConfigPatch (which round-trips: load → patch → write).
 // File is created lazily on first write — boot tolerates missing file.
 
@@ -51,7 +51,7 @@ export function writeUserConfig(cfg: UserConfig): void {
  *  the post-mutation value of the field for callers that want to
  *  echo back.
  *
- *  FU3 (PLAN-config-unification-monad-root-2026-05-10 closing): the
+ *  FU3 (PLAN-config-unification-elanous-root-2026-05-10 closing): the
  *  full read-modify-write is wrapped in a cross-process file lock so
  *  simultaneous patchers (NEXUS daemon + CLI · or two daemons) cannot
  *  lose each other's updates. Lock path is shared with Path A's
@@ -134,7 +134,7 @@ function writeNested(obj: Record<string, unknown>, path: string[], value: unknow
 
 /** Remove the value at `switchId`. No-op when the path does not exist.
  *  Mirrors `writeSwitchValue` semantics for path scoping ('global.X' or
- *  'tabs.<id>.X'). Used by `monad nexus config unset`. */
+ *  'tabs.<id>.X'). Used by `elanous nexus config unset`. */
 export function unsetSwitchValue(cfg: UserConfig, switchId: string): void {
   const parts = switchId.split('.');
   if (parts.length < 2) throw new Error(`invalid switch id: ${switchId}`);

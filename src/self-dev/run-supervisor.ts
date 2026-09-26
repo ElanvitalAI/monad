@@ -274,7 +274,7 @@ export function decideNextRun(input: {
       ...base,
       action: 'stop',
       stopReason: 'provider-exhausted',
-      why: `공급자 한도 소진 — ${failures.map((result) => `${result.providerErrors!.provider} 오류 ${result.providerErrors!.count}건`).join(' · ')}. monad usage 로 잔량 확인 · --role-llm/--child-llm-provider 로 다른 공급자 선택`,
+      why: `공급자 한도 소진 — ${failures.map((result) => `${result.providerErrors!.provider} 오류 ${result.providerErrors!.count}건`).join(' · ')}. elanous usage 로 잔량 확인 · --role-llm/--child-llm-provider 로 다른 공급자 선택`,
     };
   }
 
@@ -316,7 +316,7 @@ export function decideNextRun(input: {
           ...base,
           action: 'stop',
           stopReason: 'step-timeout',
-          why: `${stallRounds}라운드 연속 제자리 — 재시도 후보 ${timedOut.length}개가 전부 단계 시간 초과(timed-out)로 판정 없이 끝났다${providerNote}. 골 결손이 아니라 단계 예산 문제일 수 있다 — 공급자 지연(monad usage · --role-llm)·리뷰 diff 크기를 본다`,
+          why: `${stallRounds}라운드 연속 제자리 — 재시도 후보 ${timedOut.length}개가 전부 단계 시간 초과(timed-out)로 판정 없이 끝났다${providerNote}. 골 결손이 아니라 단계 예산 문제일 수 있다 — 공급자 지연(elanous usage · --role-llm)·리뷰 diff 크기를 본다`,
         };
       }
       return {

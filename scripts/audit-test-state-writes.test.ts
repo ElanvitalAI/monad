@@ -3,11 +3,11 @@ import { addedCandidates, auditTestStateWrites, august8Inventory, classifyCandid
 
 describe('audit-test-state-writes static safety classification', () => {
   test('recognizes only the three approval-safe isolation signals', () => {
-    expect(classifyStaticIsolation("process.env.MONAD_STATE_DIR; run('--config-dir'); mkdtempSync('/tmp/a')")).toEqual({
-      signals: ['MONAD_STATE_DIR', '--config-dir', 'mkdtemp'],
+    expect(classifyStaticIsolation("process.env.ELANOUS_STATE_DIR; run('--config-dir'); mkdtempSync('/tmp/a')")).toEqual({
+      signals: ['ELANOUS_STATE_DIR', '--config-dir', 'mkdtemp'],
       safety: 'isolated',
     });
-    expect(classifyStaticIsolation("writeFileSync(join(homedir(), '.monad', 'unsafe'), 'x')")).toEqual({
+    expect(classifyStaticIsolation("writeFileSync(join(homedir(), '.elanous', 'unsafe'), 'x')")).toEqual({
       signals: [],
       safety: 'manual-review',
     });

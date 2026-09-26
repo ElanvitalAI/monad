@@ -3,7 +3,7 @@
 // Glamour-inspired subset: heading h1-h6, paragraph + inline (bold /
 // italic / code / strike / link), bullet + numbered lists, blockquote,
 // fenced code block, horizontal rule. Self-implemented to keep the
-// expression layer dep-free — monad's markdown surface is short slash
+// expression layer dep-free — elanous's markdown surface is short slash
 // payloads, not full CommonMark.
 //
 // Two-stage pipeline:

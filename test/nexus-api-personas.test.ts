@@ -24,7 +24,7 @@ import {
 } from '../src/nexus/api/personas.js';
 
 let dir: string;
-const originalPersonasDir = process.env.MONAD_PERSONAS_DIR;
+const originalPersonasDir = process.env.ELANOUS_PERSONAS_DIR;
 
 function writePersona(name: string, body: string): void {
   writeFileSync(join(dir, `${name}.yaml`), body, 'utf8');
@@ -34,13 +34,13 @@ beforeEach(() => {
   _resetGlobalPersonaRegistryForTest();
   dir = mkdtempSync(join(tmpdir(), 'persona-rest-test-'));
   setGlobalPersonaRegistryDir(dir);
-  process.env.MONAD_PERSONAS_DIR = dir;
+  process.env.ELANOUS_PERSONAS_DIR = dir;
 });
 
 afterEach(() => {
   _resetGlobalPersonaRegistryForTest();
-  if (originalPersonasDir === undefined) delete process.env.MONAD_PERSONAS_DIR;
-  else process.env.MONAD_PERSONAS_DIR = originalPersonasDir;
+  if (originalPersonasDir === undefined) delete process.env.ELANOUS_PERSONAS_DIR;
+  else process.env.ELANOUS_PERSONAS_DIR = originalPersonasDir;
   rmSync(dir, { recursive: true, force: true });
 });
 

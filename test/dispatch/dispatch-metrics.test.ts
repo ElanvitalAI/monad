@@ -30,15 +30,15 @@ const SAMPLE: DispatchRunRecord = {
 };
 
 describe('dispatch-metrics path resolution', () => {
-  test('MONAD_DISPATCH_DIR env wins', () => {
-    const prev = process.env.MONAD_DISPATCH_DIR;
-    process.env.MONAD_DISPATCH_DIR = '/tmp/dispatch-x';
+  test('ELANOUS_DISPATCH_DIR env wins', () => {
+    const prev = process.env.ELANOUS_DISPATCH_DIR;
+    process.env.ELANOUS_DISPATCH_DIR = '/tmp/dispatch-x';
     try {
       expect(dispatchDir()).toBe('/tmp/dispatch-x');
       expect(dispatchRunsPath()).toBe(`/tmp/dispatch-x/${RUNS_FILE}`);
     } finally {
-      if (prev === undefined) delete process.env.MONAD_DISPATCH_DIR;
-      else process.env.MONAD_DISPATCH_DIR = prev;
+      if (prev === undefined) delete process.env.ELANOUS_DISPATCH_DIR;
+      else process.env.ELANOUS_DISPATCH_DIR = prev;
     }
   });
 });

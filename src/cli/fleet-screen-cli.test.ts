@@ -25,9 +25,9 @@ describe('fleet screen CLI', () => {
     const root = mkdtempSync(join(tmpdir(), 'fleet-screen-'));
     try {
       const home = join(root, 'home');
-      const prod = join(home, '.monad');
+      const prod = join(home, '.elanous');
       const other = join(root, 'other');
-      const testState = join(root, 'test', '.monad-test');
+      const testState = join(root, 'test', '.elanous-test');
       writeManifest(join(prod, 'pty', 'manifest.db'), 'prod', 'prod-label', 20, 200);
       writeManifest(join(other, 'pty', 'manifest.db'), 'other', 'other-label', 10, 100);
       writeManifest(join(testState, 'pty', 'manifest.db'), 'test', 'test-label', 30, 300);
@@ -37,7 +37,7 @@ describe('fleet screen CLI', () => {
         { name: 'test:x', stateDir: testState, pid: process.pid, startedAt: 'x', kind: 'test' },
         { name: 'other-duplicate', stateDir: other, pid: process.pid, startedAt: 'x', kind: 'prod' },
       ] }));
-      const run = (args: string[]) => spawnSync(process.execPath, ['bin/monad.mjs', 'fleet', 'screen', '--all', '--json', ...args], {
+      const run = (args: string[]) => spawnSync(process.execPath, ['bin/elanous.mjs', 'fleet', 'screen', '--all', '--json', ...args], {
         cwd: process.cwd(), env: { ...process.env, HOME: home }, encoding: 'utf8',
       });
       const defaultRun = run([]);

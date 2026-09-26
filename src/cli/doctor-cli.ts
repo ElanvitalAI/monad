@@ -107,7 +107,7 @@ export interface DoctorOptions {
   repositoryRoot?: string;
   /** 빌드 도구 탐침(시험 seam) — 주입 안 하면 실제 `make`·`c++ -std=gnu++20` 탐침. */
   probeBuildToolchain?: () => { make: boolean | null; cxx20: boolean | null };
-  /** 파이썬 환경 판정(시험 seam) — 기본 = `monad python check` 와 같은 함수(실제 파이썬으로 잰다). */
+  /** 파이썬 환경 판정(시험 seam) — 기본 = `elanous python check` 와 같은 함수(실제 파이썬으로 잰다). */
   checkPythonEnv?: () => { status: 'ok' | 'fixable' | 'manual'; evidence: string; remedy?: string } | null;
   /** L0 substrate·docker·kubernetes·memory 탐침(시험 seam) — 주입 안 하면 `defaultProbeHostEnvironment`. */
   probeHostEnvironment?: () => HostEnvironmentProbe | null;
@@ -227,13 +227,13 @@ function defaultGhAuthStatus(commandExists: (name: string) => boolean): number |
 /**
  * Install prefix when this process is the installed copy.
  * `scripts/install.sh` writes `$PREFIX/install.json` and runs the package from
- * `$PREFIX/current/node_modules/monadagent`. The marker is one level above
+ * `$PREFIX/current/node_modules/elanous`. The marker is one level above
  * `current`, not beside the package. A checkout (no such file three levels
  * above the package) returns `null`. The file body is not returned.
  */
 /**
- * 설치 prefix — 설치기의 세 모양을 다 안다: ⓐ 판 폴더 실경로 `$PREFIX/versions/<판>/node_modules/monadagent`
- * (`import.meta.url` 은 심링크를 풀어 이 모양이 된다) ⓑ `$PREFIX/current/node_modules/monadagent` ⓒ 옛 `$PREFIX/node_modules/monadagent`.
+ * 설치 prefix — 설치기의 세 모양을 다 안다: ⓐ 판 폴더 실경로 `$PREFIX/versions/<판>/node_modules/elanous`
+ * (`import.meta.url` 은 심링크를 풀어 이 모양이 된다) ⓑ `$PREFIX/current/node_modules/elanous` ⓒ 옛 `$PREFIX/node_modules/elanous`.
  * `.git` 이 있으면 체크아웃(`null`) · 아무것도 확인 못 하면 `undefined`(모른다 — 「체크아웃」으로 읽지 않는다).
  * 🩸 2026-09-24: 종전 판은 ⓐ 에서 `versions/` 를 prefix 로 읽어 설치본 doctor 가 「running from a checkout」이라 했다.
  */
@@ -285,7 +285,7 @@ interface ReadinessLookup {
   readOsRelease?: () => string | null;
   /** 빌드 도구 탐침(시험 seam). */
   probeBuildToolchain?: () => { make: boolean | null; cxx20: boolean | null };
-  /** 파이썬 환경 판정(시험 seam) — 기본 = `monad python check` 와 같은 함수(실제 파이썬으로 잰다). */
+  /** 파이썬 환경 판정(시험 seam) — 기본 = `elanous python check` 와 같은 함수(실제 파이썬으로 잰다). */
   checkPythonEnv?: () => { status: 'ok' | 'fixable' | 'manual'; evidence: string; remedy?: string } | null;
   /** L0 substrate·docker·kubernetes·memory 탐침(시험 seam). `null` 을 돌려주면 네 칸 모두 «못 쟀다». */
   probeHostEnvironment?: () => HostEnvironmentProbe | null;
@@ -293,8 +293,8 @@ interface ReadinessLookup {
   nodePty?: 'found' | 'missing' | 'broken' | null;
   /** 서비스 파일(시험 seam) — 없으면 null. */
   readServiceFile?: () => { path: string; text: string } | null;
-  /** 첫 PATH 의 `monad` 실경로(시험 seam). */
-  monadOnPath?: (pathEntries: readonly string[]) => string | null;
+  /** 첫 PATH 의 `elanous` 실경로(시험 seam). */
+  elanousOnPath?: (pathEntries: readonly string[]) => string | null;
 }
 
 /** 경로(또는 그 조상)에 `.git` 이 있나 — 읽기만. */
@@ -322,10 +322,10 @@ export function readBunPin(root: string, read: (path: string) => string = (path)
   }
 }
 
-/** PATH 를 앞에서부터 보고 처음 만나는 `monad` 의 실경로(링크를 끝까지 푼 것). 없으면 null. */
-export function defaultMonadOnPath(pathEntries: readonly string[]): string | null {
+/** PATH 를 앞에서부터 보고 처음 만나는 `elanous` 의 실경로(링크를 끝까지 푼 것). 없으면 null. */
+export function defaultElanousOnPath(pathEntries: readonly string[]): string | null {
   for (const entry of pathEntries) {
-    const candidate = join(entry, 'monad');
+    const candidate = join(entry, 'elanous');
     if (!existsSync(candidate)) continue;
     try { return realpathSync(candidate); } catch { return null; }
   }
@@ -385,11 +385,11 @@ function resolveReadinessDeps(lookup: ReadinessLookup): ReadinessDeps {
   } catch {
     installPrefix = undefined;
   }
-  let monadOnPath: string | null | undefined;
+  let elanousOnPath: string | null | undefined;
   try {
-    monadOnPath = (lookup.monadOnPath ?? defaultMonadOnPath)(pathEntries);
+    elanousOnPath = (lookup.elanousOnPath ?? defaultElanousOnPath)(pathEntries);
   } catch {
-    monadOnPath = undefined;
+    elanousOnPath = undefined;
   }
   let health: { daemonSha?: string } | null = null;
   try {
@@ -451,7 +451,7 @@ function resolveReadinessDeps(lookup: ReadinessLookup): ReadinessDeps {
     codexCodeModeHost,
     installPrefix,
     pathEntries,
-    monadOnPath,
+    elanousOnPath,
     health,
     codeRevision: revision,
     platform: lookup.platform,
@@ -671,8 +671,8 @@ function readHead(path: string): Buffer | null {
 
 export function defaultReadServiceFile(platform: NodeJS.Platform, home: string = homedir()): { path: string; text: string } | null | undefined {
   const path = platform === 'darwin'
-    ? join(home, 'Library', 'LaunchAgents', 'com.monad.nexus.plist')
-    : platform === 'linux' ? join(home, '.config', 'systemd', 'user', 'monad-nexus.service') : null;
+    ? join(home, 'Library', 'LaunchAgents', 'com.elanous.nexus.plist')
+    : platform === 'linux' ? join(home, '.config', 'systemd', 'user', 'elanous-nexus.service') : null;
   if (!path) return undefined;
   if (!existsSync(path)) return null;
   return { path, text: readFileSync(path, 'utf8') };
@@ -874,7 +874,7 @@ function describe(source: CredentialSource): string {
     case 'env': return 'resolved from environment';
     case 'cache': return 'resolved from credential cache';
     case 'skill-env': return 'resolved from skill .env';
-    case 'user-config': return 'resolved from monad user config';
+    case 'user-config': return 'resolved from elanous user config';
     case 'unresolved': return 'not configured in a supported source';
   }
 }
@@ -883,7 +883,7 @@ function sourceFor(name: string, options: Required<Pick<DoctorOptions, 'env' | '
   if (name === 'FIRECRAWL_API_KEY' && hasValue(options.userConfig.registry.discovery.firecrawl.apiKey)) return 'user-config';
 
   const cachePath = join(options.cacheDir, name.toLowerCase());
-  if (!options.env.MONAD_KEEP_ENV_KEYS && options.exists(cachePath) && hasValue(options.readFile(cachePath))) return 'cache';
+  if (!options.env.ELANOUS_KEEP_ENV_KEYS && options.exists(cachePath) && hasValue(options.readFile(cachePath))) return 'cache';
 
   if (hasValue(options.env[name])) return 'env';
 
@@ -955,7 +955,7 @@ export function runDoctor(options: DoctorOptions = {}): DoctorReport {
 
     const resolutionOptions = {
       env,
-      cacheDir: options.cacheDir ?? (env.MONAD_KEY_CACHE_DIR?.trim() || join(homedir(), '.cache')),
+      cacheDir: options.cacheDir ?? (env.ELANOUS_KEY_CACHE_DIR?.trim() || join(homedir(), '.cache')),
       tavilyEnvFile: options.tavilyEnvFile ?? env.TAVILY_ENV_FILE ?? join(homedir(), '.claude', 'skills', 'omni-crawl', '.env'),
       userConfig: options.userConfig ?? getConfig(),
       readFile,

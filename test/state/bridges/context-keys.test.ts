@@ -1,11 +1,11 @@
 // ── Presentation P1.5 · bridgeContextKeysToStore ──
 //
-// Bidirectional sync between a MonadState store's ui.context slot and
+// Bidirectional sync between a ElanousState store's ui.context slot and
 // a legacy ContextKeyService. Tests per HANDOFF §3 · 12 case.
 
 import { describe, test, expect } from 'bun:test';
 import { createStore } from '../../../src/state/store.js';
-import { defaultMonadState, type MonadState } from '../../../src/state/types.js';
+import { defaultElanousState, type ElanousState } from '../../../src/state/types.js';
 import { bridgeContextKeysToStore } from '../../../src/state/bridges/context-keys.js';
 import {
   createContextKeyService,
@@ -15,7 +15,7 @@ import {
 type CKRecord = Record<string, unknown>;
 
 function mkStore() {
-  return createStore<MonadState>(defaultMonadState());
+  return createStore<ElanousState>(defaultElanousState());
 }
 
 function getCtx(store: ReturnType<typeof mkStore>): CKRecord {

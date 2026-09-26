@@ -1,9 +1,9 @@
-// `monad release` — 공개 배포 한 판을 «명령»으로 (버전 매뉴얼 내부 문서 `MANUAL-versioning-and-release-2026-09-25` §A).
+// `elanous release` — 공개 배포 한 판을 «명령»으로 (버전 매뉴얼 내부 문서 `MANUAL-versioning-and-release-2026-09-25` §A).
 //
-//   monad release prepare --version <x.y.z[-rc.N]> [--source <ref>] [--out <dir>] [--notes-from <ref>] [--skip-e2e]
-//   monad release publish --dir <prepare 산출> --notes-file <본문> [--yes]
-//   monad release verify  [--version <x.y.z>]
-//   monad release notes   --from <ref> [--to <ref>]
+//   elanous release prepare --version <x.y.z[-rc.N]> [--source <ref>] [--out <dir>] [--notes-from <ref>] [--skip-e2e]
+//   elanous release publish --dir <prepare 산출> --notes-file <본문> [--yes]
+//   elanous release verify  [--version <x.y.z>]
+//   elanous release notes   --from <ref> [--to <ref>]
 //
 // 🩸 계기(2026-09-25 v0.1.0 첫 공개): 손으로 밟은 절차에서 둘을 빠뜨릴 뻔했다 — 공개본 git 커밋(판 커밋이 공개본 커밋이 된다) ·
 //    PWA 빌드(빌드 산출은 공개본에 안 실린다 → 빠뜨리면 «웹 화면 없는 판»). 절차를 명령으로 굳힌다.
@@ -18,7 +18,7 @@ import { dirname, join, resolve } from 'node:path';
 import type { Command } from 'commander';
 import { debug } from '../debug/log.js';
 
-export const DEFAULT_PUBLIC_REPO = 'ElanvitalAI/monad';
+export const DEFAULT_PUBLIC_REPO = 'ElanvitalAI/elanous';
 const SEMVER = /^\d+\.\d+\.\d+(?:-(?:rc|alpha|beta)\.\d+)?$/;
 
 export interface RunResult { status: number | null; stdout: string; stderr: string }
@@ -87,7 +87,7 @@ export async function prepareRelease(opts: PrepareOptions, run: Runner = default
   const repoRoot = resolve(opts.repoRoot ?? join(import.meta.dir, '..', '..'));
   const publicRepo = opts.publicRepo ?? DEFAULT_PUBLIC_REPO;
   const sourceRef = opts.source ?? 'origin/main';
-  const out = resolve(opts.out ?? mkdtempSync(join(tmpdir(), `monad-release-${opts.version}-`)));
+  const out = resolve(opts.out ?? mkdtempSync(join(tmpdir(), `elanous-release-${opts.version}-`)));
   if (existsSync(out) && readdirSync(out).length > 0) throw new Error(`산출 폴더가 비어 있지 않다: ${out}`);
   mkdirSync(out, { recursive: true });
   const tag = `v${opts.version}`;
@@ -125,7 +125,7 @@ export async function prepareRelease(opts: PrepareOptions, run: Runner = default
     const name = must(run('git', ['config', 'user.name'], repoRoot), 'git config user.name');
     const email = must(run('git', ['config', 'user.email'], repoRoot), 'git config user.email');
     must(run('git', ['add', '-A'], publicDir), 'git add');
-    must(run('git', ['-c', `user.name=${name}`, '-c', `user.email=${email}`, 'commit', '-q', '--allow-empty', '-m', `monad ${tag}`], publicDir), 'git commit');
+    must(run('git', ['-c', `user.name=${name}`, '-c', `user.email=${email}`, 'commit', '-q', '--allow-empty', '-m', `elanous ${tag}`], publicDir), 'git commit');
     const publicCommit = must(run('git', ['rev-parse', 'HEAD'], publicDir), 'git rev-parse');
     log(`③ 공개 커밋 ${publicCommit.slice(0, 12)} (${publicRepo} main 위)`);
 
@@ -133,7 +133,7 @@ export async function prepareRelease(opts: PrepareOptions, run: Runner = default
     symlinkSync(join(modulesRoot, 'node_modules'), join(publicDir, 'node_modules'), 'dir');
     const pwaModules = join(modulesRoot, 'apps', 'pwa', 'node_modules');
     if (existsSync(pwaModules) && existsSync(join(publicDir, 'apps', 'pwa'))) symlinkSync(pwaModules, join(publicDir, 'apps', 'pwa', 'node_modules'), 'dir');
-    const pwa = run('bun', ['bin/monad.mjs', 'nexus', 'build'], publicDir);
+    const pwa = run('bun', ['bin/elanous.mjs', 'nexus', 'build'], publicDir);
     const webUi = pwa.status === 0 && existsSync(join(publicDir, 'apps', 'pwa', 'out', 'index.html'));
     if (!webUi) throw new Error(`PWA 빌드 실패 — 웹 화면 없는 판은 내지 않는다: ${(pwa.stderr || pwa.stdout).trim().slice(-300)}`);
     log('④ PWA 빌드');
@@ -156,9 +156,9 @@ export async function prepareRelease(opts: PrepareOptions, run: Runner = default
       const home = join(out, 'e2e-home');
       const prefix = join(out, 'e2e-prefix');
       mkdirSync(home);
-      const env = { ...process.env, HOME: home, MONAD_INSTALL_PREFIX: prefix, MONAD_RELEASE_BASE: `file://${join(out, 'e2e-release')}`, MONAD_INSTALL_SOURCE: '', MONAD_VERSION: '', SHELL: '/bin/zsh' };
+      const env = { ...process.env, HOME: home, ELANOUS_INSTALL_PREFIX: prefix, ELANOUS_RELEASE_BASE: `file://${join(out, 'e2e-release')}`, ELANOUS_INSTALL_SOURCE: '', ELANOUS_VERSION: '', SHELL: '/bin/zsh' };
       const install = run('bash', ['-s', '--', '--no-modify-path'], home, { env, input: readFileSync(join(distDir, 'install.sh'), 'utf8') });
-      const version = run(join(prefix, 'bin', 'monad'), ['--version'], home, { env });
+      const version = run(join(prefix, 'bin', 'elanous'), ['--version'], home, { env });
       const versionLine = version.stdout.trim();
       const ok = install.status === 0 && versionLine.startsWith(`${opts.version} ${publicCommit}`);
       run('bash', [join(publicDir, 'scripts', 'uninstall.sh')], home, { env });
@@ -177,7 +177,7 @@ export async function prepareRelease(opts: PrepareOptions, run: Runner = default
       publicDir, distDir, files: buildJson.files, webUi, e2e, ...(notesDraft ? { notesDraft } : {}), preparedAt: new Date().toISOString(),
     };
     writeFileSync(join(out, 'release.json'), `${JSON.stringify(manifest, null, 2)}\n`);
-    log(`✅ 준비 끝 — ${out}/release.json · 공개는 \`monad release publish --dir ${out} --notes-file <본문> --yes\``);
+    log(`✅ 준비 끝 — ${out}/release.json · 공개는 \`elanous release publish --dir ${out} --notes-file <본문> --yes\``);
     return manifest;
   } finally {
     run('git', ['worktree', 'remove', '--force', sourceDir], repoRoot);
@@ -197,7 +197,7 @@ export function planPublish(m: ReleaseManifest, notesFile: string): PublishStep[
       what: `릴리스 ${m.tag}${m.prerelease ? ' (prerelease)' : ''} 생성 ⊕ 자산 ${assets.length}(${assets.join(' · ')})`,
       command: 'gh',
       args: ['release', 'create', m.tag, ...assets.map((name) => join(m.distDir, name)), '--repo', m.publicRepo, '--target', m.publicCommit,
-        '--title', `monad ${m.tag}`, '--notes-file', notesFile, ...(m.prerelease ? ['--prerelease'] : [])],
+        '--title', `elanous ${m.tag}`, '--notes-file', notesFile, ...(m.prerelease ? ['--prerelease'] : [])],
       cwd: m.publicDir,
     },
   ];
@@ -220,13 +220,13 @@ export async function publishRelease(opts: { dir: string; notesFile: string; yes
   for (const s of steps) log(`${opts.yes ? '▶' : '·'} ${s.what}\n    ${s.command} ${s.args.join(' ')}`);
   if (!opts.yes) { log('⛔ 보기만 했다 — 공개는 되돌릴 수 없다. 실행하려면 --yes'); return { published: false, steps }; }
   for (const s of steps) must(run(s.command, s.args, s.cwd), s.what);
-  log(`✅ 공개: https://github.com/${m.publicRepo}/releases/tag/${m.tag} — 이어서 \`monad release verify --version ${m.version}\``);
+  log(`✅ 공개: https://github.com/${m.publicRepo}/releases/tag/${m.tag} — 이어서 \`elanous release verify --version ${m.version}\``);
   return { published: true, steps };
 }
 
 // ── yank(릴리스 내리기 · 대표 09-26 승인 · 로드맵 #2) ─────────────────────────────────────────
 // 지우지 않고 «내린다»: 대상 판을 pre-release 로 강등 ⊕ Latest 해제 ⊕ 제목에 (yanked) → 직전 안정 판에 Latest.
-// 그러면 `latest/download/install.sh` 가 직전 판을 준다. 자산은 남는다 — 판을 고정한 사용자(`MONAD_VERSION=`)도
+// 그러면 `latest/download/install.sh` 가 직전 판을 준다. 자산은 남는다 — 판을 고정한 사용자(`ELANOUS_VERSION=`)도
 // 받을 수 있고 `--undo` 로 되돌린다. (gemini-cli 의 `release-rollback` 과 같은 자리 · 참조 04 `~/source/ref`)
 
 export interface ReleaseInfo { tagName: string; isPrerelease: boolean; isDraft: boolean; isLatest: boolean; publishedAt: string }
@@ -240,7 +240,7 @@ export function planYank(releases: readonly ReleaseInfo[], tag: string, repo: st
   if (!target) throw new Error(`없는 릴리스다: ${tag}`);
   const version = tag.replace(/^v/, '');
   if (undo) {
-    return [{ what: `${tag} 되돌리기 — 정식 판 ⊕ Latest ⊕ 제목 원래대로`, command: 'gh', args: ['release', 'edit', tag, '--repo', repo, '--prerelease=false', '--latest', '--title', `monad ${tag}`], cwd: '.' }];
+    return [{ what: `${tag} 되돌리기 — 정식 판 ⊕ Latest ⊕ 제목 원래대로`, command: 'gh', args: ['release', 'edit', tag, '--repo', repo, '--prerelease=false', '--latest', '--title', `elanous ${tag}`], cwd: '.' }];
   }
   if (target.isPrerelease) throw new Error(`이미 pre-release 다(yank 됐거나 미리보기): ${tag} — 되돌리려면 --undo`);
   const previous = releases
@@ -248,8 +248,8 @@ export function planYank(releases: readonly ReleaseInfo[], tag: string, repo: st
     .sort((a, b) => b.publishedAt.localeCompare(a.publishedAt))[0];
   if (!previous) throw new Error(`${tag} 말고 정식 판이 없다 — 내리면 Latest 가 비어 한 줄 설치가 전부 실패한다. 내리지 않는다`);
   return [
-    { what: `${tag} 내리기 — pre-release 로 강등 ⊕ Latest 해제 ⊕ 제목 (yanked) · 자산은 남긴다`, command: 'gh', args: ['release', 'edit', tag, '--repo', repo, '--prerelease', '--latest=false', '--title', `monad ${tag} (yanked)`], cwd: '.' },
-    { what: `${previous.tagName} 을 Latest 로 — latest/download/install.sh 가 이 판을 준다(v${version} 을 고정한 사용자는 MONAD_VERSION=${version} 로 여전히 받는다)`, command: 'gh', args: ['release', 'edit', previous.tagName, '--repo', repo, '--latest'], cwd: '.' },
+    { what: `${tag} 내리기 — pre-release 로 강등 ⊕ Latest 해제 ⊕ 제목 (yanked) · 자산은 남긴다`, command: 'gh', args: ['release', 'edit', tag, '--repo', repo, '--prerelease', '--latest=false', '--title', `elanous ${tag} (yanked)`], cwd: '.' },
+    { what: `${previous.tagName} 을 Latest 로 — latest/download/install.sh 가 이 판을 준다(v${version} 을 고정한 사용자는 ELANOUS_VERSION=${version} 로 여전히 받는다)`, command: 'gh', args: ['release', 'edit', previous.tagName, '--repo', repo, '--latest'], cwd: '.' },
   ];
 }
 
@@ -273,7 +273,7 @@ export async function yankRelease(opts: { version: string; publicRepo?: string; 
   const steps = planYank(listReleases(repo, run, cwd), tag, repo, opts.undo);
   for (const s of steps) log(`${opts.yes ? '▶' : '·'} ${s.what}
     ${s.command} ${s.args.join(' ')}`);
-  if (!opts.yes) { log(`⛔ 보기만 했다 — 실행하려면 --yes (되돌리기: monad release yank --version ${opts.version} --undo --yes)`); return { applied: false, latestNow: null }; }
+  if (!opts.yes) { log(`⛔ 보기만 했다 — 실행하려면 --yes (되돌리기: elanous release yank --version ${opts.version} --undo --yes)`); return { applied: false, latestNow: null }; }
   for (const s of steps) must(run(s.command, s.args, cwd), s.what);
   // 기대 = 되돌림이면 그 판 · 내림이면 Latest 를 받은 직전 판(두 번째 단계의 대상).
   const expected = opts.undo ? tag : steps[1]!.args[2]!;
@@ -304,12 +304,12 @@ export async function yankRelease(opts: { version: string; publicRepo?: string; 
  *  미션 스토어·세션 기록은 LLM 이 있어야 생겨 여기서 «안 잰다». */
 export type LogRoundTrip = 'ok' | 'fail' | 'no-store';
 
-export function stateRoundTrip(monad: string, home: string, env: NodeJS.ProcessEnv, run: Runner, startedAtMs: number, nonce = `verify${startedAtMs}`): { memory: boolean; logs: LogRoundTrip } {
-  const add = run(monad, ['memory', 'add', 'reference', `release-verify-${nonce}`, 'release verify probe'], home, { env, input: `release verify nonce ${nonce}\n` });
-  const search = run(monad, ['memory', 'search', nonce], home, { env });
+export function stateRoundTrip(elanous: string, home: string, env: NodeJS.ProcessEnv, run: Runner, startedAtMs: number, nonce = `verify${startedAtMs}`): { memory: boolean; logs: LogRoundTrip } {
+  const add = run(elanous, ['memory', 'add', 'reference', `release-verify-${nonce}`, 'release verify probe'], home, { env, input: `release verify nonce ${nonce}\n` });
+  const search = run(elanous, ['memory', 'search', nonce], home, { env });
   const memory = add.status === 0 && search.status === 0 && search.stdout.includes(nonce);
-  run(monad, ['setup', '--non-interactive'], home, { env });
-  const read = run(monad, ['logs', '--limit', '20', '--json'], home, { env });
+  run(elanous, ['setup', '--non-interactive'], home, { env });
+  const read = run(elanous, ['logs', '--limit', '20', '--json'], home, { env });
   const rows = read.stdout.split('\n').flatMap((line) => {
     try { const row = JSON.parse(line) as { ts_ms?: unknown }; return typeof row.ts_ms === 'number' ? [row.ts_ms] : []; } catch { return []; }
   });
@@ -322,22 +322,22 @@ export async function verifyRelease(opts: { version?: string; publicRepo?: strin
   if (opts.version !== undefined && !isReleaseVersion(opts.version)) throw new Error(`버전 모양이 아니다: ${opts.version}`);
   const repo = opts.publicRepo ?? DEFAULT_PUBLIC_REPO;
   const installerUrl = `https://github.com/${repo}/releases/${opts.version ? `download/v${opts.version}` : 'latest/download'}/install.sh`;
-  const root = mkdtempSync(join(tmpdir(), 'monad-release-verify-'));
+  const root = mkdtempSync(join(tmpdir(), 'elanous-release-verify-'));
   const startedAtMs = Date.now();
   try {
     const home = join(root, 'home');
     const prefix = join(root, 'prefix');
     mkdirSync(home);
-    // 검증은 «빈 HOME» 에서만 쓴다 — 물려받은 MONAD_*(STATE_DIR 등)·XDG_* 가 있으면 상태 왕복이 운영 저장소에 쓴다.
-    const inherited = Object.fromEntries(Object.entries(process.env).filter(([key]) => !key.startsWith('MONAD_') && !key.startsWith('XDG_')));
-    const env: NodeJS.ProcessEnv = { ...inherited, HOME: home, MONAD_INSTALL_PREFIX: prefix, MONAD_INSTALL_SOURCE: '', MONAD_VERSION: opts.version ?? '', SHELL: '/bin/zsh' };
+    // 검증은 «빈 HOME» 에서만 쓴다 — 물려받은 ELANOUS_*(STATE_DIR 등)·XDG_* 가 있으면 상태 왕복이 운영 저장소에 쓴다.
+    const inherited = Object.fromEntries(Object.entries(process.env).filter(([key]) => !key.startsWith('ELANOUS_') && !key.startsWith('XDG_')));
+    const env: NodeJS.ProcessEnv = { ...inherited, HOME: home, ELANOUS_INSTALL_PREFIX: prefix, ELANOUS_INSTALL_SOURCE: '', ELANOUS_VERSION: opts.version ?? '', SHELL: '/bin/zsh' };
     const script = must(run('curl', ['-fsSL', installerUrl], home), `설치기 받기 ${installerUrl}`);
     const install = run('bash', ['-s', '--', '--no-modify-path'], home, { env, input: script });
-    const versionLine = run(join(prefix, 'bin', 'monad'), ['--version'], home, { env }).stdout.trim();
-    const state = stateRoundTrip(join(prefix, 'bin', 'monad'), home, env, run, startedAtMs);
-    const update = run(join(prefix, 'bin', 'monad'), ['self-update', '--json'], home, { env });
-    const uninstall = existsSync(join(prefix, 'current', 'node_modules', 'monadagent', 'scripts', 'uninstall.sh'))
-      ? run('bash', [join(prefix, 'current', 'node_modules', 'monadagent', 'scripts', 'uninstall.sh')], home, { env })
+    const versionLine = run(join(prefix, 'bin', 'elanous'), ['--version'], home, { env }).stdout.trim();
+    const state = stateRoundTrip(join(prefix, 'bin', 'elanous'), home, env, run, startedAtMs);
+    const update = run(join(prefix, 'bin', 'elanous'), ['self-update', '--json'], home, { env });
+    const uninstall = existsSync(join(prefix, 'current', 'node_modules', 'elanous', 'scripts', 'uninstall.sh'))
+      ? run('bash', [join(prefix, 'current', 'node_modules', 'elanous', 'scripts', 'uninstall.sh')], home, { env })
       : { status: null, stdout: '', stderr: 'uninstall.sh 없음' };
     const ok = install.status === 0 && (opts.version ? versionLine.startsWith(`${opts.version} `) : versionLine.length > 0) && update.status === 0 && state.memory && state.logs !== 'fail';
     log(`${ok ? '✅' : '⛔'} ${installerUrl}\n  설치 rc=${install.status} · --version «${versionLine}» · 기억 왕복 ${state.memory ? 'ok' : 'FAIL'} · 로그 왕복 ${state.logs === 'ok' ? 'ok' : state.logs === 'fail' ? 'FAIL' : '안 잼(스토어 없음 — 데몬이 한 번 떠야 생긴다)'} · self-update rc=${update.status} · 제거 rc=${uninstall.status}`);

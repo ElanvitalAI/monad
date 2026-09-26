@@ -1,6 +1,6 @@
 // ── Minimal MCP stdio server (Track I) ──
 //
-// Exposes the monad ToolRuntime registry to external MCP clients via
+// Exposes the elanous ToolRuntime registry to external MCP clients via
 // stdin/stdout JSON-RPC. This is a focused implementation — it does
 // not depend on @modelcontextprotocol/sdk to keep the footprint
 // small; we speak the narrow subset of MCP that tool consumers need:
@@ -42,11 +42,11 @@ interface JsonRpcResponse {
   error?: { code: number; message: string; data?: unknown };
 }
 
-/** Canonical latest protocol version monad will speak. Server and client
+/** Canonical latest protocol version elanous will speak. Server and client
  *  both read this — do not duplicate the string elsewhere. */
 export const MCP_PROTOCOL_VERSION_LATEST = '2025-11-25' as const;
 
-/** Versions monad can speak. `2024-11-05` stays so already-attached
+/** Versions elanous can speak. `2024-11-05` stays so already-attached
  *  peers keep working; latest is the one new handshakes offer. */
 export const MCP_SUPPORTED_PROTOCOL_VERSIONS = [
   '2024-11-05',
@@ -76,7 +76,7 @@ const SERVER_INFO = { name: 'monad-agent', version: '0.1.0' };
 // ─── Handler ─────────────────────────────────────────────────────
 
 export interface McpServerContext {
-  /** Which monad surface the remote caller is authenticated as.
+  /** Which elanous surface the remote caller is authenticated as.
    *  Drives listToolRuntimes filter + ctx.surface at dispatch.
    *  Default 'mcp' so tools intended for MCP (catalog surface
    *  contains 'mcp') show up. */
@@ -84,7 +84,7 @@ export interface McpServerContext {
   /** PFC capture seam origin tag (Post-Closure FU · 2026-05-13). The
    *  outermost transport sets this when handing the request in:
    *    • mcp-http   — POST /v1/mcp   (Streamable HTTP transport)
-   *    • mcp-stdio  — `monad mcp serve` stdio JSON-RPC
+   *    • mcp-stdio  — `elanous mcp serve` stdio JSON-RPC
    *    • rest       — POST /v1/tools/<id>/call (REST shim)
    *  `tools/call` flips the per-call user-intent emit with this tag
    *  so the Patcher / KGS can distinguish where the call originated.
@@ -192,11 +192,11 @@ export async function handleMcpRequest(
   }
 }
 
-/** Ensure direct MCP transports expose monad-owned runtimes even before
+/** Ensure direct MCP transports expose elanous-owned runtimes even before
  * the daemon's broader boot sequence has registered them. Registration is
  * idempotent, so externally registered proxy runtimes remain untouched. */
 function ensureDefaultMcpToolRuntimes(): void {
-  if (!getToolRuntime('monad_autopilot_launch')) {
+  if (!getToolRuntime('elanous_autopilot_launch')) {
     registerAllDefaultToolRuntimes();
   }
 }

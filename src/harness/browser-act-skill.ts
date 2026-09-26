@@ -124,7 +124,7 @@ export function freezeTrajectoryAsSkill(input: SkillFreezeInput): SkillFreezeRes
   good.forEach((s, i) => {
     lines.push(`### ${i + 1}. \`${s.target}\``);
     lines.push('```bash');
-    lines.push(`bun bin/monad.mjs harness browser-act ${JSON.stringify(s.url)} ${JSON.stringify(s.target)} \\`);
+    lines.push(`bun bin/elanous.mjs harness browser-act ${JSON.stringify(s.url)} ${JSON.stringify(s.target)} \\`);
     lines.push(`  --armed --persona ${personaId}`);
     lines.push('```');
     if (typeof s.landedUrl === 'string' && s.landedUrl !== s.url) {

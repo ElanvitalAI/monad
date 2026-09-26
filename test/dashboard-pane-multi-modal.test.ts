@@ -7,7 +7,7 @@ import {
 } from '../src/dashboard/modals/pane-multi.js';
 import type { DisplayCoordinator } from '../src/display/coordinator.js';
 import type { ModalSurface } from '../src/display/modal-stack.js';
-import { MONAD_PASTEL_DEFAULT } from '../src/themes/monad-pastel-default.js';
+import { ELANOUS_PASTEL_DEFAULT } from '../src/themes/elanous-pastel-default.js';
 
 // Minimal DisplayCoordinator stub — the factory only needs pushModal,
 // everything else is unused inside paint tests.
@@ -190,7 +190,7 @@ describe('showPaneMultiModal (Task 2 · T-2)', () => {
       termCols: 140,
       termRows: 36,
       chrome: {
-        theme: MONAD_PASTEL_DEFAULT,
+        theme: ELANOUS_PASTEL_DEFAULT,
         variant: 'rounded',
         titleAlign: 'left',
         titlePrefix: '⠿',
@@ -221,7 +221,7 @@ describe('showPaneMultiModal (Task 2 · T-2)', () => {
       termCols: 140,
       termRows: 36,
       chrome: {
-        theme: MONAD_PASTEL_DEFAULT,
+        theme: ELANOUS_PASTEL_DEFAULT,
         titleControls: [
           { id: 'model', label: '⌥' },
           { id: 'close', label: '✕' },
@@ -247,7 +247,7 @@ describe('showPaneMultiModal (Task 2 · T-2)', () => {
       termCols: 140,
       termRows: 36,
       chrome: {
-        theme: MONAD_PASTEL_DEFAULT,
+        theme: ELANOUS_PASTEL_DEFAULT,
         titleControls: [{ id: 'close', label: '✕' }],
       },
     });
@@ -268,7 +268,7 @@ describe('showPaneMultiModal (Task 2 · T-2)', () => {
       termCols: 140,
       termRows: 36,
       chrome: {
-        theme: MONAD_PASTEL_DEFAULT,
+        theme: ELANOUS_PASTEL_DEFAULT,
         titleControls: [{ id: 'close', label: '✕' }],
       },
     });

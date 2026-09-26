@@ -42,7 +42,7 @@ export function readFabricArcAbConfig(env: NodeJS.ProcessEnv = process.env): Fab
 }
 
 function defaultResolve(prompt: string): Promise<string> {
-  const model = process.env.MONAD_PR_REVIEW_MODEL || 'gpt-5.6-sol';
+  const model = process.env.ELANOUS_PR_REVIEW_MODEL || 'gpt-5.6-sol';
   return streamLLM([{ role: 'user', content: prompt }], () => {}, { model, reasoningEffort: 'low' });
 }
 

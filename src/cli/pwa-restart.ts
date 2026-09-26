@@ -1,4 +1,4 @@
-// `monad nexus pwa restart` — one-shot stop + start.
+// `elanous nexus pwa restart` — one-shot stop + start.
 //
 // Composes `runPwaStop` (cascade: dev BG → nexus daemon) and `runPwaStart`
 // (default mode = dev hot-live with admin dev-proxy). Mode is auto-detected
@@ -6,7 +6,7 @@
 // prod-mode session restarts in prod. Explicit `--mode` overrides.
 //
 // Build is intentionally NOT part of restart. The static export at
-// `apps/pwa/out` is owned by `monad nexus pwa build` and dev mode never
+// `apps/pwa/out` is owned by `elanous nexus pwa build` and dev mode never
 // reads it (admin POST flips nexus to reverse-proxy next-dev). Folding a
 // 30s `next build` into every restart was a holdover from the prod-only
 // era and made the dev iteration loop expensive without buying any
@@ -39,7 +39,7 @@ export interface PwaRestartOpts {
    *  no live dev lock means static-export mode, so we restart there.
    *  `'static'` / `'hmr'` skip detection and force the named mode. */
   mode?: PwaRestartMode;
-  /** Run `monad nexus pwa build` before stop/start. Off by default —
+  /** Run `elanous nexus pwa build` before stop/start. Off by default —
    *  HMR mode never reads `apps/pwa/out`, and static-mode users
    *  typically build via the standalone command. Opt in when you've
    *  changed source and want a single command to ship the new bundle
@@ -136,7 +136,7 @@ export async function runPwaRestart(opts: PwaRestartOpts = {}): Promise<PwaResta
 
   const remoteHost = remoteNexusLockHolder(opts);
   if (remoteHost) {
-    out.error(`monad nexus pwa restart: nexus lock held by remote host ${remoteHost}; cannot restart from here`);
+    out.error(`elanous nexus pwa restart: nexus lock held by remote host ${remoteHost}; cannot restart from here`);
     return { exitCode: 1, mode };
   }
 
@@ -150,12 +150,12 @@ export async function runPwaRestart(opts: PwaRestartOpts = {}): Promise<PwaResta
     if (build.exitCode !== 0) return { exitCode: build.exitCode, mode };
   }
 
-  out.log(`monad nexus pwa restart: mode=${mode}${opts.mode === 'auto' || opts.mode === undefined ? ' (auto-detected)' : ''}`);
+  out.log(`elanous nexus pwa restart: mode=${mode}${opts.mode === 'auto' || opts.mode === undefined ? ' (auto-detected)' : ''}`);
 
   const stopFn = opts.stopFn ?? runPwaStop;
   const stop = await stopFn({ out });
   if (stop.exitCode !== 0) {
-    out.error('monad nexus pwa restart: stop cascade reported failure; aborting before start');
+    out.error('elanous nexus pwa restart: stop cascade reported failure; aborting before start');
     return { exitCode: stop.exitCode, mode };
   }
 

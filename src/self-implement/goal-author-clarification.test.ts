@@ -238,7 +238,7 @@ test('authorGoal wires its generated clarification through an explicitly injecte
   log.mockRestore();
 });
 
-test('default self-resolver prompts the monad model, parses valid JSON, and aborts on timeout', async () => {
+test('default self-resolver prompts the elanous model, parses valid JSON, and aborts on timeout', async () => {
   const context = {
     questionId: 'q-model',
     question: 'Which command preserves the contract?',

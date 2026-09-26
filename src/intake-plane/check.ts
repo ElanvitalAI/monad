@@ -1,7 +1,7 @@
 /**
- * Intake check — 바깥에서 들어온 사실을 monad 현재와 대조한다.
+ * Intake check — 바깥에서 들어온 사실을 elanous 현재와 대조한다.
  *
- * 한 줄은 `바깥 사실 → monad 현재(근거 경로:줄) → 판정` 이다.
+ * 한 줄은 `바깥 사실 → elanous 현재(근거 경로:줄) → 판정` 이다.
  * 판정이 구멍/낡음(없음·판단 필요)인 항목만 골 초안 파일을 쓴다.
  * 하니스 런은 발사하지 않는다. 태스크도 등록하지 않는다.
  *
@@ -66,7 +66,7 @@ export interface IntakeCheckItem {
   readonly originalClaims?: readonly string[];
   readonly quotes: readonly string[];
   readonly verdict: IntakeCheckVerdict;
-  /** `바깥 사실 → monad 현재 → 판정` */
+  /** `바깥 사실 → elanous 현재 → 판정` */
   readonly line: string;
   readonly current: string;
   readonly evidence: readonly IntakeCheckEvidence[];
@@ -109,7 +109,7 @@ export const PREPROCESS_LENSES = [
 export type PreprocessLens = (typeof PREPROCESS_LENSES)[number];
 
 export interface IntakePreprocessClaim {
-  /** monad 에 대한 주장. FACT_LINE 원문을 그대로 주장으로 쓰지 않는다. */
+  /** elanous 에 대한 주장. FACT_LINE 원문을 그대로 주장으로 쓰지 않는다. */
   readonly text: string;
   /** 문서의 원문 인용. */
   readonly quote: string;
@@ -130,7 +130,7 @@ export interface IntakePreprocessResult {
 
 /** 주입형 선가공 호출자. 문서 원문과 렌즈 목록을 받고 JSON 텍스트를 돌려준다. */
 export interface IntakePreprocessCaller {
-  /** `anchors` = monad 에 이미 있는 명령·능력 이름 — 선가공이 대응점을 그 이름으로 적게 한다. */
+  /** `anchors` = elanous 에 이미 있는 명령·능력 이름 — 선가공이 대응점을 그 이름으로 적게 한다. */
   (args: { document: string; lenses: readonly PreprocessLens[]; anchors?: readonly string[] }): Promise<string> | string;
 }
 
@@ -377,7 +377,7 @@ export function behaviorSupported(fact: string, evidenceText: string): boolean {
 /** 약속 축의 원천 문서 — 시험 픽스처도 이 목록으로 만든다. */
 export const INTAKE_PROMISE_SOURCES: readonly string[] = [
   'docs/FAQ.md',
-  'docs/PRFAQ-monad-docs-working-backwards-2026-09-22.md',
+  'docs/PRFAQ-elanous-docs-working-backwards-2026-09-22.md',
 ];
 
 export function deriveRuler(deps: IntakeCheckDeps): IntakeCheckRuler {
@@ -946,7 +946,7 @@ function judgeFact(
   if (deps.recall) attachRecall(deps, fact, evidence);
 
   let failures = evidence.map((row) => row.failure).filter((row): row is string => !!row);
-  const claimedBehavior = behaviorNeedles(fact.text).filter((part) => part !== 'monad' && part !== '에' && part !== '의').length > 0;
+  const claimedBehavior = behaviorNeedles(fact.text).filter((part) => part !== 'elanous' && part !== '에' && part !== '의').length > 0;
   let verdict: IntakeCheckVerdict;
   const staleDoc = notYet && evidenceNameHit && (!claimedBehavior || behaviorHit);
   if (failures.length > 0) verdict = '못 쟀다';
@@ -1061,8 +1061,8 @@ export function parsePreprocessCallerText(text: string, document: string): Intak
       if (!claimText || !quote || !isLens(lens)) continue;
       // 부정 표지를 포함한 목적어는 기계적으로 뒤집지 않는다. 명확한 부재형만 존재 질문으로 바꾼다.
       const negativeMarker = /없|않|못|아니|안\s*(?:한|하|된|되|있)|0\s*(?:개|건)|미지원|불가능|부재|비존재|불가|(?:보유|지원|존재)하지/;
-      const zero = claimText.match(/^monad\s*(?:는|은)\s*(.+?)\s*(?:를|을)\s*0\s*(?:개|건)\s*보유한다[.。]?$/);
-      const normalized = zero ? `monad 에 ${zero[1]} 가 있다` : claimText;
+      const zero = claimText.match(/^elanous\s*(?:는|은)\s*(.+?)\s*(?:를|을)\s*0\s*(?:개|건)\s*보유한다[.。]?$/);
+      const normalized = zero ? `elanous 에 ${zero[1]} 가 있다` : claimText;
       if (negativeMarker.test(normalized)) {
         discards.push({ quote, reason: `부정형 주장을 긍정형으로 안전하게 정규화할 수 없음: ${claimText}` });
         continue;
@@ -1407,7 +1407,7 @@ export function runIntakeCheck(
     });
   }
 
-  const draftDir = deps.draftDir ?? join(tmpdir(), 'monad-intake-check-drafts');
+  const draftDir = deps.draftDir ?? join(tmpdir(), 'elanous-intake-check-drafts');
   const now = deps.now?.() ?? new Date().toISOString();
   const items = order.map((key) => {
     const item = merged.get(key)!;
@@ -1548,7 +1548,7 @@ export async function runIntakeCheckDocument(
   const report = runIntakeCheck(claims, syncDeps, { ruler });
   let compared: { proposals: IntakeCompareProposal[]; drafts: string[] } | undefined;
   if (deps.compare) {
-    const draftDir = deps.draftDir ?? join(tmpdir(), 'monad-intake-check-drafts');
+    const draftDir = deps.draftDir ?? join(tmpdir(), 'elanous-intake-check-drafts');
     const now = deps.now?.() ?? new Date().toISOString();
     let parsed: IntakeCompareProposal[] = [];
     try {

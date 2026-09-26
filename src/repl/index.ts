@@ -1,8 +1,8 @@
 // Sticky-session REPL — multi-turn CLI conversation in one process.
 //
-// `monad repl` keeps the boot cost (LLM SDK init, session load, debug
+// `elanous repl` keeps the boot cost (LLM SDK init, session load, debug
 // log open, anchor + tree precompute) to one paid hit instead of N×
-// the per-turn cost of `monad chat`. The same session id threads
+// the per-turn cost of `elanous chat`. The same session id threads
 // through every turn so history accumulates, provider rotation
 // between turns is fine, and tool dispatchers stay warm.
 //
@@ -388,7 +388,7 @@ async function handleMetaCommand(
         ui.error(`no rotation entry matching "${label}"`);
         return { consumed: true };
       }
-      // Persist so the next REPL turn (and any monad subprocess the
+      // Persist so the next REPL turn (and any elanous subprocess the
       // LLM might spawn for self-debug) sees the same active provider.
       try { saveUserConfig(nextCfg); } catch { /* best-effort */ }
       const p = inspectActiveProvider(nextCfg);
@@ -397,7 +397,7 @@ async function handleMetaCommand(
     }
     case 'reload': {
       const refreshed = reloadUserConfig();
-      ui.info(`reloaded ~/.config/monad/config.json`);
+      ui.info(`reloaded ~/.config/elanous/config.json`);
       return { consumed: true, cfgUpdate: refreshed };
     }
     case 'history': {
@@ -460,7 +460,7 @@ export async function runRepl(opts: ReplOpts): Promise<number> {
 
   if (!opts.jsonOutput) {
     const p = inspectActiveProvider(cfg);
-    ui.header(`monad repl — session ${session.id.slice(0, 8)}`);
+    ui.header(`elanous repl — session ${session.id.slice(0, 8)}`);
     ui.info(`provider: ${p.provider}/${p.model ?? '?'} · tools: ${tools ? tools.specs.length : 0} · :help for commands · :exit to quit`);
   }
 

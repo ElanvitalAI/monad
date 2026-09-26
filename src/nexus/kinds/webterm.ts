@@ -9,7 +9,7 @@
 // real PTY surface (sibling pattern · imports NexusWebtermSession
 // without wrapping `Dashboard` or the dashboard preview-terminal
 // renderer) and replaces the placeholder when a session is provided.
-// PR e adds the production PtyBackend factory so `monad nexus` boots
+// PR e adds the production PtyBackend factory so `elanous nexus` boots
 // each webterm tab into a real shell PTY automatically.
 
 import { TextView } from '../../ui/view.js';
@@ -43,7 +43,7 @@ export function createWebtermTabSpec(opts: WebtermTabOpts = {}): TabSpec {
  *  Two render paths:
  *
  *    - **No session** (caller didn't pass one) — placeholder noting
- *      that PR e will wire the production PTY backend; `monad legacy`
+ *      that PR e will wire the production PTY backend; `elanous legacy`
  *      remains the live shell fallback.
  *
  *    - **Session present** — header (tab id + status + pid) → output
@@ -70,7 +70,7 @@ function buildPlaceholderLines(spec: TabSpec): string[] {
     '  PR e will inject the production PtyBackend factory',
     '  so this tab boots into a real shell PTY automatically.',
     '',
-    '  Until PR e: `monad legacy` is the live shell fallback.',
+    '  Until PR e: `elanous legacy` is the live shell fallback.',
     '',
   ];
 }

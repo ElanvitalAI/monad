@@ -61,8 +61,8 @@ describe('AXON P6.3 — inheritProfile env filtering', () => {
         USER: 'joe',
         HOME: '/home/joe',
         CLAUDECODE: '1',
-        MONAD_SESSION_ID: 'abc',
-        MONAD_HITL_PORT: '9999',
+        ELANOUS_SESSION_ID: 'abc',
+        ELANOUS_HITL_PORT: '9999',
         PATH: '/usr/bin',
       },
     });
@@ -204,7 +204,7 @@ describe('AXON P6.3 — listAsSidebarStubs', () => {
 
   test('server session maps to "other" kind + server title', () => {
     const manager = new DualRoleManager();
-    manager.serverSessionRegister('monad-session-1', '/home/me/srv-proj');
+    manager.serverSessionRegister('elanous-session-1', '/home/me/srv-proj');
     const stubs = manager.listAsSidebarStubs();
     expect(stubs).toHaveLength(1);
     const s = stubs[0]!;
@@ -218,7 +218,7 @@ describe('AXON P6.3 — listAsSidebarStubs', () => {
     const manager = new DualRoleManager();
     manager.__setAgentFactoryForTest(async () => makeFakeAgent());
     await manager.clientSessionCreate({ backendId: 'gemini', cwd: '/w' });
-    manager.serverSessionRegister('monad-session-7', '/home');
+    manager.serverSessionRegister('elanous-session-7', '/home');
     const stubs = manager.listAsSidebarStubs();
     expect(stubs).toHaveLength(2);
     const kinds = stubs.map(s => s.agentKind).sort();
@@ -227,7 +227,7 @@ describe('AXON P6.3 — listAsSidebarStubs', () => {
 
   test('empty cwd falls back to no basename in title', () => {
     const manager = new DualRoleManager();
-    manager.serverSessionRegister('monad-session-9', '');
+    manager.serverSessionRegister('elanous-session-9', '');
     const s = manager.listAsSidebarStubs()[0]!;
     expect(s.title).toBe('ACP server');
   });

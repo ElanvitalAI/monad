@@ -24,8 +24,8 @@ beforeEach(() => {
 });
 afterEach(() => {
   globalThis.fetch = realFetch;
-  delete process.env.MONAD_LLM_MODELS_ENDPOINT;
-  delete process.env.MONAD_LLM_HOSTS;
+  delete process.env.ELANOUS_LLM_MODELS_ENDPOINT;
+  delete process.env.ELANOUS_LLM_HOSTS;
   delete process.env.ANTHROPIC_API_KEY;
   setHostsOverride(null);
 });
@@ -61,7 +61,7 @@ describe('getEffectiveHosts · priority chain (override > env > legacy)', () => 
     ]);
   });
   test('env set → source=env', () => {
-    process.env.MONAD_LLM_HOSTS = JSON.stringify([
+    process.env.ELANOUS_LLM_HOSTS = JSON.stringify([
       { name: 'env-host', kind: 'ollama', endpoint: 'http://localhost:11434' },
     ]);
     const eff = getEffectiveHosts();
@@ -69,7 +69,7 @@ describe('getEffectiveHosts · priority chain (override > env > legacy)', () => 
     expect(eff.hosts[0]?.name).toBe('env-host');
   });
   test('override wins over env', () => {
-    process.env.MONAD_LLM_HOSTS = JSON.stringify([
+    process.env.ELANOUS_LLM_HOSTS = JSON.stringify([
       { name: 'env', kind: 'lm-studio', endpoint: 'http://env' },
     ]);
     setHostsOverride([
@@ -80,7 +80,7 @@ describe('getEffectiveHosts · priority chain (override > env > legacy)', () => 
     expect(eff.hosts[0]?.name).toBe('override');
   });
   test('parseError surfaces when env malformed (no override)', () => {
-    process.env.MONAD_LLM_HOSTS = '{not json';
+    process.env.ELANOUS_LLM_HOSTS = '{not json';
     const eff = getEffectiveHosts();
     expect(eff.source).toBe('env');
     expect(eff.parseError).toMatch(/JSON parse failed/);
@@ -137,8 +137,8 @@ describe('handleLlmHostsConfig · GET', () => {
     const raw = JSON.stringify(body);
     expect(raw).not.toContain('sk-ant-secret');
   });
-  test('source=env when MONAD_LLM_HOSTS set', async () => {
-    process.env.MONAD_LLM_HOSTS = JSON.stringify([
+  test('source=env when ELANOUS_LLM_HOSTS set', async () => {
+    process.env.ELANOUS_LLM_HOSTS = JSON.stringify([
       { name: 'env', kind: 'lm-studio', endpoint: 'http://env' },
     ]);
     const res = await handleLlmHostsConfig(new Request('http://x/v1/llm/hosts'));
@@ -146,7 +146,7 @@ describe('handleLlmHostsConfig · GET', () => {
     expect(body.source).toBe('env');
   });
   test('parseError flows through to GET response', async () => {
-    process.env.MONAD_LLM_HOSTS = '{not json';
+    process.env.ELANOUS_LLM_HOSTS = '{not json';
     const res = await handleLlmHostsConfig(new Request('http://x/v1/llm/hosts'));
     const body = (await res.json()) as { parseError?: string };
     expect(body.parseError).toMatch(/JSON parse failed/);
@@ -262,7 +262,7 @@ describe('handleLlmHostsConfig · DELETE', () => {
     expect(getHostsOverride()).toBe(null);
   });
   test('clear when env present → reverts to env (not legacy)', async () => {
-    process.env.MONAD_LLM_HOSTS = JSON.stringify([
+    process.env.ELANOUS_LLM_HOSTS = JSON.stringify([
       { name: 'env', kind: 'lm-studio', endpoint: 'http://env' },
     ]);
     setHostsOverride([{ name: 'temp', kind: 'lm-studio', endpoint: 'http://temp' }]);
@@ -312,7 +312,7 @@ describe('Integration · /v1/llm/models honours override', () => {
   });
 
   test('override > env → env hosts ignored while override active', async () => {
-    process.env.MONAD_LLM_HOSTS = JSON.stringify([
+    process.env.ELANOUS_LLM_HOSTS = JSON.stringify([
       { name: 'env-host', kind: 'lm-studio', endpoint: 'http://env-host' },
     ]);
     setHostsOverride([{
@@ -339,7 +339,7 @@ describe('Integration · /v1/llm/models honours override', () => {
   });
 
   test('clear override → /v1/llm/models reverts to env', async () => {
-    process.env.MONAD_LLM_HOSTS = JSON.stringify([
+    process.env.ELANOUS_LLM_HOSTS = JSON.stringify([
       { name: 'env-host', kind: 'lm-studio', endpoint: 'http://env-host' },
     ]);
     setHostsOverride([{ name: 'temp', kind: 'lm-studio', endpoint: 'http://temp' }]);

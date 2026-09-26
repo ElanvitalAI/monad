@@ -14,7 +14,7 @@
 //
 // ⛔⭐ 그리고 안내가 «반쪽»이었다: `resume with /session load <id>` 는 ***TUI 안 명령***인데
 //   그 문구를 읽는 사람은 그때 «셸»에 있다. TUI 에 `--session` 플래그가 «없어서»
-//   실제로 맞는 안내는 ***「monad 재실행 → /resume <id>」***다.
+//   실제로 맞는 안내는 ***「elanous 재실행 → /resume <id>」***다.
 
 import { globalAgentRegistry, type AgentRegistry } from '../agent/registry.js';
 import { debug } from '../debug/log.js';
@@ -205,14 +205,14 @@ export function buildForceKillConfirmPrompt(
  */
 export function buildResumeGuidance(sessionId: string | undefined): string {
   if (!sessionId) {
-    return '[session] 세션 id 를 기록하지 못했습니다 — `monad session list` 로 최근 세션을 확인하십시오.\n';
+    return '[session] 세션 id 를 기록하지 못했습니다 — `elanous session list` 로 최근 세션을 확인하십시오.\n';
   }
   return [
     `[session] ${sessionId}`,
     '  이어서 하려면 —',
-    `    monad                     실행 후  /resume ${sessionId}`,
-    `    monad chat --session ${sessionId} "<메시지>"    (한 번만 주고받기)`,
-    `    monad session list        최근 세션 목록`,
+    `    elanous                     실행 후  /resume ${sessionId}`,
+    `    elanous chat --session ${sessionId} "<메시지>"    (한 번만 주고받기)`,
+    `    elanous session list        최근 세션 목록`,
     '',
   ].join('\n');
 }

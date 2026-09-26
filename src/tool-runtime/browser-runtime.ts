@@ -13,7 +13,7 @@
 //     `waitForLoad` (subscribe to Page.loadEventFired). Also injected.
 //
 // This file does NOT implement the full persistent daemon (Phase
-// D1). It holds a lazy singleton per monad process: first call
+// D1). It holds a lazy singleton per elanous process: first call
 // spawns Chrome, subsequent calls reuse; the client lives until the
 // process exits or `closeBrowserRuntime()` is invoked.
 
@@ -135,7 +135,7 @@ export function buildBrowserNavigateTool(): LLMToolSpec {
   return {
     name: 'BrowserNavigate',
     description:
-      'Navigate the Monad Browser Context Organ (persistent headless Chrome) to a URL. ' +
+      'Navigate the Elanous Browser Context Organ (persistent headless Chrome) to a URL. ' +
       'Returns the final URL (after redirects), page title, and load time. Pair with ' +
       'BrowserRead to extract text/HTML/screenshot. Deferred: schema surfaces only via ' +
       'ToolSearch — use when the user asks you to open a page, read a URL, or check a ' +
@@ -287,7 +287,7 @@ export function buildBrowserReadTool(): LLMToolSpec {
   return {
     name: 'BrowserRead',
     description:
-      'Read the currently loaded page in the Monad Browser Context Organ. Modes: ' +
+      'Read the currently loaded page in the Elanous Browser Context Organ. Modes: ' +
       '"text" (document.body.innerText or selector innerText; default), "html" (outerHTML, ' +
       'capped), "screenshot" (PNG base64). Pair with BrowserNavigate. Deferred: schema ' +
       'surfaces only via ToolSearch.',

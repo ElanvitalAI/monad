@@ -73,14 +73,14 @@ export const messagesEn: Messages = {
   notificationLevelError: 'error',
 
   // Setup wizard — banner + completion
-  setupBanner: 'monad — setup wizard',
+  setupBanner: 'elanous — setup wizard',
   setupWritingTo: 'Writing to: {path}',
   setupComplete: 'Setup complete',
   setupRerunHint: 'Re-run: {cmd}',
 
   // Setup wizard — Step 1 (LLM provider)
   setupStepLLMTitle: 'LLM provider',
-  setupStepLLMExcerpt: 'Pick the LLM provider monad will route turns to. Each provider needs an API key (or OAuth for Codex).',
+  setupStepLLMExcerpt: 'Pick the LLM provider elanous will route turns to. Each provider needs an API key (or OAuth for Codex).',
 
   // Setup wizard — Step 2 (Skill directories)
   setupStepSkillsTitle: 'Skill directories',
@@ -89,17 +89,17 @@ export const messagesEn: Messages = {
   // Setup wizard — Step 3 (Obsidian vault)
   setupStepObsidianTitle: 'Obsidian vault',
   setupStepObsidianExcerpt: 'Absolute path to your Obsidian vault root. Used by the Obsidian browser pane and vault-save skills.',
-  setupStepObsidianSkipBehavior: 'Skip → vault-save / obsidian-browser skills disabled. Add later: `monad setup obsidian`.',
+  setupStepObsidianSkipBehavior: 'Skip → vault-save / obsidian-browser skills disabled. Add later: `elanous setup obsidian`.',
 
   // Setup wizard — Step 4 (Telegram bot)
   setupStepTelegramTitle: 'Telegram bot (optional)',
   setupStepTelegramExcerpt: 'Chat with your agent from your phone via a Telegram bot.',
-  setupStepTelegramSkipBehavior: 'Skip → mobile chat unavailable. Add later: `monad setup telegram`.',
+  setupStepTelegramSkipBehavior: 'Skip → mobile chat unavailable. Add later: `elanous setup telegram`.',
 
   // Setup wizard — Step 5 (Discord bot)
   setupStepDiscordTitle: 'Discord bot (optional)',
   setupStepDiscordExcerpt: 'Chat with your agent in any Discord server / DM.',
-  setupStepDiscordSkipBehavior: 'Skip → Discord chat unavailable. Add later: `monad setup discord`.',
+  setupStepDiscordSkipBehavior: 'Skip → Discord chat unavailable. Add later: `elanous setup discord`.',
 
   // Setup wizard — Step 6 (Wrap-up · Sprint 12)
   setupWrapUpTitle: 'Setup Complete — Review & Save',

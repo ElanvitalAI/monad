@@ -28,7 +28,7 @@ export interface PruneSummary {
 }
 
 /** ★ 만료 게시물 콜드 백업 GC(순수-ish). 만료(now ≥ expiresAt) & non-permanent 게시물을 S3 콜드로 이관 후
- *  로컬 hot 정리. permanent(far-future expiresAt)는 만료 판정 미해당 → 자동 보존. 크론(monad schedule)이 호출. */
+ *  로컬 hot 정리. permanent(far-future expiresAt)는 만료 판정 미해당 → 자동 보존. 크론(elanous schedule)이 호출. */
 export function pruneExpiredPublications(deps: PublishLifecycleDeps): PruneSummary {
   const now = deps.now?.() ?? Date.now();
   const archived: string[] = [];

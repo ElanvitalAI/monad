@@ -5,15 +5,15 @@ import { homedir, tmpdir } from 'node:os';
 import { basename, dirname, join } from 'node:path';
 
 import { SENSITIVE_GLOBS } from '../boot/daemon-tools/path-guard.js';
-import { MONAD_RUNTIME_ARTIFACT_DIRS, MONAD_RUNTIME_ARTIFACT_PATHS } from './gate-scope.js';
+import { ELANOUS_RUNTIME_ARTIFACT_DIRS, ELANOUS_RUNTIME_ARTIFACT_PATHS } from './gate-scope.js';
 
 // ⛔ 기대치를 «수로» 박지 않는다 — 관리 항목이 하나 늘 때마다 깨지고,
 //    그때 깨지는 것은 결함이 아니라 «정상적인 증가»다.
 //    📏 2026-09-21: 종전엔 관리 항목 수를 민감 글로브 수에 «둘»을 더해 박아 둌고,
 //       그 박힌 수가 「판별 함수가 아는 다섯 중 둘만 쓴다」는 사실을 «계약으로» 굳히고 있었다.
-const MANAGED_MONAD_ENTRIES = ['.monad/', '.monad-test/', ...MONAD_RUNTIME_ARTIFACT_DIRS, ...MONAD_RUNTIME_ARTIFACT_PATHS]
+const MANAGED_ELANOUS_ENTRIES = ['.elanous/', '.elanous-test/', ...ELANOUS_RUNTIME_ARTIFACT_DIRS, ...ELANOUS_RUNTIME_ARTIFACT_PATHS]
   .filter((entry, index, all) => all.indexOf(entry) === index);
-const MANAGED_ENTRY_COUNT = SENSITIVE_GLOBS.length + MANAGED_MONAD_ENTRIES.length;
+const MANAGED_ENTRY_COUNT = SENSITIVE_GLOBS.length + MANAGED_ELANOUS_ENTRIES.length;
 import { resolveHarnessTarget, type HarnessTargetResolution } from './harness-target-options.js';
 import { makeRepositoryPublic, preflightRepositoryPublish, preflightRepositoryVisibility, provisionRepository, publishRepository } from './repo-provision.js';
 import { runDevPipeline, type DevPipelineSpec } from '../self-dev/dev-pipeline.js';
@@ -30,7 +30,7 @@ const git = (cwd: string, args: string[]) => execFileSync('git', args, { cwd, en
 const resolution = (target: string) => resolveHarnessTarget(target, { home: tmpdir() });
 const availableRepositoryGh = (args: string[], ok: { ok: boolean; exitCode: number; stdout: Buffer; stderr: Buffer; maybeTruncated: boolean }) => {
   if (args[0] !== 'api') return ok;
-  if (args[1] === 'user') return { ...ok, stdout: Buffer.from('monad-test\n') };
+  if (args[1] === 'user') return { ...ok, stdout: Buffer.from('elanous-test\n') };
   return { ...ok, ok: false, exitCode: 1, stderr: Buffer.from('HTTP 404 Not Found') };
 };
 
@@ -80,14 +80,14 @@ afterEach(() => {
 });
 
 describe('provisionRepository', () => {
-  test('promotes a non-git directory with an initial commit and ignores sensitive plus monad work and test files', () => {
+  test('promotes a non-git directory with an initial commit and ignores sensitive plus elanous work and test files', () => {
     const directory = createDirectory();
     writeFileSync(join(directory, 'app.ts'), 'export const app = true;\n');
     writeFileSync(join(directory, '.env'), 'secret');
-    writeFileSync(join(directory, '.monad-log'), 'not ignored');
-    const monadDir = join(directory, '.monad');
-    mkdirSync(monadDir);
-    writeFileSync(join(monadDir, 'debug.log'), 'internal');
+    writeFileSync(join(directory, '.elanous-log'), 'not ignored');
+    const elanousDir = join(directory, '.elanous');
+    mkdirSync(elanousDir);
+    writeFileSync(join(elanousDir, 'debug.log'), 'internal');
 
     const result = provisionRepository(resolution(directory));
 
@@ -96,9 +96,9 @@ describe('provisionRepository', () => {
     expect(Number(git(directory, ['rev-list', '--count', 'HEAD']))).toBe(1);
     expect(git(directory, ['show', '--format=', '--name-only', 'HEAD']).split('\n')).toEqual(expect.arrayContaining(['app.ts', '.gitignore']));
     expect(git(directory, ['show', '--format=', '--name-only', 'HEAD'])).not.toContain('.env');
-    expect(git(directory, ['show', '--format=', '--name-only', 'HEAD'])).not.toContain('.monad/debug.log');
+    expect(git(directory, ['show', '--format=', '--name-only', 'HEAD'])).not.toContain('.elanous/debug.log');
     const ignored = readFileSync(join(directory, '.gitignore'), 'utf8').split('\n');
-    expect(ignored).toEqual(expect.arrayContaining([...SENSITIVE_GLOBS, ...MANAGED_MONAD_ENTRIES]));
+    expect(ignored).toEqual(expect.arrayContaining([...SENSITIVE_GLOBS, ...MANAGED_ELANOUS_ENTRIES]));
   });
 
   test('creates an allow-empty root commit and a second call creates no commit', () => {
@@ -141,15 +141,15 @@ describe('provisionRepository', () => {
       });
       expect(git(directory, ['rev-parse', 'HEAD'])).toBe(before);
       const ignored = readFileSync(join(directory, '.gitignore'), 'utf8').split('\n');
-      expect(ignored).toEqual(expect.arrayContaining(['human-rule/', ...SENSITIVE_GLOBS, ...MANAGED_MONAD_ENTRIES]));
+      expect(ignored).toEqual(expect.arrayContaining(['human-rule/', ...SENSITIVE_GLOBS, ...MANAGED_ELANOUS_ENTRIES]));
       expect(steps.at(0)).toMatchObject({ ok: true, added: MANAGED_ENTRY_COUNT, preserved: 1 });
       expect(provisionRepository(resolution(directory))).toMatchObject({
         status: 'already-git',
         ignoreFile: { added: 0, preserved: 1 },
       });
       const ignoredOnRetry = readFileSync(join(directory, '.gitignore'), 'utf8').split('\n');
-      expect(ignoredOnRetry.filter((line) => line === '.monad/')).toHaveLength(1);
-      expect(ignoredOnRetry.filter((line) => line === '.monad-test/')).toHaveLength(1);
+      expect(ignoredOnRetry.filter((line) => line === '.elanous/')).toHaveLength(1);
+      expect(ignoredOnRetry.filter((line) => line === '.elanous-test/')).toHaveLength(1);
       expect(steps.at(1)).toMatchObject({ ok: true, added: 0, preserved: 1 });
     } finally {
       off();
@@ -177,7 +177,7 @@ describe('provisionRepository', () => {
 
     expect(provisionRepository(resolution(directory))).toMatchObject({ status: 'provisioned' });
     expect(readFileSync(outsideIgnore, 'utf8')).toBe('outside\n');
-    expect(readFileSync(join(directory, '.gitignore'), 'utf8')).toContain('.monad/');
+    expect(readFileSync(join(directory, '.gitignore'), 'utf8')).toContain('.elanous/');
   });
 
   test('rolls back a hard-linked .gitignore by restoring its complete original structure', () => {
@@ -360,10 +360,10 @@ describe('runDevPipeline repository provision wiring', () => {
 describe('repository publication', () => {
   const ok = { ok: true, exitCode: 0, stdout: Buffer.alloc(0), stderr: Buffer.alloc(0), maybeTruncated: false };
 
-  test('blocks .monad/auth.json in a non-git directory before any GitHub call and tells the user how to resolve it', async () => {
+  test('blocks .elanous/auth.json in a non-git directory before any GitHub call and tells the user how to resolve it', async () => {
     const directory = createDirectory('repo-publish-sensitive-');
-    mkdirSync(join(directory, '.monad'));
-    writeFileSync(join(directory, '.monad', 'auth.json'), '{"token":"secret"}');
+    mkdirSync(join(directory, '.elanous'));
+    writeFileSync(join(directory, '.elanous', 'auth.json'), '{"token":"secret"}');
     const ghCalls: string[][] = [];
     const output: string[] = [];
     const errors: string[] = [];
@@ -375,7 +375,7 @@ describe('repository publication', () => {
 
     expect(code).toBe(1);
     expect(ghCalls).toEqual([]);
-    expect(output.join('\n')).toContain('.monad/auth.json');
+    expect(output.join('\n')).toContain('.elanous/auth.json');
     expect(errors.join('\n')).toContain('remove the listed credential files');
   });
 
@@ -401,16 +401,16 @@ describe('repository publication', () => {
     const calls: string[][] = [];
     const gh = (lookup: 'exists' | 'available' | 'unknown') => (args: string[]) => {
       calls.push(args);
-      if (args[0] === 'api' && args[1] === 'user') return { ...ok, stdout: Buffer.from('monad-test\n') };
+      if (args[0] === 'api' && args[1] === 'user') return { ...ok, stdout: Buffer.from('elanous-test\n') };
       if (lookup === 'exists') return { ...ok, stdout: Buffer.from('{}') };
       return { ...ok, ok: false, exitCode: lookup === 'available' ? 1 : 2, stderr: Buffer.from(lookup === 'available' ? 'HTTP 404 Not Found' : 'network unavailable') };
     };
 
     const existing = preflightRepositoryPublish(directory, { runGh: gh('exists') });
-    expect(existing.remoteAvailability).toEqual({ status: 'exists', repository: `monad-test/${basename(directory)}` });
-    expect(existing.blockers.join('\n')).toContain(`GitHub repository monad-test/${basename(directory)} already exists`);
+    expect(existing.remoteAvailability).toEqual({ status: 'exists', repository: `elanous-test/${basename(directory)}` });
+    expect(existing.blockers.join('\n')).toContain(`GitHub repository elanous-test/${basename(directory)} already exists`);
     const available = preflightRepositoryPublish(directory, { runGh: gh('available') });
-    expect(available.remoteAvailability).toEqual({ status: 'available', repository: `monad-test/${basename(directory)}` });
+    expect(available.remoteAvailability).toEqual({ status: 'available', repository: `elanous-test/${basename(directory)}` });
     expect(available.blockers).not.toContain(expect.stringContaining('availability could not be confirmed'));
     const unknown = preflightRepositoryPublish(directory, { runGh: gh('unknown') });
     expect(unknown.remoteAvailability.status).toBe('unknown');
@@ -428,7 +428,7 @@ describe('repository publication', () => {
     const calls: string[][] = [];
     const runGh = (args: string[]) => {
       calls.push(args);
-      if (args[0] === 'api' && args[1] === 'user') return { ...ok, stdout: Buffer.from('monad-test\n') };
+      if (args[0] === 'api' && args[1] === 'user') return { ...ok, stdout: Buffer.from('elanous-test\n') };
       if (args[0] === 'api') return lookup === 'available'
         ? { ...ok, ok: false, exitCode: 1, stderr: Buffer.from('HTTP 404 Not Found') }
         : { ...ok, stdout: Buffer.from('{}') };
@@ -463,12 +463,12 @@ describe('repository publication', () => {
     git(directory, ['init']);
     git(directory, ['config', 'user.email', 'test@example.invalid']);
     git(directory, ['config', 'user.name', 'test']);
-    mkdirSync(join(directory, '.monad'));
-    writeFileSync(join(directory, '.monad', 'auth.json'), 'secret');
-    git(directory, ['add', '-f', '.monad/auth.json']); git(directory, ['commit', '-m', 'secret']);
-    rmSync(join(directory, '.monad', 'auth.json')); git(directory, ['add', '-A']); git(directory, ['commit', '-m', 'remove']);
+    mkdirSync(join(directory, '.elanous'));
+    writeFileSync(join(directory, '.elanous', 'auth.json'), 'secret');
+    git(directory, ['add', '-f', '.elanous/auth.json']); git(directory, ['commit', '-m', 'secret']);
+    rmSync(join(directory, '.elanous', 'auth.json')); git(directory, ['add', '-A']); git(directory, ['commit', '-m', 'remove']);
     const report = preflightRepositoryPublish(directory);
-    expect(report.credentialCandidates).toContain('.monad/auth.json');
+    expect(report.credentialCandidates).toContain('.elanous/auth.json');
     expect(report.blockers.join('\n')).toContain('credential candidates');
   });
 
@@ -484,7 +484,7 @@ describe('repository publication', () => {
         out: { log: (line) => output.push(line), error: () => {} },
       });
       expect(code).toBe(0);
-      expect(ghCalls).toEqual([['api', 'user', '--jq', '.login'], ['api', `repos/monad-test/${basename(directory)}`]]);
+      expect(ghCalls).toEqual([['api', 'user', '--jq', '.login'], ['api', `repos/elanous-test/${basename(directory)}`]]);
       expect(output).toContain('Repository publication declined; no remote was created and local repository changes remain.');
       expect(existsSync(join(directory, '.git'))).toBe(true);
     }
@@ -533,7 +533,7 @@ describe('repository publication', () => {
     }, undefined as unknown as ReturnType<typeof preflightRepositoryPublish>);
 
     expect(result.status).toBe('blocked');
-    expect(ghCalls).toEqual([['api', 'user', '--jq', '.login'], ['api', `repos/monad-test/${basename(directory)}`]]);
+    expect(ghCalls).toEqual([['api', 'user', '--jq', '.login'], ['api', `repos/elanous-test/${basename(directory)}`]]);
     if (result.status === 'blocked') expect(result.guidance).toContain('explicitly confirm');
   });
 
@@ -622,7 +622,7 @@ describe('repository public transition', () => {
     git(directory, ['config', 'user.email', 'test@example.invalid']);
     git(directory, ['config', 'user.name', 'test']);
     writeFileSync(join(directory, 'app.ts'), 'export {};'); git(directory, ['add', '.']); git(directory, ['commit', '-m', 'initial']);
-    git(directory, ['remote', 'add', 'origin', 'git@github.com:monad-test/private-repository.git']);
+    git(directory, ['remote', 'add', 'origin', 'git@github.com:elanous-test/private-repository.git']);
   }
 
   test('makes a clean private repository public after displaying named scope and confirmation', async () => {
@@ -642,21 +642,21 @@ describe('repository public transition', () => {
     });
     expect(code).toBe(0);
     expect(output.join('\n')).toContain('app.ts');
-    expect(output.join('\n')).toContain('.monad/');
+    expect(output.join('\n')).toContain('.elanous/');
     expect(calls).toEqual([
-      ['repo', 'view', 'monad-test/private-repository', '--json', 'isPrivate'],
-      ['repo', 'view', 'monad-test/private-repository', '--json', 'isPrivate'],
-      ['repo', 'view', 'monad-test/private-repository', '--json', 'isPrivate'],
-      ['repo', 'view', 'monad-test/private-repository', '--json', 'isPrivate'],
-      ['repo', 'edit', 'monad-test/private-repository', '--visibility', 'public', '--accept-visibility-change-consequences'],
+      ['repo', 'view', 'elanous-test/private-repository', '--json', 'isPrivate'],
+      ['repo', 'view', 'elanous-test/private-repository', '--json', 'isPrivate'],
+      ['repo', 'view', 'elanous-test/private-repository', '--json', 'isPrivate'],
+      ['repo', 'view', 'elanous-test/private-repository', '--json', 'isPrivate'],
+      ['repo', 'edit', 'elanous-test/private-repository', '--visibility', 'public', '--accept-visibility-change-consequences'],
     ]);
   });
 
   test('blocks credential candidates with their names and remediation before GitHub visibility calls', async () => {
     const directory = createDirectory('repo-public-sensitive-');
     privateRepository(directory);
-    mkdirSync(join(directory, '.monad'));
-    writeFileSync(join(directory, '.monad', 'auth.json'), 'secret');
+    mkdirSync(join(directory, '.elanous'));
+    writeFileSync(join(directory, '.elanous', 'auth.json'), 'secret');
     const calls: string[][] = [];
     const output: string[] = [];
     const errors: string[] = [];
@@ -668,10 +668,10 @@ describe('repository public transition', () => {
     });
     expect(code).toBe(1);
     expect(calls).toEqual([
-      ['repo', 'view', 'monad-test/private-repository', '--json', 'isPrivate'],
-      ['repo', 'view', 'monad-test/private-repository', '--json', 'isPrivate'],
+      ['repo', 'view', 'elanous-test/private-repository', '--json', 'isPrivate'],
+      ['repo', 'view', 'elanous-test/private-repository', '--json', 'isPrivate'],
     ]);
-    expect(output.join('\n')).toContain('.monad/auth.json');
+    expect(output.join('\n')).toContain('.elanous/auth.json');
     expect(errors.join('\n')).toContain('every reachable ref and the working tree');
   });
 
@@ -680,8 +680,8 @@ describe('repository public transition', () => {
     privateRepository(directory);
     const nested = join(directory, 'packages', 'app');
     mkdirSync(nested, { recursive: true });
-    mkdirSync(join(directory, '.monad'));
-    writeFileSync(join(directory, '.monad', 'auth.json'), 'secret');
+    mkdirSync(join(directory, '.elanous'));
+    writeFileSync(join(directory, '.elanous', 'auth.json'), 'secret');
 
     for (const target of [directory, nested]) {
       const calls: string[][] = [];
@@ -694,11 +694,11 @@ describe('repository public transition', () => {
         out: { log: (line) => output.push(line), error: (line) => errors.push(line) },
       });
       expect(code).toBe(1);
-      expect(output.join('\n')).toContain('.monad/auth.json');
+      expect(output.join('\n')).toContain('.elanous/auth.json');
       expect(errors.join('\n')).toContain('every reachable ref and the working tree');
       expect(calls).toEqual([
-        ['repo', 'view', 'monad-test/private-repository', '--json', 'isPrivate'],
-        ['repo', 'view', 'monad-test/private-repository', '--json', 'isPrivate'],
+        ['repo', 'view', 'elanous-test/private-repository', '--json', 'isPrivate'],
+        ['repo', 'view', 'elanous-test/private-repository', '--json', 'isPrivate'],
       ]);
     }
   });
@@ -735,10 +735,10 @@ describe('repository public transition', () => {
     });
     expect(code).toBe(1);
     expect(calls).toEqual([
-      ['repo', 'view', 'monad-test/private-repository', '--json', 'isPrivate'],
-      ['repo', 'view', 'monad-test/private-repository', '--json', 'isPrivate'],
-      ['repo', 'view', 'monad-test/private-repository', '--json', 'isPrivate'],
-      ['repo', 'view', 'monad-test/private-repository', '--json', 'isPrivate'],
+      ['repo', 'view', 'elanous-test/private-repository', '--json', 'isPrivate'],
+      ['repo', 'view', 'elanous-test/private-repository', '--json', 'isPrivate'],
+      ['repo', 'view', 'elanous-test/private-repository', '--json', 'isPrivate'],
+      ['repo', 'view', 'elanous-test/private-repository', '--json', 'isPrivate'],
     ]);
     expect(errors.join('\n')).toContain('Review the current repository state');
   });
@@ -763,8 +763,8 @@ describe('repository public transition', () => {
     expect(await runRepositoryPublic(directory, overrides)).toBe(0);
     expect(calls.every((args) => args[1] === 'view')).toBe(true);
     expect(calls).toEqual([
-      ['repo', 'view', 'monad-test/private-repository', '--json', 'isPrivate'],
-      ['repo', 'view', 'monad-test/private-repository', '--json', 'isPrivate'],
+      ['repo', 'view', 'elanous-test/private-repository', '--json', 'isPrivate'],
+      ['repo', 'view', 'elanous-test/private-repository', '--json', 'isPrivate'],
     ]);
     expect(gitCalls.some((args) => args[0] === 'fetch')).toBe(false);
     expect(output.join('\n')).not.toContain('(private)');
@@ -784,14 +784,14 @@ describe('repository public transition', () => {
       out: { log: () => {}, error: (line) => errors.push(line) },
     });
     expect(code).toBe(1);
-    expect(calls).toEqual([['repo', 'view', 'monad-test/private-repository', '--json', 'isPrivate']]);
+    expect(calls).toEqual([['repo', 'view', 'elanous-test/private-repository', '--json', 'isPrivate']]);
     expect(errors.join('\n')).toContain('unreadable visibility response');
   });
 
   test('rejects lookalike GitHub remote hosts before GitHub visibility access', async () => {
     const directory = createDirectory('repo-public-lookalike-');
     privateRepository(directory);
-    git(directory, ['remote', 'set-url', 'origin', 'git@evilgithub.com:monad-test/private-repository.git']);
+    git(directory, ['remote', 'set-url', 'origin', 'git@evilgithub.com:elanous-test/private-repository.git']);
     const calls: string[][] = [];
     const code = await runRepositoryPublic(directory, {
       isTerminal: () => true,
@@ -823,7 +823,7 @@ describe('repository public transition', () => {
     });
     expect(code).toBe(0);
     expect(existsSync(fetchHead) ? readFileSync(fetchHead, 'utf8') : undefined).toBe(before);
-    expect(git(directory, ['for-each-ref', '--format=%(refname)', 'refs/monad-internal/'])).toBe('');
+    expect(git(directory, ['for-each-ref', '--format=%(refname)', 'refs/elanous-internal/'])).toBe('');
   });
 
   test('blocks a credential reachable only through a fetched pull ref without retaining it in the target object database', async () => {
@@ -836,9 +836,9 @@ describe('repository public transition', () => {
     git(pullSource, ['clone', remote, '.']);
     git(pullSource, ['config', 'user.email', 'test@example.invalid']);
     git(pullSource, ['config', 'user.name', 'test']);
-    mkdirSync(join(pullSource, '.monad'));
-    writeFileSync(join(pullSource, '.monad', 'auth.json'), 'secret');
-    git(pullSource, ['add', '-f', '.monad/auth.json']);
+    mkdirSync(join(pullSource, '.elanous'));
+    writeFileSync(join(pullSource, '.elanous', 'auth.json'), 'secret');
+    git(pullSource, ['add', '-f', '.elanous/auth.json']);
     git(pullSource, ['commit', '-m', 'pull-only credential']);
     const pullCommit = git(pullSource, ['rev-parse', 'HEAD']);
     git(pullSource, ['push', 'origin', `${pullCommit}:refs/pull/1/head`]);
@@ -859,20 +859,20 @@ describe('repository public transition', () => {
     });
     expect(code).toBe(1);
     expect(calls).toEqual([
-      ['repo', 'view', 'monad-test/private-repository', '--json', 'isPrivate'],
-      ['repo', 'view', 'monad-test/private-repository', '--json', 'isPrivate'],
+      ['repo', 'view', 'elanous-test/private-repository', '--json', 'isPrivate'],
+      ['repo', 'view', 'elanous-test/private-repository', '--json', 'isPrivate'],
     ]);
     const fetch = gitCalls.find((args) => args[0] === 'fetch');
-    expect(fetch).toEqual(['fetch', '--no-write-fetch-head', 'git@github.com:monad-test/private-repository.git', '+refs/*:refs/remotes/public-scan/*']);
+    expect(fetch).toEqual(['fetch', '--no-write-fetch-head', 'git@github.com:elanous-test/private-repository.git', '+refs/*:refs/remotes/public-scan/*']);
     expect(spawnSync('git', ['cat-file', '-e', `${pullCommit}^{commit}`], { cwd: directory, encoding: 'utf8' }).status).not.toBe(0);
-    expect(errors.join('\n')).toContain('.monad/auth.json');
+    expect(errors.join('\n')).toContain('.elanous/auth.json');
   });
 
   test('already-public bypasses credential blockers after visibility is verified', async () => {
     const directory = createDirectory('repo-public-visible-first-');
     privateRepository(directory);
-    mkdirSync(join(directory, '.monad'));
-    writeFileSync(join(directory, '.monad', 'auth.json'), 'secret');
+    mkdirSync(join(directory, '.elanous'));
+    writeFileSync(join(directory, '.elanous', 'auth.json'), 'secret');
     const calls: string[][] = [];
     const output: string[] = [];
     const code = await runRepositoryPublic(directory, {
@@ -883,7 +883,7 @@ describe('repository public transition', () => {
       out: { log: (line) => output.push(line), error: () => {} },
     });
     expect(code).toBe(0);
-    expect(calls).toEqual([['repo', 'view', 'monad-test/private-repository', '--json', 'isPrivate']]);
+    expect(calls).toEqual([['repo', 'view', 'elanous-test/private-repository', '--json', 'isPrivate']]);
     expect(output.join('\n')).toContain('already public; no visibility change was made');
   });
 
@@ -943,7 +943,7 @@ describe('provisionRepository — 하드링크 .gitignore 가 «바깥 파일»�
     // 그리고 대상 안의 .gitignore 는 «새 inode»이며 무시 목록을 담았다.
     const written = readFileSync(join(target, '.gitignore'), 'utf8');
     expect(written).toContain('outside-original');  // 하드링크 원본 내용도 «보존»된다
-    expect(written).toContain('.monad/');
+    expect(written).toContain('.elanous/');
     expect(String(lstatSync(join(target, '.gitignore')).ino)).not.toBe(String(outsideBefore.ino));
   });
 });
@@ -964,21 +964,21 @@ describe('provisionRepository — 기존 .gitignore 규칙을 «보존»한다',
     const written = readFileSync(join(target, '.gitignore'), 'utf8');
     expect(written).toContain('my-secret-rule/');
     expect(written).toContain('build/');
-    expect(written).toContain('.monad/');
+    expect(written).toContain('.elanous/');
     for (const glob of SENSITIVE_GLOBS) expect(written).toContain(glob);
   });
 
   test('이미 담긴 규칙을 «두 번» 넣지 않는다', () => {
     const target = createDirectory('repo-provision-dedupe-ignore-');
     writeFileSync(join(target, 'a.txt'), 'hello\n');
-    writeFileSync(join(target, '.gitignore'), `.env\n.monad/\nkeep-me/\n`);
+    writeFileSync(join(target, '.gitignore'), `.env\n.elanous/\nkeep-me/\n`);
 
     expect(provisionRepository(resolution(target)).status).toBe('provisioned');
 
     const lines = readFileSync(join(target, '.gitignore'), 'utf8').split(/\r?\n/).filter(Boolean);
     expect(lines).toContain('keep-me/');
     expect(lines.filter((line) => line === '.env')).toHaveLength(1);
-    expect(lines.filter((line) => line === '.monad/')).toHaveLength(1);
+    expect(lines.filter((line) => line === '.elanous/')).toHaveLength(1);
   });
 });
 
@@ -1088,7 +1088,7 @@ describe('provisionRepository — «실패»도 한 줄로 남는다', () => {
 
 
 // ⛔ 2026-09-23 — untracked .gitignore 는 «별도 워크트리»에 없다. info/exclude 는 모든 워크트리에 먹는다.
-test('ensureInfoExclude — 별도 워크트리에서도 monad 실행 산출물이 무시된다 · 두 번 불러도 한 번만 쓴다', async () => {
+test('ensureInfoExclude — 별도 워크트리에서도 elanous 실행 산출물이 무시된다 · 두 번 불러도 한 번만 쓴다', async () => {
   const { ensureInfoExclude } = await import('./repo-provision.js');
   const { mkdtempSync, writeFileSync, readFileSync, rmSync, realpathSync } = await import('node:fs');
   const { tmpdir } = await import('node:os');
@@ -1104,8 +1104,8 @@ test('ensureInfoExclude — 별도 워크트리에서도 monad 실행 산출물�
     expect(first?.added).toBeGreaterThan(0);
     expect(ensureInfoExclude(repo)?.added).toBe(0);
     g(repo, 'worktree', 'add', '-q', wt);
-    expect(g(wt, 'check-ignore', '.monad/debug/chat-1.log').trim()).toBe('.monad/debug/chat-1.log');
-    expect(g(wt, 'check-ignore', '.monad-child-liveness.hb').trim()).toBe('.monad-child-liveness.hb');
-    expect(readFileSync(join(repo, '.git', 'info', 'exclude'), 'utf8')).toContain('.monad/');
+    expect(g(wt, 'check-ignore', '.elanous/debug/chat-1.log').trim()).toBe('.elanous/debug/chat-1.log');
+    expect(g(wt, 'check-ignore', '.elanous-child-liveness.hb').trim()).toBe('.elanous-child-liveness.hb');
+    expect(readFileSync(join(repo, '.git', 'info', 'exclude'), 'utf8')).toContain('.elanous/');
   } finally { rmSync(root, { recursive: true, force: true }); }
 });

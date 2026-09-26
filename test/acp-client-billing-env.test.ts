@@ -5,7 +5,7 @@ import { join } from 'node:path';
 import { AcpAgent } from '../src/acp/client.js';
 import * as backendRegistry from '../src/acp/backend-registry.js';
 import { debug } from '../src/debug/log.js';
-import { resetMonadConfigDir, setMonadConfigDir } from '../src/monad-config-dir.js';
+import { resetElanousConfigDir, setElanousConfigDir } from '../src/elanous-config-dir.js';
 import { resetUserConfig } from '../src/user-config.js';
 
 const MISSING_CWD = '/definitely/missing/acp-client-billing-env';
@@ -16,13 +16,13 @@ type SpawnEvent = Record<string, unknown>;
 
 beforeEach(() => {
   configDir = mkdtempSync(join(tmpdir(), 'acp-billing-env-'));
-  setMonadConfigDir(configDir);
+  setElanousConfigDir(configDir);
   resetUserConfig();
 });
 
 afterEach(() => {
   resetUserConfig();
-  resetMonadConfigDir();
+  resetElanousConfigDir();
   rmSync(configDir, { recursive: true, force: true });
 });
 

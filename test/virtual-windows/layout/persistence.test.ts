@@ -1,6 +1,6 @@
 // ── VW-term-infra Phase 3a — LayoutSpec persistence tests ──
 //
-// Sandbox save / load / list into a tmp dir so ~/.monad/layouts stays
+// Sandbox save / load / list into a tmp dir so ~/.elanous/layouts stays
 // untouched during CI. Cover the positive path + the skip-on-malformed
 // contract the UI relies on (broken preset doesn't brick the picker).
 
@@ -24,7 +24,7 @@ import {
 let dir = '';
 
 beforeEach(() => {
-  dir = mkdtempSync(join(tmpdir(), 'monad-layout-'));
+  dir = mkdtempSync(join(tmpdir(), 'elanous-layout-'));
 });
 
 afterEach(() => {
@@ -161,9 +161,9 @@ describe('Phase 3a · layoutsDir default vs override', () => {
     expect(layoutsDir({ dir: '/custom/layouts' })).toBe('/custom/layouts');
   });
 
-  test('default path contains ~/.monad/layouts', () => {
+  test('default path contains ~/.elanous/layouts', () => {
     const def = layoutsDir();
-    expect(def).toContain('.monad');
+    expect(def).toContain('.elanous');
     expect(def).toContain('layouts');
   });
 });

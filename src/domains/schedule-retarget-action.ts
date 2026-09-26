@@ -1,6 +1,6 @@
 // ── schedule retarget — crontab `cd <folder>` 일괄 교체 (R3·S4) ──────────
 //
-// `monad schedule retarget --from <folder> --to <folder> [--yes] [--json]`
+// `elanous schedule retarget --from <folder> --to <folder> [--yes] [--json]`
 // 의 액션. 시스템 crontab 에서 선두 `cd <from>` 만 `<to>` 로 바꾼다.
 // 기본은 dry-run. `--yes` 일 때만 백업 후 적용.
 // 대상 폴더가 디렉터리가 아니면 에러(crontab 무접촉).
@@ -21,7 +21,7 @@ export interface ScheduleRetargetInput {
   to?: string;
   /** true 면 적용. 기본 dry-run. */
   yes?: boolean;
-  /** 이 잡들만(쉼표 구분 · `monad schedule list` 의 id 접두 또는 이름). 생략하면 폴더가 같은 줄 전부. */
+  /** 이 잡들만(쉼표 구분 · `elanous schedule list` 의 id 접두 또는 이름). 생략하면 폴더가 같은 줄 전부. */
   only?: string;
 }
 
@@ -137,7 +137,7 @@ export function retargetScheduleFolders(
       if (hits.length !== 1) { missing.push(`${sel}(${hits.length}건)`); continue; }
       if (hits[0]!.raw) onlyLines.add(hits[0]!.raw.trim());
     }
-    if (missing.length > 0) return { error: `--only 선택자가 잡 «하나»에 맞지 않습니다: ${missing.join(', ')} — monad schedule list 의 id 로 고르십시오.` };
+    if (missing.length > 0) return { error: `--only 선택자가 잡 «하나»에 맞지 않습니다: ${missing.join(', ')} — elanous schedule list 의 id 로 고르십시오.` };
   }
 
   const current = (deps.read ?? readCrontab)();

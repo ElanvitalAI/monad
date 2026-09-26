@@ -381,7 +381,7 @@ export interface PushcutConfirmDeps {
   client: PushcutClient;
   /** Notification name pre-registered on the iPhone side. The
    *  accompanying iOS Shortcut is responsible for receiving the
-   *  user's tap and POSTing back to monad. Until that callback
+   *  user's tap and POSTing back to elanous. Until that callback
    *  receiver is wired, this channel just FIRES the notification
    *  and resolves to null (letting other channels win the race). */
   notificationName: string;

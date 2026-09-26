@@ -1,6 +1,6 @@
 // PLAN-ipad-server-side-file-browser §3.1 + §4.3 (F1) — root resolver
-// shared by monad/fs/list · monad/fs/read · monad/fs/stat ·
-// monad/obsidian/info.
+// shared by elanous/fs/list · elanous/fs/read · elanous/fs/stat ·
+// elanous/obsidian/info.
 //
 // Two roots:
 //   - cwd       — daemon process.cwd() (the repo the daemon was launched in)
@@ -12,7 +12,7 @@
 // clamped to the resolved vault path.
 //
 // Obsidian resolution chain (config wipe-resilient — see user feedback
-// 2026-05-16): live user config → env vars → ~/.monad backup chain →
+// 2026-05-16): live user config → env vars → ~/.elanous backup chain →
 // default ~/Obsidian/ElanvitalAI → ~/Obsidian/* auto-discovery via
 // .obsidian/ signature → unavailable. The first **existsSync** hit
 // wins; result is cached at process scope so a mid-session config.json
@@ -25,9 +25,9 @@ import { getUserConfig } from '../user-config.js';
 export type FsRootKind = 'cwd' | 'obsidian';
 
 export type ObsidianSource =
-  | 'config'      // live ~/.monad/config.json
-  | 'env'         // OBSIDIAN_VAULT or MONAD_OBSIDIAN_VAULT
-  | 'backup'      // ~/.monad/config.json.{bak,backup-*,PRESERVED-*,*.json}
+  | 'config'      // live ~/.elanous/config.json
+  | 'env'         // OBSIDIAN_VAULT or ELANOUS_OBSIDIAN_VAULT
+  | 'backup'      // ~/.elanous/config.json.{bak,backup-*,PRESERVED-*,*.json}
   | 'default'     // ~/Obsidian/ElanvitalAI present on disk
   | 'discovery'   // ~/Obsidian/* containing a .obsidian/ subdirectory
   | 'none';       // nothing found — `available: false`
@@ -54,12 +54,12 @@ function readObsidianVaultFromConfigFile(p: string): string | null {
   }
 }
 
-/** Walk ~/.monad for any config.json* file and return the vault path
+/** Walk ~/.elanous for any config.json* file and return the vault path
  *  from the newest one whose vault still exists on disk. Order:
  *  newest mtime first, so the most recent wipe-survivor wins. */
 function discoverObsidianFromBackups(home: string): string | null {
   const candidates: Array<{ path: string; mtime: number }> = [];
-  const monadDir = join(home, '.monad');
+  const elanousDir = join(home, '.elanous');
   const collect = (dir: string) => {
     try {
       for (const name of readdirSync(dir)) {
@@ -76,8 +76,8 @@ function discoverObsidianFromBackups(home: string): string | null {
       // directory missing or unreadable — skip silently
     }
   };
-  collect(monadDir);
-  collect(join(monadDir, 'backups'));
+  collect(elanousDir);
+  collect(join(elanousDir, 'backups'));
   candidates.sort((a, b) => b.mtime - a.mtime);
   for (const c of candidates) {
     const v = readObsidianVaultFromConfigFile(c.path);
@@ -119,8 +119,8 @@ function computeObsidianResolution(): ObsidianResolution {
     // getUserConfig guards malformed config.json itself; ignore here.
   }
   // 2. Env override — supports both legacy OBSIDIAN_VAULT and the
-  //    auto-research bridge's MONAD_OBSIDIAN_VAULT.
-  const envVault = (process.env.OBSIDIAN_VAULT?.trim() || process.env.MONAD_OBSIDIAN_VAULT?.trim());
+  //    auto-research bridge's ELANOUS_OBSIDIAN_VAULT.
+  const envVault = (process.env.OBSIDIAN_VAULT?.trim() || process.env.ELANOUS_OBSIDIAN_VAULT?.trim());
   if (envVault && existsSync(envVault)) {
     return { root: resolvePath(envVault), available: true, source: 'env' };
   }
@@ -128,7 +128,7 @@ function computeObsidianResolution(): ObsidianResolution {
   //    vault still resolves on disk.
   const fromBackup = discoverObsidianFromBackups(home);
   if (fromBackup) return { root: resolvePath(fromBackup), available: true, source: 'backup' };
-  // 4. Conventional default — old monad installs and the obsidianDefaults()
+  // 4. Conventional default — old elanous installs and the obsidianDefaults()
   //    fallback both pin this path.
   const def = join(home, 'Obsidian', 'ElanvitalAI');
   if (existsSync(def)) return { root: resolvePath(def), available: true, source: 'default' };
@@ -161,7 +161,7 @@ export function _resetObsidianCacheForTests(): void {
 
 /** Resolve the base directory for a given root kind. Throws when an
  *  obsidian root is requested but no vault is available — callers
- *  should `monad/obsidian/info` first to gate the UI. */
+ *  should `elanous/obsidian/info` first to gate the UI. */
 export function resolveFsRoot(kind: FsRootKind): string {
   if (kind === 'obsidian') {
     const r = resolveObsidianRoot();

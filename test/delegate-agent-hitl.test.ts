@@ -10,7 +10,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
 import { dispatchDelegateAgent } from '../src/boot/daemon-tools/delegate-agent';
-import { resetMonadConfigDir, setMonadConfigDir } from '../src/monad-config-dir';
+import { resetElanousConfigDir, setElanousConfigDir } from '../src/elanous-config-dir';
 import { resetUserConfig } from '../src/user-config';
 import {
   __setDualRoleManagerForTest,
@@ -66,14 +66,14 @@ function setEditApproval(editApproval: boolean): void {
 
 beforeEach(() => {
   testConfigDir = mkdtempSync(join(tmpdir(), 'delegate-agent-hitl-'));
-  setMonadConfigDir(testConfigDir);
+  setElanousConfigDir(testConfigDir);
   setEditApproval(true);
 });
 
 afterEach(() => {
   __setDualRoleManagerForTest(null);
   resetUserConfig();
-  resetMonadConfigDir();
+  resetElanousConfigDir();
   if (testConfigDir) {
     rmSync(testConfigDir, { recursive: true, force: true });
     testConfigDir = null;

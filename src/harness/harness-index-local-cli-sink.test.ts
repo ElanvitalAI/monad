@@ -32,7 +32,7 @@ afterEach(() => infoSpy.mockRestore());
 
 describe('production local CLI sink wiring', () => {
   test('the actual index local scores action registers its sink before running', async () => {
-    await program.parseAsync(['node', 'monad', 'local', 'scores']);
+    await program.parseAsync(['node', 'elanous', 'local', 'scores']);
 
     expect(calls).toEqual(['sink:local', 'action:scores']);
   });
@@ -40,7 +40,7 @@ describe('production local CLI sink wiring', () => {
   test('the actual index local scores action continues when sink registration fails', async () => {
     sinkShouldFail = true;
 
-    await program.parseAsync(['node', 'monad', 'local', 'scores']);
+    await program.parseAsync(['node', 'elanous', 'local', 'scores']);
 
     expect(calls).toEqual(['sink:local', 'action:scores']);
   });

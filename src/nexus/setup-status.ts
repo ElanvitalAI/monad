@@ -39,7 +39,7 @@ export interface SetupCheckOpts {
   decideProviderForConfig?: typeof decideProviderForConfig;
 }
 
-const UNATTENDED_SETUP_HINT = 'unattended: `monad setup --non-interactive --config <ans.json>`';
+const UNATTENDED_SETUP_HINT = 'unattended: `elanous setup --non-interactive --config <ans.json>`';
 
 function hasText(value: unknown): boolean {
   return typeof value === 'string' && value.trim().length > 0;
@@ -88,7 +88,7 @@ function checkLlm(
     id: 'llm',
     label: 'LLM provider',
     passed,
-    hint: `run \`monad setup llm\` or interactive \`monad nexus\`; ${UNATTENDED_SETUP_HINT}`,
+    hint: `run \`elanous setup llm\` or interactive \`elanous nexus\`; ${UNATTENDED_SETUP_HINT}`,
     ...(detailProvider && detailProvider !== 'none' ? {
       detail: `provider=${detailProvider}${credential ? ` · credential=${credential}` : ''}`,
     } : {}),
@@ -104,7 +104,7 @@ function checkPwaBuild(opts: SetupCheckOpts): SetupItem {
     id: 'pwa-build',
     label: 'PWA build',
     passed: built,
-    hint: 'run `monad nexus build`',
+    hint: 'run `elanous nexus build`',
   };
 }
 
@@ -115,7 +115,7 @@ function checkChannelBot(cfg: NexusUserConfig): SetupItem {
     id: 'channel-bot',
     label: 'Channel bot',
     passed: hasText(telegram) || hasText(discord),
-    hint: `run \`monad nexus channel-bot setup telegram|discord\`; ${UNATTENDED_SETUP_HINT}`,
+    hint: `run \`elanous nexus channel-bot setup telegram|discord\`; ${UNATTENDED_SETUP_HINT}`,
   };
 }
 
@@ -138,9 +138,9 @@ function checkSkillDirs(cfg: MainUserConfig, exists: (path: string) => boolean):
 }
 
 function osInstallHint(): string {
-  if (process.platform === 'darwin') return 'run `monad nexus install --launchd`';
-  if (process.platform === 'linux') return 'run `monad nexus install --systemd-user`';
-  return 'run `monad nexus install --launchd|--systemd-user`';
+  if (process.platform === 'darwin') return 'run `elanous nexus install --launchd`';
+  if (process.platform === 'linux') return 'run `elanous nexus install --systemd-user`';
+  return 'run `elanous nexus install --launchd|--systemd-user`';
 }
 
 function checkOsInstall(exists: (path: string) => boolean): SetupItem {

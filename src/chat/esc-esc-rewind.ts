@@ -1,11 +1,11 @@
 // ── Esc·Esc → /rewind 제스처 판정 (codex backtrack 동형) ─────────────
 //
 // TUI 부활 후속 (2026-07-12). codex 의 backtrack 상태머신(app_backtrack.rs:
-// 첫 Esc 가 prime → 다음 Esc 가 transcript 오버레이)을 monad 식으로 축약:
+// 첫 Esc 가 prime → 다음 Esc 가 transcript 오버레이)을 elanous 식으로 축약:
 // **빈 입력 버퍼**에서 Esc 를 창(window) 안에 두 번 누르면 /rewind 픽커.
 //
 // codex 와의 차이(의도): codex 는 prime 을 다른 키 입력이 해제하는
-// 상태머신이지만, monad 의 textInput 은 host 에 모든 키를 노출하지 않으므로
+// 상태머신이지만, elanous 의 textInput 은 host 에 모든 키를 노출하지 않으므로
 // **시간 창(기본 1.5s)** 으로 stale prime 을 자연 소멸시킨다. 버퍼가
 // 비어있지 않으면 절대 prime 하지 않는다 — Esc 의 기존 의미(버퍼 클리어)
 // 보존. rich 모드에선 Esc 가 입력 루프를 이탈하므로 제스처는 사실상

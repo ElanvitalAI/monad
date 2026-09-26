@@ -1,27 +1,27 @@
 #!/usr/bin/env bash
-# Install monadagent from this checkout, a local tarball, or a tarball URL.
+# Install elanous from this checkout, a local tarball, or a tarball URL.
 #
 # 🆕 2026-09-24 (결정 「sh 를 실행하면 알아서 설치되는 구조」) — claude·grok 의 네이티브 설치기와 같은 모양:
 #   $PREFIX/versions/<version>[-<커밋12>]/ 판별 본체(각자 node_modules) ← 옛 판은 남는다(롤백 · 체크아웃 설치는 커밋이 이름)
 #   $PREFIX/current  → versions/<version>                                ← 전환은 심링크 하나
-#   $PREFIX/bin/monad → ../current/node_modules/.bin/monad               ← PATH 에 넣는 «고정» 경로
-#   ⛔ 기본 PREFIX 는 상태 폴더(~/.monad)가 «아니다» — 설치물과 상태(auth·logs·worktrees)를 가른다.
+#   $PREFIX/bin/elanous → ../current/node_modules/.bin/elanous               ← PATH 에 넣는 «고정» 경로
+#   ⛔ 기본 PREFIX 는 상태 폴더(~/.elanous)가 «아니다» — 설치물과 상태(auth·logs·worktrees)를 가른다.
 #   bun 이 없으면 공식 설치기로 먼저 깐다(--no-bootstrap-bun 으로 끈다).
 set -euo pipefail
 
 usage() {
   cat <<'EOF'
 Usage: bash scripts/install.sh [--prefix PATH] [--source PATH.tgz|URL] [--no-modify-path] [--no-bootstrap-bun] [--help]
-       curl -fsSL https://github.com/ElanvitalAI/monad/releases/latest/download/install.sh | bash
+       curl -fsSL https://github.com/ElanvitalAI/elanous/releases/latest/download/install.sh | bash
 
-Install monadagent without contacting a package registry.
-  --prefix PATH       installation root (default: $MONAD_INSTALL_PREFIX or ${XDG_DATA_HOME:-$HOME/.local/share}/monad)
-                      layout: versions/<version>[-<commit12>]/ · current -> versions/… · bin/monad
+Install elanous without contacting a package registry.
+  --prefix PATH       installation root (default: $ELANOUS_INSTALL_PREFIX or ${XDG_DATA_HOME:-$HOME/.local/share}/elanous)
+                      layout: versions/<version>[-<commit12>]/ · current -> versions/… · bin/elanous
                       (a checkout install names its folder by commit, so reinstalling keeps the previous one)
   --source PATH.tgz   install an existing local package tarball
   --source URL        download the package tarball (https://…/*.tgz) and install it
-                      (or set $MONAD_INSTALL_SOURCE; without either, fetch the verified latest release)
-  --no-modify-path    do not append the monad PATH block to a shell startup file
+                      (or set $ELANOUS_INSTALL_SOURCE; without either, fetch the verified latest release)
+  --no-modify-path    do not append the elanous PATH block to a shell startup file
   --no-bootstrap-bun  fail instead of installing bun with its official installer when bun is missing
   --help, -h          show this help
 EOF
@@ -31,8 +31,8 @@ shell_quote() {
   printf "'%s'" "${1//\'/\'\"\'\"\'}"
 }
 
-PREFIX="${MONAD_INSTALL_PREFIX:-${XDG_DATA_HOME:-${HOME:?HOME is required}/.local/share}/monad}"
-SOURCE="${MONAD_INSTALL_SOURCE:-}"
+PREFIX="${ELANOUS_INSTALL_PREFIX:-${XDG_DATA_HOME:-${HOME:?HOME is required}/.local/share}/elanous}"
+SOURCE="${ELANOUS_INSTALL_SOURCE:-}"
 MODIFY_PATH=1
 BOOTSTRAP_BUN=1
 
@@ -69,7 +69,7 @@ required_command_hint() {
   local package="$1" id='' id_like='' version='' key value family='unknown' like
   if [ "$(uname -s)" = 'Darwin' ]; then
     family='darwin'
-  elif [ "$(uname -s)" = 'Linux' ] && [ -r "${MONAD_INSTALL_OS_RELEASE_FILE:-/etc/os-release}" ]; then
+  elif [ "$(uname -s)" = 'Linux' ] && [ -r "${ELANOUS_INSTALL_OS_RELEASE_FILE:-/etc/os-release}" ]; then
     while IFS='=' read -r key value; do
       value="${value#\"}"; value="${value%\"}"
       value="${value#\'}"; value="${value%\'}"
@@ -78,7 +78,7 @@ required_command_hint() {
         ID_LIKE) id_like="$value" ;;
         VERSION_ID) version="$value" ;;
       esac
-    done < "${MONAD_INSTALL_OS_RELEASE_FILE:-/etc/os-release}"
+    done < "${ELANOUS_INSTALL_OS_RELEASE_FILE:-/etc/os-release}"
     if [ "$id" = 'amzn' ] && [ "$version" = '2' ]; then
       family='amzn2'
     elif [ "$id" = 'debian' ] || [ "$id" = 'ubuntu' ]; then
@@ -128,8 +128,8 @@ if [ "${#MISSING[@]}" -gt 0 ]; then
 fi
 
 # bun 판은 고정한다 — 기계마다 «그날의 최신»이 깔리면 같은 판을 설치해도 다르게 돈다.
-# Pod 이미지(docker/harness/Dockerfile `ARG BUN_VERSION`)와 같은 판. MONAD_BUN_VERSION=latest 면 고정하지 않는다.
-BUN_PIN="${MONAD_BUN_VERSION:-1.4.2}"
+# Pod 이미지(docker/harness/Dockerfile `ARG BUN_VERSION`)와 같은 판. ELANOUS_BUN_VERSION=latest 면 고정하지 않는다.
+BUN_PIN="${ELANOUS_BUN_VERSION:-1.4.2}"
 if ! command -v bun >/dev/null 2>&1 && [ "$BOOTSTRAP_BUN" -eq 1 ]; then
   echo "bun not found — installing bun ${BUN_PIN} with its official installer (https://bun.sh/install)" >&2
   if [ "$BUN_PIN" = latest ]; then BUN_ARGS=(); else BUN_ARGS=("bun-v${BUN_PIN}"); fi
@@ -157,7 +157,7 @@ done
 # bun 의 «실제 실행 파일» — PATH 의 이름이 아니라 bun 이 스스로 말하는 경로(링크를 끝까지 푼 것).
 # 🩸 09-25 GCP debian-12 재설치: 로그인 셸은 $PREFIX/bin 이 PATH 맨 앞이라 `command -v bun` 이 우리가 전에 둔
 #    $PREFIX/bin/bun 링크 «자신»을 가리켰고, `ln -sfn` 이 그것을 자기 자신으로 덮어 고리를 만들었다
-#    (`bun: Too many levels of symbolic links` · 설치 rc 127 · 이후 `monad` 가 전부 죽음). 업데이트·재설치 경로 전부가 여기를 지난다.
+#    (`bun: Too many levels of symbolic links` · 설치 rc 127 · 이후 `elanous` 가 전부 죽음). 업데이트·재설치 경로 전부가 여기를 지난다.
 BUN_EXEC="$(bun -e 'process.stdout.write(process.execPath)' 2>/dev/null || true)"
 # bun 이 경로를 못 대면(비정상 bun) 예전처럼 PATH 의 이름으로 물러선다 — 그 이름이 우리 링크 자신이면 아래에서 다시 잇지 않는다.
 { [ -n "$BUN_EXEC" ] && [ -x "$BUN_EXEC" ]; } || BUN_EXEC="$(command -v bun)"
@@ -171,7 +171,7 @@ trap cleanup EXIT
 mkdir -p "$PREFIX"
 PREFIX="$(cd "$PREFIX" && pwd -P)"
 if [ "$MODIFY_PATH" -eq 1 ]; then
-  STARTUP="${MONAD_SHELL_STARTUP:-}"
+  STARTUP="${ELANOUS_SHELL_STARTUP:-}"
   if [ -z "$STARTUP" ]; then
     case "${SHELL:-}" in
       */zsh) STARTUP="$HOME/.zshrc" ;;
@@ -180,17 +180,17 @@ if [ "$MODIFY_PATH" -eq 1 ]; then
   fi
   mkdir -p "$(dirname "$STARTUP")"
   touch "$STARTUP"
-  MARKER_START='# >>> monad installer PATH >>>'
-  MARKER_END='# <<< monad installer PATH <<<'
+  MARKER_START='# >>> elanous installer PATH >>>'
+  MARKER_END='# <<< elanous installer PATH <<<'
   PATH_LINE="export PATH=$(shell_quote "$PREFIX/bin"):\"\$PATH\""
   if grep -Fqx "$MARKER_START" "$STARTUP" && ! grep -Fqx "$PATH_LINE" "$STARTUP"; then
     echo "⛔ PATH block already points to a different installation prefix" >&2
     exit 1
   fi
   # bash 는 로그인 셸이 ~/.profile 을 읽고, ~/.bashrc 는 «비대화형이면 맨 앞에서 return» 한다(Debian 기본).
-  # 🩸 2026-09-25 빈 debian:12 컨테이너: `bash -lc monad`(= ssh 원격 명령·스크립트) → command not found. 그래서 ~/.profile 에도 쓴다.
+  # 🩸 2026-09-25 빈 debian:12 컨테이너: `bash -lc elanous`(= ssh 원격 명령·스크립트) → command not found. 그래서 ~/.profile 에도 쓴다.
   LOGIN_STARTUP=""
-  if [ -z "${MONAD_SHELL_STARTUP:-}" ] && [ "$STARTUP" = "$HOME/.bashrc" ]; then
+  if [ -z "${ELANOUS_SHELL_STARTUP:-}" ] && [ "$STARTUP" = "$HOME/.bashrc" ]; then
     LOGIN_STARTUP="$HOME/.profile"
     touch "$LOGIN_STARTUP"
     if grep -Fqx "$MARKER_START" "$LOGIN_STARTUP" && ! grep -Fqx "$PATH_LINE" "$LOGIN_STARTUP"; then
@@ -202,24 +202,24 @@ fi
 
 # A standalone installer fetches a verified release; explicit sources and checkouts keep their existing paths.
 IS_CHECKOUT=0
-if [ -f "$SCRIPT_DIR/install.sh" ] && [ -f "$REPO_ROOT/package.json" ] && grep -q '"name": *"monadagent"' "$REPO_ROOT/package.json" 2>/dev/null; then
+if [ -f "$SCRIPT_DIR/install.sh" ] && [ -f "$REPO_ROOT/package.json" ] && grep -q '"name": *"elanous"' "$REPO_ROOT/package.json" 2>/dev/null; then
   IS_CHECKOUT=1
 fi
 if [ -z "$SOURCE" ] && [ "$IS_CHECKOUT" -eq 0 ]; then
-  RELEASE_BASE="${MONAD_RELEASE_BASE:-https://github.com/ElanvitalAI/monad/releases}"
-  if [ -n "${MONAD_VERSION:-}" ]; then
-    RELEASE_DIR="${RELEASE_BASE%/}/download/v${MONAD_VERSION}/"
+  RELEASE_BASE="${ELANOUS_RELEASE_BASE:-https://github.com/ElanvitalAI/elanous/releases}"
+  if [ -n "${ELANOUS_VERSION:-}" ]; then
+    RELEASE_DIR="${RELEASE_BASE%/}/download/v${ELANOUS_VERSION}/"
   else
     RELEASE_DIR="${RELEASE_BASE%/}/latest/download/"
   fi
-  PACKAGE_URL="${RELEASE_DIR}monadagent.tgz"
+  PACKAGE_URL="${RELEASE_DIR}elanous.tgz"
   CHECKSUM_URL="${RELEASE_DIR}SHA256SUMS"
   command -v curl >/dev/null 2>&1 || { echo "⛔ download failed: $PACKAGE_URL (curl missing)" >&2; exit 1; }
-  TMP="$(mktemp -d "${TMPDIR:-/tmp}/monad-install.XXXXXX")" || { echo "⛔ mktemp failed" >&2; exit 1; }
+  TMP="$(mktemp -d "${TMPDIR:-/tmp}/elanous-install.XXXXXX")" || { echo "⛔ mktemp failed" >&2; exit 1; }
   curl -fsSL -o "$TMP/package.tgz" "$PACKAGE_URL" || { echo "⛔ download failed: $PACKAGE_URL" >&2; exit 1; }
   curl -fsSL -o "$TMP/SHA256SUMS" "$CHECKSUM_URL" || { echo "⛔ download failed: $CHECKSUM_URL" >&2; exit 1; }
-  EXPECTED="$(awk '$2 == "monadagent.tgz" && $1 ~ /^[[:xdigit:]]+$/ && length($1) == 64 { print $1; exit }' "$TMP/SHA256SUMS")"
-  [ -n "$EXPECTED" ] || { echo "⛔ checksum missing for monadagent.tgz: $CHECKSUM_URL" >&2; exit 1; }
+  EXPECTED="$(awk '$2 == "elanous.tgz" && $1 ~ /^[[:xdigit:]]+$/ && length($1) == 64 { print $1; exit }' "$TMP/SHA256SUMS")"
+  [ -n "$EXPECTED" ] || { echo "⛔ checksum missing for elanous.tgz: $CHECKSUM_URL" >&2; exit 1; }
   if command -v sha256sum >/dev/null 2>&1; then
     ACTUAL="$(sha256sum "$TMP/package.tgz" | cut -d ' ' -f 1)"
   elif command -v shasum >/dev/null 2>&1; then
@@ -236,7 +236,7 @@ fi
 case "$SOURCE" in
   http://*|https://*)
     command -v curl >/dev/null 2>&1 || { echo "⛔ --source URL needs curl" >&2; exit 127; }
-    TMP="$(mktemp -d "${TMPDIR:-/tmp}/monad-install.XXXXXX")" || { echo "⛔ mktemp failed" >&2; exit 1; }
+    TMP="$(mktemp -d "${TMPDIR:-/tmp}/elanous-install.XXXXXX")" || { echo "⛔ mktemp failed" >&2; exit 1; }
     curl -fsSL -o "$TMP/package.tgz" "$SOURCE" || { echo "⛔ download failed: $SOURCE" >&2; exit 1; }
     METADATA_SOURCE="$SOURCE"
     INSTALL_TARBALL="$TMP/package.tgz"
@@ -251,14 +251,14 @@ elif [ -n "$SOURCE" ]; then
   [ -f "$SOURCE" ] || { echo "⛔ source tarball missing: $SOURCE" >&2; exit 2; }
   TARBALL="$(cd "$(dirname "$SOURCE")" && pwd -P)/$(basename "$SOURCE")"
   METADATA_SOURCE="$TARBALL"
-  TMP="$(mktemp -d "${TMPDIR:-/tmp}/monad-install.XXXXXX")" || { echo "⛔ mktemp failed" >&2; exit 1; }
+  TMP="$(mktemp -d "${TMPDIR:-/tmp}/elanous-install.XXXXXX")" || { echo "⛔ mktemp failed" >&2; exit 1; }
   INSTALL_TARBALL="$TMP/package.tgz"
   cp "$TARBALL" "$INSTALL_TARBALL"
 else
-  TMP="$(mktemp -d "${TMPDIR:-/tmp}/monad-install.XXXXXX")" || { echo "⛔ mktemp failed" >&2; exit 1; }
+  TMP="$(mktemp -d "${TMPDIR:-/tmp}/elanous-install.XXXXXX")" || { echo "⛔ mktemp failed" >&2; exit 1; }
   # 🆕 2026-09-24: 패키지가 PWA 빌드(apps/pwa/out/)를 싣는다 — 체크아웃에 빌드가 없으면 설치본에 웹 화면이 없다. 막지 않고 말한다.
   if [ ! -f "$REPO_ROOT/apps/pwa/out/index.html" ]; then
-    echo "⚠ PWA build not found (apps/pwa/out/index.html) — the installed copy will have no web UI. Build it first: bun bin/monad.mjs nexus build" >&2
+    echo "⚠ PWA build not found (apps/pwa/out/index.html) — the installed copy will have no web UI. Build it first: bun bin/elanous.mjs nexus build" >&2
   fi
   (cd "$REPO_ROOT" && bun pm pack --destination "$TMP" >/dev/null)
   TARBALL="$(find "$TMP" -maxdepth 1 -type f -name '*.tgz' -print -quit)"
@@ -294,7 +294,7 @@ fi
 # 🩸 2026-09-24 빈 VM 실측: apt `nodejs npm` 이 있으면 PATH 의 node(v18)·node-gyp(9.3.0)가 node-pty 를 빌드해
 #    bun 이 불러오는 순간 panic(uv_version_string)으로 죽었다. ⇒ 빌드 동안만 node=bun · node-gyp=최신 심을 PATH 앞에
 #    (src/native/native-build-env.ts 와 같은 심).
-NATIVE_SHIM="$(mktemp -d "${TMPDIR:-/tmp}/monad-native-build.XXXXXX")"
+NATIVE_SHIM="$(mktemp -d "${TMPDIR:-/tmp}/elanous-native-build.XXXXXX")"
 ln -s "$BUN_EXEC" "$NATIVE_SHIM/node"
 printf '#!/bin/sh\nexec "%s" x node-gyp@latest "$@"\n' "$BUN_EXEC" > "$NATIVE_SHIM/node-gyp"
 chmod +x "$NATIVE_SHIM/node-gyp"
@@ -305,31 +305,31 @@ fi
 rm -rf "$NATIVE_SHIM"
 ln -sfn "versions/$VERSION_NAME" "$PREFIX/current"
 mkdir -p "$PREFIX/bin"
-ln -sfn ../current/node_modules/.bin/monad "$PREFIX/bin/monad"
-chmod +x "$PREFIX/bin/monad"
-# monad 엔트리는 `#!/usr/bin/env bun` 이다 — bun 도 같은 bin 에 둬서 PATH 한 줄로 둘 다 잡히게 한다.
+ln -sfn ../current/node_modules/.bin/elanous "$PREFIX/bin/elanous"
+chmod +x "$PREFIX/bin/elanous"
+# elanous 엔트리는 `#!/usr/bin/env bun` 이다 — bun 도 같은 bin 에 둬서 PATH 한 줄로 둘 다 잡히게 한다.
 # 🩸 2026-09-25 빈 debian:12 컨테이너: bun 설치기는 ~/.bun/bin 을 ~/.bashrc 에만 써서(비대화형이면 안 읽힌다)
-#    로그인 셸에서 monad 는 찾았는데 `/usr/bin/env: 'bun': No such file or directory` 로 죽었다.
+#    로그인 셸에서 elanous 는 찾았는데 `/usr/bin/env: 'bun': No such file or directory` 로 죽었다.
 case "$BUN_EXEC" in
   "$PREFIX/bin/bun"|"$PREFIX/bin/bun/") ;;   # 자기 자신에게 잇지 않는다(고리)
   *) ln -sfn "$BUN_EXEC" "$PREFIX/bin/bun" ;;
 esac
 
-INSTALLED_PACKAGE="$PREFIX/current/node_modules/monadagent/package.json"
+INSTALLED_PACKAGE="$PREFIX/current/node_modules/elanous/package.json"
 VERSION="$(bun -e 'const p=JSON.parse(await Bun.file(process.argv.at(-1)).text()); process.stdout.write(p.version)' "$INSTALLED_PACKAGE")"
 [ -n "$VERSION" ] || { echo "⛔ package version missing: $INSTALLED_PACKAGE" >&2; exit 1; }
 INSTALLED_AT="$(date -u '+%Y-%m-%dT%H:%M:%SZ')"
 bun -e 'const [version,versionDir,source,installedAt,commit]=process.argv.slice(-5); console.log(JSON.stringify({version,versionDir,source,installedAt,...(commit ? {commit} : {})}))' \
   "$VERSION" "versions/$VERSION_NAME" "$METADATA_SOURCE" "$INSTALLED_AT" "${METADATA_COMMIT:-}" > "$PREFIX/install.json"
-# 판 폴더에도 같은 것을 둔다 — `monad --version` 은 «자기 판»의 것을 읽는다(롤백한 판이 마지막 설치의 커밋을 말하지 않게).
+# 판 폴더에도 같은 것을 둔다 — `elanous --version` 은 «자기 판»의 것을 읽는다(롤백한 판이 마지막 설치의 커밋을 말하지 않게).
 cp "$PREFIX/install.json" "$VERSION_DIR/install.json"
 
 # Darwin only: bun blocks dependency lifecycle scripts in the install prefix,
 # so the repo postinstall chmod never reaches this copy of spawn-helper.
 # Missing file or chmod failure must not fail the install.
 if [ "$(uname -s)" = "Darwin" ]; then
-  if [ -n "${MONAD_INSTALL_SPAWN_HELPER_CHMOD:-}" ]; then
-    "$MONAD_INSTALL_SPAWN_HELPER_CHMOD" "$PREFIX"/current/node_modules/node-pty/prebuilds/*/spawn-helper 2>/dev/null || true
+  if [ -n "${ELANOUS_INSTALL_SPAWN_HELPER_CHMOD:-}" ]; then
+    "$ELANOUS_INSTALL_SPAWN_HELPER_CHMOD" "$PREFIX"/current/node_modules/node-pty/prebuilds/*/spawn-helper 2>/dev/null || true
   else
     chmod +x "$PREFIX"/current/node_modules/node-pty/prebuilds/*/spawn-helper 2>/dev/null || true
   fi
@@ -342,7 +342,7 @@ if [ "$MODIFY_PATH" -eq 1 ] && [ -n "${LOGIN_STARTUP:-}" ] && ! grep -Fqx "$MARK
   printf '\n%s\n%s\n%s\n' "$MARKER_START" "$PATH_LINE" "$MARKER_END" >> "$LOGIN_STARTUP"
 fi
 
-echo "Installed monad $VERSION at $PREFIX/bin/monad"
+echo "Installed elanous $VERSION at $PREFIX/bin/elanous"
 
 # ── 다음 걸음 (2026-09-23 · Phase 3 「사람 손」) ─────────────────────────
 # ⛔ 설치가 끝나도 «무엇을 더 쳐야 하나»를 안 말하면, 빠뜨린 손이 나중에 «다른 원인의 얼굴»로 나타난다
@@ -355,11 +355,11 @@ case ":$PATH:" in
   *":$PREFIX/bin:"*) ;;
   *) if [ "$MODIFY_PATH" -eq 1 ]; then echo "  $STEP) open a new shell (or: source $STARTUP)"; else echo "  $STEP) add $PREFIX/bin to PATH"; fi; STEP=$((STEP + 1)) ;;
 esac
-if ! grep -q '"openai-codex"' "$HOME/.monad/auth.json" 2>/dev/null; then
-  echo "  $STEP) monad login openai-codex        # ChatGPT subscription (device code, no API key)"; STEP=$((STEP + 1))
+if ! grep -q '"openai-codex"' "$HOME/.elanous/auth.json" 2>/dev/null; then
+  echo "  $STEP) elanous login openai-codex        # ChatGPT subscription (device code, no API key)"; STEP=$((STEP + 1))
 fi
 # 🆕 2026-09-24 빈 VM 실측: 하니스(codex 백엔드)는 Codex CLI 를 자식으로 띄우는데 빈 기계엔 codex·node 가 «둘 다» 없었다.
-#    ⚠️ 아래 설치 줄은 빈 기계에서 아직 «안 쟀다» — `monad doctor` 의 codex 줄이 판정한다.
+#    ⚠️ 아래 설치 줄은 빈 기계에서 아직 «안 쟀다» — `elanous doctor` 의 codex 줄이 판정한다.
 if ! command -v codex >/dev/null 2>&1; then
   if ! command -v node >/dev/null 2>&1; then
     echo "  $STEP) install Node.js 20+ (the Codex CLI runs on node)   # e.g. your package manager or https://nodejs.org"; STEP=$((STEP + 1))
@@ -371,5 +371,5 @@ if ! command -v gh >/dev/null 2>&1; then
 elif ! gh auth status >/dev/null 2>&1; then
   echo "  $STEP) gh auth login                     # the harness opens pull requests with it"; STEP=$((STEP + 1))
 fi
-echo "  $STEP) monad harness say \"<one line of what you want>\""
-echo "  check anytime: monad setup --non-interactive"
+echo "  $STEP) elanous harness say \"<one line of what you want>\""
+echo "  check anytime: elanous setup --non-interactive"

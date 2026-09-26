@@ -20,7 +20,7 @@
 //   ref/codex/codex-rs/rmcp-client/src/perform_oauth_login.rs:73-157 — callback server + browser flow
 //   ref/codex/codex-rs/core/src/oauth.rs — keyring + fallback file · refresh logic
 //
-// monad surface (this module) is intentionally thin: we DON'T touch
+// elanous surface (this module) is intentionally thin: we DON'T touch
 // the keyring · we DON'T parse OAuth tokens · we DON'T implement refresh.
 // The binary is the single source of truth.
 

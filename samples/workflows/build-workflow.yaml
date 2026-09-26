@@ -8,9 +8,9 @@ description: |
         extracts a structured intent, generates a complete YAML
         following the project's "Use when / Triggers / Does / NOT for"
         convention, validates it, and (with user approval) saves it
-        to ~/.monad/workflows/.
+        to ~/.elanous/workflows/.
   NOT for: Editing an existing workflow (use the PWA YAML editor at
-           /workflows or `monad workflow show <name>` + your editor).
+           /workflows or `elanous workflow show <name>` + your editor).
 
 # model hints (sonnet / haiku) resolve to Anthropic when that's the
 # user's provider; non-Anthropic providers fall back to their own
@@ -21,10 +21,10 @@ nodes:
   - id: scan-codebase
     bash: |
       echo "=== Existing workflows ==="
-      ls -1 ~/.monad/workflows 2>/dev/null | grep -E '\.ya?ml$' | head -20 || echo "(none)"
+      ls -1 ~/.elanous/workflows 2>/dev/null | grep -E '\.ya?ml$' | head -20 || echo "(none)"
       echo ""
       echo "=== Project workflows ==="
-      ls -1 .monad/workflows 2>/dev/null | grep -E '\.ya?ml$' | head -20 || echo "(none)"
+      ls -1 .elanous/workflows 2>/dev/null | grep -E '\.ya?ml$' | head -20 || echo "(none)"
       echo ""
       echo "=== Built-in samples ==="
       ls -1 samples/workflows 2>/dev/null | head -20 || echo "(none)"
@@ -69,7 +69,7 @@ nodes:
 
   - id: generate-yaml
     prompt: |
-      You are an Archon-style monad workflow author. Generate a
+      You are an Archon-style elanous workflow author. Generate a
       complete, valid workflow YAML based on the structured intent
       provided. Write the result to $ARTIFACTS_DIR/generated.yaml
       using the Bash tool's tee or printf — do NOT use Write/Edit.
@@ -127,13 +127,13 @@ nodes:
         echo "ERROR: generate-yaml did not create \$ARTIFACTS_DIR/generated.yaml"
         exit 1
       fi
-      monad wf validate "$FILE"
+      elanous wf validate "$FILE"
     depends_on: [generate-yaml]
     idle_timeout: 30000
 
   - id: confirm-save
     approval:
-      message: "Save the generated workflow to ~/.monad/workflows/? (Enter to approve, type 'no' to skip)"
+      message: "Save the generated workflow to ~/.elanous/workflows/? (Enter to approve, type 'no' to skip)"
       capture_response: true
     depends_on: [validate-yaml]
 
@@ -145,9 +145,9 @@ nodes:
         echo "skipped — workflow stayed at $FILE"
         exit 0
       fi
-      mkdir -p "$HOME/.monad/workflows"
+      mkdir -p "$HOME/.elanous/workflows"
       NAME=$(grep '^name:' "$FILE" | head -1 | sed 's/^name:[[:space:]]*//' | tr -d '"' )
-      DEST="$HOME/.monad/workflows/$NAME.yaml"
+      DEST="$HOME/.elanous/workflows/$NAME.yaml"
       cp "$FILE" "$DEST"
       echo "installed → $DEST"
     depends_on: [confirm-save]

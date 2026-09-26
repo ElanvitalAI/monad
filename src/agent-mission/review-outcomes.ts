@@ -1,15 +1,15 @@
 // ── G9 학습루프 — 무인 리뷰 결정 결과 추적 (2026-07-23) ──────────────────────
 //
-// ROADMAP-monad-is-all §2b(무인레벨 삼각·학습 축). 무인 리뷰루프가 자율 머지한 PR 의 **사후 결과**를
+// ROADMAP-elanous-is-all §2b(무인레벨 삼각·학습 축). 무인 리뷰루프가 자율 머지한 PR 의 **사후 결과**를
 // 기록한다: merged(머지됨)·reverted(G10 회귀감지 revert)·followup-fixed(직후 수정). 이 데이터로
 // "무인 결정이 옳았나"를 측정하고, 무게(depth)별 회귀율을 집계해 G8 eligibility/무게 임계 보정 신호로 쓴다.
 //
 // 원칙(제1원칙·자동의 위험): 이 store 는 **관측·집계**만. 정책 자동 변경은 별도(안전 방향만 보수적·
 // 위험 방향은 제안=HITL). 여기는 진실을 쌓는 곳.
-// 재사용: repo-watch/pr_review_state 의 sqlite 커서 패턴(MONAD_STATE_DIR 존중·:memory: 테스트).
+// 재사용: repo-watch/pr_review_state 의 sqlite 커서 패턴(ELANOUS_STATE_DIR 존중·:memory: 테스트).
 
 import { Database } from 'bun:sqlite';
-import { monadStateRoot } from '../autopilot/state-paths.js';
+import { elanousStateRoot } from '../autopilot/state-paths.js';
 import { mkdirSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import type { ReviewDepth } from './review-depth.js';
@@ -17,7 +17,7 @@ import type { ReviewDepth } from './review-depth.js';
 export type ReviewOutcome = 'merged' | 'reverted' | 'followup-fixed';
 
 // ⚠️ 상태 경로 codex-mission 유지(agent-agnostic 리네임에도) — 기존 G9 학습 DB 고아화 방지. 코드만 agent-mission.
-export function reviewOutcomeDbPath(): string { return join(monadStateRoot(), 'codex-mission/review_outcomes.db'); }
+export function reviewOutcomeDbPath(): string { return join(elanousStateRoot(), 'codex-mission/review_outcomes.db'); }
 
 export function openReviewOutcomeDb(path: string = reviewOutcomeDbPath()): Database {
   if (path !== ':memory:') mkdirSync(dirname(path), { recursive: true });

@@ -4,7 +4,7 @@ import { mkdir, mkdtemp, writeFile } from 'node:fs/promises';
 import { homedir, tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { debug } from '../../src/debug/log';
-import { monadStateRoot } from '../../src/autopilot/state-paths';
+import { elanousStateRoot } from '../../src/autopilot/state-paths';
 import { effectiveCodexHome, resolveCodexAccount } from '../../src/oauth/codex-account';
 import { authStorePath } from '../../src/oauth/store';
 import { describeResetCreditExpiry, writeAvailabilityState, quotaSignalDir, readQuotaSignal, writeQuotaSignal,
@@ -32,7 +32,7 @@ async function authFile(): Promise<string> {
 }
 
 async function expectMissingAuthPath(env: NodeJS.ProcessEnv, expectedPath: string): Promise<void> {
-  // 빈 monad 저장소 — 파일을 못 읽을 때의 저장소 대체(#20263 ④)가 «이 기계의 실제 저장소»를 읽지 않게.
+  // 빈 elanous 저장소 — 파일을 못 읽을 때의 저장소 대체(#20263 ④)가 «이 기계의 실제 저장소»를 읽지 않게.
   const emptyStore = join(await mkdtemp(join(tmpdir(), 'codex-empty-store-')), 'auth.json');
   const result = await listCodexResetCredits({ env, authStorePath: emptyStore });
   expect(result.ok).toBe(false);
@@ -79,11 +79,11 @@ describe('Codex reset credits', () => {
     }
   });
 
-  test('uses MONAD_CODEX_ACCOUNT_HOME auth path for the selected account', async () => {
+  test('uses ELANOUS_CODEX_ACCOUNT_HOME auth path for the selected account', async () => {
     const codexHome = await mkdtemp(join(tmpdir(), 'codex-account-home-'));
     try {
       await expectMissingAuthPath(
-        { MONAD_CODEX_ACCOUNT: 'b', MONAD_CODEX_ACCOUNT_HOME: codexHome },
+        { ELANOUS_CODEX_ACCOUNT: 'b', ELANOUS_CODEX_ACCOUNT_HOME: codexHome },
         join(codexHome, 'auth.json'),
       );
     } finally {
@@ -104,7 +104,7 @@ describe('Codex reset credits', () => {
         providers: { 'openai-codex:b': { codexHome: storedHome } },
       }));
       await expectMissingAuthPath(
-        { MONAD_CODEX_ACCOUNT: 'b', MONAD_CODEX_ACCOUNT_HOME: declaredHome },
+        { ELANOUS_CODEX_ACCOUNT: 'b', ELANOUS_CODEX_ACCOUNT_HOME: declaredHome },
         join(storedHome, 'auth.json'),
       );
     } finally {
@@ -353,12 +353,12 @@ describe('quota signal (디스크 경유 · 판정층이 읽는 유일한 자리
   let priorHome: string | undefined;
   const madeDirs: string[] = [];
   beforeEach(() => {
-    priorStateDir = process.env.MONAD_STATE_DIR;
+    priorStateDir = process.env.ELANOUS_STATE_DIR;
     priorHome = process.env.HOME;
   });
   afterEach(() => {
-    if (priorStateDir === undefined) delete process.env.MONAD_STATE_DIR;
-    else process.env.MONAD_STATE_DIR = priorStateDir;
+    if (priorStateDir === undefined) delete process.env.ELANOUS_STATE_DIR;
+    else process.env.ELANOUS_STATE_DIR = priorStateDir;
     if (priorHome === undefined) delete process.env.HOME;
     else process.env.HOME = priorHome;
     // ⛔ 만든 것은 «치운다»(4R must-fix) — 다른 파일만 고치고 여기를 빼먹었다
@@ -368,7 +368,7 @@ describe('quota signal (디스크 경유 · 판정층이 읽는 유일한 자리
   async function isolated(): Promise<string> {
     const dir = await mkdtemp(join(tmpdir(), 'quota-signal-'));
     madeDirs.push(dir);
-    process.env.MONAD_STATE_DIR = dir;   // ⛔ 실제 ~/.monad 를 절대 안 건드린다
+    process.env.ELANOUS_STATE_DIR = dir;   // ⛔ 실제 ~/.elanous 를 절대 안 건드린다
     return dir;
   }
 
@@ -389,7 +389,7 @@ describe('quota signal (디스크 경유 · 판정층이 읽는 유일한 자리
     writeQuotaSignal('rate_limit_reached');
 
     expect(readdirSync(join(stateRoot, 'budget'))).toHaveLength(1);
-    expect(existsSync(join(fakeHome, '.monad', 'budget'))).toBe(false);
+    expect(existsSync(join(fakeHome, '.elanous', 'budget'))).toBe(false);
   });
 
   test('암시적 읽기는 격리 신호를 읽고 별도 운영 뿌리 신호는 읽지 않는다', async () => {
@@ -419,31 +419,31 @@ describe('quota signal (디스크 경유 · 판정층이 읽는 유일한 자리
 
   // ⛔⭐⭐⭐ **계약이 «바뀌었다**(2026-08-19 · 🅢 실측 → 🅣 수리). 옛 문면은 아래와 같았다:
   //   *"격리 지정이 없으면 quota 경로는 정식 resolver 의 운영 fallback 을 그대로 쓴다"*
-  //   ⇒ 즉 ***파생 우주(트리에서 자동으로 갈리는 `.monad-test`)까지 신호를 갈랐다.***
+  //   ⇒ 즉 ***파생 우주(트리에서 자동으로 갈리는 `.elanous-test`)까지 신호를 갈랐다.***
   // 🚨 그 결과: 자식 워크트리가 ***아무도 갱신하지 않는 자기 신호***를 읽어 «19시간» 낡은 값을 보고,
   //   회전이 `usedPercent=unknown` 으로 판단해 ***이미 100% 인 계정을 골라*** 429 로 죽었다(골 둘).
   // ⇒ 🔑 새 계약: ***「누가 격리를 «말했나»」***로 가른다.
-  //   ⓐ `MONAD_STATE_DIR` 명시 ⇒ 존중(그 위 테스트가 그것을 문다)
+  //   ⓐ `ELANOUS_STATE_DIR` 명시 ⇒ 존중(그 위 테스트가 그것을 문다)
   //   ⓑ 말한 적 없음        ⇒ ***자격(`auth.json`)과 «같은 뿌리»*** — 자격이 안 갈리므로 상태도 안 갈린다
   // ⛔⭐ **세 자리가 «한 규칙»을 쓰는지** — auth · quota signal · reset credit.
   //   📏 실측(2026-08-19): reset-credit 은 «이미» 옳은 규칙이었는데 `XDG_CONFIG_HOME` 만 «안» 봤다
-  //     ⇒ XDG 환경에서 자격은 `$XDG/monad/auth.json`, 상태는 `~/.monad/budget` 으로 «또» 갈렸다.
+  //     ⇒ XDG 환경에서 자격은 `$XDG/elanous/auth.json`, 상태는 `~/.elanous/budget` 으로 «또» 갈렸다.
   test('⛔ XDG 환경에서도 자격과 상태가 «같은 뿌리»다 — 세 자리가 한 규칙을 쓴다', () => {
-    delete process.env.MONAD_STATE_DIR;
+    delete process.env.ELANOUS_STATE_DIR;
     const priorXdg = process.env.XDG_CONFIG_HOME;
     const xdgRoot = mkdtempSync(join(tmpdir(), 'xdg-root-'));
     process.env.XDG_CONFIG_HOME = xdgRoot;
     try {
-      expect(codexCredentialRoot()).toBe(join(xdgRoot, 'monad'));
-      expect(quotaSignalDir()).toBe(join(xdgRoot, 'monad', 'budget'));
+      expect(codexCredentialRoot()).toBe(join(xdgRoot, 'elanous'));
+      expect(quotaSignalDir()).toBe(join(xdgRoot, 'elanous', 'budget'));
       // ⭐ auth 와 «같은 부모»여야 한다 — 이 단언이 「세 자리가 한 규칙」의 본체다
       expect(dirname(authStorePath())).toBe(codexCredentialRoot());
       // ⛔⭐ **셋째 자리(reset credit)는 경로 함수가 «비공개»라 직접 못 묻는다** —
       //   그래서 ***파일이 «어디에» 생기나***로 문다. 이 단언이 없으면 그 자리만 조용히 갈릴 수 있다.
-      //   ⚠️ 회귀가 나면 이 테스트는 «사람의 진짜 ~/.monad/budget 에 파일을 하나 만들고» 실패한다 —
+      //   ⚠️ 회귀가 나면 이 테스트는 «사람의 진짜 ~/.elanous/budget 에 파일을 하나 만들고» 실패한다 —
       //     그것이 바로 이 테스트가 잡으려는 «그 결함»이라 감수한다.
       writeAvailabilityState(3, join(xdgRoot, 'fake-codex-home'));
-      expect(readdirSync(join(xdgRoot, 'monad', 'budget')).some((f) => f.startsWith('codex-reset-credit-availability-'))).toBe(true);
+      expect(readdirSync(join(xdgRoot, 'elanous', 'budget')).some((f) => f.startsWith('codex-reset-credit-availability-'))).toBe(true);
     } finally {
       if (priorXdg === undefined) delete process.env.XDG_CONFIG_HOME; else process.env.XDG_CONFIG_HOME = priorXdg;
       try { rmSync(xdgRoot, { recursive: true, force: true }); } catch { /* best-effort */ }
@@ -451,12 +451,12 @@ describe('quota signal (디스크 경유 · 판정층이 읽는 유일한 자리
   });
 
   test('⛔ 격리를 «말한 적 없으면» quota 경로는 자격과 «같은 뿌리»다 — 파생 우주로 안 갈린다', () => {
-    delete process.env.MONAD_STATE_DIR;
+    delete process.env.ELANOUS_STATE_DIR;
     expect(quotaSignalDir()).toBe(join(codexCredentialRoot(), 'budget'));
     // ⭐ 그리고 그것은 ***파생 우주와 «다르다»*** — 이 단언이 회귀의 «본체»다.
     //   (파생이 실제로 갈려 있을 때만 유효하므로, 같으면 이 축은 「측정 불가」로 넘어간다)
-    if (monadStateRoot() !== codexCredentialRoot()) {
-      expect(quotaSignalDir()).not.toBe(join(monadStateRoot(), 'budget'));
+    if (elanousStateRoot() !== codexCredentialRoot()) {
+      expect(quotaSignalDir()).not.toBe(join(elanousStateRoot(), 'budget'));
     }
   });
 
@@ -480,8 +480,8 @@ describe('quota signal (디스크 경유 · 판정층이 읽는 유일한 자리
   });
 });
 
-describe('Codex reset credits — monad login without a Codex CLI mirror (#20263 ④)', () => {
-  test('falls back to the same account token in the monad auth store when the Codex file is missing', async () => {
+describe('Codex reset credits — elanous login without a Codex CLI mirror (#20263 ④)', () => {
+  test('falls back to the same account token in the elanous auth store when the Codex file is missing', async () => {
     const dir = await mkdtemp(join(tmpdir(), 'codex-store-fallback-'));
     const storePath = join(dir, 'auth.json');
     const token = tokenWithAccountId('acct-store');

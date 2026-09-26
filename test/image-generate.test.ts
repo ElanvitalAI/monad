@@ -20,7 +20,7 @@ const TINY_PNG_B64 =
   'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=';
 
 beforeEach(() => {
-  tmpRoot = mkdtempSync(join(tmpdir(), 'monad-image-gen-test-'));
+  tmpRoot = mkdtempSync(join(tmpdir(), 'elanous-image-gen-test-'));
   testVault = { root: tmpRoot, isSimulated: true, label: 'test-vault' };
 });
 

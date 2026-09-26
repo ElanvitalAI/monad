@@ -131,7 +131,7 @@ function defaultRunCommand(command: string, args: string[], cwd: string): Proces
   if (command === 'bun' && args[0] === 'test') {
     let isolated: ReturnType<typeof prepareDeterministicChildEnvironment>;
     try {
-      isolated = prepareDeterministicChildEnvironment('monad-gate-cli-test-env-');
+      isolated = prepareDeterministicChildEnvironment('elanous-gate-cli-test-env-');
     } catch (error) {
       const message = `deterministic environment setup failed: ${String(error)}`;
       return { status: null, stdout: '', stderr: message, error: error instanceof Error ? error : new Error(message) };
@@ -565,7 +565,7 @@ export function runSelfGateCli(cwd: string, options: SelfGateCliOptions = {}, de
     `scope: ${scope.testArgs?.join(', ') ?? '(test step skipped)'}`,
     `ignored unrelated worktree changes: ${selection.ignoredDirtyPaths === undefined ? '(not checked)' : selection.ignoredDirtyPaths.join(', ') || '(none)'}`,
     `unverified: ${scope.unverified.length} (${scope.unverified.join(', ') || '(none)'})`,
-    `monad runtime artifacts: ${scope.monadRuntimeArtifacts.length} (${scope.monadRuntimeArtifacts.join(', ') || '(none)'})`,
+    `elanous runtime artifacts: ${scope.elanousRuntimeArtifacts.length} (${scope.elanousRuntimeArtifacts.join(', ') || '(none)'})`,
     `document paths: ${scope.documentPaths.join(', ') || '(none)'}`,
     `documents without derived tests: ${scope.documentsWithoutDerivedTests.join(', ') || '(none)'}`,
     // ⭐ 🅣 정책(2026-08-25 · 채널 #12577) — ***「보고한다. 막지 않는다.」***

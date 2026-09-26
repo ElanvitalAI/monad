@@ -1,4 +1,4 @@
-// monad fleet — 멀티 인스턴스 뷰 + 스토어 경로 도출 테스트.
+// elanous fleet — 멀티 인스턴스 뷰 + 스토어 경로 도출 테스트.
 
 import { describe, test, expect } from 'bun:test';
 import { homedir } from 'node:os';
@@ -13,13 +13,13 @@ test('fleet CLI displays a remote host without marking it dead and retains JSON 
   try {
     const home = join(root, 'home');
     const stateDir = join(root, 'remote');
-    mkdirSync(join(home, '.monad', 'logs'), { recursive: true });
-    writeFileSync(join(home, '.monad', 'logs', 'instances.json'), JSON.stringify({ instances: [{
+    mkdirSync(join(home, '.elanous', 'logs'), { recursive: true });
+    writeFileSync(join(home, '.elanous', 'logs', 'instances.json'), JSON.stringify({ instances: [{
       name: 'remote', stateDir, hostId: '01OTHERHOST', hostname: 'win-box',
       pid: 999_999_999, startedAt: '2026-09-25T00:00:00Z',
     }] }));
-    const run = (args: string[]) => spawnSync(process.execPath, ['bin/monad.mjs', '--test', 'fleet', 'list', ...args], {
-      cwd: process.cwd(), env: { ...process.env, HOME: home, MONAD_HOST_ID: '01THISHOST' }, encoding: 'utf8',
+    const run = (args: string[]) => spawnSync(process.execPath, ['bin/elanous.mjs', '--test', 'fleet', 'list', ...args], {
+      cwd: process.cwd(), env: { ...process.env, HOME: home, ELANOUS_HOST_ID: '01THISHOST' }, encoding: 'utf8',
     });
     const text = run([]);
     expect(text.status).toBe(0);
@@ -37,50 +37,50 @@ test('fleet CLI displays a remote host without marking it dead and retains JSON 
 
 describe('instanceStorePaths — stateDir → 스토어 정본 경로', () => {
   test('scoped 인스턴스 — surface_events 는 <stateDir>/surface_events.db', () => {
-    const p = instanceStorePaths('/tmp/x/.monad-test');
-    expect(p.logs).toBe('/tmp/x/.monad-test/logs/logs.db');
-    expect(p.sessions).toBe('/tmp/x/.monad-test/sessions/index.json');
-    expect(p.tasks).toBe('/tmp/x/.monad-test/tasks/tasks.db');
-    expect(p.memory).toBe('/tmp/x/.monad-test/surface_events.db');
-    expect(p.frame).toBe('/tmp/x/.monad-test/pty/manifest.db');
-    expect(p.events).toBe('/tmp/x/.monad-test/pty/events.db');
+    const p = instanceStorePaths('/tmp/x/.elanous-test');
+    expect(p.logs).toBe('/tmp/x/.elanous-test/logs/logs.db');
+    expect(p.sessions).toBe('/tmp/x/.elanous-test/sessions/index.json');
+    expect(p.tasks).toBe('/tmp/x/.elanous-test/tasks/tasks.db');
+    expect(p.memory).toBe('/tmp/x/.elanous-test/surface_events.db');
+    expect(p.frame).toBe('/tmp/x/.elanous-test/pty/manifest.db');
+    expect(p.events).toBe('/tmp/x/.elanous-test/pty/events.db');
   });
-  test('prod(~/.monad) — memory 는 memory/ 서브(비대칭)', () => {
-    const p = instanceStorePaths(join(homedir(), '.monad'));
-    expect(p.memory).toBe(join(homedir(), '.monad', 'memory', 'surface_events.db'));
+  test('prod(~/.elanous) — memory 는 memory/ 서브(비대칭)', () => {
+    const p = instanceStorePaths(join(homedir(), '.elanous'));
+    expect(p.memory).toBe(join(homedir(), '.elanous', 'memory', 'surface_events.db'));
   });
-  test('opsEvents/schedules/mandate 는 state-dir 평면(monadStateRoot 직속·서브폴더 없음)', () => {
-    const p = instanceStorePaths('/tmp/x/.monad-test');
-    expect(p.opsEvents).toBe('/tmp/x/.monad-test/ops_events.db');
-    expect(p.schedules).toBe('/tmp/x/.monad-test/schedules.db');
-    expect(p.mandate).toBe('/tmp/x/.monad-test/finance-trade-mandate.json');
+  test('opsEvents/schedules/mandate 는 state-dir 평면(elanousStateRoot 직속·서브폴더 없음)', () => {
+    const p = instanceStorePaths('/tmp/x/.elanous-test');
+    expect(p.opsEvents).toBe('/tmp/x/.elanous-test/ops_events.db');
+    expect(p.schedules).toBe('/tmp/x/.elanous-test/schedules.db');
+    expect(p.mandate).toBe('/tmp/x/.elanous-test/finance-trade-mandate.json');
   });
   test('opsEvents/schedules/mandate 는 config-dir 무관 — state-dir 스코프(tasks 만 config-dir)', () => {
-    const p = instanceStorePaths('/tmp/s/.monad-test', '/tmp/c/.monad-test');
-    expect(p.opsEvents).toBe('/tmp/s/.monad-test/ops_events.db');   // state-dir
-    expect(p.schedules).toBe('/tmp/s/.monad-test/schedules.db');    // state-dir
-    expect(p.mandate).toBe('/tmp/s/.monad-test/finance-trade-mandate.json'); // state-dir
-    expect(p.tasks).toBe('/tmp/c/.monad-test/tasks/tasks.db');      // config-dir (대비)
+    const p = instanceStorePaths('/tmp/s/.elanous-test', '/tmp/c/.elanous-test');
+    expect(p.opsEvents).toBe('/tmp/s/.elanous-test/ops_events.db');   // state-dir
+    expect(p.schedules).toBe('/tmp/s/.elanous-test/schedules.db');    // state-dir
+    expect(p.mandate).toBe('/tmp/s/.elanous-test/finance-trade-mandate.json'); // state-dir
+    expect(p.tasks).toBe('/tmp/c/.elanous-test/tasks/tasks.db');      // config-dir (대비)
   });
   test('prod opsEvents/schedules/mandate == 기본 경로(무회귀) — state-dir 평면', () => {
-    const root = join(homedir(), '.monad');
+    const root = join(homedir(), '.elanous');
     const p = instanceStorePaths(root);
     expect(p.opsEvents).toBe(join(root, 'ops_events.db'));
     expect(p.schedules).toBe(join(root, 'schedules.db'));
     expect(p.mandate).toBe(join(root, 'finance-trade-mandate.json'));
   });
   test('tasks 는 configDir 스코프 — state-dir≠config-dir 이면 config-dir 기반(Class 3 · D1)', () => {
-    const p = instanceStorePaths('/tmp/s/.monad-test', '/tmp/c/.monad-test');
-    expect(p.tasks).toBe('/tmp/c/.monad-test/tasks/tasks.db');   // config-dir 기반
-    expect(p.logs).toBe('/tmp/s/.monad-test/logs/logs.db');       // state-dir 기반
+    const p = instanceStorePaths('/tmp/s/.elanous-test', '/tmp/c/.elanous-test');
+    expect(p.tasks).toBe('/tmp/c/.elanous-test/tasks/tasks.db');   // config-dir 기반
+    expect(p.logs).toBe('/tmp/s/.elanous-test/logs/logs.db');       // state-dir 기반
     // configDir 생략 시 stateDir 폴백(config-dir==state-dir 관례).
     expect(instanceStorePaths('/tmp/x').tasks).toBe('/tmp/x/tasks/tasks.db');
   });
 });
 
 describe('buildFleetView — 인스턴스 + 스토어 매트릭스', () => {
-  const A = '/tmp/inst-a/.monad-test';
-  const B = '/tmp/inst-b/.monad-test';
+  const A = '/tmp/inst-a/.elanous-test';
+  const B = '/tmp/inst-b/.elanous-test';
   const instances = [
     { name: 'test:a', stateDir: A, repoPath: '/tmp/inst-a', alive: true, pid: 111, startedAt: '2026-07-24T00:00:00Z' },
     { name: 'test:b', stateDir: B, alive: false, pid: 222, startedAt: '2026-07-24T00:00:00Z' },
@@ -92,7 +92,7 @@ describe('buildFleetView — 인스턴스 + 스토어 매트릭스', () => {
 
   test('주입 인스턴스 + prod 자동포함 + 스토어 존재 판정', () => {
     const view = buildFleetView({ instances, exists });
-    // prod(~/.monad) 자동 포함.
+    // prod(~/.elanous) 자동 포함.
     expect(view.some((v) => v.name === 'prod')).toBe(true);
     const a = view.find((v) => v.name === 'test:a')!;
     expect(a.stores.logs).toBe(true);
@@ -130,12 +130,12 @@ describe('buildFleetView — 인스턴스 + 스토어 매트릭스', () => {
     expect(ai).toBeLessThan(bi);
   });
 
-  test('kind 유추 — .monad-test 폴더/test: 이름=test · prod 홈=prod · 병렬 인스턴스=prod (Phase A)', () => {
+  test('kind 유추 — .elanous-test 폴더/test: 이름=test · prod 홈=prod · 병렬 인스턴스=prod (Phase A)', () => {
     const parallel = { name: 'axon', stateDir: '/tmp/axon-state', alive: true, pid: 333, startedAt: '2026-07-24T00:00:00Z' };
     const view = buildFleetView({ instances: [...instances, parallel], exists });
     expect(view.find((v) => v.name === 'test:a')!.kind).toBe('test');
     expect(view.find((v) => v.name === 'prod')!.kind).toBe('prod');
-    // 병렬 비-test 인스턴스(.monad-test 아님·test: prefix 아님)는 prod-kind → 데이터 연합 포함.
+    // 병렬 비-test 인스턴스(.elanous-test 아님·test: prefix 아님)는 prod-kind → 데이터 연합 포함.
     expect(view.find((v) => v.name === 'axon')!.kind).toBe('prod');
   });
 });
@@ -182,7 +182,7 @@ describe('ptyEventLogTargets', () => {
       isTest: (entry: { name: string }) => entry.name.startsWith('test:'),
     };
     expect(ptyEventLogTargets({}, targetDeps)).toEqual([
-      { name: 'prod', dbPath: `${join(homedir(), '.monad')}/pty/events.db` },
+      { name: 'prod', dbPath: `${join(homedir(), '.elanous')}/pty/events.db` },
       { name: 'pilot', dbPath: '/pilot/pty/events.db' },
     ]);
     expect(ptyEventLogTargets({ includeTest: true }, targetDeps).map((target) => target.name)).toEqual(['prod', 'pilot', 'test:wt']);

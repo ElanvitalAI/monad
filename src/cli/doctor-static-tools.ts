@@ -1,4 +1,4 @@
-// 🧰 monad 소유 정적 도구 — 패키지 관리자에 «줄이 없는» 배포판에서 rg·codex·uv(→ 관리형 파이썬)를 sudo 없이 받는다.
+// 🧰 elanous 소유 정적 도구 — 패키지 관리자에 «줄이 없는» 배포판에서 rg·codex·uv(→ 관리형 파이썬)를 sudo 없이 받는다.
 //
 // 계기(2026-09-25 · 대표 「AL2023·AL2 의 파이썬과 rg 는 사람이 아니라 무인으로」):
 //   📏 빈 amazonlinux:2(glibc 2.26)·amazonlinux:2023 컨테이너에서 실측 —
@@ -98,21 +98,21 @@ export function linuxArch(arch: string = process.arch): LinuxArch | null {
   return null;
 }
 
-/** monad 데이터 뿌리(`~/.local/share/monad` · 설치기 PREFIX 와 같은 규칙). */
-export function monadDataRoot(env: NodeJS.ProcessEnv = process.env, home: string = homedir()): string {
-  const prefix = env.MONAD_INSTALL_PREFIX?.trim();
+/** elanous 데이터 뿌리(`~/.local/share/elanous` · 설치기 PREFIX 와 같은 규칙). */
+export function elanousDataRoot(env: NodeJS.ProcessEnv = process.env, home: string = homedir()): string {
+  const prefix = env.ELANOUS_INSTALL_PREFIX?.trim();
   if (prefix) return prefix;
-  return join(env.XDG_DATA_HOME?.trim() || join(home, '.local', 'share'), 'monad');
+  return join(env.XDG_DATA_HOME?.trim() || join(home, '.local', 'share'), 'elanous');
 }
 
 /** 설치기가 PATH 에 넣는 폴더 — rg·codex 를 여기 두면 하니스가 PATH 로 찾는다. */
 export function staticToolBinDir(env: NodeJS.ProcessEnv = process.env, home: string = homedir()): string {
-  return join(monadDataRoot(env, home), 'bin');
+  return join(elanousDataRoot(env, home), 'bin');
 }
 
-/** uv 는 PATH 에 두지 않는다(monad 내부 도구). */
+/** uv 는 PATH 에 두지 않는다(elanous 내부 도구). */
 export function uvPath(env: NodeJS.ProcessEnv = process.env, home: string = homedir()): string {
-  return join(monadDataRoot(env, home), 'tools', 'uv');
+  return join(elanousDataRoot(env, home), 'tools', 'uv');
 }
 
 
@@ -133,7 +133,7 @@ export interface StaticToolResult { ok: boolean; path: string; detail: string }
 export function installStaticTool(name: StaticToolName, arch: LinuxArch, dest: string, deps: StaticToolDeps = {}): StaticToolResult {
   const spec = STATIC_TOOLS[name];
   const run = deps.run ?? defaultRun;
-  const work = (deps.tempDir ?? (() => mkdtempSync(join(tmpdir(), 'monad-static-tool-'))))();
+  const work = (deps.tempDir ?? (() => mkdtempSync(join(tmpdir(), 'elanous-static-tool-'))))();
   try {
     const tarball = join(work, 'pkg.tar.gz');
     const got = run('curl', ['-fsSL', '--retry', '2', '-o', tarball, spec.url(arch)]);
@@ -144,7 +144,7 @@ export function installStaticTool(name: StaticToolName, arch: LinuxArch, dest: s
     if (untar.status !== 0) return { ok: false, path: dest, detail: `tar failed: ${untar.stderr.trim().split('\n').at(-1) ?? untar.status}` };
     const extracted = join(work, spec.member(arch));
     mkdirSync(join(dest, '..'), { recursive: true });
-    const staging = `${dest}.monad-new`;
+    const staging = `${dest}.elanous-new`;
     copyFileSync(extracted, staging);
     chmodSync(staging, 0o755);
     const checkArgs = spec.checkArgs === undefined ? ['--version'] : spec.checkArgs;

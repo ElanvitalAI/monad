@@ -39,7 +39,7 @@ describe('resolveHarnessTarget', () => {
     const gitResolution = resolveHarnessTarget(git, deps(() => git));
     expect(gitResolution.status).toBe('git-repo');
     expect(gitResolution.repoRoot).toBe(realpathSync(git));
-    expect(harnessTargetOptions(gitResolution, '/monad')).toEqual({ repoRoot: realpathSync(git), monadBinRoot: '/monad' });
+    expect(harnessTargetOptions(gitResolution, '/elanous')).toEqual({ repoRoot: realpathSync(git), elanousBinRoot: '/elanous' });
     expect(resolveHarnessTarget(dir, deps()).status).toBe('non-git-dir');
     expect(resolveHarnessTarget(file, deps()).status).toBe('file');
     expect(resolveHarnessTarget(join(home, 'missing'), deps()).status).toBe('missing');
@@ -80,7 +80,7 @@ describe('resolveHarnessTarget', () => {
     expect(result.kind).toBe('git-repo');
     expect(result.reason).toBe('repository root resolves outside home');
     expect(result.canonicalTarget).toBe(realpathSync(worktree));
-    expect(harnessTargetOptions(result, '/monad')).toEqual({ repoRoot: realpathSync(outside), monadBinRoot: '/monad' });
+    expect(harnessTargetOptions(result, '/elanous')).toEqual({ repoRoot: realpathSync(outside), elanousBinRoot: '/elanous' });
   });
 
   test('revalidation은 symlink 재지정과 target 소실을 normalization-failed로 차단한다', () => {

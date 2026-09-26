@@ -84,7 +84,7 @@ export async function runPwaSharePrompt(
     out.log('  PWA share — Tailscale not detected.');
     out.log('  To expose this NEXUS to other tailnet devices later:');
     out.log('    1. Install Tailscale: https://tailscale.com/download');
-    out.log('    2. Re-run `monad nexus` (this prompt re-appears).');
+    out.log('    2. Re-run `elanous nexus` (this prompt re-appears).');
     out.log('');
     return { action: 'tailscale-missing-hint' };
   }
@@ -98,7 +98,7 @@ export async function runPwaSharePrompt(
   });
   const yes = await chooseFrom(io, '', [
     { key: 'y', value: true, label: `Yes — share via https://${hostHint}:${port}/app/` },
-    { key: 'n', value: false, label: 'No — local-only (change later with `monad nexus pwa share enable`)' },
+    { key: 'n', value: false, label: 'No — local-only (change later with `elanous nexus pwa share enable`)' },
   ], {
     defaultIndex: 0,
     help: 'arrow keys / numbers / Enter',
@@ -106,7 +106,7 @@ export async function runPwaSharePrompt(
 
   if (!yes) {
     deps.saveSwitch('disabled');
-    out.log('  → local-only. Use `monad nexus pwa share enable` later to flip.');
+    out.log('  → local-only. Use `elanous nexus pwa share enable` later to flip.');
     out.log('');
     return { action: 'disabled' };
   }
@@ -132,7 +132,7 @@ export async function runPwaSharePrompt(
 
   deps.saveSwitch('enabled');
   showSuccessOr(io, `tailnet share enabled. https://${hostHint}:${port}/app/`);
-  out.log('  Toggle later: `monad nexus pwa share disable`.');
+  out.log('  Toggle later: `elanous nexus pwa share disable`.');
   out.log('');
   return { action: 'enabled', serveExitCode: serveResult.exitCode, built };
 }

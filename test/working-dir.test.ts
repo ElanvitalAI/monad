@@ -18,7 +18,7 @@ import {
   type FsEntry,
 } from '../src/working-dir/index.js';
 
-const ROOT = join(tmpdir(), `monad-wd-test-${Date.now()}`);
+const ROOT = join(tmpdir(), `elanous-wd-test-${Date.now()}`);
 const FILES = [
   ['a.txt',       'alpha'],
   ['b.md',        'bravo'],

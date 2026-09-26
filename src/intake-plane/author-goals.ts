@@ -48,7 +48,7 @@ function authorAsk(item: IntakeCheckItem): string {
     item.fact,
     `제목: ${item.fact}`,
     '',
-    'intake check 가 바깥 지식과 monad 현재를 대조해 「없음」으로 판정한 결손이다. 이것을 채우는 골을 쓴다.',
+    'intake check 가 바깥 지식과 elanous 현재를 대조해 「없음」으로 판정한 결손이다. 이것을 채우는 골을 쓴다.',
     '백틱 이름은 대조에 쓴 검색 표지일 뿐이다 — 그 문자열이 저장소에 생기는 것을 판정 신호로 삼지 말고, 사실이 말하는 동작을 판정 신호로 쓴다.',
     `대조 결과: ${item.current}`,
     ...(item.quotes.length > 0 ? [`출처 인용: ${item.quotes.join(' / ')}`] : []),

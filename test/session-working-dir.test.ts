@@ -116,7 +116,7 @@ describe('session-working-dir', () => {
     expect(getSessionProjectRoot()).toEqual({ path: resolve(nested), source: 'marker' });
   });
 
-  test.each(['.monad', '.git', 'package.json', 'pyproject.toml', 'go.mod', 'Cargo.toml'])(
+  test.each(['.elanous', '.git', 'package.json', 'pyproject.toml', 'go.mod', 'Cargo.toml'])(
     'recognizes %s as a project marker',
     marker => {
       const project = join(tmp, marker.replace(/[^a-z]/gi, '') || 'dot-marker');

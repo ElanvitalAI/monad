@@ -86,7 +86,7 @@ export async function captureSentiment(input: CaptureSentimentInput): Promise<vo
       direction: 'inbound',
       kind: 'taste',
       category: 'taste.sentiment',
-      domain: 'monad',
+      domain: 'elanous',
       text: text.slice(0, 240),
       summary: `[sentiment:${primary}] reward ${reward.toFixed(2)}`,
       importance: Math.round(3 + Math.abs(reward) * 4), // 3..7

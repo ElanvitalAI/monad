@@ -107,7 +107,7 @@ async function bootSteerHarness(): Promise<SteerHarness> {
   };
 }
 
-describe('AcpAgent monad/session/steer', () => {
+describe('AcpAgent elanous/session/steer', () => {
   let harness: SteerHarness | null = null;
   let logSpy: ReturnType<typeof spyOn> | null = null;
 
@@ -126,7 +126,7 @@ describe('AcpAgent monad/session/steer', () => {
     });
     await harness.conn.initialize({ protocolVersion: 1, clientCapabilities: {} });
     const { sessionId } = await harness.conn.newSession({ cwd: process.cwd(), mcpServers: [] });
-    const response = await harness.conn.extMethod('monad/session/steer', { sessionId, text: 'turn addition' }) as { accepted: boolean };
+    const response = await harness.conn.extMethod('elanous/session/steer', { sessionId, text: 'turn addition' }) as { accepted: boolean };
     expect(response).toEqual({ accepted: true });
     expect(drainPendingUserInput(sessionId)).toEqual(['turn addition']);
     expect(events).toContainEqual({ category: 'acp.steer', event: 'accepted', data: { sessionId } });
@@ -139,7 +139,7 @@ describe('AcpAgent monad/session/steer', () => {
       events.push({ category, event, data });
     });
     await harness.conn.initialize({ protocolVersion: 1, clientCapabilities: {} });
-    await expect(harness.conn.extMethod('monad/session/steer', { sessionId: 'missing', text: 'x' }))
+    await expect(harness.conn.extMethod('elanous/session/steer', { sessionId: 'missing', text: 'x' }))
       .resolves.toEqual({ accepted: false });
     expect(events).toContainEqual({ category: 'acp.steer', event: 'unknown-session', data: { sessionId: 'missing' } });
   });
@@ -154,7 +154,7 @@ describe('AcpAgent monad/session/steer', () => {
       },
     };
     await expect(agent.steer('session-a' as never, [{ type: 'text', text: '  first' }, { type: 'text', text: 'second  ' }])).resolves.toBe(true);
-    expect(call).toEqual({ method: 'monad/session/steer', params: { sessionId: 'session-a', text: '  first\nsecond  ' } });
+    expect(call).toEqual({ method: 'elanous/session/steer', params: { sessionId: 'session-a', text: '  first\nsecond  ' } });
   });
 
   test('AcpAgent returns false for a real ACP peer that does not register the extension', async () => {
@@ -186,7 +186,7 @@ describe('AcpAgent monad/session/steer', () => {
   test('AcpAgent recognizes structured unknown-method errors but preserves other failures', async () => {
     const agent = new AcpAgent({ backendId: 'claude', cwd: process.cwd(), log: () => {} });
     (agent as unknown as { connection: { extMethod(): Promise<unknown> } }).connection = {
-      async extMethod() { throw { code: -32603, message: 'Internal error', data: { details: 'Method not found: monad/session/steer' } }; },
+      async extMethod() { throw { code: -32603, message: 'Internal error', data: { details: 'Method not found: elanous/session/steer' } }; },
     };
     await expect(agent.steer('session-a' as never, [{ type: 'text', text: 'x' }])).resolves.toBe(false);
     (agent as unknown as { connection: { extMethod(): Promise<unknown> } }).connection = {

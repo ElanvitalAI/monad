@@ -26,7 +26,7 @@ const fakeEmbed: EmbedFn = async (text: string) => {
 const tasteEvt = (sd: ReturnType<typeof sdb>, type: string, text: string, importance = 5, ts?: string) =>
   recordEvent(sd, {
     surface: 'cli', direction: 'inbound', kind: 'taste', category: 'taste.capture',
-    domain: 'monad', text, importance, tags: `taste:${type},conf:0.7`, ...(ts ? { ts } : {}),
+    domain: 'elanous', text, importance, tags: `taste:${type},conf:0.7`, ...(ts ? { ts } : {}),
   });
 
 describe('parseTasteType', () => {
@@ -74,7 +74,7 @@ describe('syncTasteVectors — surface_events → knowledge.db 미러(멱등)', 
     const r1 = await syncTasteVectors({ surfaceDb: sd, knowledgeDb: kd, embed: fakeEmbed });
     expect(r1.embedded).toBe(2);
 
-    const docs = loadKindVectors(kd, 'taste', 'monad');
+    const docs = loadKindVectors(kd, 'taste', 'elanous');
     expect(docs).toHaveLength(2);
     const neg = docs.find(d => JSON.parse(d.source_ref!).negative === true)!;
     expect(neg).toBeTruthy();

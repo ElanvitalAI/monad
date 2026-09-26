@@ -2,7 +2,7 @@
 //
 // Wraps GET /v1/worktrees. State changes when:
 //   • EnterWorktree / ExitWorktree LLM tool runs
-//   • A monad session crashes mid-worktree (creates an orphan)
+//   • A elanous session crashes mid-worktree (creates an orphan)
 //   • `git worktree add/remove` from CLI
 // 5s refetch is a sweet spot: fast enough to feel live during
 // interactive work, cheap enough that the spawn-git poll doesn't

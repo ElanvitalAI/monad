@@ -4,12 +4,12 @@ import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { program } from '../index.js';
-import { getMonadConfigDirOverride, resetMonadConfigDir, setMonadConfigDir } from '../monad-config-dir.js';
+import { getElanousConfigDirOverride, resetElanousConfigDir, setElanousConfigDir } from '../elanous-config-dir.js';
 import { RemotesStore, type RemoteEntry } from './remotes.js';
 import { runMcpCall, runMcpList } from './mcp-call.js';
 
 const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
-const BIN = resolve(REPO_ROOT, 'bin/monad.mjs');
+const BIN = resolve(REPO_ROOT, 'bin/elanous.mjs');
 const SPAWN_TIMEOUT_MS = 60_000;
 
 const dirs: string[] = [];
@@ -547,8 +547,8 @@ describe('runMcpList', () => {
     const { requests, server } = startMock(() => jsonRpc({ tools: [{ name: 'listed.tool' }] }));
     const dir = mkdtempSync(join(tmpdir(), 'mcp-call-r-'));
     dirs.push(dir);
-    const prevConfigDir = getMonadConfigDirOverride();
-    setMonadConfigDir(dir);
+    const prevConfigDir = getElanousConfigDirOverride();
+    setElanousConfigDir(dir);
     const store = new RemotesStore();
     store.addRemote('home', entry(dir, 'home', `ws://127.0.0.1:${server.port}/v1/acp`, 'tok'), { setDefault: true });
     store.addRemote('other', entry(dir, 'other', 'ws://127.0.0.1:1/v1/acp', 'other-tok'));
@@ -565,14 +565,14 @@ describe('runMcpList', () => {
       throw new Error(`exit:${code ?? 0}`);
     }) as typeof process.exit;
     try {
-      await program.parseAsync(['node', 'monad', 'mcp', 'list', '-r']);
+      await program.parseAsync(['node', 'elanous', 'mcp', 'list', '-r']);
     } catch (err) {
       if (!(err instanceof Error && err.message.startsWith('exit:'))) throw err;
     } finally {
       process.stdout.write = originalOut;
       process.exit = originalExit;
-      if (prevConfigDir === undefined) resetMonadConfigDir();
-      else setMonadConfigDir(prevConfigDir);
+      if (prevConfigDir === undefined) resetElanousConfigDir();
+      else setElanousConfigDir(prevConfigDir);
     }
     expect(process.exitCode).toBe(0);
     process.exitCode = 0;
@@ -583,7 +583,7 @@ describe('runMcpList', () => {
   });
 });
 
-describe('bin/monad.mjs mcp call', () => {
+describe('bin/elanous.mjs mcp call', () => {
   test('spawns mcp call demo.tool --arg k=v --remote box through the registered CLI', async () => {
     const { requests, server } = startMock((body) => {
       expect(body.method).toBe('tools/call');
@@ -603,7 +603,7 @@ describe('bin/monad.mjs mcp call', () => {
       cwd: REPO_ROOT,
       stdout: 'pipe',
       stderr: 'pipe',
-      env: { ...process.env, MONAD_DEBUG_LEVEL: 'off' },
+      env: { ...process.env, ELANOUS_DEBUG_LEVEL: 'off' },
     });
     const killer = setTimeout(() => proc.kill(), SPAWN_TIMEOUT_MS);
     const [stdout, stderr, exitCode] = await Promise.all([
@@ -647,7 +647,7 @@ describe('bin/monad.mjs mcp call', () => {
       cwd: REPO_ROOT,
       stdout: 'pipe',
       stderr: 'pipe',
-      env: { ...process.env, MONAD_DEBUG_LEVEL: 'off' },
+      env: { ...process.env, ELANOUS_DEBUG_LEVEL: 'off' },
     });
     const killer = setTimeout(() => proc.kill(), SPAWN_TIMEOUT_MS);
     const [stdout, stderr, exitCode] = await Promise.all([

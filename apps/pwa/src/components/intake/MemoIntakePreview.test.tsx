@@ -255,7 +255,7 @@ describe('MemoIntakePreview · source-level wiring', () => {
   test('FU-I7c — destination label flips with the commit toggle', () => {
     // Toast / registered surface must spell out the destination so the
     // user has truth-in-metadata: real-TOX commits vs. in-memory.
-    expect(PREVIEW_SRC).toContain('~/.monad/tasks/tasks.db');
+    expect(PREVIEW_SRC).toContain('~/.elanous/tasks/tasks.db');
     expect(PREVIEW_SRC).toContain('in-memory');
   });
 

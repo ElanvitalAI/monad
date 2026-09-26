@@ -60,7 +60,7 @@ const DEFAULT_ENDPOINT = 'http://localhost:1234/v1';
 // the common case; the dispatch path is async so the user-perceived
 // cost is the dispatch decision, not key input. Callers that wire a
 // non-reasoning model can shrink this back via `timeoutMs` opts /
-// `MONAD_SHOWROOM_ROLE_JUDGE_TIMEOUT_MS` env.
+// `ELANOUS_SHOWROOM_ROLE_JUDGE_TIMEOUT_MS` env.
 // Verified envelope on M5 Max 128GB · gemma-4-e4b warm latency
 // (reasoning + answer @ 1024 tokens) lands at 4-7s; non-reasoning
 // 3B models land at 200-500ms. We set the default to 8000ms so
@@ -71,7 +71,7 @@ const DEFAULT_TIMEOUT_MS = 8000;
 const DEFAULT_MAX_TOKENS = 1024;
 
 function resolveMaxTokens(): number {
-  const env = process.env.MONAD_SHOWROOM_ROLE_JUDGE_MAX_TOKENS;
+  const env = process.env.ELANOUS_SHOWROOM_ROLE_JUDGE_MAX_TOKENS;
   if (env) {
     const n = Number.parseInt(env, 10);
     if (Number.isFinite(n) && n > 0) return n;
@@ -124,7 +124,7 @@ export async function classifyWithLocalLlm(
     // we tested. Non-reasoning models (Llama-3.2-3B-Instruct,
     // Qwen2.5-3B-Instruct, Phi-3.5-mini) end well before this cap and
     // pay no cost. Hosts that want a tighter cap can override via
-    // `MONAD_SHOWROOM_ROLE_JUDGE_MAX_TOKENS`.
+    // `ELANOUS_SHOWROOM_ROLE_JUDGE_MAX_TOKENS`.
     max_tokens: resolveMaxTokens(),
     stream: false,
   });

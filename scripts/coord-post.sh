@@ -122,7 +122,7 @@ if [ "${COORD_DRY_RUN:-}" = "1" ]; then
   exit 0
 fi
 
-POST_OUTPUT=$(bun bin/monad.mjs gh pr comment "$PR" --body-file "$TMP" 2>&1)
+POST_OUTPUT=$(bun bin/elanous.mjs gh pr comment "$PR" --body-file "$TMP" 2>&1)
 RC=$?
 printf '%s\n' "$POST_OUTPUT" | tail -2
 if [ "$RC" -ne 0 ]; then

@@ -15,7 +15,7 @@ import { join } from 'node:path';
 import type { LLMProviderName } from '../user-config.js';
 
 /** 구독이 어디서 확인됐나 — ⛔ 값 옆에 «출처»를 둔다. */
-export type SubscriptionSource = 'monad-auth-store' | 'provider-home' | 'none';
+export type SubscriptionSource = 'elanous-auth-store' | 'provider-home' | 'none';
 
 /** 토큰 만료를 「곧」으로 볼 여유 — 이 안에 만료하면 「쓸 수 있는 구독」으로 «안» 센다.
  *  ⛔ 여기서 관대하면 「구독 있음」으로 API 키를 지운 뒤 그 구독이 죽어 «되던 것이 안 된다». */
@@ -36,7 +36,7 @@ export interface SubscriptionCheck {
   checkedPath?: string;
 }
 
-/** provider 마다 ⑴monad auth store 키 ⑵provider 자체 홈 파일 ⑶지울 과금 env.
+/** provider 마다 ⑴elanous auth store 키 ⑵provider 자체 홈 파일 ⑶지울 과금 env.
  *  ⛔ 과금 env 목록은 `src/agent-mission/driver.ts` 의 backend scrubEnv 와 «같은 지식»이다 —
  *  거기는 자식 PTY 용이고 여기는 부모 LLM 용이라 자리가 다르지만, 값이 갈리면 사고가 난다.
  *  둘 중 하나를 고치면 다른 하나도 본다. */
@@ -68,13 +68,13 @@ const SUBSCRIPTION_SPECS: Partial<Record<LLMProviderName, ProviderSubscriptionSp
 };
 
 export interface SubscriptionDeps {
-  /** monad auth store 조회 — 기본은 `src/oauth/store.ts` 의 loadTokens. */
+  /** elanous auth store 조회 — 기본은 `src/oauth/store.ts` 의 loadTokens. */
   loadTokens?: (provider: string) => unknown | null;
   fileExists?: (path: string) => boolean;
   home?: () => string;
 }
 
-/** monad auth store 상태의 만료 판정 — `isExpiringSoon` 재사용(재발명 0).
+/** elanous auth store 상태의 만료 판정 — `isExpiringSoon` 재사용(재발명 0).
  *  ⛔ 모양이 아니면 「만료로 단정하지 않는다」 — 모른다를 「죽었다」로 읽는 것도 오판이다. */
 function isTokenExpiring(state: unknown): boolean {
   try {
@@ -108,8 +108,8 @@ export function inspectSubscription(provider: LLMProviderName, deps: Subscriptio
     //   구독도 API 도 못 쓰는 상태가 된다(되던 것이 안 되는 방향의 실패).
     const expired = isTokenExpiring(state);
     return expired
-      ? { provider, hasSubscription: false, expired: true, expiryChecked: true, source: 'monad-auth-store', billingEnv: spec.billingEnv }
-      : { provider, hasSubscription: true, expiryChecked: true, source: 'monad-auth-store', billingEnv: spec.billingEnv };
+      ? { provider, hasSubscription: false, expired: true, expiryChecked: true, source: 'elanous-auth-store', billingEnv: spec.billingEnv }
+      : { provider, hasSubscription: true, expiryChecked: true, source: 'elanous-auth-store', billingEnv: spec.billingEnv };
   }
   if (spec.homeFile) {
     const path = join(home(), ...spec.homeFile);

@@ -48,8 +48,8 @@ export function ChatHudGaugeBar({ segmentKey, value, glyph }: ChatHudGaugeBarPro
   if (percent === null) {
     return (
       <span
-        data-monad-hud-key={segmentKey}
-        data-monad-hud-gauge="false"
+        data-elanous-hud-key={segmentKey}
+        data-elanous-hud-gauge="false"
         className="inline-flex items-center gap-1 font-mono text-[11px] text-muted-foreground"
       >
         {glyph ? <span aria-hidden="true">{glyph}</span> : null}
@@ -60,9 +60,9 @@ export function ChatHudGaugeBar({ segmentKey, value, glyph }: ChatHudGaugeBarPro
   const { bar, text } = ratioToToneClasses(percent);
   return (
     <span
-      data-monad-hud-key={segmentKey}
-      data-monad-hud-gauge="true"
-      data-monad-hud-percent={String(percent)}
+      data-elanous-hud-key={segmentKey}
+      data-elanous-hud-gauge="true"
+      data-elanous-hud-percent={String(percent)}
       className="inline-flex items-center gap-1.5 font-mono text-[11px]"
     >
       {glyph ? (

@@ -16,7 +16,7 @@ const realOAuthAuthExists = existsSync(join(homedir(), '.grok', 'auth.json'));
 
 describe('detectGrokAuth · ⭐ 구독(OAuth) 우선 (대표 2026-08-13 지시로 «뒤집힌» 계약)', () => {
   // ⛔ 옛 계약은 「env(api_key) 우선」이었다. 뒤집은 이유는 취향이 아니라
-  //    «실행 경로와의 정합»이다 — monad 는 grok 자식을 띄울 때 API 키 env 를
+  //    «실행 경로와의 정합»이다 — elanous 는 grok 자식을 띄울 때 API 키 env 를
   //    스크럽하고(`grokBackend.scrubEnv`) `GROK_DISABLE_API_KEY_AUTH=1` 을
   //    강제한다. 즉 자식은 API 키를 못 본다. 옛 판정은 그 반대를 말했다.
   //    (실측 2026-08-13: OAuth 재로그인 직후 XAI_API_KEY 가 있자 api_key 로 판정)

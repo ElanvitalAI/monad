@@ -1,4 +1,4 @@
-// Standalone Discord TEST messenger — `monad discord-test`.
+// Standalone Discord TEST messenger — `elanous discord-test`.
 //
 // The Discord sibling of `telegram-test-runner.ts`, with ONE structural
 // difference (PLAN-multi-surface-pty-shell M4a-0, 실측 2026-07-12):
@@ -6,7 +6,7 @@
 // telegram's getUpdates 409), so the test bot reuses the PRODUCTION
 // app/token and isolates by CHANNEL instead — it only processes
 // messages in the dedicated `discord.testChannel.channelId` guild text
-// channel (e.g. #monad_test). Everything else is ignored, including
+// channel (e.g. #elanous_test). Everything else is ignored, including
 // DMs (those belong to the production daemon's session).
 //
 // Why it's safe alongside the daemon:
@@ -14,13 +14,13 @@
 //     channel's traffic never reaches production's chat/trigger path.
 //   - This runner's channel scope (guildTextChannels + explicit filter)
 //     means it never answers DMs or production channels.
-//   - MONAD_STATE_DIR isolates ALL mutable state (sessions,
+//   - ELANOUS_STATE_DIR isolates ALL mutable state (sessions,
 //     surface_events, codex-threads) so test turns never pollute prod.
 //   - Production config is REUSED read-only (cloned in-memory); the
 //     `homeChannel` outbound route is dropped so test-side tooling
 //     can't push into production channels.
 //
-// M4a: onMessage runs the REAL monad self turn (makeDiscordAgentRunTurn
+// M4a: onMessage runs the REAL elanous self turn (makeDiscordAgentRunTurn
 // — tools + finance + delegate_code_agent + M1 terminal layer), with
 // the channel FileSink attached so PtyShellScreenshot PNGs land as
 // discord attachments. One session per channel, per runner process.
@@ -29,13 +29,13 @@ import { homedir } from 'node:os';
 import { join } from 'node:path';
 import { rmSync, mkdirSync, existsSync } from 'node:fs';
 import { getUserConfig, reloadUserConfig, userConfigPath, type UserConfig } from './user-config.js';
-import { setMonadConfigDir } from './monad-config-dir.js';
+import { setElanousConfigDir } from './elanous-config-dir.js';
 import { syncTestConfig, isTestConfigStale } from './cli/config-test-sync.js';
 import { DiscordBot } from './discord.js';
 import { debug } from './debug/log.js';
 
 /** Canonical isolated-state dir for the Discord test bot. */
-export const DEFAULT_DISCORD_TEST_STATE_DIR = join(homedir(), '.monad', 'discord-test');
+export const DEFAULT_DISCORD_TEST_STATE_DIR = join(homedir(), '.elanous', 'discord-test');
 
 export interface DiscordTestRunnerOpts {
   /** Optional token override; default = `discord.testChannel.botToken`
@@ -61,9 +61,8 @@ export function buildDiscordTestConfig(prod: UserConfig, token: string, allowedU
       // the test bot never posts into live channels or re-registers
       // slash commands against the production application.
       homeChannel: undefined,
-      sprint21: undefined,
     },
-    // 관측 격리 — 러너 로그는 prod 인스턴스와 구분되는 라벨로 태깅(monad logs 조회 시 격리).
+    // 관측 격리 — 러너 로그는 prod 인스턴스와 구분되는 라벨로 태깅(elanous logs 조회 시 격리).
     logs: { ...prod.logs, instanceName: 'test:discord-runner' },
   };
 }
@@ -77,14 +76,14 @@ export async function runDiscordTestMessenger(opts: DiscordTestRunnerOpts = {}):
   const stateDirIso = opts.stateDir?.trim() || DEFAULT_DISCORD_TEST_STATE_DIR;
   if (opts.reset) { try { rmSync(stateDirIso, { recursive: true, force: true }); } catch { /* noop */ } }
   mkdirSync(stateDirIso, { recursive: true });
-  process.env.MONAD_STATE_DIR = stateDirIso;
+  process.env.ELANOUS_STATE_DIR = stateDirIso;
   if (!existsSync(join(stateDirIso, 'config.json'))) {
     const r = syncTestConfig(stateDirIso);
     console.log(`[discord-test] 운영 config 물질화 → ${r.testConfigPath}`);
   } else if (isTestConfigStale(stateDirIso)) {
-    console.error(`[discord-test] ⚠️ 운영 config 가 사본보다 최신 — 'monad config sync-test --state-dir ${stateDirIso}' 로 갱신 권장`);
+    console.error(`[discord-test] ⚠️ 운영 config 가 사본보다 최신 — 'elanous config sync-test --state-dir ${stateDirIso}' 로 갱신 권장`);
   }
-  setMonadConfigDir(stateDirIso);
+  setElanousConfigDir(stateDirIso);
   reloadUserConfig();
   if (!userConfigPath().startsWith(stateDirIso)) {
     throw new Error(`discord-test: config 격리 불변식 위반 (${userConfigPath()} ∉ ${stateDirIso}) — 기동 거부`);
@@ -96,7 +95,7 @@ export async function runDiscordTestMessenger(opts: DiscordTestRunnerOpts = {}):
   if (!channelId) {
     throw new Error(
       'discord-test: no channel. Set `discord.testChannel.channelId` in config '
-      + '(the dedicated guild text channel, e.g. #monad_test) or pass --channel.',
+      + '(the dedicated guild text channel, e.g. #elanous_test) or pass --channel.',
     );
   }
   const token = (opts.token?.trim()) || testChannel?.botToken?.trim() || prod.discord.botToken?.trim() || '';
@@ -105,14 +104,14 @@ export async function runDiscordTestMessenger(opts: DiscordTestRunnerOpts = {}):
   }
 
   // Observability — nexus/dashboard 부트와 동일한 해석 (config화
-  // 2026-07-12): env `MONAD_DEBUG_LEVEL`(one-shot override) > user-config
+  // 2026-07-12): env `ELANOUS_DEBUG_LEVEL`(one-shot override) > user-config
   // `debug.level` > debug 모듈 기본(trail). M4c 때 env 옵트인으로만
   // 배선돼 이 엔트리포인트만 config 를 무시하던 비대칭 수리. diag 는
   // voice.discord.* hot-path events (STT partial/final, player state,
   // send pipeline) 를 ./log/debug-*.log 에 켠다.
   {
     const dbgCfg = prod.debug;
-    const envLevel = process.env.MONAD_DEBUG_LEVEL?.trim().toLowerCase();
+    const envLevel = process.env.ELANOUS_DEBUG_LEVEL?.trim().toLowerCase();
     const validLevels = ['off', 'trail', 'diag', 'normal', 'verbose', 'detail', 'keytrace'] as const;
     const startLevel = envLevel && (validLevels as readonly string[]).includes(envLevel)
       ? envLevel as typeof validLevels[number]
@@ -131,7 +130,7 @@ export async function runDiscordTestMessenger(opts: DiscordTestRunnerOpts = {}):
         : prod.discord.allowedUsers);
   const testCfg = buildDiscordTestConfig(prod, token, allowedUsers);
 
-  // Modules that read MONAD_STATE_DIR at store-resolution time — import
+  // Modules that read ELANOUS_STATE_DIR at store-resolution time — import
   // AFTER the env isolation above so the session store lands in the
   // test dir, mirroring telegram-test's lazy-path discipline.
   const { makeDiscordAgentRunTurn } = await import('./discord-agent.js');
@@ -139,7 +138,7 @@ export async function runDiscordTestMessenger(opts: DiscordTestRunnerOpts = {}):
   const { buildDiscordVoiceWire } = await import('./discord-voice-wire.js');
 
   // ⚠️ 관측 통합(제1원칙) — 독립 러너 프로세스는 nexus StoreSink 를 상속 안 함. logs.db sink 를
-  // 등록해야 debug.log(category, event, data) 가 logs.db 에 닿아 `monad logs` 로 조회된다. 안 하면
+  // 등록해야 debug.log(category, event, data) 가 logs.db 에 닿아 `elanous logs` 로 조회된다. 안 하면
   // 파일 트레일에만 남아 관측 불가(= 관측 안 한 것). instanceName='test:discord-runner' 로 격리 태깅.
   const { registerStandaloneLogSink } = await import('./domains/standalone-log-sink.js');
   await registerStandaloneLogSink('discord-test');
@@ -166,7 +165,7 @@ export async function runDiscordTestMessenger(opts: DiscordTestRunnerOpts = {}):
     log,
   });
   // M4c — voice channel wire (env-gated; inert without
-  // MONAD_DISCORD_VOICE_CHANNEL). Same runTurnImpl as the text path so
+  // ELANOUS_DISCORD_VOICE_CHANNEL). Same runTurnImpl as the text path so
   // voice turns share brains/tools/terminal observation.
   const voiceWire = buildDiscordVoiceWire({
     userConfig: testCfg,
@@ -201,7 +200,7 @@ export async function runDiscordTestMessenger(opts: DiscordTestRunnerOpts = {}):
     onMessage,
     log,
     onInteraction: async (raw) => {
-      // C1 버튼 탭이 우선(monad-q: prefix 소비) → 아니면 슬래시 명령.
+      // C1 버튼 탭이 우선(elanous-q: prefix 소비) → 아니면 슬래시 명령.
       if (await questionRuntime.handleComponentInteraction(raw)) return;
       await slashWire.onInteraction(raw);
     },

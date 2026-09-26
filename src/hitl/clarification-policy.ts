@@ -167,7 +167,7 @@ export interface ClarificationObservation {
   missionId?: string;
 }
 
-/** Decide through the shared policy and persist the outcome for `monad logs`. */
+/** Decide through the shared policy and persist the outcome for `elanous logs`. */
 export function decideAndObserveClarification(
   candidate: ClarificationCandidate,
   context: ClarificationContext,

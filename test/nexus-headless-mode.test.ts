@@ -2,7 +2,7 @@
 //
 // Covers the 4 documented scenarios from HANDOFF Track P §3.3:
 //   - TUI skip (opt set true)
-//   - signal env equivalent (MONAD_NEXUS_HEADLESS=1)
+//   - signal env equivalent (ELANOUS_NEXUS_HEADLESS=1)
 //   - explicit `false` opt overrides env (allow opt-out scripts)
 //   - default false (TUI mode preserved when neither set)
 //
@@ -17,13 +17,13 @@ describe('P.1.5 · resolveHeadlessMode', () => {
     expect(resolveHeadlessMode({ headless: true, env: {} })).toBe(true);
   });
 
-  test('MONAD_NEXUS_HEADLESS=1 env (no opt) → headless', () => {
-    expect(resolveHeadlessMode({ env: { MONAD_NEXUS_HEADLESS: '1' } })).toBe(true);
+  test('ELANOUS_NEXUS_HEADLESS=1 env (no opt) → headless', () => {
+    expect(resolveHeadlessMode({ env: { ELANOUS_NEXUS_HEADLESS: '1' } })).toBe(true);
   });
 
   test('opts.headless = false overrides env=1 (explicit opt wins)', () => {
     expect(
-      resolveHeadlessMode({ headless: false, env: { MONAD_NEXUS_HEADLESS: '1' } }),
+      resolveHeadlessMode({ headless: false, env: { ELANOUS_NEXUS_HEADLESS: '1' } }),
     ).toBe(false);
   });
 
@@ -32,7 +32,7 @@ describe('P.1.5 · resolveHeadlessMode', () => {
   });
 });
 
-describe('P.1.5 · MONAD_NEXUS_HEADLESS truthy spellings', () => {
+describe('P.1.5 · ELANOUS_NEXUS_HEADLESS truthy spellings', () => {
   test.each([
     ['1', true],
     ['true', true],
@@ -47,7 +47,7 @@ describe('P.1.5 · MONAD_NEXUS_HEADLESS truthy spellings', () => {
     ['', false],
     ['anything-else', false],
   ])('env value %p → headless = %p', (raw, expected) => {
-    expect(resolveHeadlessMode({ env: { MONAD_NEXUS_HEADLESS: raw } })).toBe(expected);
+    expect(resolveHeadlessMode({ env: { ELANOUS_NEXUS_HEADLESS: raw } })).toBe(expected);
   });
 });
 
@@ -56,13 +56,13 @@ describe('P.1.5 · TTY independence', () => {
     // The resolver is a pure (opts, env) → boolean function. The
     // first-boot wizard (P.3) is the layer that reads isTTY for prompt
     // suppression — headless decisions stay env-driven so the user can
-    // opt in even when running through `monad nexus | tee` (which
+    // opt in even when running through `elanous nexus | tee` (which
     // strips TTY but is not a service-mode invocation).
     //
     // This test pins the contract: with no env / no opt, headless is
     // false regardless of whether stdin is a TTY.
     expect(resolveHeadlessMode({ env: {} })).toBe(false);
     // And with env=1, headless is true regardless of TTY.
-    expect(resolveHeadlessMode({ env: { MONAD_NEXUS_HEADLESS: '1' } })).toBe(true);
+    expect(resolveHeadlessMode({ env: { ELANOUS_NEXUS_HEADLESS: '1' } })).toBe(true);
   });
 });

@@ -1,13 +1,13 @@
-// ── monad 네이티브 알림 발송 (Conatus send.py 대체·순수 TS) ────────────
+// ── elanous 네이티브 알림 발송 (Conatus send.py 대체·순수 TS) ────────────
 //
-// KORU 스윙 등 크론 알림을 monad 단일 발송 지점 `/v1/outbound`(텔레그램 report
+// KORU 스윙 등 크론 알림을 elanous 단일 발송 지점 `/v1/outbound`(텔레그램 report
 // channel)로 전송. 데몬 미가동/실패 시 텔레그램 직접(sendMessage) fallback —
-// send.py 와 동일 동작을 TS 로 포팅(완전 monad 소유). sync(curl) 계약.
+// send.py 와 동일 동작을 TS 로 포팅(완전 elanous 소유). sync(curl) 계약.
 
 import * as childProcess from 'node:child_process';
 import { existsSync, readFileSync, appendFileSync, mkdirSync, unlinkSync } from 'node:fs';
 import { dirname, join } from 'node:path';
-import { getMonadConfigDir } from '../monad-config-dir.js';
+import { getElanousConfigDir } from '../elanous-config-dir.js';
 import { conatusEnv } from './conatus-env.js';
 import { spillLongContent } from '../storage/content-spill.js';
 import { openSurfaceEventsDb, recordEvent } from './surface-events.js';
@@ -19,14 +19,14 @@ import { debug } from '../debug/log.js';
 import type { MissionOrigin } from '../autopilot/mission-origin.js';
 import { conatusPath } from './conatus-data-dir.js';
 
-const NEXUS_URL = process.env.MONAD_NEXUS_URL || 'http://localhost:31415';
-// 로컬 데몬이 getMonadConfigDir()/acp-token 에 발행한 loopback 토큰을 읽어 로컬
-// /v1/outbound 로 POST — getMonadConfigDir() 치환은 prod 동치(~/.monad) + --config-dir 정합.
-const ACP_TOKEN_PATH = join(getMonadConfigDir(), 'acp-token');
+const NEXUS_URL = process.env.ELANOUS_NEXUS_URL || 'http://localhost:31415';
+// 로컬 데몬이 getElanousConfigDir()/acp-token 에 발행한 loopback 토큰을 읽어 로컬
+// /v1/outbound 로 POST — getElanousConfigDir() 치환은 prod 동치(~/.elanous) + --config-dir 정합.
+const ACP_TOKEN_PATH = join(getElanousConfigDir(), 'acp-token');
 const DEFERRED_PATH = conatusPath('outbound_deferred.jsonl');
 
 // ── 발송 관측 (대표 지시 2026-07-15): 발송 시각·mode·밀림(burst/lag) 를 logs.db 에 남겨
-//    "실시간인지 밀린 것인지" 를 `monad logs --category outbound.send` 로 판단 가능하게. ──
+//    "실시간인지 밀린 것인지" 를 `elanous logs --category outbound.send` 로 판단 가능하게. ──
 /** 밀림(버스트) 판정 — 최근 창 내 이 수 이상 발송이 몰리면 밀려 나가는 중으로 본다. */
 const BURST_WINDOW_SEC = 120;
 const BURST_THRESHOLD = 5;
@@ -54,7 +54,7 @@ function logSend(
 }
 
 /** 밀림 경고 임계 env 이름 — 비교 값은 여기서만 읽는다(호출부에 리터럴을 박지 않는다). */
-export const FLUSH_LAG_WARN_MIN_ENV = 'MONAD_OUTBOUND_FLUSH_LAG_WARN_MIN';
+export const FLUSH_LAG_WARN_MIN_ENV = 'ELANOUS_OUTBOUND_FLUSH_LAG_WARN_MIN';
 
 /** 밀림 경고 임계(분). `FLUSH_LAG_WARN_MIN_ENV` 로 바꾼다. */
 export function flushLagWarnMin(): number {
@@ -63,7 +63,7 @@ export function flushLagWarnMin(): number {
     const n = Number(raw);
     if (Number.isFinite(n) && n >= 0) return n;
   }
-  const fallback = process.env.MONAD_OUTBOUND_FLUSH_LAG_WARN_MIN_DEFAULT?.trim();
+  const fallback = process.env.ELANOUS_OUTBOUND_FLUSH_LAG_WARN_MIN_DEFAULT?.trim();
   const n = fallback ? Number(fallback) : NaN;
   if (Number.isFinite(n) && n >= 0) return n;
   // 기본 1일 — 비교 리터럴이 아니라 설정 기본값. env 로 덮는다.
@@ -86,7 +86,7 @@ export function inQuietHours(now: Date = new Date()): boolean {
 }
 
 /** 최근 사용자 활동 우회 창(분) — 이 시간 내 genuine 사용자 인텐트가 있으면 무음이어도 즉시 발송. */
-const USER_ACTIVE_WINDOW_MIN = Number(process.env.MONAD_USER_ACTIVE_WINDOW_MIN) || 30;
+const USER_ACTIVE_WINDOW_MIN = Number(process.env.ELANOUS_USER_ACTIVE_WINDOW_MIN) || 30;
 
 /** ★ 사용자 깨어있음 우회(대표 2026-07-14) — "지금처럼 사용자가 깨어나 보낸 것"이면 야간 무음을
  *  무력화하고 즉시 발송. 판정=genuine 사용자 인텐트 로그(user-intent·타이핑/버튼탭 등)의 최신 시각이
@@ -231,7 +231,7 @@ export function sendOutbound(text: string, kind = 'alert', origin?: MissionOrigi
   if (bypass) console.log('[outbound] 야간 무음 우회 — 최근 사용자 활동(깨어있음) → 즉시 발송 + 보류분 flush');
   try { flushDeferred(); } catch { /* fail-soft */ }
   // ★ 발송 관측(대표 지시) — 발송 시각·mode·밀림(burst) 판정을 logs.db 에. burst=최근 2분 5건+
-  //   (몰려 나가는 중 = 밀림 의심). `monad logs --category outbound.send` 로 실시간/밀림 구분.
+  //   (몰려 나가는 중 = 밀림 의심). `elanous logs --category outbound.send` 로 실시간/밀림 구분.
   const { recentCount, burst } = recentSendBurst();
   logSend(bypass ? 'quiet-bypass' : 'realtime', kind, { burst, recentCount, ...(burst ? { backlog: true } : {}) });
   // ★ origin 되돌림(무음 밖) — 발신 채널로 직접 발송. 성공 시 종료, 실패면 report 폴백.
@@ -268,10 +268,10 @@ function logDaemonPath(classification: DaemonPathClass, kind: string, extra: Rec
   try { console.log(`[outbound] daemon-path ${classification}`); } catch { /* fail-soft */ }
 }
 
-/** monad `/v1/outbound` 우선 → 실패 시 텔레그램 직접. 성공 경로 반환(원장 중복방지용). */
+/** elanous `/v1/outbound` 우선 → 실패 시 텔레그램 직접. 성공 경로 반환(원장 중복방지용). */
 export function deliver(text: string, kind = 'alert'): 'daemon' | 'direct' | false {
-  // 1) monad 단일 발송 지점(/v1/outbound) — 데몬이 팬아웃 + 원장 기록.
-  if (process.env.SEND_VIA_MONAD !== '0') {
+  // 1) elanous 단일 발송 지점(/v1/outbound) — 데몬이 팬아웃 + 원장 기록.
+  if (process.env.SEND_VIA_ELANOUS !== '0') {
     let token = '';
     try { if (existsSync(ACP_TOKEN_PATH)) token = readFileSync(ACP_TOKEN_PATH, 'utf-8').trim(); } catch { /* no token */ }
     const headers = ['Content-Type: application/json', ...(token ? [`Authorization: Bearer ${token}`] : [])];

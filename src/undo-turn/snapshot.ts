@@ -16,7 +16,7 @@
 //        git ls-files -o --exclude-standard # for untracked enumeration
 //        git add --all -- .                 # stage tracked + untracked
 //        git write-tree                     # → tree SHA
-//   3. `git commit-tree <tree> -p HEAD -m "monad snapshot"` with a
+//   3. `git commit-tree <tree> -p HEAD -m "elanous snapshot"` with a
 //      pinned author identity so snapshots don't impersonate the user.
 //      Returns a 40-char SHA. That's our snapshot id (plus a short id
 //      for UX).
@@ -30,7 +30,7 @@ import { runGitCommand } from '../git-fs/runner.js';
 import type { Snapshot, CaptureOpts } from './types.js';
 
 const DEFAULT_LARGE_UNTRACKED_BYTES = 10 * 1024 * 1024;
-const SNAPSHOT_MESSAGE_PREFIX = 'monad snapshot';
+const SNAPSHOT_MESSAGE_PREFIX = 'elanous snapshot';
 
 /** Best-effort snapshot. Returns null on any failure — caller treats
  *  that as "no safety net for this turn" and proceeds without an
@@ -49,7 +49,7 @@ export function captureSnapshot(cwd: string, opts: CaptureOpts = {}): Snapshot |
   // commit. We allow that: the user still gets a turn-undo.
   const untracked = listUntracked(repoRoot, opts);
 
-  const tmpIdxDir = mkdtempSync(join(tmpdir(), 'monad-snap-idx-'));
+  const tmpIdxDir = mkdtempSync(join(tmpdir(), 'elanous-snap-idx-'));
   const tmpIdx = join(tmpIdxDir, 'index');
   try {
     const env = { ...process.env, GIT_INDEX_FILE: tmpIdx };
@@ -89,10 +89,10 @@ export function captureSnapshot(cwd: string, opts: CaptureOpts = {}): Snapshot |
       encoding: 'utf8', timeout: 30_000,
       env: {
         ...process.env,
-        GIT_AUTHOR_NAME: 'Monad Snapshot',
-        GIT_AUTHOR_EMAIL: 'snapshot@monad.local',
-        GIT_COMMITTER_NAME: 'Monad Snapshot',
-        GIT_COMMITTER_EMAIL: 'snapshot@monad.local',
+        GIT_AUTHOR_NAME: 'Elanous Snapshot',
+        GIT_AUTHOR_EMAIL: 'snapshot@elanous.local',
+        GIT_COMMITTER_NAME: 'Elanous Snapshot',
+        GIT_COMMITTER_EMAIL: 'snapshot@elanous.local',
       },
     });
     if (commitRes.status !== 0) return null;

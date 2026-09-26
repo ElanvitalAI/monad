@@ -35,22 +35,22 @@ const KEYS = ['ANTHROPIC_API_KEY', 'OPENAI_API_KEY', 'GEMINI_API_KEY', 'XAI_API_
 
 beforeEach(() => {
   tmpHome = mkdtempSync(join(tmpdir(), 'discovery-'));
-  process.env.MONAD_TEST_HOME = tmpHome;
+  process.env.ELANOUS_TEST_HOME = tmpHome;
   // Block any accidental real S3 upload during these tests — A7's push
   // helper gates on isS3Available() which would otherwise probe the
   // user's aws CLI. Stub-based tests opt back in via custom transport.
-  process.env.MONAD_S3_DISABLED = '1';
+  process.env.ELANOUS_S3_DISABLED = '1';
   __resetS3AvailabilityCache();
   for (const k of KEYS) delete process.env[k];
 });
 
 afterEach(() => {
   rmSync(tmpHome, { recursive: true, force: true });
-  delete process.env.MONAD_TEST_HOME;
-  delete process.env.MONAD_S3_DISABLED;
+  delete process.env.ELANOUS_TEST_HOME;
+  delete process.env.ELANOUS_S3_DISABLED;
   __resetS3AvailabilityCache();
   for (const k of KEYS) delete process.env[k];
-  delete process.env.MONAD_LLM_HOSTS;
+  delete process.env.ELANOUS_LLM_HOSTS;
   setHostsOverride(null);
 });
 
@@ -517,7 +517,7 @@ describe('runDiscovery + S3 push wiring (FU A7)', () => {
       run: async () => ({ source: 'anthropic', ok: true, models: [], durationMs: 0 }),
     };
     const out = await runDiscovery({ sources: [stub], cachePath: join(tmpHome, 's.json') });
-    // S3 disabled by the global beforeEach (MONAD_S3_DISABLED=1) so
+    // S3 disabled by the global beforeEach (ELANOUS_S3_DISABLED=1) so
     // the push helper short-circuits at `available()`.
     expect(out.s3Push?.pushed).toBe(false);
     expect(out.s3Push?.reason).toBe('disabled');
@@ -847,7 +847,7 @@ describe('handleDiscoveryGet (GET /v1/registry/discovery)', () => {
 describe('handleDiscoveryRun (POST /v1/registry/discovery)', () => {
   test('runs discovery and echoes the snapshot', async () => {
     // This is an HTTP-handler contract test, not a live provider test.
-    // Inject every builtin id so a developer's ~/.monad credentials cannot
+    // Inject every builtin id so a developer's ~/.elanous credentials cannot
     // cause Firecrawl/Grok subprocesses or network calls during `bun test`.
     const sources: DiscoverySource[] = BUILTIN_SOURCES.map((source) => ({
       id: source.id,

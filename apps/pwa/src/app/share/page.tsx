@@ -38,8 +38,8 @@ function buildShareText(title: string | null, text: string | null, url: string |
   return parts.join('\n\n');
 }
 
-const SHARE_PREFILL_KEY = 'monad.pwa.sharePrefill';
-const SHARE_ATTACHMENTS_KEY = 'monad.pwa.shareAttachments';
+const SHARE_PREFILL_KEY = 'elanous.pwa.sharePrefill';
+const SHARE_ATTACHMENTS_KEY = 'elanous.pwa.shareAttachments';
 
 type Phase =
   | 'idle'

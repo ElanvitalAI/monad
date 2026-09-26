@@ -11,7 +11,7 @@ const TARGET_AND_METADATA = [
   '경계: 데몬 셋업 게이트(src/nexus/setup-status.ts)는 이 골이 아니다',
   '- UNVERIFIABLE: corrected example: src/example.ts',
   '출처: docs/RFC-first-run.md',
-  '- Command help probe: no inline bun bin/monad.mjs command was named',
+  '- Command help probe: no inline bun bin/elanous.mjs command was named',
 ].join('\n');
 
 const authorDeps: GoalAuthorDeps = {
@@ -40,7 +40,7 @@ describe('targetScopedGoalText', () => {
       '- ⏸️ 결정 3: src/pause.ts',
       '  - UNVERIFIABLE: src/diagnostic.ts',
       '> 출처: docs/source.md',
-      '- Command help probe: bin/monad.mjs',
+      '- Command help probe: bin/elanous.mjs',
       '  - Scope-boundary candidates: src/candidate.ts',
       '> If adopted, state each boundary: src/guidance.ts',
       'Implement src/kept.ts',
@@ -105,7 +105,7 @@ describe('targetScopedGoalText', () => {
       expect(authored.document).not.toContain('new repository file: src/nexus/setup-status.ts');
       expect(authored.document).not.toContain('new repository file: src/example.ts');
       expect(authored.document).not.toContain('new repository file: docs/RFC-first-run.md');
-      expect(authored.document).not.toContain('new repository file: bin/monad.mjs');
+      expect(authored.document).not.toContain('new repository file: bin/elanous.mjs');
     } finally {
       rmSync(repositoryRoot, { force: true, recursive: true });
     }

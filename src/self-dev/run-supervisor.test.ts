@@ -135,7 +135,7 @@ describe('런 슈퍼바이저 — 「끝까지 돌린다」의 판정', () => {
     expect(decision.stopReason).toBe('provider-exhausted');
     expect(decision.why).toContain('grok');
     expect(decision.why).toContain('5');
-    expect(decision.why).toContain('monad usage');
+    expect(decision.why).toContain('elanous usage');
     expect(decision.why).not.toContain('골·불변식');
     expect(decision.classifications[0]).toMatchObject({ kind: 'transient', action: 'rerun' });
     expect(decideNextRun({ results: [{ ...quota, providerErrors: { ...quota.providerErrors, category: 'other' as const } }] }).action).toBe('relaunch');
@@ -809,11 +809,11 @@ describe('산출물의 «눈» — 판정 «전»에 보고, 「안 쟀다」와
     const defaultStateDir = mkdtempSync(join(tmpdir(), 'supervisor-stop-process-default-'));
     const defaultRunId = `process-default-source-${crypto.randomUUID()}`;
     const defaultRunStoreDir = selfDevRunsDir(defaultStateDir);
-    const priorStateDir = process.env.MONAD_STATE_DIR;
+    const priorStateDir = process.env.ELANOUS_STATE_DIR;
     const defaultEvents: Array<{ event: string; data: Record<string, unknown> }> = [];
     try {
       mkdirSync(defaultRunStoreDir, { recursive: true });
-      process.env.MONAD_STATE_DIR = defaultStateDir;
+      process.env.ELANOUS_STATE_DIR = defaultStateDir;
       await superviseRun({
         initial: [{ taskId: 'unknown', feature: 'unknown', status: 'failed', stage: 'error', runId: defaultRunId,
           error: { code: 'BOOM', message: 'TypeError: undefined is not a function' } } as never],
@@ -821,8 +821,8 @@ describe('산출물의 «눈» — 판정 «전»에 보고, 「안 쟀다」와
         observe: (event, data) => { defaultEvents.push({ event, data }); },
       });
     } finally {
-      if (priorStateDir === undefined) delete process.env.MONAD_STATE_DIR;
-      else process.env.MONAD_STATE_DIR = priorStateDir;
+      if (priorStateDir === undefined) delete process.env.ELANOUS_STATE_DIR;
+      else process.env.ELANOUS_STATE_DIR = priorStateDir;
       rmSync(defaultStateDir, { recursive: true, force: true });
     }
     expect(defaultEvents).toContainEqual({

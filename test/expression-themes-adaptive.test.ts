@@ -7,8 +7,8 @@ import {
   MOCHA_ADAPTIVE_PALETTE,
   MOCHA_PASTEL_ACCENT,
   MOCHA_PASTEL_ADAPTIVE_PALETTE,
-  MONAD_ADAPTIVE_PALETTE,
-  MONAD_PASTEL_DEFAULT,
+  ELANOUS_ADAPTIVE_PALETTE,
+  ELANOUS_PASTEL_DEFAULT,
   NORD_ADAPTIVE_PALETTE,
   NORD_LIGHT,
   ROSE_PINE_ADAPTIVE_PALETTE,
@@ -47,7 +47,7 @@ describe('expression-1 · 7 theme adaptive backbone', () => {
       LATTE_ADAPTIVE_PALETTE,
       ROSE_PINE_ADAPTIVE_PALETTE,
       NORD_ADAPTIVE_PALETTE,
-      MONAD_ADAPTIVE_PALETTE,
+      ELANOUS_ADAPTIVE_PALETTE,
       MOCHA_PASTEL_ADAPTIVE_PALETTE,
     ];
     // No two palettes should share the exact same key set + values
@@ -69,7 +69,7 @@ describe('expression-1 · 7 theme adaptive backbone', () => {
       [CATPPUCCIN_LATTE.colors.accent, LATTE_ADAPTIVE_PALETTE.blue.truecolor],
       [ROSE_PINE_DAWN.colors.accent, ROSE_PINE_ADAPTIVE_PALETTE.rose.truecolor],
       [NORD_LIGHT.colors.accent, NORD_ADAPTIVE_PALETTE.frost3.truecolor],
-      [MONAD_PASTEL_DEFAULT.colors.accent, MONAD_ADAPTIVE_PALETTE.lavender.truecolor],
+      [ELANOUS_PASTEL_DEFAULT.colors.accent, ELANOUS_ADAPTIVE_PALETTE.lavender.truecolor],
       [MOCHA_PASTEL_ACCENT.colors.accent, MOCHA_PASTEL_ADAPTIVE_PALETTE.lavender.truecolor],
     ];
     for (const [flat, adaptiveTrue] of cases) {
@@ -105,10 +105,10 @@ describe('expression-1 · 7 theme adaptive backbone', () => {
   // into the same legacy index. Truecolor stays derived from the
   // canonical hex; only the ANSI-16 fallback is pinned.
   describe('brand ANSI-16 overrides (Δ19 · F7)', () => {
-    test('monad-pastel: lavender → magenta (5) instead of bright magenta', () => {
-      expect(MONAD_ADAPTIVE_PALETTE.lavender.ansi16).toBe('5');
+    test('elanous-pastel: lavender → magenta (5) instead of bright magenta', () => {
+      expect(ELANOUS_ADAPTIVE_PALETTE.lavender.ansi16).toBe('5');
       // Truecolor + ANSI-256 unchanged from auto-derived.
-      expect(MONAD_ADAPTIVE_PALETTE.lavender.truecolor).toBe('#a093e8');
+      expect(ELANOUS_ADAPTIVE_PALETTE.lavender.truecolor).toBe('#a093e8');
     });
 
     test('catppuccin-mocha: lavender → magenta (5) so lavender/mauve stay distinct', () => {

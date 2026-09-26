@@ -16,15 +16,15 @@ describe('resolvePosixShell', () => {
 
   test('honors explicit Git Bash first but never accepts a System32 override', () => {
     const path = 'D:\\Git\\bin\\bash.exe';
-    const deps = { platform: 'win32' as const, env: { MONAD_GIT_BASH_PATH: path, ProgramFiles: 'C:\\Program Files' },
+    const deps = { platform: 'win32' as const, env: { ELANOUS_GIT_BASH_PATH: path, ProgramFiles: 'C:\\Program Files' },
       gitExecPath: () => { throw new Error('git lookup must not run for an explicit path'); }, existsSync: () => true };
     expect(resolvePosixShell(deps)).toEqual({ found: true, path });
-    expect(resolvePosixShell({ ...deps, gitExecPath: () => undefined, env: { ...deps.env, MONAD_GIT_BASH_PATH: 'C:\\Windows\\System32\\bash.exe' } })).toEqual({ found: true, path: 'C:\\Program Files\\Git\\bin\\bash.exe' });
-    const absent = resolvePosixShell({ ...deps, gitExecPath: () => undefined, env: { MONAD_GIT_BASH_PATH: 'C:\\Windows\\System32\\bash.exe' } });
+    expect(resolvePosixShell({ ...deps, gitExecPath: () => undefined, env: { ...deps.env, ELANOUS_GIT_BASH_PATH: 'C:\\Windows\\System32\\bash.exe' } })).toEqual({ found: true, path: 'C:\\Program Files\\Git\\bin\\bash.exe' });
+    const absent = resolvePosixShell({ ...deps, gitExecPath: () => undefined, env: { ELANOUS_GIT_BASH_PATH: 'C:\\Windows\\System32\\bash.exe' } });
     expect(absent.found).toBe(false);
-    expect(resolvePosixShell({ ...deps, gitExecPath: () => undefined, env: { MONAD_GIT_BASH_PATH: 'C:\\Windows\\System32\\cmd.exe' } }).found).toBe(false);
-    expect(resolvePosixShell({ ...deps, gitExecPath: () => undefined, env: { MONAD_GIT_BASH_PATH: 'C:\\Windows\\System32\\..\\System32\\bash.exe' } }).found).toBe(false);
-    expect(resolvePosixShell({ ...deps, gitExecPath: () => undefined, env: { MONAD_GIT_BASH_PATH: 'D:\\Tools\\other.exe' } }).found).toBe(false);
+    expect(resolvePosixShell({ ...deps, gitExecPath: () => undefined, env: { ELANOUS_GIT_BASH_PATH: 'C:\\Windows\\System32\\cmd.exe' } }).found).toBe(false);
+    expect(resolvePosixShell({ ...deps, gitExecPath: () => undefined, env: { ELANOUS_GIT_BASH_PATH: 'C:\\Windows\\System32\\..\\System32\\bash.exe' } }).found).toBe(false);
+    expect(resolvePosixShell({ ...deps, gitExecPath: () => undefined, env: { ELANOUS_GIT_BASH_PATH: 'D:\\Tools\\other.exe' } }).found).toBe(false);
   });
 
   test('uses git --exec-path then LOCALAPPDATA before failing', () => {
@@ -42,9 +42,9 @@ describe('resolvePosixShell', () => {
     const deps = { platform: 'win32' as const, env: {}, gitExecPath: () => undefined, existsSync: () => false };
     const result = resolvePosixShell(deps);
     expect(result.found).toBe(false);
-    if (!result.found) expect(result.reason).toContain('MONAD_GIT_BASH_PATH');
-    expect(() => requirePosixShell('/bin/sh', deps)).toThrow('set MONAD_GIT_BASH_PATH or install Git for Windows');
-    expect(() => requirePosixShellCommand('bash', deps)).toThrow('set MONAD_GIT_BASH_PATH or install Git for Windows');
+    if (!result.found) expect(result.reason).toContain('ELANOUS_GIT_BASH_PATH');
+    expect(() => requirePosixShell('/bin/sh', deps)).toThrow('set ELANOUS_GIT_BASH_PATH or install Git for Windows');
+    expect(() => requirePosixShellCommand('bash', deps)).toThrow('set ELANOUS_GIT_BASH_PATH or install Git for Windows');
     try { requirePosixShell('/bin/sh', deps); } catch (error) {
       expect((error as Error).stack).toBe((error as Error).message);
     }

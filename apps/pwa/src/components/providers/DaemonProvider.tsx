@@ -67,7 +67,7 @@ export function DaemonProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (typeof window === 'undefined') return;
     const handler = (e: StorageEvent): void => {
-      if (e.key !== 'monad.daemon.sessionId') return;
+      if (e.key !== 'elanous.daemon.sessionId') return;
       // newValue is null on removeItem; don't clobber active state
       // when another tab clears their session.
       if (!e.newValue) return;
@@ -97,7 +97,7 @@ export function DaemonProvider({ children }: { children: React.ReactNode }) {
   const setSessionId = (id: string): void => {
     setSessionIdState(id);
     if (typeof window !== 'undefined') {
-      localStorage.setItem('monad.daemon.sessionId', id);
+      localStorage.setItem('elanous.daemon.sessionId', id);
     }
     debugLog('webterm.provider.daemon.session-set', { sessionId: id });
   };

@@ -19,7 +19,7 @@ import { dirname, join } from 'node:path';
 import { ensureCronNodePath } from '../src/domains/cron-path.js';
 ensureCronNodePath();
 
-const STATE = join(homedir(), '.monad/conatus/capstone_regime.json');
+const STATE = join(homedir(), '.elanous/conatus/capstone_regime.json');
 function loadLast(): string { try { return existsSync(STATE) ? String(JSON.parse(readFileSync(STATE, 'utf-8')).lastTarget ?? '') : ''; } catch { return ''; } }
 function saveLast(t: string): void { if (!existsSync(dirname(STATE))) mkdirSync(dirname(STATE), { recursive: true }); writeFileSync(STATE, JSON.stringify({ lastTarget: t, updatedAt: new Date().toISOString() }, null, 2)); }
 
@@ -36,7 +36,7 @@ console.log(`캡스톤: ${target} · ${plan.label} · R3=${sig.r3} · E=${sig.eF
 
 // ── 대시보드용 A~E 스냅샷 영속 (매 실행 — 알림 여부와 무관 · 대표 지시 2026-07-07) ──
 try {
-  const SNAP = join(homedir(), '.monad/conatus/capstone_signals.json');
+  const SNAP = join(homedir(), '.elanous/conatus/capstone_signals.json');
   writeFileSync(SNAP, JSON.stringify({
     ts: new Date().toISOString(),
     reliable: sig.reliable,

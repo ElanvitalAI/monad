@@ -4,13 +4,13 @@
 import { describe, expect, it } from 'bun:test';
 import { buildRestartPlan, detectDaemonEnvironment, restartDaemon } from './daemon-control.js';
 
-const FAKE_LAUNCHD = { uid: 501, label: 'com.monad.nexus', platformOverride: 'darwin' as const };
+const FAKE_LAUNCHD = { uid: 501, label: 'com.elanous.nexus', platformOverride: 'darwin' as const };
 
 describe('buildRestartPlan', () => {
   it('production → launchctl kickstart -k <serviceTarget>', () => {
     const p = buildRestartPlan('production', { launchd: FAKE_LAUNCHD });
     expect(p.env).toBe('production');
-    expect(p.command).toEqual(['launchctl', 'kickstart', '-k', 'gui/501/com.monad.nexus']);
+    expect(p.command).toEqual(['launchctl', 'kickstart', '-k', 'gui/501/com.elanous.nexus']);
     expect(p.note).toContain('교차오염');
   });
 
@@ -69,7 +69,7 @@ describe('restartDaemon — 3중 게이트', () => {
     const r = await restartDaemon({ env: 'production', execute: true, authorized: true, launchd: FAKE_LAUNCHD, runCli: async (c) => { cmd = c; return { stdout: 'ok', stderr: '', exitCode: 0 }; } });
     expect(r.ok).toBe(true);
     expect(r.executed).toBe(true);
-    expect(cmd).toEqual(['launchctl', 'kickstart', '-k', 'gui/501/com.monad.nexus']);
+    expect(cmd).toEqual(['launchctl', 'kickstart', '-k', 'gui/501/com.elanous.nexus']);
   });
 
   it('exit!=0 → ok=false·사유 캡처', async () => {

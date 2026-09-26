@@ -16,7 +16,7 @@ function runGit(cwd: string, args: string[]): void {
 
 describe('assertBaseBranchOnOrigin', () => {
   it('기본 브랜치 표식을 origin 기본 브랜치로 해석해 PR manager에도 전달한다', async () => {
-    const root = mkdtempSync(join(tmpdir(), 'monad-pr-base-'));
+    const root = mkdtempSync(join(tmpdir(), 'elanous-pr-base-'));
     const remote = join(root, 'origin.git');
     const repo = join(root, 'repo');
     const calls: unknown[] = [];
@@ -54,7 +54,7 @@ describe('assertBaseBranchOnOrigin', () => {
   });
 
   it('명시한 origin base는 바꾸지 않고 로컬 전용 base는 계속 차단한다', () => {
-    const root = mkdtempSync(join(tmpdir(), 'monad-pr-base-'));
+    const root = mkdtempSync(join(tmpdir(), 'elanous-pr-base-'));
     const remote = join(root, 'origin.git');
     const repo = join(root, 'repo');
     try {
@@ -83,7 +83,7 @@ describe('assertBaseBranchOnOrigin', () => {
 
 describe('self-implement PR upsert and template', () => {
   it('repo root PR 템플릿을 본문 구조 앞에 보존한다', () => {
-    const root = mkdtempSync(join(tmpdir(), 'monad-pr-template-'));
+    const root = mkdtempSync(join(tmpdir(), 'elanous-pr-template-'));
     try {
       mkdirSync(join(root, '.github'));
       writeFileSync(join(root, '.github', 'pull_request_template.md'), '## Summary\n\n## Test plan\n');
@@ -104,7 +104,7 @@ describe('self-implement PR upsert and template', () => {
       closePr: () => true,
       mergePr: () => true,
     };
-    const root = mkdtempSync(join(tmpdir(), 'monad-pr-upsert-'));
+    const root = mkdtempSync(join(tmpdir(), 'elanous-pr-upsert-'));
     try {
       mkdirSync(join(root, '.github'));
       writeFileSync(join(root, '.github', 'pull_request_template.md'), '## Summary\n');
@@ -150,7 +150,7 @@ async function captureGateOpts(
   baselineInput?: string[];
   cwd: string;
 }> {
-  const repo = mkdtempSync(join(tmpdir(), 'monad-gate-scope-'));
+  const repo = mkdtempSync(join(tmpdir(), 'elanous-gate-scope-'));
   try {
     runGit(repo, ['init', '-b', 'main', repo]);
     runGit(repo, ['config', 'user.email', 'test@example.com']);
@@ -803,7 +803,7 @@ describe('defaultSeams.implement — PTY 폴백 강등 관측', () => {
 
   async function observeFallback(opts: {
     ptyAvailable: () => boolean;
-    runHeadlessGoalLoopPty?: () => ReturnType<typeof import('../src/self-implement/headless-monad-driver.js').runHeadlessGoalLoopPty>;
+    runHeadlessGoalLoopPty?: () => ReturnType<typeof import('../src/self-implement/headless-elanous-driver.js').runHeadlessGoalLoopPty>;
   }): Promise<Array<{ event: string; data: Record<string, unknown>; level?: string }>> {
     const events: Array<{ event: string; data: Record<string, unknown>; level?: string }> = [];
     const log = spyOn(debug, 'log').mockImplementation(((_category: string, event: string, data?: Record<string, unknown>, options?: { level?: string }) => {

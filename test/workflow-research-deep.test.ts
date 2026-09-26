@@ -80,7 +80,7 @@ describe('research-deep — trigger isolation', () => {
     ];
     const morning = ['morning briefing', "what's today", '오늘 뭐 해야 해', 'daily kickoff', "today's plan"];
     const share = ['share-intake', 'process this', 'intake', '이거 처리해줘', '공유 처리'];
-    const voice = ['voice quick task', 'voice memo', 'monad capture', '음성 받아 적어', 'remember this voice'];
+    const voice = ['voice quick task', 'voice memo', 'elanous capture', '음성 받아 적어', 'remember this voice'];
     const mine = ['research deep', 'deep dive', 'deep research', '리서치 딥', '백그라운드 조사'];
     for (const a of mine) {
       for (const b of [...builtin, ...morning, ...share, ...voice]) {
@@ -101,20 +101,20 @@ describe('research-deep — runtime: full chain happy path', () => {
       runBash: async (body) => {
         bashBodies.push(body);
         if (body.includes('OBSIDIAN_DIR')) {
-          return { stdout: 'saved=/tmp/Obsidian/Research/2026-05-08-090000.md topic=monad-mesh', stderr: '', exitCode: 0 };
+          return { stdout: 'saved=/tmp/Obsidian/Research/2026-05-08-090000.md topic=elanous-mesh', stderr: '', exitCode: 0 };
         }
         return { stdout: '', stderr: '', exitCode: 0 };
       },
       runSkill: async (slug, args) => {
         skillCalls.push({ slug, args });
-        if (slug === 'omni-crawl') return 'CRAWL[X+Grok+Firecrawl results for monad-mesh]';
+        if (slug === 'omni-crawl') return 'CRAWL[X+Grok+Firecrawl results for elanous-mesh]';
         if (slug === 'omni-digest') return 'DIGEST[rich · 5 sources synthesized]';
         if (slug === 'diagram-master') return 'DIAGRAM[mermaid flow chart]';
         return 'unknown';
       },
     };
     const r = await runWorkflowToCompletion(
-      { workflow: wf, arguments: 'monad-mesh', artifactsDir: mkdtempSync(join(tmpdir(), 'research-')) },
+      { workflow: wf, arguments: 'elanous-mesh', artifactsDir: mkdtempSync(join(tmpdir(), 'research-')) },
       deps,
     );
     expect(r.ok).toBe(true);
@@ -123,7 +123,7 @@ describe('research-deep — runtime: full chain happy path', () => {
     // digest should receive crawl output via interpolation
     const digestArgs = skillCalls.find((c) => c.slug === 'omni-digest')!.args;
     expect(digestArgs).toContain('Mode: rich');
-    expect(digestArgs).toContain('Topic: monad-mesh');
+    expect(digestArgs).toContain('Topic: elanous-mesh');
     expect(digestArgs).toContain('CRAWL[X+Grok+Firecrawl');
 
     // diagram should receive digest output
@@ -185,7 +185,7 @@ describe('research-deep — router cascade', () => {
     const prevCwd = process.cwd();
     process.chdir(tmpDir);
     try {
-      mkdirSync(join(tmpDir, '.monad', 'workflows'), { recursive: true });
+      mkdirSync(join(tmpDir, '.elanous', 'workflows'), { recursive: true });
       let llmCalls = 0;
       const fakeLLM: RouterLLMCaller = async () => {
         llmCalls += 1;
@@ -209,7 +209,7 @@ describe('research-deep — router cascade', () => {
     const prevCwd = process.cwd();
     process.chdir(tmpDir);
     try {
-      mkdirSync(join(tmpDir, '.monad', 'workflows'), { recursive: true });
+      mkdirSync(join(tmpDir, '.elanous', 'workflows'), { recursive: true });
       const fakeLLM: RouterLLMCaller = async () => '/invoke-workflow nothing';
       const r = await routeWorkflow(
         { userMessage: '백그라운드 조사 좀 부탁해' },

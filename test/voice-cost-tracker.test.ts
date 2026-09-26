@@ -19,7 +19,7 @@ import {
   type VoiceCostEvent,
 } from '../src/voice/cost-tracker.js';
 import { costForStt } from '../src/models/voice-costs.js';
-import { resetMonadConfigDir, setMonadConfigDir } from '../src/monad-config-dir.js';
+import { resetElanousConfigDir, setElanousConfigDir } from '../src/elanous-config-dir.js';
 import { voiceCostSegment } from '../src/status/bar.js';
 
 function tmpEventPath(): { path: string; cleanup: () => void } {
@@ -230,26 +230,26 @@ describe('PR-S1V.5 · voiceCostSegment renderer', () => {
 });
 
 describe('chore · defaultVoiceCostEventPath honours --config-dir', () => {
-  test('defaults to ~/.monad/voice-cost-events.jsonl', () => {
-    resetMonadConfigDir();
+  test('defaults to ~/.elanous/voice-cost-events.jsonl', () => {
+    resetElanousConfigDir();
     const path = defaultVoiceCostEventPath();
-    expect(path.endsWith('/.monad/voice-cost-events.jsonl')).toBe(true);
+    expect(path.endsWith('/.elanous/voice-cost-events.jsonl')).toBe(true);
   });
 
-  test('setMonadConfigDir reroutes the path', () => {
+  test('setElanousConfigDir reroutes the path', () => {
     const dir = mkdtempSync(join(tmpdir(), 'cost-tracker-cfgdir-'));
     try {
-      setMonadConfigDir(dir);
+      setElanousConfigDir(dir);
       expect(defaultVoiceCostEventPath()).toBe(join(dir, 'voice-cost-events.jsonl'));
     } finally {
-      resetMonadConfigDir();
+      resetElanousConfigDir();
       rmSync(dir, { recursive: true, force: true });
     }
   });
 
-  // MONAD_DAEMON_DIR env support was removed in PR #2534 (2026-05-13).
-  // Use setMonadConfigDir() / --config-dir instead — covered by the
-  // 'setMonadConfigDir overrides default' test above.
+  // ELANOUS_DAEMON_DIR env support was removed in PR #2534 (2026-05-13).
+  // Use setElanousConfigDir() / --config-dir instead — covered by the
+  // 'setElanousConfigDir overrides default' test above.
 });
 
 describe('PR-S1V.5 · voice cost-tracker · subscribers', () => {

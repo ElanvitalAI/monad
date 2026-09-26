@@ -10,12 +10,12 @@
 // 전역 arming 플래그(arming.materialize)를 대체 — 이쪽이 범위·상한까지 담는 authority.
 
 import { readFileSync, existsSync } from 'node:fs';
-import { monadStateRoot } from './state-paths.js';
+import { elanousStateRoot } from './state-paths.js';
 import { join } from 'node:path';
 
-/** [ISO-3] MONAD_STATE_DIR 존중(lazy) — test 루트에 부재 = fail-closed. */
+/** [ISO-3] ELANOUS_STATE_DIR 존중(lazy) — test 루트에 부재 = fail-closed. */
 export function materializeMandatePath(): string {
-  return join(monadStateRoot(), 'autopilot-materialize-mandate.json');
+  return join(elanousStateRoot(), 'autopilot-materialize-mandate.json');
 }
 
 export interface MaterializeMandate {
@@ -38,7 +38,7 @@ export const DISARMED_MANDATE: MaterializeMandate = {
   maxActiveJobs: 0,
 };
 
-/** ~/.monad/autopilot-materialize-mandate.json 로드 — 부재/손상/타입불일치 = fail-closed. */
+/** ~/.elanous/autopilot-materialize-mandate.json 로드 — 부재/손상/타입불일치 = fail-closed. */
 export function loadMaterializeMandate(path: string = materializeMandatePath()): MaterializeMandate {
   try {
     if (!existsSync(path)) return DISARMED_MANDATE;

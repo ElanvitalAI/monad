@@ -20,17 +20,17 @@ describe('session-deeplink 파서', () => {
 });
 
 describe('딥링크 해소 + open (dispatch)', () => {
-  const ORIG = process.env.MONAD_SESSION_ROOT;
+  const ORIG = process.env.ELANOUS_SESSION_ROOT;
   let tmp: string;
   beforeEach(async () => {
     tmp = mkdtempSync(join(tmpdir(), 'sess-p6-'));
-    process.env.MONAD_SESSION_ROOT = tmp;
+    process.env.ELANOUS_SESSION_ROOT = tmp;
     const { _clearSubscriberIndexForTest } = await import('../src/session/index.js');
     _clearSubscriberIndexForTest();
   });
   afterEach(() => {
     if (tmp) rmSync(tmp, { recursive: true, force: true });
-    if (ORIG === undefined) delete process.env.MONAD_SESSION_ROOT; else process.env.MONAD_SESSION_ROOT = ORIG;
+    if (ORIG === undefined) delete process.env.ELANOUS_SESSION_ROOT; else process.env.ELANOUS_SESSION_ROOT = ORIG;
   });
 
   test('한 서피스 링크 방출 → 다른 서피스 open(해소+문맥)', async () => {
@@ -110,12 +110,12 @@ describe('딥링크 해소 + open (dispatch)', () => {
 });
 
 describe('attach/detach 바인딩 노출', () => {
-  const ORIG = process.env.MONAD_SESSION_ROOT;
+  const ORIG = process.env.ELANOUS_SESSION_ROOT;
   let tmp: string;
-  beforeEach(() => { tmp = mkdtempSync(join(tmpdir(), 'sess-p6b-')); process.env.MONAD_SESSION_ROOT = tmp; });
+  beforeEach(() => { tmp = mkdtempSync(join(tmpdir(), 'sess-p6b-')); process.env.ELANOUS_SESSION_ROOT = tmp; });
   afterEach(() => {
     if (tmp) rmSync(tmp, { recursive: true, force: true });
-    if (ORIG === undefined) delete process.env.MONAD_SESSION_ROOT; else process.env.MONAD_SESSION_ROOT = ORIG;
+    if (ORIG === undefined) delete process.env.ELANOUS_SESSION_ROOT; else process.env.ELANOUS_SESSION_ROOT = ORIG;
   });
 
   test('telegram attach → detach 왕복', async () => {

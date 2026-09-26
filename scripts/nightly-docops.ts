@@ -5,7 +5,7 @@
 // 실행 진입점. arc2(의미 supersede) descoped 라 외부 검색/Ollama 챗 없이 **결정론 조각만**으로 성립
 // (미션 불변식: 클라우드 LLM 0·로컬 전용·비파괴·HITL 큐). cron 이 이 스크립트를 야간 호출한다.
 //   bun scripts/nightly-docops.ts            # 1 사이클 실행(제안 큐 기록·자동 적용 없음)
-//   MONAD_GROUNDING… 무관 · 산출 = ~/.monad/doc-curation/PROPOSAL-wiki-*.json (HITL 승인 대기)
+//   ELANOUS_GROUNDING… 무관 · 산출 = ~/.elanous/doc-curation/PROPOSAL-wiki-*.json (HITL 승인 대기)
 
 import { existsSync, readFileSync, readdirSync, mkdirSync, writeFileSync, appendFileSync } from 'node:fs';
 import { join } from 'node:path';
@@ -24,7 +24,7 @@ import {
 
 const repoRoot = join(import.meta.dir, '..');
 const docsDir = join(repoRoot, 'docs');
-const outDir = join(homedir(), '.monad', 'doc-curation');
+const outDir = join(homedir(), '.elanous', 'doc-curation');
 const ckDir = join(outDir, 'checkpoints');
 const nowDate = new Date().toLocaleDateString('sv-SE');
 const nowIso = new Date().toISOString();

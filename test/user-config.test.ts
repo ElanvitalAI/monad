@@ -29,10 +29,10 @@ beforeEach(() => {
   root = mkdtempSync(join(tmpdir(), 'user-config-'));
   cfgPath = join(root, 'config.json');
   setEnv({
-    MONAD_LLM_PROVIDER: undefined,
-    MONAD_LLM_MODEL: undefined,
-    MONAD_ESCALATE_PROVIDER: undefined,
-    MONAD_ESCALATE_MODEL: undefined,
+    ELANOUS_LLM_PROVIDER: undefined,
+    ELANOUS_LLM_MODEL: undefined,
+    ELANOUS_ESCALATE_PROVIDER: undefined,
+    ELANOUS_ESCALATE_MODEL: undefined,
     GROK_API_KEY: undefined,
     OPENAI_API_KEY: undefined,
   });
@@ -178,7 +178,7 @@ describe('user-config defaults', () => {
     const cfg = buildUserConfig(cfgPath);
     expect(cfg.vw.iulResident).toBe(true);
     expect(cfg.vw.iulForegroundOnStartup).toBe(true);
-    expect(cfg.vw.acpResident).toBe(false);
+    expect(cfg.vw.entries.acp.resident).toBe(false);
     expect(cfg.vw.order).toEqual(['iul', 'acp', 'sim']);
   });
 
@@ -249,12 +249,9 @@ describe('user-config defaults', () => {
       },
       tool: {
         displayMode: 'inline-to-block',
-        inlineOneLine: true,
         blockMaxLines: 8,
       },
       hud: {
-        variantBadge: true,
-        tokenGauge: true,
         gaugeWarnRatio: 0.7,
         gaugeDangerRatio: 0.85,
       },
@@ -571,12 +568,9 @@ describe('user-config lsp section (Phase L4)', () => {
       },
       tool: {
         displayMode: 'inline-to-block',
-        inlineOneLine: true,
         blockMaxLines: 8,
       },
       hud: {
-        variantBadge: true,
-        tokenGauge: true,
         gaugeWarnRatio: 0.7,
         gaugeDangerRatio: 0.85,
       },
@@ -617,7 +611,6 @@ describe('user-config lsp section (Phase L4)', () => {
         rendering: {
           tool: {
             displayMode: 'inline-to-block',
-            inlineOneLine: false,
             blockMaxLines: 0,
           },
         },
@@ -625,7 +618,6 @@ describe('user-config lsp section (Phase L4)', () => {
     });
     expect(buildUserConfig(cfgPath).chat.rendering.tool).toEqual({
       displayMode: 'inline-to-block',
-      inlineOneLine: false,
       blockMaxLines: 1,
     });
   });
@@ -635,8 +627,6 @@ describe('user-config lsp section (Phase L4)', () => {
       chat: {
         rendering: {
           hud: {
-            variantBadge: false,
-            tokenGauge: false,
             gaugeWarnRatio: -1,
             gaugeDangerRatio: 2,
           },
@@ -644,8 +634,6 @@ describe('user-config lsp section (Phase L4)', () => {
       },
     });
     expect(buildUserConfig(cfgPath).chat.rendering.hud).toEqual({
-      variantBadge: false,
-      tokenGauge: false,
       gaugeWarnRatio: 0,
       gaugeDangerRatio: 1,
     });
@@ -709,7 +697,7 @@ describe('user-config extended schema', () => {
     expect(buildUserConfig(cfgPath).llm.provider).toBe('auto');
   });
 
-  test('MONAD_LLM_PROVIDER overrides the configured provider, model, and resolves target credentials', () => {
+  test('ELANOUS_LLM_PROVIDER overrides the configured provider, model, and resolves target credentials', () => {
     write({
       llm: {
         provider: 'openai-codex',
@@ -718,7 +706,7 @@ describe('user-config extended schema', () => {
         rotation: [{ provider: 'grok', apiKey: 'xai-target' }],
       },
     });
-    process.env.MONAD_LLM_PROVIDER = 'grok';
+    process.env.ELANOUS_LLM_PROVIDER = 'grok';
 
     const cfg = buildUserConfig(cfgPath);
     expect(cfg.llm.provider).toBe('grok');
@@ -727,9 +715,9 @@ describe('user-config extended schema', () => {
     expect(cfg.llm.apiKey).toBe('xai-target');
   });
 
-  test('MONAD_LLM_MODEL overrides the switched provider default', () => {
+  test('ELANOUS_LLM_MODEL overrides the switched provider default', () => {
     write({ llm: { provider: 'openai-codex', model: 'gpt-5.6-terra' } });
-    setEnv({ MONAD_LLM_PROVIDER: 'grok', MONAD_LLM_MODEL: 'grok-4.6-custom' });
+    setEnv({ ELANOUS_LLM_PROVIDER: 'grok', ELANOUS_LLM_MODEL: 'grok-4.6-custom' });
 
     expect(buildUserConfig(cfgPath).llm.model).toBe('grok-4.6-custom');
   });
@@ -738,18 +726,18 @@ describe('user-config extended schema', () => {
     ['missing config', () => undefined],
     ['malformed config', () => write('{not json')],
     ['non-object config', () => write('"not an object"')],
-  ])('MONAD_LLM_MODEL overrides the default model without a provider override for %s', (_label, prepare) => {
+  ])('ELANOUS_LLM_MODEL overrides the default model without a provider override for %s', (_label, prepare) => {
     prepare();
-    setEnv({ MONAD_LLM_MODEL: 'model-only-override' });
+    setEnv({ ELANOUS_LLM_MODEL: 'model-only-override' });
 
     const cfg = buildUserConfig(cfgPath);
     expect(cfg.llm.provider).toBe('auto');
     expect(cfg.llm.model).toBe('model-only-override');
   });
 
-  test('same MONAD_LLM_PROVIDER preserves the configured model', () => {
+  test('same ELANOUS_LLM_PROVIDER preserves the configured model', () => {
     write({ llm: { provider: 'grok', model: 'grok-pinned' } });
-    setEnv({ MONAD_LLM_PROVIDER: 'grok' });
+    setEnv({ ELANOUS_LLM_PROVIDER: 'grok' });
 
     expect(buildUserConfig(cfgPath).llm.model).toBe('grok-pinned');
   });
@@ -764,7 +752,7 @@ describe('user-config extended schema', () => {
 
   test('model-only env mismatch names provider and model on stderr before a request', () => {
     write({ llm: { provider: 'openai-codex', model: 'gpt-5.6-terra' } });
-    setEnv({ MONAD_LLM_MODEL: 'grok-4.6' });
+    setEnv({ ELANOUS_LLM_MODEL: 'grok-4.6' });
     const chunks: string[] = [];
     const original = process.stderr.write.bind(process.stderr);
     process.stderr.write = ((chunk: string | Uint8Array, ...rest: unknown[]) => {
@@ -787,7 +775,7 @@ describe('user-config extended schema', () => {
 
   test('same-provider model-only env override stays silent', () => {
     write({ llm: { provider: 'openai-codex', model: 'gpt-5.6-terra' } });
-    setEnv({ MONAD_LLM_MODEL: 'gpt-5.6-sol' });
+    setEnv({ ELANOUS_LLM_MODEL: 'gpt-5.6-sol' });
     const chunks: string[] = [];
     const original = process.stderr.write.bind(process.stderr);
     process.stderr.write = ((chunk: string | Uint8Array, ...rest: unknown[]) => {
@@ -807,7 +795,7 @@ describe('user-config extended schema', () => {
 
   test('exact o3 model-only env mismatch names provider and model on stderr before a request', () => {
     write({ llm: { provider: 'grok', model: 'grok-4.6' } });
-    setEnv({ MONAD_LLM_MODEL: 'o3' });
+    setEnv({ ELANOUS_LLM_MODEL: 'o3' });
     const chunks: string[] = [];
     const original = process.stderr.write.bind(process.stderr);
     process.stderr.write = ((chunk: string | Uint8Array, ...rest: unknown[]) => {
@@ -830,7 +818,7 @@ describe('user-config extended schema', () => {
 
   test('openai provider with gpt-5.6-sol model-only env names both values', () => {
     write({ llm: { provider: 'openai', model: 'gpt-4o' } });
-    setEnv({ MONAD_LLM_MODEL: 'gpt-5.6-sol' });
+    setEnv({ ELANOUS_LLM_MODEL: 'gpt-5.6-sol' });
     const chunks: string[] = [];
     const original = process.stderr.write.bind(process.stderr);
     process.stderr.write = ((chunk: string | Uint8Array, ...rest: unknown[]) => {
@@ -855,9 +843,9 @@ describe('user-config extended schema', () => {
     ['missing config', () => undefined],
     ['malformed config', () => write('{not json')],
     ['non-object config', () => write('"not an object"')],
-  ])('MONAD_LLM_PROVIDER resolves target credentials with %s', (_label, prepare) => {
+  ])('ELANOUS_LLM_PROVIDER resolves target credentials with %s', (_label, prepare) => {
     prepare();
-    setEnv({ MONAD_LLM_PROVIDER: 'openai-codex', OPENAI_API_KEY: 'sk-openai-from-env' });
+    setEnv({ ELANOUS_LLM_PROVIDER: 'openai-codex', OPENAI_API_KEY: 'sk-openai-from-env' });
 
     const cfg = buildUserConfig(cfgPath);
     expect(cfg.llm.provider).toBe('openai-codex');
@@ -882,9 +870,9 @@ describe('user-config extended schema', () => {
     expect(reloaded.raw).toEqual(saved);
   });
 
-  test('MONAD_ESCALATE_PROVIDER retains priority when both provider env overrides are set', () => {
+  test('ELANOUS_ESCALATE_PROVIDER retains priority when both provider env overrides are set', () => {
     write({ llm: { provider: 'openai-codex', rotation: [{ provider: 'anthropic', apiKey: 'sk-ant-target' }] } });
-    setEnv({ MONAD_LLM_PROVIDER: 'grok', MONAD_ESCALATE_PROVIDER: 'anthropic' });
+    setEnv({ ELANOUS_LLM_PROVIDER: 'grok', ELANOUS_ESCALATE_PROVIDER: 'anthropic' });
 
     const cfg = buildUserConfig(cfgPath);
     expect(cfg.llm.provider).toBe('anthropic');
@@ -897,30 +885,30 @@ describe('user-config extended schema', () => {
     ['missing config', () => undefined],
     ['malformed config', () => write('{not json')],
     ['non-object config', () => write('"not an object"')],
-  ])('MONAD_ESCALATE_PROVIDER keeps the same priority with %s', (_label, prepare) => {
+  ])('ELANOUS_ESCALATE_PROVIDER keeps the same priority with %s', (_label, prepare) => {
     prepare();
-    setEnv({ MONAD_LLM_PROVIDER: 'grok', MONAD_ESCALATE_PROVIDER: 'anthropic', ANTHROPIC_API_KEY: 'sk-ant-from-env' });
+    setEnv({ ELANOUS_LLM_PROVIDER: 'grok', ELANOUS_ESCALATE_PROVIDER: 'anthropic', ANTHROPIC_API_KEY: 'sk-ant-from-env' });
 
     const cfg = buildUserConfig(cfgPath);
     expect(cfg.llm.provider).toBe('anthropic');
     expect(cfg.llm.apiKey).toBe('sk-ant-from-env');
   });
 
-  test('empty MONAD_LLM_PROVIDER preserves the configured provider', () => {
+  test('empty ELANOUS_LLM_PROVIDER preserves the configured provider', () => {
     write({ llm: { provider: 'openai-codex' } });
-    setEnv({ MONAD_LLM_PROVIDER: '   ' });
+    setEnv({ ELANOUS_LLM_PROVIDER: '   ' });
 
     expect(buildUserConfig(cfgPath).llm.provider).toBe('openai-codex');
   });
 
-  test('invalid MONAD_LLM_PROVIDER fails instead of silently using config', () => {
+  test('invalid ELANOUS_LLM_PROVIDER fails instead of silently using config', () => {
     write({ llm: { provider: 'openai-codex' } });
-    process.env.MONAD_LLM_PROVIDER = 'typo-provider';
+    process.env.ELANOUS_LLM_PROVIDER = 'typo-provider';
 
-    expect(() => buildUserConfig(cfgPath)).toThrow('Invalid MONAD_LLM_PROVIDER "typo-provider"');
+    expect(() => buildUserConfig(cfgPath)).toThrow('Invalid ELANOUS_LLM_PROVIDER "typo-provider"');
   });
 
-  test('without MONAD_LLM_PROVIDER the configured provider is preserved', () => {
+  test('without ELANOUS_LLM_PROVIDER the configured provider is preserved', () => {
     write({ llm: { provider: 'anthropic' } });
 
     expect(buildUserConfig(cfgPath).llm.provider).toBe('anthropic');
@@ -1027,7 +1015,6 @@ describe('user-config extended schema', () => {
         },
         tool: {
           displayMode: 'inline-to-block',
-          inlineOneLine: false,
           blockMaxLines: 12,
         },
         diff: {
@@ -1048,8 +1035,6 @@ describe('user-config extended schema', () => {
           turnBrowserMode: 'all',
         },
         hud: {
-          variantBadge: false,
-          tokenGauge: false,
           gaugeWarnRatio: 0.4,
           gaugeDangerRatio: 0.6,
         },
@@ -1118,7 +1103,6 @@ describe('user-config extended schema', () => {
       },
       tool: {
         displayMode: 'inline-to-block',
-        inlineOneLine: false,
         blockMaxLines: 12,
       },
       diff: {
@@ -1133,8 +1117,6 @@ describe('user-config extended schema', () => {
         turnBrowserMode: 'all',
       },
       hud: {
-        variantBadge: false,
-        tokenGauge: false,
         gaugeWarnRatio: 0.4,
         gaugeDangerRatio: 0.6,
       },
@@ -1741,68 +1723,12 @@ describe('user-config chmod 600 (Bundle 2\')', () => {
   });
 });
 
-describe('discord.sprint21 sub-block (sprint 21 wiring · 2026-05-01)', () => {
-  test('default → undefined (no env vars consulted)', () => {
-    const c = buildUserConfig(cfgPath);
-    expect(c.discord.sprint21).toBeUndefined();
-  });
-
-  test('full sub-block round-trips through save/load', () => {
+describe('discord.sprint21 — retired (설정 졸업 2 · 2026-09-26)', () => {
+  test('a leftover sprint21 block is not loaded and is saved away', () => {
+    write({ discord: { botToken: 't', sprint21: { enabled: true, appId: '111' } } });
     const cfg = buildUserConfig(cfgPath);
-    cfg.discord.botToken = 't';
-    cfg.discord.sprint21 = {
-      enabled: true,
-      appId: '1234567890',
-      devGuildId: '9876543210',
-      personasDir: '/tmp/personas',
-    };
+    expect('sprint21' in cfg.discord).toBe(false);
     saveUserConfig(cfg, cfgPath);
-    resetUserConfig();
-    const reloaded = buildUserConfig(cfgPath);
-    expect(reloaded.discord.sprint21).toEqual({
-      enabled: true,
-      appId: '1234567890',
-      devGuildId: '9876543210',
-      personasDir: '/tmp/personas',
-    });
-  });
-
-  test('partial sub-block — only appId set', () => {
-    write({ discord: { sprint21: { appId: '111' } } });
-    const c = buildUserConfig(cfgPath);
-    expect(c.discord.sprint21).toEqual({ appId: '111' });
-  });
-
-  test('explicit enabled:false carries through', () => {
-    write({ discord: { sprint21: { enabled: false } } });
-    const c = buildUserConfig(cfgPath);
-    expect(c.discord.sprint21?.enabled).toBe(false);
-  });
-
-  test('invalid types are dropped (sparse fallback)', () => {
-    write({
-      discord: {
-        sprint21: { enabled: 'yes', appId: 99, devGuildId: null, personasDir: '' },
-      },
-    });
-    const c = buildUserConfig(cfgPath);
-    // All fields invalid → entire sub-block undefined
-    expect(c.discord.sprint21).toBeUndefined();
-  });
-
-  test('non-object sprint21 → undefined', () => {
-    write({ discord: { sprint21: 'not-an-object' } });
-    expect(buildUserConfig(cfgPath).discord.sprint21).toBeUndefined();
-    write({ discord: { sprint21: ['array'] } });
-    expect(buildUserConfig(cfgPath).discord.sprint21).toBeUndefined();
-  });
-
-  test('save omits sprint21 when undefined (clean output)', () => {
-    const cfg = buildUserConfig(cfgPath);
-    cfg.discord.botToken = 't';
-    // sprint21 undefined → not saved
-    saveUserConfig(cfg, cfgPath);
-    write({});  // sentinel reset
     const text = require('node:fs').readFileSync(cfgPath, 'utf8');
     expect(text).not.toContain('sprint21');
   });

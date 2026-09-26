@@ -1,13 +1,13 @@
-// FU1 (PLAN-config-unification-monad-root-2026-05-10 closing follow-up):
-//   `monad config get <dotted-path>` resolves through cfg.raw when the
+// FU1 (PLAN-config-unification-elanous-root-2026-05-10 closing follow-up):
+//   `elanous config get <dotted-path>` resolves through cfg.raw when the
 //   path leaves the typed UserConfig schema (e.g. voice.stt.language ·
 //   user-defined keys preserved by buildUserConfig's catch-all).
 //
 // This test invokes the CLI as a subprocess so we exercise the same
 // helpers (`getConfigPath` + `buildUserConfig` + `userConfigPath`) that
 // production code uses. `--config-dir <dir>` isolates the config file so
-// the user's real ~/.monad/config.json is untouched. (Legacy
-// MONAD_DAEMON_DIR env was removed in PR #2534.)
+// the user's real ~/.elanous/config.json is untouched. (Legacy
+// ELANOUS_DAEMON_DIR env was removed in PR #2534.)
 
 import { describe, test, expect, beforeEach, afterEach } from 'bun:test';
 import { spawnSync } from 'node:child_process';
@@ -37,7 +37,7 @@ function runConfigGet(path: string): { stdout: string; stderr: string; code: num
     cwd: REPO_ROOT,
     env: {
       ...process.env,
-      MONAD_SUPPRESS_XDG_WARNING: '1',
+      ELANOUS_SUPPRESS_XDG_WARNING: '1',
     },
     encoding: 'utf-8',
     timeout: 15_000,
@@ -78,7 +78,7 @@ afterEach(() => {
   rmSync(daemonDir, { recursive: true, force: true });
 });
 
-describe('FU1 · monad config get · raw fallback', () => {
+describe('FU1 · elanous config get · raw fallback', () => {
   test('typed Path A key resolves directly', () => {
     const r = runConfigGet('llm.provider');
     expect(r.code).toBe(0);

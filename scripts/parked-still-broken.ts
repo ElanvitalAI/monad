@@ -59,12 +59,12 @@ export function runTest(path: string): TestResult {
   return { status: result.status, ...(result.error ? { error: result.error.message } : {}) };
 }
 
-export function parkedItems(monadArgs: readonly string[] = [], run: ParkedItemsRunner = args => {
-  const result = spawnSync(process.execPath, [join(ROOT, 'bin/monad.mjs'), ...args], { cwd: ROOT, encoding: 'utf8' });
+export function parkedItems(elanousArgs: readonly string[] = [], run: ParkedItemsRunner = args => {
+  const result = spawnSync(process.execPath, [join(ROOT, 'bin/elanous.mjs'), ...args], { cwd: ROOT, encoding: 'utf8' });
   return { status: result.status, stdout: result.stdout, stderr: result.stderr, ...(result.error ? { error: result.error.message } : {}) };
 }): ParkedItem[] {
-  const result = run([...monadArgs, 'self', 'parked', '--json']);
-  if (result.status !== 0) throw new Error(result.stderr || result.error || 'monad self parked --json unavailable');
+  const result = run([...elanousArgs, 'self', 'parked', '--json']);
+  if (result.status !== 0) throw new Error(result.stderr || result.error || 'elanous self parked --json unavailable');
   const parsed = JSON.parse(result.stdout ?? '');
   return Array.isArray(parsed) ? parsed : (parsed.items ?? []);
 }

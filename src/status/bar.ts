@@ -19,7 +19,7 @@
 //   - tokensPerSec(avg)
 //
 // Keeping this module pure (no disk I/O, no process state) so both
-// the dashboard HUD and any one-shot `monad status-bar` CLI can share
+// the dashboard HUD and any one-shot `elanous status-bar` CLI can share
 // one set of renderers.
 
 import { basename } from 'node:path';

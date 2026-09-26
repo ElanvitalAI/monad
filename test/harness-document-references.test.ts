@@ -21,15 +21,15 @@ function captureBootPrompts(documentReferences: string | undefined): { first: st
         return { provider: 'test', model: 'test' };
       };
       await runChatTurnCli({ cfg, userText: 'child instruction', explicitSessionId: undefined, reuseActive: false, forceNew: true, json: true, enableTools: true, runTurn: capture });
-      delete process.env.MONAD_DOCUMENT_REFERENCES;
+      delete process.env.ELANOUS_DOCUMENT_REFERENCES;
       await runChatTurnCli({ cfg, userText: 'child instruction', explicitSessionId: undefined, reuseActive: false, forceNew: true, json: true, enableTools: true, runTurn: capture });
       console.log(JSON.stringify({ first: prompts[0], second: prompts[1] }));
     `], {
       encoding: 'utf8',
       env: {
         ...process.env,
-        MONAD_STATE_DIR: stateDir,
-        ...(documentReferences === undefined ? {} : { MONAD_DOCUMENT_REFERENCES: documentReferences }),
+        ELANOUS_STATE_DIR: stateDir,
+        ...(documentReferences === undefined ? {} : { ELANOUS_DOCUMENT_REFERENCES: documentReferences }),
       },
     });
     expect(child.status).toBe(0);

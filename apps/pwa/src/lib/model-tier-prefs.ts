@@ -1,19 +1,19 @@
 // M1-2 (PLAN-friction-free-model-selection-ux-2026-05-12 · Phase 1) —
 // PWA-side persistence for STT tier slider.
 //
-// Storage shape (`localStorage` key `monad.model-tier.prefs`):
+// Storage shape (`localStorage` key `elanous.model-tier.prefs`):
 //   { stt: 'balanced' }   // ModelTier or absent
 //   audioMinPerDay: 0     // user's recent daily average (M3 14-day rolling)
 //
 // MVP scope: PWA-local. Cross-device sync (writing to
-// `~/.monad/config.json` via NEXUS) lands in M1-2b once the daemon
+// `~/.elanous/config.json` via NEXUS) lands in M1-2b once the daemon
 // gains a root-level user-config write endpoint. The slider UI today
 // reads/writes localStorage so the friction-reducer ships before the
 // transport ceremony.
 
 import { DEFAULT_MODEL_TIER, isModelTier, type ModelTier } from './model-tier-spec';
 
-const STORAGE_KEY = 'monad.model-tier.prefs';
+const STORAGE_KEY = 'elanous.model-tier.prefs';
 
 export interface ModelTierPrefs {
   /** STT tier the user has selected. Sparse — `undefined` means

@@ -78,7 +78,7 @@ describe('LogsPanel · source-level wiring guards', () => {
   });
 
   test('pins saved-query restore, application, and persistence wiring', () => {
-    expect(SRC).toContain("const SAVED_KEY = 'monad.pwa.logs.savedQueries';");
+    expect(SRC).toContain("const SAVED_KEY = 'elanous.pwa.logs.savedQueries';");
     expect(SRC).toContain('useEffect(() => { setSaved(loadSaved()); }, []);');
     expect(SRC).toContain('window.localStorage.getItem(SAVED_KEY)');
     expect(SRC).toContain('const s = saved.find((x) => x.name === e.target.value);');

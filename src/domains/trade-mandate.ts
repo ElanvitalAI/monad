@@ -8,20 +8,20 @@
 //   켜기 전까지 실주문 0(dry). 자율이라도 스코프 가드(종목·매뉴얼정지·재승인)를
 //   매 거래 강제. verify 게이트(리스크/노출/체결)는 그대로 자동 유지.
 //
-// 저장: ~/.monad/finance-trade-mandate.json (대표 편집·변경=컨셉변경=재승인 대상).
+// 저장: ~/.elanous/finance-trade-mandate.json (대표 편집·변경=컨셉변경=재승인 대상).
 
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { monadStateRoot } from '../autopilot/state-paths.js';
+import { elanousStateRoot } from '../autopilot/state-paths.js';
 import type { TradeIntent } from './trade-hitl.js';
 import { marketSessions, type MarketSessions } from './finance.js';
 
-/** 매매 mandate 정본 경로 — state-dir 존중(lazy · Phase B). prod(MONAD_STATE_DIR 미설정)=
- *  `~/.monad/finance-trade-mandate.json`(무변경) · 격리 test=자기 루트(무장 파일 부재 →
+/** 매매 mandate 정본 경로 — state-dir 존중(lazy · Phase B). prod(ELANOUS_STATE_DIR 미설정)=
+ *  `~/.elanous/finance-trade-mandate.json`(무변경) · 격리 test=자기 루트(무장 파일 부재 →
  *  DISARMED fail-closed). 종전 homedir 하드코딩은 test 가 prod 무장 mandate 를 공유하던
  *  위험(안전강화 — 매매 무장류는 test↔prod 절대 공유 금지). */
 export function tradeMandatePath(): string {
-  return join(monadStateRoot(), 'finance-trade-mandate.json');
+  return join(elanousStateRoot(), 'finance-trade-mandate.json');
 }
 
 export interface TradeMandate {

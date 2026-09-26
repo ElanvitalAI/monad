@@ -31,10 +31,10 @@ export interface DashboardBrowserCdpSlashRuntime {
 function buildBrowserCdpSmokeUrl(): string {
   const html = [
     '<!doctype html>',
-    '<html><head><meta charset="utf-8"><title>Monad Browser CDP Smoke</title></head>',
+    '<html><head><meta charset="utf-8"><title>Elanous Browser CDP Smoke</title></head>',
     '<body>',
     '<main>',
-    '<h1>Monad Browser CDP Smoke</h1>',
+    '<h1>Elanous Browser CDP Smoke</h1>',
     '<p id="status">browser runtime smoke ok</p>',
     '</main>',
     '</body></html>',

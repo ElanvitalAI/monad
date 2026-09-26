@@ -101,7 +101,7 @@ interface ScreenshotState {
 interface PushcutState {
   /** `idle` until first list call · `loading` during refresh ·
    *  `ok` once list resolved · `nexus-missing` on 404 (NEXUS HTTP
-   *  not running — `monad serve` standalone case) · `error` for
+   *  not running — `elanous serve` standalone case) · `error` for
    *  other failures (e.g. wrong token). */
   status: 'idle' | 'loading' | 'ok' | 'nexus-missing' | 'error';
   bindings?: PushcutBinding[];
@@ -390,7 +390,7 @@ export function SettingsPanel() {
 
   // Pushcut bindings list — only probes when daemon health is OK so
   // we don't fire NEXUS calls before the user has configured baseUrl.
-  // 404 responses (NEXUS endpoints absent · `monad serve` standalone)
+  // 404 responses (NEXUS endpoints absent · `elanous serve` standalone)
   // collapse to `nexus-missing` for clear UX.
   useEffect(() => {
     if (health.status !== 'ok' || !config.baseUrl) {
@@ -598,8 +598,8 @@ export function SettingsPanel() {
       {/* M1-2 (PLAN-friction-free-model-selection-ux-2026-05-12 · 2026-05-12)
           — 5-tick STT tier slider (Budget · Balanced · Better · Best ·
           Loaded). Abstracts away model ids so the user expresses intent
-          and monad picks the model. Local persistence today · daemon
-          sync to ~/.monad/config.json lands in M1-2b. */}
+          and elanous picks the model. Local persistence today · daemon
+          sync to ~/.elanous/config.json lands in M1-2b. */}
       <VoiceModelTierCard />
 
       {/* M2-1 (Phase 2) — same 5-tick slider for LLM. Resolver consults
@@ -705,7 +705,7 @@ export function SettingsPanel() {
                 {health.error}
               </p>
               <p className="text-[11px] text-muted-foreground">
-                Verify Base URL · daemon running (<code className="rounded bg-muted px-1">monad serve --status</code>) · network reachable from this device.
+                Verify Base URL · daemon running (<code className="rounded bg-muted px-1">elanous serve --status</code>) · network reachable from this device.
               </p>
             </div>
           )}
@@ -722,7 +722,7 @@ export function SettingsPanel() {
           <div className="rounded-md border border-border bg-card p-3 text-xs">
             {tools.status === 'ok' && tools.kind === 'none' && (
               <p className="text-muted-foreground">
-                Tools 미설정 — `monad serve --tools readonly` 또는 `webterm` 으로 활성화.
+                Tools 미설정 — `elanous serve --tools readonly` 또는 `webterm` 으로 활성화.
               </p>
             )}
             {tools.status === 'ok' && tools.kind && tools.kind !== 'none' && (
@@ -886,7 +886,7 @@ export function SettingsPanel() {
             )}
             {pushcut.status === 'nexus-missing' && (
               <p className="text-muted-foreground">
-                NEXUS endpoints not reachable. <code className="rounded bg-muted px-1.5 py-0.5">monad nexus</code> 로 띄우면 secret + binding 관리가 활성됩니다.
+                NEXUS endpoints not reachable. <code className="rounded bg-muted px-1.5 py-0.5">elanous nexus</code> 로 띄우면 secret + binding 관리가 활성됩니다.
                 <span className="block mt-1 text-[10px]">
                   (현재 daemon 만 단독 실행 중인 경우 — 본 섹션은 NEXUS HTTP 의 <code className="rounded bg-muted px-1">/v1/registry/bindings</code> + <code className="rounded bg-muted px-1">/v1/config/secrets</code> 의존)
                 </span>
@@ -931,7 +931,7 @@ export function SettingsPanel() {
                         {pushcut.pendingSecretValue}
                       </code>
                       <p className="mt-1 text-[10px] text-amber-700 dark:text-amber-300">
-                        Paste into iPhone &ldquo;monad-camera&rdquo; Pushcut Shortcut Header <code className="rounded bg-muted px-1">X-Pushcut-Sig</code> recipe.
+                        Paste into iPhone &ldquo;elanous-camera&rdquo; Pushcut Shortcut Header <code className="rounded bg-muted px-1">X-Pushcut-Sig</code> recipe.
                       </p>
                     </div>
                   )}
@@ -1140,7 +1140,7 @@ export function SettingsPanel() {
        *  Read-only reference. v2 (ROADMAP §9.1) 에서 dynamic detection 화. */}
       <AdvancedSetupMap />
 
-      {/* T4.D — Generate connect token (다른 머신 monad nexus connect 용). */}
+      {/* T4.D — Generate connect token (다른 머신 elanous nexus connect 용). */}
       <ConnectTokenCard />
 
       {/* 빌드 정보 (2026-07-08) — 우하단 fixed 배너를 정식 카드로 이관. */}

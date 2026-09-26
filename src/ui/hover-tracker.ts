@@ -10,7 +10,7 @@
 //   - AppCUI-rs `MouseEvent::Enter` / `Leave` / `Over` transitions
 //     (appcui/src/input/mouse_event.rs:1-47)
 //   - ContextKeyService equality-no-op update (DD-IDX-17)
-//   - debounced stable-hover per MONAD_HOVER_DELAY_MS (DD-IDX-17)
+//   - debounced stable-hover per ELANOUS_HOVER_DELAY_MS (DD-IDX-17)
 //
 // This module owns NO global state; callers construct instances
 // via createHoverTracker() and dispose when the parent display
@@ -57,7 +57,7 @@ export type HoverEvent =
 
 export type HoverListener = (ev: HoverEvent) => void;
 
-/** Default stable-hover delay in ms. Env MONAD_HOVER_DELAY_MS
+/** Default stable-hover delay in ms. Env ELANOUS_HOVER_DELAY_MS
  *  overrides. 500ms matches VSCode hover delay + AppCUI debounce. */
 export const DEFAULT_HOVER_STABLE_MS = 500;
 
@@ -68,7 +68,7 @@ export const DEFAULT_HOVER_STABLE_MS = 500;
 export function readHoverDelayMs(
   env: Record<string, string | undefined> = process.env,
 ): number {
-  const raw = env.MONAD_HOVER_DELAY_MS;
+  const raw = env.ELANOUS_HOVER_DELAY_MS;
   if (!raw) return DEFAULT_HOVER_STABLE_MS;
   const n = Number.parseInt(raw, 10);
   if (!Number.isFinite(n) || n <= 0) return DEFAULT_HOVER_STABLE_MS;

@@ -8,8 +8,8 @@ import {
 
 function rootWithPackage(): string {
   const root = mkdtempSync(join(tmpdir(), 'ios-gate-'));
-  mkdirSync(join(root, 'apps', 'ios', 'MonadiOSKitTests'), { recursive: true });
-  writeFileSync(join(root, 'apps', 'ios', 'MonadiOSKitTests', 'Package.swift'), '// swift-tools-version: 5.9\n');
+  mkdirSync(join(root, 'apps', 'ios', 'ElanousiOSKitTests'), { recursive: true });
+  writeFileSync(join(root, 'apps', 'ios', 'ElanousiOSKitTests', 'Package.swift'), '// swift-tools-version: 5.9\n');
   return root;
 }
 function capture() {

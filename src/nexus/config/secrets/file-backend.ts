@@ -1,6 +1,6 @@
 // NEXUS · FileBackend (Phase N-3.5 PR σ)
 //
-// Reads / writes `~/.monad/secrets.json` (0o600). Implementation moved
+// Reads / writes `~/.elanous/secrets.json` (0o600). Implementation moved
 // from src/nexus/config/secrets.ts so the registry can swap backends
 // without touching caller code. The legacy module re-exports this
 // backend's accessor functions to preserve backwards compatibility.

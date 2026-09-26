@@ -1,7 +1,7 @@
 // ── MCP proxy ToolRuntime factory (B 트랙 Phase 2 · 2026-05-12) ──
 //
 // Wraps a remote McpTool (received from the external server's
-// `tools/list`) into a ToolRuntime instance so the rest of monad —
+// `tools/list`) into a ToolRuntime instance so the rest of elanous —
 // `dispatchToolByName`, TUI, PWA `/chat`, webterm `:agent`, NEXUS
 // HTTP `/v1/tools/*`, the local MCP server's `tools/list` — see and
 // invoke it identically to any first-party tool.
@@ -199,7 +199,7 @@ export function estimateTokens(text: string): number {
  *  distinct from native tools in tool autocomplete and log lines.
  *  Tool name validation (legal LLM tool_use name) is the server's
  *  responsibility — most providers accept dots in tool names, and
- *  monad's downstream LLM dispatch (`src/llm.ts`) doesn't reject
+ *  elanous's downstream LLM dispatch (`src/llm.ts`) doesn't reject
  *  them either. */
 export function createMcpProxyRuntime(
   opts: McpProxyRuntimeOpts,
@@ -398,7 +398,7 @@ function safeJson(value: unknown): string | null {
 
 // ─── Conversion helpers ──────────────────────────────────────────
 
-/** Convert `McpToolCallResult` to the shape monad's ToolRunResult
+/** Convert `McpToolCallResult` to the shape elanous's ToolRunResult
  *  contract expects. Image-bearing convention (Phase 1 · 2026-05-05
  *  image-content-pipeline) matched: emit `mediaType` + `dataB64`
  *  at top level when an image content block is present, so the LLM

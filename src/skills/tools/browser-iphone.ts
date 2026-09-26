@@ -5,7 +5,7 @@
 //
 //   browser_open       process          — spawn Chrome + attach CDP
 //   browser_navigate   network          — Page.navigate
-//   browser_screenshot read-only        — PNG saved to /tmp/monad-output
+//   browser_screenshot read-only        — PNG saved to /tmp/elanous-output
 //   browser_read       read-only        — page text, HTML, or screenshot base64
 //   browser_close      process          — dispose CDP + Chrome
 //   iphone_notify      network          — Pushcut.notify
@@ -188,7 +188,7 @@ export async function dispatchBrowserNavigate(
 export function buildBrowserScreenshotTool(): LLMToolSpec {
   return {
     name: 'BrowserScreenshot',
-    description: 'Capture a PNG screenshot of the browser session and save to /tmp/monad-output. Returns the absolute path.',
+    description: 'Capture a PNG screenshot of the browser session and save to /tmp/elanous-output. Returns the absolute path.',
     parameters: {
       type: 'object',
       properties: {
@@ -217,7 +217,7 @@ export async function dispatchBrowserScreenshot(
     session = cdpSessions.get(id);
     if (!session) throw new Error(`unknown session_id ${id}`);
     const png = await session.client.screenshot({ format: 'png', fullPage: raw.full_page === true });
-    const dir = deps.outputDir ?? mkdtempSync(joinPath(tmpdir(), 'monad-screenshot-'));
+    const dir = deps.outputDir ?? mkdtempSync(joinPath(tmpdir(), 'elanous-screenshot-'));
     const path = joinPath(dir, `${id}-${Date.now()}.png`);
     const w = deps.writeFile ?? ((p, d) => writeFileSync(p, d));
     w(path, png);

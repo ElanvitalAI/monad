@@ -10,7 +10,7 @@ import {
 describe('classifyDestructive — filesystem patterns', () => {
   afterEach(() => {
     setGuardianDisabled(false);
-    delete process.env.MONAD_GUARDIAN;
+    delete process.env.ELANOUS_GUARDIAN;
   });
 
   test('rm -rf', () => {
@@ -144,11 +144,11 @@ describe('classifyDestructive — disk + permissions + privilege', () => {
 describe('guardian disable switches', () => {
   afterEach(() => {
     setGuardianDisabled(false);
-    delete process.env.MONAD_GUARDIAN;
+    delete process.env.ELANOUS_GUARDIAN;
   });
 
-  test('MONAD_GUARDIAN=off bypass', () => {
-    process.env.MONAD_GUARDIAN = 'off';
+  test('ELANOUS_GUARDIAN=off bypass', () => {
+    process.env.ELANOUS_GUARDIAN = 'off';
     expect(isGuardianDisabled()).toBe(true);
     expect(classifyDestructive(['rm', '-rf', '/tmp/x'])).toBeNull();
   });

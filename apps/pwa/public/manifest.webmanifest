@@ -1,6 +1,6 @@
 {
-  "name": "monad",
-  "short_name": "monad",
+  "name": "elanous",
+  "short_name": "elanous",
   "description": "monad-agent unified PWA — voice · chat · intake · control · terminal.",
   "start_url": "/app/chat",
   "scope": "/app/",

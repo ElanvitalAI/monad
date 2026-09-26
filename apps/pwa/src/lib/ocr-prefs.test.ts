@@ -73,13 +73,13 @@ describe('ocr-prefs', () => {
   });
 
   test('corrupt localStorage value falls back to defaults', () => {
-    globalThis.localStorage!.setItem('monad.ocr.prefs', 'not json{');
+    globalThis.localStorage!.setItem('elanous.ocr.prefs', 'not json{');
     expect(loadOcrPrefs()).toEqual(DEFAULT_OCR_PREFS);
   });
 
   test('non-boolean field falls back per-field', () => {
     globalThis.localStorage!.setItem(
-      'monad.ocr.prefs',
+      'elanous.ocr.prefs',
       JSON.stringify({
         defaultUseLlmVision: 'yes',
         defaultPreferHandwriting: true,

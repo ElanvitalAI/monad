@@ -113,16 +113,16 @@ beforeEach(() => {
   storeDir = mkdtempSync(join(tmpdir(), 'mcp-oauth-'));
   storePath = join(storeDir, 'auth.json');
   universeDir = mkdtempSync(join(tmpdir(), 'mcp-oauth-universe-'));
-  prevStateDir = process.env.MONAD_STATE_DIR;
+  prevStateDir = process.env.ELANOUS_STATE_DIR;
   prevXdg = process.env.XDG_CONFIG_HOME;
   // ⛔ 기본 자격 파일은 전역(authStorePath)이다 — 시험은 XDG 로 그 자리를 tmp 에 못 박는다.
   process.env.XDG_CONFIG_HOME = storeDir;
-  process.env.MONAD_STATE_DIR = universeDir;
+  process.env.ELANOUS_STATE_DIR = universeDir;
 });
 
 afterEach(() => {
-  if (prevStateDir === undefined) delete process.env.MONAD_STATE_DIR;
-  else process.env.MONAD_STATE_DIR = prevStateDir;
+  if (prevStateDir === undefined) delete process.env.ELANOUS_STATE_DIR;
+  else process.env.ELANOUS_STATE_DIR = prevStateDir;
   if (prevXdg === undefined) delete process.env.XDG_CONFIG_HOME;
   else process.env.XDG_CONFIG_HOME = prevXdg;
   rmSync(storeDir, { recursive: true, force: true });
@@ -221,9 +221,9 @@ describe('global store path (isolation manual §6)', () => {
   test('credential file is the global auth store, not under effectiveInstanceRoot()', () => {
     const path = mcpOAuthStorePath();
     expect(path).toBe(authStorePath());
-    expect(path).toBe(join(storeDir, 'monad', 'auth.json'));
+    expect(path).toBe(join(storeDir, 'elanous', 'auth.json'));
     expect(path.startsWith(resolve(universeDir))).toBe(false);
-    expect(path).not.toBe(join(homedir(), '.monad', 'auth.json'));
+    expect(path).not.toBe(join(homedir(), '.elanous', 'auth.json'));
   });
 
   test('a credential stranded under the universe root is adopted once, add-only', () => {

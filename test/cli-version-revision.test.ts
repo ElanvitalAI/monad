@@ -18,7 +18,7 @@ afterEach(() => {
 });
 
 function withUnrelatedCaller<T>(run: () => T): T {
-  const caller = mkdtempSync(join(tmpdir(), 'monad-version-caller-'));
+  const caller = mkdtempSync(join(tmpdir(), 'elanous-version-caller-'));
   const originalCwd = process.cwd();
   process.chdir(caller);
   try {
@@ -30,7 +30,7 @@ function withUnrelatedCaller<T>(run: () => T): T {
 }
 
 function withInstallMetadata<T>(contents: string | undefined, run: () => T): T {
-  const root = mkdtempSync(join(tmpdir(), 'monad-install-meta-'));
+  const root = mkdtempSync(join(tmpdir(), 'elanous-install-meta-'));
   setInstallMetadataRootForTesting(root);
   try {
     if (contents !== undefined) {
@@ -178,7 +178,7 @@ describe('CLI version revision', () => {
     const calls: string[] = [];
     failGitAtInstallRoot(calls);
 
-    const consumer = mkdtempSync(join(tmpdir(), 'monad-consumer-meta-'));
+    const consumer = mkdtempSync(join(tmpdir(), 'elanous-consumer-meta-'));
     try {
       writeFileSync(join(consumer, 'install.json'), JSON.stringify({
         version: '1.0.0',
@@ -186,7 +186,7 @@ describe('CLI version revision', () => {
         installedAt: '2026-09-22T00:00:00Z',
         commit: CONSUMER_COMMIT,
       }));
-      const packageRoot = join(consumer, 'node_modules', 'monadagent');
+      const packageRoot = join(consumer, 'node_modules', 'elanous');
       mkdirSync(packageRoot, { recursive: true });
       setInstallMetadataRootForTesting(packageRoot);
       withUnrelatedCaller(() => expect(cliVersion()).toBe(`${packageVersion()} unknown`));
@@ -201,15 +201,15 @@ describe('CLI version revision', () => {
     const calls: string[] = [];
     failGitAtInstallRoot(calls);
 
-    const prefix = mkdtempSync(join(tmpdir(), 'monad-installer-prefix-'));
+    const prefix = mkdtempSync(join(tmpdir(), 'elanous-installer-prefix-'));
     try {
-      const packageRoot = join(prefix, 'node_modules', 'monadagent');
+      const packageRoot = join(prefix, 'node_modules', 'elanous');
       mkdirSync(join(prefix, 'bin'), { recursive: true });
       mkdirSync(join(prefix, 'node_modules', '.bin'), { recursive: true });
       mkdirSync(join(packageRoot, 'bin'), { recursive: true });
-      writeFileSync(join(packageRoot, 'bin', 'monad.mjs'), '');
-      symlinkSync(join('..', 'monadagent', 'bin', 'monad.mjs'), join(prefix, 'node_modules', '.bin', 'monad'));
-      symlinkSync(join('..', 'node_modules', '.bin', 'monad'), join(prefix, 'bin', 'monad'));
+      writeFileSync(join(packageRoot, 'bin', 'elanous.mjs'), '');
+      symlinkSync(join('..', 'elanous', 'bin', 'elanous.mjs'), join(prefix, 'node_modules', '.bin', 'elanous'));
+      symlinkSync(join('..', 'node_modules', '.bin', 'elanous'), join(prefix, 'bin', 'elanous'));
       writeFileSync(join(prefix, 'install.json'), JSON.stringify({
         version: '1.0.0',
         source: 'local',
@@ -225,22 +225,22 @@ describe('CLI version revision', () => {
     expect(calls).toEqual([INSTALL_ROOT]);
   });
 
-  // 🆕 2026-09-24 — 판 폴더 레이아웃(versions/<판> · current · bin/monad). 종전엔 이 레이아웃에서 늘 `unknown` 이었다.
+  // 🆕 2026-09-24 — 판 폴더 레이아웃(versions/<판> · current · bin/elanous). 종전엔 이 레이아웃에서 늘 `unknown` 이었다.
   test('versioned installer layout reads the running version folder install.json, not the root one', () => {
     const calls: string[] = [];
     failGitAtInstallRoot(calls);
 
-    const root = mkdtempSync(join(tmpdir(), 'monad-installer-versioned-'));
+    const root = mkdtempSync(join(tmpdir(), 'elanous-installer-versioned-'));
     try {
       const versionDir = join(root, 'versions', '1.0.0-cccccccccccc');
-      const packageRoot = join(versionDir, 'node_modules', 'monadagent');
+      const packageRoot = join(versionDir, 'node_modules', 'elanous');
       mkdirSync(join(root, 'bin'), { recursive: true });
       mkdirSync(join(versionDir, 'node_modules', '.bin'), { recursive: true });
       mkdirSync(join(packageRoot, 'bin'), { recursive: true });
-      writeFileSync(join(packageRoot, 'bin', 'monad.mjs'), '');
-      symlinkSync(join('..', 'monadagent', 'bin', 'monad.mjs'), join(versionDir, 'node_modules', '.bin', 'monad'));
+      writeFileSync(join(packageRoot, 'bin', 'elanous.mjs'), '');
+      symlinkSync(join('..', 'elanous', 'bin', 'elanous.mjs'), join(versionDir, 'node_modules', '.bin', 'elanous'));
       symlinkSync(join('versions', '1.0.0-cccccccccccc'), join(root, 'current'));
-      symlinkSync(join('..', 'current', 'node_modules', '.bin', 'monad'), join(root, 'bin', 'monad'));
+      symlinkSync(join('..', 'current', 'node_modules', '.bin', 'elanous'), join(root, 'bin', 'elanous'));
       writeFileSync(join(versionDir, 'install.json'), JSON.stringify({ commit: METADATA_COMMIT }));
       writeFileSync(join(root, 'install.json'), JSON.stringify({ commit: CONSUMER_COMMIT }));   // 마지막 설치(다른 판)
       setInstallMetadataRootForTesting(packageRoot);
@@ -256,14 +256,14 @@ describe('CLI version revision', () => {
     const calls: string[] = [];
     failGitAtInstallRoot(calls);
 
-    const root = mkdtempSync(join(tmpdir(), 'monad-installer-versioned-'));
+    const root = mkdtempSync(join(tmpdir(), 'elanous-installer-versioned-'));
     try {
       const versionDir = join(root, 'versions', '1.0.0-cccccccccccc');
-      const packageRoot = join(versionDir, 'node_modules', 'monadagent');
+      const packageRoot = join(versionDir, 'node_modules', 'elanous');
       mkdirSync(join(versionDir, 'node_modules', '.bin'), { recursive: true });
       mkdirSync(join(packageRoot, 'bin'), { recursive: true });
-      writeFileSync(join(packageRoot, 'bin', 'monad.mjs'), '');
-      symlinkSync(join('..', 'monadagent', 'bin', 'monad.mjs'), join(versionDir, 'node_modules', '.bin', 'monad'));
+      writeFileSync(join(packageRoot, 'bin', 'elanous.mjs'), '');
+      symlinkSync(join('..', 'elanous', 'bin', 'elanous.mjs'), join(versionDir, 'node_modules', '.bin', 'elanous'));
       writeFileSync(join(versionDir, 'install.json'), JSON.stringify({ commit: METADATA_COMMIT }));
       setInstallMetadataRootForTesting(packageRoot);
       withUnrelatedCaller(() => expect(cliVersion()).toBe(`${packageVersion()} unknown`));
@@ -278,13 +278,13 @@ describe('CLI version revision', () => {
     const calls: string[] = [];
     failGitAtInstallRoot(calls);
 
-    const prefix = mkdtempSync(join(tmpdir(), 'monad-installer-cmd-'));
+    const prefix = mkdtempSync(join(tmpdir(), 'elanous-installer-cmd-'));
     try {
-      const packageRoot = join(prefix, 'node_modules', 'monadagent');
+      const packageRoot = join(prefix, 'node_modules', 'elanous');
       mkdirSync(join(prefix, 'bin'), { recursive: true });
       mkdirSync(join(packageRoot, 'bin'), { recursive: true });
-      writeFileSync(join(packageRoot, 'bin', 'monad.mjs'), '');
-      writeFileSync(join(prefix, 'bin', 'monad.cmd'), '@echo off\r\nbun "%~dp0..\\node_modules\\monadagent\\bin\\monad.mjs" %*\r\n');
+      writeFileSync(join(packageRoot, 'bin', 'elanous.mjs'), '');
+      writeFileSync(join(prefix, 'bin', 'elanous.cmd'), '@echo off\r\nbun "%~dp0..\\node_modules\\elanous\\bin\\elanous.mjs" %*\r\n');
       writeFileSync(join(prefix, 'install.json'), JSON.stringify({
         version: '1.0.0',
         source: 'local',
@@ -300,18 +300,18 @@ describe('CLI version revision', () => {
     expect(calls).toEqual([INSTALL_ROOT]);
   });
 
-  test('does not use prefix install.json when bin/monad is an unrelated file rather than the installer shim', () => {
+  test('does not use prefix install.json when bin/elanous is an unrelated file rather than the installer shim', () => {
     const calls: string[] = [];
     failGitAtInstallRoot(calls);
 
-    const consumer = mkdtempSync(join(tmpdir(), 'monad-unrelated-shim-'));
+    const consumer = mkdtempSync(join(tmpdir(), 'elanous-unrelated-shim-'));
     try {
-      const packageRoot = join(consumer, 'node_modules', 'monadagent');
+      const packageRoot = join(consumer, 'node_modules', 'elanous');
       mkdirSync(join(consumer, 'bin'), { recursive: true });
       mkdirSync(join(packageRoot, 'bin'), { recursive: true });
-      writeFileSync(join(packageRoot, 'bin', 'monad.mjs'), '');
-      writeFileSync(join(consumer, 'bin', 'monad'), '');
-      writeFileSync(join(consumer, 'bin', 'monad.cmd'), '@echo off\r\necho unrelated\r\n');
+      writeFileSync(join(packageRoot, 'bin', 'elanous.mjs'), '');
+      writeFileSync(join(consumer, 'bin', 'elanous'), '');
+      writeFileSync(join(consumer, 'bin', 'elanous.cmd'), '@echo off\r\necho unrelated\r\n');
       writeFileSync(join(consumer, 'install.json'), JSON.stringify({
         version: '1.0.0',
         source: 'consumer',
@@ -327,17 +327,17 @@ describe('CLI version revision', () => {
     expect(calls).toEqual([INSTALL_ROOT]);
   });
 
-  test('does not use prefix install.json when bin/monad is a consumer symlink that happens to resolve to this package', () => {
+  test('does not use prefix install.json when bin/elanous is a consumer symlink that happens to resolve to this package', () => {
     const calls: string[] = [];
     failGitAtInstallRoot(calls);
 
-    const consumer = mkdtempSync(join(tmpdir(), 'monad-coincidental-shim-'));
+    const consumer = mkdtempSync(join(tmpdir(), 'elanous-coincidental-shim-'));
     try {
-      const packageRoot = join(consumer, 'node_modules', 'monadagent');
+      const packageRoot = join(consumer, 'node_modules', 'elanous');
       mkdirSync(join(consumer, 'bin'), { recursive: true });
       mkdirSync(join(packageRoot, 'bin'), { recursive: true });
-      writeFileSync(join(packageRoot, 'bin', 'monad.mjs'), '');
-      symlinkSync(join('..', 'node_modules', 'monadagent', 'bin', 'monad.mjs'), join(consumer, 'bin', 'monad'));
+      writeFileSync(join(packageRoot, 'bin', 'elanous.mjs'), '');
+      symlinkSync(join('..', 'node_modules', 'elanous', 'bin', 'elanous.mjs'), join(consumer, 'bin', 'elanous'));
       writeFileSync(join(consumer, 'install.json'), JSON.stringify({
         version: '1.0.0',
         source: 'consumer',
@@ -353,19 +353,19 @@ describe('CLI version revision', () => {
     expect(calls).toEqual([INSTALL_ROOT]);
   });
 
-  test('does not use prefix install.json when bin/monad.cmd names the package without the installer-relative path', () => {
+  test('does not use prefix install.json when bin/elanous.cmd names the package without the installer-relative path', () => {
     const calls: string[] = [];
     failGitAtInstallRoot(calls);
 
-    const consumer = mkdtempSync(join(tmpdir(), 'monad-unrelated-cmd-path-'));
+    const consumer = mkdtempSync(join(tmpdir(), 'elanous-unrelated-cmd-path-'));
     try {
-      const packageRoot = join(consumer, 'node_modules', 'monadagent');
+      const packageRoot = join(consumer, 'node_modules', 'elanous');
       mkdirSync(join(consumer, 'bin'), { recursive: true });
       mkdirSync(join(packageRoot, 'bin'), { recursive: true });
-      writeFileSync(join(packageRoot, 'bin', 'monad.mjs'), '');
+      writeFileSync(join(packageRoot, 'bin', 'elanous.mjs'), '');
       writeFileSync(
-        join(consumer, 'bin', 'monad.cmd'),
-        '@echo off\r\nbun "C:\\caller\\node_modules\\monadagent\\bin\\monad.mjs" %*\r\n',
+        join(consumer, 'bin', 'elanous.cmd'),
+        '@echo off\r\nbun "C:\\caller\\node_modules\\elanous\\bin\\elanous.mjs" %*\r\n',
       );
       writeFileSync(join(consumer, 'install.json'), JSON.stringify({
         version: '1.0.0',

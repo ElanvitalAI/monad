@@ -11,7 +11,7 @@ import { setTestStateRoot } from '../src/nexus/paths.js';
 let stateRoot: string;
 
 beforeEach(() => {
-  stateRoot = mkdtempSync(join(tmpdir(), 'monad-nexus-mcp-reload-'));
+  stateRoot = mkdtempSync(join(tmpdir(), 'elanous-nexus-mcp-reload-'));
   setTestStateRoot(stateRoot);
 });
 

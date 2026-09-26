@@ -17,7 +17,7 @@ import {
 import type { DispatchContext, DispatchResult } from '../surface-registry.js';
 import type { ChatPromptSpec } from '../types.js';
 
-/** Matches monad's existing AskUserQuestion runtime shape (loose). */
+/** Matches elanous's existing AskUserQuestion runtime shape (loose). */
 export interface ChatPromptCallable {
   (input: {
     question: ChatPromptSpec;

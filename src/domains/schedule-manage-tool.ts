@@ -1,6 +1,6 @@
 // ── schedule_manage 공유 도구 (2026-07-07) — 전 표면 상속 ─────────────────
 //
-// 대표 지시: 스케줄/크론 CRUD를 텔레그램뿐 아니라 monad 채팅(CLI)·PWA·iPad 등
+// 대표 지시: 스케줄/크론 CRUD를 텔레그램뿐 아니라 elanous 채팅(CLI)·PWA·iPad 등
 // 전 표면에서. 이 모듈이 spec + dispatch의 단일 출처 — finance 팩(telegram)·
 // 데몬 toolSurface(PWA/ACP)·CLI(buildCliAgentTools)가 동일하게 배선.
 //
@@ -20,11 +20,11 @@ import { surfaceEventsDbPath, openSurfaceEventsDb, recallEvents } from './surfac
 
 export const SCHEDULE_MANAGE_SPEC: LLMToolSpec = {
   name: 'schedule_manage',
-  description: "⭐ 스케줄/크론 관리 — monad가 **자기 예약 작업(크론)을 인지·CRUD**. 시스템 crontab의 모든 잡을 조회/생성/수정/삭제하는 단일 창구(사람이 crontab을 직접 편집하지 않게 monad로 일반화·전 표면 공용). **'무슨 크론/스케줄 도나' '내가 뭘 예약해뒀지' '이 모니터 몇시에 도나' '이 알림 시간 바꿔줘' '이 잡 꺼줘/켜줘' '새 스케줄 추가'** 류 질문·지시에 사용. action: list(전체·category 필터)·inspect(id 상세+최근발송)·create(cron+command 신규)·update(cron 시간 변경)·enable/disable(주석 토글)·delete·adopt(monad 데몬 실행 이관)·release(crontab 복원). **안전**: 쓰기는 자동 백업(~/.monad/backups)·monad .ts는 cd repo+로그 강제. category=ingest|monitor|report|alert|digest|maintenance(도메인 무관). 파괴적(delete/update/adopt)은 신중. (스케줄러=prospective memory·memory_recall과 더블트랙.)",
+  description: "⭐ 스케줄/크론 관리 — elanous가 **자기 예약 작업(크론)을 인지·CRUD**. 시스템 crontab의 모든 잡을 조회/생성/수정/삭제하는 단일 창구(사람이 crontab을 직접 편집하지 않게 elanous로 일반화·전 표면 공용). **'무슨 크론/스케줄 도나' '내가 뭘 예약해뒀지' '이 모니터 몇시에 도나' '이 알림 시간 바꿔줘' '이 잡 꺼줘/켜줘' '새 스케줄 추가'** 류 질문·지시에 사용. action: list(전체·category 필터)·inspect(id 상세+최근발송)·create(cron+command 신규)·update(cron 시간 변경)·enable/disable(주석 토글)·delete·adopt(elanous 데몬 실행 이관)·release(crontab 복원). **안전**: 쓰기는 자동 백업(~/.elanous/backups)·elanous .ts는 cd repo+로그 강제. category=ingest|monitor|report|alert|digest|maintenance(도메인 무관). 파괴적(delete/update/adopt)은 신중. (스케줄러=prospective memory·memory_recall과 더블트랙.)",
   parameters: {
     type: 'object',
     properties: {
-      action: { type: 'string', description: 'list(기본)|inspect|create|update|enable|disable|delete|migrate(fabric Schedule Trigger 로 이관·monad 데몬 발화)|adopt(=migrate 별칭·schedule-runner 은퇴로 통합)|release(crontab 실행으로 복원)|note(사람용 설명 저장).' },
+      action: { type: 'string', description: 'list(기본)|inspect|create|update|enable|disable|delete|migrate(fabric Schedule Trigger 로 이관·elanous 데몬 발화)|adopt(=migrate 별칭·schedule-runner 은퇴로 통합)|release(crontab 실행으로 복원)|note(사람용 설명 저장).' },
       id: { type: 'string', description: 'inspect/update/enable/disable/delete/adopt/release/note 대상 잡 id(list에서 확인).' },
       category: { type: 'string', description: 'list 필터(선택) — ingest|monitor|report|alert|digest|maintenance.' },
       cron: { type: 'string', description: 'create/update용 cron 식(예: "0 7 * * *"·"*/10 9-15 * * 1-5").' },
@@ -80,7 +80,7 @@ export const compactSchedule = (r: ScheduleRow) => {
 
 export async function dispatchScheduleManage(args: Record<string, unknown>): Promise<unknown> {
   let action = String(args.action ?? 'list');
-  // Mission Fabric 통합 U4d — schedule-runner 은퇴. adopt(→monad 러너 실행)는
+  // Mission Fabric 통합 U4d — schedule-runner 은퇴. adopt(→elanous 러너 실행)는
   // 더 이상 실행 주체가 없으므로 migrate(→fabric Schedule Trigger)의 별칭으로 리다이렉트.
   if (action === 'adopt') action = 'migrate';
   const sdb = openSchedulesDb();
@@ -215,7 +215,7 @@ export async function dispatchScheduleManage(args: Record<string, unknown>): Pro
     }
     if (action === 'migrate') {
       // Mission Fabric 통합 U3(B안) — 예약잡을 fabric Task(cron surface)+Schedule
-      // Trigger 로 이관(schedule-runner 은퇴 경로). raw 무관(monad 러너 잡도 이관)이라
+      // Trigger 로 이관(schedule-runner 은퇴 경로). raw 무관(elanous 러너 잡도 이관)이라
       // 원문 부재 가드보다 앞. 데몬 live 등록·run_via='trigger'·crontab 라인 제거.
       // workflow-run 결과는 U3b 브릿지가 schedule_registry 로 되먹임.
       const { migrateJobToTrigger } = await import('./schedule-migrate.js');

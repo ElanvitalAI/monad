@@ -19,7 +19,7 @@ async function seed(path: string, body: string) {
 }
 
 beforeAll(async () => {
-  vault = await mkdtemp(join(tmpdir(), 'monad-graph-test-'));
+  vault = await mkdtemp(join(tmpdir(), 'elanous-graph-test-'));
   // Seed a small vault:
   //   Index.md             → links to ProjectA, ProjectB, Daily/2026-05-17
   //   ProjectA.md          → links to ProjectB (with alias), ProjectC#heading
@@ -129,7 +129,7 @@ describe('buildVaultGraph — edge resolution', () => {
   });
 
   test('repeated wikilinks in same file dedup to one edge', async () => {
-    const dupRoot = await mkdtemp(join(tmpdir(), 'monad-graph-dup-'));
+    const dupRoot = await mkdtemp(join(tmpdir(), 'elanous-graph-dup-'));
     await mkdir(dupRoot, { recursive: true });
     await writeFile(join(dupRoot, 'A.md'), 'See [[B]]. Also [[B]]. And one more [[B]].', 'utf8');
     await writeFile(join(dupRoot, 'B.md'), 'sink', 'utf8');
@@ -210,7 +210,7 @@ describe('buildVaultGraph — sort order', () => {
 
 describe('buildVaultGraph — error path', () => {
   test('returns error envelope when vaultRoot does not exist', async () => {
-    const result = await buildVaultGraph({ vaultRoot: '/nope/this/path/does/not/exist-monad' });
+    const result = await buildVaultGraph({ vaultRoot: '/nope/this/path/does/not/exist-elanous' });
     expect(result.nodes).toHaveLength(0);
     expect(result.edges).toHaveLength(0);
     expect(typeof result.error).toBe('string');

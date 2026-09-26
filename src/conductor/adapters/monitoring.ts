@@ -7,7 +7,7 @@
 //
 // Scheduler-retirement R1 (2026-05-11): replaced `scheduler_create`
 // recommendations with `workflow.synth_from_intent` (R3) +
-// `monad wf` flow. The `proposeScheduledJob` proposer hook name is
+// `elanous wf` flow. The `proposeScheduledJob` proposer hook name is
 // retained for backward compatibility, but emits a workflow proposal.
 
 import type { Adapter, AdapterResult } from '../types.js';
@@ -25,7 +25,7 @@ export const monitoringAdapter: Adapter = async (ctx) => {
           proposed,
           hint:
             `monitoring kind → workflow-runtime synth proposal. `
-            + `호출자가 workflow.synth_from_intent({intent: '...'}) 또는 \`monad wf register\` 로 실제 등록.`,
+            + `호출자가 workflow.synth_from_intent({intent: '...'}) 또는 \`elanous wf register\` 로 실제 등록.`,
           extra: { suggestedTool: 'workflow.synth_from_intent' },
         };
         return result;
@@ -51,7 +51,7 @@ function monitoringStub(
     pendingTracks: ['workflow-runtime'],
     hint:
       'monitoring kind: workflow-runtime Schedule Trigger 로 등록 권장. '
-      + `예: workflow.synth_from_intent({intent: '매일 9시에 ${ctx.goalSlug} 점검'}) 또는 \`monad wf register <file>\`. `
+      + `예: workflow.synth_from_intent({intent: '매일 9시에 ${ctx.goalSlug} 점검'}) 또는 \`elanous wf register <file>\`. `
       + 'Conductor ↔ workflow-runtime 자동 연동은 R3 자연어 합성 land 후.',
     extra: {
       suggestedTool: 'workflow.synth_from_intent',

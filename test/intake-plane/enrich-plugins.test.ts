@@ -66,12 +66,12 @@ describe('buildUrlDigestCallable', () => {
   test('success → summary = title + body head + raw populated', async () => {
     const fn = buildUrlDigestCallable({
       fetchUrl: makeFetchStub({
-        title: 'Monad agent README',
+        title: 'Elanous agent README',
         text: 'monad-agent is an AI fabric for…\n\nSecond paragraph here.',
       }),
     });
     const out = await fn({ url: 'https://example.com/readme' });
-    expect(out.summary).toContain('Monad agent README');
+    expect(out.summary).toContain('Elanous agent README');
     expect(out.summary).toContain('monad-agent is an AI fabric');
     expect(out.raw).toContain('Second paragraph');
   });

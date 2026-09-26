@@ -157,7 +157,7 @@ export function buildGrokLiveSearchKeywordCallable(
             {
               role: 'system',
               content:
-                '당신은 monad intake enrich plugin 입니다. 키워드 한 개에 대해 최신 web 정보를 종합한 200자 이내 한국어 요약을 만들어 주세요. '
+                '당신은 elanous intake enrich plugin 입니다. 키워드 한 개에 대해 최신 web 정보를 종합한 200자 이내 한국어 요약을 만들어 주세요. '
                 + '구체적 출처는 본문 안에 (제목 — 도메인) 형식으로 1-2개 인용하세요.',
             },
             { role: 'user', content: `키워드: '${keyword}'` },

@@ -11,9 +11,9 @@
 //    ⇒ 어느 모드든 «기본의 상위 집합»이다 — 앞 턴에서 쓴 기본 도구가 모드 때문에 사라지지 않는다(히스토리 안전).
 //    ⛔ 새 도구는 목록에만 더하면 된다 — 묶음에 안 넣으면 «기본»으로 간다(두 목록을 따로 맞출 일이 없다).
 //
-// 켜는 법(부모 env → 구현 자식 spawn 이 `MONAD_TOOL_PROFILE` 로 넘긴다):
-//   MONAD_CHILD_TOOL_PROFILE=full            전부
-//   MONAD_CHILD_TOOL_PROFILE=finance,ops     기본 ⊕ 고른 묶음
+// 켜는 법(부모 env → 구현 자식 spawn 이 `ELANOUS_TOOL_PROFILE` 로 넘긴다):
+//   ELANOUS_CHILD_TOOL_PROFILE=full            전부
+//   ELANOUS_CHILD_TOOL_PROFILE=finance,ops     기본 ⊕ 고른 묶음
 //   (없음)                                   coding(기본)
 
 /** 추가 묶음 — 코딩 기본에서 빠지고 «고르면 더해지는» 도구들. 접두 ⊕ 정확한 이름. */
@@ -37,7 +37,7 @@ export function parseToolProfile(raw: string | undefined): ToolProfile | null {
 }
 
 export function activeToolProfile(env: NodeJS.ProcessEnv = process.env): ToolProfile | null {
-  return parseToolProfile(env.MONAD_TOOL_PROFILE);
+  return parseToolProfile(env.ELANOUS_TOOL_PROFILE);
 }
 
 /** «상황» 신호 — 골 문면이 그 묶음의 «일»을 말하면 더한다(대표 09-25 「config 가 아니라 상황별로」).
@@ -53,11 +53,11 @@ export function situationalToolGroups(goalText: string | undefined): ToolExtraGr
 }
 
 /** 구현 자식 spawn 이 넘길 값.
- *  ① 부모 env `MONAD_CHILD_TOOL_PROFILE`(full · 묶음 · coding)이 있으면 그것 — 런 단위 명시가 이긴다
+ *  ① 부모 env `ELANOUS_CHILD_TOOL_PROFILE`(full · 묶음 · coding)이 있으면 그것 — 런 단위 명시가 이긴다
  *  ② 없으면 골 문면의 상황 신호로 묶음을 «더한다»
  *  ③ 둘 다 없으면 `coding`(다이어트) */
 export function childToolProfile(env: NodeJS.ProcessEnv = process.env, goalText?: string): string {
-  const explicit = env.MONAD_CHILD_TOOL_PROFILE?.trim();
+  const explicit = env.ELANOUS_CHILD_TOOL_PROFILE?.trim();
   if (explicit) return explicit;
   const groups = situationalToolGroups(goalText);
   return groups.length ? groups.join(',') : 'coding';

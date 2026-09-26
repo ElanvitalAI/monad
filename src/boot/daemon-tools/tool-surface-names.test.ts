@@ -28,7 +28,7 @@ const CHAT_CORE = [
   ...READONLY,
   'Edit', 'Write', 'Bash', 'delegate_code_agent',
   'schedule_manage', 'session_manage', 'memory_recall', 'fact_check', 'self_recall',
-  'autopilot_missions', 'ops_status', 'se_build', 'logs_query', 'mission_decide', 'monad_skills_list', 'skill_exec',
+  'autopilot_missions', 'ops_status', 'se_build', 'logs_query', 'mission_decide', 'elanous_skills_list', 'skill_exec',
 ];
 // webterm 이 chat 위에 항상 더하는 것(pty 무관) — 자율tool 3종(nest-cap off 전제) + 웹터미널/카메라.
 const WEBTERM_ALWAYS_EXTRA = [
@@ -99,7 +99,7 @@ describe('daemon toolSurface — Phase 3 골든룰(이름배열 diff=0·서피�
     expect(on).toEqual([
       ...CHAT_CORE.slice(0, -2),
       ...buildFinanceTools().specs.map((spec) => spec.name),
-      'monad_skills_list', 'skill_exec',
+      'elanous_skills_list', 'skill_exec',
     ]);
   });
 

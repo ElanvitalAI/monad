@@ -10,12 +10,12 @@ export const THEMES = [
   'catppuccin-latte',
   'rose-pine-dawn',
   'nord-light',
-  'monad-pastel-default',
+  'elanous-pastel-default',
 ] as const;
 
 export type ThemeName = (typeof THEMES)[number];
 
-const STORAGE_KEY = 'monad.pwa.theme';
+const STORAGE_KEY = 'elanous.pwa.theme';
 const SWITCH_ID = 'dashboard.theme.active';
 const DEFAULT_THEME: ThemeName = 'catppuccin-mocha';
 

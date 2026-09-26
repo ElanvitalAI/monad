@@ -1,7 +1,7 @@
 /**
  * Self-dev run store (S3 — persistence + resume).
  *
- * A lightweight, self-dev-SCOPED checkpoint: each `monad self orchestrate`
+ * A lightweight, self-dev-SCOPED checkpoint: each `elanous self orchestrate`
  * run persists its per-goal results to `<state>/self-dev-runs/<runId>.json`
  * after every job settles, so a crashed/interrupted run can resume and
  * skip already-done goals.
@@ -16,7 +16,7 @@
  * Cf. PLAN-parallel-self-dev-orchestrator-2026-07-21 §5 (S3).
  */
 import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
-import { monadStateRoot } from '../autopilot/state-paths.js';
+import { elanousStateRoot } from '../autopilot/state-paths.js';
 import { loadRunLedger, queryInterruptedRunLedgers, runLedgerDir, type RunLedgerEntry } from '../self-implement/run-ledger.js';
 import { join, resolve, sep } from 'node:path';
 import { isPidAlive } from '../git-fs/worktree.js';
@@ -92,9 +92,9 @@ export interface SelfDevRunState {
   pid?: number;
 }
 
-/** `<MONAD_STATE_DIR or ~/.monad>/self-dev-runs`. */
+/** `<ELANOUS_STATE_DIR or ~/.elanous>/self-dev-runs`. */
 export function selfDevRunsDir(stateDir?: string): string {
-  const base = stateDir ?? monadStateRoot();
+  const base = stateDir ?? elanousStateRoot();
   return join(base, 'self-dev-runs');
 }
 
@@ -489,14 +489,14 @@ export function parkedGoalsListingScopeNotice(listing: Pick<ParkedGoalListing, '
 
 export function parkedGoalsPopulationNotice(summary = countUnconvergeableRunLedgers()): string {
   if (summary.status === 'unreadable') {
-    return '[self-dev] self-implement 원장 기준 UNCONVERGEABLE 종결 런은 원장을 못 읽어 집계하지 못했습니다. 이 런들이 열어 둔 draft PR은 원장·로그로 확인: monad logs abandoned-draft-prs --all --include-test. 그중 지금도 아직 열려 있는지는 이 명령이 안 봅니다 — 네트워크 확인: gh pr list --state open --draft';
+    return '[self-dev] self-implement 원장 기준 UNCONVERGEABLE 종결 런은 원장을 못 읽어 집계하지 못했습니다. 이 런들이 열어 둔 draft PR은 원장·로그로 확인: elanous logs abandoned-draft-prs --all --include-test. 그중 지금도 아직 열려 있는지는 이 명령이 안 봅니다 — 네트워크 확인: gh pr list --state open --draft';
   }
   const displayedRunIds = summary.runIds.slice(0, PARKED_GOALS_NOTICE_RUN_ID_LIMIT);
   const omittedCount = summary.count - displayedRunIds.length;
   const runIdNotice = displayedRunIds.length === 0
     ? ''
     : ` 런 식별자: ${displayedRunIds.join(', ')}${omittedCount > 0 ? ` (${summary.count}건 중 ${displayedRunIds.length}건 표시, ${omittedCount}건 생략)` : ''}.`;
-  return `[self-dev] self-implement 원장 기준 마지막 rework-budget verdict=UNCONVERGEABLE 종결 런 ${summary.count}건은 위 목록에 [self-implement-ledger] 로 함께 실립니다.${runIdNotice} 이 런들이 열어 둔 draft PR은 원장·로그로 확인: monad logs abandoned-draft-prs --all --include-test. 그중 지금도 아직 열려 있는지는 이 명령이 안 봅니다 — 네트워크 확인: gh pr list --state open --draft`;
+  return `[self-dev] self-implement 원장 기준 마지막 rework-budget verdict=UNCONVERGEABLE 종결 런 ${summary.count}건은 위 목록에 [self-implement-ledger] 로 함께 실립니다.${runIdNotice} 이 런들이 열어 둔 draft PR은 원장·로그로 확인: elanous logs abandoned-draft-prs --all --include-test. 그중 지금도 아직 열려 있는지는 이 명령이 안 봅니다 — 네트워크 확인: gh pr list --state open --draft`;
 }
 
 /** parked goal 목록 — 각 feature 의 최신 run 결과가 done/running 이 아닌 것(진단 동봉·최신순).

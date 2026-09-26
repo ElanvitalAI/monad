@@ -47,43 +47,43 @@ describe('migrateBaseUrl', () => {
   });
 
   test('migrates legacy → current when current absent', () => {
-    localStorage.setItem('monad.daemon.baseUrl', 'https://mbp.tailnet.ts.net:31415');
+    localStorage.setItem('elanous.daemon.baseUrl', 'https://mbp.tailnet.ts.net:31415');
     const res = migrateBaseUrl({
-      legacyKey: 'monad.daemon.baseUrl',
-      currentKey: 'monad.nexus.baseUrl',
+      legacyKey: 'elanous.daemon.baseUrl',
+      currentKey: 'elanous.nexus.baseUrl',
     });
     expect(res.migrated).toBe(true);
     expect(res.currentValue).toBe('https://mbp.tailnet.ts.net:31415');
-    expect(localStorage.getItem('monad.nexus.baseUrl')).toBe('https://mbp.tailnet.ts.net:31415');
-    expect(localStorage.getItem('monad.daemon.baseUrl')).toBeNull();
+    expect(localStorage.getItem('elanous.nexus.baseUrl')).toBe('https://mbp.tailnet.ts.net:31415');
+    expect(localStorage.getItem('elanous.daemon.baseUrl')).toBeNull();
   });
 
   test('skips when current already set', () => {
-    localStorage.setItem('monad.daemon.baseUrl', 'https://old.example');
-    localStorage.setItem('monad.nexus.baseUrl', 'https://new.example');
+    localStorage.setItem('elanous.daemon.baseUrl', 'https://old.example');
+    localStorage.setItem('elanous.nexus.baseUrl', 'https://new.example');
     const res = migrateBaseUrl({
-      legacyKey: 'monad.daemon.baseUrl',
-      currentKey: 'monad.nexus.baseUrl',
+      legacyKey: 'elanous.daemon.baseUrl',
+      currentKey: 'elanous.nexus.baseUrl',
     });
     expect(res.migrated).toBe(false);
     expect(res.currentValue).toBe('https://new.example');
-    expect(localStorage.getItem('monad.daemon.baseUrl')).toBe('https://old.example');
+    expect(localStorage.getItem('elanous.daemon.baseUrl')).toBe('https://old.example');
   });
 
   test('no-op when neither legacy nor current present', () => {
     const res = migrateBaseUrl({
-      legacyKey: 'monad.daemon.baseUrl',
-      currentKey: 'monad.nexus.baseUrl',
+      legacyKey: 'elanous.daemon.baseUrl',
+      currentKey: 'elanous.nexus.baseUrl',
     });
     expect(res.migrated).toBe(false);
     expect(res.currentValue).toBeNull();
   });
 
   test('transformValue can rewrite legacy form', () => {
-    localStorage.setItem('monad.voice.wsUrl', 'wss://mbp.tailnet.ts.net:31415/v1/voice/ws');
+    localStorage.setItem('elanous.voice.wsUrl', 'wss://mbp.tailnet.ts.net:31415/v1/voice/ws');
     const res = migrateBaseUrl({
-      legacyKey: 'monad.voice.wsUrl',
-      currentKey: 'monad.daemon.baseUrl',
+      legacyKey: 'elanous.voice.wsUrl',
+      currentKey: 'elanous.daemon.baseUrl',
       transformValue: (raw) => {
         try {
           const u = new URL(raw);
@@ -100,36 +100,36 @@ describe('migrateBaseUrl', () => {
   });
 
   test('transformValue returning null aborts migration silently', () => {
-    localStorage.setItem('monad.voice.wsUrl', 'not-a-url');
+    localStorage.setItem('elanous.voice.wsUrl', 'not-a-url');
     const res = migrateBaseUrl({
-      legacyKey: 'monad.voice.wsUrl',
-      currentKey: 'monad.daemon.baseUrl',
+      legacyKey: 'elanous.voice.wsUrl',
+      currentKey: 'elanous.daemon.baseUrl',
       transformValue: () => null,
     });
     expect(res.migrated).toBe(false);
-    expect(localStorage.getItem('monad.voice.wsUrl')).toBe('not-a-url');
-    expect(localStorage.getItem('monad.daemon.baseUrl')).toBeNull();
+    expect(localStorage.getItem('elanous.voice.wsUrl')).toBe('not-a-url');
+    expect(localStorage.getItem('elanous.daemon.baseUrl')).toBeNull();
   });
 
   test('transform throwing is treated as null (legacy kept)', () => {
-    localStorage.setItem('monad.voice.wsUrl', 'whatever');
+    localStorage.setItem('elanous.voice.wsUrl', 'whatever');
     const res = migrateBaseUrl({
-      legacyKey: 'monad.voice.wsUrl',
-      currentKey: 'monad.daemon.baseUrl',
+      legacyKey: 'elanous.voice.wsUrl',
+      currentKey: 'elanous.daemon.baseUrl',
       transformValue: () => {
         throw new Error('boom');
       },
     });
     expect(res.migrated).toBe(false);
-    expect(localStorage.getItem('monad.voice.wsUrl')).toBe('whatever');
-    expect(localStorage.getItem('monad.daemon.baseUrl')).toBeNull();
+    expect(localStorage.getItem('elanous.voice.wsUrl')).toBe('whatever');
+    expect(localStorage.getItem('elanous.daemon.baseUrl')).toBeNull();
   });
 
   test('SSR (no window) is a no-op', () => {
     delete (globalThis as { window?: unknown }).window;
     const res = migrateBaseUrl({
-      legacyKey: 'monad.daemon.baseUrl',
-      currentKey: 'monad.nexus.baseUrl',
+      legacyKey: 'elanous.daemon.baseUrl',
+      currentKey: 'elanous.nexus.baseUrl',
     });
     expect(res.migrated).toBe(false);
     expect(res.currentValue).toBeNull();

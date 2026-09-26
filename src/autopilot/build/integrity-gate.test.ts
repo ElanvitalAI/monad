@@ -155,7 +155,7 @@ describe('integrity gate process-tree timeout cleanup', () => {
   }, 10_000);
 
   test('spawn ENOENT를 uncaught error 대신 기존 실패 결과로 반환한다', async () => {
-    await expect(defaultRunCmd('/definitely/missing/monad-integrity-gate-command', [], process.cwd(), 500)).resolves.toEqual({
+    await expect(defaultRunCmd('/definitely/missing/elanous-integrity-gate-command', [], process.cwd(), 500)).resolves.toEqual({
       code: 1, stdout: '', stderr: '', timedOut: false,
     });
   });

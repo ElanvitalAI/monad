@@ -1,13 +1,13 @@
 // ── VW-term-infra Phase 3a — LayoutSpec persistence ──
 //
-// Save / load / list LayoutSpec files under ~/.monad/layouts/. Each file
+// Save / load / list LayoutSpec files under ~/.elanous/layouts/. Each file
 // is one JSON-serialized LayoutSpec. Filenames derive from the
 // caller-provided slug (windowId-label fallback); the slug is sanitized
 // so a hostile spec can never write outside the layouts directory
 // (../foo → foo, slashes → '-', ...).
 //
 // Design:
-//   - Storage root is `~/.monad/layouts/` by default but overridable via
+//   - Storage root is `~/.elanous/layouts/` by default but overridable via
 //     `LayoutPersistenceOpts.dir` so tests can sandbox into tmp.
 //   - Unknown files (wrong extension, unreadable JSON) are skipped with
 //     a captured `skipped` entry in list() output rather than failing
@@ -19,7 +19,7 @@
 // See: 내부 문서 `PLAN-session-vw-term-infra-p3-p5` §3.5
 
 import { constants, promises as fsp } from 'node:fs';
-import { monadStateRoot } from '../../autopilot/state-paths.js';
+import { elanousStateRoot } from '../../autopilot/state-paths.js';
 import { join, resolve } from 'node:path';
 
 import { debug } from '../../debug/log.js';
@@ -28,7 +28,7 @@ import { fromJson, toJson } from './serializer.js';
 import { LayoutSpecValidationError, type LayoutSpec } from './types.js';
 
 export interface LayoutPersistenceOpts {
-  /** Absolute directory. Defaults to ~/.monad/layouts/. Tests override. */
+  /** Absolute directory. Defaults to ~/.elanous/layouts/. Tests override. */
   readonly dir?: string;
 }
 
@@ -54,7 +54,7 @@ const LAYOUT_EXT = '.layout.json';
 /** The effective layouts directory. Exported so callers that want to
  *  open the folder in a file browser can stat/mkdirp. */
 export function layoutsDir(opts?: LayoutPersistenceOpts): string {
-  return opts?.dir ?? join(monadStateRoot(), 'layouts');
+  return opts?.dir ?? join(elanousStateRoot(), 'layouts');
 }
 
 /** Slugify an arbitrary label into a filename-safe token.
@@ -84,8 +84,8 @@ export interface SaveLayoutSpecOpts extends LayoutPersistenceOpts {
   readonly slug?: string;
   /** Bundle B-5 (P6-4) — unified artifact persistence. When provided,
    *  the layout body is stored via `store.put('layout', ...)` under
-   *  `~/.monad/artifacts/layout/` and the returned path points there
-   *  instead of the legacy `~/.monad/layouts/` directory. Legacy path
+   *  `~/.elanous/artifacts/layout/` and the returned path points there
+   *  instead of the legacy `~/.elanous/layouts/` directory. Legacy path
    *  is still the fallback when `artifactStore` is absent (hermetic
    *  tests + any caller without store DI). */
   readonly artifactStore?: ArtifactStore;
@@ -115,7 +115,7 @@ export async function saveLayoutSpec(
     return handle.path;
   }
 
-  // Legacy fallback — `~/.monad/layouts/<slug>.layout.json` atomic write.
+  // Legacy fallback — `~/.elanous/layouts/<slug>.layout.json` atomic write.
   const dir = layoutsDir(opts);
   await fsp.mkdir(dir, { recursive: true });
   const finalPath = resolve(dir, `${slug}${LAYOUT_EXT}`);
@@ -151,7 +151,7 @@ export async function loadLayoutSpecFromPath(absPath: string): Promise<LayoutSpe
 /** Bundle B-6 (P6-5) — slug-to-artifact resolution. Scans the store's
  *  `layout` kind for an entry whose `meta.origin === slug` · returns
  *  the newest by `createdAt` · returns `null` when no match (caller
- *  falls back to the legacy `~/.monad/layouts/<slug>.layout.json`
+ *  falls back to the legacy `~/.elanous/layouts/<slug>.layout.json`
  *  path). Store-native resolution preferred for LLM-supplied slugs
  *  since the artifact path carries a timestamp prefix that makes
  *  direct file access ambiguous. */

@@ -82,9 +82,9 @@ describe('createTelegramHitlPostDeps', () => {
     expect(text).toContain('Proceed?');
     expect(text).toContain('Writes 40 bytes');
     const rm = sent[0]!.reply_markup as { inline_keyboard: Array<Array<{ text: string; callback_data: string }>> };
-    expect(rm.inline_keyboard[0]![0]!.callback_data).toBe('monad-hitl:req-001:yes');
+    expect(rm.inline_keyboard[0]![0]!.callback_data).toBe('elanous-hitl:req-001:yes');
     expect(rm.inline_keyboard[0]![0]!.text).toBe('Go');
-    expect(rm.inline_keyboard[0]![1]!.callback_data).toBe('monad-hitl:req-001:no');
+    expect(rm.inline_keyboard[0]![1]!.callback_data).toBe('elanous-hitl:req-001:no');
     expect(handle.answer).toBeInstanceOf(Promise);
   });
 
@@ -97,7 +97,7 @@ describe('createTelegramHitlPostDeps', () => {
       userId: 1,
       chatId: 111,
       messageId: 1,
-      data: 'monad-hitl:r1:yes',
+      data: 'elanous-hitl:r1:yes',
     });
     expect(await handle.answer).toBe(true);
   });
@@ -108,7 +108,7 @@ describe('createTelegramHitlPostDeps', () => {
     const handle = await deps.post({ prompt: 'ok?', requestId: 'r2' });
     await deliverCallback(bot, {
       id: 'cq2', userId: 1, chatId: 111, messageId: 1,
-      data: 'monad-hitl:r2:no',
+      data: 'elanous-hitl:r2:no',
     });
     expect(await handle.answer).toBe(false);
   });
@@ -127,13 +127,13 @@ describe('createTelegramHitlPostDeps', () => {
     createTelegramHitlPostDeps({ bot, chatId: 111 });
     await deliverCallback(bot, {
       id: 'cq-ghost', userId: 1, chatId: 111, messageId: 1,
-      data: 'monad-hitl:ghost:yes',
+      data: 'elanous-hitl:ghost:yes',
     });
     expect(acks.length).toBe(1);
     expect(acks[0]!.text).toContain('expired');
   });
 
-  test('non-monad-hitl callbacks pass through (not handled)', async () => {
+  test('non-elanous-hitl callbacks pass through (not handled)', async () => {
     const acks: Record<string, unknown>[] = [];
     const bot = mkBot({ captureAnswer: (b) => acks.push(b) });
     createTelegramHitlPostDeps({ bot, chatId: 111 });
@@ -156,7 +156,7 @@ describe('createTelegramHitlPostDeps', () => {
     await new Promise((r) => setImmediate(r));
     await deliverCallback(bot, {
       id: 'cq', userId: 1, chatId: 111, messageId: 1,
-      data: 'monad-hitl:req-wrap:yes',
+      data: 'elanous-hitl:req-wrap:yes',
     });
     expect(await p).toBe(true);
   });

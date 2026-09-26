@@ -50,7 +50,7 @@ export interface RunRecord {
 /** Create a new RunRecord in the `started` state. The caller is
  *  responsible for transitioning it through `running → completed` (or one
  *  of the failure states). The MSS wire format for `runId` is the canonical
- *  Tier 2 `run/<ULID>` MonadUri — no special-case wire form, unlike turn. */
+ *  Tier 2 `run/<ULID>` ElanousUri — no special-case wire form, unlike turn. */
 export function newRun(): RunRecord {
   return {
     runId: mintRunUri(),

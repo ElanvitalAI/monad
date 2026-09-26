@@ -4,7 +4,7 @@
 // The live change-detection layer is Firecrawl Monitors (run by the
 // omni-crawl skill) polling the source pages in `PROVIDER_MODEL_SOURCES`.
 // When a page changes, its text is handed here. This module is the
-// monad-side pipeline: classify each changed page (A3) → dedup candidates
+// elanous-side pipeline: classify each changed page (A3) → dedup candidates
 // → merge into the loaded catalog as a PREVIEW (promote:false, so nothing
 // is auto-approved) → return a proposal for the HITL step (A4).
 //
@@ -22,7 +22,7 @@ import type { LlmRunner } from '../model-tier/preset-suggest-llm.js';
 
 /** Canonical source pages the watcher monitors for new-model signals.
  *  Registered as Firecrawl Monitors on the ops side; listed here so the
- *  monad-side intake, docs, and setup share one source of truth. */
+ *  elanous-side intake, docs, and setup share one source of truth. */
 export const PROVIDER_MODEL_SOURCES: ReadonlyArray<{ id: string; url: string; kind: 'provider' | 'news' }> = [
   // Replaces 745,101-char script-JSON-only input with 21,644-char Markdown (5 model names, 36 price markers).
   { id: 'openai-pricing', url: 'https://developers.openai.com/api/docs/pricing.md', kind: 'provider' },

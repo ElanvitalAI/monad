@@ -10,7 +10,7 @@ import { findTemplates } from '../src/acp/obsidian-templates';
 let vault = '';
 
 beforeEach(() => {
-  vault = mkdtempSync(join(tmpdir(), 'monad-tpl-test-'));
+  vault = mkdtempSync(join(tmpdir(), 'elanous-tpl-test-'));
 });
 
 afterEach(() => {

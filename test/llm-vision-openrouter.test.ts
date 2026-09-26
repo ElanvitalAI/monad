@@ -9,15 +9,15 @@ import { reloadCatalog } from '../src/registry/loader';
 
 const meta = { source: 'auto-openrouter-api', lastSeen: 'x', autoFilled: true, confidence: 'high' };
 const dm = (id: string, vision: string | null) => ({ id, provider: 'openrouter', partial: { id, provider: 'openrouter', ...(vision === undefined ? {} : { vision }) }, discoveryMeta: meta });
-const saved = process.env.MONAD_CATALOG_DISCOVERY_SNAPSHOT;
+const saved = process.env.ELANOUS_CATALOG_DISCOVERY_SNAPSHOT;
 afterAll(() => {
-  if (saved === undefined) delete process.env.MONAD_CATALOG_DISCOVERY_SNAPSHOT; else process.env.MONAD_CATALOG_DISCOVERY_SNAPSHOT = saved;
+  if (saved === undefined) delete process.env.ELANOUS_CATALOG_DISCOVERY_SNAPSHOT; else process.env.ELANOUS_CATALOG_DISCOVERY_SNAPSHOT = saved;
   reloadCatalog();
 });
 
 describe('isVisionCapableModel(openrouter)', () => {
   test('⛔ 카탈로그에 없으면 «모른다» → 보내지 않는다', () => {
-    delete process.env.MONAD_CATALOG_DISCOVERY_SNAPSHOT;
+    delete process.env.ELANOUS_CATALOG_DISCOVERY_SNAPSHOT;
     reloadCatalog();
     expect(isVisionCapableModel('openrouter', 'openrouter/moonshotai/kimi-k3', 'userMessage')).toBe(false);
   });
@@ -26,7 +26,7 @@ describe('isVisionCapableModel(openrouter)', () => {
     const dir = mkdtempSync(join(tmpdir(), 'or-vision-'));
     const path = join(dir, 's.json');
     writeFileSync(path, JSON.stringify({ version: 1, generatedAt: 'x', sources: [], models: [dm('moonshotai/kimi-k3', 'images'), dm('z-ai/glm-5.3', null)] }));
-    process.env.MONAD_CATALOG_DISCOVERY_SNAPSHOT = path;
+    process.env.ELANOUS_CATALOG_DISCOVERY_SNAPSHOT = path;
     reloadCatalog();
     expect(isVisionCapableModel('openrouter', 'openrouter/moonshotai/kimi-k3', 'userMessage')).toBe(true);
     expect(isVisionCapableModel('openrouter', 'openrouter/z-ai/glm-5.3', 'userMessage')).toBe(false);
@@ -36,7 +36,7 @@ describe('isVisionCapableModel(openrouter)', () => {
 
 describe('isLikelyVisionModel(openrouter/…)', () => {
   test('⛔ 카탈로그에 없으면 «모른다» → false (이름 패턴으로 true 를 지어내지 않는다)', () => {
-    delete process.env.MONAD_CATALOG_DISCOVERY_SNAPSHOT;
+    delete process.env.ELANOUS_CATALOG_DISCOVERY_SNAPSHOT;
     reloadCatalog();
     expect(isLikelyVisionModel('openrouter/moonshotai/kimi-k3')).toBe(false);
     expect(isLikelyVisionModel('openrouter/google/gemini-3-pro')).toBe(false);
@@ -47,7 +47,7 @@ describe('isLikelyVisionModel(openrouter/…)', () => {
     const dir = mkdtempSync(join(tmpdir(), 'or-likely-vision-'));
     const path = join(dir, 's.json');
     writeFileSync(path, JSON.stringify({ version: 1, generatedAt: 'x', sources: [], models: [dm('moonshotai/kimi-k3', 'images'), dm('z-ai/glm-5.3', null)] }));
-    process.env.MONAD_CATALOG_DISCOVERY_SNAPSHOT = path;
+    process.env.ELANOUS_CATALOG_DISCOVERY_SNAPSHOT = path;
     reloadCatalog();
     expect(isLikelyVisionModel('openrouter/moonshotai/kimi-k3')).toBe(true);
     expect(isLikelyVisionModel('openrouter/z-ai/glm-5.3')).toBe(false);
@@ -57,7 +57,7 @@ describe('isLikelyVisionModel(openrouter/…)', () => {
     const dir = mkdtempSync(join(tmpdir(), 'or-same-rule-'));
     const path = join(dir, 's.json');
     writeFileSync(path, JSON.stringify({ version: 1, generatedAt: 'x', sources: [], models: [dm('qwen/qwen3.8-max-0902', 'images'), dm('moonshotai/kimi-k3', null)] }));
-    process.env.MONAD_CATALOG_DISCOVERY_SNAPSHOT = path;
+    process.env.ELANOUS_CATALOG_DISCOVERY_SNAPSHOT = path;
     reloadCatalog();
     for (const id of ['openrouter/qwen/qwen3.8-max-0902', 'openrouter/moonshotai/kimi-k3', 'openrouter/not-in-catalog/x']) {
       expect(isLikelyVisionModel(id)).toBe(isVisionCapableModel('openrouter', id, 'userMessage'));

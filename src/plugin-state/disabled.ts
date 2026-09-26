@@ -1,7 +1,7 @@
 // ── PX-2 P3: disabled.json loader ──
 //
-// Simple feature-toggle file at ~/.monad/disabled.json and
-// <cwd>/.monad/disabled.json. The two files are merged via array union
+// Simple feature-toggle file at ~/.elanous/disabled.json and
+// <cwd>/.elanous/disabled.json. The two files are merged via array union
 // (each array is a deny-list, so merge is monotonic — never re-enables
 // something either layer disabled).
 //
@@ -38,8 +38,8 @@ const EMPTY: DisabledConfig = {
   plugins: [],
 };
 
-function userPath(): string { return join(homedir(), '.monad', 'disabled.json'); }
-function projectPath(cwd: string): string { return join(cwd, '.monad', 'disabled.json'); }
+function userPath(): string { return join(homedir(), '.elanous', 'disabled.json'); }
+function projectPath(cwd: string): string { return join(cwd, '.elanous', 'disabled.json'); }
 
 function readOne(path: string, warn: (m: string) => void): DisabledConfig {
   if (!existsSync(path)) return EMPTY;
@@ -87,9 +87,9 @@ function merge(...configs: DisabledConfig[]): DisabledConfig {
 let cache: { cwd: string; config: DisabledConfig } | null = null;
 
 export interface LoadDisabledOpts {
-  /** Override ~/.monad path (tests). */
+  /** Override ~/.elanous path (tests). */
   userPath?: string;
-  /** Override <cwd>/.monad path (tests). */
+  /** Override <cwd>/.elanous path (tests). */
   projectPath?: string;
   warn?: (msg: string) => void;
 }

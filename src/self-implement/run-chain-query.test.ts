@@ -40,7 +40,7 @@ describe('run-ledger scan queries', () => {
       }
 
       expect(queryMergedRunLedgers({ dir: ledgerDir }).entries).toEqual([expect.objectContaining({ runId, prNumber: 42 })]);
-      expect(queryMergeAttribution({ dir: ledgerDir }).monadMergedEntries).toEqual([expect.objectContaining({ runId, prNumber: 42 })]);
+      expect(queryMergeAttribution({ dir: ledgerDir }).elanousMergedEntries).toEqual([expect.objectContaining({ runId, prNumber: 42 })]);
       expect(queryUnfinishedRunLedgers({ dir: ledgerDir, goalsDir: join(root, 'missing-goals') }).entries).toEqual([expect.objectContaining({ runId })]);
     } finally { rmSync(root, { recursive: true, force: true }); }
   });
@@ -138,7 +138,7 @@ describe('queryRunChain', () => {
         { surface: 'test', rec: { ts: '2026-08-06T00:00:00.000Z', category: 'dev-pipeline', event: 'plan', data: { runId, goalId: 'goal-multi-start', originSession: 'origin-multi-start' } } },
         { surface: 'test', rec: { ts: '2026-08-06T00:00:01.000Z', category: 'self-implement', event: 'start', data: { runId, feature: 'feature-one', goalSource: 'natural-language-dispatch' } } },
         { surface: 'test', rec: { ts: '2026-08-06T00:00:02.000Z', category: 'self-implement', event: 'start', data: { runId, feature: 'feature-two', goalSource: 'authored-goal-file' } } },
-        { surface: 'test', rec: { ts: '2026-08-06T00:00:03.000Z', category: 'daemon-tools.self-implement', event: 'done', data: { runId, pr: 'https://github.com/acme/monad/pull/41' } } },
+        { surface: 'test', rec: { ts: '2026-08-06T00:00:03.000Z', category: 'daemon-tools.self-implement', event: 'done', data: { runId, pr: 'https://github.com/acme/elanous/pull/41' } } },
       ]);
       store.close();
       for (const [fixtureRunId, prNumber] of [['feature-one', 51], ['feature-two', 52]] as const) {
@@ -163,7 +163,7 @@ describe('queryRunChain', () => {
       const store = new LogStore(f.logPath, { instance: 'test' });
       appendLog(store, 'dev-pipeline', 'plan', { runId: 'run-00000000-0000-4000-8000-000000000001', goalId: 'goal-1', originRoot: 'human', originAgent: 'agent-1', originSession: 'origin-1' });
       appendLog(store, 'daemon-tools.self-implement', 'dispatch', { sessionId: 'origin-1', userText: 'human request fingerprint' });
-      appendLog(store, 'daemon-tools.self-implement', 'done', { runId: 'run-00000000-0000-4000-8000-000000000001', pr: 'https://github.com/acme/monad/pull/42' });
+      appendLog(store, 'daemon-tools.self-implement', 'done', { runId: 'run-00000000-0000-4000-8000-000000000001', pr: 'https://github.com/acme/elanous/pull/42' });
       store.close();
       const result = queryRunChain({ dir: f.ledgerDir, logStorePath: f.logPath });
       expect(result.entries).toEqual([expect.objectContaining({ fingerprint: 'human request fingerprint', goalId: 'goal-1', runId: 'run-00000000-0000-4000-8000-000000000001', prNumber: 42, merged: true, goalSource: 'natural-language-dispatch', hops: { fingerprint: 'connected', goalId: 'connected', runId: 'connected', pr: 'connected', merged: 'connected' } })]);
@@ -298,7 +298,7 @@ describe('queryRunChain', () => {
       const store = new LogStore(f.logPath, { instance: 'test' });
       appendLog(store, 'dev-pipeline', 'plan', { runId: 'run-00000000-0000-4000-8000-000000000006', goalId: 'goal-invalid', originSession: 'origin-invalid' });
       appendLog(store, 'daemon-tools.self-implement', 'dispatch', { sessionId: 'origin-invalid', userText: 42 });
-      appendLog(store, 'daemon-tools.self-implement', 'done', { runId: 'run-00000000-0000-4000-8000-000000000006', pr: 'https://github.com/acme/monad/pull/43' });
+      appendLog(store, 'daemon-tools.self-implement', 'done', { runId: 'run-00000000-0000-4000-8000-000000000006', pr: 'https://github.com/acme/elanous/pull/43' });
       store.close();
       const entry = queryRunChain({ dir: f.ledgerDir, logStorePath: f.logPath }).entries[0]!;
       expect(entry.fingerprint).toBeNull();
@@ -311,7 +311,7 @@ describe('queryRunChain', () => {
     try {
       const store = new LogStore(f.logPath, { instance: 'test' });
       appendLog(store, 'dev-pipeline', 'plan', { runId: 'run-00000000-0000-4000-8000-000000000007', goalId: 'goal-old', originSession: 'origin-old' });
-      appendLog(store, 'daemon-tools.self-implement', 'done', { runId: 'run-00000000-0000-4000-8000-000000000007', pr: 'https://github.com/acme/monad/pull/9' });
+      appendLog(store, 'daemon-tools.self-implement', 'done', { runId: 'run-00000000-0000-4000-8000-000000000007', pr: 'https://github.com/acme/elanous/pull/9' });
       appendLog(store, 'daemon-tools.self-implement', 'dispatch', { sessionId: 'origin-old', userText: 'old request fingerprint' });
       for (let index = 0; index < 1_000; index += 1) appendLog(store, 'daemon-tools.self-implement', 'dispatch', { sessionId: `origin-old-distractor-${index}`, userText: 'distractor' });
       store.close();
@@ -343,7 +343,7 @@ describe('queryRunChain', () => {
       const store = new LogStore(f.logPath, { instance: 'test' });
       appendLog(store, 'dev-pipeline', 'plan', { runId: 'run-00000000-0000-4000-8000-000000000009', goalId: 'goal-good', originSession: 'origin-good' });
       appendLog(store, 'daemon-tools.self-implement', 'dispatch', { sessionId: 'origin-good', userText: 'good request' });
-      appendLog(store, 'daemon-tools.self-implement', 'done', { runId: 'run-00000000-0000-4000-8000-000000000009', pr: 'https://github.com/acme/monad/pull/8' });
+      appendLog(store, 'daemon-tools.self-implement', 'done', { runId: 'run-00000000-0000-4000-8000-000000000009', pr: 'https://github.com/acme/elanous/pull/8' });
       store.close();
       const readOnly = readonlyStore(f.logPath);
       const failingStore: RunChainLogStore = {
@@ -368,7 +368,7 @@ describe('queryRunChain', () => {
     try {
       const store = new LogStore(f.logPath, { instance: 'test' });
       appendLog(store, 'dev-pipeline', 'plan', { runId: 'run-00000000-0000-4000-8000-00000000000a', goalId: 'goal-dispatch-failed', originSession: 'origin-dispatch-failed' });
-      appendLog(store, 'daemon-tools.self-implement', 'done', { runId: 'run-00000000-0000-4000-8000-00000000000a', pr: 'https://github.com/acme/monad/pull/44' });
+      appendLog(store, 'daemon-tools.self-implement', 'done', { runId: 'run-00000000-0000-4000-8000-00000000000a', pr: 'https://github.com/acme/elanous/pull/44' });
       store.close();
       const readOnly = readonlyStore(f.logPath);
       const dispatchFailingStore: RunChainLogStore = {
@@ -391,7 +391,7 @@ describe('queryRunChain', () => {
     try {
       const store = new LogStore(f.logPath, { instance: 'test' });
       appendLog(store, 'dev-pipeline', 'plan', { runId: 'run-00000000-0000-4000-8000-00000000000b', goalId: 'goal-2', originSession: 'origin-2' });
-      appendLog(store, 'daemon-tools.self-implement', 'done', { runId: 'run-00000000-0000-4000-8000-00000000000b', pr: 'https://github.com/acme/monad/pull/8' });
+      appendLog(store, 'daemon-tools.self-implement', 'done', { runId: 'run-00000000-0000-4000-8000-00000000000b', pr: 'https://github.com/acme/elanous/pull/8' });
       store.close();
       expect(queryRunChain({ dir: f.ledgerDir, logStorePath: f.logPath }).entries[0]?.hops).toEqual({ fingerprint: 'broken', goalId: 'connected', runId: 'connected', pr: 'broken', merged: 'connected' });
       expect(queryRunChain({ dir: f.ledgerDir, logStorePath: join(f.root, 'missing.db') }).entries[0]?.hops).toEqual({ fingerprint: 'not-countable', goalId: 'not-countable', runId: 'not-countable', pr: 'not-countable', merged: 'connected' });

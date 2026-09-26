@@ -15,11 +15,11 @@ import { dispatchRunDevHarness, type DevHarnessDeps } from '../skills/tools/dev-
  *  ***문장을 든 사람에게 갈 곳이 없다***(2026-09-02 · 🅣 136차 실측 · 그래서 둘로 갈랐다).
  *  ⭐ 두 문은 «흐름»이 같다 — `runDefaultAskFileLaunchFlow`(`src/index.ts:274`)가
  *  `dev --ask` 와 같은 `runAskLaunchFlow` 를 탄다. 갈리는 것은 ***입력 종류***뿐이다. */
-export const HARNESS_DOGFOOD_REPLACEMENT_FROM_SENTENCE = 'monad harness say "<요청>"';
-export const HARNESS_DOGFOOD_REPLACEMENT_FROM_GOAL_FILE = 'monad harness ask <골문서>';
+export const HARNESS_DOGFOOD_REPLACEMENT_FROM_SENTENCE = 'elanous harness say "<요청>"';
+export const HARNESS_DOGFOOD_REPLACEMENT_FROM_GOAL_FILE = 'elanous harness ask <골문서>';
 /** @deprecated 갈래를 안 가리는 옛 이름. 새 코드는 위 둘 중 «든 것»에 맞는 쪽을 쓴다. */
 export const HARNESS_DOGFOOD_REPLACEMENT = HARNESS_DOGFOOD_REPLACEMENT_FROM_GOAL_FILE;
-export const HARNESS_DOGFOOD_DEPRECATION_NOTICE = `ℹ️  \`monad harness dogfood\`은 deprecated 입구입니다 — 손에 «무엇이 있나»로 갈립니다:\n`
+export const HARNESS_DOGFOOD_DEPRECATION_NOTICE = `ℹ️  \`elanous harness dogfood\`은 deprecated 입구입니다 — 손에 «무엇이 있나»로 갈립니다:\n`
   + `   • 요청이 «문장»이면(예전 \`dogfood <target> <objective...>\` 처럼) → \`${HARNESS_DOGFOOD_REPLACEMENT_FROM_SENTENCE}\`\n`
   + `   • 골 문서가 «이미 있으면» → \`${HARNESS_DOGFOOD_REPLACEMENT_FROM_GOAL_FILE}\``;
 

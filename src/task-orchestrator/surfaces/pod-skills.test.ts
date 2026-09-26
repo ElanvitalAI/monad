@@ -28,7 +28,7 @@ describe('pod skills — code into the image, keys only into the run', () => {
     const file = join(dir, 'pod-skills.txt');
     writeFileSync(file, '# essentials\nomni-crawl\nyoutube-master  # video\nbad name\n');
     expect(resolvePodSkills({}, file)).toEqual({ skills: ['omni-crawl', 'youtube-master'], source: 'file', invalid: ['bad name'] });
-    expect(resolvePodSkills({ MONAD_POD_SKILLS: 'a,b' }, file)).toEqual({ skills: ['a', 'b'], source: 'env', invalid: [] });
+    expect(resolvePodSkills({ ELANOUS_POD_SKILLS: 'a,b' }, file)).toEqual({ skills: ['a', 'b'], source: 'env', invalid: [] });
     expect(resolvePodSkills({}, join(dir, 'absent.txt'))).toEqual({ skills: [], source: 'none', invalid: [] });
   });
 
@@ -86,7 +86,7 @@ describe('pod skills — code into the image, keys only into the run', () => {
       const run = (skillEnv: boolean) => podSelfImplementSpawn({
         kubectl, pollMs: 1, imageCommit: null, sleep: async () => {}, skillEnv,
         readSkillEnv: () => ({ crawl: 'TAVILY_KEY=secret-value-1\n' }),
-        credentials: () => ({ monadAuth: '{}', codexAuth: '{}', ghToken: 't' }),
+        credentials: () => ({ elanousAuth: '{}', codexAuth: '{}', ghToken: 't' }),
       })({ spaceId: 's', feature: 'f' } as Parameters<ReturnType<typeof podSelfImplementSpawn>>[0]).done;
       await run(true);
       expect(applied.find((a) => a.includes('"kind":"Secret"'))).toContain('secret-value-1');
@@ -101,7 +101,7 @@ describe('pod skills — code into the image, keys only into the run', () => {
   test('a changed skill set makes the image stale even at the same commit', () => {
     const run = (cmd: string, args: readonly string[]) => {
       if (cmd === 'git') return { status: 0, stdout: 'abc\n' };
-      if (args.includes('{{index .Config.Labels "monad.pod-skills"}}')) return { status: 0, stdout: 'old\n' };
+      if (args.includes('{{index .Config.Labels "elanous.pod-skills"}}')) return { status: 0, stdout: 'old\n' };
       return { status: 0, stdout: 'abc\n' };
     };
     expect(podImageFreshness({ run, skillsDigest: () => 'new' })).toMatchObject({ fresh: false });

@@ -4,7 +4,7 @@
 import { Database } from 'bun:sqlite';
 import { mkdirSync } from 'node:fs';
 import { join, dirname } from 'node:path';
-import { getMonadConfigDir } from '../../monad-config-dir.js';
+import { getElanousConfigDir } from '../../elanous-config-dir.js';
 import type {
   KnowledgeCard,
   KnowledgeKind,
@@ -78,7 +78,7 @@ export function setKgsDbPathOverride(path: string | null): void {
 }
 
 export function kgsDefaultDbPath(): string {
-  return dbPathOverride ?? join(getMonadConfigDir(), 'kgs', 'kgs.db');
+  return dbPathOverride ?? join(getElanousConfigDir(), 'kgs', 'kgs.db');
 }
 
 function ensureDir(path: string): void {

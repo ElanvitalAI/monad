@@ -4,7 +4,7 @@ import { existsSync, rmSync, mkdtempSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { coldLedgerPath, writeColdSnapshot, readColdSnapshot, hasColdSnapshot, type ColdLineageSnapshot } from './cold-ledger.js';
-import { setMonadConfigDir, resetMonadConfigDir } from '../../monad-config-dir.js';
+import { setElanousConfigDir, resetElanousConfigDir } from '../../elanous-config-dir.js';
 
 const MID = 'apm_cold-test_abc123';
 let dir: string;
@@ -21,8 +21,8 @@ const snap = (over: Partial<ColdLineageSnapshot> = {}): ColdLineageSnapshot => (
 });
 
 describe('cold ledger — 냉동보관 round-trip', () => {
-  beforeEach(() => { dir = mkdtempSync(join(tmpdir(), 'lineage-cold-')); setMonadConfigDir(dir); });
-  afterEach(() => { resetMonadConfigDir(); try { rmSync(dir, { recursive: true, force: true }); } catch { /* */ } });
+  beforeEach(() => { dir = mkdtempSync(join(tmpdir(), 'lineage-cold-')); setElanousConfigDir(dir); });
+  afterEach(() => { resetElanousConfigDir(); try { rmSync(dir, { recursive: true, force: true }); } catch { /* */ } });
 
   it('없으면 null·hasColdSnapshot false', () => {
     expect(readColdSnapshot(MID)).toBeNull();

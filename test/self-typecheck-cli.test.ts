@@ -18,7 +18,7 @@ function git(cwd: string, ...args: string[]) {
   if (r.status !== 0) throw new Error(`git ${args.join(' ')}: ${r.stderr}`);
 }
 
-describe('monad self typecheck — 「0개 검사」는 «통과»가 아니다', () => {
+describe('elanous self typecheck — 「0개 검사」는 «통과»가 아니다', () => {
   test('검사 대상이 0개면 «안 쟀다»라고 말하고 그 이유와 잴 수 있는 길을 준다', () => {
     const root = mkdtempSync(join(tmpdir(), 'self-typecheck-zero-'));
     try {
@@ -31,7 +31,7 @@ describe('monad self typecheck — 「0개 검사」는 «통과»가 아니다'
       // ⭐ 전제를 먼저 못 박는다 — 실제로 «변경 0» 인지 확인하지 않으면 이 테스트가 조용히 무의미해진다.
       expect(spawnSync('git', ['status', '--porcelain'], { cwd: root, encoding: 'utf8' }).stdout).toBe('');
 
-      const r = spawnSync(process.execPath, [join(sourceRoot, 'bin/monad.mjs'), 'self', 'typecheck'], {
+      const r = spawnSync(process.execPath, [join(sourceRoot, 'bin/elanous.mjs'), 'self', 'typecheck'], {
         cwd: root, encoding: 'utf8', timeout: 120_000,
       });
       const out = `${r.stdout ?? ''}${r.stderr ?? ''}`;

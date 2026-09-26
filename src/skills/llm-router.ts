@@ -1,4 +1,4 @@
-// monad · LLM-based router (BACKLOG #7 / Archon-port followups)
+// elanous · LLM-based router (BACKLOG #7 / Archon-port followups)
 //
 // Direct port of Archon's `buildRouterPrompt` pattern
 // (`~/source/ref/Archon/packages/workflows/src/router.ts:73`).

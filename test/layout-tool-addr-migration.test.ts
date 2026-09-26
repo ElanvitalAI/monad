@@ -36,7 +36,7 @@ function makeRegistry(id: number, tree: LayoutNode): MockRegistry {
 const leaf = (paneId: string): LayoutNode => ({ kind: 'leaf', paneId });
 
 let dir = '';
-beforeEach(() => { dir = mkdtempSync(join(tmpdir(), 'monad-b13-')); });
+beforeEach(() => { dir = mkdtempSync(join(tmpdir(), 'elanous-b13-')); });
 afterEach(() => { rmSync(dir, { recursive: true, force: true }); });
 
 describe('B-13-α · Layout tools addr-first', () => {

@@ -20,7 +20,7 @@ const TERM = { kind: 'summary_written', path: 'executive-summary.md', minChars: 
 async function activeGoal(slug: string) {
   const home = mkdtempSync(join(tmpdir(), 'cont-bridge-'));
   const vault = discoverObsidianVault({
-    env: { MONAD_OBSIDIAN_VAULT: join(home, 'vault') },
+    env: { ELANOUS_OBSIDIAN_VAULT: join(home, 'vault') },
     cwd: home,
   });
   await dispatchResearchPlan(

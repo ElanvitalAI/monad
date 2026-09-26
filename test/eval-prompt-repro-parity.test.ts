@@ -1,7 +1,7 @@
 // repro(B1 프로브) 파리티 회귀 — 2026-07-27 리뷰 must-fix.
 //
-// 발단(실측): 같은 골이 데몬에선 `RunDevHarness` 를 부르는데 `monad repro --tools webterm`
-// 은 0회였다. 축이 둘 갈려 있었다 — ①프롬프트(데몬은 `monadSelfAccessPrompt` 를 주입하는데
+// 발단(실측): 같은 골이 데몬에선 `RunDevHarness` 를 부르는데 `elanous repro --tools webterm`
+// 은 0회였다. 축이 둘 갈려 있었다 — ①프롬프트(데몬은 `elanousSelfAccessPrompt` 를 주입하는데
 // repro 는 안 했다 · `--tools` 는 **툴 목록만** 맞춘다) ②모델(`opts.model ?? 'gpt-5.5'`
 // 하드코딩이라 config 라우팅을 무시했다).
 //

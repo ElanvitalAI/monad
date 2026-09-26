@@ -1,6 +1,6 @@
 // IDX-F4 — ModalTier const-object + TIER_ORDER + tiersCompatible
 // helper. Verifies the layering invariants that the
-// MONAD_BOUNDARY_CHECK assertion enforces in coordinator.pushModal.
+// ELANOUS_BOUNDARY_CHECK assertion enforces in coordinator.pushModal.
 
 import { describe, test, expect } from 'bun:test';
 import {

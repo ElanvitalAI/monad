@@ -34,9 +34,9 @@ resolve_gws_bin() {
   # ⛔⭐ **명시값은 «그것만» 쓴다** — 「이것을 써라」이지 「여기부터 찾아라」가 아니다.
   #    🚨 첫 판은 명시값이 없을 때 자동 탐색으로 «흘러내려» 갔고, 그 바람에
   #       ***「gws 가 없다」는 상황을 시험이 만들 수 없었다***(시험이 즉시 잡았다).
-  if [ -n "${MONAD_GWS_BIN:-}" ]; then
-    if [ -x "$MONAD_GWS_BIN" ]; then printf '%s\n' "$MONAD_GWS_BIN"; return 0; fi
-    if command -v "$MONAD_GWS_BIN" >/dev/null 2>&1; then command -v "$MONAD_GWS_BIN"; return 0; fi
+  if [ -n "${ELANOUS_GWS_BIN:-}" ]; then
+    if [ -x "$ELANOUS_GWS_BIN" ]; then printf '%s\n' "$ELANOUS_GWS_BIN"; return 0; fi
+    if command -v "$ELANOUS_GWS_BIN" >/dev/null 2>&1; then command -v "$ELANOUS_GWS_BIN"; return 0; fi
     return 0   # ⛔ 명시했는데 없으면 «없는 것»이다 — 다른 데서 찾지 않는다
   fi
   if command -v gws >/dev/null 2>&1; then command -v gws; return 0; fi
@@ -47,8 +47,8 @@ resolve_gws_bin() {
 }
 GWS_BIN="$(resolve_gws_bin)"
 if [ -z "$GWS_BIN" ]; then
-  echo "⛔ gws 를 «못 찾았다»(${MONAD_GWS_BIN:-gws}) — 「Google 이 안 된다」가 아니라 ***이 기계에 그 CLI 가 없다***." >&2
-  echo "   본 곳: \$MONAD_GWS_BIN · PATH · ~/.nvm/versions/node/*/bin · /opt/homebrew/bin · /usr/local/bin" >&2
+  echo "⛔ gws 를 «못 찾았다»(${ELANOUS_GWS_BIN:-gws}) — 「Google 이 안 된다」가 아니라 ***이 기계에 그 CLI 가 없다***." >&2
+  echo "   본 곳: \$ELANOUS_GWS_BIN · PATH · ~/.nvm/versions/node/*/bin · /opt/homebrew/bin · /usr/local/bin" >&2
   exit 3
 fi
 # ⛔ 「찾았다」로 끝내지 않는다 — 그 옆의 node 를 쓸 수 있게 «뒤»에 붙인다.
@@ -152,11 +152,11 @@ except Exception: print("")' 2>/dev/null)
       echo "⛔ 이것은 «쓰기»다($http $path) — ***되돌릴 길이 없다***." >&2
       ;;
   esac
-  echo "   사람이 그 «한 번»을 명시로 열어야 한다:  MONAD_GWS_ALLOW_WRITE=1 <같은 명령>" >&2
+  echo "   사람이 그 «한 번»을 명시로 열어야 한다:  ELANOUS_GWS_ALLOW_WRITE=1 <같은 명령>" >&2
   return 1
 }
 
-if [ "${MONAD_GWS_ALLOW_WRITE:-}" != "1" ]; then
+if [ "${ELANOUS_GWS_ALLOW_WRITE:-}" != "1" ]; then
   gws_write_gate "$@" || exit 4
 fi
 

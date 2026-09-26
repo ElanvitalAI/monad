@@ -4,7 +4,7 @@ import { extractGoalDocSections } from './goal-doc/section.js';
 //
 // ⛔⭐ 왜 있나 (2026-07-28 실측):
 //   감독자 프롬프트가 `골(수용기준·스코프 경계):` 라는 라벨을 달고 `goal.slice(0, 3000)` 을 실었다.
-//   그런데 `monad self author` 가 내는 골 파일은 **앞부분이 grounding 후보 목록**이고
+//   그런데 `elanous self author` 가 내는 골 파일은 **앞부분이 grounding 후보 목록**이고
 //   **수용 기준·규칙·스코프 경계는 뒤쪽**에 있다. ⇒ 라벨이 약속한 것을 자름이 정확히 제거했다.
 //   실측: 9,602자 골을 3000 에서 자르면 `… groundGoalInCodebase 를 src/auto` 에서 끊겼고,
 //   감독자가 *"원문 요구도 `src/auto` 에서 잘려 있어 수렴 범위를 확정할 수 없다"* 며
@@ -18,7 +18,7 @@ import { extractGoalDocSections } from './goal-doc/section.js';
  * 감독 판단에 필요한 순서. 앞일수록 먼저 담는다(예산이 모자라면 뒤가 밀린다).
  *
  * ⛔⭐ **각 칸은 동의어 집합이다** — 골에는 **두 방언**이 있다(T 리뷰 2026-07-28):
- *   · 저작기(`monad self author`) 산출 → 영문 헤더(`## ACCEPTANCE CRITERIA` …)
+ *   · 저작기(`elanous self author`) 산출 → 영문 헤더(`## ACCEPTANCE CRITERIA` …)
  *   · 손으로 쓴 골            → 한글 헤더(`## 수용 기준` · `## 파일 경계` …)
  * 초판은 **영문만** 담아 손글씨 골의 계약 절을 **최하위로 매겼다** — 이 파일이 막으려는
  * 바로 그 사고가 **대상만 바뀌어** 재발한다. ⚠️ 그리고 손글씨 골은 소수가 아니다:

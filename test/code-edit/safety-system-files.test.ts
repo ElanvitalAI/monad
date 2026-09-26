@@ -6,7 +6,7 @@ import { tmpdir } from 'os';
 import { join } from 'path';
 import {
   assessEdit,
-  findMonadRepoRoot,
+  findElanousRepoRoot,
   getDefaultSystemFileDirs,
   setSystemFileGuardDisabled,
   __resetSystemFileGuard,
@@ -20,11 +20,11 @@ function mkdir(): string {
   return d;
 }
 
-function makeMonadRepo(): { root: string; src: string } {
+function makeElanousRepo(): { root: string; src: string } {
   const root = mkdir();
   writeFileSync(
     join(root, 'package.json'),
-    JSON.stringify({ name: 'monadagent', version: '0.0.0' }),
+    JSON.stringify({ name: 'elanous', version: '0.0.0' }),
   );
   const src = join(root, 'src');
   mkdirSync(src, { recursive: true });
@@ -39,19 +39,19 @@ beforeEach(() => {
 afterEach(() => {
   __resetSystemFileGuard();
   resetPolicyToDefault();
-  delete process.env.MONAD_SYSTEM_FILE_GUARD;
+  delete process.env.ELANOUS_SYSTEM_FILE_GUARD;
   while (dirs.length) rmSync(dirs.pop()!, { recursive: true, force: true });
 });
 
-describe('findMonadRepoRoot', () => {
-  test('finds the directory holding the monadagent package.json', () => {
-    const { root, src } = makeMonadRepo();
-    expect(findMonadRepoRoot(src)).toBe(root);
+describe('findElanousRepoRoot', () => {
+  test('finds the directory holding the elanous package.json', () => {
+    const { root, src } = makeElanousRepo();
+    expect(findElanousRepoRoot(src)).toBe(root);
   });
 
-  test('returns null when no monadagent package.json exists upstream', () => {
+  test('returns null when no elanous package.json exists upstream', () => {
     const dir = mkdir();
-    expect(findMonadRepoRoot(dir)).toBeNull();
+    expect(findElanousRepoRoot(dir)).toBeNull();
   });
 
   test('skips package.json with a different name', () => {
@@ -60,7 +60,7 @@ describe('findMonadRepoRoot', () => {
       join(root, 'package.json'),
       JSON.stringify({ name: 'something-else' }),
     );
-    expect(findMonadRepoRoot(root)).toBeNull();
+    expect(findElanousRepoRoot(root)).toBeNull();
   });
 
   test('tolerates malformed package.json on the way up', () => {
@@ -68,24 +68,24 @@ describe('findMonadRepoRoot', () => {
     const nested = join(dir, 'a', 'b');
     mkdirSync(nested, { recursive: true });
     writeFileSync(join(dir, 'a', 'package.json'), '{not json');
-    expect(findMonadRepoRoot(nested)).toBeNull();
+    expect(findElanousRepoRoot(nested)).toBeNull();
   });
 });
 
 describe('getDefaultSystemFileDirs', () => {
-  test('returns [repoRoot] when called from inside a monad checkout', () => {
-    const { root, src } = makeMonadRepo();
+  test('returns [repoRoot] when called from inside a elanous checkout', () => {
+    const { root, src } = makeElanousRepo();
     expect(getDefaultSystemFileDirs(src)).toEqual([root]);
   });
 
-  test('returns [] when no monad checkout is detected', () => {
+  test('returns [] when no elanous checkout is detected', () => {
     expect(getDefaultSystemFileDirs(mkdir())).toEqual([]);
   });
 });
 
 describe('assessEdit — systemFileDirs guard', () => {
   test('edit inside systemFileDirs forces ask-user even in unsupervised mode', () => {
-    const { root, src } = makeMonadRepo();
+    const { root, src } = makeElanousRepo();
     setPolicy({ mode: 'unsupervised', systemFileDirs: [root] });
     const decision = assessEdit({
       file_path: join(src, 'llm.ts'),
@@ -99,7 +99,7 @@ describe('assessEdit — systemFileDirs guard', () => {
   });
 
   test('edit outside systemFileDirs is unaffected', () => {
-    const { root } = makeMonadRepo();
+    const { root } = makeElanousRepo();
     const elsewhere = mkdir();
     setPolicy({ mode: 'unsupervised', systemFileDirs: [root] });
     const decision = assessEdit({
@@ -110,7 +110,7 @@ describe('assessEdit — systemFileDirs guard', () => {
   });
 
   test('systemFileDirs takes precedence over trusted-dirs auto-approve', () => {
-    const { root, src } = makeMonadRepo();
+    const { root, src } = makeElanousRepo();
     setPolicy({
       mode: 'trusted-dirs',
       trustedDirs: [root],
@@ -124,7 +124,7 @@ describe('assessEdit — systemFileDirs guard', () => {
   });
 
   test('deniedDirs takes precedence over systemFileDirs', () => {
-    const { root, src } = makeMonadRepo();
+    const { root, src } = makeElanousRepo();
     setPolicy({
       mode: 'unsupervised',
       systemFileDirs: [root],
@@ -138,7 +138,7 @@ describe('assessEdit — systemFileDirs guard', () => {
   });
 
   test('disabled flag turns the guard off', () => {
-    const { root, src } = makeMonadRepo();
+    const { root, src } = makeElanousRepo();
     setPolicy({ mode: 'unsupervised', systemFileDirs: [root] });
     setSystemFileGuardDisabled(true);
     const decision = assessEdit({
@@ -148,10 +148,10 @@ describe('assessEdit — systemFileDirs guard', () => {
     expect(decision.kind).toBe('auto-approve');
   });
 
-  test('MONAD_SYSTEM_FILE_GUARD=off env var turns the guard off', () => {
-    const { root, src } = makeMonadRepo();
+  test('ELANOUS_SYSTEM_FILE_GUARD=off env var turns the guard off', () => {
+    const { root, src } = makeElanousRepo();
     setPolicy({ mode: 'unsupervised', systemFileDirs: [root] });
-    process.env.MONAD_SYSTEM_FILE_GUARD = 'off';
+    process.env.ELANOUS_SYSTEM_FILE_GUARD = 'off';
     const decision = assessEdit({
       file_path: join(src, 'llm.ts'),
       edits: [{ old_string: 'a', new_string: 'b' }],
@@ -172,21 +172,21 @@ describe('assessEdit — systemFileDirs guard', () => {
 
 describe('setPolicy — systemFileDirs preservation across mode flips', () => {
   test('flipping mode without specifying systemFileDirs keeps the previous value', () => {
-    const { root } = makeMonadRepo();
+    const { root } = makeElanousRepo();
     setPolicy({ mode: 'unsupervised', systemFileDirs: [root] });
     setPolicy({ mode: 'ask-edit' }); // dashboard `/code-edit policy ask-edit` style
     expect(getPolicy().systemFileDirs).toEqual([root]);
   });
 
   test('explicitly clearing systemFileDirs (empty array) is honoured', () => {
-    const { root } = makeMonadRepo();
+    const { root } = makeElanousRepo();
     setPolicy({ mode: 'unsupervised', systemFileDirs: [root] });
     setPolicy({ mode: 'ask-edit', systemFileDirs: [] });
     expect(getPolicy().systemFileDirs).toEqual([]);
   });
 
   test('replacing systemFileDirs is honoured', () => {
-    const { root } = makeMonadRepo();
+    const { root } = makeElanousRepo();
     const otherRoot = mkdir();
     setPolicy({ mode: 'unsupervised', systemFileDirs: [root] });
     setPolicy({ mode: 'ask-edit', systemFileDirs: [otherRoot] });

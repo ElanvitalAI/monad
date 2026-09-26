@@ -21,7 +21,7 @@ async function seed(path: string, body: string, mtimeMs: number) {
 }
 
 beforeAll(async () => {
-  vault = await mkdtemp(join(tmpdir(), 'monad-poll-changes-'));
+  vault = await mkdtemp(join(tmpdir(), 'elanous-poll-changes-'));
   await seed('Old.md', 'old', BASE_MS - 60_000);                // 1 min ago
   await seed('Mid.md', 'mid', BASE_MS - 30_000);                // 30s ago
   await seed('Newest.md', 'newest', BASE_MS);                   // now
@@ -88,14 +88,14 @@ describe('pollVaultChanges — sample cap', () => {
 
 describe('pollVaultChanges — error path', () => {
   test('non-existent vault root returns error envelope', async () => {
-    const r = await pollVaultChanges({ vaultRoot: '/nope/this/does/not/exist-monad', sinceMs: 0 });
+    const r = await pollVaultChanges({ vaultRoot: '/nope/this/does/not/exist-elanous', sinceMs: 0 });
     expect(r.count).toBe(0);
     expect(r.samplePaths).toEqual([]);
     expect(typeof r.error).toBe('string');
   });
 
   test('latestMtimeMs falls back to sinceMs when walk fails', async () => {
-    const r = await pollVaultChanges({ vaultRoot: '/nope/monad', sinceMs: 12345 });
+    const r = await pollVaultChanges({ vaultRoot: '/nope/elanous', sinceMs: 12345 });
     expect(r.latestMtimeMs).toBe(12345);
   });
 });

@@ -9,14 +9,14 @@ function fixture() {
   const out = mkdtempSync(join(tmpdir(), 'release-cli-'));
   const dist = join(out, 'dist');
   mkdirSync(dist);
-  const files = ['monadagent.tgz', 'install.sh', 'install.ps1'].map((name) => {
+  const files = ['elanous.tgz', 'install.sh', 'install.ps1'].map((name) => {
     const body = `content of ${name}`;
     writeFileSync(join(dist, name), body);
     return { name, sha256: createHash('sha256').update(body).digest('hex'), bytes: body.length };
   });
   writeFileSync(join(dist, 'SHA256SUMS'), files.map((f) => `${f.sha256}  ${f.name}`).join('\n') + '\n');
   const manifest: ReleaseManifest = {
-    version: '0.1.1', tag: 'v0.1.1', prerelease: false, publicRepo: 'ElanvitalAI/monad', sourceRef: 'origin/main',
+    version: '0.1.1', tag: 'v0.1.1', prerelease: false, publicRepo: 'ElanvitalAI/elanous', sourceRef: 'origin/main',
     sourceCommit: 'a'.repeat(40), publicCommit: 'b'.repeat(40), publicDir: join(out, 'public'), distDir: dist,
     // files = release-build 가 내는 그대로 — SHA256SUMS 는 «목록에 없다»
     files, webUi: true, e2e: { ran: true, ok: true, versionLine: `0.1.1 ${'b'.repeat(40)}` },
@@ -73,8 +73,8 @@ describe('release publish — 되돌릴 수 없으니 기본은 «보기만»', 
       expect(calls).toEqual(['gh release view']);
       const exists: Runner = () => ({ status: 0, stdout: '', stderr: '' });
       await expect(publishRelease({ dir: f.out, notesFile: f.notes, yes: true, log: () => {} }, exists)).rejects.toThrow('이미 있는 릴리스');
-      writeFileSync(join(f.dist, 'monadagent.tgz'), 'changed');
-      await expect(publishRelease({ dir: f.out, notesFile: f.notes, yes: true, log: () => {} }, noRelease)).rejects.toThrow('monadagent.tgz');
+      writeFileSync(join(f.dist, 'elanous.tgz'), 'changed');
+      await expect(publishRelease({ dir: f.out, notesFile: f.notes, yes: true, log: () => {} }, noRelease)).rejects.toThrow('elanous.tgz');
     } finally { rmSync(f.out, { recursive: true, force: true }); }
   });
 
@@ -108,25 +108,25 @@ describe('release verify — 공개 주소로 끝까지', () => {
       return stateOk(a);
     };
     const r = await verifyRelease({ version: '0.1.1', log: () => {} }, run);
-    expect(urls).toEqual(['https://github.com/ElanvitalAI/monad/releases/download/v0.1.1/install.sh']);
+    expect(urls).toEqual(['https://github.com/ElanvitalAI/elanous/releases/download/v0.1.1/install.sh']);
     expect(r.ok).toBe(true);
     const wrong: Runner = (c, a) => (a[0] === '--version' ? { status: 0, stdout: '0.1.0 cafe', stderr: '' } : stateOk(a));
     expect((await verifyRelease({ version: '0.1.1', log: () => {} }, wrong)).ok).toBe(false);
   });
 
-  test('검증 환경은 물려받은 MONAD_*·XDG_* 를 걷는다 — 상태 왕복이 운영 저장소에 쓰지 않게', async () => {
+  test('검증 환경은 물려받은 ELANOUS_*·XDG_* 를 걷는다 — 상태 왕복이 운영 저장소에 쓰지 않게', async () => {
     const seen: NodeJS.ProcessEnv[] = [];
-    const saved = { s: process.env.MONAD_STATE_DIR, x: process.env.XDG_DATA_HOME };
-    process.env.MONAD_STATE_DIR = '/real/state'; process.env.XDG_DATA_HOME = '/real/xdg';
+    const saved = { s: process.env.ELANOUS_STATE_DIR, x: process.env.XDG_DATA_HOME };
+    process.env.ELANOUS_STATE_DIR = '/real/state'; process.env.XDG_DATA_HOME = '/real/xdg';
     try {
       const run: Runner = (c, a, cwd, o) => { if (o?.env) seen.push(o.env); return c === 'curl' ? { status: 0, stdout: 'x', stderr: '' } : a[0] === '--version' ? { status: 0, stdout: '0.1.1 c', stderr: '' } : stateOk(a); };
       await verifyRelease({ version: '0.1.1', log: () => {} }, run);
     } finally {
-      if (saved.s === undefined) delete process.env.MONAD_STATE_DIR; else process.env.MONAD_STATE_DIR = saved.s;
+      if (saved.s === undefined) delete process.env.ELANOUS_STATE_DIR; else process.env.ELANOUS_STATE_DIR = saved.s;
       if (saved.x === undefined) delete process.env.XDG_DATA_HOME; else process.env.XDG_DATA_HOME = saved.x;
     }
     expect(seen.length).toBeGreaterThan(3);
-    for (const env of seen) { expect(env.MONAD_STATE_DIR).toBeUndefined(); expect(env.XDG_DATA_HOME).toBeUndefined(); expect(env.HOME).toContain('monad-release-verify-'); }
+    for (const env of seen) { expect(env.ELANOUS_STATE_DIR).toBeUndefined(); expect(env.XDG_DATA_HOME).toBeUndefined(); expect(env.HOME).toContain('elanous-release-verify-'); }
   });
 
   test('--version 이 맞아도 상태 왕복(기억 · 로그)이 안 되면 ok 가 아니다', async () => {
@@ -138,7 +138,7 @@ describe('release verify — 공개 주소로 끝까지', () => {
     expect((await verifyRelease({ version: '0.1.1', log: () => {} }, oldLogs)).ok).toBe(false);
     // 빈 HOME — 데몬이 한 번도 안 떠 로그 스토어가 없다(📏 09-25 이 맥 실측). 실패도 통과도 아니고 «안 쟀다»고 말한다.
     const lines: string[] = [];
-    const noStore: Runner = (c, a, cwd, o) => (a[0] === 'logs' ? { status: 1, stdout: '', stderr: 'monad logs: 열 수 있는 로그 스토어 없음 — scope={"registeredStores":0,"unopenedStores":0}' } : base(c, a, cwd, o));
+    const noStore: Runner = (c, a, cwd, o) => (a[0] === 'logs' ? { status: 1, stdout: '', stderr: 'elanous logs: 열 수 있는 로그 스토어 없음 — scope={"registeredStores":0,"unopenedStores":0}' } : base(c, a, cwd, o));
     expect((await verifyRelease({ version: '0.1.1', log: (l) => lines.push(l) }, noStore)).ok).toBe(true);
     expect(lines.join('\n')).toContain('로그 왕복 안 잼');
   });
@@ -165,7 +165,7 @@ describe('release yank — 내리기(지우지 않음 · 되돌릴 수 있음)',
   });
   test('--undo = 정식 판 ⊕ Latest ⊕ 제목 원래대로', () => {
     const [s] = planYank(rel, 'v0.1.1', 'o/r', true);
-    expect(s!.args).toEqual(['release', 'edit', 'v0.1.1', '--repo', 'o/r', '--prerelease=false', '--latest', '--title', 'monad v0.1.1']);
+    expect(s!.args).toEqual(['release', 'edit', 'v0.1.1', '--repo', 'o/r', '--prerelease=false', '--latest', '--title', 'elanous v0.1.1']);
   });
   test('--yes 없으면 바꾸지 않는다 · --yes 면 실행 뒤 latest 설치기가 가리키는 판을 잰다', async () => {
     const calls: string[] = [];
@@ -210,7 +210,7 @@ describe('release yank — 설치기 리다이렉트 반영을 기다린다(📏
 
 describe('release --json — stdout 은 결과 한 줄(T-R 그래프 간선용)', () => {
   test('yank --json 보기만: stdout 이 JSON 한 줄 · ok true · applied false', () => {
-    const r = Bun.spawnSync(['bun', 'bin/monad.mjs', 'release', 'yank', '--version', '9.9.9', '--json', '--public-repo', 'nobody-xyz/none'], { cwd: join(import.meta.dir, '..', '..'), stdout: 'pipe', stderr: 'pipe' });
+    const r = Bun.spawnSync(['bun', 'bin/elanous.mjs', 'release', 'yank', '--version', '9.9.9', '--json', '--public-repo', 'nobody-xyz/none'], { cwd: join(import.meta.dir, '..', '..'), stdout: 'pipe', stderr: 'pipe' });
     const lines = r.stdout.toString().trim().split('\n');
     expect(lines).toHaveLength(1);
     const d = JSON.parse(lines[0]!);

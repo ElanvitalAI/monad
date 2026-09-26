@@ -4,7 +4,7 @@
 // homedir 고정이라 격리 테스트 데몬이 **운영 미션을 보고** 알림/실행까지
 // 했다 — config 를 격리(ISO-1/2)해도 이 구멍으로 운영이 오염된다.
 //
-// 해소: 전 autopilot 경로가 `MONAD_STATE_DIR` 을 존중(logs.db·surface-events
+// 해소: 전 autopilot 경로가 `ELANOUS_STATE_DIR` 을 존중(logs.db·surface-events
 // 동형). 격리 테스트 인스턴스는 빈 미션 우주에서 시작하고, 무장류
 // (autopilot.json 등)는 test 루트에 부재 → fail-closed(DISARMED)가 기본.
 //
@@ -14,9 +14,9 @@
 import { homedir } from 'node:os';
 import { join } from 'node:path';
 
-/** `MONAD_STATE_DIR ?? ~/.monad` — autopilot 계열 경로의 단일 루트. */
-export function monadStateRoot(): string {
-  const stateDir = process.env.MONAD_STATE_DIR?.trim();
+/** `ELANOUS_STATE_DIR ?? ~/.elanous` — autopilot 계열 경로의 단일 루트. */
+export function elanousStateRoot(): string {
+  const stateDir = process.env.ELANOUS_STATE_DIR?.trim();
   // ⚠️ env 값도 **리졸버를 거쳐 정규화**한다 — 여기서만 raw 로 돌려주면 상대경로·후행 슬래시에서
   //    config-dir(정규화됨)과 두 축이 실제로 갈라진다(이 트랙의 근본과 같은 결함).
   try {
@@ -33,6 +33,6 @@ export function monadStateRoot(): string {
         why: '리졸버 실패 — prod 로 폴백(격리를 의도했다면 운영 오염 위험이므로 조사 필요)',
       });
     } catch { /* */ }
-    return stateDir && stateDir.length > 0 ? stateDir : join(homedir(), '.monad');
+    return stateDir && stateDir.length > 0 ? stateDir : join(homedir(), '.elanous');
   }
 }

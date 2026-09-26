@@ -181,19 +181,19 @@ describe('createTelegramVoiceAdapter — generateReply replyMode resolution', ()
 });
 
 describe('isTelegramVoiceEnabled', () => {
-  const ORIGINAL = process.env.MONAD_TELEGRAM_VOICE;
+  const ORIGINAL = process.env.ELANOUS_TELEGRAM_VOICE;
   it('false when unset', () => {
-    delete process.env.MONAD_TELEGRAM_VOICE;
+    delete process.env.ELANOUS_TELEGRAM_VOICE;
     expect(isTelegramVoiceEnabled()).toBe(false);
-    if (ORIGINAL !== undefined) process.env.MONAD_TELEGRAM_VOICE = ORIGINAL;
+    if (ORIGINAL !== undefined) process.env.ELANOUS_TELEGRAM_VOICE = ORIGINAL;
   });
   it('true for 1/true/on/yes (case-insensitive)', () => {
     for (const v of ['1', 'true', 'on', 'YES', 'On']) {
-      process.env.MONAD_TELEGRAM_VOICE = v;
+      process.env.ELANOUS_TELEGRAM_VOICE = v;
       expect(isTelegramVoiceEnabled()).toBe(true);
     }
-    if (ORIGINAL !== undefined) process.env.MONAD_TELEGRAM_VOICE = ORIGINAL;
-    else delete process.env.MONAD_TELEGRAM_VOICE;
+    if (ORIGINAL !== undefined) process.env.ELANOUS_TELEGRAM_VOICE = ORIGINAL;
+    else delete process.env.ELANOUS_TELEGRAM_VOICE;
   });
 });
 

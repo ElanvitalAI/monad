@@ -112,7 +112,7 @@ describe('inspectActiveProvider', () => {
     cfg.llm = { provider: 'openai-codex' };
     const info = inspectActiveProvider(cfg);
     expect(info.auth).toBe('none');
-    expect(info.authDetail).toMatch(/monad login openai-codex|monad codex setup/);
+    expect(info.authDetail).toMatch(/elanous login openai-codex|elanous codex setup/);
   });
 
   test('grok subscription takes precedence over config apiKey', () => {
@@ -206,6 +206,6 @@ describe('renderProviderStatus', () => {
     const cfg = baseConfig();
     cfg.llm = { provider: 'openai-codex' };
     const out = renderProviderStatus(inspectActiveProvider(cfg));
-    expect(out).toMatch(/monad setup|monad codex setup/);
+    expect(out).toMatch(/elanous setup|elanous codex setup/);
   });
 });

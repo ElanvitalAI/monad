@@ -12,7 +12,7 @@
 // 무접촉(무회귀) — 이 모듈은 additive primitive 이며 하니스 배선은 opt-in.
 //
 // ★ 제1원칙 관측(S4 carry·S5 튜닝): 픽(when)·실행(exec)·전달(carry)을 debug.log('harness.skill').
-//   조회: monad logs --category harness.skill.
+//   조회: elanous logs --category harness.skill.
 
 import { pickSkillsViaLlm } from '../autopilot/mission-codebase-gate.js';
 import { getSkillIndex, type SkillIndexEntry } from '../skills/index.js';

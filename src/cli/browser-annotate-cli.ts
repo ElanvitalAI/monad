@@ -24,7 +24,7 @@ export type Parsed<T> = { ok: true; value: T } | { ok: false; reason: string };
 
 const SHAPE_KINDS = ['polyline', 'line', 'arrow', 'label', 'box'] as const;
 /** 그린 것을 나중에 지우려면 이름이 필요하다. 안 주면 이 이름을 쓴다. */
-export const DEFAULT_ANNOTATION_ID = 'monad-cli';
+export const DEFAULT_ANNOTATION_ID = 'elanous-cli';
 export const DEFAULT_CHART_WIDTH = 960;
 export const DEFAULT_CHART_HEIGHT = 600;
 
@@ -280,7 +280,7 @@ export function registerBrowserAnnotateCommand(program: Command, deps: BrowserAn
         if (frameId === undefined) return fail('프레임을 못 찾았다 — 이 대상은 페이지가 아닐 수 있다', o.json);
         await transport.send('Page.setDocumentContent', {
           frameId,
-          html: `<!doctype html><html><head><meta charset="utf-8"><title>monad chart</title></head>`
+          html: `<!doctype html><html><head><meta charset="utf-8"><title>elanous chart</title></head>`
             + `<body style="margin:0;background:#0d1117">${chart.svg}</body></html>`,
         });
         // ⑵ 그 «위에» 도형 — 없으면 여기서 끝난다(차트는 이미 문서다).

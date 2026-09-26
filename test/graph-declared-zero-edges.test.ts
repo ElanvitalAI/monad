@@ -2,7 +2,7 @@ import { describe, expect, test } from 'bun:test';
 import { mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { setMonadConfigDir, resetMonadConfigDir } from '../src/monad-config-dir.js';
+import { setElanousConfigDir, resetElanousConfigDir } from '../src/elanous-config-dir.js';
 import { resetUserConfig } from '../src/user-config.js';
 import { buildDevCliSpec, type DevCliExecutor } from '../src/self-dev/dev-cli.js';
 import { planDevPipeline, toSelfImplementOptions } from '../src/self-dev/dev-pipeline.js';
@@ -36,7 +36,7 @@ async function defaultNodeNames(): Promise<string[]> {
   const ledger: Array<{ event: string; data: Record<string, unknown> }> = [];
   try {
     delete process.env.XDG_CONFIG_HOME;
-    setMonadConfigDir(configDir);
+    setElanousConfigDir(configDir);
     resetUserConfig();
     const spec = buildDevCliSpec({ text: 'graph declared zero edge check' }, SELF, {});
     const options = toSelfImplementOptions(
@@ -50,7 +50,7 @@ async function defaultNodeNames(): Promise<string[]> {
       .map(({ data }) => String(data.node));
   } finally {
     resetUserConfig();
-    resetMonadConfigDir();
+    resetElanousConfigDir();
     if (previousXdg === undefined) delete process.env.XDG_CONFIG_HOME;
     else process.env.XDG_CONFIG_HOME = previousXdg;
     rmSync(configDir, { recursive: true, force: true });

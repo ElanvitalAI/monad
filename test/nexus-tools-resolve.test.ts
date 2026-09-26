@@ -17,28 +17,28 @@ import { userConfigPath } from '../src/nexus/config/paths.js';
 import { clearSwitchRegistry } from '../src/nexus/config/switch-registry.js';
 import { reloadAllBuiltins } from '../src/nexus/config/builtins/index.js';
 import { USER_CONFIG_VERSION } from '../src/nexus/config/types.js';
-import { resetMonadConfigDir, setMonadConfigDir } from '../src/monad-config-dir.js';
+import { resetElanousConfigDir, setElanousConfigDir } from '../src/elanous-config-dir.js';
 
 let tmpRoot: string;
 let prevTools: string | undefined;
 
 beforeEach(() => {
-  tmpRoot = mkdtempSync(join(tmpdir(), 'monad-nexus-tools-resolve-'));
-  prevTools = process.env.MONAD_TOOLS;
-  // Isolate UserConfig path so the host's ~/.monad/config.json doesn't
+  tmpRoot = mkdtempSync(join(tmpdir(), 'elanous-nexus-tools-resolve-'));
+  prevTools = process.env.ELANOUS_TOOLS;
+  // Isolate UserConfig path so the host's ~/.elanous/config.json doesn't
   // bleed into the resolver AND so writeToolsSwitch() doesn't pollute
-  // it. The legacy `MONAD_DAEMON_DIR` env var was removed in PR #2534
+  // it. The legacy `ELANOUS_DAEMON_DIR` env var was removed in PR #2534
   // (config-dir-unify) — use the programmatic override instead.
-  setMonadConfigDir(tmpRoot);
-  delete process.env.MONAD_TOOLS;
+  setElanousConfigDir(tmpRoot);
+  delete process.env.ELANOUS_TOOLS;
   clearSwitchRegistry();
   reloadAllBuiltins();
 });
 
 afterEach(() => {
-  resetMonadConfigDir();
-  if (prevTools === undefined) delete process.env.MONAD_TOOLS;
-  else process.env.MONAD_TOOLS = prevTools;
+  resetElanousConfigDir();
+  if (prevTools === undefined) delete process.env.ELANOUS_TOOLS;
+  else process.env.ELANOUS_TOOLS = prevTools;
   try { rmSync(tmpRoot, { recursive: true, force: true }); } catch { /* ignore */ }
   clearSwitchRegistry();
 });
@@ -61,13 +61,13 @@ describe('resolveToolsKind — default fallback aligned with switch default', ()
   });
 
   test('CLI flag wins (priority 1)', () => {
-    process.env.MONAD_TOOLS = 'readonly';
+    process.env.ELANOUS_TOOLS = 'readonly';
     writeToolsSwitch('none');
     expect(resolveToolsKind({ tools: 'none' })).toBe('none');
   });
 
   test('env wins over switch (priority 2)', () => {
-    process.env.MONAD_TOOLS = 'readonly';
+    process.env.ELANOUS_TOOLS = 'readonly';
     writeToolsSwitch('none');
     expect(resolveToolsKind({})).toBe('readonly');
   });
@@ -88,13 +88,13 @@ describe('resolveToolsKind — default fallback aligned with switch default', ()
   });
 
   test('preserves `chat` from CLI over lower-priority env and switch inputs', () => {
-    process.env.MONAD_TOOLS = 'readonly';
+    process.env.ELANOUS_TOOLS = 'readonly';
     writeToolsSwitch('none');
     expect(resolveToolsKind({ tools: 'chat' })).toBe('chat');
   });
 
-  test('preserves `chat` from MONAD_TOOLS when no CLI flag is given', () => {
-    process.env.MONAD_TOOLS = 'chat';
+  test('preserves `chat` from ELANOUS_TOOLS when no CLI flag is given', () => {
+    process.env.ELANOUS_TOOLS = 'chat';
     writeToolsSwitch('none');
     expect(resolveToolsKind({})).toBe('chat');
   });
@@ -113,7 +113,7 @@ describe('resolveToolsKind — default fallback aligned with switch default', ()
   });
 
   test('empty flag falls through to env / switch / default', () => {
-    process.env.MONAD_TOOLS = 'readonly';
+    process.env.ELANOUS_TOOLS = 'readonly';
     expect(resolveToolsKind({ tools: '' })).toBe('readonly');
   });
 
@@ -160,8 +160,8 @@ describe('resolveAgentTurnToolsKind — user-config bypass + CLI honor', () => {
     expect(resolveAgentTurnToolsKind({})).toBe('webterm');
   });
 
-  test('MONAD_TOOLS env is IGNORED → webterm', () => {
-    process.env.MONAD_TOOLS = 'readonly';
+  test('ELANOUS_TOOLS env is IGNORED → webterm', () => {
+    process.env.ELANOUS_TOOLS = 'readonly';
     expect(resolveAgentTurnToolsKind({})).toBe('webterm');
   });
 
@@ -169,7 +169,7 @@ describe('resolveAgentTurnToolsKind — user-config bypass + CLI honor', () => {
     'CLI flag `%s` is honored',
     (kind) => {
       writeToolsSwitch('chat');
-      process.env.MONAD_TOOLS = 'readonly';
+      process.env.ELANOUS_TOOLS = 'readonly';
       expect(resolveAgentTurnToolsKind({ tools: kind })).toBe(kind);
     },
   );
@@ -183,7 +183,7 @@ describe('resolveAgentTurnToolsKind — user-config bypass + CLI honor', () => {
   });
 
   test('empty CLI flag falls through to webterm (env/config still ignored)', () => {
-    process.env.MONAD_TOOLS = 'readonly';
+    process.env.ELANOUS_TOOLS = 'readonly';
     writeToolsSwitch('readonly');
     expect(resolveAgentTurnToolsKind({ tools: '' })).toBe('webterm');
   });

@@ -1,4 +1,4 @@
-// `monad telegram run` — 넥서스 «밖»의 정식 텔레그램 Q&A 폴러.
+// `elanous telegram run` — 넥서스 «밖»의 정식 텔레그램 Q&A 폴러.
 //
 // 넥서스와 «같은» 경로(`wireNexusTelegramQaPollers` → `createNexusTelegramTriggerBot` ⊕
 // `makeTelegramAgentRunTurn`)를 따로 떠 있는 프로세스로 돌린다 — 봇 코드를 고쳐도 넥서스를
@@ -104,7 +104,7 @@ export async function runTelegramPoller(): Promise<void> {
   const { started, refusedBotIds, late } = await startTelegramPollers();
   debug.log('telegram.run', 'started', { pid: process.pid, pollers: started.length, refusedBotIds });
   for (const botId of refusedBotIds) {
-    console.warn(`[telegram run] 봇 ${botId}: 다른 프로세스가 폴링 중 — 15초마다 다시 잡으러 간다 (monad logs --category telegram.run)`);
+    console.warn(`[telegram run] 봇 ${botId}: 다른 프로세스가 폴링 중 — 15초마다 다시 잡으러 간다 (elanous logs --category telegram.run)`);
   }
   // 하나도 못 잡았으면 끝낸다(exit≠0) — 서비스 관리자(launchd KeepAlive·systemd Restart)가 다시 띄운다.
   if (started.length === 0) throw new Error('telegram run: 띄운 폴러가 없다');

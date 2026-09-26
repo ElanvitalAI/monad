@@ -1,6 +1,6 @@
 // 공통 앱 tool 단일 조립기 — turn 조립기 통일 Phase 0 (2026-07-22)
 //
-// 종전 3 조립기(telegram makeMonadAgentRunTurn · CLI buildCliAgentTools · daemon toolSurface)가
+// 종전 3 조립기(telegram makeElanousAgentRunTurn · CLI buildCliAgentTools · daemon toolSurface)가
 // L2 core(schedule_manage·memory_recall…) + L3 finance(코나투스 25종)를 **각자 조립**하던 파편화의
 // 첫 단일화. 이 둘은 이미 단일 출처(core-tools.ts·finance-tools.ts)이나 조립을 3곳이 반복 → 서피스
 // 게이팅 정리(#5080)에서 finance 를 3곳에 수동 배선한 게 바로 그 증상. 여기 한 곳으로 모은다.
@@ -16,8 +16,8 @@ import { buildFinanceTools } from '../domains/finance-tools.js';
 import { financeEnabled } from '../domains/finance.js';
 import { skillExecRuntime } from '../tool-runtime/skill-exec-runtime.js';
 import type { SkillExecArgs } from '../tool-runtime/skill-exec-runtime.js';
-import { buildMonadSkillsListTool, dispatchMonadSkillsList } from '../tool-runtime/monad-skills-list-runtime.js';
-import type { MonadSkillsListArgs } from '../tool-runtime/monad-skills-list-runtime.js';
+import { buildElanousSkillsListTool, dispatchElanousSkillsList } from '../tool-runtime/elanous-skills-list-runtime.js';
+import type { ElanousSkillsListArgs } from '../tool-runtime/elanous-skills-list-runtime.js';
 import type { UserConfig } from '../user-config.js';
 import type { LLMToolSpec } from '../llm.js';
 
@@ -31,12 +31,12 @@ export interface SharedAppTools {
 export function buildSharedAppTools(cfg?: UserConfig): SharedAppTools {
   const core = buildCoreTools();
   const fin = cfg && financeEnabled(cfg) ? buildFinanceTools() : null;
-  const skillsList = buildMonadSkillsListTool();
+  const skillsList = buildElanousSkillsListTool();
   const skill = skillExecRuntime;
   const specs: LLMToolSpec[] = [...core.specs, ...(fin ? fin.specs : []), skillsList, skill.spec];
   const names = new Set<string>([...core.names, ...(fin ? fin.names : []), skillsList.name, skill.id]);
   const dispatch = async (name: string, args: Record<string, unknown>): Promise<unknown> =>
-    name === skillsList.name ? dispatchMonadSkillsList(args as MonadSkillsListArgs) :
+    name === skillsList.name ? dispatchElanousSkillsList(args as ElanousSkillsListArgs) :
       name === skill.id ? skill.run(args as unknown as SkillExecArgs, { surface: 'skill' }) :
         fin && fin.names.has(name) ? fin.dispatch(name, args) : core.dispatch(name, args);
   return { specs, names, dispatch };

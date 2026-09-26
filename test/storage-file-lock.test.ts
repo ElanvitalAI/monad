@@ -1,4 +1,4 @@
-// FU3 (PLAN-config-unification-monad-root-2026-05-10 closing follow-up):
+// FU3 (PLAN-config-unification-elanous-root-2026-05-10 closing follow-up):
 //   src/storage/file-lock.ts — cross-process advisory lock primitive
 //   used by saveUserConfig + patchUserConfig.
 

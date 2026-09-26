@@ -1,5 +1,5 @@
 import * as fs from 'node:fs';
-import { monadStateRoot } from '../autopilot/state-paths.js';
+import { elanousStateRoot } from '../autopilot/state-paths.js';
 import * as path from 'node:path';
 import {
   isIntakeSource,
@@ -54,7 +54,7 @@ export interface IntakeStore {
   replay(): number;
 }
 
-const DEFAULT_ARCHIVE_DIR = path.join(monadStateRoot(), 'intake');
+const DEFAULT_ARCHIVE_DIR = path.join(elanousStateRoot(), 'intake');
 
 function defaultNow(): Date {
   return new Date();

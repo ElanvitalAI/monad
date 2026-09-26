@@ -1,6 +1,6 @@
 // ── PFC-S3 P3: experiment ledger + NOW.md handoff ──
 //
-// Per-goal directory under .monad/research/<goal-slug>/ that collects
+// Per-goal directory under .elanous/research/<goal-slug>/ that collects
 // one subdir per experiment with meta.json + optional inputs/ +
 // output.md. The ledger owns meta.json mutations — callers write the
 // payload files themselves.

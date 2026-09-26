@@ -92,7 +92,7 @@ export function projectSttTierMonthlyCost(
 }
 
 /** Compare projections across every tier — used by the slider tooltip
- *  ("$1 → $24/mo" delta) and by `monad voice status` to surface the
+ *  ("$1 → $24/mo" delta) and by `elanous voice status` to surface the
  *  cheapest alternative. Returns one estimate per tier. */
 export function projectSttAllTiers(
   inputs: CostEstimateInputs,

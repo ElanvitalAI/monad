@@ -8,7 +8,7 @@
 // cron: */30 * * * *  (모니터 자체 스케줄과 독립 — 폴러는 "완료된 체크"만 읽음.
 //        변경 없으면 무발송·저비용: GET checks는 무과금, 체크 과금은 Firecrawl측 스케줄)
 //
-// state: ~/.monad/conatus/firecrawl_monitor_state.json — 모니터별 마지막 처리 checkId.
+// state: ~/.elanous/conatus/firecrawl_monitor_state.json — 모니터별 마지막 처리 checkId.
 
 import { sendOutbound } from '../src/domains/outbound-alert.js';
 import {
@@ -26,7 +26,7 @@ import { ensureCronNodePath } from '../src/domains/cron-path.js';
 ensureCronNodePath();
 
 const BASE = 'https://api.firecrawl.dev/v2';
-const STATE = join(homedir(), '.monad/conatus/firecrawl_monitor_state.json');
+const STATE = join(homedir(), '.elanous/conatus/firecrawl_monitor_state.json');
 
 // 키: env 우선 → omni-crawl 스킬 .env self-load (데몬/크론 env 비의존 — kr-flow 패턴).
 function firecrawlKey(): string {
@@ -71,7 +71,7 @@ if (!monitors.length) { console.log('모니터 없음 — skip'); process.exit(0
 // 발송 floor(x_watchlist digestFloor 재사용·기본 6) + 최근 6h 기발송(크로스 dedup).
 function monitorFloor(): number {
   try {
-    const wl = JSON.parse(readFileSync(join(homedir(), '.monad/conatus/x_watchlist.json'), 'utf-8'));
+    const wl = JSON.parse(readFileSync(join(homedir(), '.elanous/conatus/x_watchlist.json'), 'utf-8'));
     if (typeof wl.digestFloor === 'number') return wl.digestFloor;
   } catch { /* default */ }
   return 6;

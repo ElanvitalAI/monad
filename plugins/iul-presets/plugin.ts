@@ -15,7 +15,7 @@
 // activate simply registers the slash commands.
 
 import type {
-  MonadPlugin,
+  ElanousPlugin,
   PluginContext,
   SlashCommand,
 } from '../../src/plugins/core/types.js';
@@ -99,7 +99,7 @@ const slashCommands: SlashCommand[] = [
   },
 ];
 
-const plugin: MonadPlugin<IulPresetsState> = {
+const plugin: ElanousPlugin<IulPresetsState> = {
   name: 'iul-presets',
   version: '0.1.0',
   description:

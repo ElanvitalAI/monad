@@ -413,7 +413,7 @@ export const DEFAULT_WIDGET_TOKENS: WidgetTokens = {
 
 /** ASCII-safe fallback glyphs. Presets with `asciiSafe: true` will
  *  expose these via `widgetTokens.icon`, and consumers can opt in
- *  with env `MONAD_ASCII_ICONS=1`. */
+ *  with env `ELANOUS_ASCII_ICONS=1`. */
 export const ASCII_SAFE_ICONS: IconTokens = {
   terminal: '[T]',
   agent: '[A]',
@@ -562,13 +562,13 @@ export function resolveSemantic(
   return tokens[kind];
 }
 
-/** Look up an icon glyph. Honors MONAD_ASCII_ICONS=1 by falling
+/** Look up an icon glyph. Honors ELANOUS_ASCII_ICONS=1 by falling
  *  back to ASCII_SAFE_ICONS even when the theme ships emoji. */
 export function resolveIcon(
   theme: ThemeTokens,
   name: keyof IconTokens,
 ): string {
-  if (process.env.MONAD_ASCII_ICONS === '1') return ASCII_SAFE_ICONS[name];
+  if (process.env.ELANOUS_ASCII_ICONS === '1') return ASCII_SAFE_ICONS[name];
   const tokens = resolveWidgetTokens(theme, 'icon');
   return tokens[name];
 }

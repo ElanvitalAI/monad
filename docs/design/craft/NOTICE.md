@@ -44,7 +44,7 @@ docs/design/craft/
 - `anti-ai-slop` = 「자동 강제 ↔ 사람 판단」을 **가르는 문법**의 원본
 - `accessibility-baseline` = 그중 **기계가 실제로 잴 수 있는** 축(WCAG)
 
-**2차(대표 결정 「ⓐ 소비 — 규칙서를 monad 안으로」)의 전제는 달라졌다:**
+**2차(대표 결정 「ⓐ 소비 — 규칙서를 elanous 안으로」)의 전제는 달라졌다:**
 ```
 1차 시점   읽는 자 «0»  ⇒ 많이 들이면 «죽은 파일»만 는다
 2차 시점   ✅ 파서 `src/design/design-doc.ts` ⊕ CLI `repo design-check` ⊕ 지킴이 셋
@@ -138,7 +138,7 @@ shasum -a 256 내부 문서 `*` docs/design/craft/LICENSE
 ⛔ **그러니 「WCAG 검사기」를 새로 짓지 마라** — 이미 있다. 규칙서는 그 자를 «어디에 더 세울지»를 말해 준다.
 
 ### ⚠️ 아직 «안 한» 것
-- 이 규칙서를 리뷰어(`monad self review`)가 인용하게 배선하는 일 — **미착수**
+- 이 규칙서를 리뷰어(`elanous self review`)가 인용하게 배선하는 일 — **미착수**
 - 나머지 9개 규칙서 수입 — **필요해질 때**
 
 ---

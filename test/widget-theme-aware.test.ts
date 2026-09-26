@@ -19,7 +19,7 @@ import {
 import {
   CATPPUCCIN_LATTE,
   CATPPUCCIN_MOCHA,
-  MONAD_PASTEL_DEFAULT,
+  ELANOUS_PASTEL_DEFAULT,
   ROSE_PINE_DAWN,
 } from '../src/themes/index.js';
 import { Printer } from '../src/ui/printer.js';
@@ -182,11 +182,11 @@ describe('IDX-6 Phase 4 Button — theme-aware', () => {
       label: 'Go',
       style: 'primary',
       onClick: () => {},
-      theme: MONAD_PASTEL_DEFAULT,
+      theme: ELANOUS_PASTEL_DEFAULT,
     });
     // not focused
     const out = renderToString(btn, 20);
-    const hex = MONAD_PASTEL_DEFAULT.colors.accent.replace('#', '');
+    const hex = ELANOUS_PASTEL_DEFAULT.colors.accent.replace('#', '');
     const r = parseInt(hex.slice(0, 2), 16);
     const g = parseInt(hex.slice(2, 4), 16);
     const b = parseInt(hex.slice(4, 6), 16);
@@ -256,18 +256,18 @@ describe('IDX-6 Phase 4 Dialog — theme passthrough', () => {
     const dlg = new Dialog<string>({
       buttons: [{ label: 'Hit', value: 'hit' }],
       onSubmit: () => {},
-      theme: MONAD_PASTEL_DEFAULT,
+      theme: ELANOUS_PASTEL_DEFAULT,
     });
     const out = renderToString(dlg, 30, 3);
     // The button child receives the theme. Whether it paints in
     // focused or normal state depends on LinearLayout focus wiring
-    // — both states use MONAD_PASTEL_DEFAULT-owned colors, so we
+    // — both states use ELANOUS_PASTEL_DEFAULT-owned colors, so we
     // check that the OUTPUT uses theme-owned fg values (either
     // button.normal.fg or button.focused.fg) rather than legacy
     // C.text. Both point at palette.text or palette.base, both of
-    // which belong to MONAD_PASTEL_DEFAULT.
-    const normal = resolveButtonState(MONAD_PASTEL_DEFAULT, 'normal');
-    const focused = resolveButtonState(MONAD_PASTEL_DEFAULT, 'focused');
+    // which belong to ELANOUS_PASTEL_DEFAULT.
+    const normal = resolveButtonState(ELANOUS_PASTEL_DEFAULT, 'normal');
+    const focused = resolveButtonState(ELANOUS_PASTEL_DEFAULT, 'focused');
     const normalTriple = hexTriple(normal.fg);
     const focusedTriple = hexTriple(focused.fg);
     const usedThemeFg =
@@ -280,10 +280,10 @@ describe('IDX-6 Phase 4 Dialog — theme passthrough', () => {
       title: 'X',
       buttons: [{ label: 'OK', value: 'ok' }],
       onSubmit: () => {},
-      theme: MONAD_PASTEL_DEFAULT,
+      theme: ELANOUS_PASTEL_DEFAULT,
     });
     const out = renderToString(dlg, 30, 3);
-    const border = resolveWidgetTokens(MONAD_PASTEL_DEFAULT, 'dialog').border;
+    const border = resolveWidgetTokens(ELANOUS_PASTEL_DEFAULT, 'dialog').border;
     expect(out).toContain(hexTriple(border.fg));
   });
 
@@ -307,11 +307,11 @@ describe('IDX-6 Phase 4 Dialog — theme passthrough', () => {
       body: 'Proceed?',
       buttons: [{ label: 'OK', value: 'ok' }],
       onSubmit: () => {},
-      theme: MONAD_PASTEL_DEFAULT,
+      theme: ELANOUS_PASTEL_DEFAULT,
       chrome: 'static',
     });
     const out = renderToString(dlg, 40, 6);
-    const chrome = MONAD_PASTEL_DEFAULT.widgetTokens?.modalChrome
+    const chrome = ELANOUS_PASTEL_DEFAULT.widgetTokens?.modalChrome
       ?? DEFAULT_WIDGET_TOKENS.modalChrome!;
     expect(out).toContain(hexTriple(chrome.borderActive.fg));
     expect(out).toContain(hexTriple(chrome.titleText.fg));
@@ -319,7 +319,7 @@ describe('IDX-6 Phase 4 Dialog — theme passthrough', () => {
   });
 
   test('box view supports chrome-wide title bar fill + rounded border variant', () => {
-    const chrome = MONAD_PASTEL_DEFAULT.widgetTokens?.modalChrome!;
+    const chrome = ELANOUS_PASTEL_DEFAULT.widgetTokens?.modalChrome!;
     const box = new BoxView(new TextView('body'), {
       border: true,
       title: 'Preview',

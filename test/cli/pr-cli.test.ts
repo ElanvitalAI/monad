@@ -247,7 +247,7 @@ describe('findSiblingPrs', () => {
   });
 });
 
-describe('monad pr land', () => {
+describe('elanous pr land', () => {
   it('finds, upserts ready with its resolved base and head, and squash merges in order', async () => {
     const { manager, calls, upserts } = fakeManager();
     const sink = output();
@@ -272,7 +272,7 @@ describe('monad pr land', () => {
         '✓ branch: feat/land',
         '✓ base: origin/main',
         '✓ typecheck: scripts/ci-typecheck-changed.ts PASS — changed files have no new type errors.',
-        '✓ isolation-gate: scripts/ci-isolation-hardcode-gate.ts PASS — no new homedir+.monad hardcoding.',
+        '✓ isolation-gate: scripts/ci-isolation-hardcode-gate.ts PASS — no new homedir+.elanous hardcoding.',
         '✓ mock-module-restore-gate: scripts/ci-mock-module-restore-gate.ts PASS — no new un-restored mock.module.',
         '[test-interference-gate] 해당 없음 — 변경 시험 파일 0개 (간섭 검사는 2개 이상 필요).',
         // ⭐ 안드로이드를 안 만진 착지라 게이트가 «깨어나지 않았다»고 «말한다».
@@ -593,14 +593,14 @@ describe('monad pr land', () => {
     const seen: string[][] = [];
     docsCliWarning(['README.md'], (files) => {
       seen.push([...files]);
-      return [{ kind: 'unknown-flag', ref: { file: 'README.md', line: 7, text: 'monad doctor --nope', cmd: 'doctor', flags: ['--nope'] }, detail: '--nope (monad doctor)' }];
+      return [{ kind: 'unknown-flag', ref: { file: 'README.md', line: 7, text: 'elanous doctor --nope', cmd: 'doctor', flags: ['--nope'] }, detail: '--nope (elanous doctor)' }];
     }, out);
     expect(seen).toEqual([['README.md']]);
     expect(logs.join('\n')).toContain('경고 전용 · 착지는 막지 않는다');
-    expect(logs.join('\n')).toContain('unknown-flag  README.md:7  --nope (monad doctor)');
+    expect(logs.join('\n')).toContain('unknown-flag  README.md:7  --nope (elanous doctor)');
     logs.length = 0;
     docsCliWarning(['README.md'], () => [], out);
-    expect(logs).toEqual(['✓ docs-cli-check(경고 전용): 바뀐 공개 문서 1개의 monad 호출이 실제 CLI 와 맞는다.']);
+    expect(logs).toEqual(['✓ docs-cli-check(경고 전용): 바뀐 공개 문서 1개의 elanous 호출이 실제 CLI 와 맞는다.']);
     logs.length = 0;
     docsCliWarning(['README.md'], () => { throw new Error('boom'); }, out);
     expect(logs[0]).toContain('못 쟀다');
@@ -1966,7 +1966,7 @@ describe('monad pr land', () => {
   });
 });
 
-describe('monad pr granularity', () => {
+describe('elanous pr granularity', () => {
   it('registers the command and reports an empty window as unmeasurable without gh or network', async () => {
     const sink = output();
     const commands: Array<{ cmd: string; args: readonly string[] }> = [];
@@ -2082,7 +2082,7 @@ describe('monad pr granularity', () => {
       'commit aaa111bbb222ccc333ddd444eee555fff666aaa docs(🅢): first',
       'docs/topic.md',
       '',
-      'commit bbb222ccc333ddd444eee555fff666aaa111bbb test: monad-config-dir.test.ts (#13663)',
+      'commit bbb222ccc333ddd444eee555fff666aaa111bbb test: elanous-config-dir.test.ts (#13663)',
       'docs/topic.md',
       '',
       'commit ccc333ddd444eee555fff666aaa111bbb222ccc tsc 게이트가 「변경 파일」만 봐서 눈이 멀었다 (#13746)',
@@ -2101,7 +2101,7 @@ describe('monad pr granularity', () => {
     expect(sink.logs).toContain('착지 앞머리: docs(🅢) 1, test 1, 앞머리 미추출 1');
     expect(report).toContain('docs/topic.md  3  docs(🅢) 1, test 1, 앞머리 미추출 1');
     expect(report).not.toContain('착지 앞머리: 앞머리 미추출 3');
-    expect(report).not.toContain('test: monad-config-dir.test.ts');
+    expect(report).not.toContain('test: elanous-config-dir.test.ts');
     expect(runPrGranularity({ since: '1 day ago' }, { ...baseDeps, run, out: sink.out })).toBe(0);
   });
 

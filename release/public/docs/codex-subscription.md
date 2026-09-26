@@ -4,19 +4,19 @@ Codex supports the official ChatGPT device-code flow (no API key needed —
 uses your ChatGPT account):
 
 ```bash
-monad login openai-codex      # opens browser + waits for code entry
-monad login status            # list providers with tokens on file
-monad login logout openai-codex   # forget tokens
+elanous login openai-codex      # opens browser + waits for code entry
+elanous login status            # list providers with tokens on file
+elanous login logout openai-codex   # forget tokens
 ```
 
 Flow: request user code → print `https://auth.openai.com/codex/device`
 and a short code → you enter it in any browser → the CLI polls until
 you finish (max 15min, Ctrl+C cancels) → tokens persist to
-`~/.monad/auth.json` (chmod 0o600) and mirror to
+`~/.elanous/auth.json` (chmod 0o600) and mirror to
 `~/.codex/auth.json` so the official Codex CLI stays in sync.
 
 Access tokens auto-refresh when within 120s of expiry. Refresh tokens
-rotate single-use per OpenAI's OAuth policy — monad always writes the
+rotate single-use per OpenAI's OAuth policy — elanous always writes the
 new pair to both locations so no manual sync is needed.
 
 When OAuth tokens are present, the provider uses
@@ -29,10 +29,10 @@ Both are recognized automatically.
 The primary path for LLM access is a **subscription**, not an API key:
 
 ```bash
-monad login openai-codex             # ChatGPT device-code flow — no API key needed
-monad config set llm.provider openai-codex   # optional — auto already prefers it
-monad login status                   # which providers have tokens on file
-monad usage                          # quota and subscription state per account
+elanous login openai-codex             # ChatGPT device-code flow — no API key needed
+elanous config set llm.provider openai-codex   # optional — auto already prefers it
+elanous login status                   # which providers have tokens on file
+elanous usage                          # quota and subscription state per account
 ```
 
 With `llm.provider = auto` (2026-09-24 decision) every selection path picks
@@ -41,18 +41,18 @@ accounts by remaining quota, and when none is left the fallback follows
 `llm.fallbackChain` before any other keyed provider. The second line above is
 optional — it pins Codex explicitly.
 
-⚠️ `monad usage` may report `unavailable (auth)` for codex even when login
+⚠️ `elanous usage` may report `unavailable (auth)` for codex even when login
 succeeded and the harness runs fine — it queries the Codex CLI mirror
-(`~/.codex/auth.json`), a different axis from the token monad itself uses
-(`~/.monad/auth.json`). Do not read that line as "the credential does not work".
+(`~/.codex/auth.json`), a different axis from the token elanous itself uses
+(`~/.elanous/auth.json`). Do not read that line as "the credential does not work".
 
 ⚠️ The harness also shells out to `gh` for pull-request lookups. Without it,
 base-branch selection degrades to the default branch and says so
 (`base-selection=pr-lookup-failed`); nothing crashes, but install the GitHub
 CLI if you want the harness to open and track pull requests.
 
-⛔ **On Linux the harness additionally needs the Codex CLI itself.** `monad
-login openai-codex` stores a token for monad's own LLM layer but prints, and
+⛔ **On Linux the harness additionally needs the Codex CLI itself.** `elanous
+login openai-codex` stores a token for elanous's own LLM layer but prints, and
 means, this:
 
 > *Codex CLI mirror was not created because this login response lacked its

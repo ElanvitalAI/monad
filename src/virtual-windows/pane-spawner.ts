@@ -4,7 +4,7 @@
 // The repository has accumulated three separate spawn entries:
 //
 //   - `spawnEmbodiedAgentInVW`     (PTY-based · codex / claude / gemini /
-//                                   local-llm / monad-as-child)
+//                                   local-llm / elanous-as-child)
 //   - `spawnLocalLlmInVW`          (raw `lll:<spec>` parser · delegates
 //                                   to the embodied path)
 //   - `spawnAcpLiveSessionInVW`    (ACP client session · acp-live pane)
@@ -94,7 +94,7 @@ interface SpawnPaneOptsBase {
   readonly cwd?: string;
 }
 
-/** PTY lane — covers codex / claude / gemini / monad-as-child / local-llm.
+/** PTY lane — covers codex / claude / gemini / elanous-as-child / local-llm.
  *  When `brand` starts with `lll:` the local-llm parser path is used so
  *  callers can pass the raw slash form directly. */
 export interface SpawnPanePtyOpts extends SpawnPaneOptsBase {
@@ -108,7 +108,7 @@ export interface SpawnPanePtyOpts extends SpawnPaneOptsBase {
   readonly env?: Record<string, string>;
 }
 
-/** ACP lane — codex-app-server / claude-code-acp once wired / monad. */
+/** ACP lane — codex-app-server / claude-code-acp once wired / elanous. */
 export interface SpawnPaneAcpOpts extends SpawnPaneOptsBase {
   readonly lane: 'acp';
   readonly backendId: string;

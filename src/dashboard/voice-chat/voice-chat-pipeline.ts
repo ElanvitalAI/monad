@@ -5,7 +5,7 @@
 // `listening` phase of voice-chat. The pipeline is intentionally
 // scoped to one concern: turn the user's mic input into a final
 // transcript and hand it to the caller. Submitting that transcript
-// to monad's chat path, advancing the state machine through
+// to elanous's chat path, advancing the state machine through
 // `processing` → `speaking`, and rendering the assistant response
 // (auto-TTS) all stay with the dashboard.
 //
@@ -51,7 +51,7 @@ export interface VoiceChatPipelineDeps {
    *  status bar / inline transcript widget. */
   onPartialTranscript?: (text: string) => void;
   /** Called when STT commits a final transcript. Caller submits this
-   *  to monad's chat dispatch and advances the state machine. */
+   *  to elanous's chat dispatch and advances the state machine. */
   onFinalTranscript: (text: string) => void;
   /** Called when mic audio indicates the user started speaking while
    *  the assistant is still in the `speaking` phase. The dashboard

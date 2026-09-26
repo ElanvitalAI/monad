@@ -180,7 +180,7 @@ describe('pr-granularity statistics', () => {
   });
 
   it('extracts unscoped 타입: as the token before the colon and leaves the body out', () => {
-    expect(extractCommitTitlePrefix('test: monad-config-dir.test.ts (#13663)')).toBe('test');
+    expect(extractCommitTitlePrefix('test: elanous-config-dir.test.ts (#13663)')).toBe('test');
     expect(extractCommitTitlePrefix('src/self-implement: gate-baseline.ts, … (#13665)')).toBe('src/self-implement');
     expect(extractCommitTitlePrefix('docs: no-scope')).toBe('docs');
   });
@@ -200,7 +200,7 @@ describe('pr-granularity statistics', () => {
       'commit aaa111bbb222ccc333ddd444eee555fff666aaa docs(🅢): first',
       'docs/topic.md',
       '',
-      'commit bbb222ccc333ddd444eee555fff666aaa111bbb test: monad-config-dir.test.ts (#13663)',
+      'commit bbb222ccc333ddd444eee555fff666aaa111bbb test: elanous-config-dir.test.ts (#13663)',
       'docs/topic.md',
       '',
       'commit ccc333ddd444eee555fff666aaa111bbb222ccc tsc 게이트가 「변경 파일」만 봐서 눈이 멀었다 (#13746)',

@@ -334,7 +334,7 @@ function helpOutput(): HandoffSlashResult {
       '  Lane address forms:',
       '    <integer>     pane index (0-based)',
       '    <role>        plan | build (=exec) | exec | review | reflect',
-      '    <brand>       codex | claude | gemini | monad | local-llm | alias',
+      '    <brand>       codex | claude | gemini | elanous | local-llm | alias',
       '',
       '  Examples:',
       '    /handoff 0 1                          left → right · as user message',

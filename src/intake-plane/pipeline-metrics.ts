@@ -2,7 +2,7 @@
  * I10 (2026-05-12) — Phase 1 dogfood metrics writer.
  *
  * Every `/v1/intake/pipeline-preview` and `/v1/intake/pipeline-commit`
- * call appends one row to `~/.monad/intake/pipeline-runs.jsonl`. The
+ * call appends one row to `~/.elanous/intake/pipeline-runs.jsonl`. The
  * payload captures everything the I10 dogfood gate (RESEARCH §11.3 ·
  * 90% auto decomposition · 2분 안) needs to measure without bouncing
  * back through the LLM:
@@ -17,8 +17,8 @@
  * `/v1/intake/runs` endpoint that ships alongside this module.
  *
  * Path resolution mirrors `task-orchestrator/paths.ts`:
- *   1. env `MONAD_INTAKE_DIR` (absolute · CI / test override)
- *   2. `<homedir>/.monad/intake`
+ *   1. env `ELANOUS_INTAKE_DIR` (absolute · CI / test override)
+ *   2. `<homedir>/.elanous/intake`
  *
  * Test seam: `recordPipelineRun()` takes optional `fs`/`now` deps so
  * unit tests can run without touching the user's home.
@@ -29,19 +29,19 @@ import {
   mkdirSync,
   readFileSync,
 } from 'node:fs';
-import { monadStateRoot } from '../autopilot/state-paths.js';
+import { elanousStateRoot } from '../autopilot/state-paths.js';
 import { join } from 'node:path';
 
 // ──────────────────── Path resolution ───────────────────────────────
 
 /** Intake dir override env. Tests + CI flip this to a tmpdir. */
-const INTAKE_DIR_ENV = 'MONAD_INTAKE_DIR';
+const INTAKE_DIR_ENV = 'ELANOUS_INTAKE_DIR';
 const RUNS_FILE = 'pipeline-runs.jsonl';
 
 export function intakeDir(): string {
   const env = process.env[INTAKE_DIR_ENV];
   if (env && env.length > 0) return env;
-  return join(monadStateRoot(), 'intake');
+  return join(elanousStateRoot(), 'intake');
 }
 
 export function pipelineRunsPath(): string {

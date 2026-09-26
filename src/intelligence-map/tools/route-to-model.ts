@@ -60,7 +60,7 @@ export async function dispatchRouteToModel(
     ...(opts.env ? { env: opts.env } : {}),
   });
   // 제1원칙 관측 — recommender 결정을 logs.db 로 남긴다(종전엔 순수 반환만·조회 불가). 지속 LLM
-  // 관리 루프가 라우팅 추천 패턴을 `monad logs --category llm.router` 로 관측·자기인지할 수 있게.
+  // 관리 루프가 라우팅 추천 패턴을 `elanous logs --category llm.router` 로 관측·자기인지할 수 있게.
   debug.log('llm.router', 'route-to-model', {
     taskType: input.task_type,
     recommended: rec.recommended ?? '(none)',

@@ -1,7 +1,7 @@
 // 하니스 공간 쓰기 경계 활성화 (2026-07-25 · #4 self-implement 격리 누출 봉쇄)
 //
 // self-implement / dev-harness / solve-mission 자식은 격리 git worktree 안에서 부팅한다(cwd=worktree).
-// 자식은 getHarnessSpace() 로 "나는 격리 공간의 monad"임을 **자기인지**하는데(harness-space.ts SSOT), 그
+// 자식은 getHarnessSpace() 로 "나는 격리 공간의 elanous"임을 **자기인지**하는데(harness-space.ts SSOT), 그
 // 자기인지 위에 **쓰기 힐링/자기보호**를 쌓는다: 쓰기 경계를 worktree 로 못박아 정본 트리(main 체크아웃)
 // 절대경로 오염을 봉쇄한다.
 //
@@ -12,7 +12,7 @@
 //   boundaryReject)는 완비됐으나 **프로덕션 활성화 호출이 0건**이었다. 이 파일이 그 "0" 을 메운다.
 //
 // ── 경계 결정: 명시 마커(1순위·결정론) → isWorktree 자동추론(폴백·안전) ───────────────
-//   ⭐ 스포너(worktree 를 직접 만든 headless-monad-driver/seams)가 MONAD_HARNESS_BOUNDARY 에 worktree 절대
+//   ⭐ 스포너(worktree 를 직접 만든 headless-elanous-driver/seams)가 ELANOUS_HARNESS_BOUNDARY 에 worktree 절대
 //      경로를 실어 전파(§2a). 자식은 이 마커로 경계를 **결정론적으로** 활성 — cwd 자동추론의 모호성
 //      (worktree vs 정본 vs shadow-standalone 은 git 시그니처 동일)을 제거. cwd 가 정본 루트/하위여도 경계는
 //      마커(worktree)라 정본 write 가 거부된다(리뷰 must-fix).
@@ -22,14 +22,14 @@
 // ── 전 harness kind 커버리지·호환성 (리뷰 should-fix) ──────────────────────────────
 //   정책은 getHarnessSpace() 비-null 인 **모든** 하니스 kind(self-implement·dev-harness·solve-mission)에
 //   적용된다 — 셋 다 격리 worktree 공간이라 정본 오염을 똑같이 막아야 하므로 의도된 확대다. 스포너 배선:
-//     · self-implement : headless-monad-driver(PTY)·seams(spawnSync 폴백) 둘 다 MONAD_HARNESS_BOUNDARY 심음(결정론).
+//     · self-implement : headless-elanous-driver(PTY)·seams(spawnSync 폴백) 둘 다 ELANOUS_HARNESS_BOUNDARY 심음(결정론).
 //     · dev-harness    : self-implement 의 Execute seam 을 재사용 → 같은 마커 경로(무추가 배선).
 //     · solve-mission  : 별도 executor 스폰이 마커를 안 심어도, cwd 가 진짜 linked worktree 면 **자동추론 폴백**이
 //                        경계를 확립(마커 無 → isWorktree 감지). 정본/standalone 부팅이면 미개입(무회귀).
 //   무회귀 불변식: 비-하니스 프로세스(운영 데몬·CLI)는 getHarnessSpace()=null → 전 함수 즉시 no-op.
 //
 // ── 관측·자기인지·힐링 (제1원칙) ──────────────────────────────────────────────────
-//   관측 : debug.log('harness.boundary', 'activate'|'main-tree-reject'|'anomaly.*', …) — monad logs --category harness.boundary
+//   관측 : debug.log('harness.boundary', 'activate'|'main-tree-reject'|'anomaly.*', …) — elanous logs --category harness.boundary
 //   자기인지: getHarnessSpace()/명시 마커 — 별도 감지 로직 최소화(스포너가 진실 전달).
 //   힐링 : boot 경계 자동 활성(b) + boundary 해제 회귀에도 정본 write 거부(c·방어심화).
 
@@ -351,7 +351,7 @@ const READ_ONLY_SHELL_COMMANDS = new Set([
  *     (대화형 셸·`bash script.sh`)는 스크립트 내용을 못 보므로 미결정이다. */
 const SHELL_INTERPRETERS = new Set(['bash', 'sh', 'zsh']);
 /** ⛔⭐⭐⭐ 런타임 인터프리터 — `bun`·`node`. 이들이 미결정으로 떨어지면 **자식이 자기 검증을
- *  하나도 못 한다**: `bun test <file>` · `bun bin/monad.mjs self typecheck` · `bun run …` 가
+ *  하나도 못 한다**: `bun test <file>` · `bun bin/elanous.mjs self typecheck` · `bun run …` 가
  *  전부 fail-closed 로 막힌다(2026-08-02 실측 — 자식이 *"격리 셸의 쓰기-대상 판정이 모든 Bash
  *  호출을 실행 전 차단하고 있어"* 라 적고 세 런이 연속 abandoned 됐다).
  *  ⇒ 판정 축은 **새로 만들지 않는다** — 아래 `-c` 없는 셸이 이미 같은 문제를 풀어 놨다:
@@ -506,9 +506,9 @@ export type HarnessCommandWriteTargets = KnownCommandTargets | UnknownCommandTar
 const REJECT_HINT_COMMANDS = ['cat', 'grep', 'rg', 'ls', 'head', 'tail', 'wc', 'diff', 'jq', 'printf'] as const;
 
 /** Returns the repository-specific verification hint only when this child worktree provides its entrypoint. */
-function monadTypecheckHint(boundary: string): string | null {
+function elanousTypecheckHint(boundary: string): string | null {
   try {
-    return existsSync(join(boundary, 'bin', 'monad.mjs')) ? 'bun bin/monad.mjs self typecheck' : null;
+    return existsSync(join(boundary, 'bin', 'elanous.mjs')) ? 'bun bin/elanous.mjs self typecheck' : null;
   } catch {
     return null;
   }
@@ -531,7 +531,7 @@ export function formatUnknownCommandWriteReject(
 ): string {
   const allowed = `허용된 읽기 명령 예: ${REJECT_HINT_COMMANDS.join(' · ')} (총 ${READ_ONLY_SHELL_COMMANDS.size}개)`;
   const git = `git 조회 하위 명령도 허용: ${['status', 'diff', 'log', 'show', 'ls-files'].join(' · ')} (총 ${READ_ONLY_GIT_SUBCOMMANDS.size}개)`;
-  const runtimeExamples = ['bun test <파일>', 'bun run <스크립트>', monadTypecheckHint(boundary)].filter((hint): hint is string => hint !== null);
+  const runtimeExamples = ['bun test <파일>', 'bun run <스크립트>', elanousTypecheckHint(boundary)].filter((hint): hint is string => hint !== null);
   const runtime = `검증은 ${[...RUNTIME_INTERPRETERS].join('·')} 로 직접 실행하라 — 예: ${runtimeExamples.join(' · ')}`;
   // ⛔⭐ 경계 «경로»는 어느 갈래에서도 빠지면 안 된다 — 자식이 *"그럼 어디에는 쓸 수 있나"* 를 잃는다.
   //   (초판 수리에서 이걸 떨어뜨렸고 회귀가 잡았다 — `길을 준다` 를 하다 길의 «주소»를 지운 셈이다.)
@@ -554,7 +554,7 @@ export function formatUnknownCommandWriteReject(
       ].join(' ')
       : unknown.reason.startsWith('런타임 해석기의')
         // ⭐ 24h 경계 거부 중 가장 큰 칸(`bun -e` 등 · 2026-09-24 실측 39/223)인데 «길»이 없었다 — 파일로 쓰면 판정된다.
-        ? `격리 worktree(${boundary}) 내부의 판정 가능한 경로만 쓰라. 인라인 코드(\`-e\`·\`--eval\` 등)는 판정할 수 없다 — 그 코드를 worktree 안의 파일로 쓰고(monad 저장소면 git 이 무시하는 \`.monad-test/scratch/<이름>.ts\`) \`bun <그 파일>\` 로 실행하라.`
+        ? `격리 worktree(${boundary}) 내부의 판정 가능한 경로만 쓰라. 인라인 코드(\`-e\`·\`--eval\` 등)는 판정할 수 없다 — 그 코드를 worktree 안의 파일로 쓰고(elanous 저장소면 git 이 무시하는 \`.elanous-test/scratch/<이름>.ts\`) \`bun <그 파일>\` 로 실행하라.`
         : `격리 worktree(${boundary}) 내부의 판정 가능한 경로만 쓰라.`;
   return `격리 경계 쓰기 판정 거부: ${unknown.reason}. ${runnableForm}`;
 }

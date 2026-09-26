@@ -1,4 +1,4 @@
-// ── `monad leader` CLI (P1 · 2026-07-26) ──────────────────────────────────
+// ── `elanous leader` CLI (P1 · 2026-07-26) ──────────────────────────────────
 //
 // `status` — 권위(leader.json) ⊗ 관측 축(bun link · launchd plist · 31415 실프로세스 · self)
 //            대조. READ-ONLY. `running` 축은 lsof 라 여기서만 조회(부팅 경로 무영향).
@@ -7,7 +7,7 @@
 //
 // ⚠️ `claim` 은 outward-facing(머신 전역 운영 지정) → 기본 dry-run, `--yes` 로만 실행.
 // ⚠️ **launchd plist 는 이 명령이 옮기지 않는다** — 운영 데몬 재기동을 유발하는 별개 행위이고,
-//    미구현을 플래그로 약속하지 않기 위해 리더 트리에서 `monad nexus install` 로 분리한다.
+//    미구현을 플래그로 약속하지 않기 위해 리더 트리에서 `elanous nexus install` 로 분리한다.
 //    (status/claim 이 어긋남을 감지하면 그 명령을 안내한다.)
 
 import type { Command } from 'commander';
@@ -71,12 +71,12 @@ export function renderLeaderStatus(
   L.push('');
   // ⚠️ '정합' 과 '확인 불가' 를 섞지 않는다 — 축이 없어서 조용한 것과 일치해서 조용한 것은 다르다.
   if (!axes.coherent) {
-    L.push(`  ⚠️ 드리프트(${axes.drift.join(', ')}) — 'monad leader claim --yes' 로 권위+bun link 이동`);
-    if (axes.drift.includes('launchd')) L.push("     launchd 는 별도: 리더 트리에서 'monad nexus install' (데몬 재기동)");
+    L.push(`  ⚠️ 드리프트(${axes.drift.join(', ')}) — 'elanous leader claim --yes' 로 권위+bun link 이동`);
+    if (axes.drift.includes('launchd')) L.push("     launchd 는 별도: 리더 트리에서 'elanous nexus install' (데몬 재기동)");
   } else if (axes.unresolved.length > 0) {
     L.push(`  ⚠️ 해석 불가 축: ${axes.unresolved.join(', ')} — 나머지는 일치하나 **정합을 확인할 수 없습니다**.`);
   } else if (!axes.authority) {
-    L.push('  · 권위 미지정 — 리더 트리에서 부팅하거나 `monad leader claim --yes` 로 지정하세요.');
+    L.push('  · 권위 미지정 — 리더 트리에서 부팅하거나 `elanous leader claim --yes` 로 지정하세요.');
   } else {
     const installedNames = Object.keys(installedAxes);
     L.push(installedNames.length > 0
@@ -138,12 +138,12 @@ export function registerLeaderCommands(program: Command, deps: LeaderCliDeps = {
       const plan: string[] = [
         `  1) bun link    → ${target}  (먼저 — 실패하면 권위를 기록하지 않는다)`,
         `  2) leader.json → ${target}`,
-        `  ·  launchd plist는 이 명령이 옮기지 않습니다 → 리더 트리에서 'monad nexus install' (데몬 재기동)`,
+        `  ·  launchd plist는 이 명령이 옮기지 않습니다 → 리더 트리에서 'elanous nexus install' (데몬 재기동)`,
       ];
       if (!o.yes) {
         d.out.log(`[dry-run] 운영 리더 승격 계획:\n${plan.join('\n')}\n\n적용하려면 --yes 를 붙이세요.`);
         if (axes.launchd && axes.launchd !== target) {
-          d.out.error(`⚠️ launchd 는 여전히 ${axes.launchd} — 데몬은 옛 트리 코드로 뜹니다. 리더 트리에서 'monad nexus install' 을 실행하세요.`);
+          d.out.error(`⚠️ launchd 는 여전히 ${axes.launchd} — 데몬은 옛 트리 코드로 뜹니다. 리더 트리에서 'elanous nexus install' 을 실행하세요.`);
         }
         return;
       }
@@ -164,7 +164,7 @@ export function registerLeaderCommands(program: Command, deps: LeaderCliDeps = {
       d.write(rec);
       d.out.log(`✓ leader.json → ${target}`);
       if (axes.launchd && axes.launchd !== target) {
-        d.out.error(`⚠️ launchd 는 여전히 ${axes.launchd} — 데몬은 옛 트리 코드로 뜹니다. 이 트리에서 'monad nexus install' 을 실행하세요.`);
+        d.out.error(`⚠️ launchd 는 여전히 ${axes.launchd} — 데몬은 옛 트리 코드로 뜹니다. 이 트리에서 'elanous nexus install' 을 실행하세요.`);
       }
     });
 }

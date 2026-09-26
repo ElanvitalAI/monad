@@ -94,7 +94,7 @@ describe('SignalPool — 적재/dedup/조회', () => {
   });
 });
 
-describe('classifySeverityRules — 심각도(모나드 교정 반영)', () => {
+describe('classifySeverityRules — 심각도(엘라누스 교정 반영)', () => {
   test('단일 커뮤니티/SNS → 상한 S1(직접 매매신호 아님)', () => {
     expect(classifySeverityRules(sig({ source: 'community' }), { dedupCount: 1 }).severity).toBe('S1');
     expect(classifySeverityRules(sig({ source: 'sns' }), { dedupCount: 1 }).severity).toBe('S1');
@@ -111,7 +111,7 @@ describe('classifySeverityRules — 심각도(모나드 교정 반영)', () => {
     expect(classifySeverityRules(sig({ source: 'community' }), { dedupCount: 10, communitySurgeDedup: 10 }).severity).toBe('S3');
   });
   test('★ 커뮤니티 잡담은 키워드보다 상한 우선(규제/급락 단어여도 S1)', () => {
-    // 모나드 교정 — 단일 커뮤니티 출처는 규제/제재/급락 단어만으로 S3/S4 취급 금지.
+    // 엘라누스 교정 — 단일 커뮤니티 출처는 규제/제재/급락 단어만으로 S3/S4 취급 금지.
     expect(classifySeverityRules(sig({ source: 'community', asset: '005930', raw: '규제 심하다 급락각' }), { dedupCount: 1 }).severity).toBe('S1');
   });
   test('공시/실적(신뢰 소스) → S3', () => {

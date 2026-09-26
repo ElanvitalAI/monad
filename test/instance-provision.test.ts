@@ -1,7 +1,7 @@
 // 파생 우주 물질화 (2026-07-27) — 3층 스위치가 켜진 뒤 self-dev 가 한 건도 완주하지 못한
 // 회귀의 근본 수리를 고정한다.
 //
-// 사슬: 3층 ON → 자식이 `<worktree>/.monad-test` 로 파생 → 갓 만든 워크트리라 그 우주가
+// 사슬: 3층 ON → 자식이 `<worktree>/.elanous-test` 로 파생 → 갓 만든 워크트리라 그 우주가
 //       비어 있음 → needsOnboarding 참 → 헤드리스 자식이 대화형 마법사를 띄움 → 툴콜 0 ·
 //       1200초 타임아웃 · aborted.
 //
@@ -58,24 +58,24 @@ describe('provisionDerivedUniverse — 자식이 태어날 우주를 채운다',
     const home = mkdtempSync(join(tmpdir(), 'prov-home-'));
     const tree = mkdtempSync(join(tmpdir(), 'prov-tree-'));
     try {
-      mkdirSync(join(home, '.monad'));
+      mkdirSync(join(home, '.elanous'));
       // 운영 config — 물질화의 원본. provider 가 실려야 자식이 온보딩에 안 걸린다.
-      writeFileSync(join(home, '.monad', 'config.json'), JSON.stringify({
+      writeFileSync(join(home, '.elanous', 'config.json'), JSON.stringify({
         instance: { treeDerivedTest: opts.switchOn },
         onboarding: { completed: true },
         llm: { provider: 'openai-codex' },
       }));
-      writeFileSync(join(home, '.monad', 'leader.json'), JSON.stringify({ tree: '/some/other/leader', promotedAt: 'x' }));
+      writeFileSync(join(home, '.elanous', 'leader.json'), JSON.stringify({ tree: '/some/other/leader', promotedAt: 'x' }));
       // 부속 파일 — 물질화가 자격까지 실어야 자식이 인증할 수 있다.
-      writeFileSync(join(home, '.monad', 'auth.json'), JSON.stringify({ token: 'fake' }));
+      writeFileSync(join(home, '.elanous', 'auth.json'), JSON.stringify({ token: 'fake' }));
       mkdirSync(join(tree, '.git'));   // findTreeRoot 가 트리로 인정하게
       if (opts.blockRootAsFile) {
         // 파생 루트를 **파일**로 점유 — 그 밑에 디렉터리를 못 만드니 복사가 반드시 깨진다.
-        writeFileSync(join(tree, '.monad-test'), 'not a directory');
+        writeFileSync(join(tree, '.elanous-test'), 'not a directory');
       }
       if (opts.preExisting) {
-        mkdirSync(join(tree, '.monad-test'));
-        writeFileSync(join(tree, '.monad-test', 'config.json'), JSON.stringify({ marker: 'pre-existing' }));
+        mkdirSync(join(tree, '.elanous-test'));
+        writeFileSync(join(tree, '.elanous-test', 'config.json'), JSON.stringify({ marker: 'pre-existing' }));
       }
       // ★ 온보딩 회피의 **실제 조건**은 provider 가 아니라 needsOnboarding 이다(리뷰 must-fix).
       //   sync 가 onboarding.completed 를 떨어뜨리면 provider 가 실려도 자식은 마법사에 걸린다.
@@ -99,13 +99,13 @@ describe('provisionDerivedUniverse — 자식이 태어날 우주를 채운다',
           provider:parsed&&parsed.llm&&parsed.llm.provider,
           needsOnboarding:onb,
           auxCopied: !!r.root && existsSync((r.root||'')+'/auth.json'),
-          derivedUntouched: !existsSync('${tree}/.monad-test'),
+          derivedUntouched: !existsSync('${tree}/.elanous-test'),
           threw, error:r.error,
         }));
       `;
       const r = spawnSync('bun', ['-e', script], {
         encoding: 'utf8', timeout: 60_000, cwd: tree,
-        env: { ...process.env, HOME: home, MONAD_STATE_DIR: '', MONAD_CONFIG_DIR: '', MONAD_NEXUS_DIR: '' },
+        env: { ...process.env, HOME: home, ELANOUS_STATE_DIR: '', ELANOUS_CONFIG_DIR: '', ELANOUS_NEXUS_DIR: '' },
       });
       return parseChildProvisionResult(r);
     } finally {
@@ -129,7 +129,7 @@ describe('provisionDerivedUniverse — 자식이 태어날 우주를 채운다',
   test('★빈 파생 우주를 물질화한다 — needsOnboarding 이 실제로 false 가 된다', async () => {
     const out = await run({ switchOn: true });
     expect(out.outcome).toBe('provisioned');
-    expect(out.root?.endsWith('.monad-test')).toBe(true);
+    expect(out.root?.endsWith('.elanous-test')).toBe(true);
     expect(out.hasConfig).toBe(true);            // ★종전엔 config.json 이 아예 없었다
     // ★이게 이 트랙의 진짜 계약이다 — 자식이 죽던 조건은 provider 부재가 아니라
     //   needsOnboarding(= !onboarding.completed) 이었다. sync 가 그 필드를 떨어뜨리면
@@ -158,7 +158,7 @@ describe('provisionDerivedUniverse — 자식이 태어날 우주를 채운다',
   // fail-open 계약(리뷰 should-fix) — 물질화가 깨져도 **던지지 않는다**. 부모가 자식의 우주
   // 때문에 죽으면 self-dev 가 통째로 멈춘다(이 트랙이 고치려던 바로 그 증상).
   test('★물질화가 깨져도 던지지 않고 failed 로 돌려준다 (fail-open)', async () => {
-    // `.monad-test` 를 **파일**로 만들어 두면 그 밑에 디렉터리를 못 만든다 = 복사 실패.
+    // `.elanous-test` 를 **파일**로 만들어 두면 그 밑에 디렉터리를 못 만든다 = 복사 실패.
     const out = await run({ switchOn: true, blockRootAsFile: true });
     expect(out.outcome).toBe('failed');
     expect(out.threw).toBeFalsy();          // ★던졌다면 스폰이 막힌다
@@ -182,31 +182,31 @@ describe('provisionDerivedUniverse — 모든 결과를 관측한다', () => {
     const home = mkdtempSync(join(tmpdir(), 'provision-observation-home-'));
     const tree = mkdtempSync(join(tmpdir(), 'provision-observation-tree-'));
     const previousHome = process.env.HOME;
-    const previousStateDir = process.env.MONAD_STATE_DIR;
-    const previousConfigDir = process.env.MONAD_CONFIG_DIR;
-    const previousNexusDir = process.env.MONAD_NEXUS_DIR;
+    const previousStateDir = process.env.ELANOUS_STATE_DIR;
+    const previousConfigDir = process.env.ELANOUS_CONFIG_DIR;
+    const previousNexusDir = process.env.ELANOUS_NEXUS_DIR;
     try {
-      mkdirSync(join(home, '.monad'));
-      writeFileSync(join(home, '.monad', 'config.json'), JSON.stringify({
+      mkdirSync(join(home, '.elanous'));
+      writeFileSync(join(home, '.elanous', 'config.json'), JSON.stringify({
         instance: { treeDerivedTest: switchOn },
         onboarding: { completed: true },
         llm: { provider: 'openai-codex' },
       }));
-      writeFileSync(join(home, '.monad', 'leader.json'), JSON.stringify({ tree: '/other', promotedAt: 'x' }));
-      writeFileSync(join(home, '.monad', 'auth.json'), JSON.stringify({ token: 'fake' }));
+      writeFileSync(join(home, '.elanous', 'leader.json'), JSON.stringify({ tree: '/other', promotedAt: 'x' }));
+      writeFileSync(join(home, '.elanous', 'auth.json'), JSON.stringify({ token: 'fake' }));
       mkdirSync(join(tree, '.git'));
       process.env.HOME = home;
-      delete process.env.MONAD_STATE_DIR;
-      delete process.env.MONAD_CONFIG_DIR;
-      delete process.env.MONAD_NEXUS_DIR;
+      delete process.env.ELANOUS_STATE_DIR;
+      delete process.env.ELANOUS_CONFIG_DIR;
+      delete process.env.ELANOUS_NEXUS_DIR;
       setTreeDerivedTestForTesting(switchOn);
       return run(tree);
     } finally {
       setTreeDerivedTestForTesting(undefined);
       if (previousHome === undefined) delete process.env.HOME; else process.env.HOME = previousHome;
-      if (previousStateDir === undefined) delete process.env.MONAD_STATE_DIR; else process.env.MONAD_STATE_DIR = previousStateDir;
-      if (previousConfigDir === undefined) delete process.env.MONAD_CONFIG_DIR; else process.env.MONAD_CONFIG_DIR = previousConfigDir;
-      if (previousNexusDir === undefined) delete process.env.MONAD_NEXUS_DIR; else process.env.MONAD_NEXUS_DIR = previousNexusDir;
+      if (previousStateDir === undefined) delete process.env.ELANOUS_STATE_DIR; else process.env.ELANOUS_STATE_DIR = previousStateDir;
+      if (previousConfigDir === undefined) delete process.env.ELANOUS_CONFIG_DIR; else process.env.ELANOUS_CONFIG_DIR = previousConfigDir;
+      if (previousNexusDir === undefined) delete process.env.ELANOUS_NEXUS_DIR; else process.env.ELANOUS_NEXUS_DIR = previousNexusDir;
       rmSync(home, { recursive: true, force: true });
       rmSync(tree, { recursive: true, force: true });
     }
@@ -226,7 +226,7 @@ describe('provisionDerivedUniverse — 모든 결과를 관측한다', () => {
   test('ls-files 실패의 비어 있지 않은 stdout은 추적 경로로 소비하지 않는다', () => {
     const failed = withProvisionFixture(true, tree => {
       setGitCommandRunnerForTesting((_cwd, args) => args[0] === 'ls-files'
-        ? { status: 17, stdout: '.monad-test/auth.json\n', stderr: 'ls-files failed' }
+        ? { status: 17, stdout: '.elanous-test/auth.json\n', stderr: 'ls-files failed' }
         : { status: 0, stdout: '', stderr: '' });
       try {
         return provisionDerivedUniverse(tree);
@@ -238,7 +238,7 @@ describe('provisionDerivedUniverse — 모든 결과를 관측한다', () => {
 
     const succeeded = withProvisionFixture(true, tree => {
       setGitCommandRunnerForTesting((_cwd, args) => args[0] === 'ls-files'
-        ? { status: 0, stdout: '.monad-test/auth.json\n', stderr: '' }
+        ? { status: 0, stdout: '.elanous-test/auth.json\n', stderr: '' }
         : { status: 0, stdout: '', stderr: '' });
       try {
         return provisionDerivedUniverse(tree);
@@ -249,7 +249,7 @@ describe('provisionDerivedUniverse — 모든 결과를 관측한다', () => {
     expect(succeeded).toEqual({
       outcome: 'failed',
       root: expect.any(String),
-      error: expect.stringContaining('.monad-test/auth.json'),
+      error: expect.stringContaining('.elanous-test/auth.json'),
     });
   });
 
@@ -285,15 +285,15 @@ describe('provisionDerivedUniverse — 모든 결과를 관측한다', () => {
     }]]);
 
     const materialized = withProvisionFixture(true, tree => captureObservation(() => provisionDerivedUniverse(tree)));
-    expect(materialized.result).toEqual({ outcome: 'provisioned', root: join((materialized.calls[0][2] as { cwd: string }).cwd, '.monad-test') });
+    expect(materialized.result).toEqual({ outcome: 'provisioned', root: join((materialized.calls[0][2] as { cwd: string }).cwd, '.elanous-test') });
     expect(materialized.calls).toEqual([['instance.provision', 'materialized', {
       cwd: expect.any(String), root: expect.any(String), copied: expect.any(Array), skippedMissing: expect.any(Array), telegramMode: expect.any(String),
       why: '빈 파생 우주 — 물질화 없이는 자식이 온보딩 마법사에 걸려 타임아웃한다',
     }]]);
 
     const already = withProvisionFixture(true, tree => {
-      mkdirSync(join(tree, '.monad-test'));
-      writeFileSync(join(tree, '.monad-test', 'config.json'), '{}');
+      mkdirSync(join(tree, '.elanous-test'));
+      writeFileSync(join(tree, '.elanous-test', 'config.json'), '{}');
       return captureObservation(() => provisionDerivedUniverse(tree));
     });
     expect(already.result).toEqual({ outcome: 'already', root: expect.any(String) });
@@ -301,7 +301,7 @@ describe('provisionDerivedUniverse — 모든 결과를 관측한다', () => {
 
     const unsafe = withProvisionFixture(true, tree => {
       const outside = mkdtempSync(join(tmpdir(), 'provision-observation-outside-'));
-      symlinkSync(outside, join(tree, '.monad-test'));
+      symlinkSync(outside, join(tree, '.elanous-test'));
       try {
         return captureObservation(() => provisionDerivedUniverse(tree));
       } finally {
@@ -316,8 +316,8 @@ describe('provisionDerivedUniverse — 모든 결과를 관측한다', () => {
     }, { level: 'error' }]]);
 
     const sealFailed = withProvisionFixture(true, tree => {
-      mkdirSync(join(tree, '.monad-test'));
-      mkdirSync(join(tree, '.monad-test', '.gitignore'));
+      mkdirSync(join(tree, '.elanous-test'));
+      mkdirSync(join(tree, '.elanous-test', '.gitignore'));
       return captureObservation(() => provisionDerivedUniverse(tree));
     });
     expect(sealFailed.result).toEqual({
@@ -330,9 +330,9 @@ describe('provisionDerivedUniverse — 모든 결과를 관측한다', () => {
     }, { level: 'error' }]]);
 
     const failed = withProvisionFixture(true, tree => {
-      mkdirSync(join(tree, '.monad-test'));
-      writeFileSync(join(tree, '.monad-test', '.gitignore'), '*\n');
-      mkdirSync(join(tree, '.monad-test', 'auth.json'));
+      mkdirSync(join(tree, '.elanous-test'));
+      writeFileSync(join(tree, '.elanous-test', '.gitignore'), '*\n');
+      mkdirSync(join(tree, '.elanous-test', 'auth.json'));
       return captureObservation(() => provisionDerivedUniverse(tree));
     });
     expect(failed.result).toEqual({ outcome: 'failed', root: expect.any(String), error: expect.any(String) });
@@ -347,7 +347,7 @@ describe('provisionDerivedUniverse — 모든 결과를 관측한다', () => {
 //   **직접** 부른다. 그러니 self-implement seam 의 호출이 삭제되거나 spawn **뒤로** 밀려도
 //   전부 통과한다(무보호). 이 트랙의 실제 계약은 *"자식이 태어나기 전에 우주가 있다"* 이므로,
 //   문자열 검사가 아니라 **자식이 관측한 사실**로 고정한다:
-//     stub `bin/monad.mjs` 가 자기 실행 시점에 `<tree>/.monad-test/config.json` 의 존재를
+//     stub `bin/elanous.mjs` 가 자기 실행 시점에 `<tree>/.elanous-test/config.json` 의 존재를
 //     기록 → 한 줄이라도 false 면 순서가 깨진 것이다(= spawn 후 물질화 = 회귀 재발).
 describe('self-implement seam 배선 — 자식은 이미 채워진 우주에서 태어난다', () => {
   test('★stub 자식이 spawn 시점에 config 를 본다 (호출 삭제·순서 역전 동시 차단)', async () => {
@@ -358,14 +358,14 @@ describe('self-implement seam 배선 — 자식은 이미 채워진 우주에서
     const tree = mkdtempSync(join(tmpdir(), 'wire-tree-'));
     const stub = mkdtempSync(join(tmpdir(), 'wire-bin-'));
     try {
-      mkdirSync(join(home, '.monad'));
-      writeFileSync(join(home, '.monad', 'config.json'), JSON.stringify({
+      mkdirSync(join(home, '.elanous'));
+      writeFileSync(join(home, '.elanous', 'config.json'), JSON.stringify({
         instance: { treeDerivedTest: true },
         onboarding: { completed: true },
         llm: { provider: 'openai-codex' },
       }));
-      writeFileSync(join(home, '.monad', 'leader.json'), JSON.stringify({ tree: '/some/other/leader', promotedAt: 'x' }));
-      writeFileSync(join(home, '.monad', 'auth.json'), JSON.stringify({ token: 'fake' }));
+      writeFileSync(join(home, '.elanous', 'leader.json'), JSON.stringify({ tree: '/some/other/leader', promotedAt: 'x' }));
+      writeFileSync(join(home, '.elanous', 'auth.json'), JSON.stringify({ token: 'fake' }));
       // ⚠️ PTY 전송은 `process.env` 가 아니라 **부팅 시 캡처한 로그인쉘 env** 를 쓴다(buildPtyEnv·F3).
       //    HOME 을 격리했으므로 그 쉘은 실제 사용자의 PATH 를 못 본다 → `command not found: bun`.
       //    격리 HOME 의 쉘 초기화 파일에 현재 런타임 경로를 심어 전송과 무관하게 자식이 뜨게 한다.
@@ -377,22 +377,22 @@ describe('self-implement seam 배선 — 자식은 이미 채워진 우주에서
       const marker = join(stub, 'observed.jsonl');
       // stub 코딩에이전트 — 아무것도 안 하고, **자기가 본 우주 상태만** 남기고 즉시 끝난다.
       mkdirSync(join(stub, 'bin'));
-      writeFileSync(join(stub, 'bin', 'monad.mjs'),
+      writeFileSync(join(stub, 'bin', 'elanous.mjs'),
         'import {existsSync,appendFileSync} from "node:fs";\n'
         + `appendFileSync(${JSON.stringify(marker)}, JSON.stringify({`
-        + `seen: existsSync(${JSON.stringify(join(tree, '.monad-test', 'config.json'))})}) + "\\n");\n`
+        + `seen: existsSync(${JSON.stringify(join(tree, '.elanous-test', 'config.json'))})}) + "\\n");\n`
         + 'process.exit(0);\n');
 
       const script = `
         const {defaultSeams}=require('${process.cwd()}/src/self-implement/seams.ts');
-        const seams=defaultSeams({monadBinRoot:'${stub}', implementMaxWaitSec:3});
+        const seams=defaultSeams({elanousBinRoot:'${stub}', implementMaxWaitSec:3});
         seams.implement({cwd:'${tree}', feature:'noop'}).then(()=>console.log('DONE'),e=>console.log('DONE:'+e));
       `;
       spawnSync('bun', ['-e', script], {
         encoding: 'utf8', timeout: 150_000, cwd: tree,
         env: {
           ...process.env, HOME: home,
-          MONAD_STATE_DIR: '', MONAD_CONFIG_DIR: '', MONAD_NEXUS_DIR: '', MONAD_NEST_DEPTH: '0',
+          ELANOUS_STATE_DIR: '', ELANOUS_CONFIG_DIR: '', ELANOUS_NEXUS_DIR: '', ELANOUS_NEST_DEPTH: '0',
         },
       });
 
@@ -410,12 +410,12 @@ describe('self-implement seam 배선 — 자식은 이미 채워진 우주에서
   }, 180_000);
 });
 
-// ★ 위 배선 테스트가 잡아낸 결함(2026-07-27) — 물질화가 워크트리 안에 `.monad-test/` 를 남기는데
+// ★ 위 배선 테스트가 잡아낸 결함(2026-07-27) — 물질화가 워크트리 안에 `.elanous-test/` 를 남기는데
 //   self-build 성공 판정이 artifact-first(`changed && !timedOut`)라, 자식이 **툴콜 0 으로 아무것도
 //   안 해도** 우리가 깐 디렉터리 때문에 `ok:true` 가 됐다(합성 repo 실측: `변경: yes · 툴콜 0`).
-//   monad 레포는 .gitignore 의 `/.monad-test/` 가 우연히 가려주지만 **외부 repo 개발 경로엔 그 줄이 없다**.
+//   elanous 레포는 .gitignore 의 `/.elanous-test/` 가 우연히 가려주지만 **외부 repo 개발 경로엔 그 줄이 없다**.
 describe('worktreeHasChanges — 우리가 흘린 것을 자식 산출물로 세지 않는다', () => {
-  test('★.monad-test 만 있으면 변경 없음 · 실제 파일이 생기면 변경 있음', async () => {
+  test('★.elanous-test 만 있으면 변경 없음 · 실제 파일이 생기면 변경 있음', async () => {
     const { spawnSync } = await import('node:child_process');
     const { mkdtempSync, mkdirSync, writeFileSync, rmSync } = await import('node:fs');
     const { tmpdir } = await import('node:os');
@@ -425,8 +425,8 @@ describe('worktreeHasChanges — 우리가 흘린 것을 자식 산출물로 세
       const { worktreeHasChanges, changedFiles } = await import('../src/self-implement/seams.js');
       expect(worktreeHasChanges(repo)).toBe(false);          // 빈 repo — 당연히 없다
       // 물질화가 남긴 것만 있는 상태 = 자식은 아무것도 안 했다.
-      mkdirSync(join(repo, '.monad-test'));
-      writeFileSync(join(repo, '.monad-test', 'config.json'), '{}');
+      mkdirSync(join(repo, '.elanous-test'));
+      writeFileSync(join(repo, '.elanous-test', 'config.json'), '{}');
       expect(worktreeHasChanges(repo)).toBe(false);          // ★종전엔 true(공수표 성공)
       expect(changedFiles(repo)).toEqual([]);                // 리뷰어도 이걸 변경으로 보면 안 된다
       // 자식이 실제로 뭔가 쓰면 그건 변경이다 — 배제가 과하면 진짜 산출물을 놓친다.
@@ -444,21 +444,21 @@ describe('worktreeHasChanges — 우리가 흘린 것을 자식 산출물로 세
 //    self-build 자식은 스스로 커밋하는 에이전트이므로 `git add -A` 한 번이면 남의 레포 히스토리에
 //    자격이 박힌다. 그래서 status 가 아니라 **staged·committed 까지** 단정한다.
 describe('물질화 봉인 — 자식의 git add -A 로도 자격이 새지 않는다', () => {
-  test('★add -A → commit 해도 .monad-test 는 한 파일도 추적되지 않는다', async () => {
+  test('★add -A → commit 해도 .elanous-test 는 한 파일도 추적되지 않는다', async () => {
     const { spawnSync } = await import('node:child_process');
     const { mkdtempSync, mkdirSync, writeFileSync, rmSync } = await import('node:fs');
     const { tmpdir } = await import('node:os');
     const home = mkdtempSync(join(tmpdir(), 'seal-home-'));
     const tree = mkdtempSync(join(tmpdir(), 'seal-tree-'));
     try {
-      mkdirSync(join(home, '.monad'));
-      writeFileSync(join(home, '.monad', 'config.json'), JSON.stringify({
+      mkdirSync(join(home, '.elanous'));
+      writeFileSync(join(home, '.elanous', 'config.json'), JSON.stringify({
         instance: { treeDerivedTest: true }, onboarding: { completed: true }, llm: { provider: 'openai-codex' },
       }));
-      writeFileSync(join(home, '.monad', 'leader.json'), JSON.stringify({ tree: '/other', promotedAt: 'x' }));
-      writeFileSync(join(home, '.monad', 'auth.json'), JSON.stringify({ token: 'SUPER-SECRET' }));
+      writeFileSync(join(home, '.elanous', 'leader.json'), JSON.stringify({ tree: '/other', promotedAt: 'x' }));
+      writeFileSync(join(home, '.elanous', 'auth.json'), JSON.stringify({ token: 'SUPER-SECRET' }));
       spawnSync('git', ['init', '-q'], { cwd: tree });
-      // ⚠️ 외부 repo 를 모사한다 — `.gitignore` 에 `/.monad-test/` 가 **없다**(monad 레포만 그 줄이 있다).
+      // ⚠️ 외부 repo 를 모사한다 — `.gitignore` 에 `/.elanous-test/` 가 **없다**(elanous 레포만 그 줄이 있다).
       writeFileSync(join(tree, 'README.md'), '# external repo\n');
 
       const script = `
@@ -467,20 +467,20 @@ describe('물질화 봉인 — 자식의 git add -A 로도 자격이 새지 않�
       `;
       spawnSync('bun', ['-e', script], {
         encoding: 'utf8', timeout: 60_000, cwd: tree,
-        env: { ...process.env, HOME: home, MONAD_STATE_DIR: '', MONAD_CONFIG_DIR: '', MONAD_NEXUS_DIR: '' },
+        env: { ...process.env, HOME: home, ELANOUS_STATE_DIR: '', ELANOUS_CONFIG_DIR: '', ELANOUS_NEXUS_DIR: '' },
       });
 
       // 자식이 하는 짓 그대로 — 전부 담고 커밋한다.
       spawnSync('git', ['add', '-A'], { cwd: tree });
       const staged = spawnSync('git', ['diff', '--cached', '--name-only'], { cwd: tree, encoding: 'utf8' }).stdout ?? '';
       expect(staged).toContain('README.md');            // 정상 파일은 담긴다(봉인이 과하지 않다)
-      expect(staged).not.toMatch(/\.monad-test/);       // ★자격은 담기지 않는다
+      expect(staged).not.toMatch(/\.elanous-test/);       // ★자격은 담기지 않는다
       spawnSync('git', ['-c', 'user.email=t@t', '-c', 'user.name=t', 'commit', '-q', '-m', 'x'], { cwd: tree });
       const tracked = spawnSync('git', ['ls-files'], { cwd: tree, encoding: 'utf8' }).stdout ?? '';
-      expect(tracked).not.toMatch(/\.monad-test/);      // ★히스토리에도 없다
+      expect(tracked).not.toMatch(/\.elanous-test/);      // ★히스토리에도 없다
       // 그리고 봉인은 자기 자신도 숨긴다 — 남의 레포 status 에 우리 파일이 뜨면 안 된다.
       const st = spawnSync('git', ['status', '--porcelain'], { cwd: tree, encoding: 'utf8' }).stdout ?? '';
-      expect(st).not.toMatch(/\.monad-test/);
+      expect(st).not.toMatch(/\.elanous-test/);
     } finally {
       rmSync(home, { recursive: true, force: true });
       rmSync(tree, { recursive: true, force: true });
@@ -488,7 +488,7 @@ describe('물질화 봉인 — 자식의 git add -A 로도 자격이 새지 않�
   }, 90_000);
 
   // ★ 3R 리뷰 must-fix — 존재 확인만으로 봉인을 인정하면 **구버전 우주가 그대로 샌다**.
-  //   봉인 이전 버전이 깐 `.monad-test` 에는 `.gitignore` 가 없거나(→ 신규 생성) 있어도 `*` 가
+  //   봉인 이전 버전이 깐 `.elanous-test` 에는 `.gitignore` 가 없거나(→ 신규 생성) 있어도 `*` 가
   //   없을 수 있고, `*` 뒤에 되살림(`!auth.json`)이 오면 git 은 **마지막 패턴**을 따른다.
   test('★기존 .gitignore 에 * 가 없거나 되살림이 뒤따르면 봉인을 채운다 (소급)', async () => {
     const { spawnSync } = await import('node:child_process');
@@ -498,29 +498,29 @@ describe('물질화 봉인 — 자식의 git add -A 로도 자격이 새지 않�
       const home = mkdtempSync(join(tmpdir(), 'ret-home-'));
       const tree = mkdtempSync(join(tmpdir(), 'ret-tree-'));
       try {
-        mkdirSync(join(home, '.monad'));
-        writeFileSync(join(home, '.monad', 'config.json'), JSON.stringify({
+        mkdirSync(join(home, '.elanous'));
+        writeFileSync(join(home, '.elanous', 'config.json'), JSON.stringify({
           instance: { treeDerivedTest: true }, onboarding: { completed: true }, llm: { provider: 'openai-codex' },
         }));
-        writeFileSync(join(home, '.monad', 'leader.json'), JSON.stringify({ tree: '/other', promotedAt: 'x' }));
-        writeFileSync(join(home, '.monad', 'auth.json'), JSON.stringify({ token: 'SUPER-SECRET' }));
+        writeFileSync(join(home, '.elanous', 'leader.json'), JSON.stringify({ tree: '/other', promotedAt: 'x' }));
+        writeFileSync(join(home, '.elanous', 'auth.json'), JSON.stringify({ token: 'SUPER-SECRET' }));
         spawnSync('git', ['init', '-q'], { cwd: tree });
         // 봉인 이전 버전이 남긴 우주 — 자격이 **이미** 놓여 있고 .gitignore 는 봉인이 아니다.
-        mkdirSync(join(tree, '.monad-test'));
-        writeFileSync(join(tree, '.monad-test', 'config.json'), '{}');
-        writeFileSync(join(tree, '.monad-test', 'auth.json'), JSON.stringify({ token: 'SUPER-SECRET' }));
-        writeFileSync(join(tree, '.monad-test', '.gitignore'), preSeal);
+        mkdirSync(join(tree, '.elanous-test'));
+        writeFileSync(join(tree, '.elanous-test', 'config.json'), '{}');
+        writeFileSync(join(tree, '.elanous-test', 'auth.json'), JSON.stringify({ token: 'SUPER-SECRET' }));
+        writeFileSync(join(tree, '.elanous-test', '.gitignore'), preSeal);
 
         spawnSync('bun', ['-e',
           `const {provisionDerivedUniverse}=require('${process.cwd()}/src/instance/provision.ts');`
           + `provisionDerivedUniverse('${tree}');`], {
           encoding: 'utf8', timeout: 60_000, cwd: tree,
-          env: { ...process.env, HOME: home, MONAD_STATE_DIR: '', MONAD_CONFIG_DIR: '', MONAD_NEXUS_DIR: '' },
+          env: { ...process.env, HOME: home, ELANOUS_STATE_DIR: '', ELANOUS_CONFIG_DIR: '', ELANOUS_NEXUS_DIR: '' },
         });
 
         spawnSync('git', ['add', '-A'], { cwd: tree });
         const staged = spawnSync('git', ['diff', '--cached', '--name-only'], { cwd: tree, encoding: 'utf8' }).stdout ?? '';
-        expect(staged).not.toMatch(/\.monad-test/);   // ★소급 봉인이 안 되면 여기서 샌다
+        expect(staged).not.toMatch(/\.elanous-test/);   // ★소급 봉인이 안 되면 여기서 샌다
       } finally {
         rmSync(home, { recursive: true, force: true });
         rmSync(tree, { recursive: true, force: true });
@@ -537,30 +537,30 @@ describe('물질화 봉인 — 자식의 git add -A 로도 자격이 새지 않�
     const home = mkdtempSync(join(tmpdir(), 'nose-home-'));
     const tree = mkdtempSync(join(tmpdir(), 'nose-tree-'));
     try {
-      mkdirSync(join(home, '.monad'));
-      writeFileSync(join(home, '.monad', 'config.json'), JSON.stringify({
+      mkdirSync(join(home, '.elanous'));
+      writeFileSync(join(home, '.elanous', 'config.json'), JSON.stringify({
         instance: { treeDerivedTest: true }, onboarding: { completed: true }, llm: { provider: 'openai-codex' },
       }));
-      writeFileSync(join(home, '.monad', 'leader.json'), JSON.stringify({ tree: '/other', promotedAt: 'x' }));
-      writeFileSync(join(home, '.monad', 'auth.json'), JSON.stringify({ token: 'SUPER-SECRET' }));
+      writeFileSync(join(home, '.elanous', 'leader.json'), JSON.stringify({ tree: '/other', promotedAt: 'x' }));
+      writeFileSync(join(home, '.elanous', 'auth.json'), JSON.stringify({ token: 'SUPER-SECRET' }));
       spawnSync('git', ['init', '-q'], { cwd: tree });
       // `.gitignore` 자리를 **디렉터리**로 점유 — 봉인 기록이 반드시 실패한다.
-      mkdirSync(join(tree, '.monad-test'), { recursive: true });
-      mkdirSync(join(tree, '.monad-test', '.gitignore'));
+      mkdirSync(join(tree, '.elanous-test'), { recursive: true });
+      mkdirSync(join(tree, '.elanous-test', '.gitignore'));
 
       const out = spawnSync('bun', ['-e',
         `const {provisionDerivedUniverse}=require('${process.cwd()}/src/instance/provision.ts');`
         + `let threw=false,r;try{r=provisionDerivedUniverse('${tree}');}catch(e){threw=true;r={outcome:'THREW'};}`
         + `console.log(JSON.stringify({outcome:r.outcome,threw}));`], {
         encoding: 'utf8', timeout: 60_000, cwd: tree,
-        env: { ...process.env, HOME: home, MONAD_STATE_DIR: '', MONAD_CONFIG_DIR: '', MONAD_NEXUS_DIR: '' },
+        env: { ...process.env, HOME: home, ELANOUS_STATE_DIR: '', ELANOUS_CONFIG_DIR: '', ELANOUS_NEXUS_DIR: '' },
       });
       const res = JSON.parse((out.stdout ?? '').trim().split('\n').pop() ?? '{}') as { outcome?: string; threw?: boolean };
       expect(res.threw).toBe(false);            // 스폰은 막히지 않는다(fail-open)
       expect(res.outcome).toBe('failed');
       // ★★ 핵심 — 봉인이 안 된 채로 자격이 놓이면 안 된다.
-      expect(existsSync(join(tree, '.monad-test', 'auth.json'))).toBe(false);
-      expect(existsSync(join(tree, '.monad-test', 'config.json'))).toBe(false);
+      expect(existsSync(join(tree, '.elanous-test', 'auth.json'))).toBe(false);
+      expect(existsSync(join(tree, '.elanous-test', 'config.json'))).toBe(false);
     } finally {
       rmSync(home, { recursive: true, force: true });
       rmSync(tree, { recursive: true, force: true });
@@ -577,31 +577,31 @@ describe('물질화 봉인 — 자식의 git add -A 로도 자격이 새지 않�
     const home = mkdtempSync(join(tmpdir(), 'quar-home-'));
     const tree = mkdtempSync(join(tmpdir(), 'quar-tree-'));
     try {
-      mkdirSync(join(home, '.monad'));
-      writeFileSync(join(home, '.monad', 'config.json'), JSON.stringify({
+      mkdirSync(join(home, '.elanous'));
+      writeFileSync(join(home, '.elanous', 'config.json'), JSON.stringify({
         instance: { treeDerivedTest: true }, onboarding: { completed: true }, llm: { provider: 'openai-codex' },
       }));
-      writeFileSync(join(home, '.monad', 'leader.json'), JSON.stringify({ tree: '/other', promotedAt: 'x' }));
-      writeFileSync(join(home, '.monad', 'auth.json'), JSON.stringify({ token: 'SUPER-SECRET' }));
+      writeFileSync(join(home, '.elanous', 'leader.json'), JSON.stringify({ tree: '/other', promotedAt: 'x' }));
+      writeFileSync(join(home, '.elanous', 'auth.json'), JSON.stringify({ token: 'SUPER-SECRET' }));
       spawnSync('git', ['init', '-q'], { cwd: tree });
       // 봉인 이전 버전이 깐 우주 — config 가 있으니 `already` 로 가고, 자격이 이미 놓여 있다.
-      mkdirSync(join(tree, '.monad-test'));
-      writeFileSync(join(tree, '.monad-test', 'config.json'), '{}');
-      writeFileSync(join(tree, '.monad-test', 'auth.json'), JSON.stringify({ token: 'SUPER-SECRET' }));
-      mkdirSync(join(tree, '.monad-test', '.gitignore'));   // 봉인 기록을 불가능하게
+      mkdirSync(join(tree, '.elanous-test'));
+      writeFileSync(join(tree, '.elanous-test', 'config.json'), '{}');
+      writeFileSync(join(tree, '.elanous-test', 'auth.json'), JSON.stringify({ token: 'SUPER-SECRET' }));
+      mkdirSync(join(tree, '.elanous-test', '.gitignore'));   // 봉인 기록을 불가능하게
 
       const out = spawnSync('bun', ['-e',
         `const {provisionDerivedUniverse}=require('${process.cwd()}/src/instance/provision.ts');`
         + `let threw=false,r;try{r=provisionDerivedUniverse('${tree}');}catch(e){threw=true;r={outcome:'THREW'};}`
         + `console.log(JSON.stringify({outcome:r.outcome,threw}));`], {
         encoding: 'utf8', timeout: 60_000, cwd: tree,
-        env: { ...process.env, HOME: home, MONAD_STATE_DIR: '', MONAD_CONFIG_DIR: '', MONAD_NEXUS_DIR: '' },
+        env: { ...process.env, HOME: home, ELANOUS_STATE_DIR: '', ELANOUS_CONFIG_DIR: '', ELANOUS_NEXUS_DIR: '' },
       });
       const res = JSON.parse((out.stdout ?? '').trim().split('\n').pop() ?? '{}') as { outcome?: string; threw?: boolean };
       expect(res.threw).toBe(false);       // 스폰은 계속된다(fail-open 유지)
       expect(res.outcome).toBe('failed');
       // ★★ 핵심 — 미봉인 자격이 남아 있으면 안 된다.
-      expect(existsSync(join(tree, '.monad-test', 'auth.json'))).toBe(false);
+      expect(existsSync(join(tree, '.elanous-test', 'auth.json'))).toBe(false);
       // 자식이 하는 짓 그대로 해도 자격이 안 실린다.
       spawnSync('git', ['add', '-A'], { cwd: tree });
       const staged = spawnSync('git', ['diff', '--cached', '--name-only'], { cwd: tree, encoding: 'utf8' }).stdout ?? '';
@@ -613,7 +613,7 @@ describe('물질화 봉인 — 자식의 git add -A 로도 자격이 새지 않�
   }, 90_000);
 
   // ★ 4R 리뷰 must-fix — `.gitignore` 는 **추적되지 않는** 파일에만 효력이 있다. 외부 repo 가
-  //   `.monad-test/auth.json` 을 이미 커밋해 뒀다면 우리가 그 위에 운영 자격을 덮어써도 봉인이
+  //   `.elanous-test/auth.json` 을 이미 커밋해 뒀다면 우리가 그 위에 운영 자격을 덮어써도 봉인이
   //   무력하고, 자식의 `git add -A` 에 그대로 실린다. 심볼릭 링크면 자격이 딴 데로 나간다.
   test('★이미 추적 중이거나 링크면 자격을 놓지 않는다 (봉인 무력 구간)', async () => {
     const { spawnSync } = await import('node:child_process');
@@ -624,35 +624,35 @@ describe('물질화 봉인 — 자식의 git add -A 로도 자격이 새지 않�
       const tree = mkdtempSync(join(tmpdir(), 'unsafe-tree-'));
       const away = mkdtempSync(join(tmpdir(), 'unsafe-away-'));
       try {
-        mkdirSync(join(home, '.monad'));
-        writeFileSync(join(home, '.monad', 'config.json'), JSON.stringify({
+        mkdirSync(join(home, '.elanous'));
+        writeFileSync(join(home, '.elanous', 'config.json'), JSON.stringify({
           instance: { treeDerivedTest: true }, onboarding: { completed: true }, llm: { provider: 'openai-codex' },
         }));
-        writeFileSync(join(home, '.monad', 'leader.json'), JSON.stringify({ tree: '/other', promotedAt: 'x' }));
-        writeFileSync(join(home, '.monad', 'auth.json'), JSON.stringify({ token: 'SUPER-SECRET' }));
+        writeFileSync(join(home, '.elanous', 'leader.json'), JSON.stringify({ tree: '/other', promotedAt: 'x' }));
+        writeFileSync(join(home, '.elanous', 'auth.json'), JSON.stringify({ token: 'SUPER-SECRET' }));
         spawnSync('git', ['init', '-q'], { cwd: tree });
         if (mode === 'tracked') {
           // 외부 repo 가 이 경로를 **커밋해 둔** 상태 — 봉인은 여기에 아무 효력이 없다.
-          mkdirSync(join(tree, '.monad-test'));
-          writeFileSync(join(tree, '.monad-test', 'auth.json'), '{"token":"harmless-placeholder"}');
+          mkdirSync(join(tree, '.elanous-test'));
+          writeFileSync(join(tree, '.elanous-test', 'auth.json'), '{"token":"harmless-placeholder"}');
           spawnSync('git', ['add', '-A'], { cwd: tree });
           spawnSync('git', ['-c', 'user.email=t@t', '-c', 'user.name=t', 'commit', '-q', '-m', 'pre'], { cwd: tree });
         } else {
-          symlinkSync(away, join(tree, '.monad-test'));   // 자격이 트리 밖으로 나가는 경로
+          symlinkSync(away, join(tree, '.elanous-test'));   // 자격이 트리 밖으로 나가는 경로
         }
 
         const out = spawnSync('bun', ['-e',
           `const {provisionDerivedUniverse}=require('${process.cwd()}/src/instance/provision.ts');`
           + `console.log(JSON.stringify(provisionDerivedUniverse('${tree}')));`], {
           encoding: 'utf8', timeout: 60_000, cwd: tree,
-          env: { ...process.env, HOME: home, MONAD_STATE_DIR: '', MONAD_CONFIG_DIR: '', MONAD_NEXUS_DIR: '' },
+          env: { ...process.env, HOME: home, ELANOUS_STATE_DIR: '', ELANOUS_CONFIG_DIR: '', ELANOUS_NEXUS_DIR: '' },
         });
         const res = JSON.parse((out.stdout ?? '').trim().split('\n').pop() ?? '{}') as { outcome?: string; error?: string };
         expect(res.outcome).toBe('failed');
         expect(res.error).toBeTruthy();
         if (mode === 'tracked') {
           // ★추적 파일을 운영 자격으로 덮어쓰지 않았다 — 원래 내용 그대로다.
-          expect(readFileSync(join(tree, '.monad-test', 'auth.json'), 'utf-8')).not.toContain('SUPER-SECRET');
+          expect(readFileSync(join(tree, '.elanous-test', 'auth.json'), 'utf-8')).not.toContain('SUPER-SECRET');
         } else {
           expect(existsSync(join(away, 'auth.json'))).toBe(false);   // ★링크 너머로 안 나갔다
         }
@@ -665,15 +665,15 @@ describe('물질화 봉인 — 자식의 git add -A 로도 자격이 새지 않�
 
 describe('runOnboarding — 자율 컨텍스트 fail-fast', () => {
   test('★self-build 자식은 마법사 대신 즉시 읽히는 에러로 죽는다', async () => {
-    const prev = process.env.MONAD_RUN_CONTEXT;
+    const prev = process.env.ELANOUS_RUN_CONTEXT;
     try {
-      process.env.MONAD_RUN_CONTEXT = 'self-build';
+      process.env.ELANOUS_RUN_CONTEXT = 'self-build';
       const { runOnboarding } = await import('../src/onboarding.js');
       // io 주입 없이(=대화형 진입) 부르면 던져야 한다. 종전엔 여기서 피커를 띄우고
       // 아무도 없는 화면의 입력을 기다렸다(툴콜 0 · 타임아웃).
       await expect(runOnboarding()).rejects.toThrow(/--non-interactive/);
     } finally {
-      if (prev === undefined) delete process.env.MONAD_RUN_CONTEXT; else process.env.MONAD_RUN_CONTEXT = prev;
+      if (prev === undefined) delete process.env.ELANOUS_RUN_CONTEXT; else process.env.ELANOUS_RUN_CONTEXT = prev;
     }
   });
 
@@ -686,9 +686,9 @@ describe('runOnboarding — 자율 컨텍스트 fail-fast', () => {
   });
 
   test('★자율이어도 IO 가 주입되면 가드가 안 잡는다 (비대화형 진입 보존)', async () => {
-    const prev = process.env.MONAD_RUN_CONTEXT;
+    const prev = process.env.ELANOUS_RUN_CONTEXT;
     try {
-      process.env.MONAD_RUN_CONTEXT = 'self-build';
+      process.env.ELANOUS_RUN_CONTEXT = 'self-build';
       const { runOnboarding } = await import('../src/onboarding.js');
       // 자율 컨텍스트인데도 IO 가 주입됐으므로 **가드는 침묵해야** 한다. 마법사 자체는
       // 빈 io/막힌 경로 때문에 어차피 실패하니, 여기서 보는 건 **실패 사유**다.
@@ -698,7 +698,7 @@ describe('runOnboarding — 자율 컨텍스트 fail-fast', () => {
       catch (e) { msg = e instanceof Error ? e.message : String(e); }
       expect(msg).not.toMatch(/자율 컨텍스트/);
     } finally {
-      if (prev === undefined) delete process.env.MONAD_RUN_CONTEXT; else process.env.MONAD_RUN_CONTEXT = prev;
+      if (prev === undefined) delete process.env.ELANOUS_RUN_CONTEXT; else process.env.ELANOUS_RUN_CONTEXT = prev;
     }
   });
 });

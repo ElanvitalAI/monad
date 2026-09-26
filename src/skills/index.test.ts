@@ -100,8 +100,8 @@ describe('무인자 buildSkillIndex() — user-config skills.dirs 존중(격리 
     const fixtureRoot = mkdtempSync(join(tmpdir(), 'cfg-skill-'));
     try {
       writeFixtureSkill(fixtureRoot, 'config-routed-skill');
-      mkdirSync(join(xdg, 'monad'), { recursive: true });
-      writeFileSync(join(xdg, 'monad', 'config.json'), JSON.stringify({ skills: { activeSet: 'custom', dirs: [fixtureRoot] } }));
+      mkdirSync(join(xdg, 'elanous'), { recursive: true });
+      writeFileSync(join(xdg, 'elanous', 'config.json'), JSON.stringify({ skills: { activeSet: 'custom', dirs: [fixtureRoot] } }));
 
       process.env.XDG_CONFIG_HOME = xdg;
       resetUserConfig();

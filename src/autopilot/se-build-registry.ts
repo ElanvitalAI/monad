@@ -3,17 +3,17 @@
 // SE 격리 빌드(미션 페이즈가 별도 worktree 에서 terra/opus 로 자율 구현하는 1회 실행)를
 // ID 로 추적한다. 빌드 = 페이즈 SE 시도 1회(재시도/폴백/재구현마다 새 buildId). 이 레지스트리가
 // "어떤 빌드가 살아있나 · 그 안에서 뭘 하나(로그 경로) · worktree 는 어디"를 단일 진실로 갖고,
-// tool(se_build)·CLI(monad ops build)·SSE(/v1/builds)가 이걸 읽는다. ops-log 와 동형·fail-soft.
+// tool(se_build)·CLI(elanous ops build)·SSE(/v1/builds)가 이걸 읽는다. ops-log 와 동형·fail-soft.
 // PLAN: 내부 문서 `PLAN-se-build-observability-stream-2026-07-13`
 
 import { Database } from 'bun:sqlite';
-import { monadStateRoot } from './state-paths.js';
+import { elanousStateRoot } from './state-paths.js';
 import { mkdirSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 
-/** [ISO-3] MONAD_STATE_DIR 존중(lazy). */
-export function seBuildsDbPath(): string { return join(monadStateRoot(), 'conatus/se_builds.db'); }
-export function seBuildsLogDir(): string { return join(monadStateRoot(), 'conatus/builds'); }
+/** [ISO-3] ELANOUS_STATE_DIR 존중(lazy). */
+export function seBuildsDbPath(): string { return join(elanousStateRoot(), 'conatus/se_builds.db'); }
+export function seBuildsLogDir(): string { return join(elanousStateRoot(), 'conatus/builds'); }
 
 // ★ no-change(대표 2026-07-14) — opus 등이 "변경 0(no-op)"을 낸 시도. 종전엔 mapBuildStatus 가
 //   built 로 뭉개 트레일에 "opus→built"(성공처럼) 오표시됐다(실제는 아무것도 안 함). 별도 상태로 정직화.

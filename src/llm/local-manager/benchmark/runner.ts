@@ -2,7 +2,7 @@
 //
 // 대표 방식 이식: 모델 하나씩·같은 문항 같은 순서·temperature 0·순차. 코딩은 실제 Python 실행 채점.
 // chat 은 OpenAI-호환 /v1/chat/completions(LM Studio·본머신/node-b) 기본, 주입으로 테스트/다른 수단 대체.
-// 관측: 결과를 debug.log('llm.bench', ...) 로 남겨 `monad logs --category llm.bench` 조회(제1원칙).
+// 관측: 결과를 debug.log('llm.bench', ...) 로 남겨 `elanous logs --category llm.bench` 조회(제1원칙).
 
 import { debug } from '../../../debug/log.js';
 import { runPython } from './code-exec.js';

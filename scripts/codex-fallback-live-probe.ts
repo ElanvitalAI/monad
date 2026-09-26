@@ -129,7 +129,7 @@ export function grokQuotaProbeFromSnapshot(snapshot: unknown): GrokQuotaProbeFie
   };
 }
 
-export function readLiveGrokQuota(stateDir = join(homedir(), '.monad')): GrokQuotaProbeFields {
+export function readLiveGrokQuota(stateDir = join(homedir(), '.elanous')): GrokQuotaProbeFields {
   try {
     const raw = readFileSync(join(stateDir, 'budget', 'state.json'), 'utf8');
     const parsed: unknown = JSON.parse(raw);
@@ -215,9 +215,9 @@ export function emitLiveProbeLine(line: LiveProbeLine): string {
 
 function main(): void {
   const repoRoot = join(import.meta.dir, '..');
-  const configDir = join(homedir(), '.monad');
+  const configDir = join(homedir(), '.elanous');
   const raw = execFileSync('bun', [
-    'bin/monad.mjs', 'provider', 'codex', 'status', '--json', '--config-dir', configDir,
+    'bin/elanous.mjs', 'provider', 'codex', 'status', '--json', '--config-dir', configDir,
   ], {
     cwd: repoRoot,
     encoding: 'utf8',

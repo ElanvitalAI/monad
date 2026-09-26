@@ -98,7 +98,7 @@ export async function submitIntent(input: SubmitIntentInput): Promise<SubmitInte
   // ── 관측(제1원칙) — 라우팅 결정을 logs.db 에 남긴다. 계측 부재 시 "미션:" 이 왜
   //   passthrough 됐는지(마커 불일치·triage throw 등) 재구성 불가였던 사각 수복
   //   (2026-07-17 대표 실사례: "미션 : " 공백콜론이 조용히 chat 으로 샘). ★조회:
-  //   monad logs --category intent.gate
+  //   elanous logs --category intent.gate
   const textPreview = (input.text ?? '').replace(/\s+/g, ' ').trim().slice(0, 100);
 
   // ★ Layer2 Taste 수집(P4·D1) — 마커/passthrough 무관 **모든 프롬프트**를 비동기 fire-soft 로
@@ -146,7 +146,7 @@ export async function submitIntent(input: SubmitIntentInput): Promise<SubmitInte
       triageGoal({ goal: marker.goal }, triageClassify ? { classify: triageClassify } : {}),
     ]);
     // ★ 관측(제1원칙) — 도메인 판정을 logs.db 에 남긴다. via=llm + keyword≠domain 이면 luna override.
-    //   조회: monad logs --category intent.gate (event=domain.resolved).
+    //   조회: elanous logs --category intent.gate (event=domain.resolved).
     debug.log('intent.gate', 'domain.resolved', {
       domain: resolved.domain,
       via: resolved.via,

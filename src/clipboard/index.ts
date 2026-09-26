@@ -14,7 +14,7 @@ import { tmpdir } from 'os';
 import { spawn } from 'child_process';
 
 /** Stable prefix so `pruneOldPastes` can find files to sweep. */
-export const PASTE_FILENAME_PREFIX = 'monad-paste-';
+export const PASTE_FILENAME_PREFIX = 'elanous-paste-';
 
 /** Default TTL for /tmp paste files — 24h (PLAN §6 Phase 10). */
 export const PASTE_TTL_MS = 24 * 60 * 60 * 1000;
@@ -275,7 +275,7 @@ export interface ClipboardWriteResult {
  *  - `file`   always write to /tmp/<file>
  *  - `off`    never touch the clipboard (returns ok=false) */
 function readClipboardMode(): 'auto' | 'local' | 'osc52' | 'file' | 'off' {
-  const raw = (process.env['MONAD_CLIPBOARD_MODE'] ?? '').toLowerCase().trim();
+  const raw = (process.env['ELANOUS_CLIPBOARD_MODE'] ?? '').toLowerCase().trim();
   if (raw === 'local' || raw === 'osc52' || raw === 'file' || raw === 'off') return raw;
   return 'auto';
 }
@@ -301,7 +301,7 @@ async function writeLocalTool(text: string): Promise<boolean> {
 async function writeToFile(text: string): Promise<string | null> {
   try {
     const { writeFileSync } = await import('node:fs');
-    const outPath = join(tmpdir(), `monad-clip-${Date.now()}.txt`);
+    const outPath = join(tmpdir(), `elanous-clip-${Date.now()}.txt`);
     writeFileSync(outPath, text, { encoding: 'utf-8' });
     return outPath;
   } catch {
@@ -316,12 +316,12 @@ export async function writeClipboardDetailed(text: string): Promise<ClipboardWri
   const mode = readClipboardMode();
   const env = detectClipboardEnv();
 
-  if (mode === 'off') return { ok: false, via: 'none', note: 'MONAD_CLIPBOARD_MODE=off' };
+  if (mode === 'off') return { ok: false, via: 'none', note: 'ELANOUS_CLIPBOARD_MODE=off' };
 
   if (mode === 'file') {
     const path = await writeToFile(text);
     return path
-      ? { ok: true, via: 'file', path, note: 'MONAD_CLIPBOARD_MODE=file' }
+      ? { ok: true, via: 'file', path, note: 'ELANOUS_CLIPBOARD_MODE=file' }
       : { ok: false, via: 'none', note: 'file-write-failed' };
   }
 

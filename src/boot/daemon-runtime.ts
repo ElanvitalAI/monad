@@ -5,7 +5,7 @@
 // tool dispatch (tools = []), per-session history. M1.5 A.1 added
 // optional disk-backed persistence (jsonl per session) so daemon
 // restarts don't drop history; opt-in via `diskDir` constructor opt
-// or `MONAD_HISTORY_DIR` env var.
+// or `ELANOUS_HISTORY_DIR` env var.
 //
 // Follow-up (M1.5 A.2 / A.3):
 //   - A.2 — read-only tool surface (Read · Grep · WebSearch)
@@ -50,7 +50,7 @@ import {
   TERMINAL_MISSION_DISCIPLINE,
 } from '../agent/terminal-surface.js';
 import type { CoreTurnDispatchTool } from '../core-turn/index.js';
-import { monadSelfAccessPrompt } from '../agent/self-ambient.js';
+import { elanousSelfAccessPrompt } from '../agent/self-ambient.js';
 import { createToolCwdResolver } from './tool-cwd.js';
 import { debug } from '../debug/log.js';
 
@@ -99,12 +99,12 @@ export interface DaemonRuntimeOpts {
    *  `DaemonSessionHistory` mirrors all appends to
    *  `<diskDir>/<sessionId>.jsonl` so daemon restarts preserve
    *  history. When unset (default), history is in-memory only.
-   *  `MONAD_HISTORY_DIR` env var is the conventional source. */
+   *  `ELANOUS_HISTORY_DIR` env var is the conventional source. */
   diskDir?: string;
   /** Tool surface activation. Default = 'webterm' (full stack).
    *  Operators set the persistent preference via
-   *  `monad config set global.tools <kind>` (single source of truth
-   *  · `MONAD_TOOLS` env var was removed 2026-05-13). Pass this opt
+   *  `elanous config set global.tools <kind>` (single source of truth
+   *  · `ELANOUS_TOOLS` env var was removed 2026-05-13). Pass this opt
    *  to override per-invocation (CLI `--tools <kind>`). */
   tools?: import('./daemon-tools/index.js').DaemonToolSurfaceKind;
   /** M1.5 A.2 — working directory for fs-bound tools (Read · Grep).
@@ -130,7 +130,7 @@ export function composeDaemonSystemPrompt(
   promptMeta: Readonly<Record<string, unknown>> | undefined,
   sessionId?: string,
 ): string {
-  return [basePrompt, buildDaemonInputSourceLine(promptMeta), monadSelfAccessPrompt(sessionId)]
+  return [basePrompt, buildDaemonInputSourceLine(promptMeta), elanousSelfAccessPrompt(sessionId)]
     .filter((part): part is string => typeof part === 'string' && part.trim().length > 0)
     .join('\n\n');
 }
@@ -217,7 +217,7 @@ function stringifyMessageText(m: LLMMessage): string {
  *
  *  Two modes (selected at construction):
  *    - **memory** (default · in-process · lost on exit) — current
- *      behavior, byId Map + lastTurnAt Map. Used by `monad serve`
+ *      behavior, byId Map + lastTurnAt Map. Used by `elanous serve`
  *      until M1.5 A.3 flips defaults.
  *    - **disk-backed** (M1.5 A.1 · `diskDir` set) — same in-memory
  *      cache PLUS write-through to `<diskDir>/<sessionId>.jsonl`
@@ -301,7 +301,7 @@ export class DaemonSessionHistory {
   private diskPathFor(sessionId: string): string | null {
     if (!this.diskDir) return null;
     // Defensive: refuse session ids that contain path separators.
-    // ACP session ids are minted server-side (`monad-session-N` /
+    // ACP session ids are minted server-side (`elanous-session-N` /
     // `http-<ts>-<rand>`), so this is a safety net for future
     // changes — never expected to fire in current code.
     if (sessionId.includes('/') || sessionId.includes('\\') || sessionId.includes('..')) {
@@ -609,8 +609,8 @@ export function createDaemonRunTurn(
         cwd: toolCwdResolver.cwd!,
         resolveWriteCwd: toolCwdResolver.resolveWriteCwd,
         signal: turnSignal ?? new AbortController().signal,
-        // Monad's own LLM assembles tool arguments from natural language.
-        entry: 'monad-apparatus',
+        // Elanous's own LLM assembles tool arguments from natural language.
+        entry: 'elanous-apparatus',
       };
       if (ctx?.sessionId) dispatchCtx.sessionId = ctx.sessionId;
       if (ctx?.userText) dispatchCtx.userText = ctx.userText;
@@ -638,7 +638,7 @@ export function createDaemonRunTurn(
       }
       // P0b(DESIGN-cross-surface-autonomy-membrane §10) — ACP 코어 데몬 턴에 SurfaceUx confirm/question 채널
       // 주입. SelfImplement(및 delegate)의 HITL(approvePr 등)이 막(SurfaceUx)을 통해 ACP 클라이언트(iPhone/
-      // PWA 시트·monad/ask)로 도달한다. ★fail-soft: pusher 없으면(피어 없음·미부팅) 채널 미설정 →
+      // PWA 시트·elanous/ask)로 도달한다. ★fail-soft: pusher 없으면(피어 없음·미부팅) 채널 미설정 →
       // SurfaceUx.confirm fail-closed(PR 안 열림·자동승인 금지·기존 동작 불변).
       if (ctx?.sessionId) {
         const { getActiveAcpAskPusher } = require('../acp/server.js') as
@@ -678,7 +678,7 @@ export function createDaemonRunTurn(
   // envelope kinds). The bridge already category-whitelists `^(chat|
   // tool|agent|acp)\.` and caps the in-memory ring at 200 to bound
   // bandwidth. If dogfood surfaces noise we can flip to opt-in via
-  // `_meta.monad.debugTap` in a follow-up.
+  // `_meta.elanous.debugTap` in a follow-up.
   //
   // Per-turn lifecycle: instantiate when the broadcaster is available
   // (post `runAcpServer` boot), dispose in finally so a misbehaving
@@ -709,12 +709,12 @@ export function createDaemonRunTurn(
 
 /** Compose helper: build a fresh history + a runTurn bound to it.
  *  Returned together so callers can introspect the history + active
- *  tool surface for `monad serve --status`.
+ *  tool surface for `elanous serve --status`.
  *
  *  Env vars (used when the matching opt is not supplied):
- *    - `MONAD_HISTORY_DIR=<path>` → A.1 disk-backed history
- *    - `MONAD_TOOLS=readonly`     → A.2 readonly tool surface
- *    - `MONAD_TOOL_CWD=<path>`    → A.2 fs-tool cwd
+ *    - `ELANOUS_HISTORY_DIR=<path>` → A.1 disk-backed history
+ *    - `ELANOUS_TOOLS=readonly`     → A.2 readonly tool surface
+ *    - `ELANOUS_TOOL_CWD=<path>`    → A.2 fs-tool cwd
  *  Default = in-memory + 'none' tool surface (current behavior). */
 export function createDaemonRuntime(
   opts: DaemonRuntimeOpts = {},
@@ -747,16 +747,16 @@ export function createDaemonRuntime(
       return undefined;
     }
   };
-  const diskDir = opts.diskDir ?? process.env.MONAD_HISTORY_DIR?.trim();
+  const diskDir = opts.diskDir ?? process.env.ELANOUS_HISTORY_DIR?.trim();
   // 2026-05-13 · tool surface resolution (env-var-free):
   //   1. `opts.tools` programmatic override (CLI `--tools <kind>`
   //      flows through here).
-  //   2. `~/.monad/config.json` → `global.tools` (single persistent
-  //      surface — set via `monad config set global.tools <kind>`).
+  //   2. `~/.elanous/config.json` → `global.tools` (single persistent
+  //      surface — set via `elanous config set global.tools <kind>`).
   //   3. Fallback 'webterm' — matches the CLI option's `Default =
   //      "webterm"` promise and keeps the PWA's sticky webterm
   //      workflow alive out of the box.
-  // The legacy `MONAD_TOOLS` env var was removed in this revision;
+  // The legacy `ELANOUS_TOOLS` env var was removed in this revision;
   // user-config is the single persistent surface (consistent with the
   // env-var removal in PR #2534 for config-dir / state-dir).
   const userConfigTools = readGlobalToolsFromUserConfig();
@@ -779,7 +779,7 @@ export function createDaemonRuntime(
     ...(opts.toolCwd !== undefined ? { toolCwd: opts.toolCwd } : {}),
   });
   // S4 (2026-07-12) — 크로스서피스 파리티: nexus 부트만 갖던 R5
-  // read-through(on-disk SessionStore lazy 로드)를 standalone `monad
+  // read-through(on-disk SessionStore lazy 로드)를 standalone `elanous
   // serve` 런타임에도 기본 장착 — 어느 데몬으로 열든 텔레그램/디스코드/
   // CLI/이전 세션 id 를 주면 그 맥락으로 이어진다.
   //
@@ -787,8 +787,8 @@ export function createDaemonRuntime(
   // 격리 규율과 충돌 없음(쓰기 미러 R3는 nexus 부트 계층에 유지)"이라 적혀 있었다.
   // 그 유보의 근거(테스트가 운영 스토어를 건드릴 위험)는 `sessionRoot()` 의
   // NODE_ENV=test 리다이렉트로 해소됐다. 유보의 대가가 실제로 발생했기 때문에
-  // 내린다 — `monad --acp-server` 로 나눈 대화가 **어디에도 남지 않아**
-  // `monad session search` 로 사후 조회가 불가능했고, 2026-07-23 사고 대화가
+  // 내린다 — `elanous --acp-server` 로 나눈 대화가 **어디에도 남지 않아**
+  // `elanous session search` 로 사후 조회가 불가능했고, 2026-07-23 사고 대화가
   // 통째로 소실됐다. 이 경로의 유일한 프로덕션 호출처는 src/index.ts:6662.
   // 설계: 내부 문서 `PLAN-self-cognition-observability-surgery-2026-07-24` §3
   let storeReadThrough: ((id: string) => LLMMessage[] | null) | undefined;
@@ -808,7 +808,7 @@ export function createDaemonRuntime(
   try { wireStoreMirror?.(history); }
   catch { /* 미러 배선 실패가 데몬 부팅을 막지 않는다 */ }
   // CV-3 DM-1 — wrap legacy single-LLM runTurn so prompts carrying
-  // `_meta.monad.multiLlm` fan out via the multi-LLM bridge while
+  // `_meta.elanous.multiLlm` fan out via the multi-LLM bridge while
   // every other prompt keeps the unchanged single-LLM path. Backwards
   // compat = 100% (D7) — vanilla ACP clients (chat / webterm /
   // telegram / discord / cli) never set the hint.

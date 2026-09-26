@@ -58,7 +58,7 @@ export class EdgeTTSProvider implements TTSProvider {
       throw new Error('EdgeTTSProvider.synthesizeBatch: text is empty');
     }
     const voice = opts.voice ?? this.defaultVoice;
-    const dir = await mkdtemp(join(tmpdir(), 'monad-tts-edge-'));
+    const dir = await mkdtemp(join(tmpdir(), 'elanous-tts-edge-'));
     const mp3Path = join(dir, 'out.mp3');
     try {
       const t0 = Date.now();

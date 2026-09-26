@@ -16,7 +16,7 @@ function event(over: Partial<OutboundEvent> = {}): OutboundEvent {
     urgency: 'normal',
     title: 't',
     body: 'b',
-    link: 'monad://x',
+    link: 'elanous://x',
     ts: 100,
     ...over,
   };
@@ -32,7 +32,7 @@ describe('buildApnsPayload', () => {
 
   test('attaches link + source + payload', () => {
     const p = buildApnsPayload(event({ payload: { kind: 'retro', cardId: 'k1' } }));
-    expect(p.link).toBe('monad://x');
+    expect(p.link).toBe('elanous://x');
     expect(p.source).toBe('showroom');
     expect(p.payload).toEqual({ kind: 'retro', cardId: 'k1' });
     expect(p.aps['thread-id']).toBe('showroom');

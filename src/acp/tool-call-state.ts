@@ -2,7 +2,7 @@
 //
 // Per-session table of tool-call lifecycle records. Extends the ACP
 // wire `ToolCallStatus` (4 states · pending / in_progress / completed /
-// failed) with three client-side states that cover monad's HITL
+// failed) with three client-side states that cover elanous's HITL
 // approval flow + turn cancellation:
 //
 //   waiting_for_confirmation  — HITL race in flight (Telegram/Discord/

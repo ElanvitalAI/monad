@@ -45,18 +45,18 @@ function makeApi(): SessionsStoreApi {
 
 describe('resolveSessionPrefix — id prefix resolve (P3)', () => {
   const SESSIONS = [
-    { id: 'monad-session-12' },
-    { id: 'monad-session-129' },
+    { id: 'elanous-session-12' },
+    { id: 'elanous-session-129' },
     { id: 'http-1752300000-abcd' },
   ];
 
   it('유일 일치 → one + id (대소문자 무시)', () => {
     expect(resolveSessionPrefix(SESSIONS, 'HTTP-1752')).toEqual({ kind: 'one', id: 'http-1752300000-abcd' });
-    expect(resolveSessionPrefix(SESSIONS, 'monad-session-129')).toEqual({ kind: 'one', id: 'monad-session-129' });
+    expect(resolveSessionPrefix(SESSIONS, 'elanous-session-129')).toEqual({ kind: 'one', id: 'elanous-session-129' });
   });
 
   it('복수 일치 → ambiguous + count (더 긴 입력 유도)', () => {
-    expect(resolveSessionPrefix(SESSIONS, 'monad-session-12')).toEqual({ kind: 'ambiguous', count: 2 });
+    expect(resolveSessionPrefix(SESSIONS, 'elanous-session-12')).toEqual({ kind: 'ambiguous', count: 2 });
   });
 
   it('0건 / 빈 prefix → none', () => {

@@ -93,7 +93,7 @@ export function proseFallbackWarning(proseFallbackPieceCount: number): string | 
 
 function readLedger(limit: number): { samples: Sample[]; truncated: boolean } {
   const res = spawnSync('bun', [
-    'bin/monad.mjs', 'logs', '--all', '--include-test',
+    'bin/elanous.mjs', 'logs', '--all', '--include-test',
     '--event', 'decomposition-shadow-goals', '--limit', String(limit), '--json',
   ], { encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 });
   if (res.status !== 0) {

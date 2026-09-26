@@ -22,7 +22,7 @@ import type {
   ShowroomLaneOutput,
 } from './surfaces/showroom-surface.js';
 
-/** Persona row loaded from `~/.monad/personas/mission-<tag>/<role>.yaml`.
+/** Persona row loaded from `~/.elanous/personas/mission-<tag>/<role>.yaml`.
  *  The loader is injected — this module does not pin a YAML lib. Tests
  *  pass an in-memory loader; production wires `yaml.parse(readFileSync)`. */
 export interface MissionPersona {
@@ -77,7 +77,7 @@ export interface MissionRoomStore {
   save(state: MissionRoomState): Promise<void>;
 }
 
-/** Lightweight in-memory store. Production wires to `~/.monad/missions/
+/** Lightweight in-memory store. Production wires to `~/.elanous/missions/
  *  <id>/showroom.json` (snapshot) + `audit.jsonl` (append-only). */
 export function createInMemoryMissionRoomStore(): MissionRoomStore & {
   snapshot(): ReadonlyMap<string, MissionRoomState>;

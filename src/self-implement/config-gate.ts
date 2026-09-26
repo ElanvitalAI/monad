@@ -1,6 +1,6 @@
 // ── config/dotfile syntax gate (#25 P3 · 2026-07-21) ─────────────────────────────────
 //
-// 단일 파일 타겟(config/dotfile ~/.zshrc·~/.monad/config.json)은 manifest 테스트가 없다 → 대신
+// 단일 파일 타겟(config/dotfile ~/.zshrc·~/.elanous/config.json)은 manifest 테스트가 없다 → 대신
 // **syntax check** 로 게이트한다(DESIGN §3): 잘못된 문법을 실위치에 적용하면 셸/앱이 깨진다 →
 // 적용 전 반드시 파싱/검사. 확장자·basename 으로 검사기 선택. 미지 형식은 skip-with-warn(HITL diff 로 검증).
 //

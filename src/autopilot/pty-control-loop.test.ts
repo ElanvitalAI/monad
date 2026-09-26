@@ -75,7 +75,7 @@ describe('runPtyControlLoop', () => {
 
   // ⚠️ `disabled` 는 **여기 없다** — 꺼진 게이트는 거부가 아니라 **상담 자체를 안 한다**.
   //   이 표에 `{enabled:false} → 거부` 를 넣으면 CLI 가 기본값을 항상 실어 보내므로
-  //   `monad drive` 의 오랜 input 주입이 통째로 멈추는 회귀를 **계약으로 굳힌다**(리뷰 must-fix).
+  //   `elanous drive` 의 오랜 input 주입이 통째로 멈추는 회귀를 **계약으로 굳힌다**(리뷰 must-fix).
   //   꺼진 경우의 계약은 바로 아래 테스트가 따로 고정한다.
   test('assist gate — ownership and stall refusals do not inject and are observed', async () => {
     const cases = [
@@ -107,7 +107,7 @@ describe('runPtyControlLoop', () => {
     }
   });
 
-  // ⭐ 기본 OFF = **옛 동작**(주입한다). 게이트가 생기기 전 `monad drive` 는 `input` 을 그냥
+  // ⭐ 기본 OFF = **옛 동작**(주입한다). 게이트가 생기기 전 `elanous drive` 는 `input` 을 그냥
   //   넣었고, 꺼진 게이트가 그걸 막으면 "기본 OFF" 가 옛 동작이 아니라 **새 동작**이 된다.
   test.each([
     ['config 가 disabled 로 실려도', { enabled: false, minRung: 0 }],
@@ -455,7 +455,7 @@ describe('runPtyControlLoop', () => {
 // ── 실 registry handle 통합(mock adapter) — controlDepsForHandle 배선 검증 ──
 describe('runPtyControlLoop + controlDepsForHandle (registry 통합)', () => {
   test('auto 자식 자율 구동: inject→agent write · takeover→cancelled', async () => {
-    process.env.MONAD_STATE_DIR ||= '/tmp/p3-ctl-test';
+    process.env.ELANOUS_STATE_DIR ||= '/tmp/p3-ctl-test';
     const { startPty, setPtyAdapterForTesting, requestPtyTakeover, unregisterPty } = await import('../pty-shell/registry.js');
     const writes: string[] = [];
     setPtyAdapterForTesting(() => ({

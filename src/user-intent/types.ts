@@ -164,12 +164,12 @@ export interface UserIntentEvent {
   ts: string;
   /** Hashed user identifier. Default empty string until U-auth lands. */
   user_id: string;
-  /** Monad session id when available. */
+  /** Elanous session id when available. */
   session_id: string;
   /** Apple device family · or hostname. */
   device_id: string;
-  /** MSS M2.1 monad_id. */
-  monad_id: string;
+  /** MSS M2.1 elanous_id. */
+  elanous_id: string;
 
   trace_id?: string;
   span_id?: string;
@@ -193,7 +193,7 @@ export interface UserIntentEvent {
 
 /** Caller input — what the emit() consumer is expected to provide.
  *  Logger fills `event_id` / `ts` / `user_id` / `session_id` /
- *  `device_id` / `monad_id` / `schema_version`. */
+ *  `device_id` / `elanous_id` / `schema_version`. */
 export interface UserIntentEventInput {
   surface: UserIntentSurface;
   intent: UserIntentDetail;

@@ -23,10 +23,10 @@ afterEach(() => {
   delete process.env.XDG_DATA_HOME;
 });
 
-function memDir() { return join(root, 'monad', 'memory'); }
+function memDir() { return join(root, 'elanous', 'memory'); }
 
 describe('memoryRoot respects XDG_DATA_HOME', () => {
-  test('path under XDG_DATA_HOME/monad/memory', () => {
+  test('path under XDG_DATA_HOME/elanous/memory', () => {
     expect(memoryRoot()).toBe(memDir());
   });
 });

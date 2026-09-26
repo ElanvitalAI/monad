@@ -11,8 +11,8 @@
 //
 // 설계: 내부 문서 `PLAN-mission-working-memory-2026-07-13` §2.
 
-import { monadStateRoot } from './state-paths.js';
-import { getMonadConfigDir } from '../monad-config-dir.js';
+import { elanousStateRoot } from './state-paths.js';
+import { getElanousConfigDir } from '../elanous-config-dir.js';
 import { join, dirname } from 'node:path';
 import { existsSync, mkdirSync, appendFileSync, statSync, openSync, readSync, closeSync, renameSync, writeFileSync, readdirSync, readFileSync } from 'node:fs';
 import {
@@ -55,7 +55,7 @@ function safeMissionSlug(missionId: string): string {
 
 /** 미션별 워킹 메모리 파일 경로 — run.log 옆(같은 미션 디렉토리·state root). 라이브 워킹셋(U2.5 compaction 대상). */
 export function missionWorkingMemoryPath(missionId: string): string {
-  return join(monadStateRoot(), 'conatus/missions', safeMissionSlug(missionId), 'working-memory.jsonl');
+  return join(elanousStateRoot(), 'conatus/missions', safeMissionSlug(missionId), 'working-memory.jsonl');
 }
 
 /**
@@ -66,7 +66,7 @@ export function missionWorkingMemoryPath(missionId: string): string {
  * ★ 리비전(revise 세대)별 파티션 — generation 별 파일(gen-<N>.jsonl)로 나눠 리비전별 리플레이/조회 가능.
  */
 export function missionWorkingMemoryArchiveDir(missionId: string): string {
-  return join(getMonadConfigDir(), 'archive', 'working-memory', safeMissionSlug(missionId));
+  return join(getElanousConfigDir(), 'archive', 'working-memory', safeMissionSlug(missionId));
 }
 
 /** 리비전(generation)별 아카이브 파일 경로 — gen-<N>.jsonl. */

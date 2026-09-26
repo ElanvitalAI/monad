@@ -14,13 +14,13 @@
 
 import { readFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
-import { monadStateRoot } from '../autopilot/state-paths.js';
+import { elanousStateRoot } from '../autopilot/state-paths.js';
 
-/** research mandate 정본 경로 — state-dir 존중(lazy · Phase B). prod=`~/.monad/
+/** research mandate 정본 경로 — state-dir 존중(lazy · Phase B). prod=`~/.elanous/
  *  finance-research-mandate.json`(무변경) · 격리 test=자기 루트. 부작용 없는 계약이나
  *  격리 test 가 prod mandate 를 상속하지 않도록 축 정합(trade mandate 와 대칭). */
 export function researchMandatePath(): string {
-  return join(monadStateRoot(), 'finance-research-mandate.json');
+  return join(elanousStateRoot(), 'finance-research-mandate.json');
 }
 
 export interface ResearchMandate {

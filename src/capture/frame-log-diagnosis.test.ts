@@ -164,7 +164,7 @@ describe('createDiagnosisConsumer', () => {
 
 function manifestRow(over: Partial<PtyManifestRow>): PtyManifestRow {
   return {
-    id: 'tui:1', kind: 'tui', cmd: 'monad', workdir: '/x', ownerPid: 1, instance: 'prod',
+    id: 'tui:1', kind: 'tui', cmd: 'elanous', workdir: '/x', ownerPid: 1, instance: 'prod',
     startedAt: 0, alive: true, exitCode: null, snapshot: '', snapshotAt: 0,
     frame: 'screen A', frameAt: 1000, updatedAt: 1000, ...over,
   } as PtyManifestRow;

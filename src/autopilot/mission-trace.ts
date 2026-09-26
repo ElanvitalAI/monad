@@ -158,7 +158,7 @@ function fetchChildMissionDerived(apmId: string): DerivedJob[] {
 
 /** 미션 fan-in 트레이스(라이브). 각 store 는 fail-soft(없으면 빈 배열). */
 export function traceAutopilotMission(apmId: string, paths: TracePaths = {}): MissionTrace {
-  const tasksDb = paths.tasksDb ?? `${homeDir()}/.monad/tasks/tasks.db`;
+  const tasksDb = paths.tasksDb ?? `${homeDir()}/.elanous/tasks/tasks.db`;
   const surfaceDb = paths.surfaceEventsDb ?? conatusPath('surface_events.db');
   let mission: MissionRow | null = null;
   try {

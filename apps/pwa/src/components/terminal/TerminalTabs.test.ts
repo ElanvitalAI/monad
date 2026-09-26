@@ -26,7 +26,7 @@ function withFakeWindow(): FakeWindowEnv {
   };
 }
 
-const STORAGE_KEY = 'monad.webterm.tabs';
+const STORAGE_KEY = 'elanous.webterm.tabs';
 
 describe('TerminalTabs storage helpers', () => {
   let env: FakeWindowEnv;

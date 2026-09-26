@@ -3,7 +3,7 @@ import { mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { compareLifecycleToScreen, scopeLifecycleToScreen } from './lifecycle-screen-scoreboard.js';
-import { runHeadlessGoalLoopPty } from './headless-monad-driver.js';
+import { runHeadlessGoalLoopPty } from './headless-elanous-driver.js';
 import { debug } from '../debug/log.js';
 import { ChannelBus } from '../terminal-matrix/channel-bus.js';
 import { publishLifecycleRecord, snapshotRunLifecycle } from '../signal/lifecycle-record.js';
@@ -320,7 +320,7 @@ describe('lifecycle screen scoreboard', () => {
   });
 
   test('closes the child participant as parent when marker polling ends', async () => {
-    const root = mkdtempSync(join(tmpdir(), 'monad-parent-participant-'));
+    const root = mkdtempSync(join(tmpdir(), 'elanous-parent-participant-'));
     const runId = 'run-parent-closes-participant';
     try {
       const result = await runHeadlessGoalLoopPty({
@@ -367,7 +367,7 @@ describe('lifecycle screen scoreboard', () => {
   });
 
   test('persists one collision-free parent-proxy terminal through the lifecycle bridge', async () => {
-    const root = mkdtempSync(join(tmpdir(), 'monad-parent-terminal-'));
+    const root = mkdtempSync(join(tmpdir(), 'elanous-parent-terminal-'));
     resetLifecycleBridgeForTesting();
     setPtyManifestDbPathForTesting(join(root, 'manifest.db'));
     const bus = new ChannelBus();

@@ -110,7 +110,7 @@ describe('dashboard tool catalog observability', () => {
       'Read', 'Grep', 'Glob', 'ListDir', 'Edit', 'Write',
       'Agent', 'AgentOutput', 'AgentReply', 'AgentStop', 'AgentList',
       'Bash', 'RunShell', 'PtyShellStart', 'PtyShellPoll', 'PtyShellSend',
-      'PtyShellKill', 'PtyShellList', 'run_tests', 'monad_skills_list', 'skill_exec',
+      'PtyShellKill', 'PtyShellList', 'run_tests', 'elanous_skills_list', 'skill_exec',
     ]);
     expect(new Set(names).size).toBe(names.length);
     expect(records).toHaveLength(1);

@@ -28,8 +28,8 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { homedir } from 'node:os';
 import { dirname, join } from 'node:path';
 
-const STATE = join(homedir(), '.monad/conatus/samsung_koru_watch.json');
-const POSITION = join(homedir(), '.monad/conatus/samsung_position.json');
+const STATE = join(homedir(), '.elanous/conatus/samsung_koru_watch.json');
+const POSITION = join(homedir(), '.elanous/conatus/samsung_position.json');
 
 interface WatchState {
   lastSubZone?: string;

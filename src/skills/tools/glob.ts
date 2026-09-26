@@ -29,7 +29,7 @@ const GLOB_MAX_BUFFER = 8 * 1024 * 1024;  // 8 MB — paths only, smaller cap th
 
 export interface GlobArgs {
   pattern: string;
-  /** Ignore rules를 무시해 .monad-test 같은 관측 경로도 포함한다. */
+  /** Ignore rules를 무시해 .elanous-test 같은 관측 경로도 포함한다. */
   no_ignore?: boolean;
   path?: string;
   head_limit?: number;

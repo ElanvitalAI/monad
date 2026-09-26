@@ -1,6 +1,6 @@
 // ── entry-independent 기억 컨텍스트 (가산 grounding) ──
 //
-// 어떤 진입(agent-mission·self-implement·ACP 직행)이든 monad 기억을 빌려주는 공유 capability.
+// 어떤 진입(agent-mission·self-implement·ACP 직행)이든 elanous 기억을 빌려주는 공유 capability.
 // ⭐불변식: recall 은 **프롬프트를 재작성하지 않는다** — 별도 `[memory:...]` 블록으로 **가산**(mirage 가드·
 //   reasoning-corpus 규율 [[project_reasoning_corpus_unification]]와 동일: 기억은 참조 컨텍스트로만).
 // 그래서 external-verbatim 진입(인핸싱 OFF)에서도 원문 프롬프트를 건드리지 않고 기억만 얹을 수 있다.
@@ -62,5 +62,5 @@ export function formatMemoryContext(items: Array<string | MemoryContextItem>): s
     return [`- [memory source=${source}; time=${timestamp}; kind=${kind}] ${text.slice(0, 200)}`];
   });
   if (!facts.length) return '';
-  return ['[monad 기억 — 참조 컨텍스트(가산·프롬프트 무접촉·mirage 가드)]', ...facts].join('\n');
+  return ['[elanous 기억 — 참조 컨텍스트(가산·프롬프트 무접촉·mirage 가드)]', ...facts].join('\n');
 }

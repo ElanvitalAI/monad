@@ -47,7 +47,7 @@
  *
  * 6 themes: catppuccin-mocha · mocha-pastel-accent (dark)
  *           catppuccin-latte · rose-pine-dawn · nord-light
- *           monad-pastel-default (light pastel)
+ *           elanous-pastel-default (light pastel)
  *
  * Token mapping policy (constant across themes):
  *   --foreground          ← colors.text
@@ -247,7 +247,7 @@
   --sidebar-ring:               #5e81ac;
 }
 
-[data-theme='monad-pastel-default'] {
+[data-theme='elanous-pastel-default'] {
   color-scheme: light;
   --background:                 #fbf6ee;
   --foreground:                 #3a2f23;

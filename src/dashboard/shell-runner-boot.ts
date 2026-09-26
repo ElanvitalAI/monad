@@ -1,4 +1,4 @@
-// ── 마이그레이션 shim (RFC-monad-tiered-tool-exposure §6b · M1) ──
+// ── 마이그레이션 shim (RFC-elanous-tiered-tool-exposure §6b · M1) ──
 //
 // shell-runner boot 는 크로스서피스 장치(shell/PTY 실행은 TUI 만이 아니라 모든
 // 서피스가 쓴다)라 표면-중립 home 인 `src/surface/` 로 이전했다(surface/shell-

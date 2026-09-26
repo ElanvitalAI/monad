@@ -1,6 +1,6 @@
 // review-observation — 절단 정책·정직 표기 회귀 가드.
 //
-// 이 모듈의 존재 이유는 **관측 갭 수리**다(수동 `monad self review` 의 verdict 가 보존되지 않았다).
+// 이 모듈의 존재 이유는 **관측 갭 수리**다(수동 `elanous self review` 의 verdict 가 보존되지 않았다).
 // 절단이 과하면 감사가 안 되고 느슨하면 로그가 폭주한다 — 그 균형을 여기서 고정한다.
 import { describe, expect, test } from 'bun:test';
 import { buildReviewObservation, safeLogText } from './review-observation.js';

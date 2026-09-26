@@ -16,7 +16,7 @@
 //   mtd/qtd → 전월/전분기 말일               ← 동일
 //   today/-Nd → KST 00:00~09:00 구간에서만 하루 밀림
 // 산술이 로컬이므로 포맷도 로컬로 맞추는 것이 최소·정합 수정이다.
-// (monad 측 계약: src/time/format.ts — 저장은 UTC, 표시·날짜키는 사용자 시간대)
+// (elanous 측 계약: src/time/format.ts — 저장은 UTC, 표시·날짜키는 사용자 시간대)
 function fmt(d: Date): string {
   const p = (n: number): string => String(n).padStart(2, '0');
   return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`;

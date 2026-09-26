@@ -5,7 +5,7 @@
 // mode + focus + busy + actions bridge back to dashboard.
 
 import type {
-  MonadPlugin, SlashCommand, Keybinding, LLMToolDef, PluginLayoutCtx, PluginContext,
+  ElanousPlugin, SlashCommand, Keybinding, LLMToolDef, PluginLayoutCtx, PluginContext,
 } from '../../src/plugins/core/types.js';
 import type { WidgetInstance } from '../../src/widgets/types.js';
 import type { Layout } from '../../src/layout/types.js';
@@ -383,7 +383,7 @@ function buildLayout(ctx: PluginLayoutCtx<SyncPluginState>): Layout {
   ]);
 }
 
-const plugin: MonadPlugin<SyncPluginState> = {
+const plugin: ElanousPlugin<SyncPluginState> = {
   name: 'sync',
   version: '0.3.0',
   description: 'Rsync skills to local or remote servers — pick targets, pick mode, run',

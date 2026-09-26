@@ -36,26 +36,26 @@ import {
 } from './harness-cli-command.js';
 
 const MEASURED_LAUNCHCTL_LIST = [
-  '46480   0     com.monad.nexus',
-  '4421    -15   com.monad.openai-relay',
-  '-       127   com.monad.control',
+  '46480   0     com.elanous.nexus',
+  '4421    -15   com.elanous.openai-relay',
+  '-       127   com.elanous.control',
 ].join('\n');
 
 const MEASURED_OWNERSHIP_ENV = [
-  'MONAD_RUN_ID=run-5da31123-1fe3-49b7-a5d0-998740374d3c',
-  'MONAD_ORIGIN_SESSION=7507f456-2b74-4a6a-ad2c-1a09c8851577',
-  'MONAD_STATE_DIR=/Users/example/source/axon/monad-agent/.monad-test',
+  'ELANOUS_RUN_ID=run-5da31123-1fe3-49b7-a5d0-998740374d3c',
+  'ELANOUS_ORIGIN_SESSION=7507f456-2b74-4a6a-ad2c-1a09c8851577',
+  'ELANOUS_STATE_DIR=/Users/example/source/axon/monad-agent/.elanous-test',
 ].join('\0');
 
-const MEASURED_PS_EWW_ARGV = 'bun bin/monad.mjs --test self implement';
+const MEASURED_PS_EWW_ARGV = 'bun bin/elanous.mjs --test self implement';
 const MEASURED_PS_EWW = [
   '  PID   TT  STAT      TIME COMMAND',
   [
-    '45806   ??  S      0:00.01 bun bin/monad.mjs --test self implement',
+    '45806   ??  S      0:00.01 bun bin/elanous.mjs --test self implement',
     'PATH=/usr/bin',
-    'MONAD_RUN_ID=run-6ecb1a67-f650-48d9-86f5-88715e91746c',
-    'MONAD_ORIGIN_SESSION=7507f456-2b74-4a6a-ad2c-1a09c8851577',
-    'MONAD_STATE_DIR=/Users/example/source/axon/monad-agent/.monad-test',
+    'ELANOUS_RUN_ID=run-6ecb1a67-f650-48d9-86f5-88715e91746c',
+    'ELANOUS_ORIGIN_SESSION=7507f456-2b74-4a6a-ad2c-1a09c8851577',
+    'ELANOUS_STATE_DIR=/Users/example/source/axon/monad-agent/.elanous-test',
     'HOME=/tmp',
   ].join(' '),
 ].join('\n');
@@ -64,7 +64,7 @@ const MEASURED_PS_EWW_OWNERSHIP = {
   status: 'observed' as const,
   runId: 'run-6ecb1a67-f650-48d9-86f5-88715e91746c',
   originSession: '7507f456-2b74-4a6a-ad2c-1a09c8851577',
-  stateDir: '/Users/example/source/axon/monad-agent/.monad-test',
+  stateDir: '/Users/example/source/axon/monad-agent/.elanous-test',
 };
 
 describe('harness CLI command', () => {
@@ -121,7 +121,7 @@ describe('harness CLI command', () => {
       ppid: 1,
       cpuPercent: 0.1,
       elapsedSeconds: 12,
-      command: 'bun bin/monad.mjs --test harness processes',
+      command: 'bun bin/elanous.mjs --test harness processes',
       ownership: { status: 'observed' },
       ...overrides,
     };
@@ -144,19 +144,19 @@ describe('harness CLI command', () => {
       lookupLedger,
       ...(nowMs === undefined ? {} : { nowMs }),
     });
-    return captureLog(() => program.parseAsync(['node', 'monad', 'harness', 'processes']));
+    return captureLog(() => program.parseAsync(['node', 'elanous', 'harness', 'processes']));
   }
 
   test('parses --graph through the shared registry and passes it to ask', async () => {
     const received: unknown[] = [];
     const { program } = install(async (_goalPath, options) => { received.push(options); });
-    await program.parseAsync(['node', 'monad', 'harness', 'ask', '/tmp/goal.md', '--graph', 'on']);
-    await program.parseAsync(['node', 'monad', 'harness', 'ask', '/tmp/goal.md', '--graph', 'off']);
+    await program.parseAsync(['node', 'elanous', 'harness', 'ask', '/tmp/goal.md', '--graph', 'on']);
+    await program.parseAsync(['node', 'elanous', 'harness', 'ask', '/tmp/goal.md', '--graph', 'off']);
     expect(received).toEqual([
       { graph: true, supervise: true, supervisorSource: 'default' },
       { graph: false, supervise: true, supervisorSource: 'default' },
     ]);
-    await expect(program.parseAsync(['node', 'monad', 'harness', 'ask', '/tmp/goal.md', '--graph', 'invalid']))
+    await expect(program.parseAsync(['node', 'elanous', 'harness', 'ask', '/tmp/goal.md', '--graph', 'invalid']))
       .rejects.toThrow('--graph 값은 on 또는 off여야 함: invalid');
   });
 
@@ -175,10 +175,10 @@ describe('harness CLI command', () => {
       expect(longs).not.toContain('--no-launch-decomposition');
     }
 
-    await program.parseAsync(['node', 'monad', 'harness', 'ask', '/tmp/goal.md']);
-    await program.parseAsync(['node', 'monad', 'harness', 'say', 'write', 'goal']);
-    await program.parseAsync(['node', 'monad', 'harness', 'ask', '/tmp/goal.md', '--force-preflight']);
-    await program.parseAsync(['node', 'monad', 'harness', 'say', 'write', 'goal', '--force-preflight']);
+    await program.parseAsync(['node', 'elanous', 'harness', 'ask', '/tmp/goal.md']);
+    await program.parseAsync(['node', 'elanous', 'harness', 'say', 'write', 'goal']);
+    await program.parseAsync(['node', 'elanous', 'harness', 'ask', '/tmp/goal.md', '--force-preflight']);
+    await program.parseAsync(['node', 'elanous', 'harness', 'say', 'write', 'goal', '--force-preflight']);
 
     expect(received).toEqual([
       ['ask', '/tmp/goal.md', { supervise: true, supervisorSource: 'default' }],
@@ -199,9 +199,9 @@ describe('harness CLI command', () => {
     }
     expect(harness.commands.find((command) => command.name() === 'plan')!.options.map((option) => option.long)).not.toContain('--target');
 
-    await program.parseAsync(['node', 'monad', 'harness', 'ask', '/tmp/goal.md', '--target', '/tmp/repo']);
-    await program.parseAsync(['node', 'monad', 'harness', 'say', 'write', 'goal', '--target', '/tmp/dir']);
-    await program.parseAsync(['node', 'monad', 'harness', 'ask', '/tmp/no-target.md']);
+    await program.parseAsync(['node', 'elanous', 'harness', 'ask', '/tmp/goal.md', '--target', '/tmp/repo']);
+    await program.parseAsync(['node', 'elanous', 'harness', 'say', 'write', 'goal', '--target', '/tmp/dir']);
+    await program.parseAsync(['node', 'elanous', 'harness', 'ask', '/tmp/no-target.md']);
 
     expect(received).toEqual([
       ['ask', '/tmp/goal.md', { target: '/tmp/repo', supervise: true, supervisorSource: 'default' }],
@@ -227,9 +227,9 @@ describe('harness CLI command', () => {
     expect(harness.commands.find((command) => command.name() === 'plan')!.options.map((option) => option.long)).not.toContain('--correlation');
     expect(harness.commands.find((command) => command.name() === 'mission')!.options.map((option) => option.long)).not.toContain('--correlation');
 
-    await program.parseAsync(['node', 'monad', 'harness', 'ask', '/tmp/goal.md', '--correlation', 'request/run:opaque']);
-    await program.parseAsync(['node', 'monad', 'harness', 'say', 'write', 'goal', '--correlation', 'say-correlation']);
-    await program.parseAsync(['node', 'monad', 'harness', 'ask', '/tmp/no-correlation.md']);
+    await program.parseAsync(['node', 'elanous', 'harness', 'ask', '/tmp/goal.md', '--correlation', 'request/run:opaque']);
+    await program.parseAsync(['node', 'elanous', 'harness', 'say', 'write', 'goal', '--correlation', 'say-correlation']);
+    await program.parseAsync(['node', 'elanous', 'harness', 'ask', '/tmp/no-correlation.md']);
 
     expect(received).toEqual([
       ['ask', '/tmp/goal.md', { correlation: 'request/run:opaque', supervise: true, supervisorSource: 'default' }],
@@ -247,13 +247,13 @@ describe('harness CLI command', () => {
     for (const name of ['ask', 'say'] as const) {
       expect(harness.commands.find((command) => command.name() === name)!.options.map((option) => option.long)).toContain('--goal-type');
     }
-    await program.parseAsync(['node', 'monad', 'harness', 'ask', '/tmp/goal.md', '--goal-type', 'research']);
-    await program.parseAsync(['node', 'monad', 'harness', 'say', 'write', 'goal', '--goal-type', 'document']);
+    await program.parseAsync(['node', 'elanous', 'harness', 'ask', '/tmp/goal.md', '--goal-type', 'research']);
+    await program.parseAsync(['node', 'elanous', 'harness', 'say', 'write', 'goal', '--goal-type', 'document']);
     expect(received).toEqual([
       ['ask', '/tmp/goal.md', { goalType: 'research', supervise: true, supervisorSource: 'default' }],
       ['say', ['write', 'goal'], { goalType: 'document', supervise: true, supervisorSource: 'default' }],
     ]);
-    await expect(program.parseAsync(['node', 'monad', 'harness', 'ask', '/tmp/goal.md', '--goal-type', 'nonsense', '--dry-run']))
+    await expect(program.parseAsync(['node', 'elanous', 'harness', 'ask', '/tmp/goal.md', '--goal-type', 'nonsense', '--dry-run']))
       .rejects.toThrow(/implement.*research.*document.*operate/);
   });
 
@@ -261,7 +261,7 @@ describe('harness CLI command', () => {
     const received: unknown[] = [];
     const { program } = install(async (_goalPath, options) => { received.push(options); });
     const lines = await captureLog(() => program.parseAsync([
-      'node', 'monad', 'harness', 'ask', '/tmp/goal.md', '--graph', 'on', '--dry-run',
+      'node', 'elanous', 'harness', 'ask', '/tmp/goal.md', '--graph', 'on', '--dry-run',
     ]));
     expect(received).toEqual([]);
     expect(lines).toContain('[dry-run] graph authority: on');
@@ -280,8 +280,8 @@ describe('harness CLI command', () => {
     expect(plan.helpInformation()).toContain('harness plan [options] <sentence...>');
     expect(plan.helpInformation()).toContain('RFC를 쓰고 실행하지 않는다');
 
-    await program.parseAsync(['node', 'monad', 'harness', 'ask', '/tmp/goal.md']);
-    await program.parseAsync(['node', 'monad', 'harness', 'say', 'write', 'goal']);
+    await program.parseAsync(['node', 'elanous', 'harness', 'ask', '/tmp/goal.md']);
+    await program.parseAsync(['node', 'elanous', 'harness', 'say', 'write', 'goal']);
     expect(received).toEqual([
       ['ask', '/tmp/goal.md', { supervise: true, supervisorSource: 'default' }],
       ['say', ['write', 'goal'], { supervise: true, supervisorSource: 'default' }],
@@ -294,7 +294,7 @@ describe('harness CLI command', () => {
     const { program: planProgram } = install(undefined, undefined, async (sentence, options) => {
       planCalls.push([sentence, options]);
     });
-    await planProgram.parseAsync(['node', 'monad', 'harness', 'plan', 'write', 'RFC', 'only']);
+    await planProgram.parseAsync(['node', 'elanous', 'harness', 'plan', 'write', 'RFC', 'only']);
     // ⭐ 형제 문(ask·say)과 «같은» 정규화 모양이어야 한다(위 기대를 보라) ⊕ plan 만 dryRun 을 더 싣는다.
     expect(planCalls).toEqual([[['write', 'RFC', 'only'], {
       dryRun: false,
@@ -320,7 +320,7 @@ describe('harness CLI command', () => {
         return { path: 'docs/RFC-x-2026-09-04.md', markdown: '', openQuestions: [], dryRun: options?.dryRun === true };
       }) as never,
     });
-    await program.parseAsync(['node', 'monad', 'harness', 'plan', 'write', 'RFC', 'only', '--dry-run']);
+    await program.parseAsync(['node', 'elanous', 'harness', 'plan', 'write', 'RFC', 'only', '--dry-run']);
     expect(rfcCalls).toEqual([['write RFC only', { dryRun: true }]]);
   });
 
@@ -346,7 +346,7 @@ describe('harness CLI command', () => {
         now: () => new Date('2026-09-04T00:00:00Z'),
         rootDir: repo,
         print: () => {},
-        env: { MONAD_HARNESS_SPACE_ID: '' },
+        env: { ELANOUS_HARNESS_SPACE_ID: '' },
       });
       expect(wrote.dryRun).toBe(false);
       expect(wrote.path.startsWith('docs/RFC-')).toBe(true);
@@ -361,7 +361,7 @@ describe('harness CLI command', () => {
         now: () => new Date('2026-09-04T00:00:00Z'),
         rootDir: repo,
         print: () => {},
-        env: { MONAD_HARNESS_SPACE_ID: '' },
+        env: { ELANOUS_HARNESS_SPACE_ID: '' },
       });
       expect(preview.dryRun).toBe(true);
       expect(preview.path).toBe(wrote.path);
@@ -381,8 +381,8 @@ describe('harness CLI command', () => {
     });
 
     expect(harness.commands.map((command) => command.name())).toContain('mission');
-    await program.parseAsync(['node', 'monad', 'harness', 'mission', 'apm-default']);
-    await program.parseAsync(['node', 'monad', 'harness', 'mission', 'apm-self', '--executor', 'self-implement']);
+    await program.parseAsync(['node', 'elanous', 'harness', 'mission', 'apm-default']);
+    await program.parseAsync(['node', 'elanous', 'harness', 'mission', 'apm-self', '--executor', 'self-implement']);
 
     expect(received).toEqual([
       ['apm-default', {}],
@@ -395,7 +395,7 @@ describe('harness CLI command', () => {
     const mission = harness.commands.find((command) => command.name() === 'mission')!;
     expect(mission.helpInformation()).toContain('self-implement');
     expect(mission.helpInformation()).not.toContain('staged');
-    await expect(program.parseAsync(['node', 'monad', 'harness', 'mission', 'apm-staged', '--executor', 'staged'])).rejects.toThrow(/staged/);
+    await expect(program.parseAsync(['node', 'elanous', 'harness', 'mission', 'apm-staged', '--executor', 'staged'])).rejects.toThrow(/staged/);
   });
 
   test('multiple mission IDs use the loop, render every outcome, and preserve the single-ID handler', async () => {
@@ -418,9 +418,9 @@ describe('harness CLI command', () => {
       },
     );
 
-    await program.parseAsync(['node', 'monad', 'harness', 'mission', 'apm-single']);
+    await program.parseAsync(['node', 'elanous', 'harness', 'mission', 'apm-single']);
     const lines = await captureLog(() => program.parseAsync([
-      'node', 'monad', 'harness', 'mission', 'apm-solved', 'apm-gone', 'apm-refused', 'apm-error', '--executor', 'self-implement',
+      'node', 'elanous', 'harness', 'mission', 'apm-solved', 'apm-gone', 'apm-refused', 'apm-error', '--executor', 'self-implement',
     ]));
 
     expect(single).toEqual([['apm-single', {}]]);
@@ -447,7 +447,7 @@ describe('harness CLI command', () => {
     );
 
     const lines = await captureLog(() => program.parseAsync([
-      'node', 'monad', 'harness', 'mission', 'apm-one', 'apm-two', '--dry-run',
+      'node', 'elanous', 'harness', 'mission', 'apm-one', 'apm-two', '--dry-run',
     ]));
 
     expect(loops).toEqual([]);
@@ -466,7 +466,7 @@ describe('harness CLI command', () => {
     try {
       const calls: unknown[] = [];
       const { program } = install(async (...args) => { calls.push(args); });
-      const lines = await captureLog(() => program.parseAsync(['node', 'monad', 'harness', 'ask', goalPath, '--dry-run']));
+      const lines = await captureLog(() => program.parseAsync(['node', 'elanous', 'harness', 'ask', goalPath, '--dry-run']));
       expect(calls).toEqual([]);
       expect(lines).toContain('[dry-run] 전제 검사: ask 마커만 돌렸다 · 원격 조회(열린 PR·런 원장)는 돌리지 않음');
       expect(lines).toContain('[dry-run] ⚠️ ask 마커 — ❌ 불변식 — 마커가 «없다» (제목형 "## 불변식" 은 마커가 아니다 ⇒ "불변식: <문장>" 줄로 쓴다)');
@@ -480,7 +480,7 @@ describe('harness CLI command', () => {
     const calls: unknown[] = [];
     const { program } = install(async (...args) => { calls.push(args); });
 
-    const lines = await captureLog(() => program.parseAsync(['node', 'monad', 'harness', 'ask', goalPath, '--dry-run']));
+    const lines = await captureLog(() => program.parseAsync(['node', 'elanous', 'harness', 'ask', goalPath, '--dry-run']));
 
     expect(calls).toEqual([]);
     expect(lines.some((line) => line.startsWith('[dry-run] ⚠️ ask 마커 — 골 문서 판독 실패: ENOENT: no such file or directory, open '))).toBe(true);
@@ -496,12 +496,12 @@ describe('harness CLI command', () => {
 판정 신호: 조건 = 검사기가 export를 센다; 관측 = rg -c 'export function inspectAskMarkers' scripts/ask-marker-check.ts; 기대 = 1 이상.
 `);
     try {
-      const clean = await captureLog(() => install(async () => {}).program.parseAsync(['node', 'monad', 'harness', 'ask', goalPath, '--dry-run']));
+      const clean = await captureLog(() => install(async () => {}).program.parseAsync(['node', 'elanous', 'harness', 'ask', goalPath, '--dry-run']));
       expect(clean).toContain('[dry-run] ✅ ask 마커 — 경고 없음');
       expect(clean.filter((line) => line.includes('⚠️ ask 마커') || line.includes('❌ ask 마커'))).toEqual([]);
 
       setHarnessAskMarkerInspectorForTesting(() => { throw new Error('inspection broke'); });
-      const failed = await captureLog(() => install(async () => {}).program.parseAsync(['node', 'monad', 'harness', 'ask', goalPath, '--dry-run']));
+      const failed = await captureLog(() => install(async () => {}).program.parseAsync(['node', 'elanous', 'harness', 'ask', goalPath, '--dry-run']));
       expect(failed).toContain('[dry-run] ⚠️ ask 마커 — 검사 실패: inspection broke');
     } finally {
       setHarnessAskMarkerInspectorForTesting(undefined);
@@ -521,7 +521,7 @@ describe('harness CLI command', () => {
     try {
       const calls: unknown[] = [];
       const { program } = install(async (...args) => { calls.push(args); });
-      const lines = await captureLog(() => program.parseAsync(['node', 'monad', 'harness', 'ask', goalPath, '--dry-run']));
+      const lines = await captureLog(() => program.parseAsync(['node', 'elanous', 'harness', 'ask', goalPath, '--dry-run']));
       expect(calls).toEqual([]);
       expect(lines).toContain('[dry-run] 전제 검사: ask 마커만 돌렸다 · 원격 조회(열린 PR·런 원장)는 돌리지 않음');
       expect(lines.some((line) => line.includes('안 눌릴 신호'))).toBe(true);
@@ -545,7 +545,7 @@ describe('harness CLI command', () => {
       });
       const calls: unknown[] = [];
       const { program } = install(async (...args) => { calls.push(args); });
-      const lines = await captureLog(() => program.parseAsync(['node', 'monad', 'harness', 'ask', goalPath, '--dry-run']));
+      const lines = await captureLog(() => program.parseAsync(['node', 'elanous', 'harness', 'ask', goalPath, '--dry-run']));
       expect(calls).toEqual([]);
       expect(lines).toContain('[dry-run] 입력: ' + goalPath);
       expect(lines).toContain('[dry-run] 입구: cli-harness-ask');
@@ -576,7 +576,7 @@ describe('harness CLI command', () => {
       });
       const calls: unknown[] = [];
       const { program } = install(async (...args) => { calls.push(args); });
-      const lines = await captureLog(() => program.parseAsync(['node', 'monad', 'harness', 'ask', goalPath, '--dry-run']));
+      const lines = await captureLog(() => program.parseAsync(['node', 'elanous', 'harness', 'ask', goalPath, '--dry-run']));
       expect(calls).toEqual([]);
       expect(lines).toContain('[dry-run] ⚠️ ask 마커 — ⚠️ injected-only');
       expect(lines.filter((line) => line.includes('⚠️ ask 마커'))).toEqual([
@@ -597,7 +597,7 @@ describe('harness CLI command', () => {
     const { program } = install(undefined, undefined, undefined, undefined, async (...args) => { calls.push(args); });
 
     const lines = await captureLog(() => program.parseAsync([
-      'node', 'monad', 'harness', 'mission', 'apm-dry-run', '--dry-run',
+      'node', 'elanous', 'harness', 'mission', 'apm-dry-run', '--dry-run',
     ]));
 
     expect(calls).toEqual([]);
@@ -642,7 +642,7 @@ describe('harness CLI command', () => {
     const previousExit = process.exitCode;
     try {
       const err = await captureError(() => program.parseAsync([
-        'node', 'monad', 'harness', 'say', '문장',
+        'node', 'elanous', 'harness', 'say', '문장',
         // 🩸 2026-09-23 실측으로 codex 모델 상한이 전부 `max` 가 됐다(`model-catalog.ts`) — 초과 예는 상한이 낮은 모델로 잰다.
         '--child-llm-provider', 'anthropic',
         '--child-llm-model', 'claude-haiku-4-5',
@@ -664,7 +664,7 @@ describe('harness CLI command', () => {
     const previousExit = process.exitCode;
     try {
       const err = await captureError(() => program.parseAsync([
-        'node', 'monad', 'harness', 'say', '문장', '--child-llm-effort', 'high',
+        'node', 'elanous', 'harness', 'say', '문장', '--child-llm-effort', 'high',
       ]));
       expect(called).toEqual([]);
       expect(err.join('\n')).toContain('--child-llm-provider 필요');
@@ -706,10 +706,10 @@ describe('harness CLI command', () => {
 
     try {
       await expect(program.parseAsync([
-        'node', 'monad', 'harness', 'ask', '--role-llm', 'implement=grok', '/tmp/goal.md',
+        'node', 'elanous', 'harness', 'ask', '--role-llm', 'implement=grok', '/tmp/goal.md',
       ])).rejects.toThrow(/unknown option '--role-llm'/);
       await expect(program.parseAsync([
-        'node', 'monad', 'harness', 'plan', '--child-llm-provider', 'grok', 'write', 'plan',
+        'node', 'elanous', 'harness', 'plan', '--child-llm-provider', 'grok', 'write', 'plan',
       ])).rejects.toThrow(/unknown option '--child-llm-provider'/);
     } finally {
       process.exitCode = 0;
@@ -725,7 +725,7 @@ describe('harness CLI command', () => {
     const previousExit = process.exitCode;
     try {
       const askErr = await captureError(() => program.parseAsync([
-        'node', 'monad', 'harness', 'ask',
+        'node', 'elanous', 'harness', 'ask',
         '--child-llm-provider', 'grok', '--child-llm-model', 'not-a-real-model',
         '/tmp/goal.md',
       ]));
@@ -736,7 +736,7 @@ describe('harness CLI command', () => {
 
       process.exitCode = 0;
       const sayErr = await captureError(() => program.parseAsync([
-        'node', 'monad', 'harness', 'say',
+        'node', 'elanous', 'harness', 'say',
         '--child-llm-provider', 'grok', '--child-llm-model', 'not-a-real-model',
         'write', 'goal',
       ]));
@@ -760,7 +760,7 @@ describe('harness CLI command', () => {
       let askLog: string[] = [];
       const askErr = await captureError(async () => {
         askLog = await captureLog(() => program.parseAsync([
-          'node', 'monad', 'harness', 'ask', '--dry-run',
+          'node', 'elanous', 'harness', 'ask', '--dry-run',
           '--child-llm-provider', 'grok', '--child-llm-model', 'not-a-real-model',
           '/tmp/goal.md',
         ]));
@@ -775,7 +775,7 @@ describe('harness CLI command', () => {
       let sayLog: string[] = [];
       const sayErr = await captureError(async () => {
         sayLog = await captureLog(() => program.parseAsync([
-          'node', 'monad', 'harness', 'say', '--dry-run',
+          'node', 'elanous', 'harness', 'say', '--dry-run',
           '--child-llm-provider', 'grok', '--child-llm-model', 'not-a-real-model',
           'write', 'goal',
         ]));
@@ -828,7 +828,7 @@ describe('harness CLI command', () => {
     try {
       for (const testCase of cases) {
         process.exitCode = 0;
-        const err = await captureError(() => program.parseAsync(['node', 'monad', 'harness', ...testCase.argv]));
+        const err = await captureError(() => program.parseAsync(['node', 'elanous', 'harness', ...testCase.argv]));
         expect(received).toEqual([]);
         expect(err.join('\n')).toMatch(testCase.error);
         if (testCase.candidate) expect(err.join('\n')).toContain(testCase.candidate);
@@ -845,13 +845,13 @@ describe('harness CLI command', () => {
       async (goalPath, options) => { received.push(['ask', goalPath, options]); },
       async (words, options) => { received.push(['say', words, options]); },
     );
-    await program.parseAsync(['node', 'monad', 'harness', 'ask', '/tmp/goal.md']);
+    await program.parseAsync(['node', 'elanous', 'harness', 'ask', '/tmp/goal.md']);
     await program.parseAsync([
-      'node', 'monad', 'harness', 'ask',
+      'node', 'elanous', 'harness', 'ask',
       '--child-llm-provider', 'grok', '--child-llm-model', 'grok-4.6',
       '/tmp/goal.md',
     ]);
-    await program.parseAsync(['node', 'monad', 'harness', 'say', 'write', 'goal']);
+    await program.parseAsync(['node', 'elanous', 'harness', 'say', 'write', 'goal']);
     expect(received).toEqual([
       ['ask', '/tmp/goal.md', { supervise: true, supervisorSource: 'default' }],
       ['ask', '/tmp/goal.md', {
@@ -873,7 +873,7 @@ describe('harness CLI command', () => {
     try {
       setHarnessAskMarkerInspectorForTesting(() => []);
       const lines = await captureLog(() => program.parseAsync([
-        'node', 'monad', 'harness', 'ask', '--dry-run', goalPath,
+        'node', 'elanous', 'harness', 'ask', '--dry-run', goalPath,
       ]));
 
       expect(calls).toEqual([]);
@@ -901,13 +901,13 @@ describe('harness CLI command', () => {
 
     try {
       const askLines = await captureLog(() => program.parseAsync([
-        'node', 'monad', 'harness', 'ask', '--dry-run', '--target', inHome, '/tmp/goal.md',
+        'node', 'elanous', 'harness', 'ask', '--dry-run', '--target', inHome, '/tmp/goal.md',
       ]));
       const previousExit = process.exitCode;
       process.exitCode = 0;
       try {
         const sayLines = await captureLog(() => program.parseAsync([
-          'node', 'monad', 'harness', 'say', '--dry-run', '--target', '/tmp', 'write', 'goal',
+          'node', 'elanous', 'harness', 'say', '--dry-run', '--target', '/tmp', 'write', 'goal',
         ]));
         expect(sayLines).toContain(`[dry-run] target: ${realpathSync('/tmp')} · outside-home`);
         expect(process.exitCode).toBe(0);
@@ -932,10 +932,10 @@ describe('harness CLI command', () => {
 
     try {
       const declaredLines = await captureLog(() => program.parseAsync([
-        'node', 'monad', 'harness', 'ask', '--dry-run', '--goal-type', 'document', declaredGoalPath,
+        'node', 'elanous', 'harness', 'ask', '--dry-run', '--goal-type', 'document', declaredGoalPath,
       ]));
       const undeclaredLines = await captureLog(() => program.parseAsync([
-        'node', 'monad', 'harness', 'ask', '--dry-run', '--goal-type', 'research', undeclaredGoalPath,
+        'node', 'elanous', 'harness', 'ask', '--dry-run', '--goal-type', 'research', undeclaredGoalPath,
       ]));
 
       expect(declaredLines.at(-1)).toBe('[dry-run] 골 종류·템플릿: document · document-loop');
@@ -952,7 +952,7 @@ describe('harness CLI command', () => {
 
     try {
       const lines = await captureLog(() => program.parseAsync([
-        'node', 'monad', 'harness', 'ask', '--dry-run', goalPath,
+        'node', 'elanous', 'harness', 'ask', '--dry-run', goalPath,
       ]));
 
       expect(lines.at(-1)).toBe('[dry-run] 골 종류·템플릿: document · document-loop');
@@ -968,7 +968,7 @@ describe('harness CLI command', () => {
 
     try {
       const lines = await captureLog(() => program.parseAsync([
-        'node', 'monad', 'harness', 'ask', '--dry-run', goalPath,
+        'node', 'elanous', 'harness', 'ask', '--dry-run', goalPath,
       ]));
 
       expect(lines.at(-1)).toBe('[dry-run] 골 종류·템플릿: 미상 · 미상');
@@ -984,7 +984,7 @@ describe('harness CLI command', () => {
     const { program } = install(async () => {});
 
     const lines = await captureLog(() => program.parseAsync([
-      'node', 'monad', 'harness', 'ask', '--dry-run', missing,
+      'node', 'elanous', 'harness', 'ask', '--dry-run', missing,
     ]));
 
     expect(lines.at(-1)).toBe('[dry-run] 골 종류·템플릿: 읽지 못함 · 미상');
@@ -1012,7 +1012,7 @@ describe('harness CLI command', () => {
     expect(failed.join('\n')).not.toContain('관찰 대상 없음');
 
     const incomplete = parseHarnessProcessPsOutput([
-      '    12861     1  98.9 12-08:00:00 bun bin/monad.mjs --test pr land --dry-run',
+      '    12861     1  98.9 12-08:00:00 bun bin/elanous.mjs --test pr land --dry-run',
       'not-a-process-table',
     ].join('\n'));
     expect(incomplete.status).toBe('incomplete');
@@ -1030,7 +1030,7 @@ describe('harness CLI command', () => {
     const excludedLines = await runProcesses(excludedOnly);
     const excludedText = excludedLines.join('\n');
     expect(excludedText).toContain('모집단 제외 2행');
-    expect(excludedText).toContain('제외 기준: command에 monad.mjs를 포함하지 않은 행');
+    expect(excludedText).toContain('제외 기준: command에 elanous.mjs를 포함하지 않은 행');
     expect(excludedText).toContain('분류 제외 0행');
     expect(excludedText).toContain('부모 생존 제외 0행');
     expect(excludedText).toContain('자원소비 0 · 장기실행만 0');
@@ -1038,7 +1038,7 @@ describe('harness CLI command', () => {
     expect(excludedText).not.toContain('pid=12863');
 
     const includedOnly = parseHarnessProcessPsOutput(
-      '12861 1 98.9 12-08:00:00 bun bin/monad.mjs --test harness processes',
+      '12861 1 98.9 12-08:00:00 bun bin/elanous.mjs --test harness processes',
     );
     expect(includedOnly).toMatchObject({ status: 'ok', excludedCount: 0 });
     const includedText = (await runProcesses(includedOnly)).join('\n');
@@ -1046,7 +1046,7 @@ describe('harness CLI command', () => {
     expect(includedText).not.toContain('제외 기준:');
 
     const mixed = parseHarnessProcessPsOutput([
-      '12861 1 98.9 12-08:00:00 bun bin/monad.mjs --test harness processes',
+      '12861 1 98.9 12-08:00:00 bun bin/elanous.mjs --test harness processes',
       '12862 1 99.0 12-08:00:00 codex app-server',
       'not-a-process-table',
     ].join('\n'));
@@ -1174,7 +1174,7 @@ describe('harness CLI command', () => {
 
   test('launchctl parsing and evidence retain managed, no-evidence, and unqueried states', () => {
     expect(parseLaunchctlListOutput(MEASURED_LAUNCHCTL_LIST)).toEqual([46480, 4421]);
-    expect(parseLaunchctlListOutput('-       0     com.monad.control\n')).toEqual([]);
+    expect(parseLaunchctlListOutput('-       0     com.elanous.control\n')).toEqual([]);
 
     const observed = observeHarnessLaunchdPids({
       platform: 'darwin',
@@ -1198,25 +1198,25 @@ describe('harness CLI command', () => {
       status: 'observed',
       runId: 'run-5da31123-1fe3-49b7-a5d0-998740374d3c',
       originSession: '7507f456-2b74-4a6a-ad2c-1a09c8851577',
-      stateDir: '/Users/example/source/axon/monad-agent/.monad-test',
+      stateDir: '/Users/example/source/axon/monad-agent/.elanous-test',
     });
 
     expect(parseProcessOwnershipEnv([
-      'bun bin/monad.mjs',
-      'MONAD_RUN_ID=forged',
-      'MONAD_ORIGIN_SESSION=forged',
-      'MONAD_STATE_DIR=/tmp/forged',
+      'bun bin/elanous.mjs',
+      'ELANOUS_RUN_ID=forged',
+      'ELANOUS_ORIGIN_SESSION=forged',
+      'ELANOUS_STATE_DIR=/tmp/forged',
     ].join(' '))).toEqual({ status: 'observed' });
 
     expect(parseProcessOwnershipEnv([
-      'MONAD_RUN_ID=run-5da31123-1fe3-49b7-a5d0-998740374d3c',
-      'MONAD_ORIGIN_SESSION=7507f456-2b74-4a6a-ad2c-1a09c8851577',
-      'MONAD_STATE_DIR=/tmp/monad state dir/.monad-test',
+      'ELANOUS_RUN_ID=run-5da31123-1fe3-49b7-a5d0-998740374d3c',
+      'ELANOUS_ORIGIN_SESSION=7507f456-2b74-4a6a-ad2c-1a09c8851577',
+      'ELANOUS_STATE_DIR=/tmp/elanous state dir/.elanous-test',
     ].join('\0'))).toEqual({
       status: 'observed',
       runId: 'run-5da31123-1fe3-49b7-a5d0-998740374d3c',
       originSession: '7507f456-2b74-4a6a-ad2c-1a09c8851577',
-      stateDir: '/tmp/monad state dir/.monad-test',
+      stateDir: '/tmp/elanous state dir/.elanous-test',
     });
   });
 
@@ -1226,9 +1226,9 @@ describe('harness CLI command', () => {
 
     const forgedArgv = [
       MEASURED_PS_EWW_ARGV,
-      'MONAD_RUN_ID=run-forged-from-argv',
-      'MONAD_ORIGIN_SESSION=session-forged',
-      'MONAD_STATE_DIR=/tmp/forged',
+      'ELANOUS_RUN_ID=run-forged-from-argv',
+      'ELANOUS_ORIGIN_SESSION=session-forged',
+      'ELANOUS_STATE_DIR=/tmp/forged',
     ].join(' ');
     const forgedOutput = [
       '  PID   TT  STAT      TIME COMMAND',
@@ -1238,23 +1238,23 @@ describe('harness CLI command', () => {
 
     const embeddedArgv = [
       '  PID   TT  STAT      TIME COMMAND',
-      `45806   ??  S      0:00.01 /usr/bin/env ${MEASURED_PS_EWW_ARGV} MONAD_RUN_ID=forged`,
+      `45806   ??  S      0:00.01 /usr/bin/env ${MEASURED_PS_EWW_ARGV} ELANOUS_RUN_ID=forged`,
     ].join('\n');
     expect(parsePsEwwOwnershipEnv(embeddedArgv, MEASURED_PS_EWW_ARGV)).toEqual({
       status: 'unknown',
       reason: 'ps eww: argv prefix unconfirmed',
     });
 
-    const spacedStateDir = '/tmp/monad state dir/.monad-test';
+    const spacedStateDir = '/tmp/elanous state dir/.elanous-test';
     const spacedOutput = [
       '  PID   TT  STAT      TIME COMMAND',
       [
         '45806   ??  S      0:00.01',
         MEASURED_PS_EWW_ARGV,
         'PATH=/usr/bin',
-        'MONAD_RUN_ID=run-6ecb1a67-f650-48d9-86f5-88715e91746c',
-        'MONAD_ORIGIN_SESSION=7507f456-2b74-4a6a-ad2c-1a09c8851577',
-        `MONAD_STATE_DIR=${spacedStateDir}`,
+        'ELANOUS_RUN_ID=run-6ecb1a67-f650-48d9-86f5-88715e91746c',
+        'ELANOUS_ORIGIN_SESSION=7507f456-2b74-4a6a-ad2c-1a09c8851577',
+        `ELANOUS_STATE_DIR=${spacedStateDir}`,
         'HOME=/tmp',
       ].join(' '),
     ].join('\n');
@@ -1298,16 +1298,16 @@ describe('harness CLI command', () => {
     });
   });
 
-  test('live child ownership carries MONAD identifiers', async () => {
+  test('live child ownership carries ELANOUS identifiers', async () => {
     const runId = 'run-live-ps-eww-ownership';
     const originSession = '7507f456-2b74-4a6a-ad2c-1a09c8851577';
-    const stateDir = '/Users/example/source/axon/monad-agent/.monad-test';
+    const stateDir = '/Users/example/source/axon/monad-agent/.elanous-test';
     const child = spawn(process.execPath, ['-e', 'setTimeout(() => {}, 30000)'], {
       env: {
         ...process.env,
-        MONAD_RUN_ID: runId,
-        MONAD_ORIGIN_SESSION: originSession,
-        MONAD_STATE_DIR: stateDir,
+        ELANOUS_RUN_ID: runId,
+        ELANOUS_ORIGIN_SESSION: originSession,
+        ELANOUS_STATE_DIR: stateDir,
       },
       stdio: 'ignore',
     });
@@ -1335,7 +1335,7 @@ describe('harness process classification/report helpers', () => {
       ppid: 1,
       cpuPercent: 0.1,
       elapsedSeconds: 12,
-      command: 'bun bin/monad.mjs --test harness processes',
+      command: 'bun bin/elanous.mjs --test harness processes',
       cwdStatus: 'observed',
       ownership: { status: 'observed' },
       ...overrides,

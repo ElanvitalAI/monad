@@ -12,27 +12,27 @@ import { tmpdir } from 'node:os';
 import { join as joinPath } from 'node:path';
 
 import { runDiscordBootCatchUp } from '../../src/discord/boot-catchup.js';
-import { setMonadConfigDir, resetMonadConfigDir } from '../../src/monad-config-dir.js';
+import { setElanousConfigDir, resetElanousConfigDir } from '../../src/elanous-config-dir.js';
 
 let tmp: string;
 
 beforeEach(() => {
-  tmp = mkdtempSync(joinPath(tmpdir(), 'monad-dc-catchup-'));
-  setMonadConfigDir(tmp);
+  tmp = mkdtempSync(joinPath(tmpdir(), 'elanous-dc-catchup-'));
+  setElanousConfigDir(tmp);
 });
 
 afterEach(() => {
-  resetMonadConfigDir();
+  resetElanousConfigDir();
   rmSync(tmp, { recursive: true, force: true });
 });
 
 function writeRuntime(historyDir: string): void {
   writeFileSync(
-    joinPath(tmp, 'monad.runtime.json'),
+    joinPath(tmp, 'elanous.runtime.json'),
     JSON.stringify({
       pid: process.pid,
       startedAt: new Date().toISOString(),
-      socketPath: joinPath(tmp, 'monad.sock'),
+      socketPath: joinPath(tmp, 'elanous.sock'),
       historyDir,
     }, null, 2),
   );
@@ -78,7 +78,7 @@ describe('runDiscordBootCatchUp', () => {
     mkdirSync(historyDir, { recursive: true });
     writeRuntime(historyDir);
     writeFileSync(
-      joinPath(historyDir, 'monad-session-7.jsonl'),
+      joinPath(historyDir, 'elanous-session-7.jsonl'),
       [
         JSON.stringify({ role: 'user', content: 'old user' }),
         JSON.stringify({ role: 'assistant', content: 'old reply' }),
@@ -88,7 +88,7 @@ describe('runDiscordBootCatchUp', () => {
     );
 
     const bridge = buildBridge([
-      { channelId: 'snowflake-99', sessionId: 'monad-session-7', lastSeenMsgIdx: 2 },
+      { channelId: 'snowflake-99', sessionId: 'elanous-session-7', lastSeenMsgIdx: 2 },
     ]);
     const sent: SentMessage[] = [];
     const n = await runDiscordBootCatchUp(
@@ -113,7 +113,7 @@ describe('runDiscordBootCatchUp', () => {
     writeRuntime(historyDir);
 
     const bridge = buildBridge([
-      { channelId: 'x', sessionId: 'monad-session-missing', lastSeenMsgIdx: 5 },
+      { channelId: 'x', sessionId: 'elanous-session-missing', lastSeenMsgIdx: 5 },
     ]);
     const sent: SentMessage[] = [];
     const n = await runDiscordBootCatchUp(
@@ -130,12 +130,12 @@ describe('runDiscordBootCatchUp', () => {
     mkdirSync(historyDir, { recursive: true });
     writeRuntime(historyDir);
     writeFileSync(
-      joinPath(historyDir, 'monad-session-7.jsonl'),
+      joinPath(historyDir, 'elanous-session-7.jsonl'),
       JSON.stringify({ role: 'assistant', content: 'fresh' }) + '\n',
     );
 
     const bridge = buildBridge([
-      { channelId: 'x', sessionId: 'monad-session-7', lastSeenMsgIdx: 0 },
+      { channelId: 'x', sessionId: 'elanous-session-7', lastSeenMsgIdx: 0 },
     ]);
     const n = await runDiscordBootCatchUp(
       bridge,

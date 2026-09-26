@@ -9,7 +9,7 @@ import { observeNestAtBoot, resetNestBootObservationForTest } from '../src/agent
 import { buildHarnessSeams } from '../src/harness/harness-seams.js';
 import { runSelfImplement, type SelfImplementSeams } from '../src/self-implement/orchestrator.js';
 
-const originEnvKeys = ['MONAD_ORIGIN_ROOT', 'MONAD_ORIGIN_AGENT', 'MONAD_ORIGIN_SESSION', 'MONAD_CONTROLLER', 'MONAD_NEST_DEPTH', 'AI_AGENT', 'CLAUDE_CODE_SESSION_ID'] as const;
+const originEnvKeys = ['ELANOUS_ORIGIN_ROOT', 'ELANOUS_ORIGIN_AGENT', 'ELANOUS_ORIGIN_SESSION', 'ELANOUS_CONTROLLER', 'ELANOUS_NEST_DEPTH', 'AI_AGENT', 'CLAUDE_CODE_SESSION_ID'] as const;
 const savedEnv = Object.fromEntries(originEnvKeys.map((key) => [key, process.env[key]]));
 
 afterEach(() => {
@@ -22,16 +22,16 @@ afterEach(() => {
 });
 
 function setOriginEnv(): void {
-  process.env.MONAD_ORIGIN_ROOT = 'external-agent';
-  process.env.MONAD_ORIGIN_AGENT = 'codex';
-  process.env.MONAD_ORIGIN_SESSION = 'session-origin-observation';
-  process.env.MONAD_CONTROLLER = 'parent-monad';
+  process.env.ELANOUS_ORIGIN_ROOT = 'external-agent';
+  process.env.ELANOUS_ORIGIN_AGENT = 'codex';
+  process.env.ELANOUS_ORIGIN_SESSION = 'session-origin-observation';
+  process.env.ELANOUS_CONTROLLER = 'parent-elanous';
 }
 
 function okSeams(): SelfImplementSeams {
   return {
     // ⛔⭐⭐⭐ 기본을 «무동작»으로 — 안 채우면 실제 계정 스토어를 읽고 codex 자식을 띄우고
-    //   ~/.monad/budget 에 쓴다(= 테스트가 «운영 쿼터를 소모»한다 · 리뷰 must-fix).
+    //   ~/.elanous/budget 에 쓴다(= 테스트가 «운영 쿼터를 소모»한다 · 리뷰 must-fix).
     refreshCodexQuotaSignals: async () => ({ accounts: [] }),
     createWorktree: async ({ branch, base }) => ({ path: `/tmp/${branch}`, branch, base, resolvedBase: 'a'.repeat(40), invokedHead: 'a'.repeat(40) }),
     implement: async () => ({ ok: true, summary: 'ok' }),
@@ -52,8 +52,8 @@ describe('origin observation fields', () => {
   //    ⚠️ 따라서 `' external-agent '` 는 **공백째** 실린다 — 그것이 이상하면 고칠 자리는 **세팅 쪽**이다.
   test('공백만 있으면 부재로 보되, 값의 앞뒤 공백은 다듬지 않는다(무정규화 계약)', () => {
     for (const key of originEnvKeys) delete process.env[key];
-    process.env.MONAD_ORIGIN_ROOT = ' external-agent ';
-    process.env.MONAD_ORIGIN_AGENT = '  ';
+    process.env.ELANOUS_ORIGIN_ROOT = ' external-agent ';
+    process.env.ELANOUS_ORIGIN_AGENT = '  ';
     const payload = originObservationFields();
     expect(payload.originRoot).toBe(' external-agent ');   // ⛔ trim 하지 않는다
     expect(payload.originAgent).toBeUndefined();           // 공백만 = 필드 생략
@@ -61,10 +61,10 @@ describe('origin observation fields', () => {
 
   test('blank origin values omit every field and guess no value', () => {
     for (const key of originEnvKeys) delete process.env[key];
-    process.env.MONAD_ORIGIN_ROOT = '';
-    process.env.MONAD_ORIGIN_AGENT = '   ';
-    process.env.MONAD_ORIGIN_SESSION = '';
-    process.env.MONAD_CONTROLLER = '\t';
+    process.env.ELANOUS_ORIGIN_ROOT = '';
+    process.env.ELANOUS_ORIGIN_AGENT = '   ';
+    process.env.ELANOUS_ORIGIN_SESSION = '';
+    process.env.ELANOUS_CONTROLLER = '\t';
 
     const payload = originObservationFields();
 
@@ -79,7 +79,7 @@ describe('origin observation fields', () => {
       originRoot: 'external-agent',
       originAgent: 'codex',
       originSession: 'session-origin-observation',
-      controller: 'parent-monad',
+      controller: 'parent-elanous',
     });
   });
 
@@ -98,21 +98,21 @@ describe('origin observation fields', () => {
     const env: NodeJS.ProcessEnv = { AI_AGENT: 'codex' };
 
     expect(establishExecutionOrigin(env, undefined, ' explicit-session ')).toBe('external-agent');
-    expect(env.MONAD_ORIGIN_SESSION).toBe('explicit-session');
+    expect(env.ELANOUS_ORIGIN_SESSION).toBe('explicit-session');
   });
 
   test('ignores an empty explicit session identifier and preserves a parent origin session', () => {
     const empty: NodeJS.ProcessEnv = { AI_AGENT: 'codex' };
     establishExecutionOrigin(empty, undefined, '   ');
-    expect(empty.MONAD_ORIGIN_SESSION).toBeUndefined();
+    expect(empty.ELANOUS_ORIGIN_SESSION).toBeUndefined();
 
     const inherited: NodeJS.ProcessEnv = {
       AI_AGENT: 'codex',
       CLAUDE_CODE_SESSION_ID: 'claude-session',
-      MONAD_ORIGIN_SESSION: 'parent-session',
+      ELANOUS_ORIGIN_SESSION: 'parent-session',
     };
     establishExecutionOrigin(inherited, undefined, 'explicit-session');
-    expect(inherited.MONAD_ORIGIN_SESSION).toBe('parent-session');
+    expect(inherited.ELANOUS_ORIGIN_SESSION).toBe('parent-session');
   });
 
   test('missing AI_AGENT sets human-cli without an agent key', () => {
@@ -120,31 +120,31 @@ describe('origin observation fields', () => {
 
     expect(establishExecutionOrigin()).toBe('human-cli');
     expect(originObservationFields()).toEqual({ originRoot: 'human-cli' });
-    expect(process.env.MONAD_ORIGIN_AGENT).toBeUndefined();
+    expect(process.env.ELANOUS_ORIGIN_AGENT).toBeUndefined();
   });
 
   test('set-once preserves an inherited root despite AI_AGENT', () => {
     for (const key of originEnvKeys) delete process.env[key];
-    process.env.MONAD_ORIGIN_ROOT = 'monad-internal';
+    process.env.ELANOUS_ORIGIN_ROOT = 'elanous-internal';
     process.env.AI_AGENT = 'claude-code';
 
-    expect(establishExecutionOrigin()).toBe('monad-internal');
-    expect(originObservationFields()).toEqual({ originRoot: 'monad-internal' });
+    expect(establishExecutionOrigin()).toBe('elanous-internal');
+    expect(originObservationFields()).toEqual({ originRoot: 'elanous-internal' });
   });
 
   test('propagates all four origin keys to child PTY environment', () => {
     const env = {
-      MONAD_ORIGIN_ROOT: 'external-agent',
-      MONAD_ORIGIN_AGENT: 'codex',
-      MONAD_ORIGIN_SESSION: 'agent-session',
-      MONAD_CONTROLLER: 'run-parent',
+      ELANOUS_ORIGIN_ROOT: 'external-agent',
+      ELANOUS_ORIGIN_AGENT: 'codex',
+      ELANOUS_ORIGIN_SESSION: 'agent-session',
+      ELANOUS_CONTROLLER: 'run-parent',
     };
 
     expect(identityEnv(env)).toEqual({
-      MONAD_ORIGIN_ROOT: 'external-agent',
-      MONAD_ORIGIN_AGENT: 'codex',
-      MONAD_ORIGIN_SESSION: 'agent-session',
-      MONAD_CONTROLLER: 'run-parent',
+      ELANOUS_ORIGIN_ROOT: 'external-agent',
+      ELANOUS_ORIGIN_AGENT: 'codex',
+      ELANOUS_ORIGIN_SESSION: 'agent-session',
+      ELANOUS_CONTROLLER: 'run-parent',
     });
   });
 
@@ -161,7 +161,7 @@ describe('origin observation fields', () => {
 
   test('four in-process requested events carry the shared origin snapshot and requested nest depth', async () => {
     setOriginEnv();
-    process.env.MONAD_NEST_DEPTH = '2';
+    process.env.ELANOUS_NEST_DEPTH = '2';
     const calls: Array<[string, string, Record<string, unknown> | undefined]> = [];
     const log = debug.log;
     debug.log = ((category: string, event: string, data?: Record<string, unknown>) => {
@@ -176,7 +176,7 @@ describe('origin observation fields', () => {
     }
 
     const origin = {
-      originRoot: 'external-agent', originAgent: 'codex', originSession: 'session-origin-observation', controller: 'parent-monad',
+      originRoot: 'external-agent', originAgent: 'codex', originSession: 'session-origin-observation', controller: 'parent-elanous',
     };
     expect(calls).toContainEqual(['run-identity', 'own', expect.objectContaining({ runId: 'origin-run', nestDepth: 2, ...origin })]);
     expect(calls).toContainEqual(['self-implement', 'start', expect.objectContaining({ runId: 'origin-run', nestDepth: 2, ...origin })]);
@@ -189,22 +189,22 @@ describe('origin observation fields', () => {
     const env = {
       ...process.env,
       NODE_ENV: undefined,
-      MONAD_STATE_DIR: undefined,
-      MONAD_CONFIG_DIR: undefined,
-      MONAD_RUN_ID: runId,
-      MONAD_ORIGIN_ROOT: 'external-agent',
-      MONAD_ORIGIN_AGENT: 'codex',
-      MONAD_ORIGIN_SESSION: 'session-origin-observation',
-      MONAD_CONTROLLER: 'parent-monad',
+      ELANOUS_STATE_DIR: undefined,
+      ELANOUS_CONFIG_DIR: undefined,
+      ELANOUS_RUN_ID: runId,
+      ELANOUS_ORIGIN_ROOT: 'external-agent',
+      ELANOUS_ORIGIN_AGENT: 'codex',
+      ELANOUS_ORIGIN_SESSION: 'session-origin-observation',
+      ELANOUS_CONTROLLER: 'parent-elanous',
     };
-    const dev = spawnSync('bun', ['bin/monad.mjs', '--test', 'dev', 'origin event test', '--backend', 'codex', '--transport', 'acp', '--no-open-pr'], {
+    const dev = spawnSync('bun', ['bin/elanous.mjs', '--test', 'dev', 'origin event test', '--backend', 'codex', '--transport', 'acp', '--no-open-pr'], {
       cwd: process.cwd(), env, encoding: 'utf8', timeout: 15_000,
     });
     // ⛔ 종료 코드를 단언하지 않는다(리뷰 3R) — ACP backend 는 plan 기록 뒤 실제 연결을 기다리므로
     //    종료는 **timeout 이 끊는 방식**에 달렸고 그것은 환경마다 다르다(`2`·`143`·`null`).
     //    ⚠️ 종전 단언은 **자기 바로 위 주석과 모순**이었다 — *"timeout 은 실행 결과일 뿐 별개다"* 라고
     //    적고서 그 결과를 단언했다. ⇒ 이 테스트가 재는 것은 **관측 payload 가 생겼는가** 하나다.
-    const logs = spawnSync('bun', ['bin/monad.mjs', '--test', 'logs', '--test', '--exact-category', 'dev-pipeline', '--event', 'plan', '--grep', runId, '--since', '10m', '--json', '--limit', '5'], {
+    const logs = spawnSync('bun', ['bin/elanous.mjs', '--test', 'logs', '--test', '--exact-category', 'dev-pipeline', '--event', 'plan', '--grep', runId, '--since', '10m', '--json', '--limit', '5'], {
       cwd: process.cwd(), env, encoding: 'utf8', timeout: 15_000,
     });
     expect(logs.status).toBe(0);
@@ -214,7 +214,7 @@ describe('origin observation fields', () => {
     expect(rows[0]).toEqual(expect.objectContaining({ data: expect.any(String) }));
     expect(JSON.parse(rows[0]!.data as string)).toEqual(expect.objectContaining({
       runId, dispatch: 'acp', executor: 'external', wired: true, nestDepth: expect.any(Number),
-      originRoot: 'external-agent', originAgent: 'codex', originSession: 'session-origin-observation', controller: 'parent-monad',
+      originRoot: 'external-agent', originAgent: 'codex', originSession: 'session-origin-observation', controller: 'parent-elanous',
     }));
   }, 35_000);
 });

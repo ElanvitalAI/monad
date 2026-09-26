@@ -148,7 +148,7 @@ describe('createApnsTransport · happy path', () => {
     const transport = createApnsTransport({
       keyId: 'KID',
       teamId: 'TID',
-      bundleId: 'com.monad.app',
+      bundleId: 'com.elanous.app',
       keyPem: privateKeyPem,
       http2Connect: () => session,
       now: () => 1_700_000_000_000,
@@ -160,7 +160,7 @@ describe('createApnsTransport · happy path', () => {
     expect(captured.length).toBe(1);
     expect(captured[0]!.headers[':path']).toBe('/3/device/deadbeef');
     expect(captured[0]!.headers[':method']).toBe('POST');
-    expect(captured[0]!.headers['apns-topic']).toBe('com.monad.app');
+    expect(captured[0]!.headers['apns-topic']).toBe('com.elanous.app');
     expect(captured[0]!.headers['apns-push-type']).toBe('alert');
     expect(captured[0]!.headers['apns-priority']).toBe(10);
     expect(String(captured[0]!.headers.authorization)).toMatch(/^bearer /);

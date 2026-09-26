@@ -13,9 +13,9 @@
 //
 // **NEXUS-only endpoints, NEXUS baseUrl** (NEXUS N-1.5 PR a · v6
 // cutover): these endpoints live exclusively on the NEXUS HTTP
-// server, and the PWA's `monad.nexus.baseUrl` (post-rename) routes
+// server, and the PWA's `elanous.nexus.baseUrl` (post-rename) routes
 // the underlying DaemonClient.fetchJson at the NEXUS port directly.
-// Pre-cutover, the same DaemonClient pointed at `monad.daemon.baseUrl`
+// Pre-cutover, the same DaemonClient pointed at `elanous.daemon.baseUrl`
 // while the endpoints lived on NEXUS — fragile in production from
 // PR #1702 until PR a landed (BACKLOG #19). Post-cutover, single-host
 // assumption holds because NEXUS is the SSoT (cleanup arc N-1.5 v6).
@@ -32,7 +32,7 @@ export const PUSHCUT_SECRET_ID = 'pushcut-webhook';
  *  channel bindings, Slack workspace maps, etc. */
 export const PUSHCUT_BINDING_CHANNEL = 'pushcut';
 
-/** PR τ binding shape — `~/.monad/nexus/bindings/pushcut.json`. */
+/** PR τ binding shape — `~/.elanous/nexus/bindings/pushcut.json`. */
 export interface PushcutBinding {
   key: string;
   sessionId?: string;
@@ -64,7 +64,7 @@ export interface DeleteBindingResponse {
 }
 
 /** Reuse DaemonClient.fetchJson — auto-attaches Bearer auth from
- *  localStorage (`monad.daemon.token`). Same baseUrl as daemon HTTP
+ *  localStorage (`elanous.daemon.token`). Same baseUrl as daemon HTTP
  *  per the same-origin assumption documented above. */
 export async function rotatePushcutSecret(
   client: DaemonClient,

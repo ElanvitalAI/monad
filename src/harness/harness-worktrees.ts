@@ -6,7 +6,7 @@ import { isPidAlive, listWorktreeSessions, type WorktreeSession } from '../git-f
 import { listPtyManifest } from '../pty-shell/pty-manifest.js';
 import { queryRunningRuns, type RunningRunStatus, type RunningRunsResult } from '../self-implement/running-runs.js';
 
-const PROVENANCE_CONFIG_KEYS = ['monad.harness.owner', 'monad.harness.command', 'monad.harness.createdAt'] as const;
+const PROVENANCE_CONFIG_KEYS = ['elanous.harness.owner', 'elanous.harness.command', 'elanous.harness.createdAt'] as const;
 type WorktreeProvenance = Record<'owner' | 'command' | 'createdAt', string>;
 const NOT_RECORDED = 'not-recorded';
 const WORKTREE_PROGRESS_INTERVAL = 20;

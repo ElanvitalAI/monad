@@ -23,11 +23,11 @@ import type { Provider, Command, ApiOptions } from '../types.js';
 
 const TOSS_BASE = process.env.TOSSINVEST_BASE_URL || 'https://openapi.tossinvest.com';
 const TOKEN_CACHE = '/tmp/toss_token_cache.json';
-// Conatus creds .env 경로 — 해석 순서 = env CONATUS_ENV → ~/.monad/conatus/.env(monad 소유) → CONATUS_DIR/.env.
-//   (2026-09-25 공개 준비: 한 사람의 개인 프로젝트 폴더 후보 둘을 뺐다 — 그 기계는 ~/.monad/conatus/.env 가 1순위라 동작이 같다.)
+// Conatus creds .env 경로 — 해석 순서 = env CONATUS_ENV → ~/.elanous/conatus/.env(elanous 소유) → CONATUS_DIR/.env.
+//   (2026-09-25 공개 준비: 한 사람의 개인 프로젝트 폴더 후보 둘을 뺐다 — 그 기계는 ~/.elanous/conatus/.env 가 1순위라 동작이 같다.)
 const CONATUS_ENV_CANDIDATES = [
   process.env.CONATUS_ENV || '',
-  join(homedir(), '.monad', 'conatus', '.env'),                             // ★ monad 소유 우선(Conatus dir 무관)
+  join(homedir(), '.elanous', 'conatus', '.env'),                             // ★ elanous 소유 우선(Conatus dir 무관)
   process.env.CONATUS_DIR ? join(process.env.CONATUS_DIR, '.env') : '',
 ].filter(Boolean);
 function conatusEnvPath(): string | null {
@@ -72,7 +72,7 @@ async function tossToken(): Promise<string | null> {
   const j = await res.json() as { access_token?: string; expires_in?: number };
   if (!j.access_token) return null;
   try {
-    // 원자적 write(temp+rename) — monad/kr-flow 와 공유하는 /tmp 캐시라 동시 갱신 인터리브 손상 방지(C).
+    // 원자적 write(temp+rename) — elanous/kr-flow 와 공유하는 /tmp 캐시라 동시 갱신 인터리브 손상 방지(C).
     const tmp = `${TOKEN_CACHE}.${process.pid}.tmp`;
     writeFileSync(tmp, JSON.stringify({ token: j.access_token, expires_at: Date.now() / 1000 + (j.expires_in ?? 3600) - 30 }));
     renameSync(tmp, TOKEN_CACHE);

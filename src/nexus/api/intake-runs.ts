@@ -1,7 +1,7 @@
 /**
  * `GET /v1/intake/runs` — Phase 1 dogfood retrospective surface (I10).
  *
- * Reads `~/.monad/intake/pipeline-runs.jsonl` (the file every
+ * Reads `~/.elanous/intake/pipeline-runs.jsonl` (the file every
  * pipeline-preview / pipeline-commit call appends to · see
  * `src/intake-plane/pipeline-metrics.ts`) and returns the most
  * recent N rows + aggregates the FULL file produces. The PWA dogfood

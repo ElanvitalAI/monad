@@ -56,7 +56,7 @@ describe('harness worktree add', () => {
     expect(renderHarnessWorktreeAdd(result).join('\n')).toContain(`path: ${result.path}`);
     expect(renderHarnessWorktreeAdd(result).join('\n')).toContain(`owner: ${result.owner}`);
     expect(renderHarnessWorktreeAdd(result).join('\n')).toContain(`baseFreshness: ${result.baseFreshness}`);
-    expect(spawnSync('git', ['config', '--worktree', '--get', 'monad.harness.owner'], { cwd: result.path, encoding: 'utf8' }).stdout.trim()).toBe('harness:unattributed');
+    expect(spawnSync('git', ['config', '--worktree', '--get', 'elanous.harness.owner'], { cwd: result.path, encoding: 'utf8' }).stdout.trim()).toBe('harness:unattributed');
     expect(spawnSync('git', ['status', '--porcelain'], { cwd: result.path, encoding: 'utf8' }).stdout).toBe('');
   });
 
@@ -71,23 +71,23 @@ describe('harness worktree add', () => {
       goalDescription: 'Store durable worktree purpose metadata.',
       goalDescriptionSource: 'generated',
     });
-    expect(spawnSync('git', ['config', '--worktree', '--get', 'monad.harness.owner'], { cwd: result.path, encoding: 'utf8' }).stdout.trim()).toBe('harness:unattributed');
-    expect(spawnSync('git', ['config', '--worktree', '--get', 'monad.harness.goalId'], { cwd: result.path, encoding: 'utf8' }).stdout.trim()).toBe('goal-42');
-    expect(spawnSync('git', ['config', '--worktree', '--get', 'monad.harness.goalFile'], { cwd: result.path, encoding: 'utf8' }).stdout.trim()).toBe('docs/goals/goal-42.md');
-    expect(spawnSync('git', ['config', '--worktree', '--get', 'monad.harness.goalTitle'], { cwd: result.path, encoding: 'utf8' }).stdout.trim()).toBe('Record worktree purpose');
-    expect(spawnSync('git', ['config', '--worktree', '--get', 'monad.harness.goalDescription'], { cwd: result.path, encoding: 'utf8' }).stdout.trim()).toBe('Store durable worktree purpose metadata.');
-    expect(spawnSync('git', ['config', '--worktree', '--get', 'monad.harness.goalDescriptionSource'], { cwd: result.path, encoding: 'utf8' }).stdout.trim()).toBe('generated');
+    expect(spawnSync('git', ['config', '--worktree', '--get', 'elanous.harness.owner'], { cwd: result.path, encoding: 'utf8' }).stdout.trim()).toBe('harness:unattributed');
+    expect(spawnSync('git', ['config', '--worktree', '--get', 'elanous.harness.goalId'], { cwd: result.path, encoding: 'utf8' }).stdout.trim()).toBe('goal-42');
+    expect(spawnSync('git', ['config', '--worktree', '--get', 'elanous.harness.goalFile'], { cwd: result.path, encoding: 'utf8' }).stdout.trim()).toBe('docs/goals/goal-42.md');
+    expect(spawnSync('git', ['config', '--worktree', '--get', 'elanous.harness.goalTitle'], { cwd: result.path, encoding: 'utf8' }).stdout.trim()).toBe('Record worktree purpose');
+    expect(spawnSync('git', ['config', '--worktree', '--get', 'elanous.harness.goalDescription'], { cwd: result.path, encoding: 'utf8' }).stdout.trim()).toBe('Store durable worktree purpose metadata.');
+    expect(spawnSync('git', ['config', '--worktree', '--get', 'elanous.harness.goalDescriptionSource'], { cwd: result.path, encoding: 'utf8' }).stdout.trim()).toBe('generated');
   });
 
   test('판정 신호: absent, blank, and partial goal metadata omit only their own keys', () => {
     const none = addHarnessWorktree({ repoRoot: repo, worktreeRoot: join(root, 'worktrees'), branch: 'feature/goal-none' });
-    for (const key of ['monad.harness.goalId', 'monad.harness.goalFile', 'monad.harness.goalTitle', 'monad.harness.goalDescription']) {
+    for (const key of ['elanous.harness.goalId', 'elanous.harness.goalFile', 'elanous.harness.goalTitle', 'elanous.harness.goalDescription']) {
       expect(spawnSync('git', ['config', '--worktree', '--get', key], { cwd: none.path }).status).not.toBe(0);
     }
     const partial = addHarnessWorktree({ repoRoot: repo, worktreeRoot: join(root, 'worktrees'), branch: 'feature/goal-partial', goalFile: 'docs/goal.md', goalTitle: '  ' });
-    expect(spawnSync('git', ['config', '--worktree', '--get', 'monad.harness.goalFile'], { cwd: partial.path, encoding: 'utf8' }).stdout.trim()).toBe('docs/goal.md');
-    expect(spawnSync('git', ['config', '--worktree', '--get', 'monad.harness.goalId'], { cwd: partial.path }).status).not.toBe(0);
-    expect(spawnSync('git', ['config', '--worktree', '--get', 'monad.harness.goalTitle'], { cwd: partial.path }).status).not.toBe(0);
+    expect(spawnSync('git', ['config', '--worktree', '--get', 'elanous.harness.goalFile'], { cwd: partial.path, encoding: 'utf8' }).stdout.trim()).toBe('docs/goal.md');
+    expect(spawnSync('git', ['config', '--worktree', '--get', 'elanous.harness.goalId'], { cwd: partial.path }).status).not.toBe(0);
+    expect(spawnSync('git', ['config', '--worktree', '--get', 'elanous.harness.goalTitle'], { cwd: partial.path }).status).not.toBe(0);
   });
 
   test('stores owner in worktree Git metadata without dirtying the worktree', () => {
@@ -95,9 +95,9 @@ describe('harness worktree add', () => {
     expect(result.owner).toBe('session-42');
     expect(result.command).toBe('harness worktree add');
     expect(result.createdAt).toMatch(/^\d{4}-\d{2}-\d{2}T/);
-    expect(spawnSync('git', ['config', '--worktree', '--get', 'monad.harness.owner'], { cwd: result.path, encoding: 'utf8' }).stdout.trim()).toBe('session-42');
-    expect(spawnSync('git', ['config', '--worktree', '--get', 'monad.harness.command'], { cwd: result.path, encoding: 'utf8' }).stdout.trim()).toBe('harness worktree add');
-    expect(spawnSync('git', ['config', '--worktree', '--get', 'monad.harness.createdAt'], { cwd: result.path, encoding: 'utf8' }).stdout.trim()).toBe(result.createdAt!);
+    expect(spawnSync('git', ['config', '--worktree', '--get', 'elanous.harness.owner'], { cwd: result.path, encoding: 'utf8' }).stdout.trim()).toBe('session-42');
+    expect(spawnSync('git', ['config', '--worktree', '--get', 'elanous.harness.command'], { cwd: result.path, encoding: 'utf8' }).stdout.trim()).toBe('harness worktree add');
+    expect(spawnSync('git', ['config', '--worktree', '--get', 'elanous.harness.createdAt'], { cwd: result.path, encoding: 'utf8' }).stdout.trim()).toBe(result.createdAt!);
     expect(spawnSync('git', ['status', '--porcelain'], { cwd: result.path, encoding: 'utf8' }).stdout).toBe('');
     expect(renderHarnessWorktreeAdd(result).join('\n')).toContain('owner: session-42');
     expect(renderHarnessWorktreeAdd(result).join('\n')).toContain('command: harness worktree add');
@@ -105,15 +105,15 @@ describe('harness worktree add', () => {
   });
 
   test.each([
-    ['command', 'monad.harness.command'],
-    ['createdAt', 'monad.harness.createdAt'],
-    ['owner', 'monad.harness.owner'],
+    ['command', 'elanous.harness.command'],
+    ['createdAt', 'elanous.harness.createdAt'],
+    ['owner', 'elanous.harness.owner'],
   ])('provenance write failure at %s restores pre-existing provenance exactly', (_stage, failedKey) => {
     const result = addHarnessWorktree({ repoRoot: repo, worktreeRoot: join(root, 'worktrees'), branch: `feature/partial-${_stage}` });
     const existing = {
-      'monad.harness.owner': 'dev:previous-run',
-      'monad.harness.command': 'monad dev previous',
-      'monad.harness.createdAt': '2026-08-04T00:00:00.000Z',
+      'elanous.harness.owner': 'dev:previous-run',
+      'elanous.harness.command': 'elanous dev previous',
+      'elanous.harness.createdAt': '2026-08-04T00:00:00.000Z',
     };
     for (const [key, value] of Object.entries(existing)) git(result.path, 'config', '--worktree', key, value);
     const hookDir = join(root, `git-wrapper-${_stage}`);
@@ -122,7 +122,7 @@ describe('harness worktree add', () => {
     writeFileSync(join(hookDir, 'git'), `#!/bin/sh\nif [ "$1" = "config" ] && [ "$2" = "--worktree" ] && [ "$3" = "--replace-all" ] && [ "$4" = ${JSON.stringify(failedKey)} ]; then echo provenance-${_stage}-failed >&2; exit 41; fi\nexec "${realGit}" "$@"\n`);
     spawnSync('chmod', ['+x', join(hookDir, 'git')]);
     const projectRoot = dirname(dirname(fileURLToPath(import.meta.url)));
-    const script = `import { recordHarnessWorktreeProvenance } from ${JSON.stringify(join(projectRoot, 'src/harness/harness-worktree-add.ts'))}; recordHarnessWorktreeProvenance(${JSON.stringify(result.path)}, { owner: 'dev:partial', command: 'monad dev', createdAt: '2026-08-05T00:00:00.000Z' });`;
+    const script = `import { recordHarnessWorktreeProvenance } from ${JSON.stringify(join(projectRoot, 'src/harness/harness-worktree-add.ts'))}; recordHarnessWorktreeProvenance(${JSON.stringify(result.path)}, { owner: 'dev:partial', command: 'elanous dev', createdAt: '2026-08-05T00:00:00.000Z' });`;
     const failed = spawnSync('bun', ['-e', script], {
       cwd: projectRoot,
       encoding: 'utf8',
@@ -184,10 +184,10 @@ describe('harness worktree add', () => {
       goalId: 'goal-no-title',
       goalFile,
     });
-    expect(spawnSync('git', ['config', '--worktree', '--get', 'monad.harness.goalTitle'], { cwd: result.path }).status).not.toBe(0);
-    expect(spawnSync('git', ['config', '--worktree', '--get', 'monad.harness.goalTitle'], { cwd: result.path, encoding: 'utf8' }).stdout.trim()).not.toBe(rootIntent);
-    expect(spawnSync('git', ['config', '--worktree', '--get', 'monad.harness.goalDescription'], { cwd: result.path }).status).not.toBe(0);
-    expect(spawnSync('git', ['config', '--worktree', '--get', 'monad.harness.goalDescriptionSource'], { cwd: result.path }).status).not.toBe(0);
+    expect(spawnSync('git', ['config', '--worktree', '--get', 'elanous.harness.goalTitle'], { cwd: result.path }).status).not.toBe(0);
+    expect(spawnSync('git', ['config', '--worktree', '--get', 'elanous.harness.goalTitle'], { cwd: result.path, encoding: 'utf8' }).stdout.trim()).not.toBe(rootIntent);
+    expect(spawnSync('git', ['config', '--worktree', '--get', 'elanous.harness.goalDescription'], { cwd: result.path }).status).not.toBe(0);
+    expect(spawnSync('git', ['config', '--worktree', '--get', 'elanous.harness.goalDescriptionSource'], { cwd: result.path }).status).not.toBe(0);
   });
 
   test('판정 신호: goal synthesis truncates generated output at 250 characters and falls back to title on empty or thrown model output', async () => {
@@ -255,9 +255,9 @@ describe('harness worktree add', () => {
   test('provenance write failure restores empty and multiline values byte-for-byte in order', () => {
     const result = addHarnessWorktree({ repoRoot: repo, worktreeRoot: join(root, 'worktrees'), branch: 'feature/lossless-rollback' });
     const existing: Record<string, string[]> = {
-      'monad.harness.command': ['', 'monad dev\n--resume run-previous'],
-      'monad.harness.createdAt': ['2026-08-04T00:00:00.000Z', ''],
-      'monad.harness.owner': ['dev:previous\nrun', ''],
+      'elanous.harness.command': ['', 'elanous dev\n--resume run-previous'],
+      'elanous.harness.createdAt': ['2026-08-04T00:00:00.000Z', ''],
+      'elanous.harness.owner': ['dev:previous\nrun', ''],
     };
     for (const [key, values] of Object.entries(existing)) {
       git(result.path, 'config', '--worktree', '--unset-all', key);
@@ -266,10 +266,10 @@ describe('harness worktree add', () => {
     const hookDir = join(root, 'git-wrapper-lossless-rollback');
     mkdirSync(hookDir);
     const realGit = spawnSync('which', ['git'], { encoding: 'utf8' }).stdout.trim();
-    writeFileSync(join(hookDir, 'git'), `#!/bin/sh\nif [ "$1" = "config" ] && [ "$2" = "--worktree" ] && [ "$3" = "--replace-all" ] && [ "$4" = "monad.harness.createdAt" ]; then echo created-at-write-failed >&2; exit 41; fi\nexec "${realGit}" "$@"\n`);
+    writeFileSync(join(hookDir, 'git'), `#!/bin/sh\nif [ "$1" = "config" ] && [ "$2" = "--worktree" ] && [ "$3" = "--replace-all" ] && [ "$4" = "elanous.harness.createdAt" ]; then echo created-at-write-failed >&2; exit 41; fi\nexec "${realGit}" "$@"\n`);
     spawnSync('chmod', ['+x', join(hookDir, 'git')]);
     const projectRoot = dirname(dirname(fileURLToPath(import.meta.url)));
-    const script = `import { recordHarnessWorktreeProvenance } from ${JSON.stringify(join(projectRoot, 'src/harness/harness-worktree-add.ts'))}; recordHarnessWorktreeProvenance(${JSON.stringify(result.path)}, { owner: 'dev:partial', command: 'monad dev', createdAt: '2026-08-05T00:00:00.000Z' });`;
+    const script = `import { recordHarnessWorktreeProvenance } from ${JSON.stringify(join(projectRoot, 'src/harness/harness-worktree-add.ts'))}; recordHarnessWorktreeProvenance(${JSON.stringify(result.path)}, { owner: 'dev:partial', command: 'elanous dev', createdAt: '2026-08-05T00:00:00.000Z' });`;
     const failed = spawnSync('bun', ['-e', script], {
       cwd: projectRoot,
       encoding: 'utf8',
@@ -287,10 +287,10 @@ describe('harness worktree add', () => {
     const hookDir = join(root, 'git-wrapper-rollback-failure');
     mkdirSync(hookDir);
     const realGit = spawnSync('which', ['git'], { encoding: 'utf8' }).stdout.trim();
-    writeFileSync(join(hookDir, 'git'), `#!/bin/sh\nif [ "$1" = "config" ] && [ "$2" = "--worktree" ] && [ "$3" = "--replace-all" ] && [ "$4" = "monad.harness.owner" ]; then echo owner-write-failed >&2; exit 41; fi\nif [ "$1" = "config" ] && [ "$2" = "--worktree" ] && [ "$3" = "--unset-all" ]; then echo rollback-clear-failed >&2; exit 42; fi\nexec "${realGit}" "$@"\n`);
+    writeFileSync(join(hookDir, 'git'), `#!/bin/sh\nif [ "$1" = "config" ] && [ "$2" = "--worktree" ] && [ "$3" = "--replace-all" ] && [ "$4" = "elanous.harness.owner" ]; then echo owner-write-failed >&2; exit 41; fi\nif [ "$1" = "config" ] && [ "$2" = "--worktree" ] && [ "$3" = "--unset-all" ]; then echo rollback-clear-failed >&2; exit 42; fi\nexec "${realGit}" "$@"\n`);
     spawnSync('chmod', ['+x', join(hookDir, 'git')]);
     const projectRoot = dirname(dirname(fileURLToPath(import.meta.url)));
-    const script = `import { recordHarnessWorktreeProvenance } from ${JSON.stringify(join(projectRoot, 'src/harness/harness-worktree-add.ts'))}; recordHarnessWorktreeProvenance(${JSON.stringify(result.path)}, { owner: 'dev:partial', command: 'monad dev', createdAt: '2026-08-05T00:00:00.000Z' });`;
+    const script = `import { recordHarnessWorktreeProvenance } from ${JSON.stringify(join(projectRoot, 'src/harness/harness-worktree-add.ts'))}; recordHarnessWorktreeProvenance(${JSON.stringify(result.path)}, { owner: 'dev:partial', command: 'elanous dev', createdAt: '2026-08-05T00:00:00.000Z' });`;
     const failed = spawnSync('bun', ['-e', script], {
       cwd: projectRoot,
       encoding: 'utf8',
@@ -310,7 +310,7 @@ describe('harness worktree add', () => {
 
   test('CLI emits structured creation data, persists owner metadata, and rejects a duplicate branch', () => {
     const projectRoot = dirname(dirname(fileURLToPath(import.meta.url)));
-    const cli = join(projectRoot, 'bin', 'monad.mjs');
+    const cli = join(projectRoot, 'bin', 'elanous.mjs');
     const first = spawnSync('bun', [cli, '--config-dir', join(root, 'config'), 'harness', 'worktree', 'add', 'feature/cli', '--base', 'HEAD', '--owner', 'cli-session', '--json'], { cwd: repo, encoding: 'utf8' });
     expect(first.status).toBe(0);
     const created = JSON.parse(first.stdout) as { path: string; branch: string; resolvedBase: string; baseFreshness: string; owner: string; command: string; createdAt: string };
@@ -321,7 +321,7 @@ describe('harness worktree add', () => {
     expect(created.owner).toBe('cli-session');
     expect(created.command).toBe('harness worktree add');
     expect(created.createdAt).toMatch(/^\d{4}-\d{2}-\d{2}T/);
-    expect(spawnSync('git', ['config', '--worktree', '--get', 'monad.harness.owner'], { cwd: created.path, encoding: 'utf8' }).stdout.trim()).toBe('cli-session');
+    expect(spawnSync('git', ['config', '--worktree', '--get', 'elanous.harness.owner'], { cwd: created.path, encoding: 'utf8' }).stdout.trim()).toBe('cli-session');
     expect(spawnSync('git', ['status', '--porcelain'], { cwd: created.path, encoding: 'utf8' }).stdout).toBe('');
 
     const duplicate = spawnSync('bun', [cli, '--config-dir', join(root, 'config'), 'harness', 'worktree', 'add', 'feature/cli'], { cwd: repo, encoding: 'utf8' });
@@ -332,7 +332,7 @@ describe('harness worktree add', () => {
 
   test('CLI prints non-JSON creation fields instead of succeeding silently', () => {
     const projectRoot = dirname(dirname(fileURLToPath(import.meta.url)));
-    const cli = join(projectRoot, 'bin', 'monad.mjs');
+    const cli = join(projectRoot, 'bin', 'elanous.mjs');
     const result = spawnSync('bun', [cli, '--config-dir', join(root, 'config'), 'harness', 'worktree', 'add', 'feature/text'], { cwd: repo, encoding: 'utf8' });
     expect(result.status).toBe(0);
     expect(result.stdout).toContain('path: ');
@@ -343,7 +343,7 @@ describe('harness worktree add', () => {
 
   test('CLI resolves the main repository root while preserving caller HEAD for an omitted base', () => {
     const projectRoot = dirname(dirname(fileURLToPath(import.meta.url)));
-    const cli = join(projectRoot, 'bin', 'monad.mjs');
+    const cli = join(projectRoot, 'bin', 'elanous.mjs');
     const nested = join(repo, 'nested', 'directory');
     mkdirSync(nested, { recursive: true });
     const fromNested = spawnSync('bun', [cli, '--config-dir', join(root, 'config'), 'harness', 'worktree', 'add', 'feature/nested', '--json'], { cwd: nested, encoding: 'utf8' });
@@ -373,7 +373,7 @@ describe('harness worktree add', () => {
 
   test('owner declaration failure rolls back the new worktree and branch so retry succeeds', () => {
     const projectRoot = dirname(dirname(fileURLToPath(import.meta.url)));
-    const cli = join(projectRoot, 'bin', 'monad.mjs');
+    const cli = join(projectRoot, 'bin', 'elanous.mjs');
     const hookDir = join(root, 'git-wrapper');
     mkdirSync(hookDir);
     const realGit = spawnSync('which', ['git'], { encoding: 'utf8' }).stdout.trim();
@@ -414,12 +414,12 @@ describe('harness worktree add git command seam', () => {
     expect(calls).toEqual([
       {
         cwd: '/injected/worktree',
-        args: ['config', '--worktree', '--replace-all', 'monad.harness.goalId', 'goal-42'],
+        args: ['config', '--worktree', '--replace-all', 'elanous.harness.goalId', 'goal-42'],
         options: { encoding: 'utf8' },
       },
       {
         cwd: '/injected/worktree',
-        args: ['config', '--worktree', '--replace-all', 'monad.harness.goalFile', 'docs/goal.md'],
+        args: ['config', '--worktree', '--replace-all', 'elanous.harness.goalFile', 'docs/goal.md'],
         options: { encoding: 'utf8' },
       },
     ]);
@@ -459,12 +459,12 @@ describe('harness worktree add git command seam', () => {
     expect(calls.map((call) => call.cwd)).toEqual(Array(7).fill('/injected/worktree'));
     expect(calls.map((call) => call.args)).toEqual([
       ['config', 'extensions.worktreeConfig', 'true'],
-      ['config', '--worktree', '--null', '--get-all', 'monad.harness.command'],
-      ['config', '--worktree', '--null', '--get-all', 'monad.harness.createdAt'],
-      ['config', '--worktree', '--null', '--get-all', 'monad.harness.owner'],
-      ['config', '--worktree', '--replace-all', 'monad.harness.command', 'harness worktree add'],
-      ['config', '--worktree', '--replace-all', 'monad.harness.createdAt', '2026-08-05T00:00:00.000Z'],
-      ['config', '--worktree', '--replace-all', 'monad.harness.owner', 'session-42'],
+      ['config', '--worktree', '--null', '--get-all', 'elanous.harness.command'],
+      ['config', '--worktree', '--null', '--get-all', 'elanous.harness.createdAt'],
+      ['config', '--worktree', '--null', '--get-all', 'elanous.harness.owner'],
+      ['config', '--worktree', '--replace-all', 'elanous.harness.command', 'harness worktree add'],
+      ['config', '--worktree', '--replace-all', 'elanous.harness.createdAt', '2026-08-05T00:00:00.000Z'],
+      ['config', '--worktree', '--replace-all', 'elanous.harness.owner', 'session-42'],
     ]);
   });
 });

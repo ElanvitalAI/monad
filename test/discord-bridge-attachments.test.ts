@@ -24,8 +24,8 @@ let bindingsPath: string;
 let mediaDir: string;
 
 beforeEach(() => {
-  tmp = mkdtempSync(joinPath(tmpdir(), 'monad-dc-bridge-attach-'));
-  sockPath = joinPath(tmp, 'monad.sock');
+  tmp = mkdtempSync(joinPath(tmpdir(), 'elanous-dc-bridge-attach-'));
+  sockPath = joinPath(tmp, 'elanous.sock');
   bindingsPath = joinPath(tmp, 'channel-bindings.json');
   mediaDir = joinPath(tmp, 'media');
   mkdirSync(mediaDir, { recursive: true });

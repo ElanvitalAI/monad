@@ -5,7 +5,7 @@
 // loads and the agent is a plain assistant. When enabled, the pack
 // contributes (today) an analyst orientation + a per-deployment resource
 // map, and (A1, later) first-class finance tool rules registered through
-// this same module. See docs/ROADMAP-conatus-monad-knowledge-absorption.
+// this same module. See docs/ROADMAP-conatus-elanous-knowledge-absorption.
 //
 // This is the single seam where finance/Conatus capability attaches to
 // the core — keep additions here so the pack stays cleanly removable.
@@ -13,7 +13,7 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import type { UserConfig } from '../user-config.js';
-import { monadDaemonDir } from '../monad-daemon.js';
+import { elanousDaemonDir } from '../elanous-daemon.js';
 import { isKrHoliday, isUsHoliday, isUsEarlyClose, US_MARKET_TIME_ZONE } from './market-holidays.js';
 
 /** Master gate for the finance/Conatus domain pack. */
@@ -27,7 +27,7 @@ export function financeEnabled(cfg: UserConfig): boolean {
  *  if present; absent = discovery mode. */
 export const FINANCE_RESOURCE_MAP_BASENAME = 'finance-resources.md';
 
-export function loadFinanceResourceMap(dir: string = monadDaemonDir()): string {
+export function loadFinanceResourceMap(dir: string = elanousDaemonDir()): string {
   try {
     const p = join(dir, FINANCE_RESOURCE_MAP_BASENAME);
     if (existsSync(p)) return readFileSync(p, 'utf-8').trim();
@@ -74,7 +74,7 @@ export const FINANCE_ANALYST_PROMPT = [
   '  기관 매수/보유비중"→command:foreign-net|investor|price(+6자리 symbol), 시장',
   '  전반="코스피 수급/외국인이 뭐 담나"→command:market-flow|frgn-institution.',
   '  13F(finance_13f·sector-fusion)는 미국 기관이고, 한국 수급은 이 도구가 유일.',
-  '- ★ 과거에 **내가(monad가) 보낸 알림/신호/통지**를 되짚는 질문("방금/아까 무슨',
+  '- ★ 과거에 **내가(elanous가) 보낸 알림/신호/통지**를 되짚는 질문("방금/아까 무슨',
   '  알림 보냈지"·"삼성 수급 관련 알림 있었나"·"전에 뭐라 알려줬지"·워치/속보/',
   '  다이제스트 회상)은 **무조건 `memory_recall` 도구 먼저**. 발송 전용 채널로 나간',
   '  것도 여기 원장에 있으니, 모른다고 반문하지 말고 먼저 회상할 것. (시세=finance_quote·',

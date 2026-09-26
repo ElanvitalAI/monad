@@ -45,7 +45,7 @@ import { personaCommand, type PersonaCtx } from './slash-commands/persona.js';
 import { pollCommand, type PollCtx } from './slash-commands/poll.js';
 import { relayCommand, type RelayCtx } from './slash-commands/relay.js';
 import { showroomCommand, type ShowroomCtx, type ShowroomSpawnRequest } from './slash-commands/showroom.js';
-import { statusCommand, type StatusCtx, type MonadStatusSnapshot } from './slash-commands/status.js';
+import { statusCommand, type StatusCtx, type ElanousStatusSnapshot } from './slash-commands/status.js';
 import { botCommands } from './slash-commands/bots.js';
 
 /** Composed slash context — all 5 commands' Ctx merged. */
@@ -71,7 +71,7 @@ export interface WireSprint21Opts {
   spawnLanes?: (req: ShowroomSpawnRequest) => Promise<{ message: string }>;
   /** Override the snapshot reported by /status. Default reports
    *  uptime + persona count + activeLaneCount=0 + version env. */
-  snapshot?: () => MonadStatusSnapshot | Promise<MonadStatusSnapshot>;
+  snapshot?: () => ElanousStatusSnapshot | Promise<ElanousStatusSnapshot>;
   /** Bind a callback for /persona use (channel → personaId). */
   setActivePersona?: (channelId: string, personaId: string) => Promise<void>;
   /** Bind a callback for /relay (channel → strategy). */
@@ -164,8 +164,8 @@ export async function wireSprint21Runtime(opts: WireSprint21Opts): Promise<Sprin
         uptimeSeconds: Math.floor((Date.now() - startTime) / 1000),
         personaCount: registry.size(),
         activeLaneCount: 0,  // sprint 22 — wire to lane orchestrator
-        version: process.env['MONAD_VERSION'] ?? 'dev',
-      } as MonadStatusSnapshot)),
+        version: process.env['ELANOUS_VERSION'] ?? 'dev',
+      } as ElanousStatusSnapshot)),
     // poll
     postPoll: async (channelId, pollBody) => {
       // POST /channels/{id}/messages with poll: {...}

@@ -3,7 +3,7 @@
 // BACKLOG #5 / FEATURE §15.8(?) — worktree visualization panel.
 //
 // /worktrees route. Shows every git worktree the active repo knows
-// about, annotated with which monad session owns it (alive / dead),
+// about, annotated with which elanous session owns it (alive / dead),
 // plus orphaned-session warnings (session JSONs whose worktree dir
 // vanished).
 //

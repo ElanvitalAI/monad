@@ -29,7 +29,7 @@ export interface WireBudgetContextBridgeOpts {
    *  dashboard singleton when omitted. */
   service?: ContextKeyService;
   /** Test seam — inject a cost-config loader so fixtures don't
-   *  depend on `~/.monad/cost-config.json`. */
+   *  depend on `~/.elanous/cost-config.json`. */
   loadConfig?: () => ReturnType<typeof loadCostConfig>;
   /** Test seam — inject a cost snapshot builder. */
   snapshot?: () => ReturnType<typeof snapshotCost>;

@@ -41,11 +41,11 @@ function universe(name: string, stateDir: string): LogTarget {
 }
 
 describe('scanForeignDeferredQueues — 우주 열거로 갇힌 큐를 센다', () => {
-  it('prod/test 우주를 열거하고 옛 뿌리(~/source·~/scratchpad·~/.monad) 밖의 큐도 센다', () => {
+  it('prod/test 우주를 열거하고 옛 뿌리(~/source·~/scratchpad·~/.elanous) 밖의 큐도 센다', () => {
     const root = tmp();
-    const prodState = join(root, 'home', '.monad');
-    const axonState = join(root, 'axon', '.monad-test');
-    const outsideState = join(root, 'private', 'tmp', 'claude-501', 'scratchpad', 'launch2', '.monad-test');
+    const prodState = join(root, 'home', '.elanous');
+    const axonState = join(root, 'axon', '.elanous-test');
+    const outsideState = join(root, 'private', 'tmp', 'claude-501', 'scratchpad', 'launch2', '.elanous-test');
     const prodQueue = join(prodState, 'conatus', 'outbound_deferred.jsonl');
     const axonQueue = join(axonState, 'conatus', 'outbound_deferred.jsonl');
     const outsideQueue = join(outsideState, 'conatus', 'outbound_deferred.jsonl');
@@ -78,7 +78,7 @@ describe('scanForeignDeferredQueues — 우주 열거로 갇힌 큐를 센다', 
     expect(scan.paths).not.toContain(canonicalQueuePath(prodQueue));
     expect(scan.paths).toContain(canonicalQueuePath(axonQueue));
     expect(scan.paths).toContain(canonicalQueuePath(outsideQueue));
-    expect(scan.paths.some((p) => p.includes('scratchpad/launch2/.monad-test'))).toBe(true);
+    expect(scan.paths.some((p) => p.includes('scratchpad/launch2/.elanous-test'))).toBe(true);
     expect(readFileSync(axonQueue, 'utf-8')).toBe(beforeAxon);
     expect(readFileSync(outsideQueue, 'utf-8')).toBe(beforeOutside);
     expect(readFileSync(prodQueue, 'utf-8')).toContain('mine');
@@ -87,7 +87,7 @@ describe('scanForeignDeferredQueues — 우주 열거로 갇힌 큐를 센다', 
   it('활성 큐는 갇힌 것으로 세지 않는다', () => {
     const root = tmp();
     const activeState = join(root, 'active-universe');
-    const foreignState = join(root, 'pilot', '.monad-test');
+    const foreignState = join(root, 'pilot', '.elanous-test');
     const activeQueue = join(activeState, 'conatus', 'outbound_deferred.jsonl');
     const foreignQueue = join(foreignState, 'conatus', 'outbound_deferred.jsonl');
     mkdirSync(join(activeState, 'conatus'), { recursive: true });
@@ -128,7 +128,7 @@ describe('scanForeignDeferredQueues — 우주 열거로 갇힌 큐를 센다', 
 
   it('외부 큐는 읽기만 하고 보내거나 옮기거나 지우지 않는다', () => {
     const root = tmp();
-    const foreignState = join(root, 'pilot', '.monad-test');
+    const foreignState = join(root, 'pilot', '.elanous-test');
     const foreignQueue = join(foreignState, 'conatus', 'outbound_deferred.jsonl');
     mkdirSync(join(foreignState, 'conatus'), { recursive: true });
     writeJsonl(foreignQueue, [
@@ -176,7 +176,7 @@ describe('scanForeignDeferredQueues — 우주 열거로 갇힌 큐를 센다', 
 
   it('큐 파일이 있다고 열거됐는데 읽기 throw 면 unknown/error 이다', () => {
     const root = tmp();
-    const state = join(root, 'pilot', '.monad-test');
+    const state = join(root, 'pilot', '.elanous-test');
     const queue = join(state, 'conatus', 'outbound_deferred.jsonl');
     mkdirSync(join(state, 'conatus'), { recursive: true });
     writeJsonl(queue, [{ ts: '2026-09-03T00:00:00Z', kind: 'codex-rotate', text: 'x' }]);
@@ -261,7 +261,7 @@ describe('scanForeignDeferredQueues — 우주 열거로 갇힌 큐를 센다', 
 
   it('한 우주 권한 오류는 다른 우주 건수를 확정으로 내지 않는다', () => {
     const root = tmp();
-    const okState = join(root, 'pilot', '.monad-test');
+    const okState = join(root, 'pilot', '.elanous-test');
     const secretParent = join(root, 'secret-parent');
     const secretState = join(secretParent, 'universe');
     const foreign = join(okState, 'conatus', 'outbound_deferred.jsonl');

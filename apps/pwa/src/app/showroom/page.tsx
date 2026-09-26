@@ -9,7 +9,7 @@ import { Suspense } from 'react';
 import { ShowroomLayout } from '@/components/showroom/ShowroomLayout';
 
 export const metadata = {
-  title: 'Showroom · monad',
+  title: 'Showroom · elanous',
 };
 
 export default function ShowroomPage() {

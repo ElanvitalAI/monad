@@ -2,9 +2,9 @@ import { describe, expect, it } from 'bun:test';
 import { extractAppliedReviewItems } from '../src/agent-mission/review-loop.js';
 import { buildReviewIntent } from '../src/agent-substrate/review-intent.js';
 
-const REINFORCEMENT_HEADLINE = '✅ 리뷰 보강 자동 반영(codex-in-monad·제1원칙 렌즈):';
+const REINFORCEMENT_HEADLINE = '✅ 리뷰 보강 자동 반영(codex-in-elanous·제1원칙 렌즈):';
 const ACP_REWORK_HEADLINE = '🔁 ACP Claude Code 2차 심판: **REWORK**';
-const identityHeader = '<!-- monad-pr-comment v1 role=author -->';
+const identityHeader = '<!-- elanous-pr-comment v1 role=author -->';
 
 describe('cross-run applied review context', () => {
   it('extracts both known loop headlines, ignores status notices and unrelated text', () => {

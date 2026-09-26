@@ -11,7 +11,7 @@ import { basename, dirname, isAbsolute, join, relative, win32 } from 'node:path'
 import ts from 'typescript';
 
 const repo = process.cwd();
-const SKIP_DIRS = new Set(['node_modules', '.git', '.monad-test', '.next', 'dist', 'coverage', 'build']);
+const SKIP_DIRS = new Set(['node_modules', '.git', '.elanous-test', '.next', 'dist', 'coverage', 'build']);
 const SOURCE_FILE = /\.([cm]?[jt]sx?)$/;
 
 export const INVENTORY_REFRESH_COMMAND = 'bun scripts/audit-swallowed-exceptions.ts';

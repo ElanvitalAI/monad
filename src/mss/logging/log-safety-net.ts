@@ -8,7 +8,7 @@
 //
 // 카테고리 설계: `nexus.console.error`/`nexus.console.warn`/`nexus.crash.*` —
 // 끝 세그먼트가 severity 라 logs.db 의 level 컬럼이 자동으로 error/warn 물질화
-// (deriveLogLevel 은 category 접미사도 본다). `monad logs --level error` 에 잡힘.
+// (deriveLogLevel 은 category 접미사도 본다). `elanous logs --level error` 에 잡힘.
 //
 // OH10 (2026-07-24): 위 접미사 유도에 더해 **명시 level** 도 함께 실는다
 // (`debug.log(…, { level })`). PR-b 에서 접미사 유도가 제거돼도 데몬 크래시가

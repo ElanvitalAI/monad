@@ -151,25 +151,25 @@ export function parseSafeDecisionSignalCommand(command: string): ParsedDecisionS
     if (args.length > 2) return { executable, args };
   }
 
-  if (executable === 'bun' && args[0] === 'bin/monad.mjs') {
-    const monadArgs = args.slice(1);
-    const [command, subcommand, reference, output] = monadArgs;
+  if (executable === 'bun' && args[0] === 'bin/elanous.mjs') {
+    const elanousArgs = args.slice(1);
+    const [command, subcommand, reference, output] = elanousArgs;
     const logsObservation =
       command === 'logs' &&
-      monadArgs.includes('--category') &&
-      (monadArgs.includes('--json') || monadArgs.includes('--json-data'));
-    const ptySnapshot = command === 'pty' && subcommand === 'snapshot' && reference !== undefined && monadArgs.length === 3;
+      elanousArgs.includes('--category') &&
+      (elanousArgs.includes('--json') || elanousArgs.includes('--json-data'));
+    const ptySnapshot = command === 'pty' && subcommand === 'snapshot' && reference !== undefined && elanousArgs.length === 3;
     const ptyLineage =
       command === 'pty' &&
       subcommand === 'lineage' &&
       reference !== undefined &&
       output === '--json' &&
-      monadArgs.length === 4;
+      elanousArgs.length === 4;
     const selfObservation =
       command === 'self' &&
       (subcommand === 'entrances' || subcommand === 'running-runs') &&
       reference === '--json' &&
-      monadArgs.length === 3;
+      elanousArgs.length === 3;
 
     if (logsObservation || ptySnapshot || ptyLineage || selfObservation) {
       return { executable, args };
@@ -244,7 +244,7 @@ function runCommandOnMergeBaseWorktree(
 ): { readonly stdout: string; readonly stderr?: string } {
   const ref = mergeBaseRef(cwd);
   if (!ref) throw new Error('merge-base ref unavailable');
-  const baselineDir = mkdtempSync(join(tmpdir(), 'monad-decision-signal-baseline-'));
+  const baselineDir = mkdtempSync(join(tmpdir(), 'elanous-decision-signal-baseline-'));
   let attached = false;
   try {
     const add = runGitCommand(cwd, ['worktree', 'add', '--detach', baselineDir, ref], { encoding: 'utf8', timeout: 60_000 });

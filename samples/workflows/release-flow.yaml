@@ -75,7 +75,7 @@ nodes:
           exit 0
           ;;
       esac
-      VERSION="${MONAD_RELEASE_VERSION:-v$(date +%Y.%m.%d-%H%M)}"
+      VERSION="${ELANOUS_RELEASE_VERSION:-v$(date +%Y.%m.%d-%H%M)}"
       echo "release=tagging version=$VERSION"
       if command -v gh >/dev/null 2>&1; then
         echo "release=gh_release_will_be_created note=use_caller_to_actually_run_gh_release_create"

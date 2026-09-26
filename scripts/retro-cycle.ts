@@ -4,7 +4,7 @@
 // 주/월/분기/연 회고 실행 엔트리 — 실 DB(backtest.db·regime.db)에서 기간 집계 →
 // REFLECTION-<period>.md 저장 → 리밸런싱 제안(HITL 알림). 리밸런싱은 대표 승인 후.
 // 사용: bun scripts/retro-cycle.ts --period weekly|monthly|quarterly|annual
-// 리포트: ~/.monad/conatus/reflections/. [[ROADMAP-...]] R3.
+// 리포트: ~/.elanous/conatus/reflections/. [[ROADMAP-...]] R3.
 
 import { existsSync, mkdirSync, writeFileSync, appendFileSync } from 'node:fs';
 import { homedir } from 'node:os';
@@ -32,8 +32,8 @@ const pIdx = process.argv.indexOf('--period');
 const period = (pIdx >= 0 ? process.argv[pIdx + 1] : 'weekly') as RetroPeriod;
 if (!['weekly', 'monthly', 'quarterly', 'annual'].includes(period)) { console.error(`잘못된 period: ${period}`); process.exit(1); }
 
-const REPORT_DIR = join(homedir(), '.monad/conatus/reflections');
-const LOG = join(homedir(), '.monad/conatus/retro_cycle.log');
+const REPORT_DIR = join(homedir(), '.elanous/conatus/reflections');
+const LOG = join(homedir(), '.elanous/conatus/retro_cycle.log');
 const log = (m: string): void => { try { appendFileSync(LOG, `${new Date().toISOString()} ${m}\n`); } catch { /* */ } };
 
 // backtest.db 기간 집계.

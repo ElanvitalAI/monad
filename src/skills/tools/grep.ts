@@ -1,7 +1,7 @@
 // ── Grep tool (Claude Code-compatible ripgrep wrapper) ──
 //
 // Ports claude-code-fork/src/tools/GrepTool. Shells out to the
-// system `rg` binary. Not bundling our own copy — monad's users are
+// system `rg` binary. Not bundling our own copy — elanous's users are
 // developers who overwhelmingly already have ripgrep installed via
 // brew/apt/cargo. When `rg` is missing we fail fast with an install
 // hint rather than silently falling back to POSIX grep (which
@@ -47,7 +47,7 @@ const RG_MAX_BUFFER = 20 * 1024 * 1024;  // 20 MB — matches claude-code
 
 export interface GrepArgs {
   pattern: string;
-  /** Ignore rules를 무시해 .monad-test 같은 관측 경로도 포함한다. */
+  /** Ignore rules를 무시해 .elanous-test 같은 관측 경로도 포함한다. */
   no_ignore?: boolean;
   path?: string;
   glob?: string;

@@ -35,9 +35,9 @@ export function ThinkingPill({ block }: { block: Block }) {
   const tailStr = tail.length ? ` (${tail.join(' · ')})` : '';
   return (
     <div
-      data-monad-block-kind="agent_thinking"
-      data-monad-block-id={block.blockId}
-      data-monad-done={done ? 'true' : 'false'}
+      data-elanous-block-kind="agent_thinking"
+      data-elanous-block-id={block.blockId}
+      data-elanous-done={done ? 'true' : 'false'}
       className={cn(
         'inline-flex items-center gap-1.5 rounded-full border bg-muted/30 px-2 py-0.5 text-[11px] font-mono',
         done

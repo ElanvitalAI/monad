@@ -6,17 +6,17 @@ interface OriginObservationFields {
   controller?: string;
 }
 
-function presentEnv(name: 'MONAD_ORIGIN_ROOT' | 'MONAD_ORIGIN_AGENT' | 'MONAD_ORIGIN_SESSION' | 'MONAD_CONTROLLER'): string | undefined {
+function presentEnv(name: 'ELANOUS_ORIGIN_ROOT' | 'ELANOUS_ORIGIN_AGENT' | 'ELANOUS_ORIGIN_SESSION' | 'ELANOUS_CONTROLLER'): string | undefined {
   const value = process.env[name];
   return value?.trim() ? value : undefined;
 }
 
 /** 이미 설정된 실행 origin을 추측 없이 관측 이벤트에 싣는다. */
 export function originObservationFields(): OriginObservationFields {
-  const originRoot = presentEnv('MONAD_ORIGIN_ROOT');
-  const originAgent = presentEnv('MONAD_ORIGIN_AGENT');
-  const originSession = presentEnv('MONAD_ORIGIN_SESSION');
-  const controller = presentEnv('MONAD_CONTROLLER');
+  const originRoot = presentEnv('ELANOUS_ORIGIN_ROOT');
+  const originAgent = presentEnv('ELANOUS_ORIGIN_AGENT');
+  const originSession = presentEnv('ELANOUS_ORIGIN_SESSION');
+  const controller = presentEnv('ELANOUS_CONTROLLER');
   return {
     ...(originRoot === undefined ? {} : { originRoot }),
     ...(originAgent === undefined ? {} : { originAgent }),

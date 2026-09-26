@@ -98,7 +98,7 @@ function makeHarness(opts: { fileOpsMaxBytes?: number } = {}): Harness {
     requestTimeoutMs: null,
   });
   // Real temp workspace · mkdtemp keeps test parallelism safe.
-  const workspaceRoot = mkdtempSync(join(tmpdir(), 'monad-fs-ops-test-'));
+  const workspaceRoot = mkdtempSync(join(tmpdir(), 'elanous-fs-ops-test-'));
   const agent = new CodexAppServerAgent({
     backendId: 'codex-app-server',
     cwd: workspaceRoot,
@@ -175,7 +175,7 @@ describe('M2 · validateFsPath (pure)', () => {
   });
 
   test('accepts path inside workspace root', () => {
-    const root = mkdtempSync(join(tmpdir(), 'monad-validate-'));
+    const root = mkdtempSync(join(tmpdir(), 'elanous-validate-'));
     try {
       const inner = join(root, 'sub', 'file.txt');
       mkdirSync(join(root, 'sub'));
@@ -187,10 +187,10 @@ describe('M2 · validateFsPath (pure)', () => {
   });
 
   test('rejects path outside workspace root', () => {
-    const root = mkdtempSync(join(tmpdir(), 'monad-validate-'));
+    const root = mkdtempSync(join(tmpdir(), 'elanous-validate-'));
     try {
       // /tmp/<other> sibling
-      const other = mkdtempSync(join(tmpdir(), 'monad-validate-other-'));
+      const other = mkdtempSync(join(tmpdir(), 'elanous-validate-other-'));
       try {
         const outside = join(other, 'evil.txt');
         writeFileSync(outside, 'leak');
@@ -212,7 +212,7 @@ describe('M2 · validateFsPath (pure)', () => {
   });
 
   test('accepts the root itself', () => {
-    const root = mkdtempSync(join(tmpdir(), 'monad-validate-root-'));
+    const root = mkdtempSync(join(tmpdir(), 'elanous-validate-root-'));
     try {
       expect(validateFsPath(root, root)).toBeNull();
     } finally {
@@ -267,7 +267,7 @@ describe('M2 · fs/readFile handler', () => {
     const h = makeHarness();
     try {
       const { threadId } = await bringUp(h);
-      const outside = mkdtempSync(join(tmpdir(), 'monad-fs-outside-'));
+      const outside = mkdtempSync(join(tmpdir(), 'elanous-fs-outside-'));
       try {
         const evil = join(outside, 'leak.txt');
         writeFileSync(evil, 'secret');
@@ -402,7 +402,7 @@ describe('M2 · fs/writeFile handler', () => {
     const h = makeHarness();
     try {
       const { threadId } = await bringUp(h);
-      const outside = mkdtempSync(join(tmpdir(), 'monad-fs-write-outside-'));
+      const outside = mkdtempSync(join(tmpdir(), 'elanous-fs-write-outside-'));
       try {
         const evil = join(outside, 'leak.txt');
         const data = Buffer.from('x').toString('base64');
@@ -505,10 +505,10 @@ describe('M2 · fs/writeFile handler', () => {
 
 // ─── env override ────────────────────────────────────────────────────
 
-describe('M2 · MONAD_CODEX_FS_MAX_BYTES env', () => {
+describe('M2 · ELANOUS_CODEX_FS_MAX_BYTES env', () => {
   test('env override applies when opts unset', async () => {
-    const prev = process.env.MONAD_CODEX_FS_MAX_BYTES;
-    process.env.MONAD_CODEX_FS_MAX_BYTES = '16';
+    const prev = process.env.ELANOUS_CODEX_FS_MAX_BYTES;
+    process.env.ELANOUS_CODEX_FS_MAX_BYTES = '16';
     try {
       const h = makeHarness();
       try {
@@ -524,14 +524,14 @@ describe('M2 · MONAD_CODEX_FS_MAX_BYTES env', () => {
         h.cleanup();
       }
     } finally {
-      if (prev === undefined) delete process.env.MONAD_CODEX_FS_MAX_BYTES;
-      else process.env.MONAD_CODEX_FS_MAX_BYTES = prev;
+      if (prev === undefined) delete process.env.ELANOUS_CODEX_FS_MAX_BYTES;
+      else process.env.ELANOUS_CODEX_FS_MAX_BYTES = prev;
     }
   });
 
   test('opts wins over env', async () => {
-    const prev = process.env.MONAD_CODEX_FS_MAX_BYTES;
-    process.env.MONAD_CODEX_FS_MAX_BYTES = '8';
+    const prev = process.env.ELANOUS_CODEX_FS_MAX_BYTES;
+    process.env.ELANOUS_CODEX_FS_MAX_BYTES = '8';
     try {
       const h = makeHarness({ fileOpsMaxBytes: 1024 });
       try {
@@ -547,8 +547,8 @@ describe('M2 · MONAD_CODEX_FS_MAX_BYTES env', () => {
         h.cleanup();
       }
     } finally {
-      if (prev === undefined) delete process.env.MONAD_CODEX_FS_MAX_BYTES;
-      else process.env.MONAD_CODEX_FS_MAX_BYTES = prev;
+      if (prev === undefined) delete process.env.ELANOUS_CODEX_FS_MAX_BYTES;
+      else process.env.ELANOUS_CODEX_FS_MAX_BYTES = prev;
     }
   });
 });

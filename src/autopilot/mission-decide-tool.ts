@@ -1,6 +1,6 @@
 // ── 미션 결정 기록 도구 (L2 core · RFC-mission-decision-injection-2026-07-15) ──
 //
-// monad 에이전트·외부 도구(Claude Code/Codex)가 미션에 대한 운영 결정(re-ground·defer·check-pass·
+// elanous 에이전트·외부 도구(Claude Code/Codex)가 미션에 대한 운영 결정(re-ground·defer·check-pass·
 // boundary…)을 프로그램적으로 기록. self_recall·logs_query 옆 L2 코어 도구. dispatch 는
 // recordMissionDecision(통합 창구·3박자) 재사용 — 워킹메모리+logs.db+기억(surface_events)+ops.
 
@@ -12,7 +12,7 @@ const KINDS: readonly MissionDecisionKind[] = ['re-ground', 'defer', 'check-pass
 
 export const MISSION_DECIDE_SPEC: LLMToolSpec = {
   name: 'mission_decide',
-  description: "⭐ 미션 결정 기록 (monad 코어) — 미션에 대한 운영 결정(criterion re-ground·게이트 defer(arming/HITL)·감사 check-pass·범위 boundary·재사용 경계 등)을 미션 컨텍스트에 **정식 주입**한다. 결정이 ①후속 페이즈 빌드 프롬프트(자기인지) ②logs.db(monad logs mission.selfheal.decision) ③통합 기억(surface_events·전 서피스 회상) ④ops timeline 에 **3박자로** 흐른다. **'이 아크 criterion 은 arming 으로 미뤄' '이 감사는 통과로 확인' '이 경계는 여기까지' 같은 운영 결정을 미션이 스스로 알고 셀프힐이 거스르지 않게 하려면 이 도구를 써라.** raw 스토어 변경 대신 이 창구로. (조회=self_recall/logs_query·상태변경 CRUD=autopilot_missions 와 구분: 여긴 '왜 그렇게 결정했나'의 원장.)",
+  description: "⭐ 미션 결정 기록 (elanous 코어) — 미션에 대한 운영 결정(criterion re-ground·게이트 defer(arming/HITL)·감사 check-pass·범위 boundary·재사용 경계 등)을 미션 컨텍스트에 **정식 주입**한다. 결정이 ①후속 페이즈 빌드 프롬프트(자기인지) ②logs.db(elanous logs mission.selfheal.decision) ③통합 기억(surface_events·전 서피스 회상) ④ops timeline 에 **3박자로** 흐른다. **'이 아크 criterion 은 arming 으로 미뤄' '이 감사는 통과로 확인' '이 경계는 여기까지' 같은 운영 결정을 미션이 스스로 알고 셀프힐이 거스르지 않게 하려면 이 도구를 써라.** raw 스토어 변경 대신 이 창구로. (조회=self_recall/logs_query·상태변경 CRUD=autopilot_missions 와 구분: 여긴 '왜 그렇게 결정했나'의 원장.)",
   parameters: {
     type: 'object',
     properties: {

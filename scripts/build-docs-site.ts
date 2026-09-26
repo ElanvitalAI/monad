@@ -310,7 +310,7 @@ ${opts.headings.map((h) => `          <li><a class="d${h.depth}" href="#${h.id}"
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>${escapeHtml(opts.title)} · monad</title>
+<title>${escapeHtml(opts.title)} · elanous</title>
 <meta name="description" content="말 한 줄에 눈·손·기억이 한꺼번에 도는 자기치유 코딩 하니스.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -320,7 +320,7 @@ ${opts.headings.map((h) => `          <li><a class="d${h.depth}" href="#${h.id}"
 <body>
 <div class="shell">
   <aside class="rail">
-    <a class="wordmark" href="./index.html">monad<span class="dot">.</span></a>
+    <a class="wordmark" href="./index.html">elanous<span class="dot">.</span></a>
     <p class="tagline">말 한 줄에 눈·손·기억이<br>한꺼번에 도는 자기치유 하니스</p>
     <nav aria-label="문서">
 ${rail}
@@ -360,7 +360,7 @@ export function indexBody(): string {
         <p class="b">${p.blurb.replace(/`([^`]+)`/g, '<code>$1</code>')}</p>
       </a></li>`).join('\n');
 
-  return `    <h1>monad 문서</h1>
+  return `    <h1>elanous 문서</h1>
     <p class="lede">말 한 줄에 눈·손·기억이 한꺼번에 도는 자기치유 코딩 하니스.</p>
     <p class="sub">목표를 문서로 받아 격리된 워크트리에서 구현하고, 게이트를 돌리고,
     무인 리뷰를 거쳐 병합까지 간다. 사람은 <strong>시스템이 못 할 때만</strong> 불린다.</p>
@@ -370,7 +370,7 @@ ${cards}
     </ol>
 
     <h2>이 문서들이 지키는 규율</h2>
-    <p>monad 의 문서는 «수»를 자랑하지 않는다. 수는 하루면 늙기 때문이다.
+    <p>elanous 의 문서는 «수»를 자랑하지 않는다. 수는 하루면 늙기 때문이다.
     그래서 칸마다 <strong>그 수를 다시 얻는 명령</strong>을 같이 둔다. 아래 표식이 그 규율의 문법이다.</p>
     <dl class="legend">
       <dt>📏</dt><dd>재는 명령 — 이 줄을 쳐서 그 수를 <em>지금</em> 다시 얻는다.</dd>
@@ -393,7 +393,7 @@ ${cards}
 //    ⛔ 이 검사는 «망»을 탄다. 그래서 test:deterministic 에 «안» 넣는다 — --check-deployed 로만.
 //    ⚠️ 이 검사가 «못 보는 것»은 그 산출이 스스로 말한다(아래 BLIND 참조).
 // ─────────────────────────────────────────────────────────────────────────────
-export const DEPLOYED_URL = 'https://monad-docs-three.vercel.app/';
+export const DEPLOYED_URL = 'https://elanous-docs-three.vercel.app/';
 
 export const FRESHNESS_BLIND = [
   '커밋 시각으로 잰다 — 아직 커밋 안 한 작업 트리 편집은 «안 보인다»',

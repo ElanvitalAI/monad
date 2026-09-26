@@ -1,7 +1,7 @@
 // ── User-config LLM fallback substrate (2026-05-13) ────────────────────
 //
-// `~/.monad/llm-fallback.json` 이 read-only 보조 fallback file. primary
-// `~/.monad/config.json` 의 `llm` section 이 sparse-wipe 되어도 daemon
+// `~/.elanous/llm-fallback.json` 이 read-only 보조 fallback file. primary
+// `~/.elanous/config.json` 의 `llm` section 이 sparse-wipe 되어도 daemon
 // boot 가 통과하도록 cascade.
 //
 // 본 test 가 검증:
@@ -14,18 +14,18 @@ import { describe, test, expect, beforeEach, afterEach } from 'bun:test';
 import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { setMonadConfigDir, resetMonadConfigDir } from '../src/monad-config-dir';
+import { setElanousConfigDir, resetElanousConfigDir } from '../src/elanous-config-dir';
 import { buildUserConfig, llmFallbackPath, readLlmFallback } from '../src/user-config';
 
 let root: string;
 
 beforeEach(() => {
   root = mkdtempSync(join(tmpdir(), 'user-config-llm-fallback-'));
-  setMonadConfigDir(root);
+  setElanousConfigDir(root);
 });
 
 afterEach(() => {
-  resetMonadConfigDir();
+  resetElanousConfigDir();
   rmSync(root, { recursive: true, force: true });
 });
 

@@ -143,8 +143,8 @@ export class IntakePipelineApi {
   }
 
   /** FU-I7c (2026-05-12) — write Mission + Task rows into the user's
-   *  real `~/.monad/tasks/tasks.db` and persist workflow YAMLs under
-   *  `~/.monad/workflows/`. Same body shape as preview minus the
+   *  real `~/.elanous/tasks/tasks.db` and persist workflow YAMLs under
+   *  `~/.elanous/workflows/`. Same body shape as preview minus the
    *  `register` flag (the endpoint *is* the register). The response
    *  shape mirrors preview-with-register so the PWA can swap paths
    *  without touching the parser. */

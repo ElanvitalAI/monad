@@ -1,7 +1,7 @@
 // AskUserQuestion ToolRuntime wrapper — Phase WF1.
 //
 // Threads `ctx.sessionId` + `ctx.signal` through to the dispatcher so
-// resolvers (notably the ACP `monad/ask/*` bridge) can fan the request
+// resolvers (notably the ACP `elanous/ask/*` bridge) can fan the request
 // out to the peer attached to the calling session.
 
 import { buildAskUserQuestionTool, dispatchAskUserQuestion } from '../ask-user-question/index.js';

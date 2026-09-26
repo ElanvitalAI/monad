@@ -17,7 +17,7 @@
 //         "remoteDir": "~/Transfers/" },
 //       { "kind": "iphone", "name": "My iPhone",
 //         "tailscaleHost": "iphone.tail-abcd.ts.net",
-//         "pushcutName": "monad-file-received" }
+//         "pushcutName": "elanous-file-received" }
 //     ]
 //   }
 //
@@ -30,7 +30,7 @@ import { homedir } from 'node:os';
 import { join as joinPath } from 'node:path';
 import { normalizeInputQuery } from '../input/query-match.js';
 import { listSshHosts, type SshHost } from '../ssh/ssh-hosts.js';
-import { migrateLegacyHomeFile } from '../storage/legacy-monad-dir-migrate.js';
+import { migrateLegacyHomeFile } from '../storage/legacy-elanous-dir-migrate.js';
 
 export type TransferTarget =
   | {
@@ -56,16 +56,16 @@ export interface TransferTargetsFileV1 {
 let configPathOverride: string | null = null;
 let cachedTargets: TransferTarget[] | null = null;
 
-// FU2 Tier 2 (PLAN-config-unification-monad-root-2026-05-10 closing follow-up):
-//   moved from ~/.config/monad-agent/transfer-targets.json → ~/.monad/transfer-targets.json.
+// FU2 Tier 2 (PLAN-config-unification-elanous-root-2026-05-10 closing follow-up):
+//   moved from ~/.config/monad-agent/transfer-targets.json → ~/.elanous/transfer-targets.json.
 function defaultConfigPath(): string {
   const xdg = process.env['XDG_CONFIG_HOME']?.trim();
   if (xdg) return joinPath(xdg, 'monad-agent', 'transfer-targets.json');
   migrateLegacyHomeFile({
     legacyHomeRel: joinPath('.config', 'monad-agent', 'transfer-targets.json'),
-    monadRel: 'transfer-targets.json',
+    elanousRel: 'transfer-targets.json',
   });
-  return joinPath(homedir(), '.monad', 'transfer-targets.json');
+  return joinPath(homedir(), '.elanous', 'transfer-targets.json');
 }
 
 function configPath(): string {
@@ -97,7 +97,7 @@ function buildDefaults(): TransferTarget[] {
   out.push({
     kind: 'iphone',
     name: 'iPhone',
-    pushcutName: 'monad-file-received',
+    pushcutName: 'elanous-file-received',
   });
   return out;
 }

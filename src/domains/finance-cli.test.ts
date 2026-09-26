@@ -1,4 +1,4 @@
-// finance-cli(monad finance sector-flow) 회귀 — 격리 임시 screener.db fixture.
+// finance-cli(elanous finance sector-flow) 회귀 — 격리 임시 screener.db fixture.
 import { afterAll, beforeAll, expect, test } from 'bun:test';
 import { Database } from 'bun:sqlite';
 import { mkdtempSync, rmSync } from 'node:fs';

@@ -1,6 +1,6 @@
 /** `I-T4` 래칫 기준선 — **관문(`src/git-fs/`) 밖에서 git 프로세스를 띄우는 자리**의 파일별 수.
  *
- *  ⛔⭐ **이 수는 「허용」이 아니라 「유예」다.** 2026-08-03 08:5x 실측(`monad self git-discipline`)이고,
+ *  ⛔⭐ **이 수는 「허용」이 아니라 「유예」다.** 2026-08-03 08:5x 실측(`elanous self git-discipline`)이고,
  *  ⭐ ***늘어나면 게이트가 막고, 줄이면 이 파일을 낮춘다.*** 줄어든 것은 실패로 치지 않는다 —
  *  유예분을 판정층 입력으로 쓰면 판정이 거짓이 된다.
  *
@@ -19,7 +19,7 @@ export const GIT_SPAWN_BASELINE: Readonly<Record<string, number>> = {
   'scripts/run-mission.ts': 6,
   'scripts/se-backend-bench.ts': 3,
   'scripts/se-isolation-verify.ts': 1,
-  'scripts/se-monad-self-tune.ts': 3,
+  'scripts/se-elanous-self-tune.ts': 3,
   'scripts/smoke-headless-goalloop.ts': 6,
   'scripts/tui-sim-bench.ts': 5,
   'scripts/tui-sim.ts': 4,

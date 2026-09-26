@@ -31,7 +31,7 @@ function makeTimeline(count: number, step = 0.1): ParsedWidgetTimeline {
       version: 2.1,
       width: 80,
       height: 24,
-      monad: { kind: 'widget-timeline' as const },
+      elanous: { kind: 'widget-timeline' as const },
     },
     frames,
   };

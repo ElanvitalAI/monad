@@ -5,7 +5,7 @@
  * The 4 LLM-touching phases (decompose · categorize · goal_align ·
  * multi_spec) all accept injected callables so they stay hermetic under
  * test. This module builds the **production** versions, wrapping the
- * same `streamLLM` path the rest of monad uses (matches R3 workflow-
+ * same `streamLLM` path the rest of elanous uses (matches R3 workflow-
  * synth wiring in `src/nexus/api/workflows.ts:90`):
  *
  *   decompose / categorize / align → thin `streamLLM` wrappers that
@@ -14,7 +14,7 @@
  *
  *   synth → wraps `synthWorkflowFromIntent` (R3) which itself uses
  *     `WorkflowDeps.callLLM`. We hand it the same `callLLM` adapter
- *     so model/provider resolution is identical to R3 `monad workflow
+ *     so model/provider resolution is identical to R3 `elanous workflow
  *     synth`.
  *
  * Test seam: every dep is injectable. Production resolves them via
@@ -188,7 +188,7 @@ export function buildIntakeDocumentStageCallables(
     const lines = document.split('\n');
     let inCheck = false;
     const external = lines.filter((line) => {
-      if (/^##\s+🧭\s+monad 점검\s*$/.test(line.trim())) {
+      if (/^##\s+🧭\s+elanous 점검\s*$/.test(line.trim())) {
         inCheck = true;
         return false;
       }
@@ -196,27 +196,27 @@ export function buildIntakeDocumentStageCallables(
       return !inCheck;
     }).join('\n');
     return ask([
-      'monad 는 자기 자신을 개발·관측하는 코딩 에이전트 하니스다(CLI · 데몬 · 모델 카탈로그 · 하니스 런 · 관측 로그).',
-      '아래 문서는 바깥 지식(영상 노트 · 글)이다. 문서의 각 사실을 렌즈로 보고 «monad 에 대한 주장»으로 옮겨라.',
-    '«monad 에 대한 주장»의 조건:',
-    '- 주어가 monad 다(「monad 는 …」「monad 의 … 에 … 가 있다」). 영상 속 제품·모델·사람에 대한 평가는 주장이 아니다.',
-    '- 각 주장마다 monad 저장소·CLI 에서 실제로 검색할 수 있는 구체적인 이름(명령 · 옵션 · 설정 키 · 개념 등)을 하나 이상 반드시 백틱(`이름`)으로 적는다. 잴 이름을 특정할 수 없다면 주장을 만들지 말고 discards 에 원문과 이유를 남긴다.',
+      'elanous 는 자기 자신을 개발·관측하는 코딩 에이전트 하니스다(CLI · 데몬 · 모델 카탈로그 · 하니스 런 · 관측 로그).',
+      '아래 문서는 바깥 지식(영상 노트 · 글)이다. 문서의 각 사실을 렌즈로 보고 «elanous 에 대한 주장»으로 옮겨라.',
+    '«elanous 에 대한 주장»의 조건:',
+    '- 주어가 elanous 다(「elanous 는 …」「elanous 의 … 에 … 가 있다」). 영상 속 제품·모델·사람에 대한 평가는 주장이 아니다.',
+    '- 각 주장마다 elanous 저장소·CLI 에서 실제로 검색할 수 있는 구체적인 이름(명령 · 옵션 · 설정 키 · 개념 등)을 하나 이상 반드시 백틱(`이름`)으로 적는다. 잴 이름을 특정할 수 없다면 주장을 만들지 말고 discards 에 원문과 이유를 남긴다.',
     '- 이름은 저장소에 드물게 나오는 구체적 식별자(명령 · 옵션 · 설정 키 · 파일 경로 · 함수 이름)로 고른다. `run` · `model` · `test` 같은 한 낱말 일반어는 너무 흔해 끝까지 잴 수 없다.',
-    '- 문서의 사실이 monad 에 «무엇을 묻게 하나»를 적는다 — 사실을 요약하지 않는다.',
-    '- 대조할 주장은 반드시 긍정형 존재·능력 문장으로 쓴다(「monad 에 X 가 있다」「monad 는 X 를 기록한다」). 「0건 보유한다」「없다」「지원하지 않는다」「안 한다」「안 된다」처럼 부재를 단언하지 마라. 존재를 검사할 대상으로 바꾸지 못하면 discards 에 원문과 이유를 남긴다.',
-    '렌즈별 질문: L1 능력=영상이 보여준 능력을 monad 가 채우나 · L2 모델·가격=새 모델·가격이 monad 카탈로그에 반영됐나 · L3 하니스 운영=영상이 겪은 병렬·격리·HITL·폴백 사고를 monad 도 겪나 · L4 관측·측정=영상이 손으로 잰 것을 monad 는 재나 · L5 라이선스·약관=무료 경로가 상업 사용에서 막히나 · L6 방법론=monad 규율로 옮길 것이 있나',
-    '예: ❌「두 에이전트가 같은 폴더에서 서로 파일을 고쳐 실험이 무효가 됐다」 → ✅「monad 는 다른 에이전트가 같은 파일을 쓰는 것을 감지한다」(L3)',
-    '예: ❌「새 모델이 입력 $4 · 출력 $20 으로 나왔다」 → ✅「monad 모델 카탈로그에 그 새 모델의 id 가 있다」(L2 · id 는 문서에서 옮겨 백틱으로)',
-    '예: ❌「과제별 비용을 손으로 집계했다」 → ✅「monad 런 원장이 런 단위 `costUsd` 를 기록한다」(L4)',
-    'monad 에 물을 것이 없는 사실(영상 제품 홍보 · 개인 평가 · 날짜 · 이름)은 이유와 함께 버린다.',
+    '- 문서의 사실이 elanous 에 «무엇을 묻게 하나»를 적는다 — 사실을 요약하지 않는다.',
+    '- 대조할 주장은 반드시 긍정형 존재·능력 문장으로 쓴다(「elanous 에 X 가 있다」「elanous 는 X 를 기록한다」). 「0건 보유한다」「없다」「지원하지 않는다」「안 한다」「안 된다」처럼 부재를 단언하지 마라. 존재를 검사할 대상으로 바꾸지 못하면 discards 에 원문과 이유를 남긴다.',
+    '렌즈별 질문: L1 능력=영상이 보여준 능력을 elanous 가 채우나 · L2 모델·가격=새 모델·가격이 elanous 카탈로그에 반영됐나 · L3 하니스 운영=영상이 겪은 병렬·격리·HITL·폴백 사고를 elanous 도 겪나 · L4 관측·측정=영상이 손으로 잰 것을 elanous 는 재나 · L5 라이선스·약관=무료 경로가 상업 사용에서 막히나 · L6 방법론=elanous 규율로 옮길 것이 있나',
+    '예: ❌「두 에이전트가 같은 폴더에서 서로 파일을 고쳐 실험이 무효가 됐다」 → ✅「elanous 는 다른 에이전트가 같은 파일을 쓰는 것을 감지한다」(L3)',
+    '예: ❌「새 모델이 입력 $4 · 출력 $20 으로 나왔다」 → ✅「elanous 모델 카탈로그에 그 새 모델의 id 가 있다」(L2 · id 는 문서에서 옮겨 백틱으로)',
+    '예: ❌「과제별 비용을 손으로 집계했다」 → ✅「elanous 런 원장이 런 단위 `costUsd` 를 기록한다」(L4)',
+    'elanous 에 물을 것이 없는 사실(영상 제품 홍보 · 개인 평가 · 날짜 · 이름)은 이유와 함께 버린다.',
     'FACT_LINE 불릿을 그대로 주장으로 쓰지 마라.',
     `렌즈: ${lenses.join(' · ')}`,
     ...(anchors && anchors.length > 0 ? [
-      `monad 에 이미 있는 명령·능력 이름: ${anchors.join(' · ')}`,
+      `elanous 에 이미 있는 명령·능력 이름: ${anchors.join(' · ')}`,
       '- 문서가 다루는 것에 대응하는 이름이 위 목록에 있으면 그 이름을 백틱으로 쓴다.',
-      '- 대응이 이미 있어도 버리지 않는다. 문서가 보여 준 방법·패턴 가운데 monad 쪽에 아직 없을 수 있는 것을 긍정형 주장으로 만든다 — 꼴: 「monad 의 `<그 이름>` 은 <문서가 보여 준 방법> 을 한다」.',
+      '- 대응이 이미 있어도 버리지 않는다. 문서가 보여 준 방법·패턴 가운데 elanous 쪽에 아직 없을 수 있는 것을 긍정형 주장으로 만든다 — 꼴: 「elanous 의 `<그 이름>` 은 <문서가 보여 준 방법> 을 한다」.',
     ] : []),
-    'JSON: {"claims":[{"text":"monad 는 …","quote":"원문 인용","lens":"L1 능력"}],"discards":[{"quote":"","reason":""}]}',
+    'JSON: {"claims":[{"text":"elanous 는 …","quote":"원문 인용","lens":"L1 능력"}],"discards":[{"quote":"","reason":""}]}',
     '문서:',
     external,
   ].join('\n'));
@@ -228,7 +228,7 @@ export function buildIntakeDocumentStageCallables(
     '종류는 판정에서 정해진다: 「없음」→ 추가 · 「판단 필요」·「있음」→ 보강 · 시너지는 판정과 무관하게 기존 능력·입구 둘 이상을 결합할 때.',
     '⛔ fact 는 대조 결과의 fact 문자열을 «한 글자도 바꾸지 말고» 복사한다 — 바꿔 쓰면 근거 없음으로 버려진다.',
     '⛔ contrast 는 그 항목 evidence 의 `path:line` 하나를 «그대로» 복사한다(여러 개를 + 로 잇지 않는다). evidence 에 path 가 없는 항목(「없음」)은 contrast 를 비울 수 없으니 제안하지 않는다.',
-    '⛔ 시너지의 surfaces 는 아래 능력·입구 목록에 «있는 이름만» 둘 이상 쓴다(monad · git 같은 일반 낱말 금지).',
+    '⛔ 시너지의 surfaces 는 아래 능력·입구 목록에 «있는 이름만» 둘 이상 쓴다(elanous · git 같은 일반 낱말 금지).',
     `능력: ${ruler.capabilities.join(' · ')}`,
     `입구: ${ruler.surfaces.join(' · ')}`,
     `대조: ${JSON.stringify(items.map((item) => ({ fact: item.fact, verdict: item.verdict, evidence: item.evidence })))}`,

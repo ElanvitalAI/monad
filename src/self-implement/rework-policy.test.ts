@@ -449,12 +449,12 @@ describe('resolveEscalateTarget — 단일 중간 모델/provider/effort', () =>
   });
   it('운영자의 SOL 환경 변수 덮어쓰기는 명시 자식에도 그대로 우선한다', () => {
     expect(resolveExplicitChildEscalateTarget('sol', {
-      MONAD_SELFDEV_SOL_MODEL: 'configured-terra', MONAD_SELFDEV_SOL_PROVIDER: 'configured-codex', MONAD_SELFDEV_SOL_EFFORT: 'medium',
+      ELANOUS_SELFDEV_SOL_MODEL: 'configured-terra', ELANOUS_SELFDEV_SOL_PROVIDER: 'configured-codex', ELANOUS_SELFDEV_SOL_EFFORT: 'medium',
     }, { provider: 'openrouter', model: 'openrouter/z-ai/glm-5.3' })).toEqual({ model: 'configured-terra', provider: 'configured-codex', effort: 'medium' });
   });
   it('none 은 null(미주입=종전 base)이고 SOL 환경 변수는 중간 승급만 바꾼다', () => {
     expect(resolveEscalateTarget('none', {})).toBeNull();
-    expect(resolveEscalateTarget('sol', { MONAD_SELFDEV_SOL_MODEL: 'configured-sol', MONAD_SELFDEV_SOL_EFFORT: 'medium' }))
+    expect(resolveEscalateTarget('sol', { ELANOUS_SELFDEV_SOL_MODEL: 'configured-sol', ELANOUS_SELFDEV_SOL_EFFORT: 'medium' }))
       .toEqual({ model: 'configured-sol', provider: 'openai-codex', effort: 'medium' });
   });
 });

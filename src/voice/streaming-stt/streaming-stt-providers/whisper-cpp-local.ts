@@ -6,7 +6,7 @@
 // own VAD-ish chunking — we forward each line we see as a partial,
 // then a final emit on finalize().
 //
-// This provider intentionally minimal: monad doesn't bundle whisper.cpp
+// This provider intentionally minimal: elanous doesn't bundle whisper.cpp
 // — the user installs it. If the binary isn't on PATH, openSession
 // throws `StreamingSTTProviderUnavailableError` so callers can fall
 // back to cloud providers cleanly.

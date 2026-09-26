@@ -6,8 +6,8 @@
 // stdin relayed) use a random token that the client sends in a
 // handshake message before any ACP JSON-RPC starts.
 //
-// Tokens are issued per-monad-instance and written to a 0600 file
-// at `~/.monad/acp-tokens.json` so a paired client can read it
+// Tokens are issued per-elanous-instance and written to a 0600 file
+// at `~/.elanous/acp-tokens.json` so a paired client can read it
 // without us shipping a credential out-of-band. Rotation is coarse —
 // the whole file gets rewritten with a fresh token on demand; there
 // is no long-lived refresh flow (mesh identity via Tailscale / SSH

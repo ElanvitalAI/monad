@@ -1,7 +1,7 @@
 // Service Worker Phase 3 — push subscription store tests.
 //
 // File-backed registry — tests use a tmp dir so production
-// `~/.monad/push-subs.json` is never touched.
+// `~/.elanous/push-subs.json` is never touched.
 
 import { afterEach, beforeEach, describe, expect, test } from 'bun:test';
 import { mkdtempSync, rmSync, statSync } from 'node:fs';

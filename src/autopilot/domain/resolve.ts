@@ -5,7 +5,7 @@
 // 잔여 모호는 confidence/candidates 로 노출해 HITL seam 이 물어보게 한다("투자용? 업무용?").
 //
 // "반도체 산업 동향 조사" = 투자자에겐 investment(선-매매 리서치)·분석가에겐 business.
-// 최근 활동이 investment 면 investment 로 기운다(monad 가 개인 에이전트라서 갖는 강점).
+// 최근 활동이 investment 면 investment 로 기운다(elanous 가 개인 에이전트라서 갖는 강점).
 //
 // 설계: 내부 문서 `PLAN-domain-pack-registry-2026-07-11` §3.8.
 
@@ -84,7 +84,7 @@ export function buildDomainPrompt(goal: string, ctx: { candidates: Domain[]; rec
   const recent = (ctx.recentDomains ?? []).filter((d) => d !== 'general');
   return [
     'You are the Autopilot DOMAIN router. Decide the WHAT axis of a user goal — one of: coding, investment, business, general.',
-    'coding = fulfilling it requires writing or changing code in the monad codebase, OR wiring/adding a',
+    'coding = fulfilling it requires writing or changing code in the elanous codebase, OR wiring/adding a',
     '  feature/capability/integration INTO the product (its telegram, discord, PWA surfaces, storage, pipelines).',
     '  The deliverable is a code change (a pull request).',
     'business = produce a knowledge artifact with EXISTING tools: report, briefing, analysis, digest, summary,',
@@ -92,7 +92,7 @@ export function buildDomainPrompt(goal: string, ctx: { candidates: Domain[]; rec
     'investment = trading/portfolio actions (buy/sell/rebalance) or pre-trade market research.',
     'general = none of the above (small talk, one-off facts).',
     'CRITICAL RULE: the SUBJECT of a goal does NOT decide the domain; the ACTION does. A goal to BUILD, MAKE,',
-    'WIRE, IMPLEMENT or ADD a feature that itself summarizes/reports/digests/researches (e.g. "make monad digest',
+    'WIRE, IMPLEMENT or ADD a feature that itself summarizes/reports/digests/researches (e.g. "make elanous digest',
     'any URL and save to Obsidian", "wire the youtube skill into telegram, quick summary then detail") is CODING,',
     'not business, because it requires building or modifying the system. Classify as business ONLY when the',
     'deliverable is the artifact itself (a report/summary) with no change to the system.',
@@ -117,7 +117,7 @@ export function parseDomainResponse(raw: string): Domain | null {
 
 // ★ 판단 모델 = luna(경량·고속·대표 지시) — tier/실행모델 분류처럼 "동적 상황을 섬세히 보는" 판정은
 //   빠른 LLM 에(휴리스틱은 fail-soft floor). [[feedback_model_tier_sol_terra_luna_2026_07_17]].
-const DOMAIN_JUDGE_MODEL = (): string => process.env.MONAD_DOMAIN_MODEL || budgetModel();
+const DOMAIN_JUDGE_MODEL = (): string => process.env.ELANOUS_DOMAIN_MODEL || budgetModel();
 
 /** 기본 도메인 분류기(luna). NODE_ENV=test 는 호출측이 주입 안 함(seam) — 실 LLM 호출 방지. */
 export const defaultDomainClassify: DomainClassify = async (goal, ctx) => {

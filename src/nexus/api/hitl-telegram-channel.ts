@@ -11,8 +11,8 @@
 // here would either fight for the same /getUpdates poller (409
 // conflict) or duplicate the message-handler. The β-1b convention:
 //   • Two distinct env vars:
-//       MONAD_TELEGRAM_HITL_BOT_TOKEN — separate bot token preferred
-//       MONAD_TELEGRAM_HITL_CHAT_ID   — target chat for HITL prompts
+//       ELANOUS_TELEGRAM_HITL_BOT_TOKEN — separate bot token preferred
+//       ELANOUS_TELEGRAM_HITL_CHAT_ID   — target chat for HITL prompts
 //   • The legacy chat bot stays untouched (its env var is
 //     `userConfig.telegram.botToken`, totally unrelated).
 //
@@ -34,11 +34,11 @@ import { createTelegramHitlPostDeps } from '../../hitl/telegram-channel.js';
 
 export interface NexusTelegramHitlOpts {
   /** Bot API token from @BotFather. Production reads
-   *  `MONAD_TELEGRAM_HITL_BOT_TOKEN` env when not supplied. */
+   *  `ELANOUS_TELEGRAM_HITL_BOT_TOKEN` env when not supplied. */
   token: string;
   /** Telegram chat id (numeric) where HITL prompts post. The user
    *  taps the inline keyboard inside that chat. Production reads
-   *  `MONAD_TELEGRAM_HITL_CHAT_ID` env when not supplied. */
+   *  `ELANOUS_TELEGRAM_HITL_CHAT_ID` env when not supplied. */
   chatId: number;
   /** Optional logger. Defaults to console.warn with a `[hitl/telegram]`
    *  prefix so log scrapers can filter the channel. */
@@ -62,15 +62,15 @@ export interface NexusTelegramHitlHandle {
   stop: () => Promise<void>;
 }
 
-/** Reads `MONAD_TELEGRAM_HITL_BOT_TOKEN` + `MONAD_TELEGRAM_HITL_CHAT_ID`
+/** Reads `ELANOUS_TELEGRAM_HITL_BOT_TOKEN` + `ELANOUS_TELEGRAM_HITL_CHAT_ID`
  *  from `process.env` and returns the parsed opts, or null when either
  *  is missing/invalid. The β-1b wire honors a per-NEXUS env so the
  *  legacy dashboard chat bot (`userConfig.telegram.botToken`) stays
  *  untouched — same fleet, different token = different /getUpdates
  *  poller, no 409 conflict. */
 export function readNexusTelegramHitlOptsFromEnv(env: NodeJS.ProcessEnv = process.env): NexusTelegramHitlOpts | null {
-  const token = env['MONAD_TELEGRAM_HITL_BOT_TOKEN'];
-  const chatIdRaw = env['MONAD_TELEGRAM_HITL_CHAT_ID'];
+  const token = env['ELANOUS_TELEGRAM_HITL_BOT_TOKEN'];
+  const chatIdRaw = env['ELANOUS_TELEGRAM_HITL_CHAT_ID'];
   if (!token || !chatIdRaw) return null;
   const chatId = Number.parseInt(chatIdRaw, 10);
   if (!Number.isFinite(chatId)) return null;

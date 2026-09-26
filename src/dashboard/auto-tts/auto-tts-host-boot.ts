@@ -12,7 +12,7 @@
 //   });
 //   abortCtrl.signal.addEventListener('abort', () => autoTts.controller.cancel());
 //
-// `MONAD_AUTO_TTS=1` flips `initiallyEnabled` on at boot. `MONAD_AUTO_TTS_MAX_LENGTH`
+// `ELANOUS_AUTO_TTS=1` flips `initiallyEnabled` on at boot. `ELANOUS_AUTO_TTS_MAX_LENGTH`
 // caps segmenter buffer growth. Provider id resolves through the same
 // `resolveTTSProviderIdFromEnv` used by `scripts/tts-test.ts` so a user
 // running with `TTS_PROVIDER=edge-tts` gets free TTS on Phase 2 too.
@@ -31,12 +31,12 @@ import {
 } from './auto-tts-controller.js';
 
 export interface BootDashboardAutoTtsOpts {
-  /** When omitted, looks at `process.env.MONAD_AUTO_TTS` ("1" / "true"
+  /** When omitted, looks at `process.env.ELANOUS_AUTO_TTS` ("1" / "true"
    *  / "on" enables, anything else disables). Tests pass an explicit
    *  bool so they don't depend on env state. Dashboard reads this
    *  from `getUserConfig().voice.tts.auto`. */
   initiallyEnabled?: boolean;
-  /** When omitted, falls back to `MONAD_AUTO_TTS_MAX_LENGTH` env or
+  /** When omitted, falls back to `ELANOUS_AUTO_TTS_MAX_LENGTH` env or
    *  segmenter default. Dashboard reads from
    *  `getUserConfig().voice.tts.maxSentenceChars`. */
   maxSentenceChars?: number;
@@ -70,8 +70,8 @@ export interface BootDashboardAutoTtsResult {
 export function bootDashboardAutoTts(
   opts: BootDashboardAutoTtsOpts = {},
 ): BootDashboardAutoTtsResult {
-  const initiallyEnabled = opts.initiallyEnabled ?? readEnvFlag('MONAD_AUTO_TTS');
-  const maxFromEnv = readEnvInt('MONAD_AUTO_TTS_MAX_LENGTH');
+  const initiallyEnabled = opts.initiallyEnabled ?? readEnvFlag('ELANOUS_AUTO_TTS');
+  const maxFromEnv = readEnvInt('ELANOUS_AUTO_TTS_MAX_LENGTH');
   const maxSentenceChars = opts.maxSentenceChars ?? maxFromEnv;
 
   // Priority: opts.providerId (= user-config from dashboard) > env > default.

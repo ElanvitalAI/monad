@@ -1,5 +1,5 @@
-// monad 의 «실물» 명령 표면에서 CLI 레퍼런스를 생성한다.
-// ⛔ 문면을 손으로 적지 않는다 — `monad <cmd> --help` 가 내는 것만 싣는다.
+// elanous 의 «실물» 명령 표면에서 CLI 레퍼런스를 생성한다.
+// ⛔ 문면을 손으로 적지 않는다 — `elanous <cmd> --help` 가 내는 것만 싣는다.
 // 사용: bun scripts/gen-docs-cli-reference.ts > 내부 문서 `cli-reference`
 // 목록만 대조: bun scripts/gen-docs-cli-reference.ts --check-names
 import { spawnSync } from 'node:child_process';
@@ -10,7 +10,7 @@ export type CommandRow = { name: string; alias?: string; desc: string; subs: num
 
 export const SECTIONS: { title: string; hint: string; names: string[] }[] = [
   { title: '하니스 — 골을 쏘고 런을 몬다', hint: '이 저장소의 척추다.', names: ['harness', 'dev', 'self', 'pr', 'repo'] },
-  { title: 'PTY 컨트롤 — 남의 화면을 밖에서 읽고 쓴다', hint: 'monad 고유 축.', names: ['pty', 'agent-mission', 'acp', 'attach', 'browser'] },
+  { title: 'PTY 컨트롤 — 남의 화면을 밖에서 읽고 쓴다', hint: 'elanous 고유 축.', names: ['pty', 'agent-mission', 'acp', 'attach', 'browser'] },
   { title: '관측 — 관측 · 자기인지 · 셀프힐링', hint: '제1원칙이 사는 자리.', names: ['logs', 'ops', 'signals', 'loops', 'fleet', 'where', 'status', 'history', 'inspect'] },
   { title: '대화 · 세션', hint: '', names: ['chat', 'ask', 'agent', 'repl', 'session', 'memory', 'docs'] },
   { title: '프로바이더 · 모델', hint: '', names: ['provider', 'provider:set', 'provider:use', 'provider:rotate', 'provider:restore', 'tier', 'registry', 'local', 'model-watch', 'usage', 'login', 'token'] },
@@ -46,7 +46,7 @@ export function countSubcommands(name: string, run: (args: string[]) => string =
 }
 
 function defaultRun(args: string[]): string {
-  const r = spawnSync('bun', ['bin/monad.mjs', ...args], { encoding: 'utf8', timeout: 90_000 });
+  const r = spawnSync('bun', ['bin/elanous.mjs', ...args], { encoding: 'utf8', timeout: 90_000 });
   return `${r.stdout ?? ''}${r.stderr ?? ''}`;
 }
 
@@ -75,12 +75,12 @@ export function parseDocumentedCommandNames(markdown: string): string[] {
   const names: string[] = [];
   for (const raw of markdown.split(/\r?\n/)) {
     const line = raw.trimEnd();
-    const table = /^\| `monad ([^`]+)`/.exec(line);
+    const table = /^\| `elanous ([^`]+)`/.exec(line);
     if (table) {
       names.push(table[1]!);
       continue;
     }
-    const rest = /^- `monad ([^`]+)`/.exec(line);
+    const rest = /^- `elanous ([^`]+)`/.exec(line);
     if (rest) names.push(rest[1]!);
   }
   return sortedUnique(names);
@@ -143,7 +143,7 @@ export function renderReference(rows: CommandRow[]): string {
     out.push('|---|---:|---|');
     for (const r of picked) {
       placed.add(r.name);
-      const name = r.alias ? `\`monad ${r.name}\` (\`${r.alias}\`)` : `\`monad ${r.name}\``;
+      const name = r.alias ? `\`elanous ${r.name}\` (\`${r.alias}\`)` : `\`elanous ${r.name}\``;
       out.push(`| ${name} | ${r.subs || '—'} | ${r.desc.replace(/\|/g, '\\|').slice(0, 220)} |`);
     }
     out.push('');
@@ -153,7 +153,7 @@ export function renderReference(rows: CommandRow[]): string {
     out.push('## 아직 절에 못 넣은 것');
     out.push('> ⚠️ 이 목록이 비지 않으면 `SECTIONS` 가 실물보다 낡은 것이다 — 절을 늘려라.');
     out.push('');
-    for (const r of rest) out.push(`- \`monad ${r.name}\` — ${r.desc.slice(0, 160)}`);
+    for (const r of rest) out.push(`- \`elanous ${r.name}\` — ${r.desc.slice(0, 160)}`);
     out.push('');
   }
   return out.join('\n');

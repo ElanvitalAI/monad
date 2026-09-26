@@ -1,5 +1,5 @@
-// `monad nexus pwa stop` — one command to take down everything that
-// `monad nexus pwa start` brought up.
+// `elanous nexus pwa stop` — one command to take down everything that
+// `elanous nexus pwa start` brought up.
 //
 // Cascade order (best-effort each step):
 //   1. Per-port Tailscale Serve unmount — drop the tls-tcp forward we
@@ -12,7 +12,7 @@
 //   2. PWA dev BG (apps/pwa next-dev) — `runPwaDevStop`
 //      That stop also DELETEs the admin endpoint via the BG child's
 //      `pwa-dev` cleanup `finally`, so nexus flips back to static.
-//   3. Nexus daemon — same SIGINT path as `monad nexus stop`.
+//   3. Nexus daemon — same SIGINT path as `elanous nexus stop`.
 //
 // `pwa stop` works whether dev mode was ever active. When the dev lock
 // is missing or stale we just clear it and proceed to the nexus stop.
@@ -41,8 +41,8 @@ export interface PwaStopOpts {
   /** Test seam — resolve the daemon PWA URL used to determine its live port. */
   resolveNexusPwaFn?: () => NexusPwaResolution;
   /** P4 — replace the registry unregister call. Default reads
-   *  `~/.monad/nexus/.lock` to get the daemon pid + drops that entry
-   *  from `~/.monad/pwa-registry.json`. */
+   *  `~/.elanous/nexus/.lock` to get the daemon pid + drops that entry
+   *  from `~/.elanous/pwa-registry.json`. */
   unregisterFn?: (pid: number) => void;
   /** P4 — read the nexus lock to recover daemon pid. Test seam. */
   readLockFn?: () => { pid: number } | null;
@@ -117,7 +117,7 @@ export async function runPwaStop(opts: PwaStopOpts = {}): Promise<PwaStopResult>
   const unregisterFn = opts.unregisterFn ?? unregisterPwaInstance;
   const readLockFn = opts.readLockFn ?? (() => readNexusLock());
 
-  out.log('monad nexus pwa stop: cascade');
+  out.log('elanous nexus pwa stop: cascade');
 
   // Per-port unmount first — release THIS port's tls-tcp forward
   // before nexus dies. Idempotent and unconditional: the user's

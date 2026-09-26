@@ -23,7 +23,7 @@ describe('TuiMirrorView (SSR)', () => {
     expect(html).toContain('TUI 관측');
     expect(html).toContain('자기신고 화면 대기 중');
     // Empty state guidance (no frames yet).
-    expect(html).toContain('대시보드(monad)를 실행하면');
+    expect(html).toContain('대시보드(elanous)를 실행하면');
     // Accessibility — the live-frame region is labelled.
     expect(html).toContain('선택한 TUI 화면의 라이브 렌더 프레임');
   });

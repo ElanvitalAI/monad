@@ -4,8 +4,8 @@
 // Aggregates two existing data sources:
 //   1. `git worktree list --porcelain` from the active repo —
 //      authoritative ground truth (every worktree git knows about).
-//   2. `~/.monad/worktrees/<sessionId>.json` — per-monad-session
-//      records of which monad process entered which worktree, so we
+//   2. `~/.elanous/worktrees/<sessionId>.json` — per-elanous-session
+//      records of which elanous process entered which worktree, so we
 //      can label each git worktree with its owning session AND
 //      detect orphans (worktree exists, owner pid dead).
 //

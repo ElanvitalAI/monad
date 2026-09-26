@@ -2,7 +2,7 @@
 //
 // "역으로 브리핑해도 답을 받을 수 있는 구조" — P5 버즈 다이제스트는 push(예약)뿐이라 PULL 이
 // 없었다. 이 모듈이 (1) 수집된 버즈 조회 + (2) stale(밤/주말/수집 정지 구간)이면 실시간 그랩
-// 폴백을 순수 로직으로 제공한다. CLI(`monad buzz`)가 실 fetch/parse/normalize 를 주입해 조립.
+// 폴백을 순수 로직으로 제공한다. CLI(`elanous buzz`)가 실 fetch/parse/normalize 를 주입해 조립.
 //
 // 수집 주기: community-buzz-cycle = */10 8-20 KST 평일. 그 밖 = stale → 실시간 그랩이 답.
 

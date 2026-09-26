@@ -1,7 +1,7 @@
 // NEXUS · webterm view (N-1 cleanup PR d) — render tests.
 //
 // Covers createWebtermTabView in both render paths:
-//   - placeholder (no session) — surfaces PR e roadmap + monad legacy hint
+//   - placeholder (no session) — surfaces PR e roadmap + elanous legacy hint
 //   - session present — header / output / footer wiring across status
 //     enum values (inert / running / exited / error)
 //
@@ -44,13 +44,13 @@ function makeFakeBackend(initial: string[] = [], pid = 9001): FakeView {
 }
 
 describe('createWebtermTabView · placeholder', () => {
-  test('no session → surfaces PR e roadmap + monad legacy hint', () => {
+  test('no session → surfaces PR e roadmap + elanous legacy hint', () => {
     const spec = createWebtermTabSpec({ id: 'webterm:1', label: 'webterm#1' });
     const out = renderToText(createWebtermTabView(spec));
     expect(out).toContain('webterm tab · webterm:1');
     expect(out).toContain('PR d');
     expect(out).toContain('PR e');
-    expect(out).toContain('monad legacy');
+    expect(out).toContain('elanous legacy');
   });
 });
 

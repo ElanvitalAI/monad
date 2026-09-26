@@ -183,11 +183,11 @@ describe('createProductionAcxSessionCallable · error mapping', () => {
 
   test('not-driveable server session → done.error.code = SERVER_SESSION_NOT_DRIVEABLE', async () => {
     const mgr = fakeManager({
-      records: [{ id: 'acp-srv:monad-session-7' }],
+      records: [{ id: 'acp-srv:elanous-session-7' }],
       throwOnSend: new Error('server session is not driveable'),
     });
     const callable = createProductionAcxSessionCallable(mgr);
-    const out = await (await callable({ ...baseInput, sessionId: 'acp-srv:monad-session-7' })).done;
+    const out = await (await callable({ ...baseInput, sessionId: 'acp-srv:elanous-session-7' })).done;
     expect(out.error?.code).toBe('SERVER_SESSION_NOT_DRIVEABLE');
   });
 
@@ -234,10 +234,10 @@ describe('createProductionAcxSessionCallable · address shape variants', () => {
 
   test('server namespace passes through unchanged', async () => {
     const mgr = fakeManager({
-      records: [{ id: 'acp-srv:monad-session-3' }],
+      records: [{ id: 'acp-srv:elanous-session-3' }],
     });
     const callable = createProductionAcxSessionCallable(mgr);
-    const { address } = await callable({ ...baseInput, sessionId: 'acp-srv:monad-session-3' });
-    expect(address).toBe('acx:acp-srv:monad-session-3');
+    const { address } = await callable({ ...baseInput, sessionId: 'acp-srv:elanous-session-3' });
+    expect(address).toBe('acx:acp-srv:elanous-session-3');
   });
 });

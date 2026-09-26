@@ -6,17 +6,17 @@ import { mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
-const ORIG = process.env.MONAD_SESSION_ROOT;
+const ORIG = process.env.ELANOUS_SESSION_ROOT;
 let tmp: string;
 beforeEach(async () => {
   tmp = mkdtempSync(join(tmpdir(), 'sess-p2-'));
-  process.env.MONAD_SESSION_ROOT = tmp;
+  process.env.ELANOUS_SESSION_ROOT = tmp;
   const { _clearSubscriberIndexForTest } = await import('../src/session/index.js');
   _clearSubscriberIndexForTest();
 });
 afterEach(() => {
   if (tmp) rmSync(tmp, { recursive: true, force: true });
-  if (ORIG === undefined) delete process.env.MONAD_SESSION_ROOT; else process.env.MONAD_SESSION_ROOT = ORIG;
+  if (ORIG === undefined) delete process.env.ELANOUS_SESSION_ROOT; else process.env.ELANOUS_SESSION_ROOT = ORIG;
 });
 
 describe('session_manage 구독 액션 (전 서피스 노출)', () => {

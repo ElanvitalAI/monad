@@ -11,7 +11,7 @@ const REPO = '/Users/x/source/leader/monad-agent';
 const plan = planIsolatedInstance(REPO, 'demo');
 const target: BuildTarget = {
   id: 'p1', slug: 'demo', title: '데모 기능',
-  planPath: '/tmp/monad-se/proposals/p1.md',
+  planPath: '/tmp/elanous-se/proposals/p1.md',
 };
 
 describe('integrity-gate', () => {
@@ -100,8 +100,8 @@ describe('★ config 격리 하드가드 (buildIsolatedLaunchArgs)', () => {
     // 격리 config-dir 은 worktree 하위(정식 아님).
     expect(plan.configDir).toContain('.worktrees');
   });
-  test('정식 ~/.monad config-dir → throw(메인 무오염 보증)', () => {
-    const evil = { ...plan, configDir: `${process.env.HOME}/.monad`, worktreePath: `${process.env.HOME}/.monad`, branch: 'se/x' };
+  test('정식 ~/.elanous config-dir → throw(메인 무오염 보증)', () => {
+    const evil = { ...plan, configDir: `${process.env.HOME}/.elanous`, worktreePath: `${process.env.HOME}/.elanous`, branch: 'se/x' };
     expect(() => buildIsolatedLaunchArgs(evil as any)).toThrow();
   });
   test('정식 포트 → throw', () => {
@@ -249,7 +249,7 @@ describe('runNocturnal — 오케스트레이션', () => {
       // ⛔⭐ 기본 record 는 recordAutonomousActionSafe → openSurfaceEventsDb() 로 «실제 DB» 를 연다.
       //   무인 리뷰 must-fix(2026-08-04 · 4라운드) — 테스트가 저장소 부작용을 내면 안 된다.
       record: () => {},
-      createInstance: async (slug) => ({ ...plan, slug, worktreePath: `/wt-${slug}`, configDir: `/wt-${slug}/.monad-test` }),
+      createInstance: async (slug) => ({ ...plan, slug, worktreePath: `/wt-${slug}`, configDir: `/wt-${slug}/.elanous-test` }),
       implement: async () => ({ changed: true, summary: '구현함' }),
       changedFiles: (worktreePath) => scopeFiles[worktreePath] ?? [],
       runIntegrityGate: async (cwd, options = {}) => {
@@ -296,7 +296,7 @@ describe('runNocturnal — 오케스트레이션', () => {
       // ⛔⭐ 기본 record 는 recordAutonomousActionSafe → openSurfaceEventsDb() 로 «실제 DB» 를 연다.
       //   무인 리뷰 must-fix(2026-08-04 · 4라운드) — 테스트가 저장소 부작용을 내면 안 된다.
       record: () => {},
-      createInstance: async (slug) => ({ ...plan, slug, worktreePath: `/wt-${slug}`, configDir: `/wt-${slug}/.monad-test` }),
+      createInstance: async (slug) => ({ ...plan, slug, worktreePath: `/wt-${slug}`, configDir: `/wt-${slug}/.elanous-test` }),
       implement: async () => ({ changed: true, summary: '구현함' }),
       changedFiles: (worktreePath) => scopeFiles[worktreePath] ?? [],
       runIntegrityGate: async (cwd, options = {}) => {

@@ -56,19 +56,19 @@ import { refConsultRuntime } from './ref-consult-runtime.js';
 import { refsGCRuntime } from './refs-gc-runtime.js';
 import { ALL_BROWSER_RUNTIMES } from './browser-runtime.js';
 import { registerWebTerminalRuntimes } from './web-terminal-runtimes.js';
-import { monadSkillsListRuntime } from './monad-skills-list-runtime.js';
+import { elanousSkillsListRuntime } from './elanous-skills-list-runtime.js';
 import { skillExecRuntime } from './skill-exec-runtime.js';
-import { monadObsidianSearchRuntime } from './monad-obsidian-search-runtime.js';
-import { monadObsidianInfoRuntime } from './monad-obsidian-info-runtime.js';
-import { monadFsListRuntime } from './monad-fs-list-runtime.js';
-import { monadFsReadRuntime } from './monad-fs-read-runtime.js';
-import { monadShowroomBroadcastRuntime } from './monad-showroom-broadcast-runtime.js';
-import { monadAutopilotLaunchRuntime } from './monad-autopilot-launch-runtime.js';
+import { elanousObsidianSearchRuntime } from './elanous-obsidian-search-runtime.js';
+import { elanousObsidianInfoRuntime } from './elanous-obsidian-info-runtime.js';
+import { elanousFsListRuntime } from './elanous-fs-list-runtime.js';
+import { elanousFsReadRuntime } from './elanous-fs-read-runtime.js';
+import { elanousShowroomBroadcastRuntime } from './elanous-showroom-broadcast-runtime.js';
+import { elanousAutopilotLaunchRuntime } from './elanous-autopilot-launch-runtime.js';
 import { persistentGroundingRuntime } from './persistent-grounding-runtime.js';
 import { goalAuthorRuntime } from './goal-author-runtime.js';
 import { bootstrapMcpProxyRuntimes } from './mcp-proxy-bootstrap.js';
 import { SELF_COGNITION_RUNTIMES } from './self-cognition-runtimes.js';
-import { MONAD_CONTROL_RUNTIMES } from './monad-control-runtimes.js';
+import { ELANOUS_CONTROL_RUNTIMES } from './elanous-control-runtimes.js';
 
 /** Register every built-in runtime. Idempotent — safe to call more
  *  than once (registry dedupe). Call from the dashboard boot path;
@@ -100,7 +100,7 @@ export function registerAllDefaultToolRuntimes(): void {
   // ⛔⭐⭐ `SelfOrchestrate` 는 «모델 표면에서 내려간다»(기본 off · 대표 결정 2026-08-20).
   //   흡수가 이미 끝났다 — SelfImplement 가 goals[]/concurrency/decompose/auto_merge 를 받고
   //   그 인자가 있으면 «같은 함수»(runSelfOrchestrateCliCommand)로 간다.
-  //   ⇒ 둘째 문은 «능력»이 아니라 파편화다. ⚠️ CLI(`monad self orchestrate`)는 «남는다».
+  //   ⇒ 둘째 문은 «능력»이 아니라 파편화다. ⚠️ CLI(`elanous self orchestrate`)는 «남는다».
   //   🩹 되돌리기: tools.selfOrchestrate.modelSurface = true
   if (isSelfOrchestrateModelSurfaceEnabled()) registerToolRuntime(selfOrchestrateRuntime);
   registerToolRuntime(undoTurnRuntime);
@@ -145,20 +145,20 @@ export function registerAllDefaultToolRuntimes(): void {
   // without an extra setup step. Idempotent guard inside.
   registerWebTerminalRuntimes();
   // PLAN-codex-app-server-hermes-parity §5 Phase H1·5a (2026-05-16) —
-  // codex MCP callback surface. monad_* tools are exposed only to the
+  // codex MCP callback surface. elanous_* tools are exposed only to the
   // 'mcp' surface (catalog entry), so they don't surface in TUI or
-  // dashboard tool lists but the monad-tools MCP server (src/mcp/
+  // dashboard tool lists but the elanous-tools MCP server (src/mcp/
   // server.ts) lists them when codex queries tools/list.
-  registerToolRuntime(monadSkillsListRuntime);
+  registerToolRuntime(elanousSkillsListRuntime);
   registerToolRuntime(skillExecRuntime);
-  registerToolRuntime(monadObsidianSearchRuntime);
-  registerToolRuntime(monadObsidianInfoRuntime);
-  registerToolRuntime(monadFsListRuntime);
-  registerToolRuntime(monadFsReadRuntime);
-  registerToolRuntime(monadShowroomBroadcastRuntime);
-  registerToolRuntime(monadAutopilotLaunchRuntime);
+  registerToolRuntime(elanousObsidianSearchRuntime);
+  registerToolRuntime(elanousObsidianInfoRuntime);
+  registerToolRuntime(elanousFsListRuntime);
+  registerToolRuntime(elanousFsReadRuntime);
+  registerToolRuntime(elanousShowroomBroadcastRuntime);
+  registerToolRuntime(elanousAutopilotLaunchRuntime);
   for (const rt of SELF_COGNITION_RUNTIMES) registerToolRuntime(rt);
-  for (const rt of MONAD_CONTROL_RUNTIMES) registerToolRuntime(rt);
+  for (const rt of ELANOUS_CONTROL_RUNTIMES) registerToolRuntime(rt);
   // External MCP proxies already declare surfaces `['mcp','tui']`, but the
   // TUI process never registered them. Fire-and-forget: handshake must not
   // block TUI startup; failures stay queryable via diagnostics.

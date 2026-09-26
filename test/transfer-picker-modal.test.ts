@@ -9,7 +9,7 @@ const MBA: SshHost = { name: 'mba', host: 'mba' };
 function mkTargets(): TransferTarget[] {
   return [
     { kind: 'ssh', name: 'mba', host: MBA, remoteDir: '~/Downloads/' },
-    { kind: 'iphone', name: 'iPhone', pushcutName: 'monad-file-received' },
+    { kind: 'iphone', name: 'iPhone', pushcutName: 'elanous-file-received' },
   ];
 }
 

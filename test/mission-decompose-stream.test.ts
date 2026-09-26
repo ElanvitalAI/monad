@@ -11,10 +11,10 @@ import {
 } from '../src/autopilot/mission-decompose-stream.js';
 
 let stateDir = '';
-const prevEnv = process.env.MONAD_STATE_DIR;
-beforeAll(() => { stateDir = mkdtempSync(join(tmpdir(), 'dstream-')); process.env.MONAD_STATE_DIR = stateDir; });
+const prevEnv = process.env.ELANOUS_STATE_DIR;
+beforeAll(() => { stateDir = mkdtempSync(join(tmpdir(), 'dstream-')); process.env.ELANOUS_STATE_DIR = stateDir; });
 afterAll(() => {
-  if (prevEnv === undefined) delete process.env.MONAD_STATE_DIR; else process.env.MONAD_STATE_DIR = prevEnv;
+  if (prevEnv === undefined) delete process.env.ELANOUS_STATE_DIR; else process.env.ELANOUS_STATE_DIR = prevEnv;
   try { rmSync(stateDir, { recursive: true, force: true }); } catch { /* noop */ }
 });
 

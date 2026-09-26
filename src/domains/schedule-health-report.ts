@@ -58,7 +58,7 @@ export function formatHealthReport(
   if (opts.mode === 'alert' && !hasScheduleProblem && !hasSinkProblem) return null;
 
   const head = `🔧 스케줄 헬스 · ${opts.nowLabel}`;
-  const summary = `대상 ${h.monadTotal} · 밀림 ${h.stale.length} · 실패 ${h.errored.length} · 비정규 ${h.noncanonical.length} · 측정 불가 ${h.unmeasured.length}`;
+  const summary = `대상 ${h.elanousTotal} · 밀림 ${h.stale.length} · 실패 ${h.errored.length} · 비정규 ${h.noncanonical.length} · 측정 불가 ${h.unmeasured.length}`;
   const parts = [head, summary];
 
   if (h.stale.length > 0) {

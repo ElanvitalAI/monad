@@ -106,7 +106,7 @@ describe('IDX-6 Phase 3 /theme list', () => {
       'catppuccin-latte',
       'rose-pine-dawn',
       'nord-light',
-      'monad-pastel-default',
+      'elanous-pastel-default',
     ]) {
       expect(joined).toContain(name);
     }

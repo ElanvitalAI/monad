@@ -4,7 +4,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
 import { toolSurface } from '../src/boot/daemon-tools/index.js';
-import { resetMonadConfigDir, setMonadConfigDir } from '../src/monad-config-dir.js';
+import { resetElanousConfigDir, setElanousConfigDir } from '../src/elanous-config-dir.js';
 import { resetUserConfig } from '../src/user-config.js';
 
 let configDir: string;
@@ -19,13 +19,13 @@ function writeConfig(modelSurface?: boolean): void {
 
 beforeEach(() => {
   configDir = mkdtempSync(join(tmpdir(), 'daemon-tools-dev-harness-'));
-  setMonadConfigDir(configDir);
+  setElanousConfigDir(configDir);
   resetUserConfig();
 });
 
 afterEach(() => {
   resetUserConfig();
-  resetMonadConfigDir();
+  resetElanousConfigDir();
   rmSync(configDir, { recursive: true, force: true });
 });
 

@@ -60,7 +60,7 @@ describe('session turn control daemon requests', () => {
         return { pid: 1, startedAt: 'now', nexusVersion: 'test', phase: 'test', httpPort: 39999, httpHost: '127.0.0.1' };
       },
       fetchFn: successfulRequest(calls),
-    })).rejects.toThrow(/Nexus daemon could not be found \(daemon-absent\).*monad nexus run/);
+    })).rejects.toThrow(/Nexus daemon could not be found \(daemon-absent\).*elanous nexus run/);
     expect(runtimeReads).toBe(0);
     expect(calls).toHaveLength(0);
   });
@@ -71,7 +71,7 @@ describe('session turn control daemon requests', () => {
     await expect(requestSessionTurnControl('session-1', 'turn', undefined, {
       resolveNexusPwaFn: () => { throw new Error('sidecar unavailable'); },
       fetchFn: successfulRequest(calls),
-    })).rejects.toThrow(/Nexus daemon could not be found \(sidecar unavailable\).*monad nexus run/);
+    })).rejects.toThrow(/Nexus daemon could not be found \(sidecar unavailable\).*elanous nexus run/);
     expect(calls).toHaveLength(0);
   });
 

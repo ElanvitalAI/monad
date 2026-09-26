@@ -7,7 +7,7 @@
 //   · verify_order_filled.py → verifyOrderFilled  (의도 ↔ 실체결)
 //
 // ⚠️ 머니패스 인접 — 하드 제약(절대 위반 금지):
-//   · READ-ONLY. 주문 접수 0 · 브로커/라이브 write 0 · ~/.monad/conatus write 0.
+//   · READ-ONLY. 주문 접수 0 · 브로커/라이브 write 0 · ~/.elanous/conatus write 0.
 //   · trade-order-adapters.ts / trade-*.ts / finance-tools.ts 무접촉(additive only).
 //   · 실집행 경로는 계속 python. 이 모듈은 순수 판정 함수 + 얇은 조회 어댑터뿐.
 //

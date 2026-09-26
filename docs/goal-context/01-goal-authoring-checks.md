@@ -150,7 +150,7 @@
    ```
    🔎 **발사 «전»에 한 줄씩 물어라** — 그 도구는 «이미 있었다»:
    ```bash
-   bun bin/monad.mjs self author --inspect-invariant '<불변식 한 줄>'
+   bun bin/elanous.mjs self author --inspect-invariant '<불변식 한 줄>'
    ```
    ⚠️ **그래도 산문형을 «지워야» 한다는 뜻은 아니다** — 사람에게 의도를 말하는 값이 있다.
    ⛔ 다만 ***그것만 쓰면 기계가 안 지켜 준다***는 것을 알고 쓴다.
@@ -351,7 +351,7 @@ entry-mode 전면 제거·dead 코드 정리)이고, ***「골을 만족시키�
 // src/self-dev/entrance-registry.test.ts — 진입점을 «실제로» 태운다
 const { program, setRunDevAskFromGoalFileDepsForTesting } = await import('../index.js');
 setRunDevAskFromGoalFileDepsForTesting({ … 무엇이 불렸는지 배열에 담는다 … });
-await program.parseAsync(['node','monad','harness','ask','/tmp/goal.md']);
+await program.parseAsync(['node','elanous','harness','ask','/tmp/goal.md']);
 expect(launchedEntrances[0]).toBe(CLI_HARNESS_ASK_ENTRANCE.id);
 ```
 ⭐ 같은 파일의 **종전 판본**이 정확히 반대였다 — `expect(indexSource).toContain('…_ENTRANCE.id')`.

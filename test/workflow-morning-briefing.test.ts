@@ -3,7 +3,7 @@
 //
 // Verifies the YAML shape (4-line description conv, trigger phrases,
 // node DAG), runtime behaviour with stubbed deps, graceful gh-missing
-// skip, MONAD_OBSIDIAN_DIR env literal, and router regex cascade
+// skip, ELANOUS_OBSIDIAN_DIR env literal, and router regex cascade
 // (single-hit, no LLM call) for the canonical trigger.
 
 import { describe, it, expect } from 'bun:test';
@@ -59,10 +59,10 @@ describe('morning-briefing — YAML shape', () => {
     expect(wf.model).toBe('haiku');
   });
 
-  it('save-daily-note honors MONAD_OBSIDIAN_DIR env override', () => {
+  it('save-daily-note honors ELANOUS_OBSIDIAN_DIR env override', () => {
     const wf = loadWorkflow();
     const save = wf.nodes.find((n) => n.id === 'save-daily-note')! as { bash?: string };
-    expect(save.bash).toContain('${MONAD_OBSIDIAN_DIR:-$HOME/Documents/Obsidian}');
+    expect(save.bash).toContain('${ELANOUS_OBSIDIAN_DIR:-$HOME/Documents/Obsidian}');
     expect(save.bash).toContain('Daily Notes');
   });
 });
@@ -103,7 +103,7 @@ describe('morning-briefing — runtime', () => {
         if (body.includes('command -v gh')) {
           return { stdout: '## Open PRs (mine)\n- #2040 morning-briefing workflow (open)', stderr: '', exitCode: 0 };
         }
-        if (body.includes('MONAD_OBSIDIAN_DIR')) {
+        if (body.includes('ELANOUS_OBSIDIAN_DIR')) {
           return { stdout: 'saved=/tmp/Obsidian/Daily Notes/2026-05-08.md date=2026-05-08 time=08:00', stderr: '', exitCode: 0 };
         }
         return { stdout: '', stderr: '', exitCode: 0 };
@@ -120,7 +120,7 @@ describe('morning-briefing — runtime', () => {
     expect(promptCalls[0]).toContain('Top 3 today');
 
     const lastBash = bashBodies[bashBodies.length - 1];
-    expect(lastBash).toContain('MONAD_OBSIDIAN_DIR');
+    expect(lastBash).toContain('ELANOUS_OBSIDIAN_DIR');
     expect(lastBash).toContain('Top 3 today');
   });
 
@@ -158,7 +158,7 @@ describe('morning-briefing — router cascade', () => {
     const prevCwd = process.cwd();
     process.chdir(tmpDir);
     try {
-      mkdirSync(join(tmpDir, '.monad', 'workflows'), { recursive: true });
+      mkdirSync(join(tmpDir, '.elanous', 'workflows'), { recursive: true });
       let llmCallCount = 0;
       const fakeLLM: RouterLLMCaller = async () => {
         llmCallCount += 1;
@@ -183,7 +183,7 @@ describe('morning-briefing — router cascade', () => {
     const prevCwd = process.cwd();
     process.chdir(tmpDir);
     try {
-      mkdirSync(join(tmpDir, '.monad', 'workflows'), { recursive: true });
+      mkdirSync(join(tmpDir, '.elanous', 'workflows'), { recursive: true });
       const fakeLLM: RouterLLMCaller = async () => '/invoke-workflow nothing';
       const r = await routeWorkflow(
         { userMessage: "let's see today's plan" },

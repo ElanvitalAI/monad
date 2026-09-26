@@ -12,7 +12,7 @@
 // separate audio path; this guarantees voice reports honor the same
 // global enable / cancel surface as turn-stream TTS.
 //
-// Opt-in via `MONAD_PFC_VOICE_REPORT=1` (default off — voice surfaces
+// Opt-in via `ELANOUS_PFC_VOICE_REPORT=1` (default off — voice surfaces
 // in TUI are still relatively new and silent-by-default avoids
 // startling on first dogfood).
 
@@ -25,7 +25,7 @@ export interface PfcVoiceRuntimeDeps {
    *  the runtime calls this lazily on each notification. Returning
    *  `null` skips voice (chat-line still fires). */
   getController: () => AutoTtsController | null;
-  /** Initial enabled state. Driven by `MONAD_PFC_VOICE_REPORT=1` at
+  /** Initial enabled state. Driven by `ELANOUS_PFC_VOICE_REPORT=1` at
    *  boot. Default `false`. */
   initiallyEnabled?: boolean;
   logDebug?: (category: string, event: string, data?: unknown) => void;

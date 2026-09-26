@@ -1,4 +1,4 @@
-// ── `monad where` (P3 · 2026-07-26) ────────────────────────────────────────
+// ── `elanous where` (P3 · 2026-07-26) ────────────────────────────────────────
 //
 // "지금 어느 우주인가 — **그리고 왜**". 이 트랙의 핵심 요구는 "격리가 편해지는 것"만이 아니라
 // **헷갈리지 않는 것**이었다. 그래서 결과(prod/test)뿐 아니라 **어느 층에서 결정됐는지**를 같이
@@ -11,7 +11,7 @@ import { observeLeaderAxes, isLeaderTree } from '../instance/leader.js';
 import { resolveCurrentInstance } from '../instance/current.js';
 import { treeDerivedTestEnabled, effectiveInstanceRoot, normRoot, type InstanceResolution } from '../instance/resolve.js';
 
-import { getMonadConfigDir } from '../monad-config-dir.js';
+import { getElanousConfigDir } from '../elanous-config-dir.js';
 
 const LAYER_LABEL: Record<InstanceResolution['layer'], string> = {
   'explicit-flag': '1층 · 명시 플래그',
@@ -66,7 +66,7 @@ export function registerWhereCommand(program: Command, deps: WhereDeps = {}): vo
       // ★ 리졸버와 **같은 스위치**를 쓴다 — 진단이 실제 해석과 갈리면 거짓 보고가 된다
       //   (스위치 ON 인데 where 만 test 라고 말하는 상황 · self review 지적).
       const treeDerivedEnabled = (deps.treeDerivedEnabled ?? treeDerivedTestEnabled)();
-      const configDir = (deps.configDir ?? getMonadConfigDir)();
+      const configDir = (deps.configDir ?? getElanousConfigDir)();
       const r = resolveCurrentInstance({
         cwd: () => cwd,
         treeDerivedEnabled: () => treeDerivedEnabled,

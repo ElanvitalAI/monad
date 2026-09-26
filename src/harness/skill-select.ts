@@ -11,7 +11,7 @@
 //    후속 최적화(ground 픽 재사용으로 1회화)는 S4/S5 정련 대상.
 //
 // ★ 제1원칙 관측(S4 carry 검증·PLAN S5) — 선택(when)·경로(luna/substring)·실행(carry)을 debug.log('harness.skill').
-//   조회: monad logs --category harness.skill.
+//   조회: elanous logs --category harness.skill.
 
 import { pickSkillsViaLlm } from '../autopilot/mission-codebase-gate.js';
 import { getSkillIndex } from '../skills/index.js';

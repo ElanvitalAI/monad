@@ -2,7 +2,7 @@
 //
 // 2026-05-13 · config-dir-unify — internal CLI flag that bg-launch
 // re-appends to the child argv to inherit the parent's test state
-// root override. Replaces the removed `MONAD_NEXUS_DIR` env var.
+// root override. Replaces the removed `ELANOUS_NEXUS_DIR` env var.
 // Public surface for users remains `--test`; this is the wire.
 
 import { afterEach, beforeEach, describe, expect, it } from 'bun:test';
@@ -26,9 +26,9 @@ import {
 } from '../src/nexus/paths';
 import { applyIsolatedRoot } from '../src/cli/test-state-dir-flag';
 import {
-  setMonadConfigDir,
-  resetMonadConfigDir,
-} from '../src/monad-config-dir';
+  setElanousConfigDir,
+  resetElanousConfigDir,
+} from '../src/elanous-config-dir';
 import { setUserConfigOverlay, resetUserConfig, getUserConfig } from '../src/user-config';
 
 let savedArgv: string[];
@@ -37,52 +37,52 @@ let savedNexusDir: string | undefined;
 
 beforeEach(() => {
   savedArgv = [...process.argv];
-  savedStateDir = process.env.MONAD_STATE_DIR;
-  savedNexusDir = process.env.MONAD_NEXUS_DIR;
-  delete process.env.MONAD_NEXUS_DIR;
+  savedStateDir = process.env.ELANOUS_STATE_DIR;
+  savedNexusDir = process.env.ELANOUS_NEXUS_DIR;
+  delete process.env.ELANOUS_NEXUS_DIR;
   setTestStateRoot(null);
-  resetMonadConfigDir();
+  resetElanousConfigDir();
 });
 
 afterEach(() => {
   process.argv = savedArgv;
   setTestStateRoot(null);
-  resetMonadConfigDir();
+  resetElanousConfigDir();
   // Clean the new test-daemon isolation side effects.
   setUserConfigOverlay(null);
   resetUserConfig();
-  if (savedStateDir === undefined) delete process.env.MONAD_STATE_DIR;
-  else process.env.MONAD_STATE_DIR = savedStateDir;
-  if (savedNexusDir === undefined) delete process.env.MONAD_NEXUS_DIR;
-  else process.env.MONAD_NEXUS_DIR = savedNexusDir;
+  if (savedStateDir === undefined) delete process.env.ELANOUS_STATE_DIR;
+  else process.env.ELANOUS_STATE_DIR = savedStateDir;
+  if (savedNexusDir === undefined) delete process.env.ELANOUS_NEXUS_DIR;
+  else process.env.ELANOUS_NEXUS_DIR = savedNexusDir;
 });
 
 describe('extractTestStateDirFlag · pure parser', () => {
   it('returns undefined when the flag is absent', () => {
-    const r = extractTestStateDirFlag(['monad', 'nexus', 'run']);
+    const r = extractTestStateDirFlag(['elanous', 'nexus', 'run']);
     expect(r.dir).toBeUndefined();
-    expect(r.argv).toEqual(['monad', 'nexus', 'run']);
+    expect(r.argv).toEqual(['elanous', 'nexus', 'run']);
   });
 
   it('parses `--test-state-dir <dir>` at any position', () => {
-    const r = extractTestStateDirFlag(['monad', '--test-state-dir', '/repo/.monad-test', 'nexus', 'run']);
-    expect(r.dir).toBe('/repo/.monad-test');
-    expect(r.argv).toEqual(['monad', 'nexus', 'run']);
+    const r = extractTestStateDirFlag(['elanous', '--test-state-dir', '/repo/.elanous-test', 'nexus', 'run']);
+    expect(r.dir).toBe('/repo/.elanous-test');
+    expect(r.argv).toEqual(['elanous', 'nexus', 'run']);
   });
 
   it('parses the `--test-state-dir=<dir>` long form', () => {
-    const r = extractTestStateDirFlag(['monad', 'nexus', 'run', '--test-state-dir=/x/y']);
+    const r = extractTestStateDirFlag(['elanous', 'nexus', 'run', '--test-state-dir=/x/y']);
     expect(r.dir).toBe('/x/y');
-    expect(r.argv).toEqual(['monad', 'nexus', 'run']);
+    expect(r.argv).toEqual(['elanous', 'nexus', 'run']);
   });
 
   it('ignores empty values', () => {
-    expect(extractTestStateDirFlag(['monad', '--test-state-dir=']).dir).toBeUndefined();
-    expect(extractTestStateDirFlag(['monad', '--test-state-dir', '   ']).dir).toBeUndefined();
+    expect(extractTestStateDirFlag(['elanous', '--test-state-dir=']).dir).toBeUndefined();
+    expect(extractTestStateDirFlag(['elanous', '--test-state-dir', '   ']).dir).toBeUndefined();
   });
 
   it('does not mutate the input array', () => {
-    const argv = ['monad', '--test-state-dir', '/x'];
+    const argv = ['elanous', '--test-state-dir', '/x'];
     const snapshot = [...argv];
     extractTestStateDirFlag(argv);
     expect(argv).toEqual(snapshot);
@@ -100,20 +100,20 @@ describe('applyTestStateDirFlagFromArgv · side-effecting bootstrap', () => {
 
   it('is a no-op when the flag is absent', () => {
     process.argv = ['bun', 'src/index.ts', 'nexus', 'run'];
-    const before = process.env.MONAD_STATE_DIR;
+    const before = process.env.ELANOUS_STATE_DIR;
     const dir = applyTestStateDirFlagFromArgv();
     expect(dir).toBeUndefined();
     expect(getTestStateRoot()).toBeUndefined();
     // No flag → no isolation side effects.
-    expect(process.env.MONAD_STATE_DIR).toEqual(before);
+    expect(process.env.ELANOUS_STATE_DIR).toEqual(before);
   });
 
-  it('completes the isolation — sets MONAD_STATE_DIR + installs the test-safe overlay', () => {
-    Reflect.deleteProperty(process.env, 'MONAD_STATE_DIR');
+  it('completes the isolation — sets ELANOUS_STATE_DIR + installs the test-safe overlay', () => {
+    Reflect.deleteProperty(process.env, 'ELANOUS_STATE_DIR');
     process.argv = ['bun', 'src/index.ts', '--test-state-dir', '/tmp/dstate', 'nexus', 'run'];
     applyTestStateDirFlagFromArgv();
     // 1) all mutable state relocates under the test root
-    expect(process.env.MONAD_STATE_DIR).toBe('/tmp/dstate');
+    expect(process.env.ELANOUS_STATE_DIR).toBe('/tmp/dstate');
     // 2) the config overlay is live — getUserConfig now returns test-safe
     //    (discord disabled, prod telegram routes dropped).
     const cfg = getUserConfig();
@@ -122,42 +122,42 @@ describe('applyTestStateDirFlagFromArgv · side-effecting bootstrap', () => {
     expect(cfg.telegram.channels).toBeUndefined();
   });
 
-  it('does not clobber an already-set MONAD_STATE_DIR', () => {
-    process.env.MONAD_STATE_DIR = '/tmp/preset';
+  it('does not clobber an already-set ELANOUS_STATE_DIR', () => {
+    process.env.ELANOUS_STATE_DIR = '/tmp/preset';
     process.argv = ['bun', 'src/index.ts', '--test-state-dir', '/tmp/dstate', 'nexus', 'run'];
     applyTestStateDirFlagFromArgv();
-    expect(process.env.MONAD_STATE_DIR).toBe('/tmp/preset');
+    expect(process.env.ELANOUS_STATE_DIR).toBe('/tmp/preset');
   });
 });
 
 describe('setTestStateRoot / nexusRootDir · state-only override', () => {
   it('nexusRootDir defaults to <config-dir>/nexus', () => {
-    const { getMonadConfigDir } = require('../src/monad-config-dir');
-    expect(nexusRootDir()).toBe(join(getMonadConfigDir(), 'nexus'));
+    const { getElanousConfigDir } = require('../src/elanous-config-dir');
+    expect(nexusRootDir()).toBe(join(getElanousConfigDir(), 'nexus'));
   });
 
   it('honours setTestStateRoot — config dir is left alone', () => {
-    setTestStateRoot('/repo/.monad-test');
-    expect(nexusRootDir()).toBe('/repo/.monad-test/nexus');
+    setTestStateRoot('/repo/.elanous-test');
+    expect(nexusRootDir()).toBe('/repo/.elanous-test/nexus');
     // The config dir resolver is untouched — this is the whole point
     // of --test no longer redirecting config.json.
-    const { getMonadConfigDir } = require('../src/monad-config-dir');
-    expect(getMonadConfigDir()).not.toBe('/repo/.monad-test');
+    const { getElanousConfigDir } = require('../src/elanous-config-dir');
+    expect(getElanousConfigDir()).not.toBe('/repo/.elanous-test');
   });
 
   it('follows --config-dir override when no test root is set', () => {
-    setMonadConfigDir('/tmp/custom');
+    setElanousConfigDir('/tmp/custom');
     expect(nexusRootDir()).toBe(join('/tmp/custom', 'nexus'));
   });
 
   it('test state root beats --config-dir override', () => {
-    setMonadConfigDir('/tmp/custom');
-    setTestStateRoot('/repo/.monad-test');
-    expect(nexusRootDir()).toBe('/repo/.monad-test/nexus');
+    setElanousConfigDir('/tmp/custom');
+    setTestStateRoot('/repo/.elanous-test');
+    expect(nexusRootDir()).toBe('/repo/.elanous-test/nexus');
   });
 
   it('all root inputs keep lock, runtime, tabs, and logs under one canonical nexus directory', () => {
-    const root = '/repo/.monad-test';
+    const root = '/repo/.elanous-test';
     const expected = join(root, 'nexus');
     const expectedPaths = [
       expected,
@@ -172,16 +172,16 @@ describe('setTestStateRoot / nexusRootDir · state-only override', () => {
     expect(paths()).toEqual(expectedPaths);
 
     setTestStateRoot(null);
-    setMonadConfigDir(root);
+    setElanousConfigDir(root);
     expect(paths()).toEqual(expectedPaths);
 
-    resetMonadConfigDir();
-    process.env.MONAD_NEXUS_DIR = expected;
+    resetElanousConfigDir();
+    process.env.ELANOUS_NEXUS_DIR = expected;
     expect(paths()).toEqual(expectedPaths);
 
-    delete process.env.MONAD_NEXUS_DIR;
-    resetMonadConfigDir();
-    const prodRoot = join(require('../src/monad-config-dir').getMonadConfigDir(), 'nexus');
+    delete process.env.ELANOUS_NEXUS_DIR;
+    resetElanousConfigDir();
+    const prodRoot = join(require('../src/elanous-config-dir').getElanousConfigDir(), 'nexus');
     expect(paths()).toEqual([
       prodRoot,
       join(prodRoot, '.lock'),
@@ -192,7 +192,7 @@ describe('setTestStateRoot / nexusRootDir · state-only override', () => {
   });
 
   it('keeps legacy files in place while resolving the canonical path', () => {
-    const root = mkdtempSync(join(tmpdir(), 'monad-test-state-'));
+    const root = mkdtempSync(join(tmpdir(), 'elanous-test-state-'));
     try {
       const legacyLock = join(root, '.lock');
       writeFileSync(legacyLock, 'legacy lock');
@@ -207,9 +207,9 @@ describe('setTestStateRoot / nexusRootDir · state-only override', () => {
   });
 
   it('global --test status finds and stop terminates a live legacy isolated daemon', async () => {
-    const repo = mkdtempSync(join(tmpdir(), 'monad-nexus-legacy-cli-'));
-    const testRoot = join(realpathSync(repo), '.monad-test');
-    const monadBin = join(process.cwd(), 'bin', 'monad.mjs');
+    const repo = mkdtempSync(join(tmpdir(), 'elanous-nexus-legacy-cli-'));
+    const testRoot = join(realpathSync(repo), '.elanous-test');
+    const elanousBin = join(process.cwd(), 'bin', 'elanous.mjs');
     mkdirSync(join(repo, '.git'));
     mkdirSync(testRoot, { recursive: true });
     const daemon = spawn('bun', ['-e', "process.on('SIGINT', () => process.exit(0)); setInterval(() => {}, 1_000)"], { stdio: 'ignore' });
@@ -230,7 +230,7 @@ describe('setTestStateRoot / nexusRootDir · state-only override', () => {
         pid: daemon.pid!, startedAt: new Date().toISOString(), nexusVersion: 'legacy', phase: 'legacy-layout',
       }));
 
-      const status = spawnSync('bun', [monadBin, '--test', 'nexus', 'status'], {
+      const status = spawnSync('bun', [elanousBin, '--test', 'nexus', 'status'], {
         cwd: repo,
         encoding: 'utf8',
         env: { ...process.env, NODE_ENV: 'test' },
@@ -239,7 +239,7 @@ describe('setTestStateRoot / nexusRootDir · state-only override', () => {
       expect(status.stdout).toContain(`root      ${testRoot}`);
       expect(status.stdout).toContain(`status    lock alive, http silent (pid=${daemon.pid}`);
 
-      const stop = spawnSync('bun', [monadBin, '--test', 'nexus', 'stop'], {
+      const stop = spawnSync('bun', [elanousBin, '--test', 'nexus', 'stop'], {
         cwd: repo,
         encoding: 'utf8',
         env: { ...process.env, NODE_ENV: 'test' },
@@ -268,7 +268,7 @@ describe('setTestStateRoot / nexusRootDir · state-only override', () => {
   }, 30_000);
 
   it('prefers a live canonical daemon over a live legacy daemon', async () => {
-    const root = mkdtempSync(join(tmpdir(), 'monad-nexus-canonical-wins-'));
+    const root = mkdtempSync(join(tmpdir(), 'elanous-nexus-canonical-wins-'));
     const canonical = spawn('sleep', ['1000'], { stdio: 'ignore' });
     const legacy = spawn('sleep', ['1000'], { stdio: 'ignore' });
     try {
@@ -294,15 +294,15 @@ describe('setTestStateRoot / nexusRootDir · state-only override', () => {
     setTestStateRoot('/tmp/x');
     setTestStateRoot(null);
     expect(getTestStateRoot()).toBeUndefined();
-    const { getMonadConfigDir } = require('../src/monad-config-dir');
-    expect(nexusRootDir()).toBe(join(getMonadConfigDir(), 'nexus'));
+    const { getElanousConfigDir } = require('../src/elanous-config-dir');
+    expect(nexusRootDir()).toBe(join(getElanousConfigDir(), 'nexus'));
   });
 
   it('global --test status finds and stop terminates a live isolated daemon', async () => {
-    const repo = mkdtempSync(join(tmpdir(), 'monad-nexus-cli-'));
-    const testRoot = join(realpathSync(repo), '.monad-test');
+    const repo = mkdtempSync(join(tmpdir(), 'elanous-nexus-cli-'));
+    const testRoot = join(realpathSync(repo), '.elanous-test');
     const daemonScript = join(repo, 'daemon.ts');
-    const monadBin = join(process.cwd(), 'bin', 'monad.mjs');
+    const elanousBin = join(process.cwd(), 'bin', 'elanous.mjs');
     mkdirSync(join(repo, '.git'));
     writeFileSync(daemonScript, [
       `import { applyIsolatedRoot } from ${JSON.stringify(join(process.cwd(), 'src/cli/test-state-dir-flag.ts'))};`,
@@ -328,7 +328,7 @@ describe('setTestStateRoot / nexusRootDir · state-only override', () => {
       await waitFor(() => existsSync(join(testRoot, 'nexus', '.lock')), 'isolated daemon did not create its lock');
       const lock = JSON.parse(require('node:fs').readFileSync(join(testRoot, 'nexus', '.lock'), 'utf8')) as { pid: number };
 
-      const status = spawnSync('bun', [monadBin, '--test', 'nexus', 'status'], {
+      const status = spawnSync('bun', [elanousBin, '--test', 'nexus', 'status'], {
         cwd: repo,
         encoding: 'utf8',
         env: { ...process.env, NODE_ENV: 'test' },
@@ -337,7 +337,7 @@ describe('setTestStateRoot / nexusRootDir · state-only override', () => {
       expect(status.stdout).toContain(`root      ${join(testRoot, 'nexus')}`);
       expect(status.stdout).toContain(`status    lock alive, http silent (pid=${lock.pid}`);
 
-      const stop = spawnSync('bun', [monadBin, '--test', 'nexus', 'stop'], {
+      const stop = spawnSync('bun', [elanousBin, '--test', 'nexus', 'stop'], {
         cwd: repo,
         encoding: 'utf8',
         env: { ...process.env, NODE_ENV: 'test' },

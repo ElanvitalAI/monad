@@ -143,7 +143,7 @@ function registerHarnessCommonOptions(command: Command): Command {
     .option('--json', '구조화 출력')
     .option('--base <branch>', '분기 base')
     .addOption(new Option('--no-auto-merge', 'self: PR 생성 후 자동 병합을 끔'))
-    .option('--observe-only', 'monad: child boot부터 SelfImplement 호출을 기록만 한다')
+    .option('--observe-only', 'elanous: child boot부터 SelfImplement 호출을 기록만 한다')
     .addOption(new Option('--no-supervise', 'self: supervisor 재개를 끔').hideHelp())
     .option('--graph <on|off>', 'self: graph authority를 이번 런에만 설정', (value: string) => {
       const parsed = parseRunControlValue('graph', value);
@@ -352,9 +352,9 @@ export interface HarnessProcessRecord {
 }
 
 export const HARNESS_PROCESS_OWNERSHIP_ENV = {
-  runId: 'MONAD_RUN_ID',
-  originSession: 'MONAD_ORIGIN_SESSION',
-  stateDir: 'MONAD_STATE_DIR',
+  runId: 'ELANOUS_RUN_ID',
+  originSession: 'ELANOUS_ORIGIN_SESSION',
+  stateDir: 'ELANOUS_STATE_DIR',
 } as const;
 
 export type HarnessProcessOwnershipObservation =
@@ -785,7 +785,7 @@ export function renderHarnessProcessReport(report: HarnessProcessReport): string
   }
   if (report.excludedCount > 0) {
     lines.push(`모집단 제외 ${report.excludedCount}행`);
-    lines.push('제외 기준: command에 monad.mjs를 포함하지 않은 행');
+    lines.push('제외 기준: command에 elanous.mjs를 포함하지 않은 행');
   }
   lines.push(`분류 제외 ${report.unclassifiedCount}행`);
   lines.push(`부모 생존 제외 ${report.parentPresentCount}행`);
@@ -852,7 +852,7 @@ function parseHarnessProcessPsLine(line: string): ParsedHarnessProcessPsLine {
   if (!match) return { kind: 'malformed', line: trimmed, pid: parseHarnessProcessPsPid(line) };
   const command = match[5]!.trim();
   const pid = Number(match[1]);
-  if (!command.includes('monad.mjs')) return { kind: 'excluded', pid };
+  if (!command.includes('elanous.mjs')) return { kind: 'excluded', pid };
   const elapsedSeconds = parsePsEtime(match[4]!);
   if (elapsedSeconds === undefined) return { kind: 'malformed', line: trimmed, pid };
   return {

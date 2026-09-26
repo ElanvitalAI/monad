@@ -10,7 +10,7 @@ describe('decideResidentRound', () => {
       botName: 'investor',
       now,
       scheduledAt,
-      universeRoot: '/tmp/monad-a',
+      universeRoot: '/tmp/elanous-a',
     });
 
     expect(result).toEqual({
@@ -18,8 +18,8 @@ describe('decideResidentRound', () => {
       round: {
         botName: 'investor',
         scheduledAt,
-        universeRoot: '/tmp/monad-a',
-        source: 'monad-resident',
+        universeRoot: '/tmp/elanous-a',
+        source: 'elanous-resident',
         humanInitiated: false,
       },
     });
@@ -34,7 +34,7 @@ describe('decideResidentRound', () => {
       botName: 'investor',
       now,
       scheduledAt: new Date('2026-09-07T10:00:01.000Z'),
-      universeRoot: '/tmp/monad-a',
+      universeRoot: '/tmp/elanous-a',
     })).toEqual({ due: false });
   });
 

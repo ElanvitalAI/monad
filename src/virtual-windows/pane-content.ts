@@ -198,7 +198,7 @@ export interface PaneFactoryDeps {
   spawn?: SpawnFn;
   terminalFactory?: (opts: PreviewTerminalOpts, spawn?: SpawnFn) => PreviewTerminal;
   /** Host-side terminal surface intent seam. PTY forwarding may drop
-   * synthetic events like double-click, but monad still preserves the
+   * synthetic events like double-click, but elanous still preserves the
    * surface intent here for selection / copy / inspection layers. */
   onTerminalMouseIntent?: (ev: DisplayMouseEvent, meta: {
     paneId: PaneId;

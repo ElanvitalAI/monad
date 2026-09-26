@@ -140,7 +140,7 @@ describe('playground · initialState', () => {
   });
 
   test('filePath loads the bound source from disk when present', () => {
-    const dir = mkdtempSync(join(tmpdir(), 'monad-playground-'));
+    const dir = mkdtempSync(join(tmpdir(), 'elanous-playground-'));
     const file = join(dir, 'lab.yaml');
     try {
       writeFileSync(file, 'preset: approval-dialog\n', 'utf8');
@@ -319,7 +319,7 @@ describe('playground · onKey · mode toggle', () => {
   });
 
   test('Ctrl+S writes the current source to the bound file', () => {
-    const dir = mkdtempSync(join(tmpdir(), 'monad-playground-'));
+    const dir = mkdtempSync(join(tmpdir(), 'elanous-playground-'));
     const file = join(dir, 'lab.yaml');
     try {
       const state = playground.initialState!({ source: 'preset: approval-dialog\n', filePath: file });
@@ -334,7 +334,7 @@ describe('playground · onKey · mode toggle', () => {
   });
 
   test('Ctrl+L reloads the bound file from disk', () => {
-    const dir = mkdtempSync(join(tmpdir(), 'monad-playground-'));
+    const dir = mkdtempSync(join(tmpdir(), 'elanous-playground-'));
     const file = join(dir, 'lab.yaml');
     try {
       writeFileSync(file, 'preset: approval-dialog\n', 'utf8');

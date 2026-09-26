@@ -115,8 +115,8 @@ describe('queryPausedGoalStatuses', () => {
         transition('goal-federated-paused', federatedRunId, '2026-08-17T04:00:00.000Z', 'active', 'paused', 'operator-stop'),
       ].map((entry) => JSON.stringify(entry)).join('\n'));
       const options = { targets };
-      const previousStateDir = process.env.MONAD_STATE_DIR;
-      process.env.MONAD_STATE_DIR = stateDir;
+      const previousStateDir = process.env.ELANOUS_STATE_DIR;
+      process.env.ELANOUS_STATE_DIR = stateDir;
       try {
         const result = queryPausedGoalStatuses(options);
         expect(result).toMatchObject([
@@ -133,8 +133,8 @@ describe('queryPausedGoalStatuses', () => {
           origin: { ledgerPath: paused.origin.ledgerPath },
         });
       } finally {
-        if (previousStateDir === undefined) delete process.env.MONAD_STATE_DIR;
-        else process.env.MONAD_STATE_DIR = previousStateDir;
+        if (previousStateDir === undefined) delete process.env.ELANOUS_STATE_DIR;
+        else process.env.ELANOUS_STATE_DIR = previousStateDir;
       }
     } finally {
       rmSync(stateDir, { recursive: true, force: true });
@@ -187,16 +187,16 @@ describe('queryPausedGoalStatuses', () => {
     try {
       mkdirSync(join(stateDir, 'run-ledger'), { recursive: true });
       mkdirSync(join(federatedDir, 'run-ledger'), { recursive: true });
-      const previousStateDir = process.env.MONAD_STATE_DIR;
-      process.env.MONAD_STATE_DIR = stateDir;
+      const previousStateDir = process.env.ELANOUS_STATE_DIR;
+      process.env.ELANOUS_STATE_DIR = stateDir;
       try {
         expect(queryPausedGoalStatuses({ targets })).toEqual([]);
         rmSync(join(stateDir, 'run-ledger'), { recursive: true, force: true });
         writeFileSync(join(stateDir, 'run-ledger'), 'not a directory');
         expect(() => queryPausedGoalStatuses()).toThrow('unable to list run ledger directory');
       } finally {
-        if (previousStateDir === undefined) delete process.env.MONAD_STATE_DIR;
-        else process.env.MONAD_STATE_DIR = previousStateDir;
+        if (previousStateDir === undefined) delete process.env.ELANOUS_STATE_DIR;
+        else process.env.ELANOUS_STATE_DIR = previousStateDir;
       }
     } finally {
       rmSync(stateDir, { recursive: true, force: true });
@@ -205,14 +205,14 @@ describe('queryPausedGoalStatuses', () => {
   });
 });
 
-describe('monad self goal-status process boundary', () => {
+describe('elanous self goal-status process boundary', () => {
   test('a fresh CLI process reads a transition written by a completed registry process', () => {
     const stateDir = mkdtempSync(join(tmpdir(), 'goal-status-cli-'));
     try {
-      const producer = spawnSync('bun', ['-e', "import { startGoal, setStatus } from './src/goals/registry.ts'; const started = startGoal({ objective: 'boundary' }); if (!started.ok) throw new Error('start failed'); setStatus('complete', 'done'); console.log(started.goal.id);"], { cwd: sourceRoot, encoding: 'utf8', env: { ...process.env, MONAD_STATE_DIR: stateDir } });
+      const producer = spawnSync('bun', ['-e', "import { startGoal, setStatus } from './src/goals/registry.ts'; const started = startGoal({ objective: 'boundary' }); if (!started.ok) throw new Error('start failed'); setStatus('complete', 'done'); console.log(started.goal.id);"], { cwd: sourceRoot, encoding: 'utf8', env: { ...process.env, ELANOUS_STATE_DIR: stateDir } });
       expect(producer.status).toBe(0);
       const goalId = producer.stdout.trim();
-      const reader = spawnSync('bun', [join(sourceRoot, 'bin/monad.mjs'), 'self', 'goal-status', goalId, '--json'], { cwd: sourceRoot, encoding: 'utf8', env: { ...process.env, MONAD_STATE_DIR: stateDir } });
+      const reader = spawnSync('bun', [join(sourceRoot, 'bin/elanous.mjs'), 'self', 'goal-status', goalId, '--json'], { cwd: sourceRoot, encoding: 'utf8', env: { ...process.env, ELANOUS_STATE_DIR: stateDir } });
       expect(reader.status).toBe(0);
       expect(JSON.parse(reader.stdout)).toMatchObject({ found: true, goalId, status: 'complete', reason: 'done' });
     } finally { rmSync(stateDir, { recursive: true, force: true }); }
@@ -221,7 +221,7 @@ describe('monad self goal-status process boundary', () => {
   test('the CLI returns structured not-found JSON with exit 1 when no durable transition exists', () => {
     const stateDir = mkdtempSync(join(tmpdir(), 'goal-status-cli-missing-'));
     try {
-      const result = spawnSync('bun', [join(sourceRoot, 'bin/monad.mjs'), 'self', 'goal-status', 'g-missing', '--json'], { cwd: sourceRoot, encoding: 'utf8', env: { ...process.env, MONAD_STATE_DIR: stateDir } });
+      const result = spawnSync('bun', [join(sourceRoot, 'bin/elanous.mjs'), 'self', 'goal-status', 'g-missing', '--json'], { cwd: sourceRoot, encoding: 'utf8', env: { ...process.env, ELANOUS_STATE_DIR: stateDir } });
       expect(result.status).toBe(1);
       expect(JSON.parse(result.stdout)).toEqual({ found: false, goalId: 'g-missing', kind: 'not-found' });
       expect(result.stderr).not.toContain('goal status not found');

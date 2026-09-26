@@ -1,12 +1,12 @@
 // ── User-Intent JSONL sink — daily rotation local writer ──
 //
-// PLAN §4.1 — `~/.monad/user-intents/{YYYY-MM-DD}.jsonl`, append-only.
+// PLAN §4.1 — `~/.elanous/user-intents/{YYYY-MM-DD}.jsonl`, append-only.
 // Always-on local sink; the OTel + Patcher fan-out sinks are
 // downstream of this file (Y3 Patcher reads the JSONL stream).
 //
 // Design:
-//   - Path resolved via `getMonadConfigDir()` so the sink honors
-//     `MONAD_DAEMON_DIR` like the rest of the codebase.
+//   - Path resolved via `getElanousConfigDir()` so the sink honors
+//     `ELANOUS_DAEMON_DIR` like the rest of the codebase.
 //   - Synchronous append on every emit — events are small (~500 B
 //     typical) and the JSONL line is the durability boundary. Async
 //     write would create a window where a process crash drops the
@@ -19,13 +19,13 @@
 
 import { appendFileSync, mkdirSync, readFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
-import { getMonadConfigDir } from '../../monad-config-dir.js';
+import { getElanousConfigDir } from '../../elanous-config-dir.js';
 import type { UserIntentEvent } from '../types.js';
 
 const SUBDIR = 'user-intents';
 
 /** Test override — points the sink at a tmp dir instead of
- *  `~/.monad/user-intents/`. */
+ *  `~/.elanous/user-intents/`. */
 let overrideDir: string | null = null;
 
 export function setUserIntentJsonlDirOverride(dir: string | null): void {
@@ -33,7 +33,7 @@ export function setUserIntentJsonlDirOverride(dir: string | null): void {
 }
 
 function rootDir(): string {
-  return overrideDir ?? join(getMonadConfigDir(), SUBDIR);
+  return overrideDir ?? join(getElanousConfigDir(), SUBDIR);
 }
 
 function utcDateStamp(ts: string): string {

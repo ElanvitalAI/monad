@@ -33,12 +33,12 @@ describe('mss log-enrich', () => {
     __resetFlagsForTests();
   });
 
-  test('no trace scope → basic record without trace_id but with monad_id', () => {
+  test('no trace scope → basic record without trace_id but with elanous_id', () => {
     const rec = enrichLogRecord({ event: 'boot', filePath: 'src/mss/foo.ts' });
     expect(rec.category).toBe('mss.foo');
     expect(rec.event).toBe('boot');
     expect(rec.pid).toBe(process.pid);
-    expect(rec.monad_id).toBeDefined();
+    expect(rec.elanous_id).toBeDefined();
     expect(rec.trace_id).toBeUndefined();
     expect(typeof rec.ts).toBe('string');
   });
@@ -72,7 +72,7 @@ describe('mss log-enrich', () => {
     });
   });
 
-  test('MSS_ENABLED=false → trace/monad fields suppressed but shape intact', () => {
+  test('MSS_ENABLED=false → trace/elanous fields suppressed but shape intact', () => {
     process.env.MSS_ENABLED = 'false';
     __resetFlagsForTests();
     startTurnTrace(() => {
@@ -80,7 +80,7 @@ describe('mss log-enrich', () => {
       expect(rec.event).toBe('off');
       expect(rec.category).toBe('mss.x');
       expect(rec.trace_id).toBeUndefined();
-      expect(rec.monad_id).toBeUndefined();
+      expect(rec.elanous_id).toBeUndefined();
     });
   });
 

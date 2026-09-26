@@ -34,22 +34,22 @@ async function streamFailure(payload: object): Promise<Error> {
   }
 }
 
-// ⭐ 2026-09-25: `debug.log` 는 `MONAD_HOST_ID` 가 있으면 `hostId` 를 자동 부착한다(RFC 런 출처 O2 · #20468) —
+// ⭐ 2026-09-25: `debug.log` 는 `ELANOUS_HOST_ID` 가 있으면 `hostId` 를 자동 부착한다(RFC 런 출처 O2 · #20468) —
 //   앞 시험 파일의 `ensureRunIdentity` 가 env 에 남긴 값이 이 파일의 `toEqual` 을 깨지 않게 runId 처럼 비운다.
 let priorHostId: string | undefined;
 beforeEach(() => {
-  priorRunId = process.env.MONAD_RUN_ID;
-  delete process.env.MONAD_RUN_ID;
-  priorHostId = process.env.MONAD_HOST_ID;
-  delete process.env.MONAD_HOST_ID;
+  priorRunId = process.env.ELANOUS_RUN_ID;
+  delete process.env.ELANOUS_RUN_ID;
+  priorHostId = process.env.ELANOUS_HOST_ID;
+  delete process.env.ELANOUS_HOST_ID;
 });
 
 afterEach(() => {
   globalThis.fetch = priorFetch;
-  if (priorRunId === undefined) delete process.env.MONAD_RUN_ID;
-  else process.env.MONAD_RUN_ID = priorRunId;
-  if (priorHostId === undefined) delete process.env.MONAD_HOST_ID;
-  else process.env.MONAD_HOST_ID = priorHostId;
+  if (priorRunId === undefined) delete process.env.ELANOUS_RUN_ID;
+  else process.env.ELANOUS_RUN_ID = priorRunId;
+  if (priorHostId === undefined) delete process.env.ELANOUS_HOST_ID;
+  else process.env.ELANOUS_HOST_ID = priorHostId;
 });
 
 describe('streamCodexResponsesEvents Codex error observability', () => {

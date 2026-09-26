@@ -104,7 +104,7 @@ describe('Recording runtimes · integration (real WidgetHost)', () => {
   });
 
   test('persist=true writes .cast file into mkdtemp baseDir', () => {
-    const tmp = mkdtempSync(path.join(tmpdir(), 'monad-rec-'));
+    const tmp = mkdtempSync(path.join(tmpdir(), 'elanous-rec-'));
     try {
       const host = new WidgetHost(makeHooks());
       host.register(counterDef);

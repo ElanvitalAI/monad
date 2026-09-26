@@ -134,7 +134,7 @@ describe('F5 · Lifecycle events drive all axes', () => {
 
 // ─── F6 · Z-order respects tier order at insertion ───────────
 // Enforced via tiersCompatible() at pushModal under
-// MONAD_BOUNDARY_CHECK=1. Test the invariant function directly.
+// ELANOUS_BOUNDARY_CHECK=1. Test the invariant function directly.
 
 describe('F6 · Z-order respects tier order at insertion', () => {
   test('tiersCompatible() is a strict weak ordering', () => {

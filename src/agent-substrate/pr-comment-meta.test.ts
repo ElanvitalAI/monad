@@ -15,18 +15,18 @@ describe('PR comment metadata', () => {
   });
 
   test('ignores unknown keys for forward compatibility while retaining all v1 fields', () => {
-    expect(parse('<!-- monad-pr-comment v1 role=author future=value run=run-1 mf=2 replyTo=1 answered=2 unanswered=0 -->'))
+    expect(parse('<!-- elanous-pr-comment v1 role=author future=value run=run-1 mf=2 replyTo=1 answered=2 unanswered=0 -->'))
       .toEqual({ role: 'author', run: 'run-1', mf: '2', replyTo: '1', answered: '2', unanswered: '0' });
   });
 
   test('rejects an unknown role and duplicate keys', () => {
-    expect(parse('<!-- monad-pr-comment v1 role=robot -->')).toBeNull();
-    expect(parse('<!-- monad-pr-comment v1 role=author run=one run=two -->')).toBeNull();
+    expect(parse('<!-- elanous-pr-comment v1 role=robot -->')).toBeNull();
+    expect(parse('<!-- elanous-pr-comment v1 role=author run=one run=two -->')).toBeNull();
   });
 
   test('drops only malformed or negative round values', () => {
-    expect(parse('<!-- monad-pr-comment v1 role=judge round=two run=run-1 -->')).toEqual({ role: 'judge', run: 'run-1' });
-    expect(parse('<!-- monad-pr-comment v1 role=judge round=-1 run=run-1 -->')).toEqual({ role: 'judge', run: 'run-1' });
+    expect(parse('<!-- elanous-pr-comment v1 role=judge round=two run=run-1 -->')).toEqual({ role: 'judge', run: 'run-1' });
+    expect(parse('<!-- elanous-pr-comment v1 role=judge round=-1 run=run-1 -->')).toEqual({ role: 'judge', run: 'run-1' });
   });
 
   test('returns null, without throwing, for ordinary human comments without a header', () => {
@@ -35,9 +35,9 @@ describe('PR comment metadata', () => {
   });
 
   test('rejects a header not on the first line, missing role or close, and an unknown version', () => {
-    expect(parse('intro\n<!-- monad-pr-comment v1 role=author -->')).toBeNull();
-    expect(parse('<!-- monad-pr-comment v1 run=run-1 -->')).toBeNull();
-    expect(parse('<!-- monad-pr-comment v1 role=author')).toBeNull();
-    expect(parse('<!-- monad-pr-comment v2 role=author -->')).toBeNull();
+    expect(parse('intro\n<!-- elanous-pr-comment v1 role=author -->')).toBeNull();
+    expect(parse('<!-- elanous-pr-comment v1 run=run-1 -->')).toBeNull();
+    expect(parse('<!-- elanous-pr-comment v1 role=author')).toBeNull();
+    expect(parse('<!-- elanous-pr-comment v2 role=author -->')).toBeNull();
   });
 });

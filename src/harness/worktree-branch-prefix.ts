@@ -2,7 +2,7 @@ import { createHash } from 'node:crypto';
 
 /** Prefix for disposable worktree branches created by self-implement and inspected by harness clean.
  * A successfully merged run cleans up its own worktree.
- * Clean disposable branches with `monad harness clean`.
+ * Clean disposable branches with `elanous harness clean`.
  */
 export const WORKTREE_BRANCH_PREFIX = 'self-impl/';
 

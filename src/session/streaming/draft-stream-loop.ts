@@ -2,7 +2,7 @@
 //
 // 세션 패브릭 C5(청크 fan-out) 의 channel-agnostic 스트리밍 코어. hermes-agent·openclaw 조사
 // 결과 두 참조 모두 이 루프를 telegram/discord 가 공유한다(참조 = openclaw createDraftStreamLoop).
-// 현 monad 는 telegram/discord streamer 가 복붙 쌍둥이(makeStreamer×2) — 이 모듈이 그 공통분모.
+// 현 elanous 는 telegram/discord streamer 가 복붙 쌍둥이(makeStreamer×2) — 이 모듈이 그 공통분모.
 //
 // 핵심 성질(참조에서 채택):
 //  - single-flight: 동시 편집 1건. 진행 중이면 최신 텍스트만 pending 에 보관(중간 프레임 drop).

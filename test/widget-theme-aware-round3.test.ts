@@ -6,7 +6,7 @@
 // an optional `theme?` spec field. These tests assert:
 //   1. backward compat — no theme → pre-Phase rendering holds
 //   2. theme-aware — output differs across presets (MOCHA / LATTE /
-//      ROSE_PINE_DAWN / MONAD_PASTEL_DEFAULT)
+//      ROSE_PINE_DAWN / ELANOUS_PASTEL_DEFAULT)
 //   3. baseline glyphs (cursor, muted prefix) still present in both
 //      paths, so callers don't lose visual affordance
 
@@ -15,7 +15,7 @@ import chalk from 'chalk';
 import {
   CATPPUCCIN_LATTE,
   CATPPUCCIN_MOCHA,
-  MONAD_PASTEL_DEFAULT,
+  ELANOUS_PASTEL_DEFAULT,
   ROSE_PINE_DAWN,
 } from '../src/themes/index.js';
 import { Printer } from '../src/ui/printer.js';
@@ -101,7 +101,7 @@ describe('Tabs — theme passthrough', () => {
   });
 
   test('active tab gets themed ANSI (cursor color applied)', () => {
-    const tabs = new Tabs({ tabs: makeTabs(), theme: MONAD_PASTEL_DEFAULT });
+    const tabs = new Tabs({ tabs: makeTabs(), theme: ELANOUS_PASTEL_DEFAULT });
     const out = renderToString(tabs);
     // Active label appears surrounded by SGR sequences (\x1b[)
     const sgrCount = (out.match(/\x1b\[/g) ?? []).length;
@@ -130,7 +130,7 @@ describe('TreeView — theme passthrough', () => {
 
   test('empty tree uses themed muted text', () => {
     const outLegacy = renderToString(new TreeView({ root: [] }));
-    const outThemed = renderToString(new TreeView({ root: [], theme: MONAD_PASTEL_DEFAULT }));
+    const outThemed = renderToString(new TreeView({ root: [], theme: ELANOUS_PASTEL_DEFAULT }));
     expect(outLegacy).toContain('(empty)');
     expect(outThemed).toContain('(empty)');
     expect(outLegacy).not.toBe(outThemed);

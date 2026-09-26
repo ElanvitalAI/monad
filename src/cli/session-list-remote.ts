@@ -69,13 +69,13 @@ export async function runSessionListRemote(opts: SessionListRemoteOpts): Promise
     return fail(
       out,
       'session-list-usage-error',
-      'monad session list: --all-instances is a local federation scope and has no meaning with --remote; drop it (the remote daemon decides its own scope).',
+      'elanous session list: --all-instances is a local federation scope and has no meaning with --remote; drop it (the remote daemon decides its own scope).',
     );
   }
 
   const timeoutMs = opts.timeoutMs ?? DEFAULT_REMOTE_SESSION_LIST_TIMEOUT_MS;
   if (!Number.isFinite(timeoutMs) || timeoutMs <= 0) {
-    return fail(out, 'session-list-usage-error', 'monad session list: --timeout must be a positive number of milliseconds');
+    return fail(out, 'session-list-usage-error', 'elanous session list: --timeout must be a positive number of milliseconds');
   }
 
   const store = (opts.remotesStore ?? (() => new RemotesStore()))();
@@ -89,7 +89,7 @@ export async function runSessionListRemote(opts: SessionListRemoteOpts): Promise
     return fail(
       out,
       'session-list-remote-error',
-      `monad session list: remote bookmark ${label}: ${err instanceof Error ? err.message : String(err)}`,
+      `elanous session list: remote bookmark ${label}: ${err instanceof Error ? err.message : String(err)}`,
     );
   }
 
@@ -98,7 +98,7 @@ export async function runSessionListRemote(opts: SessionListRemoteOpts): Promise
     return fail(
       out,
       'session-list-remote-error',
-      `monad session list: remote bookmark ${label} (${entry.host}): token file is missing or empty (${defaults.tokenFile})`,
+      `elanous session list: remote bookmark ${label} (${entry.host}): token file is missing or empty (${defaults.tokenFile})`,
     );
   }
 
@@ -109,7 +109,7 @@ export async function runSessionListRemote(opts: SessionListRemoteOpts): Promise
     return fail(
       out,
       'session-list-remote-error',
-      `monad session list: remote bookmark ${label}: ${err instanceof Error ? err.message : String(err)}`,
+      `elanous session list: remote bookmark ${label}: ${err instanceof Error ? err.message : String(err)}`,
     );
   }
 
@@ -121,7 +121,7 @@ export async function runSessionListRemote(opts: SessionListRemoteOpts): Promise
     return fail(
       out,
       'session-list-transport-error',
-      `monad session list: remote bookmark ${label}: lookup failed for ${url}: ${err instanceof Error ? err.message : String(err)}`,
+      `elanous session list: remote bookmark ${label}: lookup failed for ${url}: ${err instanceof Error ? err.message : String(err)}`,
     );
   }
   if (!fetched.ok) {
@@ -129,7 +129,7 @@ export async function runSessionListRemote(opts: SessionListRemoteOpts): Promise
     return fail(
       out,
       classification,
-      `monad session list: remote bookmark ${label}: lookup failed for ${url}: ${fetched.reason}`,
+      `elanous session list: remote bookmark ${label}: lookup failed for ${url}: ${fetched.reason}`,
     );
   }
 
@@ -204,18 +204,18 @@ function formatRemoteSessionList(sessions: readonly RemoteSessionSummary[], book
 
 function parseRemoteSessionsBody(body: unknown): readonly RemoteSessionSummary[] {
   if (body === null || typeof body !== 'object' || Array.isArray(body)) {
-    throw new Error(`monad session list: remote ${REMOTE_SESSIONS_STORE_PATH} response is not a session store list`);
+    throw new Error(`elanous session list: remote ${REMOTE_SESSIONS_STORE_PATH} response is not a session store list`);
   }
   const rec = body as { ok?: unknown; sessions?: unknown };
   if (rec.ok !== true) {
-    throw new Error(`monad session list: remote ${REMOTE_SESSIONS_STORE_PATH} response is not a session store list`);
+    throw new Error(`elanous session list: remote ${REMOTE_SESSIONS_STORE_PATH} response is not a session store list`);
   }
   if (!Array.isArray(rec.sessions)) {
-    throw new Error(`monad session list: remote ${REMOTE_SESSIONS_STORE_PATH} response is not a session store list`);
+    throw new Error(`elanous session list: remote ${REMOTE_SESSIONS_STORE_PATH} response is not a session store list`);
   }
   return rec.sessions.map((value, index) => {
     const row = parseRemoteSessionItem(value);
-    if (!row) throw new Error(`monad session list: remote ${REMOTE_SESSIONS_STORE_PATH} item ${index} is malformed`);
+    if (!row) throw new Error(`elanous session list: remote ${REMOTE_SESSIONS_STORE_PATH} item ${index} is malformed`);
     return row;
   });
 }
@@ -289,8 +289,8 @@ function resolveSessionListBookmark(
 
 function sessionListBookmarkError(named: string | undefined): string {
   return named
-    ? `--remote ${named}: unknown bookmark. Run \`monad nexus list\` to see available remotes.`
-    : 'no default remote bookmark. Run `monad nexus connect <host> --default` to set one.';
+    ? `--remote ${named}: unknown bookmark. Run \`elanous nexus list\` to see available remotes.`
+    : 'no default remote bookmark. Run `elanous nexus connect <host> --default` to set one.';
 }
 
 function classifyFetchFailure(
@@ -300,7 +300,7 @@ function classifyFetchFailure(
     return 'session-list-timeout-error';
   }
   if (fetched.status >= 400) return 'session-list-http-error';
-  if (fetched.reason.startsWith('monad session list:') || fetched.reason.includes('invalid JSON')) {
+  if (fetched.reason.startsWith('elanous session list:') || fetched.reason.includes('invalid JSON')) {
     return 'session-list-server-error';
   }
   return 'session-list-transport-error';

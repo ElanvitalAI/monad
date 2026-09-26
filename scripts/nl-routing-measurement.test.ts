@@ -3,7 +3,7 @@ import { selectCorpusItems, corpusFiltersFromEnv, assertGradableItems, assertPro
 import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { tmpdir } from 'node:os';
-import { commandResult, createMonadLiveTurnRunner, endsLiveRun, measureLiveTurn, provePtyDrivesSession, verifyPtySession, waitForOpenTurnClose, type LiveTurnRunner } from './lib/nl-routing-live.js';
+import { commandResult, createElanousLiveTurnRunner, endsLiveRun, measureLiveTurn, provePtyDrivesSession, verifyPtySession, waitForOpenTurnClose, type LiveTurnRunner } from './lib/nl-routing-live.js';
 import { resolveTruncatedTurnWaitMs, runLiveCorpus } from './lib/nl-routing-corpus-run.js';
 import { truncatedTurnsSummary } from './lib/nl-routing-live-summary.js';
 import { main as runCorpusMain, resolveCorpusRunSafety, NL_ROUTING_UNSAFE_RUN_ENV } from './measure-nl-routing-corpus.js';
@@ -188,7 +188,7 @@ describe('NL routing corpus runner safety gate', () => {
   test('runner startup logs tool cwd and passes CORPUS_CWD to runEvalPrompt without using process cwd', async () => {
     const toolCwd = mkdtempSync(resolve(tmpdir(), 'nl-routing-tool-cwd-'));
     try {
-      const result = await runEmptyCorpus({ MONAD_SELF_IMPLEMENT_OBSERVE_ONLY: '1', CORPUS_CWD: toolCwd });
+      const result = await runEmptyCorpus({ ELANOUS_SELF_IMPLEMENT_OBSERVE_ONLY: '1', CORPUS_CWD: toolCwd });
       expect(result.logs[0]).toContain('서피스 cli (유효 목록 1/3)');
       expect(result.logs[0]).toContain(`tool-cwd ${toolCwd}`);
       expect(result.logs[0]).toContain('observe-only true (flag)');
@@ -274,7 +274,7 @@ describe('NL routing corpus runner safety gate', () => {
       process.argv = process.argv.slice(0, 2);
       for (const key of Object.keys(process.env)) delete process.env[key];
       Object.assign(process.env, originalEnv, {
-        MONAD_SELF_IMPLEMENT_OBSERVE_ONLY: '1', CORPUS_CWD: tmpdir(),
+        ELANOUS_SELF_IMPLEMENT_OBSERVE_ONLY: '1', CORPUS_CWD: tmpdir(),
         CORPUS_REPEATS: '1', CORPUS_BUDGETS: '1', CORPUS_CONCURRENCY: '1',
       });
       console.log = ((line: string) => logs.push(line)) as typeof console.log;
@@ -313,7 +313,7 @@ describe('NL routing corpus runner safety gate', () => {
       process.argv = process.argv.slice(0, 2);
       for (const key of Object.keys(process.env)) delete process.env[key];
       Object.assign(process.env, originalEnv, {
-        MONAD_SELF_IMPLEMENT_OBSERVE_ONLY: '1', CORPUS_CWD: outDir, CORPUS_OUT: out, CORPUS_SURFACE: 'chat',
+        ELANOUS_SELF_IMPLEMENT_OBSERVE_ONLY: '1', CORPUS_CWD: outDir, CORPUS_OUT: out, CORPUS_SURFACE: 'chat',
         CORPUS_REPEATS: '1', CORPUS_BUDGETS: '1', CORPUS_CONCURRENCY: '1',
       });
       console.log = ((line: string) => logs.push(line)) as typeof console.log;
@@ -452,7 +452,7 @@ describe('NL routing measurement', () => {
 
   test('a production log command exception remains a measurement failure rather than an empty tool list', async () => {
     expect(commandResult(() => { throw new Error('logs unavailable'); }, ['logs'])).toBeNull();
-    const runner = createMonadLiveTurnRunner(() => { throw new Error('logs unavailable'); }, 'pty-1');
+    const runner = createElanousLiveTurnRunner(() => { throw new Error('logs unavailable'); }, 'pty-1');
     const result = await measureLiveTurn(runner, 'target-session', { id: 'q1', accept: ['Grep'] }, 'prompt', 0, { settleMs: 1, pollMs: 1 });
     expect(result).toEqual({ kind: 'unmeasurable', reason: 'snapshot-failed' });
     expect(passSummary([])).toEqual({ passes: 0, runs: 0, expectedRuns: 0 });
@@ -798,7 +798,7 @@ describe('summarizeCorpusRun — 런이 끊기면 그것이 수에 드러난다 
 });
 
 describe('⛔⭐⭐ 실제 로그 모양을 잠근다 — 표기가 한 행 안에서 갈린다 (2026-08-01 실측)', () => {
-  // ⚠️ 이 픽스처는 `monad logs --json` 이 **실제로 내는 모양**이다. 최상위는 snake_case 이고
+  // ⚠️ 이 픽스처는 `elanous logs --json` 이 **실제로 내는 모양**이다. 최상위는 snake_case 이고
   //    중첩 `data` 는 **JSON 문자열이며 camelCase** 다. 종전 픽스처는 존재하지 않는 모양을 썼고,
   //    그래서 라이브 러너가 오래 못 돌면서도 아무 에러를 안 냈다.
   const realRow = (over: Record<string, unknown> = {}) => JSON.stringify({
@@ -809,20 +809,20 @@ describe('⛔⭐⭐ 실제 로그 모양을 잠근다 — 표기가 한 행 안�
     surface: 'tui',
     category: 'capability.resolve',
     event: 'tool-selected',
-    session_id: 'monad-session-g0wp80',
-    data: JSON.stringify({ sessionId: 'monad-session-g0wp80', callId: 'call_x', tool: 'SelfImplement' }),
+    session_id: 'elanous-session-g0wp80',
+    data: JSON.stringify({ sessionId: 'elanous-session-g0wp80', callId: 'call_x', tool: 'SelfImplement' }),
     ...over,
   });
 
   test('⭐ tool-selected 를 실제 모양에서 읽는다(최상위 ts·session_id · 중첩 문자열 data)', () => {
-    const fired = toolsForSessionTurn(realRow(), 'monad-session-g0wp80', {
+    const fired = toolsForSessionTurn(realRow(), 'elanous-session-g0wp80', {
       startId: 0, instance: 'test:state', timestamp: '2026-08-01T12:00:00.000Z', runId: 'r', completedAt: '2026-08-01T12:00:02.000Z',
     });
     expect(fired).toEqual(['SelfImplement']);
   });
 
   test('⛔ 음성 대조 — 세션이 다르면 안 센다', () => {
-    expect(toolsForSessionTurn(realRow({ session_id: 'other' , data: JSON.stringify({ sessionId: 'other', tool: 'X' }) }), 'monad-session-g0wp80')).toEqual([]);
+    expect(toolsForSessionTurn(realRow({ session_id: 'other' , data: JSON.stringify({ sessionId: 'other', tool: 'X' }) }), 'elanous-session-g0wp80')).toEqual([]);
   });
 
   test('⭐ 턴 경계도 실제 모양에서 잡힌다(ts 를 timestamp 로 읽지 않는다)', () => {
@@ -830,9 +830,9 @@ describe('⛔⭐⭐ 실제 로그 모양을 잠근다 — 표기가 한 행 안�
       realRow({ id: 1, event: 'execute.begin', category: 'input.submit', ts: '2026-08-01T12:00:00.000Z', data: JSON.stringify({ runId: 'r1', textBytes: 6 }) }),
       realRow({ id: 2, event: 'execute.ok', category: 'input.submit', ts: '2026-08-01T12:00:03.000Z', data: JSON.stringify({ runId: 'r1' }) }),
     ].join('\n');
-    const started = turnStartedAfter(raw, new Set<string>(), 'monad-session-g0wp80');
+    const started = turnStartedAfter(raw, new Set<string>(), 'elanous-session-g0wp80');
     expect(started).toEqual({ startId: 1, instance: 'test:state', timestamp: '2026-08-01T12:00:00.000Z', runId: 'r1' });
-    expect(started && closedTurnBoundary(raw, started, 'monad-session-g0wp80'))
+    expect(started && closedTurnBoundary(raw, started, 'elanous-session-g0wp80'))
       .toEqual({ startId: 1, instance: 'test:state', timestamp: '2026-08-01T12:00:00.000Z', runId: 'r1', completedAt: '2026-08-01T12:00:03.000Z' });
   });
 
@@ -841,9 +841,9 @@ describe('⛔⭐⭐ 실제 로그 모양을 잠근다 — 표기가 한 행 안�
       category: 'signal', event: 'lifecycle.bridge-attached',
       data: JSON.stringify({ ptyId: 'pty_28781bd3', runId: 'r1' }),
     });
-    expect(verifyPtySession(() => logs, 'pty_28781bd3', 'monad-session-g0wp80')).toBe(true);
+    expect(verifyPtySession(() => logs, 'pty_28781bd3', 'elanous-session-g0wp80')).toBe(true);
     // ⛔ 음성 대조 — 종전 구현은 data 가 객체일 때만 풀어서 이 케이스가 영영 거짓이었다.
-    expect(verifyPtySession(() => logs, 'pty_other', 'monad-session-g0wp80')).toBe(false);
+    expect(verifyPtySession(() => logs, 'pty_other', 'elanous-session-g0wp80')).toBe(false);
   });
 
   test('옛 표기(camelCase 최상위·객체 data)도 계속 읽는다(무회귀)', () => {
@@ -960,7 +960,7 @@ describe('⛔ 인과 프로브 — 실패 갈래와 배선 (1R 리뷰 must-fix �
 
   test('⭐ 러너의 로그 조회가 중첩 인스턴스를 본다(--all --include-test)', () => {
     const seen: string[][] = [];
-    const runner = createMonadLiveTurnRunner((args) => { seen.push(args); return ''; }, 'pty_x');
+    const runner = createElanousLiveTurnRunner((args) => { seen.push(args); return ''; }, 'pty_x');
     runner.lifecycleLogs('s');
     runner.toolsForClosedTurn('s', { startId: 0, instance: '', timestamp: 't', runId: 'r', completedAt: 't2' });
     // ⛔ 한 우주만 보면 자식 TUI 로그(⟨test:state⟩)가 0건으로 읽힌다.
@@ -990,7 +990,7 @@ describe('⛔ 인과 프로브 — 실패 갈래와 배선 (1R 리뷰 must-fix �
       child: '',
     };
     const seen: string[][] = [];
-    const runner = createMonadLiveTurnRunner((args) => {
+    const runner = createElanousLiveTurnRunner((args) => {
       seen.push(args);
       const session = args[args.indexOf('--session') + 1];
       return args.includes('session.link') ? links[session] ?? '' : rows[session] ?? '';
@@ -1003,7 +1003,7 @@ describe('⛔ 인과 프로브 — 실패 갈래와 배선 (1R 리뷰 must-fix �
     const boundary = { startId: 0, instance: '', timestamp: '2026-08-02T00:00:00.000Z', runId: 'r', completedAt: '2026-08-02T00:00:10.000Z' };
     const queriedLinkSessions: string[] = [];
     const queriedToolSessions: string[] = [];
-    const runner = createMonadLiveTurnRunner((args) => {
+    const runner = createElanousLiveTurnRunner((args) => {
       const session = args[args.indexOf('--session') + 1]!;
       if (!args.includes('session.link')) {
         queriedToolSessions.push(session);
@@ -1031,14 +1031,14 @@ describe('⛔ 인과 프로브 — 실패 갈래와 배선 (1R 리뷰 must-fix �
       JSON.stringify({ ts: '2026-08-02T00:00:01.000Z', event: 'tool-selected', session_id: 'parent', data: JSON.stringify({ runId: 'r', tool: 'Grep' }) }),
       JSON.stringify({ ts: '2026-08-02T00:00:02.000Z', event: 'tool-selected', session_id: 'parent', data: JSON.stringify({ runId: 'r', tool: 'Grep' }) }),
     ].join('\n');
-    const runner = createMonadLiveTurnRunner((args) => args.includes('session.link') ? '' : raw, 'pty_x');
+    const runner = createElanousLiveTurnRunner((args) => args.includes('session.link') ? '' : raw, 'pty_x');
     expect(JSON.stringify(runner.toolsForClosedTurn('parent', boundary))).toBe(JSON.stringify(toolsForSessionTurn(raw, 'parent', boundary)));
   });
 
   test('⭐ session.link 순환과 깊이 상한은 방문하지 않은 도구를 합치지 않는다', () => {
     const boundary = { startId: 0, instance: '', timestamp: '2026-08-02T00:00:00.000Z', runId: 'r', completedAt: '2026-08-02T00:00:10.000Z' };
     const sessionFrom = (args: string[]) => args[args.indexOf('--session') + 1];
-    const runner = createMonadLiveTurnRunner((args) => {
+    const runner = createElanousLiveTurnRunner((args) => {
       const session = sessionFrom(args);
       if (!args.includes('session.link')) return JSON.stringify({ ts: '2026-08-02T00:00:01.000Z', event: 'tool-selected', session_id: session, data: JSON.stringify({ runId: 'r', tool: session }) });
       const child = session === 's8' ? 'too-deep' : session === 's0' ? 's1' : session === 's1' ? 's0' : `s${Number(session.slice(1)) + 1}`;
@@ -1046,7 +1046,7 @@ describe('⛔ 인과 프로브 — 실패 갈래와 배선 (1R 리뷰 must-fix �
     }, 'pty_x');
     expect(runner.toolsForClosedTurn('s0', boundary)).toEqual(['s0', 's1']);
 
-    const chainRunner = createMonadLiveTurnRunner((args) => {
+    const chainRunner = createElanousLiveTurnRunner((args) => {
       const session = sessionFrom(args);
       if (!args.includes('session.link')) return JSON.stringify({ ts: '2026-08-02T00:00:01.000Z', event: 'tool-selected', session_id: session, data: JSON.stringify({ runId: 'r', tool: session }) });
       return JSON.stringify({ ts: '2026-08-02T00:00:01.000Z', event: 'child-scope', session_id: session, data: JSON.stringify({ runId: 'r', childSessionId: `s${Number(session.slice(1)) + 1}` }) });
@@ -1056,8 +1056,8 @@ describe('⛔ 인과 프로브 — 실패 갈래와 배선 (1R 리뷰 must-fix �
 
   test('⛔ 어느 tool-selected 또는 session.link 조회 실패도 null로 전파한다', () => {
     const boundary = { startId: 0, instance: '', timestamp: '2026-08-02T00:00:00.000Z', runId: 'r', completedAt: '2026-08-02T00:00:10.000Z' };
-    expect(createMonadLiveTurnRunner(() => { throw new Error('unavailable'); }, 'pty_x').toolsForClosedTurn('parent', boundary)).toBeNull();
-    expect(createMonadLiveTurnRunner((args) => args.includes('session.link') ? (() => { throw new Error('unavailable'); })() : '', 'pty_x').toolsForClosedTurn('parent', boundary)).toBeNull();
+    expect(createElanousLiveTurnRunner(() => { throw new Error('unavailable'); }, 'pty_x').toolsForClosedTurn('parent', boundary)).toBeNull();
+    expect(createElanousLiveTurnRunner((args) => args.includes('session.link') ? (() => { throw new Error('unavailable'); })() : '', 'pty_x').toolsForClosedTurn('parent', boundary)).toBeNull();
   });
 
   test('⭐ 선언 조회도 중첩 인스턴스를 본다 — 안 그러면 선언이 있는데 프로브 턴을 헛되이 태운다', () => {
@@ -1078,7 +1078,7 @@ describe('⛔ 인과 프로브 — 실패 갈래와 배선 (1R 리뷰 must-fix �
 });
 
 describe('⛔⭐⭐ 연합 조회의 id 충돌 — 「id 는 인스턴스마다 독립」 (2R 리뷰 must-fix)', () => {
-  // ⚠️ `monad logs` 자신이 경고한다: "연합(--all) 조회는 행 id 가 인스턴스마다 독립이라
+  // ⚠️ `elanous logs` 자신이 경고한다: "연합(--all) 조회는 행 id 가 인스턴스마다 독립이라
   //    --before 를 쓸 수 없다". 즉 **같은 숫자 id 가 여러 저장소에 존재**한다.
   const row = (instance: string, id: number, event: string, ts: string, extra: Record<string, unknown> = {}) =>
     JSON.stringify({ id, instance, ts, event, session_id: 's', data: JSON.stringify({ runId: 'r1', ...extra }) });

@@ -33,14 +33,14 @@ beforeEach(() => {
   root = mkdtempSync(join(tmpdir(), 'tg-terra-'));
   process.env.XDG_DATA_HOME = root;
   process.env.XDG_STATE_HOME = join(root, '_state');
-  process.env.MONAD_SESSION_ROOT = join(root, 'sessions');
+  process.env.ELANOUS_SESSION_ROOT = join(root, 'sessions');
   resetGlobalMissionRouter();
 });
 afterEach(() => {
   rmSync(root, { recursive: true, force: true });
   delete process.env.XDG_DATA_HOME;
   delete process.env.XDG_STATE_HOME;
-  delete process.env.MONAD_SESSION_ROOT;
+  delete process.env.ELANOUS_SESSION_ROOT;
   resetGlobalMissionRouter();
 });
 
@@ -156,7 +156,7 @@ describe('coding turn → «better» tier (codex)', () => {
 
   test('reply carries the self execution footer with the used model', async () => {
     const { text } = await runFull('add.ts 에 함수 구현하고 실행해줘', cfg('openai-codex', OTHER));
-    expect(text).toContain(`🧠 monad · ${CODING}`);
+    expect(text).toContain(`🧠 elanous · ${CODING}`);
   });
 });
 

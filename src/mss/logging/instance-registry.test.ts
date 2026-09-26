@@ -1,7 +1,7 @@
 /**
  * 로그 인스턴스 레지스트리 — LF7-b 계약 (2026-07-13).
  *
- * 전부 temp 디렉토리 — 실 ~/.monad/logs/instances.json 미접촉.
+ * 전부 temp 디렉토리 — 실 ~/.elanous/logs/instances.json 미접촉.
  */
 import { describe, expect, it } from 'bun:test';
 import { mkdirSync, mkdtempSync, readFileSync, rmSync } from 'node:fs';
@@ -16,8 +16,8 @@ import {
 } from './instance-registry.js';
 
 function tempSetup(): { dir: string; registry: string; stateDir: string } {
-  const dir = mkdtempSync(join(tmpdir(), 'monad-loginst-'));
-  const stateDir = join(dir, '.monad-test');
+  const dir = mkdtempSync(join(tmpdir(), 'elanous-loginst-'));
+  const stateDir = join(dir, '.elanous-test');
   mkdirSync(stateDir, { recursive: true });
   return { dir, registry: join(dir, 'instances.json'), stateDir };
 }
@@ -56,15 +56,15 @@ describe('인스턴스 레지스트리 — 등록/조회/정리', () => {
     rmSync(dir, { recursive: true, force: true });
   });
 
-  // 라이브 관측 provenance: 2026-08-07 02:0x KST · monad logs instances 전수.
+  // 라이브 관측 provenance: 2026-08-07 02:0x KST · elanous logs instances 전수.
   // test:monad-agent가 네 state 경로에 등록된 사례를 독립 temp fixture로 재현한다.
   it('같은 이름의 네 stateDir는 보존하고 모호성 메타데이터로 드러낸다', () => {
     const { dir, registry, stateDir } = tempSetup();
     const stateDirs = [
       stateDir,
-      join(dir, 'elan', 'monad-agent', '.monad-test'),
-      join(dir, 'pilot', 'monad-agent', '.monad-test'),
-      join(dir, 'axon', 'monad-agent', '.monad-test'),
+      join(dir, 'elan', 'monad-agent', '.elanous-test'),
+      join(dir, 'pilot', 'monad-agent', '.elanous-test'),
+      join(dir, 'axon', 'monad-agent', '.elanous-test'),
     ];
     for (const path of stateDirs) mkdirSync(path, { recursive: true });
     for (const path of stateDirs) registerLogInstance(entry({}, path), registry);
@@ -87,10 +87,10 @@ describe('인스턴스 레지스트리 — 등록/조회/정리', () => {
 
   it('다른 hostId는 원격이고 hostId 없는 옛 항목은 같은 죽은 pid로 dead', () => {
     const { dir, registry, stateDir } = tempSetup();
-    const legacyDir = join(dir, 'legacy', '.monad-test');
+    const legacyDir = join(dir, 'legacy', '.elanous-test');
     mkdirSync(legacyDir, { recursive: true });
-    const previous = process.env.MONAD_HOST_ID;
-    process.env.MONAD_HOST_ID = '01THISHOST';
+    const previous = process.env.ELANOUS_HOST_ID;
+    process.env.ELANOUS_HOST_ID = '01THISHOST';
     try {
       registerLogInstance(entry({ hostId: '01OTHERHOST', hostname: 'win-box', pid: 999_999_999 }, stateDir), registry);
       registerLogInstance(entry({ pid: 999_999_999 }, legacyDir), registry);
@@ -102,16 +102,16 @@ describe('인스턴스 레지스트리 — 등록/조회/정리', () => {
       registerLogInstance(entry({ hostId: '01OTHERHOST', pid: process.pid }, stateDir), registry);
       expect(readLogInstances(registry)[1]).toMatchObject({ hostId: '01OTHERHOST', alive: false, liveness: 'remote' });
     } finally {
-      if (previous === undefined) delete process.env.MONAD_HOST_ID;
-      else process.env.MONAD_HOST_ID = previous;
+      if (previous === undefined) delete process.env.ELANOUS_HOST_ID;
+      else process.env.ELANOUS_HOST_ID = previous;
       rmSync(dir, { recursive: true, force: true });
     }
   });
 
   it('없는 원격 stateDir는 조회와 레지스트리에 남고 없는 로컬·구항목은 정리된다', () => {
     const { dir, registry } = tempSetup();
-    const previous = process.env.MONAD_HOST_ID;
-    process.env.MONAD_HOST_ID = '01THISHOST';
+    const previous = process.env.ELANOUS_HOST_ID;
+    process.env.ELANOUS_HOST_ID = '01THISHOST';
     const remoteDir = join(dir, 'elsewhere', 'remote-state');
     const localDir = join(dir, 'gone-local');
     const legacyDir = join(dir, 'gone-legacy');
@@ -126,8 +126,8 @@ describe('인스턴스 레지스트리 — 등록/조회/정리', () => {
         entry({ name: 'remote', hostId: '01OTHERHOST', hostname: 'win-box', pid: 999_999_999 }, remoteDir),
       ]);
     } finally {
-      if (previous === undefined) delete process.env.MONAD_HOST_ID;
-      else process.env.MONAD_HOST_ID = previous;
+      if (previous === undefined) delete process.env.ELANOUS_HOST_ID;
+      else process.env.ELANOUS_HOST_ID = previous;
       rmSync(dir, { recursive: true, force: true });
     }
   });
@@ -167,14 +167,14 @@ describe('isTestInstance — 연합 test 제외 술어', () => {
   it('kind 누락이어도 name=test: prefix 는 test(레거시 test 인스턴스 노출 차단)', () => {
     expect(isTestInstance({ name: 'test:monad-agent' })).toBe(true);
   });
-  it('kind 누락이어도 stateDir=.monad-test 는 test', () => {
-    expect(isTestInstance({ stateDir: '/x/.monad-test' })).toBe(true);
+  it('kind 누락이어도 stateDir=.elanous-test 는 test', () => {
+    expect(isTestInstance({ stateDir: '/x/.elanous-test' })).toBe(true);
   });
   it('명시 kind=prod 는 name=test: 여도 prod(명시 우선)', () => {
     expect(isTestInstance({ kind: 'prod', name: 'test:foo' })).toBe(false);
   });
   it('관례 미해당(axon 등 병렬)은 prod', () => {
     expect(isTestInstance({ name: 'axon' })).toBe(false);
-    expect(isTestInstance({ stateDir: '/src/axon/.monad' })).toBe(false);
+    expect(isTestInstance({ stateDir: '/src/axon/.elanous' })).toBe(false);
   });
 });

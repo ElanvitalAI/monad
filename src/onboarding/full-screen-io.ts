@@ -476,7 +476,7 @@ function stripPromptPunctuation(prompt: string): string {
 function isBannerLine(text: string): boolean {
   if (text.length === 0) return true;
   if (text.startsWith('━━━')) return true; // banner rule
-  if (text.startsWith('  monad — setup wizard')) return true;
+  if (text.startsWith('  elanous — setup wizard')) return true;
   if (text.startsWith('  Writing to:')) return true;
   return false;
 }

@@ -24,19 +24,19 @@ import {
   dismissWelcome,
   shouldShowWelcome,
 } from '../src/nexus/chat/welcome.js';
-import { setMonadConfigDir, resetMonadConfigDir } from '../src/monad-config-dir.js';
+import { setElanousConfigDir, resetElanousConfigDir } from '../src/elanous-config-dir.js';
 
 let tmpRoot: string;
 
 beforeEach(() => {
-  tmpRoot = mkdtempSync(join(tmpdir(), 'monad-nexus-welcome-switch-'));
-  setMonadConfigDir(tmpRoot);
+  tmpRoot = mkdtempSync(join(tmpdir(), 'elanous-nexus-welcome-switch-'));
+  setElanousConfigDir(tmpRoot);
   clearSwitchRegistry();
   reloadAllBuiltins();
 });
 
 afterEach(() => {
-  resetMonadConfigDir();
+  resetElanousConfigDir();
   try { rmSync(tmpRoot, { recursive: true, force: true }); } catch { /* ignore */ }
   clearSwitchRegistry();
 });

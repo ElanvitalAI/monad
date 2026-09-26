@@ -6,8 +6,8 @@
 // option, but that's bigger scope than this arc).
 //
 // The reader is the bridge between two pieces already on disk:
-//   1. `~/.monad/monad.runtime.json` (monad-daemon.ts) — the daemon
-//      writes its `historyDir` here on boot when MONAD_HISTORY_DIR
+//   1. `~/.elanous/elanous.runtime.json` (elanous-daemon.ts) — the daemon
+//      writes its `historyDir` here on boot when ELANOUS_HISTORY_DIR
 //      is set. This is the discovery path so the telegram bot
 //      (running as the same user, on the same host) can find the
 //      history dir without a separate config flag.
@@ -23,7 +23,7 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { join as joinPath } from 'node:path';
 
-import { readMonadDaemonRuntime } from '../monad-daemon.js';
+import { readElanousDaemonRuntime } from '../elanous-daemon.js';
 import type { LLMMessage } from '../llm.js';
 
 export interface DaemonHistoryReadResult {
@@ -35,7 +35,7 @@ export interface DaemonHistoryReadResult {
   exists: boolean;
   /** historyDir the read came from. Useful for diagnostics — surface
    *  to the user when /resume fails so they can verify the daemon
-   *  picked up MONAD_HISTORY_DIR. */
+   *  picked up ELANOUS_HISTORY_DIR. */
   historyDir?: string;
 }
 
@@ -49,7 +49,7 @@ export interface DaemonHistoryReadResult {
  *  Path-traversal defense matches DaemonSessionHistory.diskPathFor
  *  (daemon-runtime.ts:122-132) — sessionIds containing `/`, `\`, or
  *  `..` are rejected. This is a safety net since ACP-minted ids
- *  (`monad-session-N`, `http-<ts>-<rand>`) never include separators. */
+ *  (`elanous-session-N`, `http-<ts>-<rand>`) never include separators. */
 export function readDaemonSessionHistory(sessionId: string): DaemonHistoryReadResult {
   if (
     typeof sessionId !== 'string' ||
@@ -61,7 +61,7 @@ export function readDaemonSessionHistory(sessionId: string): DaemonHistoryReadRe
     return { messages: [], exists: false };
   }
 
-  const runtime = readMonadDaemonRuntime();
+  const runtime = readElanousDaemonRuntime();
   const historyDir = runtime?.historyDir;
   if (!historyDir) return { messages: [], exists: false };
 

@@ -41,7 +41,7 @@ describe('seedAu7Fragments', () => {
     for (const id of AU7_SEED_IDS) {
       const f = store.get(id);
       expect(f).not.toBeNull();
-      expect(f!.owner).toBe('monad');
+      expect(f!.owner).toBe('elanous');
       expect(f!.targetSlot).toBe('system');
       expect(f!.enabled).toBe(true);
       const triggerIntent = f!.triggers.intent as string[] | undefined;

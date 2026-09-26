@@ -1,7 +1,7 @@
-// Phase 5 F8 shadow mode (2026-05-03 · MONAD_F8_SHADOW=1).
+// Phase 5 F8 shadow mode (2026-05-03 · ELANOUS_F8_SHADOW=1).
 //
 // F8 telemetry (#1424) tracks generation bumps; shadow mode is the
-// runtime CHECK that complements it. When env var MONAD_F8_SHADOW=1
+// runtime CHECK that complements it. When env var ELANOUS_F8_SHADOW=1
 // is set, every paint cache HIT also re-runs `surface.paint()` and
 // compares the fresh ANSI string against the cached `prior.ansi`.
 // A divergence means the surface mutated state without bumping

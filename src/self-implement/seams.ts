@@ -3,17 +3,17 @@
 //
 //   fork      → forkSessionById            (session/index.ts)
 //   worktree  → createWorktree             (git-fs/worktree.ts)
-//   implement → 헤드리스 `chat --tools --goal-loop` 서브프로세스 (자식 monad·canonical goal-loop·PTY 無)
+//   implement → 헤드리스 `chat --tools --goal-loop` 서브프로세스 (자식 elanous·canonical goal-loop·PTY 無)
 //   gate      → runIntegrityGate           (autopilot/build/integrity-gate.ts · standalone)
 //   openPr    → git commit+push + dispatchOpenPullRequest (tool-runtime/git-pr-runtime.ts)
 //
-// 층 B "monad 이 monad 을 부린다"(2026-07-20 S1) — 구현 seam 이 취약한 PTY 드라이버
-// (driveHeadlessMonad·stale)에서 검증된 헤드리스 서브프로세스로 이관. 대표 지시: 구현물(artifact)이
-// 목적이라 메커니즘(하니스/중첩/ACP)은 fungible — 되는 방법을 쓴다. driveHeadlessMonad 는 파일 존치
+// 층 B "elanous 이 elanous 을 부린다"(2026-07-20 S1) — 구현 seam 이 취약한 PTY 드라이버
+// (driveHeadlessElanous·stale)에서 검증된 헤드리스 서브프로세스로 이관. 대표 지시: 구현물(artifact)이
+// 목적이라 메커니즘(하니스/중첩/ACP)은 fungible — 되는 방법을 쓴다. driveHeadlessElanous 는 파일 존치
 // (S2/S3 화면 I/O 서피스용). canonical goal-loop = [[PLAN-unified-autonomous-agent-substrate-2026-07-20]].
 
 import { judgePredictionAccuracy, mustFixTrendFromHistory, renderJudgeOwnSignals, renderJudgePredictionAccuracy } from './judge-prediction-accuracy.js';
-import { isMonadRuntimeArtifactPath } from './gate-scope.js';
+import { isElanousRuntimeArtifactPath } from './gate-scope.js';
 import { spawn, spawnSync, execFile } from 'node:child_process';
 import { randomUUID, timingSafeEqual } from 'node:crypto';
 import { existsSync, lstatSync, mkdtempSync, readFileSync, realpathSync, rmSync, statSync, unlinkSync, writeFileSync } from 'node:fs';
@@ -78,13 +78,13 @@ import { countReflectFactConflicts, type MustFixRefutation, type ReflectEvidence
 import { isSupervisorDecisionSection, splitGoalSections, supervisorGoalDigest } from './goal-digest.js';
 import type { SupervisionReworkSource } from './supervision-vocabulary.js';
 import type { ReworkBudgetVerdict } from './run-outcome.js';
-import { runHeadlessGoalLoopPty } from './headless-monad-driver.js';
+import { runHeadlessGoalLoopPty } from './headless-elanous-driver.js';
 import { buildLlmHitlRelay, SIDE_EFFECT_RE } from '../harness/llm-hitl-relay.js';
 import { dispatchAskUserQuestion } from '../ask-user-question/tool.js';
 import { parseQuestionRequest } from '../ask-user-question/types.js';
 import type { DocumentReferenceStatus } from './self-implement-runtime.js';
 
-declare module './headless-monad-driver.js' {
+declare module './headless-elanous-driver.js' {
   interface HeadlessGoalLoopPtyOptions {
     /** Runtime-resolved document reference statuses; child policy remains outside this seam. */
     documentReferences?: readonly DocumentReferenceStatus[];
@@ -231,7 +231,7 @@ export function launchDevGoalFileDetached(
 ): Promise<void> {
   return new Promise<void>((resolve, reject) => {
     const child = spawnChild(process.execPath, [
-      'bin/monad.mjs', 'dev', '--file', input.goalFile,
+      'bin/elanous.mjs', 'dev', '--file', input.goalFile,
       ...(input.base ? ['--base', input.base] : []),
       ...(input.target ? ['--target', input.target] : []),
       ...(input.correlation !== undefined ? ['--correlation', input.correlation] : []),
@@ -261,7 +261,7 @@ export function launchReworkSalvage(
   spawnChild: typeof spawn = spawn,
 ): Promise<void> {
   return launchDevGoalFileDetached(
-    { goalFile: input.goalFile, base: input.base, env: { MONAD_REWORK_SALVAGE_ATTEMPT: String(input.salvageAttempt) } },
+    { goalFile: input.goalFile, base: input.base, env: { ELANOUS_REWORK_SALVAGE_ATTEMPT: String(input.salvageAttempt) } },
     spawnChild,
   );
 }
@@ -324,14 +324,14 @@ export function assertBaseBranchOnOrigin(cwd: string, base: string | undefined):
 }
 
 /** ★ 우리가 흘린 것은 자식의 산출물이 아니다(2026-07-27) — 파생 우주 물질화가 워크트리 안에
- *  `.monad-test/` 를 만든다. self-build 의 성공 판정은 **artifact-first**(`changed && !timedOut`)라,
+ *  `.elanous-test/` 를 만든다. self-build 의 성공 판정은 **artifact-first**(`changed && !timedOut`)라,
  *  이걸 빼지 않으면 *"자식이 아무것도 안 했는데 우리가 깐 config 때문에 ok:true"* 가 된다.
- *  monad 레포는 `.gitignore` 에 `/.monad-test/` 가 있어 우연히 가려지지만, **외부 repo 개발**
- *  (monadBinRoot 경로)에는 그 줄이 없다 — 거기서 실제로 터진다. 실측: 이 PR 의 배선 테스트가
+ *  elanous 레포는 `.gitignore` 에 `/.elanous-test/` 가 있어 우연히 가려지지만, **외부 repo 개발**
+ *  (elanousBinRoot 경로)에는 그 줄이 없다 — 거기서 실제로 터진다. 실측: 이 PR 의 배선 테스트가
  *  합성 repo 에서 `변경: yes · 툴콜 0` 을 성공으로 돌려주는 것을 잡았다.
- *  `.monad-skill-artifacts/`도 executor가 워크트리 안에서 승격 증거로 스냅샷하되 Git 변경은 아니므로,
+ *  `.elanous-skill-artifacts/`도 executor가 워크트리 안에서 승격 증거로 스냅샷하되 Git 변경은 아니므로,
  *  이 공유 pathspec을 쓰는 worktreeHasChanges·preservationHasChanges·changedFiles 모두에서 제외한다. */
-const NOT_OUR_OWN_LEAVINGS = ['--', '.', ':(exclude).monad-test', ':(exclude).monad-skill-artifacts'] as const;
+const NOT_OUR_OWN_LEAVINGS = ['--', '.', ':(exclude).elanous-test', ':(exclude).elanous-skill-artifacts'] as const;
 
 /** worktree 에 self-build 산출물이 있나. 미커밋(untracked 포함) OR 기본 branch와의 fork 지점 이후 커밋 변경을 본다.
  *  `excludePaths`(워크트리 상대) = 하니스가 «깔아 둔» 경로 — 두 검사 모두에서 뺀다. 2026-09-24: 오케스트레이터가
@@ -362,7 +362,7 @@ export function preservationHasChanges(cwd: string, base?: string): boolean {
 export function changedFiles(cwd: string): string[] {
   const files = new Set<string>();
   // ① 미커밋 + untracked — porcelain 라인 'XY <path>'(rename 은 'orig -> new').
-  //   물질화·비코드 산출물(.monad-test, .monad-skill-artifacts)은 제외 — 리뷰어·게이트가 자식 변경으로 오인하면 안 된다.
+  //   물질화·비코드 산출물(.elanous-test, .elanous-skill-artifacts)은 제외 — 리뷰어·게이트가 자식 변경으로 오인하면 안 된다.
   for (const line of git(cwd, ['status', '--porcelain', ...NOT_OUR_OWN_LEAVINGS]).out.split('\n')) {
     const s = line.trim();
     if (!s) continue;
@@ -486,12 +486,12 @@ async function measureReviewScope(cwd: string, base: string): Promise<{ ref: str
   return { ref: /^[0-9a-f]{7,64}$/.test(ref) ? ref : '' };
 }
 
-/** 스테이징된 «새 파일» 중 monad 런타임 산출물만 다시 내린다(사후 조건 — 경합 없음). */
-export function unstageMonadRuntimeArtifacts(cwd: string): string[] {
+/** 스테이징된 «새 파일» 중 elanous 런타임 산출물만 다시 내린다(사후 조건 — 경합 없음). */
+export function unstageElanousRuntimeArtifacts(cwd: string): string[] {
   const staged = git(cwd, ['diff', '--cached', '--name-only', '--diff-filter=A', '-z']).out
     .split('\0')
     .filter((path) => path.length > 0)
-    .filter(isMonadRuntimeArtifactPath);
+    .filter(isElanousRuntimeArtifactPath);
   if (staged.length > 0) git(cwd, ['reset', '-q', '--', ...staged]);
   return staged;
 }
@@ -503,16 +503,16 @@ export function commitWorktree(cwd: string, message: string): { ok: boolean; out
   const untrackedRuntimeArtifacts = git(cwd, ['ls-files', '--others', '--exclude-standard', '-z']).out
     .split('\0')
     .filter(Boolean)
-    .filter(isMonadRuntimeArtifactPath)
+    .filter(isElanousRuntimeArtifactPath)
     .filter((path) => !git(cwd, ['check-ignore', '-q', path]).ok);
   const exclude = untrackedRuntimeArtifacts.map((path) => `:(exclude,literal)${path}`);
   git(cwd, ['add', '-A', '--', ...exclude]);
-  // ⛔ 위 목록은 «스냅샷»이라 경합에 진다 — `.monad-child-liveness.hb` 는 ***5초마다*** 쓰이므로
+  // ⛔ 위 목록은 «스냅샷»이라 경합에 진다 — `.elanous-child-liveness.hb` 는 ***5초마다*** 쓰이므로
   //    `ls-files` 와 `add -A` «사이»에 생기면 그대로 담힌다.
   //    📏 2026-09-21: 그래서 #19300·#19302 를 넣고도 빈 저장소 PR 에 또 들어갔다.
   //    ⇒ 사전 제외가 아니라 ***사후 조건***으로 막는다 — 경합이 구조적으로 없어진다.
   //    ⭐ `--diff-filter=A` 라 «새로 들어온 것»만 문다 — 이미 추적 중이던 경로는 그대로 남는다.
-  unstageMonadRuntimeArtifacts(cwd);
+  unstageElanousRuntimeArtifacts(cwd);
   const commit = git(cwd, ['commit', '-m', message]);
   if (!commit.ok && !/nothing to commit/.test(commit.out)) {
     debug.log('self-implement', 'commit.warn', { out: commit.out.slice(0, 300) }, { level: 'warn' });
@@ -520,7 +520,7 @@ export function commitWorktree(cwd: string, message: string): { ok: boolean; out
   return commit;
 }
 
-/** worktree 의 변경 파일 목록(tracked HEAD diff + untracked·exclude-standard). gate 와 `monad self typecheck`
+/** worktree 의 변경 파일 목록(tracked HEAD diff + untracked·exclude-standard). gate 와 `elanous self typecheck`
  *  CLI 가 공유 — 모델의 자가 타입검사가 gate 와 **동일 파일집합**을 보게(B2 선제↔A 게이트 수렴 보장). */
 export function gitChangedFiles(cwd: string): string[] {
   const tracked = git(cwd, ['diff', '--name-only', 'HEAD']).out;
@@ -637,7 +637,7 @@ export function changedFileTypecheck(
   const exemptedErrors = [...result.exempted, ...pwaResult.exempted];
   const outsideChanged = [...result.outsideChanged, ...pwaResult.outsideChanged];
   const passed = executions.every((candidate) => candidate.executed) && failing.length === 0;
-  // ⛔ baseline 전량(수백 항목)을 매 게이트마다 싣지 않는다 — 로그 부피가 크고, `monad logs` 기본
+  // ⛔ baseline 전량(수백 항목)을 매 게이트마다 싣지 않는다 — 로그 부피가 크고, `elanous logs` 기본
   //    출력이 페이로드를 200자에서 자르므로 **자기 페이로드가 절단돼** 정작 failing/exempted 를
   //    못 읽게 된다(실측 2026-07-30).
   //    ⚠️ **이 자리는 `scripts/ci-typecheck-changed.ts` 와 같은 판정의 두 번째 호출부**다 —
@@ -686,7 +686,7 @@ export function changedFileTypecheck(
   };
 }
 
-/** 헤드리스 monad 가 이 feature 를 구현하도록 주입하는 프롬프트. goal-loop 계약 + 검증된 클린-빌드
+/** 헤드리스 elanous 가 이 feature 를 구현하도록 주입하는 프롬프트. goal-loop 계약 + 검증된 클린-빌드
  *  앵커(측정→운영·[[REPORT-gemma-goalloop-lever-2026-07-20]])를 명시. 앵커가 gemma 를 99 로 끌어올렸고
  *  강한 모델엔 무해 — self-run 어느 provider 든 동일 규율. */
 export function buildPrBody(cwd: string, body: string): string {
@@ -726,14 +726,14 @@ export function featurePrompt(feature: string, cwd?: string, reviewerContext?: r
     //   실제 소요는 **146,518ms** 였다 ⇒ **27초 부족**. 검증은 **통과했는데**(출력에 `✅ … 통과`)
     //   그 타임아웃이 `stage=aborted` 로 런 전체를 버렸다. ⇒ 걸리는 시간을 **안내문에 수로** 적는다.
     //   ⚠️ 바로 위 `bun test` 줄은 같은 실패 모드를 이미 경고하는데 **여기엔 대칭이 없었다.**
-    '- 완료 前 타입 검사(중요): `bun bin/monad.mjs self typecheck` 를 돌려라 — **네가 바꾼 파일의 타입에러만** 보여준다(레포 baseline 노이즈 0·gate 와 동일 로직). **0건이 될 때까지 고쳐라.** 참조한 심볼/필드는 정의·선언까지 완성하라(소비만 하고 미정의 금지). (이 명령이 없는 레포면 프로젝트 타입체크로.) ⛔ **이 명령은 이 레포에서 약 150초 걸린다**(실측 146,518ms · 변경 5파일) — 셸 툴로 부를 때 **`timeoutMs` 를 240000 이상** 주어라. 기본값이나 120000 으로는 **검증이 통과해도 시간초과로 런이 버려진다**(실측 2026-07-30).',
+    '- 완료 前 타입 검사(중요): `bun bin/elanous.mjs self typecheck` 를 돌려라 — **네가 바꾼 파일의 타입에러만** 보여준다(레포 baseline 노이즈 0·gate 와 동일 로직). **0건이 될 때까지 고쳐라.** 참조한 심볼/필드는 정의·선언까지 완성하라(소비만 하고 미정의 금지). (이 명령이 없는 레포면 프로젝트 타입체크로.) ⛔ **이 명령은 이 레포에서 약 150초 걸린다**(실측 146,518ms · 변경 5파일) — 셸 툴로 부를 때 **`timeoutMs` 를 240000 이상** 주어라. 기본값이나 120000 으로는 **검증이 통과해도 시간초과로 런이 버려진다**(실측 2026-07-30).',
     '- ⚠️ `bun test` 가 "Ran 0 tests" 또는 "0 pass 0 fail" 이면 **통과가 아니다** — 파일 경로가 틀린 것이니 올바른 테스트 경로로 다시 실행해 실제 테스트가 돌게 하라.',
     // ⛔⛔ #4 가드가 막는데 나아갈 길이 없었다(실측 2026-07-30): 깊은 위임 **2/2** 가 여기서 죽었다.
-    //   자식이 `monad <cmd>` 를 중첩으로 띄우면 `instance-root-coherence.ts:107` 이 stderr 로
+    //   자식이 `elanous <cmd>` 를 중첩으로 띄우면 `instance-root-coherence.ts:107` 이 stderr 로
     //   *"prod 인스턴스를 nested 인터랙티브로 띄웠습니다 … 격리하려면 `--test` 를 붙이세요"* 를 내고,
     //   자식은 **어떻게 하라는 것인지 몰라 3~4번의 툴 호출 뒤 조용히 죽었다**(`soft-timeout`).
     //   ⇒ 가드는 옳다(prod 스토어 보호). **없던 것은 "이렇게 하라" 다.** `#6014`(타임아웃 안내문)와 같은 계열.
-    '- ⛔ **monad 명령을 중첩으로 띄울 때는 반드시 `--test` 를 붙여라** — `bun bin/monad.mjs --test <cmd>`. 안 붙이면 `[instance] ⚠️ prod 인스턴스를 nested 인터랙티브로 띄웠습니다` 가드가 걸려 **운영 스토어 오염을 막느라 네 런이 멈춘다**(실측: 그 상태로 조용히 죽은 런 2건). `--test` 는 config-dir·state-dir 두 축을 cwd 트리의 `.monad-test` 로 자동 격리한다. ⚠️ 관측을 조회할 때도 같다 — 격리 로그는 `bun bin/monad.mjs --test logs …` 로 봐야 보인다.',
+    '- ⛔ **elanous 명령을 중첩으로 띄울 때는 반드시 `--test` 를 붙여라** — `bun bin/elanous.mjs --test <cmd>`. 안 붙이면 `[instance] ⚠️ prod 인스턴스를 nested 인터랙티브로 띄웠습니다` 가드가 걸려 **운영 스토어 오염을 막느라 네 런이 멈춘다**(실측: 그 상태로 조용히 죽은 런 2건). `--test` 는 config-dir·state-dir 두 축을 cwd 트리의 `.elanous-test` 로 자동 격리한다. ⚠️ 관측을 조회할 때도 같다 — 격리 로그는 `bun bin/elanous.mjs --test logs …` 로 봐야 보인다.',
     // ⚠️ 버그B(dogfood 2026-07-20): 위 목표에 "PR 올려라·하니스 실행" 같은 지시가 있어도 무시하라.
     // 너의 역할은 **파일 구현+테스트만**이다. git commit·push·PR·브랜치 조작을 하지 마라 —
     // 커밋/리뷰/PR 은 상위 하니스(Deployer)가 승인 게이트(HITL)를 거쳐 처리한다. 워킹트리에 변경만 남겨라.
@@ -760,7 +760,7 @@ type PtyDegradedReason = 'unavailable' | 'cap' | 'error';
  * ⛔ **왜 필요한가**(실측 2026-07-30): 새 워크트리에서 자식 우주가 물질화되지 않으면 자식은
  *    온보딩 거부로 13초에 죽는데, 파이프라인 층에는 `stage=aborted` · `screen-only` 만 남는다.
  *    S 가 그 표면만 보고 **세 번 헛짚었다**(골 결함 · base 해석 · 프롬프트 argv 파싱 — 셋 다 틀렸다).
- *    원인은 처음부터 자식 화면에 있었다(`monad self screen`).
+ *    원인은 처음부터 자식 화면에 있었다(`elanous self screen`).
  *
  * ⚠️ **exit code 를 조건으로 쓰지 않는다**(리뷰 must-fix): 진단을 남기고 **정상 코드로 종료**하는
  *    자식이 있으면 그 사유가 다시 뭉개진다. 판정은 **진단 신호의 존재**로 한다.
@@ -830,7 +830,7 @@ export interface DefaultSeamsOptions {
    *  `reviewDiff` 어댑터를 git 없이 통과시킬 수 없어 **매핑 누락을 회귀로 못 잡는다**
    *  (원장 `JDG-S4`·`JDG-S5` · 무인 리뷰 4R 이 요구). */
   reviewScopeDiff?: typeof reviewScopeDiff;
-  /** 자식 monad 격리 config/state(goal-loop·codexInspectExempt 아밍 config 위치). */
+  /** 자식 elanous 격리 config/state(goal-loop·codexInspectExempt 아밍 config 위치). */
   configDir?: string;
   stateDir?: string;
   /** ⭐ 위 `stateDir` 이 «파생»이면 자식에게 그 사실을 «값으로» 준다(`OBS-T121`). */
@@ -868,18 +868,18 @@ export interface DefaultSeamsOptions {
   runVerifyByBreaking?: typeof runVerifyByBreaking;
   /** 기존 대조가 정보를 못 낸 편집 테스트를 base 판으로 현재 소스에서 재실행하는 seam. */
   runReverseVerifyByBreaking?: typeof runReverseVerifyByBreaking;
-  /** P1(dev-harness) — worktree 를 뜰 **대상 repo 루트**. 생략 시 데몬 cwd 의 repo(=monad 자신).
-   *  monad 자신 개발이면 생략, 외부 repo 개발이면 그 repo 루트. */
+  /** P1(dev-harness) — worktree 를 뜰 **대상 repo 루트**. 생략 시 데몬 cwd 의 repo(=elanous 자신).
+   *  elanous 자신 개발이면 생략, 외부 repo 개발이면 그 repo 루트. */
   repoRoot?: string;
   /** P2(#25) — 타겟 종류(resolveTargetKind). 'non-git-dir' 이면 createWorktree 대신 그림자 스테이징
-   *  (targetPath 필수) + gate 는 manifest 감지. 생략/그 외는 현행(monad·외부 git). */
+   *  (targetPath 필수) + gate 는 manifest 감지. 생략/그 외는 현행(elanous·외부 git). */
   targetKind?: TargetKind;
   /** P2(#25) — 비-git dir 타겟의 실제 경로(targetKind==='non-git-dir' 일 때 그림자로 감쌀 원본). */
   targetPath?: string;
-  /** P3(dev-harness) — monad 코딩에이전트 바이너리(`bin/monad.mjs`) 위치. 생략 시 worktree repo 에서
-   *  찾음(monad 자신 개발엔 정상). **외부 repo 개발** 시엔 monad repo 루트를 줘야 외부 worktree 에도
-   *  monad 에이전트가 붙는다(외부 repo 엔 monad 바이너리 없음). */
-  monadBinRoot?: string;
+  /** P3(dev-harness) — elanous 코딩에이전트 바이너리(`bin/elanous.mjs`) 위치. 생략 시 worktree repo 에서
+   *  찾음(elanous 자신 개발엔 정상). **외부 repo 개발** 시엔 elanous repo 루트를 줘야 외부 worktree 에도
+   *  elanous 에이전트가 붙는다(외부 repo 엔 elanous 바이너리 없음). */
+  elanousBinRoot?: string;
   /** ★ 내부 리뷰어 seam(2026-07-21·review-gated merge) — 주입 시 reviewDiff(worktree diff → reviewPullRequest·
    *  agent-substrate·staged 하니스와 동일 엔진) 배선. 미주입 시 reviewDiff 미노출(gate 통과=바로 병합결정·
    *  리뷰 스킵). dev-harness 의 llmReview 와 동일 형태(streamLLM 래퍼). */
@@ -1387,7 +1387,7 @@ export function defaultSeams(o: DefaultSeamsOptions = {}): SelfImplementSeams {
         const resolvedBase = revParseHead(s.path);
         return { path: s.path, branch: s.branch, base, resolvedBase, invokedHead };
       }
-      // P1 — 대상 repo: 명시 repoRoot(외부 개발) 우선, 없으면 데몬 cwd 의 repo(=monad 자신·현행).
+      // P1 — 대상 repo: 명시 repoRoot(외부 개발) 우선, 없으면 데몬 cwd 의 repo(=elanous 자신·현행).
       const repoRoot = o.repoRoot ?? resolveMainRepoRoot(process.cwd()) ?? process.cwd();
       const r = createWorktree({
         repoRoot,
@@ -1401,7 +1401,7 @@ export function defaultSeams(o: DefaultSeamsOptions = {}): SelfImplementSeams {
       if (r.resolvedBase) baselineRefs.set(r.path, r.resolvedBase);
       const provenance = runId ? {
         owner: `dev:${runId}`,
-        command: 'monad dev',
+        command: 'elanous dev',
         createdAt: new Date().toISOString(),
       } : undefined;
       const recordProvenance = o.recordWorktreeProvenance ?? recordHarnessWorktreeProvenance;
@@ -1461,23 +1461,23 @@ export function defaultSeams(o: DefaultSeamsOptions = {}): SelfImplementSeams {
       const executionSignal = signal && o.signal ? AbortSignal.any([signal, o.signal]) : signal ?? o.signal;
       // ★ #2 모델 escalation 이중 티어(2026-07-22 대표 결론) — base(terra) 소진 시 sol, sol 도 못 풀면 opus.
       //   프롬프트 rigor 힌트는 buildReworkFeature 가 이미 주입(feature 에 "sol/opus·근본부터"). 모델 티어
-      //   실전환은 driver 가 tier→타깃(resolveEscalateTarget)을 자식 goal-loop 의 MONAD_ESCALATE_* env 로 주입.
+      //   실전환은 driver 가 tier→타깃(resolveEscalateTarget)을 자식 goal-loop 의 ELANOUS_ESCALATE_* env 로 주입.
       if (escalateTier && escalateTier !== 'none') { try { debug.log('self-implement', 'implement.escalate', { cwd, tier: escalateTier }); } catch { /* fail-soft */ } }
-      // ⑩ nest-cap — CLI 직접호출(monad self implement) 경로 가드(툴-제외가 안 걸리는 경로). 상한 도달 시
+      // ⑩ nest-cap — CLI 직접호출(elanous self implement) 경로 가드(툴-제외가 안 걸리는 경로). 상한 도달 시
       // 자식 spawn 거부(액자 폭주 방지). 툴 서피스 경로는 daemon-tools 에서 이미 제외됨(defense-in-depth).
       if (nestCapReached()) {
         const info = nestInfo();
         debug.log('substrate.nest', 'implement-refused', info, { level: 'warn' });
         return { ok: false, summary: `nest-cap: 재귀 상한(${info.max}중·현재 ${info.depth}) 도달 — self-build 중단(액자 폭주 방지)` };
       }
-      // 자식 monad 을 헤드리스 `chat --tools --goal-loop` 서브프로세스로 spawn(canonical goal-loop
+      // 자식 elanous 을 헤드리스 `chat --tools --goal-loop` 서브프로세스로 spawn(canonical goal-loop
       // 아밍·PTY 無). cwd=worktree → Edit/Write 가 워크트리에 쓰고, config-dir 격리로 provider/goal-loop
       // config 적용. --goal-loop 플래그가 아밍(config 없어도)이지만 configDir 도 함께 켜 이중아밍.
-      // childNestEnv() 로 MONAD_NEST_DEPTH+1 전파 → 자식의 자식-spawn 이 상한에 걸리게.
-      // monad 코딩에이전트 바이너리 위치 — 외부 repo 개발이면 worktree(cwd)엔 monad 바이너리가 없으므로
-      // monadBinRoot(=monad repo)를 써야 한다. monad 자신 개발이면 cwd repo=monad 라 현행과 동일.
-      const binRoot = o.monadBinRoot ?? resolveMainRepoRoot(cwd) ?? resolve(import.meta.dir, '../..');
-      // ★ 파생 우주 물질화(2026-07-27) — 3층 스위치가 켜진 뒤 자식은 `<worktree>/.monad-test`
+      // childNestEnv() 로 ELANOUS_NEST_DEPTH+1 전파 → 자식의 자식-spawn 이 상한에 걸리게.
+      // elanous 코딩에이전트 바이너리 위치 — 외부 repo 개발이면 worktree(cwd)엔 elanous 바이너리가 없으므로
+      // elanousBinRoot(=elanous repo)를 써야 한다. elanous 자신 개발이면 cwd repo=elanous 라 현행과 동일.
+      const binRoot = o.elanousBinRoot ?? resolveMainRepoRoot(cwd) ?? resolve(import.meta.dir, '../..');
+      // ★ 파생 우주 물질화(2026-07-27) — 3층 스위치가 켜진 뒤 자식은 `<worktree>/.elanous-test`
       //   로 파생되는데 갓 만든 워크트리의 그 우주는 **비어 있다**. 그러면 자식이
       //   needsOnboarding 에 걸려 **대화형 마법사**를 띄우고 툴콜 0 으로 타임아웃한다
       //   (실측: 자율 잡 2건이 각각 1200초를 태우고 aborted). spawn 전에 config 를 깐다.
@@ -1574,7 +1574,7 @@ export function defaultSeams(o: DefaultSeamsOptions = {}): SelfImplementSeams {
       }
 
       // 폴백 — PTY 불가/cap 초과/에러. 기존 헤드리스 spawnSync 경로 보존(블로킹이지만 견고).
-      const args = [`${binRoot}/bin/monad.mjs`, 'dev', '--implement'];
+      const args = [`${binRoot}/bin/elanous.mjs`, 'dev', '--implement'];
       const executionId = randomUUID();
       if (o.configDir) args.push('--config-dir', o.configDir);
       args.push(prompt);
@@ -1589,15 +1589,15 @@ export function defaultSeams(o: DefaultSeamsOptions = {}): SelfImplementSeams {
         //   (worktree 이름·PTY 경로와 동형)로 SPACE 를 보장 + boundary(worktree=cwd) 전파.
         env: {
           ...process.env,
-          ...(o.stateDir ? { MONAD_STATE_DIR: o.stateDir } : {}),
+          ...(o.stateDir ? { ELANOUS_STATE_DIR: o.stateDir } : {}),
           // ⛔⭐⭐⭐ **뿌리와 «한 벌»로 간다** — 안 주면 자식이 「파생」을 「사람이 말한 격리」로 읽는다.
           //   ⇒ 실물: 쿼터 신호가 갱신 안 되는 우주를 봐서 전 계정 unknown ⇒ 회전이 100% 계정 선택 ⇒ 429(4회).
-          ...(o.stateDir && o.stateDirSource ? { MONAD_STATE_DIR_SOURCE: o.stateDirSource } : {}),
+          ...(o.stateDir && o.stateDirSource ? { ELANOUS_STATE_DIR_SOURCE: o.stateDirSource } : {}),
           ...childNestEnv(),
           ...((): Record<string, string> => {
             const sp = getHarnessSpace() ?? { inHarness: true as const, kind: 'self-implement' as const, id: normalizeSpaceId(basename(cwd)), runId: getHarnessRunId() };
             // ★ K run-identity 공백 방어 — driver 와 동일 계약(호출자 > 상속 > canonical mint). 빈 runId 는
-            //   `monad self run <runId>` 조인을 불가능하게 만든다(2026-07-26 실측 갭).
+            //   `elanous self run <runId>` 조인을 불가능하게 만든다(2026-07-26 실측 갭).
             return harnessSpaceEnv(sp.kind, sp.id, resolveRunIdentity({ explicit: runId, inherited: sp.runId }).runId);
           })(),
           ...harnessBoundaryEnv(cwd),
@@ -1646,8 +1646,8 @@ export function defaultSeams(o: DefaultSeamsOptions = {}): SelfImplementSeams {
         return { passed: g.passed, log: `[syntax gate: ${g.label}]\n${g.log}` };
       }
       // ★ #25 P1/P2(2026-07-21) — 외부 target 이면 target(그림자 포함)의 manifest 로 gate 명령 감지
-      //   (monad bun test 부적합). P1=외부 git repo(o.repoRoot), P2=비-git dir 그림자(o.targetKind).
-      //   감지 실패=skip-with-warn(검증은 리뷰/diff). monad 자신(둘 다 미설정)은 아래 종전 integrity-gate
+      //   (elanous bun test 부적합). P1=외부 git repo(o.repoRoot), P2=비-git dir 그림자(o.targetKind).
+      //   감지 실패=skip-with-warn(검증은 리뷰/diff). elanous 자신(둘 다 미설정)은 아래 종전 integrity-gate
       //   유지(회귀 0). cwd=그림자 git repo 라 detectGateCommand 가 그림자 manifest 를 검사. [[DESIGN-harness-target-generalization-2026-07-21]].
       if (o.repoRoot || o.targetKind === 'non-git-dir') {
         const detected = detectGateCommand(cwd);
@@ -2015,7 +2015,7 @@ export function defaultSeams(o: DefaultSeamsOptions = {}): SelfImplementSeams {
       //   불렀는데 **과장이었다.** 실측: `orchestrator.ts:415` 는 **`!gate.passed` 일 때만**
       //   `gate.log` 를 rework 노트로 읽는다. 스킵은 보통 **통과**로 끝나므로 이 문구는 그 경로에서
       //   **자식에게 되먹임되지 않는다.** 지금 닿는 곳은:
-      //     ✅ `gate.scope` warn 로그(`monad logs --category self-implement`) — 사람·회고
+      //     ✅ `gate.scope` warn 로그(`elanous logs --category self-implement`) — 사람·회고
       //     ✅ 다른 이유로 게이트가 실패한 라운드의 rework 노트
       //     ❌ **통과 라운드의 자식** — 미배선(자기인지까지이고 힐링은 아니다)
       //   ⇒ 이 세션 관통 발견("관측은 두껍고 판단·개입은 얇다")이 **내 수정에서도 재현**됐다.

@@ -2,8 +2,8 @@
 //
 // Mirror of `src/acp/transport/unix-socket-server.ts`'s
 // `socketToConnection` for the client side. Lets a TUI / Telegram bot
-// / web client connect to a headless Monad daemon listening on
-// `~/.monad/monad.sock` and obtain the same `{ readable, writable }`
+// / web client connect to a headless Elanous daemon listening on
+// `~/.elanous/elanous.sock` and obtain the same `{ readable, writable }`
 // shape `ndJsonStream(...)` consumes.
 //
 // The server enforces `chmod 0600` so loopback identity check is the
@@ -12,7 +12,7 @@
 //
 // Used by:
 //   - `monad-agent` TUI auto-attach (M1.3)
-//   - `monad telegram run` daemon attach (M2.1)
+//   - `elanous telegram run` daemon attach (M2.1)
 //
 // Pairs with `listenUnixSocket()` in src/acp/transport/.
 
@@ -76,7 +76,7 @@ function socketToConnection(
   };
 }
 
-/** Connect to a Monad daemon over its Unix domain socket. Resolves
+/** Connect to a Elanous daemon over its Unix domain socket. Resolves
  *  with the bidirectional stream pair once the socket is connected;
  *  rejects with `AcpTransportError` on connect failure (stale path,
  *  permission denied, no daemon listening). */

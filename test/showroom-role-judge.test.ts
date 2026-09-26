@@ -21,9 +21,9 @@ type FetchFn = typeof globalThis.fetch;
 const realFetch = globalThis.fetch;
 afterEach(() => {
   globalThis.fetch = realFetch;
-  delete process.env.MONAD_SHOWROOM_ROLE_JUDGE_BACKEND;
-  delete process.env.MONAD_SHOWROOM_ROLE_JUDGE_MODEL;
-  delete process.env.MONAD_SHOWROOM_ROLE_JUDGE_MODEL_FALLBACK;
+  delete process.env.ELANOUS_SHOWROOM_ROLE_JUDGE_BACKEND;
+  delete process.env.ELANOUS_SHOWROOM_ROLE_JUDGE_MODEL;
+  delete process.env.ELANOUS_SHOWROOM_ROLE_JUDGE_MODEL_FALLBACK;
 });
 
 describe('prompt-template · buildJudgePromptMessages', () => {
@@ -248,7 +248,7 @@ describe('resolveRoleJudgeBackend / resolveRoleJudgeModel', () => {
 
   test('backend env override > opts > default', () => {
     expect(resolveRoleJudgeBackend({ backend: 'local-llm' })).toBe('local-llm');
-    process.env.MONAD_SHOWROOM_ROLE_JUDGE_BACKEND = 'keyword';
+    process.env.ELANOUS_SHOWROOM_ROLE_JUDGE_BACKEND = 'keyword';
     expect(resolveRoleJudgeBackend({ backend: 'local-llm' })).toBe('keyword');
   });
 
@@ -258,7 +258,7 @@ describe('resolveRoleJudgeBackend / resolveRoleJudgeModel', () => {
 
   test('model env override > opts > default', () => {
     expect(resolveRoleJudgeModel({ model: 'qwen3.5-9b-mlx' })).toBe('qwen3.5-9b-mlx');
-    process.env.MONAD_SHOWROOM_ROLE_JUDGE_MODEL = 'gemma-4-26b-a4b-it';
+    process.env.ELANOUS_SHOWROOM_ROLE_JUDGE_MODEL = 'gemma-4-26b-a4b-it';
     expect(resolveRoleJudgeModel({ model: 'qwen3.5-9b-mlx' })).toBe('gemma-4-26b-a4b-it');
   });
 });
@@ -351,8 +351,8 @@ describe('FU.1 (2026-05-09) — max_tokens + timeout reasoning-safe defaults', (
     expect(parsed.max_tokens).toBe(1024);
   });
 
-  test('MONAD_SHOWROOM_ROLE_JUDGE_MAX_TOKENS env overrides default', async () => {
-    process.env.MONAD_SHOWROOM_ROLE_JUDGE_MAX_TOKENS = '512';
+  test('ELANOUS_SHOWROOM_ROLE_JUDGE_MAX_TOKENS env overrides default', async () => {
+    process.env.ELANOUS_SHOWROOM_ROLE_JUDGE_MAX_TOKENS = '512';
     let capturedBody = '';
     const stub = (async (_url: unknown, init?: RequestInit) => {
       capturedBody = (init?.body as string | undefined) ?? '';
@@ -365,7 +365,7 @@ describe('FU.1 (2026-05-09) — max_tokens + timeout reasoning-safe defaults', (
     await classifyWithLocalLlm('foo', { model: 'gemma' });
     const parsed = JSON.parse(capturedBody) as { max_tokens?: number };
     expect(parsed.max_tokens).toBe(512);
-    delete process.env.MONAD_SHOWROOM_ROLE_JUDGE_MAX_TOKENS;
+    delete process.env.ELANOUS_SHOWROOM_ROLE_JUDGE_MAX_TOKENS;
   });
 
   test('reasoning_content fallback parses when content empty', async () => {

@@ -153,7 +153,7 @@ export interface MultiphaseResult {
   arcFailure?: { arcId: string; name: string; intent: string; missing: string };
   /** ★ 아크 순차 배리어 홀드(자기 관측·대표 2026-07-16) — 아크가 미검증/실패라 후속 아크·페이즈가
    *  배리어에 막혀 실행 못 함을 미션이 스스로 인지·표면화("왜 executor 가 안 도나"의 답). run-mission
-   *  요약·ops·monad logs(mission.arc.barrier) 로 노출. 해소=아크 완성 후 재실행 또는 inject --arc. */
+   *  요약·ops·elanous logs(mission.arc.barrier) 로 노출. 해소=아크 완성 후 재실행 또는 inject --arc. */
   arcBarrier?: { blockingArc: string; blockingStatus: string; blockedArcs: readonly string[]; blockedPhases: number; missing: string | null };
   /** ★ 아크 검증 보류(적응형 디깅·2026-07-14) — grounding 불충분으로 판정 불가("못 봤다"·arcFailure
    *  아님). arc-revise 대신 HITL 검증 보류 카드. false arc-revise(grounding miss→dead-code 오판) 방지. */
@@ -431,7 +431,7 @@ export async function runMultiphaseMission(
     // ★ 아크 이벤트 발신(A7 arc-aware UX) — 아크 통합검증 통과/실패/보류를 서피스에 실시간 통지(페이즈 대칭).
     const emitArc = (a: MissionArc, status: 'done' | 'failed' | 'unverified' | 'descoped', kind: 'reconcile' | 'complete'): void => {
       // ★ 관측 장치(대표 2026-07-19·제1원칙) — 아크 통합검증 결과(배리어 해제 positive 신호)를 logs.db 에도.
-      //   배리어 held(mission.arc.barrier)와 짝 — `monad logs --category mission.arc.verify` 로 아크 완성 와칭.
+      //   배리어 held(mission.arc.barrier)와 짝 — `elanous logs --category mission.arc.verify` 로 아크 완성 와칭.
       try {
         debug.log('mission.arc.verify', status, {
           missionId, arc: a.name, arcSeq: `${arcs.indexOf(a) + 1}/${arcs.length}`, kind,
@@ -507,7 +507,7 @@ export async function runMultiphaseMission(
           blockedArcs: arcBarrier.blockedArcs, blockedPhases, missing,
         });
       } catch { /* fail-soft */ }
-      log(`[multiphase] 🚧 아크 배리어 — '${arcBarrier.blockingArc}'(${arcBarrier.blockingStatus}) 미해소로 후속 아크 ${blocked.length}개·페이즈 ${blockedPhases} 홀드${missing ? ` · missing: ${missing.slice(0, 80)}` : ''}. 해소=아크 완성 후 재실행 또는 monad autopilot inject --arc(외부 수습).`);
+      log(`[multiphase] 🚧 아크 배리어 — '${arcBarrier.blockingArc}'(${arcBarrier.blockingStatus}) 미해소로 후속 아크 ${blocked.length}개·페이즈 ${blockedPhases} 홀드${missing ? ` · missing: ${missing.slice(0, 80)}` : ''}. 해소=아크 완성 후 재실행 또는 elanous autopilot inject --arc(외부 수습).`);
     };
 
     promote(); // 초기 승격(dep 없는 blocked 도 ready 로).

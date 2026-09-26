@@ -30,7 +30,7 @@ You do **not**:
 - run shells (RunShell disallowed)
 - commit anything — the parent / executor handles git
 
-## Pattern (Monad convention)
+## Pattern (Elanous convention)
 
 Model your output on `내부 문서 `PLAN-session-px-foundation`` and `내부 문서 `PLAN-session-prefrontal-cortex``:
 

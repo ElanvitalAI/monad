@@ -1,10 +1,10 @@
 // HITL HTTP callback listener — T1-P3.
 //
 // **Permanent prod component for the Dashboard TUI surface.** Active
-// whenever `showDashboard()` boots — i.e. `monad legacy` (forced) or
-// `monad` (no-arg) when a NEXUS lock is alive on the same host (auto
+// whenever `showDashboard()` boots — i.e. `elanous legacy` (forced) or
+// `elanous` (no-arg) when a NEXUS lock is alive on the same host (auto
 // resolver fallback to legacy, see `src/cli/legacy.ts` line 73-78).
-// NEXUS-mode (`monad nexus`) hosts an equivalent path
+// NEXUS-mode (`elanous nexus`) hosts an equivalent path
 // `/v1/hitl/callback/:requestId` at port 31415 via
 // `src/nexus/api/http-server.ts` + `src/nexus/api/hitl-runtime.ts`
 // and registers its own Pushcut producer (PR #2009) — but that's a
@@ -17,7 +17,7 @@
 //     deletion candidate · fixture migration".
 //   - Round 2 §8.6 (PR #2002) corrected the premise: file has a
 //     surviving prod consumer (`dashboard/runtime/hitl.ts:46`).
-//   - Round 2 follow-up §8.6.5 considered deleting via `monad legacy`
+//   - Round 2 follow-up §8.6.5 considered deleting via `elanous legacy`
 //     cutover. User confirmed they USE Dashboard TUI as the primary
 //     interactive surface (NEXUS runs in background hosting HTTP API +
 //     PWA; Dashboard TUI is the foreground TUI). Cutover deemed
@@ -35,7 +35,7 @@
 //
 //   POST /hitl/callback/:requestId
 //       body: {"answer": true|false}
-//       headers: X-Monad-Secret: <shared secret>   (optional when
+//       headers: X-Elanous-Secret: <shared secret>   (optional when
 //               opts.secret is unset — required otherwise)
 //       responses:
 //         200 OK          — accepted; resolver fired
@@ -57,7 +57,7 @@ export interface HitlCallbackServerOpts {
   /** TCP port. 0 = OS-assigned (used by tests). Default 17645 — fixed
    *  in the 5-digit "unprivileged" range, memorable ("HITL on 4-5").
    *  On EADDRINUSE the starter scans forward up to `portScanRange`
-   *  ports so a fresh monad instance can come up even when a prior
+   *  ports so a fresh elanous instance can come up even when a prior
    *  process still holds the default. Pass a concrete port without
    *  scanning by setting portScanRange: 1. */
   port?: number;
@@ -67,7 +67,7 @@ export interface HitlCallbackServerOpts {
   /** Bind host. Default 127.0.0.1 — never expose to LAN. */
   host?: string;
   /** Optional shared secret. When set, POSTs must include the
-   *  matching X-Monad-Secret header. When unset (dev mode) all POSTs
+   *  matching X-Elanous-Secret header. When unset (dev mode) all POSTs
    *  to known requestIds are accepted. */
   secret?: string;
   /** Tap into every accepted answer — used for audit logs. */
@@ -133,7 +133,7 @@ export function createHitlCallbackServer(opts: HitlCallbackServerOpts = {}): Hit
         return;
       }
       if (opts.secret) {
-        const got = req.headers['x-monad-secret'];
+        const got = req.headers['x-elanous-secret'];
         if (typeof got !== 'string' || got !== opts.secret) {
           res.writeHead(401, { 'content-type': 'text/plain' });
           res.end('forbidden');

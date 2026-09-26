@@ -40,10 +40,10 @@ describe('FsPluginStatePersistence', () => {
     expect(got).toEqual({ n: 7 });
   });
 
-  test('write scope=project lands under projectRoot/.monad/state', () => {
+  test('write scope=project lands under projectRoot/.elanous/state', () => {
     p.write('sync', 'prefs', { theme: 'dark' }, 'project');
-    // project writes end up at projectRoot/.monad/state/sync/prefs.json
-    const path = join(projectRoot, '.monad', 'state', 'sync', 'prefs.json');
+    // project writes end up at projectRoot/.elanous/state/sync/prefs.json
+    const path = join(projectRoot, '.elanous', 'state', 'sync', 'prefs.json');
     expect(existsSync(path)).toBe(true);
   });
 

@@ -1,7 +1,7 @@
 // H6 P2 Bundle 1 · Local LLM Manager LLM tools.
 //
 // 2 read-only T1 tools for surfacing the Tailscale fleet inventory:
-//   - LlmListNodes — which monad hosts are reachable + which runtimes
+//   - LlmListNodes — which elanous hosts are reachable + which runtimes
 //     they expose (Bundle 1 = LM Studio only)
 //   - LlmListAvailableModels — which LLM weights are on each node
 //
@@ -46,7 +46,7 @@ export function buildLlmListNodesTool(): LLMToolSpec {
   return {
     name: 'LlmListNodes',
     description:
-      'Enumerate known local-LLM nodes in the Tailscale fleet (monad host + ssh-configured peers). ' +
+      'Enumerate known local-LLM nodes in the Tailscale fleet (elanous host + ssh-configured peers). ' +
       'Returns reachability + which runtimes are available per node (Bundle 1 = LM Studio only). ' +
       'Read-only · safe to call repeatedly · results cached for 5 minutes; pass `refresh:true` to force a probe.',
     parameters: {
@@ -128,7 +128,7 @@ export function buildLlmListAvailableModelsTool(): LLMToolSpec {
     description:
       'List LLM model weights discoverable on the Tailscale fleet (Bundle 1 = LM Studio only). ' +
       'Returns `{id, nodeId, runtime, label, sizeBytes?, format?, loaded?}` per model. Use the `id` as the ' +
-      'model arg when calling a local LLM: pass `local-llm:<nodeId>:<modelId>` to `streamLLM` / monad tool. ' +
+      'model arg when calling a local LLM: pass `local-llm:<nodeId>:<modelId>` to `streamLLM` / elanous tool. ' +
       'Optional `node` filter narrows to a single host. Read-only · cached 5 minutes.',
     parameters: {
       type: 'object',

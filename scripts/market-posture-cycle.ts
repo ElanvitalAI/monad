@@ -3,7 +3,7 @@
 //
 // ★ [외부 구현·claude-code] — 아크1(생산자 코어)의 통합 글루. SE 자율 팹이 이 페이즈(생산자
 //   사이클 연결)를 과대/예산소진으로 세우지 못해(2회 실패), 외부 도구(claude-code)가 대표 승인
-//   하에 직접 구현했다. 미션 self-cognition 에는 provenance=external 로 주입한다(monad autopilot
+//   하에 직접 구현했다. 미션 self-cognition 에는 provenance=external 로 주입한다(elanous autopilot
 //   inject + self log --mission). 이 파일은 아크1의 산정기(market-posture.ts)·저장소
 //   (market-posture-store.ts)를 재사용해 입력을 융합·게시하는 얇은 오케스트레이터일 뿐이다.
 //
@@ -27,7 +27,7 @@ import { publishMarketPosture, type PublishResult } from '../src/domains/market-
 import { decideLeverage, type LeveragePlan } from '../src/domains/capstone-leverage.js';
 import type { CapstoneTarget } from '../src/domains/capstone-signals.js';
 
-const CAPSTONE_REGIME_PATH = join(homedir(), '.monad/conatus/capstone_regime.json');
+const CAPSTONE_REGIME_PATH = join(homedir(), '.elanous/conatus/capstone_regime.json');
 const VALID_TARGETS: readonly CapstoneTarget[] = ['LONG_100', 'CASH_100', 'HEDGE_1D', 'HEDGE_HOLD'];
 
 /**
@@ -128,7 +128,7 @@ function defaultLoadRegime(): RegimeVector | null {
 if (import.meta.main) {
   // ★ 루프 에이전트 자기등록(대표 2026-07-16 점검) — DEFCON 국면 감시 루프(autonomous 생산자)를
   //   loop-agent-registry 에 매 실행 자기등록(계약루프 패턴 동일). 부팅마다 supersede·좀비 감지·
-  //   monad loops 자산 원장 신선. 미션(apm)·크론(schedule id) 귀속. fail-soft(등록 실패가 사이클 안 막음).
+  //   elanous loops 자산 원장 신선. 미션(apm)·크론(schedule id) 귀속. fail-soft(등록 실패가 사이클 안 막음).
   try {
     const { registerLoopAgentSafe } = await import('../src/domains/loop-agent-registry.js');
     registerLoopAgentSafe({

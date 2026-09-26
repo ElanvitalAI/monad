@@ -44,7 +44,7 @@ function coordinator(): DisplayCoordinator {
 }
 
 function withStateRoot(): { root: string; cleanup: () => void } {
-  const root = mkdtempSync(join(tmpdir(), 'monad-pending-question-'));
+  const root = mkdtempSync(join(tmpdir(), 'elanous-pending-question-'));
   return { root, cleanup: () => rmSync(root, { recursive: true, force: true }) };
 }
 
@@ -185,7 +185,7 @@ describe('pending AskUserQuestion observation', () => {
         });
         const program = new Command();
         registerPendingQuestionsCommand(program, { root: () => state.root, out: { log: () => {} } });
-        await program.parseAsync(['node', 'monad', 'questions', 'answer', 'file-answer', '{"answers":{"format":"Yes"}}']);
+        await program.parseAsync(['node', 'elanous', 'questions', 'answer', 'file-answer', '{"answers":{"format":"Yes"}}']);
       },
     });
     try {
@@ -330,7 +330,7 @@ describe('pending AskUserQuestion observation', () => {
       writeAnswer: (answer) => { writes.push(answer); },
       out: { log: (line) => output.push(line) },
     });
-    await program.parseAsync(['node', 'monad', 'questions', 'answer', 'auq:file', '{"answers":{"format":"Yes"}}']);
+    await program.parseAsync(['node', 'elanous', 'questions', 'answer', 'auq:file', '{"answers":{"format":"Yes"}}']);
     expect(writes).toEqual([{ id: 'auq:file', result: { answers: { format: 'Yes' } } }]);
     expect(output).toEqual(['Recorded answer for auq:file.']);
   });
@@ -360,17 +360,17 @@ describe('pending AskUserQuestion observation', () => {
       setExitCode: (code) => exitCodes.push(code),
     });
 
-    await program.parseAsync(['node', 'monad', 'questions', 'pending']);
+    await program.parseAsync(['node', 'elanous', 'questions', 'pending']);
     expect(output.shift()).toBe([
       'file-question  waiting=1s  expiry=active  surface=file  questions=Use Prettier?  answerable=true  answerableReason=cli-answerable',
       'modal-question  waiting=1s  expiry=no-expiry  surface=tui  questions=Use Prettier?  answerable=false  answerableReason=requires-surface:tui',
       'unknown-question  waiting=1s  expiry=no-expiry  surface=undefined  questions=Use Prettier?  answerable=false  answerableReason=requires-surface:undefined',
     ].join('\n'));
-    await program.parseAsync(['node', 'monad', 'questions', 'answer', 'modal-question', '{"answers":{"format":"Yes"}}']);
+    await program.parseAsync(['node', 'elanous', 'questions', 'answer', 'modal-question', '{"answers":{"format":"Yes"}}']);
     expect(output.shift()).toBe('Pending question modal-question exists but cannot be answered through this CLI (surface=tui, delivery=modal).');
-    await program.parseAsync(['node', 'monad', 'questions', 'answer', 'unknown-question', '{"answers":{"format":"Yes"}}']);
+    await program.parseAsync(['node', 'elanous', 'questions', 'answer', 'unknown-question', '{"answers":{"format":"Yes"}}']);
     expect(output.shift()).toBe('Pending question unknown-question exists but cannot be answered through this CLI (surface=undefined, delivery=unknown).');
-    await program.parseAsync(['node', 'monad', 'questions', 'answer', 'missing-question', '{"answers":{"format":"Yes"}}']);
+    await program.parseAsync(['node', 'elanous', 'questions', 'answer', 'missing-question', '{"answers":{"format":"Yes"}}']);
     expect(output.shift()).toBe('No active file question found for missing-question.');
     expect(writes).toEqual([]);
     expect(exitCodes).toEqual([1, 1, 1]);
@@ -398,7 +398,7 @@ describe('pending AskUserQuestion observation', () => {
           out: { log: (line) => output.push(line) },
           setExitCode: (code) => exitCodes.push(code),
         });
-        await program.parseAsync(['node', 'monad', 'questions', 'answer', id, '{"answers":{"format":"Yes"}}']);
+        await program.parseAsync(['node', 'elanous', 'questions', 'answer', id, '{"answers":{"format":"Yes"}}']);
         expect(exitCodes).toEqual([1]);
         expect(output[0]).toContain(id);
         expect(readPendingQuestionAnswer(id, { root: () => state.root })).toEqual({ ok: true, answer: null });
@@ -427,7 +427,7 @@ describe('pending AskUserQuestion observation', () => {
       out: { log: () => {} },
       setExitCode: (code) => exitCodes.push(code),
     });
-    await program.parseAsync(['node', 'monad', 'questions', 'answer', 'raced', '{"answers":{"format":"Yes"}}']);
+    await program.parseAsync(['node', 'elanous', 'questions', 'answer', 'raced', '{"answers":{"format":"Yes"}}']);
     expect(writes).toHaveLength(1);
     expect(removals).toEqual(['raced']);
     expect(exitCodes).toEqual([1]);
@@ -445,7 +445,7 @@ describe('pending AskUserQuestion observation', () => {
         out: { log: (line) => output.push(line) },
         setExitCode: (code) => exitCodes.push(code),
       });
-      await program.parseAsync(['node', 'monad', 'questions', 'answer', 'auq:file', json]);
+      await program.parseAsync(['node', 'elanous', 'questions', 'answer', 'auq:file', json]);
       expect(writes).toEqual([]);
       expect(output).toEqual(['Answer must be a valid AskUserQuestionResult.']);
       expect(exitCodes).toEqual([1]);
@@ -567,7 +567,7 @@ describe('pending AskUserQuestion observation', () => {
         root: () => emptyState.root, now: () => 0,
         out: { log: (line) => none.push(line) },
       });
-      await noneProgram.parseAsync(['node', 'monad', 'questions', 'pending']);
+      await noneProgram.parseAsync(['node', 'elanous', 'questions', 'pending']);
       expect(none).toEqual(['No pending questions.']);
     } finally {
       emptyState.cleanup();
@@ -598,7 +598,7 @@ describe('pending AskUserQuestion observation', () => {
           out: { log: (line) => output.push(line) },
           setExitCode: (code) => exitCodes.push(code),
         });
-        await program.parseAsync(['node', 'monad', 'questions', 'pending', '--json']);
+        await program.parseAsync(['node', 'elanous', 'questions', 'pending', '--json']);
         const result = JSON.parse(output[0]!);
         expect(result.ok).toBe(false);
         expect(result.questions).toBeUndefined();
@@ -617,7 +617,7 @@ describe('pending AskUserQuestion observation', () => {
       now: () => Date.parse('2026-08-12T00:00:01.500Z'),
       out: { log: (line) => json.push(line) },
     });
-    await jsonProgram.parseAsync(['node', 'monad', 'questions', 'pending', '--json']);
+    await jsonProgram.parseAsync(['node', 'elanous', 'questions', 'pending', '--json']);
     expect(JSON.parse(json[0]!)).toMatchObject({ ok: true, questions: [{ id: 'json-wait', waitingMs: 1500 }] });
   });
 });

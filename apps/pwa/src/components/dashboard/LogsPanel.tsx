@@ -55,7 +55,7 @@ const LEVEL_TONE: Record<string, string> = {
 
 const LEVELS = ['debug', 'info', 'warn', 'error'] as const;
 const BUFFER_CAP = 500;
-const SAVED_KEY = 'monad.pwa.logs.savedQueries';
+const SAVED_KEY = 'elanous.pwa.logs.savedQueries';
 
 interface QueryState {
   level: string;         // '' = 전체
@@ -301,7 +301,7 @@ export function LogsPanel() {
               multiple
               value={storeNames}
               onChange={(e) => { setStoreNames([...new Set(Array.from(e.target.selectedOptions, (option) => option.value).filter(Boolean))]); setLogs([]); setQueued([]); }}
-              title="로그 인스턴스 — 다른 모나드의 스토어를 read-only 연합 조회 (LF7-d)"
+              title="로그 인스턴스 — 다른 엘라누스의 스토어를 read-only 연합 조회 (LF7-d)"
             >
               {instances.filter((i) => !i.current).map((i) => (
                 <option key={i.name} value={i.name} disabled={!i.dbExists}>

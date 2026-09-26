@@ -32,10 +32,10 @@ function gitResult(cwd: string, args: string[], options: GitCommandOptions): Git
 }
 
 function makeRepository(): Fixture {
-  const repo = mkdtempSync(join(tmpdir(), 'monad-git-runner-'));
+  const repo = mkdtempSync(join(tmpdir(), 'elanous-git-runner-'));
   git(repo, ['init']);
-  git(repo, ['config', 'user.name', 'Monad Test']);
-  git(repo, ['config', 'user.email', 'test@monad.local']);
+  git(repo, ['config', 'user.name', 'Elanous Test']);
+  git(repo, ['config', 'user.email', 'test@elanous.local']);
   writeFileSync(join(repo, 'tracked.txt'), 'initial\n');
   git(repo, ['add', 'tracked.txt']);
   git(repo, ['commit', '-m', 'initial']);
@@ -165,7 +165,7 @@ describe('runGitCommand', () => {
         ['read-tree', PARENT_OID],
         ['add', '--all', '--', '.'],
         ['write-tree'],
-        ['commit-tree', TREE_OID, '-p', PARENT_OID, '-m', 'monad snapshot — runner behavior'],
+        ['commit-tree', TREE_OID, '-p', PARENT_OID, '-m', 'elanous snapshot — runner behavior'],
       ]);
       expect(observed.calls.map(({ cwd }) => cwd)).toEqual(Array(6).fill(fixture.repo));
 
@@ -183,10 +183,10 @@ describe('runGitCommand', () => {
           timeout: 30_000,
           env: {
             ...process.env,
-            GIT_AUTHOR_NAME: 'Monad Snapshot',
-            GIT_AUTHOR_EMAIL: 'snapshot@monad.local',
-            GIT_COMMITTER_NAME: 'Monad Snapshot',
-            GIT_COMMITTER_EMAIL: 'snapshot@monad.local',
+            GIT_AUTHOR_NAME: 'Elanous Snapshot',
+            GIT_AUTHOR_EMAIL: 'snapshot@elanous.local',
+            GIT_COMMITTER_NAME: 'Elanous Snapshot',
+            GIT_COMMITTER_EMAIL: 'snapshot@elanous.local',
           },
         },
       ]);
@@ -214,7 +214,7 @@ describe('runGitCommand', () => {
         ['ls-files', '-o', '--exclude-standard', '-z'],
         ['add', '--all', '--', '.'],
         ['write-tree'],
-        ['commit-tree', TREE_OID, '-m', 'monad snapshot'],
+        ['commit-tree', TREE_OID, '-m', 'elanous snapshot'],
       ]);
     } finally {
       fixture.dispose();
@@ -235,7 +235,7 @@ describe('runGitCommand', () => {
         ['read-tree', PARENT_OID],
         ['add', '--all', '--', '.'],
         ['write-tree'],
-        ['commit-tree', TREE_OID, '-p', PARENT_OID, '-m', 'monad snapshot'],
+        ['commit-tree', TREE_OID, '-p', PARENT_OID, '-m', 'elanous snapshot'],
       ]);
     } finally {
       fixture.dispose();

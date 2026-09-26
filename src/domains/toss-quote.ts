@@ -1,10 +1,10 @@
-// ── 토스증권 시세 클라이언트 (순수 TS · monad 네이티브) ────────────────
+// ── 토스증권 시세 클라이언트 (순수 TS · elanous 네이티브) ────────────────
 //
 // 토스 Open API 로 종목 현재가+세션고가+전일종가. **KR 정규/NXT · US 정규/주간
 // 거래(Blue Ocean) 전 세션 라이브** 커버 — Yahoo/EODHD 가 못 주는 NXT·주간거래
 // 시세를 준다(한국 투자자가 실제 체결하는 값).
 //
-// 완전 monad 소유(파이썬 toss_api.py 의존 제거). 기존 호출부가 동기라 sync 계약
+// 완전 elanous 소유(파이썬 toss_api.py 의존 제거). 기존 호출부가 동기라 sync 계약
 // 유지 위해 HTTP 는 `curl`(시스템 도구) execFileSync. OAuth(client_credentials)
 // 토큰은 **파이썬과 동일 공유 캐시 `/tmp/toss_token_cache.json`**(키 token/
 // expires_at)를 읽고 써서 재발급으로 상대 토큰을 무효화하지 않는다(client당 1토큰
@@ -85,7 +85,7 @@ function tossToken(): string | null {
 }
 
 /** /tmp 공유 토큰 캐시 원자적 write (C·toss 삼중구현 캐시 계약 통일·2026-07-22). 3개 toss 구현
- *  (monad/omni-market/kr-flow)이 `/tmp/toss_token_cache.json` 를 공유하므로 비원자 writeFileSync 는
+ *  (elanous/omni-market/kr-flow)이 `/tmp/toss_token_cache.json` 를 공유하므로 비원자 writeFileSync 는
  *  동시 갱신 시 인터리브 손상(레이스). temp 파일 write 후 renameSync(같은 fs=원자적)로 교체. */
 function writeTossCacheAtomic(content: string): void {
   const tmp = `${TOKEN_CACHE}.${process.pid}.tmp`;

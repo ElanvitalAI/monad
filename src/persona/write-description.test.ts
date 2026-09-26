@@ -18,7 +18,7 @@ import {
 let tmpDir: string;
 
 beforeEach(() => {
-  tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'monad-persona-write-test-'));
+  tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'elanous-persona-write-test-'));
 });
 
 afterEach(() => {

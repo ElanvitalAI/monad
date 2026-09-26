@@ -1,6 +1,6 @@
 // M4-3 (2026-05-12) — GET /v1/missions + GET /v1/missions/:id e2e.
 //
-// Hermetic: every call uses MONAD_TASKS_DIR / MONAD_TASKS_DB env
+// Hermetic: every call uses ELANOUS_TASKS_DIR / ELANOUS_TASKS_DB env
 // pointers at tmp dirs so the test never reads the dev's real TOX.
 
 import { describe, test, expect, beforeEach, afterEach } from 'bun:test';
@@ -24,17 +24,17 @@ let prevTasksDir: string | undefined;
 beforeEach(() => {
   tmpRoot = mkdtempSync(join(tmpdir(), 'm4-3-nexus-'));
   tmpTasks = mkdtempSync(join(tmpdir(), 'm4-3-tasks-'));
-  prevNexus = process.env.MONAD_NEXUS_DIR;
-  prevTasksDir = process.env.MONAD_TASKS_DIR;
-  process.env.MONAD_NEXUS_DIR = tmpRoot;
-  process.env.MONAD_TASKS_DIR = tmpTasks;
+  prevNexus = process.env.ELANOUS_NEXUS_DIR;
+  prevTasksDir = process.env.ELANOUS_TASKS_DIR;
+  process.env.ELANOUS_NEXUS_DIR = tmpRoot;
+  process.env.ELANOUS_TASKS_DIR = tmpTasks;
 });
 
 afterEach(() => {
-  if (prevNexus === undefined) delete process.env.MONAD_NEXUS_DIR;
-  else process.env.MONAD_NEXUS_DIR = prevNexus;
-  if (prevTasksDir === undefined) delete process.env.MONAD_TASKS_DIR;
-  else process.env.MONAD_TASKS_DIR = prevTasksDir;
+  if (prevNexus === undefined) delete process.env.ELANOUS_NEXUS_DIR;
+  else process.env.ELANOUS_NEXUS_DIR = prevNexus;
+  if (prevTasksDir === undefined) delete process.env.ELANOUS_TASKS_DIR;
+  else process.env.ELANOUS_TASKS_DIR = prevTasksDir;
   try { rmSync(tmpRoot, { recursive: true, force: true }); } catch { /* ignore */ }
   try { rmSync(tmpTasks, { recursive: true, force: true }); } catch { /* ignore */ }
 });

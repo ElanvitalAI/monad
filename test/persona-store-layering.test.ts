@@ -14,7 +14,7 @@ import { wireSprint21Runtime } from '../src/discord/sprint21-runtime.js';
 import { PersonaRegistry } from '../src/persona/registry.js';
 
 const dirs: string[] = [];
-const originalPersonasDir = process.env.MONAD_PERSONAS_DIR;
+const originalPersonasDir = process.env.ELANOUS_PERSONAS_DIR;
 
 async function personaDir(prefix: string): Promise<string> {
   const dir = await mkdtemp(join(tmpdir(), prefix));
@@ -32,8 +32,8 @@ function fakeFetch(): typeof fetch {
 
 afterEach(async () => {
   _resetGlobalPersonaRegistryForTest();
-  if (originalPersonasDir === undefined) delete process.env.MONAD_PERSONAS_DIR;
-  else process.env.MONAD_PERSONAS_DIR = originalPersonasDir;
+  if (originalPersonasDir === undefined) delete process.env.ELANOUS_PERSONAS_DIR;
+  else process.env.ELANOUS_PERSONAS_DIR = originalPersonasDir;
   await Promise.all(dirs.splice(0).map((dir) => rm(dir, { recursive: true, force: true })));
 });
 
@@ -41,7 +41,7 @@ describe('persona store layering', () => {
   test('global singleton loads state-only and repository-only personas', async () => {
     const stateDir = await personaDir('persona-state-');
     await writePersona(stateDir, 'state-only', 'State only');
-    process.env.MONAD_PERSONAS_DIR = stateDir;
+    process.env.ELANOUS_PERSONAS_DIR = stateDir;
 
     const registry = getGlobalPersonaRegistry();
     await awaitGlobalPersonaLoad();
@@ -82,7 +82,7 @@ describe('persona store layering', () => {
 
   test('missing state directory is skipped while the repository layer loads', async () => {
     const parent = await personaDir('persona-missing-parent-');
-    process.env.MONAD_PERSONAS_DIR = join(parent, 'missing');
+    process.env.ELANOUS_PERSONAS_DIR = join(parent, 'missing');
     const registry = getGlobalPersonaRegistry();
 
     await expect(awaitGlobalPersonaLoad()).resolves.toBeDefined();
@@ -98,12 +98,12 @@ describe('persona store layering', () => {
     await expect(loadLayeredPersonaDirs(registry, [notDirectory])).rejects.toBeDefined();
   });
 
-  test('explicit Sprint21 personasDir isolates the registry from MONAD_PERSONAS_DIR', async () => {
+  test('explicit Sprint21 personasDir isolates the registry from ELANOUS_PERSONAS_DIR', async () => {
     const explicitDir = await personaDir('persona-explicit-');
     const stateDir = await personaDir('persona-state-');
     await writePersona(explicitDir, 'explicit-only', 'Explicit only');
     await writePersona(stateDir, 'state-only', 'State only');
-    process.env.MONAD_PERSONAS_DIR = stateDir;
+    process.env.ELANOUS_PERSONAS_DIR = stateDir;
 
     const runtime = await wireSprint21Runtime({
       bot: {} as any,
@@ -123,7 +123,7 @@ describe('persona store layering', () => {
   test('default Sprint21 path loads state and repository layers', async () => {
     const stateDir = await personaDir('persona-state-');
     await writePersona(stateDir, 'state-only', 'State only');
-    process.env.MONAD_PERSONAS_DIR = stateDir;
+    process.env.ELANOUS_PERSONAS_DIR = stateDir;
 
     const runtime = await wireSprint21Runtime({
       bot: {} as any,
@@ -142,7 +142,7 @@ describe('persona store layering', () => {
   test('global reload uses the same layered production path', async () => {
     const stateDir = await personaDir('persona-state-');
     await writePersona(stateDir, 'state-only', 'Before reload');
-    process.env.MONAD_PERSONAS_DIR = stateDir;
+    process.env.ELANOUS_PERSONAS_DIR = stateDir;
     const registry = getGlobalPersonaRegistry();
     await awaitGlobalPersonaLoad();
     await writePersona(stateDir, 'state-only', 'After reload');

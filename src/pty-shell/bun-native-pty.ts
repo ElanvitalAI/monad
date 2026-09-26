@@ -25,7 +25,7 @@
 
 import { constants as osConstants } from 'node:os';
 
-/** Subset of node-pty's `IPty` that monad's PTY spawn sites consume. */
+/** Subset of node-pty's `IPty` that elanous's PTY spawn sites consume. */
 export interface MinimalPty {
   readonly pid: number;
   write(data: string): void;

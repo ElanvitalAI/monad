@@ -116,7 +116,7 @@ describe('proposeRelay · 4-pane plan-exec-review-reflect', () => {
         { brand: 'claude', sessionId: 's0', roleHint: 'plan' },
         { brand: 'codex',  sessionId: 's1', roleHint: 'exec' },
         { brand: 'gemini', sessionId: 's2', roleHint: 'review' },
-        { brand: 'monad',  sessionId: 's3', roleHint: 'reflect' },
+        { brand: 'elanous',  sessionId: 's3', roleHint: 'reflect' },
       ]),
       's0',
     );
@@ -129,7 +129,7 @@ describe('proposeRelay · 4-pane plan-exec-review-reflect', () => {
         { brand: 'claude', sessionId: 's0', roleHint: 'plan' },
         { brand: 'codex',  sessionId: 's1', roleHint: 'exec' },
         { brand: 'gemini', sessionId: 's2', roleHint: 'review' },
-        { brand: 'monad',  sessionId: 's3', roleHint: 'reflect' },
+        { brand: 'elanous',  sessionId: 's3', roleHint: 'reflect' },
       ]),
       's1',
     );
@@ -142,7 +142,7 @@ describe('proposeRelay · 4-pane plan-exec-review-reflect', () => {
         { brand: 'claude', sessionId: 's0', roleHint: 'plan' },
         { brand: 'codex',  sessionId: 's1', roleHint: 'exec' },
         { brand: 'gemini', sessionId: 's2', roleHint: 'review' },
-        { brand: 'monad',  sessionId: 's3', roleHint: 'reflect' },
+        { brand: 'elanous',  sessionId: 's3', roleHint: 'reflect' },
       ]),
       's2',
     );
@@ -155,7 +155,7 @@ describe('proposeRelay · 4-pane plan-exec-review-reflect', () => {
         { brand: 'claude', sessionId: 's0', roleHint: 'plan' },
         { brand: 'codex',  sessionId: 's1', roleHint: 'exec' },
         { brand: 'gemini', sessionId: 's2', roleHint: 'review' },
-        { brand: 'monad',  sessionId: 's3', roleHint: 'reflect' },
+        { brand: 'elanous',  sessionId: 's3', roleHint: 'reflect' },
       ]),
       's3',
     );

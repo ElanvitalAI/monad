@@ -125,7 +125,7 @@ export function writeDeclaredDirection(document: string, directionId: string): s
 // ── 웹 레퍼런스를 «방향»으로 ────────────────────────────────────────────────
 //
 // 🩸 계기(2026-09-08 실측): 위 여섯은 «전부 터미널 색 스킴»이고 `DesignDirection` 엔
-//    서체 칸이 아예 없었다. ⇒ ***웹 레퍼런스에서 뽑은 디자인은 monad 의 「방향」이 될 수 «없었다».***
+//    서체 칸이 아예 없었다. ⇒ ***웹 레퍼런스에서 뽑은 디자인은 elanous 의 「방향」이 될 수 «없었다».***
 //    그런데 `scripts/webclone/extract-design.ts` 는 실제 사이트에서 팔레트·서체·모션·대비 쌍을
 //    담은 `DESIGN.md` 를 «이미» 낸다. 빠진 것은 그 산출을 방향으로 «읽는 다리» 하나뿐이었다.
 //

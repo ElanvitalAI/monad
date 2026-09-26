@@ -98,7 +98,7 @@ export interface ThreadSweepSummary {
 
 /**
  * ★ UR4b 조율자 상주 sweep(레퍼런스 정합·2026-07-19) — 데몬 상주 루프가 활성 미션 thread 의 liveness/진행을
- * 인지하고 관측(mission.registry)한다. **모델 근거**: monad run-mission 은 detached 프로세스라(LangGraph
+ * 인지하고 관측(mission.registry)한다. **모델 근거**: elanous run-mission 은 detached 프로세스라(LangGraph
  * Platform 백그라운드 run 동형) 신뢰 채널은 **durable 저장소 폴링(truth)** — AutoGen mailbox 는 인프로세스
  * 전용이라 부적합. 폴링에 **heartbeat/staleness liveness** 를 얹는다(LangGraph heartbeat + Codex
  * reap_stale): "실행중(비-최종) AND heartbeat(저널 mtime) staleMin 초과 → stuck/dead → escalate 후보".

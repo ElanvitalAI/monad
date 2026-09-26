@@ -3,7 +3,7 @@
 // Tracks consecutive task completions and emits a `<system-reminder>`
 // snippet after the LLM has marked N tasks completed without an
 // intervening review/verification step. Adapts the Claude-Code-fork
-// pattern (`TaskUpdateTool.ts:333-349`) into monad's TOX runtime so
+// pattern (`TaskUpdateTool.ts:333-349`) into elanous's TOX runtime so
 // large workflows don't reach "all complete" with zero acceptance
 // proof.
 //
@@ -16,7 +16,7 @@
 // What counts as a "verification": any TaskUpdate where the patch
 // includes an `appendNote` mentioning "verif" / "review" / "check"
 // (case-insensitive substring) OR a status transition to 'review'.
-// Heuristic — not exhaustive — but matches how monad tasks document
+// Heuristic — not exhaustive — but matches how elanous tasks document
 // acceptance: a one-line note + a 'review' lane transition.
 //
 // State is process-global (one counter shared by every TaskUpdate

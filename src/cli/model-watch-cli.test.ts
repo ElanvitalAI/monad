@@ -88,7 +88,7 @@ describe('model-watch CLI', () => {
       setExitCode: (code) => exitCodes.push(code),
     });
 
-    await program.parseAsync(['node', 'monad', 'model-watch', '--json']);
+    await program.parseAsync(['node', 'elanous', 'model-watch', '--json']);
     expect(JSON.parse(output[0]!)).toMatchObject({ status: 'no-pages', fetched: 0, proposal: { added: [], updated: [] } });
     expect(errors).toEqual(['Fetch failed [all]: offline']);
     expect(exitCodes).toEqual([1]);
@@ -124,8 +124,8 @@ describe('model-watch CLI', () => {
       out: { log: (line) => completedOutput.push(line) }, err: { error: () => {} }, setExitCode: () => {},
     });
 
-    await abnormalProgram.parseAsync(['node', 'monad', 'model-watch']);
-    await completedProgram.parseAsync(['node', 'monad', 'model-watch']);
+    await abnormalProgram.parseAsync(['node', 'elanous', 'model-watch']);
+    await completedProgram.parseAsync(['node', 'elanous', 'model-watch']);
 
     expect(abnormalOutput[0]).toContain('Classification incomplete for zero-candidate sources: deadline-source, error-source');
     expect(abnormalOutput[0]).not.toContain('completed-empty');
@@ -143,7 +143,7 @@ describe('model-watch CLI', () => {
       setExitCode: () => {},
     });
 
-    await program.parseAsync(['node', 'monad', 'model-watch', '--json']);
+    await program.parseAsync(['node', 'elanous', 'model-watch', '--json']);
     const result = JSON.parse(output[0]!);
     expect(result).toMatchObject({ status: 'partial-failure', failures: [{ id: 'other' }], proposal: { added: ['new-model'] } });
     expect(result.candidates.map((item: { id: string }) => item.id)).toEqual(['new-model']);
@@ -164,7 +164,7 @@ describe('model-watch CLI', () => {
       out: { log: (line) => output.push(line) }, err: { error: () => {} }, setExitCode: (code) => exitCodes.push(code),
     });
 
-    await program.parseAsync(['node', 'monad', 'model-watch', 'apply', 'new-model', 'updated-model']);
+    await program.parseAsync(['node', 'elanous', 'model-watch', 'apply', 'new-model', 'updated-model']);
     expect(applied).toEqual([['new-model', 'updated-model']]);
     expect(output).toEqual(['Applied: added new-model; updated updated-model; saved /tmp/models.json']);
     expect(exitCodes).toEqual([0]);
@@ -181,7 +181,7 @@ describe('model-watch CLI', () => {
       out: { log: () => {} }, err: { error: (line) => errors.push(line) }, setExitCode: (code) => exitCodes.push(code),
     });
 
-    await program.parseAsync(['node', 'monad', 'model-watch', 'apply', 'previous-only']);
+    await program.parseAsync(['node', 'elanous', 'model-watch', 'apply', 'previous-only']);
     expect(applyCalls).toBe(0);
     expect(errors).toEqual(['Candidate(s) not found in the latest proposal: previous-only']);
     expect(exitCodes).toEqual([1]);
@@ -198,7 +198,7 @@ describe('model-watch CLI', () => {
       out: { log: () => {} }, err: { error: (line) => errors.push(line) }, setExitCode: (code) => exitCodes.push(code),
     });
 
-    await program.parseAsync(['node', 'monad', 'model-watch', 'apply', 'new-model', 'missing-model']);
+    await program.parseAsync(['node', 'elanous', 'model-watch', 'apply', 'new-model', 'missing-model']);
     expect(applyCalls).toBe(0);
     expect(errors).toEqual(['Candidate(s) not found in the latest proposal: missing-model']);
     expect(exitCodes).toEqual([1]);
@@ -213,7 +213,7 @@ describe('model-watch CLI', () => {
       out: { log: (line) => output.push(line) }, err: { error: () => {} }, setExitCode: () => {},
     });
 
-    await program.parseAsync(['node', 'monad', 'model-watch', 'apply']);
+    await program.parseAsync(['node', 'elanous', 'model-watch', 'apply']);
     expect(reads).toBe(0);
     expect(output).toEqual(['Usage: model-watch apply [--dry-run] <candidate-id...>']);
   });
@@ -221,12 +221,12 @@ describe('model-watch CLI', () => {
   test('uses the latest real proposal ledger record for dry-run then persists only after apply', async () => {
     const home = mkdtempSync(join(tmpdir(), 'model-watch-cli-'));
     const candidateId = 'proposal-only-model';
-    const proposalPath = join(home, '.monad', 'model-watch-proposals.jsonl');
-    const catalogPath = join(home, '.monad', 'models.json');
+    const proposalPath = join(home, '.elanous', 'model-watch-proposals.jsonl');
+    const catalogPath = join(home, '.elanous', 'models.json');
     const proposalCandidate: ModelCandidate = { ...candidate, id: candidateId };
     const output: string[] = [];
     try {
-      mkdirSync(join(home, '.monad'), { recursive: true });
+      mkdirSync(join(home, '.elanous'), { recursive: true });
       writeFileSync(proposalPath, `${proposalLedger([{ ...candidate, id: 'earlier-model' }]).trim()}\n${proposalLedger([proposalCandidate])}`);
       const program = new Command();
       registerModelWatchCommand(program, {
@@ -236,12 +236,12 @@ describe('model-watch CLI', () => {
       });
 
       expect(loadCatalog({ home }).catalog.models.some((item) => item.id === candidateId)).toBe(false);
-      await program.parseAsync(['node', 'monad', 'model-watch', 'apply', '--dry-run', candidateId]);
+      await program.parseAsync(['node', 'elanous', 'model-watch', 'apply', '--dry-run', candidateId]);
       expect(existsSync(catalogPath)).toBe(false);
       expect(loadCatalog({ home }).catalog.models.some((item) => item.id === candidateId)).toBe(false);
       expect(output).toEqual([`Dry run: would add ${candidateId}; would update none; no file written.`]);
 
-      await program.parseAsync(['node', 'monad', 'model-watch', 'apply', candidateId]);
+      await program.parseAsync(['node', 'elanous', 'model-watch', 'apply', candidateId]);
       expect(readFileSync(catalogPath, 'utf8')).toContain(candidateId);
       expect(loadCatalog({ home }).catalog.models.some((item) => item.id === candidateId)).toBe(true);
       expect(output.at(-1)).toBe(`Applied: added ${candidateId}; updated none; saved ${catalogPath}`);
@@ -262,7 +262,7 @@ describe('model-watch CLI', () => {
       out: { log: (line) => output.push(line) }, err: { error: () => {} }, setExitCode: () => {},
     });
 
-    await program.parseAsync(['node', 'monad', 'model-watch', 'apply', '--dry-run', 'new-model']);
+    await program.parseAsync(['node', 'elanous', 'model-watch', 'apply', '--dry-run', 'new-model']);
     expect(applyCalls).toBe(0);
     expect(output).toEqual(['Dry run: would add new-model; would update none; no file written.']);
   });

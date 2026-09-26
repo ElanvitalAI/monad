@@ -39,7 +39,7 @@ let originalCwd: string;
 beforeEach(() => {
   originalCwd = process.cwd();
   tmpRoot = mkdtempSync(join(tmpdir(), 'wf-api-'));
-  mkdirSync(join(tmpRoot, '.monad', 'workflows'), { recursive: true });
+  mkdirSync(join(tmpRoot, '.elanous', 'workflows'), { recursive: true });
   process.chdir(tmpRoot);
   _resetWorkflowRunRegistryForTest();
 });
@@ -389,7 +389,7 @@ describe('built-in workflows show up in listing', () => {
     // Sanity that the discovery still finds builtins even if the
     // per-test cwd has its own project dir.
     writeFileSync(
-      join(tmpRoot, '.monad', 'workflows', 'extra.yaml'),
+      join(tmpRoot, '.elanous', 'workflows', 'extra.yaml'),
       'name: extra\ndescription: extra entry\nnodes:\n  - id: x\n    bash: echo\n',
       'utf-8',
     );

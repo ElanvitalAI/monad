@@ -27,7 +27,7 @@
 #      📄 그 함정 전수 = 내부 문서 §17
 #      ⇒ 그래서 이 창은 ***간선 수를 고치지 않았다***. 고치려면 그 순서 세우기를 «먼저» 세워야 한다.
 #   🩹 재는 명령(노드 진입까지):
-#      bun bin/monad.mjs logs --all --include-test --event pipeline-node-entry --limit 9000 --json --json-data
+#      bun bin/elanous.mjs logs --all --include-test --event pipeline-node-entry --limit 9000 --json --json-data
 #      (data.graphId == "self-implement" 로 거르고 data.node 로 센다 · ⛔ limit 을 3배로 한 번 더 쳐서 절단을 확인한다)
 #   ⛔⭐ 그리고 ***「거른 뒤의 가장 이른 행」을 「원장의 바닥」으로 읽지 마라*** — 그 둘은 다른 값이다.
 #      바닥을 재려면 그 «필터를 빼고» 같은 이벤트의 가장 이른 행을 본다.

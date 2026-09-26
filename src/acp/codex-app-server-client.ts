@@ -482,7 +482,7 @@ export interface SpawnedCodexAppServer {
  *  host-less tool execution (verified: `-c features.code_mode_host=false`
  *  passes `--strict-config` AND actually creates files, whereas the broader
  *  `features.code_mode=false` is a valid key that does NOT stop the host
- *  spawn). Injected for EVERY monad-driven spawn so `/cdx` never depends on
+ *  spawn). Injected for EVERY elanous-driven spawn so `/cdx` never depends on
  *  the user's `~/.codex/config.toml`. */
 export function buildCodexAppServerArgs(codexArgs?: readonly string[]): string[] {
   const supplied = codexArgs ?? [];

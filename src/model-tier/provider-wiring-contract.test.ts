@@ -11,7 +11,7 @@
 //     *"`shipping` = wired on this provider today · `wip` = pulls a fallback"*
 //   ⇒ ⑴ `shipping` 이면 ***반드시 생성된다*** (한 방향만 — `wip` 은 약속을 안 한다)
 //     ⑵ `wip` 이 실패하더라도 그 문면은 ***「무엇을 하라」를 말해야 한다***
-//        (`local` 은 *"set `llm.baseUrl` via `monad setup`"* 이라 말한다 ↔
+//        (`local` 은 *"set `llm.baseUrl` via `elanous setup`"* 이라 말한다 ↔
 //         `kimi` 는 *"unknown provider"* 라 «아무것도» 말하지 않는다)
 //
 // ⛔ 「셋을 구현하라」도 「union 에서 지우라」도 ***이 자의 주장이 아니다.*** 이 자는 «드러내기»만 한다.
@@ -74,7 +74,7 @@ describe('provider 배선 계약 — 사다리가 약속한 것이 «생성되�
     //   ⛔ 다시 «말없이» 죽는 wip provider 가 생기면 여기서 이름으로 뜬다.
     expect(silent.sort()).toEqual([]);
     // ⊕ 그리고 «말하는» 쪽이 적어도 하나는 있어야 이 판정이 공허하지 않다.
-    //   `local` 은 *"set `llm.baseUrl` via `monad setup`"* 이라 말한다.
+    //   `local` 은 *"set `llm.baseUrl` via `elanous setup`"* 이라 말한다.
     expect(guided.length).toBeGreaterThan(0);
   });
 });

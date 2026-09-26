@@ -2,7 +2,7 @@
 // Session`. Two impls live alongside:
 //
 //   - `createNodeReadlineHost(stream)` — wraps Node's `readline` for
-//     the standalone process path (e.g. external `monad setup`).
+//     the standalone process path (e.g. external `elanous setup`).
 //   - `createTestReadlineHost(events)` — fully synchronous; flushes
 //     pre-recorded line/key events. Used in unit tests and
 //     deterministic snapshot scenarios.

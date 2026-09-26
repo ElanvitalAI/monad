@@ -1,8 +1,8 @@
 // ── Capture substrate · SelfReportFrame (PLAN P0) ──
 //
 // The unifying frame contract for the self-observation capture bus:
-// any monad surface publishes its *rendered screen text* + metadata to
-// one ChannelBus channel, and consumers (monad self screen · PWA ·
+// any elanous surface publishes its *rendered screen text* + metadata to
+// one ChannelBus channel, and consumers (elanous self screen · PWA ·
 // memory · recording · a future ReAct driver) subscribe — without
 // caring which surface or which production mode produced it.
 //
@@ -39,7 +39,7 @@ export interface SelfReportFrame {
    *  belongs to (fleet federation key · PLAN §10). */
   readonly instance: string;
   /** ⭐ K4 run-identity(2026-07-25·[[PLAN §K/K4]]) — 이 프레임이 속한 per-run join anchor(getHarnessRunId·
-   *  MONAD_RUN_ID). 프레임 스트림을 run 단위로 join(관측→검증 접합·G5). 부재(run 밖 서피스)=생략. */
+   *  ELANOUS_RUN_ID). 프레임 스트림을 run 단위로 join(관측→검증 접합·G5). 부재(run 밖 서피스)=생략. */
   readonly runId?: string;
   readonly kind: SelfReportKind;
   readonly mode: SelfReportMode;

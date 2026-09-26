@@ -2,12 +2,12 @@
 //
 // ★ 관측성: append-only JSONL(turn-checkpoint/store.ts 동형). 미션당 한 파일. 각 단계 실행이
 //   프레임으로 남아 "무슨 인자로 무엇을 냈나"를 사후에 본다. debug.log 로 logs.db 에도 흘려
-//   `monad logs --category mission.pipeline.frame` 조회. LLM 원문은 sidecar 분리(크기 리스크).
+//   `elanous logs --category mission.pipeline.frame` 조회. LLM 원문은 sidecar 분리(크기 리스크).
 // fail-soft: 저널 write 실패가 빌드를 막지 않는다(관측은 부수효과).
 
 import * as fs from 'node:fs';
 import { join, dirname } from 'node:path';
-import { monadStateRoot } from '../state-paths.js';
+import { elanousStateRoot } from '../state-paths.js';
 import { debug } from '../../debug/log.js';
 import type { PipelineFrame, FrameLlmSidecar } from './frame-types.js';
 import { missionGeneration } from '../lineage/mission-generation.js';
@@ -17,7 +17,7 @@ let overrideDir: string | null = null;
 
 /** 테스트/픽스처용 디렉토리 오버라이드. null = 기본 복원. */
 export function setFrameDir(dir: string | null): void { overrideDir = dir; }
-export function frameDir(): string { return overrideDir ?? join(monadStateRoot(), DEFAULT_SUBDIR); }
+export function frameDir(): string { return overrideDir ?? join(elanousStateRoot(), DEFAULT_SUBDIR); }
 
 /** 미션 id → 파일 안전 slug(빌드·실행 저널 공유). */
 export function safeId(missionId: string): string {

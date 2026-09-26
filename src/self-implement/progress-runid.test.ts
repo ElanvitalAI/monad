@@ -36,7 +36,7 @@ function expectProgressContract(output: string, expectedKinds: readonly string[]
   expect(`PROGRESS:${decoded[0]!.humanLine ?? ''}`).toBe(humanLines[0]);
 }
 import { debug } from '../debug/log.js';
-import { runHeadlessGoalLoopPty } from './headless-monad-driver.js';
+import { runHeadlessGoalLoopPty } from './headless-elanous-driver.js';
 import { GOAL_RULES_POLICY } from './goal-author.js';
 import { defaultSeams, reviewScopeDiff } from './seams.js';
 import { runSelfImplement } from './orchestrator.js';
@@ -68,22 +68,22 @@ describe('self-implement progress runId', () => {
     }
   });
 
-  test('forwards MONAD_HARNESS_POLICY without changing child argv', async () => {
+  test('forwards ELANOUS_HARNESS_POLICY without changing child argv', async () => {
     const policy = '하니스 정책 시험 문장 이다';
-    const priorPolicy = process.env.MONAD_HARNESS_POLICY;
+    const priorPolicy = process.env.ELANOUS_HARNESS_POLICY;
     const events: Array<{ event: string; data: Record<string, unknown> }> = [];
     const log = spyOn(debug, 'log').mockImplementation(((_category: string, event: string, data?: Record<string, unknown>) => {
       if (event === 'harness-policy-applied') events.push({ event, data: data ?? {} });
     }) as never);
     let childEnv: Record<string, string> | undefined;
-    process.env.MONAD_HARNESS_POLICY = policy;
+    process.env.ELANOUS_HARNESS_POLICY = policy;
     try {
       const result = await runHeadlessGoalLoopPty({
         binRoot: '/tmp/repo', cwd: '/tmp/worktree', featurePrompt: 'x', maxWaitSec: 1, maxHardWaitSec: 1, pollMs: 1,
         ptyAvailable: () => true,
         spawn: ((opts: { args: string[]; env?: Record<string, string> }) => {
           childEnv = opts.env;
-          expect(opts.args).toEqual(['/tmp/repo/bin/monad.mjs', 'dev', '--implement', 'x']);
+          expect(opts.args).toEqual(['/tmp/repo/bin/elanous.mjs', 'dev', '--implement', 'x']);
           return {
             id: 'self_policy', write: () => {}, renderScreen: async () => 'done', renderScreenPng: async () => null,
             snapshot: () => 'GOAL-COMPLETE\n', drainDelta: () => '', isAlive: () => false, exitCode: 0, kill: () => {},
@@ -91,41 +91,41 @@ describe('self-implement progress runId', () => {
         }) as never,
       });
       expect(result.exitCode).toBe(0);
-      expect(childEnv?.MONAD_HARNESS_POLICY).toBe(policy);
+      expect(childEnv?.ELANOUS_HARNESS_POLICY).toBe(policy);
       expect(events).toEqual([]);
     } finally {
-      if (priorPolicy === undefined) delete process.env.MONAD_HARNESS_POLICY;
-      else process.env.MONAD_HARNESS_POLICY = priorPolicy;
+      if (priorPolicy === undefined) delete process.env.ELANOUS_HARNESS_POLICY;
+      else process.env.ELANOUS_HARNESS_POLICY = priorPolicy;
       log.mockRestore();
     }
   });
 
   test('forwards the default goal rules policy when parent does not set one', async () => {
-    const priorPolicy = process.env.MONAD_HARNESS_POLICY;
+    const priorPolicy = process.env.ELANOUS_HARNESS_POLICY;
     const events: Array<{ event: string; data: Record<string, unknown> }> = [];
     const log = spyOn(debug, 'log').mockImplementation(((_category: string, event: string, data?: Record<string, unknown>) => {
       if (event === 'harness-policy-applied') events.push({ event, data: data ?? {} });
     }) as never);
     let childEnv: Record<string, string> | undefined;
-    delete process.env.MONAD_HARNESS_POLICY;
+    delete process.env.ELANOUS_HARNESS_POLICY;
     try {
       await runHeadlessGoalLoopPty({
         binRoot: '/tmp/repo', cwd: '/tmp/worktree', featurePrompt: 'x', maxWaitSec: 1, maxHardWaitSec: 1, pollMs: 1,
         ptyAvailable: () => true,
         spawn: ((opts: { args: string[]; env?: Record<string, string> }) => {
           childEnv = opts.env;
-          expect(opts.args).toEqual(['/tmp/repo/bin/monad.mjs', 'dev', '--implement', 'x']);
+          expect(opts.args).toEqual(['/tmp/repo/bin/elanous.mjs', 'dev', '--implement', 'x']);
           return {
             id: 'self_no_policy', write: () => {}, renderScreen: async () => 'done', renderScreenPng: async () => null,
             snapshot: () => 'GOAL-COMPLETE\n', drainDelta: () => '', isAlive: () => false, exitCode: 0, kill: () => {},
           };
         }) as never,
       });
-      expect(childEnv?.MONAD_HARNESS_POLICY).toBe(GOAL_RULES_POLICY.join('\n'));
+      expect(childEnv?.ELANOUS_HARNESS_POLICY).toBe(GOAL_RULES_POLICY.join('\n'));
       expect(events).toEqual([]);
     } finally {
-      if (priorPolicy === undefined) delete process.env.MONAD_HARNESS_POLICY;
-      else process.env.MONAD_HARNESS_POLICY = priorPolicy;
+      if (priorPolicy === undefined) delete process.env.ELANOUS_HARNESS_POLICY;
+      else process.env.ELANOUS_HARNESS_POLICY = priorPolicy;
       log.mockRestore();
     }
   });
@@ -153,11 +153,11 @@ describe('self-implement progress runId', () => {
         });
         const systemPrompt = request?.systemPrompt;
         console.log(JSON.stringify({
-          status: typeof systemPrompt === 'string' && systemPrompt.startsWith(process.env.MONAD_HARNESS_POLICY + '\\n\\n') ? 'applied' : 'missing',
+          status: typeof systemPrompt === 'string' && systemPrompt.startsWith(process.env.ELANOUS_HARNESS_POLICY + '\\n\\n') ? 'applied' : 'missing',
           lengths: events.map((event) => event.length),
         }));
       `,
-    ], { encoding: 'utf8', env: { ...process.env, MONAD_HARNESS_POLICY: policy, MONAD_STATE_DIR: mkdtempSync(join(tmpdir(), 'policy-child-state-')) } });
+    ], { encoding: 'utf8', env: { ...process.env, ELANOUS_HARNESS_POLICY: policy, ELANOUS_STATE_DIR: mkdtempSync(join(tmpdir(), 'policy-child-state-')) } });
     expect(child.status).toBe(0);
     expect(child.stderr).not.toContain(policy);
     const report = JSON.parse(child.stdout.trim().split('\n').at(-1)!);
@@ -175,14 +175,14 @@ describe('self-implement progress runId', () => {
         const { runChatTurnCli } = await import(${JSON.stringify(indexModule)});
         const cfg = getUserConfig();
         cfg.chat.toolDeny = [];
-        delete process.env.MONAD_HARNESS_SPACE;
+        delete process.env.ELANOUS_HARNESS_SPACE;
         const requests = [];
         const runTurn = async (input) => { requests.push(input); return { provider: 'test', model: 'test' }; };
         await runChatTurnCli({
           cfg, userText: 'ordinary', explicitSessionId: undefined, reuseActive: false,
           forceNew: true, json: true, enableTools: true, runTurn,
         });
-        process.env.MONAD_HARNESS_SPACE = 'self-implement';
+        process.env.ELANOUS_HARNESS_SPACE = 'self-implement';
         let planOutput = '';
         let markStepDoneOutput = '';
         let markStepDone;
@@ -215,7 +215,7 @@ describe('self-implement progress runId', () => {
       `,
     ], {
       encoding: 'utf8',
-      env: { ...process.env, MONAD_STATE_DIR: mkdtempSync(join(tmpdir(), 'plan-child-state-')) },
+      env: { ...process.env, ELANOUS_STATE_DIR: mkdtempSync(join(tmpdir(), 'plan-child-state-')) },
     });
     expect(child.status).toBe(0);
     const report = JSON.parse(child.stdout.trim().split('\n').at(-1)!);
@@ -237,9 +237,9 @@ describe('self-implement progress runId', () => {
     expectProgressContract(report.markStepDoneOutput, ['plan', 'step']);
   });
 
-  test('forwards MONAD_HARNESS_POLICY through the spawnSync fallback and uses default goal rules without a parent policy', async () => {
+  test('forwards ELANOUS_HARNESS_POLICY through the spawnSync fallback and uses default goal rules without a parent policy', async () => {
     const policy = '하니스 정책 시험 문장 이다';
-    const priorPolicy = process.env.MONAD_HARNESS_POLICY;
+    const priorPolicy = process.env.ELANOUS_HARNESS_POLICY;
     const repo = mkdtempSync(join(tmpdir(), 'policy-fallback-'));
     git(repo, 'init', '-b', 'main');
     git(repo, 'config', 'user.email', 't@example.test');
@@ -257,21 +257,21 @@ describe('self-implement progress runId', () => {
       return { status: 0, stdout: '', stderr: '', signal: null, error: undefined };
     }) as never;
     try {
-      process.env.MONAD_HARNESS_POLICY = policy;
+      process.env.ELANOUS_HARNESS_POLICY = policy;
       await defaultSeams({ ptyAvailable: () => false, spawnSync: spawnSyncFallback }).implement({ cwd: repo, feature: 'x', runId: 'run-policy-fallback' });
       expect(calls).toHaveLength(1);
-      expect(calls[0]!.args).toEqual([expect.stringContaining('/bin/monad.mjs'), 'dev', '--implement', expect.any(String)]);
-      expect(calls[0]!.env?.MONAD_HARNESS_POLICY).toBe(policy);
+      expect(calls[0]!.args).toEqual([expect.stringContaining('/bin/elanous.mjs'), 'dev', '--implement', expect.any(String)]);
+      expect(calls[0]!.env?.ELANOUS_HARNESS_POLICY).toBe(policy);
       expect(policyEvents).toEqual([]);
 
-      delete process.env.MONAD_HARNESS_POLICY;
+      delete process.env.ELANOUS_HARNESS_POLICY;
       await defaultSeams({ ptyAvailable: () => false, spawnSync: spawnSyncFallback }).implement({ cwd: repo, feature: 'x', runId: 'run-policy-fallback' });
       expect(calls).toHaveLength(2);
-      expect(calls[1]!.env?.MONAD_HARNESS_POLICY).toBe(GOAL_RULES_POLICY.join('\n'));
+      expect(calls[1]!.env?.ELANOUS_HARNESS_POLICY).toBe(GOAL_RULES_POLICY.join('\n'));
       expect(policyEvents).toEqual([]);
     } finally {
-      if (priorPolicy === undefined) delete process.env.MONAD_HARNESS_POLICY;
-      else process.env.MONAD_HARNESS_POLICY = priorPolicy;
+      if (priorPolicy === undefined) delete process.env.ELANOUS_HARNESS_POLICY;
+      else process.env.ELANOUS_HARNESS_POLICY = priorPolicy;
       log.mockRestore();
       rmSync(repo, { recursive: true, force: true });
     }

@@ -1,6 +1,6 @@
 // Scheduler-retirement R4 (2026-05-11) — workflow-runs listing helper.
 //
-// Reads `~/.monad/workflows-runs/<runId>/run.json` and returns a
+// Reads `~/.elanous/workflows-runs/<runId>/run.json` and returns a
 // minimal row shape suitable for the scheduler-task-list widget
 // (R4 dashboard widget redirect). Pure I/O — no caching, no
 // global state. Callers that need a long-lived projection should
@@ -12,7 +12,7 @@
 // without touching the widget surface.
 
 import { existsSync, readdirSync, readFileSync, statSync } from 'fs';
-import { monadStateRoot } from '../autopilot/state-paths.js';
+import { elanousStateRoot } from '../autopilot/state-paths.js';
 import { join } from 'path';
 
 export interface WorkflowRunRow {
@@ -33,14 +33,14 @@ export interface WorkflowRunRow {
 }
 
 export interface ListRunsOpts {
-  /** Override the dir (tests). Defaults to `~/.monad/workflows-runs/`. */
+  /** Override the dir (tests). Defaults to `~/.elanous/workflows-runs/`. */
   dir?: string;
   /** Max rows to return (most recent first). Defaults to 200. */
   limit?: number;
 }
 
 export function defaultWorkflowRunsDir(): string {
-  return join(monadStateRoot(), 'workflows-runs');
+  return join(elanousStateRoot(), 'workflows-runs');
 }
 
 /** Pure-ish: lists `dir/<runId>/run.json` rows. Skips entries that

@@ -1,7 +1,7 @@
-// ── Monad identity — singleton ULID persisted to ~/.monad/identity.json ──
+// ── Elanous identity — singleton ULID persisted to ~/.elanous/identity.json ──
 //
 // DD-MSS-05 · DD-MSS-23 — every log/memory/signal is stamped with a stable
-// monad_id so future multi-monad mesh topology (Phase M6) can route without
+// elanous_id so future multi-elanous mesh topology (Phase M6) can route without
 // a rename. Generated once per machine, re-used forever.
 //
 // ULID (DD-MSS-23): 48-bit timestamp + 80-bit randomness, Crockford base32,
@@ -14,15 +14,15 @@ import { dirname, join } from 'path';
 import { randomBytes } from 'crypto';
 
 const CROCKFORD = '0123456789ABCDEFGHJKMNPQRSTVWXYZ';
-const DEFAULT_IDENTITY_FILE = join(homedir(), '.monad', 'identity.json');
+const DEFAULT_IDENTITY_FILE = join(homedir(), '.elanous', 'identity.json');
 
 interface IdentityFile {
-  monad_id: string;
+  elanous_id: string;
   created_at: string;
   schema_version: 1;
 }
 
-/** Test override — set to a tmpfile path to isolate from `~/.monad/`. */
+/** Test override — set to a tmpfile path to isolate from `~/.elanous/`. */
 let overrideFile: string | null = null;
 let cached: string | null = null;
 
@@ -63,23 +63,23 @@ function identityPath(): string {
   return overrideFile ?? DEFAULT_IDENTITY_FILE;
 }
 
-/** Returns the machine-stable monad ULID. First call persists
- *  `~/.monad/identity.json` atomically (tmp + rename); subsequent calls
+/** Returns the machine-stable elanous ULID. First call persists
+ *  `~/.elanous/identity.json` atomically (tmp + rename); subsequent calls
  *  read the in-process cache. Corrupt or missing file triggers regeneration. */
-export function getOrCreateMonadId(): string {
+export function getOrCreateElanousId(): string {
   if (cached) return cached;
   const path = identityPath();
   try {
     const parsed = JSON.parse(readFileSync(path, 'utf8')) as IdentityFile;
-    if (typeof parsed?.monad_id === 'string' && parsed.monad_id.length === 26) {
-      cached = parsed.monad_id;
+    if (typeof parsed?.elanous_id === 'string' && parsed.elanous_id.length === 26) {
+      cached = parsed.elanous_id;
       return cached;
     }
   } catch { /* missing or corrupt — regenerate */ }
 
   const id = newUlid();
   const payload: IdentityFile = {
-    monad_id: id,
+    elanous_id: id,
     created_at: new Date().toISOString(),
     schema_version: 1,
   };

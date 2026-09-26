@@ -4,7 +4,7 @@
 // the operator sees activity without opening the roster widget. Tree
 // drawing matches claude-code-fork's `AgentProgressLine`
 // (`tools/AgentTool/UI.tsx:33-180,505-570` · `components/AgentProgressLine.tsx:23-135`)
-// adapted to monad's chatLines string[] surface and tree-prefix
+// adapted to elanous's chatLines string[] surface and tree-prefix
 // idioms.
 //
 // Pure function — no side effects. Caller composes the block and

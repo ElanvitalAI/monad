@@ -1,6 +1,6 @@
 // PWA auto-install — runs `bun install` inside `apps/pwa` when
 // `checkPwaBuildDeps` reports missing `node_modules`. The canonical
-// `monad nexus run` entry calls this from `maybeAutoBuild` before
+// `elanous nexus run` entry calls this from `maybeAutoBuild` before
 // invoking the build, so a fresh `git clone` (or a pulled lockfile
 // change) starts working with one command instead of forcing the user
 // through the "missing node_modules" diagnostic in pwa-build.ts.
@@ -38,7 +38,7 @@ function defaultSpawn(cmd: string, args: string[], cwd: string): Promise<number>
 
 export async function runPwaInstall(opts: PwaInstallOpts): Promise<PwaInstallResult> {
   const out = opts.out ?? console;
-  out.log(`monad nexus pwa install: ${opts.cwd}`);
+  out.log(`elanous nexus pwa install: ${opts.cwd}`);
   out.log('  bun install  (apps/pwa deps · ~30-60s typical)');
   const t0 = Date.now();
   const spawnFn = opts.spawnFn ?? defaultSpawn;

@@ -11,31 +11,31 @@ import { writeFileSync } from 'node:fs';
 import { readMultiLlmHint } from '../src/acp/multi-llm-bridge';
 import { validateWorkflow } from '../src/workflow-runtime/schema';
 import { inferProviderFromModel } from '../src/llm';
-import { setMonadConfigDir, resetMonadConfigDir } from '../src/monad-config-dir.js';
+import { setElanousConfigDir, resetElanousConfigDir } from '../src/elanous-config-dir.js';
 
-const prevTestHome = process.env.MONAD_TEST_HOME;
+const prevTestHome = process.env.ELANOUS_TEST_HOME;
 
 let tmpHome: string;
 let cfgPath: string;
 
 beforeEach(() => {
   tmpHome = mkdtempSync(join(tmpdir(), 'rfc-p2-'));
-  process.env.MONAD_TEST_HOME = tmpHome;
-  setMonadConfigDir(join(tmpHome, '.monad'));
-  cfgPath = join(tmpHome, '.monad', 'config.json');
+  process.env.ELANOUS_TEST_HOME = tmpHome;
+  setElanousConfigDir(join(tmpHome, '.elanous'));
+  cfgPath = join(tmpHome, '.elanous', 'config.json');
   __resetCatalogForTests();
 });
 
 afterEach(() => {
   rmSync(tmpHome, { recursive: true, force: true });
-  resetMonadConfigDir();
-  if (prevTestHome === undefined) delete process.env.MONAD_TEST_HOME;
-  else process.env.MONAD_TEST_HOME = prevTestHome;
+  resetElanousConfigDir();
+  if (prevTestHome === undefined) delete process.env.ELANOUS_TEST_HOME;
+  else process.env.ELANOUS_TEST_HOME = prevTestHome;
   __resetCatalogForTests();
 });
 
 function writeCfg(provider: string): void {
-  const dir = join(tmpHome, '.monad');
+  const dir = join(tmpHome, '.elanous');
   require('node:fs').mkdirSync(dir, { recursive: true });
   writeFileSync(
     cfgPath,
@@ -96,7 +96,7 @@ describe('user-config normalizeProvider · alias-aware', () => {
 describe('multi-llm-bridge readMultiLlmHint · alias normalize on wire', () => {
   test("PWA Showroom 'claude' input → 'anthropic' on wire", () => {
     const hint = readMultiLlmHint({
-      monad: {
+      elanous: {
         multiLlm: {
           targets: [
             { id: 't1', provider: 'claude' },
@@ -112,7 +112,7 @@ describe('multi-llm-bridge readMultiLlmHint · alias normalize on wire', () => {
 
   test('canonical id round-trips', () => {
     const hint = readMultiLlmHint({
-      monad: {
+      elanous: {
         multiLlm: {
           targets: [
             { id: 't1', provider: 'anthropic' },
@@ -127,7 +127,7 @@ describe('multi-llm-bridge readMultiLlmHint · alias normalize on wire', () => {
 
   test('unknown provider passes through verbatim (caller decides fallback)', () => {
     const hint = readMultiLlmHint({
-      monad: {
+      elanous: {
         multiLlm: {
           targets: [{ id: 't1', provider: 'mistral' }],
         },

@@ -26,7 +26,7 @@ if (unknownFlag) {
 
 ensureCronNodePath();
 
-const LOG = join(homedir(), '.monad/conatus/signal_digest_cycle.log');
+const LOG = join(homedir(), '.elanous/conatus/signal_digest_cycle.log');
 const LIVE = process.argv.includes('--live');
 
 function log(msg: string): void {

@@ -5,18 +5,18 @@
 //   - 기억(recall+write) = 진입 무관 → 항상 ON(가산 grounding·프롬프트 무접촉).
 //   - 관측성 = 진입 무관 → 항상 ON(공유 버스).
 //
-// 대칭: TUI/monad-apparatus = monad 오리지널 존중·능력 평가(인핸싱 ON) /
+// 대칭: TUI/elanous-apparatus = elanous 오리지널 존중·능력 평가(인핸싱 ON) /
 //       external-verbatim(외부 Claude 크래프트·중첩) = 외부가 프롬프트 엔지니어(인핸싱 OFF).
 // 어느 진입이든 기억·관측은 보장 → "다 허용"이 안전(직행이 기억·눈을 잃지 않음).
 
 /**
  * 진입 클래스.
- * - `monad-apparatus`: 사람이 monad 를 통해(TUI·서피스) 또는 monad 가 원문을 prep 하는 미션(codex mission 등).
- *   monad 의 프롬프트 엔지니어링 역량을 쓴다 → 인핸싱 기본 ON.
- * - `external-verbatim`: 외부 에이전트(Claude Code 등)가 스스로 프롬프트를 크래프트했거나 상위 monad 가
+ * - `elanous-apparatus`: 사람이 elanous 를 통해(TUI·서피스) 또는 elanous 가 원문을 prep 하는 미션(codex mission 등).
+ *   elanous 의 프롬프트 엔지니어링 역량을 쓴다 → 인핸싱 기본 ON.
+ * - `external-verbatim`: 외부 에이전트(Claude Code 등)가 스스로 프롬프트를 크래프트했거나 상위 elanous 가
  *   엔지니어인 중첩. 외부/상위가 프롬프트 엔지니어 → 인핸싱 기본 OFF(verbatim 존중).
  */
-export type IngestionEntry = 'monad-apparatus' | 'external-verbatim';
+export type IngestionEntry = 'elanous-apparatus' | 'external-verbatim';
 
 export interface IngestionPolicy {
   entry: IngestionEntry;
@@ -38,7 +38,7 @@ export interface ResolveIngestionOpts {
  * ★ 진입 정책 해석 — 기억·관측은 항상 ON, 인핸싱만 mode 기본값(명시 override 우선).
  */
 export function resolveIngestionPolicy(opts: ResolveIngestionOpts): IngestionPolicy {
-  const enhanceDefault = opts.entry === 'monad-apparatus';
+  const enhanceDefault = opts.entry === 'elanous-apparatus';
   return {
     entry: opts.entry,
     enhance: opts.explicitEnhance ?? enhanceDefault,

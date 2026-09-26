@@ -27,11 +27,11 @@ beforeEach(() => {
   root = mkdtempSync(join(tmpdir(), 'lsp-registry-'));
   originalXdg = process.env.XDG_CONFIG_HOME;
   process.env.XDG_CONFIG_HOME = root;
-  const monadDir = join(root, 'monad');
+  const elanousDir = join(root, 'elanous');
   writeFileSync(join(root, '.keep'), '');
-  // userConfigPath resolves to XDG_CONFIG_HOME/monad/config.json
-  cfgPath = join(monadDir, 'config.json');
-  require('node:fs').mkdirSync(monadDir, { recursive: true });
+  // userConfigPath resolves to XDG_CONFIG_HOME/elanous/config.json
+  cfgPath = join(elanousDir, 'config.json');
+  require('node:fs').mkdirSync(elanousDir, { recursive: true });
   writeConfig({});
   __resetServerRegistryForTests();
 });

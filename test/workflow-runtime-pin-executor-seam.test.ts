@@ -11,7 +11,7 @@ import { join } from 'node:path';
 
 import { runWorkflowToCompletion } from '../src/workflow-runtime/executor';
 import { setWorkflowPin } from '../src/workflow-runtime/pin-data';
-import { setMonadConfigDir, resetMonadConfigDir } from '../src/monad-config-dir';
+import { setElanousConfigDir, resetElanousConfigDir } from '../src/elanous-config-dir';
 import { _resetSignalBus } from '../src/signal-bus/bus';
 import { _resetUserIntentLogger } from '../src/user-intent/logger';
 import type { WorkflowDefinition, WorkflowDeps } from '../src/workflow-runtime/types';
@@ -43,7 +43,7 @@ function makeDeps(): WorkflowDeps {
 
 beforeEach(() => {
   tmp = mkdtempSync(join(tmpdir(), 'wf-pin-seam-'));
-  setMonadConfigDir(tmp);
+  setElanousConfigDir(tmp);
   bashCalls = [];
   promptCalls = [];
   bus = _resetSignalBus();
@@ -53,7 +53,7 @@ beforeEach(() => {
 });
 
 afterEach(() => {
-  resetMonadConfigDir();
+  resetElanousConfigDir();
   _resetSignalBus();
   _resetUserIntentLogger();
   try { rmSync(tmp, { recursive: true, force: true }); } catch { /* ignore */ }

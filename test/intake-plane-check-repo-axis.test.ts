@@ -15,12 +15,12 @@ function fakeRepo() {
   writeFileSync(join(root, 'catalog/external-commands.yaml'), 'commands: []\n');
   writeFileSync(join(root, 'src/index.ts'), '');
   writeFileSync(join(root, 'docs/FAQ.md'), '# FAQ\n');
-  writeFileSync(join(root, 'docs/PRFAQ-monad-docs-working-backwards-2026-09-22.md'), '# FAQ\n');
+  writeFileSync(join(root, 'docs/PRFAQ-elanous-docs-working-backwards-2026-09-22.md'), '# FAQ\n');
   return { root, readFile: (path: string) => readFileSync(path, 'utf8'), commit: () => 'test',
     draftDir: join(root, 'drafts'), log: () => {} };
 }
 afterEach(() => { for (const root of roots.splice(0)) rmSync(root, { recursive: true, force: true }); });
-const fact = () => ({ text: `monad 에 \`${token}\` 가 있다` });
+const fact = () => ({ text: `elanous 에 \`${token}\` 가 있다` });
 
 test('documentation-only match is a mention, not behavioral evidence', () => {
   const deps = fakeRepo();
@@ -120,8 +120,8 @@ test('a refusal line cannot hide a later executable match', () => {
 
 test('name-only executable hit does not stop before a later behavior-supporting hit', () => {
   const deps = fakeRepo();
-  writeFileSync(join(deps.root, 'src/probe.ts'), `export const first = '${token}';\nexport const monad = () => randomChoose('${token}');\n`);
-  const item = runIntakeCheck([{ text: `monad 는 \`${token}\` 을 무작위로 고른다` }], deps).items[0]!;
+  writeFileSync(join(deps.root, 'src/probe.ts'), `export const first = '${token}';\nexport const elanous = () => randomChoose('${token}');\n`);
+  const item = runIntakeCheck([{ text: `elanous 는 \`${token}\` 을 무작위로 고른다` }], deps).items[0]!;
   expect(item.verdict).toBe('있음');
   expect(item.evidence.some((row) => row.repoKind === 'behavior' && row.line === 2)).toBe(true);
 });
@@ -130,9 +130,9 @@ test('behavior-supporting hit beyond the executable sample remains visible', () 
   const deps = fakeRepo();
   writeFileSync(join(deps.root, 'src/probe.ts'), [
     ...Array.from({ length: 15 }, (_, i) => `export const name${i} = '${token}';`),
-    `export const monad = () => randomChoose('${token}');`,
+    `export const elanous = () => randomChoose('${token}');`,
   ].join('\n'));
-  const item = runIntakeCheck([{ text: `monad 는 \`${token}\` 을 무작위로 고른다` }], deps).items[0]!;
+  const item = runIntakeCheck([{ text: `elanous 는 \`${token}\` 을 무작위로 고른다` }], deps).items[0]!;
   expect(item.verdict).toBe('있음');
   expect(item.evidence.some((row) => row.repoKind === 'behavior' && row.line === 16)).toBe(true);
   expect(item.evidence.some((row) => row.summary.includes('더 있음'))).toBe(true);
@@ -269,11 +269,11 @@ test('repository read failure remains unmeasured', () => {
 
 test('negative claim from a fake preprocessing caller is normalized with both wordings', async () => {
   const deps = fakeRepo();
-  const original = `monad 는 ${token} 를 0건 보유한다`;
+  const original = `elanous 는 ${token} 를 0건 보유한다`;
   const report = await runIntakeCheckDocument([], { ...deps, preprocess: () => JSON.stringify({
     claims: [{ text: original, quote: 'external quote', lens: 'L1 능력' }], discards: [],
   }) }, { document: 'external quote' });
-  expect(report.items[0]?.fact).toBe(`monad 에 ${token} 가 있다`);
+  expect(report.items[0]?.fact).toBe(`elanous 에 ${token} 가 있다`);
   expect(report.items[0]?.originalClaims).toEqual([original]);
   expect((intakeCheckReportJson(report).items as Array<{ originalClaims?: string[] }>)[0]?.originalClaims).toEqual([original]);
   expect(renderIntakeCheckReport(report)).toContain(`원 주장: ${original}`);
@@ -281,7 +281,7 @@ test('negative claim from a fake preprocessing caller is normalized with both wo
 
 test('existence denial from the preprocessing caller is discarded before comparison', async () => {
   const deps = fakeRepo();
-  const original = `monad 에 ${token} 가 존재하지 않다`;
+  const original = `elanous 에 ${token} 가 존재하지 않다`;
   writeFileSync(join(deps.root, 'src/probe.ts'), `export const probe = '${token}';\n`);
   const report = await runIntakeCheckDocument([], { ...deps, preprocess: () => JSON.stringify({
     claims: [{ text: original, quote: 'external quote', lens: 'L1 능력' }], discards: [],
@@ -296,7 +296,7 @@ test('existence denial from the preprocessing caller is discarded before compari
 test('zero-count variants and other negative markers cannot be compared as affirmative claims', async () => {
   const deps = fakeRepo();
   for (const suffix of ['0개 보유한다', '보유하지 않는다', '보유하지 못한다', '없음', '못 한다', '아니다']) {
-    const original = `monad 는 ${token} 를 ${suffix}`;
+    const original = `elanous 는 ${token} 를 ${suffix}`;
     const report = await runIntakeCheckDocument([], { ...deps, preprocess: () => JSON.stringify({
       claims: [{ text: original, quote: 'external quote', lens: 'L1 능력' }], discards: [],
     }) }, { document: 'external quote' });
@@ -308,7 +308,7 @@ test('zero-count variants and other negative markers cannot be compared as affir
 
 test('colloquial denial is discarded before comparison with its reason', async () => {
   const deps = fakeRepo();
-  for (const phrase of [`monad 는 ${token} 를 안 한다`, `monad 는 ${token} 가 안 된다`]) {
+  for (const phrase of [`elanous 는 ${token} 를 안 한다`, `elanous 는 ${token} 가 안 된다`]) {
     const report = await runIntakeCheckDocument([], { ...deps, preprocess: () => JSON.stringify({
       claims: [{ text: phrase, quote: 'external quote', lens: 'L1 능력' }], discards: [],
     }) }, { document: 'external quote' });
@@ -320,7 +320,7 @@ test('colloquial denial is discarded before comparison with its reason', async (
 test('unknown negative form is discarded with a reason; production prompt requests affirmative claims', async () => {
   const deps = fakeRepo();
   const report = await runIntakeCheckDocument([], { ...deps, preprocess: () => JSON.stringify({
-    claims: [{ text: `monad 는 ${token} 를 지원하지 않는다`, quote: 'external quote', lens: 'L1 능력' }], discards: [],
+    claims: [{ text: `elanous 는 ${token} 를 지원하지 않는다`, quote: 'external quote', lens: 'L1 능력' }], discards: [],
   }) }, { document: 'external quote' });
   expect(report.items).toEqual([]);
   expect(report.discards?.[0]?.reason).toContain('부정형');
@@ -348,9 +348,9 @@ test('a doc comment after a template literal with an expression is still a comme
 
 test('an injected file list keeps later document mentions after executable support', () => {
   const deps = fakeRepo();
-  writeFileSync(join(deps.root, 'src/probe.ts'), `export const probe = 'monad ${token} records';\n`);
+  writeFileSync(join(deps.root, 'src/probe.ts'), `export const probe = 'elanous ${token} records';\n`);
   writeFileSync(join(deps.root, 'docs/notes.md'), `${token} mention\n`);
-  const claim = { text: `monad 는 \`${token}\` 를 records` };
+  const claim = { text: `elanous 는 \`${token}\` 를 records` };
   const item = runIntakeCheck([claim], { ...deps, listFiles: () => ['src/probe.ts', 'docs/notes.md'] }).items[0]!;
   expect(item.verdict).toBe('있음');
   expect(item.evidence.some((row) => row.axis === 'repo' && row.repoKind === 'document' && row.path === 'docs/notes.md')).toBe(true);
@@ -358,8 +358,8 @@ test('an injected file list keeps later document mentions after executable suppo
 
 test('a refusing entrance line cannot supply behavioral support next to a neutral executable line', () => {
   const deps = fakeRepo();
-  writeFileSync(join(deps.root, 'src/refuse.ts'), `export const refuse = 'monad ${token} records: unknown option';\n`);
+  writeFileSync(join(deps.root, 'src/refuse.ts'), `export const refuse = 'elanous ${token} records: unknown option';\n`);
   writeFileSync(join(deps.root, 'src/neutral.ts'), `export const neutral = '${token}';\n`);
-  const item = runIntakeCheck([{ text: `monad 는 \`${token}\` 를 records` }], deps).items[0]!;
+  const item = runIntakeCheck([{ text: `elanous 는 \`${token}\` 를 records` }], deps).items[0]!;
   expect(item.verdict).not.toBe('있음');
 });

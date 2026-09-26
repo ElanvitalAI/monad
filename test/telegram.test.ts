@@ -78,8 +78,8 @@ function baseConfig(): UserConfig {
         streaming: { mode: 'byte', catchUpThresholdLines: 50, catchUpAgeMs: 200 },
         compactBoundary: { enabled: true },
         wrap: { urlAware: false, preserveOsc8: true },
-        tool: { displayMode: 'inline-to-block', inlineOneLine: true, blockMaxLines: 20 },
-        hud: { variantBadge: true, tokenGauge: true, gaugeWarnRatio: 0.7, gaugeDangerRatio: 0.85 },
+        tool: { displayMode: 'inline-to-block', blockMaxLines: 20 },
+        hud: { gaugeWarnRatio: 0.7, gaugeDangerRatio: 0.85 },
         diff: {
           colorTier: 'auto', adaptiveBg: true, syntaxPerHunk: true, cache: true, headerStyle: 'legacy',
           turnSummary: true, turnBrowser: true, turnBrowserHistory: 8, turnBrowserMode: 'all',
@@ -124,7 +124,7 @@ let root: string;
 beforeEach(() => {
   root = mkdtempSync(join(tmpdir(), 'tg-'));
   process.env.XDG_CONFIG_HOME = join(root, '_config');
-  process.env.MONAD_STATE_DIR = join(root, '_monad-state');
+  process.env.ELANOUS_STATE_DIR = join(root, '_elanous-state');
   process.env.XDG_DATA_HOME = root;
   process.env.XDG_STATE_HOME = join(root, '_state');
   resetUserConfig();
@@ -136,7 +136,7 @@ afterEach(() => {
   resetUserConfig();
   rmSync(root, { recursive: true, force: true });
   delete process.env.XDG_CONFIG_HOME;
-  delete process.env.MONAD_STATE_DIR;
+  delete process.env.ELANOUS_STATE_DIR;
   delete process.env.XDG_DATA_HOME;
   delete process.env.XDG_STATE_HOME;
 });

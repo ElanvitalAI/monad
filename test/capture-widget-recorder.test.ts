@@ -197,7 +197,7 @@ describe('widget-recorder · serialization', () => {
     expect(header.height).toBe(24);
     expect(header.title).toBe('test');
     expect(header.timestamp).toBe(1700000000);
-    expect(header.monad).toEqual({ kind: 'widget-timeline' });
+    expect(header.elanous).toEqual({ kind: 'widget-timeline' });
   });
 
   test('serialize emits one frame line per recorded event', () => {
@@ -270,13 +270,13 @@ describe('widget-recorder · parseWidgetTimeline', () => {
   });
 
   test('unsupported version → WidgetTimelineParseError', () => {
-    const bad = JSON.stringify({ version: 2, width: 80, height: 24, monad: { kind: 'widget-timeline' } }) + '\n';
+    const bad = JSON.stringify({ version: 2, width: 80, height: 24, elanous: { kind: 'widget-timeline' } }) + '\n';
     expect(() => parseWidgetTimeline(bad)).toThrow(WidgetTimelineParseError);
   });
 
   test('unknown frame type is skipped (v2 spec)', () => {
     const bad =
-      JSON.stringify({ version: 2.1, width: 80, height: 24, monad: { kind: 'widget-timeline' } }) + '\n' +
+      JSON.stringify({ version: 2.1, width: 80, height: 24, elanous: { kind: 'widget-timeline' } }) + '\n' +
       JSON.stringify([0.1, 'o', 'unknown-kind-ignored']) + '\n' +
       JSON.stringify([0.2, 'w', 'w1', { v: 1 }]) + '\n';
     const parsed = parseWidgetTimeline(bad);
@@ -286,7 +286,7 @@ describe('widget-recorder · parseWidgetTimeline', () => {
 
   test('malformed frames are skipped but header is preserved', () => {
     const bad =
-      JSON.stringify({ version: 2.1, width: 80, height: 24, monad: { kind: 'widget-timeline' } }) + '\n' +
+      JSON.stringify({ version: 2.1, width: 80, height: 24, elanous: { kind: 'widget-timeline' } }) + '\n' +
       '{not-json}\n' +
       JSON.stringify([1, 'w', 'w1', { ok: true }]) + '\n';
     const parsed = parseWidgetTimeline(bad);

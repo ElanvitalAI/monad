@@ -42,7 +42,7 @@ export interface LiveTurnRunner {
 
 /** ⭐⭐ **인과로** pty↔session 을 묶는다 — `lifecycle.bridge-attached` **선언이 없을 때**의 경로.
  *
- *  ⛔ 실측(2026-08-01): `dev --monad --hold` 로 붙잡은 bare TUI 는 그 선언을 **남기지 않는다**
+ *  ⛔ 실측(2026-08-01): `dev --elanous --hold` 로 붙잡은 bare TUI 는 그 선언을 **남기지 않는다**
  *  (`self_*` 하니스 pty 만 남긴다). 그래서 `verifyPtySession` 이 영영 거짓이고, 러너는
  *  **입력을 아예 안 보낸다**(남의 세션에 주입하지 않으려는 안전장치).
  *
@@ -93,7 +93,7 @@ export function verifyPtySession(execute: CommandExecutor, pty: string, expected
 
 /** ⛔⭐⭐ **중첩 인스턴스를 함께 본다** — 기본 조회는 **한 우주만** 본다.
  *
- *  실측(2026-08-01): `dev --monad --hold` 로 붙잡은 자식 TUI 의 로그는 `⟨test:state⟩` 에 쌓이는데,
+ *  실측(2026-08-01): `dev --elanous --hold` 로 붙잡은 자식 TUI 의 로그는 `⟨test:state⟩` 에 쌓이는데,
  *  부모 셸의 조회(`--test` = `test:monad-agent`)로는 **0건**으로 보인다. 그 0 은 «미배선» 이 아니라
  *  **«다른 우주를 봤다»** 이고, 그대로 두면 계측이 살아 있는 판에 «없다» 로 판정한다.
  *  ⇒ 세션 id 로 이미 좁히고 있으므로 인스턴스를 넓혀도 표본이 섞이지 않는다. */
@@ -106,7 +106,7 @@ export function verifyPtySession(execute: CommandExecutor, pty: string, expected
 const FEDERATED = ['--all', '--include-test'] as const;
 //   ⛔⭐ 라벨(`--instance`)로는 못 좁힌다 — `test:state` 하나에 **71개 우주**가 겹친다(원장 `OBS-S16`).
 //   ⇒ 좁히기는 **경로**로 한다: 호출자가 `CORPUS_STATE_DIR` 로 스토어를 못 박으면(그 값이
-//     `MONAD_STATE_DIR` 로 자식 `monad` 에 실린다) 조회는 **그 스토어 하나**만 본다.
+//     `ELANOUS_STATE_DIR` 로 자식 `elanous` 에 실린다) 조회는 **그 스토어 하나**만 본다.
 //   실측: 연합 0.6s→실패 92건·판정 0  vs  경로 지목 **0.63s·정확히 그 우주**.
 const scopeArgs = (): readonly string[] => (process.env.CORPUS_STATE_DIR?.trim() ? [] : FEDERATED);
 const SESSION_LINK_DEPTH_LIMIT = 8;
@@ -132,7 +132,7 @@ function linkChildrenForClosedTurn(raw: string, sessionId: string, boundary: Clo
 }
 
 /** Production command adapter; exceptions never become empty logs or a no-fire result. */
-export function createMonadLiveTurnRunner(execute: CommandExecutor, pty: string): LiveTurnRunner {
+export function createElanousLiveTurnRunner(execute: CommandExecutor, pty: string): LiveTurnRunner {
   const toolLogs = (sessionId: string, boundary: ClosedTurnBoundary) =>
     commandResult(execute, ['logs', ...scopeArgs(), '--surface', 'tui', '--exact-category', 'capability.resolve', '--event', 'tool-selected', '--session', sessionId, '--since', boundary.timestamp, '--limit', '900', '--json']);
   const linkLogs = (sessionId: string, boundary: ClosedTurnBoundary) =>

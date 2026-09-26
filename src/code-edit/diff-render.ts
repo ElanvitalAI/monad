@@ -1,7 +1,7 @@
 // ANSI diff renderer — Phase CE3.
 //
 // Adapted from codex-rs/tui/src/diff_render.rs (Apache 2.0) — same
-// palette choice, same gutter shape, but written against Monad's
+// palette choice, same gutter shape, but written against Elanous's
 // direct-ANSI paint model instead of ratatui.
 //
 // Output shape (screenshot-reference):

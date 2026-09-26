@@ -9,7 +9,7 @@ function seedJob(db: ReturnType<typeof openSchedulesDb>, over: Partial<ScheduleR
   const row = {
     id: 'job_x', name: 'collect', source: 'crontab', cron: '5,35 9-15 * * 1-5',
     interval_ms: null, command: 'cd /r && bun scripts/collect.ts', category: 'ingest', domain: 'finance',
-    enabled: 1, managed_by: 'monad', run_via: 'monad', raw: '5,35 9-15 * * 1-5 cd /r && bun scripts/collect.ts',
+    enabled: 1, managed_by: 'elanous', run_via: 'elanous', raw: '5,35 9-15 * * 1-5 cd /r && bun scripts/collect.ts',
     ...over,
   };
   db.run(
@@ -112,7 +112,7 @@ describe('catchUpTriggerJobs — 이관잡 놓친발화 복구(U4b)', () => {
     db.run(
       `INSERT OR REPLACE INTO schedule_registry (id, name, source, cron, command, category, enabled, managed_by, run_via, last_run)
        VALUES (?,?,?,?,?,?,?,?,?,?)`,
-      [row.id, row.name, 'crontab', row.cron, row.command, 'report', row.enabled, 'monad', row.run_via, row.last_run],
+      [row.id, row.name, 'crontab', row.cron, row.command, 'report', row.enabled, 'elanous', row.run_via, row.last_run],
     );
   }
   const at10am = () => new Date('2026-07-09T10:00:00');
@@ -152,10 +152,10 @@ describe('catchUpTriggerJobs — 이관잡 놓친발화 복구(U4b)', () => {
     } finally { db.close(); }
   });
 
-  it('run_via=monad(비이관) 잡은 이 sweep 대상 아님', async () => {
+  it('run_via=elanous(비이관) 잡은 이 sweep 대상 아님', async () => {
     const db = openSchedulesDb(':memory:');
     try {
-      seedTrigger(db, { run_via: 'monad', last_run: null });
+      seedTrigger(db, { run_via: 'elanous', last_run: null });
       const r = await catchUpTriggerJobs(db, { spawn: async () => ({ code: 0, ms: 1 }), now: at10am });
       expect(r.recovered).toEqual([]);
     } finally { db.close(); }

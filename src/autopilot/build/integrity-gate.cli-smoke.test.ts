@@ -18,7 +18,7 @@ describe('cli-smoke 게이트 스텝', () => {
   beforeAll(() => {
     presentCwd = mkdtempSync(join(tmpdir(), 'cli-smoke-present-'));
     mkdirSync(join(presentCwd, 'bin'));
-    writeFileSync(join(presentCwd, 'bin', 'monad.mjs'), 'export {};\n');
+    writeFileSync(join(presentCwd, 'bin', 'elanous.mjs'), 'export {};\n');
     absentCwd = mkdtempSync(join(tmpdir(), 'cli-smoke-absent-'));
   });
 
@@ -32,15 +32,15 @@ describe('cli-smoke 게이트 스텝', () => {
     expect(DEFAULT_GATE_STEPS).toContain('test');
   });
 
-  test('exit 0 → pass · 정확히 `bun bin/monad.mjs --help` 를 호출한다', async () => {
+  test('exit 0 → pass · 정확히 `bun bin/elanous.mjs --help` 를 호출한다', async () => {
     const calls: Array<[string, string[]]> = [];
-    const runCmd: RunCmd = async (cmd, args) => { calls.push([cmd, args]); return { code: 0, stdout: 'Usage: monad …', stderr: '', timedOut: false }; };
+    const runCmd: RunCmd = async (cmd, args) => { calls.push([cmd, args]); return { code: 0, stdout: 'Usage: elanous …', stderr: '', timedOut: false }; };
     const r = await runIntegrityGate(presentCwd, { steps: ['cli-smoke'], runCmd });
     expect(r.passed).toBe(true);
     expect(r.steps[0]?.name).toBe('cli-smoke');
     expect(r.steps[0]?.ok).toBe(true);
     expect(r.steps[0]?.skipped).toBe(false);
-    expect(calls).toEqual([['bun', ['bin/monad.mjs', '--help']]]); // 실제 CLI 기동 인자 단언(mock 과장 방지·review)
+    expect(calls).toEqual([['bun', ['bin/elanous.mjs', '--help']]]); // 실제 CLI 기동 인자 단언(mock 과장 방지·review)
   });
 
   test('로드 크래시(커맨드 중복 등 non-0) → fail — 정적 게이트가 못 잡던 결함 차단', async () => {
@@ -108,7 +108,7 @@ describe('cli-smoke 게이트 스텝', () => {
     expect(r.steps[0]).toMatchObject({ name: 'cli-smoke', ok: true, skipped: false });
     expect(r.steps[0]?.summary).toStartWith('pass (');
     expect(r.passed).toBe(true);
-    expect(r.log).toBe('[cli-smoke] PASS bun bin/monad.mjs --help — second | third | fourth');
+    expect(r.log).toBe('[cli-smoke] PASS bun bin/elanous.mjs --help — second | third | fourth');
   });
 
   test('긴 test 필터 로그는 생략 수를 명시한다', async () => {
@@ -133,11 +133,11 @@ describe('cli-smoke 게이트 스텝', () => {
     expect(brokenLog).not.toContain('c/d.test.ts');
   });
 
-  test('bin/monad.mjs 가 없는 cwd 에서 cli-smoke 는 실패가 아니라 건너뜀이고 이유가 비어 있지 않다', async () => {
+  test('bin/elanous.mjs 가 없는 cwd 에서 cli-smoke 는 실패가 아니라 건너뜀이고 이유가 비어 있지 않다', async () => {
     const calls: Array<[string, string[]]> = [];
     const runCmd: RunCmd = async (cmd, args) => {
       calls.push([cmd, args]);
-      return { code: 1, stdout: '', stderr: 'Module not found "bin/monad.mjs"', timedOut: false };
+      return { code: 1, stdout: '', stderr: 'Module not found "bin/elanous.mjs"', timedOut: false };
     };
     const r = await runIntegrityGate(absentCwd, { steps: ['cli-smoke'], runCmd });
     expect(r.steps[0]).toMatchObject({ name: 'cli-smoke', skipped: true, ok: true });
@@ -149,8 +149,8 @@ describe('cli-smoke 게이트 스텝', () => {
     expect(calls).toEqual([]);
   });
 
-  test('bin/monad.mjs 가 있는 cwd 에서 cli-smoke 는 종전대로 실행되고 통과 또는 실패로 기록된다', async () => {
-    const passCmd: RunCmd = async () => ({ code: 0, stdout: 'Usage: monad …', stderr: '', timedOut: false });
+  test('bin/elanous.mjs 가 있는 cwd 에서 cli-smoke 는 종전대로 실행되고 통과 또는 실패로 기록된다', async () => {
+    const passCmd: RunCmd = async () => ({ code: 0, stdout: 'Usage: elanous …', stderr: '', timedOut: false });
     const pass = await runIntegrityGate(presentCwd, { steps: ['cli-smoke'], runCmd: passCmd });
     expect(pass.steps[0]).toMatchObject({ name: 'cli-smoke', skipped: false, ok: true });
     expect(pass.passed).toBe(true);

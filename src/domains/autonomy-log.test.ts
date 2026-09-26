@@ -13,7 +13,7 @@ function surfaceDb(): Database {
 }
 
 describe('recordAutonomousAction — 자율행동 주입', () => {
-  test('domain=monad·kind=autonomy·surface=loop:<loop> 기록 + rationale 를 text 에 포함', () => {
+  test('domain=elanous·kind=autonomy·surface=loop:<loop> 기록 + rationale 를 text 에 포함', () => {
     const db = surfaceDb();
     const id = recordAutonomousAction(db, {
       loop: 'trade',
@@ -29,7 +29,7 @@ describe('recordAutonomousAction — 자율행동 주입', () => {
     expect(r.surface).toBe('loop:trade');
     expect(r.direction).toBe('outbound');
     expect(r.kind).toBe(AUTONOMY_KIND);
-    expect(r.domain).toBe('monad');
+    expect(r.domain).toBe('elanous');
     expect(r.category).toBe('autonomy');
     expect(r.importance).toBe(8);            // trade 루프 기본 현저성
     expect(r.text).toContain('why: 국면 BEAR_CASH 방어');
@@ -82,7 +82,7 @@ describe('recallAutonomy — 자율행동 회상', () => {
   test('self_recall(recallSelfEvents)가 자율행동을 impl 과 함께 회상(P0.3 통합)', () => {
     const db = surfaceDb();
     recordAutonomousAction(db, { loop: 'trade', action: '삼성 매도 자율집행', rationale: 'BEAR_CASH' });
-    // domain=monad 이므로 self_recall 이 집어야 한다.
+    // domain=elanous 이므로 self_recall 이 집어야 한다.
     const hits = recallSelfEvents(db, '삼성', { bump: false });
     expect(hits.length).toBeGreaterThanOrEqual(1);
     expect(hits.some(h => h.surface === 'loop:trade')).toBe(true);

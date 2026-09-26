@@ -11,7 +11,7 @@
 import { Database } from 'bun:sqlite';
 import { join, dirname } from 'node:path';
 import { mkdirSync } from 'node:fs';
-import { monadStateRoot } from './state-paths.js';
+import { elanousStateRoot } from './state-paths.js';
 
 /** 미션 관계 4종(RFC §4.1). lineage=계보(파생)·continuation=이어가기(A완료→B)·
  *  coevolution=공진화(A 학습→B 개선)·association=연관(같은 코드영역·무방향 의미). */
@@ -27,9 +27,9 @@ export interface MissionEdge {
   createdAt: number;
 }
 
-/** mission_edges DB 경로(autopilot/·격리 데몬 MONAD_STATE_DIR 존중). */
+/** mission_edges DB 경로(autopilot/·격리 데몬 ELANOUS_STATE_DIR 존중). */
 export function missionEdgesDbPath(): string {
-  return join(monadStateRoot(), 'autopilot/mission_edges.db');
+  return join(elanousStateRoot(), 'autopilot/mission_edges.db');
 }
 
 let _db: Database | null = null;

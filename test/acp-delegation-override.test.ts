@@ -1,5 +1,5 @@
 // Explicit surface intent overrides active-delegation auto-continue — a
-// stated "self / 모나드가 직접" must NOT be hijacked to the last ACP backend
+// stated "self / 엘라누스가 직접" must NOT be hijacked to the last ACP backend
 // (the reported bug: "sub 함수도 self로 추가해줘" ran on codex).
 
 import { describe, test, expect } from 'bun:test';
@@ -12,10 +12,10 @@ describe('classifyDelegationOverride', () => {
     expect(classifyDelegationOverride('그냥 직접 고쳐줘')).toBe('self');
   });
 
-  test('monad-as-actor → self (모나드가 직접 / 모나드로 / monad가)', () => {
-    expect(classifyDelegationOverride('모나드가 직접 추가해')).toBe('self');
-    expect(classifyDelegationOverride('모나드로 해줘')).toBe('self');
-    expect(classifyDelegationOverride('monad가 처리해')).toBe('self');
+  test('elanous-as-actor → self (엘라누스가 직접 / 엘라누스로 / elanous가)', () => {
+    expect(classifyDelegationOverride('엘라누스가 직접 추가해')).toBe('self');
+    expect(classifyDelegationOverride('엘라누스로 해줘')).toBe('self');
+    expect(classifyDelegationOverride('elanous가 처리해')).toBe('self');
   });
 
   test('self wins even when another backend is mentioned', () => {

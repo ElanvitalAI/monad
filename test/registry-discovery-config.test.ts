@@ -1,7 +1,7 @@
 // RFC #2161 FU · 2026-05-11 — user-config resolver for discovery wiring.
 //
 // Verifies the priority chain: user-config (`registry.discovery.*`)
-// wins over legacy env (`MONAD_DISCOVERY_CRON_INTERVAL_MS` /
+// wins over legacy env (`ELANOUS_DISCOVERY_CRON_INTERVAL_MS` /
 // `FIRECRAWL_API_KEY`), env wins over default. The omni-crawl bridge
 // branch was removed in A6-real P4 alongside its source. See
 // `feedback_user_config_over_env.md` for the policy.
@@ -15,11 +15,11 @@ import {
   getFirecrawlConfig,
 } from '../src/registry/discovery/config.js';
 import { resetUserConfig } from '../src/user-config.js';
-import { setMonadConfigDir, resetMonadConfigDir } from '../src/monad-config-dir.js';
+import { setElanousConfigDir, resetElanousConfigDir } from '../src/elanous-config-dir.js';
 
 let tmpDir: string;
 const ENV_KEYS = [
-  'MONAD_DISCOVERY_CRON_INTERVAL_MS',
+  'ELANOUS_DISCOVERY_CRON_INTERVAL_MS',
   'FIRECRAWL_API_KEY',
 ];
 
@@ -38,14 +38,14 @@ function writeConfig(payload: Record<string, unknown>): void {
 
 beforeEach(() => {
   tmpDir = mkdtempSync(join(tmpdir(), 'discovery-config-'));
-  setMonadConfigDir(tmpDir);
+  setElanousConfigDir(tmpDir);
   for (const k of ENV_KEYS) delete process.env[k];
   resetUserConfig();
 });
 
 afterEach(() => {
   rmSync(tmpDir, { recursive: true, force: true });
-  resetMonadConfigDir();
+  resetElanousConfigDir();
   for (const k of ENV_KEYS) delete process.env[k];
   resetUserConfig();
 });
@@ -87,7 +87,7 @@ describe('getDiscoveryCronConfig', () => {
   });
 
   test('falls back to env when user-config absent', () => {
-    process.env.MONAD_DISCOVERY_CRON_INTERVAL_MS = '120000';
+    process.env.ELANOUS_DISCOVERY_CRON_INTERVAL_MS = '120000';
     expect(getDiscoveryCronConfig().intervalMs).toBe(120000);
   });
 
@@ -95,7 +95,7 @@ describe('getDiscoveryCronConfig', () => {
     writeConfig({
       registry: { discovery: { cron: { intervalMs: 300_000 } } },
     });
-    process.env.MONAD_DISCOVERY_CRON_INTERVAL_MS = '120000';
+    process.env.ELANOUS_DISCOVERY_CRON_INTERVAL_MS = '120000';
     expect(getDiscoveryCronConfig().intervalMs).toBe(300_000);
   });
 
@@ -114,12 +114,12 @@ describe('getDiscoveryCronConfig', () => {
   });
 
   test('clamps env value below 60s up to 60s', () => {
-    process.env.MONAD_DISCOVERY_CRON_INTERVAL_MS = '500';
+    process.env.ELANOUS_DISCOVERY_CRON_INTERVAL_MS = '500';
     expect(getDiscoveryCronConfig().intervalMs).toBe(60_000);
   });
 
   test('rejects non-numeric env (treats as dormant)', () => {
-    process.env.MONAD_DISCOVERY_CRON_INTERVAL_MS = 'not-a-number';
+    process.env.ELANOUS_DISCOVERY_CRON_INTERVAL_MS = 'not-a-number';
     expect(getDiscoveryCronConfig().intervalMs).toBe(0);
   });
 
@@ -127,7 +127,7 @@ describe('getDiscoveryCronConfig', () => {
     writeConfig({
       registry: { discovery: { cron: { intervalMs: -1 } } },
     });
-    process.env.MONAD_DISCOVERY_CRON_INTERVAL_MS = '90000';
+    process.env.ELANOUS_DISCOVERY_CRON_INTERVAL_MS = '90000';
     expect(getDiscoveryCronConfig().intervalMs).toBe(90_000);
   });
 });

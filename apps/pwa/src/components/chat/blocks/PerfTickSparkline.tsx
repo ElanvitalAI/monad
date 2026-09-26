@@ -89,8 +89,8 @@ function MetricRow({ group }: { group: MetricGroup }) {
   const path = buildPath(group);
   return (
     <div
-      data-monad-perf-metric={group.metric}
-      data-monad-perf-latest={group.latest}
+      data-elanous-perf-metric={group.metric}
+      data-elanous-perf-latest={group.latest}
       className="flex items-center gap-2 text-[10px] font-mono"
     >
       <span className="text-muted-foreground truncate min-w-[120px]">
@@ -128,8 +128,8 @@ export function PerfTickSparkline({ block }: { block: Block }) {
   if (groups.length === 0) {
     return (
       <div
-        data-monad-block-kind="perf_session"
-        data-monad-block-id={block.blockId}
+        data-elanous-block-kind="perf_session"
+        data-elanous-block-id={block.blockId}
         className="rounded border border-border bg-muted/20 px-2 py-1 text-[10px] text-muted-foreground italic"
       >
         (no perf samples yet)
@@ -138,9 +138,9 @@ export function PerfTickSparkline({ block }: { block: Block }) {
   }
   return (
     <div
-      data-monad-block-kind="perf_session"
-      data-monad-block-id={block.blockId}
-      data-monad-perf-metric-count={groups.length}
+      data-elanous-block-kind="perf_session"
+      data-elanous-block-id={block.blockId}
+      data-elanous-perf-metric-count={groups.length}
       className={cn(
         'rounded border border-border bg-muted/20 px-2 py-1',
         'flex flex-col gap-0.5',

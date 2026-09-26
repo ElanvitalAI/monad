@@ -6,7 +6,7 @@
 // 안에 머무르게 한다.
 //
 // CSS-only transition (framer-motion 의존성 회피 · autopilot rule).
-// `data-monad-voice-overlay` selector + `aria-hidden` 으로 외부에서
+// `data-elanous-voice-overlay` selector + `aria-hidden` 으로 외부에서
 // 시각/접근성 검증 가능.
 
 import { Mic, MicOff, Loader2, AlertCircle, Volume2, VolumeX, Hand } from 'lucide-react';
@@ -86,7 +86,7 @@ export function VoiceOverlay({
 
   return (
     <div
-      data-monad-voice-overlay
+      data-elanous-voice-overlay
       aria-hidden={!visible}
       className={cn(
         'pointer-events-none absolute inset-0 z-10 flex items-center justify-center transition-opacity duration-300',
@@ -117,7 +117,7 @@ export function VoiceOverlay({
         <button
           type="button"
           onClick={showInterrupt ? onInterrupt : onToggle}
-          data-monad-action={showInterrupt ? 'voice-overlay-interrupt' : 'voice-overlay-toggle'}
+          data-elanous-action={showInterrupt ? 'voice-overlay-interrupt' : 'voice-overlay-toggle'}
           className={cn(
             'inline-flex h-16 w-16 items-center justify-center rounded-full text-white transition-colors',
             showInterrupt
@@ -152,7 +152,7 @@ export function VoiceOverlay({
             <button
               type="button"
               onClick={onTtsToggle}
-              data-monad-action="voice-overlay-tts-toggle"
+              data-elanous-action="voice-overlay-tts-toggle"
               className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground"
               aria-label={ttsMuted ? '음성 응답 켜기' : '음성 응답 끄기'}
               aria-pressed={!ttsMuted}

@@ -207,8 +207,8 @@ describe('showErrorOr / showHelpOr / showSuccessOr', () => {
 
   test('success fallback uses `✓ msg` prefix', () => {
     const io = scriptedIO([]);
-    showSuccessOr(io, 'Connected as @monadtestbot');
-    expect(io.outputs).toContain('  ✓ Connected as @monadtestbot');
+    showSuccessOr(io, 'Connected as @elanoustestbot');
+    expect(io.outputs).toContain('  ✓ Connected as @elanoustestbot');
   });
 
   test('host overrides win — fallbacks skipped', () => {

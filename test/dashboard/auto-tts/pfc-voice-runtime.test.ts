@@ -28,7 +28,7 @@ function fakeController(): AutoTtsController & {
 function notification(opts: Partial<PfcReverseFeedbackNotification> = {}): PfcReverseFeedbackNotification {
   return {
     shellId: opts.shellId ?? 's1',
-    summary: opts.summary ?? '🧠 monad · sh-s1 (exit 1) · AssertionError 발견',
+    summary: opts.summary ?? '🧠 elanous · sh-s1 (exit 1) · AssertionError 발견',
     canApply: opts.canApply ?? true,
     capability: opts.capability ?? {
       canRead: true, canInterrupt: true, canWrite: true, canInspect: true,

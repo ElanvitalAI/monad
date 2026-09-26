@@ -1,4 +1,4 @@
-// `monad dev` help 컨사이스 계약 (2026-07-27) — 대표 지시 *"컨사이스하게 · 상세는 연결된 매뉴얼에서"*.
+// `elanous dev` help 컨사이스 계약 (2026-07-27) — 대표 지시 *"컨사이스하게 · 상세는 연결된 매뉴얼에서"*.
 //
 // 종전 `--ground` help 는 내부 동작(LLM 키워드 추출·랭킹·상위 12파일·심볼 12개·미주입 범위·표적 품질
 // 한계)을 전부 담아 화면에서 문단이 됐다. 줄이는 건 쉽지만 **다시 불어나는 것**이 문제라 계약을 잠근다.
@@ -17,14 +17,14 @@ const REPO = join(import.meta.dir, '..');
 const MANUAL = 'docs/manual/MANUAL-frontdoor-selfdev-dogfood-mechanism-2026-07-25.md';
 
 function devHelp(): string {
-  const r = spawnSync('bun', [join(REPO, 'bin/monad.mjs'), 'dev', '--help'], {
+  const r = spawnSync('bun', [join(REPO, 'bin/elanous.mjs'), 'dev', '--help'], {
     encoding: 'utf8', timeout: 120_000, cwd: REPO, env: { ...process.env, COLUMNS: '200' },
   });
   return `${r.stdout ?? ''}${r.stderr ?? ''}`;
 }
 
 function devHelpAll(): string {
-  const r = spawnSync('bun', [join(REPO, 'bin/monad.mjs'), 'dev', '--help-all'], {
+  const r = spawnSync('bun', [join(REPO, 'bin/elanous.mjs'), 'dev', '--help-all'], {
     encoding: 'utf8', timeout: 120_000, cwd: REPO, env: { ...process.env, COLUMNS: '200' },
   });
   return `${r.stdout ?? ''}${r.stderr ?? ''}`;
@@ -52,7 +52,7 @@ function optionText(help: string, flag: string): string {
   return acc.join(' ').replace(/\s+/g, ' ').trim();
 }
 
-describe('monad dev help — 컨사이스 계약', () => {
+describe('elanous dev help — 컨사이스 계약', () => {
   test('⭐ 옵션 설명이 한 문장 분량을 넘지 않는다 (문단 회귀 차단)', () => {
     // ⛔ 2026-09-02: 이 시험은 `--ground` 를 표본으로 썼는데 그 옵션이 «은퇴»했다(#15264).
     //   ⭐ 지키던 것은 «그 옵션»이 아니라 ***「설명이 문단으로 불어나지 않는다」***이므로 축을 옮긴다.

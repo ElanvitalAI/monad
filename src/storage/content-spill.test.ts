@@ -12,7 +12,7 @@ describe('spillLongContent', () => {
 
   test('threshold 초과 → 미리보기+링크로 대체', () => {
     const long = 'X'.repeat(5000);
-    const up = () => 'https://elanvital-public.s3.amazonaws.com/monad/x/spill/abc.txt';
+    const up = () => 'https://elanvital-public.s3.amazonaws.com/elanous/x/spill/abc.txt';
     const r = spillLongContent(long, { threshold: 3500, previewChars: 200, upload: up });
     expect(r.spilled).toBe(true);
     expect(r.url).toContain('spill/abc.txt');

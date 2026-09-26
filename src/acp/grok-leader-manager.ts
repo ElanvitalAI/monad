@@ -16,7 +16,7 @@
 // 사용 안 함 — Showroom multi-lane (ROADMAP A1+C1) 의 dogfood 결과 본
 // 후 wire 진입. 즉 본 PR 은 *호출 site 없음* · 별 PR 에서 활용.
 //
-// **opt-in design**: 추후 wire 시 env var `MONAD_GROK_USE_LEADER=1` 또는
+// **opt-in design**: 추후 wire 시 env var `ELANOUS_GROK_USE_LEADER=1` 또는
 // AcpBackendSpec 의 별 option 으로 활성화 결정. 단일 lane 일 때는
 // overhead 만 추가 (leader spawn + 통신 hop) — multi-lane 일 때만 가치.
 //

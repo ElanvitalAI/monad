@@ -2,13 +2,13 @@
 //
 // ⛔ 계기: 레지스트리가 TypeScript 에 박혀 있으면
 //    ⑴ 고객 기계를 «기술»할 수 없고 ⑵ 새 도구를 넣으려면 저장소를 고쳐야 한다.
-//    AX 현장에서는 둘 다 막힌다 — 고객 기계에 monad 가 없을 수도 있다.
+//    AX 현장에서는 둘 다 막힌다 — 고객 기계에 elanous 가 없을 수도 있다.
 //
 // 📌 찾는 순서 (먼저 찾은 것이 이긴다 · ⛔ env 로 «값»을 받지 않는다 — 경로만):
 //    ① --config <path>
-//    ② $MONAD_VIDEO_TOOLS            (경로만)
+//    ② $ELANOUS_VIDEO_TOOLS            (경로만)
 //    ③ ./video-tools.json            (프로젝트)
-//    ④ ~/.monad/video-tools.json     (사용자)
+//    ④ ~/.elanous/video-tools.json     (사용자)
 //
 // ⛔ 설정이 «없어도» 돈다 — 내장 레지스트리가 기본값이다. 설정은 «덮개»지 «전제»가 아니다.
 
@@ -16,7 +16,7 @@ import { existsSync, readFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 
 import { CAPABILITIES, type Capability, type Impl, type Tier } from './capabilities.js';
-import { getMonadConfigDir } from '../monad-config-dir.js';
+import { getElanousConfigDir } from '../elanous-config-dir.js';
 
 export interface MachineProfile {
   /** 실제로 재나. false 면 have/missing 목록만 믿는다(= 고객 기계 가정). */
@@ -155,7 +155,7 @@ export function validateConfig(cfg: unknown): string[] {
 }
 
 export function findConfigPath(explicit?: string): string | null {
-  // ⛔⭐⭐ ***`join(homedir(), '.monad', …)` 를 손으로 짓지 «않는다».***
+  // ⛔⭐⭐ ***`join(homedir(), '.elanous', …)` 를 손으로 짓지 «않는다».***
   //
   // 🩸 실측 2026-09-22 — `pr land` 의 격리 게이트가 이 줄 하나로 착지를 «막았다»:
   //   `src/video-pipeline/config.ts: 0 → 1 (+1 신규 하드코딩 · line 162)`
@@ -164,13 +164,13 @@ export function findConfigPath(explicit?: string): string | null {
   //   🔑 ***「내 관문이 초록」과 「착지할 수 있다」는 다른 값이다.***
   //
   // ⇒ 격리가 성립하려면 스토어 경로가 resolver 를 «거쳐야» 한다:
-  //   `getMonadConfigDir()` 은 `effectiveInstanceRoot()` 를 소비해 ***test 우주를 따라간다.***
-  //   손으로 지은 `~/.monad` 는 격리 런에서도 ***운영 설정을 읽는다*** — 그것이 누출이다.
+  //   `getElanousConfigDir()` 은 `effectiveInstanceRoot()` 를 소비해 ***test 우주를 따라간다.***
+  //   손으로 지은 `~/.elanous` 는 격리 런에서도 ***운영 설정을 읽는다*** — 그것이 누출이다.
   const candidates = [
     explicit,
-    process.env.MONAD_VIDEO_TOOLS,
+    process.env.ELANOUS_VIDEO_TOOLS,
     join(process.cwd(), 'video-tools.json'),
-    join(getMonadConfigDir(), 'video-tools.json'),
+    join(getElanousConfigDir(), 'video-tools.json'),
   ].filter((p): p is string => typeof p === 'string' && p.length > 0);
   for (const c of candidates) { const p = resolve(c); if (existsSync(p)) return p; }
   return null;

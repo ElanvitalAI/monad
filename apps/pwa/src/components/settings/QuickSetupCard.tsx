@@ -209,7 +209,7 @@ function CardBody({ snapshot, swap, onSwap }: CardBodyProps) {
 
       <p className="text-[11px] text-muted-foreground">
         Grok · 중국 4종 (kimi/qwen/glm/deepseek) 등은 NEXUS chat 우선순위
-        외 — daemon 탭 또는 <code className="rounded bg-muted px-1">monad legacy</code>{' '}
+        외 — daemon 탭 또는 <code className="rounded bg-muted px-1">elanous legacy</code>{' '}
         에서 사용.
       </p>
     </div>

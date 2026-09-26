@@ -4,7 +4,7 @@
 // LLM both burns tokens and blows the context window. The shortlist
 // (Tier A3) calls for a single helper that:
 //   1. Returns the body as-is when ≤ threshold (fast path).
-//   2. Writes the full body to /tmp/monad-output/<hash>.<ext>.
+//   2. Writes the full body to /tmp/elanous-output/<hash>.<ext>.
 //   3. Returns a truncated head + tail with a "saved to:" footer
 //      so the model knows it can read more via the Read tool.
 //
@@ -22,8 +22,8 @@ import { tmpdir } from 'node:os';
 import { join as joinPath } from 'node:path';
 import { createHash } from 'node:crypto';
 
-export const DEFAULT_OUTPUT_DIR = process.env.MONAD_OUTPUT_DIR
-  ?? joinPath(tmpdir(), 'monad-output');
+export const DEFAULT_OUTPUT_DIR = process.env.ELANOUS_OUTPUT_DIR
+  ?? joinPath(tmpdir(), 'elanous-output');
 
 export const DEFAULT_INLINE_LIMIT = 8 * 1024;     // 8 KB inline
 export const DEFAULT_HEAD_BYTES = 4 * 1024;       // 4 KB head when spilled

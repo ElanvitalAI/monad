@@ -1,4 +1,4 @@
-// session_manage / monad session — 대화 세션 관리 디스패처 테스트.
+// session_manage / elanous session — 대화 세션 관리 디스패처 테스트.
 //
 // search(내용 검색·필터) · show(ID/prefix 전체 열람) · list(최근·telegram 필터) · delete(파괴적).
 // 검색은 filesWithMatches 를 null 반환으로 강제해 rg 비의존 JS 폴백 경로를 검증.

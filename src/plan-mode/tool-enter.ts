@@ -1,6 +1,6 @@
 // EnterPlanMode tool — Phase WF4.
 //
-// Flips Monad into plan mode: save previous code-edit policy, init
+// Flips Elanous into plan mode: save previous code-edit policy, init
 // a plan artifact, publish the session transition. Does NOT require
 // any parameters — optional initialTitle just lets the artifact
 // frontmatter start with something more descriptive than "(untitled)".

@@ -291,7 +291,7 @@ describe('streamLLMWithTools', () => {
       { onText: () => {}, dispatchTool: async () => { dispatches++; return {}; } },
       // Pin maxTurns explicitly. Without it the cap is resolved from user-config
       // (llm.answerPriority → per-family default, e.g. quality/default = 20),
-      // which would make this test read ~/.monad/config.json and vary by machine.
+      // which would make this test read ~/.elanous/config.json and vary by machine.
       // Passing maxTurns keeps the boundedness assertion deterministic.
       { provider, tools: [{ name: 'loop', description: '', parameters: {} }], maxTurns: 6 },
     );

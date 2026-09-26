@@ -6,7 +6,7 @@
 //
 // Architecture: read-only thin wrapper over the global PersonaRegistry
 // (`src/persona/global-registry.ts`). Disk yaml is the source of truth;
-// editing requires text editor + `monad persona reload` (or fs.watch
+// editing requires text editor + `elanous persona reload` (or fs.watch
 // auto-reload). PWA Showroom consumes this for the per-panel persona
 // picker (§6.4 Q2 = REST read-only).
 //
@@ -196,9 +196,9 @@ export function handlePersonasEvents(
 /** Resolve personas dir same way `global-registry.ts` does, so the PATCH
  *  endpoint targets the file the registry will reload. */
 function resolvePersonasDir(): string {
-  const env = process.env.MONAD_PERSONAS_DIR;
+  const env = process.env.ELANOUS_PERSONAS_DIR;
   if (env && env.length > 0) return env;
-  return join(homedir(), '.monad', 'personas');
+  return join(homedir(), '.elanous', 'personas');
 }
 
 /** PATCH /v1/personas/:personaId — update description.

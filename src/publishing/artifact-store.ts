@@ -32,11 +32,11 @@ import type {
   PublishTarget,
 } from './types.js';
 
-/** 게시물 기본 라이프사이클(대표 2026-07-23: 공개는 길게·기본 1년). env MONAD_PUBLISH_TTL_DAYS 로 override.
+/** 게시물 기본 라이프사이클(대표 2026-07-23: 공개는 길게·기본 1년). env ELANOUS_PUBLISH_TTL_DAYS 로 override.
  *  만료는 삭제가 아니라 콜드 백업 대상 신호(GC 가 S3 콜드 이관·콜드리드 가능·영구옵션은 별도). */
 const PUBLISH_TTL_DAYS_DEFAULT = 365;
 function resolvePublishTtlMs(): number {
-  const d = Number(process.env.MONAD_PUBLISH_TTL_DAYS);
+  const d = Number(process.env.ELANOUS_PUBLISH_TTL_DAYS);
   const days = Number.isFinite(d) && d > 0 ? d : PUBLISH_TTL_DAYS_DEFAULT;
   return days * 24 * 60 * 60 * 1000;
 }

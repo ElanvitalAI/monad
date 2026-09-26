@@ -4,7 +4,7 @@
 // dotfiles), `node_modules`, and non-`.md` files. Sorted by basename
 // so the autocomplete popup feels stable across queries.
 //
-// `monad/obsidian/templates` covers a single folder; this one walks the
+// `elanous/obsidian/templates` covers a single folder; this one walks the
 // whole vault because wikilinks can reference any note. The cap (default
 // 500, max 2000) bounds payload — vaults larger than that should rely
 // on the substring `query` to narrow.

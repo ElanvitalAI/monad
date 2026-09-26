@@ -12,7 +12,7 @@
 //
 // Cancellation:
 //   • Resolver-side AbortSignal (turn cancel from caller) → reject the
-//     pending Promise + fan-out `monad/ask/cancel` notification so the
+//     pending Promise + fan-out `elanous/ask/cancel` notification so the
 //     peer dismisses its open sheet.
 //   • Session-level cancel (`session/cancel` notification from peer) →
 //     `cancelAllForSession(sessionId)` rejects every inflight ask + fans
@@ -31,8 +31,8 @@ import type {
 } from '../ask-user-question/types.js';
 import type { AskUserQuestionDispatchContext } from '../ask-user-question/tool.js';
 import type {
-  MonadAskCancelPayload,
-  MonadAskRequestPayload,
+  ElanousAskCancelPayload,
+  ElanousAskRequestPayload,
 } from './ask-extensions.js';
 
 /** Minimal subset of `AcpServerHandle` this bridge depends on. Lets
@@ -40,11 +40,11 @@ import type {
 export interface AskBridgeHandle {
   pushAskRequest(
     sessionId: string,
-    payload: MonadAskRequestPayload,
+    payload: ElanousAskRequestPayload,
   ): Promise<AskUserQuestionResult | null>;
   pushAskCancel(
     sessionId: string,
-    payload: MonadAskCancelPayload,
+    payload: ElanousAskCancelPayload,
   ): Promise<void>;
 }
 
@@ -93,7 +93,7 @@ export class AskQuestionBridge {
       throw new AskBridgeUnavailable('no sessionId on dispatch context');
     }
     const askId = this.generateId();
-    const payload: MonadAskRequestPayload = { id: askId, request: req };
+    const payload: ElanousAskRequestPayload = { id: askId, request: req };
 
     let inflightEntry: InflightAsk | null = null;
     let externalReject: ((err: Error) => void) | null = null;
@@ -145,7 +145,7 @@ export class AskQuestionBridge {
           debug.log('acp.ask.bridge', 'resolve.no-peer', { sessionId, askId });
         }
         throw new AskBridgeUnavailable(
-          `no monad/ask cap-able peer attached to session ${sessionId}`,
+          `no elanous/ask cap-able peer attached to session ${sessionId}`,
         );
       }
       if (debug.enabled) {

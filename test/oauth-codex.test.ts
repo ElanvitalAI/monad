@@ -47,8 +47,8 @@ afterEach(() => {
   rmSync(root, { recursive: true, force: true });
   delete process.env.XDG_CONFIG_HOME;
   delete process.env.CODEX_HOME;
-  delete process.env.MONAD_CODEX_ACCOUNT;
-  delete process.env.MONAD_CODEX_ACCOUNT_HOME;
+  delete process.env.ELANOUS_CODEX_ACCOUNT;
+  delete process.env.ELANOUS_CODEX_ACCOUNT_HOME;
 });
 
 // ⛔⭐⭐⭐ 6R should-fix — 계정별 배선(storeKey · 미러 경로 · refresh 저장 방향)을 «실제 진입점»으로
@@ -81,8 +81,8 @@ describe('loadFreshCodexAuthState — 이름 계정으로 «진입점»을 직�
     writeFileSync(join(root, 'codex-home', 'auth.json'), JSON.stringify({
       tokens: { access_token: jwtOf(nowSec() + 30 * 24 * 3600, 'DEFAULT'), refresh_token: 'DEFAULT-R' },
     }) + '\n');
-    process.env.MONAD_CODEX_ACCOUNT = 'team';
-    process.env.MONAD_CODEX_ACCOUNT_HOME = teamHome;
+    process.env.ELANOUS_CODEX_ACCOUNT = 'team';
+    process.env.ELANOUS_CODEX_ACCOUNT_HOME = teamHome;
     return { teamHome };
   }
 
@@ -326,7 +326,7 @@ describe('loadFreshCodexAuthState — ~/.codex as shared SoT + concurrent-refres
       last_refresh: new Date().toISOString(),
     }) + '\n');
   }
-  async function saveMonad(accessExpSec: number, refresh: string, expiresAt: number): Promise<void> {
+  async function saveElanous(accessExpSec: number, refresh: string, expiresAt: number): Promise<void> {
     const { saveTokens } = await import('../src/oauth/store');
     saveTokens('openai-codex', {
       accessToken: jwt(accessExpSec), refreshToken: refresh, expiresAt, tokenType: 'Bearer',
@@ -334,7 +334,7 @@ describe('loadFreshCodexAuthState — ~/.codex as shared SoT + concurrent-refres
   }
 
   test('adopts the fresher ~/.codex token WITHOUT refreshing (reconcile-first)', async () => {
-    await saveMonad(nowSec() - 3600, 'dead-R', Date.now() - 3600_000); // monad stale
+    await saveElanous(nowSec() - 3600, 'dead-R', Date.now() - 3600_000); // elanous stale
     writeMirror(nowSec() + 7 * 24 * 3600, 'live-R');                   // mirror fresh (CLI refreshed)
     let called = false;
     const { fetchImpl } = makeFetch(() => { called = true; return { status: 500, json: {} }; });
@@ -344,7 +344,7 @@ describe('loadFreshCodexAuthState — ~/.codex as shared SoT + concurrent-refres
   });
 
   test('refreshes when expiring and no fresher mirror', async () => {
-    await saveMonad(nowSec() + 60, 'cur-R', Date.now() + 60_000);      // within 120s buffer
+    await saveElanous(nowSec() + 60, 'cur-R', Date.now() + 60_000);      // within 120s buffer
     const { fetchImpl, calls } = makeFetch((c) =>
       c.url === CODEX_OAUTH_TOKEN_URL
         ? { status: 200, json: { access_token: 'fresh-A', refresh_token: 'fresh-R', expires_in: 3600 } }
@@ -355,7 +355,7 @@ describe('loadFreshCodexAuthState — ~/.codex as shared SoT + concurrent-refres
   });
 
   test('concurrent race: our refresh 401s while the CLI rotates the mirror → adopt mirror (no throw)', async () => {
-    await saveMonad(nowSec() + 30, 'mine-R', Date.now() + 30_000);     // monad expiring, fresher than initial mirror
+    await saveElanous(nowSec() + 30, 'mine-R', Date.now() + 30_000);     // elanous expiring, fresher than initial mirror
     writeMirror(nowSec() - 100, 'old-mirror-R');                       // mirror initially stale
     const { fetchImpl } = makeFetch((c) => {
       if (c.url === CODEX_OAUTH_TOKEN_URL) {
@@ -371,13 +371,13 @@ describe('loadFreshCodexAuthState — ~/.codex as shared SoT + concurrent-refres
   });
 
   test('both stores dead → throws actionable re-login error', async () => {
-    await saveMonad(nowSec() - 10, 'dead-R', Date.now() - 10_000);     // monad expired, no mirror
+    await saveElanous(nowSec() - 10, 'dead-R', Date.now() - 10_000);     // elanous expired, no mirror
     const { fetchImpl } = makeFetch((c) =>
       c.url === CODEX_OAUTH_TOKEN_URL
         ? { status: 401, json: { error: 'invalid_grant' } }
         : { status: 500, json: {} });
     await expect(loadFreshCodexAuthState({ fetchImpl, mirrorCodex: false }))
-      .rejects.toThrow(/monad login openai-codex/);
+      .rejects.toThrow(/elanous login openai-codex/);
   });
 });
 

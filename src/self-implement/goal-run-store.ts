@@ -3,7 +3,7 @@ import { existsSync, mkdirSync, readFileSync, statSync } from 'node:fs';
 import { hostname } from 'node:os';
 import { basename, dirname, join, relative, resolve } from 'node:path';
 import { resolveHostId } from '../platform/host-id.js';
-import { monadStateRoot } from '../autopilot/state-paths.js';
+import { elanousStateRoot } from '../autopilot/state-paths.js';
 import { resolveLogTargets, type LogTarget } from '../cli/logs-cli.js';
 import { LogStore } from '../mss/logging/log-store.js';
 import { debug } from '../debug/log.js';
@@ -319,7 +319,7 @@ export interface GoalRunQueryDeps {
 }
 
 export function goalRunDbPath(): string {
-  return join(monadStateRoot(), 'self-implement', 'goal-runs.db');
+  return join(elanousStateRoot(), 'self-implement', 'goal-runs.db');
 }
 
 /** Read-only description of the current instance's terminal goal-run population. */
@@ -906,7 +906,7 @@ function renderGoalRunRecurrence(record: GoalRunRecord | undefined, priorRuns: G
     if (matching.length > shownRunIds.length) {
       lines.push(`${matching.length - shownRunIds.length} additional displayed matching prior failure${matching.length === shownRunIds.length + 1 ? '' : 's'} not shown`);
     }
-    lines.push(`view all: monad self goal-run-search --goal ${record.goalId}`);
+    lines.push(`view all: elanous self goal-run-search --goal ${record.goalId}`);
     return lines.join('\n');
   }
 
@@ -917,7 +917,7 @@ function renderGoalRunRecurrence(record: GoalRunRecord | undefined, priorRuns: G
     lines.push(`prior run IDs: ${shownRunIds.join(', ')}`);
     if (matching.length > shownRunIds.length) {
       lines.push(`${matching.length - shownRunIds.length} additional matching prior failure${matching.length === shownRunIds.length + 1 ? '' : 's'} not shown`);
-      lines.push(`view all: monad self goal-run-search --goal ${record.goalId}`);
+      lines.push(`view all: elanous self goal-run-search --goal ${record.goalId}`);
     }
   }
   return lines.join('\n');
@@ -944,12 +944,12 @@ function renderGoalRunReproduction(record: GoalRunRecord | undefined): string {
 
   const configRoot = execution.configRoot!;
   const stateRoot = execution.stateRoot!;
-  const sameTestRoot = configRoot === stateRoot && basename(configRoot) === '.monad-test';
+  const sameTestRoot = configRoot === stateRoot && basename(configRoot) === '.elanous-test';
   if (!sameTestRoot) {
     return `${['reproduction:', ...anchors, 'relaunch command unavailable: configRoot and stateRoot cannot be represented exactly by global flags.'].join('\n')}`;
   }
   const relaunchCommand = [
-    'bun bin/monad.mjs',
+    'bun bin/elanous.mjs',
     `--test=${quotePosixShellArgument(configRoot)}`,
     'dev',
     '--file', quotePosixShellArgument(goalFile),
@@ -995,7 +995,7 @@ export function renderGoalRunQuery(result: GoalRunQueryResult, deps: GoalRunQuer
     }
     const terminalStatusMissing = unfinished.entries.filter((entry) => entry.status === 'terminal-status-missing');
     if (result.goalDocumentPath === null) {
-      return `${header}\n\nno matching goal run records\nunfinished run count: ${terminalStatusMissing.length} (goal document path unavailable; scope not narrowed)\nmore to inspect:\nquery command: monad self unfinished-runs`;
+      return `${header}\n\nno matching goal run records\nunfinished run count: ${terminalStatusMissing.length} (goal document path unavailable; scope not narrowed)\nmore to inspect:\nquery command: elanous self unfinished-runs`;
     }
     const scopedRuns = result.goalDocumentPath
       ? terminalStatusMissing.filter((entry) => entry.goalDocumentPath === result.goalDocumentPath)
@@ -1003,7 +1003,7 @@ export function renderGoalRunQuery(result: GoalRunQueryResult, deps: GoalRunQuer
     if (scopedRuns.length === 0) {
       return `${header}\n\nno matching goal run records\nunfinished run count: 0 (${result.goalDocumentPath ? 'no unfinished runs for this goal' : 'no unfinished run ledgers found'})`;
     }
-    return `${header}\n\nno matching goal run records\nunfinished run count: ${scopedRuns.length}${result.goalDocumentPath ? ' (scoped to this goal)' : ' (all goals; query was not narrowed)'}\nmore to inspect:\nquery command: monad self unfinished-runs`;
+    return `${header}\n\nno matching goal run records\nunfinished run count: ${scopedRuns.length}${result.goalDocumentPath ? ' (scoped to this goal)' : ' (all goals; query was not narrowed)'}\nmore to inspect:\nquery command: elanous self unfinished-runs`;
   } catch {
     return `${header}\n\nno matching goal run records\nunfinished run count: unavailable (unfinished run ledgers could not be read)`;
   }

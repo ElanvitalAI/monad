@@ -603,7 +603,7 @@ export interface DesignCheckOk {
   repoRoot: string;
   documentPath: string;
   craftDirectory: string;
-  /** Every rulebook monad ships — lets the panel show "available but not
+  /** Every rulebook elanous ships — lets the panel show "available but not
    *  declared" without a second round trip. */
   availableRulebooks: string[];
   declaredRulebooks: string[];

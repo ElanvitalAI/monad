@@ -259,7 +259,7 @@ export async function iphoneTransfer(
     return {
       ok: false,
       reason: 'config-missing',
-      message: 'Pushcut is not configured (missing api key). Run `monad setup` or configure Pushcut in your user config.',
+      message: 'Pushcut is not configured (missing api key). Run `elanous setup` or configure Pushcut in your user config.',
     };
   }
 
@@ -274,13 +274,13 @@ export async function iphoneTransfer(
   }
 
   // Fire one Pushcut notification per file, with the URL + filename
-  // in the body. The iOS Shortcut (monad-file-received) picks up
+  // in the body. The iOS Shortcut (elanous-file-received) picks up
   // the URL and downloads.
   for (let i = 0; i < opts.files.length; i++) {
     const f = opts.files[i]!;
     const url = served.urls[i]!;
     const r = await pushcut.notify(target.pushcutName, {
-      title: `File from Monad — ${basename(f.localPath)}`,
+      title: `File from Elanous — ${basename(f.localPath)}`,
       text: `Size: ${f.size ?? 'unknown'} bytes`,
       input: url,
     });

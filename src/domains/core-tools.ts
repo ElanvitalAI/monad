@@ -31,7 +31,7 @@ import { MISSION_DECIDE_SPEC, dispatchMissionDecide } from '../autopilot/mission
  *  finance-tools 에서 L2 로 이관(2026-07-08). */
 const MEMORY_RECALL_SPEC: LLMToolSpec = {
   name: 'memory_recall',
-  description: "⭐ 크로스서피스 기억 (코어·**멀티 도메인**) — monad가 전 표면에서 **자기가 발송한 알림/신호(outbound)와 나눈 대화(inbound Q&A)**를 회상. 도메인 무관 코어 도구로 여러 도메인을 아우른다: finance(투자 알림·수급·속보)·monad(자기 구현 이력·self-awareness)·ops 등 — domain 인자로 특정 도메인만, 생략 시 전 도메인 통합 회상. **'방금/아까/어제 무슨 알림 보냈나' '전에 뭐라고 알려줬지' '내가 전에 뭘 물어봤지' 처럼 과거 발송·대화를 되짚는 질문은 반드시 이 도구 먼저.** direction 으로 outbound(발송)/inbound(대화) 필터, query(자연어) 최근성+현저성+관련성 스코어 top-N. 회상 결과에 **archived(흐려져 S3 로 이관된 cold 기억)** 가 있으면 그 후보의 id 를 **restoreId** 로 다시 호출해 **느린 복원**(S3 fetch·recall_count++·재활성화)해서 본문까지 되살릴 수 있다. READ-ONLY(restoreId 제외)·fail-soft. (예: 실시간 시세=finance_quote · 과거 유사국면 벡터검색=finance_knowledge · monad 구현 이력=self_recall 과 구분: 여긴 도메인 불문 '내가 보낸/대화한 것'의 원장.)",
+  description: "⭐ 크로스서피스 기억 (코어·**멀티 도메인**) — elanous가 전 표면에서 **자기가 발송한 알림/신호(outbound)와 나눈 대화(inbound Q&A)**를 회상. 도메인 무관 코어 도구로 여러 도메인을 아우른다: finance(투자 알림·수급·속보)·elanous(자기 구현 이력·self-awareness)·ops 등 — domain 인자로 특정 도메인만, 생략 시 전 도메인 통합 회상. **'방금/아까/어제 무슨 알림 보냈나' '전에 뭐라고 알려줬지' '내가 전에 뭘 물어봤지' 처럼 과거 발송·대화를 되짚는 질문은 반드시 이 도구 먼저.** direction 으로 outbound(발송)/inbound(대화) 필터, query(자연어) 최근성+현저성+관련성 스코어 top-N. 회상 결과에 **archived(흐려져 S3 로 이관된 cold 기억)** 가 있으면 그 후보의 id 를 **restoreId** 로 다시 호출해 **느린 복원**(S3 fetch·recall_count++·재활성화)해서 본문까지 되살릴 수 있다. READ-ONLY(restoreId 제외)·fail-soft. (예: 실시간 시세=finance_quote · 과거 유사국면 벡터검색=finance_knowledge · elanous 구현 이력=self_recall 과 구분: 여긴 도메인 불문 '내가 보낸/대화한 것'의 원장.)",
   parameters: {
     type: 'object',
     properties: {
@@ -39,7 +39,7 @@ const MEMORY_RECALL_SPEC: LLMToolSpec = {
       direction: { type: 'string', description: '방향 필터(선택) — outbound(내가 보낸 알림)|inbound(나눈 대화 Q&A). 생략 시 둘 다.' },
       kind: { type: 'string', description: '종류 필터(선택) — alert|watch-zone|digest|report|qna|impl 등.' },
       category: { type: 'string', description: '카테고리 필터(선택·도메인무관) — monitor|alert|report|digest|ingest|qna|maintenance|awareness.' },
-      domain: { type: 'string', description: '도메인 필터(선택·멀티도메인) — finance(투자)·monad(구현)·ops 등. 생략 시 전 도메인 통합.' },
+      domain: { type: 'string', description: '도메인 필터(선택·멀티도메인) — finance(투자)·elanous(구현)·ops 등. 생략 시 전 도메인 통합.' },
       sinceHours: { type: 'number', description: '조회 기간 시간(기본 168=7일).' },
       limit: { type: 'number', description: '반환 건수(기본 8).' },
       restoreId: { type: 'string', description: '느린 복원(선택) — archived 후보의 id 를 지정하면 그 cold 기억을 S3 에서 복원(recall_count++·warm 재활성화)해 본문 반환. 회상 결과 archived 에 관련 후보가 있고 본문이 필요할 때만.' },
@@ -107,7 +107,7 @@ const CORE_TOOL_HANDLERS: Record<string, (args: Record<string, unknown>) => Prom
   session_manage: (args) => dispatchSessionQuery(args), // 대화 세션 검색·열람·목록·삭제(내용/ID/텔레그램)
   memory_recall: dispatchMemoryRecall,
   fact_check: dispatchFactCheck, // 팩트체크 캐스케이드(내부 발송원장→외부 X/레딧/웹)·도메인 무관 코어
-  self_recall: dispatchSelfRecall, // self-awareness(monad 구현 이력)·도메인 무관 코어
+  self_recall: dispatchSelfRecall, // self-awareness(elanous 구현 이력)·도메인 무관 코어
   autopilot_missions: dispatchAutopilotMissions, // 오토파일럿 계보 조회(AL3)·도메인 무관 코어
   ops_status: dispatchOpsStatus, // 운영 상태 관측(지금 뭐 도나·이상 없나)·도메인 무관 코어
   se_build: dispatchSeBuild, // SE 격리 빌드 관측(빌드 안 뭐 하나·로그 tail·worktree diff)·코어

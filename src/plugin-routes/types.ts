@@ -51,7 +51,7 @@ export interface CompiledRoute extends RouteContribution {
   keywords: readonly string[];
 }
 
-/** Snapshot shape for `.monad/routes.json` (compiled cache). */
+/** Snapshot shape for `.elanous/routes.json` (compiled cache). */
 export interface RoutesCompiledFile {
   schemaVersion: 1;
   generatedAt: number;

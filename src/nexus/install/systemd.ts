@@ -1,21 +1,21 @@
 // NEXUS · systemd --user install (Phase N-5 PR ω)
 //
-// `monad nexus install --systemd-user`:
+// `elanous nexus install --systemd-user`:
 //   1. Render unit (INI) with Restart=on-failure + RestartSec=10. Exit 75
 //      from PR χ is non-zero → systemd respawns. Exit 0 (cleanExit) →
 //      systemd stays put. Same hermes-style handshake as launchd.
-//   2. Write to ~/.config/systemd/user/monad-nexus.service (mode 0o644).
+//   2. Write to ~/.config/systemd/user/elanous-nexus.service (mode 0o644).
 //   3. (default) `systemctl --user daemon-reload` + `enable` + `start`.
 //      `--no-start` skips enable + start (daemon-reload still runs so the
 //      file is parsed and surfaced in `systemctl --user list-unit-files`).
 //
-// `monad nexus uninstall --systemd-user`:
+// `elanous nexus uninstall --systemd-user`:
 //   1. `systemctl --user stop` + `disable` (idempotent — non-zero on
 //      already-disabled is treated as success).
 //   2. Remove the unit file.
 //   3. `systemctl --user daemon-reload`.
 //
-// `monad nexus status --systemd-user` / statusSystemd():
+// `elanous nexus status --systemd-user` / statusSystemd():
 //   - `systemctl --user is-active` + `is-enabled` decide running/loaded/
 //     not-loaded outcomes.
 
@@ -27,7 +27,7 @@ import { runCli as defaultRunCli, type RunCli } from '../config/secrets/cli-help
 import { debug } from '../../debug/log.js';
 import { nexusRunCommand, persistProviderKeysToCache, type KeyCachePersistResult } from './launchd.js';
 
-export const SYSTEMD_UNIT_NAME = 'monad-nexus.service';
+export const SYSTEMD_UNIT_NAME = 'elanous-nexus.service';
 export const SYSTEMD_DEFAULT_RESTART_SECONDS = 10;
 
 export interface RenderSystemdUnitOpts {
@@ -44,7 +44,7 @@ export interface RenderSystemdUnitOpts {
 
 export function renderSystemdServiceUnit(opts: RenderSystemdUnitOpts): string {
   const restart = opts.restartSeconds ?? SYSTEMD_DEFAULT_RESTART_SECONDS;
-  const description = opts.description ?? 'monad NEXUS — unified TUI shell + supervisor + meta-api';
+  const description = opts.description ?? 'elanous NEXUS — unified TUI shell + supervisor + meta-api';
   const execStart = opts.command.map(shellQuote).join(' ');
   const envEntries = Object.entries(opts.env ?? {});
   const envLines = envEntries.length === 0
@@ -135,8 +135,8 @@ export function resolveSystemdEnvironment(opts: SystemdOpts = {}): SystemdEnviro
 }
 
 function defaultCommand(): string[] {
-  // 🩸 2026-09-24: 종전 `monad nexus run` — systemd 는 bare 이름을 고정 경로(/usr/bin 등)에서만 찾아
-  //    설치본(`~/.local/share/monad/bin`)이나 `~/.bun/bin` 의 monad 를 못 찾는다. launchd 와 같은 명령을 쓴다.
+  // 🩸 2026-09-24: 종전 `elanous nexus run` — systemd 는 bare 이름을 고정 경로(/usr/bin 등)에서만 찾아
+  //    설치본(`~/.local/share/elanous/bin`)이나 `~/.bun/bin` 의 elanous 를 못 찾는다. launchd 와 같은 명령을 쓴다.
   return nexusRunCommand();
 }
 
@@ -175,7 +175,7 @@ export async function installSystemd(opts: SystemdOpts = {}): Promise<InstallSys
 
   const writeUnit = opts.writeUnit ?? defaultWriteUnit;
   try {
-    // 🩸 2026-09-24 빈 Ubuntu VM 실측: 유닛의 `StandardOutput=append:<~/.monad/nexus/logs/…>` 폴더가 없으면
+    // 🩸 2026-09-24 빈 Ubuntu VM 실측: 유닛의 `StandardOutput=append:<~/.elanous/nexus/logs/…>` 폴더가 없으면
     //    systemd 가 출력 파일을 못 열어 `status=209/STDOUT` 으로 즉시 죽고 재시작만 반복했다(데몬이 «한 번도» 못 뜬다).
     const ensureDir = opts.ensureDir ?? ((dir: string) => mkdirSync(dir, { recursive: true }));
     for (const dir of new Set([dirname(env.stdoutPath), dirname(env.stderrPath)])) ensureDir(dir);

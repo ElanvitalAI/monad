@@ -4,7 +4,7 @@
 // matching (e.g. "claude-haiku" → "claude-haiku-4-5") + ref/gemini-cli
 // `defaultModelConfigs.ts` modelConfig alias hierarchy.
 //
-// monad's model id matching is prefix-based throughout the codebase
+// elanous's model id matching is prefix-based throughout the codebase
 // (`m.startsWith('claude-')`, `m.startsWith('gpt-')`, etc.). When a
 // user types a short alias (`haiku`, `opus`, `flash`) the prefix
 // lookup misses and the request falls back to provider default. This

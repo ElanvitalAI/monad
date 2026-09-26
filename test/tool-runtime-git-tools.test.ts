@@ -316,7 +316,7 @@ describe('dispatchMergePullRequest', () => {
         { number: 7, strategy: 'merge', admin: true },
         { cwd: '/tmp', adminEnvAllowed: false },
       ),
-    ).toThrow(/MONAD_GH_ALLOW_ADMIN=1/);
+    ).toThrow(/ELANOUS_GH_ALLOW_ADMIN=1/);
   });
 
   test('admin + adminEnvAllowed=true → passes --admin', () => {

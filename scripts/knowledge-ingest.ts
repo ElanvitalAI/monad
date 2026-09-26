@@ -1,7 +1,7 @@
 #!/usr/bin/env bun
 // ── R3 지식레이어 인제스트 (2026-07-06 · 일 1회 크론) ────────────────────
 // 유의 뉴스신호(6+)·디깅 리포트·주간 알파 리포트를 임베딩해
-// ~/.monad/conatus/knowledge.db 에 멱등 영속. 90일 휘발(pruneOld) 전에
+// ~/.elanous/conatus/knowledge.db 에 멱등 영속. 90일 휘발(pruneOld) 전에
 // 지식만 남긴다 — 인제스트가 매일 돌므로 휘발 대상은 항상 이미 영속됨.
 //
 // cron: 45 20 * * * (KST — 주간증류 20:00 · 주간알파 20:30 뒤)
@@ -37,7 +37,7 @@ const counts = await ingestKnowledge(db);
 let kpruned = 0;
 try { kpruned = pruneKnowledge(db); } catch { /* fail-soft */ }
 // ★ self-awareness(P3) — 구현/설계 문서(docs/HANDOFF·REPORT·PLAN·FEATURE…) 자동
-//   벡터화(domain=monad). monad 가 "내가 뭘 구현했나"를 self_recall 벡터 층으로 회상.
+//   벡터화(domain=elanous). elanous 가 "내가 뭘 구현했나"를 self_recall 벡터 층으로 회상.
 //   DocOps P0(2026-07-13): mtime 증분(무변경=stat만·수정=구청크 교체·living doc 갱신
 //   반영) + doc-lint taxonomy와 재귀 inventory를 재사용해 canonical 문서 전체를 합류한다.
 const docs = { files: 0, chunks: 0, skipped: 0, unchanged: 0, refreshed: 0 };
@@ -56,7 +56,7 @@ if (resolvedDocs.roots.length === 0) {
 }
 for (const root of resolvedDocs.roots) {
   try {
-    const r = await ingestDocsDir(db, { domain: 'monad', dir: root.path });
+    const r = await ingestDocsDir(db, { domain: 'elanous', dir: root.path });
     docs.files += r.files; docs.chunks += r.chunks; docs.skipped += r.skipped;
     docs.unchanged += r.unchanged; docs.refreshed += r.refreshed;
     debug.log('knowledge.ingest', 'docs-root', {

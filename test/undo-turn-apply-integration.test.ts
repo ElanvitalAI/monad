@@ -49,7 +49,7 @@ describe('apply.ts auto-snapshot hook', () => {
     __resetSessionWorkingDir();
     resetPolicyToDefault();
     setUndoDisabled(false);
-    delete process.env.MONAD_UNDO;
+    delete process.env.ELANOUS_UNDO;
     setPolicy({ mode: 'unsupervised' });  // skip approver prompts
     repo = mkdtempSync(join(tmpdir(), 'ut2-'));
     gitInit(repo);
@@ -122,8 +122,8 @@ describe('apply.ts auto-snapshot hook', () => {
     endTurn();
   });
 
-  test('MONAD_UNDO=off → no snapshot even with Edit', async () => {
-    process.env.MONAD_UNDO = 'off';
+  test('ELANOUS_UNDO=off → no snapshot even with Edit', async () => {
+    process.env.ELANOUS_UNDO = 'off';
     startTurn('turn D');
     const store = new ReadFileStateStore();
     const p = join(repo, 'a.txt');
@@ -131,7 +131,7 @@ describe('apply.ts auto-snapshot hook', () => {
     await applyEdit({ file_path: p, edits: [{ old_string: 'v1\n', new_string: 'v2\n' }] }, store);
     expect(listSnapshots().length).toBe(0);
     endTurn();
-    delete process.env.MONAD_UNDO;
+    delete process.env.ELANOUS_UNDO;
   });
 
   test('end-to-end — Edit, then restore reverses the change', async () => {

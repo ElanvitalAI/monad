@@ -1,5 +1,5 @@
 // Step 1 of platform-evolution arc — channel-agnostic chat ↔ daemon
-// session bindings, persisted at <MONAD_DAEMON_DIR>/channel-bindings.json
+// session bindings, persisted at <ELANOUS_DAEMON_DIR>/channel-bindings.json
 // (PLAN-discord-ambient-merge.md §2 D11=B).
 //
 // Why generic: the telegram fan-out arc (PR #837~#846) introduced
@@ -19,7 +19,7 @@
 //         "channelAccount": "default",        // multi-account ready
 //         "chatId": "123" | "987654321...",   // string; telegram numbers stringified
 //         "threadId": "0" | "" | "...",       // empty string = no thread (discord = no forum thread)
-//         "sessionId": "monad-session-3",
+//         "sessionId": "elanous-session-3",
 //         "lastSeenMsgIdx": 42,
 //         "updatedAt": "2026-04-27T..."
 //       }
@@ -33,7 +33,7 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join as joinPath } from 'node:path';
 
-import { monadDaemonDir, ensureMonadDaemonDir } from '../monad-daemon.js';
+import { elanousDaemonDir, ensureElanousDaemonDir } from '../elanous-daemon.js';
 
 export type ChannelKind = 'telegram' | 'discord' | string;
 
@@ -63,7 +63,7 @@ interface BindingsFile {
 const STORE_BASENAME = 'channel-bindings.json';
 
 export function defaultChannelBindingsPath(): string {
-  return joinPath(monadDaemonDir(), STORE_BASENAME);
+  return joinPath(elanousDaemonDir(), STORE_BASENAME);
 }
 
 function bindingKey(
@@ -240,7 +240,7 @@ function loadFrom(path: string, into: Map<string, ChannelBinding>): void {
 function ensureDir(path: string): void {
   const dir = dirname(path);
   if (!existsSync(dir)) {
-    if (dir === monadDaemonDir()) ensureMonadDaemonDir();
+    if (dir === elanousDaemonDir()) ensureElanousDaemonDir();
     else mkdirSync(dir, { recursive: true });
   }
 }

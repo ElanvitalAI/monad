@@ -24,7 +24,7 @@ const DEFAULT_SKILL = 'omni-crawl';
 // 버그: omni-crawl 등 검색 스킬이 full 도구셋(Write/Edit 포함)으로 실행되고 executeSkill 의
 // skillCwd 가 process.cwd()=main 트리라, codex 가 조사 중 Write 도구로 `내부 문서 `*`` 를
 // main 트리에 직접 write → 승인 전(proposed 미션) 부작용으로 main 트리 오염(walker main-tree
-// pollution 의 research/prepare 판). recordResult 의 `.monad/research/` archive(격리)와 별개.
+// pollution 의 research/prepare 판). recordResult 의 `.elanous/research/` archive(격리)와 별개.
 //
 // 수복: research 경로에서 Write/Edit/NotebookEdit 만 deny. Bash 는 manifest.skillDir cwd 라 main
 // 트리 밖이고 omni-crawl 검색 CLI(npx tsx scripts/main.ts)에 필수라 유지 → 검색은 정상 작동,

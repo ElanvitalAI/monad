@@ -1,10 +1,10 @@
 // P4 (2026-05-10) — Multi-instance PWA daemon registry.
 //
-// Tracks every `monad nexus pwa start` / `pwa test` daemon currently
+// Tracks every `elanous nexus pwa start` / `pwa test` daemon currently
 // running on this host so `pwa global status` / `pwa global clean`
 // (P5) can see across folders / projects / lock dirs. Without a
-// registry, two instances in different cwds or `~/.monad/nexus/` vs
-// `<repo>/.monad-test/` are invisible to each other; the registry
+// registry, two instances in different cwds or `~/.elanous/nexus/` vs
+// `<repo>/.elanous-test/` are invisible to each other; the registry
 // makes them addressable from one place.
 //
 // Wire points (P4 hookups in pwa-start / pwa-stop / pwa-test):
@@ -13,7 +13,7 @@
 //   - On `pwa global status` (P5) → `listPwaInstances({ prune: true })`
 //   - On `pwa global clean` (P5) → list → kill / unmount each → wipe file
 //
-// File: `~/.monad/pwa-registry.json` (JSON · single source of truth
+// File: `~/.elanous/pwa-registry.json` (JSON · single source of truth
 // per host). Schema versioned (`version: 1`). Atomic write via
 // `tmpfile + rename` so a concurrent reader never sees a half-written
 // file. Stale entries (pid no longer alive) are pruned lazily on read
@@ -45,13 +45,13 @@ export interface PwaLauncherProvenanceOpts {
 export function resolvePwaLauncherProvenance(
   { env, isTTY }: PwaLauncherProvenanceOpts,
 ): PwaLauncherProvenance {
-  const runId = env.MONAD_RUN_ID;
+  const runId = env.ELANOUS_RUN_ID;
   if (runId) return { kind: 'autonomous-run', runId };
 
   const serviceName = env.LAUNCH_JOB_NAME;
   if (serviceName) return { kind: 'service-manager', serviceName };
 
-  if (env.MONAD_NEXUS_BG_PARENT) return { kind: 'background-child' };
+  if (env.ELANOUS_NEXUS_BG_PARENT) return { kind: 'background-child' };
   if (isTTY) return { kind: 'human-terminal' };
   return { kind: 'unknown' };
 }
@@ -92,8 +92,8 @@ export interface PwaRegistryEntry {
   /** Working directory the user invoked `pwa start` / `pwa test` from.
    *  Distinguishes "multi-folder same machine" instances. */
   cwd: string;
-  /** Daemon state directory. `~/.monad/nexus/` for production · per-
-   *  repo `<repo>/.monad-test/` for test mode. */
+  /** Daemon state directory. `~/.elanous/nexus/` for production · per-
+   *  repo `<repo>/.elanous-test/` for test mode. */
   daemonDir: string;
   /** True when Tailscale Serve was mounted at boot (`share enable` or
    *  `--https`). `pwa global clean` knows whether to attempt unmount. */
@@ -154,10 +154,10 @@ export interface PwaInstanceListResult {
 
 const REGISTRY_VERSION = 1;
 
-/** Default path: `~/.monad/pwa-registry.json`. Override via env for
+/** Default path: `~/.elanous/pwa-registry.json`. Override via env for
  *  tests or alternate user roots. */
 export function pwaRegistryPath(): string {
-  const root = process.env.MONAD_HOME || join(homedir(), '.monad');
+  const root = process.env.ELANOUS_HOME || join(homedir(), '.elanous');
   return join(root, 'pwa-registry.json');
 }
 

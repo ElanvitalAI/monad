@@ -48,7 +48,7 @@ function fakeRegistry(): {
 
 function adminRouter() {
   const r = createPersonaCapabilityRouter({ grantStore: createCapabilityGrantStore() });
-  r.setPersona({ persona: 'monad-bot', role: 'admin' });
+  r.setPersona({ persona: 'elanous-bot', role: 'admin' });
   return r;
 }
 
@@ -59,7 +59,7 @@ describe('createAmbientObserver — death detection', () => {
     const obs = createAmbientObserver({
       registry: fake.registry,
       channels: [CHANNEL],
-      observerPersona: 'monad-bot',
+      observerPersona: 'elanous-bot',
       personaRouter: adminRouter(),
       channelPost: async (p) => { posts.push(p); },
     });
@@ -82,7 +82,7 @@ describe('createAmbientObserver — death detection', () => {
     const obs = createAmbientObserver({
       registry: fake.registry,
       channels: [CHANNEL],
-      observerPersona: 'monad-bot',
+      observerPersona: 'elanous-bot',
       personaRouter: adminRouter(),
       channelPost: async (p) => { posts.push(p); },
     });
@@ -131,7 +131,7 @@ describe('createAmbientObserver — throttle', () => {
     const obs = createAmbientObserver({
       registry: fake.registry,
       channels: [CHANNEL],
-      observerPersona: 'monad-bot',
+      observerPersona: 'elanous-bot',
       personaRouter: adminRouter(),
       channelPost: async (p) => { posts.push(p); },
       throttleMs: 1000,
@@ -161,7 +161,7 @@ describe('createAmbientObserver — multi-channel', () => {
         { id: 'ch-1', name: 'a' },
         { id: 'ch-2', name: 'b' },
       ],
-      observerPersona: 'monad-bot',
+      observerPersona: 'elanous-bot',
       personaRouter: adminRouter(),
       channelPost: async (p) => { posts.push(p); },
     });
@@ -184,7 +184,7 @@ describe('createAmbientObserver — stop', () => {
     const obs = createAmbientObserver({
       registry: fake.registry,
       channels: [CHANNEL],
-      observerPersona: 'monad-bot',
+      observerPersona: 'elanous-bot',
       personaRouter: adminRouter(),
       channelPost: async () => {},
     });
@@ -202,7 +202,7 @@ describe('createAmbientObserver — composer override', () => {
     const obs = createAmbientObserver({
       registry: fake.registry,
       channels: [CHANNEL],
-      observerPersona: 'monad-bot',
+      observerPersona: 'elanous-bot',
       personaRouter: adminRouter(),
       channelPost: async (p) => { posts.push(p); },
       composeMessage: (e: AmbientPostureEvent) => `OVERRIDE: ${e.shellId}`,

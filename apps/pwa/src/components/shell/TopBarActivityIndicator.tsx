@@ -14,7 +14,7 @@ export function TopBarActivityIndicator({
     return (
       <span
         role="alert"
-        data-monad-component="topbar-activity"
+        data-elanous-component="topbar-activity"
         data-activity-kind="error"
         title={snapshot.message}
         className="max-w-[9rem] shrink-0 truncate rounded px-1.5 py-0.5 text-[10px] text-rose-500 sm:max-w-[16rem]"
@@ -30,7 +30,7 @@ export function TopBarActivityIndicator({
       href={snapshot.run.href}
       aria-label={label}
       title={label}
-      data-monad-component="topbar-activity"
+      data-elanous-component="topbar-activity"
       data-activity-kind="active"
       data-run-id={snapshot.run.runId}
       className="flex min-w-0 max-w-[7.5rem] shrink items-center gap-1 rounded-md px-1.5 py-0.5 text-[10px] font-medium text-emerald-600 hover:bg-accent sm:max-w-[18rem]"

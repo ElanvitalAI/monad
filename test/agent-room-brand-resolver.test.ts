@@ -136,8 +136,8 @@ describe('resolveBrand · laneKind (CL6)', () => {
     expect(r.laneKind).toBe('pty');
   });
 
-  test('monad defaults to acp lane', () => {
-    const r = resolveBrand('monad', undefined);
+  test('elanous defaults to acp lane', () => {
+    const r = resolveBrand('elanous', undefined);
     expect(r.laneKind).toBe('acp');
   });
 

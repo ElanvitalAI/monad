@@ -17,7 +17,7 @@ import { Database } from 'bun:sqlite';
 import { existsSync, writeFileSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { isS3Available, s3MonadKey, uploadFile, downloadFile, objectExists } from '../storage/s3.js';
+import { isS3Available, s3ElanousKey, uploadFile, downloadFile, objectExists } from '../storage/s3.js';
 
 /** S3 접근 seam — 기본은 실 S3(aws cli), 테스트는 in-memory mock 주입. */
 export interface ArchiveS3Deps {
@@ -30,7 +30,7 @@ export interface ArchiveS3Deps {
 
 /** 기본 S3 구현 — 일반 S3(memory-archive/) JSON 보관(임시파일 경유·aws cli). */
 export function defaultArchiveS3Deps(): ArchiveS3Deps {
-  const keyOf = (id: string) => s3MonadKey('memoryArchive', `${id}.json`);
+  const keyOf = (id: string) => s3ElanousKey('memoryArchive', `${id}.json`);
   return {
     available: () => isS3Available(),
     put: (id, json) => {

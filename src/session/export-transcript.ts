@@ -1,11 +1,11 @@
 // 대화 전사 내보내기 — 공유 순수함수 (PLAN 1-D · 2026-07-24).
 //
-// 레포 관례("단일 창구") — dispatchSessionQuery 처럼 CLI(`monad session export`)·
+// 레포 관례("단일 창구") — dispatchSessionQuery 처럼 CLI(`elanous session export`)·
 // TUI(`/export`)·(후속) 텔레그램이 이 한 함수를 공유한다. 세션 JSONL(또는 라이브
 // TUI history)을 마크다운 전사로 렌더해 홈 하위 경로에 쓴다.
 //
 // 안전: 홈 밖 경로는 거부(resolveTargetKind → 'outside-home'). 기본 경로
-// `~/temp/monad-transcript-<stamp>.md`(대표 지시). `~` 확장은 단일 resolveHome.
+// `~/temp/elanous-transcript-<stamp>.md`(대표 지시). `~` 확장은 단일 resolveHome.
 
 import { mkdirSync, writeFileSync, existsSync, statSync } from 'node:fs';
 import { dirname, join } from 'node:path';
@@ -95,7 +95,7 @@ function renderMarkdown(
 /** 대상 파일 경로 결정. 디렉토리를 주면 기본 파일명을 그 안에 만든다. */
 function resolveTargetPath(to: string | undefined, atMs: number, home: string): string {
   const stamp = timestampSlug(atMs);
-  const defaultName = `monad-transcript-${stamp}.md`;
+  const defaultName = `elanous-transcript-${stamp}.md`;
   if (!to || !to.trim()) {
     return join(home, 'temp', defaultName);
   }

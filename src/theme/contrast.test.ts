@@ -26,7 +26,7 @@ const EXPECTED_BELOW_NORMAL_TEXT: Readonly<Record<string, ReadonlyArray<string>>
     'selectView.cursor',
     'statusBar.pillActive',
   ],
-  'monad-pastel-default': [],
+  'elanous-pastel-default': [],
 };
 
 function directTokenPairs(value: unknown, path = ''): Array<{ name: string; pair: TokenPair }> {
@@ -56,15 +56,15 @@ describe('theme contrast measurement', () => {
   });
 });
 
-describe('monad pastel default accent roles', () => {
-  const theme = THEME_REGISTRY.find(({ name }) => name === 'monad-pastel-default');
+describe('elanous pastel default accent roles', () => {
+  const theme = THEME_REGISTRY.find(({ name }) => name === 'elanous-pastel-default');
   const widgetTokens = theme?.widgetTokens;
   const focused = widgetTokens?.button?.focused;
   const pressed = widgetTokens?.button?.pressed;
   const cursor = widgetTokens?.selectView?.cursor;
   const pillActive = widgetTokens?.statusBar?.pillActive;
   if (!theme || !focused || !pressed || !cursor || !pillActive) {
-    throw new Error('missing monad-pastel-default accent token');
+    throw new Error('missing elanous-pastel-default accent token');
   }
 
   test('uses normal-text contrast for the four repaired accent pairs', () => {

@@ -49,7 +49,7 @@ const PREVIEW_CAP = 500;
 /** D4 (Bundle 2 · 2026-04-28) — transports the inject pipeline can
  *  route through. `pty` was the v1-only target; `acp` was added when
  *  showroom v2 needed to handoff into ACP-backed sessions
- *  (monad-as-child). Adding a new transport kind here is the single
+ *  (elanous-as-child). Adding a new transport kind here is the single
  *  switch that opens the inject pipeline to it — `target.send()` is
  *  already transport-agnostic. */
 type InjectableTransportKind = 'pty' | 'acp';
@@ -170,8 +170,8 @@ export async function injectCapture(
   }
   // D4 (Bundle 2 · 2026-04-28) — accept both PTY and ACP transports.
   // `target.send()` is transport-agnostic: PTY adapters write to the
-  // pty stream, monad-as-child (ACP) writes to `child.stdin` which the
-  // sub-monad parses as JSON-RPC. The HITL approver and audit pipeline
+  // pty stream, elanous-as-child (ACP) writes to `child.stdin` which the
+  // sub-elanous parses as JSON-RPC. The HITL approver and audit pipeline
   // are unchanged — only the precondition check widens.
   // See: 내부 문서 `PLAN-showroom-v2-lane-handoff-2026-04-28` §D6.
   const hasInjectableTransport = target.transports.some(

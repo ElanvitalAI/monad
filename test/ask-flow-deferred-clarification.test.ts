@@ -1,6 +1,6 @@
 // ⭐ 72차: 비대화형 표면(무인 런 · TUI 슬래시)에서 저작기의 물음이 «사실상 사라졌다» —
 //   「N건 있다」만 말하고 «무엇을 묻는지»도 «어떻게 답하는지»도 안 줬다.
-// ⛔ 새 인터뷰 UI 를 만들지 «않는다» — 답변 창구(`monad self clarify answer`)는 이미 있다.
+// ⛔ 새 인터뷰 UI 를 만들지 «않는다» — 답변 창구(`elanous self clarify answer`)는 이미 있다.
 //   이 시험은 그 «가리킴»이 실제로 나오는지를 문다.
 import { describe, expect, test } from 'bun:test';
 import { runAskLaunchFlow, type AskLaunchFlowDeps } from '../src/self-dev/ask-launch-flow.js';
@@ -92,8 +92,8 @@ describe('runAskLaunchFlow — 비대화형 되묻기', () => {
     expect(text).toContain('Which function should the target contain?');
     expect(text).toContain('0) Function or constant');
     // ⛔ 답변 «경로» — 이미 있는 창구를 가리킨다(새 UI 를 만들지 않는다).
-    expect(text).toContain('monad self clarify answer docs/goals/GOAL-x.md <questionId>');
-    expect(text).toContain('monad self author --supersedes docs/goals/GOAL-x.md');
+    expect(text).toContain('elanous self clarify answer docs/goals/GOAL-x.md <questionId>');
+    expect(text).toContain('elanous self author --supersedes docs/goals/GOAL-x.md');
     expect(logs.find(({ event }) => event === 'ask-clarification-intake')?.data)
       .toMatchObject({ mode: 'deferred-noninteractive', pendingCount: 1, interactive: false });
     // runAskLaunchFlow → recommendLaunchDecomposition 및 인보커 git 관측은 둘 다 fake seam만 소비한다.
@@ -119,6 +119,6 @@ describe('runAskLaunchFlow — 비대화형 되묻기', () => {
     );
     const text = printed.join('\n');
     expect(text).toContain('되묻기 없음');
-    expect(text).not.toContain('monad self clarify answer');
+    expect(text).not.toContain('elanous self clarify answer');
   }, 30_000);
 });

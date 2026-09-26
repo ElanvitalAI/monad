@@ -27,15 +27,15 @@ import { debug } from '../src/debug/log.js';
 import { reportDecomposeFailureHitl } from './se-mission-prepare-cause.js';
 
 // ★ 인스턴스 스코프 상속(ISO·2026-07-14) — 부모 데몬(mission-prepare-spawn)이 argv 로 넘긴
-// --config-dir 을 setMonadConfigDir 로 적용하고 argv 에서 strip. 이걸 store 열기 전에 해야
-// 격리 테스트 데몬이 만든 미션을 .monad-test/tasks/tasks.db 에서 찾는다(미적용 시 운영 스토어
+// --config-dir 을 setElanousConfigDir 로 적용하고 argv 에서 strip. 이걸 store 열기 전에 해야
+// 격리 테스트 데몬이 만든 미션을 .elanous-test/tasks/tasks.db 에서 찾는다(미적용 시 운영 스토어
 // 조회 → "미션 없음" 즉사). strip 후 argv[2]=missionId 유지(플래그는 항상 뒤에 붙는다).
 applyConfigDirFlagFromArgv();
 
 // ★ D-시리즈 관측 store sink(2026-07-15 · 관측성) — se-mission-prepare 는 데몬이 detached 로 스폰한
 //   별도 프로세스라 데몬의 logs.db StoreSink 를 상속하지 않는다. 등록 안 하면 분해 비평(D1
 //   mission.decomp.critique)·granularity 등의 debug.log 가 prepare 파일 트레일에만 남고 logs.db 에
-//   안 닿아 `monad logs --category mission.decomp.critique` 로 조회 불가(관측 관문 무실효). run-mission
+//   안 닿아 `elanous logs --category mission.decomp.critique` 로 조회 불가(관측 관문 무실효). run-mission
 //   과 동형(run-mission.ts:242). fail-soft(실패해도 준비는 진행).
 try {
   const [storeMod, dbgMod, cfgMod] = await Promise.all([
@@ -121,7 +121,7 @@ console.error(`[mission-prepare] ${missionId} (tier=${m.tier}·heavy=${heavy}${f
 
 // ★ LG1 빌드 가시화(2026-07-19) — 미션이 빌드에 진입했음을 조율자 렌즈(mission.coordinator)로 관측. 종전엔
 //   빌드 중 조율자가 미션을 못 봤다(exec-frame 없음·decompose 전 assembleMissionState 빈 State·라이브 갭).
-//   이제 `monad logs --category mission.coordinator` 로 building 을 회상. 제1원칙 관측.
+//   이제 `elanous logs --category mission.coordinator` 로 building 을 회상. 제1원칙 관측.
 try { debug.log('mission.coordinator', 'lifecycle', { missionId, phase: 'building', stage: 'prepare-start', heavy, tier: m.tier }); } catch { /* fail-soft */ }
 
 // ★ 골 분해 라이브 통지(대표 2026-07-13) — 페이즈별 진행(notifyPhaseProgress)처럼, 골 분해 단계
@@ -136,7 +136,7 @@ function notifyStep(stepIdx: number, detail: string): void {
   // ★ 관측 파리티(2026-07-15) — 골 분해 진척을 통합 로그 패브릭(logs.db)에도 남긴다. 종전엔 텔레그램
   //   notifier 로만 가서(아래 origin 게이트) 비-텔레그램 오퍼레이터(Claude Code·codex·PWA)는 데몬의
   //   재분해 진행을 못 봤다(제1원칙 위반 — surface 만·통합 관측 store 미도달). origin 무관하게 먼저 로깅해
-  //   `monad logs --category mission.prepare` / ops / self_recall 로 CLI·skill 파리티 확보. StoreSink 는
+  //   `elanous logs --category mission.prepare` / ops / self_recall 로 CLI·skill 파리티 확보. StoreSink 는
   //   상단에서 등록됨(detached 프로세스 sink 상속 없음 보완). fail-soft.
   try {
     debug.log('mission.prepare', STEPS[stepIdx] ?? `step-${stepIdx}`, {
@@ -317,7 +317,7 @@ const buildImpls: import('../src/autopilot/mission-build-orchestrate.js').StageI
         try { similar = findSimilarMissions(simStore, m.goal, missionId); } finally { simStore.close(); }
         redesignLine = formatRedesignProposal(shape, similar);
         // ★ 관측(대표 2026-07-20) — 골 형태 판정(redesign 역제안)을 logs.db 로(종전 console.error=run.log
-        //   만이라 `monad logs` 로 조회 불가·redesign:true 근거가 관측 사각이었다). fail-soft.
+        //   만이라 `elanous logs` 로 조회 불가·redesign:true 근거가 관측 사각이었다). fail-soft.
         try { debug.log('mission.build.shape', shape.verdict, { missionId, reason: shape.reason.slice(0, 140), similar: similar.length }); } catch { /* fail-soft */ }
         console.error(`[mission-prepare] 🔧 골 형태 판정 → ${shape.verdict}: ${shape.reason.slice(0, 80)}`);
       }
@@ -402,7 +402,7 @@ const buildImpls: import('../src/autopilot/mission-build-orchestrate.js').StageI
     missionUsedRfcPreset = !!rfcPresetTasks?.length; // ★ RFC 은퇴 게이트 — preset 사용 시 critique/coevolve 스킵
     const r = await decomposeMissionToPhases(missionId, {
       ...(rfcPresetTasks?.length ? { presetTasks: rfcPresetTasks } : {}),
-      maxTasks: Number(process.env.MONAD_DECOMPOSE_MAX || 8),
+      maxTasks: Number(process.env.ELANOUS_DECOMPOSE_MAX || 8),
       ...(arcHintValid ? { arcHint: arcHintValid } : {}),
       ...(researchContext ? { researchContext } : {}),
       ...(groundingIn.context ? { codebaseContext: groundingIn.context } : {}),
@@ -414,7 +414,7 @@ const buildImpls: import('../src/autopilot/mission-build-orchestrate.js').StageI
       ...(redesign ? { redesign: true } : {}),
       ...(freshReset ? { fresh: true } : {}),
       ...(groundingIn.files.length ? { groundingFiles: groundingIn.files } : {}),
-      decomposeEffort: resolveDecomposeEffort(m.tier), // ★ tier 분기(heavy=medium·light=medium·병목 힘빼기 2026-07-21·seam=MONAD_DECOMPOSE_HEAVY_EFFORT)
+      decomposeEffort: resolveDecomposeEffort(m.tier), // ★ tier 분기(heavy=medium·light=medium·병목 힘빼기 2026-07-21·seam=ELANOUS_DECOMPOSE_HEAVY_EFFORT)
     });
     const phaseCount = r.ok ? r.phaseCount : 0;
     console.error(r.ok ? `[mission-prepare] ${r.phaseCount} 페이즈 backlog · 플랜 ${r.planPath ?? '(없음)'}` : `[mission-prepare] 분해 실패: ${r.error}`);
@@ -760,7 +760,7 @@ if (heavy && !missionUsedRfcPreset && critiqueResult?.hasCritical) { // ★ RFC 
           let coCtxRe = '';
           try { const { recallCoevolutionContext } = await import('../src/autopilot/mission-coevolve-recall.js'); coCtxRe = recallCoevolutionContext(missionId); } catch { /* fail-soft */ }
           const r = await decomposeMissionToPhases(missionId, {
-            maxTasks: Number(process.env.MONAD_DECOMPOSE_MAX || 8),
+            maxTasks: Number(process.env.ELANOUS_DECOMPOSE_MAX || 8),
             ...(arcHintValid ? { arcHint: arcHintValid } : {}),
             ...(coResearchContext ? { researchContext: coResearchContext } : {}),
             ...(grounding.context ? { codebaseContext: grounding.context } : {}),
@@ -950,7 +950,7 @@ if (missionUsedRfcPreset) {
 
 // 3a) ★ A6-b 과대골 성숙도 분리 검출(RFC §8b) — 분해가 만든 아크가 과대(heavy·아크≥3 또는 over_scope
 //     preflight)면 "지금 = 성숙도 1단계·나머지 = 후속 미션" 역제안을 HITL 카드에 표면화. 자율경계(대표):
-//     **검출·제안만**(자동 분리 없음). 집행은 대표 명시 트리거(monad autopilot maturity-split --apply).
+//     **검출·제안만**(자동 분리 없음). 집행은 대표 명시 트리거(elanous autopilot maturity-split --apply).
 let maturityLine = '';
 let arcOverviewLine = '';   // ★ A2.5 아크 구조 개요(다중 아크면 사람이 아크 분류를 보게 함)
 let arcCount = 0;           // 요약 카드용 아크 수(대표 2026-07-16 요약 먼저)
@@ -982,7 +982,7 @@ if (heavy) {
     }
     arcPreflightConcerns = concernLines.join('\n');
     // ★ 관측(대표 2026-07-20) — 아크 preflight 집계를 logs.db 로(종전 console.error=run.log 만이라
-    //   `monad logs` 로 CC1 입력(아크수·mirage·over_scope)을 조회 불가 = 문맥관리 관측 사각). fail-soft.
+    //   `elanous logs` 로 CC1 입력(아크수·mirage·over_scope)을 조회 불가 = 문맥관리 관측 사각). fail-soft.
     try { debug.log('mission.build.arc', 'preflight', { missionId, arcCount, mirageArcs, overScopeArcs, phaseCount }); } catch { /* fail-soft */ }
     // ★ arcHint 이탈 관측(대표 2026-07-20) — 지정≠실제를 logs.db 로(종전 무관측·대표가 이유 없이 마주침).
     if (arcHintValid && arcHintValid >= 2 && arcCount && arcCount !== arcHintValid) {
@@ -1034,7 +1034,7 @@ const decomposeSynthesis = synthesizeDecomposition({
   mirageArcs, overScopeArcs, arcCount, phaseCount,
 });
 // ★ 관측(대표 2026-07-20) — CC1 종합 verdict 를 logs.db 로. 종전 이 판단은 description·카드에 쓰이기만
-//   하고 계측이 0 이라 `monad logs --grep synthesis` 가 빈 결과 = CC1 판단 자체가 관측 사각이었다. fail-soft.
+//   하고 계측이 0 이라 `elanous logs --grep synthesis` 가 빈 결과 = CC1 판단 자체가 관측 사각이었다. fail-soft.
 try {
   // ★ 압축(대표 2026-07-20) — debug.log payload 400자 상한(log.ts:640)에 긴 missionId+풀키면 뒷필드
   //   (crit 등)이 잘렸다. event=recommendation(조회 시 approve/review/redesign 즉시 식별)·짧은 키로 전
@@ -1168,7 +1168,7 @@ else if (clarified && comment) parts.push('', `🧩 확정 설계 기준: ${comm
 // 권고(성숙도)는 있을 때만 짧게. ★ 리디자인 역제안은 위(813)에서 recommendedAction=redesign 일 때만
 //   요지로 통합 — 종전 여기서 전체를 무조건 push 해 proceed(승인 추천)에도 역제안 크게 노출 + 813 요지와
 //   중복(카드에 2번·대표 지적). 역제안 전체·근거는 description(781)에 남아 첨부/pipeline 으로 확인.
-if (maturityLine) parts.push('', maturityLine, `  집행: monad autopilot maturity-split ${missionId} --apply`);
+if (maturityLine) parts.push('', maturityLine, `  집행: elanous autopilot maturity-split ${missionId} --apply`);
 // ★ 분해 granularity(결정론 게이트·"[과대→split] 관심사 N클래스")는 카드에서 제거(대표 2026-07-19
 //   "분해 이야기 줄여라"). 카드는 "무엇을(아크·페이즈) 만드나"에 집중 — granularity 상세는 description +
 //   pipeline --sub 으로. (granularityLine 은 description 3b 에 여전히 저장됨.)

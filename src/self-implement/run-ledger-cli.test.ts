@@ -17,7 +17,7 @@ import { makeRunObserver, observeRunOutcome } from './orchestrator.js';
 const sourceRoot = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
 
 const fixtureRunIds = {
-  monadMerged: 'run-00000000-0000-4000-8000-000000000010',
+  elanousMerged: 'run-00000000-0000-4000-8000-000000000010',
   failedMerge: 'run-00000000-0000-4000-8000-000000000011',
   humanOpenPr: 'run-00000000-0000-4000-8000-000000000012',
   humanMerge: 'run-00000000-0000-4000-8000-000000000013',
@@ -45,47 +45,47 @@ function fixtureRunId(name: keyof typeof fixtureRunIds): string {
 }
 
 function runCli(stateDir: string, args: string[], env: NodeJS.ProcessEnv = {}) {
-  return spawnSync(process.execPath, [join(sourceRoot, 'bin/monad.mjs'), 'self', 'run-ledger', ...args], {
+  return spawnSync(process.execPath, [join(sourceRoot, 'bin/elanous.mjs'), 'self', 'run-ledger', ...args], {
     encoding: 'utf8',
     timeout: 60_000,
-    env: { ...process.env, ...env, MONAD_STATE_DIR: stateDir },
+    env: { ...process.env, ...env, ELANOUS_STATE_DIR: stateDir },
   });
 }
 
 function runGoalSourceDistributionCli(stateDir: string, args: string[] = []) {
-  return spawnSync(process.execPath, [join(sourceRoot, 'bin/monad.mjs'), 'self', 'goal-source-distribution', ...args], {
+  return spawnSync(process.execPath, [join(sourceRoot, 'bin/elanous.mjs'), 'self', 'goal-source-distribution', ...args], {
     encoding: 'utf8',
     timeout: 60_000,
-    env: { ...process.env, MONAD_STATE_DIR: stateDir },
+    env: { ...process.env, ELANOUS_STATE_DIR: stateDir },
   });
 }
 
 function runScreenCli(stateDir: string, args: string[]) {
-  return spawnSync(process.execPath, [join(sourceRoot, 'bin/monad.mjs'), 'self', 'screen', ...args], {
+  return spawnSync(process.execPath, [join(sourceRoot, 'bin/elanous.mjs'), 'self', 'screen', ...args], {
     encoding: 'utf8',
     timeout: 60_000,
-    env: { ...process.env, MONAD_STATE_DIR: stateDir },
+    env: { ...process.env, ELANOUS_STATE_DIR: stateDir },
   });
 }
 
 function runMergeAttributionCli(stateDir: string, args: string[] = []) {
-  return spawnSync(process.execPath, [join(sourceRoot, 'bin/monad.mjs'), 'self', 'merge-attribution', ...args], {
+  return spawnSync(process.execPath, [join(sourceRoot, 'bin/elanous.mjs'), 'self', 'merge-attribution', ...args], {
     encoding: 'utf8',
     timeout: 60_000,
-    env: { ...process.env, MONAD_STATE_DIR: stateDir },
+    env: { ...process.env, ELANOUS_STATE_DIR: stateDir },
   });
 }
 
 function runUnfinishedRunsCli(stateDir: string, cwd: string, args: string[] = []) {
-  return spawnSync(process.execPath, [join(sourceRoot, 'bin/monad.mjs'), 'self', 'unfinished-runs', ...args], {
+  return spawnSync(process.execPath, [join(sourceRoot, 'bin/elanous.mjs'), 'self', 'unfinished-runs', ...args], {
     cwd,
     encoding: 'utf8',
     timeout: 60_000,
-    env: { ...process.env, MONAD_STATE_DIR: stateDir },
+    env: { ...process.env, ELANOUS_STATE_DIR: stateDir },
   });
 }
 
-describe('monad self run-ledger — 실물 argv (판정 신호 회귀)', () => {
+describe('elanous self run-ledger — 실물 argv (판정 신호 회귀)', () => {
   it('원장이 없고 self-dev checkpoint가 있으면 다른 스토어와 조회 명령을 가리키며 exit 1을 보존한다', () => {
     const stateDir = mkdtempSync(join(tmpdir(), 'run-ledger-cli-self-dev-'));
     const runId = 'self-dev-only-run';
@@ -105,7 +105,7 @@ describe('monad self run-ledger — 실물 argv (판정 신호 회귀)', () => {
       expect(out).toContain(`run ledger not found: ${join(stateDir, 'run-ledger', `${runId}.jsonl`)}`);
       expect(out).toContain(`checked 2 paths: ${join(stateDir, 'run-ledger', `${runId}.jsonl`)}; ${join(stateDir, 'self-dev-runs', `${runId}.json`)}`);
       expect(out).toContain(`self-dev run checkpoint found: ${join(stateDir, 'self-dev-runs', `${runId}.json`)}`);
-      expect(out).toContain(`inspect it with: monad self participants ${runId}`);
+      expect(out).toContain(`inspect it with: elanous self participants ${runId}`);
     } finally {
       rmSync(stateDir, { recursive: true, force: true });
     }
@@ -227,8 +227,8 @@ describe('monad self run-ledger — 실물 argv (판정 신호 회귀)', () => {
         mkdirSync(join(stateDir, 'logs'), { recursive: true });
         new LogStore(join(stateDir, 'logs', 'logs.db')).close();
       }
-      mkdirSync(join(home, '.monad', 'logs'), { recursive: true });
-      writeFileSync(join(home, '.monad', 'logs', 'instances.json'), JSON.stringify({ instances: [
+      mkdirSync(join(home, '.elanous', 'logs'), { recursive: true });
+      writeFileSync(join(home, '.elanous', 'logs', 'instances.json'), JSON.stringify({ instances: [
         { name: 'other', stateDir: otherStateDir, kind: 'prod', configDir: otherStateDir, pid: 0, startedAt: '' },
         { name: 'test:fixture', stateDir: testStateDir, kind: 'test', configDir: testStateDir, pid: 0, startedAt: '' },
       ] }), 'utf8');
@@ -278,13 +278,13 @@ describe('monad self run-ledger — 실물 argv (판정 신호 회귀)', () => {
         mkdirSync(join(stateDir, 'logs'), { recursive: true });
         new LogStore(join(stateDir, 'logs', 'logs.db')).close();
       }
-      mkdirSync(join(home, '.monad', 'logs'), { recursive: true });
-      new LogStore(join(home, '.monad', 'logs', 'logs.db')).close();
-      writeFileSync(join(home, '.monad', 'logs', 'instances.json'), JSON.stringify({ instances: [
+      mkdirSync(join(home, '.elanous', 'logs'), { recursive: true });
+      new LogStore(join(home, '.elanous', 'logs', 'logs.db')).close();
+      writeFileSync(join(home, '.elanous', 'logs', 'instances.json'), JSON.stringify({ instances: [
         { name: 'other', stateDir: otherStateDir, kind: 'prod', configDir: otherStateDir, pid: 0, startedAt: '' },
       ] }), 'utf8');
-      for (const stateDir of [home + '/.monad', otherStateDir]) mkdirSync(join(stateDir, 'run-ledger'), { recursive: true });
-      writeFileSync(join(home, '.monad', 'run-ledger', `${firstRunId}.jsonl`), `${JSON.stringify({ runId: firstRunId, event: 'first', data: {} })}\n`, 'utf8');
+      for (const stateDir of [home + '/.elanous', otherStateDir]) mkdirSync(join(stateDir, 'run-ledger'), { recursive: true });
+      writeFileSync(join(home, '.elanous', 'run-ledger', `${firstRunId}.jsonl`), `${JSON.stringify({ runId: firstRunId, event: 'first', data: {} })}\n`, 'utf8');
       writeFileSync(join(otherStateDir, 'run-ledger', `${secondRunId}.jsonl`), `${JSON.stringify({ runId: secondRunId, event: 'second', data: {} })}\n`, 'utf8');
       const env = { HOME: home };
 
@@ -301,7 +301,7 @@ describe('monad self run-ledger — 실물 argv (판정 신호 회귀)', () => {
       expect(duplicate.stderr).toContain(`candidate runId=${firstRunId}`);
       expect(duplicate.stderr).toContain('universe=prod');
       expect(duplicate.stderr).toContain('universe=other');
-      expect(duplicate.stderr).toContain(join(home, '.monad', 'run-ledger'));
+      expect(duplicate.stderr).toContain(join(home, '.elanous', 'run-ledger'));
       expect(duplicate.stderr).toContain(join(otherStateDir, 'run-ledger'));
 
       writeFileSync(join(otherStateDir, 'run-ledger', `${secondRunId}.jsonl`), '{broken\n', 'utf8');
@@ -320,7 +320,7 @@ describe('monad self run-ledger — 실물 argv (판정 신호 회귀)', () => {
       const dir = join(stateDir, 'run-ledger');
       mkdirSync(dir, { recursive: true });
       const write = (runId: string, entries: object[]) => writeFileSync(join(dir, `${runId}.jsonl`), `${entries.map((entry) => JSON.stringify(entry)).join('\n')}\n`, 'utf8');
-      write(fixtureRunId('monadMerged'), [{ timestamp: '2026-08-05T10:00:00.000Z', runId: fixtureRunId('monadMerged'), event: 'merged', data: { number: 1, merged: true } }]);
+      write(fixtureRunId('elanousMerged'), [{ timestamp: '2026-08-05T10:00:00.000Z', runId: fixtureRunId('elanousMerged'), event: 'merged', data: { number: 1, merged: true } }]);
       write(fixtureRunId('failedMerge'), [
         { timestamp: '2026-08-05T10:28:00.000Z', runId: fixtureRunId('failedMerge'), event: 'pr-opened', data: { number: 4 } },
         { timestamp: '2026-08-05T10:29:00.000Z', runId: fixtureRunId('failedMerge'), event: 'run-status', data: { stage: 'pr-opened', node: 'merge', mergeReason: 'merge-attempt-failed' } },
@@ -346,13 +346,13 @@ describe('monad self run-ledger — 실물 argv (판정 신호 회귀)', () => {
       const withoutCrossStoreTotal = queryMergeAttribution({ dir });
       expect(withoutCrossStoreTotal.unattributable).toEqual({
         status: 'not-countable',
-        reason: 'Merges that did not pass through monad cannot be counted from run ledgers alone.',
+        reason: 'Merges that did not pass through elanous cannot be counted from run ledgers alone.',
       });
       expect(queryMergeAttribution({ dir, crossStoreMergedTotal: 1 }).unattributable).toEqual({ status: 'counted', count: 0 });
       expect(queryMergeAttribution({ dir, crossStoreMergedTotal: 3 }).unattributable).toEqual({ status: 'counted', count: 2 });
       const invalidCrossStoreTotal: { status: 'not-countable'; reason: string } = {
         status: 'not-countable',
-        reason: 'The cross-store merged total must be a finite non-negative integer that is not less than the monad merged count.',
+        reason: 'The cross-store merged total must be a finite non-negative integer that is not less than the elanous merged count.',
       };
       for (const crossStoreMergedTotal of [0, -1, 1.5, Number.NaN, Number.POSITIVE_INFINITY]) {
         expect(queryMergeAttribution({ dir, crossStoreMergedTotal }).unattributable).toEqual(invalidCrossStoreTotal);
@@ -362,7 +362,7 @@ describe('monad self run-ledger — 실물 argv (판정 신호 회귀)', () => {
       const text = runMergeAttributionCli(stateDir);
       expect(`status=${text.status}`).toBe('status=0');
       expect(text.stdout).toContain(`ledger directory: ${dir}`);
-      expect(text.stdout).toContain('monad merged: 1');
+      expect(text.stdout).toContain('elanous merged: 1');
       expect(text.stdout).toContain('handed to human (no merge attempt): 3');
       expect(text.stdout).toContain('handed to human (merge attempted): 2');
       expect(text.stdout).toContain(`PR 5 runId=${fixtureRunId('humanOpenPr')} timestamp=2026-08-05T11:00:00.000Z mergeReason=no-auto-flag`);
@@ -370,7 +370,7 @@ describe('monad self run-ledger — 실물 argv (판정 신호 회귀)', () => {
       expect(text.stdout).toContain(`PR unknown runId=${fixtureRunId('humanOpenPrStatusNumberOnly')} timestamp=2026-08-05T12:45:00.000Z mergeReason=none`);
       expect(text.stdout).toContain(`PR 4 runId=${fixtureRunId('failedMerge')} timestamp=2026-08-05T10:30:00.000Z mergeReason=merge-attempt-failed`);
       expect(text.stdout).toContain(`PR 6 runId=${fixtureRunId('humanMerge')} timestamp=2026-08-05T12:00:00.000Z mergeReason=none`);
-      expect(text.stdout).toContain('unattributable: not-countable — Merges that did not pass through monad cannot be counted from run ledgers alone.');
+      expect(text.stdout).toContain('unattributable: not-countable — Merges that did not pass through elanous cannot be counted from run ledgers alone.');
       expect(text.stdout).toContain('excluded merged entries: 2');
       expect(text.stdout).toContain('excluded ledgers: 1');
       expect(text.stdout).toContain('note: Reads only self-implement run ledgers; it does not read the log-store observations for review-loop auto-merged events or MergePullRequest tool calls.');
@@ -378,7 +378,7 @@ describe('monad self run-ledger — 실물 argv (판정 신호 회귀)', () => {
       const json = runMergeAttributionCli(stateDir, ['--json']);
       expect(`status=${json.status}`).toBe('status=0');
       expect(JSON.parse(json.stdout)).toMatchObject({
-        monadMergedEntries: [{ runId: fixtureRunId('monadMerged') }],
+        elanousMergedEntries: [{ runId: fixtureRunId('elanousMerged') }],
         ledgerDirectory: dir,
         handedToHumanWithoutMergeAttemptCount: 3,
         handedToHumanAfterMergeAttemptCount: 2,
@@ -399,7 +399,7 @@ describe('monad self run-ledger — 실물 argv (판정 신호 회귀)', () => {
   });
 });
 
-describe('monad self goal-source-distribution — 실물 argv', () => {
+describe('elanous self goal-source-distribution — 실물 argv', () => {
   it('세 goalSource 값과 부재를 각각 세며, malformed 원장은 읽지 못한 원장으로 분리한다', () => {
     const stateDir = mkdtempSync(join(tmpdir(), 'goal-source-distribution-'));
     try {
@@ -410,7 +410,7 @@ describe('monad self goal-source-distribution — 실물 argv', () => {
         `${JSON.stringify({ timestamp: '2026-08-11T00:00:00.000Z', runId, event: 'start', data: goalSource === undefined ? {} : { goalSource } })}\n`,
         'utf8',
       );
-      write(fixtureRunId('monadMerged'), 'authored-goal-file');
+      write(fixtureRunId('elanousMerged'), 'authored-goal-file');
       write(fixtureRunId('failedMerge'), 'natural-language-dispatch');
       write(fixtureRunId('humanOpenPr'), 'no-goal-file');
       write(fixtureRunId('humanMerge'));
@@ -499,7 +499,7 @@ describe('monad self goal-source-distribution — 실물 argv', () => {
         ledgerDirectoryMissing: false,
       });
 
-      const help = spawnSync(process.execPath, [join(sourceRoot, 'bin/monad.mjs'), 'self', '--help'], { encoding: 'utf8', timeout: 60_000 });
+      const help = spawnSync(process.execPath, [join(sourceRoot, 'bin/elanous.mjs'), 'self', '--help'], { encoding: 'utf8', timeout: 60_000 });
       expect(`status=${help.status}`).toBe('status=0');
       expect(help.stdout).toContain('goal-source-distribution');
     } finally {
@@ -513,7 +513,7 @@ describe('monad self goal-source-distribution — 실물 argv', () => {
 //    리뷰는 `src/index.ts` 의 unattributable 출력 수정을 두 라운드 「스코프 크리프」로 지적했으나,
 //    `unattributable` 이 판별 유니온이라 그 수정은 touch-clean tsc 게이트에서 «강제»된다.
 //    ⇒ 되돌리지 않고, 리뷰가 옳게 지적한 「테스트가 없다」를 여기서 닫는다.
-describe('monad self unfinished-runs — 실물 argv', () => {
+describe('elanous self unfinished-runs — 실물 argv', () => {
   it('종결 기록 부재와 읽지 못한 원장을 구분하고, 마지막 브랜치 마디로 찾은 골의 경로와 탐색 범위를 낸다', () => {
     const stateDir = mkdtempSync(join(tmpdir(), 'unfinished-run-ledger-'));
     const cwd = mkdtempSync(join(tmpdir(), 'unfinished-run-goals-'));
@@ -616,7 +616,7 @@ describe('monad self unfinished-runs — 실물 argv', () => {
       const matchingGoal = join(goalsDir, 'GOAL-matching-a1b2c3d4-2026-08-10.txt');
       const otherGoal = join(goalsDir, 'GOAL-other-b2c3d4e5-2026-08-10.txt');
       writeFileSync(matchingGoal, 'Original ask (verbatim, unmodified):\n```\n대상 경로: src/self-implement/goal-author.ts\n```\n## TRACED PATHS\n1. src/self-implement/goal-author.ts\n', 'utf8');
-      writeFileSync(otherGoal, 'Original ask (verbatim, unmodified):\n```\n대상 경로: src/self-implement/headless-monad-driver.ts\n```\n## TRACED PATHS\n1. src/self-implement/headless-monad-driver.ts\n', 'utf8');
+      writeFileSync(otherGoal, 'Original ask (verbatim, unmodified):\n```\n대상 경로: src/self-implement/headless-elanous-driver.ts\n```\n## TRACED PATHS\n1. src/self-implement/headless-elanous-driver.ts\n', 'utf8');
       const matchingRunId = fixtureRunId('active');
       const otherRunId = fixtureRunId('nonTerminalStatus');
       const unknownRunId = fixtureRunId('unknownGoal');
@@ -648,11 +648,11 @@ describe('monad self unfinished-runs — 실물 argv', () => {
       ]);
       const unfiltered = queryUnfinishedRunLedgers({ dir: ledgerDir, goalsDir });
       expect(unfiltered.entries.find((entry) => entry.runId === otherRunId)).toMatchObject({
-        plannedPaths: ['src/self-implement/headless-monad-driver.ts'],
+        plannedPaths: ['src/self-implement/headless-elanous-driver.ts'],
         plannedPathStatus: 'found-ledger-goal-file',
-        declaredPaths: ['src/self-implement/headless-monad-driver.ts'],
+        declaredPaths: ['src/self-implement/headless-elanous-driver.ts'],
         declaredPathStatus: 'found',
-        pathMatchReasons: { 'src/self-implement/headless-monad-driver.ts': 'both' },
+        pathMatchReasons: { 'src/self-implement/headless-elanous-driver.ts': 'both' },
       });
       expect(renderUnfinishedRunLedgers(queried)).toContain('matching paths: 1\nunknown paths: 1');
 
@@ -906,7 +906,7 @@ describe('run screen key resolution', () => {
       const store = new LogStore(logPath, { instance: 'test' });
       store.insertBatch([{ surface: 'test', rec: { ts: '2026-08-07T00:00:00.000Z', category: 'self-implement', event: 'headless.spawn', data: { runId, screenKey: 'resolved-screen' } } }]);
       store.close();
-      writeHarnessScreen('resolved-screen', 'resolved frame', { MONAD_STATE_DIR: stateDir });
+      writeHarnessScreen('resolved-screen', 'resolved frame', { ELANOUS_STATE_DIR: stateDir });
 
       const resolved = runScreenCli(stateDir, ['--run', runId]);
       expect(`status=${resolved.status}`).toBe('status=0');
@@ -917,14 +917,14 @@ describe('run screen key resolution', () => {
       const collisionStore = new LogStore(logPath, { instance: 'test' });
       collisionStore.insertBatch([{ surface: 'test', rec: { ts: '2026-08-07T00:00:30.000Z', category: 'self-implement', event: 'headless.spawn', data: { runId: collisionRunId, screenKey: 'foo' } } }]);
       collisionStore.close();
-      writeHarnessScreen('foo-old', 'wrong partial-match frame', { MONAD_STATE_DIR: stateDir });
+      writeHarnessScreen('foo-old', 'wrong partial-match frame', { ELANOUS_STATE_DIR: stateDir });
 
       const exactMissing = runScreenCli(stateDir, ['--run', collisionRunId]);
       expect(`status=${exactMissing.status}`).toBe('status=0');
       expect(exactMissing.stdout).toContain(`화면 버퍼 없음: foo (runId=${collisionRunId} 해석됨·아직 프레임 미기록)`);
       expect(exactMissing.stdout).not.toContain('wrong partial-match frame');
 
-      writeHarnessScreen('foo', 'exact frame', { MONAD_STATE_DIR: stateDir });
+      writeHarnessScreen('foo', 'exact frame', { ELANOUS_STATE_DIR: stateDir });
       const exact = runScreenCli(stateDir, ['--run', collisionRunId]);
       expect(`status=${exact.status}`).toBe('status=0');
       expect(exact.stdout).toContain(`하니스 화면: foo · runId=${collisionRunId}`);

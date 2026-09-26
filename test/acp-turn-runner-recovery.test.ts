@@ -46,13 +46,13 @@ import { join } from 'node:path';
 
 // CRITICAL: redirect XDG_CONFIG_HOME to a per-test tmpdir so the
 // global session-store singleton writes to a throwaway location
-// instead of the user's real ~/.config/monad/acp-sessions.json.
+// instead of the user's real ~/.config/elanous/acp-sessions.json.
 // Without this, every store.set() in these tests would pollute the
 // user's actual session file (we discovered this the hard way on
 // 2026-05-02 — `stored-sess-1`, `persisted-id`, `fresh-100` test
 // fixtures leaked into the live store).
 const ORIGINAL_XDG = process.env.XDG_CONFIG_HOME;
-const ORIGINAL_MONAD_STATE_DIR = process.env.MONAD_STATE_DIR;
+const ORIGINAL_ELANOUS_STATE_DIR = process.env.ELANOUS_STATE_DIR;
 let testConfigDir: string | null = null;
 
 interface StubAgentSpec {
@@ -149,7 +149,7 @@ beforeEach(() => {
   // setting the env BEFORE reset gives us a fresh isolated path.
   testConfigDir = mkdtempSync(join(tmpdir(), 'turn-runner-config-'));
   process.env.XDG_CONFIG_HOME = testConfigDir;
-  delete process.env.MONAD_STATE_DIR;
+  delete process.env.ELANOUS_STATE_DIR;
   _resetTurnRunnerCachesForTests();
   _resetAcpSessionStoreForTests();
 });
@@ -163,8 +163,8 @@ afterEach(() => {
   }
   if (ORIGINAL_XDG === undefined) delete process.env.XDG_CONFIG_HOME;
   else process.env.XDG_CONFIG_HOME = ORIGINAL_XDG;
-  if (ORIGINAL_MONAD_STATE_DIR === undefined) delete process.env.MONAD_STATE_DIR;
-  else process.env.MONAD_STATE_DIR = ORIGINAL_MONAD_STATE_DIR;
+  if (ORIGINAL_ELANOUS_STATE_DIR === undefined) delete process.env.ELANOUS_STATE_DIR;
+  else process.env.ELANOUS_STATE_DIR = ORIGINAL_ELANOUS_STATE_DIR;
 });
 
 describe('runAcpTurn · L3 · loadSession-first validation (capability=true)', () => {
@@ -200,7 +200,7 @@ describe('runAcpTurn · L3 · loadSession-first validation (capability=true)', (
   });
 
   test('alias and canonical records resolve to the canonical session in both file orders', async () => {
-    const storeDir = join(testConfigDir!, 'monad');
+    const storeDir = join(testConfigDir!, 'elanous');
     mkdirSync(storeDir, { recursive: true });
     const updatedAt = new Date().toISOString();
     const alias = { chatId: 'chat-alias', backendId: 'codex', sessionId: 'alias-session', updatedAt, mintedEpoch: ACP_SESSION_EPOCH, turnCount: 0 };
@@ -223,7 +223,7 @@ describe('runAcpTurn · L3 · loadSession-first validation (capability=true)', (
   });
 
   test('drops invalid timestamps before canonical selection regardless of file order', () => {
-    const storeDir = join(testConfigDir!, 'monad');
+    const storeDir = join(testConfigDir!, 'elanous');
     mkdirSync(storeDir, { recursive: true });
     const valid = { chatId: 'chat-invalid-date', backendId: 'codex-app-server', sessionId: 'valid-session', updatedAt: '2026-08-28T00:00:00.000Z', mintedEpoch: ACP_SESSION_EPOCH, turnCount: 0 };
     const invalid = { chatId: 'chat-invalid-date', backendId: 'codex-app-server', sessionId: 'invalid-session', updatedAt: 'not-a-date', mintedEpoch: ACP_SESSION_EPOCH, turnCount: 0 };

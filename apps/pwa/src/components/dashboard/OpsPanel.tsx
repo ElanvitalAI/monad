@@ -6,7 +6,7 @@ import { toast } from 'sonner';
 
 /**
  * 운영 상황판 (Ops Observability P4 · 2026-07-10) — 투자 대시보드 서브탭.
- * monad 자율 시스템(미션 → 3계약 루프 → blackboard → 오케스트레이터 → 집행)이 지금
+ * elanous 자율 시스템(미션 → 3계약 루프 → blackboard → 오케스트레이터 → 집행)이 지금
  * 무엇을 어떤 상태로 돌리고 있나 + 이상 + 상태 전이 이력을 한눈에. 백엔드 /v1/dashboard/ops.
  */
 
@@ -26,7 +26,7 @@ interface OpsData {
   };
   loops: { loops: OpsLoop[]; armed: boolean; live: boolean; executionMode: string; paperSources: string[] };
   orchestration: { recent: Array<{ event: string; state: string | null; at: string; detail?: Record<string, unknown> }> };
-  schedules: { monadTotal: number; staleCount: number; erroredCount: number } | null;
+  schedules: { elanousTotal: number; staleCount: number; erroredCount: number } | null;
   health: { healthy: boolean; anomalies: OpsAnomaly[]; anomalyCount?: number };
   timeline: OpsTimelineEntry[];
   generatedAt: string;
@@ -52,11 +52,11 @@ function fmtRelative(iso: string | null | undefined): string {
   return `${Math.floor(hr / 24)}d`;
 }
 
-/** 미션 출처 사람용 라벨 — 'human-intent'(내가 던진 골) vs 'discovery'(monad 자율 발굴). */
+/** 미션 출처 사람용 라벨 — 'human-intent'(내가 던진 골) vs 'discovery'(elanous 자율 발굴). */
 function sourceLabel(source: string): string {
   switch (source) {
     case 'human-intent': return '내가 던진 골';
-    case 'discovery': return 'monad 발굴';
+    case 'discovery': return 'elanous 발굴';
     case 'repo-watch': return '레포 감시';
     case 'manual': return '수동';
     default: return source;
@@ -209,7 +209,7 @@ export function OpsPanel() {
           ) : <span className="text-xs text-muted-foreground">최근 사이클 없음</span>}
           {data.loops.paperSources.length ? <div className="mt-1 text-xs text-amber-500">페이퍼: {data.loops.paperSources.join(', ')}</div> : null}
         </Card>
-        <Card title="스케줄" sub={data.schedules ? `${data.schedules.monadTotal} monad` : '—'}>
+        <Card title="스케줄" sub={data.schedules ? `${data.schedules.elanousTotal} elanous` : '—'}>
           {data.schedules ? (
             <div className="text-xs">
               <span className={data.schedules.staleCount ? 'text-amber-500' : 'text-muted-foreground'}>stale {data.schedules.staleCount}</span>{' · '}

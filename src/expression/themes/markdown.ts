@@ -34,7 +34,7 @@ export interface MarkdownTheme {
   hr: AdaptiveColor;
 }
 
-// Catppuccin Mocha — matches monad's IDX track default-pastel theme.
+// Catppuccin Mocha — matches elanous's IDX track default-pastel theme.
 const THEME_DEFAULT: MarkdownTheme = {
   headings: [
     adaptive('#cba6f7'), // h1 mauve

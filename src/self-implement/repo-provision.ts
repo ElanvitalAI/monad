@@ -4,7 +4,7 @@ import { tmpdir } from 'node:os';
 import { basename, dirname, isAbsolute, join } from 'node:path';
 
 import { SENSITIVE_GLOBS, SENSITIVE_PATTERNS } from '../boot/daemon-tools/path-guard.js';
-import { MONAD_RUNTIME_ARTIFACT_DIRS, MONAD_RUNTIME_ARTIFACT_PATHS } from './gate-scope.js';
+import { ELANOUS_RUNTIME_ARTIFACT_DIRS, ELANOUS_RUNTIME_ARTIFACT_PATHS } from './gate-scope.js';
 import { runGhCliWithResult, type GhCliResult } from '../git-fs/gh-cli.js';
 import { debug } from '../debug/log.js';
 import { runGitCommand } from '../git-fs/runner.js';
@@ -12,8 +12,8 @@ import type { GitRunResult } from '../git-fs/retry.js';
 import type { HarnessTargetResolution } from './harness-target-options.js';
 
 const GIT_TIMEOUT_MS = 30_000;
-const MONAD_WORK_GLOB = '.monad/';
-const MONAD_TEST_GLOB = '.monad-test/';
+const ELANOUS_WORK_GLOB = '.elanous/';
+const ELANOUS_TEST_GLOB = '.elanous-test/';
 
 interface IgnoreSnapshot {
   path: string;
@@ -135,7 +135,7 @@ function remoteRepository(cwd: string, deps: Pick<RepositoryPublishDeps, 'runGit
 function remoteCommittedPaths(cwd: string, deps: Pick<RepositoryPublishDeps, 'runGit'>): CommittedPathScan {
   const origin = remoteOriginUrl(cwd, deps);
   if (!origin) return { paths: [] };
-  const scanDirectory = mkdtempSync(join(tmpdir(), 'monad-public-scan-'));
+  const scanDirectory = mkdtempSync(join(tmpdir(), 'elanous-public-scan-'));
   try {
     if (gitResult(scanDirectory, ['init', '--bare'], deps).status !== 0) {
       return { paths: [], error: 'could not initialize isolated repository history scan' };
@@ -436,20 +436,20 @@ function prepareIgnoreSnapshot(target: string): IgnoreSnapshot {
 
 /** 돌려주는 두 수는 관측용이다 — 「몇 줄을 더했나」와 「사람이 쓴 줄이 몇 줄 살았나」.
  *  ⛔ 「추가됐나」와 「기존 것이 살아 있나」는 다른 값이라 «둘 다» 센다. */
-/** monad 가 관리하는 무시 항목(단일 출처). */
+/** elanous 가 관리하는 무시 항목(단일 출처). */
 function managedIgnoreEntries(): string[] {
   return [
     ...SENSITIVE_GLOBS,
-    MONAD_WORK_GLOB,
-    MONAD_TEST_GLOB,
-    ...MONAD_RUNTIME_ARTIFACT_DIRS,
-    ...MONAD_RUNTIME_ARTIFACT_PATHS,
+    ELANOUS_WORK_GLOB,
+    ELANOUS_TEST_GLOB,
+    ...ELANOUS_RUNTIME_ARTIFACT_DIRS,
+    ...ELANOUS_RUNTIME_ARTIFACT_PATHS,
   ].filter((entry, index, all) => all.indexOf(entry) === index);
 }
 
 /**
  * ⛔ 2026-09-23 (재현 판 실측) — `.gitignore` 를 작업 디렉토리에 «untracked» 로만 쓰면, 자식은 커밋된 HEAD 에서 만든
- *   «별도 워크트리»에서 일하므로 그 규칙이 없다(`check-ignore` 무반응) ⇒ `.monad/debug/*.log` 가 또 커밋·diff 에 섞였다.
+ *   «별도 워크트리»에서 일하므로 그 규칙이 없다(`check-ignore` 무반응) ⇒ `.elanous/debug/*.log` 가 또 커밋·diff 에 섞였다.
  *   공통 git 디렉토리의 `info/exclude` 는 «모든 워크트리»에 먹고 추적 파일을 안 건드린다 ⇒ 같은 항목을 거기에도 쓴다.
  */
 export function ensureInfoExclude(repoRoot: string): { added: number; path: string } | null {
@@ -463,7 +463,7 @@ export function ensureInfoExclude(repoRoot: string): { added: number; path: stri
   const additions = managedIgnoreEntries().filter((e) => !lines.includes(e));
   if (additions.length > 0) {
     const prefix = existsSync(path) && !readFileSync(path, 'utf8').endsWith('\n') && readFileSync(path, 'utf8').length > 0 ? '\n' : '';
-    appendFileSync(path, `${prefix}# monad runtime artifacts (repo-provision)\n${additions.join('\n')}\n`);
+    appendFileSync(path, `${prefix}# elanous runtime artifacts (repo-provision)\n${additions.join('\n')}\n`);
   }
   return { added: additions.length, path };
 }
@@ -471,16 +471,16 @@ export function ensureInfoExclude(repoRoot: string): { added: number; path: stri
 function ensureIgnoreFile(snapshot: IgnoreSnapshot): { added: number; preserved: number } {
   const current = snapshot.backupPath ? readFileSync(snapshot.backupPath, 'utf8') : '';
   const lines = current.split(/\r?\n/).filter(Boolean);
-  // ⛔ monad 런타임 산출물 목록을 여기 «다시» 나열하지 않는다 — 하나의 출처를 임포트한다.
-  //    📏 2026-09-21: 종전엔 `.monad/` · `.monad-test/` 둘만 썼고, 판별 함수가 아는 나머지 셋
-  //       (`.monad-child-liveness.hb` · `.monad-se/` · `.monad-goal-grounding-build/` · `.monad-session/`)은 untracked 로 남아
+  // ⛔ elanous 런타임 산출물 목록을 여기 «다시» 나열하지 않는다 — 하나의 출처를 임포트한다.
+  //    📏 2026-09-21: 종전엔 `.elanous/` · `.elanous-test/` 둘만 썼고, 판별 함수가 아는 나머지 셋
+  //       (`.elanous-child-liveness.hb` · `.elanous-se/` · `.elanous-goal-grounding-build/` · `.elanous-session/`)은 untracked 로 남아
   //       그중 하나가 빈 저장소 PR 에 들어가 런을 UNCONVERGEABLE 로 만들었다(`#19300`·`#19302`).
   const managedEntries = [
     ...SENSITIVE_GLOBS,
-    MONAD_WORK_GLOB,
-    MONAD_TEST_GLOB,
-    ...MONAD_RUNTIME_ARTIFACT_DIRS,
-    ...MONAD_RUNTIME_ARTIFACT_PATHS,
+    ELANOUS_WORK_GLOB,
+    ELANOUS_TEST_GLOB,
+    ...ELANOUS_RUNTIME_ARTIFACT_DIRS,
+    ...ELANOUS_RUNTIME_ARTIFACT_PATHS,
   ].filter((entry, index, all) => all.indexOf(entry) === index);
   const additions = managedEntries.filter((glob) => !lines.includes(glob));
   const preserved = lines.filter((line) => !managedEntries.includes(line)).length;
@@ -614,8 +614,8 @@ export function provisionRepository(
   try {
     debug.log('repo-provision', 'promoting', { target: cwd, status: target.status });
     runGit(cwd, ['init'], deps, 'init');
-    runGit(cwd, ['config', 'user.email', 'monad-repo-provision@local'], deps, 'config-email');
-    runGit(cwd, ['config', 'user.name', 'monad-repo-provision'], deps, 'config-name');
+    runGit(cwd, ['config', 'user.email', 'elanous-repo-provision@local'], deps, 'config-email');
+    runGit(cwd, ['config', 'user.name', 'elanous-repo-provision'], deps, 'config-name');
     // ⛔ 실패도 «한 줄»을 남긴다 — 안 남기면 「ignore 단계가 없다」와 「거기서 죽었다」가 같은 모양이 된다
     //   (무인 리뷰 must-fix · 2026-08-18 `#10120` 3R). 침묵이 정상과 구별 안 되면 그 자는 거짓을 생산한다.
     try {

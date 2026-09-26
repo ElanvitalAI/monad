@@ -41,7 +41,7 @@ export function createDashboardProviderSlashRuntime(
     `${provider}${model ? ` / ${model}` : ''}`;
 
   return {
-    rotationEmptyLine: () => deps.warning('  rotation empty — add entries first via `monad provider:rotate add <provider>`'),
+    rotationEmptyLine: () => deps.warning('  rotation empty — add entries first via `elanous provider:rotate add <provider>`'),
     rotatedLine: (label, provider, model) => deps.success(`  ✓ rotated → ${label}  (${providerDetail(provider, model)})`),
     useUsageLine: () => deps.warning('  usage: /provider use <label | provider | model-substring>'),
     noRotationMatchLine: (needle) => deps.warning(`  no rotation entry matching "${needle}"`),

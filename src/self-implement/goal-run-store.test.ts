@@ -151,7 +151,7 @@ describe('federated unfinished run ledgers', () => {
     const root = mkdtempSync(join(tmpdir(), 'unfinished-runs-cli-'));
     directories.push(root);
     const home = join(root, 'home');
-    const prodStateDir = join(home, '.monad');
+    const prodStateDir = join(home, '.elanous');
     const testStateDir = join(root, 'test-state');
     const missingLedgerStateDir = join(root, 'missing-ledger-state');
     const prodRunId = 'run-00000000-0000-4000-8000-000000000051';
@@ -172,13 +172,13 @@ describe('federated unfinished run ledgers', () => {
       ],
     }));
 
-    const env = { ...process.env, HOME: home, MONAD_STATE_DIR: prodStateDir };
+    const env = { ...process.env, HOME: home, ELANOUS_STATE_DIR: prodStateDir };
     const all = Bun.spawnSync({
-      cmd: [process.execPath, 'bin/monad.mjs', 'self', 'unfinished-runs', '--all', '--json'],
+      cmd: [process.execPath, 'bin/elanous.mjs', 'self', 'unfinished-runs', '--all', '--json'],
       cwd: process.cwd(), env, stdout: 'pipe', stderr: 'pipe',
     });
     const allAndTest = Bun.spawnSync({
-      cmd: [process.execPath, 'bin/monad.mjs', 'self', 'unfinished-runs', '--all', '--include-test', '--path', 'src/index.ts', '--json'],
+      cmd: [process.execPath, 'bin/elanous.mjs', 'self', 'unfinished-runs', '--all', '--include-test', '--path', 'src/index.ts', '--json'],
       cwd: process.cwd(), env, stdout: 'pipe', stderr: 'pipe',
     });
 
@@ -646,7 +646,7 @@ describe('GoalRunStore', () => {
 
     const unscoped = renderGoalRunQuery(empty, { queryUnfinishedRunLedgers: () => unfinishedLedgerQuery(['run-pending-one', 'run-pending-two']) });
     expect(unscoped).toContain('unfinished run count: 2 (all goals; query was not narrowed)');
-    expect(unscoped).toContain('more to inspect:\nquery command: monad self unfinished-runs');
+    expect(unscoped).toContain('more to inspect:\nquery command: elanous self unfinished-runs');
     expect(unscoped).not.toContain('reproduction:');
     expect(unscoped).not.toContain('relaunch command:');
     expect(unscoped).not.toContain('view all unfinished runs:');
@@ -661,14 +661,14 @@ describe('GoalRunStore', () => {
       ) },
     );
     expect(scoped).toContain('unfinished run count: 1 (scoped to this goal)');
-    expect(scoped).toContain('more to inspect:\nquery command: monad self unfinished-runs');
+    expect(scoped).toContain('more to inspect:\nquery command: elanous self unfinished-runs');
     expect(scoped).toContain(unscoped.match(/more to inspect:\nquery command: .+/)?.[0]!);
     expect(scoped).not.toContain('reproduction:');
     expect(scoped).not.toContain('relaunch command:');
     expect(scoped).not.toContain('view all unfinished runs:');
     expect(scoped).not.toContain('run-other-one');
 
-    const autopsyRoot = '/tmp/.monad-test';
+    const autopsyRoot = '/tmp/.elanous-test';
     const autopsy = renderGoalRunInspection({
       runId: 'run-autopsy',
       records: [{
@@ -682,7 +682,7 @@ describe('GoalRunStore', () => {
       logs: { count: 0, categories: [], instances: [], unreadableInstances: [] },
     });
     expect(autopsy).toContain('reproduction:');
-    expect(autopsy).toContain('relaunch command: bun bin/monad.mjs');
+    expect(autopsy).toContain('relaunch command: bun bin/elanous.mjs');
 
     const unavailableScope = renderGoalRunQuery(
       { ...empty, goalDocumentPath: null },
@@ -741,9 +741,9 @@ describe('GoalRunStore', () => {
     }
     const stateDir = goalFile.slice(0, goalFile.lastIndexOf('/'));
     const result = Bun.spawnSync({
-      cmd: [process.execPath, 'bin/monad.mjs', 'self', 'goal-run-search', '--goal', 'goal-cli', '--outcome', 'abandoned', '--json'],
+      cmd: [process.execPath, 'bin/elanous.mjs', 'self', 'goal-run-search', '--goal', 'goal-cli', '--outcome', 'abandoned', '--json'],
       cwd: process.cwd(),
-      env: { ...process.env, MONAD_STATE_DIR: stateDir },
+      env: { ...process.env, ELANOUS_STATE_DIR: stateDir },
       stdout: 'pipe',
       stderr: 'pipe',
     });
@@ -762,16 +762,16 @@ describe('GoalRunStore', () => {
       .not.toHaveProperty('supervisorReason');
 
     const noMatch = Bun.spawnSync({
-      cmd: [process.execPath, 'bin/monad.mjs', 'self', 'goal-run-search', '--goal', 'no-such-goal'],
+      cmd: [process.execPath, 'bin/elanous.mjs', 'self', 'goal-run-search', '--goal', 'no-such-goal'],
       cwd: process.cwd(),
-      env: { ...process.env, MONAD_STATE_DIR: stateDir },
+      env: { ...process.env, ELANOUS_STATE_DIR: stateDir },
       stdout: 'pipe',
       stderr: 'pipe',
     });
     const noMatchJson = Bun.spawnSync({
-      cmd: [process.execPath, 'bin/monad.mjs', 'self', 'goal-run-search', '--goal', 'no-such-goal', '--json'],
+      cmd: [process.execPath, 'bin/elanous.mjs', 'self', 'goal-run-search', '--goal', 'no-such-goal', '--json'],
       cwd: process.cwd(),
-      env: { ...process.env, MONAD_STATE_DIR: stateDir },
+      env: { ...process.env, ELANOUS_STATE_DIR: stateDir },
       stdout: 'pipe',
       stderr: 'pipe',
     });
@@ -852,7 +852,7 @@ describe('GoalRunStore', () => {
       expect(rendered).toContain('this is failure #5 with this signature');
       expect(rendered).toContain('prior run IDs: run-four, run-three, run-two');
       expect(rendered).toContain('1 additional matching prior failure not shown');
-      expect(rendered).toContain('view all: monad self goal-run-search --goal goal-recurrence');
+      expect(rendered).toContain('view all: elanous self goal-run-search --goal goal-recurrence');
       expect(rendered).toContain('reproduction:');
       expect(JSON.parse(JSON.stringify(inspection))).not.toHaveProperty('priorRuns');
 
@@ -924,7 +924,7 @@ describe('GoalRunStore', () => {
       expect(rendered).toContain('matching prior failures: at least 1000 in 1000 displayed prior runs');
       expect(rendered).toContain('prior run query truncated: 1001 total prior runs; exact recurrence count and ordinal are unavailable');
       expect(rendered).toContain('prior run IDs from displayed history:');
-      expect(rendered).toContain('view all: monad self goal-run-search --goal goal-truncated-recurrence');
+      expect(rendered).toContain('view all: elanous self goal-run-search --goal goal-truncated-recurrence');
       expect(rendered).not.toContain('this is failure #');
       expect(rendered).not.toContain('matching prior failures: 1000\n');
     } finally {
@@ -935,7 +935,7 @@ describe('GoalRunStore', () => {
   test('renders reproduction anchors and a relaunch command only for an exactly representable test universe', () => {
     const { store: goalRunStore, goalFile } = store();
     try {
-      const testRoot = join(dirname(goalFile), '.monad-test');
+      const testRoot = join(dirname(goalFile), '.elanous-test');
       goalRunStore.insert(goalFile, {
         ...record('run-repro', 'abandoned'),
         resolvedBase: 'feature/reproduce',
@@ -949,10 +949,10 @@ describe('GoalRunStore', () => {
       expect(rendered).toContain('PR number: 42');
       expect(rendered).toContain(`config root: ${testRoot}`);
       expect(rendered).toContain(`state root: ${testRoot}`);
-      expect(rendered).toContain(`relaunch command: bun bin/monad.mjs --test='${testRoot}' dev --file '${goalFile}' --base 'feature/reproduce'`);
+      expect(rendered).toContain(`relaunch command: bun bin/elanous.mjs --test='${testRoot}' dev --file '${goalFile}' --base 'feature/reproduce'`);
 
       const shellSensitiveGoalFile = "/tmp/goal file '$(touch injected)`";
-      const shellSensitiveRoot = "/tmp/test root '$(touch injected)`/.monad-test";
+      const shellSensitiveRoot = "/tmp/test root '$(touch injected)`/.elanous-test";
       const shellSensitive = renderGoalRunInspection({
         ...inspectGoalRun('run-repro', goalRunStore.path, { targets: [] }),
         records: [{
@@ -968,7 +968,7 @@ describe('GoalRunStore', () => {
           },
         }],
       });
-      expect(shellSensitive).toContain("relaunch command: bun bin/monad.mjs --test='/tmp/test root '\\''$(touch injected)`/.monad-test' dev --file '/tmp/goal file '\\''$(touch injected)`' --base 'base name '\\''$(touch injected)`'");
+      expect(shellSensitive).toContain("relaunch command: bun bin/elanous.mjs --test='/tmp/test root '\\''$(touch injected)`/.elanous-test' dev --file '/tmp/goal file '\\''$(touch injected)`' --base 'base name '\\''$(touch injected)`'");
 
       goalRunStore.insert(goalFile, record('run-missing', 'abandoned'));
       const missing = renderGoalRunInspection(inspectGoalRun('run-missing', goalRunStore.path, { targets: [] }));
@@ -1000,7 +1000,7 @@ describe('GoalRunStore', () => {
     const lockedStateDir = join(home, 'locked-state');
     const lockedDbPath = join(lockedStateDir, 'logs', 'logs.db');
     try {
-      const testRoot = join(stateDir, '.monad-test');
+      const testRoot = join(stateDir, '.elanous-test');
       goalRunStore.insert(goalFile, {
         ...record('run-cli-locked', 'abandoned'),
         resolvedBase: 'reproduction-base',
@@ -1009,24 +1009,24 @@ describe('GoalRunStore', () => {
       });
       mkdirSync(dirname(lockedDbPath), { recursive: true });
       writeFileSync(lockedDbPath, 'not a SQLite database');
-      const registryPath = join(home, '.monad', 'logs', 'instances.json');
+      const registryPath = join(home, '.elanous', 'logs', 'instances.json');
       mkdirSync(dirname(registryPath), { recursive: true });
       writeFileSync(registryPath, JSON.stringify({
         instances: [{ name: 'locked', stateDir: lockedStateDir, pid: process.pid, startedAt: '2026-08-09T00:00:00.000Z' }],
       }));
-      const env = { ...process.env, HOME: home, MONAD_STATE_DIR: stateDir };
+      const env = { ...process.env, HOME: home, ELANOUS_STATE_DIR: stateDir };
       const human = Bun.spawnSync({
-        cmd: [process.execPath, 'bin/monad.mjs', 'self', 'goal-run', 'run-cli-locked'],
+        cmd: [process.execPath, 'bin/elanous.mjs', 'self', 'goal-run', 'run-cli-locked'],
         cwd: process.cwd(), env, stdout: 'pipe', stderr: 'pipe',
       });
       const json = Bun.spawnSync({
-        cmd: [process.execPath, 'bin/monad.mjs', 'self', 'goal-run', 'run-cli-locked', '--json'],
+        cmd: [process.execPath, 'bin/elanous.mjs', 'self', 'goal-run', 'run-cli-locked', '--json'],
         cwd: process.cwd(), env, stdout: 'pipe', stderr: 'pipe',
       });
       expect(human.exitCode).toBe(0);
       expect(human.stdout.toString()).toContain('unreadable instances:');
       expect(human.stdout.toString()).toContain('locked');
-      expect(human.stdout.toString()).toContain(`relaunch command: bun bin/monad.mjs --test='${testRoot}' dev --file '${goalFile}' --base 'reproduction-base'`);
+      expect(human.stdout.toString()).toContain(`relaunch command: bun bin/elanous.mjs --test='${testRoot}' dev --file '${goalFile}' --base 'reproduction-base'`);
       expect(json.exitCode).toBe(0);
       expect(JSON.parse(json.stdout.toString())).toMatchObject({
         records: [{ record: { resolvedBase: 'reproduction-base', configRoot: testRoot, stateRoot: testRoot } }],
@@ -1082,7 +1082,7 @@ describe('GoalRunStore', () => {
     const workingDirectory = mkdtempSync(join(tmpdir(), 'clarify-pending-cli-'));
     directories.push(workingDirectory);
     const goalsDirectory = join(workingDirectory, 'docs', 'goals');
-    const stateDir = join(workingDirectory, '.monad-test');
+    const stateDir = join(workingDirectory, '.elanous-test');
     mkdirSync(goalsDirectory, { recursive: true });
     const clarification = (id: string) => [
       '- Clarification:',
@@ -1100,7 +1100,7 @@ describe('GoalRunStore', () => {
     writeFileSync(join(goalsDirectory, 'GOAL-first.md'), `# First goal\n${clarification('first-choice')}\n`);
     writeFileSync(join(goalsDirectory, 'GOAL-second.md'), `# Second goal\n${clarification('second-choice')}\n`);
     writeFileSync(join(goalsDirectory, 'GOAL-without-pending.md'), '# Goal without clarification\n');
-    const cli = join(process.cwd(), 'bin', 'monad.mjs');
+    const cli = join(process.cwd(), 'bin', 'elanous.mjs');
     const result = Bun.spawnSync({
       cmd: [process.execPath, cli, `--test=${stateDir}`, 'self', 'clarify', 'pending'],
       cwd: workingDirectory,
@@ -1124,10 +1124,10 @@ describe('GoalRunStore', () => {
     directories.push(workingDirectory);
     const goalsDirectory = join(workingDirectory, 'docs', 'goals');
     const nestedDirectory = join(workingDirectory, 'nested');
-    const stateDir = join(workingDirectory, '.monad-test');
+    const stateDir = join(workingDirectory, '.elanous-test');
     mkdirSync(goalsDirectory, { recursive: true });
     mkdirSync(nestedDirectory, { recursive: true });
-    writeFileSync(join(workingDirectory, 'package.json'), JSON.stringify({ name: 'monadagent' }));
+    writeFileSync(join(workingDirectory, 'package.json'), JSON.stringify({ name: 'elanous' }));
     writeFileSync(join(goalsDirectory, 'GOAL-nested.md'), [
       '# Nested goal',
       '- Clarification:',
@@ -1141,7 +1141,7 @@ describe('GoalRunStore', () => {
       '  - answer: DEFERRED-UNTIL: Choose a scope',
     ].join('\n'));
     const result = Bun.spawnSync({
-      cmd: [process.execPath, join(process.cwd(), 'bin', 'monad.mjs'), `--test=${stateDir}`, 'self', 'clarify', 'pending', '--dir', '../docs/goals'],
+      cmd: [process.execPath, join(process.cwd(), 'bin', 'elanous.mjs'), `--test=${stateDir}`, 'self', 'clarify', 'pending', '--dir', '../docs/goals'],
       cwd: nestedDirectory,
       env: process.env,
       stdout: 'pipe',
@@ -1158,7 +1158,7 @@ describe('GoalRunStore', () => {
     const workingDirectory = mkdtempSync(join(tmpdir(), 'clarify-pending-summary-cli-'));
     directories.push(workingDirectory);
     const goalsDirectory = join(workingDirectory, 'docs', 'goals');
-    const stateDir = join(workingDirectory, '.monad-test');
+    const stateDir = join(workingDirectory, '.elanous-test');
     mkdirSync(goalsDirectory, { recursive: true });
     const clarification = [
       '- Clarification:',
@@ -1172,7 +1172,7 @@ describe('GoalRunStore', () => {
       '  - answer: DEFERRED-UNTIL: Choose a scope',
     ].join('\n');
     writeFileSync(join(goalsDirectory, 'GOAL-pending.md'), `# Goal\n${clarification}\n`);
-    const cli = join(process.cwd(), 'bin', 'monad.mjs');
+    const cli = join(process.cwd(), 'bin', 'elanous.mjs');
     const result = Bun.spawnSync({
       cmd: [process.execPath, cli, `--test=${stateDir}`, 'self', 'clarify', 'pending'],
       cwd: workingDirectory,
@@ -1201,7 +1201,7 @@ describe('GoalRunStore', () => {
   test('self goal-run CLI reports present and absent ledgers with JSON log summaries', () => {
     const workingDirectory = mkdtempSync(join(tmpdir(), 'goal-run-cli-'));
     directories.push(workingDirectory);
-    const stateDir = join(workingDirectory, '.monad-test');
+    const stateDir = join(workingDirectory, '.elanous-test');
     const goalFile = join(stateDir, 'GOAL-test.txt');
     mkdirSync(stateDir, { recursive: true });
     writeFileSync(goalFile, 'Test goal\n- GoalId: 0123456789abcdef\n');
@@ -1214,7 +1214,7 @@ describe('GoalRunStore', () => {
     const logs = new LogStore(join(stateDir, 'logs', 'logs.db'));
     logs.insertBatch([{ surface: 'harness:self-implement', rec: { ts: '2026-08-09T01:00:00.000Z', level: 'info', category: 'goal.run', event: 'started', data: 'run-cli-autopsy' } }]);
     logs.close();
-    const cli = join(process.cwd(), 'bin', 'monad.mjs');
+    const cli = join(process.cwd(), 'bin', 'elanous.mjs');
     const present = Bun.spawnSync({
       cmd: [process.execPath, cli, `--test=${stateDir}`, 'self', 'goal-run', 'run-cli-autopsy', '--json'],
       cwd: process.cwd(), env: process.env, stdout: 'pipe', stderr: 'pipe',
@@ -1247,9 +1247,9 @@ describe('GoalRunStore', () => {
     }
     const stateDir = goalFile.slice(0, goalFile.lastIndexOf('/'));
     const result = Bun.spawnSync({
-      cmd: [process.execPath, 'bin/monad.mjs', 'self', 'goal-runs', 'run-cli-proof', '--json'],
+      cmd: [process.execPath, 'bin/elanous.mjs', 'self', 'goal-runs', 'run-cli-proof', '--json'],
       cwd: process.cwd(),
-      env: { ...process.env, MONAD_STATE_DIR: stateDir },
+      env: { ...process.env, ELANOUS_STATE_DIR: stateDir },
       stdout: 'pipe',
       stderr: 'pipe',
     });

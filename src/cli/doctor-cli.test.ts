@@ -30,7 +30,7 @@ function options(overrides: Parameters<typeof runDoctor>[0] = {}) {
     env: {},
     userConfig: userConfig(),
     // Existing cases assert the credential report. Readiness is injected so they
-    // never touch gh, HTTP, PATH, or ~/.monad. The readiness section is covered below.
+    // never touch gh, HTTP, PATH, or ~/.elanous. The readiness section is covered below.
     readiness: {
       provider: 'grok',
       codexLogin: false,
@@ -207,7 +207,7 @@ describe('doctor CLI', () => {
       err: { error: () => {} },
       setExitCode: (code) => exitCodes.push(code),
     });
-    await program.parseAsync(['node', 'monad', 'doctor']);
+    await program.parseAsync(['node', 'elanous', 'doctor']);
     expect(output[0]).toContain('못 하는 일:');
     expect(exitCodes).toEqual([]);
   });
@@ -372,9 +372,9 @@ describe('doctor CLI', () => {
   });
 
   test('uses process environment paths when no environment is injected', () => {
-    const previousCacheDir = process.env.MONAD_KEY_CACHE_DIR;
+    const previousCacheDir = process.env.ELANOUS_KEY_CACHE_DIR;
     const previousTavilyEnvFile = process.env.TAVILY_ENV_FILE;
-    process.env.MONAD_KEY_CACHE_DIR = '/process-cache';
+    process.env.ELANOUS_KEY_CACHE_DIR = '/process-cache';
     process.env.TAVILY_ENV_FILE = '/process-skill/.env';
     try {
       const report = runDoctor(options({
@@ -390,8 +390,8 @@ describe('doctor CLI', () => {
       expect(report.credentials.find((item) => item.name === 'CACHE_ONLY')).toMatchObject({ source: 'cache' });
       expect(report.credentials.find((item) => item.name === 'TAVILY_API_KEY')).toMatchObject({ source: 'skill-env' });
     } finally {
-      if (previousCacheDir === undefined) delete process.env.MONAD_KEY_CACHE_DIR;
-      else process.env.MONAD_KEY_CACHE_DIR = previousCacheDir;
+      if (previousCacheDir === undefined) delete process.env.ELANOUS_KEY_CACHE_DIR;
+      else process.env.ELANOUS_KEY_CACHE_DIR = previousCacheDir;
       if (previousTavilyEnvFile === undefined) delete process.env.TAVILY_ENV_FILE;
       else process.env.TAVILY_ENV_FILE = previousTavilyEnvFile;
     }
@@ -419,7 +419,7 @@ describe('doctor CLI', () => {
       out: { log: () => {} },
       setExitCode: (code) => exitCodes.push(code),
     });
-    await program.parseAsync(['node', 'monad', 'doctor']);
+    await program.parseAsync(['node', 'elanous', 'doctor']);
     expect(errors).toEqual(['Could not build credential report from local configuration.']);
     expect(exitCodes).toEqual([1]);
   });
@@ -577,7 +577,7 @@ describe('doctor CLI', () => {
       err: { error: () => {} },
       setExitCode: (code) => exitCodes.push(code),
     });
-    await program.parseAsync(['node', 'monad', 'doctor']);
+    await program.parseAsync(['node', 'elanous', 'doctor']);
     expect(output[0]).toContain('node-pty: missing (capability)');
     expect(output[0]).toContain(`  Breaks: ${nodePty?.breaks}`);
     expect(output[0]).toContain(`  Fix: ${nodePty?.fix}`);
@@ -634,7 +634,7 @@ describe('doctor CLI', () => {
       err: { error: () => {} },
       setExitCode: (code) => exitCodes.push(code),
     });
-    await program.parseAsync(['node', 'monad', 'doctor']);
+    await program.parseAsync(['node', 'elanous', 'doctor']);
     expect(output[0]).toContain('  Breaks: unnamed pty absence');
     expect(output[0]).toContain('  Fix: On Linux, node-pty builds when node-gyp is present');
     expect(exitCodes).toEqual([]);
@@ -845,7 +845,7 @@ describe('doctor CLI', () => {
       err: { error: () => {} },
       setExitCode: (code) => exitCodes.push(code),
     });
-    await program.parseAsync(['node', 'monad', 'doctor']);
+    await program.parseAsync(['node', 'elanous', 'doctor']);
     expect(output[0]).toContain('External commands catalog unavailable');
     expect(exitCodes).toEqual([]);
   });
@@ -916,7 +916,7 @@ describe('doctor CLI', () => {
       setExitCode: (code) => exitCodes.push(code),
     });
 
-    await program.parseAsync(['node', 'monad', 'doctor', '--json']);
+    await program.parseAsync(['node', 'elanous', 'doctor', '--json']);
     const report = JSON.parse(output[0]!);
     expect(report.ok).toBe(true);
     expect(report.credentials).toHaveLength(6);
@@ -1241,14 +1241,14 @@ describe('doctor CLI', () => {
   });
 
   test('defaultReadInstallPrefix reads $PREFIX/install.json, not the copy under current', () => {
-    const packageRoot = '/opt/monad/current/node_modules/monadagent';
+    const packageRoot = '/opt/elanous/current/node_modules/elanous';
     const seen: string[] = [];
     const prefix = defaultReadInstallPrefix(packageRoot, (path) => {
       seen.push(path);
-      return path === '/opt/monad/install.json';
+      return path === '/opt/elanous/install.json';
     });
-    expect(prefix).toBe('/opt/monad');
-    expect(seen).toEqual(['/opt/monad/install.json']);
+    expect(prefix).toBe('/opt/elanous');
+    expect(seen).toEqual(['/opt/elanous/install.json']);
     const checkout = defaultReadInstallPrefix('/src/monad-agent', (path) => path === '/src/monad-agent/.git');
     expect(checkout).toBeNull();
     // 모르면 «모른다» — 체크아웃으로 읽지 않는다(리뷰 must-fix · 2026-09-24).
@@ -1257,9 +1257,9 @@ describe('doctor CLI', () => {
 
   // 🆕 2026-09-24 — 실물: 설치본 doctor 가 「running from a checkout」이라 했다(import.meta.url 은 심링크를 풀어 판 폴더 실경로가 된다).
   test('defaultReadInstallPrefix knows the versioned layout and the old flat layout', () => {
-    const versioned = defaultReadInstallPrefix('/opt/monad/versions/1.0.0-abc/node_modules/monadagent', (p) => p === '/opt/monad/install.json');
-    expect(versioned).toBe('/opt/monad');
-    const flat = defaultReadInstallPrefix('/opt/old/node_modules/monadagent', (p) => p === '/opt/old/install.json');
+    const versioned = defaultReadInstallPrefix('/opt/elanous/versions/1.0.0-abc/node_modules/elanous', (p) => p === '/opt/elanous/install.json');
+    expect(versioned).toBe('/opt/elanous');
+    const flat = defaultReadInstallPrefix('/opt/old/node_modules/elanous', (p) => p === '/opt/old/install.json');
     expect(flat).toBe('/opt/old');
   });
 
@@ -1311,7 +1311,7 @@ describe('doctor CLI', () => {
         nodePty: 'found',
         bunVersion: '1.4.2',
         bunPin: '1.4.2',
-        pythonEnv: { status: 'ok', evidence: 'python 3.12.12 (monad-venv) · required modules import' },
+        pythonEnv: { status: 'ok', evidence: 'python 3.12.12 (elanous-venv) · required modules import' },
         substrate: { kubernetesServiceHost: false, serviceAccountNamespace: false, dockerenv: false, containerenv: false, cgroup: null, containerEnv: null },
         docker: { onPath: false },
         kubernetes: { onPath: false },
@@ -1342,7 +1342,7 @@ describe('doctor CLI', () => {
       codexLogin: true,
       ghOnPath: true,
       ghAuthStatus: 1,
-      installPrefix: '/opt/monad',
+      installPrefix: '/opt/elanous',
       pathEntries: ['/usr/bin'],
       health: null,
       codeRevision: 'abc123def4567890',
@@ -1385,7 +1385,7 @@ describe('doctor CLI', () => {
       },
       codeRevision: () => 'abc123def4567890abc123def4567890abc123de',
       fetchHealth: () => ({ daemonSha: 'fffffffffff' }),
-      readInstallPrefix: () => '/opt/monad',
+      readInstallPrefix: () => '/opt/elanous',
       ghAuthStatus: () => {
         calls.push('gh-auth');
         return 1;
@@ -1401,7 +1401,7 @@ describe('doctor CLI', () => {
     expect(by('gh-auth')).toMatchObject({ status: 'manual', remedy: 'gh auth login' });
     expect(by('install-path')).toMatchObject({
       status: 'fixable',
-      remedy: `export PATH='/opt/monad/bin':\"$PATH\"`,
+      remedy: `export PATH='/opt/elanous/bin':\"$PATH\"`,
     });
     expect(by('service-version')?.status).toBe('manual');
     expect(by('service-version')?.evidence).toContain('fffffffffff');
@@ -1419,7 +1419,7 @@ describe('doctor CLI', () => {
   test('doctor --fix exposes harness tools and --sudo receives the same install line', async () => {
     const lines: string[] = [];
     const sudoPlans: string[][] = [];
-    const sandbox = mkdtempSync(join(tmpdir(), 'monad-doctor-harness-'));
+    const sandbox = mkdtempSync(join(tmpdir(), 'elanous-doctor-harness-'));
     const calls = join(sandbox, 'calls');
     const script = `#!/bin/sh
 name="${'${0##*/}'}"

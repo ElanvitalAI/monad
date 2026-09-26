@@ -11,11 +11,11 @@ function fixtureRoot(): string {
   const root = mkdtempSync(join(tmpdir(), 'cli-doc-coverage-'));
   temporaryRoots.push(root);
   for (const directory of ['.rules', 'docs/manual']) mkdirSync(join(root, directory), { recursive: true });
-  writeFileSync(join(root, '.rules', 'rule.md'), 'monad alpha run\n');
-  writeFileSync(join(root, 'docs/manual', 'manual.md'), 'monad gamma run\n');
-  writeFileSync(join(root, 'CLAUDE.md'), 'monad beta run\n');
-  writeFileSync(join(root, 'AGENTS.md'), 'monad delta run\n');
-  writeFileSync(join(root, 'ignored.md'), 'monad orphan run\n');
+  writeFileSync(join(root, '.rules', 'rule.md'), 'elanous alpha run\n');
+  writeFileSync(join(root, 'docs/manual', 'manual.md'), 'elanous gamma run\n');
+  writeFileSync(join(root, 'CLAUDE.md'), 'elanous beta run\n');
+  writeFileSync(join(root, 'AGENTS.md'), 'elanous delta run\n');
+  writeFileSync(join(root, 'ignored.md'), 'elanous orphan run\n');
   return root;
 }
 
@@ -46,7 +46,7 @@ const sources: Record<string, string | undefined> = {
 
 describe('CLI documentation coverage observation', () => {
   test('attributes multiline chained additions to their complete source-local path', () => {
-    const result = collectCliDocCoverage({ inventory: ['alpha', 'alpha run', 'beta', 'beta run', 'gamma', 'gamma run'], patch, corpus: 'monad alpha run\n', readSource: (source) => sources[source] });
+    const result = collectCliDocCoverage({ inventory: ['alpha', 'alpha run', 'beta', 'beta run', 'gamma', 'gamma run'], patch, corpus: 'elanous alpha run\n', readSource: (source) => sources[source] });
     expect(result.recent).toBe(2);
     expect(result.candidates).toEqual([{ path: 'beta run', source: 'src/cli/beta.ts', mentions: 0, proseMentions: 0 }]);
   });
@@ -149,7 +149,7 @@ describe('CLI documentation coverage observation', () => {
   });
 
   // ⛔⭐⭐ 무인 리뷰 6R must-fix 둘 — **접두에 왼쪽 경계가 없었고**, 「호출로 안 쓰였다」를
-  //   「아예 안 나온다」로 접고 있었다. 앞은 내가 만든 버그(`demonad …` 가 매치), 뒤는 내 «판단 오류»다.
+  //   「아예 안 나온다」로 접고 있었다. 앞은 내가 만든 버그(`deelanous …` 가 매치), 뒤는 내 «판단 오류»다.
   test('separates a prose mention from an invocation, and does not match a glued prefix', () => {
     const shared = {
       inventory: ['alpha', 'alpha run'],
@@ -161,11 +161,11 @@ describe('CLI documentation coverage observation', () => {
     expect(prose.candidates).toEqual([]);
     expect(prose.proseOnly).toBe(1);
     // ⓑ 붙어 있는 접두는 «호출이 아니다». 왼쪽 경계가 없으면 이것이 호출로 세어졌다.
-    const glued = collectCliDocCoverage({ ...shared, corpus: 'demonad alpha run' });
+    const glued = collectCliDocCoverage({ ...shared, corpus: 'deelanous alpha run' });
     expect(glued.candidates).toEqual([]);          // 산문으로는 잡히므로 결손은 아니고…
     expect(glued.proseOnly).toBe(1);               // …「호출로는 0」이 유지돼야 한다
     // ⓒ 진짜 호출은 호출로 센다.
-    const invoked = collectCliDocCoverage({ ...shared, corpus: 'bun bin/monad.mjs alpha run' });
+    const invoked = collectCliDocCoverage({ ...shared, corpus: 'bun bin/elanous.mjs alpha run' });
     expect(invoked.proseOnly).toBe(0);
     expect(invoked.candidates).toEqual([]);
   });
@@ -206,14 +206,14 @@ describe('CLI documentation coverage observation', () => {
     //   `bun test` 안에서 spawn 하면 «안 온다». 차이는 자식이 물려받는 `NODE_ENV` 하나였다(벗기니 도착).
     //   ⇒ 🧩 그대로 두면 ***「배선이 없다」와 「테스트라서 안 쓴다」가 같은 값***이 되어, 이 단언이
     //   회귀를 잡는 게 아니라 «항상 빨간불»인 죽은 칸이 된다. 벗기는 것이 «실물 조건»에 맞추는 것이다.
-    //   ⊕ ⭐⭐ **로그 저장소를 «격리»한다**(무인 리뷰 7R must-fix) — `MONAD_STATE_DIR` 로 임시 뿌리를 주면
+    //   ⊕ ⭐⭐ **로그 저장소를 «격리»한다**(무인 리뷰 7R must-fix) — `ELANOUS_STATE_DIR` 로 임시 뿌리를 주면
     //   스크립트도 조회도 «그 저장소»를 쓴다(실측: `<tmp>/logs/logs.db` 가 생기고 거기서 읽힌다).
     //   ⇒ 공유 저장소에 영속 부작용을 안 남기고, 「최근 200건에 밀린다」는 플레이크 원인도 사라진다.
     const logRoot = mkdtempSync(join(tmpdir(), 'cli-doc-coverage-logs-'));
     temporaryRoots.push(logRoot);
-    const liveEnv: Record<string, string> = { MONAD_STATE_DIR: logRoot };
+    const liveEnv: Record<string, string> = { ELANOUS_STATE_DIR: logRoot };
     for (const [key, value] of Object.entries(process.env)) if (key !== 'NODE_ENV' && value !== undefined) liveEnv[key] = value;
-    liveEnv.MONAD_STATE_DIR = logRoot;
+    liveEnv.ELANOUS_STATE_DIR = logRoot;
     const subprocess = Bun.spawnSync(['bun', 'scripts/cli-doc-coverage.ts', '--json', `--since=${marker}`], { cwd: join(import.meta.dir, '..'), stdout: 'pipe', stderr: 'pipe', env: liveEnv });
     expect(subprocess.exitCode).toBe(0);
     const stdout = new TextDecoder().decode(subprocess.stdout).trim();
@@ -232,7 +232,7 @@ describe('CLI documentation coverage observation', () => {
 
     // ⛔⭐⭐⭐ **「남겼다」가 아니라 「도착했다」를 잰다** (무인 리뷰가 «세 라운드» 요구했고 그가 옳았다).
     //   📏 이 창의 실측: `registerStandaloneLogSink` 가 «없을 때» 스크립트는 정상 종료하고 JSON 도 냈지만
-    //   `monad logs --category cli.doc-coverage` 가 **0건**이었다. 위 stdout 단언만으로는 그 상태가 «초록»이다.
+    //   `elanous logs --category cli.doc-coverage` 가 **0건**이었다. 위 stdout 단언만으로는 그 상태가 «초록»이다.
     //   ⇒ 🧩 `#6701`·`I-T8` 이 이미 적은 형태 — ***호출을 재는 것과 도착을 재는 것은 다른 축이다.***
     //   ⛔ `logs.db` 를 직접 열지 않는다(저장소 규율) — 1급 CLI 로만 읽는다.
     // ⛔⭐ **도착은 «즉시»가 아니다** — sink 기록에 지연이 있어 자식 종료 직후 조회하면 놓친다
@@ -241,7 +241,7 @@ describe('CLI documentation coverage observation', () => {
     type LogRow = { event?: string; data?: { since?: string } };
     const arrived = (): boolean => {
       const logs = Bun.spawnSync(
-        ['bun', 'bin/monad.mjs', 'logs', '--category', 'cli.doc-coverage', '--limit', '20', '--json', '--json-data'],
+        ['bun', 'bin/elanous.mjs', 'logs', '--category', 'cli.doc-coverage', '--limit', '20', '--json', '--json-data'],
         { cwd: join(import.meta.dir, '..'), stdout: 'pipe', stderr: 'pipe', env: liveEnv },
       );
       if (logs.exitCode !== 0) return false;

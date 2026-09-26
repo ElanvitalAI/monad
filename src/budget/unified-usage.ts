@@ -161,7 +161,7 @@ async function collectGrokRows(deps: UnifiedUsageDeps): Promise<AccountUsageRow[
 export const DEFAULT_RESET_CREDIT_EXPIRY_WARNING_MS = 24 * 60 * 60 * 1000;
 
 function configuredResetCreditExpiryWarningMs(): number | undefined {
-  const raw = process.env.MONAD_CODEX_RESET_CREDIT_EXPIRY_WARNING_MS?.trim();
+  const raw = process.env.ELANOUS_CODEX_RESET_CREDIT_EXPIRY_WARNING_MS?.trim();
   if (!raw) return DEFAULT_RESET_CREDIT_EXPIRY_WARNING_MS;
   const value = Number(raw);
   return Number.isFinite(value) && value >= 0 ? value : undefined;

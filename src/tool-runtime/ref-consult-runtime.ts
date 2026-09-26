@@ -2,7 +2,7 @@
 //
 // Third step of the discovery cycle: FindRepo → SyncRepo →
 // RefConsult. Runs a grep or read against a previously-SyncRepo'd
-// local cache at ~/.cache/monad-refs/<host>/<owner>/<repo>.
+// local cache at ~/.cache/elanous-refs/<host>/<owner>/<repo>.
 //
 // This tool is INTENTIONALLY THIN — it delegates to ripgrep (`rg`)
 // via spawnSync when mode='grep', or to plain fs.readFileSync when
@@ -26,7 +26,7 @@ import type { ToolRuntime, ToolRuntimeContext } from './types.js';
 import { DEFAULT_REFERENCE_ROOTS } from '../agent/ref-grounding.js';   // ★ F3 — 로컬 canonical ref 루트
 import { debug } from '../debug/log.js';
 
-const CACHE_ROOT_DEFAULT = join(homedir(), '.cache', 'monad-refs');
+const CACHE_ROOT_DEFAULT = join(homedir(), '.cache', 'elanous-refs');
 const DEFAULT_HEAD_LIMIT = 200;
 const MAX_HEAD_LIMIT = 2000;
 const READ_MAX_BYTES = 500_000;
@@ -72,7 +72,7 @@ export function buildRefConsultTool(): LLMToolSpec {
     name: 'RefConsult',
     description:
       'Grep or read inside a repo — resolved from the SyncRepo cache ' +
-      '(~/.cache/monad-refs/<host>/<owner>/<repo>) OR the local canonical ref tree ' +
+      '(~/.cache/elanous-refs/<host>/<owner>/<repo>) OR the local canonical ref tree ' +
       '(~/source/ref/<repo>, no SyncRepo needed for repos already there). Third step of the ' +
       'discovery cycle. mode="grep" delegates to ripgrep; mode="read" returns a bounded file ' +
       'slice. Fails fast only if the repo is in neither cache nor ~/source/ref.',

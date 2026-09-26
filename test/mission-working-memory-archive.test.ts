@@ -9,7 +9,7 @@ import {
   appendWorkingMemoryArchive, readWorkingMemoryArchive, missionWorkingMemoryArchivePath,
   type WorkingMemoryEntry,
 } from '../src/autopilot/mission-working-memory.js';
-import { setMonadConfigDir, resetMonadConfigDir } from '../src/monad-config-dir.js';
+import { setElanousConfigDir, resetElanousConfigDir } from '../src/elanous-config-dir.js';
 
 const MID = 'apm_test_u25';
 const entry = (phaseId: string, summary = 's'): Omit<WorkingMemoryEntry, 'at'> => ({
@@ -18,8 +18,8 @@ const entry = (phaseId: string, summary = 's'): Omit<WorkingMemoryEntry, 'at'> =
 
 describe('U2.5 — write-time compaction(라이브 성장 bound)', () => {
   let stateDir: string;
-  beforeEach(() => { stateDir = mkdtempSync(join(tmpdir(), 'wm-state-')); process.env.MONAD_STATE_DIR = stateDir; });
-  afterEach(() => { delete process.env.MONAD_STATE_DIR; try { rmSync(stateDir, { recursive: true, force: true }); } catch { /* ignore */ } });
+  beforeEach(() => { stateDir = mkdtempSync(join(tmpdir(), 'wm-state-')); process.env.ELANOUS_STATE_DIR = stateDir; });
+  afterEach(() => { delete process.env.ELANOUS_STATE_DIR; try { rmSync(stateDir, { recursive: true, force: true }); } catch { /* ignore */ } });
 
   test('임계 미만이면 no-op(compacted=false)', () => {
     appendWorkingMemory(MID, entry('a'));
@@ -48,10 +48,10 @@ describe('U2.5 — 리비전(generation)별 풀 아카이브', () => {
   beforeEach(() => {
     cfgDir = mkdtempSync(join(tmpdir(), 'wm-cfg-'));
     stateDir = mkdtempSync(join(tmpdir(), 'wm-state-'));
-    setMonadConfigDir(cfgDir); process.env.MONAD_STATE_DIR = stateDir;
+    setElanousConfigDir(cfgDir); process.env.ELANOUS_STATE_DIR = stateDir;
   });
   afterEach(() => {
-    resetMonadConfigDir(); delete process.env.MONAD_STATE_DIR;
+    resetElanousConfigDir(); delete process.env.ELANOUS_STATE_DIR;
     for (const d of [cfgDir, stateDir]) try { rmSync(d, { recursive: true, force: true }); } catch { /* ignore */ }
   });
 

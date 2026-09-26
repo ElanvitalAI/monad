@@ -15,7 +15,7 @@ describe('isBotSignal (무한루프 방지)', () => {
     expect(isBotSignal('github-actions[bot]', '아무 내용')).toBe(true);
   });
   test('review-loop 자동 코멘트 마커(✅) → true (gh 인증 계정이 남겨도 마커로 걸림)', () => {
-    expect(isBotSignal('ElanvitalAI', '✅ 리뷰 보강 자동 반영(codex-in-monad)')).toBe(true);
+    expect(isBotSignal('ElanvitalAI', '✅ 리뷰 보강 자동 반영(codex-in-elanous)')).toBe(true);
     expect(isBotSignal('ElanvitalAI', '🔁 ACP 최종심판: REWORK')).toBe(true);
   });
   test('사람 보강 요청(마커 없음) → false', () => {

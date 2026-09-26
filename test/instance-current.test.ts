@@ -4,20 +4,20 @@ import { resolveCurrentInstance } from '../src/instance/current.js';
 import { prodInstanceRoot } from '../src/instance/resolve.js';
 
 const withStateDir = <T>(stateDir: string | undefined, fn: () => T): T => {
-  const previous = process.env.MONAD_STATE_DIR;
-  if (stateDir === undefined) delete process.env.MONAD_STATE_DIR;
-  else process.env.MONAD_STATE_DIR = stateDir;
+  const previous = process.env.ELANOUS_STATE_DIR;
+  if (stateDir === undefined) delete process.env.ELANOUS_STATE_DIR;
+  else process.env.ELANOUS_STATE_DIR = stateDir;
   try {
     return fn();
   } finally {
-    if (previous === undefined) delete process.env.MONAD_STATE_DIR;
-    else process.env.MONAD_STATE_DIR = previous;
+    if (previous === undefined) delete process.env.ELANOUS_STATE_DIR;
+    else process.env.ELANOUS_STATE_DIR = previous;
   }
 };
 
 describe('resolveCurrentInstance', () => {
-  test('MONAD_STATE_DIR test root is resolved as test through the runtime input assembly', () => {
-    const testRoot = join(process.cwd(), '.monad-test');
+  test('ELANOUS_STATE_DIR test root is resolved as test through the runtime input assembly', () => {
+    const testRoot = join(process.cwd(), '.elanous-test');
     const result = withStateDir(testRoot, () => resolveCurrentInstance({
       treeDerivedEnabled: () => false,
     }));
@@ -27,7 +27,7 @@ describe('resolveCurrentInstance', () => {
     expect(result.root).toBe(testRoot);
   });
 
-  test('MONAD_STATE_DIR production root is resolved as prod through the runtime input assembly', () => {
+  test('ELANOUS_STATE_DIR production root is resolved as prod through the runtime input assembly', () => {
     const prodRoot = prodInstanceRoot();
     const result = withStateDir(prodRoot, () => resolveCurrentInstance({
       treeDerivedEnabled: () => false,
@@ -39,7 +39,7 @@ describe('resolveCurrentInstance', () => {
   });
 
   test('an explicit test root wins over the parent stamp', () => {
-    const explicitRoot = join(process.cwd(), '.monad-test-explicit');
+    const explicitRoot = join(process.cwd(), '.elanous-test-explicit');
     const result = withStateDir(prodInstanceRoot(), () => resolveCurrentInstance({
       explicitFlagRoot: () => explicitRoot,
       treeDerivedEnabled: () => false,

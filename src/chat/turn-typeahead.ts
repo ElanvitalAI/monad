@@ -5,7 +5,7 @@
 //   codex — 턴 중에도 composer 가 키를 받고 제출은 steer/queue 로 흡수
 //           (`pending_steers`·`queued_user_messages`).
 //   CC    — focus 식에 isLoading 없음 · 제출은 enqueue() + 버퍼 클리어.
-// monad: 스트리밍 키 사다리에서 printable/backspace/enter 를 이 버퍼로 보존
+// elanous: 스트리밍 키 사다리에서 printable/backspace/enter 를 이 버퍼로 보존
 // (에코는 호출측이 composer zone 에 직접 페인트), 턴 종료 시 FIFO로 넘긴다.
 
 export interface TurnTypeaheadState {

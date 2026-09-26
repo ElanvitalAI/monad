@@ -47,7 +47,7 @@ import type { FeedbackEnvelope } from '../src/feedback/envelope.js';
 let cwd: string;
 
 beforeEach(() => {
-  cwd = mkdtempSync(joinPath(tmpdir(), 'monad-edit-'));
+  cwd = mkdtempSync(joinPath(tmpdir(), 'elanous-edit-'));
 });
 
 afterEach(() => {

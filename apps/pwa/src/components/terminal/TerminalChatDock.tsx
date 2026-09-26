@@ -504,7 +504,7 @@ export const TerminalChatDock = forwardRef<TerminalChatDockHandle, Props>(functi
               onClick={voice.onToggle}
               disabled={voice.disabled}
               title={voice.disabled ? '마이크 사용 불가 (insecure context 등)' : voice.phaseLabel}
-              data-monad-action="webterm-voice-toggle-dock"
+              data-elanous-action="webterm-voice-toggle-dock"
               aria-pressed={voice.active}
               className={cn(
                 'inline-flex h-7 items-center gap-1.5 rounded-md border px-2 text-[11px]',
@@ -537,7 +537,7 @@ export const TerminalChatDock = forwardRef<TerminalChatDockHandle, Props>(functi
                 setTtsMuted((m) => !m);
               }}
               title={ttsMuted ? '음성 응답 켜기' : '음성 응답 끄기'}
-              data-monad-action="webterm-tts-mute-toggle"
+              data-elanous-action="webterm-tts-mute-toggle"
               aria-pressed={ttsMuted}
               className={cn(
                 'inline-flex h-7 items-center justify-center rounded-md border px-2 text-[11px]',

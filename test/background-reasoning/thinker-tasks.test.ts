@@ -74,7 +74,7 @@ describe('runPatternDetect', () => {
 
 describe('runPersonalization', () => {
   test('parses update map', async () => {
-    const cb = fixedCallable('{"update":{"voiceWakeWord":"hey monad","sensitivity":0.6}}');
+    const cb = fixedCallable('{"update":{"voiceWakeWord":"hey elanous","sensitivity":0.6}}');
     const out = await runPersonalization(
       {
         target: 'voice',
@@ -83,7 +83,7 @@ describe('runPersonalization', () => {
       },
       cb,
     );
-    expect(out.update.voiceWakeWord).toBe('hey monad');
+    expect(out.update.voiceWakeWord).toBe('hey elanous');
     expect(out.update.sensitivity).toBe(0.6);
   });
 });

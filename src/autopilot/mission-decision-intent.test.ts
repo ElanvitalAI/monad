@@ -49,7 +49,7 @@ describe('detectMissionDecisionIntent — 결정 NL 라우팅(Layer 3)', () => {
   });
 
   test('슬래시/장문/빈문자열 방어', () => {
-    expect(detectMissionDecisionIntent('/monad-decision').isIntent).toBe(false);
+    expect(detectMissionDecisionIntent('/elanous-decision').isIntent).toBe(false);
     expect(detectMissionDecisionIntent('').isIntent).toBe(false);
     expect(detectMissionDecisionIntent('미션 ' + 'x'.repeat(500)).isIntent).toBe(false);
   });

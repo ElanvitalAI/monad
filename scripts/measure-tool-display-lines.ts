@@ -27,10 +27,9 @@ type DisplayLineMeasurement = {
  *  (무인 리뷰 must-fix · 2026-08-02). */
 export function resolveMeasureRenderConfig(defaults: {
   rendering: { tool: { blockMaxLines: number } };
-}): { displayMode: 'inline-to-block'; inlineOneLine: boolean; blockMaxLines: number } {
+}): { displayMode: 'inline-to-block'; blockMaxLines: number } {
   return {
     displayMode: 'inline-to-block',
-    inlineOneLine: true,
     blockMaxLines: defaults.rendering.tool.blockMaxLines,
   };
 }

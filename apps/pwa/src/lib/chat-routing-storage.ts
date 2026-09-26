@@ -10,15 +10,15 @@
 //                                     options in the BackendPickerChip
 //                                     menu. OFF hides the chip entirely
 //                                     and locks the send path to
-//                                     monad-builtin ("basic mode").
+//                                     elanous-builtin ("basic mode").
 //
 // Mirrors iOS @AppStorage("chat.autoRouting") + @AppStorage("chat.acpBackends").
 // Cross-tab sync via StorageEvent fan-out (same pattern as
 // intent-panel-storage).
 
-const AUTO_ROUTING_KEY = 'monad.pwa.chat.autoRouting';
-const ACP_BACKENDS_KEY = 'monad.pwa.chat.acpBackends';
-const CHANGE_EVENT = 'monad-chat-routing-changed';
+const AUTO_ROUTING_KEY = 'elanous.pwa.chat.autoRouting';
+const ACP_BACKENDS_KEY = 'elanous.pwa.chat.acpBackends';
+const CHANGE_EVENT = 'elanous-chat-routing-changed';
 
 export interface ChatRoutingState {
   autoRouting: boolean;

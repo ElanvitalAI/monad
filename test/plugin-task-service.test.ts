@@ -63,7 +63,7 @@ describe('PluginTaskService', () => {
   });
 
   test('records, cancels, and reruns execution history', async () => {
-    const root = mkdtempSync(join(tmpdir(), 'monad-execution-history-'));
+    const root = mkdtempSync(join(tmpdir(), 'elanous-execution-history-'));
     try {
       const starts: string[] = [];
       const stops: string[] = [];

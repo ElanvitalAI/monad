@@ -82,7 +82,7 @@ export function DebugTapDrawer({
 
   return (
     <div
-      data-monad-debug-tap-drawer={open ? 'open' : 'closed'}
+      data-elanous-debug-tap-drawer={open ? 'open' : 'closed'}
       className={cn(
         'fixed bottom-0 left-0 right-0 z-50 transition-transform duration-200 ease-out',
         'pointer-events-none',
@@ -105,8 +105,8 @@ export function DebugTapDrawer({
             </span>
             <span
               className="text-[10px] text-muted-foreground/70"
-              data-monad-debug-tap-count={filtered.length}
-              data-monad-debug-tap-total={lines.length}
+              data-elanous-debug-tap-count={filtered.length}
+              data-elanous-debug-tap-total={lines.length}
             >
               {filtered.length}/{lines.length}
             </span>
@@ -123,7 +123,7 @@ export function DebugTapDrawer({
                 'w-40 rounded border border-border bg-background px-2 py-1 text-[11px] font-mono',
                 'focus:outline-none focus:ring-1 focus:ring-primary',
               )}
-              data-monad-debug-tap-filter=""
+              data-elanous-debug-tap-filter=""
               aria-label="Filter debug lines"
             />
             <button
@@ -131,7 +131,7 @@ export function DebugTapDrawer({
               onClick={onClose}
               className="rounded px-2 py-1 text-xs text-muted-foreground hover:bg-muted hover:text-foreground"
               aria-label="Close debug drawer"
-              data-monad-debug-tap-close=""
+              data-elanous-debug-tap-close=""
             >
               ✕
             </button>
@@ -139,7 +139,7 @@ export function DebugTapDrawer({
         </header>
         <ul
           className="flex-1 overflow-y-auto px-3 py-2 text-[11px] font-mono"
-          data-monad-debug-tap-list=""
+          data-elanous-debug-tap-list=""
         >
           {filtered.length === 0 ? (
             <li className="italic text-muted-foreground/60">
@@ -160,9 +160,9 @@ function DebugTapRow({ line }: { line: DebugTapLine }) {
   const time = new Date(line.loggedAt).toISOString().slice(11, 23);
   return (
     <li
-      data-monad-debug-tap-line=""
-      data-monad-category={line.category}
-      data-monad-event={line.event}
+      data-elanous-debug-tap-line=""
+      data-elanous-category={line.category}
+      data-elanous-event={line.event}
       className="py-0.5"
     >
       <span className="text-muted-foreground/70">[{time}]</span>{' '}

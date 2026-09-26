@@ -32,7 +32,7 @@
 //   - Windows / non-POSIX shell names → skip (we only gate POSIX names).
 //
 // Explicitly a NO-OP when:
-//   - `MONAD_SKIP_LOGIN_ENV=1` is set (escape hatch for debugging).
+//   - `ELANOUS_SKIP_LOGIN_ENV=1` is set (escape hatch for debugging).
 //   - `process.env.TERM_PROGRAM === 'monad-agent-nested'` (don't
 //     double-capture when we're spawned inside ourselves).
 //
@@ -42,7 +42,7 @@
 // deliberately NOT bundled into the PTY identity-propagation fix, whose invariant
 // is "no behaviour change for existing callers".
 //
-// ⚠️ Runtime instance identity (`MONAD_STATE_DIR`, nest depth, harness space) does
+// ⚠️ Runtime instance identity (`ELANOUS_STATE_DIR`, nest depth, harness space) does
 // NOT survive this capture — the login shell cannot reproduce what the process set
 // at runtime. It crosses the PTY boundary via `identityEnv()` layered ON TOP of the
 // captured snapshot; see `agent/identity-env.ts`. Never merge `process.env`
@@ -134,7 +134,7 @@ export function getCapturedEnv(): Record<string, string> {
   if (captured && cached) return cached;
   if (captured && !cached) return process.env as Record<string, string>;
 
-  if (process.env.MONAD_SKIP_LOGIN_ENV === '1'
+  if (process.env.ELANOUS_SKIP_LOGIN_ENV === '1'
       || process.env.TERM_PROGRAM === 'monad-agent-nested') {
     captured = true;
     cached = null;

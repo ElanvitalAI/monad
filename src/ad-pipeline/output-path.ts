@@ -47,7 +47,7 @@ function join(base: string, name: string): string {
 export function adProjectDir(input: AdOutputPathInput): AdOutputPathResult {
   const rejection = validInput(input);
   if (rejection) return rejection;
-  return join(join(join(input.home, 'Movies'), 'monad-ad'), `${input.date}-${input.slug}`);
+  return join(join(join(input.home, 'Movies'), 'elanous-ad'), `${input.date}-${input.slug}`);
 }
 
 /** Builds the documented final master filename without accessing the filesystem. */

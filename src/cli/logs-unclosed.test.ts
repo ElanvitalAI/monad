@@ -82,7 +82,7 @@ describe('findUnclosedOperations — 시작만 있고 종료가 없는 것을 �
 describe('등록된 짝 — ⛔ 추측으로 늘리지 않는다', () => {
   test('실측으로 검증된 것만 있다', () => {
     // ⚠️ 이 단언은 목록을 **고정**하는 것이 아니라, 늘릴 때 **실측했는지 되묻게** 하는 자리다.
-    // 짝을 더할 때는 `monad logs --exact-category <c> --since 3d` 로 종료 이벤트를 먼저 확인한다.
+    // 짝을 더할 때는 `elanous logs --exact-category <c> --since 3d` 로 종료 이벤트를 먼저 확인한다.
     expect(LIFECYCLE_PAIRS).toEqual([
       expect.objectContaining({ category: 'goal.loop', correlationField: 'sessionId' }),
       expect.objectContaining({

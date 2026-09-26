@@ -1,7 +1,7 @@
 /**
  * localStorage 영속성 — schema version 가드 + 깨진 storage fallback.
  *
- * key: `monad.pwa.workspace`
+ * key: `elanous.pwa.workspace`
  *
  * Wrapper 트리 (PR #3 의 WorkspaceProvider) 는 `loadWorkspaceState` 로
  * mount 시 hydrate · `saveWorkspaceState` 를 reducer wrap 으로 매번 호출.
@@ -17,7 +17,7 @@ import type {
   WorkspaceTabKind,
 } from './types';
 
-export const WORKSPACE_STORAGE_KEY = 'monad.pwa.workspace';
+export const WORKSPACE_STORAGE_KEY = 'elanous.pwa.workspace';
 export const WORKSPACE_SCHEMA_VERSION = 1;
 
 interface PersistedShape {

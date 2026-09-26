@@ -85,7 +85,7 @@ export const MCP_UI_TOOL_RESULT_METHOD = 'ui/notifications/tool-result';
 /** 규범 이전의 이름 — 옛 위젯이 이것을 보낼 수 있어 «받기»만 한다. 보내지는 않는다. */
 export const LEGACY_INITIALIZED_METHOD = 'notifications/initialized';
 /** 우리가 결과를 못 실었을 때 그 이유를 싣는 자리. 규범 밖이라 이름공간을 붙인다. */
-export const MCP_APP_RESULT_OMITTED_META_KEY = 'monad/resultOmittedReason';
+export const MCP_APP_RESULT_OMITTED_META_KEY = 'elanous/resultOmittedReason';
 
 const emptyState = (): McpAppBridgeState => ({ frames: {}, pending: {}, pushes: [], unmatched: [], nextGeneration: 1 });
 const pendingKey = (frameId: string, generation: number, id: JsonRpcId) =>
@@ -252,7 +252,7 @@ const MCP_APP_PROTOCOL_VERSION = '2025-11-21';
 function initializeResult(): Record<string, unknown> {
   return {
     protocolVersion: MCP_APP_PROTOCOL_VERSION,
-    hostInfo: { name: 'monad', version: '1' },
+    hostInfo: { name: 'elanous', version: '1' },
     // ⛔ 안 하는 것을 «한다고» 말하지 않는다.
     hostCapabilities: { serverTools: {} },
     hostContext: {},

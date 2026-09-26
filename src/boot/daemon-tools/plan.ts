@@ -20,7 +20,7 @@
 // Why explicit `MarkStepDone` rather than heuristic step inference?
 // Heuristic (matching subsequent tool calls to step index) would
 // produce 70%-correct progress signals at best; explicit gives the
-// LLM full agency over what counts as "step done" without monad
+// LLM full agency over what counts as "step done" without elanous
 // guessing. Cost is one extra tool call per step — negligible.
 
 import type { LLMToolSpec } from '../../llm.js';

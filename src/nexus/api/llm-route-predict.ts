@@ -1,9 +1,9 @@
 // NEXUS · POST /v1/llm/route/predict — mission router HTTP wire.
 //
 // HANDOFF §3.4 originally specified an ACP custom JSON-RPC method
-// (`monad/route/predict`), but ACP SDK v0.14.1 does not expose a low-
+// (`elanous/route/predict`), but ACP SDK v0.14.1 does not expose a low-
 // level escape hatch for agent→client custom methods (see notes in
-// `src/acp/monad-extensions.ts`). A REST endpoint on the existing
+// `src/acp/elanous-extensions.ts`). A REST endpoint on the existing
 // NEXUS HTTP server is the pragmatic equivalent — same DI seam, same
 // bearer auth, same CORS surface as `/v1/llm/rotation` (PR #2576).
 //

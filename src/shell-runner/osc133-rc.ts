@@ -60,18 +60,18 @@ const BASH_RC = `
 # Emit OSC 133;B on every prompt redraw (captures previous exit code)
 # followed by OSC 133;A (prompt-start). Prepend rather than replace
 # so any existing PROMPT_COMMAND logic keeps working.
-__monad_osc133_prompt() {
-  local __monad_last=$?
-  printf '\\033]133;B;%s\\007' "$__monad_last"
+__elanous_osc133_prompt() {
+  local __elanous_last=$?
+  printf '\\033]133;B;%s\\007' "$__elanous_last"
   printf '\\033]133;A\\007'
-  return $__monad_last
+  return $__elanous_last
 }
 if [ -z "\${PROMPT_COMMAND-}" ]; then
-  PROMPT_COMMAND='__monad_osc133_prompt'
+  PROMPT_COMMAND='__elanous_osc133_prompt'
 else
   case "$PROMPT_COMMAND" in
-    *__monad_osc133_prompt*) ;;
-    *) PROMPT_COMMAND='__monad_osc133_prompt; '"$PROMPT_COMMAND" ;;
+    *__elanous_osc133_prompt*) ;;
+    *) PROMPT_COMMAND='__elanous_osc133_prompt; '"$PROMPT_COMMAND" ;;
   esac
 fi
 `.trimStart();
@@ -86,17 +86,17 @@ if [ -f "$HOME/.zshrc" ]; then . "$HOME/.zshrc"; fi
 if [ -f "$HOME/.zlogin" ]; then . "$HOME/.zlogin"; fi
 # Emit OSC 133;B (with exit code) + OSC 133;A on precmd. Runs
 # between the previous command finishing and the next prompt.
-__monad_osc133_prompt() {
-  local __monad_last=$?
-  printf '\\033]133;B;%s\\007' "$__monad_last"
+__elanous_osc133_prompt() {
+  local __elanous_last=$?
+  printf '\\033]133;B;%s\\007' "$__elanous_last"
   printf '\\033]133;A\\007'
-  return $__monad_last
+  return $__elanous_last
 }
 autoload -Uz add-zsh-hook 2>/dev/null
 if typeset -f add-zsh-hook >/dev/null; then
-  add-zsh-hook precmd __monad_osc133_prompt
+  add-zsh-hook precmd __elanous_osc133_prompt
 else
-  precmd_functions=( __monad_osc133_prompt "\${precmd_functions[@]}" )
+  precmd_functions=( __elanous_osc133_prompt "\${precmd_functions[@]}" )
 fi
 `.trimStart();
 
@@ -115,25 +115,25 @@ export function detectShellKind(shell: string | undefined): SupportedShell | nul
  *  caller should apply. Returns null for unsupported shells. */
 export function makeOsc133RcFile(shell: SupportedShell): RcFileHandle | null {
   if (shell === 'bash') {
-    const dir = mkdtempSync(join(tmpdir(), 'monad-rcbash-'));
+    const dir = mkdtempSync(join(tmpdir(), 'elanous-rcbash-'));
     const path = join(dir, 'bashrc');
     writeFileSync(path, BASH_RC, { encoding: 'utf8', mode: 0o600 });
     return {
       path,
       spawnArgs: ['--rcfile', path],
-      env: { MONAD_OSC133: '1' },
+      env: { ELANOUS_OSC133: '1' },
       cleanup: () => {
         try { rmSync(dir, { recursive: true, force: true }); } catch { /* ignore */ }
       },
     };
   }
   if (shell === 'zsh') {
-    const dir = mkdtempSync(join(tmpdir(), 'monad-rczsh-'));
+    const dir = mkdtempSync(join(tmpdir(), 'elanous-rczsh-'));
     writeFileSync(join(dir, '.zshrc'), ZSH_RC, { encoding: 'utf8', mode: 0o600 });
     return {
       path: dir,
       spawnArgs: [],
-      env: { ZDOTDIR: dir, MONAD_OSC133: '1' },
+      env: { ZDOTDIR: dir, ELANOUS_OSC133: '1' },
       cleanup: () => {
         try { rmSync(dir, { recursive: true, force: true }); } catch { /* ignore */ }
       },

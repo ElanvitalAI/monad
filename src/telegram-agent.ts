@@ -8,12 +8,12 @@
 
 import type { UserConfig } from './user-config.js';
 import type { runTurn } from './session/chat.js';
-import { makeMonadAgentRunTurn } from './agent/monad-agent-turn.js';
+import { makeElanousAgentRunTurn } from './agent/monad-agent-turn.js';
 
 export { delegateBackendToSlashKey } from './agent/monad-agent-turn.js';
 
-/** Telegram flavor of the monad self turn — drop-in for botFromConfig's
- *  `runTurnImpl`. See makeMonadAgentRunTurn for the shared assembly. */
+/** Telegram flavor of the elanous self turn — drop-in for botFromConfig's
+ *  `runTurnImpl`. See makeElanousAgentRunTurn for the shared assembly. */
 export function makeTelegramAgentRunTurn(cfg: UserConfig): typeof runTurn {
-  return makeMonadAgentRunTurn(cfg, 'telegram');
+  return makeElanousAgentRunTurn(cfg, 'telegram');
 }

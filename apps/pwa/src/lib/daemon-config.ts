@@ -3,16 +3,16 @@
  * Source of truth: localStorage (PWA-scoped) + URL ?override.
  *
  * Storage keys (NEXUS N-1.5 PR a · v6 cutover · 2026-05-06):
- *   monad.nexus.baseUrl    → REST + WS host (e.g. https://mbp.tailnet.ts.net:31415)
- *   monad.daemon.token     → bearer
- *   monad.daemon.provider  → optional family default (claude/gemini/grok/codex)
+ *   elanous.nexus.baseUrl    → REST + WS host (e.g. https://mbp.tailnet.ts.net:31415)
+ *   elanous.daemon.token     → bearer
+ *   elanous.daemon.provider  → optional family default (claude/gemini/grok/codex)
  *
  * Legacy keys auto-migrated (one-shot, drop after copy):
- *   monad.daemon.baseUrl   → monad.nexus.baseUrl  (NEXUS = SSoT post-cutover)
- *   monad.voice.wsUrl      → monad.nexus.baseUrl  (re-rooted via URL transform)
- *   monad.voice.token      → monad.daemon.token
+ *   elanous.daemon.baseUrl   → elanous.nexus.baseUrl  (NEXUS = SSoT post-cutover)
+ *   elanous.voice.wsUrl      → elanous.nexus.baseUrl  (re-rooted via URL transform)
+ *   elanous.voice.token      → elanous.daemon.token
  *
- * Token / provider keys keep the `monad.daemon.*` prefix until PR i
+ * Token / provider keys keep the `elanous.daemon.*` prefix until PR i
  * (NexusProvider mount + daemon-client.ts retire) which renames the
  * full surface. Storage keys are user-device-bound; bundling the
  * rename under one PR keeps the migration window short.
@@ -21,15 +21,15 @@
 import { migrateBaseUrl } from './migrate-base-url';
 
 const STORAGE_KEYS = {
-  baseUrl: 'monad.nexus.baseUrl',
-  token: 'monad.daemon.token',
-  provider: 'monad.daemon.provider',
+  baseUrl: 'elanous.nexus.baseUrl',
+  token: 'elanous.daemon.token',
+  provider: 'elanous.daemon.provider',
 } as const;
 
 const LEGACY_KEYS = {
-  daemonBaseUrl: 'monad.daemon.baseUrl',
-  voiceWsUrl: 'monad.voice.wsUrl',
-  voiceToken: 'monad.voice.token',
+  daemonBaseUrl: 'elanous.daemon.baseUrl',
+  voiceWsUrl: 'elanous.voice.wsUrl',
+  voiceToken: 'elanous.voice.token',
 } as const;
 
 export interface DaemonConfig {

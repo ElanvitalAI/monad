@@ -86,7 +86,7 @@ describe('HitlCallbackServer', () => {
     const r = await post(`${server.url()}/hitl/callback/req-s`, { answer: true });
     expect(r.status).toBe(401);
     // pending promise is still alive; clean up by firing with secret.
-    await post(`${server.url()}/hitl/callback/req-s`, { answer: true }, { 'x-monad-secret': 'topsecret' });
+    await post(`${server.url()}/hitl/callback/req-s`, { answer: true }, { 'x-elanous-secret': 'topsecret' });
     expect(await p).toBe(true);
   });
 
@@ -94,7 +94,7 @@ describe('HitlCallbackServer', () => {
     server = mk({ secret: 's3cret' });
     await server.start();
     const p = server.awaitCallback('req');
-    const r = await post(`${server.url()}/hitl/callback/req`, { answer: false }, { 'x-monad-secret': 's3cret' });
+    const r = await post(`${server.url()}/hitl/callback/req`, { answer: false }, { 'x-elanous-secret': 's3cret' });
     expect(r.status).toBe(200);
     expect(await p).toBe(false);
   });

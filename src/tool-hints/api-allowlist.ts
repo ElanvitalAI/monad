@@ -17,7 +17,7 @@
 import { existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from 'node:fs';
 import { homedir } from 'node:os';
 import { dirname, join as joinPath } from 'node:path';
-import { migrateLegacyHomeFile } from '../storage/legacy-monad-dir-migrate.js';
+import { migrateLegacyHomeFile } from '../storage/legacy-elanous-dir-migrate.js';
 
 // ─── Allowlist ──────────────────────────────────────────────────
 
@@ -39,15 +39,15 @@ let configPathOverride: string | null = null;
 let sessionOnlyEntries: AllowEntry[] = [];
 let cachedPersistent: AllowEntry[] | null = null;
 
-// FU2 Tier 2: ~/.config/monad-agent/api-allow.json → ~/.monad/api-allow.json.
+// FU2 Tier 2: ~/.config/monad-agent/api-allow.json → ~/.elanous/api-allow.json.
 function defaultConfigPath(): string {
   const xdg = process.env.XDG_CONFIG_HOME?.trim();
   if (xdg) return joinPath(xdg, 'monad-agent', 'api-allow.json');
   migrateLegacyHomeFile({
     legacyHomeRel: joinPath('.config', 'monad-agent', 'api-allow.json'),
-    monadRel: 'api-allow.json',
+    elanousRel: 'api-allow.json',
   });
-  return joinPath(homedir(), '.monad', 'api-allow.json');
+  return joinPath(homedir(), '.elanous', 'api-allow.json');
 }
 
 function configPath(): string {

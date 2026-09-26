@@ -1,9 +1,9 @@
 // M1-5 (PLAN-friction-free-model-selection-ux-2026-05-12 · Phase 1) —
-// `monad setup` step: Voice & AI behavior.
+// `elanous setup` step: Voice & AI behavior.
 //
 // Per the PLAN §4a.2 zero-config-first principle, the default path
 // here is "Smart defaults active" — the user picks one option and
-// monad runs Balanced tier for every surface with no further setup.
+// elanous runs Balanced tier for every surface with no further setup.
 // Power users may instead opt into a preset (Phase 2 placeholder
 // today · the wizard accepts the input but Phase 1 ignores it) or
 // per-surface customize (sets `modelTier.voice.stt` directly).
@@ -66,7 +66,7 @@ function modeOptions(allowBack: boolean): ModeOption[] {
       key: '1',
       label: 'Smart defaults (recommended)',
       value: 'smart',
-      description: 'Casual · monad picks Balanced tier · ~$2/mo · no setup needed beyond this',
+      description: 'Casual · elanous picks Balanced tier · ~$2/mo · no setup needed beyond this',
     },
     {
       key: '2',
@@ -109,7 +109,7 @@ function tierHint(tier: ModelTier): string {
 async function askMonthlyCapUsd(io: WizardIO): Promise<number | undefined> {
   io.print('');
   io.print('  Monthly budget cap (USD) — skip with blank to leave unset (no cap).');
-  io.print('  When set, monad notifies you at 80% and can auto-fallback to a');
+  io.print('  When set, elanous notifies you at 80% and can auto-fallback to a');
   io.print('  cheaper tier for the rest of the month.');
   const raw = await io.ask('  Cap [blank = no cap]: ');
   const trimmed = (raw ?? '').trim();
@@ -133,7 +133,7 @@ export async function askVoiceAI(
     index: stepOpts.index ?? 6,
     total: stepOpts.total ?? 7,
     title: 'Voice & AI behavior',
-    excerpt: 'How should monad pick speech-to-text and AI models? Smart defaults are the\nrecommended path — you can customize anytime from PWA settings or `monad voice status`.',
+    excerpt: 'How should elanous pick speech-to-text and AI models? Smart defaults are the\nrecommended path — you can customize anytime from PWA settings or `elanous voice status`.',
     severity: 'optional',
     skipBehavior: 'Pressing Enter keeps Smart defaults (Balanced tier · ~$2/mo).',
   });
@@ -157,7 +157,7 @@ export async function askVoiceAI(
     // by keeping the user on Smart defaults but tagging persona='power'
     // so the auto-suggest hint in PWA opens the preset card directly.
     io.print('  (Preset catalog ships in Phase 2 · for now Smart defaults stay active.)');
-    io.print('  monad has noted your preference — preset hints will appear when ready.');
+    io.print('  elanous has noted your preference — preset hints will appear when ready.');
     return {
       modelTier: { persona: 'power' },
     };

@@ -135,7 +135,7 @@ deer-flow 는 무료(DDG+Jina) 기본·유료 선택이지만, omni-crawl 은 �
 
 ### CLI 계약 (무변경 보장)
 
-`asset-attractiveness`·monad `research-bridge` 의존 계약 유지:
+`asset-attractiveness`·elanous `research-bridge` 의존 계약 유지:
 positional query + `--engine` + `--print` → exit 0 + `---BEGIN_OMNI_CRAWL_MARKDOWN---` 마커.
 신규 플래그(`--free`/`--allow-private`)는 전부 추가형.
 

@@ -1,11 +1,11 @@
 // PLAN §7 P2 — registry write 경로의 arbiter 집행 통합 테스트. mock adapter(setPtyAdapterForTesting)로
-// 실 PTY 없이 write 게이팅·canWrite·requestPtyTakeover 검증. 격리 tmp MONAD_STATE_DIR(manifest 무접촉).
+// 실 PTY 없이 write 게이팅·canWrite·requestPtyTakeover 검증. 격리 tmp ELANOUS_STATE_DIR(manifest 무접촉).
 import { test, expect, describe, afterEach, spyOn } from 'bun:test';
 import { mkdtempSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
-process.env.MONAD_STATE_DIR = mkdtempSync(join(tmpdir(), 'registry-arbiter-'));
+process.env.ELANOUS_STATE_DIR = mkdtempSync(join(tmpdir(), 'registry-arbiter-'));
 
 const { startPty, setPtyAdapterForTesting, requestPtyTakeover, unregisterPty } = await import('./registry.js');
 const { debug } = await import('../debug/log.js');

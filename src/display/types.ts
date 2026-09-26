@@ -341,7 +341,7 @@ export type ModalTier = (typeof MODAL_TIER)[keyof typeof MODAL_TIER];
  *  rank tier may appear above a lower-rank tier in the modal stack;
  *  same-rank tiers may stack (e.g. two dialogs, nested menus). See
  *  `tiersCompatible` for the enforcement helper used by the
- *  MONAD_BOUNDARY_CHECK dev-assertion path. */
+ *  ELANOUS_BOUNDARY_CHECK dev-assertion path. */
 export const TIER_ORDER: readonly ModalTier[] = [
   'vw', 'execution', 'terminal', 'dialog', 'popup', 'menu', 'picker', 'tooltip',
 ] as const;

@@ -9,7 +9,7 @@ import {
   createSelfImplementAdapter,
   defaultSelfImplementSpawn,
   parseSelfImplementJson,
-  resolveSpawnMonadBin,
+  resolveSpawnElanousBin,
   type SelfImplementJobSpawn,
   type SelfImplementJobDone,
   reportUnmappedDispositionFields,
@@ -27,7 +27,7 @@ async function assertDefaultSpawnBin(cwd: string, expectedBin: string, expectedB
   const shimDir = mkdtempSync(join(tmpdir(), 'self-implement-bun-shim-'));
   const capturePath = join(shimDir, 'spawn.txt');
   const bunShim = join(shimDir, 'bun');
-  writeFileSync(bunShim, '#!/bin/sh\nprintf "%s\\n%s\\n" "$PWD" "$1" > "$MONAD_TEST_SPAWN_CAPTURE"\n');
+  writeFileSync(bunShim, '#!/bin/sh\nprintf "%s\\n%s\\n" "$PWD" "$1" > "$ELANOUS_TEST_SPAWN_CAPTURE"\n');
   chmodSync(bunShim, 0o755);
   const launches: Array<{ bin: unknown; binSource: unknown }> = [];
   const logSpy = spyOn(debug, 'log').mockImplementation(((category: string, event: string, data?: Record<string, unknown>) => {
@@ -35,10 +35,10 @@ async function assertDefaultSpawnBin(cwd: string, expectedBin: string, expectedB
   }) as typeof debug.log);
   const originalCwd = process.cwd();
   const originalPath = process.env.PATH;
-  const originalCapture = process.env.MONAD_TEST_SPAWN_CAPTURE;
+  const originalCapture = process.env.ELANOUS_TEST_SPAWN_CAPTURE;
   try {
     process.env.PATH = `${shimDir}:${originalPath ?? ''}`;
-    process.env.MONAD_TEST_SPAWN_CAPTURE = capturePath;
+    process.env.ELANOUS_TEST_SPAWN_CAPTURE = capturePath;
     process.chdir(cwd);
     const { done } = defaultSelfImplementSpawn()({ feature: 'verify bin root', spaceId: 'test-space' });
     await done;
@@ -48,8 +48,8 @@ async function assertDefaultSpawnBin(cwd: string, expectedBin: string, expectedB
     process.chdir(originalCwd);
     if (originalPath === undefined) delete process.env.PATH;
     else process.env.PATH = originalPath;
-    if (originalCapture === undefined) delete process.env.MONAD_TEST_SPAWN_CAPTURE;
-    else process.env.MONAD_TEST_SPAWN_CAPTURE = originalCapture;
+    if (originalCapture === undefined) delete process.env.ELANOUS_TEST_SPAWN_CAPTURE;
+    else process.env.ELANOUS_TEST_SPAWN_CAPTURE = originalCapture;
     logSpy.mockRestore();
     rmSync(shimDir, { recursive: true, force: true });
   }
@@ -173,10 +173,10 @@ describe('self-implement surface adapter (S1 · parallel self-dev)', () => {
     expect(seen!.spaceId).toContain(task.id.replace('task:', ''));
   });
 
-  test('production spawn falls back to this monad bin outside a git repository', async () => {
+  test('production spawn falls back to this elanous bin outside a git repository', async () => {
     const cwd = mkdtempSync(join(tmpdir(), 'self-implement-bin-fallback-'));
     try {
-      const expectedBin = resolve(import.meta.dir, '../../../bin/monad.mjs');
+      const expectedBin = resolve(import.meta.dir, '../../../bin/elanous.mjs');
       expect(existsSync(expectedBin)).toBe(true);
       await assertDefaultSpawnBin(cwd, expectedBin, 'source-tree-fallback');
     } finally {
@@ -190,32 +190,32 @@ describe('self-implement surface adapter (S1 · parallel self-dev)', () => {
       execFileSync('git', ['init', '-q'], { cwd });
       writeFileSync(join(cwd, 'README.md'), '# external product\n');
       mkdirSync(join(cwd, 'bin'));
-      mkdirSync(join(cwd, 'bin', 'monad.mjs'));
-      const expectedBin = resolve(import.meta.dir, '../../../bin/monad.mjs');
+      mkdirSync(join(cwd, 'bin', 'elanous.mjs'));
+      const expectedBin = resolve(import.meta.dir, '../../../bin/elanous.mjs');
       await assertDefaultSpawnBin(cwd, expectedBin, 'source-tree-fallback');
     } finally {
       rmSync(cwd, { recursive: true, force: true });
     }
   });
 
-  test('production spawn keeps this monad repository bin', async () => {
-    const monadRoot = resolve(import.meta.dir, '../../..');
-    await assertDefaultSpawnBin(monadRoot, join(monadRoot, 'bin', 'monad.mjs'), 'cwd-repository');
+  test('production spawn keeps this elanous repository bin', async () => {
+    const elanousRoot = resolve(import.meta.dir, '../../..');
+    await assertDefaultSpawnBin(elanousRoot, join(elanousRoot, 'bin', 'elanous.mjs'), 'cwd-repository');
   });
 
-  test('resolveSpawnMonadBin uses only regular repository entrypoints and reports missing candidates', () => {
+  test('resolveSpawnElanousBin uses only regular repository entrypoints and reports missing candidates', () => {
     const cwd = mkdtempSync(join(tmpdir(), 'self-implement-selector-'));
     const missingSourceRoot = mkdtempSync(join(tmpdir(), 'self-implement-missing-source-'));
     try {
       execFileSync('git', ['init', '-q'], { cwd });
       mkdirSync(join(cwd, 'bin'));
-      mkdirSync(join(cwd, 'bin', 'monad.mjs'));
-      expect(resolveSpawnMonadBin(cwd)).toEqual({
-        bin: resolve(import.meta.dir, '../../../bin/monad.mjs'),
+      mkdirSync(join(cwd, 'bin', 'elanous.mjs'));
+      expect(resolveSpawnElanousBin(cwd)).toEqual({
+        bin: resolve(import.meta.dir, '../../../bin/elanous.mjs'),
         source: 'source-tree-fallback',
       });
       rmSync(join(cwd, 'bin'), { recursive: true, force: true });
-      expect(() => resolveSpawnMonadBin(cwd, missingSourceRoot)).toThrow(/tried .*bin\/monad\.mjs/);
+      expect(() => resolveSpawnElanousBin(cwd, missingSourceRoot)).toThrow(/tried .*bin\/elanous\.mjs/);
     } finally {
       rmSync(cwd, { recursive: true, force: true });
       rmSync(missingSourceRoot, { recursive: true, force: true });

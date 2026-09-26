@@ -5,7 +5,7 @@ import { mkdtempSync, existsSync, writeFileSync, readFileSync, rmSync } from 'no
 import { tmpdir, hostname } from 'node:os';
 import { join } from 'node:path';
 
-import { getMonadConfigDir } from '../src/monad-config-dir.js';
+import { getElanousConfigDir } from '../src/elanous-config-dir.js';
 import {
   nexusRootDir,
   nexusLockPath,
@@ -32,19 +32,19 @@ let tmpRoot: string;
 let prevEnv: string | undefined;
 
 beforeEach(() => {
-  tmpRoot = mkdtempSync(join(tmpdir(), 'monad-nexus-'));
-  prevEnv = process.env.MONAD_NEXUS_DIR;
-  process.env.MONAD_NEXUS_DIR = tmpRoot;
+  tmpRoot = mkdtempSync(join(tmpdir(), 'elanous-nexus-'));
+  prevEnv = process.env.ELANOUS_NEXUS_DIR;
+  process.env.ELANOUS_NEXUS_DIR = tmpRoot;
 });
 
 afterEach(() => {
-  if (prevEnv === undefined) delete process.env.MONAD_NEXUS_DIR;
-  else process.env.MONAD_NEXUS_DIR = prevEnv;
+  if (prevEnv === undefined) delete process.env.ELANOUS_NEXUS_DIR;
+  else process.env.ELANOUS_NEXUS_DIR = prevEnv;
   try { rmSync(tmpRoot, { recursive: true, force: true }); } catch { /* ignore */ }
 });
 
 describe('nexus/paths', () => {
-  test('MONAD_NEXUS_DIR is a final nexus-directory override', () => {
+  test('ELANOUS_NEXUS_DIR is a final nexus-directory override', () => {
     expect(nexusRootDir()).toBe(tmpRoot);
     expect(nexusLockPath()).toBe(join(tmpRoot, '.lock'));
     expect(nexusRuntimePath()).toBe(join(tmpRoot, 'runtime.json'));
@@ -66,8 +66,8 @@ describe('nexus/paths', () => {
   });
 
   test('default root falls back under home when env unset', () => {
-    delete process.env.MONAD_NEXUS_DIR;
-    expect(nexusRootDir()).toBe(join(getMonadConfigDir(), 'nexus'));
+    delete process.env.ELANOUS_NEXUS_DIR;
+    expect(nexusRootDir()).toBe(join(getElanousConfigDir(), 'nexus'));
   });
 });
 

@@ -229,10 +229,10 @@ interface DashboardInlineSetupFlowDeps {
   notifyWarning?: (text: string) => void;
   notifyError?: (text: string) => void;
   /** Optional. Launches the popup-terminal wizard at a specific
-   *  legacy step (`monad setup llm`). Used for `openai-codex` /
+   *  legacy step (`elanous setup llm`). Used for `openai-codex` /
    *  `local` providers whose flows still live in the wizard
    *  (oauth, local probe). When omitted, codex/local picks fall
-   *  back to a notice that asks the user to run `monad setup llm`. */
+   *  back to a notice that asks the user to run `elanous setup llm`. */
   launchPopupWizard?: (step: 'llm') => void;
   /** Optional override for env scan — set in tests. */
   readEnv?: () => NodeJS.ProcessEnv;
@@ -598,7 +598,7 @@ export function createDashboardInlineSetupFlow(
 
   const openCodexOrLocalRedirect = (option: DashboardProviderSetupOption): void => {
     const isCodex = option.flow === 'codex';
-    const cmd = 'monad setup llm';
+    const cmd = 'elanous setup llm';
     const lines = isCodex
       ? [
           'OpenAI Codex needs the popup wizard for OAuth + model picker.',
@@ -1225,7 +1225,7 @@ export function createDashboardInlineSetupFlow(
         else if (target === 'local-llm') void openLocalLlmPickerView();
         else if (target === 'aux-info') {
           // Info-only — toast a per-service breakdown so the user knows
-          // what monad will pick up automatically, then re-open menu.
+          // what elanous will pick up automatically, then re-open menu.
           for (const v of aux) deps.notifyInfo?.(`  ${v.name} → ${v.usedBy}`);
           openCategoryPicker();
         }
@@ -1301,7 +1301,7 @@ function mountSurface(spec: {
     fill: ' ',
     titleRight: formatChromeControlsTitleRight({ closeButton: true }) ?? DEFAULT_CLOSE_GLYPH,
   });
-  const shadow: ModalShadowSpec | undefined = spec.theme && process.env.MONAD_MODAL_SHADOW !== 'off'
+  const shadow: ModalShadowSpec | undefined = spec.theme && process.env.ELANOUS_MODAL_SHADOW !== 'off'
     ? { theme: spec.theme }
     : undefined;
   return mountViewAsModalSurface({

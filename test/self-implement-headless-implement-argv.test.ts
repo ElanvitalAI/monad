@@ -1,10 +1,10 @@
 import { describe, expect, test } from 'bun:test';
 import { defaultSeams } from '../src/self-implement/seams.js';
-import { runHeadlessGoalLoopPty } from '../src/self-implement/headless-monad-driver.js';
+import { runHeadlessGoalLoopPty } from '../src/self-implement/headless-elanous-driver.js';
 
 const prompt = '두 더하기 두는 얼마인가';
-const configDir = '/tmp/monad-config';
-const stateDir = '/tmp/monad-state';
+const configDir = '/tmp/elanous-config';
+const stateDir = '/tmp/elanous-state';
 
 function completedPty() {
   const handle = {
@@ -41,8 +41,8 @@ describe('self-implement child argv uses dev --implement', () => {
 
     expectImplementArgv(captured.args!);
     expect(captured.workdir).toBe('/worktree');
-    expect(captured.env?.MONAD_STATE_DIR).toBe(stateDir);
-    expect(captured.env).toEqual(expect.objectContaining({ MONAD_PTY_ID: expect.any(String) }));
+    expect(captured.env?.ELANOUS_STATE_DIR).toBe(stateDir);
+    expect(captured.env).toEqual(expect.objectContaining({ ELANOUS_PTY_ID: expect.any(String) }));
   });
 
   test('spawnSync fallback preserves positional prompt, config, cwd spawn option, and state environment', async () => {
@@ -60,8 +60,8 @@ describe('self-implement child argv uses dev --implement', () => {
     expect(captured.cmd).toBe('bun');
     expectImplementArgv(captured.args!);
     expect(captured.cwd).toBe('/worktree');
-    expect(captured.env?.MONAD_STATE_DIR).toBe(stateDir);
-    expect(captured.env).toEqual(expect.objectContaining({ MONAD_HARNESS_SPACE: expect.any(String) }));
+    expect(captured.env?.ELANOUS_STATE_DIR).toBe(stateDir);
+    expect(captured.env).toEqual(expect.objectContaining({ ELANOUS_HARNESS_SPACE: expect.any(String) }));
   });
 
 });

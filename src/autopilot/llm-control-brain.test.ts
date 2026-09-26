@@ -221,7 +221,7 @@ describe('createLlmControlBrain', () => {
 // ── LLM brain → controlDepsForHandle → registry arbiter 실배선(mock adapter) ──
 describe('createLlmControlBrain + controlDepsForHandle (실배선 통합)', () => {
   test('LLM 결정이 controlDepsForHandle 통해 arbiter agent write 로', async () => {
-    process.env.MONAD_STATE_DIR ||= '/tmp/p3b-brain-test';
+    process.env.ELANOUS_STATE_DIR ||= '/tmp/p3b-brain-test';
     const { startPty, setPtyAdapterForTesting, unregisterPty } = await import('../pty-shell/registry.js');
     const writes: string[] = [];
     setPtyAdapterForTesting(() => ({
@@ -246,7 +246,7 @@ describe('createLlmControlBrain + controlDepsForHandle (실배선 통합)', () =
   });
 
   test('observe→화면→LLM 실경로 — onData 방출·화면 읽는 stub(review Goodhart 방지)', async () => {
-    process.env.MONAD_STATE_DIR ||= '/tmp/p3b-brain-test';
+    process.env.ELANOUS_STATE_DIR ||= '/tmp/p3b-brain-test';
     const { startPty, setPtyAdapterForTesting, unregisterPty } = await import('../pty-shell/registry.js');
     const emitRef: { fn: ((d: string) => void) | null } = { fn: null };
     const writes: string[] = [];

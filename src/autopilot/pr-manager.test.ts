@@ -261,19 +261,19 @@ describe('makePrManager.upsertPr — 기존 PR 재활용(대표 2026-07-12)', ()
     expect(add?.join(' ')).toContain(':(exclude)apps/pwa/out');
   });
 
-  it('★ monad 런타임 산출물은 호출부가 안 줘도 빠진다 — «남의 저장소» 누출 차단', () => {
+  it('★ elanous 런타임 산출물은 호출부가 안 줘도 빠진다 — «남의 저장소» 누출 차단', () => {
     // 📏 2026-09-21: monad-agent 는 .gitignore 가 그 이름들을 가려서 이 경로가 «원리상» 안 보였고,
-    //    빈 시험 저장소에서 돌리니 `.monad-child-liveness.hb` 가 PR diff 에 들어갔다.
+    //    빈 시험 저장소에서 돌리니 `.elanous-child-liveness.hb` 가 PR diff 에 들어갔다.
     //    그리고 리뷰어가 그것을 「실행 부산물」로 지적했고 자식은 «원리상» 못 지워 런이 버려졌다.
     const { run, calls } = stubRunner({
       'pr list': { ok: true, out: 'url/pull/1' },
       'check-ignore': { ok: false, out: '' },
-      'ls-files --others': { ok: true, out: '.monad-child-liveness.hb\0.monad/state.json\0src/user.ts\0' },
+      'ls-files --others': { ok: true, out: '.elanous-child-liveness.hb\0.elanous/state.json\0src/user.ts\0' },
     });
     makePrManager(run).upsertPr(input);
     const add = calls.find((c) => c.includes('add'));
-    expect(add?.join(' ')).toContain(':(exclude,literal).monad-child-liveness.hb');
-    expect(add?.join(' ')).toContain(':(exclude,literal).monad/state.json');
+    expect(add?.join(' ')).toContain(':(exclude,literal).elanous-child-liveness.hb');
+    expect(add?.join(' ')).toContain(':(exclude,literal).elanous/state.json');
     // ⭐ 사용자 파일은 빼면 안 된다 — 벙어리 방지
     expect(add?.join(' ')).not.toContain('src/user.ts');
   });
@@ -284,11 +284,11 @@ describe('makePrManager.upsertPr — 기존 PR 재활용(대표 2026-07-12)', ()
       'pr list': { ok: true, out: 'url/pull/1' },
       'check-ignore': { ok: false, out: '' },
       'ls-files --others': { ok: true, out: '' },                        // ← 스냅샷 시점엔 «없다»
-      'diff --cached': { ok: true, out: '.monad-child-liveness.hb\0src/user.ts\0' },  // ← add 뒤엔 «있다»
+      'diff --cached': { ok: true, out: '.elanous-child-liveness.hb\0src/user.ts\0' },  // ← add 뒤엔 «있다»
     });
     makePrManager(run).upsertPr(input);
     const reset = calls.find((c) => c.includes('reset'));
-    expect(reset?.join(' ')).toContain('.monad-child-liveness.hb');
+    expect(reset?.join(' ')).toContain('.elanous-child-liveness.hb');
     expect(reset?.join(' ')).not.toContain('src/user.ts');   // ⭐ 사용자 파일은 안 내린다
   });
 

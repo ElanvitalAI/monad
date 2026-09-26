@@ -5,7 +5,7 @@
 // pure function — state comes in via argument.
 //
 // IDX-6 Phase 6 migration (2026-04-19) — glyphs route through
-// theme-icons so MONAD_ASCII_ICONS=1 and preset-specific IconTokens
+// theme-icons so ELANOUS_ASCII_ICONS=1 and preset-specific IconTokens
 // overrides apply automatically. `noColor` path still uses the raw
 // glyph string (no ANSI prefix) so logs / test snapshots stay clean.
 

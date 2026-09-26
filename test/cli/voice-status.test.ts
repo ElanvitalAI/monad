@@ -1,5 +1,5 @@
 // M1-4 (PLAN-friction-free-model-selection-ux-2026-05-12 · Phase 1) —
-// `monad voice status` report builder + formatter. Both are pure
+// `elanous voice status` report builder + formatter. Both are pure
 // functions so the test injects a UserConfig and a temp eventPath.
 
 import { describe, expect, test } from 'bun:test';

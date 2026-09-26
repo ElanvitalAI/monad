@@ -211,11 +211,11 @@ interface PromptBody {
    *  'rebuild' (NEXUS-side store 의 last N turn cross-backend history →
    *  prefix 빌드 · 모든 agent-cli backend 가 same conversation 인지). */
   historyMode?: 'append' | 'rebuild' | 'seed-session';
-  /** historyMode='seed-session' 시 — 히스토리를 replay 할 monad 세션 id(fork된 세션).
+  /** historyMode='seed-session' 시 — 히스토리를 replay 할 elanous 세션 id(fork된 세션).
    *  그 세션의 on-disk 대화를 seed prefix 로 주입해 fresh backend 가 부모 맥락 이어받음.
    *  fork-continue 첫 turn 에만 사용(이후 turn 은 'append'). */
   seedSessionId?: string;
-  /** Cross-backend conversation 의 chat 식별자. monad ACP session id
+  /** Cross-backend conversation 의 chat 식별자. elanous ACP session id
    *  또는 stable client-side identifier. 같은 chatId 안의 모든 backend
    *  turn 이 누적. 미명시 시 historyMode 무관 (legacy path). */
   chatId?: string;
@@ -234,7 +234,7 @@ interface PromptBody {
    *                  는 별 path · agent-cli CLI 가 forward 안 함)
    *  W8-A 후속 (2026-05-14) — 'video' kind 추가. 본 schema 가 video raw
    *  base64 받지만 현 cut 의 모든 brand CLI 는 silent drop. iOS-side 가
-   *  monad-builtin path (NEXUS 의 video frame extraction) 에서 처리하도록
+   *  elanous-builtin path (NEXUS 의 video frame extraction) 에서 처리하도록
    *  안내. 향후 brand 가 native video 지원 시 자연 활성.
    *  per-brand validation 은 daemon 측 LLM 측에서 silent drop 가능. */
   userContent?: Array<{
@@ -243,7 +243,7 @@ interface PromptBody {
   }>;
   /** 클라 서피스 귀속(2026-07-18·GN). 네이티브 iOS/Android 앱이 `{kind:'native',
    *  platform:'ios'|'android'}` 를 보내면 agent-cli 턴(S4)을 canonical 세션 스토어
-   *  S1 에도 origin='native' 로 미러 → `monad session` 가시화 + taste 소스 귀속.
+   *  S1 에도 origin='native' 로 미러 → `elanous session` 가시화 + taste 소스 귀속.
    *  chatId 를 S1 세션 id 로 사용(멱등 adopt). 미지정 시 legacy(S4 만). */
   source?: { kind?: string; platform?: string };
 }
@@ -377,7 +377,7 @@ export async function handleAgentCliPromptStream(
   if (historyMode === 'rebuild' && chatId) {
     historyPrefixText = buildCrossBackendHistoryPrefix(aggregator, chatId, currentUserText, 8);
   } else if (historyMode === 'seed-session' && typeof body.seedSessionId === 'string' && body.seedSessionId) {
-    // fork-continue — fork된 monad 세션의 on-disk 히스토리를 seed prefix 로 replay(첫 turn).
+    // fork-continue — fork된 elanous 세션의 on-disk 히스토리를 seed prefix 로 replay(첫 turn).
     try {
       const seed = loadSession(body.seedSessionId);
       if (seed) historyPrefixText = buildSessionHistoryPrefix(seed.messages, currentUserText, 8);
@@ -493,7 +493,7 @@ export async function handleAgentCliPromptStream(
           }
         }
         // GN (2026-07-18) — 네이티브 iOS/Android 앱 대화를 canonical 세션 스토어 S1 에도
-        // 미러(origin='native'). agent-cli 경로는 S4(aggregator) 만 써서 `monad session`
+        // 미러(origin='native'). agent-cli 경로는 S4(aggregator) 만 써서 `elanous session`
         // 에 안 보였다(불가시·감사 G3/GN). 클라가 source.kind='native' 를 보낼 때만·
         // fail-soft·chatId 를 S1 세션 id 로(멱등 adopt). 네이티브 표면은 source와
         // origin에 함께 기록해 source 소비자와 origin 소비자를 모두 보존한다.

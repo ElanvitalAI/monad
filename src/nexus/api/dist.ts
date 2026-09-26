@@ -12,10 +12,10 @@
 // (`pwa share enable` → `https://mbp.tailnet-example.ts.net:31415/...`)
 // satisfies that requirement at zero additional cost.
 //
-// Files live under `~/.monad/dist/`:
+// Files live under `~/.elanous/dist/`:
 //
-//   ~/.monad/dist/
-//     ├─ MonadiOS.ipa     ← the artifact published via `monad nexus dist publish`
+//   ~/.elanous/dist/
+//     ├─ ElanousiOS.ipa     ← the artifact published via `elanous nexus dist publish`
 //     └─ dist.json        ← bundle metadata (bundleId · version · title · file)
 //
 // The endpoints intentionally bypass bearer-token auth — iOS Safari
@@ -28,22 +28,22 @@ import { readFile, stat } from 'node:fs/promises';
 import { homedir } from 'node:os';
 import { join } from 'node:path';
 
-export const DIST_DIR = join(homedir(), '.monad', 'dist');
+export const DIST_DIR = join(homedir(), '.elanous', 'dist');
 export const DIST_META_FILE = 'dist.json';
 // ⛔ 값은 «잎»이 갖는다 — 이유는 `rest-route-paths.ts` 머리말.
 import { IPA_PATH_PREFIX, MANIFEST_PATH } from './rest-route-paths.js';
 export { IPA_PATH_PREFIX, MANIFEST_PATH };
 
-/** dist.json on disk · written by `monad nexus dist publish`. */
+/** dist.json on disk · written by `elanous nexus dist publish`. */
 export interface DistMeta {
-  /** File name (no path) under ~/.monad/dist · e.g. "MonadiOS.ipa". */
+  /** File name (no path) under ~/.elanous/dist · e.g. "ElanousiOS.ipa". */
   file: string;
   bundleId: string;
   /** CFBundleShortVersionString — human-readable (e.g. "1.0"). */
   version: string;
   /** CFBundleVersion — build number (e.g. "1"). */
   build?: string;
-  /** Title shown in Safari install confirmation (e.g. "Monad"). */
+  /** Title shown in Safari install confirmation (e.g. "Elanous"). */
   title: string;
   /** Optional 512x512 PNG URL · iOS Safari uses it during install. */
   displayImageUrl?: string;
@@ -121,7 +121,7 @@ export async function handleDistManifest(req: Request): Promise<Response> {
   const meta = await readDistMeta();
   if (!meta) {
     return new Response(
-      'No IPA published yet. Run: monad nexus dist publish <path/to/Monad.ipa>\n',
+      'No IPA published yet. Run: elanous nexus dist publish <path/to/Elanous.ipa>\n',
       { status: 404, headers: { 'content-type': 'text/plain; charset=utf-8' } },
     );
   }
@@ -139,7 +139,7 @@ export async function handleDistManifest(req: Request): Promise<Response> {
 
 /** GET /v1/dist/<file>.ipa → application/octet-stream stream. The file
  *  name in the URL must match dist.json's `file` field (we don't allow
- *  arbitrary access to ~/.monad/dist contents). */
+ *  arbitrary access to ~/.elanous/dist contents). */
 export async function handleDistIpa(_req: Request, filename: string): Promise<Response> {
   if (filename.includes('/') || filename.includes('..')) {
     return new Response('bad filename', { status: 400 });
@@ -178,7 +178,7 @@ export async function handleDistInstallPage(req: Request): Promise<Response> {
   const meta = await readDistMeta();
   if (!meta) {
     return new Response(
-      '<!doctype html><meta charset=utf-8><body style="font-family:-apple-system,system-ui;padding:24px"><h2>Monad dist</h2><p>No IPA published yet.</p><pre>monad nexus dist publish &lt;path/to/Monad.ipa&gt;</pre></body>',
+      '<!doctype html><meta charset=utf-8><body style="font-family:-apple-system,system-ui;padding:24px"><h2>Elanous dist</h2><p>No IPA published yet.</p><pre>elanous nexus dist publish &lt;path/to/Elanous.ipa&gt;</pre></body>',
       { status: 200, headers: { 'content-type': 'text/html; charset=utf-8' } },
     );
   }

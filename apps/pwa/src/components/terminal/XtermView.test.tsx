@@ -58,7 +58,7 @@ mock.module('@xterm/addon-web-links', () => ({ WebLinksAddon: class {} }));
 mock.module('@xterm/addon-unicode11', () => ({ Unicode11Addon: class {} }));
 mock.module('@xterm/addon-serialize', () => ({ SerializeAddon: class { serialize(): string { return ''; } } }));
 mock.module('@/lib/debug', () => ({ debugLog: () => {} }));
-mock.module('@/lib/monad-term-envelope', () => ({ parseMonadTermEnvelope: () => null }));
+mock.module('@/lib/elanous-term-envelope', () => ({ parseElanousTermEnvelope: () => null }));
 mock.module('@/lib/peer-id', () => ({ getPeerId: () => 'peer' }));
 mock.module('@/lib/snapshot', () => ({ loadSnapshot: () => null, saveSnapshot: () => {}, snapshotKey: () => 'snapshot' }));
 mock.module('@/lib/xterm-resize-controller', () => ({ createXtermResizeController: () => ({ dispose: () => {} }) }));

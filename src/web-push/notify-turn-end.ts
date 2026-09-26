@@ -55,7 +55,7 @@ export async function notifyAgentTurnEnd(opts: {
   if (listSubscriptions().length === 0) return;
   try {
     const result = await sendPushToAll({
-      title: 'monad — agent done',
+      title: 'elanous — agent done',
       body: truncate(trimmed, BODY_MAX),
       url: `/app/?session=${encodeURIComponent(sessionId)}`,
       tag: `agent-turn-${sessionId}`,

@@ -3,16 +3,16 @@
 import { describe, test, expect } from 'bun:test';
 import { evaluateStall, setEventLoopActivity, currentEventLoopActivity, startEventLoopWatchdog, stopEventLoopWatchdog, isEventLoopWatchdogActive } from './event-loop-watchdog.js';
 
-describe('gate 격리 — MONAD_NO_WATCHDOG', () => {
-  test('MONAD_NO_WATCHDOG=1 → startEventLoopWatchdog no-op(gate test 프로세스 격리)', () => {
-    const prev = process.env.MONAD_NO_WATCHDOG;
-    process.env.MONAD_NO_WATCHDOG = '1';
+describe('gate 격리 — ELANOUS_NO_WATCHDOG', () => {
+  test('ELANOUS_NO_WATCHDOG=1 → startEventLoopWatchdog no-op(gate test 프로세스 격리)', () => {
+    const prev = process.env.ELANOUS_NO_WATCHDOG;
+    process.env.ELANOUS_NO_WATCHDOG = '1';
     try {
       startEventLoopWatchdog({ heartbeatFile: '/tmp/wd-test.hb', stallLogFile: '/tmp/wd-test.stall' });
       expect(isEventLoopWatchdogActive()).toBe(false); // 워커/interval 미기동
     } finally {
       stopEventLoopWatchdog();
-      if (prev === undefined) delete process.env.MONAD_NO_WATCHDOG; else process.env.MONAD_NO_WATCHDOG = prev;
+      if (prev === undefined) delete process.env.ELANOUS_NO_WATCHDOG; else process.env.ELANOUS_NO_WATCHDOG = prev;
     }
   });
 });

@@ -40,7 +40,7 @@ describe('runPwaInstall', () => {
     expect(spawnCmd).toBe('bun');
     expect(spawnArgs).toEqual(['install']);
     expect(spawnCwd).toBe('/repo/apps/pwa');
-    expect(out.logs.some((l) => l.includes('monad nexus pwa install: /repo/apps/pwa'))).toBe(true);
+    expect(out.logs.some((l) => l.includes('elanous nexus pwa install: /repo/apps/pwa'))).toBe(true);
     expect(out.logs.some((l) => l.includes('✓ install succeeded'))).toBe(true);
   });
 

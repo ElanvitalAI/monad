@@ -1,14 +1,14 @@
-// Picker adapters — bridge between expression's PickerSpec and monad's
+// Picker adapters — bridge between expression's PickerSpec and elanous's
 // search-modal SearchItem-like records.
 //
-// Why: monad's picker family (session-picker / window-picker / ssh-
+// Why: elanous's picker family (session-picker / window-picker / ssh-
 // picker / transfer-picker / log-search / window-finder) all share
 // `createSearchModal` from `src/chat/search/modal.ts`. That modal
 // renders via SelectView (an upward-aware widget). The expression
 // PickerSpec is a downward-list spec consumed by renderPicker.
 //
 // These adapters let callers convert in either direction — useful for:
-//   - feeding existing monad pickers' state into describeForScreenReader
+//   - feeding existing elanous pickers' state into describeForScreenReader
 //     (pure a11y) without changing their UX
 //   - building new flat-list pickers from existing SearchItem arrays
 //     (future provider/model selection modals)
@@ -82,7 +82,7 @@ export function searchItemsToPickerSpec(
 
 /** Convert a PickerSpec back into SearchItem-like records. Useful
  *  when a host that owns a PickerSpec wants to feed a SearchItem-
- *  consuming surface (e.g., monad's createSearchModal) without
+ *  consuming surface (e.g., elanous's createSearchModal) without
  *  converting field-by-field manually. */
 export function pickerSpecToSearchItems(
   spec: PickerSpec,

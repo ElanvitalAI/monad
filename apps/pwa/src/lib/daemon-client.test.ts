@@ -923,11 +923,11 @@ describe('DaemonClient.connectAcp lifecycle leases', () => {
     const second = client.connectAcp({ sessionId: 'request-handlers' });
     const socket = MockWebSocket.instances[0]!;
     const calls: string[] = [];
-    const disposeFirst = first.onRequest('monad/ask/request', () => {
+    const disposeFirst = first.onRequest('elanous/ask/request', () => {
       calls.push('first');
       return { owner: 'first' };
     });
-    const disposeSecond = second.onRequest('monad/ask/request', () => {
+    const disposeSecond = second.onRequest('elanous/ask/request', () => {
       calls.push('second');
       return { owner: 'second' };
     });
@@ -941,21 +941,21 @@ describe('DaemonClient.connectAcp lifecycle leases', () => {
     socket.respond(2, {});
     await first.ready;
 
-    socket.request(99, 'monad/ask/request', { question: 'first' });
+    socket.request(99, 'elanous/ask/request', { question: 'first' });
     await Promise.resolve();
     await Promise.resolve();
     expect(calls).toEqual(['second']);
     expect(JSON.parse(socket.sent.at(-1)!)).toMatchObject({ id: 99, result: { owner: 'second' } });
 
     disposeSecond();
-    socket.request(100, 'monad/ask/request', { question: 'first-restored' });
+    socket.request(100, 'elanous/ask/request', { question: 'first-restored' });
     await Promise.resolve();
     await Promise.resolve();
     expect(calls).toEqual(['second', 'first']);
     expect(JSON.parse(socket.sent.at(-1)!)).toMatchObject({ id: 100, result: { owner: 'first' } });
 
     disposeFirst();
-    socket.request(101, 'monad/ask/request', { question: 'none' });
+    socket.request(101, 'elanous/ask/request', { question: 'none' });
     await Promise.resolve();
     expect(JSON.parse(socket.sent.at(-1)!)).toMatchObject({ id: 101, error: { code: -32601 } });
     first.close();
@@ -972,7 +972,7 @@ describe('DaemonClient.connectAcp lifecycle leases', () => {
     released.close();
     released.on('sessionUpdate', () => { calls += 1; });
     released.onAny(() => { calls += 1; });
-    released.onRequest('monad/ask/request', () => { calls += 1; return {}; });
+    released.onRequest('elanous/ask/request', () => { calls += 1; return {}; });
     released.onState(() => { calls += 1; });
     released.close();
     expect(calls).toBe(0);
@@ -986,7 +986,7 @@ describe('DaemonClient.connectAcp lifecycle leases', () => {
     socket.respond(2, {});
     await active.ready;
 
-    socket.request(99, 'monad/ask/request', {});
+    socket.request(99, 'elanous/ask/request', {});
     await Promise.resolve();
     expect(calls).toBe(0);
     expect(JSON.parse(socket.sent.at(-1)!)).toMatchObject({ id: 99, error: { code: -32601 } });
@@ -998,7 +998,7 @@ describe('DaemonClient.connectAcp lifecycle leases', () => {
     const acp = client.connectAcp({ sessionId: 'request-close-race' });
     const socket = MockWebSocket.instances[0]!;
     let rejectResponder!: (error: Error) => void;
-    acp.onRequest('monad/ask/request', () => new Promise((_resolve, reject) => { rejectResponder = reject; }));
+    acp.onRequest('elanous/ask/request', () => new Promise((_resolve, reject) => { rejectResponder = reject; }));
 
     socket.open();
     await Promise.resolve();
@@ -1009,7 +1009,7 @@ describe('DaemonClient.connectAcp lifecycle leases', () => {
     socket.respond(2, {});
     await acp.ready;
 
-    socket.request(99, 'monad/ask/request', {});
+    socket.request(99, 'elanous/ask/request', {});
     socket.finishClose(1006);
     rejectResponder(new Error('responder failed'));
     await Promise.resolve();

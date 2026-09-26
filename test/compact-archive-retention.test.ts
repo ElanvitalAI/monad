@@ -22,7 +22,7 @@ import {
 let tmpDir: string;
 
 beforeEach(() => {
-  tmpDir = join(tmpdir(), `monad-archive-retention-${Date.now()}-${Math.random().toString(36).slice(2)}`);
+  tmpDir = join(tmpdir(), `elanous-archive-retention-${Date.now()}-${Math.random().toString(36).slice(2)}`);
   mkdirSync(tmpDir, { recursive: true });
   resetArchiveRetentionForTest();
 });

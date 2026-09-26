@@ -2,7 +2,7 @@ import { describe, expect, test } from 'bun:test';
 import { childInstanceScope } from './child-scope.js';
 
 /**
- * ⛔⭐⭐ 자식은 `MONAD_STATE_DIR` «문자열 하나»만 받는다 — 그래서 「사람이 말한 격리」와
+ * ⛔⭐⭐ 자식은 `ELANOUS_STATE_DIR` «문자열 하나»만 받는다 — 그래서 「사람이 말한 격리」와
  * 「부모가 트리에서 «파생»해 준 것」을 구분할 수 없었다. 그 결과 바깥 계정의 상태(쿼터 신호)를
  * 갱신 안 되는 우주에서 읽고 ***회전이 100% 계정을 골라*** 429 가 «네 번» 났다.
  */
@@ -18,9 +18,9 @@ describe('childInstanceScope — 파생 우주에 «출처»를 붙인다', () =
     const scope = childInstanceScope({
       ...base,
       effectiveRoot: () => '/prod',
-      derivedRoot: () => '/tree/.monad-test',
+      derivedRoot: () => '/tree/.elanous-test',
     });
-    expect(scope.stateDir).toBe('/tree/.monad-test');
+    expect(scope.stateDir).toBe('/tree/.elanous-test');
     expect(scope.stateDirSource).toBe('derived');
   });
 
@@ -28,7 +28,7 @@ describe('childInstanceScope — 파생 우주에 «출처»를 붙인다', () =
     const scope = childInstanceScope({
       ...base,
       effectiveRoot: () => '/some/other-universe',
-      derivedRoot: () => '/tree/.monad-test',
+      derivedRoot: () => '/tree/.elanous-test',
     });
     expect(scope.stateDir).toBe('/some/other-universe');
     expect(scope.stateDirSource).toBeUndefined();

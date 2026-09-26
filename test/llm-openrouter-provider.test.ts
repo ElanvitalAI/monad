@@ -10,10 +10,10 @@ import { join } from 'node:path';
 // ⛔ 키 캐시는 프로세스당 첫 읽기를 기억한다 — llm 을 import 하기 «전»에 캐시 디렉토리를 고정한다.
 const keyDir = mkdtempSync(join(tmpdir(), 'or-keys-'));
 writeFileSync(join(keyDir, 'openrouter_api_key'), 'sk-or-from-cache\n');
-const savedKeyDir = process.env.MONAD_KEY_CACHE_DIR;
-const savedKeep = process.env.MONAD_KEEP_ENV_KEYS;
-process.env.MONAD_KEY_CACHE_DIR = keyDir;
-delete process.env.MONAD_KEEP_ENV_KEYS;
+const savedKeyDir = process.env.ELANOUS_KEY_CACHE_DIR;
+const savedKeep = process.env.ELANOUS_KEEP_ENV_KEYS;
+process.env.ELANOUS_KEY_CACHE_DIR = keyDir;
+delete process.env.ELANOUS_KEEP_ENV_KEYS;
 
 const llm = await import('../src/llm.js');
 const uc = await import('../src/user-config.js');
@@ -38,8 +38,8 @@ beforeEach(() => {
 afterEach(() => { globalThis.fetch = prior; });
 beforeAll(() => {});
 afterAll(() => {
-  if (savedKeyDir === undefined) delete process.env.MONAD_KEY_CACHE_DIR; else process.env.MONAD_KEY_CACHE_DIR = savedKeyDir;
-  if (savedKeep !== undefined) process.env.MONAD_KEEP_ENV_KEYS = savedKeep;
+  if (savedKeyDir === undefined) delete process.env.ELANOUS_KEY_CACHE_DIR; else process.env.ELANOUS_KEY_CACHE_DIR = savedKeyDir;
+  if (savedKeep !== undefined) process.env.ELANOUS_KEEP_ENV_KEYS = savedKeep;
 });
 
 function cfg(llmPatch: Record<string, unknown>) {
@@ -59,7 +59,7 @@ describe('OpenRouter provider wire', () => {
     expect(calls[0]!.url).toBe(OPENROUTER_API_URL);
     expect(calls[0]!.body.model).toBe('moonshotai/kimi-k3');
     expect(calls[0]!.headers.authorization).toBe('Bearer sk-or-cfg');
-    expect(calls[0]!.headers['x-title']).toBe('monad');
+    expect(calls[0]!.headers['x-title']).toBe('elanous');
     expect(calls[0]!.headers['http-referer']).toBeUndefined();
   });
 

@@ -60,7 +60,7 @@ export function BotlabPanel({ search, remembered = null }: { search: string; rem
             : resolved.source === 'remembered'
               ? 'Host is the one remembered on this device; override it with ?host=<tailnet-name>.'
               : resolved.source === 'default'
-                ? 'Host is the build default (NEXT_PUBLIC_MONAD_BOTLAB_HOST); override it with ?host=<tailnet-name>.'
+                ? 'Host is the build default (NEXT_PUBLIC_ELANOUS_BOTLAB_HOST); override it with ?host=<tailnet-name>.'
                 : 'No wall host is configured. Open this page once with ?host=<the VM tailnet name> — it is remembered on this device.'}
         </p>
         {resolved.rejected !== null && (

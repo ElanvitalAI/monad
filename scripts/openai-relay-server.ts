@@ -8,9 +8,9 @@
  *    테일스케일 IP 에 바인딩하며, 그 IP 는 테일넷 밖에서 라우팅되지 않는다.
  *
  * 환경변수
- *   MONAD_OPENAI_RELAY_SHARED_SECRET  (필수) — 없으면 핸들러가 503 을 낸다
- *   MONAD_OPENAI_RELAY_HOST           바인딩 주소. 기본 127.0.0.1
- *   MONAD_OPENAI_RELAY_PORT           바인딩 포트. 기본 31420
+ *   ELANOUS_OPENAI_RELAY_SHARED_SECRET  (필수) — 없으면 핸들러가 503 을 낸다
+ *   ELANOUS_OPENAI_RELAY_HOST           바인딩 주소. 기본 127.0.0.1
+ *   ELANOUS_OPENAI_RELAY_PORT           바인딩 포트. 기본 31420
  */
 import { OPENAI_RELAY_PATH, tryHandleOpenAiRelay } from '../src/nexus/api/openai-relay.js';
 import { resolveGrokCredential } from '../src/grok/credential.js';
@@ -19,7 +19,7 @@ import { getOpenAiRelaySharedSecret, hydrateEnvFromKeyCache } from '../src/confi
 import { registerLogStoreSink } from '../src/mss/logging/log-store.js';
 
 // ⛔ 독립 프로세스라 데몬의 부팅 배선을 안 탄다 — 스토어 싱크를 «직접» 단다.
-//    이걸 안 달면 debug.log 가 화면에만 남고 `monad logs` 조회에 «영영 안 닿는다»
+//    이걸 안 달면 debug.log 가 화면에만 남고 `elanous logs` 조회에 «영영 안 닿는다»
 //    (2026-08-23 실측: nexus.openai-relay 는 닿았고 이 프로세스 자기 로그는 0건이었다).
 registerLogStoreSink(debug.registerSink.bind(debug), 'openai-relay');
 
@@ -27,9 +27,9 @@ const MODELS_PATH = '/v1/models';
 const HEALTH_PATH = '/healthz';
 
 // 설치본 전환 RFC 0b — 공유 비밀·xAI 키는 plist 가 아니라 키 캐시(~/.cache/<소문자 env 이름>)에서.
-const hydratedKeys = hydrateEnvFromKeyCache(['MONAD_OPENAI_RELAY_SHARED_SECRET', 'XAI_API_KEY']);
-const host = process.env.MONAD_OPENAI_RELAY_HOST?.trim() || '127.0.0.1';
-const port = Number.parseInt(process.env.MONAD_OPENAI_RELAY_PORT?.trim() || '31420', 10);
+const hydratedKeys = hydrateEnvFromKeyCache(['ELANOUS_OPENAI_RELAY_SHARED_SECRET', 'XAI_API_KEY']);
+const host = process.env.ELANOUS_OPENAI_RELAY_HOST?.trim() || '127.0.0.1';
+const port = Number.parseInt(process.env.ELANOUS_OPENAI_RELAY_PORT?.trim() || '31420', 10);
 
 function json(body: unknown, status: number): Response {
   return new Response(JSON.stringify(body), {

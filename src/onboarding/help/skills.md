@@ -1,7 +1,7 @@
 Skill directories — Step 2 / 5
 
-Skills are markdown-defined micro-agents that monad can dispatch
-during a turn. The preset choice tells monad which family of
+Skills are markdown-defined micro-agents that elanous can dispatch
+during a turn. The preset choice tells elanous which family of
 skills to load by default:
 
   · opencode    — opencode-flavoured tool catalogue
@@ -16,4 +16,4 @@ per line, blank line to finish. Paths that don't exist yet are
 kept anyway so you can create them later.
 
 You can change the active preset any time via:
-    monad setup skills
+    elanous setup skills

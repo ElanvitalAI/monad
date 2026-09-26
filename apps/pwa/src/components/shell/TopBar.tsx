@@ -33,7 +33,7 @@ import { TopBarWorkspaceStrip } from './TopBarWorkspaceStrip';
 import { TopBarActivityIndicator } from './TopBarActivityIndicator';
 import type { ShellActivitySnapshot } from './activity-snapshot';
 
-const WAKE_LOCK_KEY = 'monad.pwa.wakeLockOn';
+const WAKE_LOCK_KEY = 'elanous.pwa.wakeLockOn';
 
 interface Props {
   onToggleSidebar: () => void;

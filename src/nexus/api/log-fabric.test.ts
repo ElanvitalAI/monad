@@ -1,7 +1,7 @@
 /**
  * /v1/logs REST 계약 (통합 로그 패브릭 LF1 · 2026-07-13).
  *
- * store 는 :memory: 주입(deps.store) — 실 ~/.monad 미접촉. 레벨 POST 는
+ * store 는 :memory: 주입(deps.store) — 실 ~/.elanous 미접촉. 레벨 POST 는
  * setLevel/persistLevel spy 주입으로 전역 debug 싱글톤/실 config 미접촉.
  */
 import { describe, expect, it } from 'bun:test';
@@ -324,8 +324,8 @@ describe('연합 조회 (LF7-d) — ?store= 리졸버 + /v1/logs/instances', () 
   // ⛔ 여기서 «표본»의 두 값을 서로 비교하지 않는다 — mkView 가 그 식으로 만든 것을 같은 식으로 재면
   //   무엇을 넣어도 참이라 판별력이 «0» 이다(리뷰 must-fix 실측). 그 성질은 «제품 코드가 값을 만드는 자리»에서 잰다.
   it('미등록 prod fallback 은 두 값을 리터럴로 싣는다 — 단일 뿌리를 합성했으므로 「걸치지 않았다」', () => {
-    const home = mkdtempSync(join(tmpdir(), 'monad-lf7d-home-'));
-    const dbPath = join(home, '.monad', 'logs', 'logs.db');
+    const home = mkdtempSync(join(tmpdir(), 'elanous-lf7d-home-'));
+    const dbPath = join(home, '.elanous', 'logs', 'logs.db');
     new LogStore(dbPath).close();
     const store = seededStore();
     let fallback: LogInstanceView | undefined;
@@ -334,7 +334,7 @@ describe('연합 조회 (LF7-d) — ?store= 리졸버 + /v1/logs/instances', () 
         store: () => store,
         instances: () => [],
         // ⛔ 환경 변수를 흔들지 않는다 — 그러면 플랫폼별 prod 경로 «계약» 자체가 달라진다.
-        prodStateRoot: () => join(home, '.monad'),
+        prodStateRoot: () => join(home, '.elanous'),
         openRemoteStore: (view) => { fallback = view; return store; },
       });
       expect(res.status).toBe(200);
@@ -349,7 +349,7 @@ describe('연합 조회 (LF7-d) — ?store= 리졸버 + /v1/logs/instances', () 
   it('/v1/logs/instances 응답은 두 새 필드를 «안 내보낸다» — 응답 형태는 이 착지가 지키는 계약이다', async () => {
     const { handleLogsInstances } = await import('./log-fabric.js');
     const res = handleLogsInstances(get('/v1/logs/instances'), OPTS, {
-      instances: () => [mkView('test:monad-agent', '/x/.monad-test/logs/logs.db', true, 2)],
+      instances: () => [mkView('test:monad-agent', '/x/.elanous-test/logs/logs.db', true, 2)],
     });
     expect(res.status).toBe(200);
     const body = await res.json() as { instances: Array<Record<string, unknown>> };
@@ -368,7 +368,7 @@ describe('연합 조회 (LF7-d) — ?store= 리졸버 + /v1/logs/instances', () 
   });
 
   it('store=<타 인스턴스> → 레지스트리 경로의 logs.db 를 read-only 조회', async () => {
-    const dir = mkdtempSync(join(tmpdir(), 'monad-lf7d-'));
+    const dir = mkdtempSync(join(tmpdir(), 'elanous-lf7d-'));
     const dbPath = join(dir, 'logs', 'logs.db');
     const remote = new LogStore(dbPath, { instance: 'test:remote-agent' });
     remote.insertBatch([{ rec: rec({ event: 'remote.ok' }), surface: 'nexus' }]);
@@ -544,7 +544,7 @@ describe('연합 조회 (LF7-d) — ?store= 리졸버 + /v1/logs/instances', () 
   it('GET /v1/logs/instances — self 표시 + current 플래그 (자기 미등록 시 합성)', async () => {
     const { handleLogsInstances } = await import('./log-fabric.js');
     const res = handleLogsInstances(get('/v1/logs/instances'), OPTS, {
-      instances: () => [mkView('test:monad-agent', '/x/.monad-test/logs/logs.db')],
+      instances: () => [mkView('test:monad-agent', '/x/.elanous-test/logs/logs.db')],
     });
     expect(res.status).toBe(200);
     const j = await res.json() as {

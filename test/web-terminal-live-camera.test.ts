@@ -23,7 +23,7 @@ import {
   buildLiveCameraFrameTool,
   dispatchLiveCameraFrame,
 } from '../src/tool-runtime/web-terminal-live-camera';
-import { setMonadConfigDir, resetMonadConfigDir } from '../src/monad-config-dir.js';
+import { setElanousConfigDir, resetElanousConfigDir } from '../src/elanous-config-dir.js';
 import {
   WEB_TERMINAL_TOOL_NAMES,
   buildWebTerminalSpecs,
@@ -126,13 +126,13 @@ describe('dispatchLiveCameraFrame', () => {
     // file with a valid `att-…` id and have resolveAttachmentPath
     // (which scans the dir) find it.
     tmpDir = mkdtempSync(join(tmpdir(), 'live-cam-test-'));
-    setMonadConfigDir(tmpDir);
+    setElanousConfigDir(tmpDir);
     mkdirSync(join(tmpDir, 'attachments'), { recursive: true });
   });
 
   afterEach(() => {
     try { rmSync(tmpDir, { recursive: true, force: true }); } catch { /* ignore */ }
-    resetMonadConfigDir();
+    resetElanousConfigDir();
   });
 
   test('returns no-frame when registry empty', async () => {

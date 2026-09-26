@@ -10,7 +10,7 @@ import { DaemonSessionHistory } from '../src/boot/daemon-runtime.js';
 let tmp: string;
 
 beforeEach(() => {
-  tmp = mkdtempSync(joinPath(tmpdir(), 'monad-history-register-'));
+  tmp = mkdtempSync(joinPath(tmpdir(), 'elanous-history-register-'));
 });
 
 afterEach(() => {

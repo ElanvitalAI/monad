@@ -16,7 +16,7 @@
  *   to a re-show toggle is a follow-up.
  */
 
-const DISMISS_KEY = 'monad.pwa.installBanner.dismissedAt';
+const DISMISS_KEY = 'elanous.pwa.installBanner.dismissedAt';
 const RESHOW_DAYS = 7;
 const RESHOW_MS = RESHOW_DAYS * 24 * 60 * 60 * 1000;
 

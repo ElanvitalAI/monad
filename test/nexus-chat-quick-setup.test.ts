@@ -115,10 +115,10 @@ describe('renderQuickSetupLines · output shape', () => {
 });
 
 describe('renderQuickSetupLines · setup commands', () => {
-  test('codex OAuth row hints monad login codex command', () => {
+  test('codex OAuth row hints elanous login codex command', () => {
     const snap = buildQuickSetupSnapshot({ envSource: {}, tokenLookup: noTokens });
     const lines = renderQuickSetupLines(snap);
-    expect(lines.some((l) => l.includes('monad login codex'))).toBe(true);
+    expect(lines.some((l) => l.includes('elanous login codex'))).toBe(true);
   });
 
   test('env-var rows include export hints', () => {

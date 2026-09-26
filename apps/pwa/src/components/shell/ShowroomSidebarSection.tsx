@@ -115,7 +115,7 @@ export function ShowroomSidebarSection({ compact = false, onNavigate }: Props = 
   useEffect(() => {
     if (!ctx || typeof window === 'undefined') return;
     const onStorage = (e: StorageEvent): void => {
-      if (e.key && !e.key.startsWith('monad.showroom')) return;
+      if (e.key && !e.key.startsWith('elanous.showroom')) return;
       void (async () => {
         try {
           const { layouts: out } = await listShowroomsHybrid(ctx.client);

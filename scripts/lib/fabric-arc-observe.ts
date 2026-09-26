@@ -72,7 +72,7 @@ export interface FabricArcObserveOptions {
 const REPOSITORY_PATH = /\b(?:src|scripts|test|tests|docs|apps|packages|bin)\/[\w./-]+\.[a-z0-9]{1,5}\b/gi;
 const BACKTICKED_IDENTIFIER = /`([A-Za-z_$][\w.$:-]*)`/g;
 const GROUNDED_DOCUMENT_PATH = /\b(?:src|scripts|test|tests|docs|apps|packages|bin)\/[\w./-]+\.[a-z0-9]{1,5}\b/gi;
-const EXECUTABLE_COMMAND = /(?:^|\n)\s*(?:(?:bun|npm|pnpm|yarn|node|deno|python3?|tsc|git|monad)\b[^\n]*)/gim;
+const EXECUTABLE_COMMAND = /(?:^|\n)\s*(?:(?:bun|npm|pnpm|yarn|node|deno|python3?|tsc|git|elanous)\b[^\n]*)/gim;
 const REPOSITORY_ROOT = resolve(import.meta.dir, '../..');
 const REPOSITORY_ROOT_PREFIX = `${REPOSITORY_ROOT}${sep}`;
 

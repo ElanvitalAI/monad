@@ -14,9 +14,9 @@ function event(over: Partial<OutboundEvent> = {}): OutboundEvent {
     id: 'e1',
     source: 'showroom',
     urgency: 'normal',
-    title: 'monad nudge',
+    title: 'elanous nudge',
     body: 'continue?',
-    link: 'monad://session/abc',
+    link: 'elanous://session/abc',
     ts: 100,
     ...over,
   };
@@ -35,9 +35,9 @@ function fakeSender(result: SendPushResult): { sender: WebPushSender; sent: Push
 describe('buildWebPushPayload · field mapping', () => {
   test('maps title/body/link/source to PushPayload fields', () => {
     const p = buildWebPushPayload(event());
-    expect(p.title).toBe('monad nudge');
+    expect(p.title).toBe('elanous nudge');
     expect(p.body).toBe('continue?');
-    expect(p.url).toBe('monad://session/abc');
+    expect(p.url).toBe('elanous://session/abc');
     expect(p.tag).toBe('showroom');
   });
 
@@ -125,7 +125,7 @@ describe('createWebPushChannel · send dispatch', () => {
       expect(res.channelMessageId).toBe('web-push:e1:3/3');
     }
     expect(sent.length).toBe(1);
-    expect(sent[0]!.title).toBe('monad nudge');
+    expect(sent[0]!.title).toBe('elanous nudge');
   });
 
   test('partial delivery → still ok · ratio in id', async () => {

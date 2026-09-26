@@ -53,7 +53,7 @@ interface RequestBody {
    *  local-llm without restarting the daemon. */
   backend?: 'keyword' | 'local-llm';
   /** Per-call model override; only consulted when the resolved
-   *  backend is `local-llm`. Falls back to `MONAD_SHOWROOM_ROLE_
+   *  backend is `local-llm`. Falls back to `ELANOUS_SHOWROOM_ROLE_
    *  JUDGE_MODEL` env or the default `google/gemma-4-e4b`. */
   model?: string;
 }
@@ -73,25 +73,25 @@ function jsonResponse(body: unknown, status: number): Response {
 }
 
 /** Resolve the backend a single request will use — env var
- *  `MONAD_SHOWROOM_ROLE_JUDGE_BACKEND` overrides opts which
+ *  `ELANOUS_SHOWROOM_ROLE_JUDGE_BACKEND` overrides opts which
  *  overrides the 'keyword' default. Exported for tests. */
 export function resolveRoleJudgeBackend(
   opts: RoleJudgeRouteOpts,
 ): 'keyword' | 'local-llm' {
-  const env = process.env.MONAD_SHOWROOM_ROLE_JUDGE_BACKEND;
+  const env = process.env.ELANOUS_SHOWROOM_ROLE_JUDGE_BACKEND;
   if (env === 'keyword' || env === 'local-llm') return env;
   return opts.backend ?? 'keyword';
 }
 
 /** Resolve the model id for the local-llm backend — env var
- *  `MONAD_SHOWROOM_ROLE_JUDGE_MODEL` overrides opts which overrides
+ *  `ELANOUS_SHOWROOM_ROLE_JUDGE_MODEL` overrides opts which overrides
  *  the HANDOFF default `google/gemma-4-e4b`. Falls back to the
  *  already-loaded `gemma-4-26b-a4b-it` (HANDOFF §6.2 fallback note)
- *  when an explicit `MONAD_SHOWROOM_ROLE_JUDGE_MODEL_FALLBACK` is set
+ *  when an explicit `ELANOUS_SHOWROOM_ROLE_JUDGE_MODEL_FALLBACK` is set
  *  and the primary fetch fails — that branch is wired in the handler
  *  loop below. */
 export function resolveRoleJudgeModel(opts: RoleJudgeRouteOpts): string {
-  const env = process.env.MONAD_SHOWROOM_ROLE_JUDGE_MODEL;
+  const env = process.env.ELANOUS_SHOWROOM_ROLE_JUDGE_MODEL;
   if (env && env.length > 0) return env;
   // micro.2a (2026-05-09) — swap default from `google/gemma-4-e4b`
   // to `mlx-community/gemma-4-26b-a4b-it`. Live measurement on
@@ -101,14 +101,14 @@ export function resolveRoleJudgeModel(opts: RoleJudgeRouteOpts): string {
   // The 26B variant is heavier on disk (16GB vs 5.9GB) but the user
   // already has it deployed; warm latency drops 10x while accuracy
   // holds. Operators on smaller hosts can fall back to the e4b via
-  // `MONAD_SHOWROOM_ROLE_JUDGE_MODEL=google/gemma-4-e4b`.
+  // `ELANOUS_SHOWROOM_ROLE_JUDGE_MODEL=google/gemma-4-e4b`.
   return opts.model ?? 'mlx-community/gemma-4-26b-a4b-it';
 }
 
 /** Optional override of the wall-clock timeout via env. Honoured only
  *  when the value parses as a positive finite integer (ms). */
 export function resolveRoleJudgeTimeoutMs(opts: RoleJudgeRouteOpts): number | undefined {
-  const env = process.env.MONAD_SHOWROOM_ROLE_JUDGE_TIMEOUT_MS;
+  const env = process.env.ELANOUS_SHOWROOM_ROLE_JUDGE_TIMEOUT_MS;
   if (env) {
     const n = Number.parseInt(env, 10);
     if (Number.isFinite(n) && n > 0) return n;
@@ -183,9 +183,9 @@ export async function handleRoleJudge(
     result.source === 'fallback' &&
     result.llm &&
     !result.llm.ok &&
-    process.env.MONAD_SHOWROOM_ROLE_JUDGE_MODEL_FALLBACK
+    process.env.ELANOUS_SHOWROOM_ROLE_JUDGE_MODEL_FALLBACK
   ) {
-    const fallbackModel = process.env.MONAD_SHOWROOM_ROLE_JUDGE_MODEL_FALLBACK!;
+    const fallbackModel = process.env.ELANOUS_SHOWROOM_ROLE_JUDGE_MODEL_FALLBACK!;
     if (fallbackModel !== model) {
       result = await hybridClassify({
         userPrompt: prompt,

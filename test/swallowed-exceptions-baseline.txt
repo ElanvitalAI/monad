@@ -3,10 +3,10 @@
 # Refresh:
 # bun scripts/audit-swallowed-exceptions.ts
 
-apps/ios/MonadiOS/MonadiOS/Resources/web/codemirror.js:4:15717
-apps/ios/MonadiOS/MonadiOS/Resources/web/codemirror.js:9:56739
-apps/ios/MonadiOS/MonadiOS/Resources/web/codemirror.js:16:5128
-apps/ios/MonadiOS/MonadiOS/Resources/web/codemirror.js:30:1128
+apps/ios/ElanousiOS/ElanousiOS/Resources/web/codemirror.js:4:15717
+apps/ios/ElanousiOS/ElanousiOS/Resources/web/codemirror.js:9:56739
+apps/ios/ElanousiOS/ElanousiOS/Resources/web/codemirror.js:16:5128
+apps/ios/ElanousiOS/ElanousiOS/Resources/web/codemirror.js:30:1128
 apps/pwa/src/components/vault/VaultGraph.tsx:24:73
 apps/pwa/src/components/vault/VaultPanel.tsx:66:50
 apps/pwa/src/components/vault/VaultTagsPanel.tsx:20:5
@@ -26,9 +26,9 @@ scripts/se-backend-bench.ts:103:66
 scripts/se-backend-bench.ts:103:179
 scripts/se-doc-map.ts:17:158
 scripts/se-isolation-verify.ts:98:108
-scripts/se-monad-self-tune.ts:108:56
-scripts/se-monad-self-tune.ts:109:104
-scripts/se-monad-self-tune.ts:139:138
+scripts/se-elanous-self-tune.ts:108:56
+scripts/se-elanous-self-tune.ts:109:104
+scripts/se-elanous-self-tune.ts:139:138
 scripts/se-nocturnal-run.ts:56:121
 scripts/tui-sim.ts:124:36
 scripts/tui-sim.ts:282:39
@@ -170,7 +170,7 @@ src/nexus/index.ts:3078:60
 src/ocr/upstage.ts:249:56
 src/self-implement/goal-run-store.ts:411:40
 src/session/s3-backup.ts:120:30
-test/acp-codex-app-server-monad-ui.test.ts:322:11
+test/acp-codex-app-server-elanous-ui.test.ts:322:11
 test/codex-image-generation.test.ts:93:81
 test/dashboard-session-swap-to.test.ts:132:30
 test/dashboard-session-swap-to.test.ts:145:39

@@ -2,7 +2,7 @@
 //
 // Verifies the host-side policy gate. codex v2 protocol has no per-
 // conversation MCP override RPC (verified vs codex-rs spec at PLAN
-// §2.2), so monad enforces tool allow/block at the
+// §2.2), so elanous enforces tool allow/block at the
 // `mcpServer/tool/call` server-request boundary.
 
 import { describe, test, expect } from 'bun:test';

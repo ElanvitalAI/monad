@@ -25,7 +25,7 @@ function runRename(stateDir: string, failManifest = false): string {
   `;
   const result = Bun.spawnSync([process.execPath, '-e', script], {
     cwd: repo,
-    env: { ...process.env, NODE_ENV: 'production', MONAD_STATE_DIR: stateDir, ...(failManifest ? { MONAD_STATE_DIR: '/dev/null/blocked' } : {}) },
+    env: { ...process.env, NODE_ENV: 'production', ELANOUS_STATE_DIR: stateDir, ...(failManifest ? { ELANOUS_STATE_DIR: '/dev/null/blocked' } : {}) },
     stdout: 'pipe',
     stderr: 'pipe',
   });
@@ -99,7 +99,7 @@ function runOutputTotalOnExit(stateDir: string, failedExitFlushes = 0): unknown 
   `;
   const result = Bun.spawnSync([process.execPath, '-e', script], {
     cwd: repo,
-    env: { ...process.env, NODE_ENV: 'production', MONAD_STATE_DIR: stateDir },
+    env: { ...process.env, NODE_ENV: 'production', ELANOUS_STATE_DIR: stateDir },
     stdout: 'pipe', stderr: 'pipe',
   });
   expect(result.exitCode).toBe(0);

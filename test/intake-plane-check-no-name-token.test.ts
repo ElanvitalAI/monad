@@ -31,9 +31,9 @@ function fixture(over: Partial<IntakeCheckDeps> = {}): IntakeCheckDeps {
   };
 }
 
-const unnamed = 'monad 는 목표 수행 중 정보가 모자라면 사용자에게 질문한다';
+const unnamed = 'elanous 는 목표 수행 중 정보가 모자라면 사용자에게 질문한다';
 const missingName = ['missing', 'feature', 'q7x9'].join('-');
-const named = `monad 는 \`${missingName}\` 를 지원한다`;
+const named = `elanous 는 \`${missingName}\` 를 지원한다`;
 
 test('unnamed --fact cannot search the whole sentence or write a gap draft', () => {
   let probes = 0;

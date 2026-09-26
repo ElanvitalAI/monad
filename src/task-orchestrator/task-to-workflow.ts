@@ -146,7 +146,7 @@ export function surfaceToBodyNode(task: Task): DagNode {
   }
 }
 
-/** A workflow name safe for `~/.monad/workflows-runs/<runId>/` paths.
+/** A workflow name safe for `~/.elanous/workflows-runs/<runId>/` paths.
  *  Mirrors the legacy `taskId` shape (already kebab-case · 32 hex). */
 function workflowNameForTask(taskId: string): string {
   return `tox-task-${taskId}`;

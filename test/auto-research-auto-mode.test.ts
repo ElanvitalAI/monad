@@ -23,7 +23,7 @@ import { discoverObsidianVault } from '../src/auto-research/obsidian-bridge';
 async function makeGoal(slug: string, budget?: any, termination?: any) {
   const home = mkdtempSync(join(tmpdir(), 'auto-mode-'));
   const vault = discoverObsidianVault({
-    env: { MONAD_OBSIDIAN_VAULT: join(home, 'vault') },
+    env: { ELANOUS_OBSIDIAN_VAULT: join(home, 'vault') },
     cwd: home,
   });
   const input: any = {
@@ -70,7 +70,7 @@ describe('PFC-S4 P5 — auto-mode session + tools', () => {
   test('enter with uninitialised goal fails', async () => {
     const home = mkdtempSync(join(tmpdir(), 'auto-mode-nope-'));
     const vault = discoverObsidianVault({
-      env: { MONAD_OBSIDIAN_VAULT: join(home, 'vault') },
+      env: { ELANOUS_OBSIDIAN_VAULT: join(home, 'vault') },
       cwd: home,
     });
     const res = await dispatchEnterAutoMode({ goal_slug: 'missing' }, { vault });

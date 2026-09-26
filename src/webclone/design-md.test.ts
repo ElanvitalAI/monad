@@ -106,7 +106,7 @@ describe('contrastPairsFrom — ⛔ 투명 바탕은 쌍이 아니다', () => {
 describe('renderDesignMd — ⭐ 산출이 «파서에 닿는가»', () => {
   const md = renderDesignMd(BASE);
 
-  test('monad design-check 문법을 낸다', () => {
+  test('elanous design-check 문법을 낸다', () => {
     expect(md).toContain('## Craft rulebooks');
     expect(md).toContain('## Palette');
     expect(md).toContain('## Contrast pairs');

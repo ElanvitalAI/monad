@@ -30,13 +30,13 @@ function createAuditRepository(): string {
     "import { tmpdir } from 'node:os';",
     "import { join } from 'node:path';",
     "const stateDir = mkdtempSync(join(tmpdir(), 'audit-candidate-'));",
-    "writeFileSync(join(stateDir, '.monad', 'candidate.txt'), 'candidate');",
+    "writeFileSync(join(stateDir, '.elanous', 'candidate.txt'), 'candidate');",
     '',
   ].join('\n'));
   return root;
 }
 
-/** ⛔⭐ 상태 증거가 «따옴표 안 경로»뿐인 후보 — 식별자(`homedir`·`MONAD_*_DIR`)를 한 번도 안 쓴다.
+/** ⛔⭐ 상태 증거가 «따옴표 안 경로»뿐인 후보 — 식별자(`homedir`·`ELANOUS_*_DIR`)를 한 번도 안 쓴다.
  *  종전 `statePattern` 은 선행 `\b` 가 전체 교대에 걸려 이 형태를 하나도 못 물었고, finding 은
  *  writer ⊕ state 줄이 «둘 다» 있어야 만들어지므로 그런 파일은 **통째로 누락**됐다.
  *  ⚠️ 위 `createAuditRepository` 픽스처는 `homedir()` 을 같이 써서 «다른 대안»으로 물렸다 —
@@ -49,7 +49,7 @@ function createQuotedDotPathRepository(): string {
     "import { writeFileSync } from 'node:fs';",
     "import { join } from 'node:path';",
     'const base = process.env.SOME_ROOT ?? \'/tmp/x\';',
-    "writeFileSync(join(base, '.monad', 'candidate.txt'), 'candidate');",
+    "writeFileSync(join(base, '.elanous', 'candidate.txt'), 'candidate');",
     '',
   ].join('\n'));
   return root;
@@ -79,8 +79,8 @@ function createMixedWriterIsolationRepository(): string {
     "import { tmpdir } from 'node:os';",
     "import { join } from 'node:path';",
     "const isolated = mkdtempSync(join(tmpdir(), 'isolated-'));",
-    "writeFileSync(join(isolated, '.monad', 'safe.txt'), 'safe');",
-    "writeFileSync(join(process.env.HOME!, '.monad', 'unsafe.txt'), 'unsafe');",
+    "writeFileSync(join(isolated, '.elanous', 'safe.txt'), 'safe');",
+    "writeFileSync(join(process.env.HOME!, '.elanous', 'unsafe.txt'), 'unsafe');",
     '',
   ].join('\n'));
   return root;
@@ -108,7 +108,7 @@ function createDatabaseConstructorRepository(usesDatabase: boolean): string {
   mkdirSync(join(root, 'src'));
   writeFileSync(join(root, 'test', 'database-constructor.test.ts'), [
     "import { Database } from 'bun:sqlite';",
-    "const path = process.env.MONAD_STATE_DIR + '/goal-runs.db';",
+    "const path = process.env.ELANOUS_STATE_DIR + '/goal-runs.db';",
     ...(usesDatabase ? ['new Database(path);'] : ['Database;']),
     '',
   ].join('\n'));
@@ -228,12 +228,12 @@ describe('test home/state write inventory contract', () => {
     }
   });
 
-  test('classifies only MONAD_STATE_DIR, --config-dir, and mkdtemp as static isolation signals', () => {
-    expect(classifyStaticIsolation("process.env.MONAD_STATE_DIR; run('--config-dir', '/tmp/cfg'); mkdtempSync('/tmp/a')")).toEqual({
-      signals: ['MONAD_STATE_DIR', '--config-dir', 'mkdtemp'],
+  test('classifies only ELANOUS_STATE_DIR, --config-dir, and mkdtemp as static isolation signals', () => {
+    expect(classifyStaticIsolation("process.env.ELANOUS_STATE_DIR; run('--config-dir', '/tmp/cfg'); mkdtempSync('/tmp/a')")).toEqual({
+      signals: ['ELANOUS_STATE_DIR', '--config-dir', 'mkdtemp'],
       safety: 'isolated',
     });
-    expect(classifyStaticIsolation("writeFileSync(join(homedir(), '.monad', 'unsafe'), 'x')")).toEqual({
+    expect(classifyStaticIsolation("writeFileSync(join(homedir(), '.elanous', 'unsafe'), 'x')")).toEqual({
       signals: [],
       safety: 'manual-review',
     });
@@ -262,7 +262,7 @@ describe('test home/state write inventory contract', () => {
       expect(classification.findings).toHaveLength(1);
       expect(classification.isolated.map(({ line }) => line)).toEqual([4, 5]);
       expect(classification.manualReview.map(({ line, pattern }) => ({ line, pattern }))).toEqual([
-        { line: 6, pattern: "writeFileSync(join(process.env.HOME!, '.monad', 'unsafe.txt'))" },
+        { line: 6, pattern: "writeFileSync(join(process.env.HOME!, '.elanous', 'unsafe.txt'))" },
       ]);
     } finally {
       rmSync(root, { recursive: true, force: true });

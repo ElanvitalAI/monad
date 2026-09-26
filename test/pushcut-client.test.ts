@@ -14,7 +14,7 @@ import {
 } from '../src/pushcut/client.js';
 
 function tmpConfig(body: Record<string, unknown>): string {
-  const dir = joinPath(tmpdir(), `monad-pushcut-${Date.now()}-${Math.random().toString(36).slice(2)}`);
+  const dir = joinPath(tmpdir(), `elanous-pushcut-${Date.now()}-${Math.random().toString(36).slice(2)}`);
   mkdirSync(dir, { recursive: true });
   const path = joinPath(dir, 'pushcut.json');
   writeFileSync(path, JSON.stringify(body), 'utf-8');
@@ -31,7 +31,7 @@ describe('loadPushcutConfig', () => {
   });
 
   test('malformed JSON returns null (no throw)', () => {
-    const dir = joinPath(tmpdir(), `monad-pushcut-bad-${Date.now()}`);
+    const dir = joinPath(tmpdir(), `elanous-pushcut-bad-${Date.now()}`);
     mkdirSync(dir, { recursive: true });
     const p = joinPath(dir, 'pushcut.json');
     writeFileSync(p, '{not valid}', 'utf-8');

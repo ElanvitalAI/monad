@@ -6,9 +6,9 @@
 // let it through.
 //
 // Ported from codex's Guardian layer (core/src/guardian/
-// approval_request.rs) adapted to monad's shell surface. Codex's
+// approval_request.rs) adapted to elanous's shell surface. Codex's
 // Guardian lives inside core — it can intercept tool calls before
-// they reach the shell. Monad's equivalent lives in the same place
+// they reach the shell. Elanous's equivalent lives in the same place
 // as the approval policy (src/code-edit/safety.ts and the shell
 // approval pipeline) and is pattern-matched on the argv.
 //
@@ -19,7 +19,7 @@
 //     modal can surface.
 //   • `severity: 'destructive' | 'escalated'` — future surface for
 //     AU6 sandbox-failure escalation.
-//   • Disable via env `MONAD_GUARDIAN=off`; documented + tested.
+//   • Disable via env `ELANOUS_GUARDIAN=off`; documented + tested.
 //
 // Not a replacement for approval modal — the Guardian is a SIGNAL
 // that the caller uses to, e.g., force `severity: 'destructive'`
@@ -44,7 +44,7 @@ export function setGuardianDisabled(disabled: boolean): void {
 
 export function isGuardianDisabled(): boolean {
   if (sessionDisabled) return true;
-  const v = (process.env.MONAD_GUARDIAN ?? '').toLowerCase();
+  const v = (process.env.ELANOUS_GUARDIAN ?? '').toLowerCase();
   return v === 'off' || v === '0' || v === 'false';
 }
 

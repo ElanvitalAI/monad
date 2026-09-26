@@ -11,7 +11,7 @@ function temporaryHome(): { home: string; dispose: () => void } {
 }
 
 function writeCatalog(home: string, models: unknown[]): void {
-  const dir = join(home, '.monad');
+  const dir = join(home, '.elanous');
   mkdirSync(dir, { recursive: true });
   writeFileSync(join(dir, 'models.json'), JSON.stringify({ version: 1, updated: 0, models }));
 }

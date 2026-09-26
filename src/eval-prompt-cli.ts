@@ -1,4 +1,4 @@
-// ── monad ask — single-shot CLI prompt evaluator ─────────────────────────
+// ── elanous ask — single-shot CLI prompt evaluator ─────────────────────────
 //
 // Headless entry that pipes a single user prompt through the same LLM
 // dispatch surface the dashboard chat uses (universal preamble +
@@ -30,7 +30,7 @@ import {
   streamLLMWithTools,
 } from './llm.js';
 import { buildUniversalPreamble } from './prompt-library/universal-preamble.js';
-import { monadSelfAccessPrompt } from './agent/self-ambient.js';
+import { elanousSelfAccessPrompt } from './agent/self-ambient.js';
 import { getModelFamily } from './models/prompts.js';
 import {
   applyRotationEntry,
@@ -71,7 +71,7 @@ export type EvalPromptToolSurface = (typeof EVAL_PROMPT_TOOL_SURFACES)[number];
 
 /** ⭐ repro 파리티 축 ①: **프롬프트**(2026-07-27) — `--tools chat|webterm` 은 "데몬이 쓰는
  *  서피스를 재현하겠다" 는 뜻인데 종전엔 **툴 목록만** 맞추고 시스템 프롬프트는 안 맞췄다.
- *  데몬은 `monadSelfAccessPrompt`(self-build 자각)를 항상 주입하므로, 같은 골이 데몬에선
+ *  데몬은 `elanousSelfAccessPrompt`(self-build 자각)를 항상 주입하므로, 같은 골이 데몬에선
  *  `RunDevHarness` 를 부르고 프로브에선 0회로 갈렸다(실측 — 프로브가 **실제와 반대** 답).
  *  ⚠️ `cli` 는 데몬 서피스가 아니므로 무접촉(종전 동작 유지).
  *  seam 으로 뺀 이유: 이건 판정 프로브의 **정확성 계약**이라 인라인 조건으로 두면 조용히
@@ -206,7 +206,7 @@ export function isEvalPromptToolSurface(value: string): value is EvalPromptToolS
 // native handlers for those — model is trained to use shell `cat`/`rg`/
 // `fd` for text/search and apply_patch for edits. See buildCodexHostTools
 // comment for the empirical reproducer.
-// Wave 7 — env override `MONAD_CODEX_TOOLSET` for hypothesis testing:
+// Wave 7 — env override `ELANOUS_CODEX_TOOLSET` for hypothesis testing:
 //   "shell-shaped" → `shell` (codex-rs schema, command:array) + ListDir
 //                    + WebFetch — tests if schema match unlocks codex
 //                    use of shell for cat/rg/find
@@ -228,7 +228,7 @@ export function buildEvalPromptToolSurface(
     return { specs: daemon.specs, daemon };
   }
 
-  const codexToolset = process.env.MONAD_CODEX_TOOLSET ?? 'shaped';
+  const codexToolset = process.env.ELANOUS_CODEX_TOOLSET ?? 'shaped';
   const baseTools = modelFamily === 'codex'
     ? (codexToolset === 'shell-shaped'
         ? buildCodexShellShapedTools()
@@ -239,7 +239,7 @@ export function buildEvalPromptToolSurface(
             : buildCodexHostTools())
     : buildHostTools();
   return {
-    specs: process.env.MONAD_EVAL_INCLUDE_TUI_TOOLS === 'true'
+    specs: process.env.ELANOUS_EVAL_INCLUDE_TUI_TOOLS === 'true'
       ? [...baseTools, ...buildTuiMirrorOptionalTools()]
       : baseTools,
   };
@@ -265,11 +265,11 @@ function buildHostTools(): LLMToolSpec[] {
  *  optional tool SPECS that the TUI plain-chat path always exposes via
  *  `buildDashboardOptionalToolSpecs` (DashboardState + 5 TerminalModal
  *  tools) on top of the standard host tools. dispatch is stubbed —
- *  these tools require a live dashboard runtime; in headless `monad
+ *  these tools require a live dashboard runtime; in headless `elanous
  *  repro` mode they return an error so the model sees the spec but
  *  any actual call fails cleanly.
  *
- *  Triggered by `MONAD_EVAL_INCLUDE_TUI_TOOLS=true`. Purpose: measure
+ *  Triggered by `ELANOUS_EVAL_INCLUDE_TUI_TOOLS=true`. Purpose: measure
  *  whether the extra spec exposure changes codex behavior (W5-G
  *  no-content-read streak counts these calls toward the streak even
  *  though they're not Read/Edit/Write/Lsp).
@@ -353,7 +353,7 @@ function buildCodexMinimalTools(): LLMToolSpec[] {
  *  (timeout, sandbox, network). This is a pure schema adapter — same
  *  underlying execution.
  *
- *  Tested when MONAD_CODEX_TOOLSET=shell-shaped. Hypothesis: with
+ *  Tested when ELANOUS_CODEX_TOOLSET=shell-shaped. Hypothesis: with
  *  matching schema, codex uses `shell` for `cat`/`rg`/`find` instead of
  *  ignoring our generic Bash tool. */
 function buildCodexShellTool(): LLMToolSpec {
@@ -485,10 +485,10 @@ async function dispatchHostTool(
       if (TUI_MIRROR_TOOL_NAMES.has(name)) {
         return {
           available: false,
-          reason: `tool ${name} requires a live dashboard runtime — not available in 'monad repro' headless mode`,
+          reason: `tool ${name} requires a live dashboard runtime — not available in 'elanous repro' headless mode`,
         };
       }
-      return { error: `tool ${name} not available in 'monad ask' headless mode` };
+      return { error: `tool ${name} not available in 'elanous ask' headless mode` };
   }
 }
 
@@ -748,7 +748,7 @@ export async function runEvalPrompt(opts: EvalPromptOpts): Promise<EvalPromptRes
   // differently than in dashboard chat.
   const sessionCache = new SessionCache();
   // 툴셋 선택 — cli 는 종전 조립(모델별 변형 포함) · chat/webterm 은 데몬 서피스.
-  //   상세(codex 변형·MONAD_CODEX_TOOLSET 가설)는 buildEvalPromptToolSurface 주석 참조.
+  //   상세(codex 변형·ELANOUS_CODEX_TOOLSET 가설)는 buildEvalPromptToolSurface 주석 참조.
   const selectedSurface = opts.tools ?? 'cli';
   // 데몬 서피스용 never-abort 신호(헤드리스에선 프로세스 kill 이 곧 중단이라 발화 없음).
   const headlessSignal = new AbortController().signal;
@@ -799,14 +799,14 @@ export async function runEvalPrompt(opts: EvalPromptOpts): Promise<EvalPromptRes
 
   // ⭐ 데몬 서피스 프롬프트 파리티(2026-07-27) — `--tools chat|webterm` 은 **데몬이 쓰는
   //   서피스**를 재현하겠다는 뜻인데, 종전엔 **툴 목록만** 맞추고 시스템 프롬프트는 안 맞췄다.
-  //   데몬은 `monadSelfAccessPrompt`(self-build 자각 · 배틀쉽 소환 안내)를 항상 주입하는데
+  //   데몬은 `elanousSelfAccessPrompt`(self-build 자각 · 배틀쉽 소환 안내)를 항상 주입하는데
   //   repro 는 universal preamble 만 써서, **같은 골이 데몬에선 RunDevHarness 를 부르고
   //   프로브에선 0회**로 갈렸다(실측). 판정 프로브가 실제와 반대 답을 내면 B1 사다리 자체가
   //   못 쓰게 되므로(매뉴얼 §4 "1~3 건너뛰면 왜 안 되는지 안 나온다") 여기서 축을 맞춘다.
   //   ⚠️ `cli` 서피스는 데몬이 아니므로 무접촉 — 종전 동작 그대로.
-  const surfaceParity: LLMMessage[] = reproSurfaceParityMessages(opts.tools, monadSelfAccessPrompt);
+  const surfaceParity: LLMMessage[] = reproSurfaceParityMessages(opts.tools, elanousSelfAccessPrompt);
   if (!opts.silent && surfaceParity.length > 0) {
-    process.stdout.write(`[ask] surface parity: +monadSelfAccessPrompt (tools=${opts.tools})\n`);
+    process.stdout.write(`[ask] surface parity: +elanousSelfAccessPrompt (tools=${opts.tools})\n`);
   }
   const messages: LLMMessage[] = [
     ...preamble,
@@ -1000,7 +1000,7 @@ export async function runEvalPrompt(opts: EvalPromptOpts): Promise<EvalPromptRes
     surfaceToolNames,
     surfaceToolCount: surfaceToolNames.length,
     durationMs,
-    logPath: logPath ?? (process.env.MONAD_LOG_LATEST ?? 'log/latest'),
+    logPath: logPath ?? (process.env.ELANOUS_LOG_LATEST ?? 'log/latest'),
     eventCounts,
     assertions,
     ...(jsonlOutPath !== undefined ? { jsonlOutPath } : {}),

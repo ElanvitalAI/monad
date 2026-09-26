@@ -45,7 +45,7 @@ export function buildAgentHandoffTool(): LLMToolSpec {
         to_brand: {
           type: 'string',
           description:
-            'Target agent brand. Registered brands include: codex, claude, claude-code, gemini, gemini-cli, monad, monad-child.',
+            'Target agent brand. Registered brands include: codex, claude, claude-code, gemini, gemini-cli, elanous, elanous-child.',
         },
         to_mode: {
           type: 'string',

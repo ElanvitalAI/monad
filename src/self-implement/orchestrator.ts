@@ -1,6 +1,6 @@
 // self-implement 오케스트레이터 (2026-07-19) — 세션 포크 → worktree → 구현 → gate → PR.
 //
-// 대표 지시: 외부 drive-tui 로 monad 를 구동하는 능력의 **내부판**. monad 가 TUI 대화의
+// 대표 지시: 외부 drive-tui 로 elanous 를 구동하는 능력의 **내부판**. elanous 가 TUI 대화의
 // 자연어("이 기능 구현하고 PR 올려줘")를 인식해 SelfImplement 툴을 자율 호출 → 이 시퀀서가
 // 6단계를 관통한다. 미션 plan/build 코드 무접촉 — 전 단계가 미션-무결합 재사용 seam(조사 실측).
 //
@@ -84,8 +84,8 @@ import { DEV_PIPELINE_SINK_SURFACE } from './self-cli-sink-surface.js';
 import { registerLoopAgentSafe, type LoopAgentInput } from '../domains/loop-agent-registry.js';
 import { originObservationFields } from '../agent/origin-observation.js';
 import { getHarnessSpace, normalizeSpaceId, resolveRunIdentity } from '../harness/harness-space.js';
-import { getMonadConfigDir } from '../monad-config-dir.js';
-import { monadStateRoot } from '../autopilot/state-paths.js';
+import { getElanousConfigDir } from '../elanous-config-dir.js';
+import { elanousStateRoot } from '../autopilot/state-paths.js';
 import { plannedSelfImplBranch } from '../harness/worktree-branch-prefix.js';
 export { slugifyFeature } from '../harness/worktree-branch-prefix.js';
 import { resolveAutoReviewLabels } from './context-capsule.js';
@@ -814,7 +814,7 @@ export function withRefreshedRunFacts<T extends { commits?: readonly string[]; c
 /** 감독자 입력이 «어떻게 배달됐나» — 이 값은 **한 집에서만** 산다.
  *
  *  📏 2026-08-22 실측(16차 `[F]`): 같은 값이 네 자리에 «각자» 적혀 있었고
- *  (`SelfImplementSeams.implement` · 이 파일의 라운드 지역 타입 · `headless-monad-driver` 의
+ *  (`SelfImplementSeams.implement` · 이 파일의 라운드 지역 타입 · `headless-elanous-driver` 의
  *  `onSupervisorInput` 과 `formatSupervisionProgressLine`) 서로 «달랐다».
  *  `#10942` 가 이 파일 쪽만 `inbox-*` 로 넓히자 두 쪽을 잇는 `seams.ts` 가 컴파일을 못 했고,
  *  ***PWA 빌드 전체가 멈췄다*** — 그런데 `bun test` 는 전부 초록이었다.
@@ -903,11 +903,11 @@ export interface SelfImplementSeams {
   mergeMain?: (worktreePath: string, mergeTarget: string) => Promise<import('../autopilot/build/llm-conflict-merge.js').LlmMergeOutcome>;
   /** ★ G2(2026-07-21·병렬 auto-merge 안전) — worktree 변경을 커밋한다(mergeMain 이 clean tree 를 요구하므로
    *  PR 直前 main-싱크 전에 impl 변경을 먼저 커밋). 기본=commitWorktree. 미주입 시 G2 pre-PR 싱크 skip(fail-safe).
-   *  [[ROADMAP-monad-is-all-pty-unified-autonomy-2026-07-21]] G2. */
+   *  [[ROADMAP-elanous-is-all-pty-unified-autonomy-2026-07-21]] G2. */
   commitWork?: (cwd: string, message: string) => void;
   /** --ground 코드베이스 prepass seam. cwd는 구현 대상 worktree이며 실패는 goal-loop를 막지 않는다. */
   groundGoal?: (goalText: string, deps: { cwd: string }) => Promise<string>;
-  /** ③ 구현 — cwd(worktree)에서 코딩 에이전트 구동(P1: 헤드리스 monad spawn·goal-loop 아밍).
+  /** ③ 구현 — cwd(worktree)에서 코딩 에이전트 구동(P1: 헤드리스 elanous spawn·goal-loop 아밍).
    *  escalateTier(#2) — sol 단일 승급으로 재시도하고 seam 이 그 대상을 honor한다. */
   /** ⚠️ `runId` 는 **필수**(리뷰 should-fix) — 오케스트레이터가 항상 보장하므로 옵셔널로 두면 새 seam
    *  구현이 전파를 조용히 빠뜨릴 수 있다. 필수로 선언해 컴파일 시점에 막는다. */
@@ -964,7 +964,7 @@ export interface SelfImplementSeams {
   preservationHasChanges?: (ctx: { cwd: string; base?: string }) => boolean | Promise<boolean>;
   /** Hard-cap salvage evidence: a clean worktree and commits ahead of origin/main. */
   readReworkSalvageEvidence?: (cwd: string) => Promise<ReworkSalvageEvidence>;
-  /** Starts exactly one detached `monad dev --file <goal> --base <branch>` follow-up. */
+  /** Starts exactly one detached `elanous dev --file <goal> --base <branch>` follow-up. */
   launchReworkSalvage?: (input: { goalFile: string; base: string; salvageAttempt: number }) => Promise<void>;
   /** Persist a full oversized PR body so its bounded PR counterpart can link to it. */
   persistPrBodyArtifact?: (input: { origin: string; body: string; originalChars: number }) => { path: string };
@@ -1909,7 +1909,7 @@ export interface SelfImplementOptions {
   /** 시험이 런치 오버레이를 빼 «지금 YAML 예산»을 읽게 할 때 쓴다. 생략하면 디스크 오버레이다. */
   graphOverlays?: readonly GraphOverlaySpec[];
   /** ★ K run-identity — 이 self-implement 호출의 per-run join anchor. 미지정 시 상속(env)→canonical mint.
-   *  리워크 라운드 전부가 이 값을 공유한다(`monad self run <runId>` 가 호출 전체를 조인). */
+   *  리워크 라운드 전부가 이 값을 공유한다(`elanous self run <runId>` 가 호출 전체를 조인). */
   runId?: string;
   /** Authored goal document's stable identity, carried into self-implement observations when present. */
   goalId?: string;
@@ -1923,13 +1923,13 @@ export interface SelfImplementOptions {
   childLlm?: ChildLlmSelection;
   /** 런타임이 이미 추출·저장소 경계 판정한 문서 참조. 모든 구현 라운드에 그대로 전달한다. */
   documentReferences?: readonly DocumentReferenceStatus[];
-  /** ★ monad 내부 프롬프트 인핸싱(가산·anti-drift·Phase 1 공용 심) — feature(원문)를 verbatim 보존 +
+  /** ★ elanous 내부 프롬프트 인핸싱(가산·anti-drift·Phase 1 공용 심) — feature(원문)를 verbatim 보존 +
    *  커버리지 체크리스트를 얹어 round-0 goal-loop 에 전달. 브랜치명/PR제목은 원문(opts.feature) 유지.
-   *  명시 override(undefined 면 entry 정책 결정: monad-apparatus→ON·external-verbatim→OFF·§6e capability 구동).
+   *  명시 override(undefined 면 entry 정책 결정: elanous-apparatus→ON·external-verbatim→OFF·§6e capability 구동).
    *  agent-mission 과 동일한 src/prompt-enhance/ 레이어를 소비(재발명 0). */
   enhance?: boolean;
   /** ★ 진입 클래스(§6e·capability 구동) — enhance mode-gating. 생략 시 기본 external-verbatim(보수·무회귀).
-   *  monad 내부 자연어 구동(데몬 dispatch)은 조립부가 monad-apparatus를 명시해 enhance/ground를 켠다.
+   *  elanous 내부 자연어 구동(데몬 dispatch)은 조립부가 elanous-apparatus를 명시해 enhance/ground를 켠다.
    *  외부 Claude Code/ACP 가 프롬프트를 직접 크래프트했으면 external-verbatim(→OFF·verbatim 존중). */
   entry?: IngestionEntry;
   /** 인핸싱 산출물 유형 힌트(예: 'PLAN 문서'). */
@@ -1937,7 +1937,7 @@ export interface SelfImplementOptions {
   /** --ground: round-0 objective에 codebase-only grounding을 prepend한다(기본 off). */
   ground?: boolean;
   /**
-   * ★ entry-independent 기억 주입(PLAN §6e FIX) — monad 기억을 가산 grounding 컨텍스트로(프롬프트 무접촉·
+   * ★ entry-independent 기억 주입(PLAN §6e FIX) — elanous 기억을 가산 grounding 컨텍스트로(프롬프트 무접촉·
    * 인핸싱과 독립). 어떤 진입이든 기본 ON(false 로만 끔). agent-mission 과 동일 레이어(재발명 0).
    */
   memory?: boolean;
@@ -1985,7 +1985,7 @@ export interface SelfImplementOptions {
    *  outward-facing(main 병합)이라 명시 opt-in 만. mergePr seam 이 있어야 실제 병합(없으면 non-draft PR 까지).
    *  completion이 없던 기존 호출자의 호환 입력으로 유지한다. */
   autoMerge?: boolean;
-  /** ★ G8 자기판단(2026-07-23·[[ROADMAP-monad-is-all-pty-unified-autonomy-2026-07-21]] §2b) — PR 을 열 때
+  /** ★ G8 자기판단(2026-07-23·[[ROADMAP-elanous-is-all-pty-unified-autonomy-2026-07-21]] §2b) — PR 을 열 때
    *  `auto-review` opt-in 라벨을 붙일지. **2단 게이트**: 이 플래그(사람 옵트인) AND assessAutonomyEligibility
    *  (작업 위험도 자기판단·fail-safe) 통과여야 부착. 부적합(외부배포·실주문·설계분기·파괴·보안·리뷰 must-fix)이면
    *  플래그 있어도 안 붙이고 사유를 관측+PR 코멘트로. 붙으면 L3 폴러(pr-review-watch)가 이후 리뷰를 무인 완결. */
@@ -2463,7 +2463,7 @@ function prBody(feature: string, implSummary: string, gateLog?: string, review?:
     ...(gateLog ? ['', '## Gate', '```', gateLog.trim().slice(0, 3000), '```'] : []),
     ...relaxation,
     '',
-    '🤖 self-implement 오케스트레이터 (monad 자율 구현·리뷰-게이트 병합)',
+    '🤖 self-implement 오케스트레이터 (elanous 자율 구현·리뷰-게이트 병합)',
   ].join('\n');
 }
 
@@ -2538,7 +2538,7 @@ function collectPrEvidence(input: {
     } : {}),
     tests: {
       // 게이트 로그에서 명령을 못 뽑으면 게이트 자체를 «한 줄»로 싣는다 — 「돌았다」는 사실은 있다.
-      runs: testRuns.length ? testRuns : [{ command: 'monad self gate (변경 파일 범위)', detail: input.gate.passed ? 'passed' : 'failed' }],
+      runs: testRuns.length ? testRuns : [{ command: 'elanous self gate (변경 파일 범위)', detail: input.gate.passed ? 'passed' : 'failed' }],
       ...(input.gate.log ? { gateLog: input.gate.log } : {}),
     },
     risks: extracted.risks,
@@ -3226,13 +3226,13 @@ function runOriginData(env: NodeJS.ProcessEnv = process.env): RunOriginData {
     hostname: hostname(),
     platform: process.platform,
     arch: process.arch,
-    substrate: env.MONAD_SUBSTRATE || 'host',
+    substrate: env.ELANOUS_SUBSTRATE || 'host',
     instance: resolveInstanceName(),
-    monadVersion: (JSON.parse(readFileSync(new URL('../../package.json', import.meta.url), 'utf8')) as { version: string }).version,
-    ...(env.MONAD_POD_NAME ? { podName: env.MONAD_POD_NAME } : {}),
-    ...(env.MONAD_NODE_NAME ? { nodeName: env.MONAD_NODE_NAME } : {}),
-    ...(env.MONAD_POD_NAMESPACE ? { podNamespace: env.MONAD_POD_NAMESPACE } : {}),
-    ...(env.MONAD_IMAGE_COMMIT ? { imageCommit: env.MONAD_IMAGE_COMMIT } : {}),
+    elanousVersion: (JSON.parse(readFileSync(new URL('../../package.json', import.meta.url), 'utf8')) as { version: string }).version,
+    ...(env.ELANOUS_POD_NAME ? { podName: env.ELANOUS_POD_NAME } : {}),
+    ...(env.ELANOUS_NODE_NAME ? { nodeName: env.ELANOUS_NODE_NAME } : {}),
+    ...(env.ELANOUS_POD_NAMESPACE ? { podNamespace: env.ELANOUS_POD_NAMESPACE } : {}),
+    ...(env.ELANOUS_IMAGE_COMMIT ? { imageCommit: env.ELANOUS_IMAGE_COMMIT } : {}),
   };
 }
 
@@ -3266,8 +3266,8 @@ export async function runSelfImplement(opts: SelfImplementOptions): Promise<Self
     };
   }
   const parentHarnessSpaceId = getHarnessSpace()?.id || undefined;
-  const configRoot = getMonadConfigDir() || undefined;
-  const stateRoot = monadStateRoot() || undefined;
+  const configRoot = getElanousConfigDir() || undefined;
+  const stateRoot = elanousStateRoot() || undefined;
   let resolvedBase: string | undefined;
   const traversedNodes: PipelineNodeId[] = [];
   const roundClassifications: LifecycleScreenComparison[] = [];
@@ -4493,7 +4493,7 @@ async function runSelfImplementInner(
     // 둘 다 알 때만 비교가 의미를 갖는다. 하나라도 모르면 판정하지 않는다(null).
     invokedHeadDiffers: resolvedBase !== null && invokedHead !== null ? resolvedBase !== invokedHead : null,
   });
-  // ⛔ 발사 부모(`harness ask`·`dev`)에는 MONAD_HARNESS_SPACE_ID 가 «없다» — 그 env 는 자식에게만 심긴다.
+  // ⛔ 발사 부모(`harness ask`·`dev`)에는 ELANOUS_HARNESS_SPACE_ID 가 «없다» — 그 env 는 자식에게만 심긴다.
   //   그래서 getHarnessSpace() 만 보면 운영에서 늘 undefined 이고 정지 확인이 «한 번도» 안 돈다(#20040 착지 직후 실측).
   //   `self send <space> --stop` 이 겨냥하는 것은 자식의 공간 = 워크트리 이름이다(아래 activeChildInboxId 와 같은 식 · dev-cli.ts recordRestart 폴백과 같다).
   const parentSoftStopSpaceId = s.parentSoftStopSpaceId || getHarnessSpace()?.id || normalizeSpaceId(basename(wt.path)) || undefined;
@@ -4877,7 +4877,7 @@ async function runSelfImplementInner(
           observe: (state, data) => {
             observe('clarification-file-resolver', { state, ...data }, state === 'pending-write-failed' || state === 'answer-read-failed' ? { level: 'warn' } : undefined);
             if (state === 'pending-created' && data) {
-              progress('awaiting-clarification', `사람의 clarification 답변 대기 중 (${data.pendingQuestionId}). 조회: monad questions pending`);
+              progress('awaiting-clarification', `사람의 clarification 답변 대기 중 (${data.pendingQuestionId}). 조회: elanous questions pending`);
             } else if (state === 'pending-removed' && data) {
               progress('awaiting-clarification', `clarification 답변 대기 종료 (${data.pendingQuestionId}).`);
             }

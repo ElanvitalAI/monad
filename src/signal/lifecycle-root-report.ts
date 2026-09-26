@@ -2,10 +2,10 @@ import { linkSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync }
 import { basename, dirname, join } from 'node:path';
 import { tmpdir } from 'node:os';
 import { randomUUID } from 'node:crypto';
-import { monadStateRoot } from '../autopilot/state-paths.js';
+import { elanousStateRoot } from '../autopilot/state-paths.js';
 
-export const LIFECYCLE_ROOT_REPORT_ENV = 'MONAD_LIFECYCLE_ROOT_REPORT';
-export const LIFECYCLE_ROOT_REPORT_NONCE_ENV = 'MONAD_LIFECYCLE_ROOT_REPORT_NONCE';
+export const LIFECYCLE_ROOT_REPORT_ENV = 'ELANOUS_LIFECYCLE_ROOT_REPORT';
+export const LIFECYCLE_ROOT_REPORT_NONCE_ENV = 'ELANOUS_LIFECYCLE_ROOT_REPORT_NONCE';
 
 interface LifecycleRootReport {
   readonly executionId: string;
@@ -14,7 +14,7 @@ interface LifecycleRootReport {
 }
 
 export function lifecycleRootReportPath(executionId: string, nonce: string): string {
-  return join(tmpdir(), 'monad-lifecycle-root-reports', `${executionId}-${nonce}.json`);
+  return join(tmpdir(), 'elanous-lifecycle-root-reports', `${executionId}-${nonce}.json`);
 }
 
 export function lifecycleRootReportEnv(reportPath: string, nonce: string): Record<string, string> {
@@ -27,7 +27,7 @@ export function lifecycleRootReportEnv(reportPath: string, nonce: string): Recor
 /** Child reports the exact state root selected by its own resolver to its parent-owned handoff file. */
 export function publishLifecycleRootReport(): void {
   const reportPath = process.env[LIFECYCLE_ROOT_REPORT_ENV]?.trim();
-  const executionId = process.env.MONAD_PTY_ID?.trim();
+  const executionId = process.env.ELANOUS_PTY_ID?.trim();
   const nonce = process.env[LIFECYCLE_ROOT_REPORT_NONCE_ENV]?.trim();
   delete process.env[LIFECYCLE_ROOT_REPORT_ENV];
   delete process.env[LIFECYCLE_ROOT_REPORT_NONCE_ENV];
@@ -37,7 +37,7 @@ export function publishLifecycleRootReport(): void {
     mkdirSync(dirname(reportPath), { recursive: true });
     writeFileSync(
       temporaryPath,
-      JSON.stringify({ executionId, nonce, stateDir: monadStateRoot() } satisfies LifecycleRootReport),
+      JSON.stringify({ executionId, nonce, stateDir: elanousStateRoot() } satisfies LifecycleRootReport),
       { encoding: 'utf8', flag: 'wx' },
     );
     try {

@@ -1,8 +1,8 @@
 // ── DaemonSessionHistory → on-disk SessionStore write-through (R3 · 2026-07-09)
 //
-// 대표 지시: 백엔드 세션 공유. PWA 챗(ACP 세션 monad-session-N)은 in-memory
+// 대표 지시: 백엔드 세션 공유. PWA 챗(ACP 세션 elanous-session-N)은 in-memory
 // DaemonSessionHistory 에만 살아 목록에 안 뜨고 이동/재시작 시 소실됐다. onAppend
-// seam(Tier 1 fan-out)으로 매 턴 메시지를 on-disk SessionStore(~/.monad/sessions)에
+// seam(Tier 1 fan-out)으로 매 턴 메시지를 on-disk SessionStore(~/.elanous/sessions)에
 // 미러 → 목록/복원/공유 일원화. 텔레그램/CLI(uuid·이미 on-disk)는 제외(중복·루프
 // 방지). 설계: 내부 문서 `DESIGN-live-session-management-2026-07-09` §R3.
 
@@ -19,7 +19,7 @@ import { debug } from '../../debug/log.js';
 
 /** ACP/데몬 민팅 세션 판별(신규 세션 origin 라벨용). */
 export function isAcpChatSession(id: string): boolean {
-  return id.startsWith('monad-session') || id.startsWith('http-');
+  return id.startsWith('elanous-session') || id.startsWith('http-');
 }
 
 /** on-disk SessionStore → LLMMessage[] read-through(R5 · 완전 무결 공유).

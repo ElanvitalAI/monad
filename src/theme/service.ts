@@ -3,7 +3,7 @@
 // A reactive singleton wrapping the THEME_REGISTRY. Widgets + the
 // dashboard subscribe for re-render signals when the user runs
 // `/theme switch <name>`; the service persists the active name to
-// ~/.monad/theme.json so the next session opens in the same
+// ~/.elanous/theme.json so the next session opens in the same
 // palette.
 //
 // Design points:
@@ -38,7 +38,7 @@ import {
   listThemes,
 } from '../themes/index.js';
 
-/** Shape persisted to ~/.monad/theme.json. Version field lets us
+/** Shape persisted to ~/.elanous/theme.json. Version field lets us
  *  extend the schema later (e.g. add per-widget overrides) without
  *  breaking older installs. */
 export interface ThemeConfig {
@@ -49,7 +49,7 @@ export interface ThemeConfig {
 /** Default persist path. Exported so the dashboard / slash
  *  commands point at the same file. */
 export function defaultThemeConfigPath(): string {
-  return join(homedir(), '.monad', 'theme.json');
+  return join(homedir(), '.elanous', 'theme.json');
 }
 
 export interface ThemeServiceSnapshot {

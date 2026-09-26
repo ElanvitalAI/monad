@@ -13,7 +13,7 @@ import {
   buildSelfOrchestrateDevSpec, toOrchestrateOptions, orchestrateExitCode, executeOrchestrateReroute,
   buildChatDevSpec, observeDevSelection, LINEAGE_OPEN_PR_THRESHOLD, observeTargetRemote, resolveTargetRemoteCompletion,
   type DevPipelineSpec, type ResolvedDevPlan, type DevPipelineDeps, type DevChatOpts,
-  type DevMonadTuiOpts, type DevDispatch } from './dev-pipeline.js';
+  type DevElanousTuiOpts, type DevDispatch } from './dev-pipeline.js';
 import { reviewReasoningEffort } from '../model-tier/review-effort.js';
 import type { AgentBackend, AgentMissionResult } from '../agent-mission/driver.js';
 import { runSelfImplement, type SelfImplementResult, type SelfImplementSeams, type SelfImplementOptions } from '../self-implement/orchestrator.js';
@@ -113,17 +113,17 @@ describe('planDevPipeline — 순수 정규화/검증/디스패치(계약 SSOT)'
     }
   });
 
-  it('declared-only NL·parallel·monad 경로는 safe resolver 기본을 유지한다', () => {
+  it('declared-only NL·parallel·elanous 경로는 safe resolver 기본을 유지한다', () => {
     const declaredOnlyNaturalLanguage = planDevPipeline(T({ entrance: 'nl-self-orchestrate' }));
     const parallel = planDevPipeline(T({
       entrance: 'nl-self-implement',
       parallel: { goals: [{ feature: 'a' }] },
     }));
-    const monad = planDevPipeline(T({
+    const elanous = planDevPipeline(T({
       entrance: 'nl-self-implement',
-      monad: { goal: 'child goal' },
+      elanous: { goal: 'child goal' },
     }));
-    for (const safe of [declaredOnlyNaturalLanguage, parallel, monad]) {
+    for (const safe of [declaredOnlyNaturalLanguage, parallel, elanous]) {
       expect(safe).toMatchObject({
         completion: 'worktree-only', completionSource: 'default', autoReview: false, autoReviewSource: 'default',
       });
@@ -192,52 +192,52 @@ describe('planDevPipeline — 순수 정규화/검증/디스패치(계약 SSOT)'
     expect(p.parallel?.concurrency).toBe(3);
   });
 
-  it('WIRED_DISPATCHES = 전 8종(self·monad-tui·shell-drive·agent-mission-pty·acp·parallel·interactive·plan-staged)', () => {
-    expect([...WIRED_DISPATCHES].sort()).toEqual(['acp', 'agent-mission-pty', 'interactive', 'monad-tui', 'parallel', 'plan-staged', 'self-mission', 'shell-drive']);
+  it('WIRED_DISPATCHES = 전 8종(self·elanous-tui·shell-drive·agent-mission-pty·acp·parallel·interactive·plan-staged)', () => {
+    expect([...WIRED_DISPATCHES].sort()).toEqual(['acp', 'agent-mission-pty', 'elanous-tui', 'interactive', 'parallel', 'plan-staged', 'self-mission', 'shell-drive']);
   });
 
-  it('새 monad TUI namespace는 self+mission에서 monad-tui dispatch를 선택한다', () => {
-    const monad: DevMonadTuiOpts = { goal: '격리 child를 완주', maxSteps: 7, pollMs: 0, model: 'test', isolatedRoot: '/isolated', cwd: '/work' };
-    const p = planDevPipeline(T({ executor: { kind: 'self' }, monad }));
-    expect(p.dispatch).toBe('monad-tui');
-    expect(p.monad).toEqual(monad);
+  it('새 elanous TUI namespace는 self+mission에서 elanous-tui dispatch를 선택한다', () => {
+    const elanous: DevElanousTuiOpts = { goal: '격리 child를 완주', maxSteps: 7, pollMs: 0, model: 'test', isolatedRoot: '/isolated', cwd: '/work' };
+    const p = planDevPipeline(T({ executor: { kind: 'self' }, elanous }));
+    expect(p.dispatch).toBe('elanous-tui');
+    expect(p.elanous).toEqual(elanous);
     expect(p.wired).toBe(true);
   });
 
-  it('monad TUI dispatch는 hold일 때만 goal 없이 계획하고, 일반 경로의 빈 goal 거부는 유지한다', () => {
-    expect(() => planDevPipeline(T({ monad: { goal: '' } }))).toThrow(/비어 있지 않은 goal/);
-    expect(() => planDevPipeline(T({ monad: { goal: '   ' } }))).toThrow(/비어 있지 않은 goal/);
-    expect(planDevPipeline(T({ monad: { hold: true } })).monad).toEqual({ hold: true });
-    expect(() => planDevPipeline(T({ monad: { hold: true, goal: '명시 충돌' } }))).toThrow(/hold 는 goal과 동시 사용 불가/);
-    expect(planDevPipeline(T({ monad: { goal: '유효한 child 목표' } })).dispatch).toBe('monad-tui');
+  it('elanous TUI dispatch는 hold일 때만 goal 없이 계획하고, 일반 경로의 빈 goal 거부는 유지한다', () => {
+    expect(() => planDevPipeline(T({ elanous: { goal: '' } }))).toThrow(/비어 있지 않은 goal/);
+    expect(() => planDevPipeline(T({ elanous: { goal: '   ' } }))).toThrow(/비어 있지 않은 goal/);
+    expect(planDevPipeline(T({ elanous: { hold: true } })).elanous).toEqual({ hold: true });
+    expect(() => planDevPipeline(T({ elanous: { hold: true, goal: '명시 충돌' } }))).toThrow(/hold 는 goal과 동시 사용 불가/);
+    expect(planDevPipeline(T({ elanous: { goal: '유효한 child 목표' } })).dispatch).toBe('elanous-tui');
     // ⛔ 경계값 — `trim()` 기준이면 빈/공백 goal 이 **통과해 조용히 무시**된다(리뷰 must-fix · 2026-07-30).
     //    하위 계층(pty-drive-cli)과 같은 계약: goal 의 **존재 자체**를 거부한다.
-    expect(() => planDevPipeline(T({ monad: { hold: true, goal: '' } }))).toThrow(/hold 는 goal과 동시 사용 불가/);
-    expect(() => planDevPipeline(T({ monad: { hold: true, goal: '   ' } }))).toThrow(/hold 는 goal과 동시 사용 불가/);
+    expect(() => planDevPipeline(T({ elanous: { hold: true, goal: '' } }))).toThrow(/hold 는 goal과 동시 사용 불가/);
+    expect(() => planDevPipeline(T({ elanous: { hold: true, goal: '   ' } }))).toThrow(/hold 는 goal과 동시 사용 불가/);
     // ⛔ brain 전용 옵션은 hold 와 함께 오면 거부한다 — hold 는 brain 을 안 만들므로 조용히 무시됐다.
-    expect(() => planDevPipeline(T({ monad: { hold: true, maxSteps: 5 } }))).toThrow(/brain 전용 옵션과 동시 사용 불가/);
-    expect(() => planDevPipeline(T({ monad: { hold: true, pollMs: 0 } }))).toThrow(/brain 전용 옵션과 동시 사용 불가/);
-    expect(() => planDevPipeline(T({ monad: { hold: true, model: 'x' } }))).toThrow(/brain 전용 옵션과 동시 사용 불가/);
+    expect(() => planDevPipeline(T({ elanous: { hold: true, maxSteps: 5 } }))).toThrow(/brain 전용 옵션과 동시 사용 불가/);
+    expect(() => planDevPipeline(T({ elanous: { hold: true, pollMs: 0 } }))).toThrow(/brain 전용 옵션과 동시 사용 불가/);
+    expect(() => planDevPipeline(T({ elanous: { hold: true, model: 'x' } }))).toThrow(/brain 전용 옵션과 동시 사용 불가/);
     // ⭐ 스폰 옵션은 hold 에서도 유효하다(거부 대상 아님).
-    expect(planDevPipeline(T({ monad: { hold: true, cwd: '/w', isolatedRoot: '/iso' } })).monad)
+    expect(planDevPipeline(T({ elanous: { hold: true, cwd: '/w', isolatedRoot: '/iso' } })).elanous)
       .toEqual({ hold: true, cwd: '/w', isolatedRoot: '/iso' });
     // ⛔ goal 을 optional 로 바꿨으므로 **hold 도 goal 도 없는 {}** 를 명시적으로 거부해야 한다
     //    (기존 'goal 필수' 계약을 타입이 아니라 런타임으로 고정한다 · 리뷰 must-fix).
-    expect(() => planDevPipeline(T({ monad: {} }))).toThrow(/비어 있지 않은 goal/);
+    expect(() => planDevPipeline(T({ elanous: {} }))).toThrow(/비어 있지 않은 goal/);
   });
 
   it('hold forwards an explicit readiness timeout and preserves omission for the PTY drive default', async () => {
     let got: import('../cli/pty-drive-cli.js').PtyDriveOpts | undefined;
     const runPtyDrive = async (opts: import('../cli/pty-drive-cli.js').PtyDriveOpts) => { got = opts; return { exitCode: 0 }; };
-    const explicit = await runDevPipeline({ input: { text: '' }, monad: { hold: true, readyTimeoutMs: 180000 } }, { runPtyDrive });
-    expect(explicit.kind).toBe('monad-tui');
-    expect(got).toEqual({ monad: true, hold: true, readyTimeoutMs: 180000 });
-    const defaulted = await runDevPipeline({ input: { text: '' }, monad: { hold: true } }, { runPtyDrive });
-    expect(defaulted.kind).toBe('monad-tui');
-    expect(got).toEqual({ monad: true, hold: true });
+    const explicit = await runDevPipeline({ input: { text: '' }, elanous: { hold: true, readyTimeoutMs: 180000 } }, { runPtyDrive });
+    expect(explicit.kind).toBe('elanous-tui');
+    expect(got).toEqual({ elanous: true, hold: true, readyTimeoutMs: 180000 });
+    const defaulted = await runDevPipeline({ input: { text: '' }, elanous: { hold: true } }, { runPtyDrive });
+    expect(defaulted.kind).toBe('elanous-tui');
+    expect(got).toEqual({ elanous: true, hold: true });
   });
 
-  it('기존 dispatch 선택 순서는 monad namespace 없이 그대로다', () => {
+  it('기존 dispatch 선택 순서는 elanous namespace 없이 그대로다', () => {
     const cases: Array<[DevPipelineSpec, DevDispatch]> = [
       [T(), 'self-mission'],
       [T({ executor: { kind: 'external', backend: 'codex' }, branch: 'wt/x' }), 'agent-mission-pty'],
@@ -249,9 +249,9 @@ describe('planDevPipeline — 순수 정규화/검증/디스패치(계약 SSOT)'
     for (const [spec, dispatch] of cases) expect(planDevPipeline(spec).dispatch).toBe(dispatch);
   });
 
-  it('monad TUI namespace를 다른 dispatch와 함께 지정하면 dispatch명을 포함해 거부한다', () => {
-    expect(() => planDevPipeline(T({ context: 'interactive', monad: { goal: 'x' } })))
-      .toThrow(/monad TUI 실행 옵션은 monad-tui dispatch.*interactive/);
+  it('elanous TUI namespace를 다른 dispatch와 함께 지정하면 dispatch명을 포함해 거부한다', () => {
+    expect(() => planDevPipeline(T({ context: 'interactive', elanous: { goal: 'x' } })))
+      .toThrow(/elanous TUI 실행 옵션은 elanous-tui dispatch.*interactive/);
   });
 
   // ── 검증 에러 ──
@@ -348,13 +348,13 @@ describe('어댑터 — 계획 → 기존 성숙 함수 옵션(재발명 0)', ()
   });
 
   it('toSelfImplementOptions — salvage lineage environment is received as salvageAttempt', () => {
-    const previous = process.env.MONAD_REWORK_SALVAGE_ATTEMPT;
-    process.env.MONAD_REWORK_SALVAGE_ATTEMPT = '1';
+    const previous = process.env.ELANOUS_REWORK_SALVAGE_ATTEMPT;
+    process.env.ELANOUS_REWORK_SALVAGE_ATTEMPT = '1';
     try {
       expect(toSelfImplementOptions('골 본문', planDevPipeline(T()), fakeSeams).salvageAttempt).toBe(1);
     } finally {
-      if (previous === undefined) delete process.env.MONAD_REWORK_SALVAGE_ATTEMPT;
-      else process.env.MONAD_REWORK_SALVAGE_ATTEMPT = previous;
+      if (previous === undefined) delete process.env.ELANOUS_REWORK_SALVAGE_ATTEMPT;
+      else process.env.ELANOUS_REWORK_SALVAGE_ATTEMPT = previous;
     }
   });
 
@@ -393,7 +393,7 @@ describe('어댑터 — 계획 → 기존 성숙 함수 옵션(재발명 0)', ()
 
   it('수동 --file 골은 실행 직전에 저작기와 동일한 증거 위치 계약을 self child payload에 전달한다', async () => {
     const required = 'For every acceptance criterion, state where evidence that it was met appears in the diff or which line of the report shows it. Evidence visible only on an execution screen and left in neither the diff nor the report is not evidence.';
-    const directory = mkdtempSync(join(tmpdir(), 'monad-manual-goal-'));
+    const directory = mkdtempSync(join(tmpdir(), 'elanous-manual-goal-'));
     const file = join(directory, 'manual-goal.txt');
     const manual = CANONICAL_GOAL_FILE;
     writeFileSync(file, manual);
@@ -425,7 +425,7 @@ describe('어댑터 — 계획 → 기존 성숙 함수 옵션(재발명 0)', ()
       branch: 'wt/a', base: 'main', enhance: false,
       mission: {
         evidence: { kind: 'doc', dirRel: 'docs/plans', glob },
-        maxRounds: 16, commit: true, entry: 'monad-apparatus', deliverableHint: 'PPT', screensDir: '/s',
+        maxRounds: 16, commit: true, entry: 'elanous-apparatus', deliverableHint: 'PPT', screensDir: '/s',
       },
     });
     const ms = toAgentMissionSpec('미션 본문', plan, () => fakeBackend);
@@ -441,7 +441,7 @@ describe('어댑터 — 계획 → 기존 성숙 함수 옵션(재발명 0)', ()
       commit: true,
       screensDir: '/s',
       deliverableHint: 'PPT',
-      entry: 'monad-apparatus',
+      entry: 'elanous-apparatus',
     });
     expect((ms.evidence as { glob: RegExp }).glob.source).toBe(glob.source); // glob 무손실 명시
   });
@@ -529,7 +529,7 @@ describe('U4b — mission 재라우팅 seam(성공경로·모든 옵션 전달·
       input: { text: 'M' },
       executor: { kind: 'external', backend: 'claude' },
       branch: 'wt/a', base: 'main', enhance: false,
-      mission: { evidence: { kind: 'tsc' }, maxRounds: 12, commit: false, entry: 'monad-apparatus', deliverableHint: 'PPT', screensDir: '/s' },
+      mission: { evidence: { kind: 'tsc' }, maxRounds: 12, commit: false, entry: 'elanous-apparatus', deliverableHint: 'PPT', screensDir: '/s' },
     });
   });
 
@@ -537,7 +537,7 @@ describe('U4b — mission 재라우팅 seam(성공경로·모든 옵션 전달·
     const spec = buildAgentMissionDevSpec({ mission: 'M', backend: 'codex', branch: 'b', evidence: { kind: 'tsc' }, maxRounds: 16, commit: true });
     expect(spec.base).toBeUndefined();
     expect(spec.enhance).toBeUndefined();
-    expect(spec.mission).toEqual({ evidence: { kind: 'tsc' }, maxRounds: 16, commit: true, entry: 'monad-apparatus' });
+    expect(spec.mission).toEqual({ evidence: { kind: 'tsc' }, maxRounds: 16, commit: true, entry: 'elanous-apparatus' });
   });
 
   it('executeAgentMissionReroute — runDevPipeline 을 spec+주입backend 로 호출·ok→exit 0', async () => {
@@ -891,9 +891,9 @@ describe('U4b — chat(interactive) 재라우팅(spec 매핑·주입 dispatch)',
 
 describe('runDevPipeline — 디스패치 라우팅(주입·무실행)', () => {
   it('runId만 있으면 기존 resolver로 explicit 출처를 기록한다', async () => {
-    const stateDir = mkdtempSync(join(tmpdir(), 'monad-dev-pipeline-run-'));
-    const previousStateDir = process.env.MONAD_STATE_DIR;
-    process.env.MONAD_STATE_DIR = stateDir;
+    const stateDir = mkdtempSync(join(tmpdir(), 'elanous-dev-pipeline-run-'));
+    const previousStateDir = process.env.ELANOUS_STATE_DIR;
+    process.env.ELANOUS_STATE_DIR = stateDir;
     try {
       await runDevPipeline(T({ runId: 'run-dev-pipeline-record' }), {
         runSelfImplement: async () => selfResult,
@@ -909,16 +909,16 @@ describe('runDevPipeline — 디스패치 라우팅(주입·무실행)', () => {
         runIdSource: 'explicit',
       }]);
     } finally {
-      if (previousStateDir === undefined) delete process.env.MONAD_STATE_DIR;
-      else process.env.MONAD_STATE_DIR = previousStateDir;
+      if (previousStateDir === undefined) delete process.env.ELANOUS_STATE_DIR;
+      else process.env.ELANOUS_STATE_DIR = previousStateDir;
       rmSync(stateDir, { recursive: true, force: true });
     }
   });
 
   it('최외곽에서 minted한 identity를 받으면 저장 참가자 출처를 minted로 보존한다', async () => {
-    const stateDir = mkdtempSync(join(tmpdir(), 'monad-dev-pipeline-run-'));
-    const previousStateDir = process.env.MONAD_STATE_DIR;
-    process.env.MONAD_STATE_DIR = stateDir;
+    const stateDir = mkdtempSync(join(tmpdir(), 'elanous-dev-pipeline-run-'));
+    const previousStateDir = process.env.ELANOUS_STATE_DIR;
+    process.env.ELANOUS_STATE_DIR = stateDir;
     try {
       const identity = ensureRunIdentity({});
       await runDevPipeline(T({ runId: identity.runId, runIdSource: identity.source }), {
@@ -927,8 +927,8 @@ describe('runDevPipeline — 디스패치 라우팅(주입·무실행)', () => {
       });
       expect(loadSelfDevRun(identity.runId, selfDevRunsDir(stateDir))?.participants?.[0]?.runIdSource).toBe('minted');
     } finally {
-      if (previousStateDir === undefined) delete process.env.MONAD_STATE_DIR;
-      else process.env.MONAD_STATE_DIR = previousStateDir;
+      if (previousStateDir === undefined) delete process.env.ELANOUS_STATE_DIR;
+      else process.env.ELANOUS_STATE_DIR = previousStateDir;
       rmSync(stateDir, { recursive: true, force: true });
     }
   });
@@ -1024,13 +1024,13 @@ describe('runDevPipeline — 디스패치 라우팅(주입·무실행)', () => {
       entries.push({ category: _category, event, data: data ?? {} });
     }) as never);
     try {
-      observeDevSelection('completion', 'worktree-only', 'default', undefined, 'monad-apparatus', undefined);
+      observeDevSelection('completion', 'worktree-only', 'default', undefined, 'elanous-apparatus', undefined);
       observeDevSelection('autoReview', true, 'config', undefined, 'external-verbatim', undefined);
     } finally {
       log.mockRestore();
     }
     expect(entries).toEqual([
-      { category: 'dev-pipeline', event: 'selection', data: { axis: 'completion', effectiveValue: 'worktree-only', source: 'default', requestedValue: undefined, entryRoute: 'monad-apparatus' } },
+      { category: 'dev-pipeline', event: 'selection', data: { axis: 'completion', effectiveValue: 'worktree-only', source: 'default', requestedValue: undefined, entryRoute: 'elanous-apparatus' } },
       { category: 'dev-pipeline', event: 'selection', data: { axis: 'autoReview', effectiveValue: true, source: 'config', requestedValue: undefined, entryRoute: 'external-verbatim' } },
     ]);
   });
@@ -1875,23 +1875,23 @@ describe('runDevPipeline — 디스패치 라우팅(주입·무실행)', () => {
     });
   });
 
-  it('monad-tui → injected runPtyDrive로 goal과 옵션을 손실 없이 전달한다', async () => {
+  it('elanous-tui → injected runPtyDrive로 goal과 옵션을 손실 없이 전달한다', async () => {
     let got: import('../cli/pty-drive-cli.js').PtyDriveOpts | undefined;
-    const monad: DevMonadTuiOpts = { goal: 'child goal', maxSteps: 9, pollMs: 0, model: 'brain', isolatedRoot: '/iso', cwd: '/cwd' };
-    const r = await runDevPipeline(T({ monad }), { runPtyDrive: async (opts) => { got = opts; return { exitCode: 0 }; } });
-    expect(r.kind).toBe('monad-tui');
-    expect(got).toEqual({ monad: true, ...monad });
+    const elanous: DevElanousTuiOpts = { goal: 'child goal', maxSteps: 9, pollMs: 0, model: 'brain', isolatedRoot: '/iso', cwd: '/cwd' };
+    const r = await runDevPipeline(T({ elanous }), { runPtyDrive: async (opts) => { got = opts; return { exitCode: 0 }; } });
+    expect(r.kind).toBe('elanous-tui');
+    expect(got).toEqual({ elanous: true, ...elanous });
     expect(devResultOk(r)).toBe(true);
   });
 
-  it('monad-tui completion:pr은 미배선을 명시 거부한다', async () => {
-    await expect(runDevPipeline(T({ monad: { goal: 'x' }, completion: 'pr' }), { runPtyDrive: async () => ({ exitCode: 0 }) }))
+  it('elanous-tui completion:pr은 미배선을 명시 거부한다', async () => {
+    await expect(runDevPipeline(T({ elanous: { goal: 'x' }, completion: 'pr' }), { runPtyDrive: async () => ({ exitCode: 0 }) }))
       .rejects.toThrow(/NotYetUnified.*completion:pr/);
   });
 
-  it('monad-tui 기본 실행은 격리 root를 만들지 못하면 fail-closed로 중단한다', async () => {
-    await expect(runDevPipeline(T({ monad: { goal: 'x', cwd: process.cwd(), isolatedRoot: '/dev/null/dev-pipeline-monad-root' } })))
-      .rejects.toThrow(/cannot establish isolated monad TUI root/);
+  it('elanous-tui 기본 실행은 격리 root를 만들지 못하면 fail-closed로 중단한다', async () => {
+    await expect(runDevPipeline(T({ elanous: { goal: 'x', cwd: process.cwd(), isolatedRoot: '/dev/null/dev-pipeline-elanous-root' } })))
+      .rejects.toThrow(/cannot establish isolated elanous TUI root/);
   });
 
   it('agent-mission-pty → runAgentMission 호출(backend resolve)', async () => {
@@ -3156,7 +3156,7 @@ describe('dev-pipeline — self-mission target seam forwarding', () => {
     expect(received?.completion).toBe('auto-merge');
   });
 
-  // ⛔ 2026-09-23 (벤더 A/B) — 사용자 경로에도 대상 저장소 준비(.gitignore 에 monad 산출물)를 건다. 도구 저장소면 안 건다.
+  // ⛔ 2026-09-23 (벤더 A/B) — 사용자 경로에도 대상 저장소 준비(.gitignore 에 elanous 산출물)를 건다. 도구 저장소면 안 건다.
   it('no target: a foreign working repository is provisioned; the tool repository itself is not', async () => {
     const { mkdtempSync, realpathSync } = await import('node:fs');
     const { execFileSync } = await import('node:child_process');
@@ -3224,13 +3224,13 @@ describe('dev-pipeline — self-mission target seam forwarding', () => {
     expect(seamsBuilt).toBe(false);
   });
 
-  it('buildDefaultSelfImplementSeams forwards revalidated target seam keys with childScope.monadBinRoot', async () => {
+  it('buildDefaultSelfImplementSeams forwards revalidated target seam keys with childScope.elanousBinRoot', async () => {
     const { readFileSync } = await import('node:fs');
     const src = readFileSync(new URL('./dev-pipeline.ts', import.meta.url), 'utf8');
     const body = src.slice(src.indexOf('export async function buildDefaultSelfImplementSeams'));
     const fn = body.slice(0, body.indexOf('\n}\n'));
     expect(fn).toContain('revalidateHarnessTarget(plan.target)');
-    expect(fn).toContain('harnessTargetOptions(target, childScope.monadBinRoot)');
+    expect(fn).toContain('harnessTargetOptions(target, childScope.elanousBinRoot)');
     expect(fn).toContain('...(targetOptions ?? {})');
     expect(fn).not.toContain('process.cwd()');
     expect(fn).not.toContain("resolve(import.meta.dir, '../..')");
@@ -3278,8 +3278,8 @@ describe('무인 경로 도구 리뷰어 고르기', () => {
   });
 
   it('설정이 없으면 보수적 기본이고 0 으로 완전히 끈다', () => {
-    const previous = process.env.MONAD_TOOL_REVIEWER_RATE;
-    delete process.env.MONAD_TOOL_REVIEWER_RATE;
+    const previous = process.env.ELANOUS_TOOL_REVIEWER_RATE;
+    delete process.env.ELANOUS_TOOL_REVIEWER_RATE;
     try {
       expect(DEFAULT_UNMANNED_TOOL_REVIEWER_RATE).toBe(0.1);
       expect(DEFAULT_UNMANNED_TOOL_REVIEWER_RATE).toBeLessThan(0.5);
@@ -3287,8 +3287,8 @@ describe('무인 경로 도구 리뷰어 고르기', () => {
       expect(unmannedToolReviewerRateFromConfig(() => ({ llm: { toolReviewerRate: 0 } }))).toBe(0);
       expect(unmannedToolReviewerRateFromConfig(() => ({ llm: { toolReviewerRate: 1 } }))).toBe(1);
     } finally {
-      if (previous === undefined) delete process.env.MONAD_TOOL_REVIEWER_RATE;
-      else process.env.MONAD_TOOL_REVIEWER_RATE = previous;
+      if (previous === undefined) delete process.env.ELANOUS_TOOL_REVIEWER_RATE;
+      else process.env.ELANOUS_TOOL_REVIEWER_RATE = previous;
     }
   });
 

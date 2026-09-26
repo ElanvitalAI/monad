@@ -43,9 +43,9 @@ export function DiffBlock({ block }: { block: Block }) {
   const hunkCount = block.hunks.length;
   return (
     <div
-      data-monad-block-kind="tool_diff"
-      data-monad-block-id={block.blockId}
-      data-monad-file-path={block.filePath}
+      data-elanous-block-kind="tool_diff"
+      data-elanous-block-id={block.blockId}
+      data-elanous-file-path={block.filePath}
       className="rounded border border-border bg-muted/20 px-2 py-1 text-xs font-mono"
     >
       <button
@@ -81,7 +81,7 @@ export function DiffBlock({ block }: { block: Block }) {
           {block.hunks.map((hunk, hi) => (
             <div
               key={hi}
-              data-monad-hunk-index={hi}
+              data-elanous-hunk-index={hi}
               className="border-t border-border/40 first:border-t-0"
             >
               <div className="px-2 py-0.5 text-[10px] text-muted-foreground bg-muted/30">
@@ -92,7 +92,7 @@ export function DiffBlock({ block }: { block: Block }) {
                 {hunk.lines.map((line, li) => (
                   <div
                     key={li}
-                    data-monad-line-kind={line.kind}
+                    data-elanous-line-kind={line.kind}
                     className={cn(
                       'flex items-baseline px-2 py-px',
                       LINE_TONE[line.kind],

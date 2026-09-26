@@ -5,7 +5,7 @@
 // the provider+model that ran the call, the timestamp, and the
 // token breakdown reported by that provider's usage event.
 //
-// Why a ring buffer rather than reading `~/.monad/cost-events.jsonl`:
+// Why a ring buffer rather than reading `~/.elanous/cost-events.jsonl`:
 // the JSONL log persists across sessions and is the source of truth
 // for cost rollups, but `/context` wants the *current session*'s
 // recent calls to show "what's in context right now". The ring

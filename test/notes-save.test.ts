@@ -29,7 +29,7 @@ let tmpRoot: string;
 let testVault: ObsidianVault;
 
 beforeEach(() => {
-  tmpRoot = mkdtempSync(join(tmpdir(), 'monad-notes-save-'));
+  tmpRoot = mkdtempSync(join(tmpdir(), 'elanous-notes-save-'));
   testVault = { root: tmpRoot, isSimulated: true, label: 'test-vault' };
 });
 

@@ -14,11 +14,11 @@ let prevCwd: string;
 beforeEach(() => {
   tmpDir = mkdtempSync(join(tmpdir(), 'wf-router-'));
   // discoverWorkflows reads from process.cwd() — chdir into a tmp
-  // dir with a controlled .monad/workflows/ payload so test runs are
+  // dir with a controlled .elanous/workflows/ payload so test runs are
   // hermetic.
   prevCwd = process.cwd();
   process.chdir(tmpDir);
-  mkdirSync(join(tmpDir, '.monad', 'workflows'), { recursive: true });
+  mkdirSync(join(tmpDir, '.elanous', 'workflows'), { recursive: true });
 });
 
 afterEach(() => {
@@ -27,7 +27,7 @@ afterEach(() => {
 });
 
 function seedWorkflow(name: string, body: string): void {
-  writeFileSync(join(tmpDir, '.monad', 'workflows', `${name}.yaml`), body, 'utf-8');
+  writeFileSync(join(tmpDir, '.elanous', 'workflows', `${name}.yaml`), body, 'utf-8');
 }
 
 const SUMMARY_YAML = `name: my-summary

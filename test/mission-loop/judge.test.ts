@@ -127,7 +127,7 @@ describe('judgeMissionRequests', () => {
     const authorityRoot = root();
     writeRequest(authorityRoot, 'request.md', validRequest());
     const entry = resolve(import.meta.dir, '..', '..', 'scripts/mission-request-judge.ts');
-    const run = spawnSync('bun', [entry, '--tick', '--root', authorityRoot], { encoding: 'utf8', env: { ...process.env, MONAD_MISSION_REQUEST_HARNESS_COMMAND: 'true' } });
+    const run = spawnSync('bun', [entry, '--tick', '--root', authorityRoot], { encoding: 'utf8', env: { ...process.env, ELANOUS_MISSION_REQUEST_HARNESS_COMMAND: 'true' } });
 
     expect(run.status).toBe(0);
     expect(run.stdout).toContain('🔁 복합 회차 1건');

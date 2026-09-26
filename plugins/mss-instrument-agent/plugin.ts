@@ -11,7 +11,7 @@
 // prompt the user can hand to the primary assistant (LLM), which then
 // invokes the Agent tool with `subagent_type=mss-instrument-reviewer`.
 // Skipping the in-process agent spawn keeps the plugin simple — the
-// Monad agent-team plugin already owns that pathway and the reviewer
+// Elanous agent-team plugin already owns that pathway and the reviewer
 // runs there identically.
 //
 // See `agents/mss-instrument-reviewer.md` for the reviewer prompt and
@@ -19,7 +19,7 @@
 // the surrounding M2.2 Phase C wire-up plan.
 
 import type {
-  MonadPlugin,
+  ElanousPlugin,
   PluginContext,
   SlashCommand,
 } from '../../src/plugins/core/types.js';
@@ -61,7 +61,7 @@ export function collectMssReviewDiff(opts: {
   const statRaw = git(['diff', '--shortstat', `${base}..${head}`]).trim();
   const { changedFiles, insertions, deletions } = parseShortStat(statRaw);
 
-  const outDir = joinPath(tmpBase, 'monad-mss-review');
+  const outDir = joinPath(tmpBase, 'elanous-mss-review');
   mkdirSync(outDir, { recursive: true });
   const diffPath = joinPath(outDir, `diff-${now()}.diff`);
   writeFile(diffPath, diff);
@@ -136,7 +136,7 @@ const slashCommands: SlashCommand[] = [
   },
 ];
 
-const plugin: MonadPlugin<Record<string, never>> = {
+const plugin: ElanousPlugin<Record<string, never>> = {
   name: 'mss-instrument-agent',
   version: '0.2.0',
   description:

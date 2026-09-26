@@ -16,7 +16,7 @@ import type { CompactArchiveEntry } from '../src/compact/types.js';
 let tmpDir: string;
 
 beforeEach(() => {
-  tmpDir = join(tmpdir(), `monad-archive-inspect-${Date.now()}-${Math.random().toString(36).slice(2)}`);
+  tmpDir = join(tmpdir(), `elanous-archive-inspect-${Date.now()}-${Math.random().toString(36).slice(2)}`);
   mkdirSync(tmpDir, { recursive: true });
 });
 

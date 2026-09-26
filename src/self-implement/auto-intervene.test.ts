@@ -378,7 +378,7 @@ describe('decideBoundaryApproval', () => {
   });
 
   test('headless boundary watcher는 기존 verdict spread 로그 경로로 판정을 관측에 싣는다', () => {
-    const source = readFileSync(fileURLToPath(new URL('./headless-monad-driver.ts', import.meta.url)), 'utf8');
+    const source = readFileSync(fileURLToPath(new URL('./headless-elanous-driver.ts', import.meta.url)), 'utf8');
     expect(source).toContain('verdict = decideBoundaryApproval(request);');
     expect(source).toContain("debug.log('harness.boundary', 'approval-shadow', { ...context, requestId: request.requestId, ...verdict });");
   });

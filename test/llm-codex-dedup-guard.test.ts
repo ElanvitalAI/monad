@@ -54,7 +54,7 @@ function scriptedProvider(turns: LLMStreamEvent[][], onCall?: () => void): LLMPr
 }
 
 describe('streamLLMWithTools — codex-family same-args dedup (fix L)', () => {
-  // NOTE on test design: monad's exploration-synthesis phase fires when
+  // NOTE on test design: elanous's exploration-synthesis phase fires when
   // 4 consecutive turns issue only EXPLORATORY_TOOLS (Read, Grep, Glob,
   // ListDir, Lsp, …). Beyond that point the loop rejects pending calls
   // wholesale with a phase-rejection stub — independent of the dedup

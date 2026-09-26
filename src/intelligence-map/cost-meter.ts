@@ -1,6 +1,6 @@
 // ── PFC-S5 P2: cost meter ──
 //
-// JSONL event log at ~/.monad/cost-events.jsonl — one line per paid
+// JSONL event log at ~/.elanous/cost-events.jsonl — one line per paid
 // LLM call. snapshotCost() streams the file and computes total /
 // weekly / monthly rollups on demand (no cache; events are capped
 // by file rotation in a follow-up session).
@@ -34,11 +34,11 @@ import { dispatchBudget } from '../auto-research/tools/budget.js';
 // ── Paths ──────────────────────────────────────────────────────────────
 
 export function getCostEventPath(home: string = homedir()): string {
-  return join(home, '.monad', 'cost-events.jsonl');
+  return join(home, '.elanous', 'cost-events.jsonl');
 }
 
 export function getCostConfigPath(home: string = homedir()): string {
-  return join(home, '.monad', 'cost-config.json');
+  return join(home, '.elanous', 'cost-config.json');
 }
 
 interface PathOpts {
@@ -50,7 +50,7 @@ interface PathOpts {
 function resolveEventPath(opts: PathOpts = {}): string {
   const env = opts.env ?? process.env;
   if (opts.path) return opts.path;
-  const override = env.MONAD_COST_EVENTS?.trim();
+  const override = env.ELANOUS_COST_EVENTS?.trim();
   if (override) return override;
   return getCostEventPath(opts.home);
 }
@@ -58,7 +58,7 @@ function resolveEventPath(opts: PathOpts = {}): string {
 function resolveConfigPath(opts: PathOpts = {}): string {
   const env = opts.env ?? process.env;
   if (opts.path) return opts.path;
-  const override = env.MONAD_COST_CONFIG?.trim();
+  const override = env.ELANOUS_COST_CONFIG?.trim();
   if (override) return override;
   return getCostConfigPath(opts.home);
 }

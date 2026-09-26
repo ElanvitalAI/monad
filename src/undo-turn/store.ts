@@ -5,7 +5,7 @@
 // .git/objects until the user runs `git gc`, so if a user *really*
 // wants an older snapshot they can still `git cat-file -p` it.
 //
-// Not persisted across sessions. A crashed / restarted monad starts
+// Not persisted across sessions. A crashed / restarted elanous starts
 // with an empty ring; the orphan commits from the prior session are
 // still in .git/objects but no longer indexed here. Documented in
 // LESSONS.
@@ -15,7 +15,7 @@ import type { Snapshot } from './types.js';
 const DEFAULT_MAX = 20;
 
 function resolveMax(): number {
-  const raw = process.env.MONAD_UNDO_HISTORY_MAX;
+  const raw = process.env.ELANOUS_UNDO_HISTORY_MAX;
   if (!raw) return DEFAULT_MAX;
   const n = Number.parseInt(raw, 10);
   if (!Number.isFinite(n) || n <= 0) return DEFAULT_MAX;

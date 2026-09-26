@@ -70,7 +70,7 @@ describe('notifyAgentTurnEnd', () => {
     const longText = 'A'.repeat(300);
     await notifyAgentTurnEnd({ sessionId: 'sess-42', finalText: longText, stopReason: 'end_turn' });
     expect(captured).not.toBeNull();
-    expect(captured!.title).toBe('monad — agent done');
+    expect(captured!.title).toBe('elanous — agent done');
     expect(captured!.body).toBeDefined();
     expect(captured!.body!.length).toBeLessThanOrEqual(140);
     expect(captured!.body!.endsWith('…')).toBe(true);

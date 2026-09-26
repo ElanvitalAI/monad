@@ -16,7 +16,7 @@ import { debug } from '../debug/log.js';
 const ctx = { surface: 'tui' } as ToolRuntimeContext;
 
 function loadSelfImplementConfig(raw: unknown) {
-  const dir = mkdtempSync(join(tmpdir(), 'monad-fabric-threshold-'));
+  const dir = mkdtempSync(join(tmpdir(), 'elanous-fabric-threshold-'));
   try {
     const path = join(dir, 'config.json');
     writeFileSync(path, JSON.stringify(raw === undefined ? {} : { tools: { selfImplement: raw } }));

@@ -1,7 +1,7 @@
 // RFC #2161 Phase 6 FU · 2026-05-11 — discovery user-config resolver.
 //
 // The original Phase 6 follow-ups (#2206 omni-crawl bridge · #2209 cron
-// scheduler) wired their behaviour to MONAD_* env vars directly. That
+// scheduler) wired their behaviour to ELANOUS_* env vars directly. That
 // violated the "신규 옵션은 user-config 만 노출" rule
 // (`내부 문서 `MANUAL-user-config`` §2 · memory
 // `feedback_user_config_over_env.md`). This module is the canonical
@@ -50,7 +50,7 @@ export function getFirecrawlConfig(cfg?: UserConfig): ResolvedFirecrawlConfig {
 }
 
 /** Resolve discovery cron config. user-config wins; falls back to
- *  legacy env (`MONAD_DISCOVERY_CRON_INTERVAL_MS`); else 0 (dormant).
+ *  legacy env (`ELANOUS_DISCOVERY_CRON_INTERVAL_MS`); else 0 (dormant).
  *  Non-zero values are clamped to [60s, 24h] to match the cron.ts
  *  scheduler's own clamp (defensive — the scheduler also clamps). */
 export function getDiscoveryCronConfig(cfg?: UserConfig): ResolvedDiscoveryCronConfig {
@@ -60,7 +60,7 @@ export function getDiscoveryCronConfig(cfg?: UserConfig): ResolvedDiscoveryCronC
     ? fromConfig
     : 0;
   if (raw === 0) {
-    const envRaw = readEnv('MONAD_DISCOVERY_CRON_INTERVAL_MS');
+    const envRaw = readEnv('ELANOUS_DISCOVERY_CRON_INTERVAL_MS');
     if (envRaw.length > 0) {
       const parsed = Number(envRaw);
       if (Number.isFinite(parsed) && parsed > 0) raw = parsed;

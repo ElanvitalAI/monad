@@ -1,5 +1,5 @@
 // ⭐P2 (capture substrate) — manifest→ACP terminalFrame poller +
-// `monad/term/terminalFrame` envelope round-trip unit tests.
+// `elanous/term/terminalFrame` envelope round-trip unit tests.
 //
 // Covers:
 //   - terminalFrame envelope format/parse round-trip (incl. multi-row
@@ -13,61 +13,61 @@
 import { describe, expect, test } from 'bun:test';
 
 import {
-  formatMonadTermEnvelope,
-  parseMonadTermEnvelope,
-  parseMonadTermCapabilities,
-  type MonadTermFramePayload,
-} from '../src/acp/monad-extensions.js';
+  formatElanousTermEnvelope,
+  parseElanousTermEnvelope,
+  parseElanousTermCapabilities,
+  type ElanousTermFramePayload,
+} from '../src/acp/elanous-extensions.js';
 import { pollAndBroadcastTuiFrames, type TermFrameBroadcaster } from '../src/capture/tui-frame-broadcaster.js';
 import type { PtyManifestRow } from '../src/pty-shell/pty-manifest.js';
 
 function frameRow(over: Partial<PtyManifestRow> = {}): PtyManifestRow {
   return {
-    id: 'tui:1', kind: 'tui', cmd: 'monad', ownerPid: 1, instance: 'test:x',
+    id: 'tui:1', kind: 'tui', cmd: 'elanous', ownerPid: 1, instance: 'test:x',
     startedAt: 1000, alive: true, exitCode: null,
     snapshot: '', snapshotAt: 0, updatedAt: 2000,
-    frame: '┌─ monad ─┐\n│ hi │\n└─────────┘', frameAt: 2000,
+    frame: '┌─ elanous ─┐\n│ hi │\n└─────────┘', frameAt: 2000,
     ...over,
   };
 }
 
 describe('terminalFrame envelope', () => {
   test('format → parse round-trip preserves multi-row frame', () => {
-    const payload: MonadTermFramePayload = {
+    const payload: ElanousTermFramePayload = {
       terminalId: 'tui:9', frame: 'row1\nrow2\n  picker  \nrow4', instance: 'test:a', at: 1717,
     };
-    const text = formatMonadTermEnvelope({ method: 'terminalFrame', payload });
-    const parsed = parseMonadTermEnvelope(text);
+    const text = formatElanousTermEnvelope({ method: 'terminalFrame', payload });
+    const parsed = parseElanousTermEnvelope(text);
     expect(parsed?.method).toBe('terminalFrame');
     expect(parsed?.payload).toEqual(payload);
   });
 
   test('head/tail carry the terminalId for routing', () => {
-    const text = formatMonadTermEnvelope({
+    const text = formatElanousTermEnvelope({
       method: 'terminalFrame',
       payload: { terminalId: 'tui:42', frame: 'x', instance: 'i', at: 1 },
     });
-    expect(text.startsWith('[monad/term/terminalFrame] tui:42\n')).toBe(true);
-    expect(text.endsWith('<<monad-term-end tui:42>>')).toBe(true);
+    expect(text.startsWith('[elanous/term/terminalFrame] tui:42\n')).toBe(true);
+    expect(text.endsWith('<<elanous-term-end tui:42>>')).toBe(true);
   });
 
   test('rejects missing/mistyped fields', () => {
-    const bad = '[monad/term/terminalFrame] tui:1\n{"terminalId":"tui:1","frame":"x"}\n<<monad-term-end tui:1>>';
-    expect(parseMonadTermEnvelope(bad)).toBeNull(); // missing instance + at
-    const bad2 = '[monad/term/terminalFrame] tui:1\n{"terminalId":"tui:1","frame":5,"instance":"i","at":1}\n<<monad-term-end tui:1>>';
-    expect(parseMonadTermEnvelope(bad2)).toBeNull(); // frame not a string
+    const bad = '[elanous/term/terminalFrame] tui:1\n{"terminalId":"tui:1","frame":"x"}\n<<elanous-term-end tui:1>>';
+    expect(parseElanousTermEnvelope(bad)).toBeNull(); // missing instance + at
+    const bad2 = '[elanous/term/terminalFrame] tui:1\n{"terminalId":"tui:1","frame":5,"instance":"i","at":1}\n<<elanous-term-end tui:1>>';
+    expect(parseElanousTermEnvelope(bad2)).toBeNull(); // frame not a string
   });
 
   test('capability parse reads terminalFrame flag', () => {
-    expect(parseMonadTermCapabilities({ monad: { term: { terminalFrame: true } } }).terminalFrame).toBe(true);
-    expect(parseMonadTermCapabilities({ monad: { term: { terminalOutput: true } } }).terminalFrame).toBe(false);
-    expect(parseMonadTermCapabilities(null).terminalFrame).toBe(false);
+    expect(parseElanousTermCapabilities({ elanous: { term: { terminalFrame: true } } }).terminalFrame).toBe(true);
+    expect(parseElanousTermCapabilities({ elanous: { term: { terminalOutput: true } } }).terminalFrame).toBe(false);
+    expect(parseElanousTermCapabilities(null).terminalFrame).toBe(false);
   });
 });
 
 describe('pollAndBroadcastTuiFrames', () => {
-  function collector(): { calls: MonadTermFramePayload[]; bcast: TermFrameBroadcaster } {
-    const calls: MonadTermFramePayload[] = [];
+  function collector(): { calls: ElanousTermFramePayload[]; bcast: TermFrameBroadcaster } {
+    const calls: ElanousTermFramePayload[] = [];
     const bcast: TermFrameBroadcaster = async (p) => { calls.push(p); return { delivered: 1, fannedTo: 1 }; };
     return { calls, bcast };
   }
@@ -82,7 +82,7 @@ describe('pollAndBroadcastTuiFrames', () => {
     expect(sent).toBe(1);
     expect(calls).toHaveLength(1);
     expect(calls[0]!.terminalId).toBe('tui:1');
-    expect(calls[0]!.frame).toContain('monad');
+    expect(calls[0]!.frame).toContain('elanous');
     expect(calls[0]!.at).toBe(2000);
     expect(last.get('tui:1')).toBe(2000);
   });

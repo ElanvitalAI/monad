@@ -60,18 +60,18 @@ describe('publishControlObservationFrame — 제어루프 관측 → 프레임 �
 });
 
 describe('makeMissionObserveStep — onStep 발행 + capture semantics 보존', () => {
-  // keyframe 캡처는 writeKeyframePng 가 MONAD_STATE_DIR 하위에 실 파일을 쓴다 → temp 로 스코프 + 정리(리뷰:
+  // keyframe 캡처는 writeKeyframePng 가 ELANOUS_STATE_DIR 하위에 실 파일을 쓴다 → temp 로 스코프 + 정리(리뷰:
   //   테스트 아티팩트 누수 방지·실 홈 오염 회피). 비-keyframe 테스트엔 무해.
   let stateDir = '';
   let prevStateDir: string | undefined;
   beforeEach(() => {
-    prevStateDir = process.env.MONAD_STATE_DIR;
+    prevStateDir = process.env.ELANOUS_STATE_DIR;
     stateDir = mkdtempSync(join(tmpdir(), 'kf-test-'));
-    process.env.MONAD_STATE_DIR = stateDir;
+    process.env.ELANOUS_STATE_DIR = stateDir;
   });
   afterEach(() => {
-    if (prevStateDir === undefined) delete process.env.MONAD_STATE_DIR;
-    else process.env.MONAD_STATE_DIR = prevStateDir;
+    if (prevStateDir === undefined) delete process.env.ELANOUS_STATE_DIR;
+    else process.env.ELANOUS_STATE_DIR = prevStateDir;
     if (stateDir) rmSync(stateDir, { recursive: true, force: true });
   });
 

@@ -6,13 +6,13 @@ describe('expression/config/env-bridge', () => {
     expect(buildEnvOverrides({ env: {} })).toEqual({});
   });
 
-  test('MONAD_LLM_* env vars build the llm partial', () => {
+  test('ELANOUS_LLM_* env vars build the llm partial', () => {
     const out = buildEnvOverrides({
       env: {
-        MONAD_LLM_PROVIDER: 'openai',
-        MONAD_LLM_API_KEY: 'sk-foo',
-        MONAD_LLM_MODEL: 'gpt-4o',
-        MONAD_LLM_BASE_URL: 'https://api.openai.com/v1',
+        ELANOUS_LLM_PROVIDER: 'openai',
+        ELANOUS_LLM_API_KEY: 'sk-foo',
+        ELANOUS_LLM_MODEL: 'gpt-4o',
+        ELANOUS_LLM_BASE_URL: 'https://api.openai.com/v1',
       },
     });
     expect(out.llm).toEqual({
@@ -29,32 +29,32 @@ describe('expression/config/env-bridge', () => {
     });
   });
 
-  test('MONAD_OBSIDIAN_VAULT also maps when OBSIDIAN_VAULT is unset', () => {
-    expect(buildEnvOverrides({ env: { MONAD_OBSIDIAN_VAULT: '/v' } })).toEqual({
+  test('ELANOUS_OBSIDIAN_VAULT also maps when OBSIDIAN_VAULT is unset', () => {
+    expect(buildEnvOverrides({ env: { ELANOUS_OBSIDIAN_VAULT: '/v' } })).toEqual({
       obsidian: { vault: '/v' },
     });
   });
 
-  test('MONAD_TELEGRAM_ENABLED toggles boolean', () => {
-    expect(buildEnvOverrides({ env: { MONAD_TELEGRAM_ENABLED: '1' } })).toEqual({
+  test('ELANOUS_TELEGRAM_ENABLED toggles boolean', () => {
+    expect(buildEnvOverrides({ env: { ELANOUS_TELEGRAM_ENABLED: '1' } })).toEqual({
       telegram: { enabled: true },
     });
-    expect(buildEnvOverrides({ env: { MONAD_TELEGRAM_ENABLED: '0' } })).toEqual({
+    expect(buildEnvOverrides({ env: { ELANOUS_TELEGRAM_ENABLED: '0' } })).toEqual({
       telegram: { enabled: false },
     });
   });
 
-  test('MONAD_DISCORD_BOT_TOKEN populates discord.botToken', () => {
+  test('ELANOUS_DISCORD_BOT_TOKEN populates discord.botToken', () => {
     expect(
-      buildEnvOverrides({ env: { MONAD_DISCORD_BOT_TOKEN: 'MTI...' } }),
+      buildEnvOverrides({ env: { ELANOUS_DISCORD_BOT_TOKEN: 'MTI...' } }),
     ).toEqual({ discord: { botToken: 'MTI...' } });
   });
 
   test('mixed env vars produce all sections', () => {
     const out = buildEnvOverrides({
       env: {
-        MONAD_LLM_PROVIDER: 'grok',
-        MONAD_TELEGRAM_BOT_TOKEN: '12:abc',
+        ELANOUS_LLM_PROVIDER: 'grok',
+        ELANOUS_TELEGRAM_BOT_TOKEN: '12:abc',
         OBSIDIAN_VAULT: '/v',
       },
     });

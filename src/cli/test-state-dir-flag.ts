@@ -3,7 +3,7 @@
 //
 // Internal-only flag used to propagate the `--test` mode's nexus
 // state root to bg-launch'd child processes WITHOUT relying on the
-// removed `MONAD_NEXUS_DIR` environment variable. The flag is
+// removed `ELANOUS_NEXUS_DIR` environment variable. The flag is
 // extracted *before* Commander parses (same pattern as
 // `--config-dir` in `config-dir-flag.ts`) and routed through
 // `setTestStateRoot()` so every consumer of `nexusRootDir()` sees
@@ -70,7 +70,7 @@ export function applyTestStateDirFlagFromArgv(): string | undefined {
  *  전역 `--test`(사람·에이전트) **두 입구가 공유**한다. 종전엔 이 기계가 internal-only 플래그
  *  뒤에만 있어 사람이 부를 입구가 없었고, 그래서 문서 174곳에 수동 주문이 화석으로 남았다.
  *
- *  하는 일: nexus state root ⊕ MONAD_STATE_DIR ⊕ config-dir 을 **한 뿌리로** 세우고,
+ *  하는 일: nexus state root ⊕ ELANOUS_STATE_DIR ⊕ config-dir 을 **한 뿌리로** 세우고,
  *  config 사본이 없으면 물질화하며, config 경로가 test 루트 밖이면 **기동을 거부**한다. */
 export function applyIsolatedRoot(dir: string): void {
   const { setTestStateRoot } = require('../nexus/paths.js') as typeof import('../nexus/paths.js');
@@ -80,23 +80,23 @@ export function applyIsolatedRoot(dir: string): void {
   // (pwa-test re-appends it to the daemon child only). Complete the isolation
   // so an operating (production) environment is NEVER touched:
   //  1. Relocate ALL mutable state (sessions · acp · surface · codex-threads)
-  //     under the test root — otherwise the daemon writes into prod ~/.monad.
+  //     under the test root — otherwise the daemon writes into prod ~/.elanous.
   //  2. ISO-2 (2026-07-13 · 대표 결정): config 도 **완전 분기** — 테스트
   //     프로세스는 운영 config.json 을 아예 열지 않는다. 물질화된 test-safe
-  //     사본(<testRoot>/config.json · `monad config sync-test`)만 읽고 쓴다.
+  //     사본(<testRoot>/config.json · `elanous config sync-test`)만 읽고 쓴다.
   //     종전 in-memory overlay(buildTestSafeDaemonConfig 를 getUserConfig 에
   //     거는 방식)는 은퇴 — overlay 뷰가 디스크에 박제되는 오염 사건(#4029)과
   //     "공유 config write-through" 함정 클래스의 원천 제거.
-  if (!process.env.MONAD_STATE_DIR?.trim()) process.env.MONAD_STATE_DIR = dir;
+  if (!process.env.ELANOUS_STATE_DIR?.trim()) process.env.ELANOUS_STATE_DIR = dir;
   try {
-    const cfgDir = require('../monad-config-dir.js') as typeof import('../monad-config-dir.js');
-    const current = cfgDir.getMonadConfigDirOverride();
+    const cfgDir = require('../elanous-config-dir.js') as typeof import('../elanous-config-dir.js');
+    const current = cfgDir.getElanousConfigDirOverride();
     if (current !== dir) {
       if (current !== undefined) {
         // bg-launch 가 운영 config-dir 를 관성으로 물려준 경우 등 — 격리가 이긴다.
         console.error(`[test-isolation] --config-dir ${current} 는 --test 격리와 충돌 — ${dir} 로 강제`);
       }
-      cfgDir.setMonadConfigDir(dir);
+      cfgDir.setElanousConfigDir(dir);
     }
     // config 사본 보장 — 없으면 운영에서 물질화(최초 무마찰), 있으면 drift 경고만
     // (자동 덮어쓰기 금지 — 명시적 sync 원칙). 유닛 테스트(NODE_ENV=test)는
@@ -109,7 +109,7 @@ export function applyIsolatedRoot(dir: string): void {
         const r = sync.syncTestConfig(dir);
         console.log(`[test-isolation] 운영 config 물질화 → ${r.testConfigPath} (telegram=${r.telegramMode})`);
       } else if (sync.isTestConfigStale(dir)) {
-        console.error(`[test-isolation] ⚠️ 운영 config 가 테스트 사본보다 최신 — 'monad config sync-test' 로 갱신 권장`);
+        console.error(`[test-isolation] ⚠️ 운영 config 가 테스트 사본보다 최신 — 'elanous config sync-test' 로 갱신 권장`);
       }
       // 부팅 불변식 — 테스트 프로세스의 config 경로는 반드시 test 루트 안.
       // (위 강제로 항상 참이어야 하나, 미래 회귀를 기동 거부로 잡는다.)

@@ -1,7 +1,7 @@
 // ── ⭐ 소환로 e2e (F2 · RFC-observability-driven-tool-selection · 2026-07-26) ──
 //
-// 실전검증(격리 acpx 자연어)에서 monad 에이전트는 SelfImplement 를 **부르지 못하고**
-// PtyShell 로 `monad self implement` CLI 를 셸아웃했다. 원인은 한 곳이 아니라 사슬 3곳:
+// 실전검증(격리 acpx 자연어)에서 elanous 에이전트는 SelfImplement 를 **부르지 못하고**
+// PtyShell 로 `elanous self implement` CLI 를 셸아웃했다. 원인은 한 곳이 아니라 사슬 3곳:
 //
 //   ① tier-flip 이 defer 만 하고 ToolSearch 를 active 에 안 실었다 (감지만·주입 X)
 //   ② 데몬 webterm dispatch 에 ToolSearch 라우팅이 아예 없었다
@@ -116,7 +116,7 @@ describe('소환로 · 서피스 풀 = 권위적 allowlist', () => {
     const proc = Bun.spawnSync({
       cmd: ['bun', '-e', probe],
       // depth 99 는 config(substrate.maxNestDepth)/env 어느 상한이든 초과.
-      env: { ...process.env, MONAD_NEST_DEPTH: '99' },
+      env: { ...process.env, ELANOUS_NEST_DEPTH: '99' },
       stdout: 'pipe',
       stderr: 'pipe',
     });

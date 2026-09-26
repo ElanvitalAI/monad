@@ -38,7 +38,7 @@ export interface ResolvedLaunchCapabilities {
 
 /** ⛔ 기본값을 «여기 한 곳»에 둔다. 흩어 두면 입구마다 다른 기본값이 생긴다. */
 const DEFAULTS: Record<LaunchCapabilityDefaultProfile, { completion: DevCompletion; autoReview: boolean }> = {
-  // `monad dev`의 무플래그 self 요청이 기존에 내던 결과를 이 한 곳에서 보존한다.
+  // `elanous dev`의 무플래그 self 요청이 기존에 내던 결과를 이 한 곳에서 보존한다.
   'self-mission': { completion: 'auto-merge', autoReview: true },
   // staged planning retained its auto-drive behavior but never had unattended review wiring.
   'plan-staged': { completion: 'auto-merge', autoReview: false },

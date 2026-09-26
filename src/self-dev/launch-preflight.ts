@@ -574,7 +574,7 @@ export function evaluateLaunchPreflight(input: LaunchPreflightInput): LaunchPref
       detail: (input.askTargetPathRejections?.length
         ? `대상 경로 라벨은 있는데 조각 ${input.askTargetPathRejections.length}개가 거부됐다: ${input.askTargetPathRejections.slice(0, 3).map((r) => `「${r.fragment.length > 40 ? `${r.fragment.slice(0, 40)}…` : r.fragment}」(${r.reason})`).join(' · ')} — 그 줄에는 «경로만» 둔다(설명은 다음 줄)`
         : '골에서 대상 경로를 하나도 못 뽑았다 — ask 첫 줄에 「대상 경로: <파일> · <파일>」을 넣어라')
-        + ' — 이 상태의 「위반 0」은 「검사했다」가 아니다 — monad self author --inspect-target-paths "<문면>"',
+        + ' — 이 상태의 「위반 0」은 「검사했다」가 아니다 — elanous self author --inspect-target-paths "<문면>"',
     });
   }
 
@@ -616,7 +616,7 @@ export function evaluateLaunchPreflight(input: LaunchPreflightInput): LaunchPref
     );
     if (siblings.length > 0) {
       const named = siblings.map((pr) => `#${pr.number} ${pr.headRefName}`).join(', ');
-      const inspectCommand = `bun bin/monad.mjs gh pr view ${siblings[0]!.number}`;
+      const inspectCommand = `bun bin/elanous.mjs gh pr view ${siblings[0]!.number}`;
       warnings.push({
         kind: 'sibling-pr',
         name: siblings.map((pr) => `#${pr.number}`).join(' '),
@@ -1147,7 +1147,7 @@ export function renderLaunchPreflight(
   for (const blocker of result.blockers) lines.push(`[preflight]   · ${blocker.name} — ${blocker.detail}`);
   lines.push(forced
     ? '[preflight] ⚠️ --force-preflight — 위 막힘을 «뚫고» 발사한다 (이 우회는 관측에 남는다)'
-    : '[preflight] 그래도 가려면 --force-preflight (그 우회는 관측에 남는다) — monad dev');
+    : '[preflight] 그래도 가려면 --force-preflight (그 우회는 관측에 남는다) — elanous dev');
   return lines.join('\n');
 }
 
@@ -1629,7 +1629,7 @@ export function decideAskPreflight(
   }
 
   // ⛔⭐ 셋째 축 «배선» — 이것이 없으면 `countRecentChanges` 는 «호출되지 않는 API 표면»이고
-  //   새 축은 런타임에서 영영 `unknown` 이다(2026-08-11 모나드 리뷰 must-fix ②).
+  //   새 축은 런타임에서 영영 `unknown` 이다(2026-08-11 엘라누스 리뷰 must-fix ②).
   //   ⭐ 조회기가 «아예 없을» 때도 「변경 없음」이 아니라 ***「배선되지 않았다」***고 말한다 —
   //     이 저장소의 「0」과 「못 셈」 규율이 여기서도 같다.
   let recentChanges: Readonly<Record<string, number>> | null = null;
@@ -1803,9 +1803,9 @@ export function renderBlockedInspection(result: LaunchPreflightResult): string {
   const lines: string[] = ['[preflight] 🔎 막은 것을 이렇게 봅니다:'];
   for (const blocker of result.blockers) {
     if (blocker.kind === 'open-pr') {
-      lines.push(`[preflight]   ${blocker.name} → bun bin/monad.mjs gh pr view ${blocker.name.replace('#', '')} --json title,isDraft,updatedAt,files`);
+      lines.push(`[preflight]   ${blocker.name} → bun bin/elanous.mjs gh pr view ${blocker.name.replace('#', '')} --json title,isDraft,updatedAt,files`);
     } else if (blocker.kind === 'live-run') {
-      lines.push(`[preflight]   ${blocker.name} → bun bin/monad.mjs self run-ledger ${blocker.name} | tail -5`);
+      lines.push(`[preflight]   ${blocker.name} → bun bin/elanous.mjs self run-ledger ${blocker.name} | tail -5`);
     } else {
       lines.push(`[preflight]   ${blocker.name} — ${blocker.detail}`);
     }

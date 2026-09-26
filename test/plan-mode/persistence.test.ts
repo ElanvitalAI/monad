@@ -8,7 +8,7 @@ import {
 } from '../../src/plan-mode/index.js';
 
 // Point HOME at a temp dir so the test's plan artifacts don't land
-// in the user's ~/.monad/plans/. Restore after each test.
+// in the user's ~/.elanous/plans/. Restore after each test.
 const prevHome = process.env.HOME;
 const dirs: string[] = [];
 

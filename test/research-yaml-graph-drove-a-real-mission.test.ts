@@ -12,7 +12,7 @@ interface LedgerRow {
 
 async function measuredRows(): Promise<LedgerRow[]> {
   const proc = Bun.spawn([
-    'bun', 'bin/monad.mjs', '--test', 'self', 'run-ledger', runId, '--all', '--include-test', '--json',
+    'bun', 'bin/elanous.mjs', '--test', 'self', 'run-ledger', runId, '--all', '--include-test', '--json',
   ], { cwd: `${import.meta.dir}/..`, stdout: 'pipe', stderr: 'pipe' });
   const [stdout, stderr, exitCode] = await Promise.all([new Response(proc.stdout).text(), new Response(proc.stderr).text(), proc.exited]);
   expect(exitCode, stderr).toBe(0);

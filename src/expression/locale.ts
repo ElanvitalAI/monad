@@ -1,7 +1,7 @@
 // Locale resolution — picks `en` / `ko` / `ja` / `zh` from env hints.
 //
 // Resolution order:
-//  1. `MONAD_LANG`            — explicit project override (highest)
+//  1. `ELANOUS_LANG`            — explicit project override (highest)
 //  2. `LC_ALL` / `LC_MESSAGES` / `LANG` — POSIX locale chain
 //  3. `en` fallback           — default when nothing matches
 //
@@ -16,7 +16,7 @@ const SUPPORTED: ReadonlyArray<Locale> = ['en', 'ko', 'ja', 'zh'];
 /** Detect the active locale from environment variables. Falls back to
  *  `'en'` when no hint matches a supported locale. */
 export function detectLocale(env: NodeJS.ProcessEnv = process.env): Locale {
-  const explicit = env.MONAD_LANG?.trim().toLowerCase();
+  const explicit = env.ELANOUS_LANG?.trim().toLowerCase();
   if (explicit) {
     // Exact match (en/ko/ja/zh).
     if ((SUPPORTED as ReadonlyArray<string>).includes(explicit)) {

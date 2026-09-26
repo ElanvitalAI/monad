@@ -173,7 +173,7 @@ export const openPullRequestRuntime: ToolRuntime<OpenPullRequestArgs, OpenPullRe
 // OpenPullRequest → MergePullRequest workflow without dropping back to
 // raw Bash. Three merge strategies (squash | merge | rebase). Branch
 // deletion is opt-in. `admin` is opt-in AND requires the user to set
-// `MONAD_GH_ALLOW_ADMIN=1` in the environment — admin merges bypass
+// `ELANOUS_GH_ALLOW_ADMIN=1` in the environment — admin merges bypass
 // branch protection and are easy to misfire on a shared repo.
 
 export type MergeStrategy = 'squash' | 'merge' | 'rebase';
@@ -191,7 +191,7 @@ export interface MergePullRequestArgs {
   deleteBranch?: boolean;
   /** When true, pass `--admin` so the merge bypasses branch protection.
    *  Doubly-gated: in addition to passing this arg the user must have
-   *  `MONAD_GH_ALLOW_ADMIN=1` in their environment. Default false. */
+   *  `ELANOUS_GH_ALLOW_ADMIN=1` in their environment. Default false. */
   admin?: boolean;
   /** Wait for required checks to pass before merging (`--auto`).
    *  Mutually exclusive with `admin`. Default false. */
@@ -216,7 +216,7 @@ export function buildMergePullRequestTool(): LLMToolSpec {
       'Merge a pull request via `gh pr merge`. Pick a strategy (squash | merge | rebase) ' +
       'explicitly — no default, to avoid silently rewriting commit history. Pass `auto: true` ' +
       'to wait for required checks; `admin: true` bypasses branch protection but requires the ' +
-      'user to set `MONAD_GH_ALLOW_ADMIN=1` in their environment as a second safety gate. ' +
+      'user to set `ELANOUS_GH_ALLOW_ADMIN=1` in their environment as a second safety gate. ' +
       'Optional `deleteBranch: true` removes the branch on remote + local after merge.',
     parameters: {
       type: 'object',
@@ -243,7 +243,7 @@ export function buildMergePullRequestTool(): LLMToolSpec {
         admin: {
           type: 'boolean',
           description:
-            'Bypass branch protection (`--admin`). Requires both this flag AND env MONAD_GH_ALLOW_ADMIN=1. ' +
+            'Bypass branch protection (`--admin`). Requires both this flag AND env ELANOUS_GH_ALLOW_ADMIN=1. ' +
             'Mutually exclusive with `auto`.',
         },
         auto: {
@@ -273,7 +273,7 @@ export function dispatchMergePullRequest(
     cwd?: string;
     runner?: (cmd: string, argv: string[], stdin: string, cwd: string) => { stdout: string; stderr: string; status: number };
     /** Override the env-var safety gate. Pass true to skip the env
-     *  check (used in tests). Default consults `process.env.MONAD_GH_ALLOW_ADMIN`. */
+     *  check (used in tests). Default consults `process.env.ELANOUS_GH_ALLOW_ADMIN`. */
     adminEnvAllowed?: boolean;
     log?: MergePullRequestLog;
   } = {},
@@ -314,11 +314,11 @@ export function dispatchMergePullRequest(
   // admin double-gate: env var must also be set.
   let usedAdmin = false;
   if (args.admin) {
-    const envAllowed = opts.adminEnvAllowed ?? (process.env.MONAD_GH_ALLOW_ADMIN === '1');
+    const envAllowed = opts.adminEnvAllowed ?? (process.env.ELANOUS_GH_ALLOW_ADMIN === '1');
     if (!envAllowed) {
       reject('admin-env-disallowed');
       throw new Error(
-        'MergePullRequest: admin merge requested but MONAD_GH_ALLOW_ADMIN=1 is not set in env. ' +
+        'MergePullRequest: admin merge requested but ELANOUS_GH_ALLOW_ADMIN=1 is not set in env. ' +
         'Admin bypasses branch protection — set the env var explicitly to authorise.',
       );
     }

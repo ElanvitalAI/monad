@@ -5,14 +5,14 @@ import { runPtyControlLoop, type ControlDecision, type PtyControlDeps } from '..
 
 type BrainRecord = { category: string; event: string; data: Record<string, unknown> };
 
-const originalRunId = process.env.MONAD_RUN_ID;
-const originalPtyId = process.env.MONAD_PTY_ID;
+const originalRunId = process.env.ELANOUS_RUN_ID;
+const originalPtyId = process.env.ELANOUS_PTY_ID;
 
 afterEach(() => {
-  if (originalRunId === undefined) delete process.env.MONAD_RUN_ID;
-  else process.env.MONAD_RUN_ID = originalRunId;
-  if (originalPtyId === undefined) delete process.env.MONAD_PTY_ID;
-  else process.env.MONAD_PTY_ID = originalPtyId;
+  if (originalRunId === undefined) delete process.env.ELANOUS_RUN_ID;
+  else process.env.ELANOUS_RUN_ID = originalRunId;
+  if (originalPtyId === undefined) delete process.env.ELANOUS_PTY_ID;
+  else process.env.ELANOUS_PTY_ID = originalPtyId;
 });
 
 function captureBrainRecords(): { records: BrainRecord[]; restore: () => void } {
@@ -43,8 +43,8 @@ function brainFor(actions: ControlDecision[]) {
 
 describe('PTY control brain decision identity', () => {
   test('records each multi-step decision once with the caller-declared child and harness run while preserving the established record contract', async () => {
-    process.env.MONAD_RUN_ID = 'run-declared-by-harness';
-    process.env.MONAD_PTY_ID = 'pty-process-state-must-not-be-subject';
+    process.env.ELANOUS_RUN_ID = 'run-declared-by-harness';
+    process.env.ELANOUS_PTY_ID = 'pty-process-state-must-not-be-subject';
     const { records, restore } = captureBrainRecords();
     try {
       const result = await runPtyControlLoop(brainFor([
@@ -60,15 +60,15 @@ describe('PTY control brain decision identity', () => {
         { category: 'autopilot.control', event: 'brain', data: { step: 1, action: 'wait', state: 'working', subjectPtyId: 'pty-child-declared-by-caller', runId: 'run-declared-by-harness' } },
         { category: 'autopilot.control', event: 'brain', data: { step: 2, action: 'done', state: 'working', subjectPtyId: 'pty-child-declared-by-caller', runId: 'run-declared-by-harness' } },
       ]);
-      expect(records.every(({ data }) => data.subjectPtyId !== process.env.MONAD_PTY_ID)).toBe(true);
+      expect(records.every(({ data }) => data.subjectPtyId !== process.env.ELANOUS_PTY_ID)).toBe(true);
     } finally {
       restore();
     }
   });
 
   test('without caller or harness identity still records the decision and preserves termination and step count without fabricating identity', async () => {
-    delete process.env.MONAD_RUN_ID;
-    delete process.env.MONAD_PTY_ID;
+    delete process.env.ELANOUS_RUN_ID;
+    delete process.env.ELANOUS_PTY_ID;
     const actions: ControlDecision[] = [{ action: 'wait' }, { action: 'done', reason: 'complete' }];
     const baseline = await runPtyControlLoop(brainFor(actions), deps(), { maxSteps: 3, pollMs: 0 });
     const { records, restore } = captureBrainRecords();

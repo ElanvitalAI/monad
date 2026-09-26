@@ -10,7 +10,7 @@
 //   - light pastel (cool blue)         → catppuccin-latte
 //   - light pastel (warm rose)         → rose-pine-dawn
 //   - light pastel (cool arctic)       → nord-light
-//   - light pastel (brand lavender)    → monad-pastel-default
+//   - light pastel (brand lavender)    → elanous-pastel-default
 
 import type { ThemeTokens } from '../theme/tokens.js';
 import {
@@ -30,9 +30,9 @@ import {
   ADAPTIVE_PALETTE as NORD_ADAPTIVE_PALETTE,
 } from './nord-light.js';
 import {
-  MONAD_PASTEL_DEFAULT,
-  ADAPTIVE_PALETTE as MONAD_ADAPTIVE_PALETTE,
-} from './monad-pastel-default.js';
+  ELANOUS_PASTEL_DEFAULT,
+  ADAPTIVE_PALETTE as ELANOUS_ADAPTIVE_PALETTE,
+} from './elanous-pastel-default.js';
 import {
   MOCHA_PASTEL_ACCENT,
   ADAPTIVE_PALETTE as MOCHA_PASTEL_ADAPTIVE_PALETTE,
@@ -44,13 +44,13 @@ export {
   CATPPUCCIN_LATTE,
   ROSE_PINE_DAWN,
   NORD_LIGHT,
-  MONAD_PASTEL_DEFAULT,
+  ELANOUS_PASTEL_DEFAULT,
   MOCHA_PASTEL_ACCENT,
   MOCHA_ADAPTIVE_PALETTE,
   LATTE_ADAPTIVE_PALETTE,
   ROSE_PINE_ADAPTIVE_PALETTE,
   NORD_ADAPTIVE_PALETTE,
-  MONAD_ADAPTIVE_PALETTE,
+  ELANOUS_ADAPTIVE_PALETTE,
   MOCHA_PASTEL_ADAPTIVE_PALETTE,
 };
 
@@ -67,7 +67,7 @@ export const ADAPTIVE_PALETTES_BY_THEME: ReadonlyMap<
   [CATPPUCCIN_LATTE.name, LATTE_ADAPTIVE_PALETTE],
   [ROSE_PINE_DAWN.name, ROSE_PINE_ADAPTIVE_PALETTE],
   [NORD_LIGHT.name, NORD_ADAPTIVE_PALETTE],
-  [MONAD_PASTEL_DEFAULT.name, MONAD_ADAPTIVE_PALETTE],
+  [ELANOUS_PASTEL_DEFAULT.name, ELANOUS_ADAPTIVE_PALETTE],
   [MOCHA_PASTEL_ACCENT.name, MOCHA_PASTEL_ADAPTIVE_PALETTE],
 ]);
 
@@ -85,7 +85,7 @@ export const THEME_REGISTRY: ReadonlyArray<ThemeTokens> = [
   CATPPUCCIN_LATTE,
   ROSE_PINE_DAWN,
   NORD_LIGHT,
-  MONAD_PASTEL_DEFAULT,
+  ELANOUS_PASTEL_DEFAULT,
 ];
 
 /** Map of name → theme for O(1) lookup. Populated from THEME_REGISTRY

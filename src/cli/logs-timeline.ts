@@ -13,7 +13,7 @@
 // is never queried.
 //
 // Pure `renderTimeline(rows)` so it is unit-testable off synthetic rows; the
-// CLI (`monad logs timeline`) and tui-sim both feed it real rows.
+// CLI (`elanous logs timeline`) and tui-sim both feed it real rows.
 
 import { existsSync, writeFileSync } from 'node:fs';
 import type { LogStoreRow, LogQuery } from '../mss/logging/log-store.js';
@@ -199,25 +199,25 @@ export interface LogsTimelineOpts {
   out?: string;
 }
 
-/** `monad logs timeline` — render a session/window as a readable narrative. */
+/** `elanous logs timeline` — render a session/window as a readable narrative. */
 export function runLogsTimeline(opts: LogsTimelineOpts): number {
   const resolved = resolveLogTargets({ test: opts.test, instance: opts.instance });
-  if (resolved.error) { console.error(`monad logs timeline: ${resolved.error}`); return 1; }
+  if (resolved.error) { console.error(`elanous logs timeline: ${resolved.error}`); return 1; }
   const target = resolved.targets[0];
   if (!target || !existsSync(target.dbPath)) {
-    console.error(`monad logs timeline: 로그 스토어 없음 — ${target?.dbPath ?? '타겟 0'}`);
+    console.error(`elanous logs timeline: 로그 스토어 없음 — ${target?.dbPath ?? '타겟 0'}`);
     return 1;
   }
   const q: Pick<LogQuery, 'sessionId' | 'sinceMs' | 'untilMs'> = {};
   if (opts.session) q.sessionId = opts.session;
   if (opts.since) {
     const ms = parseSince(opts.since);
-    if (ms === null) { console.error(`monad logs timeline: --since 파싱 불가 '${opts.since}'`); return 1; }
+    if (ms === null) { console.error(`elanous logs timeline: --since 파싱 불가 '${opts.since}'`); return 1; }
     q.sinceMs = ms;
   }
   if (opts.until) {
     const ms = parseSince(opts.until);
-    if (ms === null) { console.error(`monad logs timeline: --until 파싱 불가 '${opts.until}'`); return 1; }
+    if (ms === null) { console.error(`elanous logs timeline: --until 파싱 불가 '${opts.until}'`); return 1; }
     q.untilMs = ms;
   }
   const store = LogStore.openReadOnly(target.dbPath);

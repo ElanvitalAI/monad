@@ -46,16 +46,16 @@ describe('makeOsc133RcFile — bash', () => {
       expect(body).toContain('\\033]133;B;%s\\007');
       expect(body).toContain('\\033]133;A\\007');
       // PROMPT_COMMAND guarded so repeat re-sourcing doesn't double-append.
-      expect(body).toContain('__monad_osc133_prompt');
+      expect(body).toContain('__elanous_osc133_prompt');
     } finally {
       rc.cleanup();
     }
   });
 
-  test('env advertises MONAD_OSC133=1', () => {
+  test('env advertises ELANOUS_OSC133=1', () => {
     const rc = makeOsc133RcFile('bash')!;
     try {
-      expect(rc.env.MONAD_OSC133).toBe('1');
+      expect(rc.env.ELANOUS_OSC133).toBe('1');
     } finally {
       rc.cleanup();
     }
@@ -95,7 +95,7 @@ describe('makeOsc133RcFile — zsh', () => {
       expect(body).toContain('$HOME/.zshrc');
       expect(body).toContain('\\033]133;B;%s\\007');
       expect(body).toContain('\\033]133;A\\007');
-      expect(body).toContain('add-zsh-hook precmd __monad_osc133_prompt');
+      expect(body).toContain('add-zsh-hook precmd __elanous_osc133_prompt');
     } finally {
       rc.cleanup();
     }

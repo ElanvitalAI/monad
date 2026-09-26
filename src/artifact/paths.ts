@@ -2,14 +2,14 @@
 //
 // Maps `(kind, origin, ext?)` to `<baseDir>/<kind>/<YYYYMMDD-HHmmss>-
 // <origin>.<ext>`. Separates:
-//   * base directory (default `~/.monad/artifacts/` · test override)
+//   * base directory (default `~/.elanous/artifacts/` · test override)
 //   * kind subdir (new subdir per ArtifactKind · keeps directory tidy)
 //   * timestamp prefix (sortable · second-resolution for no collision
 //     in 99% of real flows)
 //   * sanitized origin (alphanumeric + `-` `.` `_` only)
 //   * extension (per-kind default · overridable)
 
-import { monadStateRoot } from '../autopilot/state-paths.js';
+import { elanousStateRoot } from '../autopilot/state-paths.js';
 import path from 'node:path';
 import type { ArtifactKind } from './types.js';
 
@@ -23,9 +23,9 @@ export const DEFAULT_EXTENSIONS: Readonly<Record<ArtifactKind, string>> = Object
   attachment: 'bin',
 });
 
-/** Base directory — `~/.monad/artifacts/`. Tests inject `mkdtemp`. */
+/** Base directory — `~/.elanous/artifacts/`. Tests inject `mkdtemp`. */
 export function defaultArtifactBaseDir(): string {
-  return path.join(monadStateRoot(), 'artifacts');
+  return path.join(elanousStateRoot(), 'artifacts');
 }
 
 /** Sortable timestamp `YYYYMMDD-HHmmss` from a ms-since-epoch value.

@@ -178,7 +178,7 @@ async function measurePair(
 }
 
 async function liveConditions(env: NodeJS.ProcessEnv): Promise<ResolvedDecomposerConditions> {
-  const model = env.DECOMPOSER_PROMOTION_AB_MODEL?.trim() || process.env.MONAD_PR_REVIEW_MODEL || 'gpt-5.6-sol';
+  const model = env.DECOMPOSER_PROMOTION_AB_MODEL?.trim() || process.env.ELANOUS_PR_REVIEW_MODEL || 'gpt-5.6-sol';
   const llm: SelfDevDecomposeLlm = (prompt) => streamLLM([{ role: 'user', content: prompt }], () => {}, { model, reasoningEffort: 'low' });
   return { model, resolver: 'shared-streamLLM', llm };
 }

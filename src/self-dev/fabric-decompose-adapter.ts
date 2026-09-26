@@ -71,7 +71,7 @@ export type FabricDecomposeRequestResult =
 
 async function defaultFabricResolve(prompt: string): Promise<string> {
   const { streamLLM } = await import('../llm.js');
-  const model = process.env.MONAD_PR_REVIEW_MODEL || tierModel('best');
+  const model = process.env.ELANOUS_PR_REVIEW_MODEL || tierModel('best');
   return streamLLM([{ role: 'user', content: prompt }], () => {}, { model, reasoningEffort: 'low' });
 }
 

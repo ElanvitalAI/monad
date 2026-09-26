@@ -28,8 +28,8 @@ const classifications = {
 
 describe('parseSafeDecisionSignalCommand', () => {
   test('names shell syntax and allowlist rejections while preserving the unsafe-command ledger reason', () => {
-    const shellComposed = 'bun bin/monad.mjs logs --category x --json | tee output.json';
-    const allowlistMiss = 'bun bin/monad.mjs provider codex usage --account b';
+    const shellComposed = 'bun bin/elanous.mjs logs --category x --json | tee output.json';
+    const allowlistMiss = 'bun bin/elanous.mjs provider codex usage --account b';
 
     expect(parseSafeDecisionSignalCommand(shellComposed)).toEqual({ reason: 'shell-syntax-mixed' });
     expect(parseSafeDecisionSignalCommand(allowlistMiss)).toEqual({ reason: 'not-allowlisted' });
@@ -39,17 +39,17 @@ describe('parseSafeDecisionSignalCommand', () => {
     ]);
   });
 
-  test('parses declared read-only monad observations into argv', () => {
-    expect(parseSafeDecisionSignalCommand('bun bin/monad.mjs logs --category x --json')).toEqual({
-      executable: 'bun', args: ['bin/monad.mjs', 'logs', '--category', 'x', '--json'],
+  test('parses declared read-only elanous observations into argv', () => {
+    expect(parseSafeDecisionSignalCommand('bun bin/elanous.mjs logs --category x --json')).toEqual({
+      executable: 'bun', args: ['bin/elanous.mjs', 'logs', '--category', 'x', '--json'],
     });
-    expect(parseSafeDecisionSignalCommand('bun bin/monad.mjs logs --category x --json-data')).toBeDefined();
-    expect(parseSafeDecisionSignalCommand('bun bin/monad.mjs pty snapshot ref')).toEqual({
-      executable: 'bun', args: ['bin/monad.mjs', 'pty', 'snapshot', 'ref'],
+    expect(parseSafeDecisionSignalCommand('bun bin/elanous.mjs logs --category x --json-data')).toBeDefined();
+    expect(parseSafeDecisionSignalCommand('bun bin/elanous.mjs pty snapshot ref')).toEqual({
+      executable: 'bun', args: ['bin/elanous.mjs', 'pty', 'snapshot', 'ref'],
     });
-    expect(parseSafeDecisionSignalCommand('bun bin/monad.mjs pty lineage ref --json')).toBeDefined();
-    expect(parseSafeDecisionSignalCommand('bun bin/monad.mjs self entrances --json')).toBeDefined();
-    expect(parseSafeDecisionSignalCommand('bun bin/monad.mjs self running-runs --json')).toBeDefined();
+    expect(parseSafeDecisionSignalCommand('bun bin/elanous.mjs pty lineage ref --json')).toBeDefined();
+    expect(parseSafeDecisionSignalCommand('bun bin/elanous.mjs self entrances --json')).toBeDefined();
+    expect(parseSafeDecisionSignalCommand('bun bin/elanous.mjs self running-runs --json')).toBeDefined();
   });
 
   test('rejects unquoted multi-word rg patterns as ambiguous', () => {
@@ -82,9 +82,9 @@ describe('parseSafeDecisionSignalCommand', () => {
     expect(parseSafeDecisionSignalCommand('bun scripts/ask-marker-check.ts docs/goals/x.md')).toBeDefined();
   });
 
-  test('matches monad command names exactly instead of accepting prefixes', () => {
-    expect(parseSafeDecisionSignalCommand('bun bin/monad.mjs logstash --category x --json')).toEqual({ reason: 'not-allowlisted' });
-    expect(parseSafeDecisionSignalCommand('bun bin/monad.mjs self entrance --json')).toEqual({ reason: 'not-allowlisted' });
+  test('matches elanous command names exactly instead of accepting prefixes', () => {
+    expect(parseSafeDecisionSignalCommand('bun bin/elanous.mjs logstash --category x --json')).toEqual({ reason: 'not-allowlisted' });
+    expect(parseSafeDecisionSignalCommand('bun bin/elanous.mjs self entrance --json')).toEqual({ reason: 'not-allowlisted' });
   });
 });
 

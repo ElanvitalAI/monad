@@ -1,9 +1,9 @@
 // Codex «계정» 해석 — 어느 계정의 토큰을 정본으로 쓸 것인가.
 //
 // ⛔⭐⭐⭐ **왜 이것이 필요한가**(2026-08-05 실측 · MANUAL-llm-provider-operations §3a):
-//   `CODEX_HOME` 은 monad 의 «미러 쓰기 경로»만 바꾸고 «정본»은 `~/.monad/auth.json` 하나였다.
+//   `CODEX_HOME` 은 elanous 의 «미러 쓰기 경로»만 바꾸고 «정본»은 `~/.elanous/auth.json` 하나였다.
 //   ⇒ 계정을 둘 만들어도 ***조회는 계정별로 되고 실행은 안 됐다***. 더 나쁘게는
-//     `CODEX_HOME=<B> monad <LLM 명령>` 이 토큰 갱신 때 «A 의 토큰으로 B 를 덮었다».
+//     `CODEX_HOME=<B> elanous <LLM 명령>` 이 토큰 갱신 때 «A 의 토큰으로 B 를 덮었다».
 //   ✅ 그래서 계정을 «이름»으로 두고, 이름마다 ⓐ 정본 스토어 키 ⓑ 미러 홈 을 갈라 준다.
 //
 // ⛔⭐⭐ **기본 계정의 동작은 «한 바이트도» 안 바뀐다** — 스토어 키는 그대로 `openai-codex` 이고
@@ -19,7 +19,7 @@ export const DEFAULT_CODEX_ACCOUNT = 'default';
 export interface CodexAccountResolution {
   /** 사람이 부르는 이름. */
   readonly name: string;
-  /** `~/.monad/auth.json` 안의 provider 키. 기본 계정은 «접미 없음». */
+  /** `~/.elanous/auth.json` 안의 provider 키. 기본 계정은 «접미 없음». */
   readonly storeKey: string;
   /** 공식 CLI 와 공유하는 홈(= 미러 대상). */
   readonly home: string;
@@ -51,20 +51,20 @@ export function accountNameFromStoreKey(key: string): string {
 
 /**
  * 지금 어느 계정을 쓰나.
- * ⭐ 지금은 per-run env 하나뿐이다 — `MONAD_CODEX_ACCOUNT` ⊕ `MONAD_CODEX_ACCOUNT_HOME`.
+ * ⭐ 지금은 per-run env 하나뿐이다 — `ELANOUS_CODEX_ACCOUNT` ⊕ `ELANOUS_CODEX_ACCOUNT_HOME`.
  *   ⛔ 지속 설정(config)은 «이 판의 스코프가 아니다» — 안 배선된 계약을 미리 만들지 않는다.
  * ⛔ 이름이 유효하지 않거나 홈을 모르면 «기본으로 떨어진다** — 모르는 계정으로 쓰는 것보다 안전하다.
  */
 export function resolveCodexAccount(
   env: NodeJS.ProcessEnv = process.env,
   /** ⛔⭐ 「이름은 골랐는데 홈을 모른다」를 «정본 기록»으로 메운다(2026-08-11 72차).
-   *  📏 그 전 실물: `MONAD_CODEX_ACCOUNT=team` 만 주면 홈이 없어 ***조용히 default 로 떨어지는데***
+   *  📏 그 전 실물: `ELANOUS_CODEX_ACCOUNT=team` 만 주면 홈이 없어 ***조용히 default 로 떨어지는데***
    *    그 상태로 `explicit` 판정이 서서 ***관측이 「사람이 명시했다」고 말했다*** — 계정은 default 인데.
    *  ⛔ 여기서 스토어를 «직접 읽지 않는다» — `store.ts → codex-account.ts` 의존이라 순환이 된다.
    *    그래서 읽을 수 있는 쪽(`codex-account-store.ts`)이 이 심으로 «넣어 준다». */
   deps: { readonly storedHome?: (storeKey: string) => string | undefined } = {},
 ): CodexAccountResolution {
-  const fromEnv = env.MONAD_CODEX_ACCOUNT?.trim();
+  const fromEnv = env.ELANOUS_CODEX_ACCOUNT?.trim();
   const picked = fromEnv && isValidAccountName(fromEnv)
     ? { name: fromEnv, source: 'env' as const }
     : { name: DEFAULT_CODEX_ACCOUNT, source: 'default' as const };
@@ -80,7 +80,7 @@ export function resolveCodexAccount(
     };
   }
 
-  const envHome = env.MONAD_CODEX_ACCOUNT_HOME?.trim();
+  const envHome = env.ELANOUS_CODEX_ACCOUNT_HOME?.trim();
   // ⭐ env 가 먼저(사람이 그 자리에서 준 것) · 없으면 정본 기록이 아는 홈.
   const storedHome = deps.storedHome?.(codexStoreKey(picked.name))?.trim();
   const home = envHome && envHome.length > 0

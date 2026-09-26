@@ -19,7 +19,7 @@ export interface DetectExternalLockOpts {
   state: NexusState;
   registry: TabRegistry;
   tabId: string;
-  /** Path to the shared lock file (telegram.lock / discord.lock / monad.pid). */
+  /** Path to the shared lock file (telegram.lock / discord.lock / elanous.pid). */
   lockPath: string;
   /** Override for tests. Defaults to safeReadLock(lockPath). */
   readLock?: () => LockMeta | null;

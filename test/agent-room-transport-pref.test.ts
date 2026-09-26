@@ -38,7 +38,7 @@ describe('validateAgentRoomSpec · transportPref enum', () => {
   test('valid pref acp', () => {
     expect(() => validateAgentRoomSpec({
       preset: 'two-split',
-      members: [{ brandRef: 'monad', transportPref: 'acp' }, { brandRef: 'claude' }],
+      members: [{ brandRef: 'elanous', transportPref: 'acp' }, { brandRef: 'claude' }],
     })).not.toThrow();
   });
 
@@ -62,22 +62,22 @@ describe('validateAgentRoomSpec · transportPref enum', () => {
 
 // ─── checkTransportCompat · compat-table ──────────────────────────
 
-describe('checkTransportCompat · ACP-only brands (monad)', () => {
-  test('monad + pty → drop with warning', () => {
-    const r = checkTransportCompat('monad', 'pty');
+describe('checkTransportCompat · ACP-only brands (elanous)', () => {
+  test('elanous + pty → drop with warning', () => {
+    const r = checkTransportCompat('elanous', 'pty');
     expect(r.effective).toBeUndefined();
     expect(r.warning).toMatch(/no PTY adapter/);
   });
 
-  test('monad + acp → pass through', () => {
-    const r = checkTransportCompat('monad', 'acp');
+  test('elanous + acp → pass through', () => {
+    const r = checkTransportCompat('elanous', 'acp');
     expect(r.effective).toBe('acp');
     expect(r.warning).toBeUndefined();
   });
 
-  test('monad + auto/undefined → no hint', () => {
-    expect(checkTransportCompat('monad', 'auto').effective).toBeUndefined();
-    expect(checkTransportCompat('monad', undefined).effective).toBeUndefined();
+  test('elanous + auto/undefined → no hint', () => {
+    expect(checkTransportCompat('elanous', 'auto').effective).toBeUndefined();
+    expect(checkTransportCompat('elanous', undefined).effective).toBeUndefined();
   });
 });
 
@@ -171,7 +171,7 @@ describe('buildAgentRoom · transportPref warnings', () => {
       }),
       // PR-CL7 (C.3 · 2026-04-29) — ACP-lane stubs. After CL6 every
       // brand has a `laneKind`; brands that default to ACP (codex /
-      // monad) route here unless `transportPref: 'pty'` narrows them
+      // elanous) route here unless `transportPref: 'pty'` narrows them
       // back. The transport-pref warning tests cover both branches.
       spawnAcpInitial: async (o: { backendId: string }) => {
         const sid = `acp-${seq++}`;
@@ -200,7 +200,7 @@ describe('buildAgentRoom · transportPref warnings', () => {
     };
   }
 
-  test('monad + pty → warning surfaced', async () => {
+  test('elanous + pty → warning surfaced', async () => {
     const reg = new AgentRoomRegistry();
     const stubs = makeStubs();
     // dynamic import inside to avoid circular module init
@@ -209,7 +209,7 @@ describe('buildAgentRoom · transportPref warnings', () => {
       {
         preset: 'two-split',
         members: [
-          { brandRef: 'monad', transportPref: 'pty' },
+          { brandRef: 'elanous', transportPref: 'pty' },
           { brandRef: 'codex' },
         ],
       },
@@ -267,7 +267,7 @@ describe('buildAgentRoom · transportPref warnings', () => {
         preset: 'two-split',
         members: [
           { brandRef: 'codex', transportPref: 'pty' },
-          { brandRef: 'monad', transportPref: 'acp' },
+          { brandRef: 'elanous', transportPref: 'acp' },
         ],
       },
       { registry: reg, ...stubs },
@@ -361,7 +361,7 @@ describe('composeFromLanes · transportPref pipe', () => {
 describe('LANE_MATRIX_BY_BRAND', () => {
   test('contains an entry for every recognized brand', () => {
     expect(Object.keys(LANE_MATRIX_BY_BRAND).sort()).toEqual([
-      'claude', 'codex', 'gemini', 'local-llm', 'monad',
+      'claude', 'codex', 'elanous', 'gemini', 'local-llm',
     ]);
   });
 
@@ -377,8 +377,8 @@ describe('LANE_MATRIX_BY_BRAND', () => {
     expect(e.supported).toEqual(['pty']);
   });
 
-  test('monad is acp-only', () => {
-    const e = LANE_MATRIX_BY_BRAND.monad!;
+  test('elanous is acp-only', () => {
+    const e = LANE_MATRIX_BY_BRAND.elanous!;
     expect(e.defaultLane).toBe('acp');
     expect(e.supported).toEqual(['acp']);
   });

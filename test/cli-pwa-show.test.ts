@@ -23,7 +23,7 @@ function fixture(overrides: Partial<PwaInstanceListing> = {}): PwaInstanceListin
     mode: 'static',
     kind: 'production',
     cwd: '/tmp/A',
-    daemonDir: '/tmp/.monad/nexus',
+    daemonDir: '/tmp/.elanous/nexus',
     shareMounted: false,
     https: false,
     startedAt: '2026-05-10T12:00:00.000Z',
@@ -63,7 +63,7 @@ describe('runPwaShow', () => {
     expect(r.exitCode).toBe(0);
     expect(r.instance).toBeUndefined();
     expect(out.logs.some((l) => l.includes('No PWA daemon registered'))).toBe(true);
-    expect(out.logs.some((l) => l.includes('monad nexus run --hmr'))).toBe(true);
+    expect(out.logs.some((l) => l.includes('elanous nexus run --hmr'))).toBe(true);
     expect(out.logs.some((l) => l.includes('global status'))).toBe(true);
   });
 

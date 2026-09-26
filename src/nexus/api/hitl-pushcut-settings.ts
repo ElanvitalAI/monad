@@ -80,7 +80,7 @@ export async function handleHitlTestPushcut(
 ): Promise<Response> {
   const client = opts.client ?? getPushcutClient();
   const notificationName = opts.notificationName
-    ?? process.env['MONAD_HITL_NOTIFY']
+    ?? process.env['ELANOUS_HITL_NOTIFY']
     ?? 'monad-confirm';
 
   if (!client.configured) {
@@ -102,7 +102,7 @@ export async function handleHitlTestPushcut(
 
   const promptRaw = typeof body.prompt === 'string' && body.prompt.trim().length > 0
     ? body.prompt.trim()
-    : 'monad β-3 test notification';
+    : 'elanous β-3 test notification';
   // Pushcut payload caps individual fields around ~256 chars in the
   // 'title' slot; 200 is a safe ceiling that still carries a useful
   // human prompt.

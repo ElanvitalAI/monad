@@ -87,7 +87,7 @@ describe('checkReadiness', () => {
   test('gh missing is manual and names the install command for the measured platform', () => {
     const linux = byId({ ...healthy, ghOnPath: false, ghAuthStatus: 1, platform: 'linux' }, 'gh-auth');
     expect(linux.status).toBe('manual');
-    expect(linux.remedy).toBe('monad doctor --fix --yes');   // apt gh 는 2.80 미만(Debian 12 2.23 · Ubuntu 24.04 2.45)
+    expect(linux.remedy).toBe('elanous doctor --fix --yes');   // apt gh 는 2.80 미만(Debian 12 2.23 · Ubuntu 24.04 2.45)
     const darwin = byId({ ...healthy, ghOnPath: false, ghAuthStatus: 1, platform: 'darwin' }, 'gh-auth');
     expect(darwin.status).toBe('manual');
     expect(darwin.remedy).toBe('brew install gh');
@@ -164,15 +164,15 @@ describe('checkReadiness', () => {
   test('an install prefix whose bin is off PATH is fixable with the installer PATH line', () => {
     const item = byId({
       ...healthy,
-      installPrefix: '/home/user/.local/share/monad',
+      installPrefix: '/home/user/.local/share/elanous',
       pathEntries: ['/usr/bin', '/home/user/.local/bin'],
     }, 'install-path');
     expect(item.status).toBe('fixable');
-    expect(item.remedy).toBe(`export PATH='/home/user/.local/share/monad/bin':\"$PATH\"`);
+    expect(item.remedy).toBe(`export PATH='/home/user/.local/share/elanous/bin':\"$PATH\"`);
   });
 
   test('the install-path remedy keeps the existing PATH when a shell runs it', () => {
-    const prefix = '/opt/monad';
+    const prefix = '/opt/elanous';
     const item = byId({
       ...healthy,
       installPrefix: prefix,
@@ -189,7 +189,7 @@ describe('checkReadiness', () => {
   });
 
   test('a prefix containing spaces is judged on the real path and shell-quoted in the remedy', () => {
-    const prefix = '/Users/Ada Lovelace/Library/Application Support/monad';
+    const prefix = '/Users/Ada Lovelace/Library/Application Support/elanous';
     const missing = byId({
       ...healthy,
       installPrefix: prefix,
@@ -198,7 +198,7 @@ describe('checkReadiness', () => {
     expect(missing.status).toBe('fixable');
     expect(missing.evidence).toContain(prefix);
     expect(missing.evidence).not.toContain('[redacted]');
-    expect(missing.remedy).toBe(`export PATH='/Users/Ada Lovelace/Library/Application Support/monad/bin':\"$PATH\"`);
+    expect(missing.remedy).toBe(`export PATH='/Users/Ada Lovelace/Library/Application Support/elanous/bin':\"$PATH\"`);
     const present = byId({
       ...healthy,
       installPrefix: `${prefix}/`,
@@ -209,26 +209,26 @@ describe('checkReadiness', () => {
   });
 
   test('Windows PATH matches a trailing backslash case-insensitively and splits semicolons', () => {
-    const prefix = 'C:\\Users\\u\\AppData\\Local\\monad';
-    const item = byId({ platform: 'win32', installPrefix: prefix, pathEntries: [`C:\\Windows;C:\\USERS\\U\\AppData\\Local\\monad\\bin\\`] }, 'install-path');
+    const prefix = 'C:\\Users\\u\\AppData\\Local\\elanous';
+    const item = byId({ platform: 'win32', installPrefix: prefix, pathEntries: [`C:\\Windows;C:\\USERS\\U\\AppData\\Local\\elanous\\bin\\`] }, 'install-path');
     expect(item.status).toBe('ok');
     expect(item.evidence).toContain(`${prefix}\\bin`);
     expect(byId({ platform: 'win32', installPrefix: prefix, pathEntries: [`${prefix}\\bin\\`] }, 'install-path').status).toBe('ok');
   });
 
   test('Windows missing PATH uses the installer PowerShell expression with escaped quotes', () => {
-    const prefix = 'C:\\Users\\u\\AppData\\Local\\monad';
+    const prefix = 'C:\\Users\\u\\AppData\\Local\\elanous';
     expect(byId({ platform: 'win32', installPrefix: prefix, pathEntries: [] }, 'install-path'))
       .toMatchObject({ status: 'fixable', remedy: `$env:PATH = '${prefix}\\bin' + [IO.Path]::PathSeparator + $env:PATH` });
-    expect(byId({ platform: 'win32', installPrefix: "C:\\Users\\O'Brien\\monad", pathEntries: [] }, 'install-path').remedy)
-      .toBe("$env:PATH = 'C:\\Users\\O''Brien\\monad\\bin' + [IO.Path]::PathSeparator + $env:PATH");
+    expect(byId({ platform: 'win32', installPrefix: "C:\\Users\\O'Brien\\elanous", pathEntries: [] }, 'install-path').remedy)
+      .toBe("$env:PATH = 'C:\\Users\\O''Brien\\elanous\\bin' + [IO.Path]::PathSeparator + $env:PATH");
   });
 
   test('an install prefix whose bin is on PATH is ok', () => {
     const item = byId({
       ...healthy,
-      installPrefix: '/opt/monad/',
-      pathEntries: ['/usr/bin', '/opt/monad/bin'],
+      installPrefix: '/opt/elanous/',
+      pathEntries: ['/usr/bin', '/opt/elanous/bin'],
     }, 'install-path');
     expect(item.status).toBe('ok');
   });
@@ -255,7 +255,7 @@ describe('checkReadiness', () => {
     expect(item.status).toBe('manual');
     expect(item.evidence).toContain(OTHER_SHA);
     expect(item.evidence).toContain(CODE);
-    expect(item.remedy).toBe('bash scripts/install.sh --no-modify-path && launchctl kickstart -k gui/$(id -u)/com.monad.nexus');
+    expect(item.remedy).toBe('bash scripts/install.sh --no-modify-path && launchctl kickstart -k gui/$(id -u)/com.elanous.nexus');
   });
 
   test('linux restart uses the user systemd unit', () => {
@@ -266,7 +266,7 @@ describe('checkReadiness', () => {
       platform: 'linux',
     }, 'service-version');
     expect(item.status).toBe('manual');
-    expect(item.remedy).toBe('bash scripts/install.sh --no-modify-path && systemctl --user restart monad-nexus');
+    expect(item.remedy).toBe('bash scripts/install.sh --no-modify-path && systemctl --user restart elanous-nexus');
   });
 
   test('an unmeasured platform does not invent a launchctl restart command', () => {
@@ -299,7 +299,7 @@ describe('checkReadiness', () => {
     expect(longer.status).toBe('manual');
     expect(longer.evidence).toContain(`${CODE}ffff`);
     expect(longer.evidence).toContain(CODE);
-    expect(longer.remedy).toBe('bash scripts/install.sh --no-modify-path && launchctl kickstart -k gui/$(id -u)/com.monad.nexus');
+    expect(longer.remedy).toBe('bash scripts/install.sh --no-modify-path && launchctl kickstart -k gui/$(id -u)/com.elanous.nexus');
   });
 
   test('redacted lookalikes are not compared as commits', () => {
@@ -344,7 +344,7 @@ describe('checkReadiness', () => {
       provider: 'auto',
       codexLogin: true,
       ghOnPath: false,
-      installPrefix: '/opt/monad',
+      installPrefix: '/opt/elanous',
       pathEntries: [],
       health: { daemonSha: OTHER_SHA },
       codeRevision: CODE,
@@ -399,7 +399,7 @@ describe('checkReadiness', () => {
       codexLogin: true,
       ghOnPath: true,
       ghAuthStatus: 1,
-      installPrefix: `/opt/${secret}/monad`,
+      installPrefix: `/opt/${secret}/elanous`,
       pathEntries: [`/opt/${secret}/bin`],
       health: { daemonSha: secret },
       codeRevision: `${secret}-revision`,
@@ -421,7 +421,7 @@ describe('checkReadiness', () => {
 
   test('a secret inside a PATH entry does not hide a real matching install bin', () => {
     const secret = 'sk-live-should-never-appear';
-    const prefix = `/opt/${secret}/monad`;
+    const prefix = `/opt/${secret}/elanous`;
     const item = byId({
       ...healthy,
       installPrefix: prefix,
@@ -434,7 +434,7 @@ describe('checkReadiness', () => {
   });
 });
 
-// 🆕 2026-09-24 — 전역 monad 링크가 설치본으로 풀리면 PATH 블록이 필요 없다.
+// 🆕 2026-09-24 — 전역 elanous 링크가 설치본으로 풀리면 PATH 블록이 필요 없다.
 describe('bun-version — one pin (.bun-version) for installer, pod image and doctor', () => {
   const by = (d: Parameters<typeof checkReadiness>[0]) => checkReadiness(d).items.find((entry) => entry.id === 'bun-version')!;
   test('equal is ok, different is manual with the pinned install line, unreadable is unknown', () => {
@@ -449,15 +449,15 @@ describe('bun-version — one pin (.bun-version) for installer, pod image and do
   });
 });
 
-describe('install-path — monad on PATH resolving into the install', () => {
-  const base = { installPrefix: '/home/u/.local/share/monad', pathEntries: ['/home/u/.bun/bin', '/usr/bin'] };
-  test('ok when the first monad on PATH resolves inside the install prefix', () => {
-    const r = checkReadiness({ ...base, monadOnPath: '/home/u/.local/share/monad/versions/1.0.0-abc/node_modules/monadagent/bin/monad.mjs' });
+describe('install-path — elanous on PATH resolving into the install', () => {
+  const base = { installPrefix: '/home/u/.local/share/elanous', pathEntries: ['/home/u/.bun/bin', '/usr/bin'] };
+  test('ok when the first elanous on PATH resolves inside the install prefix', () => {
+    const r = checkReadiness({ ...base, elanousOnPath: '/home/u/.local/share/elanous/versions/1.0.0-abc/node_modules/elanous/bin/elanous.mjs' });
     expect(r.items.find((i) => i.id === 'install-path')).toMatchObject({ status: 'ok' });
   });
-  test('still fixable when monad on PATH is a checkout, absent, or a sibling prefix', () => {
-    for (const monadOnPath of ['/home/u/src/monad-agent/bin/monad.mjs', null, undefined, '/home/u/.local/share/monad-other/bin/monad']) {
-      const r = checkReadiness({ ...base, monadOnPath });
+  test('still fixable when elanous on PATH is a checkout, absent, or a sibling prefix', () => {
+    for (const elanousOnPath of ['/home/u/src/monad-agent/bin/elanous.mjs', null, undefined, '/home/u/.local/share/elanous-other/bin/elanous']) {
+      const r = checkReadiness({ ...base, elanousOnPath });
       expect(r.items.find((i) => i.id === 'install-path')).toMatchObject({ status: 'fixable' });
     }
   });
@@ -468,31 +468,31 @@ describe('readiness — T2 additions (2026-09-24)', () => {
 
   test('auto with no login and no LLM key is manual, not a false green', () => {
     expect(find({ provider: 'auto', codexLogin: false, llmCredentialAvailable: false }, 'provider-decision'))
-      .toMatchObject({ status: 'manual', remedy: 'monad login openai-codex' });
+      .toMatchObject({ status: 'manual', remedy: 'elanous login openai-codex' });
     expect(find({ provider: 'auto', codexLogin: false, llmCredentialAvailable: true }, 'provider-decision').status).toBe('ok');
     expect(find({ provider: 'auto', codexLogin: false, llmCredentialAvailable: null }, 'provider-decision').status).toBe('ok');
   });
 
-  test('service file: version folder is fixable, bare monad is manual, stable path is ok, absent is ok, unmeasured is unknown', () => {
+  test('service file: version folder is fixable, bare elanous is manual, stable path is ok, absent is ok, unmeasured is unknown', () => {
     const plist = (arg: string) => `<array><string>/usr/bin/bun</string><string>${arg}</string><string>nexus</string><string>run</string></array>`;
-    expect(find({ serviceFile: { path: '/p', text: plist('/i/versions/1.0.0-a/node_modules/monadagent/bin/monad.mjs') } }, 'service-file').status).toBe('fixable');
-    expect(find({ serviceFile: { path: '/p', text: '<array><string>monad</string><string>nexus</string><string>run</string></array>' } }, 'service-file'))
-      .toMatchObject({ status: 'manual', remedy: 'monad nexus install' });
-    expect(find({ serviceFile: { path: '/p', text: plist('/i/current/node_modules/monadagent/bin/monad.mjs') } }, 'service-file').status).toBe('ok');
+    expect(find({ serviceFile: { path: '/p', text: plist('/i/versions/1.0.0-a/node_modules/elanous/bin/elanous.mjs') } }, 'service-file').status).toBe('fixable');
+    expect(find({ serviceFile: { path: '/p', text: '<array><string>elanous</string><string>nexus</string><string>run</string></array>' } }, 'service-file'))
+      .toMatchObject({ status: 'manual', remedy: 'elanous nexus install' });
+    expect(find({ serviceFile: { path: '/p', text: plist('/i/current/node_modules/elanous/bin/elanous.mjs') } }, 'service-file').status).toBe('ok');
     expect(find({ serviceFile: null }, 'service-file').status).toBe('ok');
     expect(find({}, 'service-file').status).toBe('unknown');
-    expect(JSON.stringify(find({ serviceFile: { path: '/p', text: 'SECRET_KEY=abc /versions/1/node_modules/monadagent/' } }, 'service-file'))).not.toContain('SECRET_KEY');
+    expect(JSON.stringify(find({ serviceFile: { path: '/p', text: 'SECRET_KEY=abc /versions/1/node_modules/elanous/' } }, 'service-file'))).not.toContain('SECRET_KEY');
   });
 });
 
 test('systemd provider environment is fixable by name only; unrelated entries are ok and unreadable files unknown', () => {
   const secret = 'unique-service-secret-12345';
-  const unit = `[Service]\nEnvironment="OPENAI_API_KEY=${secret}"\nEnvironment="MONAD_PWA_STATIC_DIR=/public"\n`;
+  const unit = `[Service]\nEnvironment="OPENAI_API_KEY=${secret}"\nEnvironment="ELANOUS_PWA_STATIC_DIR=/public"\n`;
   const found = byId({ serviceFile: { path: '/unit', text: unit } }, 'service-secrets');
   expect(found.status).toBe('fixable');
   expect(found.evidence).toContain('OPENAI_API_KEY');
   expect(JSON.stringify(checkReadiness({ serviceFile: { path: '/unit', text: unit } }))).not.toContain(secret);
-  expect(byId({ serviceFile: { path: '/unit', text: 'Environment="MONAD_PWA_STATIC_DIR=/public"\n' } }, 'service-secrets').status).toBe('ok');
+  expect(byId({ serviceFile: { path: '/unit', text: 'Environment="ELANOUS_PWA_STATIC_DIR=/public"\n' } }, 'service-secrets').status).toBe('ok');
   expect(byId({}, 'service-secrets').status).toBe('unknown');
   const plist = `<plist><dict><key>EnvironmentVariables</key><dict><key>OPENAI_API_KEY</key><string>${secret}</string></dict></dict></plist>`;
   const plistItem = byId({ serviceFile: { path: '/plist', text: plist } }, 'service-secrets');
@@ -521,7 +521,7 @@ describe('readiness — build toolchain and node-pty (RFC #20265 P2)', () => {
   });
 });
 
-// 🆕 2026-09-24 — python-env (RFC #20265 A3 · 대표 표준 = monad venv)
+// 🆕 2026-09-24 — python-env (RFC #20265 A3 · 대표 표준 = elanous venv)
 describe('python-env readiness', () => {
   const pick = (deps: Parameters<typeof checkReadiness>[0]) => checkReadiness(deps).items.find((i) => i.id === 'python-env')!;
   test('unmeasured is unknown, not ok', () => {
@@ -533,7 +533,7 @@ describe('python-env readiness', () => {
       .toMatchObject({ status: 'manual', remedy: 'uv python install 3.12' });
   });
   test('fixable points at doctor --fix; manual prefixes the distro python build deps', () => {
-    expect(pick({ pythonEnv: { status: 'fixable', evidence: 'venv missing', remedy: 'monad python setup --yes' } })).toMatchObject({ status: 'fixable', remedy: 'monad doctor --fix --yes' });
+    expect(pick({ pythonEnv: { status: 'fixable', evidence: 'venv missing', remedy: 'elanous python setup --yes' } })).toMatchObject({ status: 'fixable', remedy: 'elanous doctor --fix --yes' });
     const m = pick({ distro: 'amzn2', pythonEnv: { status: 'manual', evidence: 'python 3.7 older than 3.12.12', remedy: 'pyenv install 3.12.12' } });
     expect(m.status).toBe('manual');
     expect(m.remedy).toContain('openssl11-devel');
@@ -543,27 +543,27 @@ describe('python-env readiness', () => {
 });
 
 test('python-env with no python at all on debian gets the distro python line, not the pyenv prose', () => {
-  const m = checkReadiness({ distro: 'debian', pythonEnv: { status: 'manual', evidence: 'no python3 found (MONAD_PYTHON · monad venv · pyenv · PATH)', remedy: 'install Python 3.12.12+ (pyenv install 3.12.12) — see RFC-doctor-fix-build-toolchain-and-python-by-distro A2' } }).items.find((i) => i.id === 'python-env')!;
-  expect(m.remedy).toBe('sudo apt-get update && sudo apt-get install -y python3 python3-venv && monad python setup --yes');
+  const m = checkReadiness({ distro: 'debian', pythonEnv: { status: 'manual', evidence: 'no python3 found (ELANOUS_PYTHON · elanous venv · pyenv · PATH)', remedy: 'install Python 3.12.12+ (pyenv install 3.12.12) — see RFC-doctor-fix-build-toolchain-and-python-by-distro A2' } }).items.find((i) => i.id === 'python-env')!;
+  expect(m.remedy).toBe('sudo apt-get update && sudo apt-get install -y python3 python3-venv && elanous python setup --yes');
 });
 
 test('python-env with no python on a family without a base line keeps the build path', () => {
-  const m = checkReadiness({ distro: 'amzn2', pythonEnv: { status: 'manual', evidence: 'no python3 found (MONAD_PYTHON · monad venv · pyenv · PATH)', remedy: 'install Python 3.12.12+ (pyenv install 3.12.12) — see RFC A2' } }).items.find((i) => i.id === 'python-env')!;
+  const m = checkReadiness({ distro: 'amzn2', pythonEnv: { status: 'manual', evidence: 'no python3 found (ELANOUS_PYTHON · elanous venv · pyenv · PATH)', remedy: 'install Python 3.12.12+ (pyenv install 3.12.12) — see RFC A2' } }).items.find((i) => i.id === 'python-env')!;
   expect(m.remedy).toContain('pyenv install');
 });
 
 test('python-env ensurepip case does not prepend pyenv build deps', () => {
-  const m = checkReadiness({ distro: 'debian', pythonEnv: { status: 'manual', evidence: 'the base python cannot create a venv with pip (ensurepip missing)', remedy: 'sudo apt-get install -y python3-venv && monad python setup --yes' } }).items.find((i) => i.id === 'python-env')!;
-  expect(m.remedy).toBe('sudo apt-get install -y python3-venv && monad python setup --yes');
+  const m = checkReadiness({ distro: 'debian', pythonEnv: { status: 'manual', evidence: 'the base python cannot create a venv with pip (ensurepip missing)', remedy: 'sudo apt-get install -y python3-venv && elanous python setup --yes' } }).items.find((i) => i.id === 'python-env')!;
+  expect(m.remedy).toBe('sudo apt-get install -y python3-venv && elanous python setup --yes');
 });
 
 describe('service-version remedy follows where doctor runs (D5)', () => {
   test('an installed copy only needs a restart — the remedy restarts, it does not install from a checkout', () => {
-    const item = byId({ ...healthy, installPrefix: '/opt/monad', health: { daemonSha: OTHER_SHA }, codeRevision: CODE, platform: 'darwin' }, 'service-version');
+    const item = byId({ ...healthy, installPrefix: '/opt/elanous', health: { daemonSha: OTHER_SHA }, codeRevision: CODE, platform: 'darwin' }, 'service-version');
     expect(item.status).toBe('manual');
-    expect(item.remedy).toBe('launchctl kickstart -k gui/$(id -u)/com.monad.nexus');
-    const linux = byId({ ...healthy, installPrefix: '/opt/monad', health: { daemonSha: OTHER_SHA }, codeRevision: CODE, platform: 'linux' }, 'service-version');
-    expect(linux.remedy).toBe('systemctl --user restart monad-nexus');
+    expect(item.remedy).toBe('launchctl kickstart -k gui/$(id -u)/com.elanous.nexus');
+    const linux = byId({ ...healthy, installPrefix: '/opt/elanous', health: { daemonSha: OTHER_SHA }, codeRevision: CODE, platform: 'linux' }, 'service-version');
+    expect(linux.remedy).toBe('systemctl --user restart elanous-nexus');
   });
 });
 
@@ -622,13 +622,13 @@ describe('L0 substrate · docker · kubernetes · memory (RFC docker·k8s ladder
     expect(byId({ kubernetes: { onPath: false } }, 'kubernetes').status).toBe('ok');
     expect(byId({ kubernetes: { onPath: true, context: null } }, 'kubernetes')).toMatchObject({ status: 'ok', evidence: 'kubectl installed, no context — optional' });
     expect(byId({ kubernetes: { onPath: true } }, 'kubernetes').status).toBe('unknown');
-    const down = byId({ kubernetes: { onPath: true, context: 'kind-monad', server: { kind: 'no-response', detail: 'connection refused' } } }, 'kubernetes');
+    const down = byId({ kubernetes: { onPath: true, context: 'kind-elanous', server: { kind: 'no-response', detail: 'connection refused' } } }, 'kubernetes');
     expect(down.status).toBe('manual');
-    expect(down.evidence).toContain('kind-monad: cluster unreachable');
-    expect(down.remedy).toBe("kubectl --context 'kind-monad' cluster-info");
-    expect(byId({ kubernetes: { onPath: true, context: 'kind-monad', server: { kind: 'timeout' } } }, 'kubernetes').status).toBe('unknown');
-    expect(byId({ kubernetes: { onPath: true, context: 'kind-monad', server: { kind: 'ok', gitVersion: 'v1.31.0' } } }, 'kubernetes'))
-      .toMatchObject({ status: 'ok', evidence: 'context kind-monad · server v1.31.0' });
+    expect(down.evidence).toContain('kind-elanous: cluster unreachable');
+    expect(down.remedy).toBe("kubectl --context 'kind-elanous' cluster-info");
+    expect(byId({ kubernetes: { onPath: true, context: 'kind-elanous', server: { kind: 'timeout' } } }, 'kubernetes').status).toBe('unknown');
+    expect(byId({ kubernetes: { onPath: true, context: 'kind-elanous', server: { kind: 'ok', gitVersion: 'v1.31.0' } } }, 'kubernetes'))
+      .toMatchObject({ status: 'ok', evidence: 'context kind-elanous · server v1.31.0' });
   });
 
   test('memory parsers: vm_stat uses the page size from its first line; /proc/meminfo multiplies kB', () => {
@@ -673,19 +673,19 @@ describe('L0 substrate · docker · kubernetes · memory (RFC docker·k8s ladder
   });
 });
 
-// 🩸 09-26: 운영 plist 가 사람 작업 트리(pilot)를 가리켰다 — WorkingDirectory ⊕ MONAD_PWA_STATIC_DIR.
+// 🩸 09-26: 운영 plist 가 사람 작업 트리(pilot)를 가리켰다 — WorkingDirectory ⊕ ELANOUS_PWA_STATIC_DIR.
 describe('service-file — a service that depends on a git working tree', () => {
-  const plist = `<dict>\n  <key>EnvironmentVariables</key>\n  <dict>\n    <key>MONAD_PWA_STATIC_DIR</key>\n    <string>/Users/u/work/checkout/apps/pwa/out</string>\n  </dict>\n  <key>ProgramArguments</key>\n  <array><string>/Users/u/.bun/bin/bun</string><string>/Users/u/.local/share/monad/current/node_modules/monadagent/bin/monad.mjs</string></array>\n  <key>WorkingDirectory</key>\n  <string>/Users/u/work/checkout</string>\n</dict>`;
+  const plist = `<dict>\n  <key>EnvironmentVariables</key>\n  <dict>\n    <key>ELANOUS_PWA_STATIC_DIR</key>\n    <string>/Users/u/work/checkout/apps/pwa/out</string>\n  </dict>\n  <key>ProgramArguments</key>\n  <array><string>/Users/u/.bun/bin/bun</string><string>/Users/u/.local/share/elanous/current/node_modules/elanous/bin/elanous.mjs</string></array>\n  <key>WorkingDirectory</key>\n  <string>/Users/u/work/checkout</string>\n</dict>`;
   test('servicePathRefs reads WorkingDirectory and the PWA dir from a plist and a systemd unit', () => {
     expect(servicePathRefs(plist)).toEqual(['/Users/u/work/checkout/apps/pwa/out', '/Users/u/work/checkout']);
-    expect(servicePathRefs('[Service]\nWorkingDirectory=/home/u\nEnvironment="MONAD_PWA_STATIC_DIR=/home/u/src/apps/pwa/out"\n')).toEqual(['/home/u', '/home/u/src/apps/pwa/out']);
+    expect(servicePathRefs('[Service]\nWorkingDirectory=/home/u\nEnvironment="ELANOUS_PWA_STATIC_DIR=/home/u/src/apps/pwa/out"\n')).toEqual(['/home/u', '/home/u/src/apps/pwa/out']);
   });
   test('git-tree refs make it manual with a reinstall-from-home remedy; none keeps it ok', () => {
     const by = (d: Parameters<typeof checkReadiness>[0]) => checkReadiness(d).items.find((e) => e.id === 'service-file')!;
     const bad = by({ platform: 'darwin', serviceFile: { path: '/p.plist', text: plist }, serviceGitTreeRefs: ['/Users/u/work/checkout'] });
     expect(bad.status).toBe('manual');
     expect(bad.evidence).toContain('git working tree');
-    expect(bad.remedy).toBe('cd ~ && monad nexus install --launchd');
+    expect(bad.remedy).toBe('cd ~ && elanous nexus install --launchd');
     expect(by({ platform: 'darwin', serviceFile: { path: '/p.plist', text: plist }, serviceGitTreeRefs: [] }).status).toBe('ok');
   });
 });

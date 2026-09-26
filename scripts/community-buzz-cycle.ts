@@ -3,8 +3,8 @@
 //
 // PLAN-community-buzz-surveillance §7 P1. cron one-shot: fetch → parse → upsert
 // → velocity → 로그. 이번 페이즈는 감시·적재·velocity 까지(무LLM·무알림).
-// Tier1 판정(P2)·알림(P3)·정규화(P1.5)는 후속. 크론 등록은 `monad schedule` 로.
-//   예: monad schedule create --cron '*/5 9-15 * * 1-5' --command 'scripts/community-buzz-cycle.ts'
+// Tier1 판정(P2)·알림(P3)·정규화(P1.5)는 후속. 크론 등록은 `elanous schedule` 로.
+//   예: elanous schedule create --cron '*/5 9-15 * * 1-5' --command 'scripts/community-buzz-cycle.ts'
 
 import { unknownCronFlag } from '../src/domains/cron-flag-contract.js';
 import { ensureCronNodePath } from '../src/domains/cron-path.js';
@@ -33,7 +33,7 @@ import { alertCandidates, recentAlertedTitles, markAlerted, filterNewAlerts, for
 import { sendOutbound } from '../src/domains/outbound-alert.js';
 import { omniQuote } from '../src/domains/finance-tools.js';
 
-const LOG = join(homedir(), '.monad/conatus/buzz_cycle.log');
+const LOG = join(homedir(), '.elanous/conatus/buzz_cycle.log');
 // ★ A1c — 수집/알림 분리(적응형 투자): --collect-only 면 fmkorea 수집·buzz_posts 적재만 하고
 //   직접 발송은 skip(알림은 signal pool 게이트/라우터가 독점). 미지정 시 기존 동작(수집+알림).
 const COLLECT_ONLY = process.argv.includes('--collect-only');

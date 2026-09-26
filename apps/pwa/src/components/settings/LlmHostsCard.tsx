@@ -2,7 +2,7 @@
 
 // §3.6 (2026-05-10) — Settings card consumer for FU.A3 multi-host
 // hot-reload (#2118). Lets users add/remove Anthropic / Gemini / vLLM
-// / Ollama hosts at runtime without editing `MONAD_LLM_HOSTS` JSON.
+// / Ollama hosts at runtime without editing `ELANOUS_LLM_HOSTS` JSON.
 //
 // Architecture (from BACKLOG §3.6 + FU.A3):
 //   - GET  /v1/llm/hosts → list with `source: 'override'|'env'|'legacy'`.
@@ -392,7 +392,7 @@ export function LlmHostsCard() {
       </div>
 
       <p className="text-[10px] text-muted-foreground">
-        In-memory override · daemon restart reverts to <code className="rounded bg-muted px-1">MONAD_LLM_HOSTS</code> env / legacy single host. Permanent change → set the env var in <code className="rounded bg-muted px-1">.zshrc</code> or <code className="rounded bg-muted px-1">launchctl setenv</code>. PUT replaces the full list, so re-add Anthropic/Gemini hosts in one go (existing apiKeys appear as <code className="rounded bg-muted px-1">[redacted]</code> and aren&rsquo;t round-trippable).
+        In-memory override · daemon restart reverts to <code className="rounded bg-muted px-1">ELANOUS_LLM_HOSTS</code> env / legacy single host. Permanent change → set the env var in <code className="rounded bg-muted px-1">.zshrc</code> or <code className="rounded bg-muted px-1">launchctl setenv</code>. PUT replaces the full list, so re-add Anthropic/Gemini hosts in one go (existing apiKeys appear as <code className="rounded bg-muted px-1">[redacted]</code> and aren&rsquo;t round-trippable).
       </p>
     </section>
   );

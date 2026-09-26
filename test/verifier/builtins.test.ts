@@ -27,7 +27,7 @@ describe('schema builtin', () => {
     });
     const r = await schemaBuiltin(
       {},
-      { data: { name: 'monad' } },
+      { data: { name: 'elanous' } },
       { kind: 'schema', schemaRef: 'greeting' },
       ctx,
     );

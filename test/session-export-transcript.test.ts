@@ -36,7 +36,7 @@ afterEach(() => { rmSync(root, { recursive: true, force: true }); rmSync(home, {
 describe('exportSessionTranscript', () => {
   test('disk session → default ~/temp path, drops tool rows', () => {
     const r = exportSessionTranscript({ sessionId: 'aaaa', root, home, nowMs: NOW });
-    expect(r.path).toBe(join(home, 'temp', 'monad-transcript-20260724-010203.md'));
+    expect(r.path).toBe(join(home, 'temp', 'elanous-transcript-20260724-010203.md'));
     expect(r.messages).toBe(2); // tool row dropped
     expect(r.title).toBe('refactor turn-runner');
     const md = readFileSync(r.path, 'utf8');
@@ -58,7 +58,7 @@ describe('exportSessionTranscript', () => {
   test('directory target appends default filename', () => {
     const dir = join(home, 'out'); mkdirSync(dir, { recursive: true });
     const r = exportSessionTranscript({ sessionId: 'aaaa', to: dir, root, home, nowMs: NOW });
-    expect(r.path).toBe(join(dir, 'monad-transcript-20260724-010203.md'));
+    expect(r.path).toBe(join(dir, 'elanous-transcript-20260724-010203.md'));
   });
 
   test('live history overrides disk source', () => {

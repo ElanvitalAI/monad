@@ -116,12 +116,12 @@ describe('resolveDetachedRunIdentity — detached child runId propagation', () =
   test('부모가 구운 명시 runId가 환경 상속값보다 우선한다', () => {
     expect(resolveDetachedRunIdentity(
       { runId: 'run-parent' },
-      { MONAD_RUN_ID: 'run-other' },
+      { ELANOUS_RUN_ID: 'run-other' },
     )).toEqual({ runId: 'run-parent', source: 'explicit' });
   });
 
   test('명시 runId가 없으면 환경을 상속하고, 없으면 새로 mint한다', () => {
-    expect(resolveDetachedRunIdentity({}, { MONAD_RUN_ID: 'run-inherited' }))
+    expect(resolveDetachedRunIdentity({}, { ELANOUS_RUN_ID: 'run-inherited' }))
       .toEqual({ runId: 'run-inherited', source: 'inherited' });
 
     const minted = resolveDetachedRunIdentity({}, {});

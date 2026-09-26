@@ -67,10 +67,10 @@ export function McpAppFrame({ html, connectDomains, resourceDomains, server, too
   return (
     <iframe
       ref={ref}
-      data-monad-mcp-app-frame="true"
+      data-elanous-mcp-app-frame="true"
       // Rendered so the host-side server pairing is observable in a string
       // render — the field it comes from has already been wrong once.
-      data-monad-mcp-server={server ?? ''}
+      data-elanous-mcp-server={server ?? ''}
       sandbox="allow-scripts"
       srcDoc={srcDoc}
       title="MCP App"

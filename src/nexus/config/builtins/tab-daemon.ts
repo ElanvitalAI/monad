@@ -1,6 +1,6 @@
 // NEXUS · daemon-tab built-in switches (Phase N-3.5 PR φ)
 //
-// Per-instance overrides for the daemon tab (`monad serve`). Most users
+// Per-instance overrides for the daemon tab (`elanous serve`). Most users
 // only ever have `daemon:1`, so the literal id pattern is fine.
 //
 // Pushcut webhook switches (D1/D2/D4) are housed here because the
@@ -34,7 +34,7 @@ export const DAEMON_SWITCHES: SwitchSpec[] = [
     ],
     hotApplicable: false,
     restartTabs: ['daemon:1'],
-    envName: 'MONAD_TOOLS',
+    envName: 'ELANOUS_TOOLS',
   },
   {
     id: 'tabs.daemon:1.historyDir',
@@ -46,7 +46,7 @@ export const DAEMON_SWITCHES: SwitchSpec[] = [
     default: '',
     hotApplicable: false,
     restartTabs: ['daemon:1'],
-    envName: 'MONAD_HISTORY_DIR',
+    envName: 'ELANOUS_HISTORY_DIR',
   },
 
   // ---- Pushcut webhook (WT-N-3 D1/D2/D4 absorbed) ----
@@ -71,8 +71,8 @@ export const DAEMON_SWITCHES: SwitchSpec[] = [
     hotApplicable: true,
     pwaPreferred: true,
     redactInLogs: true,
-    envName: 'MONAD_PUSHCUT_WEBHOOK_SECRET',
-    legacyEnvName: 'MONAD_PUSHCUT_WEBHOOK_SECRET',
+    envName: 'ELANOUS_PUSHCUT_WEBHOOK_SECRET',
+    legacyEnvName: 'ELANOUS_PUSHCUT_WEBHOOK_SECRET',
   },
   {
     id: PUSHCUT_WEBHOOK_PATH_SWITCH_ID,

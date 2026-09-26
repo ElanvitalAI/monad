@@ -36,8 +36,8 @@ import { debugLog } from '@/lib/debug';
 import { terminalChipLabel } from './terminal-chip-label';
 import { tabCloseAction, terminateConfirmation, type OwnerRunUsage } from './tab-close-intent';
 
-const STORAGE_KEY = 'monad.webterm.tabs';
-const HIDDEN_STORAGE_KEY = 'monad.webterm.hidden-tabs';
+const STORAGE_KEY = 'elanous.webterm.tabs';
+const HIDDEN_STORAGE_KEY = 'elanous.webterm.hidden-tabs';
 
 export type InitialTerminalState =
   | { status: 'pending' }
@@ -80,7 +80,7 @@ interface DaemonListEntry {
   /** P4 — 마지막 PTY 출력 시각(epoch ms). 구 데몬은 미포함(optional). */
   lastOutputAt?: number;
   ownerRunUsage?: OwnerRunUsage;
-  terminalOriginCategory?: 'direct-human' | 'monad' | 'external-tool' | 'unknown';
+  terminalOriginCategory?: 'direct-human' | 'elanous' | 'external-tool' | 'unknown';
   terminalOriginReason?: string;
   externalToolName?: string;
   controller?: string;
@@ -95,7 +95,7 @@ const EMPTY_DAEMON_INFO: ReadonlyMap<string, DaemonListEntry> = new Map();
 
 function terminalOriginLabel(info: DaemonListEntry | undefined): string {
   if (info?.terminalOriginCategory === 'direct-human') return '사람';
-  if (info?.terminalOriginCategory === 'monad') return 'monad';
+  if (info?.terminalOriginCategory === 'elanous') return 'elanous';
   if (info?.terminalOriginCategory === 'external-tool') return info.externalToolName ? `외부 도구: ${info.externalToolName}` : '외부 도구';
   return info?.terminalOriginReason ? `이 행에서는 알 수 없음: ${info.terminalOriginReason}` : '이 행에서는 알 수 없음';
 }
@@ -219,7 +219,7 @@ export function parseTerminalListResponse(
       ...(ownerRunUsage === 'running' || ownerRunUsage === 'terminated-live-owner' || ownerRunUsage === 'no-run-id' || ownerRunUsage === 'unknown'
         ? { ownerRunUsage }
         : {}),
-      ...(terminalOriginCategory === 'direct-human' || terminalOriginCategory === 'monad' || terminalOriginCategory === 'external-tool' || terminalOriginCategory === 'unknown'
+      ...(terminalOriginCategory === 'direct-human' || terminalOriginCategory === 'elanous' || terminalOriginCategory === 'external-tool' || terminalOriginCategory === 'unknown'
         ? { terminalOriginCategory }
         : {}),
       ...(typeof terminalOriginReason === 'string' ? { terminalOriginReason } : {}),

@@ -13,7 +13,7 @@
 //
 // Threshold:
 //   - default 50_000 (matches BACKLOG §3.3 spec)
-//   - build-time override `NEXT_PUBLIC_MONAD_SHOWROOM_BROADCAST_COST_WARN_TOKENS`
+//   - build-time override `NEXT_PUBLIC_ELANOUS_SHOWROOM_BROADCAST_COST_WARN_TOKENS`
 //   - runtime override via localStorage (settings card · future axis)
 
 import type { ShowroomPanel } from './types';
@@ -66,7 +66,7 @@ export interface EstimateBroadcastCostOpts {
 /** Build-time + runtime threshold resolver. SSR-safe. */
 export function resolveCostWarnThreshold(): number {
   // Build-time env (Next.js NEXT_PUBLIC_*).
-  const envRaw = typeof process !== 'undefined' ? process.env?.NEXT_PUBLIC_MONAD_SHOWROOM_BROADCAST_COST_WARN_TOKENS : undefined;
+  const envRaw = typeof process !== 'undefined' ? process.env?.NEXT_PUBLIC_ELANOUS_SHOWROOM_BROADCAST_COST_WARN_TOKENS : undefined;
   const envParsed = envRaw ? Number(envRaw) : Number.NaN;
   if (Number.isFinite(envParsed) && envParsed > 0) return envParsed;
   return DEFAULT_BROADCAST_COST_WARN_TOKENS;

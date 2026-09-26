@@ -124,7 +124,7 @@ export interface DaemonTerminalSummary {
   /** Terminal creation requester serialized by current daemons; absent from legacy responses. */
   origin?: 'human' | 'system' | 'unknown';
   /** Canonical manifest/CLI provenance, optional so legacy daemon responses remain compatible. */
-  terminalOriginCategory?: 'direct-human' | 'monad' | 'external-tool' | 'unknown';
+  terminalOriginCategory?: 'direct-human' | 'elanous' | 'external-tool' | 'unknown';
   terminalOriginReason?: string;
   externalToolName?: string;
   /** Omitted when no controller was recorded; an empty string is preserved when explicitly sent. */
@@ -295,7 +295,7 @@ export interface AcpFrame {
   params?: unknown;
   result?: unknown;
   error?: { code: number; message: string; data?: unknown };
-  // monad-specific notification kinds.
+  // elanous-specific notification kinds.
   kind?: 'output' | 'exit' | 'snapshot' | 'sessionUpdate' | 'error';
 }
 
@@ -315,7 +315,7 @@ export interface AcpConnection {
   on(kind: NonNullable<AcpFrame['kind']>, cb: AcpFrameHandler): () => void;
   onAny(cb: AcpFrameHandler): () => void;
   /** M4 — register an inbound request handler for a specific method
-   *  (e.g. `monad/ask/request`). Each lease keeps an independent binding.
+   *  (e.g. `elanous/ask/request`). Each lease keeps an independent binding.
    *  The latest active binding owns the one JSON-RPC response; disposing it
    *  restores the preceding binding. Returns a disposer that removes only
    *  this binding. Notifications (method without id) still flow via `on()` /
@@ -943,7 +943,7 @@ export class DaemonClient {
       }) => void;
       /** P5.x.+ activity pill (#1985) — turn-level metrics emitted at
        *  end of stream (turnDurationMs · toolCallCount · textBytes).
-       *  CLI cost is external to monad so we surface activity rather
+       *  CLI cost is external to elanous so we surface activity rather
        *  than $ — useful for "which agent is doing more work". */
       onUsage?: (evt: {
         turnDurationMs: number;
@@ -1106,7 +1106,7 @@ export class DaemonClient {
   }
 
   /** CV-3 FP-B — Showroom named layout daemon-side store (cross-device
-   *  sync · ~/.monad/showroom-layouts.json). vision Q3: auto-migrate
+   *  sync · ~/.elanous/showroom-layouts.json). vision Q3: auto-migrate
    *  on first daemon save · localStorage stays as cache fallback. */
   async listShowroomLayouts(): Promise<{
     layouts: Array<{
@@ -1221,7 +1221,7 @@ export class DaemonClient {
   /** §3.6 (2026-05-10) — multi-host hot-reload GUI consumer for FU.A3
    *  endpoint (#2118). The Settings · LlmHostsCard renders the result,
    *  letting users add/remove Anthropic/Gemini/vLLM/Ollama hosts at
-   *  runtime without editing `MONAD_LLM_HOSTS` JSON or restarting the
+   *  runtime without editing `ELANOUS_LLM_HOSTS` JSON or restarting the
    *  daemon. Override is in-memory only — env/legacy reverts on
    *  restart (intentional · permanent change still goes via .zshrc). */
   async getLlmHosts(): Promise<LlmHostsResponse> {
@@ -1245,7 +1245,7 @@ export class DaemonClient {
 
   /** R6 FU.2 · §6.3 audio bridge — POST audio file to daemon
    *  `/v1/audio/stt` for transcription. Daemon picks the configured
-   *  STT provider (default OpenAI Whisper · same as monad TUI). The
+   *  STT provider (default OpenAI Whisper · same as elanous TUI). The
    *  PWA's audio context source uses this to auto-fill the
    *  transcript field on file pick.
    *
@@ -1495,7 +1495,7 @@ class AcpConnectionImpl implements AcpConnection {
       debugLog('webterm.acp.close', { code: ev.code, reason: ev.reason, handshakeComplete: this.handshakeComplete });
     });
     // WT-S-1.5 — auto ACP handshake on open. Sends `initialize` then
-    // `session/new` with monad term/ui caps declared, so daemon
+    // `session/new` with elanous term/ui caps declared, so daemon
     // broadcasts (terminalOutput envelope etc.) reach this peer.
     this.readyPromise = (async () => {
       await this.waitOpen();
@@ -1505,13 +1505,13 @@ class AcpConnectionImpl implements AcpConnection {
           fs: { readTextFile: false, writeTextFile: false },
           terminal: false,
           _meta: {
-            monad: {
+            elanous: {
               ui: { showModal: true, showToast: true, updateStatusPill: true, usage: false },
               term: { terminalOutput: true, terminalExit: true, terminalFrame: true },
               // M4 of PLAN-ask-user-question-cross-surface-2026-05-13 —
               // PWA renders the native AskUserQuestion modal (shadcn
               // Dialog). Daemon's `dispatchAskUserQuestion` resolver
-              // path will push via SDK `extMethod('monad/ask/request',
+              // path will push via SDK `extMethod('elanous/ask/request',
               // …)` to peers that advertise this cap.
               ask: { askUserQuestion: true },
             },

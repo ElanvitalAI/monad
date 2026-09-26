@@ -1,6 +1,6 @@
-// Phase 2 (PLAN-config-unification-monad-root-2026-05-10):
+// Phase 2 (PLAN-config-unification-elanous-root-2026-05-10):
 //   buildUserConfig() exposes NEXUS schema fields (`version`, `global`,
-//   `tabs`) at the typed UserConfig root so `monad config get/set
+//   `tabs`) at the typed UserConfig root so `elanous config get/set
 //   global.<...>` resolves through the same dotted-path resolver as
 //   Path A keys. saveUserConfig() round-trips them.
 
@@ -95,7 +95,7 @@ describe('Phase 2 · NEXUS schema co-resident at UserConfig root', () => {
       llm: { provider: 'auto' },
     });
     const cfg = buildUserConfig(cfgPath);
-    // Simulate `monad config set global.nexus.pwa.shareTailnet enabled`
+    // Simulate `elanous config set global.nexus.pwa.shareTailnet enabled`
     (cfg.global as Record<string, Record<string, Record<string, unknown>>>)
       .nexus.pwa.shareTailnet = 'enabled';
     saveUserConfig(cfg, cfgPath);

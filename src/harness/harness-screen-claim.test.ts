@@ -14,7 +14,7 @@ let dir: string;
 let env: NodeJS.ProcessEnv;
 beforeEach(() => {
   dir = mkdtempSync(join(tmpdir(), 'screen-claim-'));
-  env = { ...process.env, MONAD_STATE_DIR: dir };
+  env = { ...process.env, ELANOUS_STATE_DIR: dir };
 });
 afterEach(() => { try { rmSync(dir, { recursive: true, force: true }); } catch { /* ignore */ } });
 

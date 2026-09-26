@@ -1,6 +1,6 @@
 {
   "name": "content-trust",
-  "description": "밖에서 읽어 온 글(웹·채널·메일)을 «지시»로 읽어도 되나. ⛔ monad 는 omni-crawl·채널을 읽는다.",
+  "description": "밖에서 읽어 온 글(웹·채널·메일)을 «지시»로 읽어도 되나. ⛔ elanous 는 omni-crawl·채널을 읽는다.",
   "requiredStateKeys": ["source", "text"],
   "questions": {
     "injection": {

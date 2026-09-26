@@ -2,7 +2,7 @@
 
 import { describe, expect, test } from 'bun:test';
 
-import { parseMonadUri } from '../../../src/mss/uri/parser.ts';
+import { parseElanousUri } from '../../../src/mss/uri/parser.ts';
 import { mintSessionUri } from '../../../src/mss/uri/session-mint.ts';
 import { asSessionUri } from '../../../src/mss/uri/builder.ts';
 
@@ -12,14 +12,14 @@ describe('mintSessionUri', () => {
     expect(() => asSessionUri(uri)).not.toThrow();
   });
 
-  test('format is `session/<ULID>` — Tier 2 MonadUri', () => {
+  test('format is `session/<ULID>` — Tier 2 ElanousUri', () => {
     const uri = mintSessionUri();
     expect(uri).toMatch(/^session\/[0-9A-HJKMNP-TV-Z]{26}$/);
   });
 
-  test('parses as a MonadUri with a single session segment', () => {
+  test('parses as a ElanousUri with a single session segment', () => {
     const uri = mintSessionUri();
-    const parsed = parseMonadUri(uri);
+    const parsed = parseElanousUri(uri);
     expect(parsed).not.toBeNull();
     expect(parsed!.tier).toBe(2);
     expect(parsed!.segments.length).toBe(1);
@@ -42,11 +42,11 @@ describe('mintSessionUri', () => {
     expect(tsB.localeCompare(tsA)).toBeGreaterThan(0);
   });
 
-  test('typed SessionUri can be used anywhere a MonadUri is expected', () => {
+  test('typed SessionUri can be used anywhere a ElanousUri is expected', () => {
     const uri = mintSessionUri();
     // Compile-only smoke: no runtime assertion required — if this
     // compiles, the brand hierarchy is intact (SessionUri extends
-    // MonadUri extends string).
+    // ElanousUri extends string).
     const asStr: string = uri;
     expect(typeof asStr).toBe('string');
   });

@@ -11,7 +11,7 @@
 //
 // Dispatch returns JSON via the `ToolRuntime` `{ output: string }`
 // shape. Persist defaults to `true` — timelines land in
-// `~/.monad/timelines/<recorderId>.cast` so the widget-team
+// `~/.elanous/timelines/<recorderId>.cast` so the widget-team
 // StateTimelineViewer (Bundle 8W) can `view <path>` them.
 //
 // Multiple concurrent recorders are supported — the active-recorder
@@ -42,7 +42,7 @@ import type { ArtifactStore } from '../artifact/index.js';
 // ── Types ────────────────────────────────────────────────────────
 
 /** Minimal fs contract — swap in-memory in tests so persistence works
- *  without hitting the real `~/.monad/timelines/` directory. Matches
+ *  without hitting the real `~/.elanous/timelines/` directory. Matches
  *  `node:fs` sync shape for the two methods we call. */
 export interface RecordingFs {
   mkdirSync(p: string, opts: { recursive: boolean }): void;
@@ -61,10 +61,10 @@ export interface RecordingRuntimeDeps {
   /** Bundle B-3 (P6-2) · unified artifact persistence. When present,
    *  `persist=true` timeline saves go through `ArtifactStore.put(
    *  'timeline', body, {origin: recorderId, producer: 'bundle-8t'})`
-   *  and land under `~/.monad/artifacts/timeline/`. Takes precedence
+   *  and land under `~/.elanous/artifacts/timeline/`. Takes precedence
    *  over legacy `baseDir` / `fs`. */
   artifactStore?: ArtifactStore;
-  /** @deprecated Legacy fallback · `~/.monad/timelines/` direct write.
+  /** @deprecated Legacy fallback · `~/.elanous/timelines/` direct write.
    *  Used only when `artifactStore` is absent (e.g. hermetic tests
    *  without store DI). */
   baseDir?: string;
@@ -125,7 +125,7 @@ export function buildStopRecordingTool(): LLMToolSpec {
     name: 'StopRecording',
     description:
       'Stop a recorder started via `StartRecording`. By default the '
-      + 'asciicast v2.1 timeline is persisted to `~/.monad/timelines/'
+      + 'asciicast v2.1 timeline is persisted to `~/.elanous/timelines/'
       + '<recorderId>.cast` and the path is returned. Set `persist=false` '
       + 'to get the serialized body inline instead. `format="summary"` '
       + 'returns frame counts per widget rather than the full timeline.',

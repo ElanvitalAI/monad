@@ -1,6 +1,6 @@
 import { join } from 'node:path';
 import { debug } from '../debug/log.js';
-import { getMonadConfigDirOverride } from '../monad-config-dir.js';
+import { getElanousConfigDirOverride } from '../elanous-config-dir.js';
 import { getTestStateRoot } from '../nexus/paths.js';
 import { findTreeRoot, getAppliedGlobalTestRoot } from '../cli/test-flag.js';
 import { observeLeaderAxes } from './leader.js';
@@ -17,14 +17,14 @@ interface ResolveCurrentInstanceDeps {
 export function resolveCurrentInstance(deps: ResolveCurrentInstanceDeps = {}): InstanceResolution {
   const cwd = (deps.cwd ?? (() => process.cwd()))();
   const explicitFlagRoot = (deps.explicitFlagRoot ?? (() =>
-    getAppliedGlobalTestRoot() ?? getTestStateRoot() ?? getMonadConfigDirOverride()))();
+    getAppliedGlobalTestRoot() ?? getTestStateRoot() ?? getElanousConfigDirOverride()))();
   const treeRoot = findTreeRoot(cwd);
   const resolution = resolveInstance({
     explicitFlagRoot,
-    stampedStateDir: (deps.stampedStateDir ?? (() => process.env.MONAD_STATE_DIR))(),
+    stampedStateDir: (deps.stampedStateDir ?? (() => process.env.ELANOUS_STATE_DIR))(),
     treeDerivedEnabled: (deps.treeDerivedEnabled ?? treeDerivedTestEnabled)(),
     axes: observeLeaderAxes(),
-    treeTestRoot: treeRoot ? join(treeRoot, '.monad-test') : null,
+    treeTestRoot: treeRoot ? join(treeRoot, '.elanous-test') : null,
     prodRoot: prodInstanceRoot(),
   });
   debug.log('instance.current', 'resolved', { layer: resolution.layer, kind: resolution.kind });

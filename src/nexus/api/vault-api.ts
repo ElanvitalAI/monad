@@ -1,6 +1,6 @@
 // ── Obsidian Vault REST 브릿지 (2026-07-09 · OP0) ─────────────────────────
 //
-// iPad Obsidian 기능을 PWA에 이식(PLAN-obsidian-pwa-port). ACP(monad/obsidian/*)는
+// iPad Obsidian 기능을 PWA에 이식(PLAN-obsidian-pwa-port). ACP(elanous/obsidian/*)는
 // WebSocket 전용이라 PWA read 작업엔 REST 가 깔끔 — 기존 obsidian 헬퍼를 얇게 노출.
 // 로직 중복 0(resolveObsidianRoot + 헬퍼 재사용). dashboard.ts 패턴(CORS·jsonResponse).
 //

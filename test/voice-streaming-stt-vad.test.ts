@@ -136,39 +136,39 @@ describe('createVadDetector — reset', () => {
 });
 
 describe('resolveVadModeFromEnv', () => {
-  it('returns fallback when MONAD_VOICE_VAD unset', () => {
-    delete process.env.MONAD_VOICE_VAD;
+  it('returns fallback when ELANOUS_VOICE_VAD unset', () => {
+    delete process.env.ELANOUS_VOICE_VAD;
     expect(resolveVadModeFromEnv()).toBe('server');
     expect(resolveVadModeFromEnv('local')).toBe('local');
   });
 
   it('returns env value when valid', () => {
-    process.env.MONAD_VOICE_VAD = 'local';
+    process.env.ELANOUS_VOICE_VAD = 'local';
     expect(resolveVadModeFromEnv()).toBe('local');
-    process.env.MONAD_VOICE_VAD = 'manual';
+    process.env.ELANOUS_VOICE_VAD = 'manual';
     expect(resolveVadModeFromEnv()).toBe('manual');
-    process.env.MONAD_VOICE_VAD = 'server';
+    process.env.ELANOUS_VOICE_VAD = 'server';
     expect(resolveVadModeFromEnv()).toBe('server');
   });
 
   it('falls back when env value unknown', () => {
-    process.env.MONAD_VOICE_VAD = 'gibberish';
+    process.env.ELANOUS_VOICE_VAD = 'gibberish';
     expect(resolveVadModeFromEnv()).toBe('server');
   });
 });
 
 describe('readVadOptsFromEnv', () => {
   it('returns base when no env vars set', () => {
-    delete process.env.MONAD_VOICE_VAD_THRESHOLD;
-    delete process.env.MONAD_VOICE_VAD_SILENCE_MS;
-    delete process.env.MONAD_VOICE_VAD_MIN_SPEECH_MS;
+    delete process.env.ELANOUS_VOICE_VAD_THRESHOLD;
+    delete process.env.ELANOUS_VOICE_VAD_SILENCE_MS;
+    delete process.env.ELANOUS_VOICE_VAD_MIN_SPEECH_MS;
     expect(readVadOptsFromEnv({ threshold: 0.5 })).toEqual({ threshold: 0.5 });
   });
 
   it('reads numeric env overrides', () => {
-    process.env.MONAD_VOICE_VAD_THRESHOLD = '0.025';
-    process.env.MONAD_VOICE_VAD_SILENCE_MS = '500';
-    process.env.MONAD_VOICE_VAD_MIN_SPEECH_MS = '300';
+    process.env.ELANOUS_VOICE_VAD_THRESHOLD = '0.025';
+    process.env.ELANOUS_VOICE_VAD_SILENCE_MS = '500';
+    process.env.ELANOUS_VOICE_VAD_MIN_SPEECH_MS = '300';
     const opts = readVadOptsFromEnv();
     expect(opts.threshold).toBe(0.025);
     expect(opts.silenceMs).toBe(500);
@@ -176,8 +176,8 @@ describe('readVadOptsFromEnv', () => {
   });
 
   it('rejects invalid / negative values silently', () => {
-    process.env.MONAD_VOICE_VAD_THRESHOLD = 'abc';
-    process.env.MONAD_VOICE_VAD_SILENCE_MS = '-100';
+    process.env.ELANOUS_VOICE_VAD_THRESHOLD = 'abc';
+    process.env.ELANOUS_VOICE_VAD_SILENCE_MS = '-100';
     const opts = readVadOptsFromEnv({});
     expect(opts.threshold).toBeUndefined();
     expect(opts.silenceMs).toBeUndefined();

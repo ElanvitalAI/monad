@@ -4,7 +4,7 @@
 // 대표 지적: 투자 사이클들을 raw 크론으로만 등록해 미션 fabric 에서 관측이 안 됨. 이 스크립트가
 // ① 적응형 투자 오토파일럿을 대표하는 **coordinator 앵커 미션**을 만들고(멱등) ② 모든 투자 크론을
 // 그 apm_id 로 태깅(schedule_registry.autopilot_id·setScheduleMission)해 **fan-in 관측**을 연다.
-// 이후 `monad autopilot trace <apm>` / PWA /autopilot 미션 트리에서 25 사이클 계보가 보인다.
+// 이후 `elanous autopilot trace <apm>` / PWA /autopilot 미션 트리에서 25 사이클 계보가 보인다.
 //
 // 안전: 메타데이터(계보 태그)만 설정 — 크론 스케줄/실행 무변경. READ-except-tag. 멱등.
 
@@ -63,7 +63,7 @@ function main(): void {
       const g = byLayer.get(l); if (!g?.length) continue;
       console.log(`  ${l}: ${g.sort().join(', ')}`);
     }
-    console.log(`\n관측: monad autopilot trace ${apmId}`);
+    console.log(`\n관측: elanous autopilot trace ${apmId}`);
   } finally { sdb.close(); }
 }
 

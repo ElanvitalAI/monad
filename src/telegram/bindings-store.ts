@@ -4,8 +4,8 @@
 // Step 1 of platform-evolution arc (PR b) — this module is now a
 // thin telegram-shaped wrapper over the channel-agnostic store
 // (`src/channel/bindings-store.ts`). The on-disk file moved from
-// `<MONAD_DAEMON_DIR>/telegram-daemon-bindings.json` (legacy) to
-// `<MONAD_DAEMON_DIR>/channel-bindings.json` (unified). Existing
+// `<ELANOUS_DAEMON_DIR>/telegram-daemon-bindings.json` (legacy) to
+// `<ELANOUS_DAEMON_DIR>/channel-bindings.json` (unified). Existing
 // telegram-only stores are migrated 1× via
 // `migrateLegacyTelegramBindings` on construction; the legacy file
 // is preserved as `.bak` for rollback.
@@ -17,7 +17,7 @@
 
 import { dirname } from 'node:path';
 
-import { monadDaemonDir } from '../monad-daemon.js';
+import { elanousDaemonDir } from '../elanous-daemon.js';
 import {
   openChannelBindingsStore,
   defaultChannelBindingsPath,
@@ -67,9 +67,9 @@ export function openTelegramBindingsStore(
   const storePath = opts.storePath ?? defaultChannelBindingsPath();
   const channel: ChannelBindingsStore = openChannelBindingsStore({ storePath });
   // Daemon dir for migration = the directory holding the channel
-  // store path. For default usage that's monadDaemonDir(); for tests
+  // store path. For default usage that's elanousDaemonDir(); for tests
   // pointing at a tmp file, that's the tmp dir.
-  const daemonDir = opts.storePath ? dirname(opts.storePath) : monadDaemonDir();
+  const daemonDir = opts.storePath ? dirname(opts.storePath) : elanousDaemonDir();
   migrateLegacyTelegramBindings({ daemonDir, store: channel });
 
   return {

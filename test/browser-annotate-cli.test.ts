@@ -129,7 +129,7 @@ describe('🔗 배선 — ⛔ CDP 목으로 «실행 경로»를 문다(이음�
       connect: async () => ({ transport, page: { wsUrl: 'ws://p', url: 'https://old.example/page', total: 1 } }),
       exit: (code) => codes.push(code),
     });
-    await program.parseAsync(['node', 'monad', 'browser', ...argv]);
+    await program.parseAsync(['node', 'elanous', 'browser', ...argv]);
     return { sent, said: lines.join('\n'), codes };
   };
 
@@ -213,7 +213,7 @@ describe('🔗 배선 — ⛔ CDP 목으로 «실행 경로»를 문다(이음�
       connect: async (): Promise<never> => { throw new Error('ECONNREFUSED 127.0.0.1:9404'); },
       exit: (code) => codes.push(code),
     });
-    await program.parseAsync(['node', 'monad', 'browser', 'annotate', '--port', '9404', '--shapes', 's.json']);
+    await program.parseAsync(['node', 'elanous', 'browser', 'annotate', '--port', '9404', '--shapes', 's.json']);
     expect(lines.join('\n')).toContain('ECONNREFUSED');
     expect(lines.join('\n')).not.toContain('at ');   // ⛔ 스택이 아니다
     expect(codes).toContain(1);

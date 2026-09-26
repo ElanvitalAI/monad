@@ -1,13 +1,14 @@
-// ── monad → codex PTY RFC mission driver ──
+// ── elanous → codex PTY RFC mission driver ──
 //
-// ROADMAP-monad-is-all-pty-unified-autonomy §1 3차(역전): 모나드가 codex 를 PTY 로 인보크해
+// ROADMAP-elanous-is-all-pty-unified-autonomy §1 3차(역전): 엘라누스가 codex 를 PTY 로 인보크해
 // 미션을 RFC(입력→결과확인→재입력)로 완주시킨다.
 //   - codex --yolo (무프롬프트) · 구독 모드(OPENAI_API_KEY 스크럽·API 과금 0)
-//   - CWD→git worktree 분기(격리) · 브레인=monad streamLLM(codex 화면 읽고 다음 행동 결정)
+//   - CWD→git worktree 분기(격리) · 브레인=elanous streamLLM(codex 화면 읽고 다음 행동 결정)
 //   - 막히면 omni-crawl 자율 검색 → worktree 파일로 떨궈 codex 에 read 지시(TUI 멀티라인 회피)
 //   - 증거 게이트(doc 존재 / tsc 0 / test pass)로 완료 판정 후 commit
 // 재사용: startPty(Bun 네이티브 PTY)·createWorktree·streamLLM·worktreeHasChanges·commitWorktree.
 import { execFileSync, spawnSync } from 'node:child_process';
+import { homedir } from 'node:os';
 import { existsSync, writeFileSync, mkdirSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import { startPty, mintPtyId, onPtyEvent, type PtyHandle, type StartOpts } from '../pty-shell/registry.js';
@@ -18,6 +19,7 @@ import { configuredWorktreeRoot } from '../user-config.js';
 import { worktreeHasChanges, commitWorktree, changedFiles } from '../self-implement/seams.js';
 import { streamLLM, type LLMMessage } from '../llm.js';
 import { debug } from '../debug/log.js';
+import { reemitPtyUsage } from '../budget/pty-usage-reemit.js';
 import { classifyAuthError } from '../oauth/codex.js';
 import type { FallbackStep } from '../oauth/fallback-chain.js';
 import { runPtyControlLoop, controlDepsForHandle, type ControlDecision, type ControlObservation, type RunSupervisor } from '../autopilot/pty-control-loop.js';
@@ -73,7 +75,7 @@ export type EvidenceMode =
   | { kind: 'test'; testPath: string; fileRel?: string };   // 변경 + tsc 0 + 특정 test pass
 
 // ── Agent backend (agent-agnostic PTY RFC) ──
-//   monad 이 PTY 로 모는 코딩 에이전트를 교체 가능하게 추상화. 지금은 codex, 이후 claude/gemini/grok 확장.
+//   elanous 이 PTY 로 모는 코딩 에이전트를 교체 가능하게 추상화. 지금은 codex, 이후 claude/gemini/grok 확장.
 //   (폴더/개념이 codex-mission 이던 것을 agent-mission 으로 일반화 — driver 는 backend 만 바꾸면 된다.)
 export interface AgentBackend {
   name: 'codex' | 'claude' | 'gemini' | 'grok' | 'aside';
@@ -90,7 +92,10 @@ export interface AgentBackend {
 export const codexBackend: AgentBackend = {
   name: 'codex',
   cmd: 'codex',
-  args: ['--yolo'],
+  // 🩸 09-26: 시작 때 «Update available» 창이 떴고 미션 두뇌의 Enter 가 `brew upgrade --cask codex` 를 돌려 codex 가 스스로
+  //    종료했다(pty-mission-failed). 도는 중의 판 교체는 다른 codex 프로세스의 짝 바이너리(code-mode-host)까지 지운다 —
+  //    같은 날 옛 app-server(0.154.0)가 «지워진 폴더»에서 짝을 찾다 도구 실행을 전부 잃었다. 자식은 업데이트를 묻지 않는다.
+  args: ['--yolo', '-c', 'check_for_update_on_startup=false'],
   scrubEnv: ['OPENAI_API_KEY'],
   handleTrust: (screen, write) => {
     if (screenNeedsTrust(screen)) { write('1\r'); return true; }
@@ -187,13 +192,13 @@ const FORCED_ENV_BY_BACKEND: Readonly<Record<string, Readonly<Record<string, str
  * env 는 baseEnv 복사 후 backend.scrubEnv 키와 공용 중첩-실행 표지를 각각 제거한다. 전자는 지정 backend 의 알려진
  * 과금 경로(API 키·대체 인증·프로바이더 스위치)를 좁혀 구독(oauth) 모드를 우선하고, 후자는 부모 중첩 상태가 PTY 자식에
  * 전파되지 않게 한다. backend 강제 env 는 스크럽 뒤에 적용하되 바깥에서 설정한 값은 보존한다. driver 의 실 spawn 은 이
- * 결과에 TERM·MONAD_RUN_ID 만 덧댄다.
+ * 결과에 TERM·ELANOUS_RUN_ID 만 덧댄다.
  * 이 함수로 "선택 → spawn 파라미터" 실행경로가 백엔드별로 단위 검증된다(U3 선택 실증).
  */
 export function resolveBackendSpawn(
   backend: AgentBackend,
   baseEnv: Record<string, string | undefined>,
-): { cmd: string; args: string[]; env: Record<string, string>; nestedEnvRemovedCount: number; forcedEnv: string[] } {
+): { cmd: string; args: string[]; env: Record<string, string>; unsetEnv: string[]; nestedEnvRemovedCount: number; forcedEnv: string[] } {
   const env: Record<string, string> = {};
   for (const [k, v] of Object.entries(baseEnv)) if (v != null) env[k] = v;
   for (const k of backend.scrubEnv ?? []) delete env[k];
@@ -211,13 +216,16 @@ export function resolveBackendSpawn(
       nestedEnvRemovedCount += 1;
     }
   }
-  return { cmd: backend.cmd, args: [...backend.args], env, nestedEnvRemovedCount, forcedEnv };
+  // 지운 키 이름 — PTY 합성이 로그인 셸 캡처본에서 되살리지 않게 그대로 넘긴다(강제 env 로 다시 넣은 키는 뺀다).
+  //   ⚠️ 과금 스크럽 키만 — 중첩 표지는 정체성 allowlist 가 다시 싣는 키가 있어 이 PR 의 범위 밖이다.
+  const unsetEnv = [...new Set(backend.scrubEnv ?? [])].filter((k) => !(k in env));
+  return { cmd: backend.cmd, args: [...backend.args], env, unsetEnv, nestedEnvRemovedCount, forcedEnv };
 }
 
 /** Build the mission PTY options after identity is preallocated for child env propagation. */
 export function buildAgentMissionPtySpawnOptions(opts: {
   readonly backend: AgentBackend;
-  readonly spawn: { cmd: string; args: string[]; env: Record<string, string> };
+  readonly spawn: { cmd: string; args: string[]; env: Record<string, string>; unsetEnv?: readonly string[] };
   readonly workdir: string;
   readonly nickname: string;
 }): StartOpts {
@@ -228,6 +236,7 @@ export function buildAgentMissionPtySpawnOptions(opts: {
     args: opts.spawn.args,
     workdir: opts.workdir,
     env: withChildPtyIdentity(opts.spawn.env, id),
+    ...(opts.spawn.unsetEnv?.length ? { unsetEnv: opts.spawn.unsetEnv } : {}),
     cols: 110,
     rows: 40,
     kind: opts.backend.name,
@@ -347,18 +356,18 @@ export interface AgentMissionSpec {
   /** 구동할 에이전트 backend(기본 codexBackend). claude/gemini/grok 확장점. */
   agent?: AgentBackend;
   /**
-   * ★ monad 내부 프롬프트 인핸싱(가산·anti-drift) — 원문 verbatim 보존 + 커버리지 체크리스트 부착.
-   * 명시 override(undefined 면 entry 정책이 결정: monad-apparatus→ON·external-verbatim→OFF·§6e capability 구동).
+   * ★ elanous 내부 프롬프트 인핸싱(가산·anti-drift) — 원문 verbatim 보존 + 커버리지 체크리스트 부착.
+   * 명시 override(undefined 면 entry 정책이 결정: elanous-apparatus→ON·external-verbatim→OFF·§6e capability 구동).
    * 켜면 mission 을 파일(.mission-prompt.md)로 떨궈 에이전트에 read 지시(TUI 멀티라인 페이스트 위험 회피).
    */
   enhance?: boolean;
-  /** ★ 진입 클래스(§6e·capability 구동) — enhance mode-gating. 기본 monad-apparatus(monad 가 원문 prep→ON).
-   *  외부 에이전트가 프롬프트를 직접 크래프트했거나 상위 monad 중첩이면 external-verbatim(→OFF). */
+  /** ★ 진입 클래스(§6e·capability 구동) — enhance mode-gating. 기본 elanous-apparatus(elanous 가 원문 prep→ON).
+   *  외부 에이전트가 프롬프트를 직접 크래프트했거나 상위 elanous 중첩이면 external-verbatim(→OFF). */
   entry?: IngestionEntry;
   /** 인핸싱 산출물 유형 힌트(예: 'PPT 발표덱', 'PLAN 문서'). */
   deliverableHint?: string;
   /**
-   * ★ entry-independent 기억 주입(PLAN §6e FIX) — monad 기억을 가산 grounding 컨텍스트로(프롬프트 무접촉·
+   * ★ entry-independent 기억 주입(PLAN §6e FIX) — elanous 기억을 가산 grounding 컨텍스트로(프롬프트 무접촉·
    * 인핸싱과 독립). 어떤 진입이든 기본 ON(false 로만 끔). external-verbatim(인핸싱 OFF)에서도 원문 안 건드림.
    */
   memory?: boolean;
@@ -399,6 +408,7 @@ export interface AgentMissionDeps {
   resolveRunFallback?: (input: { currentStep: FallbackStep; currentCredentialRateLimited: true }) => { action: string; backend?: string };
   /** 재귀 재시도 사이에만 전달되는 런 로컬 폴백 진행 상태. */
   runtimeFallback?: RuntimeFallbackContext;
+  reemitPtyUsage?: typeof reemitPtyUsage;
 }
 
 const DEFAULT_OMNI = `${process.env.HOME}/.claude/skills/omni-crawl/scripts/main.ts`;
@@ -424,7 +434,7 @@ function omniCrawl(query: string, omniPath: string): string {
   try {
     // ⭐npx/tsx PATH 의존 제거(근본 동작 수리) — `npx tsx` 는 PATH 의 nvm bin + 전역 tsx 에 의존해,
     //   제한된 PATH(데몬/미션/self-implement child)서 ENOENT 로 죽던 근본(cron PATH 무음실패 계열).
-    //   monad 는 bun 런타임이고 bun 은 TS 를 네이티브 실행하므로(tsx 불필요), 현재 실행 파일 절대경로
+    //   elanous 는 bun 런타임이고 bun 은 TS 를 네이티브 실행하므로(tsx 불필요), 현재 실행 파일 절대경로
     //   (process.execPath=bun)로 직접 돌린다 → PATH 무관·tsx 불필요·더 빠름. omni-crawl 은 자체 initEnv 로
     //   .env(절대경로)를 로드하니 API 키도 cwd/셸 env 와 무관하게 채워진다.
     const out = execFileSync(process.execPath, [omniPath, query, '--json', '--mode', 'deep'], {
@@ -457,7 +467,7 @@ export function createMissionSearch(opts: MissionSearchOpts): (query: string, st
     let info: string;
     try { info = crawl(query, opts.omniPath); }
     catch (e) { info = `omni-crawl 실패: ${(e as Error).message}`; } // 주입 crawl 이 throw 해도 미션 무중단
-    try { writeFileSync(join(opts.worktree, '.mission-context.md'), `# monad 가 omni-crawl 로 수집한 정보\n\n${info}\n`); }
+    try { writeFileSync(join(opts.worktree, '.mission-context.md'), `# elanous 가 omni-crawl 로 수집한 정보\n\n${info}\n`); }
     catch (e) { debug.log('agent-mission', 'search-context-write-failed', { step, error: (e as Error).message }); } // 기록 실패를 관측 가능하게(계약 정합·review)
   };
 }
@@ -659,7 +669,7 @@ export function createMissionControlBrain(opts: MissionControlBrainOpts): RunSup
     maxTokens: 500,
     temperature: 0.2,
     messageBuilder: (obs, controlHistory): LLMMessage[] => {
-      const sys = `너는 monad 다. ${backendName}(외부 코딩 에이전트)를 PTY 로 열어 미션을 완주시키는 컨트롤러다.
+      const sys = `너는 elanous 다. ${backendName}(외부 코딩 에이전트)를 PTY 로 열어 미션을 완주시키는 컨트롤러다.
  ${backendName} 의 현재 화면을 보고 **다음 행동 하나**를 JSON 으로만 결정하라.
 
  미션 요지: ${opts.mission.slice(0, 400)}
@@ -765,7 +775,7 @@ async function raceKeyframeRender(render: () => Promise<Buffer | null> | Buffer 
  * runAgentMission 이 실제로 이 factory 를 배선하므로, 반환 함수 + 배선 가드(source)를 함께 테스트하면
  * "제어루프 경유 프레임 발행"을 회귀 검증한다.
  *
- * ⚠️ **범위**: agent-mission 의 onStep 배선에만 적용 — 범용 runPtyControlLoop·타 ReAct 호출자(monad drive
+ * ⚠️ **범위**: agent-mission 의 onStep 배선에만 적용 — 범용 runPtyControlLoop·타 ReAct 호출자(elanous drive
  *    등)는 자동 합류 안 함(각자 배선 필요).
  * ⚠️ **실패 계약(정직)**: 두 관측은 대칭이 아니다 —
  *    · 발행은 **fail-soft**: publishSelfReportFrame 이 bus.publish 실패를 설계상 내부에서 삼킨다(#5379 계약·
@@ -836,10 +846,10 @@ export function buildMissionWorktreeRequest(
 
 export function buildMissionWorktreeProvenance(branch: string, createdAt = new Date().toISOString()): {
   owner: string;
-  command: 'monad agent-mission';
+  command: 'elanous agent-mission';
   createdAt: string;
 } {
-  return { owner: `agent:${branch}`, command: 'monad agent-mission', createdAt };
+  return { owner: `agent:${branch}`, command: 'elanous agent-mission', createdAt };
 }
 
 export function recordMissionWorktreeProvenance(
@@ -877,12 +887,12 @@ export async function runAgentMission(spec: AgentMissionSpec, deps: AgentMission
 
   debug.log('agent-mission', 'start', { agent: backend.name, branch: spec.branch, base: spec.base ?? 'HEAD', evidence: spec.evidence.kind, repoRoot });
   // ★ capability 구동(2026-07-23) — 롤·capability 를 선언·관측하고, **활성 집합이 enhance behavior 를 구동**한다
-  //   (선언 ∩ §6e 진입정책). agent-mission = controller 가 executor:agent 를 몰다. 진입 기본 monad-apparatus
-  //   (monad 가 원문 prep → enhance ON) · 명시 spec.enhance override 우선 · 외부/중첩은 external-verbatim 전달.
+  //   (선언 ∩ §6e 진입정책). agent-mission = controller 가 executor:agent 를 몰다. 진입 기본 elanous-apparatus
+  //   (elanous 가 원문 prep → enhance ON) · 명시 spec.enhance override 우선 · 외부/중첩은 external-verbatim 전달.
   const { describeRole } = await import('../agent-substrate/execution/roles.js');
   const { resolveActiveCapabilities } = await import('../agent-substrate/execution/capabilities.js');
-  // 기본 external-verbatim(보수·무회귀) — 프롬프트를 함부로 인핸싱하지 않음. monad-apparatus 는 도어가 명시 선언
-  //   (agent-mission CLI = monad-apparatus → ON). 명시 spec.enhance override 는 여전히 최우선.
+  // 기본 external-verbatim(보수·무회귀) — 프롬프트를 함부로 인핸싱하지 않음. elanous-apparatus 는 도어가 명시 선언
+  //   (agent-mission CLI = elanous-apparatus → ON). 명시 spec.enhance override 는 여전히 최우선.
   const missionEntry = spec.entry ?? 'external-verbatim';
   const caps = resolveActiveCapabilities('agent-mission', {
     entry: missionEntry,
@@ -908,23 +918,65 @@ export async function runAgentMission(spec: AgentMissionSpec, deps: AgentMission
   const spawnParams = resolveBackendSpawn(backend, process.env);
   const env = spawnParams.env;
   env.TERM = 'xterm-256color';
-  // ⭐run-identity — runId 를 spawn 前 확정해 child env(MONAD_RUN_ID 상속)와 executorRef 에 동일 배선한다.
+  // ⭐run-identity — runId 를 spawn 前 확정해 child env(ELANOUS_RUN_ID 상속)와 executorRef 에 동일 배선한다.
   //   spawn 後 mint 하면 child 는 자기 runId 를 모르고 ref 와도 상관이 끊긴다(K join 정합·review).
   const runId = ensureRunId();
-  env.MONAD_RUN_ID = runId;
+  env.ELANOUS_RUN_ID = runId;
   debug.log('agent-mission', 'spawn', { agent: backend.name, cmd: `${spawnParams.cmd} ${spawnParams.args.join(' ')}`, scrubbed: backend.scrubEnv ?? [], nestedEnvRemovedCount: spawnParams.nestedEnvRemovedCount, runId });
   // PTY 정체성 — kind(=backend)·nickname(goto 로 나중 접근)·accessMode='auto'(헤드리스 자율·brain 이 write 소유).
-  const h = spawnPty(buildAgentMissionPtySpawnOptions({
+  const ptyOpts = buildAgentMissionPtySpawnOptions({
     backend,
-    spawn: { cmd: spawnParams.cmd, args: spawnParams.args, env },
+    spawn: { cmd: spawnParams.cmd, args: spawnParams.args, env, unsetEnv: spawnParams.unsetEnv },
     workdir: wt.path,
     nickname: spec.nickname ?? spec.branch,
-  }));
+  });
+  const childStartedAt = Date.now();
+  let liveDirty = false, liveChunks = 0;
+  let liveTimer: ReturnType<typeof setInterval> | undefined;
+  let usageReemitted = false;
+  let childSessionId: string | undefined;
+  let sessionOutput = '';
+  const offLive = onPtyEvent((ev) => {
+    if (ev.id !== ptyOpts.id) return;
+    if (ev.type === 'output') {
+      liveDirty = true; liveChunks += 1;
+      if (backend.name === 'codex' && !childSessionId) {
+        sessionOutput = (sessionOutput + ev.chunk).slice(-8192);
+        childSessionId = sessionOutput.match(/Session ID:\s*([0-9a-f]{8}-[0-9a-f-]{27,})/i)?.[1];
+      }
+    }
+    if (ev.type === 'exit') {
+      offLive();
+      if (liveTimer) clearInterval(liveTimer);
+    }
+    if (ev.type === 'exit' && backend.name === 'codex' && !usageReemitted) {
+      usageReemitted = true;
+      if (!childSessionId) {
+        debug.log('agent-mission', 'pty-usage-session-unidentified', { runId, ptyId: ptyOpts.id }, { level: 'warn' });
+      }
+      try {
+        (deps.reemitPtyUsage ?? reemitPtyUsage)({
+          codexHome: env.CODEX_HOME || join(env.HOME || homedir(), '.codex'),
+          runId,
+          workdir: wt.path,
+          sessionId: childSessionId ?? '',
+          sinceMs: childStartedAt,
+        });
+      } catch (error) {
+        debug.log('agent-mission', 'pty-usage-reemit-failed', {
+          runId, error: error instanceof Error ? error.message : String(error),
+        }, { level: 'warn' });
+      }
+    }
+  });
+  let h: PtyHandle;
+  try { h = spawnPty(ptyOpts); }
+  catch (error) { offLive(); throw error; }
   const executorRef = buildExecutorPtyRef({
     ptyId: h.id,
     backend: backend.name,
-    runId, // child env(MONAD_RUN_ID)와 동일 — spawn 前 확정
-    spaceId: env.MONAD_HARNESS_SPACE_ID,
+    runId, // child env(ELANOUS_RUN_ID)와 동일 — spawn 前 확정
+    spaceId: env.ELANOUS_HARNESS_SPACE_ID,
     instance: resolveInstanceName(),
   });
   debug.log('agent-mission', 'pty', { id: h.id, kind: h.kind, nickname: h.nickname, accessMode: h.accessMode, executorRef });
@@ -970,9 +1022,7 @@ export async function runAgentMission(spec: AgentMissionSpec, deps: AgentMission
   //   마다 dirty 표시 → 디바운스 타이머가 live.txt 갱신(cat 으로 실시간 관측)+하트비트. controller/PWA 도 같은
   //   버스 구독 가능(중첩 포워딩 씨앗). 능력 신설 아님 — 이미 있는 버스를 미션 드라이버에 배선.
   const liveFile = join(screensDir, 'live.txt');
-  let liveDirty = false, liveChunks = 0;
-  const offLive = onPtyEvent((ev) => { if (ev.id === h.id && ev.type === 'output') { liveDirty = true; liveChunks += 1; } });
-  const liveTimer = setInterval(() => {
+  liveTimer = setInterval(() => {
     if (!liveDirty) return;
     liveDirty = false;
     void h.renderScreen().then((s) => {
@@ -980,7 +1030,7 @@ export async function runAgentMission(spec: AgentMissionSpec, deps: AgentMission
       if (liveChunks % 20 === 0) debug.log('agent-mission', 'live', { chunks: liveChunks, tail: s.slice(-80).replace(/\s+/g, ' ') });
     }).catch(() => { /* noop */ });
   }, 800);
-  const stopLive = (): void => { try { clearInterval(liveTimer); } catch { /* noop */ } try { offLive(); } catch { /* noop */ } };
+  const stopLive = (): void => { if (liveTimer) clearInterval(liveTimer); offLive(); };
 
   // ready + trust — backend 별 신뢰/권한 프롬프트 처리(codex=1, 이후 백엔드는 자체 handler).
   await waitForQuiet(h, 1500, 20000);
@@ -990,8 +1040,8 @@ export async function runAgentMission(spec: AgentMissionSpec, deps: AgentMission
     await waitForQuiet(h, 1500, 15000); screen = await capture('trusted');
   }
 
-  // ★ monad 내부 인핸싱(opt-in) — 원문 verbatim 보존 + 커버리지 체크리스트 부착(anti-drift).
-  //   외부(1차)는 원문을 재해석 없이 넘기고, 인핸싱은 monad(2차) 안에서만 가산적으로 일어난다.
+  // ★ elanous 내부 인핸싱(opt-in) — 원문 verbatim 보존 + 커버리지 체크리스트 부착(anti-drift).
+  //   외부(1차)는 원문을 재해석 없이 넘기고, 인핸싱은 elanous(2차) 안에서만 가산적으로 일어난다.
   let missionText = spec.mission;
   let checklist: string[] = [];
   if (enhanceActive) {
@@ -1007,7 +1057,7 @@ export async function runAgentMission(spec: AgentMissionSpec, deps: AgentMission
     });
   }
 
-  // ★ entry-independent 기억 (PLAN §6e FIX) — 어떤 진입이든 monad 기억을 가산 컨텍스트로(프롬프트 무접촉·
+  // ★ entry-independent 기억 (PLAN §6e FIX) — 어떤 진입이든 elanous 기억을 가산 컨텍스트로(프롬프트 무접촉·
   //   인핸싱과 독립·mirage 가드). 인핸싱 OFF(external-verbatim)에서도 원문 안 건드리고 기억만 얹음.
   if (spec.memory !== false) {
     const { recallMemoryContext } = await import('../agent-substrate/execution/memory-context.js');
@@ -1022,8 +1072,8 @@ export async function runAgentMission(spec: AgentMissionSpec, deps: AgentMission
     const pf = join(wt.path, '.mission-prompt.md');
     try { writeFileSync(pf, missionText); } catch { /* noop */ }
     const note = enhanceActive
-      ? '.mission-prompt.md 파일을 읽고 그 안의 미션을 완수하라. [monad 인핸싱]의 커버리지 체크리스트 모든 항목을 산출물에 빠짐없이 반영하고(요약·일반화 금지), 완료하면 MISSION-COMPLETE 라고 답하라.'
-      : '.mission-prompt.md 파일을 읽고 그 안의 미션을 완수하라(원문 그대로·[monad 기억]은 참조 컨텍스트). 완료하면 MISSION-COMPLETE 라고 답하라.';
+      ? '.mission-prompt.md 파일을 읽고 그 안의 미션을 완수하라. [elanous 인핸싱]의 커버리지 체크리스트 모든 항목을 산출물에 빠짐없이 반영하고(요약·일반화 금지), 완료하면 MISSION-COMPLETE 라고 답하라.'
+      : '.mission-prompt.md 파일을 읽고 그 안의 미션을 완수하라(원문 그대로·[elanous 기억]은 참조 컨텍스트). 완료하면 MISSION-COMPLETE 라고 답하라.';
     debug.log('agent-mission', 'mission-send', { via: 'file', file: '.mission-prompt.md', chars: missionText.length, enhanced: enhanceActive });
     drive(note); await sleep(800); drive('\r');
   } else {
@@ -1058,7 +1108,7 @@ export async function runAgentMission(spec: AgentMissionSpec, deps: AgentMission
   // ★ P3b-2 observe 어댑터(2026-07-25) — EMIT-side(makeMissionObserveStep)가 프레임 버스에 흘리는 executor
   //   화면을 **구조화 진행 다이제스트**(state+요약·throttle)로 압축해 observe 서피스(로그 패브릭)에 노출한다.
   //   raw 화면(self screen/manifest)이 아닌 "지금 뭐 하나" 서사. brain 무접촉·순수 관측·재발명 0(버스 구독 +
-  //   classifyFrameState). 조회=`monad logs --category agent-mission.observe`. runWithControlObserve seam 이
+  //   classifyFrameState). 조회=`elanous logs --category agent-mission.observe`. runWithControlObserve seam 이
   //   attach→run→cleanup(성공·예외·fail-soft attach) 전 경로를 소유(누수·관측예외로부터 미션 보호). runId
   //   필터로 이 run 의 프레임만 관측(PTY 재사용 시 타 run 혼입 방지). 텔레그램/TUI sink 는 얇은 후속 부착.
   // ★ 동일 버스 인스턴스 보장(리뷰 should-fix) — observe 구독과 EMIT(makeMissionObserveStep)이 **같은** 버스를
@@ -1134,7 +1184,7 @@ export async function runAgentMission(spec: AgentMissionSpec, deps: AgentMission
   const evidencePath = finalEv.ok ? finalEv.path : null;
   let committed = false;
   if (finalEv.ok && (spec.commit ?? true)) {
-    const c = commitWorktree(wt.path, `chore(agent-mission): ${spec.branch} — ${backend.name}-in-monad PTY RFC 산출`);
+    const c = commitWorktree(wt.path, `chore(agent-mission): ${spec.branch} — ${backend.name}-in-elanous PTY RFC 산출`);
     committed = c.ok;
     debug.log('agent-mission', 'commit', { ok: c.ok, out: c.out.slice(0, 120) });
   }

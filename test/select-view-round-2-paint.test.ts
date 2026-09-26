@@ -19,7 +19,7 @@ import {
   CATPPUCCIN_LATTE,
   CATPPUCCIN_MOCHA,
   ROSE_PINE_DAWN,
-  MONAD_PASTEL_DEFAULT,
+  ELANOUS_PASTEL_DEFAULT,
 } from '../src/themes/index.js';
 import { SelectView } from '../src/ui/widgets/select-view.js';
 import { Printer } from '../src/ui/printer.js';
@@ -337,7 +337,7 @@ describe('Cross-preset divergence — full render', () => {
       renderSelectView({ ...spec, theme: CATPPUCCIN_MOCHA }),
       renderSelectView({ ...spec, theme: CATPPUCCIN_LATTE }),
       renderSelectView({ ...spec, theme: ROSE_PINE_DAWN }),
-      renderSelectView({ ...spec, theme: MONAD_PASTEL_DEFAULT }),
+      renderSelectView({ ...spec, theme: ELANOUS_PASTEL_DEFAULT }),
     ]);
 
     expect(outputs.size).toBe(4);

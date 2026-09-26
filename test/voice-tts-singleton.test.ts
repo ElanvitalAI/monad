@@ -31,7 +31,7 @@ describe('daemon TTS singleton', () => {
     delete process.env.OPENAI_API_KEY;
     delete process.env.TTS_PROVIDER;
     // Isolate the real user-config: config `voice.tts.provider` wins over
-    // env in resolveProviderId, so a machine whose ~/.monad config pins a
+    // env in resolveProviderId, so a machine whose ~/.elanous config pins a
     // provider (e.g. elevenlabs-tts) would otherwise mask the env/default
     // path these tests exercise. Strip the tts config so resolution falls
     // through to TTS_PROVIDER env → default 'openai-tts'.

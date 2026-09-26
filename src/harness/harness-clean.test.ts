@@ -405,7 +405,7 @@ describe('planHarnessClean — query timings', () => {
 });
 
 describe('planHarnessClean — closedPr 상태 매핑', () => {
-  const recorded = { owner: 'dev:run', command: 'monad dev', createdAt: '2026-08-05T00:00:00.000Z' };
+  const recorded = { owner: 'dev:run', command: 'elanous dev', createdAt: '2026-08-05T00:00:00.000Z' };
 
   function planClosed(over: {
     branch: string;
@@ -542,7 +542,7 @@ describe('execHarnessClean — query timings on the dry-run path', () => {
       branchPrefix: 'self-impl/',
       run,
       runGh: () => ({ status: 0, stdout: JSON.stringify({ data: { repository: { b0: { nodes: [] } } } }) }),
-      readWorktreeProvenance: () => ({ owner: 'dev:run', command: 'monad dev', createdAt: '2026-08-05T00:00:00.000Z' }),
+      readWorktreeProvenance: () => ({ owner: 'dev:run', command: 'elanous dev', createdAt: '2026-08-05T00:00:00.000Z' }),
     });
     expect(res.dryRun).toBe(true);
     expect(res.removed).toEqual([]);
@@ -602,7 +602,7 @@ describe('execHarnessClean — query timings on the dry-run path', () => {
         status: 0,
         stdout: JSON.stringify({ data: { repository: { b0: { nodes: [{ state: 'OPEN', mergedAt: null }] } } } }),
       }),
-      readWorktreeProvenance: () => ({ owner: 'dev:run', command: 'monad dev', createdAt: '2026-08-05T00:00:00.000Z' }),
+      readWorktreeProvenance: () => ({ owner: 'dev:run', command: 'elanous dev', createdAt: '2026-08-05T00:00:00.000Z' }),
     });
     expect(res.dryRun).toBe(true);
     expect(res.removed).toEqual([]);
@@ -618,7 +618,7 @@ describe('execHarnessClean — query timings on the dry-run path', () => {
       branchPrefix: 'self-impl/',
       run,
       runGh: () => ({ status: 1, stdout: '', stderr: 'offline' }),
-      readWorktreeProvenance: () => ({ owner: 'dev:run', command: 'monad dev', createdAt: '2026-08-05T00:00:00.000Z' }),
+      readWorktreeProvenance: () => ({ owner: 'dev:run', command: 'elanous dev', createdAt: '2026-08-05T00:00:00.000Z' }),
     });
     expect(res.plan.remove).toEqual([]);
     expect(res.plan.queryStatus?.pullRequests).toBe(false);

@@ -70,7 +70,7 @@ function sampleRecord(
   };
 }
 
-function makePersistence(base = '/cfg/monad/acp-sessions', clock?: { ticks: number[] }) {
+function makePersistence(base = '/cfg/elanous/acp-sessions', clock?: { ticks: number[] }) {
   const fs = makeMemFs();
   let i = 0;
   const p = createAcpSessionPersistence({

@@ -9,21 +9,21 @@
 // DOLLARS. Read-only; live-fetch (persistence to knowledge_13f.db = A2.2b).
 
 import { join } from 'node:path';
-import { monadStateRoot } from '../autopilot/state-paths.js';
+import { elanousStateRoot } from '../autopilot/state-paths.js';
 import { getUserConfig } from '../user-config.js';
 
 /** 13F 기관보유 지식 DB (fact_13f_holdings · dim_security). ★ M0.1(2026-07-07):
- *  R3 벡터 지식(~/.monad/conatus/knowledge.db·docs 테이블)과 동명 충돌하던
- *  ~/.monad/knowledge.db 를 knowledge_13f.db 로 분리 — 두 DB는 테이블도 완전 별개.
- *  경로는 state-dir 존중(lazy · Phase B). prod=`~/.monad/knowledge_13f.db`(무변경). */
+ *  R3 벡터 지식(~/.elanous/conatus/knowledge.db·docs 테이블)과 동명 충돌하던
+ *  ~/.elanous/knowledge.db 를 knowledge_13f.db 로 분리 — 두 DB는 테이블도 완전 별개.
+ *  경로는 state-dir 존중(lazy · Phase B). prod=`~/.elanous/knowledge_13f.db`(무변경). */
 export function knowledge13fDbPath(): string {
-  return join(monadStateRoot(), 'knowledge_13f.db');
+  return join(elanousStateRoot(), 'knowledge_13f.db');
 }
 
 /** SEC 가 요구하는 `User-Agent` — 연락처는 config `finance.secContactEmail` 에서 읽는다(코드에 박지 않는다). */
 export function secUserAgent(email = getUserConfig().finance?.secContactEmail): string {
   if (!email) {
-    throw new Error('SEC EDGAR 는 연락처 이메일이 있는 요청만 받는다 — `monad config set finance.secContactEmail <이메일>` 로 설정한다');
+    throw new Error('SEC EDGAR 는 연락처 이메일이 있는 요청만 받는다 — `elanous config set finance.secContactEmail <이메일>` 로 설정한다');
   }
   return `monad-agent research (${email})`;
 }

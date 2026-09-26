@@ -6,7 +6,7 @@
 //
 // ★ 미션-중립 — PR diff → verdict 는 순수하며 미션 결합이 없다(PhaseResult 브릿지 reviewToPhaseFields 만
 //   mission-critique 잔류). LLM 리뷰어는 llmReview 주입 seam(streamLLM-sol 등)이라 substrate 는 LLM 무결합.
-// ★ 소비자 — 미션(mission-critique re-export)·하니스(review-adapter)·CLI(monad self review)·self-implementation.
+// ★ 소비자 — 미션(mission-critique re-export)·하니스(review-adapter)·CLI(elanous self review)·self-implementation.
 // 전부 순수(+ 주입 seam). I/O 없음(gh pr diff·streamLLM 은 호출측).
 
 import type { ReferencedFileReader } from '../self-implement/goal-file-reader.js';
@@ -161,12 +161,12 @@ export interface ReviewInput {
 }
 
 /**
- * 리뷰 프롬프트 diff 예산(기본 64000·MONAD_PR_REVIEW_DIFF_CHARS override·최소 2000).
+ * 리뷰 프롬프트 diff 예산(기본 64000·ELANOUS_PR_REVIEW_DIFF_CHARS override·최소 2000).
  * 모델 한계가 아닌 리뷰 예산이다. 기본 리뷰 모델 gpt-5.6-sol의 1,000,000 토큰 contextWindow를 기준으로
  * 64,000자(약 16K 토큰)는 분할 리뷰 도입을 전제로 한 조각별 고정 예산이다.
  */
 export function reviewDiffCharLimit(): number {
-  const n = Number(process.env.MONAD_PR_REVIEW_DIFF_CHARS);
+  const n = Number(process.env.ELANOUS_PR_REVIEW_DIFF_CHARS);
   return Number.isFinite(n) && n >= 2000 ? n : 64_000;
 }
 
@@ -200,7 +200,7 @@ export function budgetFileDiff(fileDiff: string, budget: number): string {
 }
 
 /**
- * ★ 분할 리뷰 «패스 상한». 기본 6 · `MONAD_PR_REVIEW_MAX_PASSES` override · 최소 1.
+ * ★ 분할 리뷰 «패스 상한». 기본 6 · `ELANOUS_PR_REVIEW_MAX_PASSES` override · 최소 1.
  *
  * ⛔ 왜 상한이 있나 — 한 패스 = LLM 호출 «한 번»이다. 상한이 없으면 초대형 PR 하나가
  *   리뷰 비용을 무제한으로 끌어올린다. ⛔ 그러나 상한에 걸리면 «조용히 덜 보지» 않는다 —
@@ -210,7 +210,7 @@ export function budgetFileDiff(fileDiff: string, budget: number): string {
  *   결합하지 않는 substrate 다(파일 머리말의 「LLM 무결합」과 같은 이유).
  */
 export function reviewMaxPasses(): number {
-  const n = Number(process.env.MONAD_PR_REVIEW_MAX_PASSES);
+  const n = Number(process.env.ELANOUS_PR_REVIEW_MAX_PASSES);
   return Number.isFinite(n) && n >= 1 ? Math.floor(n) : 6;
 }
 
@@ -807,7 +807,7 @@ export async function reviewPullRequest(
     //   실측(2026-08-07): `--acp-backend claude-code`(미등록) 를 주면 레지스트리는
     //   ***`Unknown ACP backend "claude-code". Known: claude, gemini, codex-app-server, grok`***
     //   이라는 «완벽한» 오류를 던지는데, 그것이 여기서 사라지고 사용자는 `reviewed=false` 만 봤다.
-    //   CLI 는 *"관측: monad logs --category acp-review"* 라 안내하는데 ⛔ 그 로그에도 아무것도 없었다.
+    //   CLI 는 *"관측: elanous logs --category acp-review"* 라 안내하는데 ⛔ 그 로그에도 아무것도 없었다.
     //   ⇒ ***fail-soft 는 옳지만 «침묵하는» fail-soft 는 아니다.*** 이유를 «값으로» 돌려준다.
     //
     // ⛔⭐⭐⭐ 그런데 «여기서 로그를 쓰지 않는다** — 이 함수는 파일 머리말대로 «LLM 무결합»이고

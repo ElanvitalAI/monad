@@ -141,7 +141,7 @@ export async function runSelfImplementCliCommand(
       return { ok: false, message: '--plan is retired for self implement and is rejected', exitCode: 1 };
     }
     const observeOnly = resolveObserveOnlyDecision(opts.observeOnly
-      ? { ...process.env, MONAD_SELF_IMPLEMENT_OBSERVE_ONLY: '1' }
+      ? { ...process.env, ELANOUS_SELF_IMPLEMENT_OBSERVE_ONLY: '1' }
       : process.env);
     if (observeOnly.enabled) {
       const { debug } = await import('../debug/log.js');

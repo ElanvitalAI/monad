@@ -1,4 +1,4 @@
-// monad PWA service worker — Phase 1 (foundation).
+// elanous PWA service worker — Phase 1 (foundation).
 //
 // What this file does today:
 //   - install:  bumps to activate immediately (no precache yet)
@@ -28,7 +28,7 @@
 // breaking schema change.
 
 const CACHE_VERSION = 'v4-phase-4-offline-cache';
-const CACHE_PREFIX = 'monad-pwa-';
+const CACHE_PREFIX = 'elanous-pwa-';
 // Phase 2 — dedicated cache for incoming share-target POST payloads.
 // Each share gets a unique key (`shared-${id}`) under this cache so
 // multiple in-flight shares don't clobber each other. The Share page
@@ -41,7 +41,7 @@ const SHARE_CACHE = `${CACHE_PREFIX}share-target-${CACHE_VERSION}`;
 const RUNTIME_CACHE = `${CACHE_PREFIX}runtime-${CACHE_VERSION}`;
 const PRECACHE = `${CACHE_PREFIX}precache-${CACHE_VERSION}`;
 // PRECACHE_URLS — the absolute minimum that lets the user see *any*
-// monad UI when the daemon is unreachable. We don't precache a full
+// elanous UI when the daemon is unreachable. We don't precache a full
 // page (Next.js App Router pages are render-time, not static), but
 // we do precache the offline fallback page + manifest + critical
 // fonts so the empty-state has a real face.
@@ -71,7 +71,7 @@ self.addEventListener('install', (event) => {
 
 self.addEventListener('activate', (event) => {
   event.waitUntil((async () => {
-    // Drop caches from older monad SW versions. Defensive — Phase 1
+    // Drop caches from older elanous SW versions. Defensive — Phase 1
     // doesn't create any, but if we land Phase 1 + 4 in quick
     // succession the cleanup runs once and never gets in the way.
     const keys = await self.caches.keys();
@@ -258,12 +258,12 @@ self.addEventListener('push', (event) => {
   try {
     payload = event.data.json();
   } catch {
-    payload = { title: 'monad', body: event.data.text() };
+    payload = { title: 'elanous', body: event.data.text() };
   }
-  const title = payload.title || 'monad';
+  const title = payload.title || 'elanous';
   const options = {
     body: payload.body || '',
-    tag: payload.tag || 'monad-default',
+    tag: payload.tag || 'elanous-default',
     data: payload.data || {},
     // iOS Safari ignores most of these; they're for Android/desktop.
     badge: '/app/icon-badge.png',

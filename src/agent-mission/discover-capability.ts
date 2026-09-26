@@ -14,7 +14,7 @@
 //    firecrawl 은 registry 의 web-search fallback provider 로만 닿고, "docs 전량 스크랩" 전용 모드는 아직 미배선.
 //    발굴 후보 → 설치 spec 환원(구조화 식별자·출처)도 그 브리지에서(현재는 사람/후속이 소비).
 //
-// 관측: monad logs --category autopilot.provision (discover/discover-fail/discover-community).
+// 관측: elanous logs --category autopilot.provision (discover/discover-fail/discover-community).
 
 import { searchWeb, type WebSearchResult } from '../web-search/index.js';
 import { grokAgentSearch } from '../grok/agent-search.js';

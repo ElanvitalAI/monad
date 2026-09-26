@@ -36,7 +36,7 @@ describe('PluginContext.listWidgetTypes', () => {
   const originalXdgDataHome = process.env.XDG_DATA_HOME;
 
   beforeEach(() => {
-    root = mkdtempSync(join(tmpdir(), 'monad-pcintro-'));
+    root = mkdtempSync(join(tmpdir(), 'elanous-pcintro-'));
     process.env.XDG_DATA_HOME = join(root, 'data');
     builtinDir = join(root, 'plugins');
     userDir = join(root, 'user-plugins');

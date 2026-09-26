@@ -12,7 +12,7 @@ import {
 } from './media-store.js';
 
 let root: string;
-beforeEach(() => { root = mkdtempSync(join(tmpdir(), 'monad-media-test-')); });
+beforeEach(() => { root = mkdtempSync(join(tmpdir(), 'elanous-media-test-')); });
 afterEach(() => rmSync(root, { recursive: true, force: true }));
 
 function okResponse(bytes: Uint8Array): Response {

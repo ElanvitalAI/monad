@@ -114,7 +114,6 @@ describe('createTurnStreamFormatter activity labels', () => {
 describe('createTurnStreamFormatter foldMode forwarding', () => {
   const toolRendering = {
     displayMode: 'inline-to-block' as const,
-    inlineOneLine: true,
     blockMaxLines: 8,
   };
 

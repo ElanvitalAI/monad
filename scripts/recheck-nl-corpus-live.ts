@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { execFileSync } from 'node:child_process';
 import { assertGradableItems, assertProbeOutsideCorpus, normalizeCorpusItems, positiveInteger, summarizeCorpusRun, wilsonInterval } from './lib/nl-routing-measurement.js';
-import { createMonadLiveTurnRunner, provePtyDrivesSession, verifyPtySession, type LiveRecord } from './lib/nl-routing-live.js';
+import { createElanousLiveTurnRunner, provePtyDrivesSession, verifyPtySession, type LiveRecord } from './lib/nl-routing-live.js';
 import { resolveTruncatedTurnWaitMs, runLiveCorpus } from './lib/nl-routing-corpus-run.js';
 import { truncatedTurnsSummary } from './lib/nl-routing-live-summary.js';
 
@@ -67,18 +67,18 @@ const STATE_DIR = process.env.CORPUS_STATE_DIR;
 //   세션·로그는 **자식의 우주**에서 난다. ⇒ 한 env 로 둘을 덮으면 하나가 깨진다
 //   (실측: 스토어를 자식으로 못 박자 `pty: pty_xxx was not found` 로 입력 전달 자체가 실패했다).
 //   ⇒ **`logs` 만** 자식 스토어로 좁힌다. 나머지(`pty …`)는 호출자의 우주 그대로 둔다.
-function monad(args: string[]): string {
+function elanous(args: string[]): string {
   const scopesToChildStore = STATE_DIR !== undefined && args[0] === 'logs';
-  // ⛔⭐⭐⭐ `--config-dir` 는 `MONAD_STATE_DIR` 을 **덮는다**(실측 2026-08-02):
-  //     MONAD_STATE_DIR=<child> logs …                    → 4행
-  //     MONAD_STATE_DIR=<child> logs --config-dir <test> … → 0행
+  // ⛔⭐⭐⭐ `--config-dir` 는 `ELANOUS_STATE_DIR` 을 **덮는다**(실측 2026-08-02):
+  //     ELANOUS_STATE_DIR=<child> logs …                    → 4행
+  //     ELANOUS_STATE_DIR=<child> logs --config-dir <test> … → 0행
   //   ⇒ pty 를 찾으려고 `CORPUS_CONFIG_DIR` 을 주면 **로그 조회가 통째로 눈이 먼다.**
   //   위 주석(67-71)이 *"logs 만 자식 스토어로 좁힌다"* 를 적어 두고 74-75 로 구현했는데,
   //   이 줄이 모든 명령에 `--config-dir` 를 붙여 그것을 조용히 되돌리고 있었다.
   //   ⇒ 자식 스토어로 좁히는 `logs` 에는 `--config-dir` 를 **붙이지 않는다**(스토어는 env 가 정한다).
   const full = CONFIG_DIR && !scopesToChildStore ? [...args, '--config-dir', CONFIG_DIR] : args;
-  const env = scopesToChildStore ? { ...process.env, MONAD_STATE_DIR: STATE_DIR } : process.env;
-  return execFileSync('bun', ['bin/monad.mjs', ...full], { encoding: 'utf8', maxBuffer: 64 * 1024 * 1024, env });
+  const env = scopesToChildStore ? { ...process.env, ELANOUS_STATE_DIR: STATE_DIR } : process.env;
+  return execFileSync('bun', ['bin/elanous.mjs', ...full], { encoding: 'utf8', maxBuffer: 64 * 1024 * 1024, env });
 }
 
 function promptForItem(item: CorpusItem): string {
@@ -96,12 +96,12 @@ async function main(): Promise<void> {
   if (!contaminatedSessionReuse && new Set(repeatSessions).size !== repeatSessions.length) throw new Error('CORPUS_SESSIONS must provide a distinct session for every repeat.');
   // ⭐ 두 경로다. ⑴ 선언(`lifecycle.bridge-attached`)이 있으면 그걸 쓴다 — 턴을 안 쓰고 싸다.
   //    ⑵ 없으면 **인과로 증명**한다: 내가 이 pty 에 넣은 입력에 그 세션이 그 길이로 반응했나.
-  //    ⛔ 실측 — `dev --monad --hold` 의 bare TUI 는 선언을 안 남긴다(`self_*` 하니스만 남긴다).
+  //    ⛔ 실측 — `dev --elanous --hold` 의 bare TUI 는 선언을 안 남긴다(`self_*` 하니스만 남긴다).
   //    그래서 ⑴만 있으면 이 러너는 **영영 못 돈다**. 안전장치를 낮추는 대신 증거를 바꾼다.
   const corpus = JSON.parse(readFileSync(CORPUS_PATH, 'utf8')) as CorpusContract & { items: CorpusItem[] };
-  const probeRunner = createMonadLiveTurnRunner(monad, PTY);
+  const probeRunner = createElanousLiveTurnRunner(elanous, PTY);
   for (const sessionId of repeatSessions) {
-    if (verifyPtySession(monad, PTY, sessionId)) {
+    if (verifyPtySession(elanous, PTY, sessionId)) {
       console.log(`[live] pty↔session 확인 — lifecycle.bridge-attached 선언 · session=${sessionId}`);
       continue;
     }

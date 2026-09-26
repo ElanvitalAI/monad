@@ -3,7 +3,7 @@
 // Three tools exposed to skill-runner / dashboard / MCP:
 //
 //   SaveLayout({windowId, label?}) — snapshot the current window layout
-//     to ~/.monad/layouts/<slug>.layout.json. Returns the saved slug +
+//     to ~/.elanous/layouts/<slug>.layout.json. Returns the saved slug +
 //     file path. Idempotent per label (re-save overwrites).
 //
 //   LoadLayout({slug, windowId}) — list saved layouts when slug is
@@ -51,7 +51,7 @@ export function buildSaveLayoutTool(): LLMToolSpec {
   return {
     name: 'SaveLayout',
     description:
-      'Save the current layout of a virtual window to ~/.monad/layouts/<slug>.layout.json. '
+      'Save the current layout of a virtual window to ~/.elanous/layouts/<slug>.layout.json. '
       + 'Slug derives from label (or windowId when no label). Overwrites existing slug atomically. '
       + 'Address via `target: {kind:"window", windowId}` (preferred · SurfaceAddress shape) or '
       + 'legacy `windowId: integer`.',
@@ -117,7 +117,7 @@ export interface LayoutToolsDeps {
   readonly registry: WindowRegistry;
   readonly dir?: string;
   /** Bundle B-5 (P6-4) — dashboard injects the unified ArtifactStore
-   *  so SaveLayout output lands in `~/.monad/artifacts/layout/`. */
+   *  so SaveLayout output lands in `~/.elanous/artifacts/layout/`. */
   readonly artifactStore?: import('../../artifact/index.js').ArtifactStore;
 }
 

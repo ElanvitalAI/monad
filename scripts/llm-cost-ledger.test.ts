@@ -13,7 +13,7 @@ describe('llm-cost-ledger pagination', () => {
   it('does not treat a truncated page without a cursor as a complete total', () => {
     const parsed = pageIsIncomplete(
       `${JSON.stringify({ model: 'gpt-5.6-terra', inputTokens: 1, outputTokens: 0 })}\n${JSON.stringify({ _meta: { type: 'log-query-limit', limitReached: true, nextCursor: null } })}\n`,
-      'monad logs: result may be truncated (limitReached=true)\n',
+      'elanous logs: result may be truncated (limitReached=true)\n',
       0,
     );
     expect(parsed.limitReached).toBe(true);
@@ -28,7 +28,7 @@ describe('llm-cost-ledger pagination', () => {
           JSON.stringify({ model: 'gpt-5.6-luna', inputTokens: 1, outputTokens: 0 }),
           JSON.stringify({ _meta: { type: 'log-query-limit', limitReached: true, nextCursor: null, nextCursors: { prod: 9 } } }),
         ].join('\n'),
-        stderr: 'monad logs: result may be truncated (limitReached=true)\n',
+        stderr: 'elanous logs: result may be truncated (limitReached=true)\n',
         status: 0,
       },
       {

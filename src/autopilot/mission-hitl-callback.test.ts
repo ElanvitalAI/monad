@@ -35,7 +35,7 @@ describe('mission HITL callback data', () => {
   });
 
   it('미션 HITL 이 아닌 콜백은 null(형제 핸들러 소관)', () => {
-    expect(parseHitlCallbackData('monad-hitl:req123:yes')).toBeNull();
+    expect(parseHitlCallbackData('elanous-hitl:req123:yes')).toBeNull();
     expect(parseHitlCallbackData('mq:sid:0:opt')).toBeNull();
     expect(parseHitlCallbackData('apm-hitl:6196e5:maybe')).toBeNull(); // 잘못된 decision
     expect(parseHitlCallbackData('garbage')).toBeNull();
@@ -88,8 +88,8 @@ describe('mission approval feedback summary', () => {
 });
 
 describe('approvalNextStepText — 승인 후 안내 domain-aware(대표 2026-07-16)', () => {
-  it('코어(monad) 미션엔 매매 안전관문 문구 없음 · approve 로 빌드 착수', () => {
-    const s = approvalNextStepText('apm_x', 'monad');
+  it('코어(elanous) 미션엔 매매 안전관문 문구 없음 · approve 로 빌드 착수', () => {
+    const s = approvalNextStepText('apm_x', 'elanous');
     expect(s).toContain('빌드 착수');
     expect(s).toContain('autopilot approve apm_x');
     expect(s).not.toContain('매매');

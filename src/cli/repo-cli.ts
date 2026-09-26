@@ -193,7 +193,7 @@ function scaffoldDesignDirectionLines(targetPath: string, deps: typeof liveDeps)
   return [
     'Design direction: (none declared) — pick one, or leave it and decide later:',
     ...available.map((d) => `  ${d.id}  ${d.mood}`),
-    `  → monad repo design-direction ${targetPath} --set <direction>`,
+    `  → elanous repo design-direction ${targetPath} --set <direction>`,
   ];
 }
 
@@ -241,7 +241,7 @@ export async function runRepositoryDesignCheck(target: string | undefined, overr
   const deps = { ...liveDeps, ...overrides };
   const outcome = resolveRepositoryDesignCheck(target, overrides);
   // ⛔ Message text is a contract, not cosmetics — `#11793` settled on this
-  //    "blocked: cannot read <path>" wording so a caller outside the monad
+  //    "blocked: cannot read <path>" wording so a caller outside the elanous
   //    tree learns WHICH path failed. Keep it byte-identical.
   if (!outcome.ok) {
     deps.out.error(`Repository design check blocked: cannot read ${outcome.path}.`);
@@ -413,7 +413,7 @@ export function registerRepoCommands(program: Command, overrides: RepoCliDeps = 
       if (code !== 0) deps.setExitCode(code);
     });
   repo.command('design-extract <url>')
-    .description('라이브 웹 페이지에서 «에셋 + DESIGN.md» 를 뽑는다 — 팔레트·서체·모션·대비 쌍을 monad 가 읽는 형식으로')
+    .description('라이브 웹 페이지에서 «에셋 + DESIGN.md» 를 뽑는다 — 팔레트·서체·모션·대비 쌍을 elanous 가 읽는 형식으로')
     .option('--out <dir>', '출력 뿌리 (기본: ./design-extract)')
     .option('--no-assets', '자산 미러를 건너뛴다 — 규칙만 뽑는다')
     .option('--port <n>', 'CDP 포트 (기본 9355)')
@@ -455,7 +455,7 @@ export function registerRepoCommands(program: Command, overrides: RepoCliDeps = 
   // ⭐⭐ 웹클론 판정을 ***하니스 라인 안에서*** 부를 수 있게 하는 문 (2026-09-13 🅕 · 대표 지시).
   //   🩸 왜: 판정 도구가 `scripts/webclone/` 에만 있어서 ***사람이 밖에서 치는 것***이었다.
   //      자식 워크트리는 그 경로를 모르고, 런은 판정 결과를 «모른 채» 닫혔다(9/9 인 산출이 abandoned).
-  //   ⇒ ⓐ 어느 cwd 에서나 부를 수 있고 ⓑ 판정이 `monad logs --category webclone.judge` 로 흐르고
+  //   ⇒ ⓐ 어느 cwd 에서나 부를 수 있고 ⓑ 판정이 `elanous logs --category webclone.judge` 로 흐르고
   //      ⓒ `--require` 면 종료 코드로 «성패»를 말한다.
   //   ⛔ 로직을 여기서 다시 짜지 않는다 — `scripts/webclone/{check-clone,check-layout}.ts` 가 정본이다.
   repo.command('webclone-judge <clone-dir>')
@@ -527,7 +527,7 @@ export function registerRepoCommands(program: Command, overrides: RepoCliDeps = 
     });
 
   repo.command('design-screen-contrast <ansi-path>')
-    .description('ANSI 화면 스냅샷의 텍스트 대비를 검사 — `monad pty snapshot <ref> --ansi` 산출을 파일로 준다')
+    .description('ANSI 화면 스냅샷의 텍스트 대비를 검사 — `elanous pty snapshot <ref> --ansi` 산출을 파일로 준다')
     .option('--background <hex>', '터미널 기본 배경색 (#rrggbb)')
     .option('--foreground <hex>', '터미널 기본 전경색 (#rrggbb)')
     .option('--threshold <n>', '최소 대비 문턱 (기본: 4.5)')

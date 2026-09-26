@@ -33,7 +33,7 @@
 //     errors surface as chat log warnings via
 //     `attachFilePathToken`'s own error path.
 //   • `acceptKinds = ['file-path[]', 'text/uri-list']` — primary is
-//     the monad-native array shape; URI list fallback lets us accept
+//     the elanous-native array shape; URI list fallback lets us accept
 //     payloads originating from future cross-process DnD (XDND /
 //     Wayland `text/uri-list` MIME) without a second rewrite.
 

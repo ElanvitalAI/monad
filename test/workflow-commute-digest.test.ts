@@ -65,7 +65,7 @@ describe('commute-digest — runtime', () => {
         if (body.includes('command -v gh')) {
           return { stdout: '## Open PRs\n- #2050 R2/R3 closure', stderr: '', exitCode: 0 };
         }
-        if (body.includes('MONAD_CALENDAR_CMD')) {
+        if (body.includes('ELANOUS_CALENDAR_CMD')) {
           return { stdout: '- 09:00 sync\n- 14:00 review', stderr: '', exitCode: 0 };
         }
         if (body.includes('OBSIDIAN_DIR')) {
@@ -93,7 +93,7 @@ describe('commute-digest — trigger isolation', () => {
       'build workflow', 'new workflow', '워크플로우 만들어줘', 'workflow builder',
       'morning briefing', "what's today", '오늘 뭐 해야 해', 'daily kickoff', "today's plan",
       'share-intake', 'process this', 'intake', '이거 처리해줘', '공유 처리',
-      'voice quick task', 'voice memo', 'monad capture', '음성 받아 적어', 'remember this voice',
+      'voice quick task', 'voice memo', 'elanous capture', '음성 받아 적어', 'remember this voice',
       'research deep', 'deep dive', 'deep research', '리서치 딥', '백그라운드 조사',
       'daily standup', 'standup recap', 'EoD recap', '오늘 마감', '야근전 정리',
     ];
@@ -113,7 +113,7 @@ describe('commute-digest — router cascade', () => {
     const prevCwd = process.cwd();
     process.chdir(tmpDir);
     try {
-      mkdirSync(join(tmpDir, '.monad', 'workflows'), { recursive: true });
+      mkdirSync(join(tmpDir, '.elanous', 'workflows'), { recursive: true });
       let llmCalls = 0;
       const fakeLLM: RouterLLMCaller = async () => { llmCalls += 1; return ''; };
       const r = await routeWorkflow(

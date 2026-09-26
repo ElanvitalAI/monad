@@ -17,7 +17,7 @@ function harness() {
   return { coordinator, scheduled };
 }
 
-// Q5 (Phase 3, 2026-05-03) — MONAD_LEGACY_FOCUS env flag removed.
+// Q5 (Phase 3, 2026-05-03) — ELANOUS_LEGACY_FOCUS env flag removed.
 // Cleanup hooks no longer needed.
 
 describe('F-3a-2 — cycleFocus reads primitive.active (not coord.focus.active)', () => {
@@ -84,7 +84,7 @@ describe('F-3a-2 — cycleFocus reads primitive.active (not coord.focus.active)'
   });
 
   // Q5 (Phase 3, 2026-05-03) — `legacy mode — cycleFocus reads
-  // coord.focus.active directly` test removed; MONAD_LEGACY_FOCUS
+  // coord.focus.active directly` test removed; ELANOUS_LEGACY_FOCUS
   // rollback flag dropped. Primitive is the only source of truth.
 });
 
@@ -141,7 +141,7 @@ describe('F-3a-2 — syncExternalFocus primitive-direct delegation', () => {
 
   // Q5 (Phase 3, 2026-05-03) — `legacy mode — syncExternalFocus
   // routes through setFocus/clearFocus wrappers` test removed;
-  // MONAD_LEGACY_FOCUS rollback flag dropped. The primitive-direct
+  // ELANOUS_LEGACY_FOCUS rollback flag dropped. The primitive-direct
   // path is the only path.
 });
 

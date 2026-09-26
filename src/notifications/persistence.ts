@@ -4,7 +4,7 @@
 // modal can replay the recent history on the next process launch.
 // Session N landed the in-memory store; this adds a thin sidecar:
 //
-//   ~/.monad/notifications/<sid>.jsonl  (one event per line)
+//   ~/.elanous/notifications/<sid>.jsonl  (one event per line)
 //
 // Design choices:
 //  - Per-session files — easy to truncate or delete when a session is
@@ -23,12 +23,12 @@
 
 import * as fs from 'node:fs';
 import * as path from 'node:path';
-import { monadStateRoot } from '../autopilot/state-paths.js';
+import { elanousStateRoot } from '../autopilot/state-paths.js';
 
 import type { NotificationEvent } from './store.js';
 
 export interface PersistenceOpts {
-  /** Root directory. Defaults to `~/.monad/notifications`. `null`
+  /** Root directory. Defaults to `~/.elanous/notifications`. `null`
    *  disables persistence (used in tests that want the shape without
    *  I/O). */
   dir?: string | null;
@@ -60,7 +60,7 @@ export interface PersistenceAdapter {
 export function createPersistence(opts: PersistenceOpts = {}): PersistenceAdapter {
   const dir = opts.dir === null
     ? null
-    : (opts.dir ?? path.join(monadStateRoot(), 'notifications'));
+    : (opts.dir ?? path.join(elanousStateRoot(), 'notifications'));
   const cap = opts.fileMaxLines ?? DEFAULT_FILE_CAP;
   if (dir === null) return noopAdapter();
   try { fs.mkdirSync(dir, { recursive: true }); } catch { /* swallow */ }

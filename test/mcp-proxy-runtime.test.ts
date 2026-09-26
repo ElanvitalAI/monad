@@ -138,11 +138,11 @@ describe('createMcpProxyRuntime', () => {
       authorizer: alwaysAuthorized,
     });
     const result = await rt.run(
-      { scheme: 'monad' },
+      { scheme: 'elanous' },
       { surface: 'mcp' },
     );
     expect(captured.name).toBe('build_target'); // remote tool name, NOT the proxy id
-    expect(captured.args).toEqual({ scheme: 'monad' });
+    expect(captured.args).toEqual({ scheme: 'elanous' });
     expect((result as { output: string }).output).toBe('ok');
   });
 
@@ -644,7 +644,7 @@ describe('mcpResultToRunResult', () => {
   test('preserves structuredContent under `structured`', () => {
     const result: McpToolCallResult = {
       content: [],
-      structuredContent: { duration_ms: 1234, scheme: 'monad' },
+      structuredContent: { duration_ms: 1234, scheme: 'elanous' },
     };
     const out = mcpResultToRunResult(result) as {
       structured: { duration_ms: number };

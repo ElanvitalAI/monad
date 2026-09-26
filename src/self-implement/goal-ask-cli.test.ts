@@ -6,7 +6,7 @@ import { GoalAskStore } from './goal-ask-store.js';
 
 const directories: string[] = [];
 const REPO_ROOT = resolve(import.meta.dir, '..', '..');
-const BIN = resolve(REPO_ROOT, 'bin/monad.mjs');
+const BIN = resolve(REPO_ROOT, 'bin/elanous.mjs');
 const document = '- RootIntent: CLI goal asks\n';
 
 afterEach(() => {
@@ -23,7 +23,7 @@ function runGoalAsks(stateDir: string, args: string[]) {
   return Bun.spawnSync({
     cmd: [process.execPath, BIN, 'self', 'goal-asks', ...args],
     cwd: REPO_ROOT,
-    env: { ...process.env, MONAD_STATE_DIR: stateDir },
+    env: { ...process.env, ELANOUS_STATE_DIR: stateDir },
     stdout: 'pipe',
     stderr: 'pipe',
   });

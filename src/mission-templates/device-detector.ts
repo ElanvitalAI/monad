@@ -3,7 +3,7 @@
 //
 // `DeviceDetector` answers "what Apple devices does this user own right
 // now?" by reading a `DeviceFleetSource`. Production wires the source to
-// `~/.monad/devices.json` (which the iOS Companion periodically refreshes
+// `~/.elanous/devices.json` (which the iOS Companion periodically refreshes
 // from CKShare / iCloud device family); tests pass an inline source.
 //
 // The detector normalises raw rows into a stable `DeviceCapabilitySet`

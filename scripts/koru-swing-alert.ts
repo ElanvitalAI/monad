@@ -2,7 +2,7 @@
 // ── KORU 550주 스윙 알림 (10분 크론) ──────────────────────────────────
 // omni-market KORU 시세 조회 → 예약주문 세팅 가이드 / 스톱 조정 안내를 텔레그램
 // 발송. 신규 이벤트(익절 도달·손절 액션·고가 유의미 갱신) 시에만 발송(스팸 방지).
-// ★ READ-ONLY 안내 — 실시간 체결은 증권사 예약주문/스톱로스. monad는 세팅 가이드만.
+// ★ READ-ONLY 안내 — 실시간 체결은 증권사 예약주문/스톱로스. elanous는 세팅 가이드만.
 //
 // cron 예시 (KORU 거래시간·KST): */10 9-16 평일 + */10 22,23,0-5 (미국장).
 
@@ -56,7 +56,7 @@ if (!shouldAlert(e)) { console.log(`KORU $${cur} · 신규 이벤트 없음 — 
 
 const msg = formatOrderPlan(e);
 console.log(msg);
-// monad 네이티브 발송(/v1/outbound → 텔레그램, 실패 시 텔레그램 직접 fallback).
+// elanous 네이티브 발송(/v1/outbound → 텔레그램, 실패 시 텔레그램 직접 fallback).
 if (sendOutbound(msg, 'alert')) {
   markNotified(now, undefined, cur);  // 하락 움직임 알림 스팸 방지용 현재가 기록
   console.log('\n✅ 텔레그램 발송');

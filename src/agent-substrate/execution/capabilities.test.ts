@@ -67,8 +67,8 @@ describe('카탈로그 무결성', () => {
 });
 
 describe('resolveActiveCapabilities — 선언 → behavior 구동(선언 ∩ 진입정책·§6e)', () => {
-  it('monad-apparatus 진입 → enhance 활성(정책 기본 ON)', () => {
-    const a = resolveActiveCapabilities('skill', { entry: 'monad-apparatus' });
+  it('elanous-apparatus 진입 → enhance 활성(정책 기본 ON)', () => {
+    const a = resolveActiveCapabilities('skill', { entry: 'elanous-apparatus' });
     expect(a.has('enhance')).toBe(true);
     expect(a.has('memory')).toBe(true);   // entry-independent 항상
     expect(a.has('observe')).toBe(true);
@@ -82,17 +82,17 @@ describe('resolveActiveCapabilities — 선언 → behavior 구동(선언 ∩ �
   });
 
   it('explicitEnhance 가 진입 기본값보다 우선(양방향)', () => {
-    expect(resolveActiveCapabilities('skill', { entry: 'monad-apparatus', explicitEnhance: false }).has('enhance')).toBe(false);
+    expect(resolveActiveCapabilities('skill', { entry: 'elanous-apparatus', explicitEnhance: false }).has('enhance')).toBe(false);
     expect(resolveActiveCapabilities('skill', { entry: 'external-verbatim', explicitEnhance: true }).has('enhance')).toBe(true);
   });
 
   it('선언에 없는 capability 는 활성 집합에도 없음(skill 조합엔 arming 없음)', () => {
-    const a = resolveActiveCapabilities('skill', { entry: 'monad-apparatus' });
+    const a = resolveActiveCapabilities('skill', { entry: 'elanous-apparatus' });
     expect(a.has('arming')).toBe(false);
     expect(a.has('isolation')).toBe(false);
   });
 
-  it('기본 진입(opts 생략) = monad-apparatus(enhance ON)', () => {
+  it('기본 진입(opts 생략) = elanous-apparatus(enhance ON)', () => {
     expect(resolveActiveCapabilities('skill').has('enhance')).toBe(true);
   });
 });

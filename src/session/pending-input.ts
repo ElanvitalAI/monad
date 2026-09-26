@@ -6,11 +6,11 @@
 // ⛔ 왜 클로저가 아니라 «레지스트리»인가 — 라이브 실측(2026-08-19):
 //   TUI 의 큐는 대시보드에, 에이전트 루프는 ACP «서버» 쪽 `runCoreTurn` 에 있다.
 //   ⭐ 둘은 ***같은 프로세스***다(로그 스토어가 같다: `llm.router` 와 `chat-main.plain-turn`
-//     둘 다 `test:monad-drive-Og2Z6M`) — 그러나 «RPC 경계»가 사이에 있어 클로저를 못 넘긴다.
+//     둘 다 `test:elanous-drive-Og2Z6M`) — 그러나 «RPC 경계»가 사이에 있어 클로저를 못 넘긴다.
 //   ⇒ 그래서 «세션 id 로 만나는» 자리를 하나 둔다.
 //
 // ⚠️ 한계(정직하게): 이것은 ***같은 프로세스*** 전제다. 데몬이 다른 프로세스인 구성에서는
-//   ACP 에 진짜 `steer` 메서드가 필요하다(`clientSessionSteer` 가 이미 있으나 monad 자체
+//   ACP 에 진짜 `steer` 메서드가 필요하다(`clientSessionSteer` 가 이미 있으나 elanous 자체
 //   backend 는 `steer()` 를 «구현하지 않는다» — 호출자도 0이다). 그 확장은 별건이다.
 
 import { debug } from '../debug/log.js';

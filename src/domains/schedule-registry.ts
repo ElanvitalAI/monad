@@ -1,7 +1,7 @@
 // ── 스케줄 레지스트리 (2026-07-07 · S0) ────────────────────────────────
 //
-// 대표 지시: monad가 자기 예약(크론)을 알아야 한다. 27개 crontab 잡이 실제
-// 스케줄링을 전담하는데 monad는 프로그램적으로 인지하지 못함(= "그림자
+// 대표 지시: elanous가 자기 예약(크론)을 알아야 한다. 27개 crontab 잡이 실제
+// 스케줄링을 전담하는데 elanous는 프로그램적으로 인지하지 못함(= "그림자
 // 스케줄러"). 이는 메모리 갭과 대칭(prospective memory) — 스케줄러도 기억의
 // 한 부류. 메모리 트랙 surface_events.db와 peer 구조(더블트랙).
 //
@@ -15,14 +15,14 @@ import { existsSync, mkdirSync, readFileSync } from 'node:fs';
 import { homedir } from 'node:os';
 import { createHash } from 'node:crypto';
 import { dirname, join } from 'node:path';
-import { monadStateRoot } from '../autopilot/state-paths.js';
+import { elanousStateRoot } from '../autopilot/state-paths.js';
 import { prevScheduledFire } from './cron-match.js';
 
-/** 스케줄 레지스트리 DB 정본 경로 — state-dir 존중(lazy · Phase B). prod(MONAD_STATE_DIR
- *  미설정)=`~/.monad/schedules.db`(무변경) · 격리 test 인스턴스=자기 루트(빈 시작). 종전
+/** 스케줄 레지스트리 DB 정본 경로 — state-dir 존중(lazy · Phase B). prod(ELANOUS_STATE_DIR
+ *  미설정)=`~/.elanous/schedules.db`(무변경) · 격리 test 인스턴스=자기 루트(빈 시작). 종전
  *  homedir 하드코딩은 test 데몬의 미션 materialize/cancel 이 prod 크론을 건드리던 근본. */
 export function schedulesDbPath(): string {
-  return join(monadStateRoot(), 'schedules.db');
+  return join(elanousStateRoot(), 'schedules.db');
 }
 
 /** 도메인 무관 카테고리 (§타입 일반화 — Conatus 전용 탈피). */
@@ -41,9 +41,9 @@ export interface ScheduleRow {
   last_seen: string | null;
   last_run: string | null;
   note: string | null;
-  managed_by: string;      // monad | manual
+  managed_by: string;      // elanous | manual
   raw: string | null;      // 원본 crontab 라인(inspect용)
-  /** 실행 주체(S2): crontab(시스템 cron 발화) | monad(데몬 러너 발화). */
+  /** 실행 주체(S2): crontab(시스템 cron 발화) | elanous(데몬 러너 발화). */
   run_via: string;
   // ── 실행 결과 추적(P1 관측성) — markResult 가 갱신 ──
   last_status?: string | null;      // ok | error
@@ -88,16 +88,16 @@ export function openSchedulesDb(path: string = schedulesDbPath()): Database {
   return db;
 }
 
-/** 잡 실행 주체 전환(adopt=monad / release=crontab). */
-export function setRunVia(db: Database, id: string, runVia: 'crontab' | 'monad' | 'trigger'): void {
+/** 잡 실행 주체 전환(adopt=elanous / release=crontab). */
+export function setRunVia(db: Database, id: string, runVia: 'crontab' | 'elanous' | 'trigger'): void {
   db.run(`UPDATE schedule_registry SET run_via = ? WHERE id = ?`, [runVia, id]);
 }
 
-/** monad 데몬이 실행 책임을 지는 run_via — schedule-runner('monad')·workflow
+/** elanous 데몬이 실행 책임을 지는 run_via — schedule-runner('elanous')·workflow
  *  Schedule Trigger('trigger'·Mission Fabric 통합 U3). crontab/daemon 은 제외.
  *  헬스 추적·이중발화 판정의 단일 술어. */
-export function isMonadManagedRunVia(runVia: string): boolean {
-  return runVia === 'monad' || runVia === 'trigger';
+export function isElanousManagedRunVia(runVia: string): boolean {
+  return runVia === 'elanous' || runVia === 'trigger';
 }
 
 /** 사람용 설명(note) 설정 — "이게 무슨 스케줄인지". inventory 파생값이 아니라
@@ -151,7 +151,7 @@ export function markResult(db: Database, id: string, r: RunResult): void {
 }
 
 // ── 스케줄 헬스(P2 관측성) — "무엇이 밀렸나/실패했나" 순수 판정 ──────────
-// stale = monad 발화 잡인데 '직전 예정 시각'이 지났음에도 그 이후 실행 기록이
+// stale = elanous 발화 잡인데 '직전 예정 시각'이 지났음에도 그 이후 실행 기록이
 // 없음(= 유실). catch-up sweep 이 정상 동작하면 stale 은 곧 해소되므로, 남아
 // 있는 stale 은 진짜 문제(catch-up 제외된 매매류·grace 초과·러너 정지 등).
 
@@ -161,7 +161,7 @@ export interface JobHealth {
   overdueMs: number;            // 직전 예정 이후 경과(ms)
 }
 export interface ScheduleHealth {
-  monadTotal: number;                 // 결과를 남길 수 있는 헬스 대상 잡 수
+  elanousTotal: number;                 // 결과를 남길 수 있는 헬스 대상 잡 수
   excludedRunVia: number;             // 관리 실행 방식 대상 밖이라 제외된 잡 수
   excludedUnwrappedCrontab: number;   // 관측 래퍼 없는 crontab 잡이라 제외된 수
   excludedDisabled: number;           // 비활성화되어 제외된 잡 수
@@ -189,16 +189,16 @@ export function scheduleHealth(
   const noncanonical: JobHealth[] = [];
   const unmeasured: JobHealth[] = [];
   const canMeasureCanonicality = opts.repo !== undefined && opts.bun !== undefined;
-  let monadTotal = 0;
+  let elanousTotal = 0;
   let excludedRunVia = 0;
   let excludedUnwrappedCrontab = 0;
   let excludedDisabled = 0;
   let excludedMissingCron = 0;
   for (const r of rows) {
-    // U3(Mission Fabric): 'trigger'(workflow Schedule Trigger 이관잡)도 monad
+    // U3(Mission Fabric): 'trigger'(workflow Schedule Trigger 이관잡)도 elanous
     // 관리 실행이므로 헬스 추적(발화는 데몬, 결과는 브릿지가 markResult via='trigger').
     const wrappedCrontab = r.run_via === 'crontab' && isCronRunWrappedCommand(r.command);
-    if (!isMonadManagedRunVia(r.run_via) && !wrappedCrontab) {
+    if (!isElanousManagedRunVia(r.run_via) && !wrappedCrontab) {
       if (r.run_via === 'crontab') excludedUnwrappedCrontab++;
       else excludedRunVia++;
       continue;
@@ -211,7 +211,7 @@ export function scheduleHealth(
       excludedMissingCron++;
       continue;
     }
-    monadTotal++;
+    elanousTotal++;
     const cron = r.cron;
     const healthJob = { id: r.id, name: r.name, cron: r.cron, lastRun: r.last_run ?? null,
       lastStatus: r.last_status ?? null, overdueMs: 0 };
@@ -230,7 +230,7 @@ export function scheduleHealth(
     }
   }
   return {
-    monadTotal, excludedRunVia, excludedUnwrappedCrontab, excludedDisabled, excludedMissingCron,
+    elanousTotal, excludedRunVia, excludedUnwrappedCrontab, excludedDisabled, excludedMissingCron,
     errored, stale, noncanonical, unmeasured, generatedAt: now.toISOString(),
   };
 }
@@ -302,7 +302,7 @@ export function scriptName(command: string): string {
   if (m) return m[1]!;
   const noCd = c.replace(/^cd\s+\S+\s*&&\s*/, '');
   const tokens = noCd.split(/\s+/);
-  // bun/node 런처면 다음 토큰(실 스크립트)을 이름 원천으로 — `bun bin/monad.mjs` → monad.mjs(bun 아님).
+  // bun/node 런처면 다음 토큰(실 스크립트)을 이름 원천으로 — `bun bin/elanous.mjs` → elanous.mjs(bun 아님).
   let head = tokens[0] ?? c;
   if (/(^|\/)(bun|node)$/.test(head) && tokens[1]) head = tokens[1];
   return head.split('/').pop() ?? c;
@@ -422,9 +422,9 @@ export function reindexCrontabEntry(db: Database, oldId: string, newId: string):
 }
 
 // ── 내부 스케줄 인벤토리 (B2 · 2026-07-07) — 통합 뷰 ────────────────────
-// crontab 외에 monad 데몬이 자체 발화하는 내부 스케줄(daily-reflection·discovery·
+// crontab 외에 elanous 데몬이 자체 발화하는 내부 스케줄(daily-reflection·discovery·
 // workflow-runtime 트리거)도 같은 레지스트리에 편입 → "전체 스케줄 한 화면".
-// run_via='daemon'(데몬 자체 발화) — 내 schedule-runner(run_via='monad')와 구분,
+// run_via='daemon'(데몬 자체 발화) — 내 schedule-runner(run_via='elanous')와 구분,
 // 러너가 오발화하지 않음. source로 출처 구분.
 
 export interface InventoryInternalOpts {
@@ -451,15 +451,15 @@ export function inventoryInternalSchedules(db: Database, opts: InventoryInternal
     );
     count++;
   };
-  // daily-reflection (항상 가동 · 기본 21:00) — monad 자체 활동 회고(오늘 노트/OCR/
-  // 세션 요약·PWA /reflection) 스냅샷 푸시. 투자 무관 → monad(core). Conatus 투자
+  // daily-reflection (항상 가동 · 기본 21:00) — elanous 자체 활동 회고(오늘 노트/OCR/
+  // 세션 요약·PWA /reflection) 스냅샷 푸시. 투자 무관 → elanous(core). Conatus 투자
   // 회고(retro loop = retro-aggregate/report/rebalance)와는 별개.
-  const hour = opts.reflectionHour ?? (Number.isFinite(Number.parseInt(process.env.MONAD_REFLECTION_HOUR ?? '', 10)) ? Number.parseInt(process.env.MONAD_REFLECTION_HOUR!, 10) : 21);
-  upsert('internal:daily-reflection', 'daily-reflection', 'daily-reflection', `0 ${hour} * * *`, null, 'daemon: monad 활동 회고(노트/OCR/세션) 스냅샷 푸시', 'report', 'monad');
-  // discovery (env 설정 시에만 가동) — 코어 인프라 → monad.
-  const dm = opts.discoveryIntervalMs ?? Number.parseInt(process.env.MONAD_DISCOVERY_CRON_INTERVAL_MS ?? '', 10);
+  const hour = opts.reflectionHour ?? (Number.isFinite(Number.parseInt(process.env.ELANOUS_REFLECTION_HOUR ?? '', 10)) ? Number.parseInt(process.env.ELANOUS_REFLECTION_HOUR!, 10) : 21);
+  upsert('internal:daily-reflection', 'daily-reflection', 'daily-reflection', `0 ${hour} * * *`, null, 'daemon: elanous 활동 회고(노트/OCR/세션) 스냅샷 푸시', 'report', 'elanous');
+  // discovery (env 설정 시에만 가동) — 코어 인프라 → elanous.
+  const dm = opts.discoveryIntervalMs ?? Number.parseInt(process.env.ELANOUS_DISCOVERY_CRON_INTERVAL_MS ?? '', 10);
   if (Number.isFinite(dm) && dm > 0) {
-    upsert('internal:discovery', 'discovery', 'discovery', null, dm, 'daemon: registry discovery refresh', 'ingest', 'monad');
+    upsert('internal:discovery', 'discovery', 'discovery', null, dm, 'daemon: registry discovery refresh', 'ingest', 'elanous');
   }
   // workflow-runtime schedule 트리거 편입 — 워크플로 YAML의 scheduleTrigger 노드.
   // 현재 0개(test-delivery-pushcut 무트리거)이나 존재 시 자동 편입. fail-soft.
@@ -478,7 +478,7 @@ export function inventoryInternalSchedules(db: Database, opts: InventoryInternal
   }
   for (const w of wfSchedules) {
     upsert(`internal:wf:${w.workflowName}:${w.nodeId}`, w.workflowName, 'workflow-runtime',
-      w.cron ?? null, w.intervalMs ?? null, `workflow: ${w.workflowName}#${w.nodeId}`, 'maintenance', 'monad');
+      w.cron ?? null, w.intervalMs ?? null, `workflow: ${w.workflowName}#${w.nodeId}`, 'maintenance', 'elanous');
   }
   return { count };
 }
@@ -505,19 +505,19 @@ export function driftedSchedules(db: Database, staleBefore: string): ScheduleRow
 }
 
 // ── crontab 쓰기 (S1 · schedule_manage) — 순수 변환 + 임퓨어 적용 분리 ─────────
-// 안전 원칙: ① 항상 백업 ② monad .ts 스크립트는 `cd <repo> &&` 강제(상대경로
+// 안전 원칙: ① 항상 백업 ② elanous .ts 스크립트는 `cd <repo> &&` 강제(상대경로
 // 즉사 방지 · feedback_crontab_line_cd_repo_required) ③ 로그 리다이렉트 ④ 파괴적
 // 작업은 확인. 실행 엔진 신설 아님 — 시스템 crontab을 안전하게 CRUD.
 
 import { writeFileSync } from 'node:fs';
 
-/** monad repo 루트(이 파일 = src/domains/…). */
+/** elanous repo 루트(이 파일 = src/domains/…). */
 export function repoRoot(): string {
   return cronRepoRoot(join(import.meta.dir, '..', '..'));
 }
 
 /**
- * 설치본의 고정 경로(`<prefix>/current/node_modules/monadagent`) — 있으면. R3(09-24)에서 체크아웃이 필요 없는 크론을
+ * 설치본의 고정 경로(`<prefix>/current/node_modules/elanous`) — 있으면. R3(09-24)에서 체크아웃이 필요 없는 크론을
  * 여기로 옮긴다 ⇒ 건강 검사는 이 `cd` 도 정규로 본다(`scheduleHealth` 의 `alsoCanonicalRepos`).
  */
 export function installedCronRoot(
@@ -525,16 +525,16 @@ export function installedCronRoot(
   exists: (p: string) => boolean = existsSync,
   home: string = homedir(),
 ): string | null {
-  const prefix = env.MONAD_INSTALL_PREFIX?.trim() || join(env.XDG_DATA_HOME?.trim() || join(home, '.local', 'share'), 'monad');
-  const root = join(prefix, 'current', 'node_modules', 'monadagent');
+  const prefix = env.ELANOUS_INSTALL_PREFIX?.trim() || join(env.XDG_DATA_HOME?.trim() || join(home, '.local', 'share'), 'elanous');
+  const root = join(prefix, 'current', 'node_modules', 'elanous');
   return exists(root) ? root : null;
 }
 
 /**
- * 크론 `cd` 대상. 🩸 2026-09-24: 전역 `monad`·데몬이 설치본으로 옮긴 뒤 `import.meta.dir` 는 판 폴더
- * (`~/.local/share/monad/versions/<판>/node_modules/monadagent`)로 풀린다 — 그 경로를 크론에 박으면
+ * 크론 `cd` 대상. 🩸 2026-09-24: 전역 `elanous`·데몬이 설치본으로 옮긴 뒤 `import.meta.dir` 는 판 폴더
+ * (`~/.local/share/elanous/versions/<판>/node_modules/elanous`)로 풀린다 — 그 경로를 크론에 박으면
  * 야간 정리(#20214)가 그 판을 지우는 날 크론이 조용히 죽는다.
- * ⇒ 설치본이면 ① 리더 트리(`~/.monad/leader.json` — 종전 크론이 `cd` 하던 체크아웃) ② 없으면 고정 경로 `current`.
+ * ⇒ 설치본이면 ① 리더 트리(`~/.elanous/leader.json` — 종전 크론이 `cd` 하던 체크아웃) ② 없으면 고정 경로 `current`.
  * 설치본이 아니면(체크아웃) 그대로.
  */
 export function cronRepoRoot(
@@ -542,17 +542,17 @@ export function cronRepoRoot(
   deps: { home?: string; exists?: (p: string) => boolean; readLeader?: () => string | null } = {},
 ): string {
   const exists = deps.exists ?? existsSync;
-  const m = /^(.*)\/versions\/[^/]+\/node_modules\/monadagent\/?$/.exec(codeRoot.replace(/\\/g, '/'));
+  const m = /^(.*)\/versions\/[^/]+\/node_modules\/elanous\/?$/.exec(codeRoot.replace(/\\/g, '/'));
   if (!m || hasGitAbove(codeRoot, exists)) return codeRoot;
   const home = deps.home ?? homedir();
   const leader = (deps.readLeader ?? (() => {
     try {
-      const raw = JSON.parse(readFileSync(join(home, '.monad', 'leader.json'), 'utf-8')) as { tree?: unknown };
+      const raw = JSON.parse(readFileSync(join(home, '.elanous', 'leader.json'), 'utf-8')) as { tree?: unknown };
       return typeof raw.tree === 'string' ? raw.tree : null;
     } catch { return null; }
   }))();
   if (leader && exists(leader)) return leader;
-  return `${m[1]}/current/node_modules/monadagent`;
+  return `${m[1]}/current/node_modules/elanous`;
 }
 
 function hasGitAbove(dir: string, exists: (p: string) => boolean): boolean {
@@ -567,18 +567,18 @@ function hasGitAbove(dir: string, exists: (p: string) => boolean): boolean {
 }
 
 // 셸 명령의 **선두 진입점**(옵션 `cd <path> &&` 뒤)만 대상으로 앵커한다 — 임의 `&&`/`;` 경계를 훑으면
-//   인용 문자열 내부의 `; monad`/`&& monad` 를 셸 경계로 오인해 문자열을 변조한다(리뷰 #5342 실버그).
-//   cron 진입점은 `monad …` 또는 `[cd <repo> &&] <bun> bin/monad.mjs …` 선두 형태뿐이라 선두 앵커로 충분·안전.
-const LEADING_MONAD_ENTRYPOINT = /^(\s*(?:cd\s+\S+\s+&&\s+)?)(?:(?:\S*\/)?bun\s+bin\/monad\.mjs|monad)(?=\s|$)/;
+//   인용 문자열 내부의 `; elanous`/`&& elanous` 를 셸 경계로 오인해 문자열을 변조한다(리뷰 #5342 실버그).
+//   cron 진입점은 `elanous …` 또는 `[cd <repo> &&] <bun> bin/elanous.mjs …` 선두 형태뿐이라 선두 앵커로 충분·안전.
+const LEADING_ELANOUS_ENTRYPOINT = /^(\s*(?:cd\s+\S+\s+&&\s+)?)(?:(?:\S*\/)?bun\s+bin\/elanous\.mjs|elanous)(?=\s|$)/;
 
-/** 셸 명령 **선두**의 monad 진입형(bare `monad` · `<bun경로> bin/monad.mjs`)을 현재 Bun 절대 진입점으로 통일한다.
+/** 셸 명령 **선두**의 elanous 진입형(bare `elanous` · `<bun경로> bin/elanous.mjs`)을 현재 Bun 절대 진입점으로 통일한다.
  *  선두(옵션 `cd … &&` 뒤)에만 앵커 — 인용 문자열/후속 인자 내부는 무접촉. */
-function normalizeCronMonadEntrypoint(command: string, bun: string): string {
-  return command.replace(LEADING_MONAD_ENTRYPOINT, (_m, prefix: string) => `${prefix}${bun} bin/monad.mjs`);
+function normalizeCronElanousEntrypoint(command: string, bun: string): string {
+  return command.replace(LEADING_ELANOUS_ENTRYPOINT, (_m, prefix: string) => `${prefix}${bun} bin/elanous.mjs`);
 }
 
-/** cron + 스크립트 → 안전한 crontab 라인 조립. repo-cwd 필요 명령(scripts·bin/monad.mjs·전역 monad)은
- *  cd+로그 강제. cron 은 home 에서 발화하므로 repo 상대경로·monad 의 git 컨텍스트가 깨진다(무음 실패). */
+/** cron + 스크립트 → 안전한 crontab 라인 조립. repo-cwd 필요 명령(scripts·bin/elanous.mjs·전역 elanous)은
+ *  cd+로그 강제. cron 은 home 에서 발화하므로 repo 상대경로·elanous 의 git 컨텍스트가 깨진다(무음 실패). */
 export function buildCronLine(
   cron: string, command: string,
   opts: { repo?: string; bun?: string; logName?: string } = {},
@@ -587,19 +587,19 @@ export function buildCronLine(
   const bun = opts.bun ?? process.execPath; // 데몬은 bun 하에서 구동
   const cmd = command.trim();
   // cron의 기본 PATH에는 ~/.bun/bin이 없을 수 있다. 직접 실행과 cd/세미콜론 뒤의
-  // monad CLI를 모두 Bun 절대경로로 고정해 PATH에 의존하지 않는다.
-  const runnableCmd = normalizeCronMonadEntrypoint(cmd, bun);
+  // elanous CLI를 모두 Bun 절대경로로 고정해 PATH에 의존하지 않는다.
+  const runnableCmd = normalizeCronElanousEntrypoint(cmd, bun);
   // ★ repo-cwd 필요(2026-07-23·운영 리포트 무음실패 근본수정) — 이미 완성형(cd …)만 제외하고,
-  //   repo-상대 스크립트(scripts/*.ts|mjs|js|sh·bin/monad.mjs) + monad CLI도 cd 강제.
+  //   repo-상대 스크립트(scripts/*.ts|mjs|js|sh·bin/elanous.mjs) + elanous CLI도 cd 강제.
   const alreadyCd = /^cd\s/.test(runnableCmd);
-  const startsWithAbsoluteNonMonadCommand = /^\//.test(cmd)
-    && !LEADING_MONAD_ENTRYPOINT.test(cmd)
+  const startsWithAbsoluteNonElanousCommand = /^\//.test(cmd)
+    && !LEADING_ELANOUS_ENTRYPOINT.test(cmd)
     && !/^\S*\/bun\s/.test(cmd);
-  const isRepoScript = /(^|\s)(scripts\/(?:(?!\.\.(?:\/|$))[\w.-]+\/)*(?!\.\.(?:\s|$))[\w.-]+\.(ts|mjs|js|sh)|bin\/monad\.mjs)(\s|$)/.test(runnableCmd);
-  const needsRepoCwd = !alreadyCd && !startsWithAbsoluteNonMonadCommand && isRepoScript;
+  const isRepoScript = /(^|\s)(scripts\/(?:(?!\.\.(?:\/|$))[\w.-]+\/)*(?!\.\.(?:\s|$))[\w.-]+\.(ts|mjs|js|sh)|bin\/elanous\.mjs)(\s|$)/.test(runnableCmd);
+  const needsRepoCwd = !alreadyCd && !startsWithAbsoluteNonElanousCommand && isRepoScript;
   let full = runnableCmd;
   if (needsRepoCwd) {
-    const needsBun = /^(?:scripts\/(?:(?!\.\.(?:\/|$))[\w.-]+\/)*(?!\.\.(?:\s|$))[\w.-]+\.(?:ts|mjs|js)|bin\/monad\.mjs)(?:\s|$)/.test(runnableCmd);
+    const needsBun = /^(?:scripts\/(?:(?!\.\.(?:\/|$))[\w.-]+\/)*(?!\.\.(?:\s|$))[\w.-]+\.(?:ts|mjs|js)|bin\/elanous\.mjs)(?:\s|$)/.test(runnableCmd);
     const withBun = needsBun ? `${bun} ${runnableCmd}` : runnableCmd;
     full = `cd ${repo} && ${withBun}`;
   }
@@ -639,7 +639,7 @@ export function setLineEnabled(current: string, rawLine: string, enabled: boolea
 
 /** 임퓨어: 백업 후 crontab 교체. 백업 경로 반환. */
 export function applyCrontab(text: string, opts: { backupDir?: string; now?: string } = {}): string {
-  const dir = opts.backupDir ?? join(monadStateRoot(), 'backups');
+  const dir = opts.backupDir ?? join(elanousStateRoot(), 'backups');
   mkdirSync(dir, { recursive: true });
   const stamp = (opts.now ?? new Date().toISOString()).replace(/[:.]/g, '-');
   const backup = join(dir, `crontab-cronmanage-${stamp}.bak`);

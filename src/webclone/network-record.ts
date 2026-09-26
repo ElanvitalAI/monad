@@ -187,7 +187,7 @@ export function toHar(entries: readonly RecordedRequest[], meta: { pageUrl: stri
   return {
     log: {
       version: '1.2',
-      creator: { name: 'monad-webclone-network-record', version: '1' },
+      creator: { name: 'elanous-webclone-network-record', version: '1' },
       // ⛔ 표준 밖 필드는 `_` 접두로 — 파서가 무시하되 사람은 읽는다
       _blindSpots: NETWORK_BLIND_SPOTS,
       _observedEvents: OBSERVED_EVENTS,

@@ -2,7 +2,7 @@ import { resetFrontVisitCountsForTesting } from './graph-front-nodes.js';
 import { describe, it, expect, spyOn, beforeAll, afterAll } from 'bun:test';
 import * as devCli from './dev-cli.js';
 
-// 발사 시험은 실시간 `monad usage`(grok 잔량)를 부르지 않는다 — 캐시가 «모름»이던 종전 동작으로 고정.
+// 발사 시험은 실시간 `elanous usage`(grok 잔량)를 부르지 않는다 — 캐시가 «모름»이던 종전 동작으로 고정.
 beforeAll(() => devCli.setLaunchGrokQuotaReaderForTesting(() => 'unknown'));
 afterAll(() => devCli.setLaunchGrokQuotaReaderForTesting(undefined));
 import { debug } from '../debug/log.js';
@@ -387,9 +387,9 @@ describe('buildDevCliSpec — 옵션 축 라우팅(T7)', () => {
       .toThrow(/--observe-only/);
   });
 
-  it('monad-tui는 지원하는 --observe-only를 기존처럼 수락한다', () => {
-    expect(buildDevCliSpec(IN, SELF, { monad: true, goal: 'child goal', observeOnly: true }, ['monad', 'goal', 'observeOnly']))
-      .toMatchObject({ monad: { goal: 'child goal', observeOnly: true } });
+  it('elanous-tui는 지원하는 --observe-only를 기존처럼 수락한다', () => {
+    expect(buildDevCliSpec(IN, SELF, { elanous: true, goal: 'child goal', observeOnly: true }, ['elanous', 'goal', 'observeOnly']))
+      .toMatchObject({ elanous: { goal: 'child goal', observeOnly: true } });
   });
 
   it('self-mission의 허용된 명시 경로·출력 옵션은 기존처럼 통과한다', () => {
@@ -404,24 +404,24 @@ describe('buildDevCliSpec — 옵션 축 라우팅(T7)', () => {
 
   it('--plan refusal and help literally direct callers to live harness say, never the retired harness plan door', () => {
     const refusal = () => buildDevCliSpec(IN, SELF, { plan: true });
-    expect(refusal).toThrow(/monad harness say/);
+    expect(refusal).toThrow(/elanous harness say/);
     expect(refusal).toThrow(/--plan 은 은퇴했고 명시적으로 거부됨/);
-    expect(refusal).not.toThrow(/monad harness plan/);
+    expect(refusal).not.toThrow(/elanous harness plan/);
     const help = formatDevPlanOptionHelp();
-    expect(help).toContain('monad harness say');
-    expect(help).not.toContain('monad harness plan');
+    expect(help).toContain('elanous harness say');
+    expect(help).not.toContain('elanous harness plan');
   });
 
-  it('self + --monad → 격리 TUI namespace로 매핑하고 completion을 주입하지 않는다', () => {
-    const spec = buildDevCliSpec(IN, SELF, { monad: true, goal: 'child goal', maxSteps: '4', pollMs: '0', model: 'brain', isolatedRoot: '/iso', cwd: '/work', readyTimeoutMs: '180000' });
-    expect(spec.monad).toEqual({ goal: 'child goal', maxSteps: 4, pollMs: 0, model: 'brain', isolatedRoot: '/iso', cwd: '/work', readyTimeoutMs: 180000 });
+  it('self + --elanous → 격리 TUI namespace로 매핑하고 completion을 주입하지 않는다', () => {
+    const spec = buildDevCliSpec(IN, SELF, { elanous: true, goal: 'child goal', maxSteps: '4', pollMs: '0', model: 'brain', isolatedRoot: '/iso', cwd: '/work', readyTimeoutMs: '180000' });
+    expect(spec.elanous).toEqual({ goal: 'child goal', maxSteps: 4, pollMs: 0, model: 'brain', isolatedRoot: '/iso', cwd: '/work', readyTimeoutMs: 180000 });
     expect(spec.completion).toBeUndefined();
-    expect(planDevPipeline(spec).dispatch).toBe('monad-tui');
+    expect(planDevPipeline(spec).dispatch).toBe('elanous-tui');
   });
 
-  it('monad hold readiness timeout rejects zero, negative, and nonnumeric values by flag name', () => {
+  it('elanous hold readiness timeout rejects zero, negative, and nonnumeric values by flag name', () => {
     for (const value of ['0', '-1', 'nope']) {
-      expect(() => buildDevCliSpec(IN, SELF, { monad: true, hold: true, readyTimeoutMs: value }, ['monad', 'hold', 'readyTimeoutMs']))
+      expect(() => buildDevCliSpec(IN, SELF, { elanous: true, hold: true, readyTimeoutMs: value }, ['elanous', 'hold', 'readyTimeoutMs']))
         .toThrow(/--ready-timeout-ms/);
     }
   });
@@ -447,14 +447,14 @@ describe('buildDevCliSpec — 옵션 축 라우팅(T7)', () => {
   it('--implement + --plan도 조합 검증보다 은퇴 사유를 우선한다', () => {
     expect(() => buildDevCliSpec(IN, SELF, { implement: true, plan: true }))
       .toThrow(new RegExp(`은퇴.*${DEV_PLAN_REPLACEMENT}`));
-    expect(() => buildDevCliSpec(IN, SELF, { implement: true, monad: true, goal: 'child goal' }))
-      .toThrow(/--implement 와 --monad 는 동시 사용 불가/);
+    expect(() => buildDevCliSpec(IN, SELF, { implement: true, elanous: true, goal: 'child goal' }))
+      .toThrow(/--implement 와 --elanous 는 동시 사용 불가/);
   });
 
-  it('--worktree는 monad/drive 경로에서만 허용하며 명시 cwd와 함께면 거부한다', () => {
-    expect(buildDevCliSpec(IN, SELF, { monad: true, goal: 'child goal', worktree: true }).monad).toEqual({ goal: 'child goal' });
+  it('--worktree는 elanous/drive 경로에서만 허용하며 명시 cwd와 함께면 거부한다', () => {
+    expect(buildDevCliSpec(IN, SELF, { elanous: true, goal: 'child goal', worktree: true }).elanous).toEqual({ goal: 'child goal' });
     expect(buildDevCliSpec(IN, SELF, { goal: 'drive goal', worktree: true }).drive).toMatchObject({ goal: 'drive goal' });
-    expect(() => buildDevCliSpec(IN, SELF, { monad: true, goal: 'child goal', worktree: true, cwd: '/work' })).toThrow(/--worktree 와 --cwd/);
+    expect(() => buildDevCliSpec(IN, SELF, { elanous: true, goal: 'child goal', worktree: true, cwd: '/work' })).toThrow(/--worktree 와 --cwd/);
     expect(() => buildDevCliSpec(IN, SELF, { worktree: true })).toThrow(/무효한 옵션.*worktree/);
   });
 
@@ -583,13 +583,13 @@ describe('buildDevCliSpec — 옵션 축 라우팅(T7)', () => {
   it('재실행과 승격 조각 실행 직전에 시작 시각 기준 supervisor frame을 현재 공간 또는 이전 worktree key로 쓴다', async () => {
     const stateDir = mkdtempSync(join(tmpdir(), 'dev-cli-supervisor-screen-'));
     const previous = {
-      stateDir: process.env.MONAD_STATE_DIR,
-      space: process.env.MONAD_HARNESS_SPACE,
-      spaceId: process.env.MONAD_HARNESS_SPACE_ID,
+      stateDir: process.env.ELANOUS_STATE_DIR,
+      space: process.env.ELANOUS_HARNESS_SPACE,
+      spaceId: process.env.ELANOUS_HARNESS_SPACE_ID,
     };
-    process.env.MONAD_STATE_DIR = stateDir;
-    delete process.env.MONAD_HARNESS_SPACE;
-    delete process.env.MONAD_HARNESS_SPACE_ID;
+    process.env.ELANOUS_STATE_DIR = stateDir;
+    delete process.env.ELANOUS_HARNESS_SPACE;
+    delete process.env.ELANOUS_HARNESS_SPACE_ID;
     try {
       let executions = 0;
       await devCli.executeDevSelfRun('relaunch frame', async () => {
@@ -599,14 +599,14 @@ describe('buildDevCliSpec — 옵션 축 라우팅(T7)', () => {
       expect(executions).toBe(3);
       expect(readHarnessScreen('previous-result')).toMatch(/^\[supervisor\] relaunch after \d+ms$/);
 
-      process.env.MONAD_HARNESS_SPACE = 'self-implement';
-      process.env.MONAD_HARNESS_SPACE_ID = 'current-space';
+      process.env.ELANOUS_HARNESS_SPACE = 'self-implement';
+      process.env.ELANOUS_HARNESS_SPACE_ID = 'current-space';
       await devCli.executeDevSelfRun('piece frame', async () => selfResult({ worktreePath: '/tmp/ignored-result' }), promotedConvergedOptions());
       expect(readHarnessScreen('current-space')).toMatch(/^\[supervisor\] promoted-piece after \d+ms$/);
     } finally {
-      if (previous.stateDir === undefined) delete process.env.MONAD_STATE_DIR; else process.env.MONAD_STATE_DIR = previous.stateDir;
-      if (previous.space === undefined) delete process.env.MONAD_HARNESS_SPACE; else process.env.MONAD_HARNESS_SPACE = previous.space;
-      if (previous.spaceId === undefined) delete process.env.MONAD_HARNESS_SPACE_ID; else process.env.MONAD_HARNESS_SPACE_ID = previous.spaceId;
+      if (previous.stateDir === undefined) delete process.env.ELANOUS_STATE_DIR; else process.env.ELANOUS_STATE_DIR = previous.stateDir;
+      if (previous.space === undefined) delete process.env.ELANOUS_HARNESS_SPACE; else process.env.ELANOUS_HARNESS_SPACE = previous.space;
+      if (previous.spaceId === undefined) delete process.env.ELANOUS_HARNESS_SPACE_ID; else process.env.ELANOUS_HARNESS_SPACE_ID = previous.spaceId;
       rmSync(stateDir, { recursive: true, force: true });
     }
   });
@@ -685,9 +685,9 @@ describe('buildDevCliSpec — 옵션 축 라우팅(T7)', () => {
   });
 
   it('공간을 풀 수 없으면 실행을 보존하고 human-stop-unchecked를 관측한다', async () => {
-    const previous = { space: process.env.MONAD_HARNESS_SPACE, spaceId: process.env.MONAD_HARNESS_SPACE_ID };
-    delete process.env.MONAD_HARNESS_SPACE;
-    delete process.env.MONAD_HARNESS_SPACE_ID;
+    const previous = { space: process.env.ELANOUS_HARNESS_SPACE, spaceId: process.env.ELANOUS_HARNESS_SPACE_ID };
+    delete process.env.ELANOUS_HARNESS_SPACE;
+    delete process.env.ELANOUS_HARNESS_SPACE_ID;
     const logs: Array<{ event: string; data: Record<string, unknown> }> = [];
     const log = spyOn(debug, 'log').mockImplementation((_category, event, data) => { logs.push({ event, data: data as Record<string, unknown> }); });
     let executions = 0;
@@ -700,8 +700,8 @@ describe('buildDevCliSpec — 옵션 축 라우팅(T7)', () => {
       expect(logs).toContainEqual(expect.objectContaining({ event: 'human-stop-unchecked', data: expect.objectContaining({ reason: 'space-unresolved', skipped: 'relaunch' }) }));
     } finally {
       log.mockRestore();
-      if (previous.space === undefined) delete process.env.MONAD_HARNESS_SPACE; else process.env.MONAD_HARNESS_SPACE = previous.space;
-      if (previous.spaceId === undefined) delete process.env.MONAD_HARNESS_SPACE_ID; else process.env.MONAD_HARNESS_SPACE_ID = previous.spaceId;
+      if (previous.space === undefined) delete process.env.ELANOUS_HARNESS_SPACE; else process.env.ELANOUS_HARNESS_SPACE = previous.space;
+      if (previous.spaceId === undefined) delete process.env.ELANOUS_HARNESS_SPACE_ID; else process.env.ELANOUS_HARNESS_SPACE_ID = previous.spaceId;
     }
   });
 
@@ -733,7 +733,7 @@ describe('buildDevCliSpec — 옵션 축 라우팅(T7)', () => {
   };
 
   const openDraft = (): { isDraft: boolean; state: string } => ({ isDraft: true, state: 'OPEN' });
-  const pr = (n: number): string => `https://github.com/acme/monad/pull/${n}`;
+  const pr = (n: number): string => `https://github.com/acme/elanous/pull/${n}`;
   const executeAfterStartDraftTriage = async (
     feature: string,
     execute: (relaunch?: boolean) => Promise<import('../self-implement/orchestrator.js').SelfImplementResult>,
@@ -1921,11 +1921,11 @@ describe('buildDevCliSpec — 옵션 축 라우팅(T7)', () => {
 
   it('draft PR 기본 명령은 CWD 대신 URL 저장소와 번호를 --repo로 고정하고 브랜치를 삭제하지 않는다', () => {
     expect(devCli.draftPrCommandArgs(pr(42), 'close', 'replace'))
-      .toEqual(['pr', 'close', '42', '--repo', 'acme/monad', '--comment', 'replace']);
+      .toEqual(['pr', 'close', '42', '--repo', 'acme/elanous', '--comment', 'replace']);
     expect(devCli.draftPrCommandArgs(pr(42), 'comment', 'handoff'))
-      .toEqual(['pr', 'comment', '42', '--repo', 'acme/monad', '--body', 'handoff']);
+      .toEqual(['pr', 'comment', '42', '--repo', 'acme/elanous', '--body', 'handoff']);
     expect(devCli.draftPrCommandArgs(pr(42), 'close', 'replace')).not.toContain('--delete-branch');
-    expect(devCli.draftPrCommandArgs('https://example.com/acme/monad/pull/42', 'close', 'replace')).toBeNull();
+    expect(devCli.draftPrCommandArgs('https://example.com/acme/elanous/pull/42', 'close', 'replace')).toBeNull();
   });
 
   it('닫기 실패는 정상 반환을 보존하고, 남긴 draft 코멘트는 «유일» 이라 말하지 않고 닫지 못한 번호를 적는다', async () => {
@@ -3085,11 +3085,11 @@ describe('buildDevCliSpec — 옵션 축 라우팅(T7)', () => {
       postMergeCleanup: { enabled: false } as SelfImplementSeams['postMergeCleanup'],
       onProgress: ({ message }) => progressMessages.push(message),
     };
-    const result = await runSelfImplement({ feature: 'merge observation', base: 'monad:default-branch', autoMerge: true, seams });
+    const result = await runSelfImplement({ feature: 'merge observation', base: 'elanous:default-branch', autoMerge: true, seams });
     expect(result).toMatchObject({ merged: true, mergedBase: 'actual-retargeted-base' });
     expect(progressMessages).toContain('✅ 자동 병합 완료 (#9) → actual-retargeted-base (main에는 아직 안 감)');
-    expect(devCli.renderDevCompletionLine({ kind: 'self', ok: true, runId: result.runId, base: 'monad:default-branch', result })).toContain('merged-into=actual-retargeted-base');
-    expect(devCli.renderDevCompletionLine({ kind: 'self', ok: true, runId: result.runId, base: 'monad:default-branch', result })).toContain('merged-pr=#9');
+    expect(devCli.renderDevCompletionLine({ kind: 'self', ok: true, runId: result.runId, base: 'elanous:default-branch', result })).toContain('merged-into=actual-retargeted-base');
+    expect(devCli.renderDevCompletionLine({ kind: 'self', ok: true, runId: result.runId, base: 'elanous:default-branch', result })).toContain('merged-pr=#9');
   });
 
   it('confirmed-merge seam이 PR base를 관측하지 못하면 완료 줄은 unknown을 표시한다', async () => {
@@ -3108,11 +3108,11 @@ describe('buildDevCliSpec — 옵션 축 라우팅(T7)', () => {
       mergeMain: async () => ({ status: 'up-to-date', resolvedFiles: [] }),
       postMergeCleanup: { enabled: false } as SelfImplementSeams['postMergeCleanup'],
     };
-    const result = await runSelfImplement({ feature: 'merge observation unknown', base: 'monad:default-branch', autoMerge: true, seams });
+    const result = await runSelfImplement({ feature: 'merge observation unknown', base: 'elanous:default-branch', autoMerge: true, seams });
     expect(result).toMatchObject({ merged: true });
     expect(result).not.toHaveProperty('mergedBase');
-    expect(devCli.renderDevCompletionLine({ kind: 'self', ok: true, runId: result.runId, base: 'monad:default-branch', result })).toContain('merged-into=unknown');
-    expect(devCli.renderDevCompletionLine({ kind: 'self', ok: true, runId: result.runId, base: 'monad:default-branch', result })).toContain('merged-pr=#9');
+    expect(devCli.renderDevCompletionLine({ kind: 'self', ok: true, runId: result.runId, base: 'elanous:default-branch', result })).toContain('merged-into=unknown');
+    expect(devCli.renderDevCompletionLine({ kind: 'self', ok: true, runId: result.runId, base: 'elanous:default-branch', result })).toContain('merged-pr=#9');
   });
 
   it('병합되지 않은 self 완료 줄은 기존 문자열을 유지한다', () => {
@@ -3235,7 +3235,7 @@ describe('buildDevCliSpec — 옵션 축 라우팅(T7)', () => {
     const result: SelfImplementResult = selfResult({ stage: 'merged', merged: merge.merged, ...(merge.baseRefName ? { mergedBase: merge.baseRefName } : {}) });
 
     expect(merge).toEqual({ merged: true, baseRefName: 'actual-parent-branch' });
-    expect(devCli.renderDevCompletionLine({ kind: 'self', ok: true, runId: result.runId, base: 'monad:default-branch', result }))
+    expect(devCli.renderDevCompletionLine({ kind: 'self', ok: true, runId: result.runId, base: 'elanous:default-branch', result }))
       .toContain('merged-into=actual-parent-branch');
     expect(calls).toEqual([
       ['gh', 'pr', 'merge', '9', '--squash', '--match-head-commit', 'checked-head-sha'],
@@ -3243,35 +3243,35 @@ describe('buildDevCliSpec — 옵션 축 라우팅(T7)', () => {
     ]);
   });
 
-  it('--monad는 self와 goal이 필수이고 plan은 조합 검증보다 은퇴 사유를 우선한다', () => {
-    expect(() => buildDevCliSpec(IN, PTY, { monad: true, goal: 'x', branch: 'wt/x' })).toThrow(/self backend/);
-    expect(() => buildDevCliSpec(IN, SELF, { monad: true })).toThrow(/--goal 필요/);
-    expect(() => buildDevCliSpec(IN, SELF, { monad: true, goal: 'x', plan: true })).toThrow(new RegExp(`은퇴.*${DEV_PLAN_REPLACEMENT}`));
-    expect(() => buildDevCliSpec(IN, SELF, { monad: true, goal: 'x', openPr: true })).toThrow(/무효한 옵션.*openPr/);
+  it('--elanous는 self와 goal이 필수이고 plan은 조합 검증보다 은퇴 사유를 우선한다', () => {
+    expect(() => buildDevCliSpec(IN, PTY, { elanous: true, goal: 'x', branch: 'wt/x' })).toThrow(/self backend/);
+    expect(() => buildDevCliSpec(IN, SELF, { elanous: true })).toThrow(/--goal 필요/);
+    expect(() => buildDevCliSpec(IN, SELF, { elanous: true, goal: 'x', plan: true })).toThrow(new RegExp(`은퇴.*${DEV_PLAN_REPLACEMENT}`));
+    expect(() => buildDevCliSpec(IN, SELF, { elanous: true, goal: 'x', openPr: true })).toThrow(/무효한 옵션.*openPr/);
   });
 
-  it('dev --monad --hold --json only suppresses the wrapper JSON after the hold result', () => {
-    expect(shouldSuppressDevJsonWrapper({ monad: true, hold: true, json: true })).toBe(true);
-    expect(shouldSuppressDevJsonWrapper({ monad: true, hold: true, json: false })).toBe(false);
-    expect(shouldSuppressDevJsonWrapper({ monad: true, hold: false, json: true })).toBe(false);
-    expect(shouldSuppressDevJsonWrapper({ monad: false, hold: true, json: true })).toBe(false);
+  it('dev --elanous --hold --json only suppresses the wrapper JSON after the hold result', () => {
+    expect(shouldSuppressDevJsonWrapper({ elanous: true, hold: true, json: true })).toBe(true);
+    expect(shouldSuppressDevJsonWrapper({ elanous: true, hold: true, json: false })).toBe(false);
+    expect(shouldSuppressDevJsonWrapper({ elanous: true, hold: false, json: true })).toBe(false);
+    expect(shouldSuppressDevJsonWrapper({ elanous: false, hold: true, json: true })).toBe(false);
   });
 
-  it('--hold는 --monad 전용이고 goal 없는 held TUI spec으로 전달하며 goal과의 충돌은 거부한다', () => {
-    expect(buildDevCliSpec(IN, SELF, { monad: true, hold: true }).monad).toEqual({ hold: true });
-    expect(buildDevCliSpec(IN, SELF, { monad: true, hold: true, json: true }).monad).toEqual({ hold: true, json: true });
-    expect(() => buildDevCliSpec(IN, SELF, { hold: true })).toThrow(/--hold 는 --monad/);
-    expect(() => buildDevCliSpec(IN, SELF, { monad: true, hold: true, goal: 'x' })).toThrow(/--hold 와 --goal/);
+  it('--hold는 --elanous 전용이고 goal 없는 held TUI spec으로 전달하며 goal과의 충돌은 거부한다', () => {
+    expect(buildDevCliSpec(IN, SELF, { elanous: true, hold: true }).elanous).toEqual({ hold: true });
+    expect(buildDevCliSpec(IN, SELF, { elanous: true, hold: true, json: true }).elanous).toEqual({ hold: true, json: true });
+    expect(() => buildDevCliSpec(IN, SELF, { hold: true })).toThrow(/--hold 는 --elanous/);
+    expect(() => buildDevCliSpec(IN, SELF, { elanous: true, hold: true, goal: 'x' })).toThrow(/--hold 와 --goal/);
     // ⛔ 경계값 — `trim()` 기준이면 `--goal ''`/공백이 거부를 통과하고 조립부가 falsy 로 버려
     //    **수락 후 조용히 무시**된다(레포 불변식 위반 · 리뷰 must-fix · 2026-07-30).
-    expect(() => buildDevCliSpec(IN, SELF, { monad: true, hold: true, goal: '' })).toThrow(/--hold 와 --goal/);
-    expect(() => buildDevCliSpec(IN, SELF, { monad: true, hold: true, goal: '   ' })).toThrow(/--hold 와 --goal/);
+    expect(() => buildDevCliSpec(IN, SELF, { elanous: true, hold: true, goal: '' })).toThrow(/--hold 와 --goal/);
+    expect(() => buildDevCliSpec(IN, SELF, { elanous: true, hold: true, goal: '   ' })).toThrow(/--hold 와 --goal/);
     // ⛔ brain 전용 옵션은 --hold 와 함께 거부(조용히 무시 금지).
-    expect(() => buildDevCliSpec(IN, SELF, { monad: true, hold: true, maxSteps: '5' })).toThrow(/brain 전용 옵션/);
-    expect(() => buildDevCliSpec(IN, SELF, { monad: true, hold: true, pollMs: '0' })).toThrow(/brain 전용 옵션/);
-    expect(() => buildDevCliSpec(IN, SELF, { monad: true, hold: true, model: 'brain' })).toThrow(/brain 전용 옵션/);
+    expect(() => buildDevCliSpec(IN, SELF, { elanous: true, hold: true, maxSteps: '5' })).toThrow(/brain 전용 옵션/);
+    expect(() => buildDevCliSpec(IN, SELF, { elanous: true, hold: true, pollMs: '0' })).toThrow(/brain 전용 옵션/);
+    expect(() => buildDevCliSpec(IN, SELF, { elanous: true, hold: true, model: 'brain' })).toThrow(/brain 전용 옵션/);
     // ⭐ 그리고 비-hold 경로에서 빈 goal 이 spec 에 **남아야** 한다(버리면 하위 계층이 그 사실을 못 본다).
-    expect(buildDevCliSpec(IN, SELF, { monad: true, goal: 'g' }).monad).toEqual({ goal: 'g' });
+    expect(buildDevCliSpec(IN, SELF, { elanous: true, goal: 'g' }).elanous).toEqual({ goal: 'g' });
   });
 
   it('--plan은 completion override보다 은퇴 사유를 우선한다', () => {
@@ -3306,20 +3306,20 @@ describe('buildDevCliSpec — 옵션 축 라우팅(T7)', () => {
   });
 
   it('--base 생략은 호출자 HEAD 대신 기본 브랜치 표식을 전달하고, HEAD 및 임의 명시는 그대로 보존한다', () => {
-    expect(buildDevCliSpec(IN, SELF, {}).base).toBe('monad:default-branch');
+    expect(buildDevCliSpec(IN, SELF, {}).base).toBe('elanous:default-branch');
     expect(buildDevCliSpec(IN, SELF, { base: 'HEAD' }).base).toBe('HEAD');
     expect(buildDevCliSpec(IN, SELF, { base: 'stack/base' }).base).toBe('stack/base');
   });
 
   it('--base DEFAULT_BRANCH_WORKTREE_BASE도 자동 기본값이 아닌 명시 선택으로 계획한다', () => {
-    expect(planDevPipeline(buildDevCliSpec({ file: '/goal.txt' }, SELF, { base: 'monad:default-branch' })).baseSelection)
+    expect(planDevPipeline(buildDevCliSpec({ file: '/goal.txt' }, SELF, { base: 'elanous:default-branch' })).baseSelection)
       .toEqual({ rule: 'explicit', evidence: 'caller --base' });
   });
 
   it('살아 있는 spread dispatches preserve an explicit default-branch base provenance', () => {
     const cases = [
-      buildDevCliSpec(IN, SELF, { monad: true, goal: 'child goal', base: 'monad:default-branch' }),
-      buildDevCliSpec(IN, SELF, { goal: 'drive goal', base: 'monad:default-branch' }),
+      buildDevCliSpec(IN, SELF, { elanous: true, goal: 'child goal', base: 'elanous:default-branch' }),
+      buildDevCliSpec(IN, SELF, { goal: 'drive goal', base: 'elanous:default-branch' }),
     ];
 
     for (const spec of cases) {
@@ -3378,7 +3378,7 @@ describe('buildDevCliSpec — 옵션 축 라우팅(T7)', () => {
   });
 
   it('은퇴한 --plan은 --target 조합보다 먼저 은퇴 사유로 거부한다', () => {
-    expect(() => buildDevCliSpec(IN, SELF, { plan: true, target: '/repo/target' })).toThrow(/--plan 은 은퇴했고 명시적으로 거부됨.*monad harness say/);
+    expect(() => buildDevCliSpec(IN, SELF, { plan: true, target: '/repo/target' })).toThrow(/--plan 은 은퇴했고 명시적으로 거부됨.*elanous harness say/);
   });
 
   it('self-mission 외 경로의 --target은 조용히 폐기하지 않고 거부한다', () => {
@@ -3403,7 +3403,7 @@ describe('buildDevCliSpec — 옵션 축 라우팅(T7)', () => {
   });
 
   it('self + --ground + --plan → ground 조합보다 은퇴 거부가 우선한다', () => {
-    expect(() => buildDevCliSpec(IN, SELF, { ground: true, plan: true })).toThrow(/--plan 은 은퇴했고 명시적으로 거부됨.*monad harness say/);
+    expect(() => buildDevCliSpec(IN, SELF, { ground: true, plan: true })).toThrow(/--plan 은 은퇴했고 명시적으로 거부됨.*elanous harness say/);
   });
 
   it('external+pty + --ground → ground 명시 거부', () => {
@@ -3468,11 +3468,11 @@ describe('buildDevCliSpec — 옵션 축 라우팅(T7)', () => {
     expect(src).toContain("'--activity-grace': '240초'");
     expect(action).toContain('devHarnessRetirementNotice(retirementInput, opts.plan === true)');
     expect(action).toContain('if (!opts.json)');
-    expect(src).toContain('monad harness ask');
-    expect(src).toContain('monad harness say');
+    expect(src).toContain('elanous harness ask');
+    expect(src).toContain('elanous harness say');
     const retirementNotice = src.slice(src.indexOf('function devHarnessRetirementNotice'), src.indexOf('const selfDevCmd'));
     expect(retirementNotice).toContain('`${DEV_PLAN_REPLACEMENT} ${quoteDevHarnessArgument(input.value)}`');
-    expect(retirementNotice).not.toContain('monad harness plan');
+    expect(retirementNotice).not.toContain('elanous harness plan');
   });
 
   // ⛔⭐⭐⭐ 이 단언은 **`index.ts` 를 보다가 `dev-pipeline.ts` 로 옮겨졌다**(2026-08-03 · `JDG-S21`).
@@ -3591,9 +3591,9 @@ describe('buildDevCliSpec — 경로-무관 옵션 명시 거부(수락 후 무�
     expect(() => buildDevCliSpec(IN, PTY, { branch: 'wt/x', draft: false })).toThrow(/무효한 옵션.*draft/);
   });
   it('--plan 은 경로와 조합 옵션보다 은퇴 거부가 우선한다', () => {
-    expect(() => buildDevCliSpec(IN, SELF, { plan: true, autoReview: true })).toThrow(/--plan 은 은퇴했고 명시적으로 거부됨.*monad harness say/);
-    expect(() => buildDevCliSpec(IN, SELF, { plan: true, maxWait: '900' })).toThrow(/--plan 은 은퇴했고 명시적으로 거부됨.*monad harness say/);
-    expect(() => buildDevCliSpec(IN, PTY, { branch: 'wt/x', plan: true })).toThrow(/--plan 은 은퇴했고 명시적으로 거부됨.*monad harness say/);
+    expect(() => buildDevCliSpec(IN, SELF, { plan: true, autoReview: true })).toThrow(/--plan 은 은퇴했고 명시적으로 거부됨.*elanous harness say/);
+    expect(() => buildDevCliSpec(IN, SELF, { plan: true, maxWait: '900' })).toThrow(/--plan 은 은퇴했고 명시적으로 거부됨.*elanous harness say/);
+    expect(() => buildDevCliSpec(IN, PTY, { branch: 'wt/x', plan: true })).toThrow(/--plan 은 은퇴했고 명시적으로 거부됨.*elanous harness say/);
   });
   it('acp 에 mission·self 옵션 → 거부', () => {
     expect(() => buildDevCliSpec(IN, ACP, { evidence: 'doc' })).toThrow(/무효한 옵션/);
@@ -3622,7 +3622,7 @@ describe('parsePositiveInt / evidence 검증(오타·비정상값 거부·must-f
   });
 });
 
-describe('monad dev --file 수동 골 진입점', () => {
+describe('elanous dev --file 수동 골 진입점', () => {
   it('수동 파일을 shared 증거 위치 계약으로 보강한 self-child payload까지 전달한다', async () => {
     const file = '/tmp/hand-authored-goal.txt';
     const manualGoal = `## PROBLEM\n사람이 손으로 작성한 골\n\n## WHAT TO BUILD\n자식 발사 확인\n\n## ACCEPTANCE CRITERIA\n발사한다\n\n## REQUIRED EVIDENCE\n- [launch] 자식 발사 확인\n\n## TRACED PATHS\n- src/self-dev/dev-cli.ts\n\n## SCOPE BOUNDARY\n- 발사 경계만\n\n## 답하지 못하는 것\n- 없다\n\n## 불변식\n- 기존 발사 유지\n\n## 판정 신호\n- 발사됨`;
@@ -3662,12 +3662,12 @@ describe('monad dev --file 수동 골 진입점', () => {
     await run(buildDevCliSpec({ file }, SELF, {}), (args) => args[1] === 'list'
       ? '[{"number":6944,"updatedAt":"2026-08-04T01:00:00Z","state":"OPEN"}]'
       : '{"headRefName":"self-impl-rework"}');
-    await run(buildDevCliSpec({ file }, SELF, { base: 'monad:default-branch' }), () => {
+    await run(buildDevCliSpec({ file }, SELF, { base: 'elanous:default-branch' }), () => {
       throw new Error('explicit default base must not query gh');
     });
     await run({ input: { file }, base: 'legacy-human-base' }, () => { throw new Error('legacy base must not query gh'); });
 
-    expect(bases).toEqual(['self-impl-rework', 'monad:default-branch', 'legacy-human-base']);
+    expect(bases).toEqual(['self-impl-rework', 'elanous:default-branch', 'legacy-human-base']);
   });
 
   it('선택 완료된 file/text variant만 파이프라인 입력으로 변환한다', () => {
@@ -3760,21 +3760,21 @@ describe('devResultOk — kind 별 성공판정(latent 버그 수리)', () => {
 // ⛔⭐⭐⭐ `drive` 거부 문면은 **길을 같이 준다** (2026-08-03 · `[S]` 제보 `OBS-S26` → `[T]` 수리)
 //
 // 왜 이 테스트가 있나: `dev` 와 `drive` 는 **한 Commander 명령의 두 이름**이라 도움말이 하나뿐인데
-// 계약은 이름마다 갈린다. 그래서 `drive --help` 가 `--monad` 를 광고하고 실행하면 거부된다 —
+// 계약은 이름마다 갈린다. 그래서 `drive --help` 가 `--elanous` 를 광고하고 실행하면 거부된다 —
 // ***자식이 읽을 수 있는 유일한 계약 문서가 도움말인데 그것이 거짓이었다.***
 // 실측(2026-08-03): 하니스 자식이 그것을 믿고 `drive` 경로에서 죽었다.
 //
 // ⛔ 거부 **자체**는 옳다 — RFC-two-command-convergence §6-2 불변식이
-//   *"`monad drive` 에 monad 자식을 아는 플래그를 다시 넣지 않는다"* 이다(#5668 이 되돌린 그것).
+//   *"`elanous drive` 에 elanous 자식을 아는 플래그를 다시 넣지 않는다"* 이다(#5668 이 되돌린 그것).
 //   그래서 이 테스트는 **거부가 사라지지 않는 것**과 **길이 붙는 것**을 같이 문다.
 describe('drive 별칭 거부 — 금지만 있고 길이 없는 형태를 막는다', () => {
   it('거부는 유지된다 (RFC §6-2 불변식 — 계약을 무르지 않는다)', () => {
-    expect(() => devCli.assertDriveAliasOptions(['monad'])).toThrow(/지원하지 않는 옵션/);
+    expect(() => devCli.assertDriveAliasOptions(['elanous'])).toThrow(/지원하지 않는 옵션/);
     // ⛔⭐ 손으로 적은 수는 «늙는다» — 종전 문면이 「다섯뿐이다」인데 목록은 «일곱»이었다.
     //   실측(2026-08-20 로그 12시간): 이 거부가 85건 났고 그때마다 자식이 «모순된 안내»를 읽었다.
     //   ⇒ 문면의 수와 «실제로 나열한 개수»가 같은지를 시험이 문다.
     try {
-      devCli.assertDriveAliasOptions(['monad']);
+      devCli.assertDriveAliasOptions(['elanous']);
       throw new Error('거부가 나야 한다');
     } catch (error) {
       const message = (error as Error).message;
@@ -3788,13 +3788,13 @@ describe('drive 별칭 거부 — 금지만 있고 길이 없는 형태를 막�
 
   it('거부 문면이 ⓐ허용 목록과 ⓑ대안 명령을 같이 말한다', () => {
     let message = '';
-    try { devCli.assertDriveAliasOptions(['monad']); } catch (e) { message = String((e as Error).message); }
+    try { devCli.assertDriveAliasOptions(['elanous']); } catch (e) { message = String((e as Error).message); }
     // ⓐ 다섯 허용 옵션이 전부 문면에 있다 — "그럼 뭘 쓰나"에 답한다.
     for (const flag of ['--goal', '--max-steps', '--poll-ms', '--model', '--cwd', '--attach']) {
       expect(message).toContain(flag);
     }
     // ⓑ 어디서 쓰라는 길이 있다.
-    expect(message).toContain('monad dev');
+    expect(message).toContain('elanous dev');
     // ⓒ ⛔ **왜** 도움말이 거짓으로 보이는지 — 그 인과를 말해야 한다.
     //   ⚠️ 초판은 '도움말' 이라는 **낱말 하나**만 물었다(무인 리뷰 must-fix: Goodhart).
     //     그러면 "도움말을 보라" 같은 정반대 문장도 통과한다. 필수 사실은 **공유**와 **경고**다.
@@ -3826,7 +3826,7 @@ describe('dev --plan help names the replacement door', () => {
     dev.exitOverride();
     dev.configureOutput({ writeOut: write, writeErr: write });
     try {
-      await program.parseAsync(['node', 'monad', 'dev', '--help']);
+      await program.parseAsync(['node', 'elanous', 'dev', '--help']);
     } catch (error) {
       if ((error as { code?: string }).code !== 'commander.helpDisplayed') throw error;
     } finally {
@@ -3842,7 +3842,7 @@ describe('dev --plan help names the replacement door', () => {
   it('formatDevPlanOptionHelp interpolates the replacement argument instead of baking a destination literal', () => {
     expect(formatDevPlanOptionHelp(DEV_PLAN_REPLACEMENT)).toContain(DEV_PLAN_REPLACEMENT);
     expect(formatDevPlanOptionHelp(DEV_PLAN_REPLACEMENT)).toContain('대응 문');
-    const other = 'monad harness OTHER-DOOR';
+    const other = 'elanous harness OTHER-DOOR';
     const composedOther = formatDevPlanOptionHelp(other);
     expect(composedOther).toContain(other);
     expect(composedOther).not.toContain(DEV_PLAN_REPLACEMENT);
@@ -3861,14 +3861,14 @@ describe('dev --plan help names the replacement door', () => {
     expect(flat).toContain(DEV_PLAN_REPLACEMENT);
     expect(flat).toContain(composed.replace(/\s+/g, ' '));
     expect(flat).toContain('self: headless implementation chat turn(--new·--tools·--goal-loop·interactive dispatch)');
-    expect(flat).toContain('self: 격리 bare monad TUI child를 LLM 제어 루프로 목표까지 구동');
+    expect(flat).toContain('self: 격리 bare elanous TUI child를 LLM 제어 루프로 목표까지 구동');
     expect(flat).toContain('--ask <path>');
     expect(flat).toContain('--say <text>');
     expect(flat).toContain('--file <path>');
     expect(flat).toContain('--attach <ref>');
 
     const original = plan!.description;
-    const other = 'monad harness OTHER-DOOR';
+    const other = 'elanous harness OTHER-DOOR';
     plan!.description = formatDevPlanOptionHelp(other);
     try {
       const mutated = (await captureDevHelp()).replace(/\s+/g, ' ');
@@ -3881,7 +3881,7 @@ describe('dev --plan help names the replacement door', () => {
 });
 
 describe('dev 은퇴 옵션 실물', () => {
-  const cli = resolve(import.meta.dir, '..', '..', 'bin', 'monad.mjs');
+  const cli = resolve(import.meta.dir, '..', '..', 'bin', 'elanous.mjs');
   const repo = resolve(import.meta.dir, '..', '..');
   const retiredDefaults = {
     '--open-pr': 'PR 개설 활성',
@@ -3924,9 +3924,9 @@ describe('dev 은퇴 옵션 실물', () => {
   }, 60_000);
 
   it.each([
-    ['--ask', ['--ask', 'missing goal with spaces.md'], "monad harness ask 'missing goal with spaces.md'", "ENOENT: no such file or directory, open 'missing goal with spaces.md'"],
-    ['--file', ['--file', 'missing file with spaces.md'], "monad harness ask 'missing file with spaces.md'", "ENOENT: no such file or directory, open 'missing file with spaces.md'"],
-    ['--say', ['--say', '   '], "monad harness say '   '", '--say 입력이 비었다'],
+    ['--ask', ['--ask', 'missing goal with spaces.md'], "elanous harness ask 'missing goal with spaces.md'", "ENOENT: no such file or directory, open 'missing goal with spaces.md'"],
+    ['--file', ['--file', 'missing file with spaces.md'], "elanous harness ask 'missing file with spaces.md'", "ENOENT: no such file or directory, open 'missing file with spaces.md'"],
+    ['--say', ['--say', '   '], "elanous harness say '   '", '--say 입력이 비었다'],
   ] as const)('%s 실행은 대응 명령에 사용자 인자를 보존하고 기존 하위 오류까지 유지한다', (_kind, args, replacement, existingFailure) => {
     const result = spawnSync('bun', [cli, '--test', 'dev', ...args], { cwd: repo, encoding: 'utf8', timeout: 60_000 });
     expect(result.error).toBeUndefined();
@@ -3980,7 +3980,7 @@ describe('dev 은퇴 옵션 실물', () => {
 
   it('B/C 옵션은 선언을 유지하고 골 입력이 없으면 은퇴 안내를 내지 않는다', () => {
     const src = readFileSync(resolve(import.meta.dir, '../index.ts'), 'utf8');
-    for (const option of ['--no-auto-merge', '--force-preflight', '--allow-no-evidence', '--base', '--context', '--role-llm', '--child-llm-provider', '--attach', '--monad', '--backend']) {
+    for (const option of ['--no-auto-merge', '--force-preflight', '--allow-no-evidence', '--base', '--context', '--role-llm', '--child-llm-provider', '--attach', '--elanous', '--backend']) {
       expect(new RegExp(`(?:\\.option|new Option)\\(\\s*['\"]${option}`).test(src)).toBe(true);
     }
     const result = spawnSync('bun', [cli, '--test', 'dev', '--backend', 'self', '--transport', 'acp', 'x'], { cwd: repo, encoding: 'utf8', timeout: 60_000 });
@@ -3994,11 +3994,11 @@ describe('dev 은퇴 옵션 실물', () => {
 //
 // ⚠️ 위 단언들은 전부 helper 를 **직접 호출**한다. 그런데 이 PR 이 고치려는 결함은
 //   *"자식이 **도움말을 읽고** 잘못 믿는다"* 이므로, 검증도 **실제 도움말 출력**을 봐야 한다.
-//   ⇒ 그래서 여기서만 실물 `bin/monad.mjs` 를 spawn 한다(in-process import 로는 못 잰다).
+//   ⇒ 그래서 여기서만 실물 `bin/elanous.mjs` 를 spawn 한다(in-process import 로는 못 잰다).
 //   ⚠️ spawn 1회 ~7초 — per-test 타임아웃을 명시한다(기본 5초면 타임아웃이 곧 빈 출력이 되어
 //     "도움말이 없다" 와 구분이 안 된다 · 2026-08-03 cli-entry.test.ts 와 같은 이유).
 describe('drive --help 실물 — 계약 갈림이 맨 앞에 온다', () => {
-  const CLI = resolve(import.meta.dir, '..', '..', 'bin', 'monad.mjs');
+  const CLI = resolve(import.meta.dir, '..', '..', 'bin', 'elanous.mjs');
   // ⚠️ 같은 CLI 를 테스트마다 다시 띄우지 않는다(무인 리뷰 should-fix) — describe 당 **이름별 1회**만
   //   띄우고 캐시한다. 출력은 이 프로세스 안에서 불변이므로 캐시가 판정을 바꾸지 않는다.
   const cache = new Map<string, string>();
@@ -4041,8 +4041,8 @@ describe('drive --help 실물 — 계약 갈림이 맨 앞에 온다', () => {
     //   (실측: `도움말을 공유` 가 `도움말을\n공유` 로 갈려 실패했다 — 문면은 «있었다».)
     //   ⇒ 공백을 하나로 접은 뒤 단언한다. 첫 줄 계약은 «위 테스트»가 접지 않고 그대로 문다.
     const flat = out.replace(/\s+/g, ' ');
-    // 이 PR 은 별칭을 없애지 않는다(RFC §6-2). 따라서 --monad 는 계속 보인다.
-    expect(flat).toContain('--monad');
+    // 이 PR 은 별칭을 없애지 않는다(RFC §6-2). 따라서 --elanous 는 계속 보인다.
+    expect(flat).toContain('--elanous');
     // ⇒ 그렇기 때문에 "도움말을 공유한다 · 아래는 dev 기준" 이 반드시 있어야 한다.
     expect(flat).toContain('도움말을 공유');
     expect(flat).toMatch(/dev` 기준|dev 기준/);
@@ -4063,7 +4063,7 @@ describe('drive --help 실물 — 계약 갈림이 맨 앞에 온다', () => {
  * ⛔⭐⭐⭐ **이 회귀가 «증명하지 못하는» 것**(무인 리뷰가 두 번째로 짚었다 · 과장하지 않는다):
  *   아래 둘은 「미결론 문구의 «부재»」만 본다. ⇒ ***`src/index.ts` 의 가드 설치와 `conclude()` 를
  *   «통째로 지워도» 통과한다.*** 즉 「배선이 있다」를 못 증명한다.
- *   ⚠️ 그런데 「가드가 «발화»하는 실물 경로」가 `monad dev` CLI 에는 **없다** — 모든 종료 경로가
+ *   ⚠️ 그런데 「가드가 «발화»하는 실물 경로」가 `elanous dev` CLI 에는 **없다** — 모든 종료 경로가
  *   결론을 내도록 만든 것이 이 착지의 내용이기 때문이다(정상 상태에서 가드는 침묵한다).
  *   ⇒ 🩹 그래서 **양성 대조는 `dev-completion-guard.test.ts` 가 갖는다** — 거기서 진짜 프로세스를 띄워
  *     루프를 비우면 산출이 나오고 종료 코드가 바뀌는 것을 «실물»로 문다.
@@ -4078,13 +4078,13 @@ describe('drive --help 실물 — 계약 갈림이 맨 앞에 온다', () => {
  */
 describe('dev completion guard — 실물 거부 경로에서 «오탐이 없다»', () => {
   const REPO = resolve(import.meta.dir, '..', '..');
-  const CLI = join(REPO, 'bin', 'monad.mjs');
+  const CLI = join(REPO, 'bin', 'elanous.mjs');
   // 완료 줄(`[dev] … 완료`)과 형태가 다른, 가드만 찍는 문면.
   const UNCONCLUDED = '[dev completion guard]';
 
   // ⛔⭐⭐ 실물 CLI 를 띄우면 그 자식이 **저장소의 standalone 로그 sink 에 진짜로 쓴다**
   //   (무인 리뷰 must-fix). ⇒ state·config 를 «임시 디렉터리»로 격리하고 끝나면 지운다.
-  //   ⚠️ 이 저장소 규율상 둘을 «같이» 줘야 한다 — `MONAD_STATE_DIR` 만으로는 config-dir 스코프가 안 갈린다.
+  //   ⚠️ 이 저장소 규율상 둘을 «같이» 줘야 한다 — `ELANOUS_STATE_DIR` 만으로는 config-dir 스코프가 안 갈린다.
   function runCli(args: string[], extraEnv: Record<string, string> = {}): { code: number; stderr: string; stdout: string } {
     const sandbox = mkdtempSync(join(tmpdir(), 'dev-guard-cli-'));
     try {
@@ -4092,7 +4092,7 @@ describe('dev completion guard — 실물 거부 경로에서 «오탐이 없다
         cwd: REPO,
         encoding: 'utf8',
         timeout: 120_000,
-        env: { ...process.env, MONAD_STATE_DIR: sandbox, ...extraEnv },
+        env: { ...process.env, ELANOUS_STATE_DIR: sandbox, ...extraEnv },
       });
       return { code: r.status ?? -1, stderr: r.stderr ?? '', stdout: r.stdout ?? '' };
     } finally {
@@ -4105,7 +4105,7 @@ describe('dev completion guard — 실물 거부 경로에서 «오탐이 없다
   //   ⇒ 테스트 전용 seam 으로 「결론 없이 액션이 끝나는」 상황을 «강제»해 양성으로 문다.
   //   ⇒ 이제 `src/index.ts` 에서 가드 설치를 지우면 «이 테스트가 실패한다».
   it('결론 없이 끝나면 — 실물 CLI 가 산출을 남기고 0 이 아닌 코드로 끝난다', () => {
-    const r = runCli(['dev', 'x'], { MONAD_DEV_TEST_UNCONCLUDED_EXIT: '1' });
+    const r = runCli(['dev', 'x'], { ELANOUS_DEV_TEST_UNCONCLUDED_EXIT: '1' });
     expect(r.stderr).toContain('[dev completion guard]');
     expect(r.stderr).toContain('결론 없이 종료');
     // ⛔ 이 한 줄이 B1 의 전부다 — 42차엔 여기가 `0` 이라 «성공처럼» 보였다.
@@ -4130,23 +4130,23 @@ describe('dev completion guard — 실물 거부 경로에서 «오탐이 없다
 
   it('attach advisory points to the existing PTY command without interrupting the existing validation path', () => {
     const r = runCli(['dev', '--attach', 'pty-123', 'x']);
-    expect(r.stderr).toContain('monad pty auto');
-    expect(r.stderr).toContain("monad pty auto 'pty-123'");
+    expect(r.stderr).toContain('elanous pty auto');
+    expect(r.stderr).toContain("elanous pty auto 'pty-123'");
     expect(r.stderr).toContain('무효한 옵션: attach');
     expect(r.code).not.toBe(0);
   }, 130_000);
 
   it('attach advisory shell-quotes spaces, quotes, and shell metacharacters as one argument', () => {
     const r = runCli(['dev', '--attach', "pty ref'; $(unsafe);", 'x']);
-    expect(r.stderr).toContain("monad pty auto 'pty ref'\\''; $(unsafe);'");
+    expect(r.stderr).toContain("elanous pty auto 'pty ref'\\''; $(unsafe);'");
     expect(r.stderr).toContain('무효한 옵션: attach');
     expect(r.code).not.toBe(0);
   }, 130_000);
 
   it('external backend advisory points to the existing agent-mission command without interrupting the existing validation path', () => {
     const r = runCli(['dev', '--backend', 'codex', '--branch', 'wt/advisory', '--evidence', 'invalid', 'x']);
-    expect(r.stderr).toContain('monad agent-mission mission');
-    expect(r.stderr).toContain('monad agent-mission mission --backend codex');
+    expect(r.stderr).toContain('elanous agent-mission mission');
+    expect(r.stderr).toContain('elanous agent-mission mission --backend codex');
     expect(r.stderr).toContain('--evidence 는 tsc|doc|test 만');
     expect(r.code).not.toBe(0);
   }, 130_000);
@@ -4157,7 +4157,7 @@ describe('dev completion guard — 실물 거부 경로에서 «오탐이 없다
       ['dev', '--observe-only', 'x'],
     ]) {
       const r = runCli(args);
-      expect(r.stderr).not.toContain('monad agent-mission mission');
+      expect(r.stderr).not.toContain('elanous agent-mission mission');
       expect(r.code).not.toBe(0);
     }
   }, 130_000);
@@ -4168,10 +4168,10 @@ describe('dev completion guard — 실물 거부 경로에서 «오탐이 없다
     expect(`${r.stdout}${r.stderr}`).toContain('--json은 --hold 전용입니다');
   }, 130_000);
 
-  it('monad hold remains advisory-free on its existing path', () => {
-    const r = runCli(['dev', '--monad', '--hold', 'x']);
-    expect(r.stderr).not.toContain('monad pty auto');
-    expect(r.stderr).not.toContain('monad agent-mission mission');
+  it('elanous hold remains advisory-free on its existing path', () => {
+    const r = runCli(['dev', '--elanous', '--hold', 'x']);
+    expect(r.stderr).not.toContain('elanous pty auto');
+    expect(r.stderr).not.toContain('elanous agent-mission mission');
     expect(r.stderr).toContain('격리 우주에서는 작업 디렉토리를 명시해야 한다');
     expect(r.code).not.toBe(0);
   }, 130_000);
@@ -4470,7 +4470,7 @@ describe('buildChildLlmSelection — config-backed child LLM when flags are abse
       const warnings = lines.join('').split('\n').filter((line) => line.includes('주간 한도 소진'));
       const quotaEvents = events.filter(({ event }) => event === 'child-llm-quota-exhausted');
       if (quota === 'exhausted') {
-        expect(warnings).toEqual(['[dev] ⚠️ child-llm grok 주간 한도 소진(monad usage) — 자식이 응답을 못 받아 도구 0회로 끝날 수 있다 · 바꾸려면 --child-llm-provider openai-codex --child-llm-model <모델>']);
+        expect(warnings).toEqual(['[dev] ⚠️ child-llm grok 주간 한도 소진(elanous usage) — 자식이 응답을 못 받아 도구 0회로 끝날 수 있다 · 바꾸려면 --child-llm-provider openai-codex --child-llm-model <모델>']);
         expect(quotaEvents).toEqual([{ category: 'self-dev', event: 'child-llm-quota-exhausted', data: { provider: 'grok', model: 'grok-4.7', selection: 'config' } }]);
       } else {
         expect(warnings).toEqual([]);

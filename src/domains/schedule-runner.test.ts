@@ -13,17 +13,17 @@ const CRON = [
 // fake node-cron — 타이머 안 돌고 stop만. 발화는 triggerNow로.
 const fakeSchedule = () => ({ stop() { /* noop */ } });
 
-function seed(runViaMonad: string[]) {
+function seed(runViaElanous: string[]) {
   const db = openSchedulesDb(':memory:');
   inventoryCrontab(db, { crontab: CRON, now: '2026-07-07T00:00:00Z' });
   for (const r of listSchedules(db)) {
-    if (runViaMonad.includes(r.name)) setRunVia(db, r.id, 'monad');
+    if (runViaElanous.includes(r.name)) setRunVia(db, r.id, 'elanous');
   }
   return db;
 }
 
 describe('startScheduleRunner — 실행 대상 선별', () => {
-  test('run_via=monad 잡만 스케줄(나머지 crontab이 실행)', () => {
+  test('run_via=elanous 잡만 스케줄(나머지 crontab이 실행)', () => {
     const db = seed(['foo-report']);
     // adopt 시나리오: foo는 crontab에서 제거됨(= crontabText가 foo 제외)
     const runner = startScheduleRunner({
@@ -37,14 +37,14 @@ describe('startScheduleRunner — 실행 대상 선별', () => {
 
   test('더블파이어 가드 — crontab에 아직 있으면 스킵', () => {
     const db = seed(['foo-report']);
-    // foo가 여전히 crontab에 있음 → monad 러너는 스킵(중복 발화 방지)
+    // foo가 여전히 crontab에 있음 → elanous 러너는 스킵(중복 발화 방지)
     const runner = startScheduleRunner({ db, schedule: fakeSchedule, catchupGraceMs: 0, crontabText: () => CRON });
     expect(runner.active().length).toBe(0);
     runner.stop();
   });
 
   test('run_via=crontab 잡은 스케줄 안 함', () => {
-    const db = seed([]); // 아무것도 monad 아님
+    const db = seed([]); // 아무것도 elanous 아님
     const runner = startScheduleRunner({ db, schedule: fakeSchedule, catchupGraceMs: 0, crontabText: () => '' });
     expect(runner.active().length).toBe(0);
     runner.stop();
@@ -88,9 +88,9 @@ describe('reload — adopt/release 반영(재시작 불요)', () => {
     const db = seed([]);
     const runner = startScheduleRunner({ db, schedule: fakeSchedule, catchupGraceMs: 0, crontabText: () => '' });
     expect(runner.active().length).toBe(0);
-    // adopt: bar-monitor를 monad 실행으로
+    // adopt: bar-monitor를 elanous 실행으로
     const bar = listSchedules(db).find(r => r.name === 'bar-monitor')!;
-    setRunVia(db, bar.id, 'monad');
+    setRunVia(db, bar.id, 'elanous');
     runner.reload();
     expect(runner.active()).toEqual([bar.id]);
     // release: 다시 crontab
@@ -104,10 +104,10 @@ describe('reload — adopt/release 반영(재시작 불요)', () => {
 describe('catch-up 자기회복 + 실행결과 추적(P1)', () => {
   const dayCron = '0 7 * * * cd /r && bun scripts/foo-report.ts >> /tmp/x.log 2>&1';
   const tradeCron = '5 8 * * * cd /r && bun scripts/trade-autonomous-cycle.ts >> /tmp/t.log 2>&1';
-  function seedRows(cronLines: string[], monadNames: string[]) {
+  function seedRows(cronLines: string[], elanousNames: string[]) {
     const db = openSchedulesDb(':memory:');
     inventoryCrontab(db, { crontab: cronLines.join('\n'), now: '2026-07-07T00:00:00Z' });
-    for (const r of listSchedules(db)) if (monadNames.includes(r.name)) setRunVia(db, r.id, 'monad');
+    for (const r of listSchedules(db)) if (elanousNames.includes(r.name)) setRunVia(db, r.id, 'elanous');
     return db;
   }
   const settle = () => new Promise((r) => setTimeout(r, 15));
@@ -189,6 +189,6 @@ describe('배선 가드', () => {
     expect(src).toContain("if (action === 'adopt') action = 'migrate'"); // adopt→migrate 리다이렉트
     expect(src).toContain("action === 'migrate'");
     expect(src).toContain("action === 'release'");
-    expect(src).not.toContain("setRunVia(sdb, target.id, 'monad')"); // run_via='monad' 생성 폐지
+    expect(src).not.toContain("setRunVia(sdb, target.id, 'elanous')"); // run_via='elanous' 생성 폐지
   });
 });

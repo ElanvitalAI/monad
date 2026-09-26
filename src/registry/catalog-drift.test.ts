@@ -120,13 +120,13 @@ describe('catalog drift — 파생 핀이 catalog SSoT 와 정합(2026-07-15)', 
     // 발견 소스가 내는 «원 id»(접두 없음)로 적는다 — 접두는 폴드가 붙인다.
     const models = ladder.map((id) => { const raw = id.replace(/^openrouter\//, ''); return { id: raw, provider: 'openrouter', partial: { id: raw, provider: 'openrouter' }, discoveryMeta: meta }; });
     writeFileSync(path, JSON.stringify({ version: 1, generatedAt: '2026-09-23T00:00:00Z', sources: [], models }));
-    const saved = process.env.MONAD_CATALOG_DISCOVERY_SNAPSHOT;
-    process.env.MONAD_CATALOG_DISCOVERY_SNAPSHOT = path;
+    const saved = process.env.ELANOUS_CATALOG_DISCOVERY_SNAPSHOT;
+    process.env.ELANOUS_CATALOG_DISCOVERY_SNAPSHOT = path;
     try {
       const catalog = reloadCatalog();
       expect(ladder.filter((id) => !catalog.models.get(id))).toEqual([]);
     } finally {
-      if (saved === undefined) delete process.env.MONAD_CATALOG_DISCOVERY_SNAPSHOT; else process.env.MONAD_CATALOG_DISCOVERY_SNAPSHOT = saved;
+      if (saved === undefined) delete process.env.ELANOUS_CATALOG_DISCOVERY_SNAPSHOT; else process.env.ELANOUS_CATALOG_DISCOVERY_SNAPSHOT = saved;
       reloadCatalog();
     }
   });

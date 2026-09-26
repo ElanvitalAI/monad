@@ -18,14 +18,14 @@ import { join, resolve } from 'node:path';
 import { isObviouslyLongAskPath } from '../index.js';
 
 const REPO = resolve(import.meta.dir, '..', '..');
-const BIN = resolve(REPO, 'bin', 'monad.mjs');
+const BIN = resolve(REPO, 'bin', 'elanous.mjs');
 
 function runDev(args: readonly string[]): { code: number | null; stderr: string } {
   const r = spawnSync('bun', [BIN, 'dev', ...args], {
     cwd: REPO,
     encoding: 'utf8',
     timeout: 60_000,
-    env: { ...process.env, MONAD_SELF_IMPLEMENT_OBSERVE_ONLY: '1' },
+    env: { ...process.env, ELANOUS_SELF_IMPLEMENT_OBSERVE_ONLY: '1' },
   });
   return { code: r.status, stderr: `${r.stderr ?? ''}${r.stdout ?? ''}` };
 }
@@ -46,7 +46,7 @@ describe('dev --ask — 실물 진입점(spawn)에서 인자 계약이 서는가
     // ⛔ 2026-09-02: 그 옵션은 은퇴했다. 「임계 검증」이 아니라 «은퇴 안내»가 «저작 전에» 거부한다.
     //   ⭐ 지키는 것은 그대로다 — ***파일 없음(ENOENT)까지 가기 «전»에 멈춘다***.
     for (const bad of ['1.5', '1e2', '0', 'abc']) {
-      const { code, stderr } = runDev(['--ask', '/tmp/monad-ask-does-not-exist.txt', '--live-run-window', bad]);
+      const { code, stderr } = runDev(['--ask', '/tmp/elanous-ask-does-not-exist.txt', '--live-run-window', bad]);
       expect(code).toBe(1);
       expect(stderr).toContain('--live-run-window 은퇴');
       expect(stderr).toContain('적용 기본값');
@@ -56,7 +56,7 @@ describe('dev --ask — 실물 진입점(spawn)에서 인자 계약이 서는가
 
   test('[window-accepted-at-cli] 성한 임계는 통과해 «다음 단계»로 간다', () => {
     // ⛔ 2026-09-02: 성한 값이어도 그 옵션은 «없다» — 은퇴 안내가 먼저 멈춘다(기본값 30분이 그대로 적용된다).
-    const { code, stderr } = runDev(['--ask', '/tmp/monad-ask-does-not-exist.txt', '--live-run-window', '45']);
+    const { code, stderr } = runDev(['--ask', '/tmp/elanous-ask-does-not-exist.txt', '--live-run-window', '45']);
     expect(code).toBe(1);
     expect(stderr).toContain('--live-run-window 은퇴');
     // ⭐ 그리고 «무엇이 기본이 됐나»를 말한다 — 사람이 그 값을 못 바꾸게 됐으므로 더 중요하다.
@@ -141,7 +141,7 @@ describe('dev --ask — 실물 진입점(spawn)에서 인자 계약이 서는가
 
   // 판정 신호 ⑤: 긴 값 안내를 항상 내면 이 단언이 실패한다.
   test('[short-missing-path] 짧은 미존재 경로는 파일 오류를 내고 문장 안내를 붙이지 않는다', () => {
-    const dir = mkdtempSync(join(tmpdir(), 'monad-ask-missing-'));
+    const dir = mkdtempSync(join(tmpdir(), 'elanous-ask-missing-'));
     const missing = join(dir, `does-not-exist-${process.pid}.txt`);
     try {
       const { code, stderr } = runDev(['--ask', missing]);
@@ -158,7 +158,7 @@ describe('dev --ask — 실물 진입점(spawn)에서 인자 계약이 서는가
   });
 
   test('[short-existing-path] 짧은 정상 경로는 은퇴 안내에 경로가 잘리지 않고 그대로 실린다', () => {
-    const dir = mkdtempSync(join(tmpdir(), 'monad-ask-'));
+    const dir = mkdtempSync(join(tmpdir(), 'elanous-ask-'));
     const file = join(dir, 'goal.txt');
     writeFileSync(file, '');
     try {

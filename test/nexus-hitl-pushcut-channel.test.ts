@@ -1,6 +1,6 @@
 // NEXUS Pushcut HITL producer wire-up — 2026-05-08 follow-up.
 //
-// Legacy dashboard mode (`monad legacy`) registers Pushcut + terminal
+// Legacy dashboard mode (`elanous legacy`) registers Pushcut + terminal
 // confirm channels via `dashboard/runtime/hitl.ts`. NEXUS mode now
 // registers a Pushcut channel + an in-app PWA banner channel
 // (β-1a · 2026-05-08); Telegram / Discord / terminal channels stay
@@ -42,10 +42,10 @@ let prevHome: string | undefined;
 let activeHandle: RunNexusHandle | undefined;
 
 beforeEach(() => {
-  tmpRoot = mkdtempSync(join(tmpdir(), 'monad-nexus-hitl-pushcut-'));
-  prevNexusDir = process.env.MONAD_NEXUS_DIR;
+  tmpRoot = mkdtempSync(join(tmpdir(), 'elanous-nexus-hitl-pushcut-'));
+  prevNexusDir = process.env.ELANOUS_NEXUS_DIR;
   prevHome = process.env.HOME;
-  process.env.MONAD_NEXUS_DIR = tmpRoot;
+  process.env.ELANOUS_NEXUS_DIR = tmpRoot;
   process.env.HOME = tmpRoot;
   setIntakeStoreForTest(createIntakeStore({ archiveDir: null, replayOnInit: false }));
   // Reset any default channels that may have leaked from a prior file.
@@ -57,8 +57,8 @@ afterEach(async () => {
     try { activeHandle.release(); } catch { /* swallow */ }
     activeHandle = undefined;
   }
-  if (prevNexusDir === undefined) delete process.env.MONAD_NEXUS_DIR;
-  else process.env.MONAD_NEXUS_DIR = prevNexusDir;
+  if (prevNexusDir === undefined) delete process.env.ELANOUS_NEXUS_DIR;
+  else process.env.ELANOUS_NEXUS_DIR = prevNexusDir;
   if (prevHome === undefined) delete process.env.HOME;
   else process.env.HOME = prevHome;
   setIntakeStoreForTest(null);

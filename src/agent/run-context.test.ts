@@ -4,7 +4,7 @@
 //   ① 부모 config 가 목표 provider 의 키를 **해석**한다(user-config escalate · provider-credentials)
 //   ② spawn 이 그 키를 **자식 env 로 릴레이**한다(여기)
 // ②가 끊기면 부모가 아무리 옳게 해석해도 자식은 키 없이 떠서 401 이 난다. spawn env 는 replace 라
-// 자동 상속이 없으므로 이 릴레이가 유일한 통로다(`headless-monad-driver.ts:287` 이 실소비처).
+// 자동 상속이 없으므로 이 릴레이가 유일한 통로다(`headless-elanous-driver.ts:287` 이 실소비처).
 
 import { test, expect, describe, afterEach } from 'bun:test';
 import { childLlmSelectionEnv, childProviderKeyEnv } from './run-context.js';
@@ -24,26 +24,26 @@ afterEach(() => {
 
 describe('childLlmSelectionEnv — 자식 spawn 두뇌 선택 릴레이', () => {
   test('provider와 model이 함께 있으면 두 값을 리터럴로 전달한다', () => {
-    setEnv('MONAD_LLM_PROVIDER', 'grok');
-    setEnv('MONAD_LLM_MODEL', 'grok-4.6');
-    expect(childLlmSelectionEnv()).toEqual({ MONAD_LLM_PROVIDER: 'grok', MONAD_LLM_MODEL: 'grok-4.6' });
+    setEnv('ELANOUS_LLM_PROVIDER', 'grok');
+    setEnv('ELANOUS_LLM_MODEL', 'grok-4.6');
+    expect(childLlmSelectionEnv()).toEqual({ ELANOUS_LLM_PROVIDER: 'grok', ELANOUS_LLM_MODEL: 'grok-4.6' });
   });
 
   test('provider만 있으면 provider만 전달한다', () => {
-    setEnv('MONAD_LLM_PROVIDER', 'grok');
-    setEnv('MONAD_LLM_MODEL', undefined);
-    expect(childLlmSelectionEnv()).toEqual({ MONAD_LLM_PROVIDER: 'grok' });
+    setEnv('ELANOUS_LLM_PROVIDER', 'grok');
+    setEnv('ELANOUS_LLM_MODEL', undefined);
+    expect(childLlmSelectionEnv()).toEqual({ ELANOUS_LLM_PROVIDER: 'grok' });
   });
 
   test('model만 있으면 model만 전달한다', () => {
-    setEnv('MONAD_LLM_PROVIDER', undefined);
-    setEnv('MONAD_LLM_MODEL', 'grok-4.6');
-    expect(childLlmSelectionEnv()).toEqual({ MONAD_LLM_MODEL: 'grok-4.6' });
+    setEnv('ELANOUS_LLM_PROVIDER', undefined);
+    setEnv('ELANOUS_LLM_MODEL', 'grok-4.6');
+    expect(childLlmSelectionEnv()).toEqual({ ELANOUS_LLM_MODEL: 'grok-4.6' });
   });
 
   test('둘 다 없으면 빈 객체라 기존 replace env를 바꾸지 않는다', () => {
-    setEnv('MONAD_LLM_PROVIDER', undefined);
-    setEnv('MONAD_LLM_MODEL', undefined);
+    setEnv('ELANOUS_LLM_PROVIDER', undefined);
+    setEnv('ELANOUS_LLM_MODEL', undefined);
     expect(childLlmSelectionEnv()).toEqual({});
   });
 
@@ -51,15 +51,15 @@ describe('childLlmSelectionEnv — 자식 spawn 두뇌 선택 릴레이', () => 
     const relay = childLlmSelectionEnv({ provider: 'local', model: 'lmstudio-community/gemma-4-26b-a4b-it', source: 'flag' });
     const { getModelFamily } = await import('../models/prompts.js');
     expect(relay).toMatchObject({
-      MONAD_LLM_PROVIDER: 'local',
-      MONAD_LLM_MODEL: 'local:lmstudio-community/gemma-4-26b-a4b-it',
+      ELANOUS_LLM_PROVIDER: 'local',
+      ELANOUS_LLM_MODEL: 'local:lmstudio-community/gemma-4-26b-a4b-it',
     });
-    expect(getModelFamily(relay.MONAD_LLM_MODEL)).toBe('local');
+    expect(getModelFamily(relay.ELANOUS_LLM_MODEL)).toBe('local');
   });
 
   test('local relay prefixing is idempotent and preserves empty models', () => {
-    expect(childLlmSelectionEnv({ provider: 'local', model: 'local:llama-3', source: 'flag' })).toMatchObject({ MONAD_LLM_MODEL: 'local:llama-3' });
-    expect(childLlmSelectionEnv({ provider: 'local', model: '', source: 'flag' })).toMatchObject({ MONAD_LLM_MODEL: '' });
+    expect(childLlmSelectionEnv({ provider: 'local', model: 'local:llama-3', source: 'flag' })).toMatchObject({ ELANOUS_LLM_MODEL: 'local:llama-3' });
+    expect(childLlmSelectionEnv({ provider: 'local', model: '', source: 'flag' })).toMatchObject({ ELANOUS_LLM_MODEL: '' });
   });
 
   test('별칭 표에서 얻은 모든 provider는 자식 env에서 runtime provider가 된다', () => {
@@ -69,25 +69,25 @@ describe('childLlmSelectionEnv — 자식 spawn 두뇌 선택 릴레이', () => 
       const selection = buildChildLlmSelection({ childLlmProvider: alias, childLlmModel: defaultChildLlmModel(provider) });
       expect(selection).toBeDefined();
       const relay = childLlmSelectionEnv(selection);
-      expect(relay.MONAD_LLM_PROVIDER).toBe(provider);
-      expect(runtimeProviders).toContain(relay.MONAD_LLM_PROVIDER);
+      expect(relay.ELANOUS_LLM_PROVIDER).toBe(provider);
+      expect(runtimeProviders).toContain(relay.ELANOUS_LLM_PROVIDER);
     }
   });
 
   test('정식 provider는 child relay에서 변하지 않는다', () => {
-    expect(childLlmSelectionEnv({ provider: 'openai-codex', model: 'gpt-5.6-terra', source: 'flag' }).MONAD_LLM_PROVIDER)
+    expect(childLlmSelectionEnv({ provider: 'openai-codex', model: 'gpt-5.6-terra', source: 'flag' }).ELANOUS_LLM_PROVIDER)
       .toBe('openai-codex');
   });
 
   test('명시 선택은 부모 선택을 읽거나 바꾸지 않고 선택 provider 키를 함께 릴레이한다', () => {
-    setEnv('MONAD_LLM_PROVIDER', 'parent');
-    setEnv('MONAD_LLM_MODEL', 'parent-model');
+    setEnv('ELANOUS_LLM_PROVIDER', 'parent');
+    setEnv('ELANOUS_LLM_MODEL', 'parent-model');
     setEnv('ANTHROPIC_API_KEY', 'sk-ant-parent');
     expect(childLlmSelectionEnv({ provider: 'anthropic', model: 'claude-opus-4-8', source: 'flag' })).toEqual({
-      MONAD_LLM_PROVIDER: 'anthropic', MONAD_LLM_MODEL: 'claude-opus-4-8', ANTHROPIC_API_KEY: 'sk-ant-parent',
+      ELANOUS_LLM_PROVIDER: 'anthropic', ELANOUS_LLM_MODEL: 'claude-opus-4-8', ANTHROPIC_API_KEY: 'sk-ant-parent',
     });
-    expect(process.env.MONAD_LLM_PROVIDER).toBe('parent');
-    expect(process.env.MONAD_LLM_MODEL).toBe('parent-model');
+    expect(process.env.ELANOUS_LLM_PROVIDER).toBe('parent');
+    expect(process.env.ELANOUS_LLM_MODEL).toBe('parent-model');
   });
 
   test('config 출처 선택은 자식 env 릴레이 전에도 source=config 로 남고 flag 와 구별된다', () => {
@@ -99,12 +99,12 @@ describe('childLlmSelectionEnv — 자식 spawn 두뇌 선택 릴레이', () => 
     expect(fromFlag).toEqual({ provider: 'grok', model: 'grok-4.6', source: 'flag' });
     expect(fromConfig?.source).not.toBe(fromFlag?.source);
     expect(childLlmSelectionEnv(fromConfig)).toEqual(expect.objectContaining({
-      MONAD_LLM_PROVIDER: 'grok',
-      MONAD_LLM_MODEL: 'grok-4.6',
+      ELANOUS_LLM_PROVIDER: 'grok',
+      ELANOUS_LLM_MODEL: 'grok-4.6',
     }));
     expect(childLlmSelectionEnv(fromFlag)).toEqual(expect.objectContaining({
-      MONAD_LLM_PROVIDER: 'grok',
-      MONAD_LLM_MODEL: 'grok-4.6',
+      ELANOUS_LLM_PROVIDER: 'grok',
+      ELANOUS_LLM_MODEL: 'grok-4.6',
     }));
   });
 });
@@ -160,7 +160,7 @@ describe('childProviderKeyEnv — 자식 spawn 키 릴레이', () => {
 //   이 파일의 앵커·판정식을 함께 갱신하거나 AST 기반으로 승격할 것. 아래 음성 fixture 는 우회 형태가
 //   늘어날 때 **값싸게 확장하는 자리**다.
 describe('ratchet — escalate 스폰은 provider 키 릴레이를 함께 심는다', () => {
-  const SPAWN_SITE = 'src/self-implement/headless-monad-driver.ts';
+  const SPAWN_SITE = 'src/self-implement/headless-elanous-driver.ts';
 
   /** 릴레이 배선의 유일한 판정식 — **모든** 탐색 지점이 이걸 쓴다(리뷰 must-fix 8R: `includes` 로
    *  느슨하게 보면 문자열 언급 같은 비-배선으로 우회된다). */
@@ -169,17 +169,17 @@ describe('ratchet — escalate 스폰은 provider 키 릴레이를 함께 심는
   const LLM_SELECTION_RE = /\.\.\.\s*childLlmSelectionEnv\(/;
 
   /** escalate env 프로퍼티의 표기 변형까지 잡는 앵커 — 따옴표 유무·콜론 앞 공백(9R). */
-  const ANCHOR_RE = /(['"])?MONAD_ESCALATE_PROVIDER\1?\s*:/;
+  const ANCHOR_RE = /(['"])?ELANOUS_ESCALATE_PROVIDER\1?\s*:/;
   /** 위와 같은 뜻의 git grep(POSIX ERE) 패턴 — 탐색과 판정이 **같은 형태 집합**을 봐야 한다. */
-  const ANCHOR_GREP = "['\"]?MONAD_ESCALATE_PROVIDER['\"]?[[:space:]]*:";
+  const ANCHOR_GREP = "['\"]?ELANOUS_ESCALATE_PROVIDER['\"]?[[:space:]]*:";
 
   /** escalate env 를 조립하는 객체 리터럴을 **전부** 잘라낸다 — 파일 전체 `toContain` 은 호출이 주석·
    *  dead code 로 옮겨가도 통과하고(7R), 첫 occurrence 만 보면 같은 파일에 **두 번째 미배선 리터럴**을
-   *  추가해도 통과한다(8R). `MONAD_ESCALATE_PROVIDER:` 프로퍼티마다 괄호 균형으로 블록을 뜬다. */
+   *  추가해도 통과한다(8R). `ELANOUS_ESCALATE_PROVIDER:` 프로퍼티마다 괄호 균형으로 블록을 뜬다. */
   function escalateEnvBlocks(src: string): string[] {
     const blocks: string[] = [];
     for (let from = 0; ;) {
-      // ⚠️ 표기 변형 허용(리뷰 must-fix 9R) — `'MONAD_ESCALATE_PROVIDER':` · `MONAD_ESCALATE_PROVIDER :`
+      // ⚠️ 표기 변형 허용(리뷰 must-fix 9R) — `'ELANOUS_ESCALATE_PROVIDER':` · `ELANOUS_ESCALATE_PROVIDER :`
       //    같은 유효 형태를 정확 문자열 검색은 놓치고, 그러면 RELAY_RE 판정 자체가 안 돈다.
       const m = ANCHOR_RE.exec(src.slice(from));
       if (!m) break;
@@ -214,28 +214,28 @@ describe('ratchet — escalate 스폰은 provider 키 릴레이를 함께 심는
   // "주석 이동을 잡는다"를 커밋 메시지가 아니라 **테스트로** 증명한다. 아래 fixture 들은 실제 소스가
   // 아니라 판정 로직에 먹이는 합성 입력이라, 회피 형태가 늘어나도 값싸게 고정할 수 있다.
   describe('판정기 음성 fixture — 이런 회피는 반드시 미배선으로 잡힌다', () => {
-    const wired = `{ MONAD_ESCALATE_MODEL: m, MONAD_ESCALATE_PROVIDER: p, ...childProviderKeyEnv(target.provider) }`;
+    const wired = `{ ELANOUS_ESCALATE_MODEL: m, ELANOUS_ESCALATE_PROVIDER: p, ...childProviderKeyEnv(target.provider) }`;
 
     test('정상 배선은 통과', () => { expect(unwiredBlocks(wired)).toBe(0); });
 
     test('★ 줄 주석으로 옮긴 호출 — 미배선', () => {
-      expect(unwiredBlocks(`{ MONAD_ESCALATE_PROVIDER: p, // ...childProviderKeyEnv(target.provider)\n }`)).toBe(1);
+      expect(unwiredBlocks(`{ ELANOUS_ESCALATE_PROVIDER: p, // ...childProviderKeyEnv(target.provider)\n }`)).toBe(1);
     });
 
     test('★ 블록 주석 안의 호출 — 미배선', () => {
-      expect(unwiredBlocks(`{ MONAD_ESCALATE_PROVIDER: p, /* ...childProviderKeyEnv(target.provider) */ }`)).toBe(1);
+      expect(unwiredBlocks(`{ ELANOUS_ESCALATE_PROVIDER: p, /* ...childProviderKeyEnv(target.provider) */ }`)).toBe(1);
     });
 
     test('★ 문자열로만 언급 — 미배선(includes 였다면 통과했다)', () => {
-      expect(unwiredBlocks(`{ MONAD_ESCALATE_PROVIDER: p, note: 'childProviderKeyEnv' }`)).toBe(1);
+      expect(unwiredBlocks(`{ ELANOUS_ESCALATE_PROVIDER: p, note: 'childProviderKeyEnv' }`)).toBe(1);
     });
 
     test('★ spread 없이 호출만 — 미배선', () => {
-      expect(unwiredBlocks(`{ MONAD_ESCALATE_PROVIDER: p, k: childProviderKeyEnv(target.provider) }`)).toBe(1);
+      expect(unwiredBlocks(`{ ELANOUS_ESCALATE_PROVIDER: p, k: childProviderKeyEnv(target.provider) }`)).toBe(1);
     });
 
     test('★ 같은 파일의 **두 번째** 리터럴이 미배선 — 잡힌다(첫 occurrence 만 보면 통과했다)', () => {
-      expect(unwiredBlocks(`${wired}\nconst other = { MONAD_ESCALATE_PROVIDER: p2 };`)).toBe(1);
+      expect(unwiredBlocks(`${wired}\nconst other = { ELANOUS_ESCALATE_PROVIDER: p2 };`)).toBe(1);
     });
 
     test('배선된 리터럴이 둘이면 둘 다 통과', () => {
@@ -244,9 +244,9 @@ describe('ratchet — escalate 스폰은 provider 키 릴레이를 함께 심는
 
     // ★ must-fix(9R) — 표기 변형을 놓치면 판정 자체가 안 돌아 **미배선이 통과**한다.
     test.each([
-      ["따옴표", `{ 'MONAD_ESCALATE_PROVIDER': p }`],
-      ["쌍따옴표", `{ "MONAD_ESCALATE_PROVIDER": p }`],
-      ["콜론 앞 공백", `{ MONAD_ESCALATE_PROVIDER : p }`],
+      ["따옴표", `{ 'ELANOUS_ESCALATE_PROVIDER': p }`],
+      ["쌍따옴표", `{ "ELANOUS_ESCALATE_PROVIDER": p }`],
+      ["콜론 앞 공백", `{ ELANOUS_ESCALATE_PROVIDER : p }`],
     ])('★ 표기 변형(%s)도 리터럴로 잡아 미배선을 검출', (_label, snippet) => {
       expect(escalateEnvBlocks(snippet).length).toBe(1);
       expect(unwiredBlocks(snippet)).toBe(1);
@@ -257,7 +257,7 @@ describe('ratchet — escalate 스폰은 provider 키 릴레이를 함께 심는
     const { readFileSync } = await import('node:fs');
     const src = readFileSync(SPAWN_SITE, 'utf-8');
     const selection = src.search(LLM_SELECTION_RE);
-    const escalation = src.indexOf('MONAD_ESCALATE_PROVIDER');
+    const escalation = src.indexOf('ELANOUS_ESCALATE_PROVIDER');
     expect(selection).toBeGreaterThanOrEqual(0);
     expect(escalation).toBeGreaterThan(selection);
   });
@@ -266,7 +266,7 @@ describe('ratchet — escalate 스폰은 provider 키 릴레이를 함께 심는
     const { readFileSync } = await import('node:fs');
     const src = readFileSync(SPAWN_SITE, 'utf-8');
     // 이 파일이 escalate 스폰의 env 를 조립한다는 전제 자체를 먼저 고정(파일이 옮겨가면 여기서 실패).
-    expect(src).toContain('MONAD_ESCALATE_PROVIDER');
+    expect(src).toContain('ELANOUS_ESCALATE_PROVIDER');
     expect(escalateEnvBlocks(src).length).toBeGreaterThan(0);   // 추출이 죽으면 가드가 무력해진다
     expect(unwiredBlocks(src)).toBe(0);
   });
@@ -298,16 +298,16 @@ describe('ratchet — escalate 스폰은 provider 키 릴레이를 함께 심는
 // BACKLOG B12 — 상속 갈래도 local 이면 엔드포인트를 넘긴다.
 import { childLlmSelectionEnv as relayForB12 } from './run-context.js';
 describe('childLlmSelectionEnv inherit branch relays the local endpoint (BACKLOG B12)', () => {
-  const keep = { p: process.env.MONAD_LLM_PROVIDER, m: process.env.MONAD_LLM_MODEL, u: process.env.LOCAL_LLM_URL };
+  const keep = { p: process.env.ELANOUS_LLM_PROVIDER, m: process.env.ELANOUS_LLM_MODEL, u: process.env.LOCAL_LLM_URL };
   afterEach(() => {
-    for (const [k, v] of [['MONAD_LLM_PROVIDER', keep.p], ['MONAD_LLM_MODEL', keep.m], ['LOCAL_LLM_URL', keep.u]] as const) {
+    for (const [k, v] of [['ELANOUS_LLM_PROVIDER', keep.p], ['ELANOUS_LLM_MODEL', keep.m], ['LOCAL_LLM_URL', keep.u]] as const) {
       if (v === undefined) delete process.env[k]; else process.env[k] = v;
     }
   });
   test('inherited local provider carries LOCAL_LLM_URL; other providers do not', () => {
-    process.env.MONAD_LLM_PROVIDER = 'local'; process.env.MONAD_LLM_MODEL = 'local:x'; process.env.LOCAL_LLM_URL = 'http://node-b:1234/v1';
-    expect(relayForB12()).toEqual({ MONAD_LLM_PROVIDER: 'local', MONAD_LLM_MODEL: 'local:x', LOCAL_LLM_URL: 'http://node-b:1234/v1' });
-    process.env.MONAD_LLM_PROVIDER = 'grok';
+    process.env.ELANOUS_LLM_PROVIDER = 'local'; process.env.ELANOUS_LLM_MODEL = 'local:x'; process.env.LOCAL_LLM_URL = 'http://node-b:1234/v1';
+    expect(relayForB12()).toEqual({ ELANOUS_LLM_PROVIDER: 'local', ELANOUS_LLM_MODEL: 'local:x', LOCAL_LLM_URL: 'http://node-b:1234/v1' });
+    process.env.ELANOUS_LLM_PROVIDER = 'grok';
     expect(relayForB12().LOCAL_LLM_URL).toBeUndefined();
   });
 });

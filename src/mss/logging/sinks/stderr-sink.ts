@@ -8,7 +8,7 @@
 // Use cases:
 //   • CI runs that capture stderr in the job log
 //   • container sidecars / log forwarders that already tail stderr
-//   • local `monad ... 2> trace.log` redirection without touching
+//   • local `elanous ... 2> trace.log` redirection without touching
 //     the file-sink ring
 //
 // Default off — an always-on stderr stream would flood interactive

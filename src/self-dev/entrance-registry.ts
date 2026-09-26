@@ -175,14 +175,14 @@ const ENTRANCE_DECLARATIONS = [
   //     이 문은 «기준선»이라 매일 도는데도 적는 사람이 없었다. 그 상태가 ④ 집계를 «읽을 수 없게» 만들었다.
   //   legacyParity: ⛔ ***구조적으로 잴 것이 없다.*** 이 문 «자신»이 옛 입구라, 대조할 「그 앞의 문」이 없다.
   //     🩸 2026-09-02 정정(🅣 136차): 종전 문면은 *"`harness dogfood` 가 은퇴하며 «이 문»을 지목했다"*
-  //       였는데 ***사실이 아니다*** — `HARNESS_DOGFOOD_REPLACEMENT` 는 `monad harness ask <골문서>`,
+  //       였는데 ***사실이 아니다*** — `HARNESS_DOGFOOD_REPLACEMENT` 는 `elanous harness ask <골문서>`,
   //       즉 `cli-harness-ask` 를 지목한다(`src/harness/dogfood.ts`). ⇒ 근거는 틀렸고 결론은 선다.
   //     ⭐ 그리고 그 갈림은 «작다» — `harness ask` 는 `runDefaultAskFileLaunchFlow`(`index.ts:274`)로
   //       `dev --ask` 와 ***같은*** `runAskLaunchFlow` 를 탄다. 두 문의 차이는 `entrance` 태그뿐이다.
   //     ⇒ 판정값이 `'verified' | 'unknown'` 둘뿐이라 「구조적 부재」를 적을 칸이 없다. `unknown` 으로 둔다.
   //     ⛔ 그러니 이 `unknown` 을 「미완」으로 읽지 마라 — 그 구분은 이 주석이 canonical 이다.
   { id: 'cli-dev-ask', surface: 'cli', status: 'live', verification: { actualMission: 'verified', legacyParity: 'unknown' } },
-  // `monad drive` 는 `monad dev` 의 Commander alias 로 살아 있고, buildDriveAliasDevSpec 이 entrance 를
+  // `elanous drive` 는 `elanous dev` 의 Commander alias 로 살아 있고, buildDriveAliasDevSpec 이 entrance 를
   // `cli-drive` 로 넘기며 completion 을 `worktree-only` 로 못 박는다. 그래서 별도 무인 권한 축이 아니다.
   { id: 'cli-drive', surface: 'cli', status: 'live' },
   { id: 'cli-self-implement', surface: 'cli', status: 'live' },
@@ -202,10 +202,10 @@ const ENTRANCE_DECLARATIONS = [
   { id: 'cli-harness-say', surface: 'cli', status: 'live', verification: { actualMission: 'verified', legacyParity: 'verified' } },
   { id: 'cli-harness-orchestrate', surface: 'cli', status: 'live', verification: { actualMission: 'verified', legacyParity: 'unknown' } },
   // ⭐ 2026-08-24 · 🅣 — ***사람이 «돌려 보고» 적은 판정***이다(⛔ 도구가 추측한 값이 아니다).
-  //   actualMission: `monad harness plan --no-auto-merge --role-llm planning=grok "<문장>"` 로
+  //   actualMission: `elanous harness plan --no-auto-merge --role-llm planning=grok "<문장>"` 로
   //     실제 골을 «끝까지» 돌렸다 — rounds=2 · autoDrive=on · draft PR #12065 · exit 0.
   //     📏 원장 각인이 그것을 말한다: `"entrance":"cli-harness-plan"` (2026-08-23T20:04:19Z · 2건).
-  //     📌 산출물은 `내부 문서 `DECISION-monad-dev-monad-stays-dev-live-tui-lane-2026-08-24``(#12066 착지).
+  //     📌 산출물은 `내부 문서 `DECISION-elanous-dev-elanous-stays-dev-live-tui-lane-2026-08-24``(#12066 착지).
   //   legacyParity: ⛔ «안 쟀다» — 옛 입구(`dev --plan`)와 나란히 놓고 대조하지 않았다.
   //     ⚠️ `unknown` 은 「실패」가 아니라 「안 쟀다」다. 둘을 섞지 마라.
   { id: 'cli-harness-plan', surface: 'cli', status: 'live', verification: { actualMission: 'verified', legacyParity: 'unknown' } },
@@ -311,19 +311,19 @@ export function lookupEntrance(id: string): EntranceDeclaration {
 export const CLI_DEV_ASK_ENTRANCE = byId('cli-dev-ask');
 export const TUI_SLASH_ASK_ENTRANCE = byId('tui-slash-ask');
 export const DAEMON_HARNESS_ASK_ENTRANCE = byId('daemon-harness-ask');
-/** `monad harness ask <골 문서>`: 이미 저작된 골을 «저작 없이» 파이프라인으로 보내는 입구.
+/** `elanous harness ask <골 문서>`: 이미 저작된 골을 «저작 없이» 파이프라인으로 보내는 입구.
  *  ⛔⭐ 이 상수가 «있어야» 각인 가능성이 `stampable` 로 파생된다 — 그리고 그 각인이
  *  「이 입구를 안 쓴다」와 「이 입구를 «못 잰다»」를 가른다(은퇴 판단의 전제 · 2026-08-22). */
 export const CLI_HARNESS_ASK_ENTRANCE = byId('cli-harness-ask');
-/** `monad harness say <문장>`: 문장을 저작해 발사하는 입구. `ask` 와 «다른 계약»이다(저작을 «한다»). */
+/** `elanous harness say <문장>`: 문장을 저작해 발사하는 입구. `ask` 와 «다른 계약»이다(저작을 «한다»). */
 export const CLI_HARNESS_SAY_ENTRANCE = byId('cli-harness-say');
-/** `monad harness orchestrate <goal...>`: 여러 골을 CLI에서 직접 self-dev orchestrator로 보내는 발사 입구. */
+/** `elanous harness orchestrate <goal...>`: 여러 골을 CLI에서 직접 self-dev orchestrator로 보내는 발사 입구. */
 export const CLI_HARNESS_ORCHESTRATE_ENTRANCE = byId('cli-harness-orchestrate');
-/** `monad harness plan <문장>`: say 저작 흐름을 재사용해 plan-staged dispatch로 보내는 발사 입구. */
+/** `elanous harness plan <문장>`: say 저작 흐름을 재사용해 plan-staged dispatch로 보내는 발사 입구. */
 export const CLI_HARNESS_PLAN_ENTRANCE = byId('cli-harness-plan');
-/** `monad harness run`: RFC-one-door-many-entrances의 실제 은퇴 CLI 입구. */
+/** `elanous harness run`: RFC-one-door-many-entrances의 실제 은퇴 CLI 입구. */
 export const CLI_HARNESS_RUN_ENTRANCE = byId('cli-harness-run');
-/** `monad harness dogfood`: temp 하위 전용 헤드리스 입구 — RFC 상 은퇴. */
+/** `elanous harness dogfood`: temp 하위 전용 헤드리스 입구 — RFC 상 은퇴. */
 export const CLI_HARNESS_DOGFOOD_ENTRANCE = byId('cli-harness-dogfood');
 
 /** 표면별 집계 — ⛔ 문서가 이 함수를 «부르게» 하고 표를 손으로 적지 않는다. */

@@ -139,7 +139,7 @@ export function describeVoiceChatPhase(phase: VoiceChatPhase): string {
     case 'listening':
       return '🎙 listening — speak, then ESC to send';
     case 'processing':
-      return '⚙ processing — sending to monad';
+      return '⚙ processing — sending to elanous';
     case 'speaking':
       return '🔊 speaking — assistant responding';
     case 'stopping':

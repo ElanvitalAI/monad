@@ -73,14 +73,14 @@ export const messagesKo: Messages = {
   notificationLevelError: '오류',
 
   // Setup wizard — banner + completion
-  setupBanner: 'monad — 셋업 마법사',
+  setupBanner: 'elanous — 셋업 마법사',
   setupWritingTo: '저장 경로: {path}',
   setupComplete: '셋업 완료',
   setupRerunHint: '다시 실행: {cmd}',
 
   // Setup wizard — Step 1 (LLM provider)
   setupStepLLMTitle: 'LLM 공급자',
-  setupStepLLMExcerpt: 'monad 가 사용할 LLM 공급자를 선택하세요. 각 공급자는 API 키 (또는 Codex 의 OAuth) 가 필요합니다.',
+  setupStepLLMExcerpt: 'elanous 가 사용할 LLM 공급자를 선택하세요. 각 공급자는 API 키 (또는 Codex 의 OAuth) 가 필요합니다.',
 
   // Setup wizard — Step 2 (Skill directories)
   setupStepSkillsTitle: '스킬 디렉토리',
@@ -89,17 +89,17 @@ export const messagesKo: Messages = {
   // Setup wizard — Step 3 (Obsidian vault)
   setupStepObsidianTitle: 'Obsidian 볼트',
   setupStepObsidianExcerpt: 'Obsidian 볼트 루트의 절대 경로. Obsidian 브라우저 패널과 vault-save 스킬에 사용됩니다.',
-  setupStepObsidianSkipBehavior: '건너뛰기 → vault-save / obsidian-browser 스킬 비활성. 추후 `monad setup obsidian` 으로 추가.',
+  setupStepObsidianSkipBehavior: '건너뛰기 → vault-save / obsidian-browser 스킬 비활성. 추후 `elanous setup obsidian` 으로 추가.',
 
   // Setup wizard — Step 4 (Telegram bot)
   setupStepTelegramTitle: 'Telegram 봇 (선택)',
   setupStepTelegramExcerpt: 'Telegram 봇으로 모바일에서 에이전트와 대화.',
-  setupStepTelegramSkipBehavior: '건너뛰기 → 모바일 채팅 사용 불가. 추후 `monad setup telegram` 으로 추가.',
+  setupStepTelegramSkipBehavior: '건너뛰기 → 모바일 채팅 사용 불가. 추후 `elanous setup telegram` 으로 추가.',
 
   // Setup wizard — Step 5 (Discord bot)
   setupStepDiscordTitle: 'Discord 봇 (선택)',
   setupStepDiscordExcerpt: 'Discord 서버 / DM 에서 에이전트와 대화.',
-  setupStepDiscordSkipBehavior: '건너뛰기 → Discord 채팅 사용 불가. 추후 `monad setup discord` 으로 추가.',
+  setupStepDiscordSkipBehavior: '건너뛰기 → Discord 채팅 사용 불가. 추후 `elanous setup discord` 으로 추가.',
 
   // Setup wizard — Step 6 (Wrap-up · Sprint 12)
   setupWrapUpTitle: '셋업 완료 — 검토 및 저장',

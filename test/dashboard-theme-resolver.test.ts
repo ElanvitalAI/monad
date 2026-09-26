@@ -13,7 +13,7 @@ import {
 import {
   CATPPUCCIN_LATTE,
   CATPPUCCIN_MOCHA,
-  MONAD_PASTEL_DEFAULT,
+  ELANOUS_PASTEL_DEFAULT,
   NORD_LIGHT,
   ROSE_PINE_DAWN,
 } from '../src/themes/index.js';
@@ -150,7 +150,7 @@ describe('FU G resolveActiveTheme — cross-preset differentiation', () => {
       ['catppuccin-latte', CATPPUCCIN_LATTE],
       ['rose-pine-dawn', ROSE_PINE_DAWN],
       ['nord-light', NORD_LIGHT],
-      ['monad-pastel-default', MONAD_PASTEL_DEFAULT],
+      ['elanous-pastel-default', ELANOUS_PASTEL_DEFAULT],
     ];
     for (const [name, expected] of pairs) {
       const t = resolveActiveTheme({ raw: { active: name } });
@@ -183,7 +183,7 @@ describe('FU G setActivePresetInConfig', () => {
 
   test('overwrites existing active', () => {
     const out = setActivePresetInConfig(
-      { active: 'monad-pastel-default' },
+      { active: 'elanous-pastel-default' },
       'catppuccin-mocha',
     );
     expect(out.active).toBe('catppuccin-mocha');
@@ -201,9 +201,9 @@ describe('FU G resolveActiveTheme — round-trip via setActivePresetInConfig', (
     expect(resolveActiveTheme({ raw: cfg }).colors.accent).toBe(
       NORD_LIGHT.colors.accent,
     );
-    cfg = setActivePresetInConfig(cfg, 'monad-pastel-default');
+    cfg = setActivePresetInConfig(cfg, 'elanous-pastel-default');
     expect(resolveActiveTheme({ raw: cfg }).colors.accent).toBe(
-      MONAD_PASTEL_DEFAULT.colors.accent,
+      ELANOUS_PASTEL_DEFAULT.colors.accent,
     );
   });
 });

@@ -1,7 +1,7 @@
 // ── C5 (Phase 3 Bundle 3) — persona ambient (posture trigger) ──
 //
 // HANDOFF Phase 3 / ROADMAP §6 C5: "persona ambient (posture trigger)".
-// monad 가 Discord 채널에 ambient observer 로 가만히 있다가, substrate
+// elanous 가 Discord 채널에 ambient observer 로 가만히 있다가, substrate
 // posture 변화 (특히 user-interactive → unavailable, 즉 shell 죽음) 을
 // 감지하면 channel 에 자동 메시지.
 //

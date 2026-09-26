@@ -15,7 +15,7 @@ function fixture(version = '0.0.1'): { root: string; out: string } {
   const root = join(base, 'public-tree');
   const out = join(base, 'assets');
   mkdirSync(join(root, 'scripts'), { recursive: true });
-  writeFileSync(join(root, 'package.json'), JSON.stringify({ name: 'monadagent', version, files: ['scripts/'] }));
+  writeFileSync(join(root, 'package.json'), JSON.stringify({ name: 'elanous', version, files: ['scripts/'] }));
   writeFileSync(join(root, 'scripts/install.sh'), '#!/bin/sh\necho shell\n');
   writeFileSync(join(root, 'scripts/install.ps1'), 'Write-Output powershell\n');
   writeFileSync(join(root, 'scripts/uninstall.sh'), '#!/bin/sh\necho remove\n');
@@ -32,11 +32,11 @@ test('packs only the supplied tree, copies installers, writes sorted SHA256SUMS 
   expect(result.version).toBe('0.0.1');
   expect(result.prerelease).toBe(false);
   expect(result.tag).toBeUndefined();
-  expect(readdirSync(out).sort()).toEqual(['SHA256SUMS', 'install.ps1', 'install.sh', 'monadagent.tgz', 'uninstall.sh']);
+  expect(readdirSync(out).sort()).toEqual(['SHA256SUMS', 'elanous.tgz', 'install.ps1', 'install.sh', 'uninstall.sh']);
   expect(readFileSync(join(out, 'install.sh'), 'utf8')).toBe('#!/bin/sh\necho shell\n');
   expect(readFileSync(join(out, 'install.ps1'), 'utf8')).toBe('Write-Output powershell\n');
   expect(readFileSync(join(out, 'uninstall.sh'), 'utf8')).toBe('#!/bin/sh\necho remove\n');
-  const names = ['install.ps1', 'install.sh', 'monadagent.tgz', 'uninstall.sh'];
+  const names = ['install.ps1', 'install.sh', 'elanous.tgz', 'uninstall.sh'];
   expect(result.files.map((f) => f.name)).toEqual(names);
   const expected = names.map((name) => {
     const body = readFileSync(join(out, name));
@@ -45,10 +45,10 @@ test('packs only the supplied tree, copies installers, writes sorted SHA256SUMS 
     return `${sha256}  ${name}`;
   });
   expect(readFileSync(join(out, 'SHA256SUMS'), 'utf8')).toBe(`${expected.join('\n')}\n`);
-  const tar = spawnSync('tar', ['-tzf', join(out, 'monadagent.tgz')], { encoding: 'utf8' });
+  const tar = spawnSync('tar', ['-tzf', join(out, 'elanous.tgz')], { encoding: 'utf8' });
   expect(tar.status).toBe(0);
   expect(tar.stdout.split('\n')).toContain('package/package.json');
-  const pkg = spawnSync('tar', ['-xOzf', join(out, 'monadagent.tgz'), 'package/package.json'], { encoding: 'utf8' });
+  const pkg = spawnSync('tar', ['-xOzf', join(out, 'elanous.tgz'), 'package/package.json'], { encoding: 'utf8' });
   expect(pkg.status).toBe(0);
   expect(JSON.parse(pkg.stdout).version).toBe('0.0.1');
 });
@@ -58,7 +58,7 @@ test('CLI prints only JSON on stdout and warns once for missing PWA output', () 
   const child = spawnSync('bun', [script, '--root', root, '--out', out], { encoding: 'utf8' });
   expect(child.status).toBe(0);
   expect(child.stderr.trim().split('\n')).toEqual(['웹 화면 없는 판']);
-  expect(JSON.parse(child.stdout)).toEqual({ version: '0.0.1', files: ['install.ps1', 'install.sh', 'monadagent.tgz', 'uninstall.sh'].map((name) => {
+  expect(JSON.parse(child.stdout)).toEqual({ version: '0.0.1', files: ['install.ps1', 'install.sh', 'elanous.tgz', 'uninstall.sh'].map((name) => {
     const body = readFileSync(join(out, name));
     return { name, sha256: createHash('sha256').update(body).digest('hex'), bytes: body.byteLength };
   }), prerelease: false });
@@ -72,9 +72,9 @@ test('CLI accepts matching stable tag and packs five files with the package vers
   expect(result.version).toBe('0.1.0');
   expect(result.tag).toBe('v0.1.0');
   expect(result.prerelease).toBe(false);
-  expect(result.files.map((file: { name: string }) => file.name)).toEqual(['install.ps1', 'install.sh', 'monadagent.tgz', 'uninstall.sh']);
-  expect(readdirSync(out).sort()).toEqual(['SHA256SUMS', 'install.ps1', 'install.sh', 'monadagent.tgz', 'uninstall.sh']);
-  const pkg = spawnSync('tar', ['-xOzf', join(out, 'monadagent.tgz'), 'package/package.json'], { encoding: 'utf8' });
+  expect(result.files.map((file: { name: string }) => file.name)).toEqual(['install.ps1', 'install.sh', 'elanous.tgz', 'uninstall.sh']);
+  expect(readdirSync(out).sort()).toEqual(['SHA256SUMS', 'elanous.tgz', 'install.ps1', 'install.sh', 'uninstall.sh']);
+  const pkg = spawnSync('tar', ['-xOzf', join(out, 'elanous.tgz'), 'package/package.json'], { encoding: 'utf8' });
   expect(pkg.status).toBe(0);
   expect(JSON.parse(pkg.stdout).version).toBe('0.1.0');
 });
@@ -134,7 +134,7 @@ test('pack runs the supplied tree prepack hook and does not warn when PWA is pre
   const child = spawnSync('bun', [script, '--root', root, '--out', out], { encoding: 'utf8' });
   expect(child.status).toBe(0);
   expect(child.stderr).toBe('');
-  const marker = spawnSync('tar', ['-xOzf', join(out, 'monadagent.tgz'), 'package/scripts/packed-marker'], { encoding: 'utf8' });
+  const marker = spawnSync('tar', ['-xOzf', join(out, 'elanous.tgz'), 'package/scripts/packed-marker'], { encoding: 'utf8' });
   expect(marker.status).toBe(0);
   expect(marker.stdout).toBe('from-public-tree');
 });

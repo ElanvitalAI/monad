@@ -119,9 +119,9 @@ describe('routeDashboardPriorityKey', () => {
 
   // Regression: terminal modal must claim keys BEFORE input-core
   // dispatchPreKey. Otherwise user-defined / chord bindings (Ctrl+B
-  // s/c/g, custom Ctrl+A, etc.) fire as monad actions while the
+  // s/c/g, custom Ctrl+A, etc.) fire as elanous actions while the
   // user is interacting with a child PTY (claude / codex / shell).
-  // Per user feedback: "터미널 모드에서는 최대한 모나드의 키 파이어링을
+  // Per user feedback: "터미널 모드에서는 최대한 엘라누스의 키 파이어링을
   // 줄이는 것 검토 필요. 터미널 안의 ctrl+a, ctrl+b 등 특수 처리키가
   // 많이 보이므로." Bell remains step 1 because bell modals visually
   // overlay the popup terminal.

@@ -1,6 +1,6 @@
 // BACKLOG #1 — markdown-aware replay preview rendering.
 //
-// `MONAD_RESUME_SESSION` boot, `/resume <daemon-id>` mid-flight swap,
+// `ELANOUS_RESUME_SESSION` boot, `/resume <daemon-id>` mid-flight swap,
 // and `/session load <prefix>` (TUI-side) all show a "Preview of last
 // 5" block after replaying history into chat.history. The original
 // implementation collapsed each message into a single 100-char line

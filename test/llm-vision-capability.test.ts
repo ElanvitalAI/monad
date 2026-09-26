@@ -96,7 +96,7 @@ describe('isVisionCapableModel — Grok (xAI)', () => {
     expect(isVisionCapableModel('grok', 'grok-1', 'userMessage')).toBe(false);
   });
 
-  test('tool-result axis stays false — monad routes Grok via Chat Completions (text-only tool messages)', () => {
+  test('tool-result axis stays false — elanous routes Grok via Chat Completions (text-only tool messages)', () => {
     expect(isVisionCapableModel('grok', 'grok-2-vision', 'toolResult')).toBe(false);
     expect(isVisionCapableModel('grok', 'grok-3', 'toolResult')).toBe(false);
     expect(isVisionCapableModel('grok', 'grok-4.3', 'toolResult')).toBe(false);

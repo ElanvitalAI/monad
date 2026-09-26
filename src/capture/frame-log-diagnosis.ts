@@ -1,18 +1,18 @@
 // ── Capture substrate · ReAct self-diagnosis (PLAN P1 · §7 · §2) ──
 //
-// The observation foundation (P0~P5) lets monad SEE its own screen. This
+// The observation foundation (P0~P5) lets elanous SEE its own screen. This
 // module adds the JUDGE half of the ReAct loop — WITHOUT the act half, so
 // it needs no input arbiter (PLAN §6c "제어는 arbiter 선결"; this slice is
 // diagnosis-only and arbiter-independent).
 //
 // The insight (PLAN §2·§7): a bug reveals itself as a DRIFT between the two
-// kinds of text monad already captures —
+// kinds of text elanous already captures —
 //   • 화면 텍스트  = what the TUI rendered   (pty-manifest frame · P1~P3)
 //   • 구조화 텍스트 = what the code logged     (logs.db · debug.log/observe)
 // Correlating the two per surface catches the failure modes a single lens
 // misses. Live-proven this session: a click whose SCREEN said "실행됨" while
 // the LOG said route:none ≠ dispatch:submit (multi-path, only some
-// instrumented). monad pointing at its own bug is the whole point of this
+// instrumented). elanous pointing at its own bug is the whole point of this
 // milestone.
 //
 // Same decoupled/testable shape as `frame-memory.ts`:
@@ -22,7 +22,7 @@
 //   3. startFrameLogDiagnosisPoller — daemon-side: per framed surface, read
 //      the log window since the last frame, correlate, and on drift record a
 //      HIGH-importance `drift` event into surface_events (recallable via
-//      `monad self recall`) + observe via debug.log. HITL notification wiring
+//      `elanous self recall`) + observe via debug.log. HITL notification wiring
 //      is a deps injection point, DEFAULT OFF (signal wiring = 대표 decision).
 //
 // Conservative by design: drift findings surface to a human, so the
@@ -404,13 +404,13 @@ function matchesInstance(_r: LogWindowRecord, _instance: string): boolean {
 /** Start the daemon-side ReAct diagnosis poller. Reads the shared pty-manifest
  *  for framed surfaces (cross-process), correlates each new frame against its
  *  log window, and records HIGH-importance `drift` events into surface_events.
- *  Returns a stop thunk. No-op when disabled via `MONAD_TUI_DIAGNOSIS=0`.
+ *  Returns a stop thunk. No-op when disabled via `ELANOUS_TUI_DIAGNOSIS=0`.
  *
  *  Isolation is STRUCTURAL (same as frame-memory): the manifest, the log store
  *  the caller wires `queryLogsSince` to, and the surface_events db `record`
- *  binds to are ALL scoped to the same `MONAD_STATE_DIR`. */
+ *  binds to are ALL scoped to the same `ELANOUS_STATE_DIR`. */
 export function startFrameLogDiagnosisPoller(deps: FrameLogDiagnosisDeps): () => void {
-  if (process.env.MONAD_TUI_DIAGNOSIS === '0') {
+  if (process.env.ELANOUS_TUI_DIAGNOSIS === '0') {
     if (debug.enabled) debug.log('capture.react-diagnosis', 'disabled', { reason: 'killswitch' });
     return () => {};
   }

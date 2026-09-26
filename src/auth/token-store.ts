@@ -1,9 +1,9 @@
 // Step 5 PR δ — token rotation + envelope store.
 //
-// PLAN-step5-sdk-zero-env.md §1 D-Phase3-E: explicit `monad token
+// PLAN-step5-sdk-zero-env.md §1 D-Phase3-E: explicit `elanous token
 // rotate` + 24h grace period. The legacy raw file
-// `~/.monad/acp-token` is migrated to an envelope at
-// `~/.monad/acp-token.json` on first rotate or scoped mint. Both
+// `~/.elanous/acp-token` is migrated to an envelope at
+// `~/.elanous/acp-token.json` on first rotate or scoped mint. Both
 // files coexist so old tooling that reads the raw file keeps
 // working — the envelope is canonical, the raw file is a mirror of
 // the active token.
@@ -45,14 +45,14 @@ export interface TokenStoreEnvelope {
 }
 
 export interface TokenStorePaths {
-  /** Resolved monad config root, e.g. from `--config-dir`. */
+  /** Resolved elanous config root, e.g. from `--config-dir`. */
   configDir?: string;
-  /** Test-only home-directory override; token files remain under `.monad`. */
+  /** Test-only home-directory override; token files remain under `.elanous`. */
   homedirOverride?: string;
 }
 
 function tokenStoreDir(p?: TokenStorePaths): string {
-  return p?.configDir ?? joinPath(p?.homedirOverride ?? homedir(), '.monad');
+  return p?.configDir ?? joinPath(p?.homedirOverride ?? homedir(), '.elanous');
 }
 
 function rawTokenPath(p?: TokenStorePaths): string {
@@ -116,7 +116,7 @@ export function loadEnvelope(p?: TokenStorePaths): TokenStoreEnvelope | null {
   if (raw) {
     // Idempotent migration: convert raw → envelope on first call so
     // PR δ tooling can rotate / mint scoped tokens without forcing
-    // the user to re-run `monad serve --http-port`.
+    // the user to re-run `elanous serve --http-port`.
     const migrated: TokenStoreEnvelope = { active: raw };
     writeBoth(migrated, p);
     debug.log('auth.token-store.migrated', envelopePath(p));
@@ -186,7 +186,7 @@ export function mintScopedToken(
     // Surface the chicken-and-egg explicitly — a scoped token
     // without an underlying admin token has no signing chain.
     throw new Error(
-      'mintScopedToken: no admin token exists. Run `monad serve --http-port` once or `monad token rotate` first.',
+      'mintScopedToken: no admin token exists. Run `elanous serve --http-port` once or `elanous token rotate` first.',
     );
   }
   const tok = mintRandomToken();

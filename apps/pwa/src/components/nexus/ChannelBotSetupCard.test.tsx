@@ -16,16 +16,16 @@ describe('ChannelBotSetupCard — T2.A', () => {
 
   test('telegram hint references BotFather + token env + wizard cmd', () => {
     const h = deriveSetupHint('telegram');
-    expect(h.tokenEnvName).toBe('MONAD_TELEGRAM_BOT_TOKEN');
-    expect(h.wizardCmd).toBe('monad setup telegram');
+    expect(h.tokenEnvName).toBe('ELANOUS_TELEGRAM_BOT_TOKEN');
+    expect(h.wizardCmd).toBe('elanous setup telegram');
     expect(h.tokenSource).toContain('BotFather');
     expect(h.wizardOnlyNote).toContain('Allowlist');
   });
 
   test('discord hint references developer portal + guild note', () => {
     const h = deriveSetupHint('discord');
-    expect(h.tokenEnvName).toBe('MONAD_DISCORD_BOT_TOKEN');
-    expect(h.wizardCmd).toBe('monad setup discord');
+    expect(h.tokenEnvName).toBe('ELANOUS_DISCORD_BOT_TOKEN');
+    expect(h.wizardCmd).toBe('elanous setup discord');
     expect(h.tokenSource).toContain('discord.com');
     expect(h.wizardOnlyNote).toContain('Guild');
   });

@@ -1,7 +1,7 @@
 // ── 섹터 매력도 저장소 + 오케스트레이터 (SP1 · 2026-07-07) ────────────────
 //
 // sector-attractiveness(순수 계산)의 I/O 경계. 데이터는 screener.db prices(로컬·백필
-// 완료) 재사용 — omni-market 재호출 없음. 결과는 screener.db sector_scores(monad 소유·
+// 완료) 재사용 — omni-market 재호출 없음. 결과는 screener.db sector_scores(elanous 소유·
 // 기존 외부 파이썬 sector 테이블과 별개) 에 3 window(daily/weekly/monthly) × market 저장.
 //
 // ★ 기존 sector 테이블(외부 파이썬 monthly)은 deprecated — regime 은 sector_scores 를 읽는다.
@@ -37,7 +37,7 @@ export function loadPricesForCodes(db: Database, codes: string[], fromDate: stri
   return out;
 }
 
-/** sector_scores 테이블(멱등·PK date+market+window+chain). monad 소유. */
+/** sector_scores 테이블(멱등·PK date+market+window+chain). elanous 소유. */
 export function openSectorDb(path: string = SCREENER_DB_PATH): Database {
   const db = new Database(path);
   db.run(`CREATE TABLE IF NOT EXISTS sector_scores(

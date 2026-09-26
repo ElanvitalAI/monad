@@ -12,7 +12,7 @@ import { resetSearchLoopGuardForTest } from '../src/skills/tools/search-loop-gua
 let tmp: string;
 
 beforeAll(() => {
-  tmp = mkdtempSync(join(tmpdir(), 'monad-listdir-test-'));
+  tmp = mkdtempSync(join(tmpdir(), 'elanous-listdir-test-'));
   // Tree:
   //   <tmp>/README.md     (120 bytes)
   //   <tmp>/index.ts      (50 bytes, written second so newer mtime)

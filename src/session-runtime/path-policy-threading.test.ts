@@ -2,7 +2,7 @@
 //
 // 대표 결정: telegram/discord=strict. 이 테스트는 dispatchSessionRuntimeTool(deps.pathPolicy)이 native
 // Read/Write dispatch 까지 정책을 실제로 스레딩하는지 확인 — strict 면 credential deny-list·cwd-탈출
-// 차단, 미지정(permissive)이면 현행대로 통과. + makeMonadAgentRunTurn(telegram/discord)이 strict 를
+// 차단, 미지정(permissive)이면 현행대로 통과. + makeElanousAgentRunTurn(telegram/discord)이 strict 를
 // 주입하는 배선 가드.
 
 import { describe, test, expect, afterAll } from 'bun:test';
@@ -56,7 +56,7 @@ describe('Phase 4b PR2 — session-runtime 정책 스레딩', () => {
 });
 
 describe('Phase 4b PR2 — 배선 가드', () => {
-  test('makeMonadAgentRunTurn(telegram/discord)이 strict 정책 주입', () => {
+  test('makeElanousAgentRunTurn(telegram/discord)이 strict 정책 주입', () => {
     const src = readFileSync(join(import.meta.dir, '../agent/monad-agent-turn.ts'), 'utf-8');
     expect(src).toContain("buildContinuationAgentTools({ pathPolicy: 'strict' })");
   });

@@ -22,21 +22,21 @@ afterEach(() => {
 });
 
 describe('wireDaemonHistoryToStore', () => {
-  it('ACP 세션(monad-session-*) append → on-disk 미러(목록·복원)', () => {
+  it('ACP 세션(elanous-session-*) append → on-disk 미러(목록·복원)', () => {
     const store = new SessionStore(tmp());
     const hist = new DaemonSessionHistory();
     const off = wireDaemonHistoryToStore(hist, store);
     try {
-      hist.append('monad-session-1', [
+      hist.append('elanous-session-1', [
         { role: 'user', content: '안녕' },
         { role: 'assistant', content: '반가워요' },
       ]);
-      const loaded = store.load('monad-session-1');
+      const loaded = store.load('elanous-session-1');
       expect(loaded).not.toBeNull();
       expect(loaded!.messages.length).toBe(2);
       expect(loaded!.meta).toMatchObject({ source: 'pwa', origin: 'pwa' });
-      expect(store.load('monad-session-1')!.meta).toMatchObject({ source: 'pwa', origin: 'pwa' });
-      expect(store.list().some((m) => m.id === 'monad-session-1')).toBe(true);
+      expect(store.load('elanous-session-1')!.meta).toMatchObject({ source: 'pwa', origin: 'pwa' });
+      expect(store.list().some((m) => m.id === 'elanous-session-1')).toBe(true);
     } finally { off(); }
   });
 
@@ -47,11 +47,11 @@ describe('wireDaemonHistoryToStore', () => {
     try {
       // 네이티브 앱: onPromptReceived 가 _meta.origin.surface='native' 로 tagOrigin(append 前·
       // 세션 미존재). setOrigin 은 byId 가드로 no-op 이라 tagOrigin 사용.
-      hist.tagOrigin('monad-session-ios', 'native');
-      hist.append('monad-session-ios', [{ role: 'user', content: 'hi' }]);
-      const loaded = store.load('monad-session-ios');
+      hist.tagOrigin('elanous-session-ios', 'native');
+      hist.append('elanous-session-ios', [{ role: 'user', content: 'hi' }]);
+      const loaded = store.load('elanous-session-ios');
       expect(loaded!.meta).toMatchObject({ source: 'native', origin: 'native' });
-      expect(store.load('monad-session-ios')!.meta).toMatchObject({ source: 'native', origin: 'native' });
+      expect(store.load('elanous-session-ios')!.meta).toMatchObject({ source: 'native', origin: 'native' });
     } finally { off(); }
   });
 
@@ -77,11 +77,11 @@ describe('wireDaemonHistoryToStore', () => {
     const hist = new DaemonSessionHistory();
     const off = wireDaemonHistoryToStore(hist, store);
     try {
-      hist.append('monad-session-tool', [
+      hist.append('elanous-session-tool', [
         { role: 'assistant', content: [{ type: 'tool_use', id: 'call-1', name: 'finance_quote', input: { symbol: '005930' } }] },
         { role: 'user', content: [{ type: 'tool_result', tool_use_id: 'call-1', content: '319500' }] },
       ]);
-      const loaded = store.load('monad-session-tool');
+      const loaded = store.load('elanous-session-tool');
       expect(loaded).not.toBeNull();
       expect(loaded!.messages).toHaveLength(2);
       expect(typeof loaded!.messages[0]!.content).toBe('string');
@@ -95,10 +95,10 @@ describe('wireDaemonHistoryToStore', () => {
       expect(Object.prototype.hasOwnProperty.call(loaded!.messages[0]!, 'toolName')).toBe(true);
       expect(Object.prototype.hasOwnProperty.call(loaded!.messages[1]!, 'toolName')).toBe(true);
 
-      hist.append('monad-session-unnamed-tool', [
+      hist.append('elanous-session-unnamed-tool', [
         { role: 'assistant', content: [{ type: 'tool_use', id: 'call-2', name: '', input: {} }] },
       ]);
-      const unnamed = store.load('monad-session-unnamed-tool');
+      const unnamed = store.load('elanous-session-unnamed-tool');
       expect(unnamed!.messages).toHaveLength(1);
       expect(unnamed!.messages[0]!.content).toBe('[tool_use]');
       expect(unnamed!.messages[0]!.toolName).toBeUndefined();
@@ -111,11 +111,11 @@ describe('wireDaemonHistoryToStore', () => {
     const hist = new DaemonSessionHistory();
     const off = wireDaemonHistoryToStore(hist, store);
     try {
-      hist.append('monad-session-ask', [
+      hist.append('elanous-session-ask', [
         { role: 'assistant', content: [{ type: 'tool_use', id: 'call-ask', name: 'AskUserQuestion', input: { prompt: '어느 쪽?' } }] },
         { role: 'user', content: [{ type: 'tool_result', tool_use_id: 'call-ask', content: '왼쪽' }] },
       ]);
-      const toolTurn = store.load('monad-session-ask')!.messages;
+      const toolTurn = store.load('elanous-session-ask')!.messages;
       expect(toolTurn[0]!.toolName).toBe('AskUserQuestion');
       expect(toolTurn[0]!.toolArgs).toEqual({ prompt: '어느 쪽?' });
       expect(toolTurn[1]!.toolName).toBe('AskUserQuestion');
@@ -123,11 +123,11 @@ describe('wireDaemonHistoryToStore', () => {
       expect(toolTurn[0]!.content).toBe('🔧 AskUserQuestion');
       expect(toolTurn[1]!.content).toBe('[tool_result]');
 
-      hist.append('monad-session-lookalike', [
+      hist.append('elanous-session-lookalike', [
         { role: 'user', content: '[tool_result]' },
         { role: 'assistant', content: '🔧 AskUserQuestion' },
       ]);
-      const lookalike = store.load('monad-session-lookalike')!.messages;
+      const lookalike = store.load('elanous-session-lookalike')!.messages;
       expect(lookalike).toHaveLength(2);
       expect(lookalike[0]!.content).toBe('[tool_result]');
       expect(lookalike[1]!.content).toBe('🔧 AskUserQuestion');
@@ -136,11 +136,11 @@ describe('wireDaemonHistoryToStore', () => {
       expect(Object.prototype.hasOwnProperty.call(lookalike[0]!, 'toolResult')).toBe(false);
       expect(Object.prototype.hasOwnProperty.call(lookalike[1]!, 'toolName')).toBe(false);
 
-      hist.append('monad-session-plain', [
+      hist.append('elanous-session-plain', [
         { role: 'user', content: '안녕' },
         { role: 'assistant', content: '반가워요' },
       ]);
-      const plain = store.load('monad-session-plain')!.messages;
+      const plain = store.load('elanous-session-plain')!.messages;
       expect(plain.map((m) => ({ role: m.role, content: m.content }))).toEqual([
         { role: 'user', content: '안녕' },
         { role: 'assistant', content: '반가워요' },
@@ -155,9 +155,9 @@ describe('wireDaemonHistoryToStore', () => {
     const hist = new DaemonSessionHistory();
     const off = wireDaemonHistoryToStore(hist, store);
     try {
-      hist.append('monad-session-2', [{ role: 'user', content: '1' }]);
-      hist.append('monad-session-2', [{ role: 'assistant', content: '2' }]);
-      expect(store.load('monad-session-2')!.messages.length).toBe(2);
+      hist.append('elanous-session-2', [{ role: 'user', content: '1' }]);
+      hist.append('elanous-session-2', [{ role: 'assistant', content: '2' }]);
+      expect(store.load('elanous-session-2')!.messages.length).toBe(2);
     } finally { off(); }
   });
 
@@ -171,8 +171,8 @@ describe('wireDaemonHistoryToStore', () => {
     } finally { off(); }
   });
 
-  it('isAcpChatSession — monad-session/http- 만 true(origin 라벨용)', () => {
-    expect(isAcpChatSession('monad-session-1')).toBe(true);
+  it('isAcpChatSession — elanous-session/http- 만 true(origin 라벨용)', () => {
+    expect(isAcpChatSession('elanous-session-1')).toBe(true);
     expect(isAcpChatSession('http-123-abc')).toBe(true);
     expect(isAcpChatSession('550e8400-e29b-41d4-a716-446655440000')).toBe(false);
   });

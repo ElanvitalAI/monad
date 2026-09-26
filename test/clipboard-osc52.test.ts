@@ -21,7 +21,7 @@ beforeEach(() => {
   delete process.env['SSH_TTY'];
   delete process.env['TMUX'];
   delete process.env['TERM_PROGRAM'];
-  delete process.env['MONAD_CLIPBOARD_MODE'];
+  delete process.env['ELANOUS_CLIPBOARD_MODE'];
 });
 
 afterEach(() => {
@@ -99,7 +99,7 @@ describe('detectClipboardEnv', () => {
 
 describe('writeClipboardDetailed — routing', () => {
   test('MODE=off returns ok=false with reason', async () => {
-    process.env['MONAD_CLIPBOARD_MODE'] = 'off';
+    process.env['ELANOUS_CLIPBOARD_MODE'] = 'off';
     const r = await writeClipboardDetailed('x');
     expect(r.ok).toBe(false);
     expect(r.via).toBe('none');
@@ -107,15 +107,15 @@ describe('writeClipboardDetailed — routing', () => {
   });
 
   test('MODE=file always writes a file', async () => {
-    process.env['MONAD_CLIPBOARD_MODE'] = 'file';
+    process.env['ELANOUS_CLIPBOARD_MODE'] = 'file';
     const r = await writeClipboardDetailed('hi');
     expect(r.ok).toBe(true);
     expect(r.via).toBe('file');
-    expect(r.path).toMatch(/monad-clip-\d+\.txt$/);
+    expect(r.path).toMatch(/elanous-clip-\d+\.txt$/);
   });
 
   test('MODE=osc52 + small payload → ok via osc52', async () => {
-    process.env['MONAD_CLIPBOARD_MODE'] = 'osc52';
+    process.env['ELANOUS_CLIPBOARD_MODE'] = 'osc52';
     // Suppress the actual stdout write from the test harness — we
     // replace process.stdout.write with a spy so the escape doesn't
     // bleed into test output.
@@ -137,7 +137,7 @@ describe('writeClipboardDetailed — routing', () => {
   });
 
   test('MODE=osc52 + oversized → falls back to file', async () => {
-    process.env['MONAD_CLIPBOARD_MODE'] = 'osc52';
+    process.env['ELANOUS_CLIPBOARD_MODE'] = 'osc52';
     const huge = 'a'.repeat(OSC52_TEXT_BYTE_LIMIT + 1);
     const r = await writeClipboardDetailed(huge);
     expect(r.ok).toBe(true);
@@ -146,7 +146,7 @@ describe('writeClipboardDetailed — routing', () => {
   });
 
   test('MODE=auto + SSH + small payload → osc52', async () => {
-    process.env['MONAD_CLIPBOARD_MODE'] = 'auto';
+    process.env['ELANOUS_CLIPBOARD_MODE'] = 'auto';
     process.env['SSH_CLIENT'] = '10.0.0.1 22';
     const orig = process.stdout.write.bind(process.stdout);
     (process.stdout as unknown as { write: (s: string) => boolean }).write = () => true;
@@ -160,7 +160,7 @@ describe('writeClipboardDetailed — routing', () => {
   });
 
   test('MODE=auto + SSH + oversized → file fallback', async () => {
-    process.env['MONAD_CLIPBOARD_MODE'] = 'auto';
+    process.env['ELANOUS_CLIPBOARD_MODE'] = 'auto';
     process.env['SSH_CONNECTION'] = '10.0.0.1 49152 10.0.0.2 22';
     const r = await writeClipboardDetailed('a'.repeat(OSC52_TEXT_BYTE_LIMIT + 1));
     expect(r.ok).toBe(true);

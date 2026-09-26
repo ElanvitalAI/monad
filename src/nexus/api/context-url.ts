@@ -128,7 +128,7 @@ export async function handleContextFetchUrl(
   try {
     const res = await fetchImpl(url, {
       headers: {
-        'user-agent': 'monad-context/1.0 (+https://github.com/ElanvitalAI/monad)',
+        'user-agent': 'elanous-context/1.0 (+https://github.com/ElanvitalAI/monad)',
         accept: 'text/html, text/plain;q=0.9, */*;q=0.5',
       },
       signal: ctrl.signal,

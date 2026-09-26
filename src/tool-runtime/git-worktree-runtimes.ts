@@ -27,7 +27,7 @@ import { debug } from '../debug/log.js';
 import type { ToolRuntime } from './types.js';
 
 // The runtime deps carry the current session id so the JSON
-// persistence file is per-session (two monad instances don't stomp
+// persistence file is per-session (two elanous instances don't stomp
 // each other). Wired from dashboard at boot.
 interface WorktreeDeps {
   sessionId: () => string;
@@ -136,7 +136,7 @@ export const enterWorktreeRuntime: ToolRuntime<Record<string, unknown>, EnterWor
     const { path, branch } = createWorktree({ repoRoot, branch: name, worktreeRoot: configuredWorktreeRoot(), base });
     const provenance = {
       owner: `agent:${getSessionId()}`,
-      command: 'monad enter_worktree',
+      command: 'elanous enter_worktree',
       createdAt: new Date().toISOString(),
     };
     let provenanceError: string | undefined;

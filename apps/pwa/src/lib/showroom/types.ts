@@ -273,7 +273,7 @@ export interface ClipboardContext {
  *  lifecycle as observed per panel. The Showroom client keeps a map
  *  of these per panel.modelId, updated by the multi-llm-bridge
  *  forwarding `tool_call` / `tool_call_update` SessionUpdate variants
- *  through `pushSessionUpdate(_, _meta.monad.modelId)`.
+ *  through `pushSessionUpdate(_, _meta.elanous.modelId)`.
  *
  *  Used by ShowroomPanel to render an activity pill ("3 tools · 2 running")
  *  in the header + an expandable list per tool. Reset on each new turn

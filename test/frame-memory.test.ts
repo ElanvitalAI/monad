@@ -1,6 +1,6 @@
 // ⭐P5 — frame → episodic self-memory. Pure summarizer + debounce/dedup
 // consumer + manifest poller (records salient screen changes into
-// surface_events for `monad self recall`).
+// surface_events for `elanous self recall`).
 
 import { describe, it, expect } from 'bun:test';
 import { mkdtempSync } from 'node:fs';
@@ -20,7 +20,7 @@ import type { PtyManifestRow } from '../src/pty-shell/pty-manifest.js';
 describe('summarizeFrame', () => {
   it('extracts tool-call markers + salient line, prefixed by surfaceId', () => {
     const screen = [
-      '┌─ monad ───────────────┐',
+      '┌─ elanous ───────────────┐',
       '│ ⏺ Read(src/foo.ts)     │',
       '│ ⏺ Edit(src/foo.ts)     │',
       '│ 빌드 계속 중…           │',
@@ -126,7 +126,7 @@ describe('createFrameMemoryConsumer (debounce + dedup)', () => {
 });
 
 describe('record → recall integration (real surface_events + FTS)', () => {
-  it('a summarized frame is written to surface_events and retrieved by monad self recall', () => {
+  it('a summarized frame is written to surface_events and retrieved by elanous self recall', () => {
     const db = openSurfaceEventsDb(join(mkdtempSync(join(tmpdir(), 'p5-recall-')), 'se.db'));
     try {
       const consumer = createFrameMemoryConsumer({ record: (i) => recordSelfEvent(db, i), now: () => 1000 });
@@ -152,7 +152,7 @@ describe('record → recall integration (real surface_events + FTS)', () => {
 describe('pollFrameMemory', () => {
   function row(over: Partial<PtyManifestRow> = {}): PtyManifestRow {
     return {
-      id: 'tui:1', kind: 'tui', cmd: 'monad', ownerPid: 1, instance: 'test:x',
+      id: 'tui:1', kind: 'tui', cmd: 'elanous', ownerPid: 1, instance: 'test:x',
       startedAt: 0, alive: true, exitCode: null, snapshot: '', snapshotAt: 0, updatedAt: 0,
       frame: 'hi there', frameAt: 100, ...over,
     };

@@ -1,5 +1,5 @@
 // Discord runtime lock — mirrors telegram-lock.ts. Only ONE
-// `monad discord run` daemon should be connected to the Gateway
+// `elanous discord run` daemon should be connected to the Gateway
 // for a given bot token at a time; Discord will terminate the
 // older session on identify if two processes IDENTIFY with the
 // same token, so unchecked double-starts cause flaps rather than

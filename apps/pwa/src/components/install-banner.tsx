@@ -111,7 +111,7 @@ export function InstallBanner() {
   return (
     <div
       role="dialog"
-      aria-label="Install monad to home screen"
+      aria-label="Install elanous to home screen"
       data-testid="install-banner"
       className="fixed inset-x-0 bottom-0 z-30 border-t border-border bg-card/95 px-4 py-3 shadow-lg backdrop-blur"
     >
@@ -120,7 +120,7 @@ export function InstallBanner() {
           <Download className="h-4 w-4" />
         </div>
         <div className="min-w-0 flex-1">
-          <p className="text-sm font-medium">monad 를 홈 화면에 추가하세요</p>
+          <p className="text-sm font-medium">elanous 를 홈 화면에 추가하세요</p>
           {platform === 'iosSafari' ? (
             <p className="mt-1 text-[12px] leading-relaxed text-muted-foreground">
               <Share className="inline-block h-3.5 w-3.5 align-text-bottom" /> 공유 버튼 →

@@ -1,15 +1,15 @@
 // ── M4 (Phase 4 Bundle 3) — External thinking-tool voice brain lend out ──
 //
 // HANDOFF Phase 4 / ROADMAP §7 M4: "외부 thinking-tool voice brain lend
-// out". A1/B 의 *역방향* — A1 = monad shell 을 외부 client 가 빌려쓰기.
-// M4 = monad 의 voice + reasoning capability 를 외부 도구가 RPC 로
+// out". A1/B 의 *역방향* — A1 = elanous shell 을 외부 client 가 빌려쓰기.
+// M4 = elanous 의 voice + reasoning capability 를 외부 도구가 RPC 로
 // 사용 (예: cursor 가 "이 코드 리뷰해" 음성 발화 + Gemini vision +
-// reasoning summary 를 monad 에 위임).
+// reasoning summary 를 elanous 에 위임).
 //
 // JSON-RPC method 4 종 (acp/voice-brain.* namespace):
-//   speak       — 외부에서 monad 의 TTS 사용
-//   listen      — 외부에서 monad 의 STT 사용
-//   ask         — 외부에서 monad 의 reasoning + voice 응답 사용 (full loop)
+//   speak       — 외부에서 elanous 의 TTS 사용
+//   listen      — 외부에서 elanous 의 STT 사용
+//   ask         — 외부에서 elanous 의 reasoning + voice 응답 사용 (full loop)
 //   capabilities — 외부 client 가 가능한 actions 인지
 
 import type { CapabilityGrantStore } from '../conductor/capability-grant-store.js';
@@ -47,7 +47,7 @@ export interface VoiceBrainAskRequest {
   readonly context?: string;
   /** Reasoning provider hint. */
   readonly providerHint?: string;
-  /** When true, monad 가 사용자에게 voice prompt + 사용자 응답 받음 (HITL). */
+  /** When true, elanous 가 사용자에게 voice prompt + 사용자 응답 받음 (HITL). */
   readonly hitl?: boolean;
 }
 
@@ -168,7 +168,7 @@ export function createVoiceBrainHandlers(
           return { ok: true, answer: reasoned.answer, hitlDecision: hitlOut.decision };
         }
 
-        // Speak the reasoning result (non-HITL ask = monad voice 가 응답)
+        // Speak the reasoning result (non-HITL ask = elanous voice 가 응답)
         try { await deps.speak(reasoned.answer); } catch { /* graceful */ }
 
         return { ok: true, answer: reasoned.answer };

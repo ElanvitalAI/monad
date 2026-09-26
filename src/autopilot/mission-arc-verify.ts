@@ -6,7 +6,7 @@
 //
 // grounded 검증 재사용(verifyPhaseAlreadySatisfied) — 아크 intent 를 코드에 grounding 하고 아크
 // acceptance 를 LLM 이 판정. 빈 acceptance(flat 미션·암묵 1아크)면 즉시 통과 = 회귀 0.
-// 제1원칙 준수: 아크 검증을 debug.log('mission.arc.verify') 로 관측(monad logs --category mission.arc).
+// 제1원칙 준수: 아크 검증을 debug.log('mission.arc.verify') 로 관측(elanous logs --category mission.arc).
 
 import { debug } from '../debug/log.js';
 import type { MissionArc } from '../task-orchestrator/mission.js';

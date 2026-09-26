@@ -3,7 +3,7 @@
 // PLAN-setup-tui-overhaul Phase 1-3 · PR α absorbs the LT 7 i18n
 // infrastructure into the setup wizard. These tests pin:
 //   1. New `setupStep*Title` keys exist on both bundles.
-//   2. `getMessages()` honours MONAD_LANG=ko / en.
+//   2. `getMessages()` honours ELANOUS_LANG=ko / en.
 //   3. The wizard prints localized step headers when scripted with a
 //      ko locale env (smoke test through `runOnboarding`).
 //   4. `format()` substitutes the `{path}` / `{cmd}` placeholders in
@@ -29,7 +29,7 @@ beforeEach(() => {
   resetUserConfig();
   savedEnv.XDG_CONFIG_HOME = process.env.XDG_CONFIG_HOME;
   savedEnv.CODEX_HOME = process.env.CODEX_HOME;
-  savedEnv.MONAD_LANG = process.env.MONAD_LANG;
+  savedEnv.ELANOUS_LANG = process.env.ELANOUS_LANG;
   savedEnv.LANG = process.env.LANG;
   savedEnv.LC_ALL = process.env.LC_ALL;
   process.env.XDG_CONFIG_HOME = root;
@@ -38,7 +38,7 @@ beforeEach(() => {
 afterEach(() => {
   rmSync(root, { recursive: true, force: true });
   resetUserConfig();
-  for (const k of ['XDG_CONFIG_HOME', 'CODEX_HOME', 'MONAD_LANG', 'LANG', 'LC_ALL']) {
+  for (const k of ['XDG_CONFIG_HOME', 'CODEX_HOME', 'ELANOUS_LANG', 'LANG', 'LC_ALL']) {
     if (savedEnv[k] === undefined) delete process.env[k];
     else process.env[k] = savedEnv[k];
   }
@@ -71,7 +71,7 @@ describe('i18n bundles · setup wizard keys', () => {
   });
 
   test('en bundle uses English strings', () => {
-    expect(messagesEn.setupBanner).toBe('monad — setup wizard');
+    expect(messagesEn.setupBanner).toBe('elanous — setup wizard');
     expect(messagesEn.setupComplete).toBe('Setup complete');
     expect(messagesEn.setupStepLLMTitle).toBe('LLM provider');
   });
@@ -87,38 +87,38 @@ describe('i18n bundles · setup wizard keys', () => {
       .toBe('Writing to: /tmp/c.json');
     expect(format(messagesKo.setupWritingTo, { path: '/tmp/c.json' }))
       .toBe('저장 경로: /tmp/c.json');
-    expect(format(messagesEn.setupRerunHint, { cmd: 'monad setup' }))
-      .toBe('Re-run: monad setup');
-    expect(format(messagesKo.setupRerunHint, { cmd: 'monad setup' }))
-      .toBe('다시 실행: monad setup');
+    expect(format(messagesEn.setupRerunHint, { cmd: 'elanous setup' }))
+      .toBe('Re-run: elanous setup');
+    expect(format(messagesKo.setupRerunHint, { cmd: 'elanous setup' }))
+      .toBe('다시 실행: elanous setup');
   });
 
-  test('getMessages() respects MONAD_LANG=ko', () => {
-    process.env.MONAD_LANG = 'ko';
+  test('getMessages() respects ELANOUS_LANG=ko', () => {
+    process.env.ELANOUS_LANG = 'ko';
     const m = getMessages();
-    expect(m.setupBanner).toBe('monad — 셋업 마법사');
+    expect(m.setupBanner).toBe('elanous — 셋업 마법사');
   });
 
   test('getMessages() falls back to en when no locale env set', () => {
-    delete process.env.MONAD_LANG;
+    delete process.env.ELANOUS_LANG;
     delete process.env.LANG;
     delete process.env.LC_ALL;
     delete process.env.LC_MESSAGES;
     const m = getMessages();
-    expect(m.setupBanner).toBe('monad — setup wizard');
+    expect(m.setupBanner).toBe('elanous — setup wizard');
   });
 
   test('LANG=ko_KR.UTF-8 routes to ko bundle', () => {
-    delete process.env.MONAD_LANG;
+    delete process.env.ELANOUS_LANG;
     process.env.LANG = 'ko_KR.UTF-8';
     const m = getMessages();
-    expect(m.setupBanner).toBe('monad — 셋업 마법사');
+    expect(m.setupBanner).toBe('elanous — 셋업 마법사');
   });
 });
 
 describe('runOnboarding · localized step headers', () => {
   test('en locale prints English step titles in the box header', async () => {
-    process.env.MONAD_LANG = 'en';
+    process.env.ELANOUS_LANG = 'en';
     const io = scriptedIO(['10', '1', '', '', 'n', '1']);
     await runOnboarding({ io, path: cfgPath });
     const log = io.outputs.join('\n');
@@ -127,13 +127,13 @@ describe('runOnboarding · localized step headers', () => {
     expect(log).toContain('Step 3 / 7 — Obsidian vault');
     expect(log).toContain('Step 4 / 7 — Telegram bot');
     expect(log).toContain('Step 5 / 7 — Discord bot');
-    expect(log).toContain('monad — setup wizard');
+    expect(log).toContain('elanous — setup wizard');
     expect(log).toContain('Setup complete');
-    expect(log).toContain('Re-run: monad setup');
+    expect(log).toContain('Re-run: elanous setup');
   });
 
   test('ko locale prints Korean step titles + banner + completion', async () => {
-    process.env.MONAD_LANG = 'ko';
+    process.env.ELANOUS_LANG = 'ko';
     const io = scriptedIO(['10', '1', '', '', 'n', '1']);
     await runOnboarding({ io, path: cfgPath });
     const log = io.outputs.join('\n');
@@ -142,13 +142,13 @@ describe('runOnboarding · localized step headers', () => {
     expect(log).toContain('Step 3 / 7 — Obsidian 볼트');
     expect(log).toContain('Step 4 / 7 — Telegram 봇');
     expect(log).toContain('Step 5 / 7 — Discord 봇');
-    expect(log).toContain('monad — 셋업 마법사');
+    expect(log).toContain('elanous — 셋업 마법사');
     expect(log).toContain('셋업 완료');
-    expect(log).toContain('다시 실행: monad setup');
+    expect(log).toContain('다시 실행: elanous setup');
   });
 
   test('step header dashes pad to a stable width regardless of locale', async () => {
-    process.env.MONAD_LANG = 'en';
+    process.env.ELANOUS_LANG = 'en';
     const io = scriptedIO(['10', '1', '', '', 'n', '1']);
     await runOnboarding({ io, path: cfgPath });
     const headers = io.outputs

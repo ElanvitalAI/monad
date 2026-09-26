@@ -44,9 +44,9 @@ function run(...args: string[]) {
 
 function runWithState(stateDir: string, ...args: string[]) {
   return Bun.spawnSync({
-    cmd: ['bun', 'bin/monad.mjs', `--test=${stateDir}`, 'self', 'clarify', ...args],
+    cmd: ['bun', 'bin/elanous.mjs', `--test=${stateDir}`, 'self', 'clarify', ...args],
     cwd: process.cwd(),
-    env: { ...process.env, MONAD_STATE_DIR: stateDir },
+    env: { ...process.env, ELANOUS_STATE_DIR: stateDir },
     stdout: 'pipe',
     stderr: 'pipe',
   });
@@ -261,9 +261,9 @@ describe('self clarify CLI', () => {
     mkdirSync(cwdDecoy);
     writeFileSync(join(cwdDecoy, 'GOAL-start.txt'), goalDocument());
     const fromDifferentCwd = Bun.spawnSync({
-      cmd: ['bun', join(process.cwd(), 'bin', 'monad.mjs'), `--test=${join(repository, '.monad-test')}`, 'self', 'clarify', 'closure', goalFile, '--dir', goals],
+      cmd: ['bun', join(process.cwd(), 'bin', 'elanous.mjs'), `--test=${join(repository, '.elanous-test')}`, 'self', 'clarify', 'closure', goalFile, '--dir', goals],
       cwd: cwdDecoy,
-      env: { ...process.env, MONAD_STATE_DIR: join(tmpdir(), `goal-author-closure-state-${crypto.randomUUID()}`) },
+      env: { ...process.env, ELANOUS_STATE_DIR: join(tmpdir(), `goal-author-closure-state-${crypto.randomUUID()}`) },
       stdout: 'pipe',
       stderr: 'pipe',
     });

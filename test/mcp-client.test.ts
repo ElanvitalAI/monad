@@ -366,14 +366,14 @@ describe('McpClient tools/call', () => {
     const { spawn, children } = makeFakeSpawnFactory();
     const client = new McpClient({ id: 'fake', command: ['x'], spawn });
     await startAndHandshake(client, children);
-    const callPromise = client.callTool('build_target', { scheme: 'monad' });
+    const callPromise = client.callTool('build_target', { scheme: 'elanous' });
     await flushMicrotasks();
     const child = children[0]!;
     const req = child.lastParsedRequest();
     expect(req.method).toBe('tools/call');
     expect(req.params).toEqual({
       name: 'build_target',
-      arguments: { scheme: 'monad' },
+      arguments: { scheme: 'elanous' },
     });
     child.emitLine(
       JSON.stringify({
@@ -1721,7 +1721,7 @@ describe('McpClient HTTP OAuth wiring', () => {
   });
 
   test('falls back to the static bearer when a configured issuer has no OAuth token', async () => {
-    const envName = 'MONAD_MCP_CLIENT_STATIC_FALLBACK';
+    const envName = 'ELANOUS_MCP_CLIENT_STATIC_FALLBACK';
     const previous = process.env[envName];
     const staticToken = 'static-fallback-token';
     process.env[envName] = staticToken;
@@ -1749,7 +1749,7 @@ describe('McpClient HTTP OAuth wiring', () => {
   });
 
   test('omits Authorization when the configured static bearer environment variable is missing', async () => {
-    const envName = 'MONAD_MCP_CLIENT_MISSING_STATIC_BEARER';
+    const envName = 'ELANOUS_MCP_CLIENT_MISSING_STATIC_BEARER';
     const previous = process.env[envName];
     delete process.env[envName];
     const auths: Array<string | undefined> = [];
@@ -2197,7 +2197,7 @@ describe('McpClient HTTP OAuth wiring', () => {
   });
 
   test('static bearer environment fallback sends non-empty values, omits blank values, and never exposes the token in errors', async () => {
-    const envName = 'MONAD_MCP_CLIENT_STATIC_BEARER';
+    const envName = 'ELANOUS_MCP_CLIENT_STATIC_BEARER';
     const previous = process.env[envName];
     const token = 'static-client-token';
     try {
@@ -2239,7 +2239,7 @@ describe('McpClient HTTP OAuth wiring', () => {
   // ⛔ 정적 베어러 서버가 401 을 «계속» 돌려줄 때 무한 재시도로 가지 않는가.
   //    정상 전송만 검증하면 이 축은 영영 안 눌린다(리뷰 지적 · #18564).
   test('a static-bearer server answering 401 forever stops after a bounded number of requests', async () => {
-    const envName = 'MONAD_MCP_CLIENT_401_BOUND';
+    const envName = 'ELANOUS_MCP_CLIENT_401_BOUND';
     const previous = process.env[envName];
     try {
       process.env[envName] = 'static-401-token';
@@ -2273,7 +2273,7 @@ describe('McpClient HTTP OAuth wiring', () => {
   // ⛔ oauthConfiguredButUnavailable 의 «두 값»을 각각 못 박는다 — 하나만 보면
   //    「만료된 OAuth 를 정적 토큰이 덮은 것」과 「처음부터 정적 서버인 것」이 접힌다.
   test('oauthConfiguredButUnavailable distinguishes an expired OAuth server from a static-only one', async () => {
-    const envName = 'MONAD_MCP_CLIENT_SRC_FLAG';
+    const envName = 'ELANOUS_MCP_CLIENT_SRC_FLAG';
     const previous = process.env[envName];
     try {
       process.env[envName] = 'flag-probe-token';
@@ -2310,7 +2310,7 @@ describe('McpClient HTTP OAuth wiring', () => {
 
   // ⭐ 자격 «출처»가 밖에서 보이나 — 토큰 «값»은 절대 실리지 않는다.
   test('bearerSource reports the static env-var NAME and never the token value', async () => {
-    const envName = 'MONAD_MCP_CLIENT_SOURCE_PROBE';
+    const envName = 'ELANOUS_MCP_CLIENT_SOURCE_PROBE';
     const previous = process.env[envName];
     const token = 'source-probe-secret';
     try {
@@ -2337,7 +2337,7 @@ describe('McpClient HTTP OAuth wiring', () => {
   });
 
   test('OAuth issuer falls back to static bearer when no valid OAuth token exists', async () => {
-    const envName = 'MONAD_MCP_CLIENT_OAUTH_NULL_BEARER';
+    const envName = 'ELANOUS_MCP_CLIENT_OAUTH_NULL_BEARER';
     const previous = process.env[envName];
     try {
       process.env[envName] = 'static-after-oauth-null';
@@ -2363,7 +2363,7 @@ describe('McpClient HTTP OAuth wiring', () => {
   });
 
   test('missing static bearer environment omits Authorization when OAuth yields no token', async () => {
-    const envName = 'MONAD_MCP_CLIENT_MISSING_BEARER';
+    const envName = 'ELANOUS_MCP_CLIENT_MISSING_BEARER';
     const previous = process.env[envName];
     try {
       delete process.env[envName];
@@ -2389,7 +2389,7 @@ describe('McpClient HTTP OAuth wiring', () => {
   });
 
   test('OAuth bearer takes precedence over a configured static bearer environment fallback', async () => {
-    const envName = 'MONAD_MCP_CLIENT_PREFERRED_BEARER';
+    const envName = 'ELANOUS_MCP_CLIENT_PREFERRED_BEARER';
     const previous = process.env[envName];
     try {
       process.env[envName] = 'static-client-token';

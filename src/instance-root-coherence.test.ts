@@ -4,17 +4,17 @@ import { describe, test, expect, afterEach, beforeEach } from 'bun:test';
 import { homedir } from 'node:os';
 import { join } from 'node:path';
 import { checkInstanceRootCoherence, assertInstanceRootCoherence, detectShadowRootEnvs, checkProdSpawnFootgun, warnProdSpawnFootgun } from './instance-root-coherence.js';
-import { setMonadConfigDir, resetMonadConfigDir } from './monad-config-dir.js';
+import { setElanousConfigDir, resetElanousConfigDir } from './elanous-config-dir.js';
 import { resetEffectiveInstanceRoot, setTreeDerivedTestForTesting, treeDerivedTestEnabled } from './instance/resolve.js';
 import { debug } from './debug/log.js';
 
-const savedStateDir = process.env.MONAD_STATE_DIR;
-const savedNestDepth = process.env.MONAD_NEST_DEPTH;
+const savedStateDir = process.env.ELANOUS_STATE_DIR;
+const savedNestDepth = process.env.ELANOUS_NEST_DEPTH;
 const savedShadow: Record<string, string | undefined> = {};
-for (const e of ['MONAD_HOME', 'MONAD_DIR', 'MONAD_NEXUS_DIR', 'MONAD_TASKS_DIR', 'MONAD_TASKS_DB']) savedShadow[e] = process.env[e];
+for (const e of ['ELANOUS_HOME', 'ELANOUS_DIR', 'ELANOUS_NEXUS_DIR', 'ELANOUS_TASKS_DIR', 'ELANOUS_TASKS_DB']) savedShadow[e] = process.env[e];
 
 // ⚠️ **어느 우주를 시험하는지 선언한다** — 3층(트리 파생) 스위치는 **개발자 머신의
-//    `~/.monad/config.json`** 을 직접 읽으므로, 선언하지 않으면 이 파일의 결과가 **체크아웃과 머신
+//    `~/.elanous/config.json`** 을 직접 읽으므로, 선언하지 않으면 이 파일의 결과가 **체크아웃과 머신
 //    설정에 좌우된다**(P3 착지 #5479 이후 비-리더 트리에서 4건이 계속 빨간 채였다).
 //    아래 단언들은 전부 **1·2층(명시 축)** 을 시험하므로 3층은 **OFF 로 고정**한다.
 //    3층 ON 의 동작은 별도 describe 가 따로 시험한다.
@@ -26,11 +26,11 @@ beforeEach(() => {
 afterEach(() => {
   setTreeDerivedTestForTesting(undefined);   // 실제 머신 설정으로 복원
   resetEffectiveInstanceRoot();
-  resetMonadConfigDir();
-  if (savedStateDir === undefined) delete process.env.MONAD_STATE_DIR;
-  else process.env.MONAD_STATE_DIR = savedStateDir;
-  if (savedNestDepth === undefined) delete process.env.MONAD_NEST_DEPTH;
-  else process.env.MONAD_NEST_DEPTH = savedNestDepth;
+  resetElanousConfigDir();
+  if (savedStateDir === undefined) delete process.env.ELANOUS_STATE_DIR;
+  else process.env.ELANOUS_STATE_DIR = savedStateDir;
+  if (savedNestDepth === undefined) delete process.env.ELANOUS_NEST_DEPTH;
+  else process.env.ELANOUS_NEST_DEPTH = savedNestDepth;
   for (const [e, v] of Object.entries(savedShadow)) {
     if (v === undefined) delete process.env[e];
     else process.env[e] = v;
@@ -52,18 +52,18 @@ describe('setTreeDerivedTestForTesting — 축 선언 seam', () => {
 });
 
 describe('checkInstanceRootCoherence', () => {
-  test('prod 기본(양축 미설정) → 둘 다 ~/.monad → coherent', () => {
-    resetMonadConfigDir();
-    delete process.env.MONAD_STATE_DIR;
+  test('prod 기본(양축 미설정) → 둘 다 ~/.elanous → coherent', () => {
+    resetElanousConfigDir();
+    delete process.env.ELANOUS_STATE_DIR;
     const c = checkInstanceRootCoherence();
-    expect(c.configDir).toBe(join(homedir(), '.monad'));
-    expect(c.stateDir).toBe(join(homedir(), '.monad'));
+    expect(c.configDir).toBe(join(homedir(), '.elanous'));
+    expect(c.stateDir).toBe(join(homedir(), '.elanous'));
     expect(c.coherent).toBe(true);
   });
 
   test('--test 동형(양축 같은 뿌리) → coherent', () => {
-    setMonadConfigDir('/tmp/repo/.monad-test');
-    process.env.MONAD_STATE_DIR = '/tmp/repo/.monad-test';
+    setElanousConfigDir('/tmp/repo/.elanous-test');
+    process.env.ELANOUS_STATE_DIR = '/tmp/repo/.elanous-test';
     expect(checkInstanceRootCoherence().coherent).toBe(true);
   });
 
@@ -71,29 +71,29 @@ describe('checkInstanceRootCoherence', () => {
   //    을 **기대값으로 박아** 두었는데, P3 이후 두 축이 `effectiveInstanceRoot` 한 함수로 수렴해
   //    **다른 축이 따라온다.** 그래서 그 단언들은 *고쳐진 결함이 그대로 있기를* 요구하고 있었다.
   //    ⇒ 새 불변식을 단언한다. 갈라짐 자체의 판정 로직은 아래 `assertInstanceRootCoherence` 가 주입으로 덮는다.
-  test('⭐ MONAD_STATE_DIR 만 설정 → config-dir 이 **따라온다**(P3 이후 · 종전엔 divergent 를 기대했다)', () => {
-    resetMonadConfigDir();
-    process.env.MONAD_STATE_DIR = '/tmp/repo/.monad-test';
+  test('⭐ ELANOUS_STATE_DIR 만 설정 → config-dir 이 **따라온다**(P3 이후 · 종전엔 divergent 를 기대했다)', () => {
+    resetElanousConfigDir();
+    process.env.ELANOUS_STATE_DIR = '/tmp/repo/.elanous-test';
     const c = checkInstanceRootCoherence();
-    expect(c.stateDir).toBe('/tmp/repo/.monad-test');
-    expect(c.configDir).toBe('/tmp/repo/.monad-test');   // ← 따라옴
+    expect(c.stateDir).toBe('/tmp/repo/.elanous-test');
+    expect(c.configDir).toBe('/tmp/repo/.elanous-test');   // ← 따라옴
     expect(c.coherent).toBe(true);
   });
 
   test('⭐ --config-dir 만 설정 → state-dir 이 **따라온다**(1층이 공통 뿌리)', () => {
-    setMonadConfigDir('/tmp/repo/.monad-test');
-    delete process.env.MONAD_STATE_DIR;
+    setElanousConfigDir('/tmp/repo/.elanous-test');
+    delete process.env.ELANOUS_STATE_DIR;
     const c = checkInstanceRootCoherence();
-    expect(c.configDir).toBe('/tmp/repo/.monad-test');
-    expect(c.stateDir).toBe('/tmp/repo/.monad-test');
+    expect(c.configDir).toBe('/tmp/repo/.elanous-test');
+    expect(c.stateDir).toBe('/tmp/repo/.elanous-test');
     expect(c.coherent).toBe(true);
   });
 });
 
 describe('assertInstanceRootCoherence', () => {
   test('coherent 면 조용히 통과(throw 안 함)', () => {
-    resetMonadConfigDir();
-    delete process.env.MONAD_STATE_DIR;
+    resetElanousConfigDir();
+    delete process.env.ELANOUS_STATE_DIR;
     expect(() => assertInstanceRootCoherence({ throwOnDivergence: true })).not.toThrow();
   });
 
@@ -110,8 +110,8 @@ describe('assertInstanceRootCoherence', () => {
   });
 
   test('⭐ 실제 축으로는 갈라지지 않는다 — 한 축만 설정해도 따라온다(P3 불변식)', () => {
-    setMonadConfigDir('/tmp/repo/.monad-test');
-    delete process.env.MONAD_STATE_DIR;
+    setElanousConfigDir('/tmp/repo/.elanous-test');
+    delete process.env.ELANOUS_STATE_DIR;
     expect(() => assertInstanceRootCoherence({ throwOnDivergence: true })).not.toThrow();
   });
 });
@@ -119,9 +119,9 @@ describe('assertInstanceRootCoherence', () => {
 describe('checkProdSpawnFootgun (backlog #1)', () => {
   // footgun = nested(depth>0) AND interactive(TTY) AND resolver-backed prod.
   // interactive 는 주입해 TTY 비의존 결정 테스트. 진리표 전 조합 확인.
-  test('MONAD_STATE_DIR 비어도 3층 파생 격리 자식이면 prod 아님 (env predicate 회귀 방지)', () => {
-    process.env.MONAD_NEST_DEPTH = '1';
-    delete process.env.MONAD_STATE_DIR;
+  test('ELANOUS_STATE_DIR 비어도 3층 파생 격리 자식이면 prod 아님 (env predicate 회귀 방지)', () => {
+    process.env.ELANOUS_NEST_DEPTH = '1';
+    delete process.env.ELANOUS_STATE_DIR;
     setTreeDerivedTestForTesting(true);
     resetEffectiveInstanceRoot();
     const f = checkProdSpawnFootgun({ interactive: true });
@@ -129,69 +129,69 @@ describe('checkProdSpawnFootgun (backlog #1)', () => {
     expect(f.footgun).toBe(false);
   });
 
-  test('MONAD_STATE_DIR 비고 3층 파생도 없으면 prod (참 양성 유지)', () => {
-    process.env.MONAD_NEST_DEPTH = '1';
-    delete process.env.MONAD_STATE_DIR;
+  test('ELANOUS_STATE_DIR 비고 3층 파생도 없으면 prod (참 양성 유지)', () => {
+    process.env.ELANOUS_NEST_DEPTH = '1';
+    delete process.env.ELANOUS_STATE_DIR;
     setTreeDerivedTestForTesting(false);
     resetEffectiveInstanceRoot();
     expect(checkProdSpawnFootgun({ interactive: true })).toEqual({ nested: true, interactive: true, prod: true, footgun: true });
   });
 
   test('nested + interactive + prod → footgun (유일한 참 조합)', () => {
-    process.env.MONAD_NEST_DEPTH = '1';
-    delete process.env.MONAD_STATE_DIR;
+    process.env.ELANOUS_NEST_DEPTH = '1';
+    delete process.env.ELANOUS_STATE_DIR;
     const f = checkProdSpawnFootgun({ interactive: true });
     expect(f).toEqual({ nested: true, interactive: true, prod: true, footgun: true });
   });
 
-  test('nested + interactive 이지만 격리됨(MONAD_STATE_DIR 설정) → 침묵', () => {
-    process.env.MONAD_NEST_DEPTH = '1';
-    process.env.MONAD_STATE_DIR = '/tmp/repo/.monad-test';
+  test('nested + interactive 이지만 격리됨(ELANOUS_STATE_DIR 설정) → 침묵', () => {
+    process.env.ELANOUS_NEST_DEPTH = '1';
+    process.env.ELANOUS_STATE_DIR = '/tmp/repo/.elanous-test';
     const f = checkProdSpawnFootgun({ interactive: true });
     expect(f.prod).toBe(false);
     expect(f.footgun).toBe(false);
   });
 
   test('nested 아님(top-level) + interactive + prod → 침묵 (self-dev 직접실행 아님)', () => {
-    delete process.env.MONAD_NEST_DEPTH; // depth 0
-    delete process.env.MONAD_STATE_DIR;
+    delete process.env.ELANOUS_NEST_DEPTH; // depth 0
+    delete process.env.ELANOUS_STATE_DIR;
     const f = checkProdSpawnFootgun({ interactive: true });
     expect(f.nested).toBe(false);
     expect(f.footgun).toBe(false);
   });
 
   test('nested + prod 이지만 non-interactive(데몬/harness 자식) → 침묵', () => {
-    process.env.MONAD_NEST_DEPTH = '2';
-    delete process.env.MONAD_STATE_DIR;
+    process.env.ELANOUS_NEST_DEPTH = '2';
+    delete process.env.ELANOUS_STATE_DIR;
     const f = checkProdSpawnFootgun({ interactive: false });
     expect(f.interactive).toBe(false);
     expect(f.footgun).toBe(false);
   });
 
   test('depth 0 은 nested 아님(경계) — depth 1 부터 nested', () => {
-    process.env.MONAD_NEST_DEPTH = '0';
+    process.env.ELANOUS_NEST_DEPTH = '0';
     expect(checkProdSpawnFootgun({ interactive: true }).nested).toBe(false);
-    process.env.MONAD_NEST_DEPTH = '1';
+    process.env.ELANOUS_NEST_DEPTH = '1';
     expect(checkProdSpawnFootgun({ interactive: true }).nested).toBe(true);
   });
 });
 
 describe('detectShadowRootEnvs (Phase F)', () => {
   test('shadow-root env 미설정 → 빈 목록', () => {
-    for (const e of ['MONAD_HOME', 'MONAD_DIR', 'MONAD_NEXUS_DIR', 'MONAD_TASKS_DIR', 'MONAD_TASKS_DB']) delete process.env[e];
+    for (const e of ['ELANOUS_HOME', 'ELANOUS_DIR', 'ELANOUS_NEXUS_DIR', 'ELANOUS_TASKS_DIR', 'ELANOUS_TASKS_DB']) delete process.env[e];
     expect(detectShadowRootEnvs()).toEqual([]);
   });
 
-  test('MONAD_TASKS_DB 설정(config-dir 우회 footgun) → 감지', () => {
-    for (const e of ['MONAD_HOME', 'MONAD_DIR', 'MONAD_NEXUS_DIR', 'MONAD_TASKS_DIR', 'MONAD_TASKS_DB']) delete process.env[e];
-    process.env.MONAD_TASKS_DB = '/tmp/rogue/tasks.db';
-    expect(detectShadowRootEnvs()).toEqual([{ name: 'MONAD_TASKS_DB', value: '/tmp/rogue/tasks.db' }]);
+  test('ELANOUS_TASKS_DB 설정(config-dir 우회 footgun) → 감지', () => {
+    for (const e of ['ELANOUS_HOME', 'ELANOUS_DIR', 'ELANOUS_NEXUS_DIR', 'ELANOUS_TASKS_DIR', 'ELANOUS_TASKS_DB']) delete process.env[e];
+    process.env.ELANOUS_TASKS_DB = '/tmp/rogue/tasks.db';
+    expect(detectShadowRootEnvs()).toEqual([{ name: 'ELANOUS_TASKS_DB', value: '/tmp/rogue/tasks.db' }]);
   });
 
   test('shadow env 설정돼도 assert 는 throw 안 함(warn-first)', () => {
-    resetMonadConfigDir();
-    delete process.env.MONAD_STATE_DIR;
-    process.env.MONAD_HOME = '/tmp/shadow';
+    resetElanousConfigDir();
+    delete process.env.ELANOUS_STATE_DIR;
+    process.env.ELANOUS_HOME = '/tmp/shadow';
     expect(() => assertInstanceRootCoherence()).not.toThrow();
   });
 });
@@ -210,7 +210,7 @@ describe('warnProdSpawnFootgun — emit 게이팅(P3·2026-07-26)', () => {
     try { fn(); } finally { process.stderr.write = origWrite; off(); }
     return { logs, stderr };
   }
-  const footgunEnv = (): void => { process.env.MONAD_NEST_DEPTH = '1'; delete process.env.MONAD_STATE_DIR; };
+  const footgunEnv = (): void => { process.env.ELANOUS_NEST_DEPTH = '1'; delete process.env.ELANOUS_STATE_DIR; };
   const hasFootgunLog = (logs: { category: string; event: string }[]): boolean =>
     logs.some((r) => r.category === 'instance.identity' && r.event === 'prod-spawn-footgun');
 
@@ -219,7 +219,7 @@ describe('warnProdSpawnFootgun — emit 게이팅(P3·2026-07-26)', () => {
     const { logs, stderr } = withCapture(() => { warnProdSpawnFootgun({ interactive: true, emit: 'log' }); });
     expect(hasFootgunLog(logs)).toBe(true);   // sink(=logs.db StoreSink 동형)가 record 를 받음 = 도달 실증
     const record = logs.find((r) => r.category === 'instance.identity' && r.event === 'prod-spawn-footgun');
-    expect(record?.data).toMatchObject({ kind: 'prod', layer: 'default', why: '기본값(~/.monad) — 명시도 스탬프도 없음' });
+    expect(record?.data).toMatchObject({ kind: 'prod', layer: 'default', why: '기본값(~/.elanous) — 명시도 스탬프도 없음' });
     expect(typeof record?.data?.root).toBe('string');
     expect(stderr).toBe('');
   });
@@ -242,8 +242,8 @@ describe('warnProdSpawnFootgun — emit 게이팅(P3·2026-07-26)', () => {
   });
 
   test('자식 depth 경고는 --test 처방 대신 현재 우주와 리졸버 근거를 보인다', () => {
-    process.env.MONAD_NEST_DEPTH = '2';
-    delete process.env.MONAD_STATE_DIR;
+    process.env.ELANOUS_NEST_DEPTH = '2';
+    delete process.env.ELANOUS_STATE_DIR;
     const { stderr } = withCapture(() => { warnProdSpawnFootgun({ interactive: true, emit: 'stderr' }); });
     expect(stderr).not.toContain('--test 를 붙이세요');
     expect(stderr).toContain('현재 우주: prod');

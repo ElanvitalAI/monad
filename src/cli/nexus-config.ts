@@ -1,5 +1,5 @@
-// `monad nexus config <list|get|set|unset>` — single ops surface for
-// the UserConfig file at `~/.monad/config.json`.
+// `elanous nexus config <list|get|set|unset>` — single ops surface for
+// the UserConfig file at `~/.elanous/config.json`.
 //
 // User feedback (2026-05-07): "환경변수 방식 싫음 · 그 user config 자체도
 // nexus 에서 컨트롤할 수 있게." Every knob already lives in UserConfig
@@ -66,13 +66,13 @@ export function nexusConfigList(deps: NexusConfigDeps = {}): NexusConfigResult {
 export function nexusConfigGet(path: string, deps: NexusConfigDeps = {}): NexusConfigResult {
   const { readFn, out } = resolveDeps(deps);
   if (!isValidPath(path)) {
-    out.error(`monad nexus config get: invalid path "${path}" (use global.<...> or tabs.<id>.<...>).`);
+    out.error(`elanous nexus config get: invalid path "${path}" (use global.<...> or tabs.<id>.<...>).`);
     return { exitCode: 1 };
   }
   const cfg = readFn();
   const value = readSwitchValue(cfg, path);
   if (value === undefined) {
-    out.error(`monad nexus config get: ${path} is not set.`);
+    out.error(`elanous nexus config get: ${path} is not set.`);
     return { exitCode: 1 };
   }
   out.log(typeof value === 'string' ? value : JSON.stringify(value));
@@ -86,14 +86,14 @@ export function nexusConfigSet(
 ): NexusConfigResult {
   const { patchFn, out } = resolveDeps(deps);
   if (!isValidPath(path)) {
-    out.error(`monad nexus config set: invalid path "${path}" (use global.<...> or tabs.<id>.<...>).`);
+    out.error(`elanous nexus config set: invalid path "${path}" (use global.<...> or tabs.<id>.<...>).`);
     return { exitCode: 1 };
   }
   const value = parseValue(rawValue);
   try {
     patchFn((cfg) => writeSwitchValue(cfg, path, value));
   } catch (err) {
-    out.error(`monad nexus config set: ${err instanceof Error ? err.message : String(err)}`);
+    out.error(`elanous nexus config set: ${err instanceof Error ? err.message : String(err)}`);
     return { exitCode: 1 };
   }
   out.log(`set ${path} = ${typeof value === 'string' ? value : JSON.stringify(value)}`);
@@ -103,13 +103,13 @@ export function nexusConfigSet(
 export function nexusConfigUnset(path: string, deps: NexusConfigDeps = {}): NexusConfigResult {
   const { patchFn, out } = resolveDeps(deps);
   if (!isValidPath(path)) {
-    out.error(`monad nexus config unset: invalid path "${path}" (use global.<...> or tabs.<id>.<...>).`);
+    out.error(`elanous nexus config unset: invalid path "${path}" (use global.<...> or tabs.<id>.<...>).`);
     return { exitCode: 1 };
   }
   try {
     patchFn((cfg) => unsetSwitchValue(cfg, path));
   } catch (err) {
-    out.error(`monad nexus config unset: ${err instanceof Error ? err.message : String(err)}`);
+    out.error(`elanous nexus config unset: ${err instanceof Error ? err.message : String(err)}`);
     return { exitCode: 1 };
   }
   out.log(`unset ${path}`);
