@@ -38,6 +38,8 @@ Full text of every page: https://docs.elanous.ai/llms-full.txt
 - [Discord voice channel](https://docs.elanous.ai/surfaces/discord/): Voice-channel round trips and voice attachments on Discord.
 - [The web app (PWA)](https://docs.elanous.ai/surfaces/pwa/): Open the browser dashboard: Chat, Terminal, Vault, Settings and first-time setup.
 - [Vault (Obsidian notes)](https://docs.elanous.ai/surfaces/pwa-vault/): Browse, search, edit and create Obsidian notes in the web app, and handle edits made elsewhere.
+- [Terminal (web shells)](https://docs.elanous.ai/surfaces/pwa-terminal/): Open live shells on the daemon's machine from a browser, phone or tablet, attach files and ask an agent about the screen.
+- [Chat (in the browser)](https://docs.elanous.ai/surfaces/pwa-chat/): Talk to elanous in the web app: sessions, spend, provider and backend, attachments, voice and meta commands.
 
 ## Operations
 

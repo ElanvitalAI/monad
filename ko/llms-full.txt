@@ -1074,8 +1074,8 @@ Stop a daemon you started by hand with `elanous nexus stop`.
 
 | Menu | What it does |
 |---|---|
-| **Chat** | Talk to elanous with streaming replies, pick a session, a backend and a surface, and see the running budget. Voice input is available where the browser allows microphone access. |
-| **Terminal** | Live terminals from your machine in the browser — several tabs, a modifier-key bar for touch keyboards, file and camera attachments, and a mirror of the terminal UI. |
+| **Chat** | Talk to elanous with streaming replies, pick a session, a backend and a surface, and see the running budget. Voice input is available where the browser allows microphone access. See [Chat](/surfaces/pwa-chat). |
+| **Terminal** | Live terminals from your machine in the browser — several tabs, a modifier-key bar for touch keyboards, file and camera attachments, and a mirror of the terminal UI. See [Terminal](/surfaces/pwa-terminal). |
 | **Vault** | Browse your Obsidian vault, read and edit notes, create new ones, and explore tags and the link graph. See [Vault](/surfaces/pwa-vault). |
 | **Settings** | Models and tiers, voice and text-to-speech, persona, notifications, theme and daemon health. |
 | **Setup** (`/setup`) | First-time setup in the browser. Today it covers the LLM provider; the other wizard steps still run in the terminal with `elanous onboarding`. |
@@ -1192,6 +1192,137 @@ to the one you picked.
 
 - **Obsidian vault를 찾을 수 없습니다** (vault not found) — the vault folder is not set or does not exist. Set
   it with `elanous onboarding`.
+- **The page does not load at all** — see [The web app (PWA)](/surfaces/pwa).
+
+---
+
+# Terminal (web shells)
+
+Source: https://docs.elanous.ai/surfaces/pwa-terminal/
+
+The **Terminal** menu of the web app opens real shells on the machine that
+runs the elanous daemon. You can keep several open, use them from a phone or
+tablet, attach files, and talk to an agent about what is on screen.
+
+The menu's labels are partly in Korean today, so this page gives each label
+as it appears on screen, with the meaning in brackets.
+
+> The shell runs on the daemon's machine, as your user, in the folder the
+> daemon was started from. Anything you type there runs for real.
+
+## Open a terminal
+
+- **+** at the top opens a new terminal. Each one gets a tab with its name;
+  **×** or **끝내기** (end) closes it.
+- The status at the top right shows how many terminals are open and whether
+  they are alive.
+- The bar under the tabs switches between three views:
+  - **터미널** (terminal) — your shells.
+  - **🖥 TUI 관측** (watch the TUI) — a read-only live view of the elanous
+    terminal UI running in another window on the daemon's machine.
+  - **PTY 목록** (PTY list) — every terminal the daemon knows about, with its
+    history.
+
+The connection status (`ACP: 연결됨` — connected) is shown in the corner of
+the terminal. From 0.2.2, keys you type while it still says `연결 중`
+(connecting) are held and sent in order once it connects. In earlier versions,
+wait for `연결됨` before you type — keys typed while connecting can be lost.
+
+## Type on a phone or tablet
+
+On a touch screen a key bar appears under the terminal with **Esc**, **Tab**,
+the arrow keys and sticky **Ctrl** and **Alt** — tap Ctrl, then a letter, to
+send Ctrl+letter. A modifier releases itself after a few seconds if you do
+not use it.
+
+## Toolbar
+
+| Button | What it does |
+|---|---|
+| **clear** | Clears the screen. |
+| Camera | Takes a photo (or picks one) and puts its file path into the terminal. |
+| File | Attaches one or more files and puts their paths into the terminal. You can also drag files onto the terminal. |
+| **Live** | Shares your camera with the agent while it is on. |
+| **voice→stdin** | Speak, and the words are typed into the terminal. |
+| **record** | Records the terminal session on the daemon. |
+
+## Terminal Chat Dock
+
+Under the terminal is a chat box tied to the current terminal:
+
+- Plain text asks an agent about the terminal — it can see what is on screen.
+- Lines that start with `:` stay local. Type `:help` to list them; for example
+  `:tab next`, `:tab prev`, `:cwd` and `:capture`.
+- You can pick the agent provider and see the session and cost for the month.
+
+## Use it from several devices
+
+Open the same terminal on another device (see
+[The web app (PWA)](/surfaces/pwa#use-it-from-another-device)) and both see the same
+screen. A badge shows how many devices are attached, and a short "typing"
+flash appears when someone else types.
+
+## Troubleshooting
+
+- **The page stays on «터미널 이름을 준비하는 중…» (preparing the terminal
+  name)** — reload the page.
+- **Keys go missing right after opening** (before 0.2.2) — wait until the
+  status says `ACP: 연결됨` (connected), then type.
+- **The page does not load at all** — see [The web app (PWA)](/surfaces/pwa).
+
+---
+
+# Chat (in the browser)
+
+Source: https://docs.elanous.ai/surfaces/pwa-chat/
+
+The **Chat** menu of the web app is a conversation with elanous. Replies
+stream in as they are written, and you can attach photos and files or talk to
+it with your voice.
+
+The menu's labels are partly in Korean today, so this page gives each label
+as it appears on screen, with the meaning in brackets.
+
+## The top bar
+
+| Item | What it does |
+|---|---|
+| **sess:** | The current session. Click the id to copy it. Double-click the new-chat button to start an empty session; the old one stays in the session list. The menu next to it (**세션 메뉴** — session menu) starts a new chat or shows the session id and message count. |
+| **이번 달 $…** (this month) | What elanous has spent this month, and the share of your budget when a budget is set. It turns to a warning colour when you pass your notify threshold. It reads **budget —** when the daemon cannot report it. |
+| Microphone cost | What voice input and read-aloud have cost this month. |
+| **provider** | The LLM provider for this session — keep **(default)** to use your configured one, or pick claude, gemini, grok or codex. |
+| Tool surface (**default**) | Click to switch between the daemon's normal tools and **readonly** (the agent can look but not change anything). |
+| **음성 대기** (voice waiting) | Voice status. The voice controls turn listening, spoken replies and the voice panel on or off. |
+
+## Write a message
+
+- Type in the box at the bottom and press Enter to send. Shift+Enter starts a
+  new line.
+- Buttons next to the box: attach a photo (camera or file), attach files,
+  **save a photo as a note** (it becomes a Markdown note), and a
+  **voice memo** — hold it down to record; the memo goes to intake.
+- The pill on the left (**elanous** by default) picks the backend that
+  answers: elanous's own LLM rotation, or the Codex, Claude Code or Gemini
+  command-line tools.
+
+## Meta commands
+
+Lines that start with `:` are handled in the browser, not sent to the model.
+Type `:help` to list them:
+
+| Command | What it does |
+|---|---|
+| `:session` | Show the current session id. |
+| `:fork` | Start a fresh session id. |
+| `:provider <name>` | Set the provider for this session. |
+| `:budget` | Show this month's spend and the notify threshold. |
+| `:history [N]` | Summarise the last N turns on screen (default 10). |
+| `:clear` | Clear the messages on screen. |
+
+## Troubleshooting
+
+- **The spend reads «budget —»** — the daemon could not report it; it tries
+  again every minute.
 - **The page does not load at all** — see [The web app (PWA)](/surfaces/pwa).
 
 ---
