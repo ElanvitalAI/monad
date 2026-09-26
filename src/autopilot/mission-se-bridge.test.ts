@@ -17,7 +17,7 @@ import {
 
 // notes 를 실은 페이즈 픽스처(하단 hoisted mkTask 재사용).
 const taskWithNotes = (notes: string[]) => ({ ...mkTask({ title: 't' }), notes });
-const PR_NOTE = '[SE-PR] https://github.com/ElanvitalAI/monad/pull/4165';
+const PR_NOTE = '[SE-PR] https://github.com/ElanvitalAI/elanous/pull/4165';
 
 describe('mergedPrForPhase — merge된 PR 재빌드 스킵 판정', () => {
   it('[SE-PR] merged 이면 PR 번호 반환', () => {

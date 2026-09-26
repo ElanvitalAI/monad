@@ -1685,7 +1685,7 @@ import { preservesHostChromeInput } from '../display/host-chrome-profile.js';
 // H3 #6 follow-up #1 — auto-persist on turn-end. Subscribes DRM +
 // BG managers to the H2 #5 persistence primitive so
 // `AcpSessionList` returns real records instead of empty arrays.
-// Mode controlled by ELANOUS_ACP_PERSIST_MODE env (default 'auto').
+// Mode is always 'auto' (the ELANOUS_ACP_PERSIST_MODE off-switch was graduated 2026-09-26).
 import { wireAutoPersist } from '../acp/auto-persist.js';
 import { globalAcpSessionPersistence } from '../acp/session-persistence.js';
 import { AgentStatusStore } from '../agent-status/store.js';
@@ -7167,7 +7167,7 @@ Mode- and sync-specific instructions are injected per-turn when relevant — do 
 
   // ACP follow-up #1 — auto-persist on turn-end. DRM end_turn
   // transitions + BG terminal states flow into the H2 #5 persistence
-  // primitive automatically. Opt out with ELANOUS_ACP_PERSIST_MODE=off.
+  // primitive automatically (always on — off-switch graduated 2026-09-26).
   wireAutoPersist({
     drm: globalDualRoleManager(),
     bg: globalBackgroundManager(),
@@ -7178,10 +7178,10 @@ Mode- and sync-specific instructions are injected per-turn when relevant — do 
   // the in-memory BackgroundManager bounded for long-running elanous
   // processes. Auto-persist (#1) already flushed the terminal record
   // to disk, so sweeping doesn't lose history · only the live stub.
-  // Opt out with ELANOUS_ACP_BG_SWEEP_MODE=off. Defaults: 24h TTL ·
+  // Always on (ELANOUS_ACP_BG_SWEEP_MODE off-switch graduated 2026-09-26). Defaults: 24h TTL ·
   // 1h tick (matches Warp cloud-agent "stale after a day" heuristic).
   bootDashboardAcpBgSweep({
-    enabled: process.env['ELANOUS_ACP_BG_SWEEP_MODE'] !== 'off',
+    enabled: true,
     backgroundManager: globalBackgroundManager(),
   });
 

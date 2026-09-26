@@ -1592,8 +1592,18 @@ export function resolveTargetRemoteCompletion(
   completion: DevCompletion,
   completionSource: DevSelectionSource,
   remote: TargetRemoteObservation,
+  options: { naturalLanguageDispatch?: boolean } = {},
 ): { completion: DevCompletion; reason?: string } {
   if (remote.state !== 'remote-absent' || completion === 'worktree-only') return { completion };
+  // 🩸 2026-09-26 베어 Ubuntu 26.04 실측(UX 15): TUI 자연어 경로에서 «모델이» 도구 인자(open_pr 등)를 채워
+  //   출처가 `request` 로 찍혔고, 원격 없는 저장소라 79초 뒤에 실패했다 — 사람은 PR 을 청한 적이 없다.
+  //   ⇒ 자연어 경로는 사람이 친 플래그가 아니므로 기본과 같이 워크트리로 내리고 «그렇게 했다»고 한 줄 말한다.
+  if (completionSource !== 'default' && options.naturalLanguageDispatch === true) {
+    return {
+      completion: 'worktree-only',
+      reason: `target has no git remote; the natural-language request asked for completion:${completion}, ran worktree-only instead (commits stay on a local branch — add a remote to get a PR)`,
+    };
+  }
   if (completionSource !== 'default') {
     // ⛔ 2026-09-23 (Phase 4 실측) — 막는 것은 옳지만 «무엇을 하면 되나»를 말해야 한다.
     //   `--no-auto-merge` 같은 완료 인자는 «PR 을 명시한 것»으로 읽힌다 — 로컬 프로젝트 사용자는 그걸 모른다.
@@ -1875,7 +1885,7 @@ async function runDevPipelineDispatch(
   const applyRemoteLessCompletion = (repoRoot: string): void => {
     const remote = observeTargetRemote(repoRoot, deps.runGit);
     debug.log('dev-pipeline', 'target-remote', remote);
-    const resolved = resolveTargetRemoteCompletion(plan.completion, plan.completionSource, remote);
+    const resolved = resolveTargetRemoteCompletion(plan.completion, plan.completionSource, remote, { naturalLanguageDispatch: spec.self?.naturalLanguageDispatch === true });
     if (resolved.reason) {
       plan.completion = resolved.completion;
       debug.log('dev-pipeline', 'target-remote-completion', {

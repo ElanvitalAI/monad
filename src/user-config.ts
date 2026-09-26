@@ -959,11 +959,6 @@ export interface SelfImplementToolConfig {
   observeOnly: boolean;
   /** Controls the persistent grounding loop used while authoring goals; absent preserves it. */
   goalAuthorPersistentGrounding?: boolean;
-  /**
-   * ⭐ PR 근거 아티팩트의 일곱 축이 비었을 때 **PR 준비를 막나**. 기본(absent)은 안 막는다 —
-   * 거절 사실은 `pr-evidence-artifact` 관측으로 «항상» 남고, 차단만 명시로 켠다.
-   */
-  prEvidenceArtifactEnforce?: boolean;
   /** Uses the Fabric decomposer for SelfOrchestrate requests that omit `fabric_decompose`. */
   fabricDecompose: boolean;
   /** ⛔⭐ 그래프 선언을 «실행 권위»로 올린다(RFC §5 1단계 · 대표 2026-09-08). 기본 켬(`TOOLS_DEFAULTS` · 끄려면 `false` 또는 `--no-graph`). */
@@ -977,8 +972,6 @@ export interface SelfImplementToolConfig {
   decompositionShadow: SelfImplementDecompositionShadowConfig;
   /** Opt-in delivery of authored goal clarifications from unattended dev runs. */
   clarificationEscalation: SelfImplementClarificationEscalationConfig;
-  /** Optional ask-launch override; omission lets the launch flow default self-resolution ON. */
-  selfResolveClarifications?: boolean;
   /** ⭐ PR-open 사전 승인 (2026-07-26 · 대표 결정 "오토 선호 · 기본 ON").
    *
    *  self-build 가 gate 를 통과하면 **PR 을 자동 개설**한다(기본 `true`).
@@ -2339,9 +2332,6 @@ function parseToolsConfig(raw: unknown): ToolsConfig {
   const goalAuthorPersistentGrounding = typeof selfImplRaw.goalAuthorPersistentGrounding === 'boolean'
     ? selfImplRaw.goalAuthorPersistentGrounding
     : undefined;
-  const prEvidenceArtifactEnforce = typeof selfImplRaw.prEvidenceArtifactEnforce === 'boolean'
-    ? selfImplRaw.prEvidenceArtifactEnforce
-    : undefined;
   const fabricDecompose = selfImplRaw.fabricDecompose === true;
   const graphAuthoritative = typeof selfImplRaw.graphAuthoritative === 'boolean'
     ? selfImplRaw.graphAuthoritative
@@ -2439,9 +2429,6 @@ function parseToolsConfig(raw: unknown): ToolsConfig {
     enabled: clarificationEscalationRaw.enabled === true,
     ...(clarificationTimeoutMs === undefined ? {} : { timeoutMs: clarificationTimeoutMs }),
   };
-  const selfResolveClarifications = typeof selfImplRaw.selfResolveClarifications === 'boolean'
-    ? selfImplRaw.selfResolveClarifications
-    : undefined;
   // ⭐ 관측(리뷰 should-fix) — 오타/비-boolean 은 기본값(ON)으로 수렴하는데, 그게 조용하면
   //   "껐다고 믿었는데 자동 개설되는" 운영 사고가 된다. 값이 **있는데 boolean 이 아닐 때만**
   //   경고한다(부재는 정상). 로거 대신 stderr — 이 파일의 기존 경고와 동형(부트 시점·의존 0).
@@ -2464,7 +2451,7 @@ function parseToolsConfig(raw: unknown): ToolsConfig {
     runDevHarness,
     selfOrchestrate,
     nativeStructure,
-    selfImplement: { worktreeRoot, childInstanceMode, prApprovalDelivery, observeOnly, goalAuthorPersistentGrounding, prEvidenceArtifactEnforce, fabricDecompose, graphAuthoritative, fabricDecomposeAutoPathThreshold, autoOpenPr, autoStop, autoAssist, screenStallTermination, reworkBudget, decompositionShadow, clarificationEscalation, ...(selfResolveClarifications === undefined ? {} : { selfResolveClarifications }) },
+    selfImplement: { worktreeRoot, childInstanceMode, prApprovalDelivery, observeOnly, goalAuthorPersistentGrounding, fabricDecompose, graphAuthoritative, fabricDecomposeAutoPathThreshold, autoOpenPr, autoStop, autoAssist, screenStallTermination, reworkBudget, decompositionShadow, clarificationEscalation },
   };
 }
 
@@ -2672,7 +2659,6 @@ export interface VoiceChatConfig {
 
 export type VoiceTelegramReplyMode = 'auto' | 'text' | 'voice';
 export type VoiceTelegramDispatchMode = 'auto-reply' | 'tui-bridge';
-export type VoiceDiscordReplyMode = 'auto' | 'text' | 'voice';
 export type VoiceDiscordChannelListenFilter = 'caller' | 'all';
 export type IntakeAmbientCaptureMode = 'off' | 'suggest' | 'capture';
 
@@ -2694,27 +2680,8 @@ export interface VoiceTelegramConfig {
   voiceLanguage?: string;
 }
 
-/** Where a final PWA voice transcript dispatches.
- *  - 'daemon-direct': daemon calls runTurn directly. Response text
- *     synthesizes via the daemon TTS provider and emits as DOWNSTREAM_PCM
- *     frames to the browser. Usable without TUI.
- *  - 'tui-bridge': transcript routes through dashboard voice-input-host
- *     so the TUI sees the dictation as if the user typed; auto-TTS
- *     mirrors the response back to the browser. Requires dashboard. */
-export type VoicePwaDispatchMode = 'daemon-direct' | 'tui-bridge';
-export type VoiceDiscordDispatchMode = 'auto-reply' | 'tui-bridge';
 
 export interface VoiceDiscordConfig {
-  /** Dispatch mode for Discord text DMs.
-   *  - 'auto-reply' (default): existing LLM/daemon turn path.
-   *  - 'tui-bridge': inject final text into the live dashboard input. */
-  dispatch?: VoiceDiscordDispatchMode;
-  /** Reply mode for incoming Discord voice attachments.
-   *  - 'auto' (default): user voice → voice reply; user text → text reply.
-   *  - 'text': always text reply.
-   *  - 'voice': always voice reply.
-   *  No env fallback — X9 is treated as a user-config-first surface. */
-  replyMode?: VoiceDiscordReplyMode;
   /** ISO 639-1 language hint passed to STT for incoming voice
    *  attachments. Improves Korean accuracy when set to 'ko'. */
   voiceLanguage?: string;
@@ -2752,11 +2719,7 @@ export interface VoiceDiscordConfig {
 }
 
 export interface VoicePwaConfig {
-  /** Dispatch mode for final transcripts received over /v1/voice/ws.
-   *  Default is 'daemon-direct' — TUI is not assumed. No env fallback —
-   *  PWA voice is a §1.2 신규 옵션 (sprint 22 · 2026-04-30) and is
-   *  user-config only. */
-  dispatch?: VoicePwaDispatchMode;
+  // 2026-09-26 설정 졸업: `voice.pwa.dispatch` 를 지웠다 — 그 값을 쓰던 `voice-pwa-dispatch.ts` 는 호출처 0(죽은 모듈)이었다.
 }
 
 export interface VoiceConfig {
@@ -2809,20 +2772,8 @@ function normalizeVoiceVadMode(v: unknown): VoiceVadMode {
   if (v === 'local' || v === 'manual') return v;
   return 'server';
 }
-function normalizeVoicePwaDispatch(v: unknown): VoicePwaDispatchMode | undefined {
-  if (v === 'daemon-direct' || v === 'tui-bridge') return v;
-  return undefined;
-}
 function normalizeVoiceTelegramDispatch(v: unknown): VoiceTelegramDispatchMode | undefined {
   if (v === 'auto-reply' || v === 'tui-bridge') return v;
-  return undefined;
-}
-function normalizeVoiceDiscordDispatch(v: unknown): VoiceDiscordDispatchMode | undefined {
-  if (v === 'auto-reply' || v === 'tui-bridge') return v;
-  return undefined;
-}
-function normalizeVoiceDiscordReplyMode(v: unknown): VoiceDiscordReplyMode | undefined {
-  if (v === 'auto' || v === 'text' || v === 'voice') return v;
   return undefined;
 }
 function normalizeVoiceDiscordChannelListenFilter(
@@ -3855,6 +3806,15 @@ export const RETIRED_CONFIG_KEYS: readonly RetiredConfigKey[] = [
   { path: 'chat.rendering.tool.inlineOneLine', reason: '읽는 곳이 없다 — 지워도 된다 (2026-09-26 설정 졸업 2)' },
   { path: 'vw.acpResident', reason: '읽는 곳이 없다 — 지워도 된다 (2026-09-26 설정 졸업 2 · vw.acp.resident 도 소비자 없음)' },
   { path: 'discord.sprint21', reason: '읽는 곳이 없다 — 지워도 된다 (2026-09-26 설정 졸업 2 · 런타임 sprint21-runtime 은 호출처 0·휴면)' },
+  { path: 'tools.selfImplement.prEvidenceArtifactEnforce', reason: '차단 스위치 졸업 — PR 근거 관문은 막지 않고 관측만 한다(2026-09-26 설정 졸업 · 한 번도 기본으로 안 켜졌다)' },
+  { path: 'voice.discord.dispatch', reason: '읽는 곳이 없다 — 지워도 된다 (2026-09-26 설정 졸업 2 · 값을 쓰던 디스코드 음성 어댑터는 호출처 0)' },
+  { path: 'voice.discord.replyMode', reason: '읽는 곳이 없다 — 지워도 된다 (2026-09-26 설정 졸업 2 · 값을 쓰던 디스코드 음성 어댑터는 호출처 0)' },
+  { path: 'voice.pwa.dispatch', reason: '읽는 곳이 없다 — 지워도 된다 (2026-09-26 설정 졸업 2 · voice-pwa-dispatch 는 호출처 0)' },
+  { path: 'voice.stt.mode', reason: '타입에 없는 키 — 읽는 곳이 없다 (2026-09-26 설정 졸업 2)' },
+  { path: 'voice.stt.language', reason: '타입에 없는 키 — 읽는 곳이 없다 (2026-09-26 설정 졸업 2)' },
+  // 설정 졸업 1-d(2026-09-26): 3층(트리 파생)은 늘 켠다 — 리더 미지정이면 운영으로 떨어지므로 새 설치의 동작은 같다.
+  { path: 'instance.treeDerivedTest', reason: '늘 켬으로 졸업 — 지워도 된다 (2026-09-26 설정 졸업 1-d)' },
+  { path: 'tools.selfImplement.selfResolveClarifications', reason: '늘 켬으로 졸업 — 지워도 된다 (2026-09-26 설정 졸업 1-c · self author 도 harness 와 같이 되묻기를 자동 답변)' },
 ];
 
 /** 설정 원문(JSON 객체)에서 폐기 키가 «있는» 항목만 돌려준다. 순수. */
@@ -4461,12 +4421,6 @@ export function buildUserConfig(path: string = defaultPath()): UserConfig {
         ...(typeof voiceChat.multiTurn === 'boolean' ? { multiTurn: voiceChat.multiTurn } : {}),
       },
       discord: {
-        ...(normalizeVoiceDiscordDispatch(voiceDiscord.dispatch) !== undefined
-          ? { dispatch: normalizeVoiceDiscordDispatch(voiceDiscord.dispatch)! }
-          : {}),
-        ...(normalizeVoiceDiscordReplyMode(voiceDiscord.replyMode) !== undefined
-          ? { replyMode: normalizeVoiceDiscordReplyMode(voiceDiscord.replyMode)! }
-          : {}),
         ...(typeof voiceDiscord.voiceLanguage === 'string' && voiceDiscord.voiceLanguage.length > 0
           ? { voiceLanguage: voiceDiscord.voiceLanguage }
           : {}),
@@ -4523,9 +4477,6 @@ export function buildUserConfig(path: string = defaultPath()): UserConfig {
           : {}),
       },
       pwa: {
-        ...(normalizeVoicePwaDispatch(voicePwa.dispatch) !== undefined
-          ? { dispatch: normalizeVoicePwaDispatch(voicePwa.dispatch)! }
-          : {}),
       },
     },
     intake: {

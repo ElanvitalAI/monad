@@ -626,7 +626,7 @@ export interface LivePaneMultiModalColumn {
    *  mouse paths (e.g. Browser cursor → Preview refresh was previously
    *  wired only through `onAfterKey`, so a mouse click / scroll-wheel
    *  cursor move left the Preview stale). Codex comment
-   *  [#4286180153](https://github.com/ElanvitalAI/monad/pull/369#issuecomment-4286180153)
+   *  [#4286180153](https://github.com/ElanvitalAI/elanous/pull/369#issuecomment-4286180153)
    *  acceptance point 2. Deprecated target: W2 RenderCoordinator
    *  commit boundary in H1, which will subsume both hooks into a
    *  single cross-surface notification. */

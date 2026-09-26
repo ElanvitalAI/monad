@@ -58,7 +58,7 @@ export const CODEX_MODELS: CodexModel[] = [
   },
   {
     id: 'gpt-6-sol',
-    label: 'GPT-6 Sol (recommended)',
+    label: 'GPT-6 Sol',   // «recommended» 표시는 목록이 `recommended: true` 로 붙인다 — 라벨에도 쓰면 두 번 뜬다(UX 8)
     tier: 'balanced',
     description: 'elanous 운영 기본(대표 2026-09-23). 복합 코딩·agentic 워크플로. Reasoning «Highest» 인데 가격은 5.6 Terra 와 같은 입력·더 싼 출력. 1.05M ctx, effort none..max(기본 medium).',
     contextWindow: 1_050_000,

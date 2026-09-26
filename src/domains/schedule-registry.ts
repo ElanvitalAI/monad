@@ -323,7 +323,9 @@ export function inferCategory(command: string): ScheduleCategory {
 
 /** 현재 crontab 원문 반환(없으면 ''). */
 export function readCrontab(): string {
-  try { return execFileSync('crontab', ['-l'], { encoding: 'utf-8' }); }
+  // ⛔ stderr 를 물려받지 않는다 — 크론이 없는 기계에서 「no crontab for <user>」가 TUI 화면 한가운데 찍혔다
+  //   (2026-09-26 베어 Ubuntu 26.04 실측 · UX 17). 크론 없음은 정상이라 빈 문자열이다.
+  try { return execFileSync('crontab', ['-l'], { encoding: 'utf-8', stdio: ['ignore', 'pipe', 'pipe'] }); }
   catch { return ''; } // no crontab for user
 }
 

@@ -37,7 +37,7 @@ export interface VapidKeyPair {
   subject: string;
 }
 
-const DEFAULT_SUBJECT = 'https://github.com/ElanvitalAI/monad';
+const DEFAULT_SUBJECT = 'https://github.com/ElanvitalAI/elanous';
 
 /** Lazy-loaded singleton — daemon boot path calls this once and
  *  holds the result for the lifetime of the process. */

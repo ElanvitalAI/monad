@@ -416,34 +416,21 @@ function stripEmphasis(text: string): string {
 }
 
 export interface PrEvidenceGateDecision {
-  /** 참이면 호출자는 PR 준비를 «진행하지 않는다». */
-  readonly blocked: boolean;
   /** 본문에 이을 근거 절. 거절이면 undefined 다. */
   readonly body?: string;
   readonly missing: readonly PrEvidenceAxis[];
   /** 관측·오류 메시지에 그대로 쓰는 한 줄. 통과면 undefined 다. */
   readonly reason?: string;
-  /** 이 판정이 «막을 수 있는» 상태였나 — `enforce` 를 그대로 되비춘다. */
-  readonly enforced: boolean;
 }
 
 /**
- * 관문 판정. 작성기의 거절을 «막는 것»으로 올릴지는 `enforce` 가 정한다.
+ * 관문 판정 — «막지 않는다». 거절이면 근거 절을 안 싣고 «무엇이 비었나»를 이름으로 낸다(관측).
  *
- * ⛔ 기본을 차단으로 두지 않는 것은 «의도적 결정»이다 — `orchestrator.test.ts` 의 `pr-opened`
- *   단정 141개가 골의 «내용»과 무관하게 죽는다. 그래서 거절은 기본적으로 「근거 절을 안 싣고
- *   그 사실을 이름으로 관측한다」까지이고, 차단은 config 로 «명시»해 켠다.
+ * 2026-09-26 설정 졸업(대표 «꺼진 옵션 뒤 코드는 지운다»): 한 번도 기본으로 켜지지 않던 차단 스위치
+ * `prEvidenceArtifactEnforce` 와 그 차단 갈래를 지웠다. 거절 사실은 `pr-evidence-artifact` 관측으로 «항상» 남는다.
  */
-export function decidePrEvidenceGate(
-  input: PrEvidenceInput,
-  options: { readonly enforce: boolean },
-): PrEvidenceGateDecision {
+export function decidePrEvidenceGate(input: PrEvidenceInput): PrEvidenceGateDecision {
   const result = composePrEvidenceArtifact(input);
-  if (result.ok) return { blocked: false, body: result.body, missing: [], enforced: options.enforce };
-  return {
-    blocked: options.enforce,
-    missing: result.missing,
-    reason: result.reason,
-    enforced: options.enforce,
-  };
+  if (result.ok) return { body: result.body, missing: [] };
+  return { missing: result.missing, reason: result.reason };
 }

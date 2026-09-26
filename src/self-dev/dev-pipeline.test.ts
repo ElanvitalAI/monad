@@ -146,6 +146,11 @@ describe('planDevPipeline — 순수 정규화/검증/디스패치(계약 SSOT)'
     expect(() => resolveTargetRemoteCompletion('pr', 'request', absent)).toThrow(/target has no git remote.*completion:pr/);
     // 거부는 «무엇을 하면 되나»를 말한다 — 로컬로 돌리는 길 ⊕ PR 을 얻는 길(2026-09-23 Phase 4 실측)
     expect(() => resolveTargetRemoteCompletion('pr', 'request', absent)).toThrow(/drop the completion flags.*worktree-only.*git remote add/);
+    // UX 15(2026-09-26 베어 VM): 자연어 경로(TUI 모델이 채운 인자)는 사람이 친 플래그가 아니다 — 던지지 않고 워크트리로 내린다.
+    const nl = resolveTargetRemoteCompletion('pr', 'request', absent, { naturalLanguageDispatch: true });
+    expect(nl.completion).toBe('worktree-only');
+    expect(nl.reason).toContain('natural-language request');
+    expect(resolveTargetRemoteCompletion('pr', 'request', unreadable, { naturalLanguageDispatch: true })).toEqual({ completion: 'pr' });
   });
 
   it('completion·autoReview는 값과 함께 request/config/default 출처를 한 자리에서 해석한다', () => {

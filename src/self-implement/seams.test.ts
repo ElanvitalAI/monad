@@ -50,7 +50,7 @@ describe('launchDevGoalFileDetached', () => {
   test('target을 --base 바로 뒤의 인접 argv 두 칸으로 전달한다', async () => {
     const received: SpawnObservation[] = [];
     await launchDevGoalFileDetached({ goalFile: 'g.md', base: 'main', target: '/tmp/x' }, fakeSpawn(received));
-    expect(received.map(({ args }) => args)).toEqual([['bin/elanous.mjs', 'dev', '--file', 'g.md', '--base', 'main', '--target', '/tmp/x']]);
+    expect(received.map(({ args }) => args)).toEqual([[ELANOUS_ENTRY_SCRIPT, 'dev', '--file', 'g.md', '--base', 'main', '--target', '/tmp/x']]);   // 절대 경로(사용자 프로젝트 cwd 에서도)
   });
 
   function expectDetachedLaunch(observation: SpawnObservation, args: string[]): void {
@@ -65,7 +65,7 @@ describe('launchDevGoalFileDetached', () => {
     await launchDevGoalFileDetached({ goalFile: 'tmp/nonexistent-zzz.md', base: 'main', correlation: 'request-zzz' }, fakeSpawn(received));
     expect(received).toHaveLength(1);
     const argv = received[0]!.args;
-    expectDetachedLaunch(received[0]!, ['bin/elanous.mjs', 'dev', '--file', 'tmp/nonexistent-zzz.md', '--base', 'main', '--correlation', 'request-zzz']);
+    expectDetachedLaunch(received[0]!, [ELANOUS_ENTRY_SCRIPT, 'dev', '--file', 'tmp/nonexistent-zzz.md', '--base', 'main', '--correlation', 'request-zzz']);
 
     const result = spawnSync(process.execPath, [argv[0]!, '--test', ...argv.slice(1)], {
       cwd: resolve(import.meta.dir, '../..'), encoding: 'utf8', timeout: 30_000,
@@ -4134,13 +4134,34 @@ describe('listOpenDraftsForLineage — 원장과 draft 를 PR «URL» 로 잇는
     try {
       // 먼저 열린(더 이른) 다른 저장소의 #5 — 번호로만 이으면 이것이 이긴다
       appendRunLedgerEntry({ runId: 'run-other-repo', event: 'pr-opened', timestamp: '2026-09-01T00:00:00Z', data: { number: 5, url: 'https://github.com/someone/other/pull/5' } }, dir);
-      appendRunLedgerEntry({ runId: 'run-this-repo', event: 'pr-opened', timestamp: '2026-09-20T00:00:00Z', data: { number: 5, url: 'https://github.com/ElanvitalAI/monad/pull/5' } }, dir);
-      const drafts = listOpenDraftsForLineage(() => [{ number: 5, url: 'https://github.com/ElanvitalAI/monad/pull/5' }], undefined, dir);
+      appendRunLedgerEntry({ runId: 'run-this-repo', event: 'pr-opened', timestamp: '2026-09-20T00:00:00Z', data: { number: 5, url: 'https://github.com/ElanvitalAI/elanous/pull/5' } }, dir);
+      const drafts = listOpenDraftsForLineage(() => [{ number: 5, url: 'https://github.com/ElanvitalAI/elanous/pull/5' }], undefined, dir);
       expect(drafts).toEqual([{ number: 5, runId: 'run-this-repo', openedAt: '2026-09-20T00:00:00Z' }]);
-      const unknown = listOpenDraftsForLineage(() => [{ number: 7, url: 'https://github.com/ElanvitalAI/monad/pull/7' }], undefined, dir);
+      const unknown = listOpenDraftsForLineage(() => [{ number: 7, url: 'https://github.com/ElanvitalAI/elanous/pull/7' }], undefined, dir);
       expect(unknown).toEqual([{ number: 7, runId: '', openedAt: '' }]);
     } finally {
       rmSync(dir, { recursive: true, force: true });
     }
+  });
+});
+
+import { existsSync as __existsSync } from 'node:fs';
+import { isAbsolute as __isAbsolute } from 'node:path';
+import { ELANOUS_ENTRY_SCRIPT, launchDevGoalFileDetached as __launchDetached } from './seams.js';
+// 2026-09-26 베어 Ubuntu 26.04 실측: 상대 경로 `bin/elanous.mjs` 로 띄워 사용자 프로젝트(cwd)에서 자식이 즉사했다.
+describe('launchDevGoalFileDetached — 사용자 프로젝트에서도 진입 스크립트를 찾는다', () => {
+  test('진입 스크립트는 절대 경로이고 실제로 있다 · cwd 와 무관하다', async () => {
+    const calls: Array<{ cmd: string; args: readonly string[] }> = [];
+    const fakeSpawn = ((cmd: string, args: readonly string[]) => {
+      calls.push({ cmd, args });
+      const handlers: Record<string, () => void> = {};
+      queueMicrotask(() => handlers.spawn?.());
+      return { once: (ev: string, fn: () => void) => { handlers[ev] = fn; }, off: () => {}, unref: () => {} };
+    }) as unknown as typeof import('node:child_process').spawn;
+    await __launchDetached({ goalFile: '/tmp/GOAL.md' }, fakeSpawn);
+    expect(__isAbsolute(calls[0]!.args[0]!)).toBe(true);
+    expect(calls[0]!.args[0]).toBe(ELANOUS_ENTRY_SCRIPT);
+    expect(__existsSync(ELANOUS_ENTRY_SCRIPT)).toBe(true);
+    expect(calls[0]!.args.slice(1, 4)).toEqual(['dev', '--file', '/tmp/GOAL.md']);
   });
 });

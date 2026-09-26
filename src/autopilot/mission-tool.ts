@@ -727,7 +727,7 @@ export async function dispatchAutopilotMissions(args: Record<string, unknown>): 
       if (phaseRef) {
         // 페이즈 지정 시 PR 링크/노트를 항상 phase notes 에 추가(reconcile 이 최신 PR 로 인지) + status 선택 갱신.
         const phaseNotes = [
-          ...(pr ? [`[SE-PR] https://github.com/ElanvitalAI/monad/pull/${pr} (외부 주입)`] : []),
+          ...(pr ? [`[SE-PR] https://github.com/ElanvitalAI/elanous/pull/${pr} (외부 주입)`] : []),
           ...(note ? [`[EXTERNAL] ${note}`] : []),
         ];
         const upd = setPhaseStatusDirect(id, phaseRef, newStatus, phaseNotes);

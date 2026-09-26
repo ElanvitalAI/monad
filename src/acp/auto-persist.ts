@@ -59,12 +59,9 @@ export interface AutoPersistHandle {
   readonly mode: AcpAutoPersistMode;
 }
 
-/** Resolve the default auto-persist mode from the environment.
- *  `ELANOUS_ACP_PERSIST_MODE=off` opts out; anything else (or unset)
- *  keeps `'auto'`. Exported so consumers can audit + re-use in tests. */
-export function defaultAcpAutoPersistMode(env: NodeJS.ProcessEnv = process.env): AcpAutoPersistMode {
-  const raw = env['ELANOUS_ACP_PERSIST_MODE'];
-  if (raw === 'off') return 'off';
+/** 기본 자동 저장 모드 — 항상 `'auto'`(2026-09-26 설정 졸업: 옛 끄기 스위치 ELANOUS_ACP_PERSIST_MODE 를 없앴다).
+ *  호출자가 `opts.mode` 로 명시하면 그것을 쓴다(시험). */
+export function defaultAcpAutoPersistMode(): AcpAutoPersistMode {
   return 'auto';
 }
 

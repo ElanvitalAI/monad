@@ -36,11 +36,11 @@ export function renderWhere(r: InstanceResolution, extra: {
   L.push('  ── 판정 입력 ──');
   L.push(`  이 트리    : ${extra.selfTree}`);
   L.push(`  리더 권위  : ${extra.authority ?? '(미지정)'}${extra.isLeader === null ? ' · 판정 보류' : extra.isLeader ? ' · 이 트리가 리더' : ' · 비-리더'}`);
-  L.push(`  트리 파생  : ${extra.treeDerivedEnabled ? 'ON' : 'OFF (기본)'}`);
+  L.push(`  트리 파생  : ${extra.treeDerivedEnabled ? 'ON' : 'OFF (시험 override)'}`);
   if (r.wouldBeIfTreeDerived) {
     L.push('');
     L.push(`  ⓘ 트리 파생을 켜면 → ${r.wouldBeIfTreeDerived.kind} · ${r.wouldBeIfTreeDerived.root}`);
-    L.push(`     (${r.wouldBeIfTreeDerived.why}) · config \`instance.treeDerivedTest\` 로 켭니다`);
+    L.push(`     (${r.wouldBeIfTreeDerived.why})`);
   }
   return L.join('\n');
 }

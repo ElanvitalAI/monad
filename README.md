@@ -88,7 +88,7 @@ elanous doctor        # every credential the code reads: is it resolved, and fro
 work with zero credentials. Each key you add unlocks one capability; see
 [`.env.example`](.env.example). The primary path for LLM access is a
 **subscription**, not an API key (`elanous login openai-codex`) — details in
-[Codex subscription](https://elanvitalai.github.io/elanous/models/codex-subscription/).
+[Codex subscription](https://docs.elanous.ai/models/codex-subscription/).
 
 ## Quick start
 
@@ -97,7 +97,7 @@ elanous harness say "add a --json flag to the status command"   # one sentence
 elanous harness ask 내부 문서 `MY-ASK`                        # a written goal
 ```
 
-See the [Quickstart](https://elanvitalai.github.io/elanous/getting-started/quickstart/).
+See the [Quickstart](https://docs.elanous.ai/getting-started/quickstart/).
 ## What makes it different
 
 Most agents do one of these well. elanous's claim is that **all three
@@ -151,18 +151,18 @@ several places — notably the default integrity gate runs
 Running the harness against another repository is **not supported yet**.
 ## Documentation
 
-All documentation lives at **[elanvitalai.github.io/elanous](https://elanvitalai.github.io/elanous/)** (한국어: [/ko](https://elanvitalai.github.io/elanous/ko/)).
+All documentation lives at **[docs.elanous.ai](https://docs.elanous.ai/)** (한국어: [/ko](https://docs.elanous.ai/ko/)).
 
 | Goal | Start here |
 |---|---|
-| Install, update, uninstall | [Install](https://elanvitalai.github.io/elanous/getting-started/install/) · [Update and uninstall](https://elanvitalai.github.io/elanous/getting-started/update-and-uninstall/) |
-| First run | [Quickstart](https://elanvitalai.github.io/elanous/getting-started/quickstart/) · [Commands you will use](https://elanvitalai.github.io/elanous/using-elanous/commands/) |
-| Models and logins | [Providers](https://elanvitalai.github.io/elanous/models/providers/) · [Codex subscription](https://elanvitalai.github.io/elanous/models/codex-subscription/) |
-| Sessions and the TUI | [Sessions](https://elanvitalai.github.io/elanous/using-elanous/sessions/) · [The TUI](https://elanvitalai.github.io/elanous/using-elanous/tui/) |
-| Chat channels | [Telegram](https://elanvitalai.github.io/elanous/surfaces/telegram/) · [Discord](https://elanvitalai.github.io/elanous/surfaces/discord/) |
-| Settings and tools | [Configuration](https://elanvitalai.github.io/elanous/reference/configuration/) · [External commands](https://elanvitalai.github.io/elanous/reference/external-commands/) · [Source layout](https://elanvitalai.github.io/elanous/concepts/source-layout/) |
-| Something failed | [Troubleshooting](https://elanvitalai.github.io/elanous/help/troubleshooting/) |
-| What shipped | [Releases](https://elanvitalai.github.io/elanous/releases/0-1-0/) |
+| Install, update, uninstall | [Install](https://docs.elanous.ai/getting-started/install/) · [Update and uninstall](https://docs.elanous.ai/getting-started/update-and-uninstall/) |
+| First run | [Quickstart](https://docs.elanous.ai/getting-started/quickstart/) · [Commands you will use](https://docs.elanous.ai/using-elanous/commands/) |
+| Models and logins | [Providers](https://docs.elanous.ai/models/providers/) · [Codex subscription](https://docs.elanous.ai/models/codex-subscription/) |
+| Sessions and the TUI | [Sessions](https://docs.elanous.ai/using-elanous/sessions/) · [The TUI](https://docs.elanous.ai/using-elanous/tui/) |
+| Chat channels | [Telegram](https://docs.elanous.ai/surfaces/telegram/) · [Discord](https://docs.elanous.ai/surfaces/discord/) |
+| Settings and tools | [Configuration](https://docs.elanous.ai/reference/configuration/) · [External commands](https://docs.elanous.ai/reference/external-commands/) · [Source layout](https://docs.elanous.ai/concepts/source-layout/) |
+| Something failed | [Troubleshooting](https://docs.elanous.ai/help/troubleshooting/) |
+| What shipped | [Releases](https://docs.elanous.ai/releases/0-1-0/) |
 ## Requirements
 
 - **bun** — the tested version is pinned in [`.bun-version`](.bun-version); the

@@ -111,7 +111,7 @@ for (const full of files) {
     //    두드리면 rate limit 에 걸리고, 그러면 전 문서가 `unverifiable` 로 시끄러워진다.
     //    ⇒ `--check-pointers` 를 명시했을 때만 돈다(야간 배선이 그 플래그를 준다).
     if (checkPointers) issuecommentWarnings.push(...await lintGitHubIssueCommentPointers(sourceRepoRel, fullText, {
-      repository: { owner: 'ElanvitalAI', repo: 'monad-agent' },
+      repository: { owner: 'ElanvitalAI', repo: 'elanous-agent' },
       apiBase: process.env.GITHUB_API_URL,
       fetchStatus: issueCommentFetchStatus,
     }));

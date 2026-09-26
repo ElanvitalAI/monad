@@ -172,7 +172,7 @@ export function PersonaCard() {
       <p className="text-[10px] text-muted-foreground">
         Note: ⚗ Auto describer 와 orchestrator routing 은{' '}
         <a
-          href="https://github.com/ElanvitalAI/monad/blob/main/내부 문서 `RESEARCH-hermes-pr27572-triage-orchestrator-deferred-2026-05-19`"
+          href="https://github.com/ElanvitalAI/elanous/blob/main/내부 문서 `RESEARCH-hermes-pr27572-triage-orchestrator-deferred-2026-05-19`"
           target="_blank"
           rel="noopener noreferrer"
           className="underline"

@@ -172,15 +172,12 @@ export function setTreeDerivedTestForTesting(enabled: boolean | undefined): void
 
 /** 3층 스위치 — 머신 레벨 `~/.elanous/config.json` 의 `instance.treeDerivedTest`.
  *  **config 기계를 거치지 않는다**(순환 방지). 기본 false. */
+// 설정 졸업 1-d(2026-09-26 · 대표 «기본으로 켜진 것은 옵션으로 두지 않는다»): 3층(트리 파생)은 늘 켠다.
+//   운영은 07-26 부터 켜 두었다. 리더가 지정되지 않은 새 설치는 3층이 «추측하지 않고» 4층(운영)으로 떨어지므로 동작이 같다.
+//   `instance.treeDerivedTest` 는 폐기 키(`RETIRED_CONFIG_KEYS`) — 파일 값을 읽지 않는다. 시험만 override 로 끈다.
 export function treeDerivedTestEnabled(): boolean {
   if (treeDerivedOverride !== undefined) return treeDerivedOverride;
-  try {
-    const { readFileSync, existsSync } = require('node:fs') as typeof import('node:fs');
-    const p = join(homedir(), '.elanous', 'config.json');
-    if (!existsSync(p)) return false;
-    const raw = JSON.parse(readFileSync(p, 'utf-8')) as { instance?: { treeDerivedTest?: boolean } };
-    return raw?.instance?.treeDerivedTest === true;
-  } catch { return false; }
+  return true;
 }
 
 /** state-dir·config-dir 이 공유하는 **실효 뿌리**. env 스탬프가 있으면 그것이 이긴다. */

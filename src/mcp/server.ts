@@ -71,7 +71,7 @@ export function negotiateMcpProtocolVersion(
   return MCP_PROTOCOL_VERSION_LATEST;
 }
 
-const SERVER_INFO = { name: 'monad-agent', version: '0.1.0' };
+const SERVER_INFO = { name: 'elanous-agent', version: '0.1.0' };
 
 // ─── Handler ─────────────────────────────────────────────────────
 

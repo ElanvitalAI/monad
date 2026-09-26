@@ -165,10 +165,11 @@ describe('provisionDerivedUniverse — 자식이 태어날 우주를 채운다',
     expect(out.error).toBeTruthy();         // 사유는 남는다(관측 + 반환값)
   }, 90_000);
 
-  test('3층 OFF 면 할 일이 없다 (자식은 운영/명시 우주로 간다)', async () => {
+  // 설정 졸업 1-d(2026-09-26): 3층은 늘 켠다 — 설정 파일의 `instance.treeDerivedTest:false` 는 폐기 키라 «더 끄지 못한다».
+  test('폐기 키 treeDerivedTest:false 로는 3층을 끄지 못한다 (늘 켬 · 설정 졸업 1-d)', async () => {
     const out = await run({ switchOn: false });
-    expect(out.outcome).toBe('switch-off');
-    expect(out.root).toBe(null);
+    expect(out.outcome).toBe('provisioned');
+    expect(out.root).not.toBe(null);
   }, 90_000);
 });
 

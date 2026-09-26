@@ -131,7 +131,7 @@ export interface DispatchContext {
    *    - The field is a type-checked hook — any future change to
    *      the DragManager contract surfaces at compile time here.
    *
-   *  See PR #308 §5.5 + [3-way convergence comment on PR #306](https://github.com/ElanvitalAI/monad/pull/306#issuecomment-4284981117).
+   *  See PR #308 §5.5 + [3-way convergence comment on PR #306](https://github.com/ElanvitalAI/elanous/pull/306#issuecomment-4284981117).
    *
    *  Note (I.2): since PR #374 the dispatcher does NOT consume ESC
    *  directly from this field. `DragEscInterceptor` (registered on

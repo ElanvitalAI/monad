@@ -1928,34 +1928,32 @@ export async function runNexus(opts: RunNexusOptions = {}): Promise<RunNexusHand
           const streamingStt = getDaemonStreamingSttProvider();
           const ttsProvider = getDaemonTtsProvider();
           if (streamingStt) {
-            const { createPwaVoiceAdapter, isPwaVoiceEnabled } =
+            const { createPwaVoiceAdapter } =
               await import('../voice/channel-adapters/pwa-voice-adapter.js');
-            if (isPwaVoiceEnabled()) {
-              if (ttsProvider) {
-                const { createPwaTtsBridge } =
-                  await import('../voice/voice-pwa-tts-bridge.js');
-                pwaTtsBridge = createPwaTtsBridge({ ttsProvider });
-                // FU-2 webterm wire — same instance the ACP server
-                // dereferences via the holder wrapper (line ~547).
-                // chat REST path uses local var below; both reach
-                // the same per-session bridge.
-                pwaTtsBridgeHolder.current = pwaTtsBridge;
-              }
-              const bridge = pwaTtsBridge;
-              realPwaAdapter = createPwaVoiceAdapter({
-                sttProvider: streamingStt,
-                onSessionOpen: (session) => {
-                  if (bridge && session.sessionId && session.emitDownstream) {
-                    const emit = session.emitDownstream.bind(session);
-                    bridge.attach(session.sessionId, (frame) => emit(frame));
-                  }
-                },
-                onSessionClose: (session) => {
-                  if (bridge && session.sessionId) bridge.detach(session.sessionId);
-                },
-              });
-              console.log(`voice: NEXUS PWA WS adapter functional (streaming STT wired · TTS bridge ${bridge ? 'wired' : 'absent (no TTS provider)'})`);
+            if (ttsProvider) {
+              const { createPwaTtsBridge } =
+                await import('../voice/voice-pwa-tts-bridge.js');
+              pwaTtsBridge = createPwaTtsBridge({ ttsProvider });
+              // FU-2 webterm wire — same instance the ACP server
+              // dereferences via the holder wrapper (line ~547).
+              // chat REST path uses local var below; both reach
+              // the same per-session bridge.
+              pwaTtsBridgeHolder.current = pwaTtsBridge;
             }
+            const bridge = pwaTtsBridge;
+            realPwaAdapter = createPwaVoiceAdapter({
+              sttProvider: streamingStt,
+              onSessionOpen: (session) => {
+                if (bridge && session.sessionId && session.emitDownstream) {
+                  const emit = session.emitDownstream.bind(session);
+                  bridge.attach(session.sessionId, (frame) => emit(frame));
+                }
+              },
+              onSessionClose: (session) => {
+                if (bridge && session.sessionId) bridge.detach(session.sessionId);
+              },
+            });
+            console.log(`voice: NEXUS PWA WS adapter functional (streaming STT wired · TTS bridge ${bridge ? 'wired' : 'absent (no TTS provider)'})`);
           } else {
             console.log('voice: NEXUS streaming STT inactive (set OPENAI_API_KEY for openai-realtime-stt) — voice WS will use stub adapter');
           }

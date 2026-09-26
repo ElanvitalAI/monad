@@ -21,10 +21,13 @@
 //   - `aws s3 sync s3://bucket/monad/<elanous_id>/` cleanly backs up one
 //     machine; `aws s3 rm --recursive` cleanly purges one machine's state.
 //
-// Env overrides:
-//   AWS_S3_BUCKET           — bucket name. Default 'elanvital-public'
-//                             (matches the yt-vault skill's bucket so we
-//                             reuse one credential setup).
+// Buckets (2026-09-26 · 🚨 대화 원문이 공개 버킷에 올라가던 사고의 수리):
+//   ⛔ 기본 버킷은 «없다». 설정하지 않으면 올리지 않는다(새 설치·공개 사용자가 남의 버킷을 부르지 않게).
+//   - 비공개 버킷 = 기본. 세션·기억 보관·지표 등 «모든» 기능.
+//       env `AWS_S3_BUCKET` → config `storage.s3.bucket`
+//   - 공개 버킷 = «공개 링크를 만드는» 기능만(`PUBLIC_FEATURE_SEGMENTS`: 게시·아침 보고·디버그 묶음).
+//       env `AWS_S3_PUBLIC_BUCKET` → config `storage.s3.publicBucket`
+//   어느 버킷으로 갈지는 «키»가 정한다(`bucketForKey`) — 호출자는 키만 넘긴다.
 //   AWS_S3_ELANOUS_PREFIX     — top-level prefix. Default 'elanous'.
 //   ELANOUS_S3_DISABLED=1     — opt-out (force local-only mode for dev /
 //                             airplane / fresh-install).
@@ -35,8 +38,10 @@
 // surfaced as thrown Errors so callers can degrade to local-only mode.
 
 import { execSync, execFileSync } from 'node:child_process';
-import { existsSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { getOrCreateElanousId } from '../mss/identity.js';
+import { getElanousConfigDir } from '../elanous-config-dir.js';
 import { debug } from '../debug/log.js';
 
 let _awsBin: string | undefined;
@@ -51,7 +56,6 @@ export function awsBin(): string {
   return _awsBin;
 }
 
-const DEFAULT_BUCKET = 'elanvital-public';
 const DEFAULT_PREFIX = 'monad';
 const UPLOAD_TIMEOUT_MS = 60_000;
 const DOWNLOAD_TIMEOUT_MS = 30_000;
@@ -91,17 +95,53 @@ export const S3_FEATURE_PREFIXES = {
 export type S3FeatureKey = keyof typeof S3_FEATURE_PREFIXES;
 
 export interface S3Config {
+  /** 비공개 버킷(기본 목적지) — 비어 있으면 비공개 기능은 올리지 않는다. */
   bucket: string;
+  /** 공개 링크용 버킷 — 비어 있으면 공개 게시는 링크 없이 로컬로만. */
+  publicBucket: string;
   prefix: string;
   disabled: boolean;
 }
 
+/** 공개 링크를 «의도적으로» 만드는 기능의 키 조각 — 이 조각이 든 키만 공개 버킷으로 간다. 나머지는 전부 비공개. */
+export const PUBLIC_FEATURE_SEGMENTS = ['publish', 'publish-cold', 'morning', 'debug-bundle'] as const;
+
+function configuredBuckets(): { bucket?: string; publicBucket?: string } {
+  try {
+    const raw = JSON.parse(readFileSync(join(getElanousConfigDir(), 'config.json'), 'utf8')) as { storage?: { s3?: { bucket?: unknown; publicBucket?: unknown } } };
+    const s3 = raw?.storage?.s3;
+    return {
+      ...(typeof s3?.bucket === 'string' && s3.bucket.trim() ? { bucket: s3.bucket.trim() } : {}),
+      ...(typeof s3?.publicBucket === 'string' && s3.publicBucket.trim() ? { publicBucket: s3.publicBucket.trim() } : {}),
+    };
+  } catch { return {}; }
+}
+
 export function s3Config(): S3Config {
+  const cfg = configuredBuckets();
   return {
-    bucket: process.env.AWS_S3_BUCKET?.trim() || DEFAULT_BUCKET,
+    bucket: process.env.AWS_S3_BUCKET?.trim() || cfg.bucket || '',
+    publicBucket: process.env.AWS_S3_PUBLIC_BUCKET?.trim() || cfg.publicBucket || '',
     prefix: process.env.AWS_S3_ELANOUS_PREFIX?.trim() || DEFAULT_PREFIX,
     disabled: process.env.ELANOUS_S3_DISABLED === '1',
   };
+}
+
+/** 키가 공개 기능의 것인가 — 접두 다음 조각들 중 하나가 `PUBLIC_FEATURE_SEGMENTS` 면 공개. */
+export function isPublicKey(key: string): boolean {
+  return key.split('/').some((seg) => (PUBLIC_FEATURE_SEGMENTS as readonly string[]).includes(seg));
+}
+
+/** 이 키가 갈 버킷. 없으면 던진다 — 호출자는 이미 실패를 받아 로컬로 물러난다(«조용히 공개 버킷으로» 가지 않는다). */
+export function bucketForKey(key: string): string {
+  const cfg = s3Config();
+  const bucket = isPublicKey(key) ? cfg.publicBucket : cfg.bucket;
+  if (!bucket) {
+    const which = isPublicKey(key) ? 'storage.s3.publicBucket(AWS_S3_PUBLIC_BUCKET)' : 'storage.s3.bucket(AWS_S3_BUCKET)';
+    try { debug.log('s3.bucket', 'not-configured', { which, publicKey: isPublicKey(key) }); } catch { /* 관측 실패가 흐름을 막지 않는다 */ }
+    throw new Error(`S3 버킷이 설정되지 않았다: ${which}`);
+  }
+  return bucket;
 }
 
 /** Build the canonical S3 key for a per-machine artifact. */
@@ -115,7 +155,7 @@ export function s3ElanousKey(feature: S3FeatureKey, ...subpath: string[]): strin
 
 /** Build the s3:// URI from a key. */
 export function s3Uri(key: string): string {
-  return `s3://${s3Config().bucket}/${key}`;
+  return `s3://${bucketForKey(key)}/${key}`;
 }
 
 /** Build the public HTTPS URL for an object. Virtual-hosted style
@@ -127,7 +167,9 @@ export function s3Uri(key: string): string {
 /** S3 공개 버킷 base URL(https) — 외부 공개 게시의 canonical origin 용
  *  (렌더러가 canonical URL 을 HTTPS 로 요구하므로 localhost origin 은 못 씀). */
 export function s3PublicBase(): string {
-  return `https://${s3Config().bucket}.s3.amazonaws.com`;
+  const bucket = s3Config().publicBucket;
+  if (!bucket) throw new Error('S3 공개 버킷이 설정되지 않았다: storage.s3.publicBucket(AWS_S3_PUBLIC_BUCKET)');
+  return `https://${bucket}.s3.amazonaws.com`;
 }
 
 export function s3PublicUrl(key: string): string {
@@ -147,7 +189,8 @@ let cliAvailable: boolean | null = null;
 export function isS3Available(): boolean {
   if (cliAvailable !== null) return cliAvailable;
   const cfg = s3Config();
-  if (cfg.disabled) {
+  if (cfg.disabled || (!cfg.bucket && !cfg.publicBucket)) {
+    // 버킷이 하나도 없으면 S3 를 안 쓴다(기본 버킷 없음 · 2026-09-26).
     cliAvailable = false;
     return false;
   }

@@ -67,11 +67,12 @@ describe('ptyManifestDbPath instance resolution', () => {
     }
   }, 90_000);
 
-  test('tree-derived opt-in remains off by default without ELANOUS_STATE_DIR', () => {
+  // 설정 졸업 1-d(2026-09-26): 3층은 늘 켠다 — 설정의 treeDerivedTest:false 는 폐기 키라 비-리더 트리는 여전히 트리 파생이다.
+  test('retired treeDerivedTest:false no longer turns tree-derived off for a non-leader tree', () => {
     const { output, home } = probe({ treeDerivedTest: false });
     try {
-      expect(output.state).toBe(join(home, '.elanous'));
-      expect(output.manifest).toBe(join(home, '.elanous', 'pty', 'manifest.db'));
+      expect(output.state).toEndWith('.elanous-test');
+      expect(output.manifest).toBe(join(output.state!, 'pty', 'manifest.db'));
     } finally {
       rmSync(home, { recursive: true, force: true });
     }

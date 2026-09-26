@@ -644,7 +644,7 @@ describe('harnessPrBranches — branch-targeted GraphQL batching', () => {
     });
     const res = harnessPrBranches(
       ['self-impl/closed-one', 'self-impl/no-pr'],
-      'ElanvitalAI/monad',
+      'ElanvitalAI/elanous',
       () => ({ status: 0, stdout: REAL_RESPONSE }),
     );
     expect(res.ok).toBe(true);
@@ -657,7 +657,7 @@ describe('harnessPrBranches — branch-targeted GraphQL batching', () => {
     const INVENTED = JSON.stringify({
       data: { repository: { b0: { pullRequests: { nodes: [{ state: 'OPEN' }] } } } },
     });
-    const res = harnessPrBranches(['self-impl/a'], 'ElanvitalAI/monad', () => ({ status: 0, stdout: INVENTED }));
+    const res = harnessPrBranches(['self-impl/a'], 'ElanvitalAI/elanous', () => ({ status: 0, stdout: INVENTED }));
     expect(res.ok).toBe(false);
   });
 

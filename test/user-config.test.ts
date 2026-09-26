@@ -1356,36 +1356,6 @@ describe('user-config voice.discord (sprint 22 follow-up — Discord text dispat
     expect(c.voice.discord).toEqual({});
   });
 
-  test('dispatch preserved when valid', () => {
-    write({ voice: { discord: { dispatch: 'auto-reply' } } });
-    expect(buildUserConfig(cfgPath).voice.discord.dispatch).toBe('auto-reply');
-    write({ voice: { discord: { dispatch: 'tui-bridge' } } });
-    expect(buildUserConfig(cfgPath).voice.discord.dispatch).toBe('tui-bridge');
-  });
-
-  test('dispatch dropped when invalid (sparse fallback)', () => {
-    write({ voice: { discord: { dispatch: 'voice-channel' } } });
-    expect(buildUserConfig(cfgPath).voice.discord.dispatch).toBeUndefined();
-    write({ voice: { discord: { dispatch: 9 } } });
-    expect(buildUserConfig(cfgPath).voice.discord.dispatch).toBeUndefined();
-  });
-
-  test('replyMode preserved when valid', () => {
-    write({ voice: { discord: { replyMode: 'voice' } } });
-    expect(buildUserConfig(cfgPath).voice.discord.replyMode).toBe('voice');
-    write({ voice: { discord: { replyMode: 'text' } } });
-    expect(buildUserConfig(cfgPath).voice.discord.replyMode).toBe('text');
-    write({ voice: { discord: { replyMode: 'auto' } } });
-    expect(buildUserConfig(cfgPath).voice.discord.replyMode).toBe('auto');
-  });
-
-  test('replyMode dropped when invalid (sparse fallback)', () => {
-    write({ voice: { discord: { replyMode: 'loud' } } });
-    expect(buildUserConfig(cfgPath).voice.discord.replyMode).toBeUndefined();
-    write({ voice: { discord: { replyMode: 8 } } });
-    expect(buildUserConfig(cfgPath).voice.discord.replyMode).toBeUndefined();
-  });
-
   test('voiceLanguage preserved when non-empty string', () => {
     write({ voice: { discord: { voiceLanguage: 'ko' } } });
     expect(buildUserConfig(cfgPath).voice.discord.voiceLanguage).toBe('ko');
@@ -1462,46 +1432,33 @@ describe('user-config voice.discord (sprint 22 follow-up — Discord text dispat
     write({
       voice: {
         discord: {
-          dispatch: 'tui-bridge',
-          replyMode: 'voice',
           voiceLanguage: 'ko',
           voiceChannel: { enabled: true, listenFilter: 'caller', leaveOnEmpty: true },
         },
         telegram: { dispatch: 'auto-reply', replyMode: 'voice' },
-        pwa: { dispatch: 'tui-bridge' },
       },
     });
     const c = buildUserConfig(cfgPath);
-    expect(c.voice.discord.dispatch).toBe('tui-bridge');
-    expect(c.voice.discord.replyMode).toBe('voice');
     expect(c.voice.discord.voiceLanguage).toBe('ko');
     expect(c.voice.discord.voiceChannel?.enabled).toBe(true);
     expect(c.voice.discord.voiceChannel?.listenFilter).toBe('caller');
     expect(c.voice.discord.voiceChannel?.leaveOnEmpty).toBe(true);
     expect(c.voice.telegram.dispatch).toBe('auto-reply');
     expect(c.voice.telegram.replyMode).toBe('voice');
-    expect(c.voice.pwa.dispatch).toBe('tui-bridge');
   });
 });
 
 describe('user-config voice.pwa (sprint 22 §1.2 — PWA voice WS dispatch)', () => {
-  test('default → empty object (caller applies dispatch = "daemon-direct")', () => {
+  test('retired voice dispatch/replyMode keys are ignored (2026-09-26 config graduation)', () => {
+    write({ voice: { discord: { dispatch: 'tui-bridge', replyMode: 'voice' }, pwa: { dispatch: 'tui-bridge' } } });
     const c = buildUserConfig(cfgPath);
+    expect(c.voice.discord).toEqual({});
     expect(c.voice.pwa).toEqual({});
   });
 
-  test('dispatch preserved when valid', () => {
-    write({ voice: { pwa: { dispatch: 'daemon-direct' } } });
-    expect(buildUserConfig(cfgPath).voice.pwa.dispatch).toBe('daemon-direct');
-    write({ voice: { pwa: { dispatch: 'tui-bridge' } } });
-    expect(buildUserConfig(cfgPath).voice.pwa.dispatch).toBe('tui-bridge');
-  });
-
-  test('dispatch dropped when invalid (sparse fallback)', () => {
-    write({ voice: { pwa: { dispatch: 'broadcast-everywhere' } } });
-    expect(buildUserConfig(cfgPath).voice.pwa.dispatch).toBeUndefined();
-    write({ voice: { pwa: { dispatch: 7 } } });
-    expect(buildUserConfig(cfgPath).voice.pwa.dispatch).toBeUndefined();
+  test('default → empty object (caller applies dispatch = "daemon-direct")', () => {
+    const c = buildUserConfig(cfgPath);
+    expect(c.voice.pwa).toEqual({});
   });
 
   test('coexists with telegram + tts sub-sections', () => {
@@ -1509,13 +1466,11 @@ describe('user-config voice.pwa (sprint 22 §1.2 — PWA voice WS dispatch)', ()
       voice: {
         tts: { auto: true },
         telegram: { replyMode: 'voice' },
-        pwa: { dispatch: 'tui-bridge' },
       },
     });
     const c = buildUserConfig(cfgPath);
     expect(c.voice.tts.auto).toBe(true);
     expect(c.voice.telegram.replyMode).toBe('voice');
-    expect(c.voice.pwa.dispatch).toBe('tui-bridge');
   });
 });
 

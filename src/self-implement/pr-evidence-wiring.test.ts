@@ -10,7 +10,6 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
 import { runSelfImplement, type SelfImplementSeams } from './orchestrator.js';
-import { setUserConfigOverlay } from '../user-config.js';
 
 const isolatedStateDir = mkdtempSync(join(tmpdir(), 'elanous-pr-evidence-wiring-'));
 const priorStateDir = process.env.ELANOUS_STATE_DIR;
@@ -100,7 +99,7 @@ describe('pr-evidence-artifact · 배선', () => {
     // ⑴ 관측이 «나온다» — 이 이벤트가 0건이면 배선이 실행 경로에 없다.
     const events = evidenceEvents(captured);
     expect(events).toHaveLength(1);
-    expect(events[0]).toMatchObject({ accepted: true, blocked: false, missingCount: 0, axes: 7 });
+    expect(events[0]).toMatchObject({ accepted: true, missingCount: 0, axes: 7 });
 
     // ⑵ 본문에 «실린다» — 일곱 절이 전부 있다.
     expect(captured.bodies).toHaveLength(1);
@@ -137,7 +136,8 @@ describe('pr-evidence-artifact · 배선', () => {
 
     const events = evidenceEvents(captured);
     expect(events).toHaveLength(1);
-    expect(events[0]).toMatchObject({ accepted: false, blocked: false, enforced: false });
+    expect(events[0]).toMatchObject({ accepted: false });
+    expect(events[0]).not.toHaveProperty('blocked');
     // 계획·위험·대안이 골에서 안 왔다. ⛔ 「0개」가 아니라 «이름»이 나온다.
     expect(events[0]!.missing).toEqual(['risks', 'alternatives']);
     expect(String(events[0]!.reason)).toContain('위험');
@@ -148,43 +148,4 @@ describe('pr-evidence-artifact · 배선', () => {
     expect(captured.bodies[0]!).toContain('## 구현 요약');
   });
 
-  test('enforce 를 켜면 PR 준비 «전»에 멎는다 — openPr 이 한 번도 안 불린다', async () => {
-    // ⛔⭐ 이 시험이 무는 것: 「막는다」가 «PR 준비 전»인가. `openPr` 호출 수가 그 답이다 —
-    //   본문을 만들고 나서 막으면 이 수가 1이 된다.
-    const captured: Captured = { ledger: [], bodies: [] };
-    setUserConfigOverlay((c) => ({
-      ...c,
-      tools: { ...c.tools, selfImplement: { ...c.tools.selfImplement, prEvidenceArtifactEnforce: true } },
-    }));
-    try {
-      // ⚠️ 이 자리의 기존 관행은 «던지기»다 — 바로 아래 `openPr` 실패 경로도 같은 모양으로 던진다.
-      //   그래서 새 종료 단계를 만들지 않고 그 계약을 따른다(의도적 결정).
-      let thrown: unknown;
-      try {
-        await runSelfImplement({
-          feature: 'enforce 를 켜고 골 문서 없이 발사',
-          maxReworkRounds: 1,
-          seams: wiringSeams(captured),
-        });
-      } catch (error) {
-        thrown = error;
-      }
-
-      // 실패 문면이 «무엇이 비었나»와 «worktree 는 보존됐다»를 같이 말한다.
-      expect(thrown).toBeInstanceOf(Error);
-      const message = (thrown as Error).message;
-      expect(message).toContain('PR 근거 아티팩트 관문 차단');
-      expect(message).toContain('risks(위험');
-      expect(message).toContain('worktree·branch 보존');
-
-      // ⭐ 핵심 — PR 준비에 «닿지도 않았다». 이 수가 1이면 「본문을 만들고 나서」 막은 것이다.
-      expect(captured.bodies).toHaveLength(0);
-      const events = evidenceEvents(captured);
-      expect(events).toHaveLength(1);
-      expect(events[0]).toMatchObject({ accepted: false, blocked: true, enforced: true });
-      expect(events[0]!.missing).toEqual(['risks', 'alternatives']);
-    } finally {
-      setUserConfigOverlay(null);
-    }
-  });
 });

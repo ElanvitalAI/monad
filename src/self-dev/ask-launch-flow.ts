@@ -40,28 +40,18 @@ import { observeFrontNodeEntry } from './graph-front-nodes.js';
 import { decomposeSelfDevGoal, type SelfDevDecomposeOptions, type SelfDevDecomposition } from './decompose.js';
 import { observeDecomposerSelection, readFabricDecomposeConfig, selectFabricDecomposer } from './self-orchestrate-runtime.js';
 import type { GoalDocumentClarification } from '../self-implement/goal-author-clarification.js';
-import { getUserConfig } from '../user-config.js';
 
-export type SelfResolveClarificationsSource = 'flag' | 'config' | 'default' | 'config-read-failure';
+export type SelfResolveClarificationsSource = 'flag' | 'default';
 
 interface ResolvedSelfResolveClarifications {
   readonly value: boolean;
   readonly source: SelfResolveClarificationsSource;
 }
 
-function resolveSelfResolveClarifications(
-  explicit: boolean | undefined,
-  readConfig: () => { readonly tools: { readonly selfImplement: { readonly selfResolveClarifications?: boolean } } },
-): ResolvedSelfResolveClarifications {
-  if (explicit !== undefined) return { value: explicit, source: 'flag' };
-  try {
-    const configured = readConfig().tools.selfImplement.selfResolveClarifications;
-    return configured === undefined
-      ? { value: true, source: 'default' }
-      : { value: configured, source: 'config' };
-  } catch {
-    return { value: true, source: 'config-read-failure' };
-  }
+// 설정 졸업 1-c(2026-09-26 · 대표 «기본으로 켜진 것은 옵션으로 두지 않는다»): 설정 키는 폐기됐다 — 읽지 않는다.
+//   프로그램 인자(시험·내부 호출)만 끌 수 있다.
+function resolveSelfResolveClarifications(explicit: boolean | undefined): ResolvedSelfResolveClarifications {
+  return explicit !== undefined ? { value: explicit, source: 'flag' } : { value: true, source: 'default' };
 }
 
 /** 저작기 산출 — `runGoalAuthorCli` 의 반환에서 이 흐름이 «실제로 쓰는» 것만. */
@@ -179,7 +169,6 @@ export interface AskLaunchFlowDeps {
   /** 골 문서 경로를 cwd 기준 상대 경로로 — `--from-clarification` 문법이 그것을 요구한다. */
   relativeToCwd(path: string): string;
   /** Optional config seam: failures resolve to default ON and remain observable. */
-  readSelfResolveClarificationsConfig?(): { readonly tools: { readonly selfImplement: { readonly selfResolveClarifications?: boolean } } };
 }
 
 export interface AskLaunchFlowInput {
@@ -778,10 +767,7 @@ export async function runAskLaunchFlow(
 ): Promise<AskLaunchFlowResult> {
   const entrance = input.entrance;
   const askStartedAt = deps.now();
-  const selfResolveClarifications = resolveSelfResolveClarifications(
-    input.selfResolveClarifications,
-    deps.readSelfResolveClarificationsConfig ?? getUserConfig,
-  );
+  const selfResolveClarifications = resolveSelfResolveClarifications(input.selfResolveClarifications);
   deps.log('harness.entrance', {
     entrance: entrance.id,
     entranceStatus: entrance.status,

@@ -27,7 +27,7 @@ import { debug } from '../debug/log.js';
 const REFRESH_BUFFER_MS = 120_000;
 const AUTH_MODE = 'mcp-oauth';
 const DEFAULT_REDIRECT_URI = 'http://127.0.0.1/oauth/callback';
-const CLIENT_NAME = 'monad-agent';
+const CLIENT_NAME = 'elanous-agent';
 
 export type McpOAuthErrorCode =
   | 'discovery'

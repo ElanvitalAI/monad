@@ -12,6 +12,7 @@
 // 부작용(kubectl·파일)은 주입받는다 — 시험은 가짜 kubectl 로 누른다.
 
 import { podSkillsDigest, readSkillEnvFiles, resolvePodSkills } from './pod-skills.js';
+import { collectPodLedgers } from './pod-ledger-collect.js';
 import { controlInboxEnv } from '../../harness/control-inbox.js';
 import { finishPodFragment, writePodFragment } from '../../harness/self-send-target.js';
 
@@ -132,6 +133,23 @@ export function podJobManifest(o: { name: string; namespace: string; image: stri
     `elanous self implement "$(cat /creds/feature)" --json ${quoted} > /tmp/si.out 2>&1; rc=$?`,
     'cat /tmp/si.out',
     '[ -f scripts/usage-rollup.ts ] && bun scripts/usage-rollup.ts --since 12h || echo "ELANOUS_USAGE_ROLLUP {\"measured\":false,\"reason\":\"no rollup script\"}"',
+    `set -o pipefail
+found=0
+for ledger in "\${ELANOUS_STATE_DIR:-$HOME/.elanous}"/run-ledger/*.jsonl; do
+  [ -f "$ledger" ] || continue
+  found=1
+  run_id=\${ledger##*/}; run_id=\${run_id%.jsonl}
+  if encoded=$(gzip -c "$ledger" | base64 | tr -d '\\n'); then
+    total=$(( (\${#encoded} + 7999) / 8000 ))
+    for ((n=1; n<=total; n++)); do
+      chunk=\${encoded:$(( (n-1)*8000 )):8000}
+      printf 'ELANOUS_RUN_LEDGER %s %s/%s %s\\n' "$run_id" "$n" "$total" "$chunk"
+    done
+  else
+    echo "[pod] ledger transfer failed: $run_id" >&2
+  fi
+done
+if [ "$found" -eq 0 ]; then echo ELANOUS_RUN_LEDGER_NONE; fi`,
     'tail -n 1 /tmp/si.out',
     'exit $rc',
   ].join('\n');
@@ -183,7 +201,7 @@ export function podSelfImplementSpawn(options: PodSpawnOptions = {}): SelfImplem
   const sleep = options.sleep ?? ((ms: number) => new Promise<void>((r) => setTimeout(r, ms)));
   const namespace = options.namespace ?? 'elanous-test';
   const image = options.image ?? 'elanous-harness:local';
-  const repoUrl = options.repoUrl ?? 'https://github.com/ElanvitalAI/monad';
+  const repoUrl = options.repoUrl ?? 'https://github.com/ElanvitalAI/elanous';
   const env = options.env ?? process.env;
   return (input) => {
     const name = podJobName(input.spaceId);
@@ -259,6 +277,13 @@ export function podSelfImplementSpawn(options: PodSpawnOptions = {}): SelfImplem
           await sleep(options.pollMs ?? 15_000);
         }
         const logs = kubectl(['-n', namespace, 'logs', `job/${name}`, '-c', 'child', '--tail=400']).stdout;
+        try {
+          const full = kubectl(['-n', namespace, 'logs', `job/${name}`, '-c', 'child']);
+          if (full.status !== 0) throw new Error(full.stderr || `kubectl logs exited ${full.status}`);
+          collectPodLedgers(full.stdout);
+        } catch (error) {
+          debug.log('self-implement.pod', 'ledger-collect-incomplete', { job: name, reason: error instanceof Error ? error.message : String(error) });
+        }
         cleanupSecret();
         // ⭐ 호스트 단가로 다시 매긴다(BACKLOG C1b) — Pod 엔 레지스트리 스냅숏이 없다.
         const { estimateLlmCost } = await import('../../budget/llm-cost.js');
@@ -266,7 +291,7 @@ export function podSelfImplementSpawn(options: PodSpawnOptions = {}): SelfImplem
         const parsed = parseSelfImplementJson(logs);
         // Pod 안 경로는 호스트에서 쓸 수 없다.
         const disposition = parsed ? { ...parsed, worktreePath: undefined } : undefined;
-        debug.log('self-implement.pod', 'job-finished', { job: name, ...(member ? { context: member.context } : {}), state, stage: disposition?.stage ?? null, prUrl: disposition?.prUrl ?? null });
+        debug.log('self-implement.pod', 'job-finished', { job: name, ...(member ? { context: member.context } : {}), state, stage: disposition?.stage ?? null, prUrl: disposition?.prUrl ?? null, childRunId: disposition?.childRunId ?? null });
         const tail = logs.slice(-4000);
         if (state === 'aborted') return { exitCode: null, output: tail, error: { code: 'aborted', message: 'aborted — Job deleted' }, ...(disposition ? { disposition } : {}) };
         return {

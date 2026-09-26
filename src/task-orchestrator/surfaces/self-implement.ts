@@ -72,6 +72,8 @@ export interface SelfImplementDisposition {
   providerErrors?: { count: number; provider: string; category: 'quota' | 'credential' | 'request' | 'other' };
   /** Stable self-implement run identity for ledger-backed consumers. */
   runId?: string;
+  /** Pod child run identity, distinct from the host parent run attached to logs. */
+  childRunId?: string;
   /** E4(2026-09-25 · 벤치 비교 칸) — 자식 `--json` 의 `gate.passed`. 없으면 «못 쟀다»(false 가 아니다). */
   gatePassed?: boolean;
   /** 자식 `--json` 의 `review.verdict`(마지막 리뷰). `review.reviewed=false` 면 싣지 않는다 — 리뷰 안 한 판을 pass 로 읽지 않게. */
@@ -461,7 +463,7 @@ export function parseSelfImplementJson(stdout: string): SelfImplementDisposition
           && typeof (o.providerErrors as Record<string, unknown>).provider === 'string'
           && ['quota', 'credential', 'request', 'other'].includes(String((o.providerErrors as Record<string, unknown>).category))
           ? { providerErrors: o.providerErrors as SelfImplementDisposition['providerErrors'] } : {}),
-        ...(typeof o.runId === 'string' && o.runId.trim() ? { runId: o.runId } : {}),
+        ...(typeof o.runId === 'string' && o.runId.trim() ? { runId: o.runId, childRunId: o.runId } : {}),
         ...reviewGateFields(o),
       };
       reportUnmappedDispositionFields(o, mapped);

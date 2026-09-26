@@ -21,6 +21,8 @@ export interface GraphTemplateNode {
   readonly kind: GraphNodeKind;
   /** 그 노드의 재방문 상한. ⛔ 지금의 rework 상한이 «여기로 올라올» 자리다(RFC §4.1). */
   readonly maxVisits: number;
+  /** YAML recipe identifier; existing orchestrator does not execute it. */
+  readonly recipe?: string;
   /** YAML이 선언한 선택 계약. 관측용이며 실행 권한을 강제하지 않는다. */
   readonly contract?: GraphNodeContract;
 }
@@ -98,7 +100,7 @@ export function defaultGraphsDir(): string {
   return join(dirname(fileURLToPath(import.meta.url)), '..', '..', 'graphs');
 }
 
-export type DiscardedGraphNodeField = Exclude<keyof GraphNodeSpec, 'nodeId' | 'kind' | 'maxVisits' | 'contract'>;
+export type DiscardedGraphNodeField = Exclude<keyof GraphNodeSpec, 'nodeId' | 'kind' | 'maxVisits' | 'recipe' | 'contract'>;
 
 export interface GraphTemplateCompilation {
   readonly template: GraphTemplate;
@@ -109,7 +111,6 @@ export interface GraphTemplateCompilation {
 }
 
 const DISCARDED_NODE_FIELDS: readonly DiscardedGraphNodeField[] = [
-  'recipe',
   'progress',
   'phases',
   'terminalStages',
@@ -129,6 +130,7 @@ export function compileGraphTemplate(spec: GraphTemplateSpec): GraphTemplateComp
         nodeId: n.nodeId,
         kind: n.kind as GraphNodeKind,
         maxVisits: n.maxVisits,
+        ...(n.recipe === undefined ? {} : { recipe: n.recipe }),
         ...(n.contract === undefined ? {} : { contract: n.contract }),
       })),
       edges: edgeMapOf(spec),

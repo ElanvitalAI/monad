@@ -190,7 +190,8 @@ describe('renderWhere — 결과뿐 아니라 **왜** 를 보여준다', () => {
     const r = resolveInstance({ axes: axesFor(OTHER), depth: 0, prodRoot: PROD, treeTestRoot: TEST_ROOT });
     const s = renderWhere(r, base);
     expect(s).toContain('트리 파생을 켜면');
-    expect(s).toContain('instance.treeDerivedTest');
+    // 설정 졸업 1-d: 켜는 설정 키는 폐기됐다 — 안내에 그 키를 내지 않는다.
+    expect(s).not.toContain('instance.treeDerivedTest');
   });
 });
 

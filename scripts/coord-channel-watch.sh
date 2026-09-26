@@ -51,8 +51,8 @@ set -u
 PR_NUM="${CH_PR:-16815}"  # ⛔ 2026-09-10: #12577 이 2,376/2,500 에 닿아 채널 «4» 로 옮김(벽 «전»에 미리)
 #   📏 이력: #5730(07-28~08-12) → #8328(08-11~08-25) → #12577(08-25~09-10) → #16815.
 #   ***수명이 «2주 안팎»이다 — 세 판이 전부 그랬다.*** 다음 벽은 09-24 언저리.
-#   🩹 발신이 rc=1 이면 먼저 세라: gh api repos/ElanvitalAI/monad/issues/<n> --jq .comments
-REPO="${CH_REPO:-ElanvitalAI/monad}"
+#   🩹 발신이 rc=1 이면 먼저 세라: gh api repos/ElanvitalAI/elanous/issues/<n> --jq .comments
+REPO="${CH_REPO:-ElanvitalAI/elanous}"
 INTERVAL="${CH_INTERVAL:-60}"
 BODY_CHARS="${CH_BODY_CHARS:-1500}"
 # ⛔⭐⭐⭐ PR «본문» 감시 (2026-08-08 [T] 60차) — 종전엔 «대화 코멘트»만 봤다.

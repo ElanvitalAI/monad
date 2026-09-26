@@ -92,7 +92,7 @@ export interface MarkdownPublishServiceOptions {
   origin: string;
 }
 
-/** S3 공개 게시 prefix — elanvital-public/monad/publish/<id>/index.html (bucket-wide public-read). */
+/** S3 공개 게시 prefix — <공개 버킷>/monad/publish/<id>/index.html (bucket-wide public-read · 공개 버킷 = storage.s3.publicBucket). */
 export const S3_PUBLISH_PREFIX = 'monad/publish';
 /** S3 콜드 백업 prefix — 만료 게시물을 Glacier 로 이관(백업·삭제 아님·콜드리드). */
 export const S3_PUBLISH_COLD_PREFIX = 'monad/publish-cold';
@@ -102,7 +102,8 @@ export const S3_PUBLISH_COLD_PREFIX = 'monad/publish-cold';
  *  ★id 는 execFileSync(셸 미경유) + isValidPublishId 이중 방어(command injection·#5194 리뷰). */
 export function archivePublicationToS3Cold(id: string): void {
   if (!isValidPublishId(id)) throw new Error(`archive: invalid publish id: ${id.slice(0, 24)}`);
-  const bucket = s3Config().bucket;
+  const bucket = s3Config().publicBucket;   // 게시는 공개 버킷 기능이다(2026-09-26 버킷 분리)
+  if (!bucket) throw new Error('archive: S3 공개 버킷이 설정되지 않았다(storage.s3.publicBucket)');
   const hot = `s3://${bucket}/${S3_PUBLISH_PREFIX}/${id}/`;
   const cold = `s3://${bucket}/${S3_PUBLISH_COLD_PREFIX}/${id}/`;
   execFileSync('aws', ['s3', 'cp', hot, cold, '--recursive', '--storage-class', 'GLACIER', '--quiet'], { stdio: 'ignore' });

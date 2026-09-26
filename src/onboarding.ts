@@ -385,7 +385,7 @@ interface ProviderChoice {
 }
 
 const PROVIDER_CHOICES: ProviderChoice[] = [
-  { key: 'openai-codex', label: 'OpenAI Codex (GPT-5.4 / codex-mini via ChatGPT OAuth)', defaultModel: CODEX_DEFAULT_MODEL, needsBaseUrl: false, needsApiKey: true },
+  { key: 'openai-codex', label: 'OpenAI Codex (ChatGPT subscription · OAuth)', defaultModel: CODEX_DEFAULT_MODEL, needsBaseUrl: false, needsApiKey: true },
   { key: 'local',        label: 'Local (LM Studio · MLX · Ollama — Apple Silicon preferred)', defaultModel: LOCAL_LLM_MODEL, needsBaseUrl: true, needsApiKey: false },
   { key: 'grok',         label: 'Grok (xAI)', defaultModel: GROK_MODEL, needsBaseUrl: false, needsApiKey: true },
   { key: 'openai',       label: 'OpenAI (ChatGPT)', defaultModel: OPENAI_MODEL, needsBaseUrl: false, needsApiKey: true },

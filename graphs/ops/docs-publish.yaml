@@ -1,0 +1,26 @@
+graph_id: docs-publish
+version: 1
+entry_node: build
+terminal_nodes: [done, failed]
+nodes:
+  - node_id: build
+    kind: agent
+    recipe: cmd:build-public
+    max_visits: 1
+  - node_id: deploy
+    kind: agent
+    recipe: cmd:deploy-pages-dry
+    max_visits: 1
+  - node_id: done
+    kind: gate
+    max_visits: 1
+  - node_id: failed
+    kind: gate
+    max_visits: 1
+edges:
+  - from: build
+    on: outcome
+    map: { ok: deploy, fail: failed }
+  - from: deploy
+    on: outcome
+    map: { ok: done, fail: failed }

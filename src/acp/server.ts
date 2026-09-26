@@ -197,7 +197,7 @@ export interface AcpServerSession {
 }
 
 export interface AcpServerOptions {
-  /** Name reported back to the client in initialize(). Default 'monad-agent'. */
+  /** Name reported back to the client in initialize(). Default 'elanous-agent'. */
   agentName?: string;
   /** Version string reported. Default read from package.json if present. */
   agentVersion?: string;
@@ -3310,7 +3310,7 @@ export async function runAcpServer(opts: AcpServerOptions = {}): Promise<void> {
     sessionPeers,
     dualRole,
     nextSessionToken: mintAcpSessionToken,
-    agentName: opts.agentName ?? 'monad-agent',
+    agentName: opts.agentName ?? 'elanous-agent',
     agentVersion: opts.agentVersion ?? readPkgVersion(),
     opts,
   };

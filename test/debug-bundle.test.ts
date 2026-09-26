@@ -3,10 +3,15 @@
 // All disk + S3 dependencies are seam-injected so the test never
 // touches ~/.elanous/log or the real AWS CLI.
 
-import { describe, expect, test } from 'bun:test';
+import { afterAll, beforeAll, describe, expect, test } from 'bun:test';
 import { buildAndUploadBundle, composePrompt, handleDebugBundlePost } from '../src/nexus/api/debug-bundle';
 
 const FROZEN_NOW = new Date('2026-05-18T19:30:45.000Z');
+
+// 2026-09-26: 기본 버킷이 없어졌다 — 디버그 묶음은 공개 버킷 기능이라 시험이 공개 버킷을 명시한다.
+const savedPublicBucket = process.env.AWS_S3_PUBLIC_BUCKET;
+beforeAll(() => { process.env.AWS_S3_PUBLIC_BUCKET = 'elanvital-public'; });
+afterAll(() => { if (savedPublicBucket === undefined) delete process.env.AWS_S3_PUBLIC_BUCKET; else process.env.AWS_S3_PUBLIC_BUCKET = savedPublicBucket; });
 
 function stubDeps(overrides: Partial<Parameters<typeof buildAndUploadBundle>[2]> = {}) {
   return {

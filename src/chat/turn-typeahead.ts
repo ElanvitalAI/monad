@@ -247,7 +247,8 @@ export function renderTurnTypeaheadQueueRow(
   if (count === 0) return null;
   const head = state.queuedSubmissions[0] ?? '';
   const label = count === 1 ? '⏳ 대기 1건' : `⏳ 대기 ${count}건`;
-  const tail = ' · 턴 종료 시 전송';
+  // 되꺼내기 키를 화면에 적는다 — 안내가 없어 대기 발화를 취소·수정할 길을 몰랐다(2026-09-26 베어 VM 실측 · UX 12).
+  const tail = ' · 턴 종료 시 전송 · Ctrl+↑ 되꺼내기';
   const budget = Math.max(8, width - [...label].length - [...tail].length - 5);
   const cps = [...head];
   const shown = cps.length > budget ? `${cps.slice(0, budget).join('')}…` : head;

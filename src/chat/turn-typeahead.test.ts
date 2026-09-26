@@ -162,7 +162,7 @@ describe('drainedIntoTurn — 라이브 턴 배수 문장', () => {
     expect(renderTurnTypeaheadQueueRow(
       { buffer: '', queuedSubmissions: ['MIDLOOPTEST456'] },
       80,
-    )).toBe('⏳ 대기 1건 · "MIDLOOPTEST456" · 턴 종료 시 전송');
+    )).toBe('⏳ 대기 1건 · "MIDLOOPTEST456" · 턴 종료 시 전송 · Ctrl+↑ 되꺼내기');
   });
 
   test('여러 건이면 앞에서부터 떨어지고 들어간 내용을 모두 보여 준다', () => {

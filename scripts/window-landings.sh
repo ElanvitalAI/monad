@@ -32,7 +32,7 @@ echo "📍 시점:  $(date -u '+%Y-%m-%dT%H:%M:%SZ')  (이 값은 «이 순간�
 #   search API 가 「그날 이후 병합 총 수」를 «조건»으로 답하므로, 그 수 + 여유로 limit 를 «한 번에» 맞춘다.
 #   ⛔ search 자체는 headRefName 을 «안 준다» — 그래서 조회는 여전히 pr list 로 하고, search 는 «크기만» 답한다.
 DAY="${SINCE%%T*}"
-TOTAL="$(bun "$REPO_BIN" gh api "search/issues?q=repo:ElanvitalAI/monad+is:pr+is:merged+merged:>=$DAY&per_page=1" --jq '.total_count' 2>/dev/null | tail -1)"
+TOTAL="$(bun "$REPO_BIN" gh api "search/issues?q=repo:ElanvitalAI/elanous+is:pr+is:merged+merged:>=$DAY&per_page=1" --jq '.total_count' 2>/dev/null | tail -1)"
 if [ -n "${TOTAL:-}" ] && [ "$TOTAL" -gt 0 ] 2>/dev/null; then
   LIMIT=$(( TOTAL * 2 + 100 ))
   echo "📏 창 크기: search API ⇒ merged:>=$DAY 총 ${TOTAL}건 ⇒ 상한을 ${LIMIT} 로 «맞춘다»"

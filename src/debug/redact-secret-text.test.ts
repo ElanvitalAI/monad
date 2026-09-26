@@ -53,7 +53,7 @@ describe('redactSecretText — 오탐 가드(로그가 못 쓰게 되면 안 된
     'src/self-implement/gate-scope.ts 의 판정이 틀렸다',
     'unverified 가 개수만 실려 Goodhart 테스트가 됐다',
     '변경 파일 9개 타입 검사 통과',
-    'https://github.com/ElanvitalAI/monad/pull/5502',
+    'https://github.com/ElanvitalAI/elanous/pull/5502',
     'bun test test/self-implement-seams.test.ts',
     'runId=run-8f7ba351-cb40-4745-a5c3-34c18ca978f8',
   ];

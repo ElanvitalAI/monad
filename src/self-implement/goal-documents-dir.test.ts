@@ -79,7 +79,7 @@ describe('resolveGoalDocumentsDir', () => {
     try {
       const resolved = resolveGoalDocumentsDir(repo, { readConfig: () => configWithGoalsDir(undefined) });
       expect(resolved.reason).toBe('default-dot-elanous');
-      expect(logged).toEqual([{ repoRoot: repo, directory: join(repo, '.elanous', 'goals'), reason: 'default-dot-elanous' }]);
+      expect(logged).toEqual([{ repoRoot: repo, directory: join(repo, '.elanous', 'goals'), reason: 'default-dot-elanous', excluded: 'added' }]);   // UX 13: 사용자 저장소 로컬 무시 목록
     } finally {
       debug.log = original;
     }

@@ -4,8 +4,8 @@ Pick the LLM elanous uses for chat / agent loops. Each provider needs
 something different:
 
   · OpenAI Codex — sign in via ChatGPT OAuth (browser device-code
-                   flow) OR paste an OpenAI API key. Includes
-                   GPT-5.4 / codex-mini.
+                   flow) OR paste an OpenAI API key. The model
+                   list in the next step is the current one.
   · Local        — Ollama / LM Studio / MLX / Docker on this
                    machine or another Tailscale node. We auto-probe
                    and let you pick.

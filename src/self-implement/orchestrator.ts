@@ -6670,8 +6670,8 @@ async function runSelfImplementInner(
   //     재면 각각 셋·다섯 칸이 «비어» 있었고, 그중 「원장」과 「위험」은 «둘 다» 0이었다.
   //     `prBody` 는 모든 인자가 optional 이라 비면 그 절이 «조용히 사라진다» — 그래서 결손이
   //     정상 산출과 구별되지 않았다. 이 관문이 그 부재를 «이름으로» 말한다.
-  //   ⛔ 기본은 «막지 않는다»(config `tools.selfImplement.prEvidenceArtifactEnforce`) — 골의 내용과
-  //     무관하게 착지를 죽이지 않기 위한 의도적 결정이다. 다만 ***거절은 항상 관측으로 남는다***.
+  //   ⛔ «막지 않는다» — 골의 내용과 무관하게 착지를 죽이지 않는다. ***거절은 항상 관측으로 남는다***.
+  //     (차단 스위치 `prEvidenceArtifactEnforce` 는 2026-09-26 설정 졸업으로 지웠다 — 한 번도 기본으로 안 켜졌다.)
   const prEvidence = collectPrEvidence({
     feature: opts.feature,
     goalFile: opts.goalFile,
@@ -6686,25 +6686,15 @@ async function runSelfImplementInner(
     provider: activeProvider.provider,
     planRevision: lastPlanRevision,
   });
-  const prEvidenceDecision = decidePrEvidenceGate(prEvidence, {
-    enforce: userConfig.tools.selfImplement.prEvidenceArtifactEnforce === true,
-  });
+  const prEvidenceDecision = decidePrEvidenceGate(prEvidence);
   observe('pr-evidence-artifact', {
     accepted: prEvidenceDecision.missing.length === 0,
-    blocked: prEvidenceDecision.blocked,
-    enforced: prEvidenceDecision.enforced,
     axes: PR_EVIDENCE_AXES.length,
     missingCount: prEvidenceDecision.missing.length,
     missing: prEvidenceDecision.missing,
     ...(prEvidenceDecision.reason ? { reason: prEvidenceDecision.reason } : {}),
     ...(prEvidenceDecision.body ? { bodyChars: prEvidenceDecision.body.length } : {}),
   });
-  if (prEvidenceDecision.blocked) {
-    // ⛔ 준비 «전»에 멎는다 — 부실한 본문으로 PR 을 열지 않는다. worktree·브랜치는 보존한다.
-    const location = `PR 근거 아티팩트 관문 차단 — ${prEvidenceDecision.reason} (worktree·branch 보존 · ${wt.branch} · ${wt.path})`;
-    progress('aborted', location);
-    throw new Error(location);
-  }
   const preparedPrBody = preparePrBody(
     [
       prBody(opts.feature, impl.summary, gate.log, review, reviewIntent, declineReasons, harvestedForPr(), opts.goalFile, lastPlanRevision),

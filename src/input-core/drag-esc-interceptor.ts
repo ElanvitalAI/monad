@@ -15,7 +15,7 @@
 //   - PLAN-compositor-i2-interceptor-registry.md §2 Phase I.2.2
 //   - PR #308 §5.5 · original A-8 introduction
 //   - 3-way convergence comment on PR #306
-//     https://github.com/ElanvitalAI/monad/pull/306#issuecomment-4284981117
+//     https://github.com/ElanvitalAI/elanous/pull/306#issuecomment-4284981117
 
 import type { KeyInterceptor } from './interceptor.js';
 import type { DragManager } from '../primitives/drag-session/index.js';

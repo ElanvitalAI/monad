@@ -4,7 +4,7 @@
 
 ```bash
 elanous self-update                  # latest release
-elanous self-update --version 0.1.1  # a specific version
+elanous self-update --version 0.2.0  # a specific version
 ```
 
 A release install updates by re-running the release installer; the previous version stays under `versions/` for rollback.
@@ -18,10 +18,6 @@ A release install updates by re-running the release installer; the previous vers
 
 ### `elanous update` and automatic updates
 
-:::info Available from 0.1.2
-On 0.1.1, use `elanous self-update` — it installs 0.1.2, and `elanous update` works from then on.
-:::
-
 ```bash
 elanous update                # same as self-update
 elanous update --auto on      # update every day
@@ -30,6 +26,16 @@ elanous update --auto off
 ```
 
 `--auto on` installs a daily job — a launchd agent on macOS, a systemd user timer on Linux — that runs `self-update --restart --alert` at 04:17 local time. It is not turned on if a cron entry already runs the update.
+
+## Moving from monad
+
+Elanous 0.2.0 is monad renamed — same project, new command (`elanous`), folders (`~/.elanous`, `~/.local/share/elanous`), `ELANOUS_*` variables and service names.
+
+:::warning Don't move with `monad update`
+The old updater doesn't know the new install folder. Turn automatic updates off (`monad update --auto off`), install Elanous fresh with the one-line installer, then run the migration script it ships.
+:::
+
+The exact steps — the migration script (a dry run first), macOS and Linux services, what stays behind — are in the [0.2.0 release notes](0.2.0.md#moving-from-monad).
 
 ## Uninstall
 

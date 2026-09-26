@@ -1,0 +1,6 @@
+build-public:
+  command: "bun website/scripts/build-public.ts"
+  timeout_ms: 600000   # 실측 2026-09-26: 캐시가 식은 빌드는 120초를 넘겨 잘렸다(exit null · 잠금이 남음)
+deploy-pages-dry:
+  command: "bun website/scripts/deploy-pages.ts"
+  timeout_ms: 600000   # deploy-pages 도 안에서 build-public 을 돈다

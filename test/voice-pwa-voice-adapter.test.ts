@@ -4,7 +4,6 @@ import { afterEach, describe, expect, it } from 'bun:test';
 import {
   createStubPwaVoiceAdapter,
   createPwaVoiceAdapter,
-  isPwaVoiceEnabled,
   PWA_VOICE_FRAME_KIND,
   PwaVoiceUnavailableError,
 } from '../src/voice/channel-adapters/pwa-voice-adapter.js';
@@ -411,24 +410,6 @@ describe('createPwaVoiceAdapter (sttProvider wired — Phase 7 frontend)', () =>
 });
 
 // ── Env gate ───────────────────────────────────────────────────────
-
-describe('isPwaVoiceEnabled', () => {
-  it('true when ELANOUS_PWA_VOICE unset (default-on)', () => {
-    delete process.env.ELANOUS_PWA_VOICE;
-    expect(isPwaVoiceEnabled()).toBe(true);
-  });
-
-  it('false only for explicit opt-out ELANOUS_PWA_VOICE values', () => {
-    for (const v of ['0', 'false', 'off', 'no', ' FALSE ', 'Off', ' NO ']) {
-      process.env.ELANOUS_PWA_VOICE = v;
-      expect(isPwaVoiceEnabled()).toBe(false);
-    }
-    for (const v of ['1', 'true', 'on', 'YES', 'On']) {
-      process.env.ELANOUS_PWA_VOICE = v;
-      expect(isPwaVoiceEnabled()).toBe(true);
-    }
-  });
-});
 
 // ── Frame protocol ─────────────────────────────────────────────────
 

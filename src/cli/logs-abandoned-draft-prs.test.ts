@@ -1859,14 +1859,14 @@ describe('runLogsAbandonedDraftPrs — count-domain-gap', () => {
 describe('repoSlugFromPrUrl — 저장소는 PR 자신의 url 에서 온다', () => {
   test('url 에서 owner/repo 를 뽑는다', () => {
     expect(repoSlugFromPrUrl('https://github.com/ElanvitalAI/elanous-harness-e2e/pull/3')).toBe('ElanvitalAI/elanous-harness-e2e');
-    expect(repoSlugFromPrUrl('https://github.com/ElanvitalAI/monad/pull/19323')).toBe('ElanvitalAI/monad');
+    expect(repoSlugFromPrUrl('https://github.com/ElanvitalAI/elanous/pull/19323')).toBe('ElanvitalAI/elanous');
   });
   test('없거나 모양이 아니면 null 이다 — ⛔ 「기본 저장소」로 접지 않는다', () => {
     expect(repoSlugFromPrUrl(null)).toBeNull();
     expect(repoSlugFromPrUrl(undefined)).toBeNull();
     expect(repoSlugFromPrUrl('')).toBeNull();
     expect(repoSlugFromPrUrl('not a url')).toBeNull();
-    expect(repoSlugFromPrUrl('https://github.com/ElanvitalAI/monad/issues/3')).toBeNull();
+    expect(repoSlugFromPrUrl('https://github.com/ElanvitalAI/elanous/issues/3')).toBeNull();
   });
   test('조회기는 후보 url 에서 각각의 저장소를 유도한다', () => {
     const seen: string[][] = [];
@@ -1876,12 +1876,12 @@ describe('repoSlugFromPrUrl — 저장소는 PR 자신의 url 에서 온다', ()
     };
     const candidates = [
       { number: 3, url: 'https://github.com/ElanvitalAI/elanous-harness-e2e/pull/3' },
-      { number: 19323, url: 'https://github.com/ElanvitalAI/monad/pull/19323' },
+      { number: 19323, url: 'https://github.com/ElanvitalAI/elanous/pull/19323' },
     ] as Parameters<LookupCurrentDraftPrStatus>[0][];
     for (const candidate of candidates) expect(lookupCurrentPrStatus(candidate, spawnGh)).toBe('open');
     expect(seen).toEqual([
       ['pr', 'view', '3', '--repo', 'ElanvitalAI/elanous-harness-e2e', '--json', 'state,mergedAt'],
-      ['pr', 'view', '19323', '--repo', 'ElanvitalAI/monad', '--json', 'state,mergedAt'],
+      ['pr', 'view', '19323', '--repo', 'ElanvitalAI/elanous', '--json', 'state,mergedAt'],
     ]);
   });
   test('lookupCurrentPrStatus accepts lowercase and uppercase states while mergedAt remains first', () => {
@@ -1909,13 +1909,13 @@ describe('repoSlugFromPrUrl — 저장소는 PR 자신의 url 에서 온다', ()
     const calls: Array<Pick<AbandonedDraftPr, 'number' | 'url'>> = [];
     const prs = [
       { number: 3, url: 'https://github.com/ElanvitalAI/elanous-harness-e2e/pull/3' },
-      { number: 19323, url: 'https://github.com/ElanvitalAI/monad/pull/19323' },
+      { number: 19323, url: 'https://github.com/ElanvitalAI/elanous/pull/19323' },
       { number: 7, url: null },
     ] as never as Parameters<typeof applyCurrentStatus>[0];
     applyCurrentStatus(prs, (candidate) => { calls.push({ number: candidate.number, url: candidate.url }); return 'open'; });
     expect(calls).toEqual([
       { number: 3, url: 'https://github.com/ElanvitalAI/elanous-harness-e2e/pull/3' },
-      { number: 19323, url: 'https://github.com/ElanvitalAI/monad/pull/19323' },
+      { number: 19323, url: 'https://github.com/ElanvitalAI/elanous/pull/19323' },
       { number: 7, url: null },
     ]);
     const source = readFileSync(new URL('./logs-abandoned-draft-prs.ts', import.meta.url), 'utf8');

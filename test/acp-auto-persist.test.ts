@@ -7,7 +7,6 @@
 //   - BG intermediate state (running → waiting) → no persist
 //   - mode 'off' → no subscription
 //   - dispose() unsubscribes cleanly
-//   - env var ELANOUS_ACP_PERSIST_MODE = 'off' → mode resolves to 'off'
 
 import { describe, expect, test, beforeEach, afterEach, mock } from 'bun:test';
 import {
@@ -83,14 +82,9 @@ async function flush(): Promise<void> {
 }
 
 describe('defaultAcpAutoPersistMode', () => {
-  test('defaults to auto when env unset', () => {
-    expect(defaultAcpAutoPersistMode({})).toBe('auto');
-  });
-  test("returns 'off' when ELANOUS_ACP_PERSIST_MODE=off", () => {
-    expect(defaultAcpAutoPersistMode({ ELANOUS_ACP_PERSIST_MODE: 'off' })).toBe('off');
-  });
-  test('unknown values coerce to auto', () => {
-    expect(defaultAcpAutoPersistMode({ ELANOUS_ACP_PERSIST_MODE: 'whatever' })).toBe('auto');
+  test("is always 'auto' — the ELANOUS_ACP_PERSIST_MODE off-switch was graduated (2026-09-26)", () => {
+    process.env.ELANOUS_ACP_PERSIST_MODE = 'off';
+    try { expect(defaultAcpAutoPersistMode()).toBe('auto'); } finally { delete process.env.ELANOUS_ACP_PERSIST_MODE; }
   });
 });
 

@@ -56,7 +56,7 @@ describe('MCP initialize', () => {
     const res = resp.result as { protocolVersion: string; capabilities: { tools: unknown }; serverInfo: { name: string } };
     expect(res.protocolVersion).toBe('2025-11-25');
     expect(res.capabilities.tools).toBeTruthy();
-    expect(res.serverInfo.name).toBe('monad-agent');
+    expect(res.serverInfo.name).toBe('elanous-agent');
   });
 
   test('echoes requested 2024-11-05 when we can speak it', async () => {
@@ -282,7 +282,7 @@ describe('createMcpStdioServer', () => {
     expect(outLines).toHaveLength(1);
     const first = JSON.parse(outLines[0]!);
     expect(first.id).toBe(1);
-    expect(first.result.serverInfo.name).toBe('monad-agent');
+    expect(first.result.serverInfo.name).toBe('elanous-agent');
   });
 
   test('notifications (no id) produce no response', async () => {

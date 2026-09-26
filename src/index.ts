@@ -48,6 +48,7 @@ import { registerReleaseCommands } from './cli/release-cli.js';
 import { registerModelWatchCommand } from './cli/model-watch-cli.js';
 import { registerDoctorCommand } from './cli/doctor-cli.js';
 import { registerSetupCommand } from './cli/setup-cli.js';
+import { registerGraphCommands } from './graph-runner/graph-cli.js';
 // IMPORTANT: parse `--config-dir <dir>` + `--test-state-dir <dir>`
 // BEFORE Commander loads — the resolvers are read at module-init
 // time by several config-touching imports below, so the override
@@ -919,6 +920,7 @@ registerReleaseCommands(program);
 registerModelWatchCommand(program);
 registerDoctorCommand(program);
 registerSetupCommand(program);
+registerGraphCommands(program);
 
 const pythonCmd = program.command('python').description('elanous 가 쓰는 파이썬(해석 · 점검 · elanous venv 셋업) — RFC-doctor-fix-build-toolchain-and-python-by-distro');
 pythonCmd.command('where').description('어느 파이썬을 쓰나(ELANOUS_PYTHON > elanous venv > pyenv .python-version > PATH)').option('--json').option('--path', '경로만 한 줄(스크립트·스킬용)').action(async (o: { json?: boolean; path?: boolean }) => {
@@ -3595,7 +3597,6 @@ selfCmd
   .option('--supersedes <goalFile>', '이전 골 문서의 GoalId를 계승하고 Superseded-By 역링크를 기록한다')
   .option('--root-intent <text>', '새 루트 또는 RootIntent 없는 레거시 부모에 기록할 단일 행 루트 목적')
   .option('--goal-type <type>', '골 종류 (implement, research, document, operate)')
-  .option('--self-resolve-clarifications', '되묻기를 저작기가 repository evidence로 자동 답변한다 (기본: 미결로 유지)')
   .option('--adversarial-review', '골 분해의 adversarial review를 문턱과 무관하게 실행한다')
   .option('--disable-adversarial-review', '골 분해의 adversarial review를 실행하지 않는다')
   // ⭐ 저작한 골을 **상주 루프의 큐**에 넣는다(옵트인). ⛔ 종료 규칙은 저작기가 만들 수 없어(골 문서에
@@ -3603,7 +3604,7 @@ selfCmd
   .option('--enqueue', '저작한 골을 데몬 상주 루프의 골 큐에 넣는다 (--termination-command 필요)')
   .option('--termination-command <cmd>', '큐에 넣을 때 쓸 종료 판정 명령 (exit 0 이면 그 골은 끝난 것)')
   .option('--termination-timeout <ms>', '종료 판정 명령의 제한 시간(ms)', '5000')
-  .action(async (parts: string[], opts: { cwd: string; lint?: string; printTemplate?: boolean; inspectDecisionSignal?: string; inspectInvariant?: string; inspectBoundary?: string; inspectArtifactLaunch?: string; inspectTestScenario?: string; inspectTargetPaths?: string; parentGoalFile?: string; parentQuestionId?: string; fromClarification?: string; supersedes?: string; rootIntent?: string; goalType?: string; selfResolveClarifications?: boolean; adversarialReview?: boolean; disableAdversarialReview?: boolean; enqueue?: boolean; terminationCommand?: string; terminationTimeout?: string }, command?: { getOptionValueSource?: (key: string) => string | undefined }) => {
+  .action(async (parts: string[], opts: { cwd: string; lint?: string; printTemplate?: boolean; inspectDecisionSignal?: string; inspectInvariant?: string; inspectBoundary?: string; inspectArtifactLaunch?: string; inspectTestScenario?: string; inspectTargetPaths?: string; parentGoalFile?: string; parentQuestionId?: string; fromClarification?: string; supersedes?: string; rootIntent?: string; goalType?: string; adversarialReview?: boolean; disableAdversarialReview?: boolean; enqueue?: boolean; terminationCommand?: string; terminationTimeout?: string }, command?: { getOptionValueSource?: (key: string) => string | undefined }) => {
     if (opts.printTemplate) {
       const timeoutFromCli = command?.getOptionValueSource?.('terminationTimeout') === 'cli';
       if (opts.lint || parts.length || opts.inspectDecisionSignal !== undefined || opts.inspectInvariant !== undefined || opts.inspectBoundary !== undefined || opts.inspectArtifactLaunch !== undefined || opts.inspectTestScenario !== undefined || opts.inspectTargetPaths !== undefined
@@ -3707,7 +3708,8 @@ selfCmd
     //   ⚠️ fail-open — 관측 배선 실패가 저작 자체를 막지 않는다.
     try {
       const { runGoalAuthorCli, formatGoalAuthorSelfInspection, formatGoalInterviewRound } = await import('./self-implement/goal-author-cli.js');
-      const result = await runGoalAuthorCli(parts, opts);
+      // 설정 졸업 1-c(2026-09-26): 되묻기 자동 답변은 늘 켠다 — `harness ask/say` 와 같은 동작(옵션 없음).
+      const result = await runGoalAuthorCli(parts, { ...opts, selfResolveClarifications: true });
       console.log(result.path);
       // ⭐ grounding 상태를 함께 알린다 — 이 장치의 알려진 약점이 여기서 드러나야 한다.
       //   (dead surface 로 두지 말고 연결하라 · 리뷰 2026-07-28)

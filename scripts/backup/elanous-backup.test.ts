@@ -165,3 +165,203 @@ describe('elanous-backup crontab snapshot', () => {
     expect(output).toContain('[dry-run] 올리지 않았다');
   });
 });
+
+/**
+ * 🔐 자격 묶음 — tar | age → secrets.tar.age 하나만 올린다 (2026-09-26 · 대표 «자격까지 담아라»)
+ *
+ * ⛔ 실물을 돌린다: 격리 HOME 에 가짜 자격 ⊕ 시험용 age 열쇠를 두고, gcloud·aws·crontab 을 PATH 앞 스텁으로 막는다.
+ *    업로드는 스텁이 «로컬 폴더로 복사»만 한다 — 네트워크·운영 버킷·심박은 닿지 않는다.
+ */
+const restore = resolve(import.meta.dir, 'elanous-restore.sh');
+// ⛔ 스크립트와 «같은» 곳을 본다 — PATH 도 본다(리뷰 must-fix: PATH 에만 있으면 시험이 조용히 건너뛰어졌다).
+const AGE = ['/opt/homebrew/bin/age', '/usr/local/bin/age', (spawnSync('sh', ['-c', 'command -v age'], { encoding: 'utf8' }).stdout ?? '').trim()]
+  .find((p) => p && spawnSync('test', ['-x', p]).status === 0);
+const MARK = 'CANARY-SECRET-7f3a9c';
+
+async function secretsFixture(opts: { recipient: boolean }) {
+  const root = await mkdtemp(join(tmpdir(), 'elanous-secrets-'));
+  const home = join(root, 'home');
+  const bin = join(root, 'bin');
+  const up = join(root, 'uploaded');
+  await mkdir(join(home, '.elanous'), { recursive: true });
+  await mkdir(join(home, '.grok'), { recursive: true });
+  await mkdir(join(home, '.elanous', 'checkpoints'), { recursive: true });
+  await writeFile(join(home, '.elanous', 'checkpoints', 'c.json'), '{}');
+  await mkdir(bin, { recursive: true });
+  await mkdir(up, { recursive: true });
+  await writeFile(join(home, '.elanous', 'auth.json'), `{"providers":{"x":{"tokens":{"accessToken":"${MARK}"}}}}`);
+  await writeFile(join(home, '.grok', 'auth.json'), `grok-${MARK}`);
+  const keyFile = join(root, 'test-identity.txt');
+  if (AGE) {
+    const kg = spawnSync(AGE.replace(/age$/, 'age-keygen'), ['-o', keyFile], { encoding: 'utf8' });
+    const pub = (kg.stderr ?? '').match(/age1[0-9a-z]+/)?.[0] ?? '';
+    if (opts.recipient) {
+      await mkdir(join(home, '.elanous', 'backup-key'), { recursive: true });
+      await writeFile(join(home, '.elanous', 'backup-key', 'recipient.txt'), `${pub}\n`);
+    }
+  }
+  await writeFile(join(bin, 'crontab'), '#!/bin/sh\nexit 0\n');
+  // gcloud: cp 는 이름만 적고, ls 는 적힌 이름 수만큼 줄을 낸다(원격 개수 대조가 맞게).
+  await writeFile(join(bin, 'gcloud'), `#!/bin/bash
+if [ "$1 $2" = "storage cp" ]; then shift 3; n=$#; i=0; for a in "$@"; do i=$((i+1)); [ $i -lt $n ] && basename "$a" >> "${up}/gcs.txt"; done; exit 0; fi
+if [ "$1 $2" = "storage ls" ]; then while read -r f; do echo "10 2026-01-01T00:00:00Z gs://x/$f"; done < "${up}/gcs.txt"; exit 0; fi
+exit 0
+`);
+  // aws: s3 cp <로컬> <s3url> 은 로컬 폴더로 복사 ⊕ 호출 기록, s3 ls 는 복사본 크기를 낸다.
+  await writeFile(join(bin, 'aws'), `#!/bin/bash
+echo "$*" >> "${up}/aws.log"
+if [ "$1 $2" = "s3 cp" ]; then cp "$3" "${up}/$(basename "$4")"; exit 0; fi
+if [ "$1 $2" = "s3 ls" ]; then f="${up}/$(basename "$3")"; [ -f "$f" ] && echo "2026-01-01 00:00:00 $(wc -c < "$f" | tr -d ' ') $(basename "$3")"; exit 0; fi
+exit 0
+`);
+  for (const f of ['crontab', 'gcloud', 'aws']) await chmod(join(bin, f), 0o755);
+  const env = {
+    ...process.env,
+    HOME: home,
+    PATH: `${bin}:${process.env.PATH ?? ''}`,
+    ELANOUS_STATE_DIR: join(root, 'state'),
+    ELANOUS_BACKUP_NO_HEARTBEAT: '1',
+    ELANOUS_KEY_CACHE_DIR: join(home, '.cache'),
+  };
+  return { root, home, up, keyFile, env };
+}
+
+describe('elanous-backup secrets bundle', () => {
+  test.skipIf(!AGE)('uploads exactly one secrets.tar.age that decrypts to the original credentials', async () => {
+    const fx = await secretsFixture({ recipient: true });
+    try {
+      const r = spawnSync('bash', [backup, '--source', 'manual'], { encoding: 'utf8', timeout: 60_000, env: fx.env });
+      const out = `${r.stdout ?? ''}${r.stderr ?? ''}`;
+      expect(out).toContain('🔐 자격 묶음 업로드 ✅');
+      expect(r.status).toBe(0);
+      const log = await Bun.file(join(fx.up, 'aws.log')).text();
+      const uploads = log.split('\n').filter((l) => l.startsWith('s3 cp'));
+      expect(uploads).toHaveLength(1);
+      expect(uploads[0]).toMatch(/ s3:\/\/\S+\/secrets\.tar\.age(\s|$)/);
+      const listed = spawnSync('bash', ['-c', `"${AGE}" -d -i "${fx.keyFile}" "${fx.up}/secrets.tar.age" | tar -xOf - .elanous/auth.json`], { encoding: 'utf8' });
+      expect(listed.stdout).toContain(MARK);
+      // ③ 출력 어디에도 자격 «내용»이 없다
+      expect(out).not.toContain(MARK);
+    } finally {
+      await rm(fx.root, { recursive: true, force: true });
+    }
+  });
+
+  test('fails the secrets step by name and never uploads when the recipient key is missing', async () => {
+    const fx = await secretsFixture({ recipient: false });
+    try {
+      const r = spawnSync('bash', [backup, '--source', 'manual'], { encoding: 'utf8', timeout: 60_000, env: fx.env });
+      const out = `${r.stdout ?? ''}${r.stderr ?? ''}`;
+      expect(r.status).not.toBe(0);
+      // ⛔ 받는 사유를 «하나»로 좁힌다 — 둘 다 받으면 열쇠 누락 경로를 안 타도 통과한다(리뷰 must-fix · GOODHART).
+      expect(out).toContain(AGE ? '🔐 자격 묶음 ⛔ 실패 — 공개 열쇠 파일이 없다' : '🔐 자격 묶음 ⛔ 실패 — age 를 못 찾았다');
+      const log = (await Bun.file(join(fx.up, 'aws.log')).exists()) ? await Bun.file(join(fx.up, 'aws.log')).text() : '';
+      expect(log.split('\n').filter((l) => l.startsWith('s3 cp'))).toHaveLength(0);
+      // 데이터 백업은 계속 돌았다(GCS 스텁이 업로드를 받았다)
+      expect(await Bun.file(join(fx.up, 'gcs.txt')).exists()).toBe(true);
+      expect(out).not.toContain(MARK);
+    } finally {
+      await rm(fx.root, { recursive: true, force: true });
+    }
+  });
+
+  test.skipIf(!AGE)('elanous-restore --to reproduces the credential bytes without printing them', async () => {
+    const fx = await secretsFixture({ recipient: true });
+    try {
+      const b = spawnSync('bash', [backup, '--source', 'manual'], { encoding: 'utf8', timeout: 60_000, env: fx.env });
+      expect(b.status).toBe(0);
+      const dest = join(fx.root, 'restored');
+      const r = spawnSync('bash', [restore, '--from', join(fx.up, 'secrets.tar.age'), '--to', dest], {
+        encoding: 'utf8',
+        timeout: 60_000,
+        env: { ...fx.env, ELANOUS_BACKUP_IDENTITY_PLAIN: fx.keyFile },
+      });
+      const out = `${r.stdout ?? ''}${r.stderr ?? ''}`;
+      expect(r.status).toBe(0);
+      expect(out).toContain('.elanous/auth.json');
+      expect(out).not.toContain(MARK);
+      const original = await Bun.file(join(fx.home, '.elanous', 'auth.json')).arrayBuffer();
+      const restored = await Bun.file(join(dest, '.elanous', 'auth.json')).arrayBuffer();
+      expect(Buffer.from(restored).equals(Buffer.from(original))).toBe(true);
+    } finally {
+      await rm(fx.root, { recursive: true, force: true });
+    }
+  });
+
+  test.skipIf(!AGE)('elanous-restore refuses --to $HOME and never overwrites home credentials', async () => {
+    const fx = await secretsFixture({ recipient: true });
+    try {
+      expect(spawnSync('bash', [backup, '--source', 'manual'], { encoding: 'utf8', timeout: 60_000, env: fx.env }).status).toBe(0);
+      const before = await Bun.file(join(fx.home, '.elanous', 'auth.json')).text();
+      await writeFile(join(fx.home, '.elanous', 'auth.json'), 'CHANGED-AFTER-BACKUP');
+      const r = spawnSync('bash', [restore, '--from', join(fx.up, 'secrets.tar.age'), '--to', fx.home], {
+        encoding: 'utf8', timeout: 60_000, env: { ...fx.env, ELANOUS_BACKUP_IDENTITY_PLAIN: fx.keyFile },
+      });
+      expect(r.status).toBe(2);
+      expect(`${r.stdout}${r.stderr}`).toContain('--to 가 홈이거나 홈을 품는다');
+      expect(await Bun.file(join(fx.home, '.elanous', 'auth.json')).text()).toBe('CHANGED-AFTER-BACKUP');
+      expect(before).toContain(MARK);
+    } finally {
+      await rm(fx.root, { recursive: true, force: true });
+    }
+  });
+
+  test.skipIf(!AGE)('elanous-restore --in-place keeps a pre-restore copy before overwriting', async () => {
+    const fx = await secretsFixture({ recipient: true });
+    try {
+      expect(spawnSync('bash', [backup, '--source', 'manual'], { encoding: 'utf8', timeout: 60_000, env: fx.env }).status).toBe(0);
+      await writeFile(join(fx.home, '.elanous', 'auth.json'), 'CHANGED-AFTER-BACKUP');
+      const r = spawnSync('bash', [restore, '--from', join(fx.up, 'secrets.tar.age'), '--in-place'], {
+        encoding: 'utf8', timeout: 60_000, env: { ...fx.env, ELANOUS_BACKUP_IDENTITY_PLAIN: fx.keyFile },
+      });
+      expect(r.status).toBe(0);
+      expect(await Bun.file(join(fx.home, '.elanous', 'auth.json')).text()).toContain(MARK);
+      const kept = spawnSync('bash', ['-c', `cat "${join(fx.home, '.elanous')}"/auth.json.pre-restore-*`], { encoding: 'utf8' });
+      expect(kept.stdout).toBe('CHANGED-AFTER-BACKUP');
+      expect(`${r.stdout}${r.stderr}`).not.toContain(MARK);
+    } finally {
+      await rm(fx.root, { recursive: true, force: true });
+    }
+  });
+
+  test('fails by name when API key cache lives outside HOME instead of silently dropping it', async () => {
+    const fx = await secretsFixture({ recipient: true });
+    try {
+      const outside = join(fx.root, 'outside-cache');
+      await mkdir(outside, { recursive: true });
+      await writeFile(join(outside, 'openai_api_key'), `k-${MARK}`);
+      const r = spawnSync('bash', [backup, '--source', 'manual'], { encoding: 'utf8', timeout: 60_000, env: { ...fx.env, ELANOUS_KEY_CACHE_DIR: outside } });
+      const out = `${r.stdout ?? ''}${r.stderr ?? ''}`;
+      expect(r.status).not.toBe(0);
+      expect(out).toContain('홈 밖');
+      expect(out).not.toContain(MARK);
+    } finally {
+      await rm(fx.root, { recursive: true, force: true });
+    }
+  });
+
+  test.skipIf(!AGE)('elanous-restore --in-place refuses to write through a symlink target', async () => {
+    const fx = await secretsFixture({ recipient: true });
+    try {
+      expect(spawnSync('bash', [backup, '--source', 'manual'], { encoding: 'utf8', timeout: 60_000, env: fx.env }).status).toBe(0);
+      const victim = join(fx.root, 'victim.txt');
+      await writeFile(victim, 'VICTIM');
+      await rm(join(fx.home, '.grok', 'auth.json'));
+      spawnSync('ln', ['-s', victim, join(fx.home, '.grok', 'auth.json')]);
+      const r = spawnSync('bash', [restore, '--from', join(fx.up, 'secrets.tar.age'), '--in-place'], {
+        encoding: 'utf8', timeout: 60_000, env: { ...fx.env, ELANOUS_BACKUP_IDENTITY_PLAIN: fx.keyFile },
+      });
+      expect(r.status).toBe(1);
+      expect(`${r.stdout}${r.stderr}`).toContain('심볼릭 링크라 건너뛴다');
+      expect(await Bun.file(victim).text()).toBe('VICTIM');
+    } finally {
+      await rm(fx.root, { recursive: true, force: true });
+    }
+  });
+
+  test('reports «no credentials» as skipped, not failed, on a machine without any', async () => {
+    const { status, output } = await runBackup('#!/bin/sh\nexit 0\n');
+    expect(status).toBe(0);
+    expect(output).toContain('🔐 자격 묶음 — 담을 자격이 없어 건너뛰었다');
+  });
+});

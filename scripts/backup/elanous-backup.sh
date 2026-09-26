@@ -57,10 +57,11 @@ for a in "$@"; do
     #       ***「사본이 다르다」로 «거짓 양성»***을 낸다 — 사본은 main 과 같은데도 그렇다.
     #    🔑 운영 트리(tree-sync 가 20분마다 main 으로 당기는 곳)를 가리켜야
     #       「다르다」가 ***「사본이 main 보다 뒤처졌다」***라는 «쓸모 있는» 뜻이 된다.
+    #    🔁 2026-09-26: pilot 트리는 사라졌다 — 운영 출처는 이제 «설치본»이다(매일 04:33 main 으로 갱신).
     case "$SELF" in
-      */pilot/*) : ;;
-      *) echo "  ⚠️ ⛔ 출처가 «운영 트리가 아니다» — 이 트리를 편집하면 낡음 검사가 «거짓 양성»을 낸다."
-         echo "     ⇒ 운영 트리에서 다시 심어라:  bash <pilot 트리>/scripts/backup/elanous-backup.sh --install" ;;
+      */.local/share/elanous/*) : ;;
+      *) echo "  ⚠️ ⛔ 출처가 «설치본이 아니다» — 이 트리를 편집하면 낡음 검사가 «거짓 양성»을 낸다."
+         echo "     ⇒ 설치본에서 다시 심어라:  bash $HOME/.local/share/elanous/current/node_modules/elanous/scripts/backup/elanous-backup.sh --install" ;;
     esac
     exit 0
   fi
@@ -106,10 +107,11 @@ esac
 #    ⇒ 🔑 크론의 기본 PATH 는 /usr/bin:/bin:/usr/sbin:/sbin 이고 gcloud 는 /opt/homebrew/bin 에 있다.
 #    ⛔ 「내 셸에서 되니까 된다」가 그 병이다 — 로그인 셸의 PATH 는 크론에 «없다».
 GCLOUD=""
-for c in /opt/homebrew/bin/gcloud /usr/local/bin/gcloud "$HOME/google-cloud-sdk/bin/gcloud"; do
-  [ -x "$c" ] && { GCLOUD="$c"; break; }
+# 🔁 2026-09-26: PATH 를 «먼저» 본다 — crontab 찾기와 같은 꼴. 크론 PATH 엔 Homebrew 가 없어 결과는 같고,
+#    시험이 PATH 앞에 둔 스텁을 «건너뛰고» 진짜 gcloud 를 부르는 구멍(🅕 실측: 가짜 HOME 으로 진짜 cp 가 돌았다)을 막는다.
+for c in "$(command -v gcloud 2>/dev/null || true)" /opt/homebrew/bin/gcloud /usr/local/bin/gcloud "$HOME/google-cloud-sdk/bin/gcloud"; do
+  [ -n "$c" ] && [ -x "$c" ] && { GCLOUD="$c"; break; }
 done
-[ -z "$GCLOUD" ] && GCLOUD="$(command -v gcloud 2>/dev/null || true)"
 if [ -z "$GCLOUD" ]; then
   echo "⛔ gcloud 를 «못 찾았다» (PATH=$PATH) — 담기 전에 멈춘다(200M 을 만들고 버리지 않는다)"
   exit 1
@@ -125,6 +127,9 @@ for c in "$(command -v crontab 2>/dev/null || true)" /usr/bin/crontab /bin/cront
 done
 
 BUCKET="${ELANOUS_BACKUP_BUCKET:-gs://monad-backup-pearlplaygroud}"
+# 🔐 자격 묶음은 «다른» 곳으로 간다 — age 로 암호화한 파일 «하나»만, 비공개 S3 버킷으로(2026-09-26 · 대표).
+SECRETS_BUCKET="${ELANOUS_BACKUP_SECRETS_BUCKET:-s3://elanvital-ops-backup}"
+RECIPIENT_FILE="${ELANOUS_BACKUP_RECIPIENT_FILE:-$HOME/.elanous/backup-key/recipient.txt}"
 DRY=0
 # 🏷️ 「무인(cron)인가」 — ⛔ 안 주면 「미상」. 「손」으로 «가정하지 않는다».
 BACKUP_SOURCE=unknown
@@ -137,6 +142,7 @@ for a in "$@"; do
     --dry-run) DRY=1 ;;
     --bucket) shift; BUCKET="${1:-$BUCKET}" ;;
     gs://*) BUCKET="$a" ;;
+    s3://*) SECRETS_BUCKET="$a" ;;
   esac
   _prev="$a"
 done
@@ -147,9 +153,11 @@ DEST="$BUCKET/$HOST/$STAMP"
 STAGE="$(mktemp -d "${TMPDIR:-/tmp}/elanous-backup-XXXXXX")"
 # ⛔ 오류 파일을 staging «안»에 두면 그것까지 «올라간다»(첫 판에서 빈 .err 4개가 올라갔다).
 ERRDIR="$(mktemp -d "${TMPDIR:-/tmp}/elanous-backup-err-XXXXXX")"
-trap 'rm -rf "$STAGE" "$ERRDIR"' EXIT
+# 🔐 평문 자격이 닿는 «유일한» 자리 — 권한 700 · 종료 시 지운다. ⛔ 평문 tar 는 여기에도 만들지 않는다(파이프로 age 에 흘린다).
+SECDIR="$(mktemp -d "${TMPDIR:-/tmp}/elanous-backup-sec-XXXXXX")"; chmod 700 "$SECDIR"
+trap 'rm -rf "$STAGE" "$ERRDIR" "$SECDIR"' EXIT
 
-human() { du -h "$1" 2>/dev/null | cut -f1; }
+human() { du -sh "$1" 2>/dev/null | cut -f1; }
 note()  { printf "  %-42s %8s  %s\n" "$1" "$2" "${3:-}"; }
 
 echo "═══ 담을 것을 «세운다» (staging: $STAGE) ═══"
@@ -259,7 +267,9 @@ snap_crontab() {
   local hits
   hits="$(grep -niE "$CRED_RE" "$out" 2>/dev/null | cut -d: -f1 | tr '\n' ' ')"
   if [ -n "${hits// /}" ]; then
-    rm -f "$out"
+    # 🔐 데이터 백업(GCS)에는 «안» 담는다 — 대신 원문을 자격 묶음으로 넘겨 «암호화해서» 담는다(아래 🔐 단계).
+    #    ⛔ 판정은 그대로 둔다(FAILED+1): 「평문 크론에 자격이 있다」는 사실 자체를 계속 사람에게 보인다.
+    mv -f "$out" "$SECDIR/machine-crontab.raw" 2>/dev/null || rm -f "$out"
     note "$name" "-" "⛔ 자격처럼 보이는 값이 있어 «안 담았다» — 줄: ${hits}(⛔ 값은 안 낸다). 크론 밖으로 옮겨라"
     FAILED=$((FAILED+1))
     return 1
@@ -323,6 +333,89 @@ while IFS= read -r tdb; do
 done < <(find "$HOME/source" -maxdepth 5 -type f -path '*/.elanous-test/tasks/tasks.db' 2>/dev/null)
 echo "  (트리 태스크 $TREE_TASKS 개)"
 
+# ── 🔐 자격 묶음: 명시 허용 목록 → tar | age → .age 한 파일 ──────────────────────────
+# 대표 2026-09-26: «재로그인 안내는 원하는 백업이 아니다 — 자격까지». 계기 = MCP 로그인값 유실.
+# ⛔ 불변식 셋: ① 평문은 $SECDIR(700) 밖에 안 쓴다 — tar 출력을 곧바로 age 로 흘려 평문 묶음 파일조차 안 만든다
+#              ② 올리는 것은 `.age` 한 파일뿐이다 ③ 출력에는 «이름과 바이트»만 — 내용은 한 줄도 안 낸다.
+# ⛔ 디렉터리를 통째로 담지 않는다 — `~/.codex` 는 4.8GB 대부분이 대화 기록이다(2026-09-26 실측).
+SECRET_ITEMS=()   # $HOME 기준 상대 경로
+add_secret() { [ -e "$HOME/$1" ] && SECRET_ITEMS+=("$1"); return 0; }
+for f in auth.json acp-token export-redactions.tsv config.json ssh-hosts.json; do add_secret ".elanous/$f"; done
+for d in "$HOME"/.codex "$HOME"/.codex-*; do
+  [ -d "$d" ] || continue; b="$(basename "$d")"
+  add_secret "$b/auth.json"; add_secret "$b/config.toml"
+done
+add_secret ".grok/auth.json"; add_secret ".grok/config.toml"
+for f in .config/gh/hosts.yml .aws/credentials .aws/config .npmrc .cargo/credentials.toml .ssh; do add_secret "$f"; done
+for f in credentials.db access_tokens.db application_default_credentials.json active_config configurations legacy_credentials; do
+  add_secret ".config/gcloud/$f"
+done
+add_secret "Library/Application Support/Higgsfield/Blender/auth.json"
+add_secret "Library/Application Support/Higgsfield/Blender/mcp"
+add_secret ".aside/accounts.json"
+for f in "$HOME"/Library/LaunchAgents/com.elanous.*.plist; do [ -f "$f" ] && add_secret "Library/LaunchAgents/$(basename "$f")"; done
+# API 키 캐시 — 이름은 `src/cli/doctor-fix.ts` defaultKeyNames() 와 같은 규칙: .env.example 의 `KEY=` 를 소문자로.
+KEY_CACHE_DIR="${ELANOUS_KEY_CACHE_DIR:-$HOME/.cache}"
+ENV_EXAMPLE="$(cd "$(dirname "$SELF")/../.." 2>/dev/null && pwd)/.env.example"
+case "$SRC_LINE" in '# ⛔ 이 파일은 «사본»이다. 출처: '*) ENV_EXAMPLE="$(cd "$(dirname "${SRC_LINE#*출처: }")/../.." 2>/dev/null && pwd)/.env.example" ;; esac
+KEY_CACHE_N=0; KEY_CACHE_OUTSIDE=0
+if [ -f "$ENV_EXAMPLE" ]; then
+  while IFS= read -r k; do
+    [ -f "$KEY_CACHE_DIR/$k" ] || continue
+    case "$KEY_CACHE_DIR/" in
+      "$HOME"/*) add_secret "${KEY_CACHE_DIR#"$HOME"/}/$k"; KEY_CACHE_N=$((KEY_CACHE_N+1)) ;;
+      # ⛔ 홈 밖 캐시는 «조용히 빼지 않는다» — 묶음은 홈 기준 경로라 못 담으니 실패로 센다(리뷰 must-fix).
+      *) KEY_CACHE_OUTSIDE=$((KEY_CACHE_OUTSIDE+1)) ;;
+    esac
+  done < <(sed -nE 's/^[[:space:]]*(#[[:space:]]*)?([A-Z][A-Z0-9_]*)=.*/\2/p' "$ENV_EXAMPLE" | tr 'A-Z' 'a-z' | sort -u)
+fi
+HAS_RAW_CRON=0; [ -s "$SECDIR/machine-crontab.raw" ] && HAS_RAW_CRON=1
+
+AGE=""
+for c in /opt/homebrew/bin/age /usr/local/bin/age "$(command -v age 2>/dev/null || true)"; do
+  [ -n "$c" ] && [ -x "$c" ] && { AGE="$c"; break; }
+done
+AWS=""
+for c in "$(command -v aws 2>/dev/null || true)" /opt/homebrew/bin/aws /usr/local/bin/aws; do
+  [ -n "$c" ] && [ -x "$c" ] && { AWS="$c"; break; }
+done
+SECRETS_STATE=skipped      # skipped | ok | failed
+SECRETS_REASON=""
+SECRETS_FILE="$SECDIR/secrets.tar.age"
+SECRETS_DEST="$SECRETS_BUCKET/$HOST/$STAMP/secrets.tar.age"
+echo
+echo "═══ 🔐 자격 묶음 (암호화 → $SECRETS_BUCKET) ═══"
+N_SECRETS=$(( ${#SECRET_ITEMS[@]} + HAS_RAW_CRON + KEY_CACHE_OUTSIDE ))
+if [ "$N_SECRETS" -eq 0 ]; then
+  echo "  담을 자격이 없다 — 건너뛴다"
+else
+  for it in ${SECRET_ITEMS[@]+"${SECRET_ITEMS[@]}"}; do note "secret:$it" "$(human "$HOME/$it")"; done
+  [ "$HAS_RAW_CRON" = 1 ] && note "secret:machine-crontab.raw" "$(human "$SECDIR/machine-crontab.raw")" "← 평문 백업에서 뺀 크론 원문"
+  echo "  (항목 $N_SECRETS · API 키 캐시 $KEY_CACHE_N$([ "$KEY_CACHE_OUTSIDE" -gt 0 ] && echo " · ⛔ 홈 밖 캐시 $KEY_CACHE_OUTSIDE"))"
+  if [ "$KEY_CACHE_OUTSIDE" -gt 0 ]; then
+    SECRETS_STATE=failed; SECRETS_REASON="API 키 캐시 $KEY_CACHE_OUTSIDE 개가 홈 밖($KEY_CACHE_DIR)이라 못 담는다 — ELANOUS_KEY_CACHE_DIR 를 홈 안으로"
+  elif [ -z "$AGE" ]; then
+    SECRETS_STATE=failed; SECRETS_REASON="age 를 못 찾았다 (brew install age)"
+  elif [ ! -s "$RECIPIENT_FILE" ]; then
+    SECRETS_STATE=failed; SECRETS_REASON="공개 열쇠 파일이 없다: $RECIPIENT_FILE"
+  else
+    TAR_ARGS=(-C "$HOME")
+    for it in ${SECRET_ITEMS[@]+"${SECRET_ITEMS[@]}"}; do TAR_ARGS+=("$it"); done
+    [ "$HAS_RAW_CRON" = 1 ] && TAR_ARGS+=(-C "$SECDIR" machine-crontab.raw)
+    # ⛔ pipefail 이 켜져 있으므로 tar 가 실패해도 여기서 잡힌다(파이프 뒤 rc 가 아니다).
+    if tar -cf - "${TAR_ARGS[@]}" 2>"$ERRDIR/secrets-tar.err" \
+         | "$AGE" -r "$(head -1 "$RECIPIENT_FILE" | tr -d '[:space:]')" -o "$SECRETS_FILE" 2>"$ERRDIR/secrets-age.err"; then
+      SECRETS_STATE=ok
+      note "secrets.tar.age" "$(human "$SECRETS_FILE")" "← tar | age -r (평문 묶음 파일 없음)"
+    else
+      rm -f "$SECRETS_FILE"
+      SECRETS_STATE=failed
+      SECRETS_REASON="묶기/암호화 실패: $(head -c 90 "$ERRDIR/secrets-tar.err" "$ERRDIR/secrets-age.err" 2>/dev/null | tr '\n' ' ')"
+    fi
+  fi
+  rm -f "$SECDIR/machine-crontab.raw"
+fi
+
 TOTAL="$(du -sh "$STAGE" 2>/dev/null | cut -f1)"
 echo
 STAGED=$(ls -1 "$STAGE" 2>/dev/null | wc -l | tr -d ' ')
@@ -331,11 +424,17 @@ echo "합계 $TOTAL → $DEST"
 printf "📋 계획 %s · 담김 %s · 실패 %s  %s\n" "$PLANNED" "$STAGED" "$FAILED" \
   "$([ "$PLANNED" = "$STAGED" ] && [ "$FAILED" = "0" ] && echo ✅ || echo '⛔ 구멍이 있다')"
 [ "$FAILED" -gt 0 ] && echo "⛔ 스냅샷 실패 $FAILED 건 — 위를 읽어라. 백업에 «구멍»이 있다."
+case "$SECRETS_STATE" in
+  ok)      echo "🔐 자격 묶음 ✅ 암호화됨 → $SECRETS_DEST" ;;
+  skipped) echo "🔐 자격 묶음 — 담을 자격이 없어 건너뛰었다" ;;
+  failed)  echo "🔐 자격 묶음 ⛔ 실패 — $SECRETS_REASON" ;;
+esac
 
 if [ "$DRY" = "1" ]; then
   echo "[dry-run] 올리지 않았다. 위 목록이 «올라갈 것»이다."
   # ⛔ 예행에서도 「구멍」을 «초록으로» 끝내지 않는다 — 예행의 뜻은 「이대로 올라간다」이므로.
   [ "$FAILED" -gt 0 ] || [ "$PLANNED" != "$STAGED" ] && exit 1
+  [ "$SECRETS_STATE" = failed ] && exit 1
   exit 0
 fi
 
@@ -347,6 +446,27 @@ UPLOAD_LOG=$("$GCLOUD" storage cp -r "$STAGE"/* "$DEST/" 2>&1); UPLOAD_RC=$?
 printf '%s\n' "$UPLOAD_LOG" | tail -3
 if [ "$UPLOAD_RC" -ne 0 ]; then
   echo "⛔ 업로드 실패 (rc=$UPLOAD_RC)"; exit 1
+fi
+
+if [ "$SECRETS_STATE" = ok ]; then
+  if [ -z "$AWS" ]; then
+    SECRETS_STATE=failed; SECRETS_REASON="aws CLI 를 못 찾았다 (PATH=$PATH)"
+  else
+    S_LOG=$("$AWS" s3 cp "$SECRETS_FILE" "$SECRETS_DEST" --only-show-errors 2>&1); S_RC=$?
+    if [ "$S_RC" -ne 0 ]; then
+      SECRETS_STATE=failed; SECRETS_REASON="S3 업로드 실패 (rc=$S_RC): $(printf '%s' "$S_LOG" | head -c 120)"
+    else
+      # ⛔ 「올렸다」로 끝내지 않는다 — 저쪽 크기를 «다시» 잰다
+      R_SIZE=$("$AWS" s3 ls "$SECRETS_DEST" 2>/dev/null | awk '{print $3}' | head -1)
+      L_SIZE=$(wc -c < "$SECRETS_FILE" | tr -d ' ')
+      if [ "$R_SIZE" = "$L_SIZE" ]; then
+        echo "🔐 자격 묶음 업로드 ✅ ${L_SIZE} bytes → $SECRETS_DEST"
+      else
+        SECRETS_STATE=failed; SECRETS_REASON="원격 크기(${R_SIZE:-없음}) ≠ 로컬(${L_SIZE})"
+      fi
+    fi
+  fi
+  [ "$SECRETS_STATE" = failed ] && echo "🔐 자격 묶음 ⛔ 실패 — $SECRETS_REASON"
 fi
 
 # ── ⛔ 「올렸다」로 끝내지 않는다 — «저쪽에서» 세어 본다 ──────────────────────
@@ -364,8 +484,8 @@ printf "  로컬 %s개 · 원격 %s개  %s\n" "$LOCAL" "$REMOTE" "$([ "$LOCAL" =
 #    ⚠️ 이 줄은 ***판정 «앞»***에 둔다 — 실패한 회차일 때가 «가장 남겨야 할» 때다.
 BACKUP_LEDGER="${ELANOUS_STATE_DIR:-$HOME/.elanous}/botlab/backup-runs.jsonl"
 mkdir -p "$(dirname "$BACKUP_LEDGER")" 2>/dev/null
-printf '{"at":"%s","dest":"%s","planned":%s,"staged":%s,"failed":%s,"uploaded":%s}\n' \
-  "$(date -u +%FT%TZ)" "$DEST" "${PLANNED:-0}" "${LOCAL:-0}" "${FAILED:-0}" "${REMOTE:-0}" \
+printf '{"at":"%s","dest":"%s","planned":%s,"staged":%s,"failed":%s,"uploaded":%s,"secrets":"%s"}\n' \
+  "$(date -u +%FT%TZ)" "$DEST" "${PLANNED:-0}" "${LOCAL:-0}" "${FAILED:-0}" "${REMOTE:-0}" "${SECRETS_STATE:-skipped}" \
   >> "$BACKUP_LEDGER" 2>/dev/null \
   && echo "  🧾 회차 판정 기록 — $BACKUP_LEDGER" \
   || echo "  ⚠️⛔ 회차 판정을 «못 남겼다» — 카나리아가 이 회차의 «완전성»을 못 본다"
@@ -381,8 +501,10 @@ case "$SRC_LINE" in
   *) HB_REPO="$(cd "$(dirname "$SELF")/../.." 2>/dev/null && pwd)" ;;
 esac
 BACKUP_OK=1
-{ [ "$LOCAL" = "$REMOTE" ] && [ "$FAILED" = "0" ] && [ "$PLANNED" = "$LOCAL" ]; } && BACKUP_OK=0
-if [ -n "$HB_REPO" ] && [ -f "$HB_REPO/scripts/botlab/heartbeat-emit.sh" ]; then
+{ [ "$LOCAL" = "$REMOTE" ] && [ "$FAILED" = "0" ] && [ "$PLANNED" = "$LOCAL" ] && [ "$SECRETS_STATE" != failed ]; } && BACKUP_OK=0
+if [ "${ELANOUS_BACKUP_NO_HEARTBEAT:-0}" = "1" ]; then
+  echo "  (심박 끔 — ELANOUS_BACKUP_NO_HEARTBEAT=1 · 시험 전용)" >&2
+elif [ -n "$HB_REPO" ] && [ -f "$HB_REPO/scripts/botlab/heartbeat-emit.sh" ]; then
   bash "$HB_REPO/scripts/botlab/heartbeat-emit.sh" backup "$BACKUP_OK" "$HB_REPO" "$BACKUP_SOURCE"
 else
   echo "  ⚠️ 심박을 «못 보냈다» — 저장소 자리를 못 찾았다(HB_REPO=${HB_REPO:-없음})" >&2
@@ -393,5 +515,9 @@ fi
 #    ⚠️ 업로드는 «막지 않는다» — 반쪽 백업이라도 없는 것보다 낫다. 막는 것은 ***「성공했다」는 말***이다.
 if [ "$FAILED" -gt 0 ] || [ "$PLANNED" != "$LOCAL" ]; then
   echo "⛔ 올렸지만 «완전하지 않다» — 계획 $PLANNED · 담김 $LOCAL · 실패 $FAILED"
+  exit 1
+fi
+if [ "$SECRETS_STATE" = failed ]; then
+  echo "⛔ 데이터는 올렸지만 «자격 묶음»이 실패했다 — $SECRETS_REASON"
   exit 1
 fi

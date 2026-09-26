@@ -8,6 +8,14 @@ elanous runs on **Bun** (not Node) on macOS, Linux and WSL2; Windows native Powe
 curl -fsSL https://github.com/ElanvitalAI/elanous/releases/latest/download/install.sh | bash
 ```
 
+Or with npm (needs [Bun](https://bun.sh) on your `PATH`):
+
+```bash
+npm install -g elanous
+```
+
+Coming from **monad** (0.1.x)? Don't use `monad update` to move — see [Moving from monad](update-and-uninstall.md#moving-from-monad).
+
 The installer:
 
 - downloads the latest release and checks it against `SHA256SUMS` — a mismatch stops the install,
@@ -24,10 +32,10 @@ elanous --version     # prints the version and the commit it was built from
 elanous doctor        # what this machine still needs — a report, not a gate
 ```
 
-Pin a version with `ELANOUS_VERSION`:
+Pin a version with `ELANOUS_VERSION` (Elanous releases start at 0.2.0):
 
 ```bash
-curl -fsSL https://github.com/ElanvitalAI/elanous/releases/latest/download/install.sh | ELANOUS_VERSION=0.1.1 bash
+curl -fsSL https://github.com/ElanvitalAI/elanous/releases/latest/download/install.sh | ELANOUS_VERSION=0.2.0 bash
 ```
 
 ## Windows (native PowerShell) — experimental

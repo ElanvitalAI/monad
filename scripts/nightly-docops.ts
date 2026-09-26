@@ -119,7 +119,7 @@ const metrics = await runNightlyDocOpsCycle({
     if (!t) return 0;
     const linkWarnings = lintDocLinks(item.path, t, { fileExists, readText, vaultFiles });
     const issueCommentWarnings = await lintGitHubIssueCommentPointers(item.path, t, {
-      repository: { owner: 'ElanvitalAI', repo: 'monad-agent' },
+      repository: { owner: 'ElanvitalAI', repo: 'elanous-agent' },
       fetchStatus: issueCommentFetchStatus,
     });
     // ⛔⭐ **분류와 대상을 보존해 찍는다**(리뷰 2R should-fix) — 숫자만 합산하면 운영자가

@@ -152,7 +152,7 @@ async function productionFetchUrl(
   try {
     const res = await fetch(url, {
       headers: {
-        'user-agent': 'elanous-intake-enrich/1.0 (+https://github.com/ElanvitalAI/monad)',
+        'user-agent': 'elanous-intake-enrich/1.0 (+https://github.com/ElanvitalAI/elanous)',
         accept: 'text/html, text/plain;q=0.9, */*;q=0.5',
       },
       signal: ctrl.signal,

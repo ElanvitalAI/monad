@@ -263,7 +263,7 @@ export async function buildAskPreflightDeps(options: BuildAskPreflightDepsOption
       const counts: Record<string, number> = {};
       for (const path of paths) {
         // git-spawn-allow: Reads recent commit hashes for this path to count changes and does not modify repository state.
-        const raw = execFileSync('git', ['log', `--since=${windowDays}.days`, '--format=%h', '--', path], { encoding: 'utf8' });
+        const raw = execFileSync('git', ['log', `--since=${windowDays}.days`, '--format=%h', '--', path], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] });   // stderr 가 TUI 화면에 새지 않게
         counts[path] = raw.split('\n').filter((line) => line.trim() !== '').length;
       }
       return counts;

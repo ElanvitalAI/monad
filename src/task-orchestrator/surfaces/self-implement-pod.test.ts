@@ -1,5 +1,8 @@
-import { describe, expect, test } from 'bun:test';
-import { mkdtempSync, rmSync } from 'node:fs';
+import { describe, expect, spyOn, test } from 'bun:test';
+import { debug } from '../../debug/log.js';
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { gunzipSync, gzipSync } from 'node:zlib';
+import { appendRunLedgerEntry, runLedgerDir, runLedgerPath } from '../../self-implement/run-ledger.js';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { CONTROL_INBOX_DIR_ENV } from '../../harness/control-inbox.js';
@@ -99,6 +102,98 @@ describe('podSelfImplementSpawn', () => {
     expect(Object.keys(secret.stringData)).not.toContain('env-ANTHROPIC_API_KEY');
     // ⭐ 과금 키만 본다 — run-origin 칸(ELANOUS_POD_NAME 등)은 별도 시험이 문다.
     expect(job.spec.template.spec.containers[0].env.map((e: { name: string }) => e.name).filter((n: string) => n.endsWith('_API_KEY'))).toEqual(['OPENROUTER_API_KEY']);
+  });
+
+  test('manifest transfers bounded ledger chunks before the final disposition line (and emits NONE for an empty store)', () => {
+    const manifest = podJobManifest({ name: 'j', namespace: 'n', image: 'i', repoUrl: 'r', args: [], passEnv: [], deadlineSeconds: 60 }) as { spec: { template: { spec: { containers: Array<{ args: string[] }> } } } };
+    const script = manifest.spec.template.spec.containers[0]!.args[0]!;
+    expect(script).toContain('ELANOUS_RUN_LEDGER %s %s/%s %s');
+    expect(script.indexOf('ELANOUS_RUN_LEDGER')).toBeGreaterThan(script.indexOf('elanous self implement'));
+    expect(script.indexOf('ELANOUS_RUN_LEDGER')).toBeLessThan(script.lastIndexOf('tail -n 1 /tmp/si.out'));
+    expect(script).toContain('ELANOUS_RUN_LEDGER_NONE');
+    const root = mkdtempSync(join(tmpdir(), 'pod-script-'));
+    try {
+      const dir = runLedgerDir(root);
+      const id = 'run-12345678-1234-1234-1234-123456789abc';
+      const payload = Array.from({ length: 12000 }, (_, n) => `line${n}`).join('\n') + '\n';
+      mkdirSync(dir, { recursive: true });
+      writeFileSync(runLedgerPath(id, dir), payload);
+      const extract = script.slice(script.indexOf('set -o pipefail\n'), script.indexOf('\ntail -n 1 /tmp/si.out'));
+      const r = Bun.spawnSync(['bash', '-c', extract], { env: { ...process.env, ELANOUS_STATE_DIR: root } });
+      expect(r.exitCode).toBe(0);
+      const lines = r.stdout.toString().trim().split('\n');
+      const chunks = lines.map((line) => line.split(' ').at(-1)!);
+      expect(lines.length).toBeGreaterThan(1);
+      expect(chunks.every((chunk) => chunk.length <= 8000)).toBe(true);
+      expect(gunzipSync(Buffer.from(chunks.join(''), 'base64')).toString('utf8')).toBe(readFileSync(runLedgerPath(id, dir), 'utf8'));
+      rmSync(dir, { recursive: true, force: true });
+      const empty = Bun.spawnSync(['bash', '-c', extract], { env: { ...process.env, ELANOUS_STATE_DIR: root } });
+      expect(empty.stdout.toString().trim()).toBe('ELANOUS_RUN_LEDGER_NONE');
+    } finally { rmSync(root, { recursive: true, force: true }); }
+  });
+
+  test('completed Job collects full-log ledger at the host while preserving tail disposition', async () => {
+    const root = mkdtempSync(join(tmpdir(), 'pod-full-logs-'));
+    const id = 'run-child-1';
+    const hostDir = runLedgerDir(root);
+    const oldState = process.env.ELANOUS_STATE_DIR;
+    const finished: Array<Record<string, unknown>> = [];
+    const logSpy = spyOn(debug, 'log').mockImplementation(((category: string, event: string, data?: Record<string, unknown>) => {
+      if (category === 'self-implement.pod' && event === 'job-finished') finished.push(data ?? {});
+    }) as typeof debug.log);
+    process.env.ELANOUS_STATE_DIR = root;
+    try {
+      const child = mkdtempSync(join(tmpdir(), 'pod-child-'));
+      let contents: string;
+      try {
+        appendRunLedgerEntry({ runId: id, event: 'start', data: { origin: { podName: 'job-x-abcde' } } }, runLedgerDir(child));
+        contents = readFileSync(runLedgerPath(id, runLedgerDir(child)), 'utf8');
+      } finally { rmSync(child, { recursive: true, force: true }); }
+      const line = `ELANOUS_RUN_LEDGER ${id} 1/1 ${gzipSync(contents).toString('base64')}`;
+      const json = '{"stage":"merged","ok":true,"runId":"run-child-1"}';
+      const calls: string[][] = [];
+      const kubectl: Kubectl = (args) => {
+        calls.push([...args]);
+        if (args.includes('current-context')) return { status: 0, stdout: 'test-context', stderr: '' };
+        if (args.includes('get')) return { status: 0, stdout: 'Complete', stderr: '' };
+        if (args.includes('logs')) return { status: 0, stdout: args.includes('--tail=400') ? `${json}\n` : `${line}\n${json}\n`, stderr: '' };
+        return { status: 0, stdout: '', stderr: '' };
+      };
+      const result = await podSelfImplementSpawn({ kubectl, credentials: CREDS, env: { ELANOUS_STATE_DIR: root } })({ feature: 'x', spaceId: 's' }).done;
+      expect(result.exitCode).toBe(0);
+      expect(result.disposition?.stage).toBe('merged');
+      expect(result.disposition?.runId).toBe(id);
+      expect(result.disposition?.childRunId).toBe(id);
+      expect(finished).toHaveLength(1);
+      expect(finished[0]).toMatchObject({ state: 'complete', stage: 'merged', childRunId: id });
+      expect(readFileSync(runLedgerPath(id, hostDir), 'utf8')).toBe(contents);
+      expect(calls.filter((args) => args.includes('logs'))).toHaveLength(2);
+    } finally {
+      logSpy.mockRestore();
+      if (oldState === undefined) delete process.env.ELANOUS_STATE_DIR;
+      else process.env.ELANOUS_STATE_DIR = oldState;
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  test('completed Job fetches full logs without --tail; collection failure leaves disposition unchanged', async () => {
+    const json = JSON.stringify({ stage: 'pr-opened', ok: true });
+    const calls: string[][] = [];
+    const kubectl: Kubectl = (args) => {
+      calls.push([...args]);
+      if (args.includes('current-context')) return { status: 0, stdout: 'test-context', stderr: '' };
+      if (args.includes('get')) return { status: 0, stdout: 'Complete', stderr: '' };
+      if (args.includes('logs') && !args.includes('--tail=400')) return { status: 1, stdout: '', stderr: 'log fetch unavailable' };
+      if (args.includes('logs')) return { status: 0, stdout: `${json}\n`, stderr: '' };
+      return { status: 0, stdout: '', stderr: '' };
+    };
+    const result = await podSelfImplementSpawn({ kubectl, credentials: CREDS, env: {} })({ feature: 'x', spaceId: 's' }).done;
+    expect(result.exitCode).toBe(0);
+    expect(result.disposition?.stage).toBe('pr-opened');
+    const logCalls = calls.filter((args) => args.includes('logs'));
+    expect(logCalls).toHaveLength(2);
+    expect(logCalls[0]).toContain('--tail=400');
+    expect(logCalls[1]).not.toContain('--tail=400');
   });
 
   test('every Job carries the isolation gate init container', () => {

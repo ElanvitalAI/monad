@@ -1,6 +1,7 @@
 import { existsSync } from 'node:fs';
 import { isAbsolute, join, relative, resolve, sep } from 'node:path';
 import { debug } from '../debug/log.js';
+import { excludeProjectDotElanous } from '../instance/project-local-exclude.js';
 import { getUserConfig, type UserConfig } from '../user-config.js';
 
 /** Why `resolveGoalDocumentsDir` picked the directory it returned. */
@@ -19,6 +20,8 @@ export interface ResolveGoalDocumentsDirDeps {
   exists?: (path: string) => boolean;
   /** Resolution observation. Defaults to `debug.log`. */
   log?: (category: string, event: string, data?: unknown) => void;
+  /** `.elanous/` 를 저장소의 로컬 무시 목록에 올린다(시험 seam). 기본 = `excludeProjectDotElanous`. */
+  excludeDotElanous?: (repoRoot: string) => string;
 }
 
 const DOCS_GOALS = ['docs', 'goals'] as const;
@@ -46,7 +49,9 @@ export function resolveGoalDocumentsDir(
       ? { directory: join(root, ...DOCS_GOALS), reason: 'existing-docs-goals' as const }
       : { directory: join(root, '.elanous', 'goals'), reason: 'default-dot-elanous' as const });
 
-  log('harness.goals-dir', 'resolved', { repoRoot: root, directory: resolved.directory, reason: resolved.reason });
+  // 기본 자리(`.elanous/goals`)면 그 저장소의 로컬 무시 목록에 올린다(UX 13 · 사용자 git status 를 더럽히지 않게).
+  const excluded = resolved.reason === 'default-dot-elanous' ? (deps.excludeDotElanous ?? excludeProjectDotElanous)(root) : undefined;
+  log('harness.goals-dir', 'resolved', { repoRoot: root, directory: resolved.directory, reason: resolved.reason, ...(excluded ? { excluded } : {}) });
   return resolved;
 }
 

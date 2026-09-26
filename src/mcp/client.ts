@@ -529,7 +529,7 @@ export interface McpClientOpts {
 
 // ─── Internal shapes ─────────────────────────────────────────────
 
-const CLIENT_INFO = { name: 'monad-agent', version: '0.1.0' };
+const CLIENT_INFO = { name: 'elanous-agent', version: '0.1.0' };
 /** MCP Apps 확장(SEP-1865 · Final)을 «우리가 실제로 하는 만큼» 선언한다.
  *
  *  ⛔⭐ `mimeTypes` 는 스펙이 «필수»로 요구한다 — 빈 객체로 선언하면

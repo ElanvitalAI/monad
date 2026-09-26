@@ -12,6 +12,7 @@
 // 목적이라 메커니즘(하니스/중첩/ACP)은 fungible — 되는 방법을 쓴다. driveHeadlessElanous 는 파일 존치
 // (S2/S3 화면 I/O 서피스용). canonical goal-loop = [[PLAN-unified-autonomous-agent-substrate-2026-07-20]].
 
+import { fileURLToPath } from 'node:url';
 import { judgePredictionAccuracy, mustFixTrendFromHistory, renderJudgeOwnSignals, renderJudgePredictionAccuracy } from './judge-prediction-accuracy.js';
 import { isElanousRuntimeArtifactPath } from './gate-scope.js';
 import { spawn, spawnSync, execFile } from 'node:child_process';
@@ -225,13 +226,19 @@ export function readReworkSalvageEvidence(cwd: string): { clean: boolean; aheadC
 /** ⭐ 골 «파일»로 런을 띄우는 «한 자리» — 표면이 둘 이상이라 여기서 만든다(2026-08-11 72차).
  *  ⛔ 표면(TUI 슬래시·rework salvage)마다 spawn 을 새로 쓰면 인자·env 가 조용히 갈린다.
  *  ⛔ detached ⊕ unref — 띄운 표면이 죽어도 런은 산다(TUI 를 닫아도 계속 돈다). */
+/** 이 패키지의 CLI 진입 스크립트(절대 경로) — 체크아웃이든 설치본(`node_modules/elanous`)이든 같은 자리다. */
+export const ELANOUS_ENTRY_SCRIPT = fileURLToPath(new URL('../../bin/elanous.mjs', import.meta.url));
+
 export function launchDevGoalFileDetached(
   input: { goalFile: string; base?: string; target?: string; correlation?: string; env?: Readonly<Record<string, string>> },
   spawnChild: typeof spawn = spawn,
 ): Promise<void> {
   return new Promise<void>((resolve, reject) => {
+    // ⛔ 상대 경로 `bin/elanous.mjs` 금지 — cwd 는 «사용자 프로젝트»다. 2026-09-26 베어 Ubuntu 26.04 실측:
+    //   TUI `/harness ask` 가 «런을 띄웠다»고 말했는데 자식이 `bin/elanous.mjs` 를 못 찾고 즉사했다(stdio ignore 라 조용히).
+    //   elanous 체크아웃 밖에서는 이 문이 한 번도 돈 적이 없었다 ⇒ 실행 중인 패키지 기준의 절대 경로로 부른다.
     const child = spawnChild(process.execPath, [
-      'bin/elanous.mjs', 'dev', '--file', input.goalFile,
+      ELANOUS_ENTRY_SCRIPT, 'dev', '--file', input.goalFile,
       ...(input.base ? ['--base', input.base] : []),
       ...(input.target ? ['--target', input.target] : []),
       ...(input.correlation !== undefined ? ['--correlation', input.correlation] : []),

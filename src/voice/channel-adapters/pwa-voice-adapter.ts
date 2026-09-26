@@ -509,24 +509,8 @@ async function createWiredSession(opts: WiredSessionOpts): Promise<PwaVoiceSessi
   };
 }
 
-// ── Env gate ───────────────────────────────────────────────────────
-
-/**
- * Default ON since Phase U closure (2026-05-05) — PWA is now the unified
- * frontend, so the voice WS endpoint is part of the standard daemon
- * surface area. Set `ELANOUS_PWA_VOICE=0` (or `false`/`off`/`no`) to opt
- * OUT, e.g. when running elanous serve on a node without OPENAI_API_KEY
- * just to avoid the streaming STT init log line.
- *
- * Pre-Phase-U: this returned false unless the env was explicitly set —
- * a Phase 7 (2026-04-30) opt-in gate while the PWA voice path was
- * experimental. That justification is gone now.
- */
-export function isPwaVoiceEnabled(): boolean {
-  const raw = process.env.ELANOUS_PWA_VOICE?.trim().toLowerCase();
-  if (raw === '0' || raw === 'false' || raw === 'off' || raw === 'no') return false;
-  return true;
-}
+// ── Env gate — 졸업(2026-09-26 설정 졸업 · 대표 «기본으로 켜진 것은 옵션으로 두지 않는다») ──
+// PWA 음성 WS 는 데몬 표준 표면이다. 옛 끄기 스위치 ELANOUS_PWA_VOICE 는 없앴다(streaming STT 가 없으면 nexus 가 어댑터를 안 만든다).
 
 // ── Frame protocol contract (for frontend reference) ───────────────
 

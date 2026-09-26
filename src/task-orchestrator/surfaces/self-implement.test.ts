@@ -228,6 +228,16 @@ describe('self-implement surface adapter (S1 · parallel self-dev)', () => {
     expect(d).toMatchObject({ ok: true, stage: 'merged', prUrl: 'https://x/1', prNumber: 1, merged: true });
   });
 
+  test('parseSelfImplementJson — preserves the child run id in both identity fields only when nonblank', () => {
+    const d = parseSelfImplementJson('{"stage":"merged","ok":true,"runId":"run-child-1"}');
+    expect(d).toMatchObject({ runId: 'run-child-1', childRunId: 'run-child-1' });
+    for (const runId of ['', '   ', 123, null]) {
+      const invalid = parseSelfImplementJson(JSON.stringify({ stage: 'merged', ok: true, runId }));
+      expect(invalid).not.toHaveProperty('runId');
+      expect(invalid).not.toHaveProperty('childRunId');
+    }
+  });
+
   test('parseSelfImplementJson — retains a non-empty terminal error diagnostic', () => {
     const d = parseSelfImplementJson('{"stage":"error","ok":false,"error":"unable to derive isolated child universe"}');
     expect(d).toMatchObject({ stage: 'error', ok: false, error: 'unable to derive isolated child universe' });

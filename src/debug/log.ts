@@ -60,6 +60,7 @@
 
 import { AsyncLocalStorage } from 'node:async_hooks';
 import { mkdirSync } from 'fs';
+import { excludeProjectDotElanous } from '../instance/project-local-exclude.js';
 import { formatClock } from '../time/format.js';
 import { homedir } from 'os';
 import { fileURLToPath } from 'node:url';
@@ -192,6 +193,8 @@ function resolveLogDir(): string {
     : join(getSessionProjectRoot().path, '.elanous', 'debug');
   try {
     mkdirSync(local, { recursive: true });
+    // 사용자 프로젝트면 `.elanous/` 를 그 저장소의 로컬 무시 목록에(UX 13 · 사용자 git status 를 더럽히지 않게).
+    if (!isWithinSourceRoot(sessionCwd)) excludeProjectDotElanous(getSessionProjectRoot().path);
     return local;
   } catch { /* selected location unwritable — fall through */ }
 

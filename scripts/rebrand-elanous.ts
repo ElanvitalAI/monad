@@ -9,7 +9,7 @@
 //   monadagent → elanous (패키지 이름) · MONAD → ELANOUS · Monad → Elanous · monad → elanous · 모나드 → 엘라누스
 //   경로(파일·디렉토리 이름)에도 같은 규칙.
 // 보호(안 바꾼다):
-//   - 운영 저장소 식별자 `ElanvitalAI/monad` 와 체크아웃 이름 `monad-agent`(저장소 이름은 별도 결정)
+//   - 운영 저장소 식별자 `ElanvitalAI/elanous` 와 체크아웃 이름 `monad-agent`(저장소 이름은 별도 결정)
 //   - S3 에 실데이터가 있는 접두·버킷(2026-09-26 실측: elanvital-public 4 · openclaw-image-ref 1 · monad-webclone-archive)
 //   ⚠️ AWS Secrets 접두는 보호하지 «않는다» — 이 기계 secrets backend 가 aws 가 아니다(실측) · 영상 폴더는 이행이 옮긴다
 //   - 제3자 이름 `Monad, Inc`(상표 사유를 적은 문서)
