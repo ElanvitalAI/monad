@@ -36,6 +36,7 @@ Full text of every page: https://docs.elanous.ai/llms-full.txt
 
 - [Telegram](https://docs.elanous.ai/surfaces/telegram/): Run elanous as a Telegram bot.
 - [Discord voice channel](https://docs.elanous.ai/surfaces/discord/): Voice-channel round trips and voice attachments on Discord.
+- [The web app (PWA)](https://docs.elanous.ai/surfaces/pwa/): Open the browser dashboard: Chat, Terminal, Vault, Settings and first-time setup.
 
 ## Operations
 
