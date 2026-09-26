@@ -24,6 +24,7 @@ Full text of every page: https://docs.elanous.ai/llms-full.txt
 ## Concepts
 
 - [How elanous works](https://docs.elanous.ai/concepts/architecture/): Observe, reason, heal — from a sentence to a merged change.
+- [Graph engineering and self-healing loops](https://docs.elanous.ai/concepts/graph-engineering/): One loop — observe, understand, heal — drawn as a graph that reshapes itself while it runs.
 - [Source layout](https://docs.elanous.ai/concepts/source-layout/): Where things live in the repository.
 
 ## Models & providers
@@ -53,6 +54,7 @@ Full text of every page: https://docs.elanous.ai/llms-full.txt
 
 ## Releases
 
+- [0.2.1](https://docs.elanous.ai/releases/0-2-1/): S3: no default bucket, private/public buckets; options that are now always on.
 - [0.2.0](https://docs.elanous.ai/releases/0-2-0/): monad is now Elanous — new command, package, paths and repository; npm as elanous.
 - [0.1.2](https://docs.elanous.ai/releases/0-1-2/): Updates (elanous update --auto), release yank, fleet reduce — released as monad.
 - [0.1.1](https://docs.elanous.ai/releases/0-1-1/): Bare-Linux install fixes, pinned Bun 1.4.2, memories survive power loss and uninstall.
